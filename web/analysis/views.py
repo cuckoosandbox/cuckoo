@@ -109,7 +109,13 @@ def chunk(request, task_id, pid, pagenum):
         
 @require_safe
 def filtered_chunk(request, task_id, pid, category):
+    """Filters calls for call category.
+    @param task_id: cuckoo task id
+    @param pid: pid you want calls
+    @param category: call category type
+    """
     if request.is_ajax():
+        # Search calls related to your PID.
         record = results_db.analysis.find_one(
             {"info.id": int(task_id), "behavior.processes.process_id": int(pid)},
             {"behavior.processes.process_id": 1, "behavior.processes.calls": 1}
@@ -118,6 +124,7 @@ def filtered_chunk(request, task_id, pid, category):
         if not record:
             raise PermissionDenied
 
+        # Extract embedded document related to your process from response collection.
         process = None
         for pdict in record["behavior"]["processes"]:
             if pdict["process_id"] == int(pid):
@@ -126,8 +133,10 @@ def filtered_chunk(request, task_id, pid, category):
         if not process:
             raise PermissionDenied
 
+        # Create empty process dict for AJAX view.
         filtered_process = {"process_id": pid, "calls": []}
 
+        # Populate dict, fetching data from all calls and selecting only appropriate category.
         for call in process["calls"]:
             chunk = results_db.calls.find_one({"_id": call})
             for call in chunk["calls"]:
