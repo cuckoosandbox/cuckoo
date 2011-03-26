@@ -1,4 +1,4 @@
-"""Database migration from Cuckoo 0.6 to Cuckoo 1.0.
+"""Database migration from Cuckoo 0.6 to Cuckoo 1.1.
 
 Revision ID: 263a45963c72
 Revises: None
