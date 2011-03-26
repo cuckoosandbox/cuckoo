@@ -134,9 +134,9 @@ def filtered_chunk(request, task_id, pid, category):
                 if call["category"] == category:
                     filtered_process["calls"].append(call)
 
-            return render_to_response("analysis/behavior/_chunk.html",
-                                      {"chunk": filtered_process},
-                                      context_instance=RequestContext(request))
+        return render_to_response("analysis/behavior/_chunk.html",
+                                  {"chunk": filtered_process},
+                                  context_instance=RequestContext(request))
     else:
         raise PermissionDenied
 
