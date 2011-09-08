@@ -51,7 +51,7 @@ This is the output you'll see:
     [2011-09-08 19:52:56] 	  | VRAM Size: 16 MB
     [2011-09-08 19:52:56] 	  | State: Saved
     [2011-09-08 19:52:56] 	  | Current Snapshot: "Clean & Running"
-    [2011-09-08 19:52:56] 	  | MAC Address: 08:00:27:31:33:37
+    [2011-09-08 19:52:56] 	  | MAC Address: 08:00:27:03:13:37
     [2011-09-08 19:52:56] [Start Up] 1 virtual machine/s added to pool.
     [2011-09-08 19:52:56] [Database] [Init] Generated database "cuckoo.db" which didn't exist before.
 
