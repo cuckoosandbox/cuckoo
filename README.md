@@ -58,4 +58,4 @@ This is the output you'll see:
 ## Donations
 Cuckoo is the result of hours and hours and hours and hours of passionated work from volunteers. If you appreciated our work, you use Cuckoo please consider making a small contribution to our efforts and to the expenses we face, please **Flattr** us:
 
-[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=malwr&url=http://github.com/cuckoobox/cuckoo&title=Cuckoo Sandbox&language=en_GB&tags=github&category=software)
+[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](hhttp://flattr.com/thing/394890/Cuckoo-Sandbox)
