@@ -346,6 +346,12 @@ def main(config_path):
         log("Unable to import analysis package: %s." % why, "ERROR")
         return False
 
+    #---------------------------------------------------------------------------
+    # Temporary hacky fix to wait for Windows VM to complete network link setup.
+    import time
+    time.sleep(10)
+    #---------------------------------------------------------------------------
+
     # Launch main function from analysis package. Default packages won't create
     # any problem, but if its using one created by the user, something might
     # fail if it wasn't properly written.
