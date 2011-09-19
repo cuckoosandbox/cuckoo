@@ -420,22 +420,28 @@ class Analysis(Thread):
                 % (self.task["target"], self.task["id"]), "ERROR")
             success = False
 
-        # 13. Stop virtual machine.
-        if vm.stop():
-            # TODO: this is a quick hacky fix for the error that VirtualBox
-            # sometimes encounters while trying to lock a session after a
-            # poweroff. Need to found a better solution.
-            sleep(5)
-            # 14. Restore virtual machine snapshot.
-            vm.restore()
-        else:
-            # If shutdown failed than I prefere not to put the virtual machine
-            # back to the pool as it might be corrupted.
-            log("[Analysis] [Core] Poweroff of virtual machine \"%s\" and "  \
-                "consequently is not getting re-added to pool. Review "      \
-                "previous errors." % self.vm_id, "ERROR")
-            free_vm = False
+        # 13. Stop virtual machine.            
+        if not vm.stop():
+            log("[Analysis] [Core] Poweroff of virtual machine \"%s\" failed," \
+                " trying to restore snapshot anyways..." % self.vm_id)
 
+        # TODO: this is a quick hacky fix for the error that VirtualBox
+        # sometimes encounters while trying to lock a session after a
+        # poweroff. Need to find a better solution.
+        sleep(5)
+
+        # 14. Restore virtual machine snapshot.
+        # I'm going to force snapshot restore even after a failed power off and
+        # try to recover the machine.
+        # Thanks to KjellChr for suggesting this feature.
+        if not vm.restore():
+            # If restore failed than I prefere not to put the virtual machine
+            # back to the pool as it might be corrupted.
+            log("[Analysis] [Core] Cannot restore snapshot on virtual machine" \
+                " \"%s\", consequently is not getting re-added to pool. "      \
+                "Review previous errors." % self.vm_id, "WARNING")
+            free_vm = False
+            
         # 15. Stop sniffer.
         if self.sniffer:
             self.sniffer.stop()

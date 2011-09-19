@@ -133,41 +133,47 @@ class VirtualMachine:
         
     def start(self):
         if self.mach:
-            # If the virtual machine has not been previouslyrestored correctly,
-            # I do it now.
-            if self.mach.state == VBOX.MachineState_PoweredOff:
-                self.restore()
+            try:
+                # If the virtual machine has not been previously restored
+                # correctly, I do it now.
+                if self.mach.state == VBOX.MachineState_PoweredOff:
+                    self.restore()
 
-            # If at this point the virtual machine is not in correct state,
-            # something must have seriously gone wrong.
-            if self.mach.state != VBOX.MachineState_Saved:
-                log("[Virtual Machine] [Start] Cannot start virtual " \
-                    "machine \"%s\", wrong machine state: %s."
-                    % (self.mach.name, self.mach.state), "ERROR")
-                return False
+                # If at this point the virtual machine is not in correct state,
+                # something must have seriously gone wrong.
+                if self.mach.state != VBOX.MachineState_Saved:
+                    log("[Virtual Machine] [Start] Cannot start virtual " \
+                        "machine \"%s\", wrong machine state: %s."
+                        % (self.mach.name, self.mach.state), "ERROR")
+                    return False
 
-            # Create VirtualBox session.
-            self.session = self.mgr.getSessionObject(self.vbox)
-            # Launch virtual machine with specified running mode.
-            mode = CuckooConfig().get_vm_mode()
+                # Create VirtualBox session.
+                self.session = self.mgr.getSessionObject(self.vbox)
+                # Launch virtual machine with specified running mode.
+                mode = CuckooConfig().get_vm_mode()
 
-            if mode != "gui" and mode != "headless":
-                log("[Virtual Machine] [Start] Unknown mode \"%s\" " \
-                    "for virtual machine \"%s.\". Aborted."
-                    % (mode, self.mach.name), "ERROR")
+                if mode != "gui" and mode != "headless":
+                    log("[Virtual Machine] [Start] Unknown mode \"%s\" " \
+                        "for virtual machine \"%s.\". Aborted."
+                        % (mode, self.mach.name), "ERROR")
+                    return False
+                
+                progress = self.mach.launchVMProcess(self.session, mode, "")
+                # Wait for task to complete with a 60 seconds timeout.
+                progress.waitForCompletion(VBOX_TIMEOUT)
+                # Check if execution was successful.
+                if progress.resultCode != 0:
+                    log("[Virtual Machine] [Start] Unable to start " \
+                        "virtual machine \"%s\"." % self.mach.name, "ERROR")
+                    return False
+                else:
+                    log("[Virtual Machine] [Start] Virtual machine \"%s\" " \
+                        "starting in \"%s\" mode." % (self.mach.name, mode))
+            except Exception, why:
+                log("[Virtual Machine] [Start] Something went wrong while " \
+                    "starting virtual machine \"%s\": %s."
+                    % (self.mach.name, why), "ERROR")
                 return False
-            
-            progress = self.mach.launchVMProcess(self.session, mode, "")
-            # Wait for task to complete with a 60 seconds timeout.
-            progress.waitForCompletion(VBOX_TIMEOUT)
-            # Check if execution was successful.
-            if progress.resultCode != 0:
-                log("[Virtual Machine] [Start] Unable to start " \
-                    "virtual machine \"%s\"." % self.mach.name, "ERROR")
-                return False
-            else:
-                log("[Virtual Machine] [Start] Virtual machine \"%s\" " \
-                    "starting in \"%s\" mode." % (self.mach.name, mode))
         else:
             log("[Virtual Machine] [Start] No virtual machine handle.",
                 "ERROR")
@@ -177,24 +183,30 @@ class VirtualMachine:
         
     def stop(self):
         if self.mach:
-            # Check machine state.
-            if self.mach.state != VBOX.MachineState_Running:
-                log("[Virtual Machine] [Stop] Virtual machine \"%s\"" \
-                    " is not running." % self.mach.name, "ERROR")
+            try:
+                # Check machine state.
+                if self.mach.state != VBOX.MachineState_Running:
+                    log("[Virtual Machine] [Stop] Virtual machine \"%s\"" \
+                        " is not running." % self.mach.name, "ERROR")
+                    return False
+                
+                # Poweroff the virtual machine.
+                progress = self.session.console.powerDown()
+                # Wait for task to complete with a 60 seconds timeout.
+                progress.waitForCompletion(VBOX_TIMEOUT)
+                # Check if poweroff was successful.
+                if progress.resultCode != 0:
+                    log("[Virtual Machine] [Stop] Unable to poweroff " \
+                        "virtual machine \"%s\"." % self.mach.name, "ERROR")
+                    return False
+                else:
+                    log("[Virtual Machine] [Stop] Virtual machine \"%s\" " \
+                        "powered off successfully." % self.mach.name)
+            except Exception, why:
+                log("[Virtual Machine] [Stop] Something went wrong while " \
+                    "powering off virtual machine \"%s\": %s."
+                    % (self.mach.name, why), "ERROR")
                 return False
-            
-            # Poweroff the virtual machine.
-            progress = self.session.console.powerDown()
-            # Wait for task to complete with a 60 seconds timeout.
-            progress.waitForCompletion(VBOX_TIMEOUT)
-            # Check if poweroff was successful.
-            if progress.resultCode != 0:
-                log("[Virtual Machine] [Stop] Unable to poweroff " \
-                    "virtual machine \"%s\"." % self.mach.name, "ERROR")
-                return False
-            else:
-                log("[Virtual Machine] [Stop] Virtual machine \"%s\" powered" \
-                    " off successfully." % self.mach.name)
         else:
             log("[Virtual Machine] [Stop] No virtual machine handle.",
                 "ERROR")
@@ -204,48 +216,56 @@ class VirtualMachine:
         
     def restore(self):
         if self.mach:
-            # Check machine state before proceeding.
-            if self.mach.state != VBOX.MachineState_PoweredOff:
-                log("[Virtual Machine] [Restore] Virtual machine " \
-                    "\"%s\" is not powered off." % self.mach.name, "ERROR")
-                return False
-        
-            # Create VirtualBox session.
-            self.session = self.mgr.getSessionObject(self.vbox)
-
-            # Lock is needed to create a session and modify the state of the 
-            # current virtual machine.
             try:
-                self.mach.lockMachine(self.session, VBOX.LockType_Shared)
-            except Exception, why:
-                log("[Virtual Machine] [Restore] Unable to " \
-                    "lock machine \"%s\": %s." % (self.mach.name, why), "ERROR")
-                return False
+                # Check machine state before proceeding.
+                if self.mach.state != VBOX.MachineState_PoweredOff:
+                    log("[Virtual Machine] [Restore] Virtual machine " \
+                        "\"%s\" is not powered off." % self.mach.name, "ERROR")
+                    return False
             
-            # Restore virtual machine snapshot.
-            try:
-                progress = self.session.console.restoreSnapshot(
-                    self.mach.currentSnapshot)
-            except Exception, why:
-                log("[Virtual Machine] [Restore] Unable to restore virtual " \
-                    "machine \"%s\": %s." % (self.mach.name, why), "ERROR")
-                return False
+                # Create VirtualBox session.
+                self.session = self.mgr.getSessionObject(self.vbox)
 
-            # Wait for task to complete with a 60 seconds timeout.
-            progress.waitForCompletion(VBOX_TIMEOUT)
-            # Check if snapshot restoring was successful.
-            if progress.resultCode != 0:
-                log("[Virtual Machine] [Restore] Unable to " \
-                    "restore virtual machine \"%s\" snapshot." % self.mach.name,
-                    "ERROR")
-                return False
-            else:
-                log("[Virtual Machine] [Restore] Virtual machine " \
-                    "\"%s\" successfully restored to current snapshot."
-                    % self.mach.name)
+                # Lock is needed to create a session and modify the state of the 
+                # current virtual machine.
+                try:
+                    self.mach.lockMachine(self.session, VBOX.LockType_Shared)
+                except Exception, why:
+                    log("[Virtual Machine] [Restore] Unable to " \
+                        "lock machine \"%s\": %s." % (self.mach.name, why),
+                        "ERROR")
+                    return False
                 
-            # Unlock machine, release session.
-            self.session.unlockMachine()
+                # Restore virtual machine snapshot.
+                try:
+                    progress = self.session.console.restoreSnapshot(
+                        self.mach.currentSnapshot)
+                except Exception, why:
+                    log("[Virtual Machine] [Restore] Unable to restore " \
+                        "virtual machine \"%s\": %s." % (self.mach.name, why),
+                        "ERROR")
+                    return False
+
+                # Wait for task to complete with a 60 seconds timeout.
+                progress.waitForCompletion(VBOX_TIMEOUT)
+                # Check if snapshot restoring was successful.
+                if progress.resultCode != 0:
+                    log("[Virtual Machine] [Restore] Unable to restore " \
+                        "virtual machine \"%s\" snapshot."
+                        % self.mach.name, "ERROR")
+                    return False
+                else:
+                    log("[Virtual Machine] [Restore] Virtual machine " \
+                        "\"%s\" successfully restored to current snapshot."
+                        % self.mach.name)
+                    
+                # Unlock machine, release session.
+                self.session.unlockMachine()
+            except Exception, why:
+                log("[Virtual Machine] [Restore] Something went wrong while " \
+                    "restoring virtual machine \"%s\" snapshot: %s."
+                    % (self.mach.name, why), "ERROR")
+                return False
         else:
             log("[Virtual Machine] [Restore] No virtual " \
                 "machine handle.", "ERROR")
