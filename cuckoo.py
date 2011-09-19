@@ -27,19 +27,19 @@ from Queue import *
 from time import sleep
 from threading import Thread
 
-from cuckoo.config import *
-from cuckoo.db import *
-from cuckoo.getfiletype import *
-from cuckoo.logging import *
-from cuckoo.logo import *
-from cuckoo.sniffer import *
-from cuckoo.now import *
+from cuckoo.core.config import *
+from cuckoo.core.db import *
+from cuckoo.core.getfiletype import *
+from cuckoo.core.logging import *
+from cuckoo.core.logo import *
+from cuckoo.core.sniffer import *
+from cuckoo.core.now import *
 
 # Check the virtualization engine from the config fle and tries to retrieve and
 # import the corresponding Cuckoo's module.
 if CuckooConfig().get_vm_engine().lower() == "virtualbox":
     try:
-        from cuckoo.virtualbox import *
+        from cuckoo.core.virtualbox import *
     except ImportError, why:
         log("Unable to load Cuckoo's VirtualBox module." \
             " Please check your installation.\n", "ERROR")

@@ -26,25 +26,25 @@ import hashlib
 class File:
     def __init__(self, file_path):
         self.file_path = file_path
+        self.file_data = None
         self.infos = {}
 
     def _get_md5(self):
-        data = open(self.file_path, "rb").read()
-        return hashlib.md5(data).hexdigest()
+        return hashlib.md5(self.file_data).hexdigest()
 
     def _get_sha1(self):
-        data = open(self.file_path, "rb").read()
-        return hashlib.sha1(data).hexdigest()
+        return hashlib.sha1(self.file_data).hexdigest()
 
     def _get_sha256(self):
-        data = open(self.file_path, "rb").read()
-        return hashlib.sha256(data).hexdigest()
+        return hashlib.sha256(self.file_data).hexdigest()
+
+    def _get_sha512(self):
+        return hashlib.sha512(self.file_data).hexdigest()
 
     def _get_type(self):
         ms = magic.open(magic.MAGIC_NONE)
         ms.load()
-        data = open(self.file_path, "rb").read()
-        file_type = ms.buffer(data)
+        file_type = ms.buffer(self.file_data)
 
         return file_type
 
@@ -53,12 +53,13 @@ class File:
 
     def process(self):
         if not os.path.exists(self.file_path):
-            # XXX Add error msg
             return None
 
+        self.file_data = open(self.file_path, "rb").read()
         self.infos["md5"]    = self._get_md5()
         self.infos["sha1"]   = self._get_sha1()
         self.infos["sha256"] = self._get_sha256()
+        self.infos["sha512"] = self._get_sha512()
         self.infos["type"]   = self._get_type()
         self.infos["size"]   = self._get_size()
 

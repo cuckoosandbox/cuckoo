@@ -22,8 +22,8 @@ import os
 import stat
 import subprocess
 
-from cuckoo.config import *
-from cuckoo.logging import *
+from cuckoo.core.config import *
+from cuckoo.core.logging import *
 
 TCPDUMP = "/usr/sbin/tcpdump"
 

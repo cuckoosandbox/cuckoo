@@ -21,7 +21,7 @@
 import time
 import datetime
 
-from cuckoo.config import *
+from cuckoo.core.config import *
 
 def get_now(format = "%Y-%m-%d %H:%M:%S"):
     # According to configuration, choose between UTC time and local time.

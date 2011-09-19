@@ -22,7 +22,7 @@ import os
 import sys
 import ConfigParser
 
-from cuckoo.colors import *
+from cuckoo.core.colors import *
 
 CONFIG_FILE = "cuckoo.conf"
 

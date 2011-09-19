@@ -21,7 +21,7 @@
 import os
 import sys
 
-from processor.analysislog import AnalysisLog
+from cuckoo.processing.analysislog import AnalysisLog
 
 class Analysis:
     def __init__(self, logs_path):

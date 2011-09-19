@@ -21,9 +21,9 @@
 import os
 import sys
 
-from cuckoo.config import *
-from cuckoo.logging import *
-from cuckoo.now import *
+from cuckoo.core.config import *
+from cuckoo.core.logging import *
+from cuckoo.core.now import *
 
 try:
     import sqlite3

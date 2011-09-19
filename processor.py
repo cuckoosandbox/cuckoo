@@ -21,7 +21,7 @@
 import os
 import sys
 
-from processor.analysis import Analysis
+from cuckoo.processing.analysis import Analysis
 
 # The following is just a basic default example of a possible postprocessing
 # script, just to show you how you should be using the provided processing APIs.

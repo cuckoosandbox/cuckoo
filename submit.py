@@ -23,10 +23,10 @@ import sys
 import sqlite3
 from optparse import OptionParser
 
-from cuckoo.now import *
-from cuckoo.logo import *
-from cuckoo.colors import *
-from cuckoo.config import *
+from cuckoo.core.now import *
+from cuckoo.core.logo import *
+from cuckoo.core.colors import *
+from cuckoo.core.config import *
 
 # This is a quick hacky script to add analysis tasks to the queue database
 # through the command line.

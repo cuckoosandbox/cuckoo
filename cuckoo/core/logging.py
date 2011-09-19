@@ -21,9 +21,9 @@
 import os
 import sys
 
-from cuckoo.now import *
-from cuckoo.colors import *
-from cuckoo.config import *
+from cuckoo.core.now import *
+from cuckoo.core.colors import *
+from cuckoo.core.config import *
 
 def log(message, level = "DEFAULT"):
     log_file = CuckooConfig().get_logging_path()

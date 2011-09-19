@@ -21,8 +21,8 @@
 import re
 import sys
 
-from cuckoo.logging import *
-from cuckoo.config import *
+from cuckoo.core.logging import *
+from cuckoo.core.config import *
 
 # Load VirtualBox's SDK APIs.
 try:
