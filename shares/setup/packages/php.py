@@ -30,7 +30,7 @@ from cuckoo.monitor import *
 def cuckoo_run(target_path):
     pids = []
 
-    # Customize this PHP path with the correct one on your Windows setup.
+    # Customize this Path with the correct one on your Windows setup.
     php = "C:\\php\\php.exe"
 
     suspended = True
@@ -39,3 +39,9 @@ def cuckoo_run(target_path):
 
     pids.append(pid)
     return pids
+
+def cuckoo_check():
+    return True
+
+def cuckoo_finish():
+    return True

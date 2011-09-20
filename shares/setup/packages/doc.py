@@ -39,3 +39,9 @@ def cuckoo_run(target_path):
 
     pids.append(pid)
     return pids
+
+def cuckoo_check():
+    return True
+
+def cuckoo_finish():
+    return True

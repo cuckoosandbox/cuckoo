@@ -55,3 +55,9 @@ def cuckoo_run(target_path):
     # Append all the process IDs you want to the list, and return the list.
     pids.append(pid)
     return pids
+
+def cuckoo_check():
+    return True
+
+def cuckoo_finish():
+    return True

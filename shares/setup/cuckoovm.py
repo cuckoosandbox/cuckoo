@@ -242,11 +242,16 @@ class PipeServer(Thread):
     def __init__(self, pipe_name = CUCKOO_PIPE):
         Thread.__init__(self)
         self.pipe_name = pipe_name
+        self._do_run = True
+
+    def stop(self):
+        log("Stopping Pipe Server")
+        self._do_run = False
 
     def run(self):
         log("Starting Pipe Server")
 
-        while True:
+        while self._do_run:
             # Create named pipe with a name defined in paths.py.
             h_pipe = KERNEL32.CreateNamedPipeA(self.pipe_name,
                                                PIPE_ACCESS_DUPLEX,
@@ -401,15 +406,44 @@ def main(config_path):
             # processes, means that I'm done with the analysis.
             if len(PROCESS_LIST) == 0:
                 break
+
+            # Launching custom check function from selected analysis package.
+            # This function allows the user to specify custom events that would
+            # require the analysis to terminate. For example, if you are just
+            # looking for a specific file being created, you can place a check
+            # in such function and if such file does exist you can make Cuckoo
+            # terminate the analysis straight away.
+            # Thanks to KjellChr for suggesting this feature.
+            try:
+                if not package.cuckoo_check():
+                    log("The check function from package \"%s\" requested to " \
+                        "terminate analysis." % config.package)
+                    break
+            except Exception, why:
+                log("Unable to launch analysis package \"%s\" check function:" \
+                    "%s." % (config.package, why), "ERROR")
         finally:
             counter += 1
             PROCESS_LOCK.release()
             KERNEL32.Sleep(1000)
 
-    log("Analysis completed.")
-
+    # Stop Pipe Server.
+    pipe.stop()
     # Stop taking screenshots.
     shots.stop()
+
+    log("Analysis completed.")
+
+    # Launching custom finish function from selected analysis package.
+    # This function allows the user to specify any custom operation to be done
+    # on the analysis machine before shutting it down.
+    try:
+        log("Executing analysis package \"%s\" custom finish function."
+            % config.package)
+        package.cuckoo_finish()
+    except Exception, why:
+        log("Unable to launch analysis package \"%s\" finish function: %s."
+            % (config.package, why), "ERROR")
 
     if not save_results(config.share):
         return False

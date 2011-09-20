@@ -31,11 +31,17 @@ def cuckoo_run(target_path):
     pids = []
 
     # Customize this Path with the correct one on your Windows setup.
-    adobe_reader = "C:\\Program Files\\Adobe\\Reader 8.0\\Reader\\AcroRd32.exe"
+    adobe_reader = "C:\\Program Files\\Adobe\\Reader 9.0\\Reader\\AcroRd32.exe"
 
-    suspended = False
+    suspended = True
     (pid, h_thread) = cuckoo_execute(adobe_reader, "\"%s\"" % target_path, suspended)
-    #cuckoo_monitor(pid, h_thread, suspended)
+    cuckoo_monitor(pid, h_thread, suspended)
 
     pids.append(pid)
     return pids
+
+def cuckoo_check():
+    return True
+
+def cuckoo_finish():
+    return True
