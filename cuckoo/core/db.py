@@ -79,7 +79,7 @@ class CuckooDatabase:
                        #   1 = completed successfully
                        #   2 = error occurred.
                        "  status INTEGER DEFAULT 0,\n"        \
-                       "  custom TEXT DEFAULT NULL\n"        \
+                       "  custom TEXT DEFAULT NULL\n"         \
                        ");")
 
         return True
@@ -93,11 +93,10 @@ class CuckooDatabase:
         # Select one item from the queue table with higher priority and older
         # addition date which has not already been processed.
         try:        
-            self._cursor.execute("SELECT * FROM queue "        \
-                                 "WHERE lock = 0 "             \
-                                 "AND status = 0 "             \
-                                 "GROUP BY priority "          \
-                                 "ORDER BY added_on LIMIT 1;")
+            self._cursor.execute("SELECT * FROM queue "  \
+                                 "WHERE lock = 0 "       \
+                                 "AND status = 0 "       \
+                                 "ORDER BY priority, added_on LIMIT 1;")
         except sqlite3.OperationalError, why:
             log("[Database] [Get Task] Unable to query database: %s."
                 % why, "ERROR")
