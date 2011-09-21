@@ -19,6 +19,7 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 import os
+import re
 import sys
 import ConfigParser
 from ctypes import *
@@ -41,6 +42,12 @@ BUFSIZE = 512
 PROCESS_LIST = []
 # Initialize lock for process list operations.
 PROCESS_LOCK = Lock()
+
+# Initialize list of files opened by the monitored processes. Once analysis
+# is completed, these files get dumped.
+FILES_LIST = []
+# Initialize lock for files list operations.
+FILES_LOCK = Lock()
 
 def install_dependencies():
     if not os.path.exists(SYSTEM_SETUP_SRC):
@@ -151,6 +158,45 @@ def install_target(share_path, target_name):
     # Return path to the newly copied file.
     return "%s\\%s" % (os.getenv("SystemDrive"), target_name)
 
+# Add the specified path to the list of files that need to be dumped.
+def add_file_to_list(file_path):
+    global FILES_LIST
+    global FILES_LOCK
+    
+    FILES_LOCK.acquire()
+    
+    if not file_path in FILES_LIST:
+        log("Newly created file path added to list: %s" % file_path)
+        FILES_LIST.append(file_path)
+        
+    FILES_LOCK.release()
+    
+    return True
+    
+# Store dumped files.
+def dump_files():
+    global FILES_LIST
+    
+    for file_path in FILES_LIST:
+        dir_dst = os.path.join(CUCKOO_PATH, "files")
+    
+        if not os.path.exists(file_path):
+            continue
+            
+        if os.path.getsize(file_path) == 0:
+            continue
+            
+        try:
+            copy(file_path, dir_dst)
+            log("Dropped file \"%s\" successfully dumped to \"%s\"."
+                % (file_path, dir_dst))
+        except (IOError, os.error), why:
+            log("Cannot dump dropped file \"%s\" to \"%s\": %s."
+                % (file_path, dir_dst, why))
+            continue
+            
+    return True
+
 # Copy analysis results from Guest installation folder to shared folder.
 def save_results(share_path):
     analysis_dirs = []
@@ -214,23 +260,29 @@ class PipeHandler(Thread):
             # If we acquired any data that must be a valid process ID we need to
             # inject our DLL in.
             if data:
-                pid = int(data.value.strip())
-    
-                if pid > -1:
-                    # Check if the process has not been injected previously.
-                    if pid not in PROCESS_LIST:
-                        # If injection is successful, add the newly monitored
-                        # process to global list too.
-                        if cuckoo_inject(pid, CUCKOO_DLL_PATH):
-                            log("Process with ID \"%d\" (0x%08x) successfully " \
-                                "injected." % (pid, pid))
-                            PROCESS_LIST.append(pid)
+                command = data.value.strip()
+                
+                if re.match("PID:", command):
+                    pid = int(command[4:])
+        
+                    if pid > -1:
+                        # Check if the process has not been injected previously.
+                        if pid not in PROCESS_LIST:
+                            # If injection is successful, add the newly monitored
+                            # process to global list too.
+                            if cuckoo_inject(pid, CUCKOO_DLL_PATH):
+                                log("Process with ID \"%d\" (0x%08x) successfully " \
+                                    "injected." % (pid, pid))
+                                PROCESS_LIST.append(pid)
+                            else:
+                                log("Failed injecting process with ID \"%s\" (0x%08x)."
+                                    % (pid, pid), "ERROR")
                         else:
-                            log("Failed injecting process with ID \"%s\" (0x%08x)."
-                                % (pid, pid), "ERROR")
-                    else:
-                        log("Process with ID \"%d\" (0x%08x) already in monitored" \
-                            " process list. Skip." % (pid, pid))
+                            log("Process with ID \"%d\" (0x%08x) already in monitored" \
+                                " process list. Skip." % (pid, pid))
+                elif re.match("FILE:", command):
+                    file = command[5:]
+                    add_file_to_list(file)
         finally:
             PROCESS_LOCK.release()
 
@@ -274,7 +326,6 @@ class PipeServer(Thread):
             # http://msdn.microsoft.com/en-us/library/aa365146%28v=vs.85%29.aspx
             if KERNEL32.ConnectNamedPipe(h_pipe, None):
                 # If there's a new connection, call the handler.
-                log("New connection to the Pipe server, handling it.")
                 p = PipeHandler(h_pipe)
                 a = p.start()
             else:
@@ -444,6 +495,9 @@ def main(config_path):
     except Exception, why:
         log("Unable to launch analysis package \"%s\" finish function: %s."
             % (config.package, why), "ERROR")
+            
+    # Try to dump the dropped files.
+    dump_files()
 
     if not save_results(config.share):
         return False

@@ -23,5 +23,5 @@ import os
 SYSTEM_SETUP_SRC = "\\\\VBOXSVR\\setup\\system\\"
 CUCKOO_SETUP_SRC = "\\\\VBOXSVR\\setup\\cuckoo\\"
 CUCKOO_PATH = "%s\\cuckoo\\" % os.getenv("SystemDrive")
-CUCKOO_DLL_PATH = os.path.join(CUCKOO_PATH, "dll\\sandbox.dll")
+CUCKOO_DLL_PATH = os.path.join(CUCKOO_PATH, "dll\\cmonitor.dll")
 CUCKOO_PIPE = "\\\\.\\pipe\\cuckoo"
