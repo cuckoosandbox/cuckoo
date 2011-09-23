@@ -64,6 +64,7 @@ class Analysis(Thread):
         self.task = task
         self.sniffer = None
         self.db = None
+        self.dst_filename = None
 
     # Clean shared folders.
     def _clean_share(self, share_path):
@@ -174,7 +175,7 @@ class Analysis(Thread):
         config = ConfigParser.RawConfigParser()
 
         config.add_section("analysis")
-        config.set("analysis", "target", os.path.basename(self.task["target"]))
+        config.set("analysis", "target", self.dst_filename)
         config.set("analysis", "package", self.task["package"])
         config.set("analysis", "timeout", self.task["timeout"])
 
@@ -267,11 +268,14 @@ class Analysis(Thread):
             self.db.complete(self.task["id"], False)
             return False
 
+        # Copy original target file name to destination target.
+        self.dst_filename = os.path.basename(self.task["target"])
+
         # 4. If analysis package has not been specified, need to run some
         # perliminary checks on the file.
         if self.task["package"] is None:
-            file_extension = os.path.splitext(self.task["target"])[1]
             file_type = get_filetype(self.task["target"])
+            file_extension = os.path.splitext(self.dst_filename)[1]
 
             if file_type:
                 # Check the file format and see if the file name has the
@@ -279,36 +283,12 @@ class Analysis(Thread):
                 # default analysis package.
                 if file_type.lower() == "exe":
                     if file_extension.lower() != ".exe":
-                        new_target = self.task["target"] + ".exe"
-
-                        try:
-                            os.rename(self.task["target"], new_target)
-                        except IOError, why:
-                            log("[Analysis] [Core] Cannot rename file from " \
-                                "\"%s\" to \"%s\": %s."
-                                % (self.task["target"], new_target, why),
-                                "ERROR")
-                            self.db.complete(self.task["id"], False)
-                            return False
-
-                        self.task["target"] = new_target
-
+                        self.dst_filename += ".exe"
+                        
                     self.task["package"] = "exe"
                 elif file_type.lower() == "pdf":
                     if file_extension.lower() != ".pdf":
-                        new_target = self.task["target"] + ".pdf"
-
-                        try:
-                            os.rename(self.task["target"], new_target)
-                        except IOError, why:
-                            log("[Analysis] [Core] Cannot rename file from " \
-                                "\"%s\" to \"%s\": %s."
-                                % (self.task["target"], new_target, why),
-                                "ERROR")
-                            self.db.complete(self.task["id"], False)
-                            return False
-
-                        self.task["target"] = new_target
+                        self.dst_filename += ".pdf"
 
                     self.task["package"] = "pdf"
                 else:
@@ -360,10 +340,11 @@ class Analysis(Thread):
 
         # 8. Copy target file to the shared folder.
         try:
-            shutil.copy(self.task["target"], self.vm_share)
+            dst_path = os.path.join(self.vm_share, self.dst_filename)
+            shutil.copy(self.task["target"], dst_path)
         except shutil.Error, why:
-            log("[Analysis] [Core] Cannot copy file \"%s\" to shared" \
-                " folder \"%s\": %s"
+            log("[Analysis] [Core] Cannot copy file \"%s\" to " \
+                "\"%s\": %s"
                 % (self.task["target"], self.vm_share, why), "ERROR")
             self.db.complete(self.task["id"], False)
             self._free_vm(self.vm_id)
