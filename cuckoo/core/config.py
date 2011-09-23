@@ -50,10 +50,21 @@ class CuckooConfig:
     def _error_config(self):
         print(red("[Config] [ERROR] ConfigParser not properly initialized."))
 
-    def get_host_interface(self):
+    def use_external_sniffer(self):
         if self.config:
             try:
-                return self.config.get("Host", "interface")
+                return self.config.get("Sniffer", "sniffer")
+            except Exception, why:
+                self._error_parse(why)
+                return None
+        else:
+            self._error_config()
+            return None
+
+    def get_sniffer_interface(self):
+        if self.config:
+            try:
+                return self.config.get("Sniffer", "interface")
             except Exception, why:
                 self._error_parse(why)
                 return None

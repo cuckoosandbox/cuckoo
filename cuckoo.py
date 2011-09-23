@@ -348,24 +348,16 @@ class Analysis(Thread):
                 % (self.task["target"], self.vm_share, why), "ERROR")
             self.db.complete(self.task["id"], False)
             self._free_vm(self.vm_id)
-            return False
+            return False     
 
-        # 9a. Initialize the network sniffer.
-        pcap_path = os.path.join(self.vm_share, "pcap/")
-        if not os.path.exists(pcap_path):
-            try:
-                os.mkdir(pcap_path)
-                pcap_file = os.path.join(pcap_path, "dump.pcap")
-                self.sniffer = Sniffer(pcap_file)
-            except (IOError, os.error), why:
-                log("[Analysis] [Core] Cannot create pcap folder at " \
-                    "path \"%s\": %s. Network traffic dump won't be " \
-                    "available for current analysis."
-                    % (pcap_path, why), "WARNING")
-
-        # 9b. Start sniffer.
-        if self.sniffer:
-            interface = CuckooConfig().get_host_interface()
+        # 9. Start sniffer.
+        # Check if the user has decided to adopt the external sniffer or not.
+        # In first case, initialize the sniffer and start it.
+        if CuckooConfig().use_external_sniffer() == "True":
+            pcap_file = os.path.join(self.vm_share, "dump.pcap")
+            self.sniffer = Sniffer(pcap_file)
+        
+            interface = CuckooConfig().get_sniffer_interface()
             guest_mac = VM_LIST[self.vm_id]
 
             if not self.sniffer.start(interface, guest_mac):
