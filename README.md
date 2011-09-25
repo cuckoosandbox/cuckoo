@@ -10,7 +10,6 @@ To properly run Cuckoo you'll need what follows:
 
   * [Python](http://www.python.org)
   * [VirtualBox](http://www.virtualbox.org)
-  * [Tcpdump](http://www.tcpdump.org)
 
 ## Download
 
