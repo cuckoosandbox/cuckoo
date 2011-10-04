@@ -350,6 +350,7 @@ def main(config_path):
     global PROCESS_LIST
     global PROCESS_LOCK
     pid_list = None
+    check_for_processes = True
 
     log("Cuckoo starting with PID %s." % os.getpid())
 
@@ -419,16 +420,18 @@ def main(config_path):
             % (config.package, why), "ERROR")
         return False
 
-    # If injection was successful, add the pid to the list of monitored
-    # processes.
-    if pid_list and len(pid_list) > 0:
+    # Add returned process IDs to the list of monitored ones.
+    if pid_list:
         for pid in pid_list:
             if pid > -1:
                 PROCESS_LIST.append(pid)
                 log("Analysis package returned following process ID to add to" \
                     " monitor list: %d." % pid)
+    # If no process IDs are returned, I must assume that the current analysis
+    # package doesn't perform any injection. Consequently I should not wait
+    # for active processes to exit, or the analysis would end prematurely.
     else:
-        return False
+        check_for_processes = False
 
     # If no analysis timeout is set in the configuration file, it'll use
     # standard 3 minutes.
@@ -446,17 +449,18 @@ def main(config_path):
         PROCESS_LOCK.acquire()
         
         try:
-            # Walk through monitored processes in the list.
-            for process_id in PROCESS_LIST:
-                # If process is inactive increase inactive counter.
-                if not check_process(process_id):
-                    log("Process with ID %d terminated." % process_id)
-                    PROCESS_LIST.remove(process_id)
-    
-            # If inactive counter is equal to the total number of monitored
-            # processes, means that I'm done with the analysis.
-            if len(PROCESS_LIST) == 0:
-                break
+            if check_for_processes:
+                # Walk through monitored processes in the list.
+                for process_id in PROCESS_LIST:
+                    # If process is inactive increase inactive counter.
+                    if not check_process(process_id):
+                        log("Process with ID %d terminated." % process_id)
+                        PROCESS_LIST.remove(process_id)
+        
+                # If inactive counter is equal to the total number of monitored
+                # processes, means that I'm done with the analysis.
+                if len(PROCESS_LIST) == 0:
+                    break
 
             # Launching custom check function from selected analysis package.
             # This function allows the user to specify custom events that would
