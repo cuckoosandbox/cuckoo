@@ -46,16 +46,20 @@ def log(message, level = "DEFAULT"):
         else:
             log = open(log_file, "w")
 
-        log.write(line)
-        log.close()
+        try:
+            #line = unicode(line, "utf-8").encode("utf-8")
+            log.write(line)
+            log.close()
 
-        if level == "WARNING":
-            sys.stdout.write(yellow(line))
-        elif level == "ERROR":
-            sys.stdout.write(bold(red(line)))
-        elif level == "INFO":
-            sys.stdout.write(cyan(line))
-        else:
-            sys.stdout.write(line)
+            if level == "WARNING":
+                sys.stdout.write(yellow(line))
+            elif level == "ERROR":
+                sys.stdout.write(bold(red(line)))
+            elif level == "INFO":
+                sys.stdout.write(cyan(line))
+            else:
+                sys.stdout.write(line)
+        except Exception, why:
+            sys.stdout.write(yellow("Unable to log event: %s" % why))
 
     return

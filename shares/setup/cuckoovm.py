@@ -95,8 +95,6 @@ def install_cuckoo():
             "ERROR")
         return False
 
-    log("Installing Cuckoo")
-
     # Generally Cuckoo's install destination path is C:\cuckoo. This folder
     # shouldn't already exist, so I create it. If I can't, analysis is aborted.
     if not os.path.exists(CUCKOO_PATH):
