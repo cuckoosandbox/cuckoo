@@ -66,13 +66,18 @@ class Analysis(Thread):
         self.db = None
         self.dst_filename = None
 
+    # Log wrapper function. It adds the task id in front of the message in
+    # order to more easily track the samples causing errors.
+    def _log(self, message, level = "DEFAULT"):
+        log("(Task #%s) %s" % (self.task["id"], message), level)
+
     # Clean shared folders.
     def _clean_share(self, share_path):
         total = len(os.listdir(share_path))
         cleaned = 0
 
         if total == 0:
-            log("[Analysis] [Clean Share] Nothing to clean in \"%s\"."
+            self._log("[Analysis] [Clean Share] Nothing to clean in \"%s\"."
                 % share_path, "DEBUG")
             return False
 
@@ -82,52 +87,45 @@ class Analysis(Thread):
             if not os.path.exists(cur_path):
                 continue
 
-            if os.path.isdir(cur_path):
-                try:
+            try:
+                if os.path.isdir(cur_path):
                     shutil.rmtree(cur_path)
-                    cleaned += 1
-                except (IOError, os.error), why:
-                    log("[Analysis] [Clean Share] Unable to remove directory " \
-                        "\"%s\": %s." % (cur_path, why), "ERROR")
-                except shutil.Error, why:
-                    log("[Analysis] [Clean Share] Unable to remove directory " \
-                        "\"%s\": %s." % (cur_path, why), "ERROR")
-            else:
-                try:
+                else:
                     os.remove(cur_path)
-                    cleaned += 1
-                except (IOError, os.error), why:
-                    log("[Analysis] [Clean Share] Unable to remove file \"%s\""\
-                        ": %s" % (cur_path, why), "ERROR")
+                cleaned += 1
+            except (IOError, os.error, shutil.Error), why:
+                self._log("[Analysis] [Clean Share] Unable to remove "\
+                          "\"%s\": %s" % (cur_path, why), "ERROR")
 
         if cleaned == total:
-            log("[Analysis] [Clean Share] Shared folder \"%s\" cleaned " \
-                "successfully." % share_path)
+            self._log("[Analysis] [Clean Share] Shared folder \"%s\" cleaned " \
+                      "successfully." % share_path)
             return True
         else:
-            log("[Analysis] [Clean Share] The folder \"%s\" wasn't completely" \
-                " cleaned. Review previour errors." % share_path, "WARNING")
+            self._log("[Analysis] [Clean Share] The folder \"%s\" wasn't " \
+                      "completely cleaned. Review previour errors."
+                      % share_path, "WARNING")
             return False
 
     # Save analysis results from source path to destination path.
     def _save_results(self, src, dst):
         if not os.path.exists(src):
-            log("[Analysis] [Save Results] The folder \"%s\" doesn't exist.",
-                "ERROR")
+            self._log("[Analysis] [Save Results] The folder \"%s\" doesn't " \
+                      "exist.", "ERROR")
             return False
 
         if not os.path.exists(dst):
             try:
                 os.mkdir(dst)
             except (IOError, os.error), why:
-                log("[Analysis] [Save Results] Unable to create directory " \
-                    "\"%s\": %s" % (dst, why), "ERROR")
+                self._log("[Analysis] [Save Results] Unable to create " \
+                          "directory \"%s\": %s" % (dst, why), "ERROR")
                 return False
         else:
-            log("[Analysis] [Save Results] The folder \"%s\" already exists." \
-                " It should be used for storing results of task with id %s."  \
-                " Have you deleted Cuckoo's database?" % (dst, self.task["id"]),
-                "ERROR")
+            self._log("[Analysis] [Save Results] The folder \"%s\" already " \
+                      "exists. It should be used for storing results of "    \
+                      "task with id %s. Have you deleted Cuckoo's database?"
+                % (dst, self.task["id"]), "ERROR")
             return False
 
         total = len(os.listdir(src))
@@ -140,32 +138,25 @@ class Analysis(Thread):
             if not os.path.exists(cur_path):
                 continue
 
-            if os.path.isdir(cur_path):
-                try:
+            try:
+                if os.path.isdir(cur_path):
                     shutil.copytree(cur_path, dst_path)
-                    copied += 1
-                except (IOError, os.error), why:
-                    log("[Analysis] [Save Results] Unable to copy \"%s\" to " \
-                        "\"%s\": %s" % (cur_path, dst_path, why), "ERROR")
-                except shutil.Error, why:
-                    log("[Analysis] [Save Results] Unable to copy \"%s\" to " \
-                        "\"%s\": %s" % (cur_path, dst_path, why), "ERROR")
-            else:
-                try:
+                else:
                     shutil.copy(cur_path, dst_path)
-                    copied += 1
-                except shutil.Error, why:
-                    log("[Analysis] [Save Results] Unable to copy \"%s\" to " \
-                        "\"%s\": %s" % (cur_path, dst_path, why), "ERROR")
+                copied += 1
+            except (IOError, os.error, shutil.Error), why:
+                self._log("[Analysis] [Save Results] Unable to copy " \
+                          "\"%s\" to \"%s\": %s" % (cur_path, dst_path, why),
+                          "ERROR")
 
         if copied == total:
-            log("[Analysis] [Save Results] Analysis results successfully " \
-                "saved to \"%s\"." % dst)
+            self._log("[Analysis] [Save Results] Analysis results " \
+                      "successfully saved to \"%s\"." % dst)
             return True
         else:
-            log("[Analysis] [Save Results] Analysis results from \"%s\" " \
-                "weren't completely copied to \"%s\". Review previour errors."
-                % (src, dst), "ERROR")
+            self._log("[Analysis] [Save Results] Results from \"%s\" weren't " \
+                      "completely copied to \"%s\". Review previour errors."
+                      % (src, dst), "ERROR")
             return False
 
     def _generate_config(self, share_path):
@@ -187,28 +178,28 @@ class Analysis(Thread):
             with open(conf_path, "wb") as config_file:
                 config.write(config_file)
 
-            log("[Analysis] [Generate Config] Config file successfully " \
-                "generated at \"%s\"." % conf_path)
+            self._log("[Analysis] [Generate Config] Config file successfully" \
+                      " generated at \"%s\"." % conf_path)
 
             # Return the local share path. This is the path where the virtual
             # machine will have access to to get analysis files and store
             # results.
             return local_share
         else:
-            log("[Analysis] [Generate Config] Shared folder \"%s\" does not" \
-                " exist." % share_path, "ERROR")
+            self._log("[Analysis] [Generate Config] Shared folder \"%s\" " \
+                      "does not exist." % share_path, "ERROR")
             return False
 
     def _free_vm(self, vm_id):
         VM_POOL.put(vm_id)
-        log("[Analysis] [Free VM] Virtual machine \"%s\" released." % vm_id,
-            "INFO")
+        self._log("[Analysis] [Free VM] Virtual machine \"%s\" " \
+                  "released." % vm_id, "INFO")
         return True
 
     def _postprocessing(self, save_path, custom = None):
         if not os.path.exists(save_path):
-            log("[Analysis] [Postprocessing] Cannot find the results folder " \
-                "at path \"%s\"." % save_path, "ERROR")
+            self._log("[Analysis] [Postprocessing] Cannot find the results" \
+                      " folder at path \"%s\"." % save_path, "ERROR")
             return -1
 
         processor = CuckooConfig().get_analysis_processor()
@@ -217,8 +208,8 @@ class Analysis(Thread):
             return -1
 
         if not os.path.exists(processor):
-            log("[Analysis] [Postprocessing] Cannot find processor script at " \
-                "path \"%s\"." % processor, "ERROR")
+            self._log("[Analysis] [Postprocessing] Cannot find processor " \
+                      "script at path \"%s\"." % processor, "ERROR")
             return -1
 
         pargs = ['python', processor, save_path]
@@ -231,8 +222,8 @@ class Analysis(Thread):
         try:
             pid = subprocess.Popen(pargs).pid
         except Exception, why:
-            log("[Analysis] [Postprocessing] Something went wrong while " \
-                "starting processor: %s" % why, "ERROR")
+            self._log("[Analysis] [Postprocessing] Something went wrong" \
+                      " while starting processor: %s" % why, "ERROR")
             return -1
         
         return pid
@@ -250,21 +241,21 @@ class Analysis(Thread):
         # Additional check to verify that the are not saved results with the
         # same task ID.
         if os.path.exists(save_path):
-            log("[Analysis] [Core] There are already stored results for " \
-                "current task with id %s at path \"%s\". Aborting."
-                % (self.task["id"], save_path), "ERROR")
+            self._log("[Analysis] [Core] There are already stored results for" \
+                      " current task with id %s at path \"%s\". Aborting."
+                      % (self.task["id"], save_path), "ERROR")
             self.db.complete(self.task["id"], False)
             return False
 
         if not os.path.exists(self.task["target"]):
-            log("[Analysis] [Core] Cannot find target file \"%s\". Aborting."
-                % self.task["target"], "ERROR")
+            self._log("[Analysis] [Core] Cannot find target file \"%s\". Abort."
+                      % self.task["target"], "ERROR")
             self.db.complete(self.task["id"], False)
             return False
 
         if os.path.isdir(self.task["target"]):
-            log("[Analysis] [Core] Specified target \"%s\" is a directory. " \
-                "Aborting." % self.task["target"], "ERROR")
+            self._log("[Analysis] [Core] Specified target \"%s\" is a " \
+                      "directory. Abort." % self.task["target"], "ERROR")
             self.db.complete(self.task["id"], False)
             return False
 
@@ -292,9 +283,9 @@ class Analysis(Thread):
 
                     self.task["package"] = "pdf"
                 else:
-                    log("[Analysis] [Core] Unknown file format for " \
-                        "target \"%s\". Aborting."
-                        % self.task["target"], "ERROR")
+                    self._log("[Analysis] [Core] Unknown file format for " \
+                              "target \"%s\". Aborting."
+                              % self.task["target"], "ERROR")
                     self.db.complete(self.task["id"], False)
                     return False
             else:
@@ -319,8 +310,8 @@ class Analysis(Thread):
         self.vm_share = CuckooConfig().get_vm_share(self.vm_id)           
 
         if not os.path.exists(self.vm_share):
-            log("[Analysis] [Core] Shared folder \"%s\" for virtual " \
-                "machine \"%s\" does not exist. Aborting.", "ERROR")
+            self._log("[Analysis] [Core] Shared folder \"%s\" for virtual " \
+                      "machine \"%s\" does not exist. Aborting.", "ERROR")
             self.db.complete(self.task["id"], False)
             self._free_vm(self.vm_id)
             return False
@@ -343,9 +334,9 @@ class Analysis(Thread):
             dst_path = os.path.join(self.vm_share, self.dst_filename)
             shutil.copy(self.task["target"], dst_path)
         except shutil.Error, why:
-            log("[Analysis] [Core] Cannot copy file \"%s\" to " \
-                "\"%s\": %s"
-                % (self.task["target"], self.vm_share, why), "ERROR")
+            self._log("[Analysis] [Core] Cannot copy file \"%s\" to " \
+                      "\"%s\": %s" % (self.task["target"], self.vm_share, why),
+                      "ERROR")
             self.db.complete(self.task["id"], False)
             self._free_vm(self.vm_id)
             return False     
@@ -361,16 +352,16 @@ class Analysis(Thread):
             guest_mac = VM_LIST[self.vm_id]
 
             if not self.sniffer.start(interface, guest_mac):
-                log("[Analysis] [Core] Unable to start sniffer. "  \
-                    "Network traffic dump won't be available for " \
-                    "current analysis.", "WARNING")
+                self._log("[Analysis] [Core] Unable to start sniffer. "  \
+                          "Network traffic dump won't be available for " \
+                          "current analysis.", "WARNING")
                 self.sniffer = None
 
         vm = VirtualMachine(self.vm_id)
         # 10. Start virtual machine
         if not vm.start():
-            log("[Analysis] [Core] Virtual machine start up failed. Analysis " \
-                "is aborted. Review previous errors.", "ERROR")
+            self._log("[Analysis] [Core] Virtual machine start up failed. " \
+                      "Analysis is aborted. Review previous errors.", "ERROR")
             # Unlock task id in order to make it run on a different virtual
             # machine. I'm not putting back the currently used one since it's
             # probably broken.
@@ -388,15 +379,16 @@ class Analysis(Thread):
 
         # 11. & 12. Launch Cuckoo's python run component.
         if not vm.execute(python_path, args):
-            log("[Analysis] [Core] Analysis of target file \"%s\" with " \
-                "task id %s failed. Check previous errors."
-                % (self.task["target"], self.task["id"]), "ERROR")
+            self._log("[Analysis] [Core] Analysis of target file \"%s\" with " \
+                      "task id %s failed. Check previous errors."
+                      % (self.task["target"], self.task["id"]), "ERROR")
             success = False
 
         # 13. Stop virtual machine.            
         if not vm.stop():
-            log("[Analysis] [Core] Poweroff of virtual machine \"%s\" failed," \
-                " trying to restore snapshot anyways..." % self.vm_id)
+            self._log("[Analysis] [Core] Poweroff of virtual machine \"%s\"" \
+                      " failed, trying to restore snapshot anyways..."
+                      % self.vm_id)
 
         # TODO: this is a quick hacky fix for the error that VirtualBox
         # sometimes encounters while trying to lock a session after a
@@ -410,9 +402,10 @@ class Analysis(Thread):
         if not vm.restore():
             # If restore failed than I prefere not to put the virtual machine
             # back to the pool as it might be corrupted.
-            log("[Analysis] [Core] Cannot restore snapshot on virtual machine" \
-                " \"%s\", consequently is not getting re-added to pool. "      \
-                "Review previous errors." % self.vm_id, "WARNING")
+            self._log("[Analysis] [Core] Cannot restore snapshot on virtual " \
+                      "machine \"%s\", consequently is not getting re-added " \
+                      "to pool. Review previous errors." % self.vm_id,
+                      "WARNING")
             free_vm = False
             
         # 15. Stop sniffer.
@@ -437,8 +430,8 @@ class Analysis(Thread):
         # 20. Invoke postprocessing script.
         processor_pid = self._postprocessing(save_path, self.task["custom"])
         if processor_pid > -1:
-            log("[Analysis] [Core] Postprocessing script started with pid " \
-                "\"%d\"." % processor_pid, "INFO")
+            self._log("[Analysis] [Core] Postprocessing script started " \
+                      "with pid \"%d\"." % processor_pid, "INFO")
 
         return True
 
