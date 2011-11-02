@@ -4,13 +4,6 @@ Our industrious oompa loompas worked restlessly to finally bring you this funny 
 Cuckoo is a free software.
 It's main goal is to provide you an open source, lightweight, highly customizable solution for your nastiest **malware analysis** needs.
 
-## Requirements
-
-To properly run Cuckoo you'll need what follows:
-
-  * [Python](http://www.python.org)
-  * [VirtualBox](http://www.virtualbox.org)
-
 ## Download
 
 You can download Cuckoo by cloning the Git repository:
@@ -20,6 +13,10 @@ You can download Cuckoo by cloning the Git repository:
 Or download the latest tarball at:
 
 [https://github.com/cuckoobox/cuckoo/tarball/master](https://github.com/cuckoobox/cuckoo/tarball/master)
+
+## Install
+
+Please read the guides in the docs folder.
 
 ## Donations
 Cuckoo is the result of hours and hours and hours and hours of passionated work from volunteers. If you appreciated our work and you want to see Cuckoo kept being developed, please consider making a small contribution to our efforts and to the expenses we face, please **Flattr** us:
