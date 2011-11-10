@@ -64,22 +64,22 @@ class CuckooDatabase:
         conn = sqlite3.connect(self.db_file)
         cursor = conn.cursor()
 
-        cursor.execute("CREATE TABLE queue (\n"               \
-                       "  id INTEGER PRIMARY KEY,\n"          \
-                       "  md5 TEXT DEFAULT NULL,\n"           \
-                       "  target TEXT NOT NULL,\n"            \
-                       "  timeout INTEGER DEFAULT NULL,\n"    \
-                       "  priority INTEGER DEFAULT 0,\n"      \
-                       "  added_on DATE DEFAULT NULL,\n"      \
-                       "  completed_on DATE DEFAULT NULL,\n"  \
-                       "  package TEXT DEFAULT NULL,\n"       \
-                       "  lock INTEGER DEFAULT 0,\n"          \
+        cursor.execute("CREATE TABLE queue (\n"                            \
+                       "  id INTEGER PRIMARY KEY,\n"                       \
+                       "  md5 TEXT DEFAULT NULL,\n"                        \
+                       "  target TEXT NOT NULL,\n"                         \
+                       "  timeout INTEGER DEFAULT NULL,\n"                 \
+                       "  priority INTEGER DEFAULT 0,\n"                   \
+                       "  added_on DATE DEFAULT CURRENT_TIMESTAMP,\n"      \
+                       "  completed_on DATE DEFAULT NULL,\n"               \
+                       "  package TEXT DEFAULT NULL,\n"                    \
+                       "  lock INTEGER DEFAULT 0,\n"                       \
                        # Status possible values:
                        #   0 = not completed
                        #   1 = completed successfully
                        #   2 = error occurred.
-                       "  status INTEGER DEFAULT 0,\n"        \
-                       "  custom TEXT DEFAULT NULL\n"         \
+                       "  status INTEGER DEFAULT 0,\n"                     \
+                       "  custom TEXT DEFAULT NULL\n"                      \
                        ");")
 
         return True
