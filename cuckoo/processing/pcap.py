@@ -25,7 +25,7 @@ import socket
 
 try:
     import dpkt
-except ImportError:
+except ImportError, why:
     sys.exit(1)
 
 class Pcap:
@@ -101,42 +101,41 @@ class Pcap:
             pcap = dpkt.pcap.Reader(file)
         except dpkt.dpkt.NeedData:
             return None
-        
-        try:
-            for ts, buf in pcap:
-                try:
-                    eth = dpkt.ethernet.Ethernet(buf)
-                    ip = eth.data
 
-                    if ip.p == dpkt.ip.IP_PROTO_TCP:
-                        tcp = ip.data
+        for ts, buf in pcap:
+            try:
+                eth = dpkt.ethernet.Ethernet(buf)
+                ip = eth.data
 
-                        if len(tcp.data) > 0:
-                            if self.check_http(tcp.data):
-                                self.add_http(tcp.data, tcp.dport)
+                if ip.p == dpkt.ip.IP_PROTO_TCP:
+                    tcp = ip.data
 
-                            connection = {}
-                            connection["src"] = socket.inet_ntoa(ip.src)
-                            connection["dst"] = socket.inet_ntoa(ip.dst)
-                            connection["sport"] = tcp.sport
-                            connection["dport"] = tcp.dport
+                    if len(tcp.data) > 0:
+                        if self.check_http(tcp.data):
+                            self.add_http(tcp.data, tcp.dport)
 
-                            self.tcp_connections.append(connection)
-                        else:
-                            continue
-                    elif ip.p == dpkt.ip.IP_PROTO_UDP:
-                        udp = ip.data
+                        connection = {}
+                        connection["src"] = socket.inet_ntoa(ip.src)
+                        connection["dst"] = socket.inet_ntoa(ip.dst)
+                        connection["sport"] = tcp.sport
+                        connection["dport"] = tcp.dport
+                          
+                        self.tcp_connections.append(connection)
+                    else:
+                        continue
+                elif ip.p == dpkt.ip.IP_PROTO_UDP:
+                    udp = ip.data
 
-                        if len(udp.data) > 0:
-                            if udp.dport == 53:
-                                if self.check_dns(udp.data):
-                                    self.add_dns(udp.data)
-                    #elif ip.p == dpkt.ip.IP_PROTO_ICMP:
-                        #icmp = ip.data
-                except AttributeError:
-                    continue
-        except dpkt.dpkt.NeedData:
-            pass
+                    if len(udp.data) > 0:
+                        if udp.dport == 53:
+                            if self.check_dns(udp.data):
+                                self.add_dns(udp.data)
+                #elif ip.p == dpkt.ip.IP_PROTO_ICMP:
+                    #icmp = ip.data
+            except AttributeError, why:
+                continue
+            except dpkt.dpkt.NeedData, why:
+                continue
 
         file.close()
 
