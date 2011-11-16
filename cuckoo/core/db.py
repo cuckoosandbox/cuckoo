@@ -43,7 +43,7 @@ class CuckooDatabase:
         if not os.path.exists(self.db_file):
             if self._generate():
                 log("[Database] [Init] Generated database \"%s\" which didn't" \
-                    " exist before." % self.db_file, "INFO")                
+                    " exist before." % self.db_file, "INFO")
 
         # Once the database is generated of it already has been, I can
         # initialize the connection.
@@ -81,6 +81,43 @@ class CuckooDatabase:
                        "  status INTEGER DEFAULT 0,\n"                     \
                        "  custom TEXT DEFAULT NULL\n"                      \
                        ");")
+
+        return True
+
+    def add_task(self, target, timeout = None, package = None, priority = None, custom = None):
+        if not self._cursor:
+            log("[Database] [Add Task] Unable to acquire cursor.", "ERROR")
+            return False
+
+        if not target or target == "":
+            log("[Database] [Add Task] Invalid target.", "ERROR")
+            return False
+
+        if not timeout:
+            timeout = "NULL"
+        if not package:
+            package = "NULL"
+        else:
+            package = "'%s'" % package
+        if not priority:
+            priority = "0"
+        if not custom:
+            custom = "NULL"
+        else:
+            custom = "'%s'" % custom
+
+        try:
+            sql = "INSERT INTO queue "                            \
+                  "(target, timeout, package, priority, custom) " \
+                  "VALUES ('%s', %s, %s, %s, %s);" % (target, timeout, package, priority, custom)
+            self._cursor.execute(sql)
+            self._conn.commit()
+            # TODO: add generated task id.
+            log("[Database] [Add Task] Successfully added new task to database.")
+        except sqlite3.OperationalError, why:
+            log("[Database] [Add Task] Unable to add task to database: %s."
+                % why, "ERROR")
+            return False
 
         return True
 
