@@ -190,7 +190,7 @@ def dump_files():
                 % (file_path, dir_dst))
         except (IOError, os.error), why:
             log("Cannot dump dropped file \"%s\" to \"%s\": %s."
-                % (file_path, dir_dst, why))
+                % (file_path, dir_dst, why), "ERROR")
             continue
             
     return True
