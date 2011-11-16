@@ -20,16 +20,42 @@
 
 import os
 import sys
-import sqlite3
+import urllib2
 from optparse import OptionParser
 
+from cuckoo.core.db import *
 from cuckoo.core.now import *
-from cuckoo.core.logo import *
 from cuckoo.core.colors import *
 from cuckoo.core.config import *
 
-# This is a quick hacky script to add analysis tasks to the queue database
-# through the command line.
+DESTINATION = "/tmp/"
+
+def filename_from_url(url):
+    return url.split('/')[-1].split('#')[0].split('?')[0]
+
+def download(url):
+    print bold(cyan("INFO")) + ": Downloading URL %s" % url
+
+    try:
+        url_handle = urllib2.urlopen(url)
+        binary_data = url_handle.read()
+    except Exception, why:
+        print bold(red("ERROR")) + ": Unable to download file: %s" % why
+        return False
+
+    filename = filename_from_url(url)
+
+    try:
+        dest = os.path.join(DESTINATION, filename)
+        f = open(dest, "wb")
+        f.write(binary_data)
+        f.close()
+    except Exception, why:
+        print bold(red("ERROR")) + ": Unable to store file: %s" % why
+        return False
+
+    return dest
+
 def main():
     parser = OptionParser(usage="usage: %prog [options] filepath")
     parser.add_option("-t", "--timeout",
@@ -56,6 +82,12 @@ def main():
                       dest="custom",
                       default=None,
                       help="Specify any custom value to be passed to postprocessing")
+    parser.add_option("-u", "--url",
+                      # TODO: finish this definition
+                      action="store_true",
+                      dest="url",
+                      default=False,
+                      help = "Specify if the target is a URL to be downloaded")
 
     (options, args) = parser.parse_args()
 
@@ -65,70 +97,37 @@ def main():
         parser.error("You didn't specify the target file path")
         return False
 
-    target = args[0]
+    # If the specified argument is an URL, download it first and retrieve the
+    # generated path.
+    if options.url:
+        target = download(args[0])
+    # Otherwise just assign the argument to target path.
+    else:
+        target = args[0]
+
+    if not target:
+        return False
 
     # Check if the target file actually exists, otherwise terminate script.
     if not os.path.exists(target):
         print bold(red("ERROR")) + ": The target file \"%s\" does not exist." % target
         return False
 
-    # Try to connect to SQLite Database, if connection fails I need to terminate
-    # the script.
+    # Add task to the database.
     try:
-        conn = sqlite3.connect(CuckooConfig().get_localdb())
-        cursor = conn.cursor()
-    except Exception, why:
-        print bold(red("ERROR")) + ": Unable to connect to SQLite database: %s" % why
-        return False
-
-    # Check if a similar task already exist in the database. This check is made
-    # in case the user accidentally issued the command multiple times. Require
-    # confirmation to proceed.
-    cursor.execute("SELECT * FROM queue WHERE target = '%s';" % target)
-    task = cursor.fetchone()
-    if task:
-        print bold(yellow("WARNING")) + ": Seems like a task with the target " \
-              "\"%s\" already exists in database." % target
-
-        # If the user doesn't really want to add the task, terminate teh script.
-        confirm = raw_input("Are you sure you want to add it (yes/no)? ")
-        if confirm.lower() == "no":
-            print bold(yellow("Stopped")) + ": Task not added. Aborting."
+        db = CuckooDatabase()
+        if not db.add_task(target,
+                           options.timeout,
+                           options.package,
+                           options.priority,
+                           options.custom):
+            print bold(red("ERROR")) + ": Unable to add task to database."
             return False
-
-    # Check if a custom timeout has been specified, in case it's not set default
-    # value to NULL.
-    if not options.timeout:
-        timeout = "NULL"
-    else:
-        timeout = options.timeout
-
-    # Same thing for analysis package.
-    if not options.package:
-        package = "NULL"
-    else:
-        package = "'%s'" % options.package
-
-    # And again for priority.
-    if not options.priority:
-        priority = "0"
-    else:
-        priority = options.priority
-
-    if not options.custom:
-        custom = "NULL"
-    else:
-        custom = "'%s'" % options.custom
-
-    # If everything's fine, now add the task to the queue into the database.
-    sql = "INSERT INTO queue (target, timeout, package, priority, custom, added_on) " \
-          "VALUES ('%s', %s, %s, %s, %s, '%s');"                                  \
-          % (target, timeout, package, priority, custom, get_now())
-
-    cursor.execute(sql)
-    conn.commit()
-
-    print bold(cyan("Done")) + ": Task added to database!"
+        else:
+            print bold(cyan("DONE")) + ": Task successfully added."
+    except Exception, why:
+        print bold(red("ERROR")) + ": Unable to add new task: %s" % why
+        return False
 
     return True
 
