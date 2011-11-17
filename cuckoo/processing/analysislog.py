@@ -83,9 +83,18 @@ class AnalysisLog:
         call["status"]    = status_value
         call["return"]    = self._encode(return_value)
         call["arguments"] = arguments
+        call["repeated"]  = 0
 
-        # Add the current API call to the complete calls list.
+        # Check if the current API call is a repetition of the previous one.
+        if len(self.calls) > 0:
+            if self.calls[-1]["api"] == call["api"] and self.calls[-1]["status"] == call["status"] and self.calls[-1]["arguments"] == call["arguments"] and self.calls[-1]["return"] == call["return"]:
+                self.calls[-1]["repeated"] += 1
+                return True
+
+        # If it's a new one, add it to the list.
         self.calls.append(call)
+
+        return True
 
     def extract(self):
         if not os.path.exists(self._log_path):
