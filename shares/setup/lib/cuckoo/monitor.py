@@ -42,12 +42,11 @@ def cuckoo_monitor(pid = -1, h_thread = -1, suspended = False, dll_path = None):
             log("Using custom DLL \"%s\"." % dll_path, "INFO")
 
         if not cuckoo_inject(pid, dll_path):
-            log("Unable to inject process with pid %s with DLL at path \"%s\"."
-                % (pid, dll_path), "ERROR")
+            log("Unable to inject process with ID \"%d\" with DLL \"%s\"" \
+                " (GLE=%s)." % (pid, dll_path, KERNEL32.GetLastError()), "ERROR")
             return False
         else:
-            log("Original process with ID \"%d\" (0x%08x) successfully " \
-                "injected." % (pid, pid))
+            log("Original process with ID \"%d\"successfully injected." % pid)
 
     # In case the process was create in suspended mode and needs to be resumed,
     # I'll do it now.
@@ -56,10 +55,10 @@ def cuckoo_monitor(pid = -1, h_thread = -1, suspended = False, dll_path = None):
         # If the resume fails we need to abort the analysis, as there won't be
         # any activity monitored.
         if not KERNEL32.ResumeThread(h_thread):
-            log("Unable to resume thread with handle 0x%08x." % h_thread,
-                "ERROR")
+            log("Unable to resume thread with handle \"0x%08x\" (GLE=%s)."
+                % (h_thread, KERNEL32.GetLastError()), "ERROR")
             return False
         else:
-            log("Resumed thread with handle 0x%08x." % h_thread, "INFO")
+            log("Resumed thread with handle \"0x%08x\"." % h_thread, "INFO")
 
     return True

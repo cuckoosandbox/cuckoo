@@ -381,11 +381,6 @@ def main(config_path):
     pipe.daemon = True
     pipe.start()
 
-    # Start taking screenshots of current execution.
-    shots = Screenshots()
-    shots.daemon = True
-    shots.start()
-
     # This is important.
     # Try to dinamically import the analysis package specified in the config
     # file.
@@ -406,6 +401,11 @@ def main(config_path):
     import time
     time.sleep(10)
     #---------------------------------------------------------------------------
+
+    # Start taking screenshots of current execution.
+    shots = Screenshots()
+    shots.daemon = True
+    shots.start()
 
     # Launch main function from analysis package. Default packages won't create
     # any problem, but if its using one created by the user, something might

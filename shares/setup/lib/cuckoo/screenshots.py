@@ -47,6 +47,7 @@ class Screenshots(Thread):
         return ImageChops.difference(img1, img2).getbbox() is None
 
     def stop(self):
+        log("Stopping screenshots.")
         self._do_run = False
 
     def run(self):

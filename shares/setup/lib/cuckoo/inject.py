@@ -111,9 +111,10 @@ def cuckoo_inject(pid, dll_path):
         return False
 
     if not grant_debug_privilege():
-        log("Unable to grant debug privilege on Cuckoo process.", "ERROR")
+        log("Unable to grant debug privileges on Cuckoo process (GLE=%s)."
+            % KERNEL32.GetLastError(), "ERROR")
     else:
-        log("Successfully granted debug privilege on Cuckoo process.")
+        log("Successfully granted debug privileges on Cuckoo process.")
 
     h_process = KERNEL32.OpenProcess(PROCESS_ALL_ACCESS, False, int(pid))
 

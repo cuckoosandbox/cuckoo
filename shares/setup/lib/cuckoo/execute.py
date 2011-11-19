@@ -29,6 +29,7 @@ from cuckoo.logging import *
 
 def cuckoo_execute(target_path, args = None, suspend = False):
     if not os.path.exists(target_path):
+        log("Unable to create process \"%s\": file does not exist.", "ERROR")
         return (-1, -1)
 
     startupinfo = STARTUPINFO()
@@ -55,7 +56,16 @@ def cuckoo_execute(target_path, args = None, suspend = False):
                                    None,
                                    byref(startupinfo),
                                    byref(process_information)):
+        log("Unable to create process \"%s\" with arguments \"%s\" (GLE=%s)."
+            % (target_path, arguments, KERNEL32.GetLastError()), "ERROR")
         return (-1, -1)
+    else:
+        log("Launched process \"%s\" with arguments \"%s\", ID \"%d\" and " \
+            "thread \"0x%08x\"."
+            % (target_path,
+               arguments,
+               process_information.dwProcessId,
+               process_information.hThread))
 
     pid = process_information.dwProcessId
     h_thread = process_information.hThread
