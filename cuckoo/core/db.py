@@ -95,10 +95,12 @@ class CuckooDatabase:
 
         if not timeout:
             timeout = "NULL"
+ 
         if not package:
             package = "NULL"
         else:
             package = "'%s'" % package
+
         if not priority:
             priority = "0"
         if not custom:
