@@ -20,14 +20,18 @@
 
 import os
 import sys
-import magic
 import hashlib
+
+try:
+    import magic
+    IS_MAGIC = True
+except ImportError, why:
+    IS_MAGIC = False
 
 class File:
     def __init__(self, file_path):
         self.file_path = file_path
         self.file_data = None
-        self.infos = {}
 
     def _get_md5(self):
         return hashlib.md5(self.file_data).hexdigest()
@@ -42,6 +46,9 @@ class File:
         return hashlib.sha512(self.file_data).hexdigest()
 
     def _get_type(self):
+        if not IS_MAGIC:
+            return None
+
         ms = magic.open(magic.MAGIC_NONE)
         ms.load()
         file_type = ms.buffer(self.file_data)
@@ -55,12 +62,14 @@ class File:
         if not os.path.exists(self.file_path):
             return None
 
-        self.file_data = open(self.file_path, "rb").read()
-        self.infos["md5"]    = self._get_md5()
-        self.infos["sha1"]   = self._get_sha1()
-        self.infos["sha256"] = self._get_sha256()
-        self.infos["sha512"] = self._get_sha512()
-        self.infos["type"]   = self._get_type()
-        self.infos["size"]   = self._get_size()
+        infos = {}
 
-        return self.infos
+        self.file_data = open(self.file_path, "rb").read()
+        infos["md5"]    = self._get_md5()
+        infos["sha1"]   = self._get_sha1()
+        infos["sha256"] = self._get_sha256()
+        infos["sha512"] = self._get_sha512()
+        infos["type"]   = self._get_type()
+        infos["size"]   = self._get_size()
+
+        return infos
