@@ -20,6 +20,7 @@
 
 import os
 import sys
+import hashlib
 import urllib2
 from optparse import OptionParser
 
@@ -56,6 +57,14 @@ def download(url):
 
     return dest
 
+def url(url):
+    file_path = os.path.join(DESTINATION, "%s.url" % hashlib.md5(url).hexdigest())
+    file_handle = open(file_path, "w")
+    file_handle.write("[InternetShortcut]\n")
+    file_handle.write("URL=%s\n" % url)
+    file_handle.close()
+    return file_path
+
 def main():
     parser = OptionParser(usage="usage: %prog [options] filepath")
     parser.add_option("-t", "--timeout",
@@ -82,12 +91,16 @@ def main():
                       dest="custom",
                       default=None,
                       help="Specify any custom value to be passed to postprocessing")
+    parser.add_option("-d", "--download",
+                      action="store_true",
+                      dest="download",
+                      default=False,
+                      help = "Specify if the target is an URL to be downloaded")
     parser.add_option("-u", "--url",
-                      # TODO: finish this definition
                       action="store_true",
                       dest="url",
                       default=False,
-                      help = "Specify if the target is a URL to be downloaded")
+                      help = "Specify if the target is an URL to be analyzed")
 
     (options, args) = parser.parse_args()
 
@@ -99,8 +112,18 @@ def main():
 
     # If the specified argument is an URL, download it first and retrieve the
     # generated path.
-    if options.url:
+    if options.download:
         target = download(args[0])
+    # If the specified argument is an URL to be analyzed, generate .url file.
+    elif options.url:
+        target = url(args[0])
+        # If the user didn't specify any analysis package, I'll use the default
+        # Internet Explorer package.
+        if not options.package:
+            print bold(yellow("NOTICE")) + ": You submitted an URL to be analyzed " \
+                  "but didn't specify any package, I'm gonna user the default " \
+                  "Internet Explorer package."
+            options.package = "ie"
     # Otherwise just assign the argument to target path.
     else:
         target = args[0]

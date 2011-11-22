@@ -30,11 +30,10 @@ from cuckoo.monitor import *
 def cuckoo_run(target_path):
     pids = []
 
-    cuckoo_execute("C:\\Program Files\\Internet Explorer\\iexplore.exe",
-                   "www.google.com")
+    internet_explorer = "C:\\Program Files\\Internet Explorer\\iexplore.exe"
 
     suspended = True
-    (pid, h_thread) = cuckoo_execute(target_path, None, suspended)
+    (pid, h_thread) = cuckoo_execute(internet_explorer, "\"%s\"" % target_path, suspended)
     cuckoo_monitor(pid, h_thread, suspended)
 
     pids.append(pid)
