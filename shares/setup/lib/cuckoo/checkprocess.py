@@ -24,19 +24,22 @@ from ctypes import *
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib")
 
-from cuckoo.defines import *
+import cuckoo.defines
 from cuckoo.logging import *
 
 def check_process(pid):
-    h_process = KERNEL32.OpenProcess(PROCESS_ALL_ACCESS, False, int(pid))
+    h_process = cuckoo.defines.KERNEL32.OpenProcess(cuckoo.defines.PROCESS_ALL_ACCESS,
+                                                    False,
+                                                    int(pid))
 
     if not h_process:
         return False
 
     exit_code = c_ulong(0)
-    KERNEL32.GetExitCodeProcess(h_process, byref(exit_code))
+    cuckoo.defines.KERNEL32.GetExitCodeProcess(h_process,
+                                               byref(exit_code))
 
-    if exit_code.value == STILL_ACTIVE:
+    if exit_code.value == cuckoo.defines.STILL_ACTIVE:
         return True
     else:
         return False

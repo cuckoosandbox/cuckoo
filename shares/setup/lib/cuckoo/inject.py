@@ -20,13 +20,17 @@
 
 import os
 import sys
+import string
+import random
 from ctypes import sizeof, byref, c_int, c_ulong, wintypes
 import ctypes
+from shutil import *
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
-from cuckoo.defines import *
+import cuckoo.defines
 from cuckoo.logging import *
+from cuckoo.paths import *
 
 # The following function was taken from PyBox:
 # http://code.google.com/p/pyboxed
@@ -43,68 +47,82 @@ def grant_debug_privilege(pid = 0):
     @return: True if operation was successful, 
               False otherwise
     """
-    ADVAPI32.OpenProcessToken.argtypes = (wintypes.HANDLE,
-                                          wintypes.DWORD,
-                                          ctypes.POINTER(wintypes.HANDLE))
+    cuckoo.defines.ADVAPI32.OpenProcessToken.argtypes = (wintypes.HANDLE,
+                                                         wintypes.DWORD,
+                                                         ctypes.POINTER(wintypes.HANDLE))
 
-    ADVAPI32.LookupPrivilegeValueW.argtypes = (wintypes.LPWSTR,
-                                               wintypes.LPWSTR,
-                                               ctypes.POINTER(LUID))
-    ADVAPI32.AdjustTokenPrivileges.argtypes = (wintypes.HANDLE,
-                                               wintypes.BOOL,
-                                               ctypes.POINTER(TOKEN_PRIVILEGES),
-                                               wintypes.DWORD,
-                                               ctypes.POINTER(TOKEN_PRIVILEGES),
-                                               ctypes.POINTER(wintypes.DWORD))
+    cuckoo.defines.ADVAPI32.LookupPrivilegeValueW.argtypes = (wintypes.LPWSTR,
+                                                              wintypes.LPWSTR,
+                                                              ctypes.POINTER(cuckoo.defines.LUID))
+    cuckoo.defines.ADVAPI32.AdjustTokenPrivileges.argtypes = (wintypes.HANDLE,
+                                                              wintypes.BOOL,
+                                                              ctypes.POINTER(cuckoo.defines.TOKEN_PRIVILEGES),
+                                                              wintypes.DWORD,
+                                                              ctypes.POINTER(cuckoo.defines.TOKEN_PRIVILEGES),
+                                                              ctypes.POINTER(wintypes.DWORD))
 
     h_process = None
     if pid == 0:
-        h_process = KERNEL32.GetCurrentProcess()
+        h_process = cuckoo.defines.KERNEL32.GetCurrentProcess()
     else:
-        h_process = KERNEL32.OpenProcess(PROCESS_ALL_ACCESS,
-                                         False,
-                                         pid)
+        h_process = cuckoo.defines.KERNEL32.OpenProcess(cuckoo.defines.PROCESS_ALL_ACCESS,
+                                                        False,
+                                                        pid)
 
     if not h_process:
         return False    
 
     # obtain token to process
     h_current_token = wintypes.HANDLE() 
-    if not ADVAPI32.OpenProcessToken(h_process,
-                                     TOKEN_ALL_ACCESS,
-                                     h_current_token): 
+    if not cuckoo.defines.ADVAPI32.OpenProcessToken(h_process,
+                                                    cuckoo.defines.TOKEN_ALL_ACCESS,
+                                                    h_current_token): 
         return False
     
     # look up current privilege value
-    se_original_luid = LUID()
-    if not ADVAPI32.LookupPrivilegeValueW(None,
-                                          "SeDebugPrivilege",
-                                          se_original_luid):
+    se_original_luid = cuckoo.defines.LUID()
+    if not cuckoo.defines.ADVAPI32.LookupPrivilegeValueW(None,
+                                                         "SeDebugPrivilege",
+                                                         se_original_luid):
         return False
 
-    luid_attributes = LUID_AND_ATTRIBUTES()
+    luid_attributes = cuckoo.defines.LUID_AND_ATTRIBUTES()
     luid_attributes.Luid = se_original_luid
-    luid_attributes.Attributes = SE_PRIVILEGE_ENABLED
-    token_privs = TOKEN_PRIVILEGES()
+    luid_attributes.Attributes = cuckoo.defines.SE_PRIVILEGE_ENABLED
+    token_privs = cuckoo.defines.TOKEN_PRIVILEGES()
     token_privs.PrivilegeCount = 1;
     token_privs.Privileges = luid_attributes; 
     
-    if not ADVAPI32.AdjustTokenPrivileges(h_current_token,
-                                          False,
-                                          token_privs,
-                                          0,
-                                          None,
-                                          None):
+    if not cuckoo.defines.ADVAPI32.AdjustTokenPrivileges(h_current_token,
+                                                         False,
+                                                         token_privs,
+                                                         0,
+                                                         None,
+                                                         None):
         return False
     
-    KERNEL32.CloseHandle(h_current_token)
-    KERNEL32.CloseHandle(h_process)
+    cuckoo.defines.KERNEL32.CloseHandle(h_current_token)
+    cuckoo.defines.KERNEL32.CloseHandle(h_process)
     
     return True
+
+def randomize_dll(dll_path):
+    new_dll_name = "".join(random.choice(string.ascii_letters) for x in range(6))
+    new_dll_path = os.path.join(CUCKOO_DLL_FOLDER, "%s.dll" % new_dll_name)
+
+    try:
+        copy(dll_path, new_dll_path)
+        return new_dll_path
+    except (IOError, os.error), why:
+        log("Unable to randomize DLL to path \"%s\": %s"
+            % (new_dll_path, why), "ERROR")
+        return dll_path
 
 def cuckoo_inject(pid, dll_path):
     if not os.path.exists(dll_path):
         return False
+
+    dll_path = randomize_dll(dll_path)
 
     # If target process is current, abort.
     if pid == os.getpid():
@@ -112,43 +130,45 @@ def cuckoo_inject(pid, dll_path):
 
     if not grant_debug_privilege():
         log("Unable to grant debug privileges on Cuckoo process (GLE=%s)."
-            % KERNEL32.GetLastError(), "ERROR")
+            % cuckoo.defines.KERNEL32.GetLastError(), "ERROR")
     else:
         log("Successfully granted debug privileges on Cuckoo process.")
 
-    h_process = KERNEL32.OpenProcess(PROCESS_ALL_ACCESS, False, int(pid))
+    h_process = cuckoo.defines.KERNEL32.OpenProcess(cuckoo.defines.PROCESS_ALL_ACCESS,
+                                                    False,
+                                                    int(pid))
 
     if not h_process:
         return False
 
-    ll_param = KERNEL32.VirtualAllocEx(h_process,
-                                       0,
-                                       len(dll_path),
-                                       MEM_RESERVE | MEM_COMMIT,
-                                       PAGE_READWRITE)
+    ll_param = cuckoo.defines.KERNEL32.VirtualAllocEx(h_process,
+                                                      0,
+                                                      len(dll_path),
+                                                      cuckoo.defines.MEM_RESERVE | \
+                                                      cuckoo.defines.MEM_COMMIT,
+                                                      cuckoo.defines.PAGE_READWRITE)
 
     bytes_written = c_int(0)
 
-    if not KERNEL32.WriteProcessMemory(h_process,
-                                       ll_param,
-                                       dll_path,
-                                       len(dll_path),
-                                       byref(bytes_written)):
+    if not cuckoo.defines.KERNEL32.WriteProcessMemory(h_process,
+                                                      ll_param,
+                                                      dll_path,
+                                                      len(dll_path),
+                                                      byref(bytes_written)):
         return False
 
-    lib_addr = KERNEL32.GetProcAddress(
-                    KERNEL32.GetModuleHandleA("kernel32.dll"),
-                    "LoadLibraryA")
+    lib_addr = cuckoo.defines.KERNEL32.GetProcAddress(cuckoo.defines.KERNEL32.GetModuleHandleA("kernel32.dll"),
+                                                      "LoadLibraryA")
 
     new_thread_id = c_ulong(0)
 
-    if not KERNEL32.CreateRemoteThread(h_process,
-                                       None,
-                                       0,
-                                       lib_addr,
-                                       ll_param,
-                                       0,
-                                       byref(new_thread_id)):
+    if not cuckoo.defines.KERNEL32.CreateRemoteThread(h_process,
+                                                      None,
+                                                      0,
+                                                      lib_addr,
+                                                      ll_param,
+                                                      0,
+                                                      byref(new_thread_id)):
         return False
 
     return True

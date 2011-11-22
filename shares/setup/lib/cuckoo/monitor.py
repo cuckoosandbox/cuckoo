@@ -24,10 +24,23 @@ from ctypes import *
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
-from cuckoo.defines import *
+import cuckoo.defines
 from cuckoo.logging import *
 from cuckoo.paths import *
 from cuckoo.inject import *
+
+def cuckoo_resumethread(h_thread = -1):
+    cuckoo.defines.KERNEL32.Sleep(2000)
+    # If the resume fails we need to abort the analysis, as there won't be
+    # any activity monitored.
+    if not cuckoo.defines.KERNEL32.ResumeThread(h_thread):
+        log("Unable to resume thread with handle \"0x%08x\" (GLE=%s)."
+            % (h_thread, cuckoo.defines.KERNEL32.GetLastError()), "ERROR")
+        return False
+    else:
+        log("Resumed thread with handle \"0x%08x\"." % h_thread, "INFO")
+
+    return True
 
 def cuckoo_monitor(pid = -1, h_thread = -1, suspended = False, dll_path = None):
     # The package run function should return the process id, if it's valid
@@ -43,7 +56,8 @@ def cuckoo_monitor(pid = -1, h_thread = -1, suspended = False, dll_path = None):
 
         if not cuckoo_inject(pid, dll_path):
             log("Unable to inject process with ID \"%d\" with DLL \"%s\"" \
-                " (GLE=%s)." % (pid, dll_path, KERNEL32.GetLastError()), "ERROR")
+                " (GLE=%s)." % (pid, dll_path, cuckoo.defines.KERNEL32.GetLastError()),
+                "ERROR")
             return False
         else:
             log("Original process with ID \"%d\"successfully injected." % pid)
@@ -51,14 +65,7 @@ def cuckoo_monitor(pid = -1, h_thread = -1, suspended = False, dll_path = None):
     # In case the process was create in suspended mode and needs to be resumed,
     # I'll do it now.
     if suspended and h_thread > -1:
-        KERNEL32.Sleep(2000)
-        # If the resume fails we need to abort the analysis, as there won't be
-        # any activity monitored.
-        if not KERNEL32.ResumeThread(h_thread):
-            log("Unable to resume thread with handle \"0x%08x\" (GLE=%s)."
-                % (h_thread, KERNEL32.GetLastError()), "ERROR")
+        if not cuckoo_resumethread(h_thread):
             return False
-        else:
-            log("Resumed thread with handle \"0x%08x\"." % h_thread, "INFO")
 
     return True

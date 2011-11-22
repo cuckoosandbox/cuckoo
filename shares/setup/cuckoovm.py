@@ -28,13 +28,14 @@ from shutil import *
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
+import cuckoo.defines
 from cuckoo.checkprocess import *
-from cuckoo.defines import *
 from cuckoo.execute import *
 from cuckoo.inject import *
 from cuckoo.logging import *
 from cuckoo.paths import *
 from cuckoo.screenshots import *
+from cuckoo.tracer import *
 
 # Initialize buffer size for Pipe server connections.
 BUFSIZE = 512
@@ -181,14 +182,14 @@ def dump_files():
         if not os.path.exists(file_path):
             continue
             
-        if os.path.getsize(file_path) == 0:
-            continue
-            
         try:
+            if os.path.getsize(file_path) == 0:
+                continue
+
             copy(file_path, dir_dst)
             log("Dropped file \"%s\" successfully dumped to \"%s\"."
                 % (file_path, dir_dst))
-        except (IOError, os.error), why:
+        except Exception, why:
             log("Cannot dump dropped file \"%s\" to \"%s\": %s."
                 % (file_path, dir_dst, why), "ERROR")
             continue
@@ -201,6 +202,7 @@ def save_results(share_path):
     analysis_dirs.append("logs")
     analysis_dirs.append("files")
     analysis_dirs.append("shots")
+    analysis_dirs.append("instructions")
 
     log("Saving analysis results to \"%s\"." % share_path)
 
@@ -242,14 +244,14 @@ class PipeHandler(Thread):
             while True:
                 bytes_read = c_int(0)
     
-                success = KERNEL32.ReadFile(self.h_pipe,
-                                            data,
-                                            sizeof(data),
-                                            byref(bytes_read),
-                                            None)
+                success = cuckoo.defines.KERNEL32.ReadFile(self.h_pipe,
+                                                           data,
+                                                           sizeof(data),
+                                                           byref(bytes_read),
+                                                           None)
     
                 if not success or bytes_read.value == 0:
-                    if KERNEL32.GetLastError() == ERROR_BROKEN_PIPE:
+                    if cuckoo.defines.KERNEL32.GetLastError() == cuckoo.defines.ERROR_BROKEN_PIPE:
                         # Client disconnected. This check is quite irrelevant.
                         pass
     
@@ -295,41 +297,41 @@ class PipeServer(Thread):
         self._do_run = True
 
     def stop(self):
-        log("Stopping Pipe Server")
+        log("Stopping Pipe Server.")
         self._do_run = False
 
     def run(self):
-        log("Starting Pipe Server")
+        log("Starting Pipe Server.")
 
         while self._do_run:
             # Create named pipe with a name defined in paths.py.
-            h_pipe = KERNEL32.CreateNamedPipeA(self.pipe_name,
-                                               PIPE_ACCESS_DUPLEX,
-                                               PIPE_TYPE_MESSAGE |     \
-                                               PIPE_READMODE_MESSAGE | \
-                                               PIPE_WAIT,
-                                               PIPE_UNLIMITED_INSTANCES,
-                                               BUFSIZE,
-                                               BUFSIZE,
-                                               0,
-                                               None)
+            h_pipe = cuckoo.defines.KERNEL32.CreateNamedPipeA(self.pipe_name,
+                                                              cuckoo.defines.PIPE_ACCESS_DUPLEX,
+                                                              cuckoo.defines.PIPE_TYPE_MESSAGE | \
+                                                              cuckoo.defines.PIPE_READMODE_MESSAGE | \
+                                                              cuckoo.defines.PIPE_WAIT,
+                                                              cuckoo.defines.PIPE_UNLIMITED_INSTANCES,
+                                                              BUFSIZE,
+                                                              BUFSIZE,
+                                                              0,
+                                                              None)
 
             # If pipe handle is invalid, something went wrong with its creation,
             # and I terminate the server.
-            if h_pipe == INVALID_HANDLE_VALUE:
+            if h_pipe == cuckoo.defines.INVALID_HANDLE_VALUE:
                 log("Pipe Server failed to start.", "ERROR")
                 return False
 
             # Wait for pipe connections. More informations at:
             # http://msdn.microsoft.com/en-us/library/aa365146%28v=vs.85%29.aspx
-            if KERNEL32.ConnectNamedPipe(h_pipe, None):
+            if cuckoo.defines.KERNEL32.ConnectNamedPipe(h_pipe, None):
                 # If there's a new connection, call the handler.
                 p = PipeHandler(h_pipe)
                 a = p.start()
             else:
                 # If there's no connection, close the Pipe handle and loop it
                 # over again.
-                KERNEL32.CloseHandle(h_pipe)
+                cuckoo.defines.KERNEL32.CloseHandle(h_pipe)
 
         return True
 
@@ -429,6 +431,7 @@ def main(config_path):
     # package doesn't perform any injection. Consequently I should not wait
     # for active processes to exit, or the analysis would end prematurely.
     else:
+        log("No process IDs returned to monitor.")
         check_for_processes = False
 
     # If no analysis timeout is set in the configuration file, it'll use
@@ -478,7 +481,7 @@ def main(config_path):
         finally:
             counter += 1
             PROCESS_LOCK.release()
-            KERNEL32.Sleep(1000)
+            cuckoo.defines.KERNEL32.Sleep(1000)
 
     # Stop Pipe Server.
     pipe.stop()

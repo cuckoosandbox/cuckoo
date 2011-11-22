@@ -24,7 +24,7 @@ from ctypes import *
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
-from cuckoo.defines import *
+import cuckoo.defines
 from cuckoo.logging import *
 
 def cuckoo_execute(target_path, args = None, suspend = False):
@@ -32,32 +32,33 @@ def cuckoo_execute(target_path, args = None, suspend = False):
         log("Unable to create process \"%s\": file does not exist.", "ERROR")
         return (-1, -1)
 
-    startupinfo = STARTUPINFO()
+    startupinfo = cuckoo.defines.STARTUPINFO()
     startupinfo.cb = sizeof(startupinfo)
-    process_information = PROCESS_INFORMATION()
+    process_information = cuckoo.defines.PROCESS_INFORMATION()
 
     if args:
         arguments = "\"" + target_path + "\" " + args
     else:
         arguments = None
 
-    creation_flags = CREATE_NEW_CONSOLE
+    creation_flags = cuckoo.defines.CREATE_NEW_CONSOLE
 
     if suspend:    
-        creation_flags += CREATE_SUSPENDED
+        creation_flags += cuckoo.defines.CREATE_SUSPENDED
 
-    if not KERNEL32.CreateProcessA(target_path,
-                                   arguments,
-                                   None,
-                                   None,
-                                   None,
-                                   creation_flags,
-                                   None,
-                                   None,
-                                   byref(startupinfo),
-                                   byref(process_information)):
+    if not cuckoo.defines.KERNEL32.CreateProcessA(target_path,
+                                                  arguments,
+                                                  None,
+                                                  None,
+                                                  None,
+                                                  creation_flags,
+                                                  None,
+                                                  None,
+                                                  byref(startupinfo),
+                                                  byref(process_information)):
         log("Unable to create process \"%s\" with arguments \"%s\" (GLE=%s)."
-            % (target_path, arguments, KERNEL32.GetLastError()), "ERROR")
+            % (target_path, arguments, cuckoo.defines.KERNEL32.GetLastError()),
+            "ERROR")
         return (-1, -1)
     else:
         log("Launched process \"%s\" with arguments \"%s\", ID \"%d\" and " \

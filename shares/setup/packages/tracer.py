@@ -19,10 +19,25 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 import os
+import sys
 
-SYSTEM_SETUP_SRC = "\\\\VBOXSVR\\setup\\system\\"
-CUCKOO_SETUP_SRC = "\\\\VBOXSVR\\setup\\cuckoo\\"
-CUCKOO_PATH = "%s\\cuckoo\\" % os.getenv("SystemDrive")
-CUCKOO_DLL_FOLDER = os.path.join(CUCKOO_PATH, "dll")
-CUCKOO_DLL_PATH = os.path.join(CUCKOO_PATH, "dll\\cmonitor.dll")
-CUCKOO_PIPE = "\\\\.\\pipe\\cuckoo"
+sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
+
+from cuckoo.tracer import *
+from cuckoo.execute import *
+from cuckoo.logging import *
+from cuckoo.monitor import *
+
+def cuckoo_run(target_path):
+    suspended = True
+    (pid, h_thread) = cuckoo_execute(target_path, None, suspended)
+    cuckoo_trace(pid)
+    cuckoo_resumethread(h_thread)
+
+    return None
+
+def cuckoo_check():
+    return True
+
+def cuckoo_finish():
+    return True

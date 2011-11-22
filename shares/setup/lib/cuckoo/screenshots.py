@@ -32,7 +32,7 @@ try:
     import ImageChops
     IS_PIL = True
 except ImportError, why:
-    log("Unable to import Python Image Library: %s." % why, "ERROR")
+    log("Unable to import Python Image Library: %s." % why, "WARNING")
     IS_PIL = False
 
 SHOT_DELAY = 1
@@ -73,10 +73,9 @@ class Screenshots(Thread):
             save_at = os.path.join(self.save_path, "shot_%s.jpg" % img_counter)
             img_current.save(save_at)
 
-            log("Screenshot saved at \"%s\"." % save_at)
+            #log("Screenshot saved at \"%s\"." % save_at)
 
             img_last = img_current
-
             time.sleep(SHOT_DELAY)
 
         return True
