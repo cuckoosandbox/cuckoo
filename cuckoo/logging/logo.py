@@ -22,11 +22,11 @@ import sys
 from cuckoo.logging.colors import *
 
 def logo():
-    sys.stdout.write(cyan("                     _                  ") + "\n")
-    sys.stdout.write(cyan("    ____ _   _  ____| |  _ ___   ___    ") + "\n")
-    sys.stdout.write(cyan("   / ___) | | |/ ___) |_/ ) _ \\ / _ \\ ") + "\n")
-    sys.stdout.write(cyan("  ( (___| |_| ( (___|  _ ( |_| | |_| |  ") + "\n")
-    sys.stdout.write(cyan("   \\____)____/ \\____)_| \_)___/ \\___/") + " v0.2\n")
+    sys.stdout.write(bold(cyan("                     _                  ")) + "\n")
+    sys.stdout.write(bold(cyan("    ____ _   _  ____| |  _ ___   ___    ")) + "\n")
+    sys.stdout.write(bold(cyan("   / ___) | | |/ ___) |_/ ) _ \\ / _ \\ ")) + "\n")
+    sys.stdout.write(bold(cyan("  ( (___| |_| ( (___|  _ ( |_| | |_| |  ")) + "\n")
+    sys.stdout.write(bold(cyan("   \\____)____/ \\____)_| \_)___/ \\___/")) + " v0.2\n")
     sys.stdout.write("\n")
     sys.stdout.write(" www.cuckoobox.org\n")
     sys.stdout.write(" Copyright (C) 2010-2011\n")
