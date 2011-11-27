@@ -20,20 +20,24 @@
 
 import os
 import sys
+import ConfigParser
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
 from cuckoo.execute import *
-from cuckoo.logging import *
 from cuckoo.monitor import *
 
 def cuckoo_run(target_path):
+    config = ConfigParser.ConfigParser()
+    config.read(target_path)
+    url = config.get("InternetShortcut", "URL")
+
     pids = []
 
     internet_explorer = "C:\\Program Files\\Internet Explorer\\iexplore.exe"
 
     suspended = True
-    (pid, h_thread) = cuckoo_execute(internet_explorer, "\"%s\"" % target_path, suspended)
+    (pid, h_thread) = cuckoo_execute(internet_explorer, "%s" % url, suspended)
     cuckoo_monitor(pid, h_thread, suspended)
 
     pids.append(pid)

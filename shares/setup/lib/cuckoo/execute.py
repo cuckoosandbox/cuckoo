@@ -20,16 +20,18 @@
 
 import os
 import sys
+import logging
 from ctypes import *
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
 import cuckoo.defines
-from cuckoo.logging import *
 
 def cuckoo_execute(target_path, args = None, suspend = False):
+    log = logging.getLogger("Execute.Execute")
+
     if not os.path.exists(target_path):
-        log("Unable to create process \"%s\": file does not exist.", "ERROR")
+        log.error("Unable to create process \"%s\": file does not exist.")
         return (-1, -1)
 
     startupinfo = cuckoo.defines.STARTUPINFO()
@@ -56,17 +58,19 @@ def cuckoo_execute(target_path, args = None, suspend = False):
                                                   None,
                                                   byref(startupinfo),
                                                   byref(process_information)):
-        log("Unable to create process \"%s\" with arguments \"%s\" (GLE=%s)."
-            % (target_path, arguments, cuckoo.defines.KERNEL32.GetLastError()),
-            "ERROR")
+        log.error("Unable to create process \"%s\" with arguments \"%s\" " \
+                  "(GLE=%s)."
+                  % (target_path,
+                     arguments,
+                     cuckoo.defines.KERNEL32.GetLastError()))
         return (-1, -1)
     else:
-        log("Launched process \"%s\" with arguments \"%s\", ID \"%d\" and " \
-            "thread \"0x%08x\"."
-            % (target_path,
-               arguments,
-               process_information.dwProcessId,
-               process_information.hThread))
+        log.info("Launched process \"%s\" with arguments \"%s\", ID \"%d\" " \
+                 "and thread \"0x%08x\"."
+                 % (target_path,
+                    arguments,
+                    process_information.dwProcessId,
+                    process_information.hThread))
 
     pid = process_information.dwProcessId
     h_thread = process_information.hThread

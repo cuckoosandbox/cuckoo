@@ -25,7 +25,6 @@ sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
 from cuckoo.tracer import *
 from cuckoo.execute import *
-from cuckoo.logging import *
 from cuckoo.monitor import *
 
 def cuckoo_run(target_path):

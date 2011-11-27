@@ -22,14 +22,14 @@ import os
 import sys
 import string
 import random
+import logging
+from shutil import *
 from ctypes import sizeof, byref, c_int, c_ulong, wintypes
 import ctypes
-from shutil import *
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
 import cuckoo.defines
-from cuckoo.logging import *
 from cuckoo.paths import *
 
 # The following function was taken from PyBox:
@@ -41,6 +41,7 @@ from cuckoo.paths import *
 # All rights reserved.
 ########################################################################
 def grant_debug_privilege(pid = 0):
+    log = logging.getLogger("Inject.GrantDebugPrivilege")
     """ grant SeDebugPrivilege to own process
     @param pid: Process id to set permissions of (or 0 if current)
     @type pid: int
@@ -70,13 +71,17 @@ def grant_debug_privilege(pid = 0):
                                                         pid)
 
     if not h_process:
+        log.error("Unable to open process handle (GLE=%d)."
+                  % cuckoo.defines.KERNEL32.GetLastError())
         return False    
 
     # obtain token to process
     h_current_token = wintypes.HANDLE() 
     if not cuckoo.defines.ADVAPI32.OpenProcessToken(h_process,
                                                     cuckoo.defines.TOKEN_ALL_ACCESS,
-                                                    h_current_token): 
+                                                    h_current_token):
+        log.error("Unable to open process token (GLE=%d)."
+                  % cuckoo.defines.KERNEL32.GetLastError())
         return False
     
     # look up current privilege value
@@ -84,6 +89,8 @@ def grant_debug_privilege(pid = 0):
     if not cuckoo.defines.ADVAPI32.LookupPrivilegeValueW(None,
                                                          "SeDebugPrivilege",
                                                          se_original_luid):
+        log.error("Unable to lookup current privilege (GLE=%d)."
+                  % cuckoo.defines.KERNEL32.GetLastError())
         return False
 
     luid_attributes = cuckoo.defines.LUID_AND_ATTRIBUTES()
@@ -99,14 +106,20 @@ def grant_debug_privilege(pid = 0):
                                                          0,
                                                          None,
                                                          None):
+        log.error("Unable to adjust token privileges (GLE=%d)."
+                  % cuckoo.defines.KERNEL32.GetLastError())
         return False
     
     cuckoo.defines.KERNEL32.CloseHandle(h_current_token)
     cuckoo.defines.KERNEL32.CloseHandle(h_process)
+
+    log.info("Successfully granted debug privileges on Cuckoo process.")
     
     return True
 
 def randomize_dll(dll_path):
+    log = logging.getLogger("Inject.RandomizeDll")
+
     new_dll_name = "".join(random.choice(string.ascii_letters) for x in range(6))
     new_dll_path = os.path.join(CUCKOO_DLL_FOLDER, "%s.dll" % new_dll_name)
 
@@ -114,31 +127,31 @@ def randomize_dll(dll_path):
         copy(dll_path, new_dll_path)
         return new_dll_path
     except (IOError, os.error), why:
-        log("Unable to randomize DLL to path \"%s\": %s"
-            % (new_dll_path, why), "ERROR")
+        log.error("Something went wrong while randomzing DLL to path \"%s\": %s"
+                  % (new_dll_path, why))
         return dll_path
 
 def cuckoo_inject(pid, dll_path):
+    log = logging.getLogger("Inject.Inject")
+
     if not os.path.exists(dll_path):
+        log.error("DLL does not exist at path \"%s\"." % dll_path)
         return False
 
     dll_path = randomize_dll(dll_path)
 
-    # If target process is current, abort.
+    # If target process is current,
     if pid == os.getpid():
         return False
-
-    if not grant_debug_privilege():
-        log("Unable to grant debug privileges on Cuckoo process (GLE=%s)."
-            % cuckoo.defines.KERNEL32.GetLastError(), "ERROR")
-    else:
-        log("Successfully granted debug privileges on Cuckoo process.")
 
     h_process = cuckoo.defines.KERNEL32.OpenProcess(cuckoo.defines.PROCESS_ALL_ACCESS,
                                                     False,
                                                     int(pid))
 
     if not h_process:
+        log.error("Unable to obtain handle on process with PID %d (GLE=%d). " \
+                  "Abort."
+                  % (pid, cuckoo.defines.KERNEL32.GetLastError()))
         return False
 
     ll_param = cuckoo.defines.KERNEL32.VirtualAllocEx(h_process,
@@ -155,6 +168,8 @@ def cuckoo_inject(pid, dll_path):
                                                       dll_path,
                                                       len(dll_path),
                                                       byref(bytes_written)):
+        log.error("Unable to write on memory of process with PID %d (GLE=%d)." \
+                  "" % (pid, cuckoo.defines.KERNEL32.GetLastError()))
         return False
 
     lib_addr = cuckoo.defines.KERNEL32.GetProcAddress(cuckoo.defines.KERNEL32.GetModuleHandleA("kernel32.dll"),
@@ -169,6 +184,11 @@ def cuckoo_inject(pid, dll_path):
                                                       ll_param,
                                                       0,
                                                       byref(new_thread_id)):
+        log.error("Unable to create a remote thread in process with PID %d " \
+                  "(GLE=%d)." % (pid, cuckoo.defines.GetLastError()))
         return False
+
+    log.debug("Process with PID %d successfully injected with DLL at path " \
+              "\"%s\"." % (pid, dll_path))
 
     return True

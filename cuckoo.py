@@ -21,37 +21,48 @@
 import os
 import sys
 import shutil
+import logging
+import logging.config
 import subprocess
 import ConfigParser
 from Queue import *
 from time import sleep
 from threading import Thread
 
-from cuckoo.core.config import *
+from cuckoo.config.config import *
+from cuckoo.logging.logo import *
+from cuckoo.logging.colored import *
 from cuckoo.core.db import *
 from cuckoo.core.getfiletype import *
-from cuckoo.core.logging import *
-from cuckoo.core.logo import *
-from cuckoo.core.sniffer import *
-from cuckoo.core.now import *
 
-# Check the virtualization engine from the config fle and tries to retrieve and
-# import the corresponding Cuckoo's module.
+log = logging.getLogger("Core")
+
+# Check the virtualization engine from the config fle and tries to retrieve
+# and import the corresponding Cuckoo's module.
 if CuckooConfig().get_vm_engine().lower() == "virtualbox":
     try:
         from cuckoo.core.virtualbox import *
     except ImportError, why:
-        log("Unable to load Cuckoo's VirtualBox module." \
-            " Please check your installation.\n", "ERROR")
+        log.critical("Unable to load Cuckoo's VirtualBox module. " \
+                     "Please verify your installation.")
         sys.exit(-1)
 # If no valid option has been specified, aborts the execution.
 else:
-    log("No valid virtualization option identified. " \
-        "Please check your configuration file.\n", "ERROR")
+    log.critical("No valid virtualization option identified. " \
+                 "Please check your configuration file.")
     sys.exit(-1)
 
+# Import the external sniffer module only if required.
+if CuckooConfig().use_external_sniffer().lower() == "on":
+    try:
+        from cuckoo.core.sniffer import *
+    except ImportError, why:
+        log.critical("Unable to import sniffer module. " \
+                     "Please verify your installation.")
+        sys.exit(-1)
+
 # Initialize complete list of virtual machines.
-# (Key = virtual machine name, Value = mac address).
+# (Key = virtual machine name, Value = MAC address).
 VM_LIST = {}
 # Initialize available virtual nachines pool.
 VM_POOL = Queue()
@@ -65,20 +76,18 @@ class Analysis(Thread):
         self.sniffer = None
         self.db = None
         self.dst_filename = None
-
-    # Log wrapper function. It adds the task id in front of the message in
-    # order to more easily track the samples causing errors.
-    def _log(self, message, level = "DEFAULT"):
-        log("(Task #%s) %s" % (self.task["id"], message), level)
+        Thread.name = self.task["id"]
+        log = logging.getLogger("Core.Analysis")
 
     # Clean shared folders.
     def _clean_share(self, share_path):
+        log = logging.getLogger("Core.Analysis.CleanShare")
+
         total = len(os.listdir(share_path))
         cleaned = 0
 
         if total == 0:
-            self._log("[Analysis] [Clean Share] Nothing to clean in \"%s\"."
-                % share_path, "DEBUG")
+            log.debug("Nothing to clean in \"%s\"." % share_path)
             return False
 
         for name in os.listdir(share_path):
@@ -94,38 +103,35 @@ class Analysis(Thread):
                     os.remove(cur_path)
                 cleaned += 1
             except (IOError, os.error, shutil.Error), why:
-                self._log("[Analysis] [Clean Share] Unable to remove "\
-                          "\"%s\": %s" % (cur_path, why), "ERROR")
+                log.error("Unable to remove \"%s\": %s" % (cur_path, why))
 
         if cleaned == total:
-            self._log("[Analysis] [Clean Share] Shared folder \"%s\" cleaned " \
-                      "successfully." % share_path)
+            log.debug("Shared folder \"%s\" cleaned successfully." % share_path)
             return True
         else:
-            self._log("[Analysis] [Clean Share] The folder \"%s\" wasn't " \
-                      "completely cleaned. Review previour errors."
-                      % share_path, "WARNING")
+            log.warning("The folder \"%s\" wasn't completely cleaned. " \
+                        "Review previour errors." % share_path)
             return False
 
     # Save analysis results from source path to destination path.
     def _save_results(self, src, dst):
+        log = logging.getLogger("Core.Analysis.SaveResults")
+
         if not os.path.exists(src):
-            self._log("[Analysis] [Save Results] The folder \"%s\" doesn't " \
-                      "exist.", "ERROR")
+            log.error("The folder \"%s\" doesn't exist." % src)
             return False
 
         if not os.path.exists(dst):
             try:
                 os.mkdir(dst)
             except (IOError, os.error), why:
-                self._log("[Analysis] [Save Results] Unable to create " \
-                          "directory \"%s\": %s" % (dst, why), "ERROR")
+                log.error("Unable to create directory \"%s\": %s" % (dst, why))
                 return False
         else:
-            self._log("[Analysis] [Save Results] The folder \"%s\" already " \
-                      "exists. It should be used for storing results of "    \
-                      "task with id %s. Have you deleted Cuckoo's database?"
-                % (dst, self.task["id"]), "ERROR")
+            log.error("The folder \"%s\" already exists. It should be used " \
+                      "for storing results of task with ID %s. " \
+                      "Have you deleted Cuckoo's database?"
+                      % (dst, self.task["id"]))
             return False
 
         total = len(os.listdir(src))
@@ -145,21 +151,20 @@ class Analysis(Thread):
                     shutil.copy(cur_path, dst_path)
                 copied += 1
             except (IOError, os.error, shutil.Error), why:
-                self._log("[Analysis] [Save Results] Unable to copy " \
-                          "\"%s\" to \"%s\": %s" % (cur_path, dst_path, why),
-                          "ERROR")
+                log.error("Unable to copy \"%s\" to \"%s\": %s"
+                          % (cur_path, dst_path, why))
 
         if copied == total:
-            self._log("[Analysis] [Save Results] Analysis results " \
-                      "successfully saved to \"%s\"." % dst)
+            log.info("Analysis results successfully saved to \"%s\"." % dst)
             return True
         else:
-            self._log("[Analysis] [Save Results] Results from \"%s\" weren't " \
-                      "completely copied to \"%s\". Review previour errors."
-                      % (src, dst), "ERROR")
+            log.warning("Results from \"%s\" weren't completely copied to " \
+                        "\"%s\". Review previour errors." % (src, dst))
             return False
 
     def _generate_config(self, share_path):
+        log = logging.getLogger("Core.Analysis.GenerateConfig")
+
         if self.task is None:
             return False
 
@@ -178,43 +183,52 @@ class Analysis(Thread):
             with open(conf_path, "wb") as config_file:
                 config.write(config_file)
 
-            self._log("[Analysis] [Generate Config] Config file successfully" \
-                      " generated at \"%s\"." % conf_path)
+            log.debug("Analysis configuration file successfully generated " \
+                      "at \"%s\"." % conf_path)
 
             # Return the local share path. This is the path where the virtual
             # machine will have access to to get analysis files and store
             # results.
             return local_share
         else:
-            self._log("[Analysis] [Generate Config] Shared folder \"%s\" " \
-                      "does not exist." % share_path, "ERROR")
+            log.error("Shared folder \"%s\" does not exist." % share_path)
             return False
 
     def _free_vm(self, vm_id):
         VM_POOL.put(vm_id)
-        self._log("[Analysis] [Free VM] Virtual machine \"%s\" " \
-                  "released." % vm_id, "INFO")
+        log = logging.getLogger("Core.Analysis.FreeVM")
+        log.info("Virtual machine \"%s\" released." % vm_id)
         return True
 
-    def _postprocessing(self, save_path, custom = None):
+    def _processing(self, save_path, custom = None):
+        log = logging.getLogger("Core.Analysis.Processing")
         if not os.path.exists(save_path):
-            self._log("[Analysis] [Postprocessing] Cannot find the results" \
-                      " folder at path \"%s\"." % save_path, "ERROR")
-            return -1
+            log.error("Cannot find the results folder at path \"%s\"."
+                      % save_path)
+            return False
 
-        processor = CuckooConfig().get_analysis_processor()
+        interpreter = CuckooConfig().get_processing_interpreter()
+
+        if not interpreter:
+            return False
+
+        if not os.path.exists(interpreter):
+            log.error("Cannot find interpreter at path \"%s\"." % interpreter)
+            return False
+
+        processor = CuckooConfig().get_processing_processor()
 
         if not processor:
-            return -1
+            return False
 
         if not os.path.exists(processor):
-            self._log("[Analysis] [Postprocessing] Cannot find processor " \
-                      "script at path \"%s\"." % processor, "ERROR")
-            return -1
+            log.error("Cannot find processor script at path \"%s\"."
+                      % processor)
+            return False
 
-        pargs = ['python', processor, save_path]
+        pargs = [interpreter, processor, save_path]
 
-        # This sends to the postprocessing any eventual custom field specified
+        # This sends to the processing any eventual custom field specified
         # at submission time in the database.
         if custom:
             pargs.extend([custom])
@@ -222,15 +236,16 @@ class Analysis(Thread):
         try:
             pid = subprocess.Popen(pargs).pid
         except Exception, why:
-            self._log("[Analysis] [Postprocessing] Something went wrong" \
-                      " while starting processor: %s" % why, "ERROR")
-            return -1
+            log.error("Something went wrong while starting processor: %s" % why)
+            return False
+
+        log.info("Analysis results processor started with PID \"%d\"." % pid)
         
-        return pid
+        return True
 
     def run(self):
+        log = logging.getLogger("Core.Analysis.Run")
         success = True
-        free_vm = True
 
         self.db = CuckooDatabase()
 
@@ -241,21 +256,23 @@ class Analysis(Thread):
         # Additional check to verify that the are not saved results with the
         # same task ID.
         if os.path.exists(save_path):
-            self._log("[Analysis] [Core] There are already stored results for" \
-                      " current task with id %s at path \"%s\". Aborting."
-                      % (self.task["id"], save_path), "ERROR")
+            log.error("There are already stored results for current task " \
+                      "with ID %d at path \"%s\". Abort."
+                      % (self.task["id"], save_path))
             self.db.complete(self.task["id"], False)
             return False
 
+        # Check if target file exists.
         if not os.path.exists(self.task["target"]):
-            self._log("[Analysis] [Core] Cannot find target file \"%s\". Abort."
-                      % self.task["target"], "ERROR")
+            log.error("Cannot find target file \"%s\". Abort."
+                      % self.task["target"])
             self.db.complete(self.task["id"], False)
             return False
 
+        # Check if target is a directory.
         if os.path.isdir(self.task["target"]):
-            self._log("[Analysis] [Core] Specified target \"%s\" is a " \
-                      "directory. Abort." % self.task["target"], "ERROR")
+            log.error("Specified target \"%s\" is a directory. Abort." 
+                      % self.task["target"])
             self.db.complete(self.task["id"], False)
             return False
 
@@ -283,9 +300,8 @@ class Analysis(Thread):
 
                     self.task["package"] = "pdf"
                 else:
-                    self._log("[Analysis] [Core] Unknown file format for " \
-                              "target \"%s\". Aborting."
-                              % self.task["target"], "ERROR")
+                    log.error("Unknown file format for target \"%s\". Abort."
+                              % self.task["target"])
                     self.db.complete(self.task["id"], False)
                     return False
             else:
@@ -302,6 +318,7 @@ class Analysis(Thread):
         while True:
             self.vm_id = VM_POOL.get()
             if self.vm_id:
+                log.info("Acquired virtual machine \"%s\"." % self.vm_id)
                 break
             else:
                 sleep(1)
@@ -310,8 +327,8 @@ class Analysis(Thread):
         self.vm_share = CuckooConfig().get_vm_share(self.vm_id)           
 
         if not os.path.exists(self.vm_share):
-            self._log("[Analysis] [Core] Shared folder \"%s\" for virtual " \
-                      "machine \"%s\" does not exist. Aborting.", "ERROR")
+            log.error("Shared folder \"%s\" for virtual machine \"%s\" " \
+                      "does not exist. Abort.")
             self.db.complete(self.task["id"], False)
             self._free_vm(self.vm_id)
             return False
@@ -334,17 +351,16 @@ class Analysis(Thread):
             dst_path = os.path.join(self.vm_share, self.dst_filename)
             shutil.copy(self.task["target"], dst_path)
         except shutil.Error, why:
-            self._log("[Analysis] [Core] Cannot copy file \"%s\" to " \
-                      "\"%s\": %s" % (self.task["target"], self.vm_share, why),
-                      "ERROR")
+            log.error("Cannot copy file \"%s\" to \"%s\": %s"
+                      % (self.task["target"], self.vm_share, why))
             self.db.complete(self.task["id"], False)
             self._free_vm(self.vm_id)
-            return False     
+            return False
 
         # 9. Start sniffer.
         # Check if the user has decided to adopt the external sniffer or not.
         # In first case, initialize the sniffer and start it.
-        if CuckooConfig().use_external_sniffer() == "True":
+        if CuckooConfig().use_external_sniffer().lower() == "on":
             pcap_file = os.path.join(self.vm_share, "dump.pcap")
             self.sniffer = Sniffer(pcap_file)
         
@@ -352,16 +368,30 @@ class Analysis(Thread):
             guest_mac = VM_LIST[self.vm_id]
 
             if not self.sniffer.start(interface, guest_mac):
-                self._log("[Analysis] [Core] Unable to start sniffer. "  \
-                          "Network traffic dump won't be available for " \
-                          "current analysis.", "WARNING")
+                log.warning("Unable to start sniffer. "  \
+                            "Network traffic dump won't be available for " \
+                            "current analysis.")
                 self.sniffer = None
 
         vm = VirtualMachine(self.vm_id)
-        # 10. Start virtual machine
+
+        # 10. I decided to move the virtual machine restore before launching it
+        # at first. This is in order both to be sure that it's clean, and also
+        # to eventually allow forensic of the machine after the analysis is
+        # completed.
+        if not vm.restore():
+            # If restore failed than I prefere not to put the virtual machine
+            # back to the pool as it might be corrupted.
+            log.warning("Cannot restore snapshot on virtual machine \"%s\", " \
+                        "consequently is not getting re-added to the pool. " \
+                        "Review previous errors." % self.vm_id)
+            self.db.unlock(self.task["id"])
+            return False
+
+        # 11. Start virtual machine
         if not vm.start():
-            self._log("[Analysis] [Core] Virtual machine start up failed. " \
-                      "Analysis is aborted. Review previous errors.", "ERROR")
+            log.error("Virtual machine start up failed. " \
+                      "Analysis is aborted. Review previous errors.")
             # Unlock task id in order to make it run on a different virtual
             # machine. I'm not putting back the currently used one since it's
             # probably broken.
@@ -377,37 +407,21 @@ class Analysis(Thread):
         args.append("\\\\VBOXSVR\\setup\\cuckoovm.py")
         args.append(local_share)
 
-        # 11. & 12. Launch Cuckoo's python run component.
+        # 12. & 13. Launch Cuckoo analyzer component on virtual machine.
         if not vm.execute(python_path, args):
-            self._log("[Analysis] [Core] Analysis of target file \"%s\" with " \
-                      "task id %s failed. Check previous errors."
-                      % (self.task["target"], self.task["id"]), "ERROR")
+            log.error("Analysis of target file \"%s\" with task ID %d failed." \
+                      " Check previous errors."
+                      % (self.task["target"], self.task["id"]))
             success = False
 
-        # 13. Stop virtual machine.            
+        # 14. Stop virtual machine.            
         if not vm.stop():
-            self._log("[Analysis] [Core] Poweroff of virtual machine \"%s\"" \
-                      " failed, trying to restore snapshot anyways..."
-                      % self.vm_id)
+            log.warning("Poweroff of virtual machine \"%s\" failed."
+                        % self.vm_id)
 
-        # TODO: this is a quick hacky fix for the error that VirtualBox
-        # sometimes encounters while trying to lock a session after a
-        # poweroff. Need to find a better solution.
-        sleep(5)
+        # Add virtual machine back to available pool.
+        self._free_vm(self.vm_id)
 
-        # 14. Restore virtual machine snapshot.
-        # I'm going to force snapshot restore even after a failed power off and
-        # try to recover the machine.
-        # Thanks to KjellChr for suggesting this feature.
-        if not vm.restore():
-            # If restore failed than I prefere not to put the virtual machine
-            # back to the pool as it might be corrupted.
-            self._log("[Analysis] [Core] Cannot restore snapshot on virtual " \
-                      "machine \"%s\", consequently is not getting re-added " \
-                      "to pool. Review previous errors." % self.vm_id,
-                      "WARNING")
-            free_vm = False
-            
         # 15. Stop sniffer.
         if self.sniffer:
             self.sniffer.stop()
@@ -423,15 +437,10 @@ class Analysis(Thread):
         else:
             self.db.complete(self.task["id"], False)
 
-        # 19. Put virtual machine back to the pool.
-        if free_vm:
-            self._free_vm(self.vm_id)
+        # 20. Invoke processing script.
+        self._processing(save_path, self.task["custom"])
 
-        # 20. Invoke postprocessing script.
-        processor_pid = self._postprocessing(save_path, self.task["custom"])
-        if processor_pid > -1:
-            self._log("[Analysis] [Core] Postprocessing script started " \
-                      "with pid \"%d\"." % processor_pid, "INFO")
+        log.info("Analyis completed.")
 
         return True
 
@@ -454,19 +463,20 @@ def main():
     # 6.  Acquire virtual machine
     # 7.  Generate analysis config
     # 8.  Copy target file to shared folder
-    # 9.  Start sniffer
-    # 10. Start virtual machine
-    # 11. Start Cuckoo's python run script
-    # 12. Wait for analysis to finish
-    # 13. Stop virtual machine
-    # 14. Restore virtual machine snapshot
+    # 9. Start sniffer
+    # 10. Restore virtual machine snapshot
+    # 11. Start virtual machine
+    # 12. Start Cuckoo analyzer python script
+    # 13. Wait for analysis to finish
+    # 14. Stop virtual machine
     # 15. Stop snfifer
     # 16. Save analysis results
     # 17. Clean shared folder
     # 18. Update task's status in database
     # 19. Put virtual machine back in the available pool
-    # 20. Invoke postprocessing script.
+    # 20. Invoke processing script.
     running = True
+    log = logging.getLogger("Core.Dispatcher")
 
     # Loop until the end of the world.
     while running:
@@ -477,24 +487,23 @@ def main():
             task = db.get_task()
 
             if not task:
-                log("[Core] [Dispatcher] No task pending.", "DEBUG")
+                log.debug("No tasks pending.")
                 sleep(1)
                 continue
 
-            log("[Core] [Dispatcher] Acquired analysis task for target \"%s\"."
-                % task["target"])
+            log.info("Acquired analysis task for target \"%s\"."
+                     % task["target"])
 
             # 3. Lock acquired task. If it doesn't get locked successfully I need
             # to abort its execution.
             if not db.lock(task["id"]):
-                log("[Core] [Dispatcher] Unable to lock task with id %s."
-                    % task["id"], "ERROR")
+                log.error("Unable to lock task with ID %d." % task["id"])
                 sleep(1)
                 continue
 
             analysis = Analysis(task).start()
         else:
-            log("[Core] [Dispatcher] No free virtual machines.", "DEBUG")
+            log.debug("No free virtual machines.")
         
         # Anti-Flood Enterprise Protection System.
         sleep(1)
@@ -502,14 +511,27 @@ def main():
     return
 
 if __name__ == "__main__":
+    logo()
+
+    # Load logging config file.
+    logging.config.fileConfig("conf/logging.conf")
+    # Hack StreamHandler to color the messages :).
+    logging.StreamHandler.emit = color_stream_emit(logging.StreamHandler.emit)
+
+    # If user enabled debug logging in the configuration file, I modify the
+    # root logger level accordingly.
+    if CuckooConfig().get_logging_debug().lower() == "on":
+        root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
+
+    log = logging.getLogger("Core.Init")
+
     try:
-        logo()
-        
         # Check if something's wrong with the Virtual Machine engine.
         if not VirtualMachine().check():
             sys.exit(-1)
 
-        log("[Start Up] Populating virtual machines pool...")
+        log.info("Populating virtual machines pool...")
 
         # Acquire Virtual Machines IDs list from the config file.
         virtual_machines = CuckooConfig().get_vms()
@@ -539,24 +561,35 @@ if __name__ == "__main__":
                     # Add the current VM to the available pool.
                     VM_POOL.put(vm_id)
                 else:
-                    log("[Start Up] Virtual machine with name \"%s\" share " \
-                        "the same MAC address \"%s\" with virtual machine "  \
-                        "with name \"%s\". Not being added to pool."
-                        % (vm.name, vm.mac, found))
+                    log.warning("Virtual machine with name \"%s\" share the " \
+                                "the same MAC address \"%s\" with virtual "  \
+                                "virtual machine with name \"%s\". " \
+                                "Not being added to pool."
+                                % (vm.name, vm.mac, found))
 
         # If virtual machines pool is empty, die.
         if VM_POOL.empty():
-            log("[Start Up] None of the specified virtual machines " \
-                "are available. Please review the errors.", "ERROR")
+            log.critical("None of the virtual machines are available. " \
+                         "Please review the errors.")
             sys.exit(-1)
         else:
-            log("[Start Up] %s virtual machine/s added to pool."
-                % VM_POOL.qsize(), "INFO")
+            log.info("%s virtual machine/s added to pool." % VM_POOL.qsize())
 
         # If I arrived this far means that the gods of virtualization are in
         # good mood today and nothing screwed up. Cross your fingers and hope
         # it won't while analyzing some 1 billion dollars malware.
         main()
     except KeyboardInterrupt:
-        log("[Core] Keyboard Interrupt. Exiting...")
+        log.critical("Keyboard interrupt catched! " \
+                     "Forcing shutdown and restore of all virtual machines " \
+                     "before exiting...")
+
+        # When a keyboard interrupt is catched I'm gonna walk through all
+        # enabled virtual machines, power them off and then restore their last
+        # snapshot.
+        for vm_id in VM_LIST:
+            vm = VirtualMachine(vm_id)
+            vm.stop()
+            vm.restore()
+
         sys.exit()

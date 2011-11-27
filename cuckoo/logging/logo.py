@@ -18,17 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-from cuckoo.core.colors import *
+import sys
+from cuckoo.logging.colors import *
 
 def logo():
-    print cyan("                     _                  ")
-    print cyan("    ____ _   _  ____| |  _ ___   ___    ")
-    print cyan("   / ___) | | |/ ___) |_/ ) _ \\ / _ \\ ")
-    print cyan("  ( (___| |_| ( (___|  _ ( |_| | |_| |  ")
-    print cyan("   \\____)____/ \\____)_| \_)___/ \\___/") + " v0.2"
-    print
-    print " www.cuckoobox.org                                "
-    print " Copyright (C) 2010-2011                          "
-    print " by " + bold("Claudio") + " \"nex\" " + bold("Guarnieri")
-    print
-    
+    sys.stdout.write(cyan("                     _                  ") + "\n")
+    sys.stdout.write(cyan("    ____ _   _  ____| |  _ ___   ___    ") + "\n")
+    sys.stdout.write(cyan("   / ___) | | |/ ___) |_/ ) _ \\ / _ \\ ") + "\n")
+    sys.stdout.write(cyan("  ( (___| |_| ( (___|  _ ( |_| | |_| |  ") + "\n")
+    sys.stdout.write(cyan("   \\____)____/ \\____)_| \_)___/ \\___/") + " v0.2\n")
+    sys.stdout.write("\n")
+    sys.stdout.write(" www.cuckoobox.org\n")
+    sys.stdout.write(" Copyright (C) 2010-2011\n")
+    sys.stdout.write(" by " + bold("Claudio") + " \"nex\" " + bold("Guarnieri") + "\n")
+    sys.stdout.write("\n")

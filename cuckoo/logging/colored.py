@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -18,18 +17,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-import time
-import datetime
+import logging
 
-from cuckoo.core.config import *
+from cuckoo.logging.colors import *
 
-def get_now(format = "%Y-%m-%d %H:%M:%S"):
-    # According to configuration, choose between UTC time and local time.
-    if CuckooConfig().get_logging_utc() == "True":
-        time = datetime.datetime.utcnow()
-    else:
-        time = datetime.datetime.now()
+def color_stream_emit(fn):
+    def new(*args):
+        root = logging.getLogger()
+        default_level = root.level
+        levelno = args[1].levelno
+        if(levelno >= 50):
+            args[1].msg = bold(red(args[1].msg))
+        elif(levelno >= 40):
+            args[1].msg = red(args[1].msg)
+        elif(levelno >= 30):
+            args[1].msg = yellow(args[1].msg)
+        elif(levelno >= 20):
+            if default_level == 10:
+                args[1].msg = cyan(args[1].msg)
 
-    now = time.strftime(format)
-    
-    return now
+        return fn(*args)
+
+    return new

@@ -25,9 +25,8 @@ import urllib2
 from optparse import OptionParser
 
 from cuckoo.core.db import *
-from cuckoo.core.now import *
-from cuckoo.core.colors import *
-from cuckoo.core.config import *
+from cuckoo.logging.colors import *
+from cuckoo.config.config import *
 
 DESTINATION = "/tmp/"
 
@@ -35,13 +34,13 @@ def filename_from_url(url):
     return url.split('/')[-1].split('#')[0].split('?')[0]
 
 def download(url):
-    print bold(cyan("INFO")) + ": Downloading URL %s" % url
+    print(bold(cyan("INFO")) + ": Downloading URL %s" % url)
 
     try:
         url_handle = urllib2.urlopen(url)
         binary_data = url_handle.read()
     except Exception, why:
-        print bold(red("ERROR")) + ": Unable to download file: %s" % why
+        print(bold(red("ERROR")) + ": Unable to download file: %s" % why)
         return False
 
     filename = filename_from_url(url)
@@ -52,7 +51,7 @@ def download(url):
         f.write(binary_data)
         f.close()
     except Exception, why:
-        print bold(red("ERROR")) + ": Unable to store file: %s" % why
+        print(bold(red("ERROR")) + ": Unable to store file: %s" % why)
         return False
 
     return dest
@@ -120,9 +119,9 @@ def main():
         # If the user didn't specify any analysis package, I'll use the default
         # Internet Explorer package.
         if not options.package:
-            print bold(yellow("NOTICE")) + ": You submitted an URL to be analyzed " \
+            print(bold(yellow("NOTICE")) + ": You submitted an URL to be analyzed " \
                   "but didn't specify any package, I'm gonna user the default " \
-                  "Internet Explorer package."
+                  "Internet Explorer package.")
             options.package = "ie"
     # Otherwise just assign the argument to target path.
     else:
@@ -133,7 +132,7 @@ def main():
 
     # Check if the target file actually exists, otherwise terminate script.
     if not os.path.exists(target):
-        print bold(red("ERROR")) + ": The target file \"%s\" does not exist." % target
+        print(bold(red("ERROR")) + ": The target file \"%s\" does not exist." % target)
         return False
 
     # Add task to the database.
@@ -144,12 +143,12 @@ def main():
                            options.package,
                            options.priority,
                            options.custom):
-            print bold(red("ERROR")) + ": Unable to add task to database."
+            print(bold(red("ERROR")) + ": Unable to add task to database.")
             return False
         else:
-            print bold(cyan("DONE")) + ": Task successfully added."
+            print(bold(cyan("DONE")) + ": Task successfully added.")
     except Exception, why:
-        print bold(red("ERROR")) + ": Unable to add new task: %s" % why
+        print(bold(red("ERROR")) + ": Unable to add new task: %s" % why)
         return False
 
     return True

@@ -20,29 +20,33 @@
 
 import os
 import sys
+import logging
 from ctypes import *
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
 import cuckoo.defines
-from cuckoo.logging import *
 from cuckoo.paths import *
 from cuckoo.inject import *
 
 def cuckoo_resumethread(h_thread = -1):
+    log = logging.getLogger("Monitor.ResumeThread")
+
     cuckoo.defines.KERNEL32.Sleep(2000)
     # If the resume fails we need to abort the analysis, as there won't be
     # any activity monitored.
     if not cuckoo.defines.KERNEL32.ResumeThread(h_thread):
-        log("Unable to resume thread with handle \"0x%08x\" (GLE=%s)."
-            % (h_thread, cuckoo.defines.KERNEL32.GetLastError()), "ERROR")
+        log.error("Unable to resume thread with handle \"0x%08x\" (GLE=%d)."
+                  % (h_thread, cuckoo.defines.KERNEL32.GetLastError()))
         return False
     else:
-        log("Resumed thread with handle \"0x%08x\"." % h_thread, "INFO")
+        log.info("Resumed thread with handle \"0x%08x\"." % h_thread)
 
     return True
 
 def cuckoo_monitor(pid = -1, h_thread = -1, suspended = False, dll_path = None):
+    log = logging.getLogger("Monitor.Monitor")
+
     # The package run function should return the process id, if it's valid
     # I can inject it with Cuckoo's DLL or specified custom DLL.
     if pid > -1:
@@ -50,17 +54,18 @@ def cuckoo_monitor(pid = -1, h_thread = -1, suspended = False, dll_path = None):
         # anything monitored.
         if not dll_path or dll_path == CUCKOO_DLL_PATH:
             dll_path = CUCKOO_DLL_PATH
-            log("Using default Cuckoo DLL \"%s\"." % dll_path, "INFO")
+            log.info("Using default Cuckoo DLL \"%s\"." % dll_path)
         else:
-            log("Using custom DLL \"%s\"." % dll_path, "INFO")
+            log.info("Using custom DLL \"%s\"." % dll_path)
 
         if not cuckoo_inject(pid, dll_path):
-            log("Unable to inject process with ID \"%d\" with DLL \"%s\"" \
-                " (GLE=%s)." % (pid, dll_path, cuckoo.defines.KERNEL32.GetLastError()),
-                "ERROR")
+            log.error("Unable to inject process with ID \"%d\" with DLL " \
+                      "\"%s\" (GLE=%s)."
+                      % (pid, dll_path, cuckoo.defines.KERNEL32.GetLastError()))
             return False
         else:
-            log("Original process with ID \"%d\"successfully injected." % pid)
+            log.info("Original process with PID \"%d\" successfully injected."
+                     % pid)
 
     # In case the process was create in suspended mode and needs to be resumed,
     # I'll do it now.

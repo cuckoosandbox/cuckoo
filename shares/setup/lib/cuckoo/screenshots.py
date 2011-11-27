@@ -21,10 +21,12 @@
 import os
 import sys
 import time
+import logging
 from threading import Thread
 
-from cuckoo.logging import *
 from cuckoo.paths import *
+
+log = logging.getLogger("Screenshots")
 
 try:
     import Image
@@ -32,7 +34,7 @@ try:
     import ImageChops
     IS_PIL = True
 except ImportError, why:
-    log("Unable to import Python Image Library: %s." % why, "WARNING")
+    log.warning("Unable to import Python Image Library: %s." % why)
     IS_PIL = False
 
 SHOT_DELAY = 1
@@ -40,6 +42,7 @@ SHOT_DELAY = 1
 class Screenshots(Thread):
     def __init__(self, save_path = os.path.join(CUCKOO_PATH, "shots")):
         Thread.__init__(self)
+        log = logging.getLogger("Screenshots.Init")
         self.save_path = save_path
         self._do_run = True
 
@@ -47,10 +50,13 @@ class Screenshots(Thread):
         return ImageChops.difference(img1, img2).getbbox() is None
 
     def stop(self):
-        log("Stopping screenshots.")
+        log = logging.getLogger("Screenshots.Stop")
+        log.info("Stopping screenshots.")
         self._do_run = False
 
     def run(self):
+        log = logging.getLogger("Screenshots.Run")
+
         # If PIL is not installed, I abort execution. This is done in order to
         # not have PIL as a forced dependency.
         if not IS_PIL:
@@ -59,7 +65,7 @@ class Screenshots(Thread):
         img_counter = 0
         img_last = None
 
-        log("Started taking screenshots.")
+        log.info("Started taking screenshots.")
 
         while self._do_run:
             img_current = ImageGrab.grab()
@@ -73,7 +79,7 @@ class Screenshots(Thread):
             save_at = os.path.join(self.save_path, "shot_%s.jpg" % img_counter)
             img_current.save(save_at)
 
-            #log("Screenshot saved at \"%s\"." % save_at)
+            log.debug("Screenshot saved at \"%s\"." % save_at)
 
             img_last = img_current
             time.sleep(SHOT_DELAY)

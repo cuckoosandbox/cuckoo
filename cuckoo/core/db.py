@@ -20,20 +20,21 @@
 
 import os
 import sys
+import logging
 
-from cuckoo.core.config import *
-from cuckoo.core.logging import *
-from cuckoo.core.now import *
+from cuckoo.config.config import *
 
 try:
     import sqlite3
 except ImportError:
-    log("[Database] Unable to locate Python SQLite3 module. Please " \
-        "verify your installation. Exiting...", "ERROR")
+    log = logging.getLogger("Database")
+    log.critical("Unable to locate Python SQLite3 module. " \
+                 "Please verify your installation. Exiting...")
     sys.exit(-1)
 
 class CuckooDatabase:
     def __init__(self):
+        log = logging.getLogger("Database.Init")
         self.db_file = CuckooConfig().get_localdb()
         self._conn = None
         self._cursor = None
@@ -42,8 +43,10 @@ class CuckooDatabase:
         # the generation procedure.
         if not os.path.exists(self.db_file):
             if self._generate():
-                log("[Database] [Init] Generated database \"%s\" which didn't" \
-                    " exist before." % self.db_file, "INFO")
+                log.info("Generated database \"%s\" which didn't" \
+                         " exist before." % self.db_file)
+            else:
+                log.error("Unable to generate database")
 
         # Once the database is generated of it already has been, I can
         # initialize the connection.
@@ -51,11 +54,10 @@ class CuckooDatabase:
             self._conn = sqlite3.connect(self.db_file)
             self._cursor = self._conn.cursor()
         except Exception, why:
-            log("[Database] [Init] Unable connection to DB \"%s\": %s."
-                % (self.db_file, why), "ERROR")
+            log.error("Unable to connect to database \"%s\": %s."
+                      % (self.db_file, why))
 
-        log("[Database] [Init] Connected to SQLite database \"%s\"." %
-            self.db_file, "DEBUG")
+        log.debug("Connected to SQLite database \"%s\"." % self.db_file)
 
     def _generate(self):
         if os.path.exists(self.db_file):
@@ -85,12 +87,14 @@ class CuckooDatabase:
         return True
 
     def add_task(self, target, timeout = None, package = None, priority = None, custom = None):
+        log = logging.getLogger("Database.AddTask")
+
         if not self._cursor:
-            log("[Database] [Add Task] Unable to acquire cursor.", "ERROR")
+            log.error("Unable to acquire cursor. Abort.")
             return False
 
         if not target or target == "":
-            log("[Database] [Add Task] Invalid target.", "ERROR")
+            log.error("Invalid target file specified. Abort.")
             return False
 
         if not timeout:
@@ -109,36 +113,35 @@ class CuckooDatabase:
             custom = "'%s'" % custom
 
         try:
-            sql = "INSERT INTO queue "                            \
+            sql = "INSERT INTO queue " \
                   "(target, timeout, package, priority, custom) " \
                   "VALUES ('%s', %s, %s, %s, %s);" % (target, timeout, package, priority, custom)
             self._cursor.execute(sql)
             self._conn.commit()
             # TODO: add generated task id.
-            log("[Database] [Add Task] Successfully added new task to database.")
+            log.info("Successfully added new task to database.")
         except sqlite3.OperationalError, why:
-            log("[Database] [Add Task] Unable to add task to database: %s."
-                % why, "ERROR")
+            log.error("Unable to add task to database: %s." % why)
             return False
 
         return True
 
     def get_task(self):
+        log = logging.getLogger("Database.GetTask")
+
         if not self._cursor:
-            log("[Database] [Get Task] Unable to acquire cursor.",
-                "ERROR")
+            log.error("Unable to acquire cursor.")
             return None
 
         # Select one item from the queue table with higher priority and older
         # addition date which has not already been processed.
         try:        
-            self._cursor.execute("SELECT * FROM queue "  \
-                                 "WHERE lock = 0 "       \
-                                 "AND status = 0 "       \
+            self._cursor.execute("SELECT * FROM queue " \
+                                 "WHERE lock = 0 " \
+                                 "AND status = 0 " \
                                  "ORDER BY priority, added_on LIMIT 1;")
         except sqlite3.OperationalError, why:
-            log("[Database] [Get Task] Unable to query database: %s."
-                % why, "ERROR")
+            log.error("Unable to query database: %s." % why)
             return None
 
         task_row = self._cursor.fetchone()
@@ -162,9 +165,10 @@ class CuckooDatabase:
             return None
 
     def lock(self, task_id):
+        log = logging.getLogger("Database.Lock")
+
         if not self._cursor:
-            log("[Database] [Lock] Unable to acquire cursor.",
-                "ERROR")
+            log.error("Unable to acquire cursor.")
             return False
 
         # Check if specified task does actually exist in the database.
@@ -172,33 +176,31 @@ class CuckooDatabase:
             self._cursor.execute("SELECT id FROM queue WHERE id = %s;" % task_id)
             task_row = self._cursor.fetchone()
         except sqlite3.OperationalError, why:
-            log("[Database] [Lock] Unable to query database: %s." % why,
-                "ERROR")
+            log.error("Unable to query database: %s." % why)
             return False
 
         # If task exists lock it, so that it doesn't get processed again.
         if task_row:
             try:
-                self._cursor.execute("UPDATE queue SET lock = 1 WHERE id = %s;"
-                                    % task_id)
+                self._cursor.execute("UPDATE queue SET lock = 1 WHERE id = %d;"
+                                     % task_id)
                 self._conn.commit()
             except sqlite3.OperationalError, why:
-                log("[Database] [Lock] Unable to query database: %s." % why,
-                    "ERROR")
+                log.error("Unable to update database: %s." % why)
                 return False
         else:
-            log("[Database] [Lock] No entries for task with id %s." % task_id,
-                "WARNING")
+            log.warning("No entries for task with ID %s." % task_id)
             return False
 
-        log("[Database] [Lock] Locked task with id %s." % task_id)
+        log.debug("Locked task with ID %d." % task_id)
 
         return True
 
     def unlock(self, task_id):
+        log = logging.getLogger("Database.Unlock")
+
         if not self._cursor:
-            log("[Database] [Unlock] Unable to acquire cursor.",
-                "ERROR")
+            log.error("Unable to acquire cursor.")
             return False
 
         # Check if specified task does actually exist in the database.
@@ -206,8 +208,7 @@ class CuckooDatabase:
             self._cursor.execute("SELECT id FROM queue WHERE id = %s;" % task_id)
             task_row = self._cursor.fetchone()
         except sqlite3.OperationalError, why:
-            log("[Database] [Unlock] Unable to query database: %s." % why,
-                "ERROR")
+            log.error("Unable to query database: %s." % why)
             return False
 
         # If task exists unlock it, in this case it's probably meant to be
@@ -218,22 +219,21 @@ class CuckooDatabase:
                                     % task_id)
                 self._conn.commit()
             except sqlite3.OperationalError, why:
-                log("[Database] [Unlock] Unable to query database: %s." % why,
-                    "ERROR")
+                log.error("Unable to update database: %s." % why)
                 return False
         else:
-            log("[Database] [Unlock] No entries for task with id %s." % task_id,
-                "WARNING")
+            log.warning("No entries for task with ID %s." % task_id)
             return False
 
-        log("[Database] [Unlock] Unlocked task with id %s." % task_id)
+        log.debug("Unlocked task with id %s." % task_id)
 
         return True
 
     def complete(self, task_id, success = True):
+        log = logging.getLogger("Database.Complete")
+
         if not self._cursor:
-            log("[Database] [Complete] Unable to acquire cursor.",
-                "ERROR")
+            log("Unable to acquire cursor.")
             return False
 
         # Check if specified task does actually exist in the database.
@@ -241,8 +241,7 @@ class CuckooDatabase:
             self._cursor.execute("SELECT id FROM queue WHERE id = %s;" % task_id)
             task_row = self._cursor.fetchone()
         except sqlite3.OperationalError, why:
-            log("[Database] [Complete] Unable to query database: %s." % why,
-                "ERROR")
+            log.error("Unable to query database: %s." % why)
             return False
 
         # If task exists proceed with update process.
@@ -254,22 +253,20 @@ class CuckooDatabase:
                 status = 2 # Failure
 
             try:
-                self._cursor.execute("UPDATE queue SET lock = 0, "     \
-                                    "status = %s, "                   \
-                                    "completed_on = \"%s\" "          \
-                                    "WHERE id = %s;"
-                                    % (status, get_now(), task_id))
+                self._cursor.execute("UPDATE queue SET lock = 0, " \
+                                     "status = %d, " \
+                                     "completed_on = DATETIME('now') " \
+                                     "WHERE id = %d;"
+                                    % (status, task_id))
                 self._conn.commit()
             except sqlite3.OperationalError, why:
-                log("[Database] [Complete] Unable to query database: %s." % why,
-                    "ERROR")
+                log.error("Unable to update database: %s." % why)
                 return False
         else:
-            log("[Database] [Complete] No entries for task with id %s."
-                % task_id, "WARNING")
+            log.warning("No entries for task with ID %d." % task_id)
             return False
 
-        log("[Database] [Complete] Task with id %s updated in the database " \
-            "with status \"%s\"." % (task_id, status))
+        log.debug("Task with ID %s updated to status \"%s\"."
+                       % (task_id, status))
 
         return True

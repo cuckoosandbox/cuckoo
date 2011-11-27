@@ -24,7 +24,6 @@ import sys
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
 from cuckoo.execute import *
-from cuckoo.logging import *
 from cuckoo.monitor import *
 
 # The package main function "cuckoo_run" should follow a fixed structure in
@@ -46,6 +45,7 @@ def cuckoo_run(target_path):
     #   process is supposed to be injected and monitored).
     suspended = True
     (pid, h_thread) = cuckoo_execute(target_path, None, suspended)
+
     # The function "cuckoo_monitor" invoke the DLL injection and resume the
     # process if it was suspended. It needs the process id and the main thread
     # handle returned by "cuckoo_execute" and the same boolean value to tell it

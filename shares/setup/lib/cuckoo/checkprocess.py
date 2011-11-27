@@ -20,19 +20,22 @@
 
 import os
 import sys
+import logging
 from ctypes import *
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib")
 
 import cuckoo.defines
-from cuckoo.logging import *
 
 def check_process(pid):
+    log = logging.getLogger("CheckProcess.CheckProcess")
     h_process = cuckoo.defines.KERNEL32.OpenProcess(cuckoo.defines.PROCESS_ALL_ACCESS,
                                                     False,
                                                     int(pid))
 
     if not h_process:
+        log.error("Unable to open handle on process with PID %d (GLE=%d)."
+                  % (pid, cuckoo.defines.KERNEL32.GetLastError()))
         return False
 
     exit_code = c_ulong(0)

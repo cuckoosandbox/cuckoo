@@ -33,6 +33,9 @@ class File:
         self.file_path = file_path
         self.file_data = None
 
+    def _get_name(self):
+        return os.path.basename(self.file_path)
+
     def _get_md5(self):
         return hashlib.md5(self.file_data).hexdigest()
 
@@ -65,6 +68,7 @@ class File:
         infos = {}
 
         self.file_data = open(self.file_path, "rb").read()
+        infos["name"]   = self._get_name()
         infos["md5"]    = self._get_md5()
         infos["sha1"]   = self._get_sha1()
         infos["sha256"] = self._get_sha256()

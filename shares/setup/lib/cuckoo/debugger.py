@@ -19,10 +19,10 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 import os
+import logging
 from threading import Thread
 from winappdbg import Debug, EventHandler, HexDump, CrashDump, win32
 
-from cuckoo.logging import *
 from cuckoo.paths import *
 
 TRACE_PATH = os.path.join(CUCKOO_PATH, "instructions")
@@ -50,11 +50,14 @@ class TraceInstructions(Thread):
         self.pid = pid
 
     def run(self):
+        log = logging.getLogger("Debugger.TraceInstructions")
+
         if not os.path.exists(TRACE_PATH):
             try:
                 os.mkdir(TRACE_PATH)
             except (IOError, os.error), why:
-                log("Unable to create folder \"%s\": %s" (TRACE_PATH, why), "ERROR")
+                log.error("Unable to create folder \"%s\": %s"
+                          % (TRACE_PATH, why))
                 return False
 
         debug = Debug(DumpInstruction(), bKillOnExit = True, bHostileCode = True)

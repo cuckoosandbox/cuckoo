@@ -19,24 +19,28 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 import os
+import logging
 
-from cuckoo.logging import *
+log = logging.getLogger("Tracer")
 
 try:
     from cuckoo.debugger import *
     IS_DEBUGGER = True
 except ImportError, why:
-    log("Unable to import debugger functions: %s" % why, "WARNING")
+    log.error("Unable to import debugger functions: %s" % why)
     IS_DEBUGGER = False
 
 def cuckoo_trace(pid = -1):
+    log = logging.getLogger("Tracer.Start")
+
     # If WinAppDbg is installed I just abort execution of this function, in
     # order to keep it as an optional dependency.
     if not IS_DEBUGGER:
         return False
 
     if pid > -1:
-        log("Starting instruction tracing for process with ID \"%d\"." % pid)
+        log.info("Starting instruction tracing for process with ID \"%d\"."
+                 % pid)
         tracer = TraceInstructions(pid)
         tracer.daemon = True
         tracer.start()

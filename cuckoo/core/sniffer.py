@@ -20,42 +20,45 @@
 
 import os
 import stat
+import logging
 import subprocess
 
-from cuckoo.core.config import *
-from cuckoo.core.logging import *
-
-TCPDUMP = "/usr/sbin/tcpdump"
+from cuckoo.config.config import *
 
 class Sniffer:
     def __init__(self, pcap_file):
-        self.ok = True
+        self.tcpdump = CuckooConfig().get_sniffer_path()
         self.pcap_file = pcap_file
         self.proc = None
         self.guest_mac = None
 
-        if not os.path.exists(TCPDUMP):
-            log("[Sniffer] [Init] Cannot find tcpdump path at \"%s\"." \
-                " Please check your installation." %
-                TCPDUMP, "ERROR")
-            self.ok = False
-            return
-
-        # Check for suid bit being set.
-        mode = os.stat(TCPDUMP)[stat.ST_MODE]
-        if mode and stat.S_ISUID != 2048:
-            log("[Sniffer] [Init] Tcpdump doesn't have SUID bit set.","ERROR")
-            self.ok = False
-            return
+        log = logging.getLogger("Sniffer")
 
     def start(self, interface, guest_mac):
+        log = logging.getLogger("Sniffer.Start")
         self.guest_mac = guest_mac
 
-        if not self.ok:
+        if not self.tcpdump:
+            log.error("Invalid tcpdump path. Check your configuration.")
+            return False
+
+        if not os.path.exists(self.tcpdump):
+            log.error("Cannot find tcpdump path at \"%s\". " \
+                      "Please check your installation." % self.tcpdump)
+            return False
+
+        # Check for suid bit being set.
+        mode = os.stat(self.tcpdump)[stat.ST_MODE]
+        if mode and stat.S_ISUID != 2048:
+            log.error("Tcpdump doesn't have SUID bit set.")
+            return False
+
+        if not interface or interface == "":
+            log.error("Invalid network interface. Check your configuration.")
             return False
 
         # Thanks to KjellChr for improving this.
-        pargs = [TCPDUMP, '-U', '-q', '-i', interface, '-n', '-s', '1515']
+        pargs = [self.tcpdump, '-U', '-q', '-i', interface, '-n', '-s', '1515']
         pargs.extend(['-w', self.pcap_file])
 
         if self.guest_mac:
@@ -64,21 +67,22 @@ class Sniffer:
         try:
             self.proc = subprocess.Popen(pargs)
         except Exception, why:
-            log("[Sniffer] [Start] Something went wrong while " \
-                "starting tcpdump: %s" % why, "ERROR")
+            log.error("Something went wrong while starting the sniffer: %s"
+                      % why)
             return False
 
-        log("[Sniffer] [Start] Tcpdump started monitoring %s." % self.guest_mac)
+        log.info("Sniffer started monitoring %s." % self.guest_mac)
         return True
 
     def stop(self):
+        log = logging.getLogger("Sniffer.Stop")
+
         if self.proc != None and self.proc.poll() == None:
             try:
                 self.proc.terminate()
             except Exception, why:
-                log("[Sniffer] [Stop] Something went wrong while " \
-                    "stopping tcpdump: %s" % why, "ERROR")
+                log.error("Something went wrong while stopping sniffer: %s"
+                          % why)
                 return False
 
-            log("[Sniffer] [Stop] Tcpdump stopped monitoring %s." % 
-                self.guest_mac)
+            log.info("Sniffer stopped monitoring %s." % self.guest_mac)

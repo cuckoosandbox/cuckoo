@@ -20,29 +20,31 @@
 
 import os
 import sys
-import time
-import datetime
+import ConfigParser
 
-LOG_PATH_DEFAULT = "%s\\analysis.log" % os.getenv("SystemDrive")
+sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
-# Get current timestamp.
-def get_now(format = "%Y-%m-%d %H:%M:%S"):
-    time = datetime.datetime.now()
-    now = time.strftime(format)
-    return now
+from cuckoo.execute import *
+from cuckoo.monitor import *
 
-# Log to analysis log file.
-def log(message, level = "INFO", log_path = LOG_PATH_DEFAULT):
-    if os.path.exists(log_path):
-        log_file = open(log_path, "a")
-    else:
-        log_file = open(log_path, "w")
+def cuckoo_run(target_path):
+    config = ConfigParser.ConfigParser()
+    config.read(target_path)
+    url = config.get("InternetShortcut", "URL")
 
-    if level:
-        line = "[%s] [%s] %s\n" % (get_now(), level, message)
-    else:
-        line = "[%s] %s \n" % (get_now(), message)
+    pids = []
 
-    sys.stdout.write(line)
-    log_file.write(line)
-    log_file.close()
+    firefox = "C:\\Program Files\\Mozilla Firefox\\firefox.exe"
+
+    suspended = True
+    (pid, h_thread) = cuckoo_execute(firefox, "%s" % url, suspended)
+    cuckoo_monitor(pid, h_thread, suspended)
+
+    pids.append(pid)
+    return pids
+
+def cuckoo_check():
+    return True
+
+def cuckoo_finish():
+    return True
