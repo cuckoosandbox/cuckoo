@@ -143,6 +143,8 @@ def cuckoo_inject(pid, dll_path):
     # If target process is current,
     if pid == os.getpid():
         return False
+        
+    grant_debug_privilege()
 
     h_process = cuckoo.defines.KERNEL32.OpenProcess(cuckoo.defines.PROCESS_ALL_ACCESS,
                                                     False,
