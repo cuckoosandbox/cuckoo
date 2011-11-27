@@ -140,8 +140,9 @@ def cuckoo_inject(pid, dll_path):
 
     dll_path = randomize_dll(dll_path)
 
-    # If target process is current,
+    # If target process is current, obviously abort.
     if pid == os.getpid():
+        log.warning("The process to be injected is Cuckoo! Abort.")
         return False
         
     grant_debug_privilege()
