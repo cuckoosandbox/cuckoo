@@ -188,10 +188,12 @@ def dump_files():
         dir_dst = os.path.join(CUCKOO_PATH, "files")
     
         if not os.path.exists(file_path):
+            log.debug("Dropped file \"%s\" does not exist." % file_path)
             continue
             
         try:
             if os.path.getsize(file_path) == 0:
+                log.debug("Dropped file \"%s\" is empty." % file_path)
                 continue
 
             copy(file_path, dir_dst)
