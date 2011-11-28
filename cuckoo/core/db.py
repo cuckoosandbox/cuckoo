@@ -88,14 +88,15 @@ class CuckooDatabase:
 
     def add_task(self, target, timeout = None, package = None, priority = None, custom = None):
         log = logging.getLogger("Database.AddTask")
+        task_id = None
 
         if not self._cursor:
             log.error("Unable to acquire cursor. Abort.")
-            return False
+            return None
 
         if not target or target == "":
             log.error("Invalid target file specified. Abort.")
-            return False
+            return None
 
         if not timeout:
             timeout = "NULL"
@@ -118,13 +119,15 @@ class CuckooDatabase:
                   "VALUES ('%s', %s, %s, %s, %s);" % (target, timeout, package, priority, custom)
             self._cursor.execute(sql)
             self._conn.commit()
-            # TODO: add generated task id.
-            log.info("Successfully added new task to database.")
+            task_id = self._cursor.lastrowid
+            log.info("Successfully added new task to database with ID %d."
+                     % task_id)
         except sqlite3.OperationalError, why:
-            log.error("Unable to add task to database: %s." % why)
-            return False
+            log.error("Something went wrong while adding task to database: %s."
+                      % why)
+            return None
 
-        return True
+        return task_id
 
     def get_task(self):
         log = logging.getLogger("Database.GetTask")

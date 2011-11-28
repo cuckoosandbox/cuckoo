@@ -138,15 +138,17 @@ def main():
     # Add task to the database.
     try:
         db = CuckooDatabase()
-        if not db.add_task(target,
-                           options.timeout,
-                           options.package,
-                           options.priority,
-                           options.custom):
+        task_id = db.add_task(target,
+                              options.timeout,
+                              options.package,
+                              options.priority,
+                              options.custom)
+        if not task_id:
             print(bold(red("ERROR")) + ": Unable to add task to database.")
             return False
         else:
-            print(bold(cyan("DONE")) + ": Task successfully added.")
+            print(bold(cyan("DONE")) + ": Task successfully added with ID %d."
+                  % task_id)
     except Exception, why:
         print(bold(red("ERROR")) + ": Unable to add new task: %s" % why)
         return False
