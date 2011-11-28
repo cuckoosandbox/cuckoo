@@ -150,7 +150,8 @@ class VirtualMachine:
                     return False
 
                 # Create VirtualBox session.
-                self.session = self.mgr.getSessionObject(self.vbox)
+                session = self.mgr.getSessionObject(self.vbox)
+
                 # Launch virtual machine with specified running mode.
                 mode = CuckooConfig().get_vm_mode()
 
@@ -163,7 +164,7 @@ class VirtualMachine:
                               "\"%s.\". Abort." % (mode, self.mach.name))
                     return False
                 
-                progress = self.mach.launchVMProcess(self.session, mode, "")
+                progress = self.mach.launchVMProcess(session, mode, "")
                 # Wait for task to complete with a 60 seconds timeout.
                 progress.waitForCompletion(VBOX_TIMEOUT)
                 # Check if execution was successful.
@@ -195,8 +196,20 @@ class VirtualMachine:
                               % self.mach.name)
                     return False
 
+                # Create VirtualBox session.
+                session = self.mgr.getSessionObject(self.vbox)
+
+                # Lock is needed to create a session and modify the state of the 
+                # current virtual machine.
+                try:
+                    self.mach.lockMachine(session, VBOX.LockType_Shared)
+                except Exception, why:
+                    log.error("Unable to lock machine \"%s\": %s."
+                              % (self.mach.name, why))
+                    return False
+                
                 # Poweroff the virtual machine.
-                progress = self.session.console.powerDown()
+                progress = session.console.powerDown()
                 # Wait for task to complete with a defined seconds timeout.
                 progress.waitForCompletion(VBOX_TIMEOUT)
                 # Check if poweroff was successful.
@@ -207,6 +220,9 @@ class VirtualMachine:
                 else:
                     log.info("Virtual machine \"%s\" powered off successfully."
                              % self.mach.name)
+
+                # Unlock machine, release session.
+                session.unlockMachine()
             except Exception, why:
                 log.error("Something went wrong while powering off virtual " \
                           "machine \"%s\": %s" % (self.mach.name, why))
@@ -229,12 +245,12 @@ class VirtualMachine:
                 #    return False
             
                 # Create VirtualBox session.
-                self.session = self.mgr.getSessionObject(self.vbox)
+                session = self.mgr.getSessionObject(self.vbox)
 
                 # Lock is needed to create a session and modify the state of the 
                 # current virtual machine.
                 try:
-                    self.mach.lockMachine(self.session, VBOX.LockType_Shared)
+                    self.mach.lockMachine(session, VBOX.LockType_Shared)
                 except Exception, why:
                     log.error("Unable to lock machine \"%s\": %s."
                               % (self.mach.name, why))
@@ -242,7 +258,7 @@ class VirtualMachine:
                 
                 # Restore virtual machine snapshot.
                 try:
-                    progress = self.session.console.restoreSnapshot(
+                    progress = session.console.restoreSnapshot(
                         self.mach.currentSnapshot)
                 except Exception, why:
                     log.error("Unable to restore virtual machine \"%s\": %s."
@@ -261,7 +277,7 @@ class VirtualMachine:
                              " current snapshot." % self.mach.name)
                     
                 # Unlock machine, release session.
-                self.session.unlockMachine()
+                session.unlockMachine()
             except Exception, why:
                 log.error("Something went wrong while restoring virtual " \
                           "machine \"%s\" snapshot: %s" % (self.mach.name, why))
@@ -287,10 +303,20 @@ class VirtualMachine:
                           % (exec_name, self.mach.name))
                 return False
 
+            # Create VirtualBox session.
+            session = self.mgr.getSessionObject(self.vbox)
+
+            # Lock is needed to create a session and modify the state of the 
+            # current virtual machine.
+            try:
+                self.mach.lockMachine(session, VBOX.LockType_Shared)
+            except Exception, why:
+                log.error("Unable to lock machine \"%s\": %s."
+                          % (self.mach.name, why))
+                return False
+
             # Set execution flags.
-            #exec_flags = VBOX.ExecuteProcessFlag_None
-            #exec_flags = VBOX.ExecuteProcessFlag_WaitForProcessStartOnly
-            exec_flags = VBOX.ExecuteProcessFlag_Hidden # <-- Go for this!
+            exec_flags = VBOX.ExecuteProcessFlag_Hidden #
 
             # If no custom timeout is specified, retrieve it from the
             # global configuration file.
@@ -311,7 +337,7 @@ class VirtualMachine:
             try:
                 log.debug("Trying to execute guest process on virtual machine.")
 
-                guest = self.session.console.guest
+                guest = session.console.guest
                 (progress, pid) = guest.executeProcess(
                     exec_name,
                     exec_flags,
@@ -342,6 +368,9 @@ class VirtualMachine:
                 (reason, code, flags) = guest.getProcessStatus(pid)
             except Exception, why:
                 code = "Unknown"
+
+            # Unlock machine, release session.
+            session.unlockMachine()
 
             exit_why = "Cuckoo analyzer exited with code %d on virtual " \
                        "machine \"%s\"." % (code, self.mach.name)

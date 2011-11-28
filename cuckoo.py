@@ -412,6 +412,8 @@ class Analysis(Thread):
             log.error("Analysis of target file \"%s\" with task ID %d failed." \
                       " Check previous errors."
                       % (self.task["target"], self.task["id"]))
+            vm.stop()
+            vm.restore()
             success = False
 
         # 14. Stop virtual machine.            
@@ -525,6 +527,8 @@ if __name__ == "__main__":
         root.setLevel(logging.DEBUG)
 
     log = logging.getLogger("Core.Init")
+
+    log.info("Started.")
 
     try:
         # Check if something's wrong with the Virtual Machine engine.
