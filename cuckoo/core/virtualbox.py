@@ -36,7 +36,8 @@ except ImportError:
 
 VBOX = vboxapi.VirtualBoxReflectionInfo(False)
 VBOX_VERSION = "4."
-VBOX_TIMEOUT = 120000
+# Wait for 5 minutes before aborting an action.
+VBOX_TIMEOUT = 300000
 
 class VirtualMachine:
     def __init__(self, vm_id = None):
@@ -347,7 +348,7 @@ class VirtualMachine:
                     self.password,
                     0)
             except Exception, why:
-                log.error("Something went wrong while executing Cuckoo : %s"
+                log.error("Something went wrong while executing Cuckoo: %s"
                           % why)
                 return False
 
@@ -359,8 +360,8 @@ class VirtualMachine:
                 progress.waitForCompletion(timeout)
             except Exception, why:
                 log.error("Something went wrong while waiting for completion" \
-                          " of Cuckoo analyzer virtual machine \"%s\"."
-                          % self.mach.name)
+                          " of Cuckoo analyzer virtual machine \"%s\": %s"
+                          % s(elf.mach.name, why))
                 return False
 
             # Retrieve process exit code.
