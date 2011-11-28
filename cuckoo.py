@@ -76,7 +76,6 @@ class Analysis(Thread):
         self.sniffer = None
         self.db = None
         self.dst_filename = None
-        Thread.name = self.task["id"]
         log = logging.getLogger("Core.Analysis")
 
     # Clean shared folders.
@@ -503,7 +502,9 @@ def main():
                 sleep(1)
                 continue
 
-            analysis = Analysis(task).start()
+            analysis = Analysis(task)
+            analysis.setName(task["id"])
+            analysis.start()
         else:
             log.debug("No free virtual machines.")
         
