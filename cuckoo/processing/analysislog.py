@@ -21,6 +21,7 @@
 import os
 import sys
 import csv
+import string
 
 class AnalysisLog:
     def __init__(self, log_path):
@@ -30,12 +31,17 @@ class AnalysisLog:
         self.process_first_seen = None
         self.calls = []
 
-    def _encode(self, string):
-        try:
-            u_string = unicode(string, "utf-8", errors="replace")
-            return u_string.encode("utf-8")
-        except Exception, why:
-            return ""
+    def _convert_char(self, char):
+        if char in string.ascii_letters or \
+           char in string.digits or \
+           char in string.punctuation or \
+           char in string.whitespace:
+            return char
+        else:
+            return r'\x%02x' % ord(char)
+
+    def _convert_to_printable(self, s):
+        return ''.join([self._convert_char(c) for c in s])
 
     def _parse(self, row):
         call = {}
@@ -73,7 +79,7 @@ class AnalysisLog:
                 continue
 
             argument["name"]  = arg_name
-            argument["value"] = self._encode(arg_value)
+            argument["value"] = self._convert_to_printable(arg_value)
 
             # Add the current argument to the complete arguments list.
             arguments.append(argument)
@@ -81,13 +87,16 @@ class AnalysisLog:
         call["timestamp"] = timestamp
         call["api"]       = api_name
         call["status"]    = status_value
-        call["return"]    = self._encode(return_value)
+        call["return"]    = self._convert_to_printable(return_value)
         call["arguments"] = arguments
         call["repeated"]  = 0
 
         # Check if the current API call is a repetition of the previous one.
         if len(self.calls) > 0:
-            if self.calls[-1]["api"] == call["api"] and self.calls[-1]["status"] == call["status"] and self.calls[-1]["arguments"] == call["arguments"] and self.calls[-1]["return"] == call["return"]:
+            if self.calls[-1]["api"] == call["api"] and \
+               self.calls[-1]["status"] == call["status"] and \
+               self.calls[-1]["arguments"] == call["arguments"] and \
+               self.calls[-1]["return"] == call["return"]:
                 self.calls[-1]["repeated"] += 1
                 return True
 
