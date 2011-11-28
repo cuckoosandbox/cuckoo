@@ -31,7 +31,8 @@ def cuckoo_execute(target_path, args = None, suspend = False):
     log = logging.getLogger("Execute.Execute")
 
     if not os.path.exists(target_path):
-        log.error("Unable to create process \"%s\": file does not exist.")
+        log.error("Unable to create process \"%s\": file does not exist."
+                  % target_path)
         return (-1, -1)
 
     startupinfo = cuckoo.defines.STARTUPINFO()
