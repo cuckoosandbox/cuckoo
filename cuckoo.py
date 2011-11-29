@@ -61,11 +61,13 @@ if CuckooConfig().use_external_sniffer().lower() == "on":
                      "Please verify your installation.")
         sys.exit(-1)
 
+#------------------------------ Global Variables ------------------------------#
 # Initialize complete list of virtual machines.
 # (Key = virtual machine name, Value = MAC address).
 VM_LIST = {}
 # Initialize available virtual nachines pool.
 VM_POOL = Queue()
+#------------------------------------------------------------------------------#
 
 class Analysis(Thread):
     def __init__(self, task = None):
@@ -403,7 +405,7 @@ class Analysis(Thread):
         python_path = python_path.replace("\\", "\\\\")
 
         args = []
-        args.append("\\\\VBOXSVR\\setup\\cuckoovm.py")
+        args.append("\\\\VBOXSVR\\setup\\analyzer.py")
         args.append(local_share)
 
         # 12. & 13. Launch Cuckoo analyzer component on virtual machine.
@@ -411,35 +413,33 @@ class Analysis(Thread):
             log.error("Analysis of target file \"%s\" with task ID %d failed." \
                       " Check previous errors."
                       % (self.task["target"], self.task["id"]))
-            vm.stop()
-            vm.restore()
             success = False
 
-        # 14. Stop virtual machine.            
-        if not vm.stop():
-            log.warning("Poweroff of virtual machine \"%s\" failed."
-                        % self.vm_id)
-
-        # Add virtual machine back to available pool.
-        self._free_vm(self.vm_id)
-
-        # 15. Stop sniffer.
+        # 14. Stop sniffer.
         if self.sniffer:
             self.sniffer.stop()
 
-        # 16. Save analysis results.
+        # 15. Save analysis results.
         self._save_results(self.vm_share, save_path)
-        # 17. Clean shared folder.
+        # 16. Clean shared folder.
         self._clean_share(self.vm_share)
 
-        # 18. Update task in database with proper status code.
+        # 17. Update task in database with proper status code.
         if success:
             self.db.complete(self.task["id"], True)
         else:
             self.db.complete(self.task["id"], False)
 
-        # 20. Invoke processing script.
+        # 18. Invoke processing script.
         self._processing(save_path, self.task["custom"])
+
+        # 19. Stop virtual machine.            
+        if not vm.stop():
+            log.warning("Poweroff of virtual machine \"%s\" failed."
+                        % self.vm_id)
+
+        # 20. Add virtual machine back to available pool.
+        self._free_vm(self.vm_id)
 
         log.info("Analyis completed.")
 
@@ -469,13 +469,13 @@ def main():
     # 11. Start virtual machine
     # 12. Start Cuckoo analyzer python script
     # 13. Wait for analysis to finish
-    # 14. Stop virtual machine
-    # 15. Stop snfifer
-    # 16. Save analysis results
-    # 17. Clean shared folder
-    # 18. Update task's status in database
-    # 19. Put virtual machine back in the available pool
-    # 20. Invoke processing script.
+    # 14. Stop snfifer
+    # 15. Save analysis results
+    # 16. Clean shared folder
+    # 17. Update task's status in database
+    # 18. Invoke processing script.
+    # 19. Stop virtual machine
+    # 20. Put virtual machine back in the available pool
     running = True
     log = logging.getLogger("Core.Dispatcher")
 

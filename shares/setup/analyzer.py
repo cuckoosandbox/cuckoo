@@ -21,6 +21,7 @@
 import os
 import re
 import sys
+import hashlib
 import ConfigParser
 from shutil import *
 from ctypes import *
@@ -38,6 +39,7 @@ from cuckoo.tracer import *
 
 log = logging.getLogger("Core")
 
+#------------------------------ Global Variables ------------------------------#
 # Initialize buffer size for Pipe server connections.
 BUFSIZE = 512
 # Initialize list of processes monitored by Cuckoo during current analysis.
@@ -50,44 +52,74 @@ PROCESS_LOCK = Lock()
 FILES_LIST = []
 # Initialize lock for files list operations.
 FILES_LOCK = Lock()
+#------------------------------------------------------------------------------#
+
+class AnalyzerConfig:
+    def __init__(self):
+        config_path = os.path.join(CUCKOO_SETUP_SHARE, "conf\\analyzer.conf")
+        config = ConfigParser.ConfigParser()
+        config.read(config_path)
+
+        # Get screenshots capture option.
+        self.screenshots = config.get("Analysis", "screenshots").strip().lower()
+
+        # Get filtered files list.
+        filtered = config.get("DroppedFiles", "filter").strip().split(",")
+        self.filtered = [md5.lower() for md5 in filtered]
+
+class AnalysisConfig:
+    def __init__(self, config_path):
+        config = ConfigParser.ConfigParser()
+        config.read(config_path)
+
+        # Get configuration for current analysis.
+        self.target = config.get("analysis", "target")
+        self.package = config.get("analysis", "package")
+        self.timeout = config.get("analysis", "timeout")
+        self.share = config.get("analysis", "share")
 
 def install_dependencies():
     log = logging.getLogger("Core.InstallDependencies")
 
+    # Check if Cuckoo's directory for system dependencies exist, otherwise
+    # abort.
     if not os.path.exists(SYSTEM_SETUP_SRC):
-        log.error("System setup does not exist at path \"%s\"."
-                  % SYSTEM_SETUP_SRC)
+        log.critical("Source system setup does not exist at path \"%s\"."
+                     % SYSTEM_SETUP_SRC)
         return False
 
     system32 = os.path.join(os.getenv("SystemRoot"), "system32")
 
+    # Not likely to happen :P, but if Windows' System32 folder does not exist
+    # I obviously need to abort.
     if not os.path.exists(system32):
-        log.error("Windows system root \"%s\" does not exist!" % system32)
+        log.critical("Windows system root \"%s\" does not exist!" % system32)
         return False
 
     try:
         if os.path.isdir(SYSTEM_SETUP_SRC):
             names = os.listdir(SYSTEM_SETUP_SRC)
 
+            # Walk through all the files in source folder and copy them.
             for name in names:
                 current_path = os.path.join(SYSTEM_SETUP_SRC, name)
 
                 log.info("Installing dependency \"%s\"." % current_path)
 
-                # If current path is a directory copy recursively also
-                # everything contained in it.
+                # If current path is a directory copy recursively everything
+                # contained in it.
                 if os.path.isdir(current_path):
                     copytree(current_path, os.path.join(system32, name))
-                # If it's a file, just copy it to Cuckoo's root.
+                # If it's a file, just copy it to Windows' system32.
                 else:
                     copy(current_path, system32)
         else:
-            log.error("System setup path \"%s\" is not a valid directory."
-                      % SYSTEM_SETUP_SRC)
+            log.critical("System setup path \"%s\" is not a valid directory."
+                         % SYSTEM_SETUP_SRC)
             return False
     except (IOError, os.error), why:
-        log.error("Something went wrong while installing dependencies: %s."
-                  % why)
+        log.critical("Something went wrong while installing dependencies: %s."
+                     % why)
         return False
 
     return True
@@ -97,8 +129,8 @@ def install_cuckoo():
     log = logging.getLogger("Core.InstallCuckoo")
 
     if not os.path.exists(CUCKOO_SETUP_SRC):
-        log.error("Cuckoo setup does not exist at path \"%s\"."
-                  % CUCKOO_SETUP_SRC)
+        log.critical("Cuckoo setup does not exist at path \"%s\"."
+                     % CUCKOO_SETUP_SRC)
         return False
 
     # Generally Cuckoo's install destination path is C:\cuckoo. This folder
@@ -107,8 +139,8 @@ def install_cuckoo():
         try:
             os.mkdir(CUCKOO_PATH)
         except (IOError, os.error), why:
-            log.error("Something went wrong while creating directory " \
-                      "\"%s\": %s." % (CUCKOO_PATH, why))
+            log.critical("Something went wrong while creating directory " \
+                         "\"%s\": %s." % (CUCKOO_PATH, why))
             return False
 
     # Start processing through all files and directories contained in Cuckoo's
@@ -131,22 +163,23 @@ def install_cuckoo():
                 else:
                     copy(current_path, CUCKOO_PATH)
         else:
-            log.error("Cuckoo setup path \"%s\" is not a valid directory."
-                      % CUCKOO_SETUP_SRC)
+            log.critical("Cuckoo setup path \"%s\" is not a valid directory."
+                         % CUCKOO_SETUP_SRC)
             return False
     except (IOError, os.error), why:
-        log.error("Something went wrong while installing Cuckoo: %s." % why)
+        log.critical("Something went wrong while installing Cuckoo: %s." % why)
         return False
 
     return True
 
 def install_target(share_path, target_name):
     log = logging.getLogger("Core.InstallTarget")
+
     target_src = os.path.join(share_path, target_name)
     target_dst = "%s\\" % os.getenv("SystemDrive")
 
     if not os.path.exists(target_src):
-        log.error("Cannot find target file at path \"%s\"." % target_src)
+        log.critical("Cannot find target file at path \"%s\"." % target_src)
         return False
 
     log.info("Installing target file from \"%s\" to \"%s\"."
@@ -156,8 +189,8 @@ def install_target(share_path, target_name):
     try:
         copy(target_src, target_dst)
     except (IOError, os.error, Error), why:
-        log.error("Something went wrong while copying file from \"%s\" to " \
-                  "\"%s\": %s." % (target_src, target_dst, why))
+        log.critical("Something went wrong while copying file from \"%s\" to " \
+                     "\"%s\": %s." % (target_src, target_dst, why))
         return False
 
     # Return path to the newly copied file.
@@ -178,22 +211,54 @@ def add_file_to_list(file_path):
     FILES_LOCK.release()
     
     return True
+
+# For a given file, check if its MD5 hash is specified in the config file as to
+# be filtered.
+def is_file_filtered(file_path):
+    log = logging.getLogger("Core.IsFileFiltered")
+
+    if not os.path.exists(file_path):
+        return False
+
+    # Claculate MD5 hash of the current file.
+    try:
+        md5 = hashlib.md5(open(file_path, "rb").read()).hexdigest()
+    except:
+        md5 = ""
+
+    filtered = AnalyzerConfig().filtered
+
+    # Check if the calculated MD5 hash appears in the filter.
+    if len(filtered) > 0:
+        if md5 in filtered:
+            log.debug("Dropped file \"%s\" has a filtered MD5 hash \"%s\". Skip."
+                      % (file_path, md5))
+            return True
+
+    return False
     
-# Store dumped files.
+# Store files being dropped by the malware and stored into local dump directory.
 def dump_files():
     global FILES_LIST
     log = logging.getLogger("Core.DumpFiles")
     
+    # Walk through all files added to the submission list during analysis.
     for file_path in FILES_LIST:
         dir_dst = os.path.join(CUCKOO_PATH, "files")
     
         if not os.path.exists(file_path):
-            log.debug("Dropped file \"%s\" does not exist." % file_path)
+            log.debug("Dropped file \"%s\" does not exist. Skip." % file_path)
             continue
-            
+
+        # If file is in filtered list, I'm gonna skip it.
+        if is_file_filtered(file_path):
+            continue
+
+        # If path exists and points to a valid file (not empty), I'm gonna dump
+        # it to Cuckoo local folder.
         try:
             if os.path.getsize(file_path) == 0:
-                log.debug("Dropped file \"%s\" is empty." % file_path)
+                log.debug("Dropped file \"%s\" is empty. Skip." % file_path)
                 continue
 
             copy(file_path, dir_dst)
@@ -247,8 +312,8 @@ class PipeHandler(Thread):
 
     def run(self):
         global PROCESS_LOCK
-        log = logging.getLogger("Core.PipeHandler")
         PROCESS_LOCK.acquire()
+        log = logging.getLogger("Core.PipeHandler")
 
         try:
             data = create_string_buffer(BUFSIZE)
@@ -269,12 +334,11 @@ class PipeHandler(Thread):
                         pass
     
                     break
-    
-            # If we acquired any data that must be a valid process ID we need to
-            # inject our DLL in.
+
             if data:
                 command = data.value.strip()
                 
+                # If the acquired data is a valid PID to monitor, inject it.
                 if re.match("PID:", command):
                     pid = int(command[4:])
                     log.debug("Received request to analyze process with PID %d."
@@ -294,6 +358,8 @@ class PipeHandler(Thread):
                             log.debug("Process with PID \"%d\" (0x%08x) " \
                                       "already in monitored process list. Skip."
                                       % (pid, pid))
+                # If the acquired data is a path to a file to dump, add it to
+                # the list. It will be dumped later on.
                 elif re.match("FILE:", command):
                     file_path = command[5:]
                     add_file_to_list(file_path)
@@ -352,24 +418,15 @@ class PipeServer(Thread):
 
         return True
 
-class Config:
-    def __init__(self, config_path):
-        config = ConfigParser.ConfigParser()
-        config.read(config_path)
-
-        self.target = config.get("analysis", "target")
-        self.package = config.get("analysis", "package")
-        self.timeout = config.get("analysis", "timeout")
-        self.share = config.get("analysis", "share")
-
 # This is the main procedure.
 def main(config_path):
     global PROCESS_LIST
     global PROCESS_LOCK
-    log = logging.getLogger("Core.Analyzer")
     pid_list = None
+    shots = None
     check_for_processes = True
 
+    log = logging.getLogger("Core.Analyzer")
     log.info("Cuckoo starting with PID %d." % os.getpid())
 
     # Check again if the config file exists. This should be a completely
@@ -377,8 +434,10 @@ def main(config_path):
     if not os.path.exists(config_path):
         return False
     
-    # Parse config file.
-    config = Config(config_path)
+    # Parse analysis config file.
+    config = AnalysisConfig(config_path)
+    # Parse analyzer config file.
+    analyzer = AnalyzerConfig()
 
     # Install system dependencies.
     if not install_dependencies():
@@ -422,14 +481,14 @@ def main(config_path):
     time.sleep(10)
     #---------------------------------------------------------------------------
 
-    # Start taking screenshots of current execution.
-    shots = Screenshots()
-    shots.daemon = True
-    shots.start()
+    # If enabled in configuration, start capturing screenshots of Windows'
+    # desktop during malware's execution.
+    if analyzer.screenshots == "on":
+        shots = Screenshots()
+        shots.daemon = True
+        shots.start()
 
-    # Launch main function from analysis package. Default packages won't create
-    # any problem, but if its using one created by the user, something might
-    # fail if it wasn't properly written.
+    # Launch main function from analysis package.
     try:
         log.info("Executing analysis package run function.")
         pid_list = package.cuckoo_run(target_path)
@@ -485,7 +544,7 @@ def main(config_path):
             # This function allows the user to specify custom events that would
             # require the analysis to terminate. For example, if you are just
             # looking for a specific file being created, you can place a check
-            # in such function and if such file does exist you can make Cuckoo
+            # in this function and if such file does exist, you can make Cuckoo
             # terminate the analysis straight away.
             # Thanks to KjellChr for suggesting this feature.
             try:
@@ -506,7 +565,8 @@ def main(config_path):
     # Stop Pipe Server.
     pipe.stop()
     # Stop taking screenshots.
-    shots.stop()
+    if shots:
+        shots.stop()
 
     log.info("Analysis completed.")
 
@@ -557,6 +617,8 @@ if __name__ == "__main__":
     # Get path for the current analysis configuration file.
     config_path = os.path.join(local_share, "analysis.conf")
 
+    # If the analysis.conf file related to this analysis does not exist, I have
+    # to abort.
     if not os.path.exists(config_path):
         log.critical("Cannot find analysis config file at \"%s\". Abort."
                      % config_path)
