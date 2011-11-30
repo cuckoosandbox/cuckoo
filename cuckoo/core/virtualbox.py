@@ -361,7 +361,7 @@ class VirtualMachine:
             except Exception, why:
                 log.error("Something went wrong while waiting for completion" \
                           " of Cuckoo analyzer virtual machine \"%s\": %s"
-                          % s(elf.mach.name, why))
+                          % (self.mach.name, why))
                 return False
 
             # Retrieve process exit code.
