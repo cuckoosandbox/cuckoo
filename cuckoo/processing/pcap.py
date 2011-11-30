@@ -25,8 +25,9 @@ import socket
 
 try:
     import dpkt
+    IS_DPKT = True
 except ImportError, why:
-    sys.exit(1)
+    IS_DPKT = False
 
 class Pcap:
     def __init__(self, filepath):
@@ -92,6 +93,9 @@ class Pcap:
         return False
     
     def process(self):
+        if not IS_DPKT:
+            return None
+
         if not os.path.exists(self.filepath):
             return None
 
