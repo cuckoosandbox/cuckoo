@@ -85,9 +85,9 @@ class File:
         if not os.path.exists(self.file_path):
             return None
 
-        infos = {}
-
         self.file_data = open(self.file_path, "rb").read()
+
+        infos = {}
         infos["name"]   = self._get_name()
         infos["size"]   = self._get_size()
         infos["md5"]    = self._get_md5()
