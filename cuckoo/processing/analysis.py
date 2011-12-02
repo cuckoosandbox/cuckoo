@@ -119,6 +119,8 @@ class ParseLog:
         except csv.Error, why:
             pass
 
+        return True
+
 class Analysis:
     def __init__(self, logs_path):
         self._logs_path = logs_path
@@ -162,3 +164,59 @@ class Analysis:
         results.sort(key=lambda process: process["first_seen"])
 
         return results
+
+class ProcessTree:
+    def __init__(self, proc_results):
+        self.proc_results = proc_results
+        self.processes = []
+        self.proctree = []
+
+    def gen_proclist(self):
+        for entry in self.proc_results:
+            process = {}
+            process["name"] = entry["process_name"]
+            process["pid"] = int(entry["process_id"])
+            process["children"] = []
+            
+            for call in entry["calls"]:
+                if call["api"] == "CreateProcessA" or \
+                   call["api"] == "CreateProcessW":
+                    if call["return"].strip() != "":
+                        process["children"].append(int(call["return"].strip()))
+                    
+            self.processes.append(process)
+
+        return True
+
+    def add_node(self, node, parent_id, tree):
+        for process in tree:
+            if process["pid"] == parent_id:
+                new = {}
+                new["name"] = node["name"]
+                new["pid"] = node["pid"]
+                new["children"] = []
+                process["children"].append(new)
+                return True
+            self.add_node(node, parent_id, process["children"])
+            
+        return False
+
+    def populate(self, node):
+        for children in node["children"]:
+            for proc in self.processes:
+                if int(proc["pid"]) == int(children):
+                    self.add_node(proc, node["pid"], self.proctree)
+                    self.populate(proc)
+
+        return True
+
+    def process(self):
+        self.gen_proclist()
+        root = {}
+        root["name"] = self.processes[0]["name"]
+        root["pid"] = self.processes[0]["pid"]
+        root["children"] = []
+        self.proctree.append(root)
+        self.populate(self.processes[0])
+
+        return self.proctree
