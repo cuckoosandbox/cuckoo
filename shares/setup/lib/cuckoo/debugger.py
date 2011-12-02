@@ -25,7 +25,7 @@ from winappdbg import Debug, EventHandler, HexDump, CrashDump, win32
 
 from cuckoo.paths import *
 
-TRACE_PATH = os.path.join(CUCKOO_PATH, "instructions")
+TRACE_PATH = os.path.join(CUCKOO_PATH, "trace")
 
 class DumpInstruction(EventHandler):
     def create_process(self, event):
