@@ -211,6 +211,9 @@ class ProcessTree:
         return True
 
     def process(self):
+        if len(self.proc_results) == 0:
+            return None
+    
         self.gen_proclist()
         root = {}
         root["name"] = self.processes[0]["name"]
