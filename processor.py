@@ -22,6 +22,7 @@ import os
 import sys
 
 from cuckoo.processing.analysis import Analysis
+from cuckoo.postprocessing.postprocessing import PostProcessor
 
 # The following is just a basic default example of a possible postprocessing
 # script, just to show you how you should be using the provided processing APIs.
@@ -30,12 +31,14 @@ from cuckoo.processing.analysis import Analysis
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
+        print "Not enough args."
         sys.exit(-1)
 
     # The first argument being passed to this script is the path to the current
     # analysis result. This is necessary and it's automatically generated and
     # provided by main Cuckoo's process.
     if not os.path.exists(sys.argv[1]):
+        print "Analysis not found, check analysis path."
         sys.exit(-1)
 
     # The second argument being passed is the value specified in the custom
@@ -48,29 +51,24 @@ if __name__ == "__main__":
 
     # Generate the log files path.
     logs_path = os.path.join(sys.argv[1], "logs")
+    if not os.path.exists(sys.argv[1]):
+        print "Log path not found, check log path."
+        sys.exit(-1)
 
     # Process the log files and normalize the data into a dictionary.
     results = Analysis(logs_path).process()
 
-    # Check if any resuls were provided back.
+    # Check if any results were provided back.
     if not results:
         sys.exit()
 
     if len(results) == 0:
         sys.exit()
+        
+    # Reports analysis to post-processing modules.
+    PostProcessor().report(results)
 
-    # Following is just an example of using the generated dict for creating a
-    # simple .txt report file.
-    report = open(os.path.join(sys.argv[1], "report.txt"), "w")
 
-    for process in results:
-        report.write("PROCESS: " + str(process["process_id"]) + " - " + str(process["process_name"]) + "\n")
 
-        for call in process["calls"]:
-            report.write("\tCALL: " + call["timestamp"] + ", " + call["api"] + ", Status: " + call["status"] + ", Return Value: " + call["return"] + "\n")
-            for argument in call["arguments"]:
-                report.write("\t\tARGUMENT: " + argument["name"] + " -> " + argument["value"] + "\n")
 
-        report.write("\n")
-
-    report.close()
+            
