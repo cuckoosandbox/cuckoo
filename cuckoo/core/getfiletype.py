@@ -21,6 +21,12 @@ import re
 import os
 
 def get_filetype(file_path):
+    """
+    Detects a filetype of a given file.
+    @param file_path: file path
+    @return: string with file type, or 'Not supported' if catches a not known filetype
+    """
+    
     if not os.path.exists(file_path):
         return None
 
