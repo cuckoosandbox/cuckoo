@@ -26,7 +26,15 @@ import ConfigParser
 from cuckoo.logging.colors import *
 
 class CuckooConfig:
+    """
+    Loads configuration file and exposes getter to configuration
+    """
+    
     def __init__(self):
+        """
+        Initialize configuration instance.
+        @raise SystemExit: if configuration file is not found
+        """
         self.config = None
         self.config_file = "conf/cuckoo.conf"
 
@@ -44,13 +52,23 @@ class CuckooConfig:
             sys.exit(-1)
 
     def _error_parse(self, why):
+        """
+        Prints a parsing error
+        @param why: Error message to be printed 
+        """
         print(red("[Config] [ERROR] Error parsing config file: \"%s\": %s."
                   % (self.config_file, why)))
 
     def _error_config(self):
+        """
+        Prints an error
+        """
         print(red("[Config] [ERROR] ConfigParser not properly initialized."))
 
     def get_logging_debug(self):
+        """
+        Returms logging debug status
+        """
         if self.config:
             try:
                 return self.config.get("Logging", "debug")
@@ -62,6 +80,9 @@ class CuckooConfig:
             return None
 
     def use_external_sniffer(self):
+        """
+        Return the state of an external sniffer
+        """
         if self.config:
             try:
                 return self.config.get("Sniffer", "sniffer")
@@ -73,6 +94,9 @@ class CuckooConfig:
             return None
 
     def get_sniffer_path(self):
+        """
+        Returns path to sniffer binary
+        """
         if self.config:
             try:
                 return self.config.get("Sniffer", "path")
@@ -84,6 +108,9 @@ class CuckooConfig:
             return None
 
     def get_sniffer_interface(self):
+        """
+        Returns sniffing interface name
+        """
         if self.config:
             try:
                 return self.config.get("Sniffer", "interface")
@@ -95,6 +122,9 @@ class CuckooConfig:
             return None
 
     def get_analysis_watchdog_timeout(self):
+        """
+        Returns watchdog timeout
+        """
         if self.config:
             try:
                 return self.config.get("Analysis", "watchdog_timeout")
@@ -105,6 +135,9 @@ class CuckooConfig:
             return None
 
     def get_analysis_analysis_timeout(self):
+        """
+        Returns analysis timeout
+        """
         if self.config:
             try:
                 return self.config.get("Analysis", "analysis_timeout")
@@ -115,6 +148,9 @@ class CuckooConfig:
             return None
 
     def get_analysis_results_path(self):
+        """
+        Return path where store analysis path
+        """
         if self.config:
             try:
                 return self.config.get("Analysis", "results_path")
@@ -125,6 +161,9 @@ class CuckooConfig:
             return None
 
     def get_processing_interpreter(self):
+        """
+        Returns processing interpreter path
+        """
         if self.config:
             try:
                 return self.config.get("Processing", "interpreter")
@@ -135,6 +174,9 @@ class CuckooConfig:
             return None
 
     def get_processing_processor(self):
+        """
+        Returns processing processor path
+        """
         if self.config:
             try:
                 return self.config.get("Processing", "processor")
@@ -145,6 +187,9 @@ class CuckooConfig:
             return None
 
     def get_localdb(self):
+        """
+        Returns local database path
+        """
         if self.config:
             try:
                 return self.config.get("LocalDatabase", "file")
@@ -156,6 +201,9 @@ class CuckooConfig:
             return None
             
     def get_vm_engine(self):
+        """
+        Returns virtualization engine
+        """
         if self.config:
             try:
                 return self.config.get("VirtualMachines", "engine")
@@ -167,6 +215,9 @@ class CuckooConfig:
             return None
         
     def get_vm_mode(self):
+        """
+        Returns spawning mode for virtual machines
+        """
         if self.config:
             try:
                 return self.config.get("VirtualMachines", "mode")
@@ -178,6 +229,9 @@ class CuckooConfig:
             return None
 
     def get_vm_python(self):
+        """
+        Returns virtual machines python paths
+        """
         if self.config:
             try:
                 return self.config.get("VirtualMachines", "python")
@@ -189,6 +243,9 @@ class CuckooConfig:
             return None
 
     def get_vm_name(self, vm_id):
+        """
+        Returns virtual machine name for a given virtual machine
+        """
         if self.config:
             try:
                 return self.config.get(vm_id, "name")
@@ -200,6 +257,9 @@ class CuckooConfig:
             return None
 
     def get_vm_username(self, vm_id):
+        """
+        Returns username for a given virtual machine
+        """
         if self.config:
             try:
                 return self.config.get(vm_id, "username")
@@ -211,6 +271,9 @@ class CuckooConfig:
             return None
 
     def get_vm_password(self, vm_id):
+        """
+        Returns password for a given virtual machine
+        """
         if self.config:
             try:
                 return self.config.get(vm_id, "password")
@@ -222,6 +285,9 @@ class CuckooConfig:
             return None
 
     def get_vm_share(self, vm_id):
+        """
+        Returns configured share for a given virtual machine
+        """
         if self.config:
             try:
                 return self.config.get(vm_id, "share")
@@ -233,6 +299,9 @@ class CuckooConfig:
             return None
 
     def get_vms(self):
+        """
+        Returns a lists all enabled virtual machines
+        """
         if self.config:
             try:
                 return self.config.get("VirtualMachines", "enabled").split(",")

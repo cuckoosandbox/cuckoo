@@ -33,6 +33,9 @@ except ImportError:
     sys.exit(-1)
 
 class CuckooDatabase:
+    """
+    Database abstraction layer
+    """
     def __init__(self):
         log = logging.getLogger("Database.Init")
         self.db_file = CuckooConfig().get_localdb()
@@ -60,6 +63,9 @@ class CuckooDatabase:
         log.debug("Connected to SQLite database \"%s\"." % self.db_file)
 
     def _generate(self):
+        """
+        Creates database structure in a sqlite file
+        """
         if os.path.exists(self.db_file):
             return False
 
@@ -87,6 +93,14 @@ class CuckooDatabase:
         return True
 
     def add_task(self, target, timeout = None, package = None, priority = None, custom = None):
+        """
+        Enqueue a task
+        @param target: database file path
+        @param timeout: analysis timeout
+        @param package: analysis packege
+        @param priority: analysis priority
+        @param custom: value passed to processor 
+        """
         log = logging.getLogger("Database.AddTask")
         task_id = None
 
@@ -130,6 +144,9 @@ class CuckooDatabase:
         return task_id
 
     def get_task(self):
+        """
+        Get a task from task queue
+        """
         log = logging.getLogger("Database.GetTask")
 
         if not self._cursor:
@@ -168,6 +185,10 @@ class CuckooDatabase:
             return None
 
     def lock(self, task_id):
+        """
+        Locks a task
+        @param task_id: Task id 
+        """
         log = logging.getLogger("Database.Lock")
 
         if not self._cursor:
@@ -200,6 +221,10 @@ class CuckooDatabase:
         return True
 
     def unlock(self, task_id):
+        """
+        Unlock a task
+        @param task_id: Task id
+        """ 
         log = logging.getLogger("Database.Unlock")
 
         if not self._cursor:
@@ -233,6 +258,11 @@ class CuckooDatabase:
         return True
 
     def complete(self, task_id, success = True):
+        """
+        Marks a task as ended
+        @param task_id: completed task id
+        @param success: if task completed successfully
+        """ 
         log = logging.getLogger("Database.Complete")
 
         if not self._cursor:

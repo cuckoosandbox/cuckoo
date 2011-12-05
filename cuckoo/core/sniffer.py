@@ -26,7 +26,15 @@ import subprocess
 from cuckoo.config.config import *
 
 class Sniffer:
+    """
+    Sniffer wrapper class
+    """
+    
     def __init__(self, pcap_file):
+        """
+        Create a new Sniffer.
+        @param pcap_file: path to PCAP file
+        """
         self.tcpdump = CuckooConfig().get_sniffer_path()
         self.pcap_file = pcap_file
         self.proc = None
@@ -35,6 +43,11 @@ class Sniffer:
         log = logging.getLogger("Sniffer")
 
     def start(self, interface, guest_mac):
+        """
+        Starts sniffing
+        @param interface: network interface name to sniff
+        @param guest_mac: virtual machine MAC address
+        """  
         log = logging.getLogger("Sniffer.Start")
         self.guest_mac = guest_mac
 
@@ -75,6 +88,10 @@ class Sniffer:
         return True
 
     def stop(self):
+        """
+        Stops sniffing
+        @return: False if some trouble happens
+        """
         log = logging.getLogger("Sniffer.Stop")
 
         if self.proc != None and self.proc.poll() == None:
