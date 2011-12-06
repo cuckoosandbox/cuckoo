@@ -22,7 +22,7 @@ import os
 import sys
 
 from cuckoo.processing.analysis import Analysis
-from cuckoo.postprocessing.postprocessing import PostProcessor
+from cuckoo.reporting import reporter
 
 # The following is just a basic default example of a possible postprocessing
 # script, just to show you how you should be using the provided processing APIs.
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         sys.exit()
         
     # Reports analysis to post-processing modules.
-    PostProcessor().report(results)
+    reporter.ReportProcessor().report(results)
 
 
 
