@@ -20,6 +20,7 @@
 
 import os
 import sys
+import json
 
 from cuckoo.postprocessing.observers import BaseObserver
 
@@ -34,5 +35,5 @@ class JsonDump(BaseObserver):
     
     def update(self, results):
         report = open(os.path.join(sys.argv[1], "report.json"), "w")
-        report.write(str(results))
+        report.write(json.dumps(results))
         report.close()
