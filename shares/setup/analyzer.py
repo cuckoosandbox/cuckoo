@@ -279,7 +279,7 @@ def save_results(share_path):
     analysis_dirs.append("logs")
     analysis_dirs.append("files")
     analysis_dirs.append("shots")
-    analysis_dirs.append("instructions")
+    analysis_dirs.append("trace")
 
     log.info("Saving analysis results to \"%s\"." % share_path)
 
