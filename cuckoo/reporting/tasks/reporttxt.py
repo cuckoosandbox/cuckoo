@@ -21,7 +21,7 @@
 import os
 import sys
 
-from cuckoo.postprocessing.observers import BaseObserver
+from cuckoo.reporting.observers import BaseObserver
 
 
 class ReportTxt(BaseObserver):
@@ -33,7 +33,11 @@ class ReportTxt(BaseObserver):
         pass
     
     def update(self, results):
-        report = open(os.path.join(sys.argv[1], "report.txt"), "w")
+        report_path = os.path.join(sys.argv[1], "reports")
+        if not os.path.exists(report_path):
+            os.mkdir(report_path)
+
+        report = open(os.path.join(report_path, "report.txt"), "w")
     
         for process in results:
             report.write("PROCESS: " + str(process["process_id"]) + " - " + str(process["process_name"]) + "\n")

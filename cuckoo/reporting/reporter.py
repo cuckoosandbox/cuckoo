@@ -19,11 +19,11 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 
-from cuckoo.postprocessing.observers import AnalysisObservable
+from cuckoo.reporting.observers import AnalysisObservable
 
-class PostProcessor:
+class ReportProcessor:
     """
-    Handles post-processing of analysis results.
+    Handles reporting of analysis results.
     """
     
     def __init__(self):
@@ -39,10 +39,10 @@ class PostProcessor:
 
     def _tasklist(self):
         """
-        This is where post-processing modules order become true.
-        @note: if you add a post-processing module you have to edit this.
+        This is where reporting modules order become true.
+        @note: if you add a reporting module you have to edit this.
         """
-        from cuckoo.postprocessing.tasks.jsondump import JsonDump
+        from cuckoo.reporting.tasks.jsondump import JsonDump
         self._observable.subscribe(JsonDump())
-        from cuckoo.postprocessing.tasks.reporttxt import ReportTxt
+        from cuckoo.reporting.tasks.reporttxt import ReportTxt
         self._observable.subscribe(ReportTxt())
