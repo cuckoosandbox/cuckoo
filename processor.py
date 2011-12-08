@@ -24,36 +24,16 @@ import sys
 from cuckoo.processing.analysis import Analysis
 from cuckoo.reporting.reporter import ReportProcessor
 
-# The following is just a basic default example of a possible postprocessing
-# script, just to show you how you should be using the provided processing APIs.
-# Another example would be for example to pass the "results" variable to a JSON
-# encoder, in order to transmit data to a remote HTTP server.
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print "Not enough args."
-        sys.exit(-1)
-
-    # The first argument being passed to this script is the path to the current
-    # analysis result. This is necessary and it's automatically generated and
-    # provided by main Cuckoo's process.
-    if not os.path.exists(sys.argv[1]):
+def main(analysis_path):
+    if not os.path.exists(analysis_path):
         print "Analysis not found, check analysis path."
-        sys.exit(-1)
-
-    # The second argument being passed is the value specified in the custom
-    # field in the SQLite3 Queue database. You can use it to pass along anything
-    # you wish.
-    try:
-        print sys.argv[2]
-    except IndexError:
-        pass
+        return False
 
     # Generate the log files path.
-    logs_path = os.path.join(sys.argv[1], "logs")
-    if not os.path.exists(sys.argv[1]):
+    logs_path = os.path.join(analysis_path, "logs")
+    if not os.path.exists(analysis_path):
         print "Log path not found, check log path."
-        sys.exit(-1)
+        return False
 
     # Process the log files and normalize the data into a dictionary.
     results = Analysis(logs_path).process()
@@ -65,5 +45,12 @@ if __name__ == "__main__":
     if len(results) == 0:
         sys.exit()
         
-    # Reports analysis to post-processing modules.
+    # Reports analysis to reports generation modules.
     ReportProcessor().report(results)
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print "Not enough args."
+        sys.exit(-1)
+
+    main(sys.argv[1])

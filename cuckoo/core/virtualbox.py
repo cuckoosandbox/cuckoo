@@ -34,19 +34,21 @@ except ImportError:
                  "Please verify your installation. Exiting...")
     sys.exit(-1)
 
+#------------------------------ Global Variables ------------------------------#
 VBOX = vboxapi.VirtualBoxReflectionInfo(False)
 VBOX_VERSION = "4."
 # Wait for 5 minutes before aborting an action.
 VBOX_TIMEOUT = 300000
+#------------------------------------------------------------------------------#
 
 class VirtualMachine:
     """
-    Virtual Machine abstraction
+    Virtual Machine abstraction.
     """
     
     def __init__(self, vm_id = None):
         """
-        Creates a new virtual machine
+        Creates a new virtual machine.
         @param vm_id: virtual machine id
         """ 
         log = logging.getLogger("VirtualMachine")
@@ -82,7 +84,8 @@ class VirtualMachine:
 
     def infos(self):
         """
-        Gets virtual machine infomation
+        Gets virtual machine infomation.
+        @return: boolean identifying the success of the operation
         """
         log = logging.getLogger("VirtualMachine.Infos")
 
@@ -132,6 +135,7 @@ class VirtualMachine:
     def check(self):
         """
         Checks if VirtualBox version is supported
+        @param: boolean saying if VirtualBox version is supported or not
         """
         log = logging.getLogger("VirtualMachine.Check")
 
@@ -148,7 +152,8 @@ class VirtualMachine:
         
     def start(self):
         """
-        Starts virtual machine
+        Starts virtual machine.
+        @return: boolean identifying the success of the operation
         """
         log = logging.getLogger("VirtualMachine.Start")
 
@@ -205,7 +210,8 @@ class VirtualMachine:
         
     def stop(self):
         """
-        Stops virtual machine
+        Stops virtual machine.
+        @return: boolean identifying the success of the operation
         """
         log = logging.getLogger("VirtualMachine.Stop")
 
@@ -256,7 +262,8 @@ class VirtualMachine:
         
     def restore(self):
         """
-        Restores virtual machine
+        Restores virtual machine.
+        @return: boolean identifying the success of the operation
         """
         log = logging.getLogger("VirtualMachine.Restore")
 
@@ -314,10 +321,11 @@ class VirtualMachine:
 
     def execute(self, exec_name, args = None, timeout = None):
         """ 
-        Execute a process inside a virtual machine
+        Execute a process inside a virtual machine.
         @param exec_name: process to be executed
         @param args: arguments of process to be executed
         @param timeout: process execution timeout
+        @return: boolean identifying the success of the operation
         """   
         log = logging.getLogger("VirtualMachine.Execute")
 

@@ -27,7 +27,7 @@ from cuckoo.config.config import *
 
 class Sniffer:
     """
-    Sniffer wrapper class
+    Sniffer wrapper class.
     """
     
     def __init__(self, pcap_file):
@@ -44,9 +44,10 @@ class Sniffer:
 
     def start(self, interface, guest_mac):
         """
-        Starts sniffing
+        Starts sniffing.
         @param interface: network interface name to sniff
-        @param guest_mac: virtual machine MAC address
+        @param guest_mac: virtual machine MAC address to filter
+        @return: boolean identifying the success of the operation
         """  
         log = logging.getLogger("Sniffer.Start")
         self.guest_mac = guest_mac
@@ -89,8 +90,8 @@ class Sniffer:
 
     def stop(self):
         """
-        Stops sniffing
-        @return: False if some trouble happens
+        Stops sniffing.
+        @return: boolean identifying the success of the operation
         """
         log = logging.getLogger("Sniffer.Stop")
 

@@ -24,6 +24,9 @@ import csv
 import string
 
 class ParseLog:
+    """
+    Parses the specified process log file.
+    """
     def __init__(self, log_path):
         self._log_path = log_path
         self.process_id         = None
@@ -32,6 +35,10 @@ class ParseLog:
         self.calls = []
 
     def _convert_char(self, char):
+        """
+        Converts a character in a printable format.
+        @return: printable character
+        """
         if char in string.ascii_letters or \
            char in string.digits or \
            char in string.punctuation or \
@@ -41,9 +48,16 @@ class ParseLog:
             return r'\x%02x' % ord(char)
 
     def _convert_to_printable(self, s):
+        """
+        Converts a string in a printable format.
+        @return: printable string
+        """
         return ''.join([self._convert_char(c) for c in s])
 
     def _parse(self, row):
+        """
+        Parses a CSV row from the log file.
+        """
         call = {}
         arguments = []
 
@@ -106,6 +120,9 @@ class ParseLog:
         return True
 
     def extract(self):
+        """
+        Processes the specified process log file.
+        """
         if not os.path.exists(self._log_path):
             return False
 
@@ -122,10 +139,17 @@ class ParseLog:
         return True
 
 class Analysis:
+    """
+    Processes all the results from the specified analysis.
+    """
     def __init__(self, logs_path):
         self._logs_path = logs_path
 
     def process(self):
+        """
+        Processes all the files from the specified analysis results path.
+        @return: dictionary containing the abstracted analysis results
+        """
         results = []
 
         # Check if the specified directory exists.
@@ -166,12 +190,18 @@ class Analysis:
         return results
 
 class ProcessTree:
+    """
+    Generates a hyerarhical process tree.
+    """
     def __init__(self, proc_results):
         self.proc_results = proc_results
         self.processes = []
         self.proctree = []
 
     def gen_proclist(self):
+        """
+        Generates the list of processes involved in the analysis.
+        """
         for entry in self.proc_results:
             process = {}
             process["name"] = entry["process_name"]
@@ -189,6 +219,9 @@ class ProcessTree:
         return True
 
     def add_node(self, node, parent_id, tree):
+        """
+        Adds a node to the tree.
+        """
         for process in tree:
             if process["pid"] == parent_id:
                 new = {}
@@ -202,6 +235,9 @@ class ProcessTree:
         return False
 
     def populate(self, node):
+        """
+        Populates the tree.
+        """
         for children in node["children"]:
             for proc in self.processes:
                 if int(proc["pid"]) == int(children):
@@ -211,6 +247,9 @@ class ProcessTree:
         return True
 
     def process(self):
+        """
+        Invokes the tree population.
+        """
         if not self.proc_results or len(self.proc_results) == 0:
             return None
     
