@@ -21,7 +21,7 @@
 
 class CuckooDict(dict):
     """
-    This class key separated by points dict.
+    This class is a dict with keys separated by points.
     """
 
     def __init__(self):
