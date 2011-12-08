@@ -40,7 +40,15 @@ VBOX_VERSION = "4."
 VBOX_TIMEOUT = 300000
 
 class VirtualMachine:
+    """
+    Virtual Machine abstraction
+    """
+    
     def __init__(self, vm_id = None):
+        """
+        Creates a new virtual machine
+        @param vm_id: virtual machine id
+        """ 
         log = logging.getLogger("VirtualMachine")
 
         vbm = vboxapi.VirtualBoxManager(None, None)
@@ -73,6 +81,9 @@ class VirtualMachine:
                           % (self.name, why))
 
     def infos(self):
+        """
+        Gets virtual machine infomation
+        """
         log = logging.getLogger("VirtualMachine.Infos")
 
         if self.mach:
@@ -119,6 +130,9 @@ class VirtualMachine:
         return True
     
     def check(self):
+        """
+        Checks if VirtualBox version is supported
+        """
         log = logging.getLogger("VirtualMachine.Check")
 
         # Check if VirtualBox version is supported.
@@ -133,6 +147,9 @@ class VirtualMachine:
         return True
         
     def start(self):
+        """
+        Starts virtual machine
+        """
         log = logging.getLogger("VirtualMachine.Start")
 
         if self.mach:
@@ -187,6 +204,9 @@ class VirtualMachine:
         return True
         
     def stop(self):
+        """
+        Stops virtual machine
+        """
         log = logging.getLogger("VirtualMachine.Stop")
 
         if self.mach:
@@ -235,6 +255,9 @@ class VirtualMachine:
         return True
         
     def restore(self):
+        """
+        Restores virtual machine
+        """
         log = logging.getLogger("VirtualMachine.Restore")
 
         if self.mach:
@@ -290,6 +313,12 @@ class VirtualMachine:
         return True
 
     def execute(self, exec_name, args = None, timeout = None):
+        """ 
+        Execute a process inside a virtual machine
+        @param exec_name: process to be executed
+        @param args: arguments of process to be executed
+        @param timeout: process execution timeout
+        """   
         log = logging.getLogger("VirtualMachine.Execute")
 
         # Check if program name is specified.
