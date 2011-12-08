@@ -1,0 +1,2482 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Cuckoo Sandbox User's Guide
+\end_layout
+
+\begin_layout Author
+release 0.2
+\end_layout
+
+\begin_layout Standard
+\begin_inset Phantom HPhantom
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+\align center
+\begin_inset Graphics
+	filename cuckoo.png
+	scale 80
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Phantom HPhantom
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+This paper is the Cuckoo Sandbox user's Guide.
+ Get the latest release in the project homepage: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://www.cuckoobox.org
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Abstract
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+This is the official user's guide of Cuckoo Sandbox.
+ This guide is designed to explain what Cuckoo is, how it works and what
+ you can do with it.
+\end_layout
+
+\begin_layout Standard
+The latest release of this document can be found on the Cuckoo web site:
+ 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://www.cuckoobox.org
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The Cuckoo Sandbox is an Open Source dynamic malware analysis system which
+ allows you to get informations on suspicious files in a completely automated
+ fashion.
+\end_layout
+
+\begin_layout Subsection
+Requirements
+\end_layout
+
+\begin_layout Standard
+Cuckoo Sandbox makes only use of the following components: 
+\end_layout
+
+\begin_layout Enumerate
+Python for automating analysis process and manage the tasks.
+\end_layout
+
+\begin_layout Enumerate
+VirtualBox for managing virtualized analysis environments.
+\end_layout
+
+\begin_layout Standard
+It's extensively tested to run on a GNU/Linux OS but probably you can run
+ it on other systems.
+\end_layout
+
+\begin_layout Subsection
+Use case
+\end_layout
+
+\begin_layout Standard
+Cuckoo Sandbox is used to analyze Windows binaries and get comprehensive
+ results describing their behavior while executed.
+\end_layout
+
+\begin_layout Standard
+Its original purpose is to automate the analysis of malwares in a virtualized
+ and isolated environment and provide all needed information to perform
+ intelligence and forensic analysis over them.
+ 
+\end_layout
+
+\begin_layout Standard
+Cuckoo can also process and analyze PDF documents, Office documents, scripts
+ and any other file type for Microsoft's Windows platforms.
+\end_layout
+
+\begin_layout Standard
+Beside this, Cuckoo's use spectrum is much wider: it can be used to automate
+ specific tasks on given files, perform customised analysis and anything
+ you could possibly imagine thanks to its scripting capabilities.
+\end_layout
+
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:How-to-get"
+
+\end_inset
+
+How to get Cuckoo
+\end_layout
+
+\begin_layout Standard
+You can get the latest Cuckoo release package from the official website:
+ 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://www.cuckoobox.org.
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+For the most recent development version you can clone the Git repository
+ at: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://github.com/cuckoobox/cuckoo
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Please consider that even if the Git version might include newer functionalities
+ and bug fixes, it should be considered an 
+\begin_inset Quotes eld
+\end_inset
+
+under development
+\begin_inset Quotes erd
+\end_inset
+
+ branch, therefore it could be not completely stable.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+About Cuckoo Sandbox
+\end_layout
+
+\begin_layout Standard
+Cuckoo Sandbox is a dynamic malware analysis system which allows you to
+ get informations on suspicious files in a completely automated fashion.
+\end_layout
+
+\begin_layout Standard
+And it's free and Open Source.
+\end_layout
+
+\begin_layout Subsection
+Features
+\end_layout
+
+\begin_layout Standard
+Cuckoo Sandbox provides you with a fully automated system able to fetch
+ files, analyze them inside an isolated virtualized Windows system and return
+ back results, such as:
+\end_layout
+
+\begin_layout Itemize
+Network traffic dump generated during malware sample execution.
+\end_layout
+
+\begin_layout Itemize
+Dump of dropped files.
+\end_layout
+
+\begin_layout Itemize
+Screenshots taken during the whole malware analysis process.
+\end_layout
+
+\begin_layout Itemize
+Relevant Windows API calls tracing of all recursively spawned processes.
+\end_layout
+
+\begin_layout Subsection
+Architecture
+\end_layout
+
+\begin_layout Standard
+Cuckoo Sandbox consists of a central management software which handles sample
+ execution and analysis.
+ Each analysis is launched in a fresh and isolated virtual machine.
+\end_layout
+
+\begin_layout Standard
+Cuckoo's infrastructure is composed by an Host machine (the management software)
+ and a number of Guest machines (virtual machines for analysis).
+\end_layout
+
+\begin_layout Standard
+The Host runs the core component of the sandbox that manages the whole analysis
+ and execution process, while the Guests are the isolated environments where
+ the malwares get actually safely executed and analyzed.
+\end_layout
+
+\begin_layout Standard
+The following picture explains Cuckoo's architecture:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Arch.png
+	scale 50
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Cuckoo's architecture.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+History
+\end_layout
+
+\begin_layout Standard
+Cuckoo Sandbox started as a Google Summer of Code project in 2010 within
+ The Honeynet Project.
+\end_layout
+
+\begin_layout Standard
+It was designed and developed by Claudio “Nex” Guarnieri, who still maintains
+ it and coordinates all efforts from joined contributors.
+\end_layout
+
+\begin_layout Standard
+After initial work during the summer 2010, the first beta release was published
+ on Feb.
+ 5th 2011, when Cuckoo was publicly announced and distributed for the first
+ time.
+\end_layout
+
+\begin_layout Standard
+Since then it has been undergoing a lot of changes and improvements which
+ lead to current stable release, 0.2.
+\end_layout
+
+\begin_layout Standard
+In March 2011, Cuckoo as been selected again as a supported project during
+ Google Summer of Code 2011 with The Honeynet Project during which Dario
+ Fernandes contributed extending its functionalities.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Installation
+\end_layout
+
+\begin_layout Subsection
+Preparing the host
+\end_layout
+
+\begin_layout Standard
+In this guide we are assuming that you are setting up Cuckoo Sandbox on
+ a GNU/Linux host system.
+\end_layout
+
+\begin_layout Standard
+Even if it has proven to work smoothly also on Mac OS X 10.6 Snow Leopard
+ and Mac OS X 10.7 Lion, at current stage OS X should not be considered an
+ officially supported platform.
+\end_layout
+
+\begin_layout Subsection
+Checking requisites
+\end_layout
+
+\begin_layout Standard
+The following requisites must be met to setup a working Cuckoo Sandbox.
+\end_layout
+
+\begin_layout Subsubsection
+Python
+\end_layout
+
+\begin_layout Standard
+First thing: make sure that you correctly installed the appropriate version
+ of Python: for current Cuckoo Sandbox you are supposed to use Python 2.7
+ (preferred) or 2.6.
+\end_layout
+
+\begin_layout Standard
+To check if your current version is correct, launch the following command
+ in your terminal:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+$ python --version
+\end_layout
+
+\begin_layout Plain Layout
+
+Python 2.7.1+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+VirtualBox
+\end_layout
+
+\begin_layout Standard
+Cuckoo Sandbox makes extensive use of VirtualBox and all the features and
+ capabilities it comes with.
+ 
+\end_layout
+
+\begin_layout Standard
+Even if you will most likely find VirtualBox already packaged with your
+ GNU/Linux distribution, it's preferable for you to download the latest
+ version directly from the official website and choose an appropriate package.
+\end_layout
+
+\begin_layout Standard
+VirtualBox comes with dedicated packages for the most popular GNU/Linux
+ distribution, you can get yours insiede official VirtualBox website at
+ 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+https://www.virtualbox.org/wiki/Linux_Downloads
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Setup
+\end_layout
+
+\begin_layout Standard
+If you downloaded the package from the Cuckoo website, as described in 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sub:How-to-get"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Now extract it in a path of your choice (in this guide we'll use /opt/cuckoo/).
+\end_layout
+
+\begin_layout Standard
+If you cloned the Git repository, you'd probably copy it to another target
+ path and keep the Git folder for fetching updates, in order to not rewrite
+ potential critical files on your running setup.
+\end_layout
+
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Configuration"
+
+\end_inset
+
+Configuration
+\end_layout
+
+\begin_layout Standard
+In order to adapt Cuckoo to your needs, you need to edit its configuration
+ file.
+\end_layout
+
+\begin_layout Standard
+Despite being extensively commented, we're going through all its sections
+ and see available options.
+\end_layout
+
+\begin_layout Subsubsection
+Logging
+\end_layout
+
+\begin_layout Standard
+The first section defines Cuckoo's logging capabilities, including:
+\end_layout
+
+\begin_layout Itemize
+The path to the main log file.
+\end_layout
+
+\begin_layout Itemize
+The possibility to use UTC timezone for logging events.
+\end_layout
+
+\begin_layout Itemize
+The possibility to enable or disable additional debug messages (useful for
+ error handling).
+\end_layout
+
+\begin_layout Standard
+Here is an example:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+[Logging]
+\end_layout
+
+\begin_layout Plain Layout
+
+# Path to Cuckoo's log file.
+\end_layout
+
+\begin_layout Plain Layout
+
+path = cuckoo.log
+\end_layout
+
+\begin_layout Plain Layout
+
+# Set to "True" if you want to use UTC time for logging, turn to "False"
+ if you
+\end_layout
+
+\begin_layout Plain Layout
+
+# want to use local time logging.
+\end_layout
+
+\begin_layout Plain Layout
+
+utc = False
+\end_layout
+
+\begin_layout Plain Layout
+
+# Enable/Disable additional debugging messages.
+ This messages won't wrote to
+\end_layout
+
+\begin_layout Plain Layout
+
+# log file but just printed on screen.
+\end_layout
+
+\begin_layout Plain Layout
+
+debug = False
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Analysis
+\end_layout
+
+\begin_layout Standard
+The second section defines Cuckoo's analysis general behavior.
+ Here you can define timeouts, path to the results and to the post-processing
+ script (which is a custom Python script you can use to access each analysis'
+ results and handle the produced data).
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+[Analysis]
+\end_layout
+
+\begin_layout Plain Layout
+
+# This is the actual analysis timeout (expressed in seconds).
+ This represents
+\end_layout
+
+\begin_layout Plain Layout
+
+# the default timeout performed by analysis core if none is specified.
+\end_layout
+
+\begin_layout Plain Layout
+
+analysis_timeout = 120
+\end_layout
+
+\begin_layout Plain Layout
+
+# Watchdog timeout (expressed in seconds) for analysis execution to complete,
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+# when this timeout gets hit, current execution is aborted and virtual machine
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+# is restored and freed.
+\end_layout
+
+\begin_layout Plain Layout
+
+watchdog_timeout = 600
+\end_layout
+
+\begin_layout Plain Layout
+
+# Specify here the path where analysis results shall be stored.
+\end_layout
+
+\begin_layout Plain Layout
+
+results_path = analysis/
+\end_layout
+
+\begin_layout Plain Layout
+
+# Specify here the path to the postprocessing script.
+\end_layout
+
+\begin_layout Plain Layout
+
+postprocessing = processor.py
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Database
+\end_layout
+
+\begin_layout Standard
+The third section contains the path to the local SQLite database that Cuckoo
+ Sandbox uses to handle pending tasks queue.
+ You generally shouldn't edit this.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+[LocalDatabase]
+\end_layout
+
+\begin_layout Plain Layout
+
+file = cuckoo.db
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Sniffer
+\end_layout
+
+\begin_layout Standard
+This section contains details on network traffic monitoring.
+\end_layout
+
+\begin_layout Standard
+By default it disables use of the external sniffer (tcpdump), but in case
+ you need it, turn it on and specify the proper Host's network interface
+ to monitor.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+[Sniffer]
+\end_layout
+
+\begin_layout Plain Layout
+
+# Enable or disable the following option by assigning a True or False value.
+\end_layout
+
+\begin_layout Plain Layout
+
+# In case you decide to disable it, you're supposed to either not have any
+\end_layout
+
+\begin_layout Plain Layout
+
+# network dump or to used VirtualBox's (or any other virtualization engine
+\end_layout
+
+\begin_layout Plain Layout
+
+# you are using) to handle the network monitoring instead of using an external
+\end_layout
+
+\begin_layout Plain Layout
+
+# sniffer such as tcpdump.
+\end_layout
+
+\begin_layout Plain Layout
+
+sniffer = False
+\end_layout
+
+\begin_layout Plain Layout
+
+# This specifies the network interface where the sniffer will bind to in
+ order
+\end_layout
+
+\begin_layout Plain Layout
+
+# to monitor virtual machines' generated traffic.
+\end_layout
+
+\begin_layout Plain Layout
+
+interface = eth0
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Virtual Machines
+\end_layout
+
+\begin_layout Standard
+This section contains information on the virtual machines that Cuckoo has
+ at its disposal.
+\end_layout
+
+\begin_layout Standard
+It's very important to properly list the available virtual machines in the
+ "enabled" option, by listing IDs you're going to assign to each of them
+ separated by commas.
+\end_layout
+
+\begin_layout Standard
+Through the "mode" option you can choose between "headless" (generally used
+ for servers) or "gui" (generally used for desktop setup, enabling the creation
+ of the graphical interface of the virtual machine).
+\end_layout
+
+\begin_layout Standard
+Make sure also to specify the exact path on Guest machines where you're
+ going to install the Python interpreter for Windows.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+[VirtualMachines]
+\end_layout
+
+\begin_layout Plain Layout
+
+# Virtualization product.
+\end_layout
+
+\begin_layout Plain Layout
+
+engine = VirtualBox
+\end_layout
+
+\begin_layout Plain Layout
+
+# List virtual machines IDs separated by commas.
+\end_layout
+
+\begin_layout Plain Layout
+
+enabled = cuckoo1
+\end_layout
+
+\begin_layout Plain Layout
+
+# Set to "gui" if you want Cuckoo to spawn virtual machines' GUIs or set
+ to
+\end_layout
+
+\begin_layout Plain Layout
+
+# "headless" if you don't.
+\end_layout
+
+\begin_layout Plain Layout
+
+mode = headless
+\end_layout
+
+\begin_layout Plain Layout
+
+# Path to local Python installation on guest machines.
+ Please be sure to have
+\end_layout
+
+\begin_layout Plain Layout
+
+# correctly set this value as it's critical to Cuckoo's proper execution.
+\end_layout
+
+\begin_layout Plain Layout
+
+python = C:
+\backslash
+Python27
+\backslash
+python.exe
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Virtual Machine Details
+\end_layout
+
+\begin_layout Standard
+For every machine you listed in the previous section, you should have a
+ corresponding detailed section like the following:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+[cuckoo1]
+\end_layout
+
+\begin_layout Plain Layout
+
+name = Cuckoo 1
+\end_layout
+
+\begin_layout Plain Layout
+
+username = Me
+\end_layout
+
+\begin_layout Plain Layout
+
+password = cuckoo
+\end_layout
+
+\begin_layout Plain Layout
+
+# Please notice that the shared folder name must coincide with the current
+\end_layout
+
+\begin_layout Plain Layout
+
+# virtual machine id, which is the name you assigned between the square
+\end_layout
+
+\begin_layout Plain Layout
+
+# brackets (e.g.
+ [cuckoo1]).
+\end_layout
+
+\begin_layout Plain Layout
+
+share = shares/cuckoo1
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here you can define:
+\end_layout
+
+\begin_layout Itemize
+Virtual machine's name in VirtualBox (which can obviously be different than
+ the ID you assigned in Cuckoo's config file).
+\end_layout
+
+\begin_layout Itemize
+The username of the Windows account you created on Guest.
+\end_layout
+
+\begin_layout Itemize
+The password for such account.
+\end_layout
+
+\begin_layout Itemize
+The path to its unique shared folder (IMPORTANT: the name of the shared
+ folder must equals the ID you assigned to current virtual machine).
+\end_layout
+
+\begin_layout Subsection
+Preparing the Guest
+\end_layout
+
+\begin_layout Standard
+Once you've installed VirtualBox you can proceed by creating your first
+ virtual machine: this can easily be done through the Graphical User Interface
+ or through the powerful command line utility "VBoxManage".
+\end_layout
+
+\begin_layout Standard
+Since VirtualBox basic usage is beyond the scope of this guide, if you're
+ not familiar with it, you're invited to first go through its official documenta
+tion at 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+https://www.virtualbox.org/wiki/Documentation
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Cuckoo Sandbox doesn't require any particular configuration at virtual machine's
+ creation time, so you can just go straight following the instructions and
+ providing default values.
+\end_layout
+
+\begin_layout Subsubsection
+Windows XP
+\end_layout
+
+\begin_layout Standard
+In order to make Cuckoo work properly, you need to perform some changes
+ on your Windows XP guest environment.
+\end_layout
+
+\begin_layout Enumerate
+Download (from official website at 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://python.org/download/
+\end_layout
+
+\end_inset
+
+) and install Windows Python 2.7 interpreter.
+\end_layout
+
+\begin_layout Enumerate
+Install VirtualBox Guest Additions.
+\end_layout
+
+\begin_layout Enumerate
+Set a password to your current user.
+\end_layout
+
+\begin_layout Enumerate
+If you want to have screenshots of Windows desktop during malware's execution,
+ you need to install Python Imaging Library which is available from 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://www.pythonware.com/products/pil/
+\end_layout
+
+\end_inset
+
+.
+ Make sure to select the installer corresponding to your Python version.
+\end_layout
+
+\begin_layout Enumerate
+Proceed by disabling Windows Firewall and Automatic Updates from Control
+ Panel - Security Center, as shown in the picture:
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename security_center.png
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Disabling Windows Firewall and Automatic Updates.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This is not mandatory, but helpful to avoid malware execution being blocked
+ and to not have the network traffic dump polluted with updates downloads.
+\end_layout
+
+\begin_layout Standard
+Proceed with installing any other software you might want available in your
+ sandboxed environment.
+\end_layout
+
+\begin_layout Standard
+For example you might want to install:
+\end_layout
+
+\begin_layout Itemize
+Mozilla Firefox
+\end_layout
+
+\begin_layout Itemize
+Adobe Reader
+\end_layout
+
+\begin_layout Itemize
+Adobe Flash Player
+\end_layout
+
+\begin_layout Itemize
+Microsoft Office
+\end_layout
+
+\begin_layout Itemize
+PHP
+\end_layout
+
+\begin_layout Itemize
+Perl
+\end_layout
+
+\begin_layout Standard
+Remember to disable auto-updates and update-checking features for each software
+ you want to install.
+\end_layout
+
+\begin_layout Standard
+Please consider that it's up to you how to configure your sandboxed environment
+ and which versions of such softwares to install, and consequently which
+ kind of exploits and malware you'll be able to analyze.
+\end_layout
+
+\begin_layout Subsubsection
+Shared Folders
+\end_layout
+
+\begin_layout Standard
+Cuckoo Sandbox uses VirtualBox's Shared Folders to exchange data between
+ the Host and the Guest.
+\end_layout
+
+\begin_layout Standard
+Generally speaking, a Cuckoo virtual machine should be provided with two
+ shared folders:
+\end_layout
+
+\begin_layout Enumerate
+A "setup" folder used to get required programs and scripts.
+\end_layout
+
+\begin_layout Enumerate
+A unique folder used to drop the analysis results.
+\end_layout
+
+\begin_layout Standard
+In order to do so, open VirtualBox's shared folders configuration:
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename shares.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Network shares configuration.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Make sure to add the two folders with the proper privileges:
+\end_layout
+
+\begin_layout Enumerate
+A "setup" folder with read-only, auto-mount, permanent.
+\end_layout
+
+\begin_layout Enumerate
+A unique folder (in the example being "cuckoo1") full access, auto-mount,
+ permanent.
+\end_layout
+
+\begin_layout Subsubsection
+Network Configuration
+\end_layout
+
+\begin_layout Standard
+Now you have to decide how to proceed configuring the network for your virtual
+ machine.
+\end_layout
+
+\begin_layout Standard
+The two easiest choices are:
+\end_layout
+
+\begin_layout Enumerate
+Use NAT and VirtualBox's embedded network trace functionality (suggested).
+\end_layout
+
+\begin_layout Enumerate
+Use Bridged Network and adopt an external sniffer (i.e.
+ tcpdump) to run on the host machine.
+\end_layout
+
+\begin_layout Subsubsection
+NAT Networking
+\end_layout
+
+\begin_layout Standard
+In case you decided to go for NAT, just open the network configuration dialog
+ of your virtual machine and choose NAT for your first adapter, as shown
+ in figure:
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename nat.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Networking configuration.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Now, in order to modify virtual machine's configuration, power it off as
+ you would normally do with a common Windows machine.
+\end_layout
+
+\begin_layout Standard
+Open a terminal on your host machine and issue the following command:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+$ VBoxManage modifyvm "Name of VM" --nictrace1 on 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+--nictracefile1 /opt/cuckoo/shares/cuckoo1/dump.pcap
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Specify the correct virtual machine's label name and the correct path to
+ its own Cuckoo shared folder (it's importat to specify "dump.pcap" appended
+ to such path).
+\end_layout
+
+\begin_layout Subsubsection
+Bridged Networking
+\end_layout
+
+\begin_layout Standard
+The bridged network is a good alternative to NAT and allows you to use an
+ external sniffer instead of VirtualBox's NIC trace.
+\end_layout
+
+\begin_layout Standard
+As you would do configuring NAT, just open the network configuration dialog
+ of your virtual machine and choose Bridged Network, select the host's network
+ interface and press OK.
+\end_layout
+
+\begin_layout Standard
+On the host, go to Cuckoo's root, open "cuckoo.conf" and edit the following
+ section:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+[Sniffer]
+\end_layout
+
+\begin_layout Plain Layout
+
+sniffer = True
+\end_layout
+
+\begin_layout Plain Layout
+
+interface = eth0
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Be sure to choose the appropriate network interface.
+\end_layout
+
+\begin_layout Subsubsection
+Snapshot
+\end_layout
+
+\begin_layout Standard
+After you completed all the previous steps, you can proceed taking a snapshot
+ of the clean virtual machine.
+\end_layout
+
+\begin_layout Standard
+Launch your virtual machine, wait for Windows to boot, log in and wait for
+ the operating system to finish its startup.
+\end_layout
+
+\begin_layout Standard
+Now you can take a snapshot.
+\end_layout
+
+\begin_layout Standard
+You can do so through VirtualBox's GUI or through the command line with:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+$ VBoxManage snapshot "Name of VM" take "Name of Snapshot"
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Once the snapshot is created, you can poweroff the virtual machine and restore
+ it with the following commands:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+$ VBoxManage controlvm "Name of VM" poweroff
+\end_layout
+
+\begin_layout Plain Layout
+
+$ VBoxManage snapshot "Name of VM" restorecurrent
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Usage"
+
+\end_inset
+
+Usage
+\end_layout
+
+\begin_layout Standard
+Cuckoo can be simply launched (preferably in a screen shell) with:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+$ python cuckoo.py
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Once started, this is similar to what you're going to see:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+                     _                    
+\end_layout
+
+\begin_layout Plain Layout
+
+    ____ _   _  ____| |  _ ___   ___ 
+\end_layout
+
+\begin_layout Plain Layout
+
+   / ___) | | |/ ___) |_/ ) _ 
+\backslash
+ / _ 
+\backslash
+    
+\end_layout
+
+\begin_layout Plain Layout
+
+  ( (___| |_| ( (___|  _ ( |_| | |_| |
+\end_layout
+
+\begin_layout Plain Layout
+
+   
+\backslash
+____)____/ 
+\backslash
+____)_| 
+\backslash
+_)___/ 
+\backslash
+___/ v0.2
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ www.cuckoobox.org
+\end_layout
+
+\begin_layout Plain Layout
+
+ Copyright (C) 2010-2011
+\end_layout
+
+\begin_layout Plain Layout
+
+ by Claudio "nex" Guarnieri
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00] [Virtual Machine] [Check] Your VirtualBox version
+ is:
+\end_layout
+
+\begin_layout Plain Layout
+
+                      "4.1.2", good! 
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00] [Start Up] Populating virtual machines pool...
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00] [Virtual Machine] Acquired virtual machine with name
+\end_layout
+
+\begin_layout Plain Layout
+
+                      "Cuckoo_1".
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00] [Virtual Machine] [Infos] Virtual machine "Cuckoo_1"
+\end_layout
+
+\begin_layout Plain Layout
+
+                      informations:
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00]   
+\backslash
+_| Name: Cuckoo_1
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00]     | ID: xxxxxxx-xxxx-xxxx
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00]     | CPU Count: 1 Core/s
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00]     | Memory Size: 192 MB
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00]     | VRAM Size: 16 MB
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00]     | State: Saved
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00]     | Current Snapshot: "Clean & Running"
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00]     | MAC Address: 08:00:27:03:13:37
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00] [Start Up] 1 virtual machine/s added to pool.
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:00] [Database] [Init] Generated database "db/cuckoo.db"
+\end_layout
+
+\begin_layout Plain Layout
+
+                      which didn't exist before.
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As you can see, at first run Cuckoo generates a SQLite database file located
+ at db/cuckoo.db.
+ This is used to keep manage the analysis tasks queue, therefore the submissions
+ should end up there and you should directly interface your feeds to it.
+\end_layout
+
+\begin_layout Standard
+For manual submissions there's a simple script you can use:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+$ python submit.py --help
+\end_layout
+
+\begin_layout Plain Layout
+
+Usage: submit.py [options] filepath
+\end_layout
+
+\begin_layout Plain Layout
+
+Options:
+\end_layout
+
+\begin_layout Plain Layout
+
+  -h, --help                           show this help message and exit
+\end_layout
+
+\begin_layout Plain Layout
+
+  -t TIMEOUT, --timeout=TIMEOUT        Specify analysis execution time limit
+\end_layout
+
+\begin_layout Plain Layout
+
+  -p PACKAGE, --package=PACKAGE        Specify custom analysis package name
+\end_layout
+
+\begin_layout Plain Layout
+
+  -r PRIORITY, --priority=PRIORITY     Specify an analysis priority expressed
+\end_layout
+
+\begin_layout Plain Layout
+
+                                       in integer
+\end_layout
+
+\begin_layout Plain Layout
+
+  -c CUSTOM, --custom=CUSTOM           Specify any custom value to be passed
+\end_layout
+
+\begin_layout Plain Layout
+
+                                       to postprocessing 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For example, in order to submit an executable you could simply issue:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+$ python submit.py /path/to/binary.exe --priority=5 --timeout=100
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Once added, Cuckoo will start analyzing the submitted file as displayed
+ by its logs:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:10] [Core] [Dispatcher] Acquired analysis task for
+\end_layout
+
+\begin_layout Plain Layout
+
+                      target "/path/to/binary.exe".
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:10] [Database] [Lock] Locked task with id 1.
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:10] (Task #1) [Analysis] [Generate Config] Config file
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+                      successfully generated at "shares/cuckoo1/analysis.conf".
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:10] [Virtual Machine] Acquired virtual machine with name
+\end_layout
+
+\begin_layout Plain Layout
+
+                      "Cuckoo 1".
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:13] [Virtual Machine] [Start] Virtual machine "Cuckoo
+ 1"
+\end_layout
+
+\begin_layout Plain Layout
+
+                      starting in "headless" mode.
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:00:14] [Virtual Machine] [Execute] Cuckoo executing with
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+                      PID 1560 on virtual machine "Cuckoo 1".
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:01:21] [Virtual Machine] [Execute] Cuckoo exited with
+\end_layout
+
+\begin_layout Plain Layout
+
+                      code 0 on virtual machine "Cuckoo 1".
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:01:21] [Virtual Machine] [Stop] Virtual machine "Cuckoo 1"
+\end_layout
+
+\begin_layout Plain Layout
+
+                      powered off successfully.
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:01:27] [Virtual Machine] [Restore] Virtual machine "Cuckoo
+ 1"
+\end_layout
+
+\begin_layout Plain Layout
+
+                      successfully restored to current snapshot.
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:01:28] (Task #1) [Analysis] [Save Results] Analysis results
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+                      successfully saved to "analysis/1".
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:01:28] (Task #1) [Analysis] [Clean Share] Shared folder
+\end_layout
+
+\begin_layout Plain Layout
+
+                      "shares/cuckoo1" cleaned successfully.
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:01:28] [Database] [Complete] Task with id 1 updated in
+\end_layout
+
+\begin_layout Plain Layout
+
+                      the database with status "1".
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:01:28] (Task #1) [Analysis] [Free VM] Virtual machine
+\end_layout
+
+\begin_layout Plain Layout
+
+                      "cuckoo1" released.
+\end_layout
+
+\begin_layout Plain Layout
+
+[2011-11-02 00:01:28] (Task #1) [Analysis] [Core] Postprocessing script
+\end_layout
+
+\begin_layout Plain Layout
+
+                      started with pid "6845".
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The results of the analysis are then stored under analysis/X where X is
+ the numeric ID of the task in the SQLite database, and they will contain:
+\end_layout
+
+\begin_layout Itemize
+analysis.conf: the config file used to perform the analysis.
+\end_layout
+
+\begin_layout Itemize
+analysis.log: a log file generated by Guest's Cuckoo component.
+\end_layout
+
+\begin_layout Itemize
+dump.pcap: the generated network traffic dump.
+\end_layout
+
+\begin_layout Itemize
+files/: the directory containing all dumped files.
+\end_layout
+
+\begin_layout Itemize
+logs/: the raw analysis log files generated by Cuckoo.
+\end_layout
+
+\begin_layout Itemize
+report.txt: an example of text report generated by the default post-processing
+ script out of the raw logs.
+\end_layout
+
+\begin_layout Itemize
+shots/: all the screenshots taken during the analysis.
+\end_layout
+
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Feedback-and-bug"
+
+\end_inset
+
+Feedback and bug reports
+\end_layout
+
+\begin_layout Standard
+If you want to report bug findings on the software, you're invited to either
+ use our official GitHub repository's ticketing system at 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+https://github.com/cuckoobox/cuckoo
+\end_layout
+
+\end_inset
+
+ or report on the official forums located at 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://forums.malwr.com
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Please remember that we can also be reached on IRC at irc.freenode.net #cuckoobox.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Copyright and license
+\end_layout
+
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:License"
+
+\end_inset
+
+License
+\end_layout
+
+\begin_layout Standard
+Cuckoo Sandbox is copyrighted by Claudio Guarnieri and is licensed under
+ GNU General Public License version 3.
+\end_layout
+
+\begin_layout Standard
+Cuckoo Sandbox is free software: you can redistribute it and/or modify it
+ under the terms of GNU General Public License as published by the Free
+ Software Foundation, either version 3 of the License, or (at your opinion)
+ any later version.
+\end_layout
+
+\begin_layout Standard
+See the GNU General Public License for more details, the full software license
+ is available in the LICENSE.txt file.
+\end_layout
+
+\begin_layout Subsection
+Disclaimer
+\end_layout
+
+\begin_layout Standard
+Cuckoo is distributed in the hope that it will be useful, but without any
+ warranty; without even the implied warranty of merchantability or fitness
+ for a particular purpose.
+\end_layout
+
+\begin_layout Standard
+Whatever you do with this tool is uniquely your responsibility.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+FAQ
+\end_layout
+
+\begin_layout Subsection
+General questions
+\end_layout
+
+\begin_layout Subsubsection
+Can I redistribute Cuckoo Sandbox?
+\end_layout
+
+\begin_layout Standard
+Yes, you can.
+ Cuckoo Sandbox is distributed under the GNU General Public License version
+ 3.
+ See 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sub:License"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Can I include Cuckoo Sandbox in my closed source commercial product?
+\end_layout
+
+\begin_layout Standard
+Generally no, you can't.
+ Cuckoo Sandbox is distributed under the GNU General Public License version
+ 3.
+ See 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sub:License"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+I want to help Cuckoo, what can I do?
+\end_layout
+
+\begin_layout Standard
+Your help is very appreciated, you can help Cuckoo Sandbox in several ways,
+ from coding to send bug reports.
+ See 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sub:Feedback-and-bug"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sub:Feedback-questions"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Usage questions
+\end_layout
+
+\begin_layout Subsubsection
+How to start an analysis?
+\end_layout
+
+\begin_layout Standard
+You can simply start an analysis via command line.
+ Check 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sec:Usage"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+How to change Cuckoo default behaviour?
+\end_layout
+
+\begin_layout Standard
+You can edit the Cuckoo configuration file.
+ Check 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sub:Configuration"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Feedback-questions"
+
+\end_inset
+
+Feedback questions
+\end_layout
+
+\begin_layout Subsubsection
+I found a bug or I want to suggest some features
+\end_layout
+
+\begin_layout Standard
+Your help is really appreciated to improve Cuckoo Sandbox.
+ Take a look at 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sub:Feedback-questions"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+I want to help but I haven't time
+\end_layout
+
+\begin_layout Standard
+There are many ways to help Cuckoo: coding, testing, reporting bugs, donating
+ money or hardware, reviewing code and documentation or submitting feature
+ requests or feedback.
+\end_layout
+
+\begin_layout Standard
+To do this you don't need to spend a lot of time.
+ Simply reading this guide and submitting bugs related to this is a great
+ help.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Authors
+\end_layout
+
+\begin_layout Quote
+Claudio 
+\begin_inset Quotes eld
+\end_inset
+
+nex
+\begin_inset Quotes erd
+\end_inset
+
+ Guarnieri – Lead Developer – nex@cuckoobox.org
+\end_layout
+
+\begin_layout Quote
+Dario Fernandes – Contributor – dariosfernandes@gmail.com
+\end_layout
+
+\begin_layout Quote
+Alessandro 
+\begin_inset Quotes eld
+\end_inset
+
+jekil
+\begin_inset Quotes erd
+\end_inset
+
+ Tanasi – Contributor – alessandro@lonerunners.net
+\end_layout
+
+\end_body
+\end_document
