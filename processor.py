@@ -20,31 +20,64 @@
 
 import os
 import sys
+import time
+from datetime import datetime
 
-from cuckoo.processing.analysis import Analysis
+from cuckoo.processing.config import AnalysisConfig
+from cuckoo.processing.analysis import Analysis, ProcessTree
+from cuckoo.processing.file import File
+from cuckoo.processing.pcap import Pcap
 from cuckoo.reporting.reporter import ReportProcessor
+
+def get_analysis_duration(started):
+    now = time.time()
+    return int(now - started)
 
 def main(analysis_path):
     if not os.path.exists(analysis_path):
         print "Analysis not found, check analysis path."
         return False
 
-    # Generate the log files path.
+    config_path = os.path.join(analysis_path, "analysis.conf")
+
+    config = AnalysisConfig(config_path)
+
+    file_path = os.path.join(analysis_path, config.target)
+    analysislog_path = os.path.join(analysis_path, "analysis.log")
     logs_path = os.path.join(analysis_path, "logs")
-    if not os.path.exists(analysis_path):
-        print "Log path not found, check log path."
+    dropped_path = os.path.join(analysis_path, "files")
+    pcap_path = os.path.join(analysis_path, "dump.pcap")
+
+    results = {}
+
+    results["info"] = {}
+    results["info"]["version"] = "0.2.1-dev"
+    results["info"]["started"] = datetime.fromtimestamp(config.started).strftime("%Y-%m-%d %H:%M:%S")
+    results["info"]["duration"] = "%d seconds" % get_analysis_duration(config.started)
+
+    results["debug"] = {}
+    results["debug"]["analysislog"] = open(analysislog_path, "rb").read()
+
+    results["file"] = File(file_path).process()
+    results["behavior"] = {}
+    results["behavior"]["processes"] = Analysis(logs_path).process()
+    results["behavior"]["processtree"] = ProcessTree(results["behavior"]["processes"]).process()
+    results["network"] = Pcap(pcap_path).process()
+
+    dropped_files = []
+    for dropped in os.listdir(dropped_path):
+        cur_path = os.path.join(dropped_path, dropped)
+        cur_file = File(cur_path).process()
+        dropped_files.append(cur_file)
+
+    results["dropped"] = dropped_files
+
+    if not results:
         return False
 
-    # Process the log files and normalize the data into a dictionary.
-    results = Analysis(logs_path).process()
-
-    # Check if any results were provided back.
-    if not results:
-        sys.exit()
-
     if len(results) == 0:
-        sys.exit()
-        
+        return False
+  
     # Reports analysis to reports generation modules.
     ReportProcessor().report(results)
 
@@ -54,3 +87,4 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     main(sys.argv[1])
+

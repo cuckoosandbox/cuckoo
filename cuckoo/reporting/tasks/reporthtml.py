@@ -21,32 +21,41 @@
 import os
 import sys
 
+try:
+    from mako.template import Template
+    from mako.lookup import TemplateLookup
+    IS_MAKO = True
+except ImportError, why:
+    IS_MAKO = False
+
 from cuckoo.reporting.observers import BaseObserver
 
-class ReportTxt(BaseObserver):
+class ReportHTML(BaseObserver):
     """
-    Generates a human readable Text report.
+    Generates a human readable HTML report.
     """
     
     def __init__(self):
         pass
     
     def update(self, results):
+        if not IS_MAKO:
+            return False
+
         report_path = os.path.join(sys.argv[1], "reports")
         if not os.path.exists(report_path):
             os.mkdir(report_path)
 
-        report = open(os.path.join(report_path, "report.txt"), "w")
-    
-        for process in results["behavior"]["processes"]:
-            report.write("PROCESS: " + str(process["process_id"]) + " - " + str(process["process_name"]) + "\n")
-    
-            for call in process["calls"]:
-                report.write("\tCALL: " + call["timestamp"] + ", " + call["api"] + ", Status: " + call["status"] + ", Return Value: " + call["return"] + "\n")
-                for argument in call["arguments"]:
-                    report.write("\t\tARGUMENT: " + argument["name"] + " -> " + argument["value"] + "\n")
-    
-            report.write("\n")
-    
+        report = open(os.path.join(report_path, "report.html"), "w")
+
+        lookup = TemplateLookup(directories=["cuckoo/reporting/tasks/html/"],
+                                output_encoding='utf-8',
+                                encoding_errors='replace')
+        
+        template = lookup.get_template("base.html")
+        html = template.render(**results)
+
+        report.write(html)
         report.close()
 
+        return True

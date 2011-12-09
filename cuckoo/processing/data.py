@@ -56,6 +56,3 @@ class CuckooDict(dict):
         self[key] = self.__class__()
         return self[key]
 
-    
-# Initialize Cuckoo analysis knowledge base.
-kb = CuckooDict()

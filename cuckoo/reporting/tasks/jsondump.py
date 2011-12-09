@@ -24,7 +24,6 @@ import json
 
 from cuckoo.reporting.observers import BaseObserver
 
-
 class JsonDump(BaseObserver):
     """
     Save report in pure JSON format.
@@ -41,3 +40,4 @@ class JsonDump(BaseObserver):
         report = open(os.path.join(report_path, "report.json"), "w")
         report.write(json.dumps(results, sort_keys = False, indent = 4))
         report.close()
+

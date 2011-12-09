@@ -1,0 +1,52 @@
+<!--
+  Cuckoo Sandbox - Automated Malware Analysis
+  Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
+  http://www.cuckoobox.org
+ 
+  This file is part of Cuckoo.
+ 
+  Cuckoo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  Cuckoo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see http://www.gnu.org/licenses/
+-->
+<html>
+<head>
+<title>Cuckoo Sandbox - Report ${file["md5"]}</title>
+<style>
+<%include file="style.css" />
+</style>
+<script type="text/JavaScript">
+<%include file="functions.js" />
+</script>
+</head>
+<body>
+<tag id="top"></tag>
+<div id="container">
+    <div id="logo"><%include file="images/logo.html" /></div>
+    <div id="menu">
+        <ul id="menu">
+            <li><a href="#general_information">General Information</a></li>
+            <li><a href="#dropped_files">Dropped Files</a></li>
+            <li><a href="#network_analysis">Network Analysis</a></li>
+            <li><a href="#behavior_analysis">Behavior Analysis</a></li>
+        </ul>
+    </div>
+    <div id="content">
+        <tag id="general_information" /><%include file="sections/general_information.html" />
+        <tag id="dropped_files" /><%include file="sections/dropped_files.html" />
+        <tag id="network_analysis" /><%include file="sections/network_analysis.html" />
+        <tag id="behavior_analysis" /><%include file="sections/behavior_analysis.html" />
+    </div>
+    <div id="footer">&copy;2010-2011 <a href="http://www.cuckoobox.org">Cuckoo Sandbox</a>. <i>Cuckoo Sandbox</i> is property of <i>Claudio Guarnieri</li>.</div>
+</div>
+</body>
+</html>

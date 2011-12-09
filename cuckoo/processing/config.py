@@ -28,5 +28,5 @@ class AnalysisConfig:
         self.package = config.get("analysis", "package")
         self.timeout = config.get("analysis", "timeout")
         self.share = config.get("analysis", "share")
-        self.started = config.get("analysis", "started")
+        self.started = float(config.get("analysis", "started"))
         self.custom = config.get("analysis", "custom")

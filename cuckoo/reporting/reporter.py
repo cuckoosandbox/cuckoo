@@ -46,3 +46,6 @@ class ReportProcessor:
         self._observable.subscribe(JsonDump())
         from cuckoo.reporting.tasks.reporttxt import ReportTxt
         self._observable.subscribe(ReportTxt())
+        from cuckoo.reporting.tasks.reporthtml import ReportHTML
+        self._observable.subscribe(ReportHTML())
+
