@@ -33,7 +33,6 @@ class CuckooDict(dict):
         Maps values to attributes. Only called if there isn't an attribute with this name.
         @param item: key to be fetched 
         @return: The value of requested key
-        @raise Exception: if value not found
         """ 
         return self.__getitem__(item)
    
