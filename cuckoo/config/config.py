@@ -53,7 +53,7 @@ class CuckooConfig:
 
     def _error_parse(self, why):
         """
-        Prints a parsing error
+        Prints a parsing error.
         @param why: Error message to be printed 
         """
         print(red("[Config] [ERROR] Error parsing config file: \"%s\": %s."
@@ -61,13 +61,13 @@ class CuckooConfig:
 
     def _error_config(self):
         """
-        Prints an error
+        Prints an error.
         """
         print(red("[Config] [ERROR] ConfigParser not properly initialized."))
 
     def get_logging_debug(self):
         """
-        Returms logging debug status
+        Returns logging debug option value.
         """
         if self.config:
             try:
@@ -81,7 +81,7 @@ class CuckooConfig:
 
     def use_external_sniffer(self):
         """
-        Return the state of an external sniffer
+        Returns the option for an external sniffer.
         """
         if self.config:
             try:
@@ -95,7 +95,7 @@ class CuckooConfig:
 
     def get_sniffer_path(self):
         """
-        Returns path to sniffer binary
+        Returns path to sniffer binary.
         """
         if self.config:
             try:
@@ -109,7 +109,7 @@ class CuckooConfig:
 
     def get_sniffer_interface(self):
         """
-        Returns sniffing interface name
+        Returns network interface name to sniff.
         """
         if self.config:
             try:
@@ -123,7 +123,7 @@ class CuckooConfig:
 
     def get_analysis_watchdog_timeout(self):
         """
-        Returns watchdog timeout
+        Returns watchdog timeout.
         """
         if self.config:
             try:
@@ -136,7 +136,7 @@ class CuckooConfig:
 
     def get_analysis_analysis_timeout(self):
         """
-        Returns analysis timeout
+        Returns maximum analysis timeout.
         """
         if self.config:
             try:
@@ -149,7 +149,7 @@ class CuckooConfig:
 
     def get_analysis_results_path(self):
         """
-        Return path where store analysis path
+        Returns path where to store analysis path.
         """
         if self.config:
             try:
@@ -162,7 +162,7 @@ class CuckooConfig:
 
     def get_processing_interpreter(self):
         """
-        Returns processing interpreter path
+        Returns processing interpreter path.
         """
         if self.config:
             try:
@@ -175,7 +175,7 @@ class CuckooConfig:
 
     def get_processing_processor(self):
         """
-        Returns processing processor path
+        Returns processing script path.
         """
         if self.config:
             try:
@@ -188,7 +188,7 @@ class CuckooConfig:
 
     def get_localdb(self):
         """
-        Returns local database path
+        Returns local database path.
         """
         if self.config:
             try:
@@ -202,7 +202,7 @@ class CuckooConfig:
             
     def get_vm_engine(self):
         """
-        Returns virtualization engine
+        Returns virtualization engine.
         """
         if self.config:
             try:
@@ -216,7 +216,7 @@ class CuckooConfig:
         
     def get_vm_mode(self):
         """
-        Returns spawning mode for virtual machines
+        Returns spawning mode for virtual machines.
         """
         if self.config:
             try:
@@ -230,7 +230,7 @@ class CuckooConfig:
 
     def get_vm_python(self):
         """
-        Returns virtual machines python paths
+        Returns virtual machines Python path.
         """
         if self.config:
             try:
@@ -244,7 +244,7 @@ class CuckooConfig:
 
     def get_vm_name(self, vm_id):
         """
-        Returns virtual machine name for a given virtual machine
+        Returns virtual machine name for a given virtual machine ID.
         """
         if self.config:
             try:
@@ -258,7 +258,7 @@ class CuckooConfig:
 
     def get_vm_username(self, vm_id):
         """
-        Returns username for a given virtual machine
+        Returns username for a given virtual machine ID.
         """
         if self.config:
             try:
@@ -272,7 +272,7 @@ class CuckooConfig:
 
     def get_vm_password(self, vm_id):
         """
-        Returns password for a given virtual machine
+        Returns password for a given virtual machine ID.
         """
         if self.config:
             try:
@@ -286,7 +286,7 @@ class CuckooConfig:
 
     def get_vm_share(self, vm_id):
         """
-        Returns configured share for a given virtual machine
+        Returns shared folder for a given virtual machine ID.
         """
         if self.config:
             try:
@@ -300,7 +300,7 @@ class CuckooConfig:
 
     def get_vms(self):
         """
-        Returns a lists all enabled virtual machines
+        Returns a lists all enabled virtual machines.
         """
         if self.config:
             try:

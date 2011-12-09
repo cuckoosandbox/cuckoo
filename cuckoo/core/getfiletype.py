@@ -24,7 +24,7 @@ def get_filetype(file_path):
     """
     Detects a filetype of a given file.
     @param file_path: file path
-    @return: string with file type, or 'Not supported' if catches a not known filetype
+    @return: identified file type
     """
     
     if not os.path.exists(file_path):
@@ -37,4 +37,4 @@ def get_filetype(file_path):
     elif re.match("%PDF", data):
         return "pdf"
     else:
-        return "Not supported"
+        return None

@@ -26,7 +26,7 @@ import logging.config
 import subprocess
 import ConfigParser
 from Queue import *
-from time import sleep
+from time import time, sleep
 from threading import Thread
 
 from cuckoo.config.config import *
@@ -70,6 +70,9 @@ VM_POOL = Queue()
 #------------------------------------------------------------------------------#
 
 class Analysis(Thread):
+    """
+    This class handles the whole analysis process.
+    """
     def __init__(self, task = None):
         Thread.__init__(self)
         self.vm_id = None
@@ -80,8 +83,11 @@ class Analysis(Thread):
         self.dst_filename = None
         log = logging.getLogger("Core.Analysis")
 
-    # Clean shared folders.
     def _clean_share(self, share_path):
+        """
+        Cleans the specified shared folder.
+        @param share_path: a shared folder
+        """
         log = logging.getLogger("Core.Analysis.CleanShare")
 
         total = len(os.listdir(share_path))
@@ -114,8 +120,12 @@ class Analysis(Thread):
                         "Review previour errors." % share_path)
             return False
 
-    # Save analysis results from source path to destination path.
     def _save_results(self, src, dst):
+        """
+        Saves analysis results from source to destination path.
+        @param src: source path
+        @param dst: destination path
+        """
         log = logging.getLogger("Core.Analysis.SaveResults")
 
         if not os.path.exists(src):
@@ -164,6 +174,11 @@ class Analysis(Thread):
             return False
 
     def _generate_config(self, share_path):
+        """
+        Generates the analysis configuration file and saves it to specified
+        shared folder.
+        @param share_path: path to the destination shared folder
+        """
         log = logging.getLogger("Core.Analysis.GenerateConfig")
 
         if self.task is None:
@@ -175,6 +190,8 @@ class Analysis(Thread):
         config.set("analysis", "target", self.dst_filename)
         config.set("analysis", "package", self.task["package"])
         config.set("analysis", "timeout", self.task["timeout"])
+        config.set("analysis", "custom", self.task["custom"])
+        config.set("analysis", "started", time())
 
         local_share = "\\\\VBOXSVR\\%s\\" % self.vm_id
         config.set("analysis", "share", local_share)
@@ -196,12 +213,20 @@ class Analysis(Thread):
             return False
 
     def _free_vm(self, vm_id):
+        """
+        Frees a virtual machine and adds it back to the available pool.
+        @param vm_id: identification to the specified virtual machine
+        """
         VM_POOL.put(vm_id)
         log = logging.getLogger("Core.Analysis.FreeVM")
         log.info("Virtual machine \"%s\" released." % vm_id)
         return True
 
-    def _processing(self, save_path, custom = None):
+    def _processing(self, save_path):
+        """
+        Invokes post-analysis processing script.
+        @param save_path: path to the analysis results folder
+        """
         log = logging.getLogger("Core.Analysis.Processing")
         if not os.path.exists(save_path):
             log.error("Cannot find the results folder at path \"%s\"."
@@ -229,11 +254,6 @@ class Analysis(Thread):
 
         pargs = [interpreter, processor, save_path]
 
-        # This sends to the processing any eventual custom field specified
-        # at submission time in the database.
-        if custom:
-            pargs.extend([custom])
-
         try:
             pid = subprocess.Popen(pargs).pid
         except Exception, why:
@@ -245,6 +265,9 @@ class Analysis(Thread):
         return True
 
     def run(self):
+        """
+        Handles the analysis process and invokes all required procedures.
+        """
         log = logging.getLogger("Core.Analysis.Run")
         success = True
 
@@ -431,7 +454,7 @@ class Analysis(Thread):
             self.db.complete(self.task["id"], False)
 
         # 18. Invoke processing script.
-        self._processing(save_path, self.task["custom"])
+        self._processing(save_path)
 
         # 19. Stop virtual machine.            
         if not vm.stop():
@@ -481,8 +504,7 @@ def main():
 
     # Loop until the end of the world.
     while running:
-        # If there actually are free virtual machines, than I can start a new
-        # analysis procedure.
+        # If there are free virtual machines I can start a new analysis.
         if not VM_POOL.empty():
             db = CuckooDatabase()
             task = db.get_task()
@@ -495,8 +517,8 @@ def main():
             log.info("Acquired analysis task for target \"%s\"."
                      % task["target"])
 
-            # 3. Lock acquired task. If it doesn't get locked successfully I need
-            # to abort its execution.
+            # 3. Lock acquired task. If it doesn't get locked successfully I
+            # need to abort its execution.
             if not db.lock(task["id"]):
                 log.error("Unable to lock task with ID %d." % task["id"])
                 sleep(1)
@@ -507,8 +529,7 @@ def main():
             analysis.start()
         else:
             log.debug("No free virtual machines.")
-        
-        # Anti-Flood Enterprise Protection System.
+
         sleep(1)
 
     return

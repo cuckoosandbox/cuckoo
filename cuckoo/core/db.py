@@ -34,7 +34,7 @@ except ImportError:
 
 class CuckooDatabase:
     """
-    Database abstraction layer
+    Database abstraction layer.
     """
     def __init__(self):
         log = logging.getLogger("Database.Init")
@@ -64,7 +64,7 @@ class CuckooDatabase:
 
     def _generate(self):
         """
-        Creates database structure in a sqlite file
+        Creates database structure in a SQLite file.
         """
         if os.path.exists(self.db_file):
             return False
@@ -94,12 +94,12 @@ class CuckooDatabase:
 
     def add_task(self, target, timeout = None, package = None, priority = None, custom = None):
         """
-        Enqueue a task
+        Enqueue a task.
         @param target: database file path
         @param timeout: analysis timeout
         @param package: analysis packege
         @param priority: analysis priority
-        @param custom: value passed to processor 
+        @param custom: value passed to processor
         """
         log = logging.getLogger("Database.AddTask")
         task_id = None
@@ -145,7 +145,7 @@ class CuckooDatabase:
 
     def get_task(self):
         """
-        Get a task from task queue
+        Get a task from task queue.
         """
         log = logging.getLogger("Database.GetTask")
 
@@ -186,8 +186,8 @@ class CuckooDatabase:
 
     def lock(self, task_id):
         """
-        Locks a task
-        @param task_id: Task id 
+        Locks a task.
+        @param task_id: task id 
         """
         log = logging.getLogger("Database.Lock")
 
@@ -222,8 +222,8 @@ class CuckooDatabase:
 
     def unlock(self, task_id):
         """
-        Unlock a task
-        @param task_id: Task id
+        Unlock a task.
+        @param task_id: task id
         """ 
         log = logging.getLogger("Database.Unlock")
 
@@ -259,7 +259,7 @@ class CuckooDatabase:
 
     def complete(self, task_id, success = True):
         """
-        Marks a task as ended
+        Marks a task as ended.
         @param task_id: completed task id
         @param success: if task completed successfully
         """ 
