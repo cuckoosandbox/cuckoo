@@ -75,6 +75,11 @@ class TestCuckooDict(unittest.TestCase):
         for k,v in self.d.h.items():
             self.assertEqual(type(v), str)
         self.assertEqual(len(self.d.h.items()), 2)
+        self.d.i.a = "a"
+        self.d.i.b = "b"
+        for k,v in self.d.i.items():
+            self.assertEqual(type(v), str)
+        self.assertEqual(len(self.d.i.items()), 2)
         
         
 if __name__ == '__main__':

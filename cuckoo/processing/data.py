@@ -25,41 +25,38 @@ class CuckooDict(dict):
     """
 
     def __init__(self):
-        pass
+        sdict = {}
+        dict.__init__(self, sdict)
 
     def __getattr__(self, item):
         """
         Maps values to attributes. Only called if there isn't an attribute with this name.
         @param item: key to be fetched 
-        """
-
-        try:
-            return self.__getitem__(item)
-        except KeyError:
-            raise Exception, "Unable to access '%s'" % item
-
-    def __setattr__(self, item, value):
+        @return: The value of requested key
+        @raise Exception: if value not found
+        """ 
+        return self.__getitem__(item)
+   
+    def __setattr__(self, key, value):
         """
         Maps attributes to values
-        @param item: key
+        @param key: key
         @param valure: value 
         """
-
-        if not self.__dict__.has_key('_AttribDict__initialised'):
-            return dict.__setattr__(self, item, value)
-        elif self.__dict__.has_key(item):
-            dict.__setattr__(self, item, value)
+        if self.__dict__.has_key(key):
+            dict.__setattr__(self, key, value)
         else:
-            self.__setitem__(item, value)
-
+            self.__setitem__(key, value)
+    
     def __missing__(self, key):
         """
         Creates nested dicts if a key not exist.
+        @param key: missing key
+        @return: a new CuckooDict 
         """
-        value = CuckooDict()
-        self[key] = value
-        return value
-     
+        self[key] = self.__class__()
+        return self[key]
+
     
 # Initialize Cuckoo analysis knowledge base.
 kb = CuckooDict()
