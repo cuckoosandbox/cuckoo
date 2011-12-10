@@ -97,7 +97,7 @@ class CuckooDatabase:
         Enqueue a task.
         @param target: database file path
         @param timeout: analysis timeout
-        @param package: analysis packege
+        @param package: analysis package
         @param priority: analysis priority
         @param custom: value passed to processor
         """

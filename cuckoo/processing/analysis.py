@@ -27,7 +27,12 @@ class ParseLog:
     """
     Parses the specified process log file.
     """
+    
     def __init__(self, log_path):
+        """
+        Creates a new instance.
+        @param log_path: log file path
+        """ 
         self._log_path = log_path
         self.process_id         = None
         self.process_name       = None
@@ -37,6 +42,7 @@ class ParseLog:
     def _convert_char(self, char):
         """
         Converts a character in a printable format.
+        @param char: char to be converted 
         @return: printable character
         """
         if char in string.ascii_letters or \
@@ -50,6 +56,7 @@ class ParseLog:
     def _convert_to_printable(self, s):
         """
         Converts a string in a printable format.
+        @param s: string to be converted 
         @return: printable string
         """
         return ''.join([self._convert_char(c) for c in s])
@@ -57,6 +64,7 @@ class ParseLog:
     def _parse(self, row):
         """
         Parses a CSV row from the log file.
+        @param row: row to be parsed 
         """
         call = {}
         arguments = []
@@ -142,7 +150,12 @@ class Analysis:
     """
     Processes all the results from the specified analysis.
     """
+    
     def __init__(self, logs_path):
+        """
+        Creates a new instance.
+        @param logs_path: log file path
+        """
         self._logs_path = logs_path
 
     def process(self):
@@ -193,7 +206,12 @@ class ProcessTree:
     """
     Generates a hyerarhical process tree.
     """
+    
     def __init__(self, proc_results):
+        """
+        Creates a new instance
+        @param proc_results: processes results from analysis
+        """ 
         self.proc_results = proc_results
         self.processes = []
         self.proctree = []
@@ -221,6 +239,8 @@ class ProcessTree:
     def add_node(self, node, parent_id, tree):
         """
         Adds a node to the tree.
+        @param parent_id: id to parent node
+        @param tree: tree structure 
         """
         for process in tree:
             if process["pid"] == parent_id:
@@ -237,6 +257,7 @@ class ProcessTree:
     def populate(self, node):
         """
         Populates the tree.
+        @param node: note added 
         """
         for children in node["children"]:
             for proc in self.processes:

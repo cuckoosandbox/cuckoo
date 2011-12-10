@@ -24,7 +24,7 @@ def get_filetype(file_path):
     """
     Detects a filetype of a given file.
     @param file_path: file path
-    @return: identified file type
+    @return: identified file type or None if not identified
     """
     
     if not os.path.exists(file_path):

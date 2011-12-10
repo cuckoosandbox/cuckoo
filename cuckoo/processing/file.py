@@ -42,7 +42,12 @@ class File:
     """
     Generate information regarding the specified file.
     """
+    
     def __init__(self, file_path):
+        """
+        Creates a new instance
+        @param file_path: path to file
+        """ 
         self.file_path = file_path
         self.file_data = None
 

@@ -22,6 +22,9 @@ import sys
 from cuckoo.logging.colors import *
 
 def logo():
+    """
+    Prints Cuckoo Sandbox logo
+    """
     sys.stdout.write(bold(cyan("                     _                  ")) + "\n")
     sys.stdout.write(bold(cyan("    ____ _   _  ____| |  _ ___   ___    ")) + "\n")
     sys.stdout.write(bold(cyan("   / ___) | | |/ ___) |_/ ) _ \\ / _ \\ ")) + "\n")

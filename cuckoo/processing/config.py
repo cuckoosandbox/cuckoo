@@ -21,7 +21,15 @@
 import ConfigParser
 
 class AnalysisConfig:
+    """
+    Analysis configuration storage
+    """
+    
     def __init__(self, config_path):
+        """
+        Creates a new analysis configuration
+        @param config_path: path to analysis config file
+        """ 
         config = ConfigParser.ConfigParser()
         config.read(config_path)
         self.target = config.get("analysis", "target")

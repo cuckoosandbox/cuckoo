@@ -30,7 +30,15 @@ except ImportError, why:
     IS_DPKT = False
 
 class Pcap:
+    """
+    Network PCAP
+    """
+    
     def __init__(self, filepath):
+        """
+        Creates a new instance
+        @param filepath: path to PCAP file
+        """ 
         self.filepath = filepath
         self.tcp_connections = []
         self.udp_connections = []
@@ -40,6 +48,10 @@ class Pcap:
         self.results = {}
         
     def check_http(self, tcpdata):
+        """
+        Checks for HTTP traffic
+        @param tcpdata: tcp data flow
+        """ 
         try:
             dpkt.http.Request(tcpdata)
             return True
@@ -47,6 +59,11 @@ class Pcap:
             return False
         
     def add_http(self, tcpdata, dport):
+        """
+        Adds an HTTP flow
+        @param tcpdata: TCP data in flow
+        @param dport: destination port
+        """  
         http = dpkt.http.Request(tcpdata)
         
         entry = {}
@@ -59,6 +76,10 @@ class Pcap:
         return True
     
     def check_dns(self, udpdata):
+        """
+        Checks for DNS traffic
+        @param udpdata: UDP data flow
+        """ 
         try:
             dpkt.dns.DNS(udpdata)
             return True
@@ -66,6 +87,10 @@ class Pcap:
             return False
     
     def add_dns(self, udpdata):
+        """
+        Adds a DNS data flow
+        @param udpdata: data inside flow
+        """ 
         dns = dpkt.dns.DNS(udpdata)
         name = dns.qd[0].name
         
@@ -93,6 +118,10 @@ class Pcap:
         return False
     
     def process(self):
+        """
+        Process PCAP
+        @return: dict with network analysis data
+        """
         if not IS_DPKT:
             return None
 

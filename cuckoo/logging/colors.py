@@ -19,31 +19,72 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 def color(t, c):
-        return chr(0x1b)+"["+str(c)+"m"+t+chr(0x1b)+"[0m"
+    """
+    Colorize text.
+    @param t: text
+    @param c: color
+    """ 
+    return chr(0x1b)+"["+str(c)+"m"+t+chr(0x1b)+"[0m"
 
 def black(t):
-        return color(t, 30)
+    """
+    Colorize black
+    @param t:  text
+    """
+    return color(t, 30)
 
 def red(t):
-        return color(t, 31)
+    """
+    Colorize red
+    @param t:  text
+    """
+    return color(t, 31)
 
 def green(t):
-        return color(t, 32)
+    """
+    Colorize green
+    @param t:  text
+    """
+    return color(t, 32)
 
 def yellow(t):
-        return color(t, 33)
+    """
+    Colorize yellow
+    @param t:  text
+    """
+    return color(t, 33)
 
 def blue(t):
-        return color(t, 34)
+    """
+    Colorize blue
+    @param t:  text
+    """
+    return color(t, 34)
 
 def magenta(t):
-        return color(t, 35)
+    """
+    Colorize magenta
+    @param t:  text
+    """
+    return color(t, 35)
 
 def cyan(t):
-        return color(t, 36)
+    """
+    Colorize cyan
+    @param t:  text
+    """
+    return color(t, 36)
 
 def white(t):
-        return color(t, 37)
+    """
+    Colorize white
+    @param t:  text
+    """
+    return color(t, 37)
 
 def bold(t):
-        return color(t, 1)
+    """
+    Bolder text
+    @param t: text
+    """ 
+    return color(t, 1)
