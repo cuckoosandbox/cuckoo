@@ -49,4 +49,3 @@ class ReportTxt(BaseObserver):
             report.write("\n")
     
         report.close()
-

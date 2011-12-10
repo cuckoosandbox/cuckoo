@@ -55,4 +55,3 @@ class CuckooDict(dict):
         """
         self[key] = self.__class__()
         return self[key]
-

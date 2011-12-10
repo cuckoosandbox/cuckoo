@@ -30,23 +30,47 @@ from cuckoo.processing.pcap import Pcap
 from cuckoo.reporting.reporter import ReportProcessor
 
 def get_analysis_duration(started):
+    """
+    Calculate analysis duration.
+    @param started: UNIX timestamp of the start time
+    """
     now = time.time()
     return int(now - started)
 
+def get_dropped_files(dropped_path):
+    """
+    Retrieve information on files dropped by the malware.
+    @param dropped_path: path to the dropped files dumps
+    """
+    dropped_files = []
+
+    if os.path.exists(dropped_path) and len(os.listdir(dropped_path)) > 0:
+        for dropped in os.listdir(dropped_path):
+            cur_path = os.path.join(dropped_path, dropped)
+            cur_file = File(cur_path).process()
+            dropped_files.append(cur_file)
+
+    return dropped_files
+
 def main(analysis_path):
+    """
+    Process the analysis results and generate reports.
+    @param analysis_path: path to the analysis results folder
+    """
     if not os.path.exists(analysis_path):
         print "Analysis not found, check analysis path."
         return False
 
     config_path = os.path.join(analysis_path, "analysis.conf")
-
     config = AnalysisConfig(config_path)
 
-    file_path = os.path.join(analysis_path, config.target)
-    analysislog_path = os.path.join(analysis_path, "analysis.log")
-    logs_path = os.path.join(analysis_path, "logs")
+    file_path    = os.path.join(analysis_path, config.target)
+    log_path     = os.path.join(analysis_path, "analysis.log")
+    logs_path    = os.path.join(analysis_path, "logs")
     dropped_path = os.path.join(analysis_path, "files")
-    pcap_path = os.path.join(analysis_path, "dump.pcap")
+    shots_path   = os.path.join(analysis_path, "shots")
+    trace_path   = os.path.join(analysis_path, "trace")
+    pcap_path    = os.path.join(analysis_path, "dump.pcap")
 
     results = {}
 
@@ -56,26 +80,17 @@ def main(analysis_path):
     results["info"]["duration"] = "%d seconds" % get_analysis_duration(config.started)
 
     results["debug"] = {}
-    results["debug"]["analysislog"] = open(analysislog_path, "rb").read()
+    results["debug"]["log"] = open(log_path, "rb").read()
 
     results["file"] = File(file_path).process()
+    results["dropped"] = get_dropped_files(dropped_path)
+    results["network"] = Pcap(pcap_path).process()
+
     results["behavior"] = {}
     results["behavior"]["processes"] = Analysis(logs_path).process()
     results["behavior"]["processtree"] = ProcessTree(results["behavior"]["processes"]).process()
-    results["network"] = Pcap(pcap_path).process()
 
-    dropped_files = []
-    for dropped in os.listdir(dropped_path):
-        cur_path = os.path.join(dropped_path, dropped)
-        cur_file = File(cur_path).process()
-        dropped_files.append(cur_file)
-
-    results["dropped"] = dropped_files
-
-    if not results:
-        return False
-
-    if len(results) == 0:
+    if not results or len(results) == 0:
         return False
   
     # Reports analysis to reports generation modules.
@@ -87,4 +102,3 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     main(sys.argv[1])
-
