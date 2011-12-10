@@ -25,6 +25,7 @@
 \bibtex_command default
 \index_command default
 \paperfontsize default
+\spacing single
 \use_hyperref false
 \papersize default
 \use_geometry false
@@ -42,8 +43,8 @@
 \shortcut idx
 \color #008000
 \end_index
-\secnumdepth 3
-\tocdepth 3
+\secnumdepth 4
+\tocdepth 4
 \paragraph_separation indent
 \paragraph_indentation default
 \quotes_language english
@@ -325,8 +326,12 @@ Screenshots taken during the whole malware analysis process.
 Relevant Windows API calls tracing of all recursively spawned processes.
 \end_layout
 
+\begin_layout Itemize
+Reporting in multiple formats (plain text, HTML, JSON and others).
+\end_layout
+
 \begin_layout Subsection
-Architecture
+Brief Architecture
 \end_layout
 
 \begin_layout Standard
@@ -533,6 +538,26 @@ https://www.virtualbox.org/wiki/Linux_Downloads
 .
 \end_layout
 
+\begin_layout Subsubsection
+Optional requisites
+\end_layout
+
+\begin_layout Standard
+The following components are not mandatory for Cuckoo Sandbox usage, but
+ allow the use of optional features.
+ So presence of this components is suggested to use Cuckoo as it best.
+\end_layout
+
+\begin_layout Itemize
+SQLite: to store analysis queue on SQLite database; python sqlite bindings
+ are already packaged for most linux distributions.
+\end_layout
+
+\begin_layout Itemize
+Mako: the make library is used to generate HTML reports, mako library is
+ already packaged for most linux distributions.
+\end_layout
+
 \begin_layout Subsection
 Setup
 \end_layout
@@ -579,6 +604,20 @@ Despite being extensively commented, we're going through all its sections
 \end_layout
 
 \begin_layout Subsubsection
+Cuckoo configuration file
+\end_layout
+
+\begin_layout Standard
+The main configuration file is named cuckoo.conf and located in the conf
+ directory.
+ You can edit the main Cuckoo Sandbox options here.
+\end_layout
+
+\begin_layout Standard
+It's composed by the sections described below.
+\end_layout
+
+\begin_layout Paragraph
 Logging
 \end_layout
 
@@ -673,7 +712,7 @@ end{verbatim}
 
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Paragraph
 Analysis
 \end_layout
 
@@ -770,7 +809,7 @@ end{verbatim}
 
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Paragraph
 Database
 \end_layout
 
@@ -813,7 +852,7 @@ end{verbatim}
 
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Paragraph
 Sniffer
 \end_layout
 
@@ -901,7 +940,7 @@ end{verbatim}
 
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Paragraph
 Virtual Machines
 \end_layout
 
@@ -1011,7 +1050,7 @@ end{verbatim}
 
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Paragraph
 Virtual Machine Details
 \end_layout
 
@@ -1104,6 +1143,24 @@ The password for such account.
 \begin_layout Itemize
 The path to its unique shared folder (IMPORTANT: the name of the shared
  folder must equals the ID you assigned to current virtual machine).
+\end_layout
+
+\begin_layout Subsubsection
+Logging configuration file
+\end_layout
+
+\begin_layout Standard
+Logging is configurable from logging.conf file in folder conf.
+\end_layout
+
+\begin_layout Standard
+You can alter Cuckoo Sandbox logging behaviours: change logging format,
+ logging output formatters and logging output devices.
+\end_layout
+
+\begin_layout Standard
+Anyway it's highly recommended to don't edit this file if you don't know
+ deeply how to hack Cuckoo Sandbox and how python works.
 \end_layout
 
 \begin_layout Subsection
