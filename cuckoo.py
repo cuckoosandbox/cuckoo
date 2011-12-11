@@ -337,6 +337,13 @@ class Analysis(Thread):
         if self.task["timeout"] is None:
             timeout = int(CuckooConfig().get_analysis_analysis_timeout())
             self.task["timeout"] = timeout
+        # If the specified timeout is bigger than the watchdog timeout set in
+        # the configuration file, I redefine it to the maximum - 30 seconds.
+        elif int(self.task["timeout"]) > int(CuckooConfig().get_analysis_watchdog_timeout()):
+            self.task["timeout"] = int(CuckooConfig().get_analysis_watchdog_timeout()) - 30
+            log.info("Specified analysis timeout is bigger than the watchdog " \
+                     "timeout (see cuckoo.conf). Redefined to %s seconds."
+                     % self.task["timeout"])
 
         # 6. Acquire a virtual machine from pool.
         while True:
