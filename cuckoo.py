@@ -540,7 +540,7 @@ if __name__ == "__main__":
     # Load logging config file.
     logging.config.fileConfig("conf/logging.conf")
     # Hack StreamHandler to color the messages :).
-    logging.StreamHandler.emit = color_stream_emit(logging.StreamHandler.emit)
+    #logging.StreamHandler.emit = color_stream_emit(logging.StreamHandler.emit)
 
     # If user enabled debug logging in the configuration file, I modify the
     # root logger level accordingly.
