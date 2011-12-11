@@ -48,6 +48,11 @@ def get_dropped_files(dropped_path):
     if os.path.exists(dropped_path) and len(os.listdir(dropped_path)) > 0:
         for dropped in os.listdir(dropped_path):
             cur_path = os.path.join(dropped_path, dropped)
+            
+            # Ignore ".gitignore" files.
+            if dropped == ".gitignore" and os.path.getsize(cur_path) == 0:
+                continue
+            
             cur_file = File(cur_path).process()
             dropped_files.append(cur_file)
 
