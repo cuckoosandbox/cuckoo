@@ -36,7 +36,7 @@ class ReportProcessor:
     def __init__(self):
         self._observable = AnalysisObservable()
         # Loaf configuration
-        if os.path.exists(self.config_file):
+        if os.path.exists(REPORTING_CONF_FILE):
             try:
                 self.config = ReportingConfig(REPORTING_CONF_FILE).enabled
             except Exception, why:
