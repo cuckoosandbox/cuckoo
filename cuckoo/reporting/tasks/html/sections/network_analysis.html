@@ -1,44 +1,47 @@
 <div class="section">
     <div class="section-title">Network Analysis</div>
-    %if network["dns"] and len(network["dns"]) > 0:
-    <fieldset>
-        <legend><%include file="../images/world.html" /> DNS Requests <a href="javascript:showHide('dns');"><%include file="../images/plus.html" /></a></legend>
-        <div id="dns" class="section-nested" style="display: none;">
-            <table cellspacing="0" cellpadding="0" border="0" width="100%">
-                <tr>
-                    <td class="title">Hostname</td>
-                    <td class="title">IP Address</td>
-                </tr>
-                %for dns in network["dns"]:
-                <tr>
-                    <td class="row"><span class="mono">${dns["hostname"]}</span></td>
-                    <td class="row"><span class="mono">${dns["ip"]}</span></td>
-                </tr>
-                %endfor
-            </table>
-        </div>
-    </fieldset>
-    <div class="space-small"></div>
-    %endif
-    %if network["http"] and len(network["http"]) > 0:
-    <fieldset>
-        <legend><%include file="../images/world.html" /> HTTP Requests <a href="javascript:showHide('http');"><%include file="../images/plus.html" /></a></legend>
-        <div id="http" class="section-nested" style="display: none;">
-            <table cellspacing="0" cellpadding="0" border="0" width="100%">
-                <tr>
-                    <td class="title">URL</td>
-                    <td class="title">Data</td>
-                </tr>
-                %for http in network["http"]:
-                <tr>
-                    <td class="row"><span class="mono">http://${http["host"]}${http["uri"]}</span></td>
-                    <td class="row"><span class="mono"><pre>${http["data"]}</pre></span></td>
-                </tr>
-                %endfor
-            </table>
-        </div>
-    </fieldset>
-    <div class="space"></div>
+    %if network and len(network) > 0:
+        %if network["dns"] and len(network["dns"]) > 0:
+        <fieldset>
+            <legend><%include file="../images/world.html" /> DNS Requests <a href="javascript:showHide('dns');"><%include file="../images/plus.html" /></a></legend>
+            <div id="dns" class="section-nested" style="display: none;">
+                <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                        <td class="title">Hostname</td>
+                        <td class="title">IP Address</td>
+                    </tr>
+                    %for dns in network["dns"]:
+                    <tr>
+                        <td class="row"><span class="mono">${dns["hostname"]}</span></td>
+                        <td class="row"><span class="mono">${dns["ip"]}</span></td>
+                    </tr>
+                    %endfor
+                </table>
+            </div>
+        </fieldset>
+        <div class="space-small"></div>
+        %endif
+        %if network["http"] and len(network["http"]) > 0:
+        <fieldset>
+            <legend><%include file="../images/world.html" /> HTTP Requests <a href="javascript:showHide('http');"><%include file="../images/plus.html" /></a></legend>
+            <div id="http" class="section-nested" style="display: none;">
+                <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                        <td class="title">URL</td>
+                        <td class="title">Data</td>
+                    </tr>
+                    %for http in network["http"]:
+                    <tr>
+                        <td class="row"><span class="mono">http://${http["host"]}${http["uri"]}</span></td>
+                        <td class="row"><span class="mono"><pre>${http["data"]}</pre></span></td>
+                    </tr>
+                    %endfor
+                </table>
+            </div>
+        </fieldset>
+        %endif
+    %else:
+        Nothing to display.
     %endif
     <%include file="../images/arrow_up.html" />
 </div>
