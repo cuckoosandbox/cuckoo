@@ -142,7 +142,7 @@ class ReportTxt(BaseObserver):
            len(self._results["network"]["dns"]) > 0:
             for dns in self._results["network"]["dns"]:
                 self._report += ("  Hostname: %s, IP: %s\n"
-                                 % (dns["hostname"]["ip"]))
+                                 % (dns["hostname"], dns["ip"]))
         else:
             self._report += "  Nothing to display.\n"
 
@@ -152,7 +152,7 @@ class ReportTxt(BaseObserver):
         if self._results["network"] and \
            len(self._results["network"]["http"]) > 0:
             for http in self._results["network"]["http"]:
-                self._report += (" Host: %s, Port: %s, URI: %s\n"
+                self._report += ("  Host: %s, Port: %s, URI: %s\n"
                                  % (http["host"], http["port"], http["uri"]))
         else:
             self._report += "  Nothing to display.\n"
