@@ -46,7 +46,6 @@ def grant_debug_privilege(pid = 0):
     @param pid: PID of the process to grant privilege to, if none is specified
                 grants privilege to itself
     """
-
     log = logging.getLogger("Inject.GrantDebugPrivilege")
 
     cuckoo.defines.ADVAPI32.OpenProcessToken.argtypes = (wintypes.HANDLE,
@@ -123,7 +122,6 @@ def randomize_dll(dll_path):
     Copies the specified DLL with a randomized file name.
     @param dll_path: path to the DLL to be randomized
     """
-
     log = logging.getLogger("Inject.RandomizeDll")
 
     new_dll_name = "".join(random.choice(string.ascii_letters) for x in range(6))
@@ -143,7 +141,6 @@ def cuckoo_inject(pid, dll_path):
     @param pid: PID of the process to be injected
     @param dll_path: path to the DLL to inject
     """
-
     log = logging.getLogger("Inject.Inject")
 
     if not os.path.exists(dll_path):

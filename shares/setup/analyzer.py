@@ -89,7 +89,6 @@ def install_dependencies():
     """
     Installs system dependencies to Windows system32.
     """
-
     log = logging.getLogger("Core.InstallDependencies")
 
     # Check if Cuckoo's directory for system dependencies exist, otherwise
@@ -139,7 +138,6 @@ def install_cuckoo():
     """
     Installs Cuckoo files.
     """
-
     log = logging.getLogger("Core.InstallCuckoo")
 
     if not os.path.exists(CUCKOO_SETUP_SRC):
@@ -185,7 +183,6 @@ def install_target(share_path, target_name):
     Copies target file to be analyzed to system drive.
     @return: path to the newly copied file
     """
-
     log = logging.getLogger("Core.InstallTarget")
 
     target_src = os.path.join(share_path, target_name)
@@ -212,7 +209,6 @@ def add_file_to_list(file_path):
     Adds the specified path to the dump list.
     @param file_path: path to the file to be dumped
     """
-
     global FILES_LIST
     global FILES_LOCK
     log = logging.getLogger("Core.AddFile")
@@ -232,7 +228,6 @@ def is_file_filtered(file_path):
     Checks if specified file is filtered and should not be dumped.
     @param file_path: path to file to check
     """
-
     log = logging.getLogger("Core.IsFileFiltered")
 
     if not os.path.exists(file_path):
@@ -258,7 +253,6 @@ def dump_files():
     """
     Dumps all intercepted files.
     """
-
     global FILES_LIST
     log = logging.getLogger("Core.DumpFiles")
     
@@ -293,7 +287,6 @@ def save_results(share_path):
     Copies analysis results from local directory to the specified shared folder.
     @param share_path: path to the shared folder
     """
-
     log = logging.getLogger("Core.SaveResults")
 
     analysis_dirs = []
@@ -328,6 +321,7 @@ class PipeHandler(Thread):
     """
     Handles connections to the pipe server.
     """
+
     def __init__(self, h_pipe):
         Thread.__init__(self)
         self.h_pipe = h_pipe
@@ -405,7 +399,6 @@ class PipeServer(Thread):
         """
         Stops pipe server.
         """
-
         log = logging.getLogger("Core.PipeServer")
         log.info("Stopping Pipe Server.")
         self._do_run = False
@@ -414,7 +407,6 @@ class PipeServer(Thread):
         """
         Runs pipe server thread.
         """
-
         log = logging.getLogger("Core.PipeServer")
         log.info("Starting Pipe Server.")
 
@@ -454,7 +446,6 @@ def main(config_path):
     Main analyzer procedure.
     @param config_path: path to the analysis config file
     """
-
     global PROCESS_LIST
     global PROCESS_LOCK
     pid_list = None

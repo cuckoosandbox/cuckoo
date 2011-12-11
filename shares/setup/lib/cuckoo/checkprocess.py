@@ -32,7 +32,6 @@ def check_process(pid):
     Checks if the specified process is still running.
     @param pid: PID of the process to verify
     """
-
     log = logging.getLogger("CheckProcess.CheckProcess")
     h_process = cuckoo.defines.KERNEL32.OpenProcess(cuckoo.defines.PROCESS_ALL_ACCESS,
                                                     False,

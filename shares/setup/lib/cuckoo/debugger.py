@@ -58,7 +58,6 @@ class TraceInstructions(Thread):
         Initializes the thread.
         @param pid: PID of the original process to monitor
         """
-
         Thread.__init__(self)
         self.pid = pid
 
@@ -66,7 +65,6 @@ class TraceInstructions(Thread):
         """
         Main thread procedure.
         """
-
         log = logging.getLogger("Debugger.TraceInstructions")
 
         if not os.path.exists(TRACE_PATH):

@@ -34,7 +34,6 @@ def cuckoo_resumethread(h_thread = -1):
     Resumes the thread of a process created in suspended mode.
     @param h_thread: handle to the thread to resume
     """
-
     log = logging.getLogger("Monitor.ResumeThread")
 
     cuckoo.defines.KERNEL32.Sleep(2000)
@@ -59,7 +58,6 @@ def cuckoo_monitor(pid = -1, h_thread = -1, suspended = False, dll_path = None):
     @param dll_path: path to the DLL to inject, if none is specified it will use
                      the default DLL
     """
-
     log = logging.getLogger("Monitor.Monitor")
 
     # The package run function should return the process id, if it's valid

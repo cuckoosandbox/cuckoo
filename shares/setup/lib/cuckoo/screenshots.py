@@ -49,7 +49,6 @@ class Screenshots(Thread):
         Initialize the thread.
         @param save_path: path to the folder where to save the screenshots
         """
-
         Thread.__init__(self)
         log = logging.getLogger("Screenshots.Init")
         self.save_path = save_path
@@ -61,14 +60,12 @@ class Screenshots(Thread):
         @param img1: first screenshot to check
         @param img2: second screenshot to check
         """
-
         return ImageChops.difference(img1, img2).getbbox() is None
 
     def stop(self):
         """
         Stop the screenshots capture.
         """
-
         log = logging.getLogger("Screenshots.Stop")
         log.info("Stopping screenshots.")
         self._do_run = False
@@ -77,7 +74,6 @@ class Screenshots(Thread):
         """
         Main thread procedure.
         """
-
         log = logging.getLogger("Screenshots.Run")
 
         # If PIL is not installed, I abort execution. This is done in order to

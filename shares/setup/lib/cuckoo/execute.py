@@ -36,7 +36,6 @@ def cuckoo_execute(target_path, args = None, suspend = False):
                     process in susepended mode.
     @return: pid and thread handle to the newly created process
     """
-
     log = logging.getLogger("Execute.Execute")
 
     if not os.path.exists(target_path):
