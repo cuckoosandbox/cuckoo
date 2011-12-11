@@ -1,0 +1,17 @@
+# Ignore Cuckoo Database
+db/cuckoo.db
+
+# Ignore Cuckoo logs
+log/*.log
+
+# Ignore Cuckoo analyses
+analysis/*
+
+# Ignore Python byte code
+*.pyc
+
+# Ignore OS generated files
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
