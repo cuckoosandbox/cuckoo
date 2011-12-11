@@ -24,6 +24,7 @@ import logging
 import ConfigParser
 
 from cuckoo.logging.colors import *
+from cuckoo.config.costants import *
 
 class CuckooConfig:
     """
@@ -36,7 +37,7 @@ class CuckooConfig:
         @raise SystemExit: if configuration file is not found
         """
         self.config = None
-        self.config_file = "conf/cuckoo.conf"
+        self.config_file = CUCKOO_CONFIG_FILE
 
         if os.path.exists(self.config_file):
             try:
