@@ -30,6 +30,11 @@ from cuckoo.paths import *
 from cuckoo.inject import *
 
 def cuckoo_resumethread(h_thread = -1):
+    """
+    Resumes the thread of a process created in suspended mode.
+    @param h_thread: handle to the thread to resume
+    """
+
     log = logging.getLogger("Monitor.ResumeThread")
 
     cuckoo.defines.KERNEL32.Sleep(2000)
@@ -45,13 +50,21 @@ def cuckoo_resumethread(h_thread = -1):
     return True
 
 def cuckoo_monitor(pid = -1, h_thread = -1, suspended = False, dll_path = None):
+    """
+    Invokes injection and resume of the specified process.
+    @param pid: PID of the process to monitor
+    @param h_thread: handle of the thread of the process to monitor
+    @param suspended: boolean value enabling or disabling the resume of the
+                      specified process from suspended mode
+    @param dll_path: path to the DLL to inject, if none is specified it will use
+                     the default DLL
+    """
+
     log = logging.getLogger("Monitor.Monitor")
 
     # The package run function should return the process id, if it's valid
     # I can inject it with Cuckoo's DLL or specified custom DLL.
     if pid > -1:
-        # If injection fails I have to abort execution as there won't be
-        # anything monitored.
         if not dll_path or dll_path == CUCKOO_DLL_PATH:
             dll_path = CUCKOO_DLL_PATH
             log.info("Using default Cuckoo DLL \"%s\"." % dll_path)
@@ -67,8 +80,7 @@ def cuckoo_monitor(pid = -1, h_thread = -1, suspended = False, dll_path = None):
             log.info("Original process with PID \"%d\" successfully injected."
                      % pid)
 
-    # In case the process was create in suspended mode and needs to be resumed,
-    # I'll do it now.
+    # Resume the process in case it was created in suspended mode.
     if suspended and h_thread > -1:
         if not cuckoo_resumethread(h_thread):
             return False

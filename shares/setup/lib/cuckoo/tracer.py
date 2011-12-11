@@ -31,6 +31,11 @@ except ImportError, why:
     IS_DEBUGGER = False
 
 def cuckoo_trace(pid = -1):
+    """
+    Invokes the trace of assembly instructions for the specified process.
+    @param pid: PID to the process to trace
+    """
+
     log = logging.getLogger("Tracer.Start")
 
     # If WinAppDbg is installed I just abort execution of this function, in

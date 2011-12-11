@@ -55,6 +55,10 @@ FILES_LOCK = Lock()
 #------------------------------------------------------------------------------#
 
 class AnalyzerConfig:
+    """
+    Parses analyzer config file.
+    """
+
     def __init__(self):
         config_path = os.path.join(CUCKOO_SETUP_SHARE, "conf\\analyzer.conf")
         config = ConfigParser.ConfigParser()
@@ -68,17 +72,24 @@ class AnalyzerConfig:
         self.filtered = [md5.lower() for md5 in filtered]
 
 class AnalysisConfig:
+    """
+    Parses analysis config file.
+    """
+
     def __init__(self, config_path):
         config = ConfigParser.ConfigParser()
         config.read(config_path)
 
-        # Get configuration for current analysis.
         self.target = config.get("analysis", "target")
         self.package = config.get("analysis", "package")
         self.timeout = config.get("analysis", "timeout")
         self.share = config.get("analysis", "share")
 
 def install_dependencies():
+    """
+    Installs system dependencies to Windows system32.
+    """
+
     log = logging.getLogger("Core.InstallDependencies")
 
     # Check if Cuckoo's directory for system dependencies exist, otherwise
@@ -124,8 +135,11 @@ def install_dependencies():
 
     return True
 
-# Copy Cuckoo core analysis components to destination setup directory.
 def install_cuckoo():
+    """
+    Installs Cuckoo files.
+    """
+
     log = logging.getLogger("Core.InstallCuckoo")
 
     if not os.path.exists(CUCKOO_SETUP_SRC):
@@ -143,10 +157,7 @@ def install_cuckoo():
                          "\"%s\": %s." % (CUCKOO_PATH, why))
             return False
 
-    # Start processing through all files and directories contained in Cuckoo's
-    # source setup folder.
     try:
-        # This check should totally make no sense, but whatever.
         if os.path.isdir(CUCKOO_SETUP_SRC):
             names = os.listdir(CUCKOO_SETUP_SRC)
 
@@ -155,11 +166,8 @@ def install_cuckoo():
 
                 log.info("Installing \"%s\"." % current_path)
 
-                # If current path is a directory copy recursively also
-                # everything contained in it.
                 if os.path.isdir(current_path):
                     copytree(current_path, os.path.join(CUCKOO_PATH, name))
-                # If it's a file, just copy it to Cuckoo's root.
                 else:
                     copy(current_path, CUCKOO_PATH)
         else:
@@ -173,6 +181,11 @@ def install_cuckoo():
     return True
 
 def install_target(share_path, target_name):
+    """
+    Copies target file to be analyzed to system drive.
+    @return: path to the newly copied file
+    """
+
     log = logging.getLogger("Core.InstallTarget")
 
     target_src = os.path.join(share_path, target_name)
@@ -185,7 +198,6 @@ def install_target(share_path, target_name):
     log.info("Installing target file from \"%s\" to \"%s\"."
              % (target_src, target_dst))
 
-    # Copy analysis' target file to system drive folder.
     try:
         copy(target_src, target_dst)
     except (IOError, os.error, Error), why:
@@ -193,11 +205,14 @@ def install_target(share_path, target_name):
                      "\"%s\": %s." % (target_src, target_dst, why))
         return False
 
-    # Return path to the newly copied file.
     return "%s\\%s" % (os.getenv("SystemDrive"), target_name)
 
-# Add the specified path to the list of files that need to be dumped.
 def add_file_to_list(file_path):
+    """
+    Adds the specified path to the dump list.
+    @param file_path: path to the file to be dumped
+    """
+
     global FILES_LIST
     global FILES_LOCK
     log = logging.getLogger("Core.AddFile")
@@ -212,15 +227,17 @@ def add_file_to_list(file_path):
     
     return True
 
-# For a given file, check if its MD5 hash is specified in the config file as to
-# be filtered.
 def is_file_filtered(file_path):
+    """
+    Checks if specified file is filtered and should not be dumped.
+    @param file_path: path to file to check
+    """
+
     log = logging.getLogger("Core.IsFileFiltered")
 
     if not os.path.exists(file_path):
         return False
 
-    # Claculate MD5 hash of the current file.
     try:
         md5 = hashlib.md5(open(file_path, "rb").read()).hexdigest()
     except:
@@ -237,12 +254,14 @@ def is_file_filtered(file_path):
 
     return False
     
-# Store files being dropped by the malware and stored into local dump directory.
 def dump_files():
+    """
+    Dumps all intercepted files.
+    """
+
     global FILES_LIST
     log = logging.getLogger("Core.DumpFiles")
     
-    # Walk through all files added to the submission list during analysis.
     for file_path in FILES_LIST:
         dir_dst = os.path.join(CUCKOO_PATH, "files")
     
@@ -254,8 +273,6 @@ def dump_files():
         if is_file_filtered(file_path):
             continue
 
-        # If path exists and points to a valid file (not empty), I'm gonna dump
-        # it to Cuckoo local folder.
         try:
             if os.path.getsize(file_path) == 0:
                 log.debug("Dropped file \"%s\" is empty. Skip." % file_path)
@@ -271,8 +288,12 @@ def dump_files():
             
     return True
 
-# Copy analysis results from Guest installation folder to shared folder.
 def save_results(share_path):
+    """
+    Copies analysis results from local directory to the specified shared folder.
+    @param share_path: path to the shared folder
+    """
+
     log = logging.getLogger("Core.SaveResults")
 
     analysis_dirs = []
@@ -283,8 +304,6 @@ def save_results(share_path):
 
     log.info("Saving analysis results to \"%s\"." % share_path)
 
-    # Walk through all results directories and try to copy them to the shared
-    # folder.
     for dir_name in analysis_dirs:
         dir_src = os.path.join(CUCKOO_PATH, dir_name)
         dir_dst = os.path.join(share_path, dir_name)
@@ -306,6 +325,9 @@ def save_results(share_path):
 
 # This class handles new Pipe connections.
 class PipeHandler(Thread):
+    """
+    Handles connections to the pipe server.
+    """
     def __init__(self, h_pipe):
         Thread.__init__(self)
         self.h_pipe = h_pipe
@@ -330,7 +352,7 @@ class PipeHandler(Thread):
     
                 if not success or bytes_read.value == 0:
                     if cuckoo.defines.KERNEL32.GetLastError() == cuckoo.defines.ERROR_BROKEN_PIPE:
-                        # Client disconnected. This check is quite irrelevant.
+                        # Client disconnected.
                         pass
     
                     break
@@ -359,7 +381,7 @@ class PipeHandler(Thread):
                                       "already in monitored process list. Skip."
                                       % (pid, pid))
                 # If the acquired data is a path to a file to dump, add it to
-                # the list. It will be dumped later on.
+                # the list.
                 elif re.match("FILE:", command):
                     file_path = command[5:]
                     add_file_to_list(file_path)
@@ -368,25 +390,35 @@ class PipeHandler(Thread):
 
         return True
 
-# This is the threaded Pipe server which listen for notifications from the
-# injected DLLs.
 class PipeServer(Thread):
+    """
+    Spawns a pipe server used to receive communications from the injected
+    malware processes.
+    """
+
     def __init__(self, pipe_name = CUCKOO_PIPE):
         Thread.__init__(self)
         self.pipe_name = pipe_name
         self._do_run = True
 
     def stop(self):
+        """
+        Stops pipe server.
+        """
+
         log = logging.getLogger("Core.PipeServer")
         log.info("Stopping Pipe Server.")
         self._do_run = False
 
     def run(self):
+        """
+        Runs pipe server thread.
+        """
+
         log = logging.getLogger("Core.PipeServer")
         log.info("Starting Pipe Server.")
 
         while self._do_run:
-            # Create named pipe with a name defined in paths.py.
             h_pipe = cuckoo.defines.KERNEL32.CreateNamedPipeA(self.pipe_name,
                                                               cuckoo.defines.PIPE_ACCESS_DUPLEX,
                                                               cuckoo.defines.PIPE_TYPE_MESSAGE | \
@@ -408,7 +440,6 @@ class PipeServer(Thread):
             # Wait for pipe connections. More informations at:
             # http://msdn.microsoft.com/en-us/library/aa365146%28v=vs.85%29.aspx
             if cuckoo.defines.KERNEL32.ConnectNamedPipe(h_pipe, None):
-                # If there's a new connection, call the handler.
                 p = PipeHandler(h_pipe)
                 a = p.start()
             else:
@@ -418,8 +449,12 @@ class PipeServer(Thread):
 
         return True
 
-# This is the main procedure.
 def main(config_path):
+    """
+    Main analyzer procedure.
+    @param config_path: path to the analysis config file
+    """
+
     global PROCESS_LIST
     global PROCESS_LOCK
     pid_list = None
@@ -429,14 +464,10 @@ def main(config_path):
     log = logging.getLogger("Core.Analyzer")
     log.info("Cuckoo starting with PID %d." % os.getpid())
 
-    # Check again if the config file exists. This should be a completely
-    # useless check, but better be 300% sure.
     if not os.path.exists(config_path):
         return False
     
-    # Parse analysis config file.
     config = AnalysisConfig(config_path)
-    # Parse analyzer config file.
     analyzer = AnalyzerConfig()
 
     # Install system dependencies.
@@ -542,10 +573,7 @@ def main(config_path):
 
             # Launching custom check function from selected analysis package.
             # This function allows the user to specify custom events that would
-            # require the analysis to terminate. For example, if you are just
-            # looking for a specific file being created, you can place a check
-            # in this function and if such file does exist, you can make Cuckoo
-            # terminate the analysis straight away.
+            # require the analysis to terminate.
             # Thanks to KjellChr for suggesting this feature.
             try:
                 if not package.cuckoo_check():
@@ -593,9 +621,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         sys.exit(-1)
 
-    # The argument for script's invocation must be the shared folder where
-    # Cuckoo will be able to get the analysis config file and write the
-    # results back.
+    # Path to the shared folder where to save results.
     local_share = sys.argv[1]
 
     # Check if the shared folder is actually accessible, otherwise abort

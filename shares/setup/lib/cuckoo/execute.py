@@ -28,6 +28,15 @@ sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 import cuckoo.defines
 
 def cuckoo_execute(target_path, args = None, suspend = False):
+    """
+    Executes a program.
+    @param target_path: path to the executable to be launched
+    @param args: arguments to be specified to the executable
+    @param suspend: boolean value which enables or disables the creation of the
+                    process in susepended mode.
+    @return: pid and thread handle to the newly created process
+    """
+
     log = logging.getLogger("Execute.Execute")
 
     if not os.path.exists(target_path):
