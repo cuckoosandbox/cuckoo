@@ -53,7 +53,7 @@ else:
     sys.exit(-1)
 
 # Import the external sniffer module only if required.
-if CuckooConfig().use_external_sniffer().lower() == "on":
+if CuckooConfig().use_external_sniffer():
     try:
         from cuckoo.core.sniffer import *
     except ImportError, why:
@@ -339,8 +339,8 @@ class Analysis(Thread):
             self.task["timeout"] = timeout
         # If the specified timeout is bigger than the watchdog timeout set in
         # the configuration file, I redefine it to the maximum - 30 seconds.
-        elif int(self.task["timeout"]) > int(CuckooConfig().get_analysis_watchdog_timeout()):
-            self.task["timeout"] = int(CuckooConfig().get_analysis_watchdog_timeout()) - 30
+        elif int(self.task["timeout"]) > CuckooConfig().get_analysis_watchdog_timeout():
+            self.task["timeout"] = CuckooConfig().get_analysis_watchdog_timeout() - 30
             log.info("Specified analysis timeout is bigger than the watchdog " \
                      "timeout (see cuckoo.conf). Redefined to %s seconds."
                      % self.task["timeout"])
@@ -391,11 +391,11 @@ class Analysis(Thread):
         # 9. Start sniffer.
         # Check if the user has decided to adopt the external sniffer or not.
         # In first case, initialize the sniffer and start it.
-        if CuckooConfig().use_external_sniffer().lower() == "on":
+        if CuckooConfig().use_external_sniffer():
             pcap_file = os.path.join(self.vm_share, "dump.pcap")
             self.sniffer = Sniffer(pcap_file)
         
-            interface = CuckooConfig().get_sniffer_interface()
+            interface = CuckooConfig().get_sniffer_interface().lower()
             guest_mac = VM_LIST[self.vm_id]
 
             if not self.sniffer.start(interface, guest_mac):
@@ -551,7 +551,7 @@ if __name__ == "__main__":
 
     # If user enabled debug logging in the configuration file, I modify the
     # root logger level accordingly.
-    if CuckooConfig().get_logging_debug().lower() == "on":
+    if CuckooConfig().get_logging_debug():
         root = logging.getLogger()
         root.setLevel(logging.DEBUG)
 

@@ -71,7 +71,7 @@ class CuckooConfig:
         """
         if self.config:
             try:
-                return self.config.get("Logging", "debug")
+                return self.config.getboolean("Logging", "debug")
             except Exception, why:
                 self._error_parse(why)
                 return None
@@ -85,7 +85,7 @@ class CuckooConfig:
         """
         if self.config:
             try:
-                return self.config.get("Sniffer", "sniffer")
+                return self.config.getboolean("Sniffer", "sniffer")
             except Exception, why:
                 self._error_parse(why)
                 return None
@@ -127,7 +127,7 @@ class CuckooConfig:
         """
         if self.config:
             try:
-                return self.config.get("Analysis", "watchdog_timeout")
+                return self.config.getint("Analysis", "watchdog_timeout")
             except Exception, why:
                 self._error_parse(why)
                 return None
@@ -140,7 +140,7 @@ class CuckooConfig:
         """
         if self.config:
             try:
-                return self.config.get("Analysis", "analysis_timeout")
+                return self.config.getint("Analysis", "analysis_timeout")
             except Exception, why:
                 self._error_parse(why)
                 return None
