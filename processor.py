@@ -21,6 +21,7 @@
 import os
 import sys
 import time
+import shutil
 from datetime import datetime
 
 from cuckoo.processing.config import AnalysisConfig
@@ -51,6 +52,30 @@ def get_dropped_files(dropped_path):
             dropped_files.append(cur_file)
 
     return dropped_files
+
+def move_pcap(analysis_path):
+    """
+    Create a new folder and move the PCAP file in it.
+    @param analysis_path: path to current analysis results directory
+    """
+    pcap_file_path = os.path.join(analysis_path, "dump.pcap")
+    pcap_dir_path = os.path.join(analysis_path, "pcap/")
+
+    if os.path.exists(pcap_file_path):
+        if not os.path.exists(pcap_dir_path):
+            try:
+                os.mkdir(pcap_dir_path)
+            except OSError, why:
+                return False
+
+        try:
+            shutil.move(pcap_file_path, pcap_dir_path)
+        except IOError, why:
+            return False
+    else:
+        return False
+
+    return True
 
 def main(analysis_path):
     """
@@ -95,6 +120,8 @@ def main(analysis_path):
   
     # Reports analysis to reports generation modules.
     ReportProcessor().report(results)
+
+    move_pcap(analysis_path)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
