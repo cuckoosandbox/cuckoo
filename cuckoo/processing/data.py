@@ -1,0 +1,128 @@
+#!/usr/bin/python
+# Cuckoo Sandbox - Automated Malware Analysis
+# Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
+# http://www.cuckoobox.org
+#
+# This file is part of Cuckoo.
+#
+# Cuckoo is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Cuckoo is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see http://www.gnu.org/licenses/.
+
+import os
+import sys
+import time
+import shutil
+from datetime import datetime
+
+from cuckoo.config.costants import *
+from cuckoo.processing.file import File
+from cuckoo.processing.pcap import Pcap
+from cuckoo.processing.config import AnalysisConfig
+from cuckoo.processing.analysis import Analysis, ProcessTree
+
+class CuckooDict:
+    def __init__(self, analysis_path):
+        self._analysis_path = analysis_path
+        self._config_path   = os.path.join(analysis_path, "analysis.conf")
+        self._log_path      = os.path.join(analysis_path, "analysis.log")
+        self._pcap_path     = os.path.join(analysis_path, "dump.pcap")
+        self._logs_path     = os.path.join(analysis_path, "logs")
+        self._dropped_path  = os.path.join(analysis_path, "files")
+        self._shots_path    = os.path.join(analysis_path, "shots")
+        self._trace_path    = os.path.join(analysis_path, "trace")
+
+    def _get_duration(self, started):
+        """
+        Calculates analysis duration.
+        @param started: UNIX timestamp of the start time
+        """
+        now = time.time()
+        return int(now - started)
+
+    def _get_dropped(self):
+        """
+        Retrieves information on files dropped by the malware.
+        @return: list with information on all dropped files
+        """
+        dropped = []
+
+        if os.path.exists(self._dropped_path) and \
+           len(os.listdir(self._dropped_path)) > 0:
+            for cur_file in os.listdir(self._dropped_path):
+                cur_path = os.path.join(self._dropped_path, cur_file)
+                
+                # Ignore ".gitignore" files.
+                if cur_file == ".gitignore" and os.path.getsize(cur_path) == 0:
+                    continue
+                
+                cur_info = File(cur_path).process()
+                dropped.append(cur_info)
+
+        return dropped
+
+    def _move_pcap(self):
+        """
+        Creates a new folder and move the PCAP file in it.
+        """
+        pcap_dir_path = os.path.join(self._analysis_path, "pcap/")
+
+        if os.path.exists(self._pcap_path):
+            if not os.path.exists(pcap_dir_path):
+                try:
+                    os.mkdir(pcap_dir_path)
+                except OSError, why:
+                    return False
+
+            try:
+                shutil.move(self._pcap_path, pcap_dir_path)
+            except IOError, why:
+                return False
+        else:
+            return False
+
+        return True
+
+    def process(self):
+        """
+        Process the analysis results and generate reports.
+        """
+        if not os.path.exists(self._analysis_path):
+            print "Analysis not found, check analysis path."
+            return None
+
+        config = AnalysisConfig(self._config_path)
+        file_path = os.path.join(self._analysis_path, config.target)
+
+        results = {}
+        results["info"] = {}
+        results["info"]["version"] = VERSION
+        results["info"]["started"] = datetime.fromtimestamp(config.started).strftime("%Y-%m-%d %H:%M:%S")
+        results["info"]["duration"] = "%d seconds" % self._get_duration(config.started)
+
+        results["debug"] = {}
+        results["debug"]["log"] = open(self._log_path, "rb").read()
+
+        results["file"] = File(file_path).process()
+        results["dropped"] = self._get_dropped()
+        results["network"] = Pcap(self._pcap_path).process()
+
+        results["behavior"] = {}
+        results["behavior"]["processes"] = Analysis(self._logs_path).process()
+        results["behavior"]["processtree"] = ProcessTree(results["behavior"]["processes"]).process()
+
+        self._move_pcap()
+
+        if not results or len(results) == 0:
+            return None
+
+        return results
