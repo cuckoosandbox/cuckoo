@@ -29,6 +29,7 @@ from cuckoo.processing.analysis import Analysis, ProcessTree
 from cuckoo.processing.file import File
 from cuckoo.processing.pcap import Pcap
 from cuckoo.reporting.reporter import ReportProcessor
+from cuckoo.config.costants import *
 
 def get_analysis_duration(started):
     """
@@ -105,7 +106,7 @@ def main(analysis_path):
     results = {}
 
     results["info"] = {}
-    results["info"]["version"] = "0.2.1-dev"
+    results["info"]["version"] = VERSION
     results["info"]["started"] = datetime.fromtimestamp(config.started).strftime("%Y-%m-%d %H:%M:%S")
     results["info"]["duration"] = "%d seconds" % get_analysis_duration(config.started)
 

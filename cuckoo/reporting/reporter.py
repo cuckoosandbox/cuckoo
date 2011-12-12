@@ -26,6 +26,7 @@ from string import split
 from cuckoo.reporting.observers import AnalysisObservable
 from cuckoo.reporting.config import ReportingConfig
 from cuckoo.logging.colors import *
+from cuckoo.config.costants import *
 
 class ReportProcessor:
     """
@@ -35,18 +36,16 @@ class ReportProcessor:
     def __init__(self):
         self._observable = AnalysisObservable()
         # Loaf configuration
-        self.config_file = "conf/reporting.conf"
-
-        if os.path.exists(self.config_file):
+        if os.path.exists(REPORTING_CONF_FILE):
             try:
-                self.config = ReportingConfig(self.config_file).enabled
+                self.config = ReportingConfig(REPORTING_CONF_FILE).enabled
             except Exception, why:
                 print(red("[Config] [ERROR] Cannot read config file \"%s\": %s."
-                          % (self.config_file, why)))
+                          % (REPORTING_CONF_FILE, why)))
                 sys.exit(-1)
         else:
             print(red("[Config] [ERROR] Cannot find config file \"%s\"."
-                      % self.config_file))
+                      % REPORTING_CONF_FILE))
             sys.exit(-1)
         
         # Load modules

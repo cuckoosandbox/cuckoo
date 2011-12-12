@@ -18,21 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-import sys
-from cuckoo.logging.colors import *
-from cuckoo.config.costants import *
-
-def logo():
-    """
-    Prints Cuckoo Sandbox logo
-    """
-    sys.stdout.write(bold(cyan("                     _                  ")) + "\n")
-    sys.stdout.write(bold(cyan("    ____ _   _  ____| |  _ ___   ___    ")) + "\n")
-    sys.stdout.write(bold(cyan("   / ___) | | |/ ___) |_/ ) _ \\ / _ \\ ")) + "\n")
-    sys.stdout.write(bold(cyan("  ( (___| |_| ( (___|  _ ( |_| | |_| |  ")) + "\n")
-    sys.stdout.write(bold(cyan("   \\____)____/ \\____)_| \_)___/ \\___/")) + " " + VERSION + "\n")
-    sys.stdout.write("\n")
-    sys.stdout.write(" www.cuckoobox.org\n")
-    sys.stdout.write(" Copyright (C) 2010-2011\n")
-    sys.stdout.write(" by " + bold("Claudio") + " \"nex\" " + bold("Guarnieri") + "\n")
-    sys.stdout.write("\n")
+CUCKOO_CONFIG_FILE = "conf/cuckoo.conf"
+REPORTING_CONF_FILE = "conf/reporting.conf"
+VERSION = "v0.2.1-dev"
