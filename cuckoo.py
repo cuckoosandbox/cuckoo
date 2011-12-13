@@ -190,8 +190,11 @@ class Analysis(Thread):
         config.set("analysis", "target", self.dst_filename)
         config.set("analysis", "package", self.task["package"])
         config.set("analysis", "timeout", self.task["timeout"])
-        config.set("analysis", "custom", self.task["custom"])
         config.set("analysis", "started", time())
+        if self.task["custom"]:
+            config.set("analysis", "custom", self.task["custom"])
+        else:
+            consig.set("analysis", "custom", "")
 
         local_share = "\\\\VBOXSVR\\%s\\" % self.vm_id
         config.set("analysis", "share", local_share)
