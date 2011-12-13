@@ -194,7 +194,7 @@ class Analysis(Thread):
         if self.task["custom"]:
             config.set("analysis", "custom", self.task["custom"])
         else:
-            consig.set("analysis", "custom", "")
+            config.set("analysis", "custom", "")
 
         local_share = "\\\\VBOXSVR\\%s\\" % self.vm_id
         config.set("analysis", "share", local_share)
