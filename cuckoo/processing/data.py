@@ -113,6 +113,7 @@ class CuckooDict:
         results["debug"]["log"] = open(self._log_path, "rb").read()
 
         results["file"] = File(file_path).process()
+        results["static"] = {}
         results["dropped"] = self._get_dropped()
         results["network"] = Pcap(self._pcap_path).process()
 
