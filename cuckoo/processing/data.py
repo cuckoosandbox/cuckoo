@@ -70,28 +70,6 @@ class CuckooDict:
 
         return dropped
 
-    def _move_pcap(self):
-        """
-        Creates a new folder and move the PCAP file in it.
-        """
-        pcap_dir_path = os.path.join(self._analysis_path, "pcap/")
-
-        if os.path.exists(self._pcap_path):
-            if not os.path.exists(pcap_dir_path):
-                try:
-                    os.mkdir(pcap_dir_path)
-                except OSError, why:
-                    return False
-
-            try:
-                shutil.move(self._pcap_path, pcap_dir_path)
-            except IOError, why:
-                return False
-        else:
-            return False
-
-        return True
-
     def process(self):
         """
         Process the analysis results and generate reports.
@@ -120,8 +98,6 @@ class CuckooDict:
         results["behavior"] = {}
         results["behavior"]["processes"] = Analysis(self._logs_path).process()
         results["behavior"]["processtree"] = ProcessTree(results["behavior"]["processes"]).process()
-
-        self._move_pcap()
 
         if not results or len(results) == 0:
             return None
