@@ -362,7 +362,7 @@ class Analysis(Thread):
 
         if not os.path.exists(self.vm_share):
             log.error("Shared folder \"%s\" for virtual machine \"%s\" " \
-                      "does not exist. Abort.")
+                      "does not exist. Abort." % (self.vm_share, self.vm_id))
             self.db.complete(self.task["id"], False)
             self._free_vm(self.vm_id)
             return False
