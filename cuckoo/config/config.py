@@ -305,7 +305,7 @@ class CuckooConfig:
         """
         if self.config:
             try:
-                return self.config.get("VirtualMachines", "enabled").split(",")
+                return map(str.strip, self.config.get("VirtualMachines", "enabled").split(","))
             except Exception, why:
                 self._error_parse(why)
                 return None
