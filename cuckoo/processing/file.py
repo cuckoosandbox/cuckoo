@@ -20,6 +20,7 @@
 
 import os
 import sys
+import binascii
 import hashlib
 
 try:
@@ -64,6 +65,19 @@ class File:
         @return: file size
         """
         return os.path.getsize(self.file_path)
+
+    def _get_crc32(self):
+        """
+        Generates the CRC32 hash of the file.
+        @return: CRC32 hash of the file
+        """
+        res = ''
+        crc = binascii.crc32(self.file_data)
+        for i in range(4):
+            t = crc & 0xFF
+            crc >>= 8
+            res = '%02X%s' % (t, res) 
+        return res
 
     def _get_md5(self):
         """
@@ -134,6 +148,7 @@ class File:
         infos = {}
         infos["name"]   = self._get_name()
         infos["size"]   = self._get_size()
+        infos["crc32"]    = self._get_crc32()
         infos["md5"]    = self._get_md5()
         infos["sha1"]   = self._get_sha1()
         infos["sha256"] = self._get_sha256()
