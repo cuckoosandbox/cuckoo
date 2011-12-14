@@ -116,7 +116,7 @@ class VirtualMachine:
                 state = "Not identified (%s)" % self.mach.state
 
             # Print virtual machine's general informations.
-            log.info("Virtual machine \"%s\" informations:" % self.name)
+            log.info("Virtual machine \"%s\" information:" % self.name)
             log.info("\t\_| Name: %s" % self.mach.name)
             log.info("\t  | ID: %s" % self.mach.id)
             log.info("\t  | CPU Count: %s Core/s" % self.mach.CPUCount)
