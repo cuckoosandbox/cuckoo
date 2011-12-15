@@ -72,7 +72,8 @@ class CuckooDict:
 
     def process(self):
         """
-        Process the analysis results and generate reports.
+        Process the analysis results and generate a dictionary containing all
+        abstracted information.
         """
         if not os.path.exists(self._analysis_path):
             print "Analysis not found, check analysis path."
