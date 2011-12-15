@@ -21,6 +21,7 @@
 import os
 import re
 import sys
+import logging
 import hashlib
 import ConfigParser
 from shutil import *
