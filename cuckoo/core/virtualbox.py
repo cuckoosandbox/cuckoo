@@ -135,7 +135,7 @@ class VirtualMachine:
     def check(self):
         """
         Checks if VirtualBox version is supported
-        @param: boolean saying if VirtualBox version is supported or not
+        @return: boolean saying if VirtualBox version is supported or not
         """
         log = logging.getLogger("VirtualMachine.Check")
 
