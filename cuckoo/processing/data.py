@@ -24,7 +24,7 @@ import time
 import shutil
 from datetime import datetime
 
-from cuckoo.config.costants import *
+from cuckoo.config.constants import VERSION
 from cuckoo.processing.file import File
 from cuckoo.processing.pcap import Pcap
 from cuckoo.processing.config import AnalysisConfig

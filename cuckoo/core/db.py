@@ -23,6 +23,7 @@ import sys
 import logging
 
 from cuckoo.config.config import CuckooConfig
+from cuckoo.config.constants import CUCKOO_DB_FILE
 
 try:
     import sqlite3
@@ -38,38 +39,46 @@ class CuckooDatabase:
     """
     def __init__(self):
         log = logging.getLogger("Database.Init")
-        self.db_file = CuckooConfig().get_localdb()
         self._conn = None
         self._cursor = None
 
         # Check if SQLite database already exists. If it doesn't exist I invoke
         # the generation procedure.
-        if not os.path.exists(self.db_file):
+        if not os.path.exists(CUCKOO_DB_FILE):
             if self._generate():
                 log.info("Generated database \"%s\" which didn't" \
-                         " exist before." % self.db_file)
+                         " exist before." % CUCKOO_DB_FILE)
             else:
                 log.error("Unable to generate database")
 
         # Once the database is generated of it already has been, I can
         # initialize the connection.
         try:
-            self._conn = sqlite3.connect(self.db_file)
+            self._conn = sqlite3.connect(CUCKOO_DB_FILE)
             self._cursor = self._conn.cursor()
         except Exception, why:
             log.error("Unable to connect to database \"%s\": %s."
-                      % (self.db_file, why))
+                      % (CUCKOO_DB_FILE, why))
 
-        log.debug("Connected to SQLite database \"%s\"." % self.db_file)
+        log.debug("Connected to SQLite database \"%s\"." % CUCKOO_DB_FILE)
 
     def _generate(self):
         """
         Creates database structure in a SQLite file.
         """
-        if os.path.exists(self.db_file):
+        if os.path.exists(CUCKOO_DB_FILE):
             return False
 
-        conn = sqlite3.connect(self.db_file)
+        db_dir = os.path.dirname(CUCKOO_DB_FILE)
+        if not os.path.exists(db_dir):
+            try:
+                os.makedirs(db_dir)
+            except (IOError, os.error), why:
+                log.error("Something went wrong while creating database " \
+                          "directory \"%s\": %s" % (db_dir, why))
+                return False
+
+        conn = sqlite3.connect(CUCKOO_DB_FILE)
         cursor = conn.cursor()
 
         cursor.execute("CREATE TABLE queue (\n"                            \

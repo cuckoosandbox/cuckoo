@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
+CUCKOO_LOG_FILE = "log/cuckoo.log"
+CUCKOO_DB_FILE = "db/cuckoo.db"
 CUCKOO_CONFIG_FILE = "conf/cuckoo.conf"
 REPORTING_CONF_FILE = "conf/reporting.conf"
 VERSION = "v0.2.1-dev"

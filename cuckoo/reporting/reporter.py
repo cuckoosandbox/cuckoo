@@ -26,7 +26,7 @@ from string import split
 from cuckoo.reporting.observers import AnalysisObservable
 from cuckoo.reporting.config import ReportingConfig
 from cuckoo.logging.colors import *
-from cuckoo.config.costants import REPORTING_CONF_FILE
+from cuckoo.config.constants import REPORTING_CONF_FILE
 
 class ReportProcessor:
     """

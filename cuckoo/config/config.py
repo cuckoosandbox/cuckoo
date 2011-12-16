@@ -24,7 +24,7 @@ import logging
 import ConfigParser
 
 from cuckoo.logging.colors import *
-from cuckoo.config.costants import CUCKOO_CONFIG_FILE
+from cuckoo.config.constants import CUCKOO_CONFIG_FILE
 
 class CuckooConfig:
     """
@@ -185,20 +185,6 @@ class CuckooConfig:
                 self._error_parse(why)
                 return None
         else:
-            return None
-
-    def get_localdb(self):
-        """
-        Returns local database path.
-        """
-        if self.config:
-            try:
-                return self.config.get("LocalDatabase", "file")
-            except Exception, why:
-                self._error_parse(why)
-                return None
-        else:
-            self._error_config()
             return None
             
     def get_vm_engine(self):

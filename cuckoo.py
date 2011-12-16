@@ -30,6 +30,7 @@ from time import time, sleep
 from threading import Thread
 
 from cuckoo.config.config import CuckooConfig
+from cuckoo.config.constants import CUCKOO_LOG_FILE
 from cuckoo.logging.logo import logo
 from cuckoo.core.db import CuckooDatabase
 from cuckoo.core.getfiletype import get_filetype
@@ -543,13 +544,23 @@ def main():
 
     return
 
-if __name__ == "__main__":
-    logo()
+def init_logging():
+    """
+    Creates log directory if it doesn't exist and initializes logging.
+    @return: boolean value representing the success or failure of the operations
+    """
+    # Creates the log directory if it doesn't exist yet.
+    log_dir = os.path.dirname(CUCKOO_LOG_FILE)
+    if not os.path.exists(log_dir):    
+        try:
+            os.makedirs(log_dir)
+        except (IOError, os.error), why:
+            sys.stderr.write("ERROR: Unable to create folder \"%s\": %s"
+                             % (log_dir, why))
+            return False
 
     # Load logging config file.
     logging.config.fileConfig("conf/logging.conf")
-    # Hack StreamHandler to color the messages :).
-    #logging.StreamHandler.emit = color_stream_emit(logging.StreamHandler.emit)
 
     # If user enabled debug logging in the configuration file, I modify the
     # root logger level accordingly.
@@ -557,8 +568,15 @@ if __name__ == "__main__":
         root = logging.getLogger()
         root.setLevel(logging.DEBUG)
 
-    log = logging.getLogger("Core.Init")
+    return True
 
+if __name__ == "__main__":
+    logo()
+
+    if not init_logging():
+        sys.exit(-1)
+
+    log = logging.getLogger("Core.Init")
     log.info("Started.")
 
     try:

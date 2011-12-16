@@ -20,7 +20,7 @@
 
 import sys
 from cuckoo.logging.colors import *
-from cuckoo.config.costants import *
+from cuckoo.config.constants import VERSION
 
 def logo():
     """
