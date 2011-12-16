@@ -135,10 +135,16 @@ def main():
         print(bold(red("ERROR")) + ": The target file \"%s\" does not exist." % target)
         return False
 
+    try:
+        md5 = hashlib.md5(open(target, "rb").read()).hexdigest()
+    except Exception, why:
+        md5 = None
+
     # Add task to the database.
     try:
         db = CuckooDatabase()
         task_id = db.add_task(target,
+                              md5,
                               options.timeout,
                               options.package,
                               options.priority,

@@ -92,7 +92,7 @@ class CuckooDatabase:
 
         return True
 
-    def add_task(self, target, timeout = None, package = None, priority = None, custom = None):
+    def add_task(self, target, md5 = None, timeout = None, package = None, priority = None, custom = None):
         """
         Enqueue a task.
         @param target: database file path
@@ -112,6 +112,13 @@ class CuckooDatabase:
             log.error("Invalid target file specified. Abort.")
             return None
 
+        if not md5:
+            md5 = "NULL"
+        else:
+            md5 = "'%s'" % md5
+
+        print md5
+
         if not timeout:
             timeout = "NULL"
  
@@ -129,8 +136,8 @@ class CuckooDatabase:
 
         try:
             sql = "INSERT INTO queue " \
-                  "(target, timeout, package, priority, custom) " \
-                  "VALUES ('%s', %s, %s, %s, %s);" % (target, timeout, package, priority, custom)
+                  "(target, md5, timeout, package, priority, custom) " \
+                  "VALUES ('%s', %s, %s, %s, %s, %s);" % (target, md5, timeout, package, priority, custom)
             self._cursor.execute(sql)
             self._conn.commit()
             task_id = self._cursor.lastrowid
