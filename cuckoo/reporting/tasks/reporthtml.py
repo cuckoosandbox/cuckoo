@@ -30,7 +30,7 @@ except ImportError, why:
 
 from cuckoo.reporting.observers import BaseObserver
 
-class ReportHTML(BaseObserver):
+class Report(BaseObserver):
     """
     Generates a human readable HTML report.
     """

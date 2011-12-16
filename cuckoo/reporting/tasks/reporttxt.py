@@ -23,7 +23,7 @@ import sys
 
 from cuckoo.reporting.observers import BaseObserver
 
-class ReportTxt(BaseObserver):
+class Report(BaseObserver):
     """
     Generates a human readable Text report.
     """
@@ -98,6 +98,7 @@ class ReportTxt(BaseObserver):
         self._report += "File name: %s\n" % self._results["file"]["name"]
         self._report += "File size: %d bytes\n" % self._results["file"]["size"]
         self._report += "File type: %s\n" % self._results["file"]["type"]
+        self._report += "CRC32:     %s\n" % self._results["file"]["crc32"]
         self._report += "MD5:       %s\n" % self._results["file"]["md5"]
         self._report += "SHA-1:     %s\n" % self._results["file"]["sha1"]
         self._report += "SHA-256:   %s\n" % self._results["file"]["sha256"]

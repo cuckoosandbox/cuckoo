@@ -38,7 +38,7 @@ class ReportProcessor:
         # Loaf configuration
         if os.path.exists(REPORTING_CONF_FILE):
             try:
-                self.config = ReportingConfig(REPORTING_CONF_FILE).enabled
+                self.config = ReportingConfig(REPORTING_CONF_FILE)
             except Exception, why:
                 print(red("[Config] [ERROR] Cannot read config file \"%s\": %s."
                           % (REPORTING_CONF_FILE, why)))
@@ -63,21 +63,17 @@ class ReportProcessor:
         This is where reporting modules order become true.
         @note: if you add a reporting module you have to edit this.
         """
-        from cuckoo.reporting.tasks.jsondump import JsonDump
-        self._subscribe(JsonDump())
-        from cuckoo.reporting.tasks.reporttxt import ReportTxt
-        self._subscribe(ReportTxt())
-        from cuckoo.reporting.tasks.reporthtml import ReportHTML
-        self._subscribe(ReportHTML())
-        
-    def _subscribe(self, task):
-        """
-        Checks if a module is enabled from configuration and subscribe it
-        @param task: module 
-        """ 
-        for module, status in self.config.items():
-            class_name = split(str(task.__class__), '.')[-1].lower()
-            if module == class_name:
-                if status:
-                    self._observable.subscribe(task)
-
+        for file in [tga for tga in os.listdir(os.path.join('.', "cuckoo/reporting/tasks")) if tga.endswith(".py")]:
+            # Skip package file
+            if file == '__init__.py':
+                continue
+            
+            # Check if reporting module is enabled
+            report = split(file, '.')[0]
+            if self.config.check(report):           
+                # Import reporting class
+                module = "cuckoo.reporting.tasks.%s" % report
+                imp = __import__(module, globals(), locals(), ['Report'], -1)
+                
+                # Subscribe
+                self._observable.subscribe(imp.Report())
