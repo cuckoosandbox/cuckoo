@@ -23,7 +23,7 @@ import sys
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
-from cuckoo.tracer import *
+from cuckoo.trace import *
 from cuckoo.execute import *
 from cuckoo.monitor import *
 
