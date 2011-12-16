@@ -119,6 +119,7 @@ class Report(BaseObserver):
                 self._report += "[2.%d] \"%s\":\n" % (counter, dropped["name"])
                 self._report += "  File size: %s bytes\n" % dropped["size"]
                 self._report += "  File type: %s\n" % dropped["type"]
+                self._report += "  CRC32:     %s\n" % dropped["crc32"]
                 self._report += "  MD5:       %s\n" % dropped["md5"]
                 self._report += "  SHA-1:     %s\n" % dropped["sha1"]
                 self._report += "  SHA-256:   %s\n" % dropped["sha256"]
