@@ -309,26 +309,26 @@ class Analysis(Thread):
         # 4. If analysis package has not been specified, need to run some
         # perliminary checks on the file.
         if self.task["package"] is None:
-            file_type = get_filetype(self.task["target"])
-            file_extension = os.path.splitext(self.dst_filename)[1]
+            file_type = get_filetype(self.task["target"]).lower()
+            file_extension = os.path.splitext(self.dst_filename)[1].lower()
 
             if file_type:
                 # Check the file format and see if the file name has the
                 # appropriate extension, otherwise fix it. Assign proper
                 # default analysis package.
-                if file_type.lower() == "exe":
-                    if file_extension.lower() != ".exe":
+                if file_type == "exe":
+                    if file_extension != ".exe":
                         self.dst_filename += ".exe"
                         
                     self.task["package"] = "exe"
-                elif file_type.lower() == "pdf":
-                    if file_extension.lower() != ".pdf":
+                elif file_type == "pdf":
+                    if file_extension != ".pdf":
                         self.dst_filename += ".pdf"
 
                     self.task["package"] = "pdf"
                 else:
-                    log.error("Unknown file format for target \"%s\". Abort."
-                              % self.task["target"])
+                    log.error("Unsupported file format (%s) for target \"%s\"."\
+                              " Abort." % (file_type, self.task["target"]))
                     self.db.complete(self.task["id"], False)
                     return False
             else:

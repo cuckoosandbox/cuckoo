@@ -17,24 +17,45 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-import re
 import os
+import re
+import sys
+import logging
+
+try:
+    import magic
+except ImportError, why:
+    log = logging.getLogger("Core.GetFileType")
+    log.critical("Unable to locate Python libmagic bindings. " \
+                 "Please verify your installation. Exiting...")
+    sys.exit(-1)
 
 def get_filetype(file_path):
     """
-    Detects a filetype of a given file.
+    Get file format identifier based on the type of the given file.
     @param file_path: file path
-    @return: identified file type or None if not identified
+    @return: file type identifier or magic signature if format is not supported
     """
+    log = logging.getLogger("Core.GetFileType")
     
     if not os.path.exists(file_path):
         return None
 
     data = open(file_path, "rb").read()
 
-    if re.match("MZ", data):
+    try:
+        ms = magic.open(magic.MAGIC_NONE)
+        ms.load()
+        file_type = ms.buffer(data)
+    except Exception, why:
+        log.error("Something went wrong while retrieving magic: %s" % why)
+        return None
+
+    if re.search("DLL", file_type):
+        return "dll"
+    elif re.search("PE32", file_type) or re.search("MS-DOS", file_type):
         return "exe"
-    elif re.match("%PDF", data):
+    elif re.match("PDF", file_type):
         return "pdf"
     else:
-        return None
+        return file_type
