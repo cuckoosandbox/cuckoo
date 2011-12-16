@@ -38,4 +38,16 @@ class ReportingConfig:
                 self.enabled[option] = config.getboolean('Tasks', option)
             except:
                 self.enabled[option] = None
+    
+    def check(self, report):
+        """
+        Checks if a module is enabled from configuration
+        @param task: report module
+        @return: True or false
+        """ 
+        for module, status in self.enabled.items():
+            if module.lower() == report:
+                if status:
+                    return True
+        return False
                 

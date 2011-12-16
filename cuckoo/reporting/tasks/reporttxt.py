@@ -23,7 +23,7 @@ import sys
 
 from cuckoo.reporting.observers import BaseObserver
 
-class ReportTxt(BaseObserver):
+class Report(BaseObserver):
     """
     Generates a human readable Text report.
     """

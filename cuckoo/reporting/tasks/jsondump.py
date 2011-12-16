@@ -24,7 +24,7 @@ import json
 
 from cuckoo.reporting.observers import BaseObserver
 
-class JsonDump(BaseObserver):
+class Report(BaseObserver):
     """
     Save report in pure JSON format.
     """
