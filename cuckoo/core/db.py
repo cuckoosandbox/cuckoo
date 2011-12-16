@@ -126,8 +126,6 @@ class CuckooDatabase:
         else:
             md5 = "'%s'" % md5
 
-        print md5
-
         if not timeout:
             timeout = "NULL"
  
