@@ -24,7 +24,7 @@ import time
 import logging
 from threading import Thread
 
-from cuckoo.paths import *
+from cuckoo.paths import CUCKOO_PATH
 
 log = logging.getLogger("Screenshots")
 

@@ -31,12 +31,11 @@ from threading import Thread, Lock
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
 import cuckoo.defines
-from cuckoo.checkprocess import *
-from cuckoo.execute import *
-from cuckoo.inject import *
+from cuckoo.checkprocess import check_process
+from cuckoo.execute import cuckoo_execute
+from cuckoo.inject import cuckoo_inject
 from cuckoo.paths import *
-from cuckoo.screenshots import *
-from cuckoo.tracer import *
+from cuckoo.screenshots import Screenshots
 
 log = logging.getLogger("Core")
 

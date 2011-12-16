@@ -23,8 +23,8 @@ import sys
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
-from cuckoo.execute import *
-from cuckoo.monitor import *
+from cuckoo.execute import cuckoo_execute
+from cuckoo.monitor import cuckoo_monitor
 
 def cuckoo_run(target_path):
     pids = []

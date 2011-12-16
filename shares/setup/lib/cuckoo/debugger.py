@@ -23,7 +23,7 @@ import logging
 from threading import Thread
 from winappdbg import Debug, EventHandler, HexDump, CrashDump, win32
 
-from cuckoo.paths import *
+from cuckoo.paths import CUCKOO_PATH
 
 TRACE_PATH = os.path.join(CUCKOO_PATH, "trace")
 

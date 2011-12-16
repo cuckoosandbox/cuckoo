@@ -24,7 +24,7 @@ import logging
 import ConfigParser
 
 from cuckoo.logging.colors import *
-from cuckoo.config.costants import *
+from cuckoo.config.costants import CUCKOO_CONFIG_FILE
 
 class CuckooConfig:
     """

@@ -30,7 +30,7 @@ import ctypes
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
 import cuckoo.defines
-from cuckoo.paths import *
+from cuckoo.paths import CUCKOO_DLL_FOLDER
 
 # The following function was taken from PyBox:
 # http://code.google.com/p/pyboxed

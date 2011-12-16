@@ -22,7 +22,7 @@ import os
 import sys
 import logging
 
-from cuckoo.config.config import *
+from cuckoo.config.config import CuckooConfig
 
 try:
     import sqlite3

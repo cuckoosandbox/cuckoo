@@ -29,11 +29,10 @@ from Queue import *
 from time import time, sleep
 from threading import Thread
 
-from cuckoo.config.config import *
-from cuckoo.logging.logo import *
-from cuckoo.logging.colored import *
-from cuckoo.core.db import *
-from cuckoo.core.getfiletype import *
+from cuckoo.config.config import CuckooConfig
+from cuckoo.logging.logo import logo
+from cuckoo.core.db import CuckooDatabase
+from cuckoo.core.getfiletype import get_filetype
 
 log = logging.getLogger("Core")
 
@@ -41,7 +40,7 @@ log = logging.getLogger("Core")
 # and import the corresponding Cuckoo's module.
 if CuckooConfig().get_vm_engine().lower() == "virtualbox":
     try:
-        from cuckoo.core.virtualbox import *
+        from cuckoo.core.virtualbox import VirtualMachine
     except ImportError, why:
         log.critical("Unable to load Cuckoo's VirtualBox module. " \
                      "Please verify your installation.")
@@ -55,7 +54,7 @@ else:
 # Import the external sniffer module only if required.
 if CuckooConfig().use_external_sniffer():
     try:
-        from cuckoo.core.sniffer import *
+        from cuckoo.core.sniffer import Sniffer
     except ImportError, why:
         log.critical("Unable to import sniffer module. " \
                      "Please verify your installation.")

@@ -23,9 +23,9 @@ import sys
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
-from cuckoo.trace import *
-from cuckoo.execute import *
-from cuckoo.monitor import *
+from cuckoo.trace import cuckoo_trace
+from cuckoo.execute import cuckoo_execute
+from cuckoo.monitor import cuckoo_resumethread
 
 def cuckoo_run(target_path):
     suspended = True

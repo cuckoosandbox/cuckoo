@@ -24,7 +24,7 @@ import logging
 log = logging.getLogger("Tracer")
 
 try:
-    from cuckoo.debugger import *
+    from cuckoo.debugger import TraceInstructions
     IS_DEBUGGER = True
 except ImportError, why:
     log.error("Unable to import debugger functions: %s" % why)

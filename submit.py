@@ -24,9 +24,9 @@ import hashlib
 import urllib2
 from optparse import OptionParser
 
-from cuckoo.core.db import *
+from cuckoo.config.config import CuckooConfig
+from cuckoo.core.db import CuckooDatabase
 from cuckoo.logging.colors import *
-from cuckoo.config.config import *
 
 DESTINATION = "/tmp/"
 

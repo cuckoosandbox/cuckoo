@@ -26,7 +26,7 @@ from string import split
 from cuckoo.reporting.observers import AnalysisObservable
 from cuckoo.reporting.config import ReportingConfig
 from cuckoo.logging.colors import *
-from cuckoo.config.costants import *
+from cuckoo.config.costants import REPORTING_CONF_FILE
 
 class ReportProcessor:
     """
@@ -61,7 +61,6 @@ class ReportProcessor:
     def _tasklist(self):
         """
         This is where reporting modules order become true.
-        @note: if you add a reporting module you have to edit this.
         """
         for file in [tga for tga in os.listdir(os.path.join('.', "cuckoo/reporting/tasks")) if tga.endswith(".py")]:
             # Skip package file

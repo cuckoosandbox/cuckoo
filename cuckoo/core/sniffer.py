@@ -23,7 +23,7 @@ import stat
 import logging
 import subprocess
 
-from cuckoo.config.config import *
+from cuckoo.config.config import CuckooConfig
 
 class Sniffer:
     """
