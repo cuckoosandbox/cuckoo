@@ -134,7 +134,7 @@ class Analysis(Thread):
 
         if not os.path.exists(dst):
             try:
-                os.mkdir(dst)
+                os.makedirs(dst)
             except (IOError, os.error), why:
                 log.error("Unable to create directory \"%s\": %s" % (dst, why))
                 return False
@@ -306,8 +306,8 @@ class Analysis(Thread):
         # Copy original target file name to destination target.
         self.dst_filename = os.path.basename(self.task["target"])
 
-        # 4. If analysis package has not been specified, need to run some
-        # perliminary checks on the file.
+        # 4. If analysis package has not been specified, I'll try to identify
+        # the correct one depending on the file type of the target.
         if self.task["package"] is None:
             file_type = get_filetype(self.task["target"]).lower()
             file_extension = os.path.splitext(self.dst_filename)[1].lower()
@@ -321,6 +321,11 @@ class Analysis(Thread):
                         self.dst_filename += ".exe"
                         
                     self.task["package"] = "exe"
+                elif file_type == "dll":
+                    if file_extension != ".dll":
+                        self.dst_filename += ".dll"
+
+                    self.task["package"] = "dll"
                 elif file_type == "pdf":
                     if file_extension != ".pdf":
                         self.dst_filename += ".pdf"
