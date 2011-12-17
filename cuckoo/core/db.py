@@ -101,6 +101,25 @@ class CuckooDatabase:
 
         return True
 
+    def _get_task_dict(self, row):
+        try:
+            task = {}
+            task["id"] = row[0]
+            task["md5"] = row[1]
+            task["target"] = row[2]
+            task["timeout"] = row[3]
+            task["priority"] = row[4]
+            task["added_on"] = row[5]
+            task["completed_on"] = row[6]
+            task["package"] = row[7]
+            task["lock"] = row[8]
+            task["status"] = row[9]
+            task["custom"] = row[10]
+
+            return task
+        except Exception, why:
+            return None
+
     def add_task(self, target, md5 = None, timeout = None, package = None, priority = None, custom = None):
         """
         Enqueue a task.
@@ -181,20 +200,7 @@ class CuckooDatabase:
         task_row = self._cursor.fetchone()
 
         if task_row:
-            task = {}
-            task["id"] = task_row[0]
-            task["md5"] = task_row[1]
-            task["target"] = task_row[2]
-            task["timeout"] = task_row[3]
-            task["priority"] = task_row[4]
-            task["added_on"] = task_row[5]
-            task["completed_on"] = task_row[6]
-            task["package"] = task_row[7]
-            task["lock"] = task_row[8]
-            task["status"] = task_row[9]
-            task["custom"] = task_row[10]
-
-            return task
+            return self._get_task_dict(task_row)
         else:
             return None
 
@@ -304,7 +310,7 @@ class CuckooDatabase:
                                      "status = %d, " \
                                      "completed_on = DATETIME('now') " \
                                      "WHERE id = %d;"
-                                    % (status, task_id))
+                                     % (status, task_id))
                 self._conn.commit()
             except sqlite3.OperationalError, why:
                 log.error("Unable to update database: %s." % why)
@@ -317,3 +323,59 @@ class CuckooDatabase:
                        % (task_id, status))
 
         return True
+
+    def search_tasks(self, md5):
+        """
+        Searches tasks by MD5.
+        @param md5: MD5 hash of the analyzed files to search for
+        @return: list of tasks matching the parameters
+        """
+        if not self._cursor:
+            return None
+
+        if not md5 or len(md5) != 32:
+            return None
+
+        try:
+            self._cursor.execute("SELECT * FROM queue " \
+                                 "WHERE md5 = '%s' " \
+                                 "AND status = 1 " \
+                                 "ORDER BY added_on DESC;"
+                                 % md5)
+        except sqlite3.OperationalError, why:
+            return None
+
+        tasks = []
+        for row in self._cursor.fetchall():
+            task_dict = self._get_task_dict(row)
+            if task_dict:
+                tasks.append(task_dict)
+
+        return tasks
+
+    def completed_tasks(self, limit = None):
+        """
+        Retrieves a list of all completed analysis.
+        @return: list of all completed tasks
+        """
+
+        if not self._cursor:
+            return None
+
+        try:
+            sql = "SELECT * FROM queue " \
+                  "WHERE status = 1 " \
+                  "ORDER BY added_on DESC"
+            if limit and limit > 0:
+                sql += " LIMIT %s;" % limit
+            self._cursor.execute(sql)
+        except sqlite3.OperationalError, why:
+            return None
+
+        tasks = []
+        for row in self._cursor.fetchall():
+            task_dict = self._get_task_dict(row)
+            if task_dict:
+                tasks.append(task_dict)
+
+        return tasks
