@@ -32,7 +32,7 @@
                     </tr>
                     %for http in network["http"]:
                     <tr>
-                        <td class="row"><span class="mono">http://${http["host"]}${http["uri"]}</span></td>
+                        <td class="row"><span class="mono">${http["uri"]}</span></td>
                         <td class="row"><span class="mono"><pre>${http["data"]}</pre></span></td>
                     </tr>
                     %endfor

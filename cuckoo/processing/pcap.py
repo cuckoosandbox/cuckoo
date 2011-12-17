@@ -22,6 +22,7 @@ import os
 import re
 import sys
 import socket
+from urlparse import urlunparse
 
 try:
     import dpkt
@@ -70,8 +71,15 @@ class Pcap:
         entry["host"] = http.headers['host']
         entry["port"] = dport
         entry["data"] = tcpdata
-        entry["uri"] = http.uri
-        
+        if entry["port"] != 80:
+            entry["uri"] = urlunparse(('http', "%s:%d" % (entry['host'], entry["port"]), http.uri, None, None, None))
+        else:
+            entry["uri"] = urlunparse(('http', entry['host'], http.uri, None, None, None))
+        entry["body"] = http.body
+        entry["user-agent"] = http.headers["user-agent"]
+        entry["version"] = http.version
+        entry["method"] = http.method
+
         self.http_requests.append(entry)
         return True
     
