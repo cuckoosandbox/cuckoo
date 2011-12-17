@@ -76,6 +76,7 @@ class Pcap:
         else:
             entry["uri"] = urlunparse(('http', entry['host'], http.uri, None, None, None))
         entry["body"] = http.body
+        entry["path"] = http.uri
         entry["user-agent"] = http.headers["user-agent"]
         entry["version"] = http.version
         entry["method"] = http.method
