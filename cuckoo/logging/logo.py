@@ -34,5 +34,4 @@ def logo():
     sys.stdout.write("\n")
     sys.stdout.write(" www.cuckoobox.org\n")
     sys.stdout.write(" Copyright (C) 2010-2011\n")
-    sys.stdout.write(" by " + bold("Claudio") + " \"nex\" " + bold("Guarnieri") + "\n")
     sys.stdout.write("\n")
