@@ -25,9 +25,8 @@ import logging
 try:
     import magic
 except ImportError, why:
-    log = logging.getLogger("Core.GetFileType")
-    log.critical("Unable to locate Python libmagic bindings. " \
-                 "Please verify your installation. Exiting...")
+    sys.stderr.write("ERROR: Unable to locate Python libmagic bindings. " \
+                     "Please verify your installation. Exiting...\n")
     sys.exit(-1)
 
 def get_filetype(file_path):

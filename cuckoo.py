@@ -35,21 +35,19 @@ from cuckoo.logging.logo import logo
 from cuckoo.core.db import CuckooDatabase
 from cuckoo.core.getfiletype import get_filetype
 
-log = logging.getLogger("Core")
-
 # Check the virtualization engine from the config fle and tries to retrieve
 # and import the corresponding Cuckoo's module.
 if CuckooConfig().get_vm_engine().lower() == "virtualbox":
     try:
         from cuckoo.core.virtualbox import VirtualMachine
     except ImportError, why:
-        log.critical("Unable to load Cuckoo's VirtualBox module. " \
-                     "Please verify your installation.")
+        sys.stderr.write("ERROR: Unable to load Cuckoo's VirtualBox module. " \
+                         "Please verify your installation.\n")
         sys.exit(-1)
 # If no valid option has been specified, aborts the execution.
 else:
-    log.critical("No valid virtualization option identified. " \
-                 "Please check your configuration file.")
+    sys.stderr.write("ERROR: No valid virtualization option identified. " \
+                     "Please check your configuration file.\n")
     sys.exit(-1)
 
 # Import the external sniffer module only if required.
@@ -57,8 +55,8 @@ if CuckooConfig().use_external_sniffer():
     try:
         from cuckoo.core.sniffer import Sniffer
     except ImportError, why:
-        log.critical("Unable to import sniffer module. " \
-                     "Please verify your installation.")
+        sys.stderr.write("ERROR: Unable to import sniffer module. " \
+                         "Please verify your installation.\n")
         sys.exit(-1)
 
 #------------------------------ Global Variables ------------------------------#

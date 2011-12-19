@@ -29,9 +29,8 @@ try:
     import vboxapi
 # If the module is not found we need to abort execution.
 except ImportError:
-    log = logging.getLogger("VirtualMachine")
-    log.critical("Unable to locate \"vboxapi\" Python library. " \
-                 "Please verify your installation. Exiting...")
+    sys.stderr.write("ERROR: Unable to locate \"vboxapi\" Python library. " \
+                     "Please verify your installation. Exiting...\n")
     sys.exit(-1)
 
 #------------------------------ Global Variables ------------------------------#

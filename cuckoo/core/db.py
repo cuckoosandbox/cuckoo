@@ -28,9 +28,8 @@ from cuckoo.config.constants import CUCKOO_DB_FILE
 try:
     import sqlite3
 except ImportError:
-    log = logging.getLogger("Database")
-    log.critical("Unable to locate Python SQLite3 module. " \
-                 "Please verify your installation. Exiting...")
+    sys.stderr.write("ERROR: Unable to locate Python SQLite3 module. " \
+                     "Please verify your installation. Exiting...\n")
     sys.exit(-1)
 
 class CuckooDatabase:
