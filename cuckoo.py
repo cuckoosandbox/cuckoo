@@ -25,7 +25,6 @@ import logging
 import logging.config
 import subprocess
 import ConfigParser
-from Queue import *
 from time import time, sleep
 from threading import Thread
 
@@ -64,7 +63,7 @@ if CuckooConfig().use_external_sniffer():
 # (Key = virtual machine name, Value = MAC address).
 VM_LIST = {}
 # Initialize available virtual nachines pool.
-VM_POOL = Queue()
+VM_POOL = []
 #------------------------------------------------------------------------------#
 
 class Analysis(Thread):
@@ -218,7 +217,7 @@ class Analysis(Thread):
         Frees a virtual machine and adds it back to the available pool.
         @param vm_id: identification to the specified virtual machine
         """
-        VM_POOL.put(vm_id)
+        VM_POOL.append(vm_id)
         log = logging.getLogger("Core.Analysis.FreeVM")
         log.info("Virtual machine \"%s\" released." % vm_id)
         return True
@@ -352,12 +351,25 @@ class Analysis(Thread):
                      % self.task["timeout"])
 
         # 6. Acquire a virtual machine from pool.
-        while True:
-            self.vm_id = VM_POOL.get()
+        vm_pop_timeout = CuckooConfig().get_analysis_watchdog_timeout() * 3
+        for i in xrange(0, vm_pop_timeout):
+            if self.task["vm_id"]:
+                if not VM_LIST.has_key(self.task["vm_id"]):
+                    log.error("The specified virtual machine \"%s\" does not "
+                              "exist or wasn't added to the pool. Abort."
+                              % self.task["vm_id"])
+                    self.db.complete(self.task["id"], False)
+                    return False
+
+                self.vm_id = VM_POOL.pop(VM_POOL.index(self.task["vm_id"]))
+            else:
+                self.vm_id = VM_POOL.pop()
+
             if self.vm_id:
                 log.info("Acquired virtual machine \"%s\"." % self.vm_id)
                 break
             else:
+                log.debug("No virtual machine available yet.")
                 sleep(1)
 
         # Get path to current virtual machine's shared folder.
@@ -518,7 +530,7 @@ def main():
     # Loop until the end of the world.
     while running:
         # If there are free virtual machines I can start a new analysis.
-        if not VM_POOL.empty():
+        if not len(VM_POOL) == 0:
             db = CuckooDatabase()
             task = db.get_task()
 
@@ -615,7 +627,7 @@ if __name__ == "__main__":
                     VM_LIST[vm_id] = vm.mac
 
                     # Add the current VM to the available pool.
-                    VM_POOL.put(vm_id)
+                    VM_POOL.append(vm_id)
                 else:
                     log.warning("Virtual machine with name \"%s\" share the " \
                                 "the same MAC address \"%s\" with virtual "  \
@@ -624,12 +636,12 @@ if __name__ == "__main__":
                                 % (vm.name, vm.mac, found))
 
         # If virtual machines pool is empty, die.
-        if VM_POOL.empty():
+        if len(VM_POOL) == 0:
             log.critical("None of the virtual machines are available. " \
                          "Please review the errors.")
             sys.exit(-1)
         else:
-            log.info("%s virtual machine/s added to pool." % VM_POOL.qsize())
+            log.info("%s virtual machine/s added to pool." % len(VM_POOL))
 
         # If I arrived this far means that the gods of virtualization are in
         # good mood today and nothing screwed up. Cross your fingers and hope

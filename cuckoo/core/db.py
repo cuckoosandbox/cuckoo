@@ -95,7 +95,8 @@ class CuckooDatabase:
                        #   1 = completed successfully
                        #   2 = error occurred.
                        "  status INTEGER DEFAULT 0,\n"                     \
-                       "  custom TEXT DEFAULT NULL\n"                      \
+                       "  custom TEXT DEFAULT NULL,\n"                      \
+                       "  vm_id TEXT DEFAULT NULL\n"                       \
                        ");")
 
         return True
@@ -114,12 +115,13 @@ class CuckooDatabase:
             task["lock"] = row[8]
             task["status"] = row[9]
             task["custom"] = row[10]
+            task["vm_id"] = row[11]
 
             return task
         except Exception, why:
             return None
 
-    def add_task(self, target, md5 = None, timeout = None, package = None, priority = None, custom = None):
+    def add_task(self, target, md5 = None, timeout = None, package = None, priority = None, custom = None, vm_id = None):
         """
         Adds a new task to the database.
         @param target: database file path
@@ -127,6 +129,7 @@ class CuckooDatabase:
         @param package: analysis package
         @param priority: analysis priority
         @param custom: value passed to processor
+        @param vm_id: ID of virtual machine where run the analysis on
         @return: return ID of the newly generated tas
         """
         log = logging.getLogger("Database.AddTask")
@@ -142,9 +145,9 @@ class CuckooDatabase:
 
         try:
             self._cursor.execute("INSERT INTO queue " \
-                                 "(target, md5, timeout, package, priority, custom) " \
-                                 "VALUES (?, ?, ?, ?, ?, ?);",
-                                 (target, md5, timeout, package, priority, custom))
+                                 "(target, md5, timeout, package, priority, custom, vm_id) " \
+                                 "VALUES (?, ?, ?, ?, ?, ?, ?);",
+                                 (target, md5, timeout, package, priority, custom, vm_id))
             self._conn.commit()
             task_id = self._cursor.lastrowid
             log.info("Successfully added new task to database with ID %d."

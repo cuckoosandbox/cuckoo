@@ -100,6 +100,12 @@ def main():
                       dest="url",
                       default=False,
                       help = "Specify if the target is an URL to be analyzed")
+    parser.add_option("-m", "--machine",
+                      action="store",
+                      type="string",
+                      dest="machine",
+                      default=None,
+                      help = "Specify a virtual machine you want to specifically use for this analysis")
 
     (options, args) = parser.parse_args()
 
@@ -148,7 +154,8 @@ def main():
                               options.timeout,
                               options.package,
                               options.priority,
-                              options.custom)
+                              options.custom,
+                              options.machine)
         if not task_id:
             print(bold(red("ERROR")) + ": Unable to add task to database.")
             return False
