@@ -372,6 +372,11 @@ class Analysis(Thread):
                 log.debug("No virtual machine available yet.")
                 sleep(1)
 
+        if not self.vm_id:
+            log.error("Acquire of virtual machine failed. Abort.")
+            self.db.complete(self.task["id"], False)
+            return False
+
         # Get path to current virtual machine's shared folder.
         self.vm_share = CuckooConfig().get_vm_share(self.vm_id)           
 
