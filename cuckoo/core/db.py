@@ -121,12 +121,13 @@ class CuckooDatabase:
 
     def add_task(self, target, md5 = None, timeout = None, package = None, priority = None, custom = None):
         """
-        Enqueue a task.
+        Adds a new task to the database.
         @param target: database file path
         @param timeout: analysis timeout
         @param package: analysis package
         @param priority: analysis priority
         @param custom: value passed to processor
+        @return: return ID of the newly generated tas
         """
         log = logging.getLogger("Database.AddTask")
         task_id = None
@@ -139,31 +140,11 @@ class CuckooDatabase:
             log.error("Invalid target file specified. Abort.")
             return None
 
-        if not md5:
-            md5 = "NULL"
-        else:
-            md5 = "'%s'" % md5
-
-        if not timeout:
-            timeout = "NULL"
- 
-        if not package:
-            package = "NULL"
-        else:
-            package = "'%s'" % package
-
-        if not priority:
-            priority = "0"
-        if not custom:
-            custom = "NULL"
-        else:
-            custom = "'%s'" % custom
-
         try:
-            sql = "INSERT INTO queue " \
-                  "(target, md5, timeout, package, priority, custom) " \
-                  "VALUES ('%s', %s, %s, %s, %s, %s);" % (target, md5, timeout, package, priority, custom)
-            self._cursor.execute(sql)
+            self._cursor.execute("INSERT INTO queue " \
+                                 "(target, md5, timeout, package, priority, custom) " \
+                                 "VALUES (?, ?, ?, ?, ?, ?);",
+                                 (target, md5, timeout, package, priority, custom))
             self._conn.commit()
             task_id = self._cursor.lastrowid
             log.info("Successfully added new task to database with ID %d."
@@ -177,7 +158,7 @@ class CuckooDatabase:
 
     def get_task(self):
         """
-        Get a task from task queue.
+        Gets a task from pending queue.
         """
         log = logging.getLogger("Database.GetTask")
 
@@ -216,7 +197,8 @@ class CuckooDatabase:
 
         # Check if specified task does actually exist in the database.
         try:
-            self._cursor.execute("SELECT id FROM queue WHERE id = %s;" % task_id)
+            self._cursor.execute("SELECT id FROM queue WHERE id = ?;",
+                                 (task_id,))
             task_row = self._cursor.fetchone()
         except sqlite3.OperationalError, why:
             log.error("Unable to query database: %s." % why)
@@ -225,8 +207,8 @@ class CuckooDatabase:
         # If task exists lock it, so that it doesn't get processed again.
         if task_row:
             try:
-                self._cursor.execute("UPDATE queue SET lock = 1 WHERE id = %d;"
-                                     % task_id)
+                self._cursor.execute("UPDATE queue SET lock = 1 WHERE id = ?;",
+                                     (task_id,))
                 self._conn.commit()
             except sqlite3.OperationalError, why:
                 log.error("Unable to update database: %s." % why)
@@ -241,7 +223,7 @@ class CuckooDatabase:
 
     def unlock(self, task_id):
         """
-        Unlock a task.
+        Unlocks a task.
         @param task_id: task id
         """ 
         log = logging.getLogger("Database.Unlock")
@@ -252,7 +234,8 @@ class CuckooDatabase:
 
         # Check if specified task does actually exist in the database.
         try:
-            self._cursor.execute("SELECT id FROM queue WHERE id = %s;" % task_id)
+            self._cursor.execute("SELECT id FROM queue WHERE id = ?;",
+                                 (task_id,))
             task_row = self._cursor.fetchone()
         except sqlite3.OperationalError, why:
             log.error("Unable to query database: %s." % why)
@@ -262,8 +245,8 @@ class CuckooDatabase:
         # rescheduled for another analysis procedure.
         if task_row:
             try:
-                self._cursor.execute("UPDATE queue SET lock = 0 WHERE id = %s;"
-                                    % task_id)
+                self._cursor.execute("UPDATE queue SET lock = 0 WHERE id = ?;",
+                                     (task_id,))
                 self._conn.commit()
             except sqlite3.OperationalError, why:
                 log.error("Unable to update database: %s." % why)
@@ -290,7 +273,8 @@ class CuckooDatabase:
 
         # Check if specified task does actually exist in the database.
         try:
-            self._cursor.execute("SELECT id FROM queue WHERE id = %s;" % task_id)
+            self._cursor.execute("SELECT id FROM queue WHERE id = ?;",
+                                 (task_id,))
             task_row = self._cursor.fetchone()
         except sqlite3.OperationalError, why:
             log.error("Unable to query database: %s." % why)
@@ -306,10 +290,10 @@ class CuckooDatabase:
 
             try:
                 self._cursor.execute("UPDATE queue SET lock = 0, " \
-                                     "status = %d, " \
+                                     "status = ?, " \
                                      "completed_on = DATETIME('now') " \
-                                     "WHERE id = %d;"
-                                     % (status, task_id))
+                                     "WHERE id = ?;",
+                                     (status, task_id))
                 self._conn.commit()
             except sqlite3.OperationalError, why:
                 log.error("Unable to update database: %s." % why)
@@ -337,10 +321,10 @@ class CuckooDatabase:
 
         try:
             self._cursor.execute("SELECT * FROM queue " \
-                                 "WHERE md5 = '%s' " \
+                                 "WHERE md5 = ? " \
                                  "AND status = 1 " \
-                                 "ORDER BY added_on DESC;"
-                                 % md5)
+                                 "ORDER BY added_on DESC;",
+                                 (md5,))
         except sqlite3.OperationalError, why:
             return None
 
