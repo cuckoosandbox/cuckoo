@@ -1,0 +1,204 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Reporting Results &mdash; Cuckoo Sandbox v0.3 Book</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Cuckoo Sandbox v0.3 Book" href="../index.html" />
+    <link rel="up" title="Customization" href="index.html" />
+    <link rel="next" title="Final Remarks" href="../finalremarks/index.html" />
+    <link rel="prev" title="Processing of results" href="processing.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../finalremarks/index.html" title="Final Remarks"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="processing.html" title="Processing of results"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Customization</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="reporting-results">
+<h1>Reporting Results<a class="headerlink" href="#reporting-results" title="Permalink to this headline">¶</a></h1>
+<p>The <em>processor</em> script is responsible for taking analysis results and elaborate them,
+as explained in the <a class="reference internal" href="processing.html"><em>Processing of results</em></a> chapter.</p>
+<p>Since version 0.3, Cuckoo Sandbox provides also a reporting engine that can be used
+to generate consumable reports (as done by the default <em>processor</em> script): it takes
+the analysis results as input and stores the produced reports in the dedicated folder
+as explained in the <a class="reference internal" href="../usage/results.html"><em>Analysis Results</em></a> chapter.</p>
+<p>The reporting engine, called <tt class="docutils literal"><span class="pre">ReportProcessor</span></tt>, is designed to load all reporting modules
+specified in configuration file <em>reporting.conf</em> (see <a class="reference internal" href="../installation/host/configuration.html"><em>Configuration</em></a> chapter) and
+execute them.</p>
+<p>A reporting module is a simple Python script which aggregates, normalizes and correlates
+analysis data in order to generate a report out of it. Cuckoo comes with several built-in
+reporting modules described below, but writing your own modules is incredibly simple.</p>
+<div class="section" id="built-in-reports">
+<h2>Built-in Reports<a class="headerlink" href="#built-in-reports" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="report-txt">
+<h3>Report TXT<a class="headerlink" href="#report-txt" title="Permalink to this headline">¶</a></h3>
+<p>This module generates a human-readable report in plain text format.</p>
+</div>
+<div class="section" id="report-html">
+<h3>Report HTML<a class="headerlink" href="#report-html" title="Permalink to this headline">¶</a></h3>
+<p>This module generates a human-readable report in HTML format. These reports are also
+served by the built-in web server as explained in <a class="reference internal" href="../usage/web.html"><em>Web Interface</em></a>.</p>
+</div>
+<div class="section" id="json-dump">
+<h3>JSON Dump<a class="headerlink" href="#json-dump" title="Permalink to this headline">¶</a></h3>
+<p>This module dumps all Cuckoo&#8217;s analysis results in JSON format.
+This is useful when you need to export Cuckoo&#8217;s data to other tools or services.</p>
+</div>
+</div>
+<div class="section" id="writing-your-own-reporting-module">
+<h2>Writing your own reporting module<a class="headerlink" href="#writing-your-own-reporting-module" title="Permalink to this headline">¶</a></h2>
+<p>As said, reporting tasks are handled by the <tt class="docutils literal"><span class="pre">ReportProcessor</span></tt> class: it loads all
+reporting modules from <em>cuckoo/reporting/tasks</em> folder, checks if they are enabled
+in the configuration file and then execute them.</p>
+<p>If you want to write your own reporting module you have to:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">Create a Python file inside the reporting module folder (<em>cuckoo/reporting/tasks</em>),
+e.g. <em>foo.py</em>.</p>
+</li>
+<li><p class="first">Append an option inside the reporting configuration file (<em>reporting.conf</em>) with
+the lowercase name of the file and enable it, like following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">foo</span> <span class="o">=</span> <span class="n">on</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Inside your Python script you have to implement the <tt class="docutils literal"><span class="pre">BaseObserver</span></tt> interface in a
+class named &#8220;<tt class="docutils literal"><span class="pre">Report</span></tt>&#8221;. When new analysis results are available, Cuckoo calls your
+<tt class="docutils literal"><span class="pre">update()</span></tt> method passing the analysis results as a parameter.</p>
+</li>
+</ul>
+</div></blockquote>
+<p>A sample custom reporting module would look like following:</p>
+<blockquote>
+<div><div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">cuckoo.reporting.observers</span> <span class="kn">import</span> <span class="n">BaseObserver</span>
+
+<span class="k">class</span> <span class="nc">Report</span><span class="p">(</span><span class="n">BaseObserver</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># Put here your initialization or leave a pass.</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
+        <span class="c"># Here you get analysis results as parameter.</span>
+        <span class="c"># Now do your stuff.</span>
+        <span class="k">print</span> <span class="s">&quot;My report!&quot;</span>
+</pre></div>
+</td></tr></table></div>
+</div></blockquote>
+<p>Whatever operation you might want to run, remember to place it inside the <tt class="docutils literal"><span class="pre">update()</span></tt> method
+or invoke it from there, so that Cuckoo will be able to execute it when needed.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/cuckoo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Reporting Results</a><ul>
+<li><a class="reference internal" href="#built-in-reports">Built-in Reports</a><ul>
+<li><a class="reference internal" href="#report-txt">Report TXT</a></li>
+<li><a class="reference internal" href="#report-html">Report HTML</a></li>
+<li><a class="reference internal" href="#json-dump">JSON Dump</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#writing-your-own-reporting-module">Writing your own reporting module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="processing.html"
+                        title="previous chapter">Processing of results</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../finalremarks/index.html"
+                        title="next chapter">Final Remarks</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/customization/reporting.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../finalremarks/index.html" title="Final Remarks"
+             >next</a></li>
+        <li class="right" >
+          <a href="processing.html" title="Processing of results"
+             >previous</a> |</li>
+        <li><a href="../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="index.html" >Customization</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Cuckoo Sandbox.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,519 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Analysis Packages &mdash; Cuckoo Sandbox v0.3 Book</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Cuckoo Sandbox v0.3 Book" href="../index.html" />
+    <link rel="up" title="Customization" href="index.html" />
+    <link rel="next" title="Processing of results" href="processing.html" />
+    <link rel="prev" title="Customization" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="processing.html" title="Processing of results"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="index.html" title="Customization"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Customization</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="analysis-packages">
+<h1>Analysis Packages<a class="headerlink" href="#analysis-packages" title="Permalink to this headline">¶</a></h1>
+<p>As explained in <a class="reference internal" href="../usage/packages.html"><em>Analysis Packages</em></a>, analysis packages are structured
+Python scripts that allow you to customize the analysis procedure inside the
+virtualized Windows environment.</p>
+<p>By default Cuckoo provides some default packages you can already use, but you
+are able to create and use some of your own.</p>
+<p>Creating new packages is really easy and just requires minimal knowledge of the
+Python language.</p>
+<div class="section" id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>As first example we&#8217;ll take a look at the default package for analyzing generic
+Windows executables (located at <em>shares/setup/packages/exe.py</em>):</p>
+<blockquote>
+<div><div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\\\\</span><span class="s">VBOXSVR</span><span class="se">\\</span><span class="s">setup</span><span class="se">\\</span><span class="s">lib</span><span class="se">\\</span><span class="s">&quot;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">cuckoo.execute</span> <span class="kn">import</span> <span class="n">cuckoo_execute</span>
+<span class="kn">from</span> <span class="nn">cuckoo.monitor</span> <span class="kn">import</span> <span class="n">cuckoo_monitor</span>
+
+<span class="c"># The package main function &quot;cuckoo_run&quot; should follow a fixed structure in</span>
+<span class="c"># order for Cuckoo to correctly handle it and its results.</span>
+<span class="k">def</span> <span class="nf">cuckoo_run</span><span class="p">(</span><span class="n">target_path</span><span class="p">):</span>
+    <span class="c"># Every analysis package can retrieve a list of multiple process IDs it</span>
+    <span class="c"># might have generated. All processes added to this list will be added to</span>
+    <span class="c"># the monitored list, and Cuckoo will wait for all of the to complete their</span>
+    <span class="c"># execution before ending the analysis.</span>
+    <span class="n">pids</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c"># The following functions are used to launch a process with the simplified</span>
+    <span class="c"># &quot;cuckoo_execute&quot; function. This function takes as arguments (in specific</span>
+    <span class="c"># order):</span>
+    <span class="c"># - a path to the executable to launch</span>
+    <span class="c"># - arguments to be passed on execution</span>
+    <span class="c"># - a boolean value to specify if the process have to be created in</span>
+    <span class="c">#   suspended mode or not (it&#39;s recommended to set it to True if the</span>
+    <span class="c">#   process is supposed to be injected and monitored).</span>
+    <span class="n">suspended</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">h_thread</span><span class="p">)</span> <span class="o">=</span> <span class="n">cuckoo_execute</span><span class="p">(</span><span class="n">target_path</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">suspended</span><span class="p">)</span>
+
+    <span class="c"># The function &quot;cuckoo_monitor&quot; invoke the DLL injection and resume the</span>
+    <span class="c"># process if it was suspended. It needs the process id and the main thread</span>
+    <span class="c"># handle returned by &quot;cuckoo_execute&quot; and the same boolean value to tell it</span>
+    <span class="c"># if it needs to resume the process.</span>
+    <span class="n">cuckoo_monitor</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">h_thread</span><span class="p">,</span> <span class="n">suspended</span><span class="p">)</span>
+
+    <span class="c"># Append all the process IDs you want to the list, and return the list.</span>
+    <span class="n">pids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pids</span>
+
+<span class="k">def</span> <span class="nf">cuckoo_check</span><span class="p">():</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+<span class="k">def</span> <span class="nf">cuckoo_finish</span><span class="p">():</span>
+    <span class="k">return</span> <span class="bp">True</span>
+</pre></div>
+</td></tr></table></div>
+</div></blockquote>
+<p>Let&#8217;s walk through the given code.</p>
+<p>At line <strong>1</strong> and <strong>2</strong> we import the <tt class="docutils literal"><span class="pre">os</span></tt> and <tt class="docutils literal"><span class="pre">sys</span></tt> Python modules.
+At line <strong>4</strong> we append &#8220;<em>\\VBOXSVR\setup\lib\</em>&#8221; to Python&#8217;s modules paths list:
+this will allow us to invoke Cuckoo&#8217;s modules directly from the shared folder.</p>
+<p>Then we can see that three functions are defined:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#cuckoo-run"><em>cuckoo_run()</em></a></li>
+<li><a class="reference internal" href="#cuckoo-check"><em>cuckoo_check()</em></a></li>
+<li><a class="reference internal" href="#cuckoo-finish"><em>cuckoo_finish()</em></a></li>
+</ul>
+</div></blockquote>
+<p>In the given example the package just executes the binary located at <tt class="docutils literal"><span class="pre">target_path</span></tt>
+in suspended mode and instructs Cuckoo to inject the process and start
+monitoring it.</p>
+<p>A slightly more complex example is the PDF analysis package (located at
+<em>shares/setup/packages/pdf.py</em>):</p>
+<blockquote>
+<div><div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\\\\</span><span class="s">VBOXSVR</span><span class="se">\\</span><span class="s">setup</span><span class="se">\\</span><span class="s">lib</span><span class="se">\\</span><span class="s">&quot;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">cuckoo.execute</span> <span class="kn">import</span> <span class="n">cuckoo_execute</span>
+<span class="kn">from</span> <span class="nn">cuckoo.monitor</span> <span class="kn">import</span> <span class="n">cuckoo_monitor</span>
+
+<span class="k">def</span> <span class="nf">cuckoo_run</span><span class="p">(</span><span class="n">target_path</span><span class="p">):</span>
+    <span class="n">pids</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c"># Customize this Path with the correct one on your Windows setup.</span>
+    <span class="n">adobe_reader</span> <span class="o">=</span> <span class="s">&quot;C:</span><span class="se">\\</span><span class="s">Program Files</span><span class="se">\\</span><span class="s">Adobe</span><span class="se">\\</span><span class="s">Reader 9.0</span><span class="se">\\</span><span class="s">Reader</span><span class="se">\\</span><span class="s">AcroRd32.exe&quot;</span>
+
+    <span class="n">suspended</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">h_thread</span><span class="p">)</span> <span class="o">=</span> <span class="n">cuckoo_execute</span><span class="p">(</span><span class="n">adobe_reader</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">target_path</span><span class="p">,</span> <span class="n">suspended</span><span class="p">)</span>
+    <span class="n">cuckoo_monitor</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">h_thread</span><span class="p">,</span> <span class="n">suspended</span><span class="p">)</span>
+
+    <span class="n">pids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pids</span>
+
+<span class="k">def</span> <span class="nf">cuckoo_check</span><span class="p">():</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+<span class="k">def</span> <span class="nf">cuckoo_finish</span><span class="p">():</span>
+    <span class="k">return</span> <span class="bp">True</span>
+</pre></div>
+</td></tr></table></div>
+</div></blockquote>
+<p>In this example we have the same structure, with the only difference being that
+instead of executing the file at <em>target_path</em>, it executes Adobe Reader with
+<em>target_path</em> as argument. In this way it basically instructs Cuckoo to monitor
+what Adobe Reader is doing while opening the given PDF file. As you understand,
+this opens a large spectrum of possibilities on what Cuckoo can be used for.</p>
+<div class="section" id="cuckoo-run">
+<span id="id1"></span><h3><tt class="docutils literal"><span class="pre">cuckoo_run()</span></tt><a class="headerlink" href="#cuckoo-run" title="Permalink to this headline">¶</a></h3>
+<p>This function is the starting point of the analysis. In this block you
+should define every operation that should performed as initialization of the
+analysis.</p>
+<p>This could include the execution of processes, creation of files, injection of
+processes and whatever you might need to perform.</p>
+<p>It should return a list of PIDs that will be used by Cuckoo to monitor their
+process status: when all monitored processes complete their execution, Cuckoo
+will terminate the analysis and exit earlier.
+If none are returned, Cuckoo will assume that there is no
+process monitored and will just run for the amount of seconds specified by
+the analysis timeout.</p>
+</div>
+<div class="section" id="cuckoo-check">
+<span id="id2"></span><h3><tt class="docutils literal"><span class="pre">cuckoo_check()</span></tt><a class="headerlink" href="#cuckoo-check" title="Permalink to this headline">¶</a></h3>
+<p>This function is performed regularly every second during the analysis. It can
+be used to perform custom checks or any other operation needed.</p>
+<p>If the <tt class="docutils literal"><span class="pre">cuckoo_check()</span></tt> function returns <em>False</em>, Cuckoo will assume that the
+package matched a conditional check and it will terminate the analysis earlier.</p>
+</div>
+<div class="section" id="cuckoo-finish">
+<span id="id3"></span><h3><tt class="docutils literal"><span class="pre">cuckoo_finish()</span></tt><a class="headerlink" href="#cuckoo-finish" title="Permalink to this headline">¶</a></h3>
+<p>This function is executed when the analysis is completed. It can be used for any
+post-analysis purpose such as copying files or any other operation you might
+need to perform before the virtual machine is shut down.</p>
+</div>
+</div>
+<div class="section" id="cuckoo-modules">
+<h2>Cuckoo Modules<a class="headerlink" href="#cuckoo-modules" title="Permalink to this headline">¶</a></h2>
+<p>As you noticed in the packages examples, Cuckoo provides some custom functions
+that facilitates some complex Windows actions.</p>
+<p>These functions are defined in some Python modules that Cuckoo provide by
+default. You can use any of these modules in your analysis packages.</p>
+<p>Following is a list of available modules and the contained functions.</p>
+<div class="section" id="cuckoo-checkprocess">
+<h3><tt class="docutils literal"><span class="pre">cuckoo.checkprocess</span></tt><a class="headerlink" href="#cuckoo-checkprocess" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>Function</strong> <tt class="docutils literal"><span class="pre">check_process()</span></tt>:</p>
+<blockquote>
+<div><p><strong>Prototype</strong>:</p>
+<div class="highlight-python"><pre>def check_process(pid)</pre>
+</div>
+<p><strong>Description</strong>: check if the specified process is still active and running.</p>
+<p><strong>Parameter</strong> <tt class="docutils literal"><span class="pre">pid</span></tt>: process ID of the process to check.</p>
+<p><strong>Return</strong>: True if the process is active, otherwise False.</p>
+<p><strong>Usage Example</strong>:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">cuckoo.checkprocess</span> <span class="kn">import</span> <span class="n">check_process</span>
+
+<span class="k">if</span> <span class="n">check_process</span><span class="p">(</span><span class="n">pid</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&quot;Process is active!&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;Process is NOT active!&quot;</span>
+</pre></div>
+</td></tr></table></div>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="cuckoo-execute">
+<h3><tt class="docutils literal"><span class="pre">cuckoo.execute</span></tt><a class="headerlink" href="#cuckoo-execute" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>Function</strong> <tt class="docutils literal"><span class="pre">cuckoo_execute()</span></tt>:</p>
+<blockquote>
+<div><p><strong>Prototype</strong>:</p>
+<div class="highlight-python"><pre>def cuckoo_execute(target_path, args = None, suspend = False)</pre>
+</div>
+<p><strong>Description</strong>: creates a process from the specified file.</p>
+<p><strong>Parameter</strong> <tt class="docutils literal"><span class="pre">target_path</span></tt>: path to the file to execute.</p>
+<p><strong>Parameter</strong> <tt class="docutils literal"><span class="pre">args</span></tt>: arguments to pass to the process.</p>
+<p><strong>Parameter</strong> <tt class="docutils literal"><span class="pre">suspend</span></tt>: set to True if should be created in suspended
+mode, otherwise set to False.</p>
+<p><strong>Return</strong>: returns a list with PID and thread handle.</p>
+<p><strong>Usage Example</strong>:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">cuckoo.execute</span> <span class="kn">import</span> <span class="n">cuckoo_execute</span>
+
+<span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">h_thread</span><span class="p">)</span> <span class="o">=</span> <span class="n">cuckoo_execute</span><span class="p">(</span><span class="s">&quot;C:</span><span class="se">\\</span><span class="s">binary.exe&quot;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="cuckoo-inject">
+<h3><tt class="docutils literal"><span class="pre">cuckoo.inject</span></tt><a class="headerlink" href="#cuckoo-inject" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>Function</strong> <tt class="docutils literal"><span class="pre">cuckoo_inject()</span></tt>:</p>
+<blockquote>
+<div><p><strong>Prototype</strong>:</p>
+<div class="highlight-python"><pre>def cuckoo_inject(pid, dll_path)</pre>
+</div>
+<p><strong>Description</strong>: injects the process with the specified PID with the DLL
+located at <em>dll_path</em>.</p>
+<p><strong>Parameter</strong> <tt class="docutils literal"><span class="pre">pid</span></tt>: ID of the process to inject.</p>
+<p><strong>Parameter</strong> <tt class="docutils literal"><span class="pre">dll_path</span></tt>: path to the DLL to be injected.</p>
+<p><strong>Return</strong>: returns True if injection succeeded, otherwise False.</p>
+<p><strong>Usage Example</strong>:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">cuckoo.inject</span> <span class="kn">import</span> <span class="n">cuckoo_inject</span>
+
+<span class="k">if</span> <span class="n">cuckoo_inject</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="s">&quot;C:</span><span class="se">\\</span><span class="s">library.dll&quot;</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&quot;Process injected successfully!&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;Injection failed!&quot;</span>
+</pre></div>
+</td></tr></table></div>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="cuckoo-monitor">
+<h3><tt class="docutils literal"><span class="pre">cuckoo.monitor</span></tt><a class="headerlink" href="#cuckoo-monitor" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>Function</strong> <tt class="docutils literal"><span class="pre">cuckoo_resumethread()</span></tt>:</p>
+<blockquote>
+<div><p><strong>Prototype</strong>:</p>
+<div class="highlight-python"><pre>def cuckoo_resumethread(h_thread = -1)</pre>
+</div>
+<p><strong>Description</strong>: resumes a thread from suspended mode.</p>
+<p><strong>Parameter</strong> <tt class="docutils literal"><span class="pre">h_thread</span></tt>: handle to the thread to be resumed (as returned
+by <tt class="docutils literal"><span class="pre">cuckoo_execute()</span></tt>.</p>
+<p><strong>Return</strong>: returns True if resume succeeded, otherwise False.</p>
+<p><strong>Usage Example</strong>:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">cuckoo.monitor</span> <span class="kn">import</span> <span class="n">cuckoo_resumethread</span>
+
+<span class="k">if</span> <span class="n">cuckoo_resumethread</span><span class="p">(</span><span class="n">h_thread</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&quot;Process resumed!&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;Process resume failed!&quot;</span>
+</pre></div>
+</td></tr></table></div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Function</strong> <tt class="docutils literal"><span class="pre">cuckoo_monitor()</span></tt>:</p>
+<blockquote>
+<div><p><strong>Prototype</strong>:</p>
+<div class="highlight-python"><pre>def cuckoo_monitor(pid = -1, h_thread = -1, suspended = False, dll_path = None)</pre>
+</div>
+<p><strong>Description</strong>: instructs Cuckoo to inject and monitor the specified process.</p>
+<p><strong>Parameter</strong> <tt class="docutils literal"><span class="pre">pid</span></tt>: ID of the process to monitor.</p>
+<p><strong>Parameter</strong> <tt class="docutils literal"><span class="pre">h_thread</span></tt>: handle to the main thread of the process to
+monitor (as returned by <tt class="docutils literal"><span class="pre">cuckoo_execute()</span></tt>).</p>
+<p><strong>Parameter</strong> <tt class="docutils literal"><span class="pre">suspended</span></tt>: set to True if the process was created
+suspended and has to be resumed, otherwise False.</p>
+<p><strong>Parameter</strong> <tt class="docutils literal"><span class="pre">dll_path</span></tt> (optional): path to the DLL to inject into the
+process. If none is specified it will use the default one.</p>
+<p><strong>Return</strong>: returns True if monitor succeeded, otherwise False.</p>
+<p><strong>Usage Example</strong>:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">cuckoo.monitor</span> <span class="kn">import</span> <span class="n">cuckoo_monitor</span>
+
+<span class="k">if</span> <span class="n">cuckoo_monitor</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">h_thread</span><span class="p">,</span> <span class="bp">True</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&quot;Process monitoring started successfully!&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;Process monitoring failed!&quot;</span>
+</pre></div>
+</td></tr></table></div>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="cuckoo-trace">
+<h3><tt class="docutils literal"><span class="pre">cuckoo.trace</span></tt><a class="headerlink" href="#cuckoo-trace" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>Function</strong> <tt class="docutils literal"><span class="pre">cuckoo_trace()</span></tt>:</p>
+<blockquote>
+<div><p><strong>Prototype</strong>:</p>
+<div class="highlight-python"><pre>def cuckoo_trace(pid = -1)</pre>
+</div>
+<p><strong>Description</strong>: instructs Cuckoo to trace assembly instructions from the
+specified process.</p>
+<p><strong>Parameter</strong> <tt class="docutils literal"><span class="pre">pid</span></tt>: ID of the process to monitor.</p>
+<p><strong>Return</strong>: returns True if tracing was successful, otherwise False.</p>
+<p><strong>Usage Example</strong>:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">cuckoo.trace</span> <span class="kn">import</span> <span class="n">cuckoo_trace</span>
+
+<span class="k">if</span> <span class="n">cuckoo_trace</span><span class="p">(</span><span class="n">pid</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&quot;Process traced successfully!&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;Process trace failed!&quot;</span>
+</pre></div>
+</td></tr></table></div>
+</div></blockquote>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/cuckoo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Analysis Packages</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting started</a><ul>
+<li><a class="reference internal" href="#cuckoo-run"><tt class="docutils literal"><span class="pre">cuckoo_run()</span></tt></a></li>
+<li><a class="reference internal" href="#cuckoo-check"><tt class="docutils literal"><span class="pre">cuckoo_check()</span></tt></a></li>
+<li><a class="reference internal" href="#cuckoo-finish"><tt class="docutils literal"><span class="pre">cuckoo_finish()</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cuckoo-modules">Cuckoo Modules</a><ul>
+<li><a class="reference internal" href="#cuckoo-checkprocess"><tt class="docutils literal"><span class="pre">cuckoo.checkprocess</span></tt></a></li>
+<li><a class="reference internal" href="#cuckoo-execute"><tt class="docutils literal"><span class="pre">cuckoo.execute</span></tt></a></li>
+<li><a class="reference internal" href="#cuckoo-inject"><tt class="docutils literal"><span class="pre">cuckoo.inject</span></tt></a></li>
+<li><a class="reference internal" href="#cuckoo-monitor"><tt class="docutils literal"><span class="pre">cuckoo.monitor</span></tt></a></li>
+<li><a class="reference internal" href="#cuckoo-trace"><tt class="docutils literal"><span class="pre">cuckoo.trace</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Customization</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="processing.html"
+                        title="next chapter">Processing of results</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/customization/packages.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="processing.html" title="Processing of results"
+             >next</a></li>
+        <li class="right" >
+          <a href="index.html" title="Customization"
+             >previous</a> |</li>
+        <li><a href="../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="index.html" >Customization</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Cuckoo Sandbox.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

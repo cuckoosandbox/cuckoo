@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>cuckoo.processing.file</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cuckoo-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://www.cuckoobox.org">Cuckoo Sandbox Developer Documentation</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="cuckoo-module.html">Package&nbsp;cuckoo</a> ::
+        <a href="cuckoo.processing-module.html">Package&nbsp;processing</a> ::
+        Module&nbsp;file
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="cuckoo.processing.file-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="cuckoo.processing.file-module.html">Module cuckoo.processing.file</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># Cuckoo Sandbox - Automated Malware Analysis</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment"># Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># http://www.cuckoobox.org</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment"># This file is part of Cuckoo.</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-comment"># Cuckoo is free software: you can redistribute it and/or modify</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment"># it under the terms of the GNU General Public License as published by</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-comment"># the Free Software Foundation, either version 3 of the License, or</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-comment"># (at your option) any later version.</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment"># Cuckoo is distributed in the hope that it will be useful,</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment"># but WITHOUT ANY WARRANTY; without even the implied warranty of</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-comment"># GNU General Public License for more details.</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-comment"># You should have received a copy of the GNU General Public License</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-comment"># along with this program.  If not, see http://www.gnu.org/licenses/.</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">sys</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">binascii</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">hashlib</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line">    <tt class="py-comment"># Try to import libmagic python bindings. You can install them with Ubuntu's</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line">    <tt class="py-comment"># python-magic package.</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line">    <tt class="py-keyword">import</tt> <tt class="py-name">magic</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line">    <tt id="link-0" class="py-name" targets="Variable cuckoo.processing.file.IS_MAGIC=cuckoo.processing.file-module.html#IS_MAGIC"><a title="cuckoo.processing.file.IS_MAGIC" class="py-name" href="#" onclick="return doclink('link-0', 'IS_MAGIC', 'link-0');">IS_MAGIC</a></tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"><tt class="py-keyword">except</tt> <tt class="py-name">ImportError</tt><tt class="py-op">,</tt> <tt id="link-1" class="py-name" targets="Variable cuckoo.processing.file.why=cuckoo.processing.file-module.html#why,Variable cuckoo.processing.pcap.why=cuckoo.processing.pcap-module.html#why,Variable cuckoo.reporting.tasks.reporthtml.why=cuckoo.reporting.tasks.reporthtml-module.html#why"><a title="cuckoo.processing.file.why
+cuckoo.processing.pcap.why
+cuckoo.reporting.tasks.reporthtml.why" class="py-name" href="#" onclick="return doclink('link-1', 'why', 'link-1');">why</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">    <tt id="link-2" class="py-name"><a title="cuckoo.processing.file.IS_MAGIC" class="py-name" href="#" onclick="return doclink('link-2', 'IS_MAGIC', 'link-0');">IS_MAGIC</a></tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line">    <tt class="py-comment"># Try to import Jose's pyssdeep bindings.</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line">    <tt class="py-comment"># You can get them at http://code.google.com/p/pyssdeep/</tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">    <tt class="py-keyword">import</tt> <tt class="py-name">ssdeep</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line">    <tt id="link-3" class="py-name" targets="Variable cuckoo.processing.file.IS_SSDEEP=cuckoo.processing.file-module.html#IS_SSDEEP"><a title="cuckoo.processing.file.IS_SSDEEP" class="py-name" href="#" onclick="return doclink('link-3', 'IS_SSDEEP', 'link-3');">IS_SSDEEP</a></tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line"><tt class="py-keyword">except</tt> <tt class="py-name">ImportError</tt><tt class="py-op">,</tt> <tt id="link-4" class="py-name"><a title="cuckoo.processing.file.why
+cuckoo.processing.pcap.why
+cuckoo.reporting.tasks.reporthtml.why" class="py-name" href="#" onclick="return doclink('link-4', 'why', 'link-1');">why</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">    <tt id="link-5" class="py-name"><a title="cuckoo.processing.file.IS_SSDEEP" class="py-name" href="#" onclick="return doclink('link-5', 'IS_SSDEEP', 'link-3');">IS_SSDEEP</a></tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"> </tt>
+<a name="File"></a><div id="File-def"><a name="L41"></a><tt class="py-lineno"> 41</tt> <a class="py-toggle" href="#" id="File-toggle" onclick="return toggle('File');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="cuckoo.processing.file.File-class.html">File</a><tt class="py-op">:</tt> </tt>
+</div><div id="File-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="File-expanded"><a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line"><tt class="py-docstring">    Generate information regarding the specified file.</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">     </tt>
+<a name="File.__init__"></a><div id="File.__init__-def"><a name="L46"></a><tt class="py-lineno"> 46</tt> <a class="py-toggle" href="#" id="File.__init__-toggle" onclick="return toggle('File.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cuckoo.processing.file.File-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">file_path</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="File.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="File.__init__-expanded"><a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line"><tt class="py-docstring">        Creates a new instance</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line"><tt class="py-docstring">        @param file_path: path to file</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt>  </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_path</tt> <tt class="py-op">=</tt> <tt class="py-name">file_path</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_data</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+</div><a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line"> </tt>
+<a name="File._get_name"></a><div id="File._get_name-def"><a name="L54"></a><tt class="py-lineno"> 54</tt> <a class="py-toggle" href="#" id="File._get_name-toggle" onclick="return toggle('File._get_name');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cuckoo.processing.file.File-class.html#_get_name">_get_name</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="File._get_name-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="File._get_name-expanded"><a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line"><tt class="py-docstring">        Retrieves the original file name of the file.</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line"><tt class="py-docstring">        @return: file name</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">basename</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_path</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"> </tt>
+<a name="File._get_size"></a><div id="File._get_size-def"><a name="L61"></a><tt class="py-lineno"> 61</tt> <a class="py-toggle" href="#" id="File._get_size-toggle" onclick="return toggle('File._get_size');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cuckoo.processing.file.File-class.html#_get_size">_get_size</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="File._get_size-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="File._get_size-expanded"><a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line"><tt class="py-docstring">        Retrieves the size of the file expressed in bytes.</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line"><tt class="py-docstring">        @return: file size</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">getsize</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_path</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line"> </tt>
+<a name="File._get_crc32"></a><div id="File._get_crc32-def"><a name="L68"></a><tt class="py-lineno"> 68</tt> <a class="py-toggle" href="#" id="File._get_crc32-toggle" onclick="return toggle('File._get_crc32');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cuckoo.processing.file.File-class.html#_get_crc32">_get_crc32</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="File._get_crc32-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="File._get_crc32-expanded"><a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line"><tt class="py-docstring">        Generates the CRC32 hash of the file.</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line"><tt class="py-docstring">        @return: CRC32 hash of the file</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">        <tt class="py-name">res</tt> <tt class="py-op">=</tt> <tt class="py-string">''</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">        <tt class="py-name">crc</tt> <tt class="py-op">=</tt> <tt class="py-name">binascii</tt><tt class="py-op">.</tt><tt class="py-name">crc32</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_data</tt><tt class="py-op">)</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">range</tt><tt class="py-op">(</tt><tt class="py-number">4</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">            <tt class="py-name">t</tt> <tt class="py-op">=</tt> <tt class="py-name">crc</tt> <tt class="py-op">&amp;</tt> <tt class="py-number">0xFF</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">            <tt class="py-name">crc</tt> <tt class="py-op">&gt;&gt;=</tt> <tt class="py-number">8</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">            <tt class="py-name">res</tt> <tt class="py-op">=</tt> <tt class="py-string">'%02X%s'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">t</tt><tt class="py-op">,</tt> <tt class="py-name">res</tt><tt class="py-op">)</tt>  </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">res</tt> </tt>
+</div><a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line"> </tt>
+<a name="File._get_md5"></a><div id="File._get_md5-def"><a name="L81"></a><tt class="py-lineno"> 81</tt> <a class="py-toggle" href="#" id="File._get_md5-toggle" onclick="return toggle('File._get_md5');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cuckoo.processing.file.File-class.html#_get_md5">_get_md5</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="File._get_md5-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="File._get_md5-expanded"><a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line"><tt class="py-docstring">        Generates the MD5 hash of the file.</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line"><tt class="py-docstring">        @return: MD5 hash of the file</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">hashlib</tt><tt class="py-op">.</tt><tt class="py-name">md5</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_data</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">hexdigest</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line"> </tt>
+<a name="File._get_sha1"></a><div id="File._get_sha1-def"><a name="L88"></a><tt class="py-lineno"> 88</tt> <a class="py-toggle" href="#" id="File._get_sha1-toggle" onclick="return toggle('File._get_sha1');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cuckoo.processing.file.File-class.html#_get_sha1">_get_sha1</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="File._get_sha1-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="File._get_sha1-expanded"><a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line"><tt class="py-docstring">        Generates the SHA-1 hash of the file.</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line"><tt class="py-docstring">        @return: SHA-1 hash of the file</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">hashlib</tt><tt class="py-op">.</tt><tt class="py-name">sha1</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_data</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">hexdigest</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line"> </tt>
+<a name="File._get_sha256"></a><div id="File._get_sha256-def"><a name="L95"></a><tt class="py-lineno"> 95</tt> <a class="py-toggle" href="#" id="File._get_sha256-toggle" onclick="return toggle('File._get_sha256');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cuckoo.processing.file.File-class.html#_get_sha256">_get_sha256</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="File._get_sha256-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="File._get_sha256-expanded"><a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line"><tt class="py-docstring">        Generates the SHA-256 hash of the file.</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line"><tt class="py-docstring">        @return: SHA-256 hash of the file</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">hashlib</tt><tt class="py-op">.</tt><tt class="py-name">sha256</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_data</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">hexdigest</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line"> </tt>
+<a name="File._get_sha512"></a><div id="File._get_sha512-def"><a name="L102"></a><tt class="py-lineno">102</tt> <a class="py-toggle" href="#" id="File._get_sha512-toggle" onclick="return toggle('File._get_sha512');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cuckoo.processing.file.File-class.html#_get_sha512">_get_sha512</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="File._get_sha512-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="File._get_sha512-expanded"><a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line"><tt class="py-docstring">        Generates the SHA-512 hash of the file.</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line"><tt class="py-docstring">        @return: SHA-512 hash of the file</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">hashlib</tt><tt class="py-op">.</tt><tt class="py-name">sha512</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_data</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">hexdigest</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line"> </tt>
+<a name="File._get_ssdeep"></a><div id="File._get_ssdeep-def"><a name="L109"></a><tt class="py-lineno">109</tt> <a class="py-toggle" href="#" id="File._get_ssdeep-toggle" onclick="return toggle('File._get_ssdeep');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cuckoo.processing.file.File-class.html#_get_ssdeep">_get_ssdeep</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="File._get_ssdeep-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="File._get_ssdeep-expanded"><a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line"><tt class="py-docstring">        Generates the ssdeep fuzzy hash of the file.</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line"><tt class="py-docstring">        @return: ssdeep fuzzy hash of the file</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt id="link-6" class="py-name"><a title="cuckoo.processing.file.IS_SSDEEP" class="py-name" href="#" onclick="return doclink('link-6', 'IS_SSDEEP', 'link-3');">IS_SSDEEP</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">None</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line"> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">ssdeep</tt><tt class="py-op">.</tt><tt class="py-name">ssdeep</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">hash_file</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_path</tt><tt class="py-op">)</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">None</tt> </tt>
+</div><a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line"> </tt>
+<a name="File._get_type"></a><div id="File._get_type-def"><a name="L122"></a><tt class="py-lineno">122</tt> <a class="py-toggle" href="#" id="File._get_type-toggle" onclick="return toggle('File._get_type');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cuckoo.processing.file.File-class.html#_get_type">_get_type</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="File._get_type-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="File._get_type-expanded"><a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line"><tt class="py-docstring">        Retrieves the libmagic type of the file.</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line"><tt class="py-docstring">        @return: file type</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt id="link-7" class="py-name"><a title="cuckoo.processing.file.IS_MAGIC" class="py-name" href="#" onclick="return doclink('link-7', 'IS_MAGIC', 'link-0');">IS_MAGIC</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">None</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line"> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line">            <tt class="py-name">ms</tt> <tt class="py-op">=</tt> <tt class="py-name">magic</tt><tt class="py-op">.</tt><tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">magic</tt><tt class="py-op">.</tt><tt class="py-name">MAGIC_NONE</tt><tt class="py-op">)</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line">            <tt class="py-name">ms</tt><tt class="py-op">.</tt><tt class="py-name">load</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">ms</tt><tt class="py-op">.</tt><tt class="py-name">buffer</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_data</tt><tt class="py-op">)</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">None</tt> </tt>
+</div><a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line"> </tt>
+<a name="File.process"></a><div id="File.process-def"><a name="L137"></a><tt class="py-lineno">137</tt> <a class="py-toggle" href="#" id="File.process-toggle" onclick="return toggle('File.process');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="cuckoo.processing.file.File-class.html#process">process</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="File.process-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="File.process-expanded"><a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line"><tt class="py-docstring">        Generates file information dictionary.</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line"><tt class="py-docstring">        @return: dictionary containing all the file's information</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">exists</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_path</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">None</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line"> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_data</tt> <tt class="py-op">=</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">file_path</tt><tt class="py-op">,</tt> <tt class="py-string">"rb"</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">read</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line"> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">        <tt id="link-8" class="py-name" targets="Method cuckoo.core.virtualbox.VirtualMachine.infos()=cuckoo.core.virtualbox.VirtualMachine-class.html#infos"><a title="cuckoo.core.virtualbox.VirtualMachine.infos" class="py-name" href="#" onclick="return doclink('link-8', 'infos', 'link-8');">infos</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">        <tt id="link-9" class="py-name"><a title="cuckoo.core.virtualbox.VirtualMachine.infos" class="py-name" href="#" onclick="return doclink('link-9', 'infos', 'link-8');">infos</a></tt><tt class="py-op">[</tt><tt class="py-string">"name"</tt><tt class="py-op">]</tt>   <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-10" class="py-name" targets="Method cuckoo.processing.file.File._get_name()=cuckoo.processing.file.File-class.html#_get_name"><a title="cuckoo.processing.file.File._get_name" class="py-name" href="#" onclick="return doclink('link-10', '_get_name', 'link-10');">_get_name</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line">        <tt id="link-11" class="py-name"><a title="cuckoo.core.virtualbox.VirtualMachine.infos" class="py-name" href="#" onclick="return doclink('link-11', 'infos', 'link-8');">infos</a></tt><tt class="py-op">[</tt><tt class="py-string">"size"</tt><tt class="py-op">]</tt>   <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Method cuckoo.processing.file.File._get_size()=cuckoo.processing.file.File-class.html#_get_size"><a title="cuckoo.processing.file.File._get_size" class="py-name" href="#" onclick="return doclink('link-12', '_get_size', 'link-12');">_get_size</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line">        <tt id="link-13" class="py-name"><a title="cuckoo.core.virtualbox.VirtualMachine.infos" class="py-name" href="#" onclick="return doclink('link-13', 'infos', 'link-8');">infos</a></tt><tt class="py-op">[</tt><tt class="py-string">"crc32"</tt><tt class="py-op">]</tt>    <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name" targets="Method cuckoo.processing.file.File._get_crc32()=cuckoo.processing.file.File-class.html#_get_crc32"><a title="cuckoo.processing.file.File._get_crc32" class="py-name" href="#" onclick="return doclink('link-14', '_get_crc32', 'link-14');">_get_crc32</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line">        <tt id="link-15" class="py-name"><a title="cuckoo.core.virtualbox.VirtualMachine.infos" class="py-name" href="#" onclick="return doclink('link-15', 'infos', 'link-8');">infos</a></tt><tt class="py-op">[</tt><tt class="py-string">"md5"</tt><tt class="py-op">]</tt>    <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name" targets="Method cuckoo.processing.file.File._get_md5()=cuckoo.processing.file.File-class.html#_get_md5"><a title="cuckoo.processing.file.File._get_md5" class="py-name" href="#" onclick="return doclink('link-16', '_get_md5', 'link-16');">_get_md5</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line">        <tt id="link-17" class="py-name"><a title="cuckoo.core.virtualbox.VirtualMachine.infos" class="py-name" href="#" onclick="return doclink('link-17', 'infos', 'link-8');">infos</a></tt><tt class="py-op">[</tt><tt class="py-string">"sha1"</tt><tt class="py-op">]</tt>   <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-18" class="py-name" targets="Method cuckoo.processing.file.File._get_sha1()=cuckoo.processing.file.File-class.html#_get_sha1"><a title="cuckoo.processing.file.File._get_sha1" class="py-name" href="#" onclick="return doclink('link-18', '_get_sha1', 'link-18');">_get_sha1</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">        <tt id="link-19" class="py-name"><a title="cuckoo.core.virtualbox.VirtualMachine.infos" class="py-name" href="#" onclick="return doclink('link-19', 'infos', 'link-8');">infos</a></tt><tt class="py-op">[</tt><tt class="py-string">"sha256"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-20" class="py-name" targets="Method cuckoo.processing.file.File._get_sha256()=cuckoo.processing.file.File-class.html#_get_sha256"><a title="cuckoo.processing.file.File._get_sha256" class="py-name" href="#" onclick="return doclink('link-20', '_get_sha256', 'link-20');">_get_sha256</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line">        <tt id="link-21" class="py-name"><a title="cuckoo.core.virtualbox.VirtualMachine.infos" class="py-name" href="#" onclick="return doclink('link-21', 'infos', 'link-8');">infos</a></tt><tt class="py-op">[</tt><tt class="py-string">"sha512"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-22" class="py-name" targets="Method cuckoo.processing.file.File._get_sha512()=cuckoo.processing.file.File-class.html#_get_sha512"><a title="cuckoo.processing.file.File._get_sha512" class="py-name" href="#" onclick="return doclink('link-22', '_get_sha512', 'link-22');">_get_sha512</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line">        <tt id="link-23" class="py-name"><a title="cuckoo.core.virtualbox.VirtualMachine.infos" class="py-name" href="#" onclick="return doclink('link-23', 'infos', 'link-8');">infos</a></tt><tt class="py-op">[</tt><tt class="py-string">"ssdeep"</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-24" class="py-name" targets="Method cuckoo.processing.file.File._get_ssdeep()=cuckoo.processing.file.File-class.html#_get_ssdeep"><a title="cuckoo.processing.file.File._get_ssdeep" class="py-name" href="#" onclick="return doclink('link-24', '_get_ssdeep', 'link-24');">_get_ssdeep</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line">        <tt id="link-25" class="py-name"><a title="cuckoo.core.virtualbox.VirtualMachine.infos" class="py-name" href="#" onclick="return doclink('link-25', 'infos', 'link-8');">infos</a></tt><tt class="py-op">[</tt><tt class="py-string">"type"</tt><tt class="py-op">]</tt>   <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-26" class="py-name" targets="Method cuckoo.processing.file.File._get_type()=cuckoo.processing.file.File-class.html#_get_type"><a title="cuckoo.processing.file.File._get_type" class="py-name" href="#" onclick="return doclink('link-26', '_get_type', 'link-26');">_get_type</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line"> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt id="link-27" class="py-name"><a title="cuckoo.core.virtualbox.VirtualMachine.infos" class="py-name" href="#" onclick="return doclink('link-27', 'infos', 'link-8');">infos</a></tt> </tt>
+</div></div><a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cuckoo-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://www.cuckoobox.org">Cuckoo Sandbox Developer Documentation</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Mon Dec 26 10:39:38 2011
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

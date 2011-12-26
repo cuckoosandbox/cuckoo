@@ -1,0 +1,341 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configuration &mdash; Cuckoo Sandbox v0.3 Book</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Cuckoo Sandbox v0.3 Book" href="../../index.html" />
+    <link rel="up" title="Preparing the Host" href="index.html" />
+    <link rel="next" title="Preparing the Guest" href="../guest/index.html" />
+    <link rel="prev" title="Installing Cuckoo" href="installation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../guest/index.html" title="Preparing the Guest"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="installation.html" title="Installing Cuckoo"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="../index.html" >Installation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Preparing the Host</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<p>Cuckoo relies on two main configuration files:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#cuckoo-conf"><em>cuckoo.conf</em></a>: for configuring general behavior and analysis options.</li>
+<li><a class="reference internal" href="#reporting-conf"><em>reporting.conf</em></a>: for enabling or disabling report formats.</li>
+</ul>
+</div></blockquote>
+<div class="section" id="cuckoo-conf">
+<span id="id1"></span><h2>cuckoo.conf<a class="headerlink" href="#cuckoo-conf" title="Permalink to this headline">¶</a></h2>
+<p>We&#8217;ll first start editing <em>conf/cuckoo.conf</em> walking through every section and
+option available.</p>
+<div class="section" id="logging">
+<h3>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h3>
+<p>Following is the logging section:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">Logging</span><span class="p">]</span>
+<span class="c"># Enable/Disable additional debugging messages. This messages won&#39;t wrote to</span>
+<span class="c"># log file but just printed on screen. [on/off]</span>
+<span class="n">debug</span> <span class="o">=</span> <span class="n">off</span>
+</pre></div>
+</div>
+<p>The <strong>debug</strong> option enables or disables debug messages that will be both printed
+on standard output as well as stored in the log file.</p>
+</div>
+<div class="section" id="analysis">
+<h3>Analysis<a class="headerlink" href="#analysis" title="Permalink to this headline">¶</a></h3>
+<p>Following is the analysis section:</p>
+<div class="highlight-python"><pre>[Analysis]
+# This is the actual analysis timeout (expressed in seconds). This represents
+# the default timeout performed by analysis core if none is specified.
+analysis_timeout = 200
+# Watchdog timeout (expressed in seconds) for analysis execution to complete,
+# when this timeout gets hit, current execution is aborted and virtual machine
+# is restored and freed.
+watchdog_timeout = 600
+# Specify here the path where analysis results shall be stored.
+results_path = analysis/</pre>
+</div>
+<p>This section defines two analysis time boundaries:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>analysis timeout</strong>: this timeout represent the maximum time an analysis should last, it can be overridden when submitting a file to analyze.</li>
+<li><strong>watchdog timeout</strong>: this is the time limit for which Cuckoo host should wait for the guest component (<em>analyzer</em>) to terminate its operations.</li>
+</ul>
+</div></blockquote>
+<p>The <em>analysis timeout</em> should be smaller than the <em>watchdog timeout</em>. If by
+mistake it&#8217;s configured differently, Cuckoo will force the <em>analysis timeout</em>
+to a smaller value.</p>
+<p>Consider that the <em>watchdog timeout</em> should be raised just under critical
+circumstances, where the analyzer or virtual machine are not responding and
+therefore need to be killed. When this happens, you&#8217;ll most likely lose any
+analysis results from that run.</p>
+<p>The <strong>results_path</strong> option defines where to store the analysis results.</p>
+</div>
+<div class="section" id="processing">
+<h3>Processing<a class="headerlink" href="#processing" title="Permalink to this headline">¶</a></h3>
+<p>Following is the processing section:</p>
+<div class="highlight-python"><pre>[Processing]
+# Specify here the interpreter path to be used to launch the script.
+interpreter = /usr/bin/python
+# Specify here the path to the analysis results processing script.
+processor = processor.py</pre>
+</div>
+<p>This section defines where the post-analysis processing script is located and
+how it should be executed.</p>
+<p>This script should be your interface to the analysis results and you should
+use it and customize it at your will in order to consume the data generated by
+Cuckoo. We&#8217;ll get more into details on this in the <a class="reference internal" href="../../customization/index.html"><em>Customization</em></a>
+chapter.</p>
+<p>By default Cuckoo provides a Python processing script that invokes some Python
+classes used to process the results and to generate human readable analysis
+reports (text, HTML, JSON).</p>
+<p>The <strong>interpreter</strong> option defines the path to the application to be used to
+execute the script.</p>
+<p>The <strong>processor</strong> option defines the path to the script to be executed.</p>
+</div>
+<div class="section" id="sniffer">
+<h3>Sniffer<a class="headerlink" href="#sniffer" title="Permalink to this headline">¶</a></h3>
+<p>Following is the sniffer section:</p>
+<div class="highlight-python"><pre>[Sniffer]
+# Enable or disable the following option by assigning a True or False value.
+# In case you decide to disable it, you're supposed to either not have any
+# network dump or to used VirtualBox's (or any other virtualization engine
+# you are using) to handle the network monitoring instead of using an external
+# sniffer such as tcpdump. [on/off]
+sniffer = off
+# Path to the sniffer (tcpdump) binary.
+path = /usr/sbin/tcpdump
+# This specifies the network interface where the sniffer will bind to in order
+# to monitor virtual machines' generated traffic.
+interface = eth0</pre>
+</div>
+<p>This section should be considered and edited just in the case you decided to use
+an external sniffer (assuming that you <a class="reference internal" href="requirements.html"><em>properly installed</em></a>
+it already).</p>
+<p>If otherwise you don&#8217;t plan to use an external sniffer, you can skip this section.</p>
+<p>First you&#8217;ll need to enable the <strong>snifer</strong> option by setting it to &#8220;<em>on</em>&#8221;.</p>
+<p>The <strong>path</strong> option defines where the sniffer (tcpdump) binary is located. It
+should be generally correct by default.</p>
+<p>The <strong>interface</strong> option defines which network interface the sniffer should
+monitor. This obviously depends on your network configuration and on how you
+are planning to configure your virtual machines&#8217; networking. It&#8217;s up to you.</p>
+</div>
+<div class="section" id="virtual-machines">
+<h3>Virtual Machines<a class="headerlink" href="#virtual-machines" title="Permalink to this headline">¶</a></h3>
+<p>Following is the Virtual Machines section:</p>
+<div class="highlight-python"><pre>[VirtualMachines]
+# Virtualization product.
+engine = VirtualBox
+# List virtual machines IDs separated by commas.
+enabled = cuckoo1
+# Set to "gui" if you want Cuckoo to spawn virtual machines' GUIs or set to
+# "headless" if you don't.
+mode = gui
+# Path to local Python installation on guest machines. Please be sure to have
+# correctly set this value as it's critical to Cuckoo's proper execution.
+python = C:\Python27\python.exe</pre>
+</div>
+<p>This is probably the most important section in the configuration file, as it
+defines the core options for the virtualization engine.</p>
+<p>The <strong>engine</strong> option defines which virtualization module to use. At current
+stage only VirtualBox is supported, therefore you shouldn&#8217;t modify this option
+unless you really know what you&#8217;re doing.</p>
+<p>The <strong>enabled</strong> option defines a comma-separated list of enabled virtual
+machines.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The virtual machines&#8217; IDs used by Cuckoo are user-defined names that are
+exclusively used internally by Cuckoo. They are <strong>not</strong> the names used
+to label the virtual machines inside VirtualBox. Even if they could have
+the same values (<em>not recommended</em>), it&#8217;s important to understand that
+they are not the same thing.</p>
+</div>
+</div></blockquote>
+<p>The <strong>mode</strong> option defines if the virtualization software should spawn the
+machines in <em>gui</em> mode (with regular window) or in <em>headless</em>, which will not
+create any graphical interface.</p>
+<p>The <strong>python</strong> option defines the location of the Python interpreter <em>inside
+the virtualized Windows environment</em>. This is critical to proper execution of
+Cuckoo, so take care to use the path you define here when installing Python on
+Windows or to come back here later and modify this value accordingly.</p>
+</div>
+<div class="section" id="virtual-machines-details">
+<h3>Virtual machines details<a class="headerlink" href="#virtual-machines-details" title="Permalink to this headline">¶</a></h3>
+<p>For each virtual machine you specified in the comma-separated list in the
+<strong>enabled</strong> option of the previous section, you have to create a dedicated
+section named with the ID value you assigned in the list.</p>
+<p>An example of such section is:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">cuckoo1</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">Cuckoo1</span>
+<span class="n">username</span> <span class="o">=</span> <span class="n">Me</span>
+<span class="n">password</span> <span class="o">=</span> <span class="n">cuckoo</span>
+<span class="c"># Please notice that the shared folder name must coincide with the current</span>
+<span class="c"># virtual machine id, which is the name you assigned between the square</span>
+<span class="c"># brackets (e.g. [cuckoo1]).</span>
+<span class="n">share</span> <span class="o">=</span> <span class="n">shares</span><span class="o">/</span><span class="n">cuckoo1</span>
+</pre></div>
+</div>
+<p>As you notice the section name <strong>[cuckoo1]</strong> has to contain the ID you assigned
+to the virtual machine.</p>
+<p>The <strong>name</strong> option is the name you&#8217;re going to use to create the virtual machine
+in VirtualBox.</p>
+<p>The <strong>username</strong> option defines the name of the Windows account you&#8217;re going to
+create.</p>
+<p>The <strong>password</strong> option defines the password for such Windows account.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The Windows account is mandatory. It is needed to allow the host
+to execute commands inside the guest operating system, therefore the
+<em>username</em> and <em>password</em> options must containd valid values.</p>
+</div>
+</div></blockquote>
+<p>The <strong>share</strong> option defines the path to the shared folder you&#8217;re going to
+assign to this specific virtual machine. This folder has to exist, therefore
+make sure to create it. The name of such folder must coincide with the ID you
+assigned to current virtual machine. In the example given, the current virtual
+machine ID is &#8220;<em>cuckoo1</em>&#8221;, so the shared folder is named &#8220;<em>cuckoo1</em>&#8221; as well.</p>
+<p>If for example you defined more than one virtual machine in the <em>enabled</em> option
+(e.g. &#8220;cuckoo1,cuckoo2&#8221;) you&#8217;ll have to create multiple details sections like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">cuckoo1</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">Cuckoo1</span>
+<span class="n">username</span> <span class="o">=</span> <span class="n">Me</span>
+<span class="n">password</span> <span class="o">=</span> <span class="n">cuckoo</span>
+<span class="n">share</span> <span class="o">=</span> <span class="n">shares</span><span class="o">/</span><span class="n">cuckoo1</span>
+
+<span class="p">[</span><span class="n">cuckoo2</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">Cuckoo2</span>
+<span class="n">username</span> <span class="o">=</span> <span class="n">Me</span>
+<span class="n">password</span> <span class="o">=</span> <span class="n">cuckoo</span>
+<span class="n">share</span> <span class="o">=</span> <span class="n">shares</span><span class="o">/</span><span class="n">cuckoo2</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="reporting-conf">
+<span id="id2"></span><h2>reporting.conf<a class="headerlink" href="#reporting-conf" title="Permalink to this headline">¶</a></h2>
+<p>The <em>conf/reporting.conf</em> file contains information on the automated reports
+generation.</p>
+<p>It contains the following section:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">Tasks</span><span class="p">]</span>
+<span class="c"># Enable/Disable reporting tasks.</span>
+<span class="c"># Here you can choose what report enable or disable.</span>
+<span class="c"># By default all available reporting tasks are enabled.</span>
+<span class="c"># Available values are [on/off]</span>
+<span class="n">jsondump</span> <span class="o">=</span> <span class="n">on</span>
+<span class="n">reporttxt</span> <span class="o">=</span> <span class="n">on</span>
+<span class="n">reporthtml</span> <span class="o">=</span> <span class="n">on</span>
+</pre></div>
+</div>
+<p>By setting those option to <em>on</em> or <em>off</em> you enable or disable the generation
+of such reports.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/cuckoo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Configuration</a><ul>
+<li><a class="reference internal" href="#cuckoo-conf">cuckoo.conf</a><ul>
+<li><a class="reference internal" href="#logging">Logging</a></li>
+<li><a class="reference internal" href="#analysis">Analysis</a></li>
+<li><a class="reference internal" href="#processing">Processing</a></li>
+<li><a class="reference internal" href="#sniffer">Sniffer</a></li>
+<li><a class="reference internal" href="#virtual-machines">Virtual Machines</a></li>
+<li><a class="reference internal" href="#virtual-machines-details">Virtual machines details</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reporting-conf">reporting.conf</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Installing Cuckoo</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../guest/index.html"
+                        title="next chapter">Preparing the Guest</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/installation/host/configuration.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../guest/index.html" title="Preparing the Guest"
+             >next</a></li>
+        <li class="right" >
+          <a href="installation.html" title="Installing Cuckoo"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="../index.html" >Installation</a> &raquo;</li>
+          <li><a href="index.html" >Preparing the Host</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Cuckoo Sandbox.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

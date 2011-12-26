@@ -1,0 +1,164 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Network Configuration &mdash; Cuckoo Sandbox v0.3 Book</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Cuckoo Sandbox v0.3 Book" href="../../index.html" />
+    <link rel="up" title="Preparing the Guest" href="index.html" />
+    <link rel="next" title="Shared Folders" href="shares.html" />
+    <link rel="prev" title="Requirements" href="requirements.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="shares.html" title="Shared Folders"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="requirements.html" title="Requirements"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="../index.html" >Installation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Preparing the Guest</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="network-configuration">
+<h1>Network Configuration<a class="headerlink" href="#network-configuration" title="Permalink to this headline">¶</a></h1>
+<p>Now it&#8217;s the time to setup the network configuration for your virtual machine.</p>
+<div class="section" id="windows-settings">
+<h2>Windows Settings<a class="headerlink" href="#windows-settings" title="Permalink to this headline">¶</a></h2>
+<p>Before configuring the underlying networking of the virtual machine, you might
+want to trick some settings inside Windows itself.</p>
+<p>One of the most important things to do is <strong>disabling</strong> <em>Windows Firewall</em> and the
+<em>Automatic Updates</em>. The reason behind this is that they can affect the behavior
+of the malware under normal circumstances and that they can pollute the network
+analysis performed by Cuckoo, by dropping connections or including unrelevant
+requests.</p>
+<p>You can do so from Windows&#8217; Control Panel as shown in the picture:</p>
+<blockquote>
+<div><div class="figure align-center">
+<img alt="../../_images/windows_security.png" src="../../_images/windows_security.png" />
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="virtual-networking">
+<h2>Virtual Networking<a class="headerlink" href="#virtual-networking" title="Permalink to this headline">¶</a></h2>
+<p>Now you need to decide how to make your virtual machine able to access Internet
+or your local network.</p>
+<p>By default VirtualBox adopts Network Address Translation (NAT) which in most
+cases will be good enough for any needs.
+This is also the configuration we&#8217;ll adopt in this documentation.</p>
+<p>If you have particular needs and want to use some different networking, please
+refer to VirtualBox&#8217;s <a class="reference external" href="https://www.virtualbox.org/manual/ch06.html">virtual networking documentation</a>.</p>
+</div>
+<div class="section" id="network-tracing">
+<h2>Network Tracing<a class="headerlink" href="#network-tracing" title="Permalink to this headline">¶</a></h2>
+<p>Unless you decided to use an external sniffer (as previously discussed in
+<a class="reference internal" href="../host/configuration.html"><em>Configuration</em></a>), you can proceed configuring the network trace
+functionality provided by VirtualBox as explained <a class="reference external" href="https://www.virtualbox.org/wiki/Network_tips">here</a>.</p>
+<p>First you need to power off your virtual machine:</p>
+<div class="highlight-python"><pre>$ VBoxManage controlvm "Name of VM" poweroff</pre>
+</div>
+<p>Then you enable network trace:</p>
+<div class="highlight-python"><pre>$ VBoxManage modifyvm "Name of VM" --nictrace1 on --nictracefile1 /path/to/cuckoo/shares/&lt;VM ID&gt;/dump.pcap</pre>
+</div>
+<p>The last argument specifies the path where the PCAP file will be stored. It has
+to be an absolute path and include the file name as well. In order to make
+Cuckoo able to find the file you&#8217;ll have to specify the shared folder you
+created for current virtual machine and &#8220;<em>dump.pcap</em>&#8221;.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/cuckoo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Network Configuration</a><ul>
+<li><a class="reference internal" href="#windows-settings">Windows Settings</a></li>
+<li><a class="reference internal" href="#virtual-networking">Virtual Networking</a></li>
+<li><a class="reference internal" href="#network-tracing">Network Tracing</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="requirements.html"
+                        title="previous chapter">Requirements</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="shares.html"
+                        title="next chapter">Shared Folders</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/installation/guest/network.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="shares.html" title="Shared Folders"
+             >next</a></li>
+        <li class="right" >
+          <a href="requirements.html" title="Requirements"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="../index.html" >Installation</a> &raquo;</li>
+          <li><a href="index.html" >Preparing the Guest</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Cuckoo Sandbox.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

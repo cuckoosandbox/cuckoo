@@ -1,0 +1,164 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation &mdash; Cuckoo Sandbox v0.3 Book</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Cuckoo Sandbox v0.3 Book" href="../index.html" />
+    <link rel="next" title="Preparing the Host" href="host/index.html" />
+    <link rel="prev" title="License" href="../introduction/license.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="host/index.html" title="Preparing the Host"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="../introduction/license.html" title="License"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>This chapter explains how to install Cuckoo.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This documentation refers to <em>Host</em> as the underlying operating systems on
+which you are running Cuckoo (generally being a GNU/Linux distribution) and
+to <em>Guest</em> as the Windows virtual machine used to run the isolated analysis.</p>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="host/index.html">Preparing the Host</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="host/requirements.html">Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="host/requirements.html#installing-python-libraries">Installing Python libraries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="host/requirements.html#installing-virtualbox">Installing VirtualBox</a></li>
+<li class="toctree-l3"><a class="reference internal" href="host/requirements.html#installing-tcpdump">Installing Tcpdump</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="host/installation.html">Installing Cuckoo</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="host/installation.html#create-a-user">Create a user</a></li>
+<li class="toctree-l3"><a class="reference internal" href="host/installation.html#download-cuckoo">Download Cuckoo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="host/installation.html#install-it">Install it</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="host/configuration.html">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="host/configuration.html#cuckoo-conf">cuckoo.conf</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="host/configuration.html#logging">Logging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="host/configuration.html#analysis">Analysis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="host/configuration.html#processing">Processing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="host/configuration.html#sniffer">Sniffer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="host/configuration.html#virtual-machines">Virtual Machines</a></li>
+<li class="toctree-l4"><a class="reference internal" href="host/configuration.html#virtual-machines-details">Virtual machines details</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="host/configuration.html#reporting-conf">reporting.conf</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guest/index.html">Preparing the Guest</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guest/creation.html">Creation of the Virtual Machine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guest/requirements.html">Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="guest/requirements.html#install-guest-additions">Install Guest Additions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guest/requirements.html#install-python">Install Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guest/requirements.html#additional-softwares">Additional Softwares</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="guest/network.html">Network Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="guest/network.html#windows-settings">Windows Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guest/network.html#virtual-networking">Virtual Networking</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guest/network.html#network-tracing">Network Tracing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="guest/shares.html">Shared Folders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guest/saving.html">Saving the Virtual Machine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guest/cloning.html">Cloning the Virtual Machine</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/cuckoo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../introduction/license.html"
+                        title="previous chapter">License</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="host/index.html"
+                        title="next chapter">Preparing the Host</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/installation/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="host/index.html" title="Preparing the Host"
+             >next</a></li>
+        <li class="right" >
+          <a href="../introduction/license.html" title="License"
+             >previous</a> |</li>
+        <li><a href="../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Cuckoo Sandbox.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

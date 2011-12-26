@@ -1,0 +1,139 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Starting Cuckoo &mdash; Cuckoo Sandbox v0.3 Book</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Cuckoo Sandbox v0.3 Book" href="../index.html" />
+    <link rel="up" title="Usage" href="index.html" />
+    <link rel="next" title="Submit an analysis" href="submit.html" />
+    <link rel="prev" title="Usage" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="submit.html" title="Submit an analysis"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="index.html" title="Usage"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Usage</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="starting-cuckoo">
+<h1>Starting Cuckoo<a class="headerlink" href="#starting-cuckoo" title="Permalink to this headline">¶</a></h1>
+<p>To start Cuckoo use the command:</p>
+<div class="highlight-python"><pre>$ python cuckoo.py</pre>
+</div>
+<p>Make sure to run it inside Cuckoo&#8217;s root directory.</p>
+<p>You will get an output similar to this:</p>
+<div class="highlight-python"><pre>                     _
+    ____ _   _  ____| |  _ ___   ___
+   / ___) | | |/ ___) |_/ ) _ \ / _ \
+  ( (___| |_| ( (___|  _ ( |_| | |_| |
+   \____)____/ \____)_| \_)___/ \___/ v0.3
+
+ www.cuckoobox.org
+ Copyright (C) 2010-2011
+
+[2011-12-18 17:43:06,343] [Core.Init] INFO: Started.
+[2011-12-18 17:43:06,834] [VirtualMachine.Check] INFO: Your VirtualBox version is: "4.1.6", good!
+[2011-12-18 17:43:06,834] [Core.Init] INFO: Populating virtual machines pool...
+[2011-12-18 17:43:06,840] [VirtualMachine.Infos] INFO: Virtual machine "Cuckoo1" information:
+[2011-12-18 17:43:06,841] [VirtualMachine.Infos] INFO:      \_| Name: Cuckoo1
+[2011-12-18 17:43:06,841] [VirtualMachine.Infos] INFO:        | ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+[2011-12-18 17:43:06,841] [VirtualMachine.Infos] INFO:        | CPU Count: 1 Core/s
+[2011-12-18 17:43:06,841] [VirtualMachine.Infos] INFO:        | Memory Size: 192 MB
+[2011-12-18 17:43:06,841] [VirtualMachine.Infos] INFO:        | VRAM Size: 16 MB
+[2011-12-18 17:43:06,841] [VirtualMachine.Infos] INFO:        | State: Saved
+[2011-12-18 17:43:06,842] [VirtualMachine.Infos] INFO:        | Current Snapshot: "Clean"
+[2011-12-18 17:43:06,842] [VirtualMachine.Infos] INFO:        | MAC Address: 08:00:27:XX:XX:XX
+[2011-12-18 17:43:06,842] [Core.Init] INFO: 1 virtual machine/s added to pool.
+[2011-12-18 17:43:07,045] [Database.Init] INFO: Generated database "db/cuckoo.db" which didn't exist before.</pre>
+</div>
+<p>Now Cuckoo is ready to run and it&#8217;s listening for submissions.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/cuckoo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Usage</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="submit.html"
+                        title="next chapter">Submit an analysis</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/usage/start.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="submit.html" title="Submit an analysis"
+             >next</a></li>
+        <li class="right" >
+          <a href="index.html" title="Usage"
+             >previous</a> |</li>
+        <li><a href="../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="index.html" >Usage</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Cuckoo Sandbox.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
