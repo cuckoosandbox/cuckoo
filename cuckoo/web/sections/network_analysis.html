@@ -1,9 +1,9 @@
 <div class="section">
     <div class="section-title">Network Analysis</div>
-    %if len(network["dns"]) == 0 and len(network["http"]) == 0:
+    %if not network["dns"] and not network["http"]:
         Nothing to display.
     %else:
-        %if network["dns"] and len(network["dns"]) > 0:
+        %if network["dns"]:
         <fieldset>
             <legend><%include file="../images/world.html" /> DNS Requests <a href="javascript:showHide('dns');"><%include file="../images/plus.html" /></a></legend>
             <div id="dns" class="section-nested" style="display: none;">
@@ -23,7 +23,7 @@
         </fieldset>
         <div class="space-small"></div>
         %endif
-        %if network["http"] and len(network["http"]) > 0:
+        %if network["http"]:
         <fieldset>
             <legend><%include file="../images/world.html" /> HTTP Requests <a href="javascript:showHide('http');"><%include file="../images/plus.html" /></a></legend>
             <div id="http" class="section-nested" style="display: none;">

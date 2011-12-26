@@ -1,6 +1,6 @@
 <div class="section">
     <div class="section-title">Dropped Files</div>
-    %if dropped and len(dropped) > 0:
+    %if dropped:
         %for dropped_file in dropped:
         <fieldset>
             <legend><%include file="../images/file.html" />File: <span class="blue"><span class="mono">${dropped_file["name"]}</span></span> <a href="javascript:showHide('dropped_${dropped_file["md5"]}');"><%include file="../images/plus.html" /></a></legend>

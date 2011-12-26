@@ -1,6 +1,6 @@
 <div class="section">
     <div class="section-title">Behavior Analysis</div>
-    %if behavior["processes"] and len(behavior["processes"]) > 0:
+    %if behavior["processes"]:
         %for process in behavior["processes"]:
         <fieldset>
             <legend><%include file="../images/cog.html" /> Process: <span class="blue"><span class="mono">${process["process_name"]}</span></span>, PID: <span class="blue"><span class="mono">${process["process_id"]}</span></span> <a href="javascript:showHide('process_${process["process_id"]}');"><%include file="../images/plus.html" /></a></legend>
