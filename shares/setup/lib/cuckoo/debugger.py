@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -23,11 +22,15 @@ import logging
 from threading import Thread
 from winappdbg import Debug, EventHandler, HexDump, CrashDump, win32
 
-from cuckoo.paths import *
+from cuckoo.paths import CUCKOO_PATH
 
 TRACE_PATH = os.path.join(CUCKOO_PATH, "trace")
 
 class DumpInstruction(EventHandler):
+    """
+    Dumps assembly instructions.
+    """
+
     def create_process(self, event):
         event.debug.start_tracing(event.get_tid())
 
@@ -45,11 +48,22 @@ class DumpInstruction(EventHandler):
         trace_file.close()
 
 class TraceInstructions(Thread):
+    """
+    Setups and starts the debugger used to trace assembly instructions.
+    """
+
     def __init__(self, pid):
+        """
+        Initializes the thread.
+        @param pid: PID of the original process to monitor
+        """
         Thread.__init__(self)
         self.pid = pid
 
     def run(self):
+        """
+        Main thread procedure.
+        """
         log = logging.getLogger("Debugger.TraceInstructions")
 
         if not os.path.exists(TRACE_PATH):

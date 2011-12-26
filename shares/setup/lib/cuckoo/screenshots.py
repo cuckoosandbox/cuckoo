@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -24,7 +23,7 @@ import time
 import logging
 from threading import Thread
 
-from cuckoo.paths import *
+from cuckoo.paths import CUCKOO_PATH
 
 log = logging.getLogger("Screenshots")
 
@@ -40,21 +39,40 @@ except ImportError, why:
 SHOT_DELAY = 1
 
 class Screenshots(Thread):
+    """
+    Captures screenshots of Windows desktop during the analysis.
+    """
+
     def __init__(self, save_path = os.path.join(CUCKOO_PATH, "shots")):
+        """
+        Initialize the thread.
+        @param save_path: path to the folder where to save the screenshots
+        """
         Thread.__init__(self)
         log = logging.getLogger("Screenshots.Init")
         self.save_path = save_path
         self._do_run = True
 
     def _equal(self, img1, img2):
+        """
+        Checks if two screenshots are identical.
+        @param img1: first screenshot to check
+        @param img2: second screenshot to check
+        """
         return ImageChops.difference(img1, img2).getbbox() is None
 
     def stop(self):
+        """
+        Stop the screenshots capture.
+        """
         log = logging.getLogger("Screenshots.Stop")
         log.info("Stopping screenshots.")
         self._do_run = False
 
     def run(self):
+        """
+        Main thread procedure.
+        """
         log = logging.getLogger("Screenshots.Run")
 
         # If PIL is not installed, I abort execution. This is done in order to

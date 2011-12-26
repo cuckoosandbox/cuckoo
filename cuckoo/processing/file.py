@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -20,6 +19,7 @@
 
 import os
 import sys
+import binascii
 import hashlib
 
 try:
@@ -39,29 +39,78 @@ except ImportError, why:
     IS_SSDEEP = False
 
 class File:
+    """
+    Generate information regarding the specified file.
+    """
+    
     def __init__(self, file_path):
+        """
+        Creates a new instance
+        @param file_path: path to file
+        """ 
         self.file_path = file_path
         self.file_data = None
 
     def _get_name(self):
+        """
+        Retrieves the original file name of the file.
+        @return: file name
+        """
         return os.path.basename(self.file_path)
 
     def _get_size(self):
+        """
+        Retrieves the size of the file expressed in bytes.
+        @return: file size
+        """
         return os.path.getsize(self.file_path)
 
+    def _get_crc32(self):
+        """
+        Generates the CRC32 hash of the file.
+        @return: CRC32 hash of the file
+        """
+        res = ''
+        crc = binascii.crc32(self.file_data)
+        for i in range(4):
+            t = crc & 0xFF
+            crc >>= 8
+            res = '%02X%s' % (t, res) 
+        return res
+
     def _get_md5(self):
+        """
+        Generates the MD5 hash of the file.
+        @return: MD5 hash of the file
+        """
         return hashlib.md5(self.file_data).hexdigest()
 
     def _get_sha1(self):
+        """
+        Generates the SHA-1 hash of the file.
+        @return: SHA-1 hash of the file
+        """
         return hashlib.sha1(self.file_data).hexdigest()
 
     def _get_sha256(self):
+        """
+        Generates the SHA-256 hash of the file.
+        @return: SHA-256 hash of the file
+        """
         return hashlib.sha256(self.file_data).hexdigest()
 
     def _get_sha512(self):
+        """
+        Generates the SHA-512 hash of the file.
+        @return: SHA-512 hash of the file
+        """
         return hashlib.sha512(self.file_data).hexdigest()
 
     def _get_ssdeep(self):
+        """
+        Generates the ssdeep fuzzy hash of the file.
+        @return: ssdeep fuzzy hash of the file
+        """
         if not IS_SSDEEP:
             return None
 
@@ -71,6 +120,10 @@ class File:
             return None
 
     def _get_type(self):
+        """
+        Retrieves the libmagic type of the file.
+        @return: file type
+        """
         if not IS_MAGIC:
             return None
 
@@ -82,6 +135,10 @@ class File:
             return None
 
     def process(self):
+        """
+        Generates file information dictionary.
+        @return: dictionary containing all the file's information
+        """
         if not os.path.exists(self.file_path):
             return None
 
@@ -90,6 +147,7 @@ class File:
         infos = {}
         infos["name"]   = self._get_name()
         infos["size"]   = self._get_size()
+        infos["crc32"]    = self._get_crc32()
         infos["md5"]    = self._get_md5()
         infos["sha1"]   = self._get_sha1()
         infos["sha256"] = self._get_sha256()

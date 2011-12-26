@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>cuckoo.defines</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cuckoo-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://www.cuckoobox.org">Cuckoo Sandbox Developer Documentation</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="cuckoo-module.html">Package&nbsp;cuckoo</a> ::
+        Module&nbsp;defines
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="cuckoo.defines-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="cuckoo.defines-module.html">Module cuckoo.defines</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># Cuckoo Sandbox - Automated Malware Analysis</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment"># Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># http://www.cuckoobox.org</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment"># This file is part of Cuckoo.</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-comment"># Cuckoo is free software: you can redistribute it and/or modify</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment"># it under the terms of the GNU General Public License as published by</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-comment"># the Free Software Foundation, either version 3 of the License, or</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-comment"># (at your option) any later version.</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment"># Cuckoo is distributed in the hope that it will be useful,</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment"># but WITHOUT ANY WARRANTY; without even the implied warranty of</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-comment"># GNU General Public License for more details.</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-comment"># You should have received a copy of the GNU General Public License</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-comment"># along with this program.  If not, see http://www.gnu.org/licenses/.</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">ctypes</tt> <tt class="py-keyword">import</tt> <tt class="py-op">*</tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-comment"># The following definitions were taken from PyBox:</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-comment"># http://code.google.com/p/pyboxed</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-comment">########################################################################</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-comment"># Copyright (c) 2010</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-comment"># Felix S. Leder &lt;leder&lt;at&gt;cs&lt;dot&gt;uni-bonn&lt;dot&gt;de&gt;</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-comment"># Daniel Plohmann &lt;plohmann&lt;at&gt;cs&lt;dot&gt;uni-bonn&lt;dot&gt;de&gt;</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt class="py-comment"># All rights reserved.</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"><tt class="py-comment">########################################################################</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"><tt id="link-0" class="py-name" targets="Variable cuckoo.defines.BYTE=cuckoo.defines-module.html#BYTE"><a title="cuckoo.defines.BYTE" class="py-name" href="#" onclick="return doclink('link-0', 'BYTE', 'link-0');">BYTE</a></tt>      <tt class="py-op">=</tt> <tt class="py-name">c_ubyte</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"><tt id="link-1" class="py-name" targets="Variable cuckoo.defines.WORD=cuckoo.defines-module.html#WORD"><a title="cuckoo.defines.WORD" class="py-name" href="#" onclick="return doclink('link-1', 'WORD', 'link-1');">WORD</a></tt>      <tt class="py-op">=</tt> <tt class="py-name">c_ushort</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"><tt id="link-2" class="py-name" targets="Variable cuckoo.defines.DWORD=cuckoo.defines-module.html#DWORD"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-2', 'DWORD', 'link-2');">DWORD</a></tt>     <tt class="py-op">=</tt> <tt class="py-name">c_ulong</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt id="link-3" class="py-name" targets="Variable cuckoo.defines.LONG=cuckoo.defines-module.html#LONG"><a title="cuckoo.defines.LONG" class="py-name" href="#" onclick="return doclink('link-3', 'LONG', 'link-3');">LONG</a></tt>      <tt class="py-op">=</tt> <tt class="py-name">c_ulong</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"><tt id="link-4" class="py-name" targets="Variable cuckoo.defines.LPBYTE=cuckoo.defines-module.html#LPBYTE"><a title="cuckoo.defines.LPBYTE" class="py-name" href="#" onclick="return doclink('link-4', 'LPBYTE', 'link-4');">LPBYTE</a></tt>    <tt class="py-op">=</tt> <tt class="py-name">POINTER</tt><tt class="py-op">(</tt><tt class="py-name">c_ubyte</tt><tt class="py-op">)</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"><tt id="link-5" class="py-name" targets="Variable cuckoo.defines.LPTSTR=cuckoo.defines-module.html#LPTSTR"><a title="cuckoo.defines.LPTSTR" class="py-name" href="#" onclick="return doclink('link-5', 'LPTSTR', 'link-5');">LPTSTR</a></tt>    <tt class="py-op">=</tt> <tt class="py-name">POINTER</tt><tt class="py-op">(</tt><tt class="py-name">c_char</tt><tt class="py-op">)</tt>  </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line"><tt id="link-6" class="py-name" targets="Variable cuckoo.defines.HANDLE=cuckoo.defines-module.html#HANDLE"><a title="cuckoo.defines.HANDLE" class="py-name" href="#" onclick="return doclink('link-6', 'HANDLE', 'link-6');">HANDLE</a></tt>    <tt class="py-op">=</tt> <tt class="py-name">c_void_p</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"><tt id="link-7" class="py-name" targets="Variable cuckoo.defines.PVOID=cuckoo.defines-module.html#PVOID"><a title="cuckoo.defines.PVOID" class="py-name" href="#" onclick="return doclink('link-7', 'PVOID', 'link-7');">PVOID</a></tt>     <tt class="py-op">=</tt> <tt class="py-name">c_void_p</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line"><tt id="link-8" class="py-name" targets="Variable cuckoo.defines.LPVOID=cuckoo.defines-module.html#LPVOID"><a title="cuckoo.defines.LPVOID" class="py-name" href="#" onclick="return doclink('link-8', 'LPVOID', 'link-8');">LPVOID</a></tt>    <tt class="py-op">=</tt> <tt class="py-name">c_void_p</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line"><tt id="link-9" class="py-name" targets="Variable cuckoo.defines.UINT_PTR=cuckoo.defines-module.html#UINT_PTR"><a title="cuckoo.defines.UINT_PTR" class="py-name" href="#" onclick="return doclink('link-9', 'UINT_PTR', 'link-9');">UINT_PTR</a></tt>  <tt class="py-op">=</tt> <tt class="py-name">c_ulong</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"><tt id="link-10" class="py-name" targets="Variable cuckoo.defines.SIZE_T=cuckoo.defines-module.html#SIZE_T"><a title="cuckoo.defines.SIZE_T" class="py-name" href="#" onclick="return doclink('link-10', 'SIZE_T', 'link-10');">SIZE_T</a></tt>    <tt class="py-op">=</tt> <tt class="py-name">c_ulong</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line"><tt id="link-11" class="py-name" targets="Variable cuckoo.defines.HMODULE=cuckoo.defines-module.html#HMODULE"><a title="cuckoo.defines.HMODULE" class="py-name" href="#" onclick="return doclink('link-11', 'HMODULE', 'link-11');">HMODULE</a></tt>   <tt class="py-op">=</tt> <tt class="py-name">c_ulong</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line"><tt id="link-12" class="py-name" targets="Variable cuckoo.defines.NULL=cuckoo.defines-module.html#NULL"><a title="cuckoo.defines.NULL" class="py-name" href="#" onclick="return doclink('link-12', 'NULL', 'link-12');">NULL</a></tt> <tt class="py-op">=</tt> <tt class="py-name">c_int</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line"> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line"><tt class="py-comment"># Constants</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line"><tt id="link-13" class="py-name" targets="Variable cuckoo.defines.DEBUG_PROCESS=cuckoo.defines-module.html#DEBUG_PROCESS"><a title="cuckoo.defines.DEBUG_PROCESS" class="py-name" href="#" onclick="return doclink('link-13', 'DEBUG_PROCESS', 'link-13');">DEBUG_PROCESS</a></tt>             <tt class="py-op">=</tt> <tt class="py-number">0x00000001</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line"><tt id="link-14" class="py-name" targets="Variable cuckoo.defines.CREATE_NEW_CONSOLE=cuckoo.defines-module.html#CREATE_NEW_CONSOLE"><a title="cuckoo.defines.CREATE_NEW_CONSOLE" class="py-name" href="#" onclick="return doclink('link-14', 'CREATE_NEW_CONSOLE', 'link-14');">CREATE_NEW_CONSOLE</a></tt>        <tt class="py-op">=</tt> <tt class="py-number">0x00000010</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line"><tt id="link-15" class="py-name" targets="Variable cuckoo.defines.CREATE_SUSPENDED=cuckoo.defines-module.html#CREATE_SUSPENDED"><a title="cuckoo.defines.CREATE_SUSPENDED" class="py-name" href="#" onclick="return doclink('link-15', 'CREATE_SUSPENDED', 'link-15');">CREATE_SUSPENDED</a></tt>          <tt class="py-op">=</tt> <tt class="py-number">0x00000004</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line"><tt id="link-16" class="py-name" targets="Variable cuckoo.defines.DBG_CONTINUE=cuckoo.defines-module.html#DBG_CONTINUE"><a title="cuckoo.defines.DBG_CONTINUE" class="py-name" href="#" onclick="return doclink('link-16', 'DBG_CONTINUE', 'link-16');">DBG_CONTINUE</a></tt>              <tt class="py-op">=</tt> <tt class="py-number">0x00010002</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line"><tt id="link-17" class="py-name" targets="Variable cuckoo.defines.INFINITE=cuckoo.defines-module.html#INFINITE"><a title="cuckoo.defines.INFINITE" class="py-name" href="#" onclick="return doclink('link-17', 'INFINITE', 'link-17');">INFINITE</a></tt>                  <tt class="py-op">=</tt> <tt class="py-number">0xFFFFFFFF</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line"><tt id="link-18" class="py-name" targets="Variable cuckoo.defines.PROCESS_ALL_ACCESS=cuckoo.defines-module.html#PROCESS_ALL_ACCESS"><a title="cuckoo.defines.PROCESS_ALL_ACCESS" class="py-name" href="#" onclick="return doclink('link-18', 'PROCESS_ALL_ACCESS', 'link-18');">PROCESS_ALL_ACCESS</a></tt>        <tt class="py-op">=</tt> <tt class="py-number">0x001F0FFF</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line"><tt id="link-19" class="py-name" targets="Variable cuckoo.defines.TOKEN_ALL_ACCESS=cuckoo.defines-module.html#TOKEN_ALL_ACCESS"><a title="cuckoo.defines.TOKEN_ALL_ACCESS" class="py-name" href="#" onclick="return doclink('link-19', 'TOKEN_ALL_ACCESS', 'link-19');">TOKEN_ALL_ACCESS</a></tt>          <tt class="py-op">=</tt> <tt class="py-number">0x000F01FF</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line"><tt id="link-20" class="py-name" targets="Variable cuckoo.defines.SE_PRIVILEGE_ENABLED=cuckoo.defines-module.html#SE_PRIVILEGE_ENABLED"><a title="cuckoo.defines.SE_PRIVILEGE_ENABLED" class="py-name" href="#" onclick="return doclink('link-20', 'SE_PRIVILEGE_ENABLED', 'link-20');">SE_PRIVILEGE_ENABLED</a></tt>      <tt class="py-op">=</tt> <tt class="py-number">0x00000002</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line"> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line"><tt class="py-comment"># Memory permissions</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line"><tt id="link-21" class="py-name" targets="Variable cuckoo.defines.PAGE_EXECUTE_READWRITE=cuckoo.defines-module.html#PAGE_EXECUTE_READWRITE"><a title="cuckoo.defines.PAGE_EXECUTE_READWRITE" class="py-name" href="#" onclick="return doclink('link-21', 'PAGE_EXECUTE_READWRITE', 'link-21');">PAGE_EXECUTE_READWRITE</a></tt>    <tt class="py-op">=</tt> <tt class="py-number">0x00000040</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line"><tt id="link-22" class="py-name" targets="Variable cuckoo.defines.PAGE_EXECUTE=cuckoo.defines-module.html#PAGE_EXECUTE"><a title="cuckoo.defines.PAGE_EXECUTE" class="py-name" href="#" onclick="return doclink('link-22', 'PAGE_EXECUTE', 'link-22');">PAGE_EXECUTE</a></tt>              <tt class="py-op">=</tt> <tt class="py-number">0x00000010</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line"><tt id="link-23" class="py-name" targets="Variable cuckoo.defines.PAGE_EXECUTE_READ=cuckoo.defines-module.html#PAGE_EXECUTE_READ"><a title="cuckoo.defines.PAGE_EXECUTE_READ" class="py-name" href="#" onclick="return doclink('link-23', 'PAGE_EXECUTE_READ', 'link-23');">PAGE_EXECUTE_READ</a></tt>         <tt class="py-op">=</tt> <tt class="py-number">0x00000020</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt id="link-24" class="py-name" targets="Variable cuckoo.defines.PAGE_READONLY=cuckoo.defines-module.html#PAGE_READONLY"><a title="cuckoo.defines.PAGE_READONLY" class="py-name" href="#" onclick="return doclink('link-24', 'PAGE_READONLY', 'link-24');">PAGE_READONLY</a></tt>             <tt class="py-op">=</tt> <tt class="py-number">0x00000002</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line"><tt id="link-25" class="py-name" targets="Variable cuckoo.defines.PAGE_READWRITE=cuckoo.defines-module.html#PAGE_READWRITE"><a title="cuckoo.defines.PAGE_READWRITE" class="py-name" href="#" onclick="return doclink('link-25', 'PAGE_READWRITE', 'link-25');">PAGE_READWRITE</a></tt>            <tt class="py-op">=</tt> <tt class="py-number">0x00000004</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line"><tt class="py-comment"># Memory Allocation Type</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line"><tt id="link-26" class="py-name" targets="Variable cuckoo.defines.MEM_COMMIT=cuckoo.defines-module.html#MEM_COMMIT"><a title="cuckoo.defines.MEM_COMMIT" class="py-name" href="#" onclick="return doclink('link-26', 'MEM_COMMIT', 'link-26');">MEM_COMMIT</a></tt>                <tt class="py-op">=</tt> <tt class="py-number">0x00001000</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line"><tt id="link-27" class="py-name" targets="Variable cuckoo.defines.MEM_RESERVE=cuckoo.defines-module.html#MEM_RESERVE"><a title="cuckoo.defines.MEM_RESERVE" class="py-name" href="#" onclick="return doclink('link-27', 'MEM_RESERVE', 'link-27');">MEM_RESERVE</a></tt>               <tt class="py-op">=</tt> <tt class="py-number">0x00002000</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line"><tt id="link-28" class="py-name" targets="Variable cuckoo.defines.MEM_DECOMMIT=cuckoo.defines-module.html#MEM_DECOMMIT"><a title="cuckoo.defines.MEM_DECOMMIT" class="py-name" href="#" onclick="return doclink('link-28', 'MEM_DECOMMIT', 'link-28');">MEM_DECOMMIT</a></tt>              <tt class="py-op">=</tt> <tt class="py-number">0x00004000</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line"><tt id="link-29" class="py-name" targets="Variable cuckoo.defines.MEM_RELEASE=cuckoo.defines-module.html#MEM_RELEASE"><a title="cuckoo.defines.MEM_RELEASE" class="py-name" href="#" onclick="return doclink('link-29', 'MEM_RELEASE', 'link-29');">MEM_RELEASE</a></tt>               <tt class="py-op">=</tt> <tt class="py-number">0x00008000</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"><tt id="link-30" class="py-name" targets="Variable cuckoo.defines.MEM_RESET=cuckoo.defines-module.html#MEM_RESET"><a title="cuckoo.defines.MEM_RESET" class="py-name" href="#" onclick="return doclink('link-30', 'MEM_RESET', 'link-30');">MEM_RESET</a></tt>                 <tt class="py-op">=</tt> <tt class="py-number">0x00080000</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line"> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line"><tt class="py-comment"># Memory page permissions, used by VirtualProtect()</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line"><tt id="link-31" class="py-name" targets="Variable cuckoo.defines.PAGE_NOACCESS=cuckoo.defines-module.html#PAGE_NOACCESS"><a title="cuckoo.defines.PAGE_NOACCESS" class="py-name" href="#" onclick="return doclink('link-31', 'PAGE_NOACCESS', 'link-31');">PAGE_NOACCESS</a></tt>             <tt class="py-op">=</tt> <tt class="py-number">0x00000001</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line"><tt id="link-32" class="py-name"><a title="cuckoo.defines.PAGE_READONLY" class="py-name" href="#" onclick="return doclink('link-32', 'PAGE_READONLY', 'link-24');">PAGE_READONLY</a></tt>             <tt class="py-op">=</tt> <tt class="py-number">0x00000002</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line"><tt id="link-33" class="py-name"><a title="cuckoo.defines.PAGE_READWRITE" class="py-name" href="#" onclick="return doclink('link-33', 'PAGE_READWRITE', 'link-25');">PAGE_READWRITE</a></tt>            <tt class="py-op">=</tt> <tt class="py-number">0x00000004</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line"><tt id="link-34" class="py-name" targets="Variable cuckoo.defines.PAGE_WRITECOPY=cuckoo.defines-module.html#PAGE_WRITECOPY"><a title="cuckoo.defines.PAGE_WRITECOPY" class="py-name" href="#" onclick="return doclink('link-34', 'PAGE_WRITECOPY', 'link-34');">PAGE_WRITECOPY</a></tt>            <tt class="py-op">=</tt> <tt class="py-number">0x00000008</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line"><tt id="link-35" class="py-name"><a title="cuckoo.defines.PAGE_EXECUTE" class="py-name" href="#" onclick="return doclink('link-35', 'PAGE_EXECUTE', 'link-22');">PAGE_EXECUTE</a></tt>              <tt class="py-op">=</tt> <tt class="py-number">0x00000010</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line"><tt id="link-36" class="py-name"><a title="cuckoo.defines.PAGE_EXECUTE_READ" class="py-name" href="#" onclick="return doclink('link-36', 'PAGE_EXECUTE_READ', 'link-23');">PAGE_EXECUTE_READ</a></tt>         <tt class="py-op">=</tt> <tt class="py-number">0x00000020</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line"><tt id="link-37" class="py-name"><a title="cuckoo.defines.PAGE_EXECUTE_READWRITE" class="py-name" href="#" onclick="return doclink('link-37', 'PAGE_EXECUTE_READWRITE', 'link-21');">PAGE_EXECUTE_READWRITE</a></tt>    <tt class="py-op">=</tt> <tt class="py-number">0x00000040</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line"><tt id="link-38" class="py-name" targets="Variable cuckoo.defines.PAGE_EXECUTE_WRITECOPY=cuckoo.defines-module.html#PAGE_EXECUTE_WRITECOPY"><a title="cuckoo.defines.PAGE_EXECUTE_WRITECOPY" class="py-name" href="#" onclick="return doclink('link-38', 'PAGE_EXECUTE_WRITECOPY', 'link-38');">PAGE_EXECUTE_WRITECOPY</a></tt>    <tt class="py-op">=</tt> <tt class="py-number">0x00000080</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line"><tt id="link-39" class="py-name" targets="Variable cuckoo.defines.PAGE_GUARD=cuckoo.defines-module.html#PAGE_GUARD"><a title="cuckoo.defines.PAGE_GUARD" class="py-name" href="#" onclick="return doclink('link-39', 'PAGE_GUARD', 'link-39');">PAGE_GUARD</a></tt>                <tt class="py-op">=</tt> <tt class="py-number">0x00000100</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line"><tt id="link-40" class="py-name" targets="Variable cuckoo.defines.PAGE_NOCACHE=cuckoo.defines-module.html#PAGE_NOCACHE"><a title="cuckoo.defines.PAGE_NOCACHE" class="py-name" href="#" onclick="return doclink('link-40', 'PAGE_NOCACHE', 'link-40');">PAGE_NOCACHE</a></tt>              <tt class="py-op">=</tt> <tt class="py-number">0x00000200</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line"><tt id="link-41" class="py-name" targets="Variable cuckoo.defines.PAGE_WRITECOMBINE=cuckoo.defines-module.html#PAGE_WRITECOMBINE"><a title="cuckoo.defines.PAGE_WRITECOMBINE" class="py-name" href="#" onclick="return doclink('link-41', 'PAGE_WRITECOMBINE', 'link-41');">PAGE_WRITECOMBINE</a></tt>         <tt class="py-op">=</tt> <tt class="py-number">0x00000400</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line"> </tt>
+<a name="STARTUPINFO"></a><div id="STARTUPINFO-def"><a name="L81"></a><tt class="py-lineno"> 81</tt> <a class="py-toggle" href="#" id="STARTUPINFO-toggle" onclick="return toggle('STARTUPINFO');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="cuckoo.defines.STARTUPINFO-class.html">STARTUPINFO</a><tt class="py-op">(</tt><tt class="py-base-class">Structure</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="STARTUPINFO-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="STARTUPINFO-expanded"><a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">    <tt id="link-42" class="py-name" targets="Variable cuckoo.defines.LUID._fields_=cuckoo.defines.LUID-class.html#_fields_,Variable cuckoo.defines.LUID_AND_ATTRIBUTES._fields_=cuckoo.defines.LUID_AND_ATTRIBUTES-class.html#_fields_,Variable cuckoo.defines.MEMORY_BASIC_INFORMATION._fields_=cuckoo.defines.MEMORY_BASIC_INFORMATION-class.html#_fields_,Variable cuckoo.defines.PROCESS_INFORMATION._fields_=cuckoo.defines.PROCESS_INFORMATION-class.html#_fields_,Variable cuckoo.defines.STARTUPINFO._fields_=cuckoo.defines.STARTUPINFO-class.html#_fields_,Variable cuckoo.defines.TOKEN_PRIVILEGES._fields_=cuckoo.defines.TOKEN_PRIVILEGES-class.html#_fields_"><a title="cuckoo.defines.LUID._fields_
+cuckoo.defines.LUID_AND_ATTRIBUTES._fields_
+cuckoo.defines.MEMORY_BASIC_INFORMATION._fields_
+cuckoo.defines.PROCESS_INFORMATION._fields_
+cuckoo.defines.STARTUPINFO._fields_
+cuckoo.defines.TOKEN_PRIVILEGES._fields_" class="py-name" href="#" onclick="return doclink('link-42', '_fields_', 'link-42');">_fields_</a></tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"cb"</tt><tt class="py-op">,</tt>            <tt id="link-43" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-43', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt>         </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"lpReserved"</tt><tt class="py-op">,</tt>    <tt id="link-44" class="py-name"><a title="cuckoo.defines.LPTSTR" class="py-name" href="#" onclick="return doclink('link-44', 'LPTSTR', 'link-5');">LPTSTR</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt>  </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"lpDesktop"</tt><tt class="py-op">,</tt>     <tt id="link-45" class="py-name"><a title="cuckoo.defines.LPTSTR" class="py-name" href="#" onclick="return doclink('link-45', 'LPTSTR', 'link-5');">LPTSTR</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt>   </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"lpTitle"</tt><tt class="py-op">,</tt>       <tt id="link-46" class="py-name"><a title="cuckoo.defines.LPTSTR" class="py-name" href="#" onclick="return doclink('link-46', 'LPTSTR', 'link-5');">LPTSTR</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"dwX"</tt><tt class="py-op">,</tt>           <tt id="link-47" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-47', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"dwY"</tt><tt class="py-op">,</tt>           <tt id="link-48" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-48', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"dwXSize"</tt><tt class="py-op">,</tt>       <tt id="link-49" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-49', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"dwYSize"</tt><tt class="py-op">,</tt>       <tt id="link-50" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-50', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"dwXCountChars"</tt><tt class="py-op">,</tt> <tt id="link-51" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-51', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"dwYCountChars"</tt><tt class="py-op">,</tt> <tt id="link-52" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-52', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"dwFillAttribute"</tt><tt class="py-op">,</tt><tt id="link-53" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-53', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"dwFlags"</tt><tt class="py-op">,</tt>       <tt id="link-54" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-54', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"wShowWindow"</tt><tt class="py-op">,</tt>   <tt id="link-55" class="py-name"><a title="cuckoo.defines.WORD" class="py-name" href="#" onclick="return doclink('link-55', 'WORD', 'link-1');">WORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"cbReserved2"</tt><tt class="py-op">,</tt>   <tt id="link-56" class="py-name"><a title="cuckoo.defines.WORD" class="py-name" href="#" onclick="return doclink('link-56', 'WORD', 'link-1');">WORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"lpReserved2"</tt><tt class="py-op">,</tt>   <tt id="link-57" class="py-name"><a title="cuckoo.defines.LPBYTE" class="py-name" href="#" onclick="return doclink('link-57', 'LPBYTE', 'link-4');">LPBYTE</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"hStdInput"</tt><tt class="py-op">,</tt>     <tt id="link-58" class="py-name"><a title="cuckoo.defines.HANDLE" class="py-name" href="#" onclick="return doclink('link-58', 'HANDLE', 'link-6');">HANDLE</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"hStdOutput"</tt><tt class="py-op">,</tt>    <tt id="link-59" class="py-name"><a title="cuckoo.defines.HANDLE" class="py-name" href="#" onclick="return doclink('link-59', 'HANDLE', 'link-6');">HANDLE</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"hStdError"</tt><tt class="py-op">,</tt>     <tt id="link-60" class="py-name"><a title="cuckoo.defines.HANDLE" class="py-name" href="#" onclick="return doclink('link-60', 'HANDLE', 'link-6');">HANDLE</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">        <tt class="py-op">]</tt> </tt>
+</div><a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line"> </tt>
+<a name="PROCESS_INFORMATION"></a><div id="PROCESS_INFORMATION-def"><a name="L103"></a><tt class="py-lineno">103</tt> <a class="py-toggle" href="#" id="PROCESS_INFORMATION-toggle" onclick="return toggle('PROCESS_INFORMATION');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="cuckoo.defines.PROCESS_INFORMATION-class.html">PROCESS_INFORMATION</a><tt class="py-op">(</tt><tt class="py-base-class">Structure</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PROCESS_INFORMATION-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="PROCESS_INFORMATION-expanded"><a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">    <tt id="link-61" class="py-name"><a title="cuckoo.defines.LUID._fields_
+cuckoo.defines.LUID_AND_ATTRIBUTES._fields_
+cuckoo.defines.MEMORY_BASIC_INFORMATION._fields_
+cuckoo.defines.PROCESS_INFORMATION._fields_
+cuckoo.defines.STARTUPINFO._fields_
+cuckoo.defines.TOKEN_PRIVILEGES._fields_" class="py-name" href="#" onclick="return doclink('link-61', '_fields_', 'link-42');">_fields_</a></tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"hProcess"</tt><tt class="py-op">,</tt>    <tt id="link-62" class="py-name"><a title="cuckoo.defines.HANDLE" class="py-name" href="#" onclick="return doclink('link-62', 'HANDLE', 'link-6');">HANDLE</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"hThread"</tt><tt class="py-op">,</tt>     <tt id="link-63" class="py-name"><a title="cuckoo.defines.HANDLE" class="py-name" href="#" onclick="return doclink('link-63', 'HANDLE', 'link-6');">HANDLE</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"dwProcessId"</tt><tt class="py-op">,</tt> <tt id="link-64" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-64', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"dwThreadId"</tt><tt class="py-op">,</tt>  <tt id="link-65" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-65', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">        <tt class="py-op">]</tt> </tt>
+</div><a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line"> </tt>
+<a name="LUID"></a><div id="LUID-def"><a name="L111"></a><tt class="py-lineno">111</tt> <a class="py-toggle" href="#" id="LUID-toggle" onclick="return toggle('LUID');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="cuckoo.defines.LUID-class.html">LUID</a><tt class="py-op">(</tt><tt class="py-base-class">Structure</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="LUID-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="LUID-expanded"><a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">    <tt id="link-66" class="py-name"><a title="cuckoo.defines.LUID._fields_
+cuckoo.defines.LUID_AND_ATTRIBUTES._fields_
+cuckoo.defines.MEMORY_BASIC_INFORMATION._fields_
+cuckoo.defines.PROCESS_INFORMATION._fields_
+cuckoo.defines.STARTUPINFO._fields_
+cuckoo.defines.TOKEN_PRIVILEGES._fields_" class="py-name" href="#" onclick="return doclink('link-66', '_fields_', 'link-42');">_fields_</a></tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">'LowPart'</tt><tt class="py-op">,</tt> <tt id="link-67" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-67', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">'HighPart'</tt><tt class="py-op">,</tt> <tt id="link-68" class="py-name"><a title="cuckoo.defines.LONG" class="py-name" href="#" onclick="return doclink('link-68', 'LONG', 'link-3');">LONG</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">        <tt class="py-op">]</tt> </tt>
+</div><a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line"> </tt>
+<a name="LUID_AND_ATTRIBUTES"></a><div id="LUID_AND_ATTRIBUTES-def"><a name="L117"></a><tt class="py-lineno">117</tt> <a class="py-toggle" href="#" id="LUID_AND_ATTRIBUTES-toggle" onclick="return toggle('LUID_AND_ATTRIBUTES');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="cuckoo.defines.LUID_AND_ATTRIBUTES-class.html">LUID_AND_ATTRIBUTES</a><tt class="py-op">(</tt><tt class="py-base-class">Structure</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="LUID_AND_ATTRIBUTES-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="LUID_AND_ATTRIBUTES-expanded"><a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">    <tt id="link-69" class="py-name"><a title="cuckoo.defines.LUID._fields_
+cuckoo.defines.LUID_AND_ATTRIBUTES._fields_
+cuckoo.defines.MEMORY_BASIC_INFORMATION._fields_
+cuckoo.defines.PROCESS_INFORMATION._fields_
+cuckoo.defines.STARTUPINFO._fields_
+cuckoo.defines.TOKEN_PRIVILEGES._fields_" class="py-name" href="#" onclick="return doclink('link-69', '_fields_', 'link-42');">_fields_</a></tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">'Luid'</tt><tt class="py-op">,</tt> <tt id="link-70" class="py-name" targets="Class cuckoo.defines.LUID=cuckoo.defines.LUID-class.html"><a title="cuckoo.defines.LUID" class="py-name" href="#" onclick="return doclink('link-70', 'LUID', 'link-70');">LUID</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">'Attributes'</tt><tt class="py-op">,</tt> <tt id="link-71" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-71', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">        <tt class="py-op">]</tt> </tt>
+</div><a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">     </tt>
+<a name="TOKEN_PRIVILEGES"></a><div id="TOKEN_PRIVILEGES-def"><a name="L123"></a><tt class="py-lineno">123</tt> <a class="py-toggle" href="#" id="TOKEN_PRIVILEGES-toggle" onclick="return toggle('TOKEN_PRIVILEGES');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="cuckoo.defines.TOKEN_PRIVILEGES-class.html">TOKEN_PRIVILEGES</a><tt class="py-op">(</tt><tt class="py-base-class">Structure</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TOKEN_PRIVILEGES-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="TOKEN_PRIVILEGES-expanded"><a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">    <tt id="link-72" class="py-name"><a title="cuckoo.defines.LUID._fields_
+cuckoo.defines.LUID_AND_ATTRIBUTES._fields_
+cuckoo.defines.MEMORY_BASIC_INFORMATION._fields_
+cuckoo.defines.PROCESS_INFORMATION._fields_
+cuckoo.defines.STARTUPINFO._fields_
+cuckoo.defines.TOKEN_PRIVILEGES._fields_" class="py-name" href="#" onclick="return doclink('link-72', '_fields_', 'link-42');">_fields_</a></tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">'PrivilegeCount'</tt><tt class="py-op">,</tt> <tt id="link-73" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-73', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">'Privileges'</tt><tt class="py-op">,</tt> <tt id="link-74" class="py-name" targets="Class cuckoo.defines.LUID_AND_ATTRIBUTES=cuckoo.defines.LUID_AND_ATTRIBUTES-class.html"><a title="cuckoo.defines.LUID_AND_ATTRIBUTES" class="py-name" href="#" onclick="return doclink('link-74', 'LUID_AND_ATTRIBUTES', 'link-74');">LUID_AND_ATTRIBUTES</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line">        <tt class="py-op">]</tt> </tt>
+</div><a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line"> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line"><tt class="py-comment"># MEMORY_BASIC_INFORMATION contains information about a </tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line"><tt class="py-comment"># particular region of memory. A call to kernel32.VirtualQuery()</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line"><tt class="py-comment"># populates this structure.</tt> </tt>
+<a name="MEMORY_BASIC_INFORMATION"></a><div id="MEMORY_BASIC_INFORMATION-def"><a name="L132"></a><tt class="py-lineno">132</tt> <a class="py-toggle" href="#" id="MEMORY_BASIC_INFORMATION-toggle" onclick="return toggle('MEMORY_BASIC_INFORMATION');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="cuckoo.defines.MEMORY_BASIC_INFORMATION-class.html">MEMORY_BASIC_INFORMATION</a><tt class="py-op">(</tt><tt class="py-base-class">Structure</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MEMORY_BASIC_INFORMATION-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="MEMORY_BASIC_INFORMATION-expanded"><a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">    <tt id="link-75" class="py-name"><a title="cuckoo.defines.LUID._fields_
+cuckoo.defines.LUID_AND_ATTRIBUTES._fields_
+cuckoo.defines.MEMORY_BASIC_INFORMATION._fields_
+cuckoo.defines.PROCESS_INFORMATION._fields_
+cuckoo.defines.STARTUPINFO._fields_
+cuckoo.defines.TOKEN_PRIVILEGES._fields_" class="py-name" href="#" onclick="return doclink('link-75', '_fields_', 'link-42');">_fields_</a></tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"BaseAddress"</tt><tt class="py-op">,</tt> <tt id="link-76" class="py-name"><a title="cuckoo.defines.PVOID" class="py-name" href="#" onclick="return doclink('link-76', 'PVOID', 'link-7');">PVOID</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"AllocationBase"</tt><tt class="py-op">,</tt> <tt id="link-77" class="py-name"><a title="cuckoo.defines.PVOID" class="py-name" href="#" onclick="return doclink('link-77', 'PVOID', 'link-7');">PVOID</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"AllocationProtect"</tt><tt class="py-op">,</tt> <tt id="link-78" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-78', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"RegionSize"</tt><tt class="py-op">,</tt> <tt id="link-79" class="py-name"><a title="cuckoo.defines.SIZE_T" class="py-name" href="#" onclick="return doclink('link-79', 'SIZE_T', 'link-10');">SIZE_T</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"State"</tt><tt class="py-op">,</tt> <tt id="link-80" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-80', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"Protect"</tt><tt class="py-op">,</tt> <tt id="link-81" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-81', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-string">"Type"</tt><tt class="py-op">,</tt> <tt id="link-82" class="py-name"><a title="cuckoo.defines.DWORD" class="py-name" href="#" onclick="return doclink('link-82', 'DWORD', 'link-2');">DWORD</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line"><tt class="py-op">]</tt> </tt>
+</div><a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line"> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line"><tt class="py-comment">########################################################################</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line"><tt class="py-comment"># Following are extended values for Cuckoo execution.</tt> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line"><tt class="py-comment">########################################################################</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line"> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line"><tt class="py-comment"># Pipe server constants.</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line"><tt id="link-83" class="py-name" targets="Variable cuckoo.defines.PIPE_ACCESS_DUPLEX=cuckoo.defines-module.html#PIPE_ACCESS_DUPLEX"><a title="cuckoo.defines.PIPE_ACCESS_DUPLEX" class="py-name" href="#" onclick="return doclink('link-83', 'PIPE_ACCESS_DUPLEX', 'link-83');">PIPE_ACCESS_DUPLEX</a></tt>          <tt class="py-op">=</tt> <tt class="py-number">0x00000003</tt> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line"><tt id="link-84" class="py-name" targets="Variable cuckoo.defines.PIPE_TYPE_MESSAGE=cuckoo.defines-module.html#PIPE_TYPE_MESSAGE"><a title="cuckoo.defines.PIPE_TYPE_MESSAGE" class="py-name" href="#" onclick="return doclink('link-84', 'PIPE_TYPE_MESSAGE', 'link-84');">PIPE_TYPE_MESSAGE</a></tt>           <tt class="py-op">=</tt> <tt class="py-number">0x00000004</tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line"><tt id="link-85" class="py-name" targets="Variable cuckoo.defines.PIPE_READMODE_MESSAGE=cuckoo.defines-module.html#PIPE_READMODE_MESSAGE"><a title="cuckoo.defines.PIPE_READMODE_MESSAGE" class="py-name" href="#" onclick="return doclink('link-85', 'PIPE_READMODE_MESSAGE', 'link-85');">PIPE_READMODE_MESSAGE</a></tt>       <tt class="py-op">=</tt> <tt class="py-number">0x00000002</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line"><tt id="link-86" class="py-name" targets="Variable cuckoo.defines.PIPE_WAIT=cuckoo.defines-module.html#PIPE_WAIT"><a title="cuckoo.defines.PIPE_WAIT" class="py-name" href="#" onclick="return doclink('link-86', 'PIPE_WAIT', 'link-86');">PIPE_WAIT</a></tt>                   <tt class="py-op">=</tt> <tt class="py-number">0x00000000</tt> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line"><tt id="link-87" class="py-name" targets="Variable cuckoo.defines.PIPE_UNLIMITED_INSTANCES=cuckoo.defines-module.html#PIPE_UNLIMITED_INSTANCES"><a title="cuckoo.defines.PIPE_UNLIMITED_INSTANCES" class="py-name" href="#" onclick="return doclink('link-87', 'PIPE_UNLIMITED_INSTANCES', 'link-87');">PIPE_UNLIMITED_INSTANCES</a></tt>    <tt class="py-op">=</tt> <tt class="py-number">0x000000ff</tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line"><tt id="link-88" class="py-name" targets="Variable cuckoo.defines.INVALID_HANDLE_VALUE=cuckoo.defines-module.html#INVALID_HANDLE_VALUE"><a title="cuckoo.defines.INVALID_HANDLE_VALUE" class="py-name" href="#" onclick="return doclink('link-88', 'INVALID_HANDLE_VALUE', 'link-88');">INVALID_HANDLE_VALUE</a></tt>        <tt class="py-op">=</tt> <tt class="py-number">0xffffffff</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line"><tt id="link-89" class="py-name" targets="Variable cuckoo.defines.ERROR_BROKEN_PIPE=cuckoo.defines-module.html#ERROR_BROKEN_PIPE"><a title="cuckoo.defines.ERROR_BROKEN_PIPE" class="py-name" href="#" onclick="return doclink('link-89', 'ERROR_BROKEN_PIPE', 'link-89');">ERROR_BROKEN_PIPE</a></tt>           <tt class="py-op">=</tt> <tt class="py-number">0x0000006d</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line"><tt class="py-comment"># Process constants.</tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line"><tt id="link-90" class="py-name" targets="Variable cuckoo.defines.STILL_ACTIVE=cuckoo.defines-module.html#STILL_ACTIVE"><a title="cuckoo.defines.STILL_ACTIVE" class="py-name" href="#" onclick="return doclink('link-90', 'STILL_ACTIVE', 'link-90');">STILL_ACTIVE</a></tt>                <tt class="py-op">=</tt> <tt class="py-number">0x00000103</tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line"> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line"><tt id="link-91" class="py-name" targets="Variable cuckoo.defines.KERNEL32=cuckoo.defines-module.html#KERNEL32"><a title="cuckoo.defines.KERNEL32" class="py-name" href="#" onclick="return doclink('link-91', 'KERNEL32', 'link-91');">KERNEL32</a></tt> <tt class="py-op">=</tt> <tt class="py-name">windll</tt><tt class="py-op">.</tt><tt class="py-name">kernel32</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line"><tt id="link-92" class="py-name" targets="Variable cuckoo.defines.ADVAPI32=cuckoo.defines-module.html#ADVAPI32"><a title="cuckoo.defines.ADVAPI32" class="py-name" href="#" onclick="return doclink('link-92', 'ADVAPI32', 'link-92');">ADVAPI32</a></tt> <tt class="py-op">=</tt> <tt class="py-name">windll</tt><tt class="py-op">.</tt><tt class="py-name">advapi32</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="cuckoo-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://www.cuckoobox.org">Cuckoo Sandbox Developer Documentation</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Mon Dec 26 10:42:22 2011
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

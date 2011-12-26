@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -23,10 +22,18 @@ import stat
 import logging
 import subprocess
 
-from cuckoo.config.config import *
+from cuckoo.config.config import CuckooConfig
 
 class Sniffer:
+    """
+    Sniffer wrapper class.
+    """
+    
     def __init__(self, pcap_file):
+        """
+        Create a new Sniffer.
+        @param pcap_file: path to PCAP file
+        """
         self.tcpdump = CuckooConfig().get_sniffer_path()
         self.pcap_file = pcap_file
         self.proc = None
@@ -35,6 +42,12 @@ class Sniffer:
         log = logging.getLogger("Sniffer")
 
     def start(self, interface, guest_mac):
+        """
+        Starts sniffing.
+        @param interface: network interface name to sniff
+        @param guest_mac: virtual machine MAC address to filter
+        @return: boolean identifying the success of the operation
+        """  
         log = logging.getLogger("Sniffer.Start")
         self.guest_mac = guest_mac
 
@@ -75,6 +88,10 @@ class Sniffer:
         return True
 
     def stop(self):
+        """
+        Stops sniffing.
+        @return: boolean identifying the success of the operation
+        """
         log = logging.getLogger("Sniffer.Stop")
 
         if self.proc != None and self.proc.poll() == None:

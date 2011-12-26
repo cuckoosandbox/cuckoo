@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -22,25 +21,34 @@ import re
 import sys
 import logging
 
-from cuckoo.config.config import *
+from cuckoo.config.config import CuckooConfig
 
 # Load VirtualBox's SDK APIs.
 try:
     import vboxapi
 # If the module is not found we need to abort execution.
 except ImportError:
-    log = logging.getLogger("VirtualMachine")
-    log.critical("Unable to locate \"vboxapi\" Python library. " \
-                 "Please verify your installation. Exiting...")
+    sys.stderr.write("ERROR: Unable to locate \"vboxapi\" Python library. " \
+                     "Please verify your installation. Exiting...\n")
     sys.exit(-1)
 
+#------------------------------ Global Variables ------------------------------#
 VBOX = vboxapi.VirtualBoxReflectionInfo(False)
 VBOX_VERSION = "4."
 # Wait for 5 minutes before aborting an action.
 VBOX_TIMEOUT = 300000
+#------------------------------------------------------------------------------#
 
 class VirtualMachine:
+    """
+    Virtual Machine abstraction.
+    """
+    
     def __init__(self, vm_id = None):
+        """
+        Creates a new virtual machine.
+        @param vm_id: virtual machine id
+        """ 
         log = logging.getLogger("VirtualMachine")
 
         vbm = vboxapi.VirtualBoxManager(None, None)
@@ -73,6 +81,10 @@ class VirtualMachine:
                           % (self.name, why))
 
     def infos(self):
+        """
+        Gets virtual machine infomation.
+        @return: boolean identifying the success of the operation
+        """
         log = logging.getLogger("VirtualMachine.Infos")
 
         if self.mach:
@@ -102,7 +114,7 @@ class VirtualMachine:
                 state = "Not identified (%s)" % self.mach.state
 
             # Print virtual machine's general informations.
-            log.info("Virtual machine \"%s\" informations:" % self.name)
+            log.info("Virtual machine \"%s\" information:" % self.name)
             log.info("\t\_| Name: %s" % self.mach.name)
             log.info("\t  | ID: %s" % self.mach.id)
             log.info("\t  | CPU Count: %s Core/s" % self.mach.CPUCount)
@@ -119,6 +131,10 @@ class VirtualMachine:
         return True
     
     def check(self):
+        """
+        Checks if VirtualBox version is supported
+        @return: boolean saying if VirtualBox version is supported or not
+        """
         log = logging.getLogger("VirtualMachine.Check")
 
         # Check if VirtualBox version is supported.
@@ -133,6 +149,10 @@ class VirtualMachine:
         return True
         
     def start(self):
+        """
+        Starts virtual machine.
+        @return: boolean identifying the success of the operation
+        """
         log = logging.getLogger("VirtualMachine.Start")
 
         if self.mach:
@@ -187,6 +207,10 @@ class VirtualMachine:
         return True
         
     def stop(self):
+        """
+        Stops virtual machine.
+        @return: boolean identifying the success of the operation
+        """
         log = logging.getLogger("VirtualMachine.Stop")
 
         if self.mach:
@@ -235,6 +259,10 @@ class VirtualMachine:
         return True
         
     def restore(self):
+        """
+        Restores virtual machine.
+        @return: boolean identifying the success of the operation
+        """
         log = logging.getLogger("VirtualMachine.Restore")
 
         if self.mach:
@@ -290,6 +318,13 @@ class VirtualMachine:
         return True
 
     def execute(self, exec_name, args = None, timeout = None):
+        """ 
+        Execute a process inside a virtual machine.
+        @param exec_name: process to be executed
+        @param args: arguments of process to be executed
+        @param timeout: process execution timeout
+        @return: boolean identifying the success of the operation
+        """   
         log = logging.getLogger("VirtualMachine.Execute")
 
         # Check if program name is specified.

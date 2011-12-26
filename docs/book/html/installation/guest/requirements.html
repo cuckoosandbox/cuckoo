@@ -1,0 +1,168 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Requirements &mdash; Cuckoo Sandbox v0.3 Book</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Cuckoo Sandbox v0.3 Book" href="../../index.html" />
+    <link rel="up" title="Preparing the Guest" href="index.html" />
+    <link rel="next" title="Network Configuration" href="network.html" />
+    <link rel="prev" title="Creation of the Virtual Machine" href="creation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="network.html" title="Network Configuration"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="creation.html" title="Creation of the Virtual Machine"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="../index.html" >Installation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Preparing the Guest</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="requirements">
+<h1>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h1>
+<p>In order to make Cuckoo run properly in your virtualized Windows system, you
+will have to install some required softwares and libraries.</p>
+<div class="section" id="install-guest-additions">
+<h2>Install Guest Additions<a class="headerlink" href="#install-guest-additions" title="Permalink to this headline">¶</a></h2>
+<p>VirtualBox&#8217;s Guest Additions provide some additional functionalities that allow
+the host and the guests to interact easily.</p>
+<p>They are required for:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Time synchronization.</li>
+<li>Shared folders.</li>
+<li>Executing processes in the guest.</li>
+</ul>
+</div></blockquote>
+<p>You can get details on how to install them from the <a class="reference external" href="http://www.virtualbox.org/manual/ch04.html">dedicated chapter</a> in the
+official documentation.</p>
+</div>
+<div class="section" id="install-python">
+<h2>Install Python<a class="headerlink" href="#install-python" title="Permalink to this headline">¶</a></h2>
+<p>Python is a strict requirement for the Cuckoo guest component (<em>analyzer</em>) to
+run properly.</p>
+<p>You can download the proper Windows installer from the <a class="reference external" href="http://www.python.org/getit/">official website</a>.
+Also in this case Python 2.7 is preferred.</p>
+<p>Some Python libraries are optionals and provide some additional features to
+Cuckoo guest component. They include:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="http://www.pythonware.com/products/pil/">Python Image Library</a>: it&#8217;s used for taking screenshots of Windows desktop during the analysis.</li>
+<li><a class="reference external" href="http://winappdbg.sourceforge.net/">WinAppDbg</a>: it&#8217;s used by the <a class="reference internal" href="../../usage/packages.html"><em>tracer package</em></a> to dump assembly instructions.</li>
+</ul>
+</div></blockquote>
+<p>They are not strictly required by Cuckoo to work properly, but you are encouraged
+to install them if you want to have access to all features available. Make sure
+to download and install the proper packages according to your Python version.</p>
+</div>
+<div class="section" id="additional-softwares">
+<h2>Additional Softwares<a class="headerlink" href="#additional-softwares" title="Permalink to this headline">¶</a></h2>
+<p>At this point you should have installed everything needed by Cuckoo to run
+properly.</p>
+<p>Depending on what kind of files you want to analyze and what kind of sandboxed
+Windows environment you want to run the malwares in, you might want to install
+additional softwares such as browsers, PDF readers, office suites etc.
+Please remeber to disable the &#8220;auto update&#8221; or &#8220;check for updates&#8221; feature of
+any additional software.</p>
+<p>This is completely up to you and to how you, you might get some hints by reading
+the <a class="reference internal" href="../../introduction/sandboxing.html"><em>Sandboxing</em></a> chapter.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/cuckoo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Requirements</a><ul>
+<li><a class="reference internal" href="#install-guest-additions">Install Guest Additions</a></li>
+<li><a class="reference internal" href="#install-python">Install Python</a></li>
+<li><a class="reference internal" href="#additional-softwares">Additional Softwares</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="creation.html"
+                        title="previous chapter">Creation of the Virtual Machine</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="network.html"
+                        title="next chapter">Network Configuration</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/installation/guest/requirements.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="network.html" title="Network Configuration"
+             >next</a></li>
+        <li class="right" >
+          <a href="creation.html" title="Creation of the Virtual Machine"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="../index.html" >Installation</a> &raquo;</li>
+          <li><a href="index.html" >Preparing the Guest</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Cuckoo Sandbox.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

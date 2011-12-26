@@ -1,0 +1,42 @@
+
+Installation
+************
+
+This chapter explains how to install Cuckoo.
+
+Note: This documentation refers to *Host* as the underlying operating
+  systems on which you are running Cuckoo (generally being a GNU/Linux
+  distribution) and to *Guest* as the Windows virtual machine used to
+  run the isolated analysis.
+
+* Preparing the Host
+  * Requirements
+    * Installing Python libraries
+    * Installing VirtualBox
+    * Installing Tcpdump
+  * Installing Cuckoo
+    * Create a user
+    * Download Cuckoo
+    * Install it
+  * Configuration
+    * cuckoo.conf
+      * Logging
+      * Analysis
+      * Processing
+      * Sniffer
+      * Virtual Machines
+      * Virtual machines details
+    * reporting.conf
+* Preparing the Guest
+  * Creation of the Virtual Machine
+  * Requirements
+    * Install Guest Additions
+    * Install Python
+    * Additional Softwares
+  * Network Configuration
+    * Windows Settings
+    * Virtual Networking
+    * Network Tracing
+  * Shared Folders
+  * Saving the Virtual Machine
+  * Cloning the Virtual Machine

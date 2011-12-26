@@ -1,0 +1,17 @@
+
+Introduction
+************
+
+This is an introductory chapter to Cuckoo Sandbox. It explains some
+basic malware analysis concepts, what's Cuckoo an how it can fit in
+malware analysis.
+
+* Sandboxing
+  * Using a Sandbox
+* What is Cuckoo?
+  * Some History
+  * Use Cases
+  * Architecture
+  * Obtaining Cuckoo
+* License
+* Disclaimer

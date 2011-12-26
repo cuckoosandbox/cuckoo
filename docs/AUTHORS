@@ -1,3 +1,14 @@
-- Claudio "nex" Guarnieri (Lead Developer) nex@cuckoobox.org
-- Dario Fernandes (Contributor) dariosfernandes@gmail.com
-- Alessandro "jekil" Tanasi (Contributor) alessandro@lonerunners.net
+                                    AUTHORS
+
+Cuckoo is the result of the work and efforts of many people. Some main developers
+and some friends and users who kindly provided us with feedback and new features.
+You'll find contributions to the code mentioned in the specific source files.
+
+MAIN DEVELOPERS:
+Claudio "nex" Guarnieri     Lead Developer    <nex at cuckoobox dot org>
+Dario Fernandes             Developer         <dariosfernandes at gmail dot com>
+Alessandro "jekil" Tanasi   Developer         <alessandro at lonerunners dot net>
+
+CONTRIBUTORS AND TESTERS:
+Ryan Sommers
+Kjell Christian

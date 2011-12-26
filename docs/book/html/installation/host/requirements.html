@@ -1,0 +1,184 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Requirements &mdash; Cuckoo Sandbox v0.3 Book</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Cuckoo Sandbox v0.3 Book" href="../../index.html" />
+    <link rel="up" title="Preparing the Host" href="index.html" />
+    <link rel="next" title="Installing Cuckoo" href="installation.html" />
+    <link rel="prev" title="Preparing the Host" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="installation.html" title="Installing Cuckoo"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="index.html" title="Preparing the Host"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="../index.html" >Installation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Preparing the Host</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="requirements">
+<h1>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h1>
+<p>Before proceeding on configuring Cuckoo, you&#8217;ll need to install some required
+software and libraries.</p>
+<div class="section" id="installing-python-libraries">
+<h2>Installing Python libraries<a class="headerlink" href="#installing-python-libraries" title="Permalink to this headline">¶</a></h2>
+<p>Cuckoo host components are completely written in Python, therefore make sure to
+have an appropriate version installed. For current release Python 2.6 or 2.7 are
+preferred.</p>
+<p>Install Python on Ubuntu:</p>
+<div class="highlight-python"><pre>$ sudo apt-get install python</pre>
+</div>
+<p>Cuckoo makes use of several libraries which include:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="http://www.darwinsys.com/file/">Magic</a>: for detecting file types.</li>
+<li><a class="reference external" href="http://code.google.com/p/dpkt/">Dpkt</a>: for extracting relevant information from PCAP files.</li>
+<li><a class="reference external" href="http://www.makotemplates.org">Mako</a>: for rendering the HTML reports and the web interface.</li>
+</ul>
+</div></blockquote>
+<p>On Ubuntu you can install all of them with the following command:</p>
+<div class="highlight-python"><pre>$ sudo apt-get install python-magic python-dpkt python-mako</pre>
+</div>
+<p>On different distributions refer to the provided official homepage to retrieve
+other installers or sources.</p>
+<p>Other optional libraries, which do not affect Cuckoo&#8217;s execution, include:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="http://code.google.com/p/pyssdeep/">Pyssdeep</a>: for calculating ssdeep fuzzy hash of files.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="installing-virtualbox">
+<h2>Installing VirtualBox<a class="headerlink" href="#installing-virtualbox" title="Permalink to this headline">¶</a></h2>
+<p>At current stage, Cuckoo heavily relies on <a class="reference external" href="http://www.virtualbox.org">VirtualBox</a> as it&#8217;s unique
+virtualization engine.</p>
+<p>Despite being often packaged by all GNU/Linux distributions, you are encouraged
+to download and install the latest version from the official website. The reason
+behind this choice is that packaged versions of VirtualBox (called OSE)
+generally have some limitations or adjustments in order to meet requirements of
+the GNU GPL license.</p>
+<p>You can get the proper package for your distribution at the <a class="reference external" href="https://www.virtualbox.org/wiki/Linux_Downloads">official download
+page</a>.</p>
+<p>The installation of VirtualBox is not in purposes of this documentation, if you
+are not familiar with it please refer to the <a class="reference external" href="https://www.virtualbox.org/wiki/Documentation">official documentation</a>.</p>
+</div>
+<div class="section" id="installing-tcpdump">
+<h2>Installing Tcpdump<a class="headerlink" href="#installing-tcpdump" title="Permalink to this headline">¶</a></h2>
+<p>By default Cuckoo makes use of VirtualBox&#8217;s embedded network tracing
+functionalities, but in some cases or some network configurations you might need
+to adopt an external network sniffer.</p>
+<p>If you intend to use VirtualBox&#8217;s own network trace, you can skip this section.</p>
+<p>The best choice for packet interception is <a class="reference external" href="http://www.tcpdump.org">tcpdump</a> of course.</p>
+<p>Install it on Ubuntu:</p>
+<div class="highlight-python"><pre>$ sudo apt-get install tcpdump</pre>
+</div>
+<p>Tcpdump requires root privileges, but since you don&#8217;t want Cuckoo to run as root
+you&#8217;ll have to set specific Linux capabilities to the binary:</p>
+<div class="highlight-python"><pre>$ sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump</pre>
+</div>
+<p>You can verify the results of last command with:</p>
+<div class="highlight-python"><pre>$ getcap /usr/sbin/tcpdump
+/usr/sbin/tcpdump = cap_net_admin,cap_net_raw+eip</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/cuckoo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Requirements</a><ul>
+<li><a class="reference internal" href="#installing-python-libraries">Installing Python libraries</a></li>
+<li><a class="reference internal" href="#installing-virtualbox">Installing VirtualBox</a></li>
+<li><a class="reference internal" href="#installing-tcpdump">Installing Tcpdump</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Preparing the Host</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="next chapter">Installing Cuckoo</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/installation/host/requirements.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="installation.html" title="Installing Cuckoo"
+             >next</a></li>
+        <li class="right" >
+          <a href="index.html" title="Preparing the Host"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="../index.html" >Installation</a> &raquo;</li>
+          <li><a href="index.html" >Preparing the Host</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Cuckoo Sandbox.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -20,15 +19,18 @@
 
 import sys
 from cuckoo.logging.colors import *
+from cuckoo.config.constants import VERSION
 
 def logo():
+    """
+    Prints Cuckoo Sandbox logo
+    """
     sys.stdout.write(bold(cyan("                     _                  ")) + "\n")
     sys.stdout.write(bold(cyan("    ____ _   _  ____| |  _ ___   ___    ")) + "\n")
     sys.stdout.write(bold(cyan("   / ___) | | |/ ___) |_/ ) _ \\ / _ \\ ")) + "\n")
     sys.stdout.write(bold(cyan("  ( (___| |_| ( (___|  _ ( |_| | |_| |  ")) + "\n")
-    sys.stdout.write(bold(cyan("   \\____)____/ \\____)_| \_)___/ \\___/")) + " v0.2.1-dev\n")
+    sys.stdout.write(bold(cyan("   \\____)____/ \\____)_| \_)___/ \\___/")) + " " + VERSION + "\n")
     sys.stdout.write("\n")
     sys.stdout.write(" www.cuckoobox.org\n")
     sys.stdout.write(" Copyright (C) 2010-2011\n")
-    sys.stdout.write(" by " + bold("Claudio") + " \"nex\" " + bold("Guarnieri") + "\n")
     sys.stdout.write("\n")

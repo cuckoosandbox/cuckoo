@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -21,7 +20,9 @@
 import os
 import re
 import sys
+import string
 import socket
+from urlparse import urlunparse
 
 try:
     import dpkt
@@ -30,7 +31,15 @@ except ImportError, why:
     IS_DPKT = False
 
 class Pcap:
+    """
+    Network PCAP.
+    """
+    
     def __init__(self, filepath):
+        """
+        Creates a new instance.
+        @param filepath: path to PCAP file
+        """ 
         self.filepath = filepath
         self.tcp_connections = []
         self.udp_connections = []
@@ -38,8 +47,34 @@ class Pcap:
         self.dns_requests = []
         self.dns_performed = []
         self.results = {}
+
+    def _convert_char(self, char):
+        """
+        Converts a character in a printable format.
+        @param char: char to be converted 
+        @return: printable character
+        """
+        if char in string.ascii_letters or \
+           char in string.digits or \
+           char in string.punctuation or \
+           char in string.whitespace:
+            return char
+        else:
+            return r'\x%02x' % ord(char)
+
+    def _convert_to_printable(self, s):
+        """
+        Converts a string in a printable format.
+        @param s: string to be converted 
+        @return: printable string
+        """
+        return ''.join([self._convert_char(c) for c in s])
         
     def check_http(self, tcpdata):
+        """
+        Checks for HTTP traffic.
+        @param tcpdata: tcp data flow
+        """ 
         try:
             dpkt.http.Request(tcpdata)
             return True
@@ -47,18 +82,35 @@ class Pcap:
             return False
         
     def add_http(self, tcpdata, dport):
+        """
+        Adds an HTTP flow.
+        @param tcpdata: TCP data in flow
+        @param dport: destination port
+        """  
         http = dpkt.http.Request(tcpdata)
         
         entry = {}
         entry["host"] = http.headers['host']
         entry["port"] = dport
-        entry["data"] = tcpdata
-        entry["uri"] = http.uri
-        
+        entry["data"] = self._convert_to_printable(tcpdata)
+        if entry["port"] != 80:
+            entry["uri"] = urlunparse(('http', "%s:%d" % (entry['host'], entry["port"]), http.uri, None, None, None))
+        else:
+            entry["uri"] = urlunparse(('http', entry['host'], http.uri, None, None, None))
+        entry["body"] = self._convert_to_printable(http.body)
+        entry["path"] = http.uri
+        entry["user-agent"] = http.headers["user-agent"]
+        entry["version"] = http.version
+        entry["method"] = http.method
+
         self.http_requests.append(entry)
         return True
     
     def check_dns(self, udpdata):
+        """
+        Checks for DNS traffic.
+        @param udpdata: UDP data flow
+        """ 
         try:
             dpkt.dns.DNS(udpdata)
             return True
@@ -66,6 +118,10 @@ class Pcap:
             return False
     
     def add_dns(self, udpdata):
+        """
+        Adds a DNS data flow.
+        @param udpdata: data inside flow
+        """ 
         dns = dpkt.dns.DNS(udpdata)
         name = dns.qd[0].name
         
@@ -80,6 +136,7 @@ class Pcap:
             entry["hostname"] = name
 
             try:
+                socket.setdefaulttimeout(10)
                 ip = socket.gethostbyname(name)
             except socket.gaierror:
                 ip = ""
@@ -93,6 +150,10 @@ class Pcap:
         return False
     
     def process(self):
+        """
+        Process PCAP.
+        @return: dict with network analysis data
+        """
         if not IS_DPKT:
             return None
 

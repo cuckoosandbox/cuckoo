@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -28,6 +27,10 @@ sys.path.append("\\\\VBOXSVR\\setup\\lib")
 import cuckoo.defines
 
 def check_process(pid):
+    """
+    Checks if the specified process is still running.
+    @param pid: PID of the process to verify
+    """
     log = logging.getLogger("CheckProcess.CheckProcess")
     h_process = cuckoo.defines.KERNEL32.OpenProcess(cuckoo.defines.PROCESS_ALL_ACCESS,
                                                     False,

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -24,7 +23,15 @@ import csv
 import string
 
 class ParseLog:
+    """
+    Parses the specified process log file.
+    """
+    
     def __init__(self, log_path):
+        """
+        Creates a new instance.
+        @param log_path: log file path
+        """ 
         self._log_path = log_path
         self.process_id         = None
         self.process_name       = None
@@ -32,6 +39,11 @@ class ParseLog:
         self.calls = []
 
     def _convert_char(self, char):
+        """
+        Converts a character in a printable format.
+        @param char: char to be converted 
+        @return: printable character
+        """
         if char in string.ascii_letters or \
            char in string.digits or \
            char in string.punctuation or \
@@ -41,9 +53,18 @@ class ParseLog:
             return r'\x%02x' % ord(char)
 
     def _convert_to_printable(self, s):
+        """
+        Converts a string in a printable format.
+        @param s: string to be converted 
+        @return: printable string
+        """
         return ''.join([self._convert_char(c) for c in s])
 
     def _parse(self, row):
+        """
+        Parses a CSV row from the log file.
+        @param row: row to be parsed 
+        """
         call = {}
         arguments = []
 
@@ -106,6 +127,9 @@ class ParseLog:
         return True
 
     def extract(self):
+        """
+        Processes the specified process log file.
+        """
         if not os.path.exists(self._log_path):
             return False
 
@@ -122,19 +146,31 @@ class ParseLog:
         return True
 
 class Analysis:
+    """
+    Processes all the results from the specified analysis.
+    """
+    
     def __init__(self, logs_path):
+        """
+        Creates a new instance.
+        @param logs_path: log file path
+        """
         self._logs_path = logs_path
 
     def process(self):
+        """
+        Processes all the files from the specified analysis results path.
+        @return: dictionary containing the abstracted analysis results
+        """
         results = []
 
         # Check if the specified directory exists.
         if not os.path.exists(self._logs_path):
-            return False
+            return results
 
         # Check if the specified directory contains any file.
         if len(os.listdir(self._logs_path)) == 0:
-            return False
+            return results
 
         # Walk through all the files.
         for file_name in os.listdir(self._logs_path):
@@ -166,12 +202,23 @@ class Analysis:
         return results
 
 class ProcessTree:
+    """
+    Generates a hyerarhical process tree.
+    """
+    
     def __init__(self, proc_results):
+        """
+        Creates a new instance
+        @param proc_results: processes results from analysis
+        """ 
         self.proc_results = proc_results
         self.processes = []
         self.proctree = []
 
     def gen_proclist(self):
+        """
+        Generates the list of processes involved in the analysis.
+        """
         for entry in self.proc_results:
             process = {}
             process["name"] = entry["process_name"]
@@ -189,6 +236,11 @@ class ProcessTree:
         return True
 
     def add_node(self, node, parent_id, tree):
+        """
+        Adds a node to the tree.
+        @param parent_id: id to parent node
+        @param tree: tree structure 
+        """
         for process in tree:
             if process["pid"] == parent_id:
                 new = {}
@@ -202,6 +254,10 @@ class ProcessTree:
         return False
 
     def populate(self, node):
+        """
+        Populates the tree.
+        @param node: note added 
+        """
         for children in node["children"]:
             for proc in self.processes:
                 if int(proc["pid"]) == int(children):
@@ -211,6 +267,9 @@ class ProcessTree:
         return True
 
     def process(self):
+        """
+        Invokes the tree population.
+        """
         if not self.proc_results or len(self.proc_results) == 0:
             return None
     

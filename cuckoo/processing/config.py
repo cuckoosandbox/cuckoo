@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -21,10 +20,20 @@
 import ConfigParser
 
 class AnalysisConfig:
+    """
+    Analysis configuration storage
+    """
+    
     def __init__(self, config_path):
+        """
+        Creates a new analysis configuration
+        @param config_path: path to analysis config file
+        """ 
         config = ConfigParser.ConfigParser()
         config.read(config_path)
         self.target = config.get("analysis", "target")
         self.package = config.get("analysis", "package")
         self.timeout = config.get("analysis", "timeout")
         self.share = config.get("analysis", "share")
+        self.started = float(config.get("analysis", "started"))
+        self.custom = config.get("analysis", "custom")

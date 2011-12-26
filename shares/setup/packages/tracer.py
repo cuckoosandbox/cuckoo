@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -23,9 +22,9 @@ import sys
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
-from cuckoo.tracer import *
-from cuckoo.execute import *
-from cuckoo.monitor import *
+from cuckoo.trace import cuckoo_trace
+from cuckoo.execute import cuckoo_execute
+from cuckoo.monitor import cuckoo_resumethread
 
 def cuckoo_run(target_path):
     suspended = True

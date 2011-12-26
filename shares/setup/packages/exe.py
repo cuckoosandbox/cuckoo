@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -23,8 +22,8 @@ import sys
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
-from cuckoo.execute import *
-from cuckoo.monitor import *
+from cuckoo.execute import cuckoo_execute
+from cuckoo.monitor import cuckoo_monitor
 
 # The package main function "cuckoo_run" should follow a fixed structure in
 # order for Cuckoo to correctly handle it and its results.

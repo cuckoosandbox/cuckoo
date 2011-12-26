@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -24,8 +23,8 @@ import ConfigParser
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
-from cuckoo.execute import *
-from cuckoo.monitor import *
+from cuckoo.execute import cuckoo_execute
+from cuckoo.monitor import cuckoo_monitor
 
 def cuckoo_run(target_path):
     config = ConfigParser.ConfigParser()

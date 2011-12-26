@@ -1,0 +1,147 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installing Cuckoo &mdash; Cuckoo Sandbox v0.3 Book</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Cuckoo Sandbox v0.3 Book" href="../../index.html" />
+    <link rel="up" title="Preparing the Host" href="index.html" />
+    <link rel="next" title="Configuration" href="configuration.html" />
+    <link rel="prev" title="Requirements" href="requirements.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="configuration.html" title="Configuration"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="requirements.html" title="Requirements"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="../index.html" >Installation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Preparing the Host</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installing-cuckoo">
+<h1>Installing Cuckoo<a class="headerlink" href="#installing-cuckoo" title="Permalink to this headline">¶</a></h1>
+<p>Proceed with download and installation.</p>
+<div class="section" id="create-a-user">
+<h2>Create a user<a class="headerlink" href="#create-a-user" title="Permalink to this headline">¶</a></h2>
+<p>Even if you obviously can run Cuckoo with your current user, creating a dedicated
+one is always a good practice.</p>
+<p>Create a new user:</p>
+<div class="highlight-python"><pre>$ sudo adduser cuckoo</pre>
+</div>
+<p>Make sure the new user belongs to the &#8220;vboxusers&#8221; group (or the group you used to
+run VirtualBox):</p>
+<div class="highlight-python"><pre>$ sudo useradd -G vboxusers cuckoo</pre>
+</div>
+</div>
+<div class="section" id="download-cuckoo">
+<h2>Download Cuckoo<a class="headerlink" href="#download-cuckoo" title="Permalink to this headline">¶</a></h2>
+<p>You can get your copy of Cuckoo from the <a class="reference external" href="http://www.cuckoobox.org">official website</a> or from our
+<a class="reference external" href="https://github.com/cuckoobox/cuckoo">git repository</a>.</p>
+<p>Please notice that the archives to be downloaded from the website are core
+releases, while the version on git has to be considered an <strong>under
+development</strong> stage, therefore possibly unstable and not yet fully documented.</p>
+</div>
+<div class="section" id="install-it">
+<h2>Install it<a class="headerlink" href="#install-it" title="Permalink to this headline">¶</a></h2>
+<p>Extract or checkout your copy of Cuckoo to a path of your choice and you&#8217;re
+ready to go ;-).</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/cuckoo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installing Cuckoo</a><ul>
+<li><a class="reference internal" href="#create-a-user">Create a user</a></li>
+<li><a class="reference internal" href="#download-cuckoo">Download Cuckoo</a></li>
+<li><a class="reference internal" href="#install-it">Install it</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="requirements.html"
+                        title="previous chapter">Requirements</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="configuration.html"
+                        title="next chapter">Configuration</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/installation/host/installation.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="configuration.html" title="Configuration"
+             >next</a></li>
+        <li class="right" >
+          <a href="requirements.html" title="Requirements"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="../index.html" >Installation</a> &raquo;</li>
+          <li><a href="index.html" >Preparing the Host</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Cuckoo Sandbox.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

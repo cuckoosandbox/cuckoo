@@ -24,9 +24,9 @@ import hashlib
 import urllib2
 from optparse import OptionParser
 
-from cuckoo.core.db import *
+from cuckoo.config.config import CuckooConfig
+from cuckoo.core.db import CuckooDatabase
 from cuckoo.logging.colors import *
-from cuckoo.config.config import *
 
 DESTINATION = "/tmp/"
 
@@ -100,6 +100,12 @@ def main():
                       dest="url",
                       default=False,
                       help = "Specify if the target is an URL to be analyzed")
+    parser.add_option("-m", "--machine",
+                      action="store",
+                      type="string",
+                      dest="machine",
+                      default=None,
+                      help = "Specify a virtual machine you want to specifically use for this analysis")
 
     (options, args) = parser.parse_args()
 
@@ -135,14 +141,21 @@ def main():
         print(bold(red("ERROR")) + ": The target file \"%s\" does not exist." % target)
         return False
 
+    try:
+        md5 = hashlib.md5(open(target, "rb").read()).hexdigest()
+    except Exception, why:
+        md5 = None
+
     # Add task to the database.
     try:
         db = CuckooDatabase()
         task_id = db.add_task(target,
+                              md5,
                               options.timeout,
                               options.package,
                               options.priority,
-                              options.custom)
+                              options.custom,
+                              options.machine)
         if not task_id:
             print(bold(red("ERROR")) + ": Unable to add task to database.")
             return False

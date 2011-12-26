@@ -25,40 +25,37 @@ import logging
 import logging.config
 import subprocess
 import ConfigParser
-from Queue import *
-from time import sleep
+from time import time, sleep
 from threading import Thread
 
-from cuckoo.config.config import *
-from cuckoo.logging.logo import *
-from cuckoo.logging.colored import *
-from cuckoo.core.db import *
-from cuckoo.core.getfiletype import *
-
-log = logging.getLogger("Core")
+from cuckoo.config.config import CuckooConfig
+from cuckoo.config.constants import CUCKOO_LOG_FILE
+from cuckoo.logging.logo import logo
+from cuckoo.core.db import CuckooDatabase
+from cuckoo.core.getfiletype import get_filetype
 
 # Check the virtualization engine from the config fle and tries to retrieve
 # and import the corresponding Cuckoo's module.
 if CuckooConfig().get_vm_engine().lower() == "virtualbox":
     try:
-        from cuckoo.core.virtualbox import *
+        from cuckoo.core.virtualbox import VirtualMachine
     except ImportError, why:
-        log.critical("Unable to load Cuckoo's VirtualBox module. " \
-                     "Please verify your installation.")
+        sys.stderr.write("ERROR: Unable to load Cuckoo's VirtualBox module. " \
+                         "Please verify your installation.\n")
         sys.exit(-1)
 # If no valid option has been specified, aborts the execution.
 else:
-    log.critical("No valid virtualization option identified. " \
-                 "Please check your configuration file.")
+    sys.stderr.write("ERROR: No valid virtualization option identified. " \
+                     "Please check your configuration file.\n")
     sys.exit(-1)
 
 # Import the external sniffer module only if required.
-if CuckooConfig().use_external_sniffer().lower() == "on":
+if CuckooConfig().use_external_sniffer():
     try:
-        from cuckoo.core.sniffer import *
+        from cuckoo.core.sniffer import Sniffer
     except ImportError, why:
-        log.critical("Unable to import sniffer module. " \
-                     "Please verify your installation.")
+        sys.stderr.write("ERROR: Unable to import sniffer module. " \
+                         "Please verify your installation.\n")
         sys.exit(-1)
 
 #------------------------------ Global Variables ------------------------------#
@@ -66,10 +63,13 @@ if CuckooConfig().use_external_sniffer().lower() == "on":
 # (Key = virtual machine name, Value = MAC address).
 VM_LIST = {}
 # Initialize available virtual nachines pool.
-VM_POOL = Queue()
+VM_POOL = []
 #------------------------------------------------------------------------------#
 
 class Analysis(Thread):
+    """
+    This class handles the whole analysis process.
+    """
     def __init__(self, task = None):
         Thread.__init__(self)
         self.vm_id = None
@@ -80,8 +80,11 @@ class Analysis(Thread):
         self.dst_filename = None
         log = logging.getLogger("Core.Analysis")
 
-    # Clean shared folders.
     def _clean_share(self, share_path):
+        """
+        Cleans the specified shared folder.
+        @param share_path: a shared folder
+        """
         log = logging.getLogger("Core.Analysis.CleanShare")
 
         total = len(os.listdir(share_path))
@@ -114,8 +117,12 @@ class Analysis(Thread):
                         "Review previour errors." % share_path)
             return False
 
-    # Save analysis results from source path to destination path.
     def _save_results(self, src, dst):
+        """
+        Saves analysis results from source to destination path.
+        @param src: source path
+        @param dst: destination path
+        """
         log = logging.getLogger("Core.Analysis.SaveResults")
 
         if not os.path.exists(src):
@@ -124,7 +131,7 @@ class Analysis(Thread):
 
         if not os.path.exists(dst):
             try:
-                os.mkdir(dst)
+                os.makedirs(dst)
             except (IOError, os.error), why:
                 log.error("Unable to create directory \"%s\": %s" % (dst, why))
                 return False
@@ -164,6 +171,11 @@ class Analysis(Thread):
             return False
 
     def _generate_config(self, share_path):
+        """
+        Generates the analysis configuration file and saves it to specified
+        shared folder.
+        @param share_path: path to the destination shared folder
+        """
         log = logging.getLogger("Core.Analysis.GenerateConfig")
 
         if self.task is None:
@@ -175,6 +187,11 @@ class Analysis(Thread):
         config.set("analysis", "target", self.dst_filename)
         config.set("analysis", "package", self.task["package"])
         config.set("analysis", "timeout", self.task["timeout"])
+        config.set("analysis", "started", time())
+        if self.task["custom"]:
+            config.set("analysis", "custom", self.task["custom"])
+        else:
+            config.set("analysis", "custom", "")
 
         local_share = "\\\\VBOXSVR\\%s\\" % self.vm_id
         config.set("analysis", "share", local_share)
@@ -196,12 +213,20 @@ class Analysis(Thread):
             return False
 
     def _free_vm(self, vm_id):
-        VM_POOL.put(vm_id)
+        """
+        Frees a virtual machine and adds it back to the available pool.
+        @param vm_id: identification to the specified virtual machine
+        """
+        VM_POOL.append(vm_id)
         log = logging.getLogger("Core.Analysis.FreeVM")
         log.info("Virtual machine \"%s\" released." % vm_id)
         return True
 
-    def _processing(self, save_path, custom = None):
+    def _processing(self, save_path):
+        """
+        Invokes post-analysis processing script.
+        @param save_path: path to the analysis results folder
+        """
         log = logging.getLogger("Core.Analysis.Processing")
         if not os.path.exists(save_path):
             log.error("Cannot find the results folder at path \"%s\"."
@@ -229,11 +254,6 @@ class Analysis(Thread):
 
         pargs = [interpreter, processor, save_path]
 
-        # This sends to the processing any eventual custom field specified
-        # at submission time in the database.
-        if custom:
-            pargs.extend([custom])
-
         try:
             pid = subprocess.Popen(pargs).pid
         except Exception, why:
@@ -245,6 +265,9 @@ class Analysis(Thread):
         return True
 
     def run(self):
+        """
+        Handles the analysis process and invokes all required procedures.
+        """
         log = logging.getLogger("Core.Analysis.Run")
         success = True
 
@@ -280,29 +303,34 @@ class Analysis(Thread):
         # Copy original target file name to destination target.
         self.dst_filename = os.path.basename(self.task["target"])
 
-        # 4. If analysis package has not been specified, need to run some
-        # perliminary checks on the file.
+        # 4. If analysis package has not been specified, I'll try to identify
+        # the correct one depending on the file type of the target.
         if self.task["package"] is None:
-            file_type = get_filetype(self.task["target"])
-            file_extension = os.path.splitext(self.dst_filename)[1]
+            file_type = get_filetype(self.task["target"]).lower()
+            file_extension = os.path.splitext(self.dst_filename)[1].lower()
 
             if file_type:
                 # Check the file format and see if the file name has the
                 # appropriate extension, otherwise fix it. Assign proper
                 # default analysis package.
-                if file_type.lower() == "exe":
-                    if file_extension.lower() != ".exe":
+                if file_type == "exe":
+                    if file_extension != ".exe":
                         self.dst_filename += ".exe"
                         
                     self.task["package"] = "exe"
-                elif file_type.lower() == "pdf":
-                    if file_extension.lower() != ".pdf":
+                elif file_type == "dll":
+                    if file_extension != ".dll":
+                        self.dst_filename += ".dll"
+
+                    self.task["package"] = "dll"
+                elif file_type == "pdf":
+                    if file_extension != ".pdf":
                         self.dst_filename += ".pdf"
 
                     self.task["package"] = "pdf"
                 else:
-                    log.error("Unknown file format for target \"%s\". Abort."
-                              % self.task["target"])
+                    log.error("Unsupported file format (%s) for target \"%s\"."\
+                              " Abort." % (file_type, self.task["target"]))
                     self.db.complete(self.task["id"], False)
                     return False
             else:
@@ -314,22 +342,47 @@ class Analysis(Thread):
         if self.task["timeout"] is None:
             timeout = int(CuckooConfig().get_analysis_analysis_timeout())
             self.task["timeout"] = timeout
+        # If the specified timeout is bigger than the watchdog timeout set in
+        # the configuration file, I redefine it to the maximum - 30 seconds.
+        elif int(self.task["timeout"]) > CuckooConfig().get_analysis_watchdog_timeout():
+            self.task["timeout"] = CuckooConfig().get_analysis_watchdog_timeout() - 30
+            log.info("Specified analysis timeout is bigger than the watchdog " \
+                     "timeout (see cuckoo.conf). Redefined to %s seconds."
+                     % self.task["timeout"])
 
         # 6. Acquire a virtual machine from pool.
-        while True:
-            self.vm_id = VM_POOL.get()
+        vm_pop_timeout = CuckooConfig().get_analysis_watchdog_timeout() * 3
+        for i in xrange(0, vm_pop_timeout):
+            if self.task["vm_id"]:
+                if not VM_LIST.has_key(self.task["vm_id"]):
+                    log.error("The specified virtual machine \"%s\" does not "
+                              "exist or wasn't added to the pool. Abort."
+                              % self.task["vm_id"])
+                    self.db.complete(self.task["id"], False)
+                    return False
+
+                self.vm_id = VM_POOL.pop(VM_POOL.index(self.task["vm_id"]))
+            else:
+                self.vm_id = VM_POOL.pop()
+
             if self.vm_id:
                 log.info("Acquired virtual machine \"%s\"." % self.vm_id)
                 break
             else:
+                log.debug("No virtual machine available yet.")
                 sleep(1)
+
+        if not self.vm_id:
+            log.error("Acquire of virtual machine failed. Abort.")
+            self.db.complete(self.task["id"], False)
+            return False
 
         # Get path to current virtual machine's shared folder.
         self.vm_share = CuckooConfig().get_vm_share(self.vm_id)           
 
         if not os.path.exists(self.vm_share):
             log.error("Shared folder \"%s\" for virtual machine \"%s\" " \
-                      "does not exist. Abort.")
+                      "does not exist. Abort." % (self.vm_share, self.vm_id))
             self.db.complete(self.task["id"], False)
             self._free_vm(self.vm_id)
             return False
@@ -361,11 +414,11 @@ class Analysis(Thread):
         # 9. Start sniffer.
         # Check if the user has decided to adopt the external sniffer or not.
         # In first case, initialize the sniffer and start it.
-        if CuckooConfig().use_external_sniffer().lower() == "on":
+        if CuckooConfig().use_external_sniffer():
             pcap_file = os.path.join(self.vm_share, "dump.pcap")
             self.sniffer = Sniffer(pcap_file)
         
-            interface = CuckooConfig().get_sniffer_interface()
+            interface = CuckooConfig().get_sniffer_interface().lower()
             guest_mac = VM_LIST[self.vm_id]
 
             if not self.sniffer.start(interface, guest_mac):
@@ -431,7 +484,7 @@ class Analysis(Thread):
             self.db.complete(self.task["id"], False)
 
         # 18. Invoke processing script.
-        self._processing(save_path, self.task["custom"])
+        self._processing(save_path)
 
         # 19. Stop virtual machine.            
         if not vm.stop():
@@ -481,9 +534,8 @@ def main():
 
     # Loop until the end of the world.
     while running:
-        # If there actually are free virtual machines, than I can start a new
-        # analysis procedure.
-        if not VM_POOL.empty():
+        # If there are free virtual machines I can start a new analysis.
+        if not len(VM_POOL) == 0:
             db = CuckooDatabase()
             task = db.get_task()
 
@@ -495,8 +547,8 @@ def main():
             log.info("Acquired analysis task for target \"%s\"."
                      % task["target"])
 
-            # 3. Lock acquired task. If it doesn't get locked successfully I need
-            # to abort its execution.
+            # 3. Lock acquired task. If it doesn't get locked successfully I
+            # need to abort its execution.
             if not db.lock(task["id"]):
                 log.error("Unable to lock task with ID %d." % task["id"])
                 sleep(1)
@@ -507,28 +559,44 @@ def main():
             analysis.start()
         else:
             log.debug("No free virtual machines.")
-        
-        # Anti-Flood Enterprise Protection System.
+
         sleep(1)
 
     return
 
-if __name__ == "__main__":
-    logo()
+def init_logging():
+    """
+    Creates log directory if it doesn't exist and initializes logging.
+    @return: boolean value representing the success or failure of the operations
+    """
+    # Creates the log directory if it doesn't exist yet.
+    log_dir = os.path.dirname(CUCKOO_LOG_FILE)
+    if not os.path.exists(log_dir):    
+        try:
+            os.makedirs(log_dir)
+        except (IOError, os.error), why:
+            sys.stderr.write("ERROR: Unable to create folder \"%s\": %s"
+                             % (log_dir, why))
+            return False
 
     # Load logging config file.
     logging.config.fileConfig("conf/logging.conf")
-    # Hack StreamHandler to color the messages :).
-    logging.StreamHandler.emit = color_stream_emit(logging.StreamHandler.emit)
 
     # If user enabled debug logging in the configuration file, I modify the
     # root logger level accordingly.
-    if CuckooConfig().get_logging_debug().lower() == "on":
+    if CuckooConfig().get_logging_debug():
         root = logging.getLogger()
         root.setLevel(logging.DEBUG)
 
-    log = logging.getLogger("Core.Init")
+    return True
 
+if __name__ == "__main__":
+    logo()
+
+    if not init_logging():
+        sys.exit(-1)
+
+    log = logging.getLogger("Core.Init")
     log.info("Started.")
 
     try:
@@ -564,7 +632,7 @@ if __name__ == "__main__":
                     VM_LIST[vm_id] = vm.mac
 
                     # Add the current VM to the available pool.
-                    VM_POOL.put(vm_id)
+                    VM_POOL.append(vm_id)
                 else:
                     log.warning("Virtual machine with name \"%s\" share the " \
                                 "the same MAC address \"%s\" with virtual "  \
@@ -573,12 +641,12 @@ if __name__ == "__main__":
                                 % (vm.name, vm.mac, found))
 
         # If virtual machines pool is empty, die.
-        if VM_POOL.empty():
+        if len(VM_POOL) == 0:
             log.critical("None of the virtual machines are available. " \
                          "Please review the errors.")
             sys.exit(-1)
         else:
-            log.info("%s virtual machine/s added to pool." % VM_POOL.qsize())
+            log.info("%s virtual machine/s added to pool." % len(VM_POOL))
 
         # If I arrived this far means that the gods of virtualization are in
         # good mood today and nothing screwed up. Cross your fingers and hope

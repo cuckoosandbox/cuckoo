@@ -1,0 +1,137 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Analysis Packages &mdash; Cuckoo Sandbox v0.3 Book</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Cuckoo Sandbox v0.3 Book" href="../index.html" />
+    <link rel="up" title="Usage" href="index.html" />
+    <link rel="next" title="Execution" href="execution.html" />
+    <link rel="prev" title="Submit an analysis" href="submit.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="execution.html" title="Execution"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="submit.html" title="Submit an analysis"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Usage</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="analysis-packages">
+<h1>Analysis Packages<a class="headerlink" href="#analysis-packages" title="Permalink to this headline">¶</a></h1>
+<p>The <strong>analysis packages</strong> are a key component in Cuckoo Sandbox.</p>
+<p>They consist in structured Python scripts which are executed inside the virtual
+machine and that define how Cuckoo should conduct the analysis.</p>
+<p>As you already know, you can choose which analysis package to use by specifying
+its name at submission time (see <a class="reference internal" href="submit.html"><em>Submit an analysis</em></a>) like following:</p>
+<div class="highlight-python"><pre>$ python submit.py /path/to/malware --package &lt;package name&gt;</pre>
+</div>
+<p>If none is specified, Cuckoo will try to detect the type of the file and choose
+the proper analysis package accordingly. If the file type is not supported and
+no package was specified, the analysis will be aborted and marked as failed in
+the database.</p>
+<p>This functionality allows you not only to use existing analysis packages, but
+also create some of your own and customize your Cuckoo setup. Ths topic will
+be dealt in details in the <a class="reference internal" href="../customization/packages.html"><em>Analysis Packages</em></a> customization
+chapter.</p>
+<p>Cuckoo provides some default analysis packages which include:</p>
+<blockquote>
+<div><ul class="simple">
+<li><tt class="docutils literal"><span class="pre">exe</span></tt>: default analysis package used to analyze generic Windows executables.</li>
+<li><tt class="docutils literal"><span class="pre">dll</span></tt>: used to analyze Dynamic Linked Libraries.</li>
+<li><tt class="docutils literal"><span class="pre">pdf</span></tt>: used to analyze Adobe Reader while opening the given PDF file.</li>
+<li><tt class="docutils literal"><span class="pre">doc</span></tt>: used to analyze Microsoft Office while opening documents.</li>
+<li><tt class="docutils literal"><span class="pre">php</span></tt>: used to analyze PHP scripts.</li>
+<li><tt class="docutils literal"><span class="pre">ie</span></tt>: used to analyze Internet Explorer while opening the given URL.</li>
+<li><tt class="docutils literal"><span class="pre">firefox</span></tt>: used to analyze Mozilla Firefox while opening the given URL.</li>
+<li><tt class="docutils literal"><span class="pre">tracer</span></tt>: used to trace assembly instructions performed by the given file.</li>
+</ul>
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/cuckoo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="submit.html"
+                        title="previous chapter">Submit an analysis</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="execution.html"
+                        title="next chapter">Execution</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/usage/packages.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="execution.html" title="Execution"
+             >next</a></li>
+        <li class="right" >
+          <a href="submit.html" title="Submit an analysis"
+             >previous</a> |</li>
+        <li><a href="../index.html">Cuckoo Sandbox v0.3 Book</a> &raquo;</li>
+          <li><a href="index.html" >Usage</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Cuckoo Sandbox.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

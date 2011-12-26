@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -23,14 +22,14 @@ import sys
 
 sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
 
-from cuckoo.execute import *
-from cuckoo.monitor import *
+from cuckoo.execute import cuckoo_execute
+from cuckoo.monitor import cuckoo_monitor
 
 def cuckoo_run(target_path):
     pids = []
 
     # Customize this Path with the correct one on your Windows setup.
-    adobe_reader = "C:\\Program Files\\Adobe\\Reader 8.0\\Reader\\AcroRd32.exe"
+    adobe_reader = "C:\\Program Files\\Adobe\\Reader 9.0\\Reader\\AcroRd32.exe"
 
     suspended = True
     (pid, h_thread) = cuckoo_execute(adobe_reader, "\"%s\"" % target_path, suspended)

@@ -1,0 +1,94 @@
+
+Cuckoo Sandbox Book
+*******************
+
+Cuckoo Sandbox is an *Open Source* software for automating analysis of
+suspicious files. To do so it makes use of custom components that
+monitor the behavior of the malicious processes while running in an
+isolated Windows environment.
+
+This book explains what Cuckoo is, how it works and what you can do
+with it, from setup and run Cuckoo to how to customize it and extend
+it.
+
+
+Having troubles?
+================
+
+If you're having troubles you might want to check out the *FAQ* it
+might already have the answers to your questions.
+
+* FAQ
+  * Usage questions
+  * General questions
+Otherwise you can ask to the developers and to other Cuckoo users in
+the #cuckoobox IRC channel.
+
+
+Contents
+========
+
+* Introduction
+  * Sandboxing
+    * Using a Sandbox
+  * What is Cuckoo?
+    * Some History
+    * Use Cases
+    * Architecture
+    * Obtaining Cuckoo
+  * License
+  * Disclaimer
+* Installation
+  * Preparing the Host
+    * Requirements
+    * Installing Cuckoo
+    * Configuration
+  * Preparing the Guest
+    * Creation of the Virtual Machine
+    * Requirements
+    * Network Configuration
+    * Shared Folders
+    * Saving the Virtual Machine
+    * Cloning the Virtual Machine
+* Usage
+  * Starting Cuckoo
+  * Submit an analysis
+    * Submission Utility
+    * Interact with SQLite
+    * Cuckoo Python Functions
+  * Analysis Packages
+  * Execution
+  * Analysis Results
+    * analysis.conf
+    * analysis.log
+    * dump.pcap
+    * files/
+    * logs/
+    * reports/
+    * shots/
+    * trace/
+  * Web Interface
+    * Start the Web Server
+    * Recent Analysis
+    * Search for MD5
+    * View Report
+* Customization
+  * Analysis Packages
+    * Getting started
+    * Cuckoo Modules
+  * Processing of results
+    * Retrieving details on a file
+    * Processing behavioral analysis results
+    * Processing network traffic
+    * Putting all together
+  * Reporting Results
+    * Built-in Reports
+    * Writing your own reporting module
+* Final Remarks
+  * Join the discussion
+  * Contribute
+  * Donations
+  * People
+    * Developers
+    * Contributors
+    * Acknowledgements
