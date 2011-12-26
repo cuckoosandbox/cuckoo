@@ -1,0 +1,18 @@
+<%inherit file="base.html" />
+<%def name="title()"> - Report ${file["md5"]}</%def>
+<%def name="content()">
+    <div id="menu">
+        <ul id="menu">
+            <li style="margin-right: 20px;"><a href="#behavior_analysis">Behavior Analysis</a></li>
+            <li><a href="#network_analysis">Network Analysis</a></li>
+            <li><a href="#dropped_files">Dropped Files</a></li>
+            <li><a href="#general_information">General Information</a></li>
+        </ul>
+    </div>
+    <div id="content">
+        <tag id="general_information" /><%include file="sections/general_information.html" />
+        <tag id="dropped_files" /><%include file="sections/dropped_files.html" />
+        <tag id="network_analysis" /><%include file="sections/network_analysis.html" />
+        <tag id="behavior_analysis" /><%include file="sections/behavior_analysis.html" />
+    </div>
+</%def>

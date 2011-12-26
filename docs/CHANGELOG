@@ -1,0 +1,36 @@
+Cuckoo Sandbox 0.3
+==================
+
+ * Introduced minimal web server with web interface to browse through the analysis reports.
+ * Added a reporting engine, configurable via reporting.conf, which supports reporting modules.
+ * Added HTML report.
+ * Added TXT report.
+ * Added JSON data export.
+ * Introduced support to URL submission.
+ * Added possibility to specify on which virtual machine run the analysis.
+ * Added database interaction functions to search analysis by MD5.
+ * Introduced DLL analysis package.
+ * Introduced assembly instructions trace analysis package.
+ * Added MD5 filtering of dropped files.
+ * Added libmagic bindings to identify file types.
+ * Added pydoc comments to all sources.
+ * Added CRC32 hash.
+ * Added ssdeep hash.
+ * Added process tree generation class.
+ * Added UDP connections extraction.
+ * Distorm3 built-in into cmonitor
+ * Fixed cmonitor
+ * Fixed chook
+ * Migrated Cuckoo to Python's logging library.
+ * Improved Cuckoo User Guide.
+ * Some minor fixes.
+
+Cuckoo Sandbox 0.2
+==================
+
+First stable release, completely refactored.
+
+Cuckoo Sandbox 0.1 beta
+=======================
+
+First public beta release.

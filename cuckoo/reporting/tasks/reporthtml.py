@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
@@ -20,14 +21,14 @@
 import os
 import sys
 
+from cuckoo.reporting.observers import BaseObserver
+
 try:
     from mako.template import Template
     from mako.lookup import TemplateLookup
     IS_MAKO = True
 except ImportError, why:
     IS_MAKO = False
-
-from cuckoo.reporting.observers import BaseObserver
 
 class Report(BaseObserver):
     """
@@ -47,11 +48,11 @@ class Report(BaseObserver):
 
         report = open(os.path.join(report_path, "report.html"), "w")
 
-        lookup = TemplateLookup(directories=["cuckoo/reporting/tasks/html/"],
+        lookup = TemplateLookup(directories=["cuckoo/web/"],
                                 output_encoding='utf-8',
                                 encoding_errors='replace')
         
-        template = lookup.get_template("base.html")
+        template = lookup.get_template("report.html")
         html = template.render(**results)
 
         report.write(html)

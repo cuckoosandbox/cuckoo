@@ -22,8 +22,8 @@
                         <td class="title">Return</td>
                         <td class="title">Repeated</td>
                     </tr>
-                    %for call in process["calls"]:
-                    <tr>
+                    %for i, call in enumerate(process["calls"]):
+                    <tr class="${i%2 and 'alternate' or 'row'}">
                         <td class="row">${call["timestamp"][8:10]}:${call["timestamp"][10:12]}:${call["timestamp"][12:14]}:${call["timestamp"][15:18]}</td>
                         <td class="row"><span class="mono">${call["api"]}</span></td>
                         <td class="row">

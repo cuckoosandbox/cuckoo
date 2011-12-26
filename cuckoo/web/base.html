@@ -20,7 +20,7 @@
 -->
 <html>
 <head>
-<title>Cuckoo Sandbox - Report ${file["md5"]}</title>
+<title>Cuckoo Sandbox<%def name="title()" />${self.title()}</title>
 <style>
 <%include file="style.css" />
 </style>
@@ -31,22 +31,10 @@
 <body>
 <tag id="top"></tag>
 <div id="container">
-    <div id="logo"><%include file="images/logo.html" /></div>
-    <div id="menu">
-        <ul id="menu">
-            <li><a href="#general_information">General Information</a></li>
-            <li><a href="#dropped_files">Dropped Files</a></li>
-            <li><a href="#network_analysis">Network Analysis</a></li>
-            <li><a href="#behavior_analysis">Behavior Analysis</a></li>
-        </ul>
-    </div>
-    <div id="content">
-        <tag id="general_information" /><%include file="sections/general_information.html" />
-        <tag id="dropped_files" /><%include file="sections/dropped_files.html" />
-        <tag id="network_analysis" /><%include file="sections/network_analysis.html" />
-        <tag id="behavior_analysis" /><%include file="sections/behavior_analysis.html" />
-    </div>
-    <div id="footer">&copy;2010-2011 <a href="http://www.cuckoobox.org">Cuckoo Sandbox</a>.</div>
+    <div id="header"><%include file="images/logo.html" /></div>
+    <%def name="content()" />
+    ${self.content()}
 </div>
+<div id="footer">&copy;2010-2011 <a href="http://www.cuckoobox.org">Cuckoo Sandbox</a>.</div>
 </body>
 </html>

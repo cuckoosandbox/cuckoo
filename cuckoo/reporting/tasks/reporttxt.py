@@ -166,7 +166,8 @@ class Report(BaseObserver):
         self._add_line()
         self._report += "\n"
 
-        if len(self._results["behavior"]["processes"]) > 0:
+        if self._results["behavior"]["processes"] and \
+           len(self._results["behavior"]["processes"]) > 0:
             counter = 1
             for process in self._results["behavior"]["processes"]:
                 self._report += ("[4.%d] Process: %s (%s):\n"

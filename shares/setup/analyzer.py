@@ -461,8 +461,9 @@ def main(config_path):
     analyzer = AnalyzerConfig()
 
     # Install system dependencies.
-    if not install_dependencies():
-        return False
+    # No longer needed in 0.3.
+    #if not install_dependencies():
+    #    return False
 
     # Install Cuckoo core analysis components to system drive. Obviously if
     # it fails we need to abort execution.

@@ -7,48 +7,75 @@ body {
 }
 #container {
     width: 90%;
-    margin-top: 40px;
+    margin-top: 110px;
     margin-left: auto;
     margin-right: auto;
     text-align: left;
+    background: white;
+    -moz-border-radius-topleft: 15px;
+    -moz-border-radius-bottomleft: 15px;
+    -moz-border-radius-topright: 15px;
+    -moz-border-radius-bottomright: 15px;
+    -webkit-border-top-left-radius: 15px;
+    -webkit-border-bottom-left-radius: 15px;
+    -webkit-border-top-right-radius: 15px;
+    -webkit-border-bottom-right-radius: 15px;
 }
-#logo {
-    margin-bottom: 10px;
+#header {
+    position: absolute;
+    top: 38px;
+    margin-left: 10px;
 }
 #menu {
-    background: #333;
-    float: left;
-    list-style: none;
+    background-image: linear-gradient(bottom, rgb(27,78,97) 15%, rgb(37,129,162) 100%);
+    background-image: -o-linear-gradient(bottom, rgb(27,78,97) 15%, rgb(37,129,162) 100%);
+    background-image: -moz-linear-gradient(bottom, rgb(27,78,97) 15%, rgb(37,129,162) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgb(27,78,97) 15%, rgb(37,129,162) 100%);
+    background-image: -ms-linear-gradient(bottom, rgb(27,78,97) 15%, rgb(37,129,162) 100%);
+    
+    background-image: -webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0.15, rgb(27,78,97)),
+        color-stop(1, rgb(37,129,162))
+    );
+    
     margin: 0;
-    padding: 0;
-    width: 100%;
+    height: 35px;
+    line-height: 35px;
+    text-align: right;
+    -moz-border-radius-topleft: 15px;
+    -moz-border-radius-topright: 15px;
+    -webkit-border-top-left-radius: 15px;
+    -webkit-border-top-right-radius: 15px;
+}
+#menu ul {
+    list-style-type: none;
 }
 #menu li {
-    float: left;
-    font: 12px Verdana, Tahoma, Serif;
-    margin: 0;
-    padding: 0;
+    float: right;
+    margin-right: 10px;
 }
-#menu a {
-    background: #333;
-    color: #ccc;
-    display: block;
-    float: left;
-    margin: 0;
-    padding: 20px 24px;
+#menu a:link, #menu a:visited {
     text-decoration: none;
+    padding-left: 10px;
+    padding-right: 10px;
+    color: white;
+    display: block;
 }
 #menu a:hover {
+    text-decoration: none;
     background: #2580a2;
-    color: #fff;
-    padding-bottom: 20px;
 }
 #content {
-    background-color: #ffffff;
     padding: 20px;
-    padding-top: 75px;
 }
 #footer {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
     margin-top: 20px;
     margin-bottom: 15px;
     color: #666;
@@ -86,12 +113,28 @@ div.page-title {
 div.section {
 }
 div.section-title {
-    font-family: Georgia, "Times New Roman", Times, serif;
-    font-size: 20px;
-    padding-bottom: 1px;
+    background-color: #729dad;
+    
+    margin: 0;
+    height: 20px;
+    line-height: 20px;
+    text-align: left;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topright: 5px;
+    -moz-border-radius-bottomleft: 5px;
+    -moz-border-radius-bottomright: 5px;
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -webkit-border-bottom-left-radius: 5px;
+    -webkit-border-bottom-right-radius: 5px;
+
+    font-family: Verdana, Tahoma, Serif;
+    color: white;
+    font-size: 12px;
+    padding: 1px;
+    padding-left: 10px;
     margin-top: 5px;
     margin-bottom: 5px;
-    border-bottom: 1px solid #ddd;
 }
 div.section-subtitle {
     padding-bottom: 1px;
@@ -137,7 +180,7 @@ fieldset {
 legend {
     margin-left: 15px;
     font-family: Verdana, Tahoma, Serif;
-    font-size: 14px;
+    font-size: 12px;
     color: #222;
 }
 
@@ -147,15 +190,34 @@ table {
     font-size: 12px;
     table-layout: fixed;
 }
+tr.row {
+}
+tr.alternate {
+    background: #eee;
+}
+tr.alternate-light {
+    background: #f7f7f7;
+}
 td.title {
     padding: 5px;
     font-weight: bold;
     background: #ccdddd;
     font-size: 12px;
 }
+td.title:first-child {
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-bottomleft: 5px;
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-bottom-left-radius: 5px;
+}
+td.title:last-child {
+    -moz-border-radius-topright: 5px;
+    -moz-border-radius-bottomright: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -webkit-border-bottom-right-radius: 5px;
+}
 td.row {
     padding: 5px;
-    border-bottom: 1px dashed #e1e1e1;
     font-size: 11px;
 }
 td.form {
