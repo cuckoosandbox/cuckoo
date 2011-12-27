@@ -1,6 +1,6 @@
 <div class="section">
     <div class="section-title">Network Analysis</div>
-    %if not network or (not network["dns"] and not network["http"]):
+    %if not isinstance(network, dict) or (not network["dns"] and not network["http"]):
         Nothing to display.
     %else:
         %if network["dns"]:

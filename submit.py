@@ -26,7 +26,7 @@ from optparse import OptionParser
 
 from cuckoo.config.config import CuckooConfig
 from cuckoo.core.db import CuckooDatabase
-from cuckoo.misc.colors import *
+from cuckoo.logging.colors import *
 
 DESTINATION = "/tmp/"
 

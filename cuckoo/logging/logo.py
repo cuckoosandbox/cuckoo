@@ -18,7 +18,7 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 import sys
-from cuckoo.misc.colors import *
+from cuckoo.logging.colors import *
 from cuckoo.config.constants import VERSION
 
 def logo():
