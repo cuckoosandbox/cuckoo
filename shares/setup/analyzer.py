@@ -253,24 +253,37 @@ def dump_files():
     Dumps all intercepted files.
     """
     global FILES_LIST
+    global FILES_LOCK
+    
     log = logging.getLogger("Core.DumpFiles")
     
-    for file_path in FILES_LIST:
-        dir_dst = os.path.join(CUCKOO_PATH, "files")
+    FILES_LOCK.acquire()
     
-        if not os.path.exists(file_path):
-            log.debug("Dropped file \"%s\" does not exist. Skip." % file_path)
-            continue
-
-        # If file is in filtered list, I'm gonna skip it.
-        if is_file_filtered(file_path):
-            continue
-
+    for file_path in FILES_LIST:    
+        dir_dst = os.path.join(CUCKOO_PATH, "files")
+        
         try:
+            if not os.path.exists(file_path):
+                log.debug("Dropped file \"%s\" does not exist. Skip." % file_path)
+                continue
+
+            if not os.path.isfile(file_path):
+                log.debug("Dropped file \"%s\" is not a regular file. Skip." % file_path)
+                continue
+
             if os.path.getsize(file_path) == 0:
                 log.debug("Dropped file \"%s\" is empty. Skip." % file_path)
                 continue
 
+            # If file is in filtered list, I'm gonna skip it.
+            if is_file_filtered(file_path):
+                continue
+        except Exception, why:
+            log.error("Something went wrong while getting attributes of file " \
+                      "\"%s\". Skip." % file_path)
+            continue
+
+        try:
             copy(file_path, dir_dst)
             log.info("Dropped file \"%s\" successfully dumped to \"%s\"."
                      % (file_path, dir_dst))
@@ -278,7 +291,9 @@ def dump_files():
             log.error("Something went wrong while dumping file from \"%s\" " \
                       "to \"%s\": %s." % (file_path, dir_dst, why))
             continue
-            
+
+    FILES_LOCK.release()
+
     return True
 
 def save_results(share_path):
