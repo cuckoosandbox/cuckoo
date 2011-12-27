@@ -35,7 +35,7 @@ def cuckoo_run(target_path):
 
     internet_explorer = "C:\\Program Files\\Internet Explorer\\iexplore.exe"
 
-    suspended = True
+    suspended = False
     (pid, h_thread) = cuckoo_execute(internet_explorer, url, suspended)
     cuckoo_monitor(pid, h_thread, suspended)
 
