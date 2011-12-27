@@ -166,11 +166,11 @@ class Analysis:
 
         # Check if the specified directory exists.
         if not os.path.exists(self._logs_path):
-            return results
+            return False
 
         # Check if the specified directory contains any file.
         if len(os.listdir(self._logs_path)) == 0:
-            return results
+            return False
 
         # Walk through all the files.
         for file_name in os.listdir(self._logs_path):

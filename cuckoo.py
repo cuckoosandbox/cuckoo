@@ -30,7 +30,7 @@ from threading import Thread
 
 from cuckoo.config.config import CuckooConfig
 from cuckoo.config.constants import CUCKOO_LOG_FILE
-from cuckoo.logging.logo import logo
+from cuckoo.misc.logo import logo
 from cuckoo.core.db import CuckooDatabase
 from cuckoo.core.getfiletype import get_filetype
 

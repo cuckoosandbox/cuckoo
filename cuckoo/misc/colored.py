@@ -18,7 +18,7 @@
 
 import logging
 
-from cuckoo.logging.colors import *
+from cuckoo.misc.colors import *
 
 def color_stream_emit(fn):
     def new(*args):

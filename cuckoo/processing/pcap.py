@@ -32,12 +32,12 @@ except ImportError, why:
 
 class Pcap:
     """
-    Network PCAP.
+    Network PCAP
     """
     
     def __init__(self, filepath):
         """
-        Creates a new instance.
+        Creates a new instance
         @param filepath: path to PCAP file
         """ 
         self.filepath = filepath
@@ -72,7 +72,7 @@ class Pcap:
         
     def check_http(self, tcpdata):
         """
-        Checks for HTTP traffic.
+        Checks for HTTP traffic
         @param tcpdata: tcp data flow
         """ 
         try:
@@ -83,7 +83,7 @@ class Pcap:
         
     def add_http(self, tcpdata, dport):
         """
-        Adds an HTTP flow.
+        Adds an HTTP flow
         @param tcpdata: TCP data in flow
         @param dport: destination port
         """  
@@ -108,7 +108,7 @@ class Pcap:
     
     def check_dns(self, udpdata):
         """
-        Checks for DNS traffic.
+        Checks for DNS traffic
         @param udpdata: UDP data flow
         """ 
         try:
@@ -119,7 +119,7 @@ class Pcap:
     
     def add_dns(self, udpdata):
         """
-        Adds a DNS data flow.
+        Adds a DNS data flow
         @param udpdata: data inside flow
         """ 
         dns = dpkt.dns.DNS(udpdata)
@@ -151,7 +151,7 @@ class Pcap:
     
     def process(self):
         """
-        Process PCAP.
+        Process PCAP
         @return: dict with network analysis data
         """
         if not IS_DPKT:

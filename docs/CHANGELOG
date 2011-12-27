@@ -21,11 +21,10 @@ Cuckoo Sandbox 0.3
  * Added process tree generation class.
  * Added UDP connections extraction.
  * Distorm3 built-in into cmonitor
- * Fixed cmonitor.
- * Fixed chook.
+ * Fixed cmonitor
+ * Fixed chook
  * Migrated Cuckoo to Python's logging library.
  * Improved Cuckoo User Guide.
- * Added changelog file.
  * Some minor fixes.
 
 Cuckoo Sandbox 0.2

@@ -24,7 +24,7 @@ from string import split
 
 from cuckoo.reporting.observers import AnalysisObservable
 from cuckoo.reporting.config import ReportingConfig
-from cuckoo.logging.colors import *
+from cuckoo.misc.colors import *
 from cuckoo.config.constants import REPORTING_CONF_FILE
 
 class ReportProcessor:
@@ -34,7 +34,7 @@ class ReportProcessor:
     
     def __init__(self):
         self._observable = AnalysisObservable()
-        # Loaf configuration
+        # Load configuration
         if os.path.exists(REPORTING_CONF_FILE):
             try:
                 self.config = ReportingConfig(REPORTING_CONF_FILE)

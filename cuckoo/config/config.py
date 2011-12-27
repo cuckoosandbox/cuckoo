@@ -22,7 +22,7 @@ import sys
 import logging
 import ConfigParser
 
-from cuckoo.logging.colors import *
+from cuckoo.misc.colors import *
 from cuckoo.config.constants import CUCKOO_CONFIG_FILE
 
 class CuckooConfig:
