@@ -614,6 +614,8 @@ if __name__ == "__main__":
         # provided during this procedure.
         for vm_id in virtual_machines:
             vm = VirtualMachine(vm_id)
+            # Force a snapshot restore before proceeding the check.
+            vm.restore()
 
             # If virtual machine check was successful, add it to lists.
             if vm.infos():
