@@ -1,51 +1,57 @@
 <div class="section">
     <div class="section-title">Dropped Files</div>
     %if dropped:
+        <%
+            counter = 1
+        %>
         %for dropped_file in dropped:
-        <fieldset>
-            <legend><%include file="../images/file.html" />File: <span class="blue"><span class="mono">${dropped_file["name"]}</span></span> <a href="javascript:showHide('dropped_${dropped_file["md5"]}');"><%include file="../images/plus.html" /></a></legend>
-            <div id="dropped_${dropped_file["md5"]}" class="section-nested" style="display: none;">
-                <table cellspacing="0" cellpadding="0" border="0" width="100%">
-                    <colgroup>
-                        <col width="150" />
-                        <col width="*" />
-                    </colgroup>
-                    <tr>
-                        <td><strong>File name</strong>:</td>
-                        <td><span class="mono">${dropped_file["name"]}</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>File size</strong>:</td>
-                        <td><span class="mono">${dropped_file["size"]} bytes</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>File type</strong>:</td>
-                        <td><span class="mono">${dropped_file["type"]}</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>MD5</strong>:</td>
-                        <td><span class="mono">${dropped_file["md5"]}</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>SHA1</strong>:</td>
-                        <td><span class="mono">${dropped_file["sha1"]}</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>SHA256</strong>:</td>
-                        <td><span class="mono">${dropped_file["sha256"]}</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>SHA512</strong>:</td>
-                        <td><span class="mono">${dropped_file["sha512"]}</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Ssdeep</strong>:</td>
-                        <td><span class="mono">${dropped_file["ssdeep"]}</span></td>
-                    </tr>
-                </table>
-            </div>
-        </fieldset>
-        <div class="space-small"></div>
+            <fieldset>
+                <legend><%include file="../images/file.html" />File: <span class="blue"><span class="mono">${dropped_file["name"]}</span></span> <a href="javascript:showHide('dropped_${counter}');"><%include file="../images/plus.html" /></a></legend>
+                <div id="dropped_${counter}" class="section-nested" style="display: none;">
+                    <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                        <colgroup>
+                            <col width="150" />
+                            <col width="*" />
+                        </colgroup>
+                        <tr>
+                            <td><strong>File name</strong>:</td>
+                            <td><span class="mono">${dropped_file["name"]}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>File size</strong>:</td>
+                            <td><span class="mono">${dropped_file["size"]} bytes</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>File type</strong>:</td>
+                            <td><span class="mono">${dropped_file["type"]}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>MD5</strong>:</td>
+                            <td><span class="mono">${dropped_file["md5"]}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>SHA1</strong>:</td>
+                            <td><span class="mono">${dropped_file["sha1"]}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>SHA256</strong>:</td>
+                            <td><span class="mono">${dropped_file["sha256"]}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>SHA512</strong>:</td>
+                            <td><span class="mono">${dropped_file["sha512"]}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ssdeep</strong>:</td>
+                            <td><span class="mono">${dropped_file["ssdeep"]}</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </fieldset>
+            <div class="space-small"></div>
+            <%
+                counter += 1
+            %>
         %endfor
     %else:
         Nothing to display.
