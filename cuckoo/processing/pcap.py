@@ -90,7 +90,8 @@ class Pcap:
         http = dpkt.http.Request(tcpdata)
         
         entry = {}
-        entry["host"] = http.headers['host']
+        if http.headers.has_key('host'):
+            entry["host"] = http.headers['host']
         entry["port"] = dport
         entry["data"] = self._convert_to_printable(tcpdata)
         if entry["port"] != 80:
@@ -99,7 +100,8 @@ class Pcap:
             entry["uri"] = urlunparse(('http', entry['host'], http.uri, None, None, None))
         entry["body"] = self._convert_to_printable(http.body)
         entry["path"] = http.uri
-        entry["user-agent"] = http.headers["user-agent"]
+        if http.headers.has_key("user-agent"):
+            entry["user-agent"] = http.headers["user-agent"]
         entry["version"] = http.version
         entry["method"] = http.method
 
