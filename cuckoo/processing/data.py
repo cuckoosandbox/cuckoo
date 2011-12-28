@@ -21,6 +21,7 @@ import os
 import sys
 import time
 import shutil
+import base64
 from datetime import datetime
 
 from cuckoo.config.constants import VERSION
@@ -68,6 +69,33 @@ class CuckooDict:
                 dropped.append(cur_info)
 
         return dropped
+    
+    def _get_screenshots(self):
+        """
+        Retrieves base64 encoded screenshots.
+        @return: list with base64 encoded screenshots
+        """
+        screenshots = []
+        
+        if os.path.exists(self._shots_path) and \
+           len(os.listdir(self._shots_path)) > 0:
+            counter = 1
+            for cur_shot in os.listdir(self._shots_path):
+                cur_path = os.path.join(self._shots_path, cur_shot)
+
+                if os.path.getsize(cur_path) == 0:
+                    continue
+                
+                entry = {}
+                entry["id"] = counter
+                entry["data"] = base64.b64encode(open(cur_path, "rb").read())
+                screenshots.append(entry)
+                
+                counter += 1
+                
+        screenshots.sort(key=lambda shot: shot["id"])
+        
+        return screenshots
 
     def process(self):
         """
@@ -88,11 +116,17 @@ class CuckooDict:
         results["info"]["duration"] = "%d seconds" % self._get_duration(config.started)
 
         results["debug"] = {}
-        results["debug"]["log"] = open(self._log_path, "rb").read()
+        
+        if os.path.exists(self._log_path) and os.path.getsize(self._log_path) > 0:
+            debug_log = open(self._log_path, "rb").read()
+        else:
+            debug_log = "No analysis.log file found. Your analysis most likely failed to start."
+        results["debug"]["log"] = debug_log
 
         results["file"] = File(file_path).process()
         results["static"] = {}
         results["dropped"] = self._get_dropped()
+        results["screenshots"] = self._get_screenshots()
         results["network"] = Pcap(self._pcap_path).process()
 
         results["behavior"] = {}
