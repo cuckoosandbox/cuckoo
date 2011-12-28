@@ -20,7 +20,7 @@
 import os
 import sys
 import csv
-import string
+from cuckoo.processing.convert import convert_to_printable
 
 class ParseLog:
     """
@@ -37,28 +37,6 @@ class ParseLog:
         self.process_name       = None
         self.process_first_seen = None
         self.calls = []
-
-    def _convert_char(self, char):
-        """
-        Converts a character in a printable format.
-        @param char: char to be converted 
-        @return: printable character
-        """
-        if char in string.ascii_letters or \
-           char in string.digits or \
-           char in string.punctuation or \
-           char in string.whitespace:
-            return char
-        else:
-            return r'\x%02x' % ord(char)
-
-    def _convert_to_printable(self, s):
-        """
-        Converts a string in a printable format.
-        @param s: string to be converted 
-        @return: printable string
-        """
-        return ''.join([self._convert_char(c) for c in s])
 
     def _parse(self, row):
         """
@@ -100,7 +78,7 @@ class ParseLog:
                 continue
 
             argument["name"]  = arg_name
-            argument["value"] = self._convert_to_printable(arg_value)
+            argument["value"] = convert_to_printable(arg_value)
 
             # Add the current argument to the complete arguments list.
             arguments.append(argument)
@@ -108,7 +86,7 @@ class ParseLog:
         call["timestamp"] = timestamp
         call["api"]       = api_name
         call["status"]    = status_value
-        call["return"]    = self._convert_to_printable(return_value)
+        call["return"]    = convert_to_printable(return_value)
         call["arguments"] = arguments
         call["repeated"]  = 0
 

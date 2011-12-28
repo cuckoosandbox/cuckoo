@@ -20,9 +20,10 @@
 import os
 import re
 import sys
-import string
 import socket
 from urlparse import urlunparse
+
+from cuckoo.processing.convert import convert_to_printable
 
 try:
     import dpkt
@@ -47,28 +48,6 @@ class Pcap:
         self.dns_requests = []
         self.dns_performed = []
         self.results = {}
-
-    def _convert_char(self, char):
-        """
-        Converts a character in a printable format.
-        @param char: char to be converted 
-        @return: printable character
-        """
-        if char in string.ascii_letters or \
-           char in string.digits or \
-           char in string.punctuation or \
-           char in string.whitespace:
-            return char
-        else:
-            return r'\x%02x' % ord(char)
-
-    def _convert_to_printable(self, s):
-        """
-        Converts a string in a printable format.
-        @param s: string to be converted 
-        @return: printable string
-        """
-        return ''.join([self._convert_char(c) for c in s])
         
     def check_http(self, tcpdata):
         """
@@ -93,12 +72,12 @@ class Pcap:
         if http.headers.has_key('host'):
             entry["host"] = http.headers['host']
         entry["port"] = dport
-        entry["data"] = self._convert_to_printable(tcpdata)
+        entry["data"] = convert_to_printable(tcpdata)
         if entry["port"] != 80:
             entry["uri"] = urlunparse(('http', "%s:%d" % (entry['host'], entry["port"]), http.uri, None, None, None))
         else:
             entry["uri"] = urlunparse(('http', entry['host'], http.uri, None, None, None))
-        entry["body"] = self._convert_to_printable(http.body)
+        entry["body"] = convert_to_printable(http.body)
         entry["path"] = http.uri
         if http.headers.has_key("user-agent"):
             entry["user-agent"] = http.headers["user-agent"]

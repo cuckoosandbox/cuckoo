@@ -19,8 +19,10 @@
 
 import os
 import sys
-import binascii
 import hashlib
+import binascii
+
+from cuckoo.processing.convert import convert_to_printable
 
 try:
     # Try to import libmagic python bindings. You can install them with Ubuntu's
@@ -56,7 +58,7 @@ class File:
         Retrieves the original file name of the file.
         @return: file name
         """
-        return os.path.basename(self.file_path)
+        return convert_to_printable(os.path.basename(self.file_path))
 
     def _get_size(self):
         """
