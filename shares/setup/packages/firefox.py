@@ -35,7 +35,7 @@ def cuckoo_run(target_path):
 
     firefox = "C:\\Program Files\\Mozilla Firefox\\firefox.exe"
 
-    suspended = True
+    suspended = False
     (pid, h_thread) = cuckoo_execute(firefox, "%s" % url, suspended)
     cuckoo_monitor(pid, h_thread, suspended)
 

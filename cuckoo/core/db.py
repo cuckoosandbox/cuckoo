@@ -131,15 +131,12 @@ class CuckooDatabase:
         @param vm_id: ID of virtual machine where run the analysis on
         @return: return ID of the newly generated tas
         """
-        log = logging.getLogger("Database.AddTask")
         task_id = None
 
         if not self._cursor:
-            log.error("Unable to acquire cursor. Abort.")
             return None
 
         if not target or target == "":
-            log.error("Invalid target file specified. Abort.")
             return None
 
         try:
@@ -149,11 +146,7 @@ class CuckooDatabase:
                                  (target, md5, timeout, package, priority, custom, vm_id))
             self._conn.commit()
             task_id = self._cursor.lastrowid
-            log.info("Successfully added new task to database with ID %d."
-                     % task_id)
         except sqlite3.OperationalError, why:
-            log.error("Something went wrong while adding task to database: %s."
-                      % why)
             return None
 
         return task_id
