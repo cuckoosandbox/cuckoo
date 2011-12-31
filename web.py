@@ -119,8 +119,8 @@ def main():
                       action="store",
                       type="string",
                       dest="host",
-                      default="localhost",
-                      help="Specify the host to bind the server on (default localhost)")
+                      default="127.0.0.1",
+                      help="Specify the address to bind the server on (default 127.0.0.1)")
     parser.add_option("-p", "--port",
                       action="store",
                       type="int",
@@ -130,7 +130,7 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    print("Starting web server on %s:%s" % (options.host, options.port))
+    print("Starting web server on http://%s:%s" % (options.host, options.port))
 
     try:
         server = HTTPServer((options.host, options.port), MyHandler)
