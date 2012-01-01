@@ -1,4 +1,11 @@
                                   CHANGELOG
+                                  
+Cuckoo Sandbox 0.3.1
+====================
+
+* Reintroduced an older version of cmonitor, in order to address troubles encountered in 0.3 release.
+* Fixed a bug in files dump caused by invalid/not regular files such as named pipes.
+* Disabled suspended mode in browsers' packages.
 
 Cuckoo Sandbox 0.3
 ==================
