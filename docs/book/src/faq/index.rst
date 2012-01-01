@@ -4,12 +4,26 @@ FAQ
 
 Frequently Asked Questions:
 
+    * :ref:`question_7`
     * :ref:`question_1`
     * :ref:`question_2`
     * :ref:`question_3`
     * :ref:`question_4`
     * :ref:`question_5`
     * :ref:`question_6`
+    
+Setup questions
+===============
+
+.. _question_7:
+
+After upgrade Cuckoo stops to work
+-------------------------------------
+
+Probably Cuckoo was upgraded in a wrong way.
+You cannot simply overwrite old Cuckoo release files with the new one.
+
+Please follow the upgrade steps described in :doc:`../installation/upgrade`.
 
 Usage questions
 ===============
