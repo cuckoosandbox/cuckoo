@@ -154,9 +154,11 @@ class Pcap:
         for ts, buf in pcap:
             try:
                 eth = dpkt.ethernet.Ethernet(buf)
+                
                 ip = eth.data
-
+                
                 if ip.p == dpkt.ip.IP_PROTO_TCP:
+                    
                     tcp = ip.data
 
                     if len(tcp.data) > 0:
@@ -164,8 +166,12 @@ class Pcap:
                             self.add_http(tcp.data, tcp.dport)
 
                         connection = {}
-                        connection["src"] = socket.inet_ntoa(ip.src)
-                        connection["dst"] = socket.inet_ntoa(ip.dst)
+                        if isinstance(ip, dpkt.ip.IP):
+                            connection["src"] = socket.inet_ntoa(ip.src)
+                            connection["dst"] = socket.inet_ntoa(ip.dst)
+                        elif isinstance(ip, dpkt.ip6.IP6):
+                            connection["src"] = socket.inet_ntop(socket.AF_INET6, ip.src)
+                            connection["dst"] = socket.inet_ntop(socket.AF_INET6, ip.dst)
                         connection["sport"] = tcp.sport
                         connection["dport"] = tcp.dport
                           
@@ -181,8 +187,12 @@ class Pcap:
                                 self.add_dns(udp.data)
 
                         connection = {}
-                        connection["src"] = socket.inet_ntoa(ip.src)
-                        connection["dst"] = socket.inet_ntoa(ip.dst)
+                        if isinstance(ip, dpkt.ip.IP):
+                            connection["src"] = socket.inet_ntoa(ip.src)
+                            connection["dst"] = socket.inet_ntoa(ip.dst)
+                        elif isinstance(ip, dpkt.ip6.IP6):
+                            connection["src"] = socket.inet_ntop(socket.AF_INET6, ip.src)
+                            connection["dst"] = socket.inet_ntop(socket.AF_INET6, ip.dst)
                         connection["sport"] = udp.sport
                         connection["dport"] = udp.dport
 
