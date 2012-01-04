@@ -42,13 +42,19 @@ def get_filetype(file_path):
 
     data = open(file_path, "rb").read()
 
+    # Thanks to Jesse from malc0de.com for this suggestion.
+    # First try official magic bindings, if something fails try to failover
+    # on the unofficial bindings.
     try:
         ms = magic.open(magic.MAGIC_NONE)
         ms.load()
         file_type = ms.buffer(data)
-    except Exception, why:
-        log.error("Something went wrong while retrieving magic: %s" % why)
-        return None
+    except:
+        try:
+            file_type = magic.from_buffer(data)
+        except Exception, why:
+            log.error("Something went wrong while retrieving magic: %s" % why)
+            return None
 
     if re.search("DLL", file_type):
         return "dll"
