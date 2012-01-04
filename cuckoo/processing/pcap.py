@@ -71,6 +71,8 @@ class Pcap:
         entry = {}
         if http.headers.has_key('host'):
             entry["host"] = http.headers['host']
+        else:
+            entry["host"] = ""
         entry["port"] = dport
         entry["data"] = convert_to_printable(tcpdata)
         if entry["port"] != 80:
