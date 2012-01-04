@@ -67,26 +67,35 @@ class Pcap:
         @param dport: destination port
         """  
         http = dpkt.http.Request(tcpdata)
-        
-        entry = {}
-        if http.headers.has_key('host'):
-            entry["host"] = http.headers['host']
-        else:
-            entry["host"] = ""
-        entry["port"] = dport
-        entry["data"] = convert_to_printable(tcpdata)
-        if entry["port"] != 80:
-            entry["uri"] = urlunparse(('http', "%s:%d" % (entry['host'], entry["port"]), http.uri, None, None, None))
-        else:
-            entry["uri"] = urlunparse(('http', entry['host'], http.uri, None, None, None))
-        entry["body"] = convert_to_printable(http.body)
-        entry["path"] = http.uri
-        if http.headers.has_key("user-agent"):
-            entry["user-agent"] = http.headers["user-agent"]
-        entry["version"] = http.version
-        entry["method"] = http.method
 
-        self.http_requests.append(entry)
+        try:
+            entry = {}
+            if http.headers.has_key('host'):
+                entry["host"] = convert_to_printable(http.headers['host'])
+            else:
+                entry["host"] = ""
+
+            entry["port"] = dport
+            entry["data"] = convert_to_printable(tcpdata)
+
+            if entry["port"] != 80:
+                entry["uri"] = convert_to_printable(urlunparse(('http', "%s:%d" % (entry['host'], entry["port"]), http.uri, None, None, None)))
+            else:
+                entry["uri"] = convert_to_printable(urlunparse(('http', entry['host'], http.uri, None, None, None)))
+
+            entry["body"] = convert_to_printable(http.body)
+            entry["path"] = convert_to_printable(http.uri)
+
+            if http.headers.has_key("user-agent"):
+                entry["user-agent"] = convert_to_printable(http.headers["user-agent"])
+
+            entry["version"] = convert_to_printable(http.version)
+            entry["method"] = convert_to_printable(http.method)
+
+            self.http_requests.append(entry)
+        except Exception, why:
+            return False
+
         return True
     
     def check_dns(self, udpdata):
