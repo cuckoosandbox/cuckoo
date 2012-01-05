@@ -25,6 +25,7 @@ import urllib2
 from optparse import OptionParser
 
 from cuckoo.config.config import CuckooConfig
+from cuckoo.logging.crash import help
 from cuckoo.core.db import CuckooDatabase
 from cuckoo.logging.colors import *
 
@@ -169,4 +170,10 @@ def main():
     return True
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print "User aborted."
+    except:
+        help()
+

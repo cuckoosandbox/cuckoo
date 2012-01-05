@@ -33,6 +33,7 @@ from cuckoo.config.constants import CUCKOO_LOG_FILE
 from cuckoo.logging.logo import logo
 from cuckoo.core.db import CuckooDatabase
 from cuckoo.core.getfiletype import get_filetype
+from cuckoo.logging.crash import help
 
 # Check the virtualization engine from the config fle and tries to retrieve
 # and import the corresponding Cuckoo's module.
@@ -668,3 +669,6 @@ if __name__ == "__main__":
             vm.restore()
 
         sys.exit()
+    except:
+        help()
+        

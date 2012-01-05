@@ -22,6 +22,7 @@ import sys
 
 from cuckoo.processing.data import CuckooDict
 from cuckoo.reporting.reporter import ReportProcessor
+from cuckoo.logging.crash import help
 
 def main(analysis_path):
     # Generate reports out of abstracted analysis results.
@@ -31,5 +32,11 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print "Not enough args."
         sys.exit(-1)
-
-    main(sys.argv[1])
+        
+    try:
+        main(sys.argv[1])   
+    except KeyboardInterrupt:
+        print "User aborted."
+    except:
+        help()
+        
