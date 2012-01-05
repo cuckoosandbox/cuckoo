@@ -113,7 +113,9 @@ class CuckooDict:
         results["info"] = {}
         results["info"]["version"] = VERSION
         results["info"]["started"] = datetime.fromtimestamp(config.started).strftime("%Y-%m-%d %H:%M:%S")
-        results["info"]["duration"] = "%d seconds" % self._get_duration(config.started)
+        duration = self._get_duration(config.started)
+        results["info"]["duration"] = "%d seconds" % duration
+        results["info"]["ended"] = datetime.fromtimestamp(config.started+duration).strftime("%Y-%m-%d %H:%M:%S")
 
         results["debug"] = {}
         
