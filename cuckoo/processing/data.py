@@ -76,11 +76,12 @@ class CuckooDict:
         @return: list with base64 encoded screenshots
         """
         screenshots = []
+
+        shots_list = os.listdir(self._shots_path)
         
-        if os.path.exists(self._shots_path) and \
-           len(os.listdir(self._shots_path)) > 0:
+        if os.path.exists(self._shots_path) and len(shots_list) > 0:
             counter = 1
-            for cur_shot in os.listdir(self._shots_path):
+            for cur_shot in sorted(shots_list):
                 cur_path = os.path.join(self._shots_path, cur_shot)
 
                 if os.path.getsize(cur_path) == 0:
