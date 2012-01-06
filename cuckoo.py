@@ -405,12 +405,22 @@ class Analysis(Thread):
         try:
             dst_path = os.path.join(self.vm_share, self.dst_filename)
             shutil.copy(self.task["target"], dst_path)
-        except shutil.Error, why:
+        except Exception, why:
             log.error("Cannot copy file \"%s\" to \"%s\": %s"
                       % (self.task["target"], self.vm_share, why))
             self.db.complete(self.task["id"], False)
             self._free_vm(self.vm_id)
             return False
+        
+        # If necessary, delete the original file.
+        if CuckooConfig().get_analysis_delete_original():
+            try:
+                os.remove(self.task["target"])
+                log.debug("Successfuly deleted original file at path \"%s\"."
+                          % self.task["target"])
+            except Exception, why:
+                self.warning("Cannot delete original file \"%s\": %s"
+                             % (self.task["target"], why))
 
         # 9. Start sniffer.
         # Check if the user has decided to adopt the external sniffer or not.

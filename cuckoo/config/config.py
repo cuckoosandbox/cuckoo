@@ -159,6 +159,20 @@ class CuckooConfig:
                 return None
         else:
             return None
+    
+    def get_analysis_delete_original(self):
+        """
+        Returns a boolean instructing whether the original file should be
+        deleted or not.
+        """
+        if self.config:
+            try:
+                return self.config.getboolean("Analysis", "delete_original")
+            except Exception, why:
+                self._error_parse(why)
+                return None
+        else:
+            return None
 
     def get_processing_interpreter(self):
         """
