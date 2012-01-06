@@ -35,6 +35,7 @@ class ParseLog:
         self._log_path = log_path
         self.process_id         = None
         self.process_name       = None
+        self.parent_id          = None
         self.process_first_seen = None
         self.calls = []
 
@@ -51,9 +52,11 @@ class ParseLog:
             timestamp    = row[0]   # Timestamp of current API call invocation.
             process_id   = row[1]   # ID of the process that performed the call.
             process_name = row[2]   # Name of the process.
-            api_name     = row[3]   # Name of the Windows API.
-            status_value = row[4]   # Success or Failure?
-            return_value = row[5]   # Value returned by the function.
+            parent_id    = row[3]   # PID of the parent process
+            category     = row[4]   # Win32 function category
+            api_name     = row[5]   # Name of the Windows API.
+            status_value = row[6]   # Success or Failure?
+            return_value = row[7]   # Value returned by the function.
         except IndexError, why:
             return False
 
@@ -62,6 +65,9 @@ class ParseLog:
 
         if not self.process_name:
             self.process_name = process_name
+            
+        if not self.parent_id:
+            self.parent_id = parent_id
 
         if not self.process_first_seen:
             self.process_first_seen = timestamp
@@ -84,6 +90,7 @@ class ParseLog:
             arguments.append(argument)
 
         call["timestamp"] = timestamp
+        call["category"]  = category
         call["api"]       = api_name
         call["status"]    = status_value
         call["return"]    = convert_to_printable(return_value)
@@ -168,6 +175,7 @@ class Analysis:
                 process = {}
                 process["process_id"]   = current_log.process_id
                 process["process_name"] = current_log.process_name
+                process["parent_id"]    = current_log.parent_id
                 process["first_seen"]   = current_log.process_first_seen
                 process["calls"]        = current_log.calls
 
