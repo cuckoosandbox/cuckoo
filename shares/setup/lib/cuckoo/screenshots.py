@@ -94,7 +94,7 @@ class Screenshots(Thread):
                     continue
 
             img_counter += 1
-            save_at = os.path.join(self.save_path, "shot_%s.jpg" % img_counter)
+            save_at = os.path.join(self.save_path, "shot_%s.jpg" % str(img_counter).rjust(3, '0'))
             img_current.save(save_at)
 
             log.debug("Screenshot saved at \"%s\"." % save_at)
