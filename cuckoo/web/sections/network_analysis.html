@@ -1,8 +1,26 @@
 <div class="section">
     <div class="section-title">Network Analysis</div>
-    %if not isinstance(network, dict) or (not network["dns"] and not network["http"]):
+    %if not isinstance(network, dict) or (not network["hosts"] and not network["dns"] and not network["http"]):
         Nothing to display.
     %else:
+        %if network["hosts"]:
+        <fieldset>
+            <legend><%include file="../images/world.html" /> Hosts Involved <a href="javascript:showHide('hosts');"><%include file="../images/plus.html" /></a></legend>
+            <div id="hosts" class="section-nested" style="display: none;">
+                <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                        <td class="title">IP Address</td>
+                    </tr>
+                    %for i, host in enumerate(network["hosts"]):
+                    <tr class="${i%2 and 'alternate' or 'row'}">
+                        <td class="row"><span class="mono">${host}</span></td>
+                    </tr>
+                    %endfor
+                </table>
+            </div>
+        </fieldset>
+        <div class="space-small"></div>
+        %endif
         %if network["dns"]:
         <fieldset>
             <legend><%include file="../images/world.html" /> DNS Requests <a href="javascript:showHide('dns');"><%include file="../images/plus.html" /></a></legend>
