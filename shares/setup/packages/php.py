@@ -32,7 +32,7 @@ def cuckoo_run(target_path):
     php = "C:\\php\\php.exe"
 
     suspended = True
-    (pid, h_thread) = cuckoo_execute(php, "\"%s\"" % target_path, suspended)
+    (pid, h_thread) = cuckoo_execute(php, "-d short_open_tag=on \"%s\"" % target_path, suspended)
     cuckoo_monitor(pid, h_thread, suspended)
 
     pids.append(pid)
