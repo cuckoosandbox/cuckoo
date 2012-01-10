@@ -34,10 +34,7 @@ class Report(BaseObserver):
     """
     Generates a human readable HTML report.
     """
-    
-    def __init__(self):
-        pass
-    
+
     def update(self, results):
         if not IS_MAKO:
             return False
@@ -46,16 +43,18 @@ class Report(BaseObserver):
         if not os.path.exists(report_path):
             os.mkdir(report_path)
 
-        report = open(os.path.join(report_path, "report.html"), "w")
-
         lookup = TemplateLookup(directories=["cuckoo/web/"],
                                 output_encoding='utf-8',
                                 encoding_errors='replace')
         
         template = lookup.get_template("report.html")
         html = template.render(**results)
-
-        report.write(html)
-        report.close()
+        
+        try:
+            report = open(os.path.join(report_path, "report.html"), "w")
+            report.write(html)
+            report.close()
+        except Exception, e:
+            print "Failed writing HTML report: %s" % e
 
         return True

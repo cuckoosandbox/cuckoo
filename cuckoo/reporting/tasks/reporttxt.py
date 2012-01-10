@@ -28,6 +28,7 @@ class Report(BaseObserver):
     """
     
     def __init__(self):
+        BaseObserver.__init__(self)
         self._report = ""
         self._results = None
 
@@ -210,6 +211,9 @@ class Report(BaseObserver):
         self._results = results
         self._gen_report()
 
-        report = open(os.path.join(report_path, "report.txt"), "w")
-        report.write(self._report)
-        report.close()
+        try:
+            report = open(os.path.join(report_path, "report.txt"), "w")
+            report.write(self._report)
+            report.close()
+        except Exception, e:
+            print "Failed writing TXT report: %s" % e
