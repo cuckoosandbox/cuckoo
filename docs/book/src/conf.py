@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Cuckoo Sandbox documentation build configuration file, created by
-# sphinx-quickstart on Sat Dec 17 23:28:31 2011.
+# Cuckoo Sandbox documentation build configuration file.
 #
 # This file is execfile()d with the current directory set to its containing dir.
 #
@@ -41,7 +40,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Cuckoo Sandbox'
-copyright = u'2011, Cuckoo Sandbox'
+copyright = u'2012, Cuckoo Sandbox'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

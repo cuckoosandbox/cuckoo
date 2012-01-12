@@ -1,5 +1,5 @@
 # Cuckoo Sandbox - Automated Malware Analysis
-# Copyright (C) 2010-2011  Claudio "nex" Guarnieri (nex@cuckoobox.org)
+# Copyright (C) 2010-2012  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
 #
 # This file is part of Cuckoo.
@@ -32,5 +32,5 @@ def logo():
     sys.stdout.write(bold(cyan("   \\____)____/ \\____)_| \_)___/ \\___/")) + " " + VERSION + "\n")
     sys.stdout.write("\n")
     sys.stdout.write(" www.cuckoobox.org\n")
-    sys.stdout.write(" Copyright (C) 2010-2011\n")
+    sys.stdout.write(" Copyright (C) 2010-2012\n")
     sys.stdout.write("\n")
