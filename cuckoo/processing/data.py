@@ -77,9 +77,12 @@ class CuckooDict:
         """
         screenshots = []
 
+        if not os.path.exists(self._shots_path):
+            return screenshots
+
         shots_list = os.listdir(self._shots_path)
         
-        if os.path.exists(self._shots_path) and len(shots_list) > 0:
+        if len(shots_list) > 0:
             counter = 1
             for cur_shot in sorted(shots_list):
                 cur_path = os.path.join(self._shots_path, cur_shot)
