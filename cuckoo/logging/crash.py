@@ -28,15 +28,17 @@ def help():
     """
     
     print
-    print 'Cuckoo stumbles in an unhandled error!'
-    print 'Please run with latest release from GIT repository.'
-    print 'If the exception persists, please send by e-mail'
-    print "to %s the following text." % constants.ML
-    print 'The developers will try to reproduce the bug, fix it'
-    print 'and get in touch with you.'
+    print "Cuckoo stumbles in an unhandled error!"
+    print "Before reporting the problem, please run with latest release from "
+    print "the development Git repository (http://github.com/cuckoobox/cuckoo)."
+    print "If the exception persists, please send to %s " % constants.ML
+    print "the following traceback."
+    print "The developers will try to reproduce the bug, fix it and get in "
+    print "touch with you."
     print
     print "Cuckoo version: %s" % constants.VERSION
     print "Python version: %s" % sys.version
     print "OS: %s" % sys.platform
     print "Command line: %s" % " ".join(sys.argv)
     traceback.print_exc()
+
