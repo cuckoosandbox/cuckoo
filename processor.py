@@ -19,24 +19,46 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 import sys
+from optparse import OptionParser
 
 from cuckoo.processing.data import CuckooDict
 from cuckoo.reporting.reporter import ReportProcessor
 from cuckoo.logging.crash import help
 
-def main(analysis_path):
-    # Generate reports out of abstracted analysis results.
-    ReportProcessor().report(CuckooDict(analysis_path).process())
+def main():
+    analysis_path = None
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print "Not enough args."
-        sys.exit(-1)
-        
+    parser = OptionParser(usage="usage: %prog [options] analysispath")
+    parser.add_option("-m", "--message",
+                      action="store",
+                      type="string",
+                      dest="message",
+                      default=None,
+                      help="Specify a message to notify to the processor script")
+
+    (options, args) = parser.parse_args()
+
+    if len(args) == 1:
+        try:
+            analysis_path = args[0]
+        except IndexError, why:
+            pass
+
+    if options.message:
+        # Do something with the message.
+        print options.message
+
+    if analysis_path:
+        # Generate reports out of abstracted analysis results.
+        ReportProcessor().report(CuckooDict(analysis_path).process())
+
+    return True
+
+if __name__ == "__main__": 
     try:
-        main(sys.argv[1])   
+        main()   
     except KeyboardInterrupt:
         print "User aborted."
     except:
         help()
-        
+

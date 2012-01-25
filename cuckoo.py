@@ -29,7 +29,7 @@ from time import time, sleep
 from threading import Thread
 
 from cuckoo.config.config import CuckooConfig
-from cuckoo.config.constants import CUCKOO_LOG_FILE
+from cuckoo.config.constants import *
 from cuckoo.logging.logo import logo
 from cuckoo.core.db import CuckooDatabase
 from cuckoo.core.getfiletype import get_filetype
@@ -223,16 +223,12 @@ class Analysis(Thread):
         log.info("Virtual machine \"%s\" released." % vm_id)
         return True
 
-    def _processing(self, save_path):
+    def _processing(self, save_path, message = None):
         """
         Invokes post-analysis processing script.
         @param save_path: path to the analysis results folder
         """
         log = logging.getLogger("Core.Analysis.Processing")
-        if not os.path.exists(save_path):
-            log.error("Cannot find the results folder at path \"%s\"."
-                      % save_path)
-            return False
 
         interpreter = CuckooConfig().get_processing_interpreter()
 
@@ -253,7 +249,19 @@ class Analysis(Thread):
                       % processor)
             return False
 
-        pargs = [interpreter, processor, save_path]
+        if save_path:
+            if not os.path.exists(save_path):
+                log.error("Cannot find the results folder at path \"%s\"."
+                          % save_path)
+                save_path = None
+                if not message:
+                    message = CUCKOO_ERROR_RESULTS_PATH_NOT_FOUND
+
+        pargs = [interpreter, processor]
+        if message:
+            pargs.extend(["--message", message])
+        if save_path:
+            pargs.extend([save_path])
 
         try:
             pid = subprocess.Popen(pargs).pid
@@ -285,6 +293,7 @@ class Analysis(Thread):
                       "with ID %d at path \"%s\". Abort."
                       % (self.task["id"], save_path))
             self.db.complete(self.task["id"], False)
+            self._processing(None, CUCKOO_ERROR_DUPLICATE_TASK)
             return False
 
         # Check if target file exists.
@@ -292,6 +301,7 @@ class Analysis(Thread):
             log.error("Cannot find target file \"%s\". Abort."
                       % self.task["target"])
             self.db.complete(self.task["id"], False)
+            self._processing(None, CUCKOO_ERROR_TARGET_NOT_FOUND)
             return False
 
         # Check if target is a directory.
@@ -299,6 +309,7 @@ class Analysis(Thread):
             log.error("Specified target \"%s\" is a directory. Abort." 
                       % self.task["target"])
             self.db.complete(self.task["id"], False)
+            self._processing(None, CUCKOO_ERROR_INVALID_TARGET)
             return False
 
         # Copy original target file name to destination target.
@@ -333,6 +344,8 @@ class Analysis(Thread):
                     log.error("Unsupported file format (%s) for target \"%s\"."\
                               " Abort." % (file_type, self.task["target"]))
                     self.db.complete(self.task["id"], False)
+                    self._processing(None,
+                                     CUCKOO_ERROR_INVALID_TARGET_FILE_TYPE)
                     return False
             else:
                 self.db.complete(self.task["id"], False)
@@ -360,6 +373,7 @@ class Analysis(Thread):
                               "exist or wasn't added to the pool. Abort."
                               % self.task["vm_id"])
                     self.db.complete(self.task["id"], False)
+                    self._processing(None, CUCKOO_ERROR_VM_NOT_FOUND)
                     return False
 
                 self.vm_id = VM_POOL.pop(VM_POOL.index(self.task["vm_id"]))
@@ -376,6 +390,7 @@ class Analysis(Thread):
         if not self.vm_id:
             log.error("Acquire of virtual machine failed. Abort.")
             self.db.complete(self.task["id"], False)
+            self._processing(None, CUCKOO_ERROR_VM_ACQUISITION_FAILED)
             return False
 
         # Get path to current virtual machine's shared folder.
@@ -386,6 +401,7 @@ class Analysis(Thread):
                       "does not exist. Abort." % (self.vm_share, self.vm_id))
             self.db.complete(self.task["id"], False)
             self._free_vm(self.vm_id)
+            self._processing(None, CUCKOO_ERROR_SHARED_FOLDER_NOT_FOUND)
             return False
 
         # Clean the virtual machine's shared folder in case it was't
@@ -410,6 +426,7 @@ class Analysis(Thread):
                       % (self.task["target"], self.vm_share, why))
             self.db.complete(self.task["id"], False)
             self._free_vm(self.vm_id)
+            self._processing(None, CUCKOO_ERROR_CANNOT_COPY_TARGET_FILE)
             return False
         
         # If necessary, delete the original file.
@@ -451,6 +468,7 @@ class Analysis(Thread):
                         "consequently is not getting re-added to the pool. " \
                         "Review previous errors." % self.vm_id)
             self.db.unlock(self.task["id"])
+            self._processing(None, CUCKOO_ERROR_VM_RESTORE_FAILED)
             return False
 
         # 11. Start virtual machine
@@ -461,6 +479,7 @@ class Analysis(Thread):
             # machine. I'm not putting back the currently used one since it's
             # probably broken.
             self.db.unlock(self.task["id"])
+            self._processing(None, CUCKOO_ERROR_VM_START_FAILED)
             return False
 
         # Get virtual machines' local Python installation path from config
@@ -681,4 +700,4 @@ if __name__ == "__main__":
         sys.exit()
     except:
         help()
-        
+
