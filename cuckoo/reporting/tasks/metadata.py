@@ -18,7 +18,6 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.    
 
 import os
-import sys
 from datetime import datetime
 from dateutil import parser
 
@@ -29,15 +28,8 @@ class Report(BaseObserver):
     """
     Generates a MAEC Malware Metadata Sharing report.
     """
-    
-    def __init__(self, analysis_path):
-        self._analysis_path = analysis_path
         
     def update(self, results):    
-        self.report_path = os.path.join(self._analysis_path, "reports")   
-        if not os.path.exists(self.report_path):
-            os.mkdir(self.report_path)
-            
         # Save results    
         self.results = results       
         # Reporting steps

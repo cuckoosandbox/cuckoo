@@ -18,7 +18,6 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.    
 
 import os
-import sys
 
 from cuckoo.reporting.observers import BaseObserver
 
@@ -28,8 +27,7 @@ class Report(BaseObserver):
     """
     
     def __init__(self, analysis_path):
-        BaseObserver.__init__(self)
-        self._analysis_path = analysis_path
+        BaseObserver.__init__(self, analysis_path)
         self._report = ""
         self._results = None
 
@@ -205,15 +203,11 @@ class Report(BaseObserver):
         self._gen_processes()
     
     def update(self, results):
-        report_path = os.path.join(self._analysis_path, "reports")
-        if not os.path.exists(report_path):
-            os.mkdir(report_path)
-
         self._results = results
         self._gen_report()
 
         try:
-            report = open(os.path.join(report_path, "report.txt"), "w")
+            report = open(os.path.join(self.report_path, "report.txt"), "w")
             report.write(self._report)
             report.close()
         except Exception, why:

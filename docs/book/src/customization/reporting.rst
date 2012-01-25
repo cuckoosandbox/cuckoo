@@ -66,9 +66,6 @@ A sample custom reporting module would look like following:
         from cuckoo.reporting.observers import BaseObserver
 
         class Report(BaseObserver):
-            def __init__(self):
-                # Put here your initialization or leave a pass.
-                pass
                 
             def update(self, results):
                 # Here you get analysis results as parameter.
@@ -77,3 +74,6 @@ A sample custom reporting module would look like following:
  
 Whatever operation you might want to run, remember to place it inside the ``update()`` method
 or invoke it from there, so that Cuckoo will be able to execute it when needed.
+
+The BaseObserver will check for reports folder and puts that path in self.report_path,
+you can use this variable if you need the reports folder path writing your custom report to disk.

@@ -18,7 +18,6 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 import os
-import sys
 import json
 
 from cuckoo.reporting.observers import BaseObserver
@@ -27,17 +26,10 @@ class Report(BaseObserver):
     """
     Save report in pure JSON format.
     """
-    
-    def __init__(self, analysis_path):
-        self._analysis_path = analysis_path
 
     def update(self, results):
-        report_path = os.path.join(self._analysis_path, "reports")
-        if not os.path.exists(report_path):
-            os.mkdir(report_path)
-        
         try:
-            report = open(os.path.join(report_path, "report.json"), "w")
+            report = open(os.path.join(self.report_path, "report.json"), "w")
             report.write(json.dumps(results, sort_keys = False, indent = 4))
             report.close()
         except Exception, why:

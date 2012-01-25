@@ -17,13 +17,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
+import os
+
 class BaseObserver:
     """
     Base observer class to be inherited by post-processor modules.
     """
     
-    def __init__(self):
-        pass
+    def __init__(self, analysis_path):
+        self._analysis_path = analysis_path
+        self._checkReportDir()
+        
+    def _checkReportDir(self):
+        """
+        Checks if reports directorys exists, otherwise create it.
+        """
+        self.report_path = os.path.join(self._analysis_path, "reports")
+        if not os.path.exists(self.report_path):
+            os.mkdir(self.report_path)
     
     def update(self):
         """
