@@ -35,6 +35,12 @@ def main():
                       dest="message",
                       default=None,
                       help="Specify a message to notify to the processor script")
+    parser.add_option("-c", "--custom",
+                      action="store",
+                      type="string",
+                      dest="custom",
+                      default=None,
+                      help="Specify a custom value to be used by the processor")
 
     (options, args) = parser.parse_args()
 
@@ -45,8 +51,10 @@ def main():
             pass
 
     if options.message:
-        # Do something with the message.
         print options.message
+
+    if options.custom:
+        print options.custom
 
     if analysis_path:
         # Generate reports out of abstracted analysis results.

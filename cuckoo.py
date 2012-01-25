@@ -260,6 +260,8 @@ class Analysis(Thread):
         pargs = [interpreter, processor]
         if message:
             pargs.extend(["--message", message])
+        if self.task["custom"]:
+            pargs.extend(["--custom", self.task["custom"]])
         if save_path:
             pargs.extend([save_path])
 
