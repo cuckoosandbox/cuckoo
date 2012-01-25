@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-
 import os
 import sys
 from string import split
@@ -31,10 +30,12 @@ class ReportProcessor:
     """
     Handles reporting of analysis results.
     """
-    
-    def __init__(self):
+
+    def __init__(self, analysis_path):
+        self._analysis_path = analysis_path
         self._observable = AnalysisObservable()
-        # Loaf configuration
+
+        # Load configuration
         if os.path.exists(REPORTING_CONF_FILE):
             try:
                 self.config = ReportingConfig(REPORTING_CONF_FILE)
@@ -46,26 +47,26 @@ class ReportProcessor:
             print(red("[Config] [ERROR] Cannot find config file \"%s\"."
                       % REPORTING_CONF_FILE))
             sys.exit(-1)
-        
+
         # Load modules
         self._tasklist()
-    
+
     def report(self, report):
         """
-        Take in care a new report.
+        Takes care of a new report.
         @param report: an analysis report.
         """ 
         self._observable.notify(report)
 
     def _tasklist(self):
         """
-        This is where reporting modules order become true.
+        This is where reporting modules order comes true.
         """
         for file in [tga for tga in os.listdir(os.path.join('.', "cuckoo/reporting/tasks")) if tga.endswith(".py")]:
             # Skip package file
             if file == '__init__.py':
                 continue
-            
+
             # Check if reporting module is enabled
             report = split(file, '.')[0]
             if self.config.check(report):           
@@ -74,4 +75,5 @@ class ReportProcessor:
                 imp = __import__(module, globals(), locals(), ['Report'], -1)
                 
                 # Subscribe
-                self._observable.subscribe(imp.Report())
+                self._observable.subscribe(imp.Report(self._analysis_path))
+

@@ -35,11 +35,14 @@ class Report(BaseObserver):
     Generates a human readable HTML report.
     """
 
+    def __init__(self, analysis_path):
+        self._analysis_path = analysis_path
+
     def update(self, results):
         if not IS_MAKO:
             return False
 
-        report_path = os.path.join(sys.argv[1], "reports")
+        report_path = os.path.join(self._analysis_path, "reports")
         if not os.path.exists(report_path):
             os.mkdir(report_path)
 
@@ -54,7 +57,8 @@ class Report(BaseObserver):
             report = open(os.path.join(report_path, "report.html"), "w")
             report.write(html)
             report.close()
-        except Exception, e:
+        except Exception, why:
             print "Failed writing HTML report: %s" % e
 
         return True
+

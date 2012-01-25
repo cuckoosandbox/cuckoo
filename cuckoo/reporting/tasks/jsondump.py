@@ -28,8 +28,11 @@ class Report(BaseObserver):
     Save report in pure JSON format.
     """
     
+    def __init__(self, analysis_path):
+        self._analysis_path = analysis_path
+
     def update(self, results):
-        report_path = os.path.join(sys.argv[1], "reports")
+        report_path = os.path.join(self._analysis_path, "reports")
         if not os.path.exists(report_path):
             os.mkdir(report_path)
         
@@ -37,5 +40,6 @@ class Report(BaseObserver):
             report = open(os.path.join(report_path, "report.json"), "w")
             report.write(json.dumps(results, sort_keys = False, indent = 4))
             report.close()
-        except Exception, e:
-            print "Failed writing JSON report: %s" % e
+        except Exception, why:
+            print "Failed writing JSON report: %s" % why
+

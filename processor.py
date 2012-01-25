@@ -58,13 +58,13 @@ def main():
 
     if analysis_path:
         # Generate reports out of abstracted analysis results.
-        ReportProcessor().report(CuckooDict(analysis_path).process())
+        ReportProcessor(analysis_path).report(CuckooDict(analysis_path).process())
 
     return True
 
 if __name__ == "__main__": 
     try:
-        main()   
+        main()
     except KeyboardInterrupt:
         print "User aborted."
     except:

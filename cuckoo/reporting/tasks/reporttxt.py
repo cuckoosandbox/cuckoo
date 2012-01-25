@@ -27,8 +27,9 @@ class Report(BaseObserver):
     Generates a human readable Text report.
     """
     
-    def __init__(self):
+    def __init__(self, analysis_path):
         BaseObserver.__init__(self)
+        self._analysis_path = analysis_path
         self._report = ""
         self._results = None
 
@@ -204,7 +205,7 @@ class Report(BaseObserver):
         self._gen_processes()
     
     def update(self, results):
-        report_path = os.path.join(sys.argv[1], "reports")
+        report_path = os.path.join(self._analysis_path, "reports")
         if not os.path.exists(report_path):
             os.mkdir(report_path)
 
@@ -215,5 +216,6 @@ class Report(BaseObserver):
             report = open(os.path.join(report_path, "report.txt"), "w")
             report.write(self._report)
             report.close()
-        except Exception, e:
-            print "Failed writing TXT report: %s" % e
+        except Exception, why:
+            print "Failed writing TXT report: %s" % why
+
