@@ -102,7 +102,7 @@ class Report(BaseObserver):
         """
         file = maec.fileObject(
                                id = f['md5'], 
-                               fileType = f['type'], 
+                               fileType = [f['type']], 
                                size = f['size'], 
                                crc32 = f['crc32'],
                                md5 = f['md5'], 
