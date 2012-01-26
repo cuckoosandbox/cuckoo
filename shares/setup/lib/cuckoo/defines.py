@@ -154,6 +154,8 @@ INVALID_HANDLE_VALUE        = 0xffffffff
 ERROR_BROKEN_PIPE           = 0x0000006d
 # Process constants.
 STILL_ACTIVE                = 0x00000103
+# File constants.
+FILE_ATTRIBUTE_HIDDEN       = 0x00000002
 
 KERNEL32 = windll.kernel32
 ADVAPI32 = windll.advapi32
