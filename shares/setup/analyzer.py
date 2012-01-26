@@ -157,9 +157,9 @@ def install_cuckoo():
     # Tries to set Cuckoo's directory as hidden.
     try:
         cuckoo.defines.KERNEL32.SetFileAttributesA(CUCKOO_PATH, cuckoo.defines.FILE_ATTRIBUTE_HIDDEN)
-        log.info("Cuckoo's directory set as hidden")
+        log.info("Cuckoo's directory set as hidden.")
     except Exception, why:
-        log.warning("Unable to set Cuckoo's directory hidden: %s" % why)
+        log.warning("Unable to set Cuckoo's directory hidden: %s." % why)
 
     try:
         if os.path.isdir(CUCKOO_SETUP_SRC):
