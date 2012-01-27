@@ -18,6 +18,7 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 import os
+import re
 import sys
 import time
 import shutil
@@ -28,6 +29,7 @@ from cuckoo.config.constants import VERSION
 from cuckoo.processing.file import File
 from cuckoo.processing.pcap import Pcap
 from cuckoo.processing.config import AnalysisConfig
+from cuckoo.processing.pe import PortableExecutable
 from cuckoo.processing.analysis import Analysis, ProcessTree
 
 class CuckooDict:
@@ -124,13 +126,17 @@ class CuckooDict:
         results["debug"] = {}
         
         if os.path.exists(self._log_path) and os.path.getsize(self._log_path) > 0:
-            debug_log = open(self._log_path, "rb").read()
+            results["debug"]["log"] = open(self._log_path, "rb").read()
         else:
-            debug_log = "No analysis.log file found. Your analysis most likely failed to start."
-        results["debug"]["log"] = debug_log
+            results["debug"]["log"] = "No analysis.log file found. Your analysis most likely failed to start."
 
         results["file"] = File(file_path).process()
+
         results["static"] = {}
+        if "type" in results["file"]:
+            if re.search("PE32", results["file"]["type"]):
+                results["static"] = PortableExecutable(file_path).process()
+
         results["dropped"] = self._get_dropped()
         results["screenshots"] = self._get_screenshots()
         results["network"] = Pcap(self._pcap_path).process()
