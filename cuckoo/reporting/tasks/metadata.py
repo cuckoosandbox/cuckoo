@@ -19,7 +19,6 @@
 
 import os
 from datetime import datetime
-from dateutil import parser
 
 from cuckoo.reporting.observers import BaseObserver
 from cuckoo.reporting import maec
@@ -47,7 +46,7 @@ class Report(BaseObserver):
             id = "cuckoo:%s" % self.results['file']['md5'],
             author = "Cuckoo Sandbox %s" % self.results["info"]["version"],
             comment = "Report created with Cuckoo Sandbox %s automated and open source malware sandbox: http://www.cuckoobox.org" % self.results["info"]["version"],
-            timestamp = parser.parse(self.results["info"]["started"]).isoformat()
+            timestamp = self.convertTime(self.results["info"]["started"])
         )        
         # Objects
         self.objects = maec.objectsType()
@@ -58,6 +57,22 @@ class Report(BaseObserver):
         # Relationships
         self.relationships = maec.relationshipsType()
         self.m.set_relationships(self.relationships)
+        
+    def convertTime(self, timestamp):
+        """
+        Parse a datatime string and returns a datetime in iso format.
+        @param timestamp: timestamp string
+        @return: ISO datetime
+        """  
+        if hasattr(datetime, 'strptime'):
+            # python 2.6
+            strptime = datetime.strptime
+        else:
+            # python 2.4 equivalent
+            import time
+            strptime = lambda date_string, format: datetime(*(time.strptime(date_string, format)[0:6]))  
+        return strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat()
+
         
     def addObjects(self):
         """
@@ -75,8 +90,9 @@ class Report(BaseObserver):
             if not found:        
                 self.objects.add_file(self.createFileObject(f))
         # URI objects
-        for req in self.results['network']['http']:
-            self.objects.add_uri(self.createUriObject(req))
+        if self.results['network']:
+            for req in self.results['network']['http']:
+                self.objects.add_uri(self.createUriObject(req))
             
     def createFileObject(self, f):
         """
@@ -86,7 +102,7 @@ class Report(BaseObserver):
         """
         file = maec.fileObject(
                                id = f['md5'], 
-                               fileType = f['type'], 
+                               fileType = [f['type']], 
                                size = f['size'], 
                                crc32 = f['crc32'],
                                md5 = f['md5'], 
