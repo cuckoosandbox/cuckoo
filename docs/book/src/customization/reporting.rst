@@ -21,19 +21,59 @@ reporting modules described below, but writing your own modules is incredibly si
 Built-in Reports
 ================
 
+Reports for humans
+------------------
+
+These reports are developed for end users.
+
 Report TXT
-----------
+++++++++++
 
 This module generates a human-readable report in plain text format.
 
 Report HTML
------------
++++++++++++
 
 This module generates a human-readable report in HTML format. These reports are also
 served by the built-in web server as explained in :doc:`../usage/web`.
 
+MAEC Reports
+------------
+
+Malware Attribute Enumeration and Characterization or simply `MAEC <http://maec.mitre.org/>`_
+is a standardized language developed by `MITRE <http://www.mitre.org/>`_ to describe malicious
+artifacts and their behavior.
+According to `MAEC website <http://maec.mitre.org/about/index.html>`_ it can be defined as:
+
+A standardized language for encoding and communicating high-fidelity information about malware
+based upon attributes such as behaviors, artifacts, and attack patterns.
+By eliminating the ambiguity and inaccuracy that currently exists in malware descriptions and
+by reducing reliance on signatures, MAEC aims to improve human-to-human, human-to-tool,
+tool-to-tool, and tool-to-human communication about malware; reduce potential duplication of
+malware analysis efforts by researchers; and allow for the faster development of countermeasures
+by enabling the ability to leverage responses to previously observed malware instances.
+
+Generating malware analysis in MAEC format brings some benefits to individuals and communities:
+
+* Standard representation: different tools can handle the same malware data without data conversion, tool-to-tool communication is easy.
+* Data exchange: individuals and groups can exchange malware analyses in a common, well known and standardized language which helps cooperation between parties.
+* Ambiguity loss: an high-fidelity language reduces communication misunderstaning.
+
+MAEC Malware Metadata Sharing
++++++++++++++++++++++++++++++
+
+Cuckoo supports MAEC 1.1 Malware Metadata Sharing reports. 
+MAEC Malware Metadata Sharing is a schema for sharing data associated with malicious software 
+as defined in `metadataSharing.xsd <http://maec.mitre.org/language/version1.1/xsddocs/http___xml_metadataSharing.xsd/index.html>`_.
+
+Data exports
+------------
+
+These reports are developed to export analysis data in a standard format to exchange 
+data in tool-to-tool communication.
+
 JSON Dump
----------
++++++++++
 
 This module dumps all Cuckoo's analysis results in JSON format.
 This is useful when you need to export Cuckoo's data to other tools or services.
