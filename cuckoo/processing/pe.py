@@ -19,37 +19,55 @@
 
 import os
 import sys
-import magic
 import string
+
+try:
+    import magic
+    IS_MAGIC = True
+except ImportError, why:
+    IS_MAGIC = False
 
 import cuckoo.processing.pefile as pefile
 import cuckoo.processing.peutils as peutils
+from cuckoo.processing.convert import convert_to_printable
 
 # Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 
 class PortableExecutable:
+    """
+    Static analysis of PE32 files.
+    """
+
     def __init__(self, file_path):
         self.file_path = file_path
         self.pe = None
 
-    def _convert_char(self, char):
-        if char in string.ascii_letters or \
-           char in string.digits or \
-           char in string.punctuation or \
-           char in string.whitespace:
-            return char
-        else:
-            return r'\x%02x' % ord(char)
-
-    def _convert_to_printable(self, s):
-        return ''.join([self._convert_char(c) for c in s])
-
     def _get_filetype(self, data):
-        ms = magic.open(magic.MAGIC_NONE)
-        ms.load()
-        return ms.buffer(data)
+        """
+        Generates file magic from the specified buffer of data.
+        @param data: buffer of binary data
+        @return: file magic
+        """
+        if not IS_MAGIC:
+            return None
+
+        try:
+            ms = magic.open(magic.MAGIC_NONE)
+            ms.load()
+            file_type = ms.buffer(data)
+        except:
+            try:
+                file_type = magic.from_buffer(data)
+            except Exception, why:
+                return None
+
+        return file_type
 
     def _get_peid_signatures(self):
+        """
+        Generates PEiD signatures for current file.
+        @return: list of matched signatures
+        """
         if not self.pe:
             return None
 
@@ -60,6 +78,10 @@ class PortableExecutable:
             return None
 
     def _get_imported_symbols(self):
+        """
+        Generates list of imported symbols.
+        @return: list of imported symbols
+        """
         if not self.pe:
             return None
 
@@ -85,6 +107,10 @@ class PortableExecutable:
         return imports
     
     def _get_exported_symbols(self):
+        """
+        Generates list of exported symbols.
+        @return: list of exported symbols
+        """
         if not self.pe:
             return None
         
@@ -101,6 +127,10 @@ class PortableExecutable:
         return exports
 
     def _get_sections(self):
+        """
+        Generates list of binary sections.
+        @return: list of binary sections
+        """
         if not self.pe:
             return None
 
@@ -121,6 +151,10 @@ class PortableExecutable:
         return sections
 
     def _get_resources(self):
+        """
+        Generates list of binary resources.
+        @return: list of binary resources
+        """
         if not self.pe:
             return None
 
@@ -160,6 +194,10 @@ class PortableExecutable:
         return resources
 
     def _get_versioninfo(self):
+        """
+        Acquires PE32 version info.
+        @return: PE32 version info
+        """
         if not self.pe:
             return None
 
@@ -188,6 +226,10 @@ class PortableExecutable:
         return infos
 
     def process(self):
+        """
+        Executes all PE32 analysis functions.
+        @return: dictionary with combined static analysis information
+        """
         if not os.path.exists(self.file_path):
             return None
 
@@ -205,3 +247,4 @@ class PortableExecutable:
         results["pe_versioninfo"] = self._get_versioninfo()
 
         return results
+
