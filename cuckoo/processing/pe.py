@@ -117,7 +117,7 @@ class PortableExecutable:
         exports = []
         
         if hasattr(self.pe, "DIRECTORY_ENTRY_EXPORT"):
-            for exported_symbol in self.pe.DIRECTORY_ENTRY_EXPORT:
+            for exported_symbol in self.pe.DIRECTORY_ENTRY_EXPORT.symbols:
                 symbol = {}
                 symbol["address"] = hex(self.pe.OPTIONAL_HEADER.ImageBase + exported_symbol.address)
                 symbol["name"] = exported_symbol.name
