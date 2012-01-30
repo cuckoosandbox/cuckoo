@@ -378,7 +378,15 @@ class Analysis(Thread):
                     self._processing(None, CUCKOO_ERROR_VM_NOT_FOUND)
                     return False
 
-                self.vm_id = VM_POOL.pop(VM_POOL.index(self.task["vm_id"]))
+                while True:
+                    if self.task["vm_id"] in VM_POOL:
+                        self.vm_id = VM_POOL.pop(VM_POOL.index(self.task["vm_id"]))
+                        break
+                    else:
+                        log.debug("The specified virtual machine \"%s\" is " \
+                                  "not available yet. Waiting..."
+                                  % self.task["vm_id"])
+                        sleep(1)
             else:
                 self.vm_id = VM_POOL.pop()
 
