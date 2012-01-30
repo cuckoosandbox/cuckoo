@@ -43,14 +43,6 @@ class CuckooDict:
         self._shots_path    = os.path.join(analysis_path, "shots")
         self._trace_path    = os.path.join(analysis_path, "trace")
 
-    def _get_duration(self, started):
-        """
-        Calculates analysis duration.
-        @param started: UNIX timestamp of the start time
-        """
-        now = time.time()
-        return int(now - started)
-
     def _get_dropped(self):
         """
         Retrieves information on files dropped by the malware.
@@ -119,9 +111,8 @@ class CuckooDict:
         results["info"] = {}
         results["info"]["version"] = VERSION
         results["info"]["started"] = datetime.fromtimestamp(config.started).strftime("%Y-%m-%d %H:%M:%S")
-        duration = self._get_duration(config.started)
-        results["info"]["duration"] = "%d seconds" % duration
-        results["info"]["ended"] = datetime.fromtimestamp(config.started+duration).strftime("%Y-%m-%d %H:%M:%S")
+        results["info"]["duration"] = "%d seconds" % (config.completed - config.started)
+        results["info"]["ended"] = datetime.fromtimestamp(config.completed).strftime("%Y-%m-%d %H:%M:%S")
 
         results["debug"] = {}
         

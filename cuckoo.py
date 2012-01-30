@@ -199,12 +199,12 @@ class Analysis(Thread):
         config.set("analysis", "share", local_share)
 
         if os.path.exists(share_path):
-            conf_path = os.path.join(share_path, "analysis.conf")
-            with open(conf_path, "wb") as config_file:
+            config_path = os.path.join(share_path, "analysis.conf")
+            with open(config_path, "wb") as config_file:
                 config.write(config_file)
 
             log.debug("Analysis configuration file successfully generated " \
-                      "at \"%s\"." % conf_path)
+                      "at \"%s\"." % config_path)
 
             # Return the local share path. This is the path where the virtual
             # machine will have access to to get analysis files and store
@@ -213,6 +213,24 @@ class Analysis(Thread):
         else:
             log.error("Shared folder \"%s\" does not exist." % share_path)
             return False
+
+    def _update_config(self, save_path):
+        """
+        Updates the analysis configuration file.
+        @param save_path: path to the stored analysis results
+        """
+        config_path = os.path.join(save_path, "analysis.conf")
+        if not os.path.exists(config_path):
+            return False
+
+        config = ConfigParser.RawConfigParser()
+        config.read(config_path)
+        config.set("analysis", "completed", time())
+
+        with open(config_path, "wb") as config_file:
+            config.write(config_file)
+
+        return True
 
     def _free_vm(self, vm_id):
         """
@@ -523,6 +541,8 @@ class Analysis(Thread):
             self.db.complete(self.task["id"], True)
         else:
             self.db.complete(self.task["id"], False)
+
+        self._update_config(save_path)
 
         # 18. Invoke processing script.
         self._processing(save_path)

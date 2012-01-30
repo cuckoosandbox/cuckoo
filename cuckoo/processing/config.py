@@ -31,9 +31,11 @@ class AnalysisConfig:
         """ 
         config = ConfigParser.ConfigParser()
         config.read(config_path)
+        self.analysis_id = config.get("analysis", "id")
         self.target = config.get("analysis", "target")
         self.package = config.get("analysis", "package")
         self.timeout = config.get("analysis", "timeout")
         self.share = config.get("analysis", "share")
         self.started = float(config.get("analysis", "started"))
         self.custom = config.get("analysis", "custom")
+        self.completed = float(config.get("analysis", "completed"))
