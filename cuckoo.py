@@ -185,6 +185,7 @@ class Analysis(Thread):
         config = ConfigParser.RawConfigParser()
 
         config.add_section("analysis")
+        config.set("analysis", "id", self.task["id"])
         config.set("analysis", "target", self.dst_filename)
         config.set("analysis", "package", self.task["package"])
         config.set("analysis", "timeout", self.task["timeout"])
