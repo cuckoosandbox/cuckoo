@@ -198,6 +198,9 @@ table {
     font-size: 12px;
     table-layout: fixed;
 }
+td {
+    word-wrap: break-word;
+}
 tr.row {
 }
 tr.alternate {
