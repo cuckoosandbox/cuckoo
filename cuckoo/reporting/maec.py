@@ -4636,7 +4636,8 @@ class HashType(GeneratedsSuper):
             outfile.write(' other_type=%s' % (self.gds_format_string(quote_attrib(self.other_type).encode(ExternalEncoding), input_name='other_type'), ))
     def exportChildren(self, outfile, level, namespace_='maec:', name_='HashType', fromsubclass_=False):
         if self.Hash_Value is not None:
-            self.Hash_Value.export(outfile, level, namespace_, name_='Hash_Value', )
+            showIndent(outfile, level)
+            outfile.write('<%sHash_Value>%s</%sHash_Value>\n' % (namespace_, self.gds_format_string(quote_xml(self.Hash_Value).encode(ExternalEncoding), input_name='Hash_Value'), namespace_))
     def hasContent_(self):
         if (
             self.Hash_Value is not None
@@ -5308,7 +5309,8 @@ class PEExportType(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('<%sFunction_Name>%s</%sFunction_Name>\n' % (namespace_, self.gds_format_string(quote_xml(self.Function_Name).encode(ExternalEncoding), input_name='Function_Name'), namespace_))
         if self.Entry_Point is not None:
-            self.Entry_Point.export(outfile, level, namespace_, name_='Entry_Point')
+            showIndent(outfile, level)
+            outfile.write('<%sEntry_Point>%s</%sEntry_Point>\n' % (namespace_, self.gds_format_string(quote_xml(self.Entry_Point).encode(ExternalEncoding), input_name='Entry_Point'), namespace_))
         if self.Ordinal is not None:
             showIndent(outfile, level)
             outfile.write('<%sOrdinal>%s</%sOrdinal>\n' % (namespace_, self.gds_format_integer(self.Ordinal, input_name='Ordinal'), namespace_))
@@ -5430,7 +5432,8 @@ class PESectionType(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('<%sEntropy>%s</%sEntropy>\n' % (namespace_, self.gds_format_float(self.Entropy, input_name='Entropy'), namespace_))
         if self.Virtual_Address is not None:
-            self.Virtual_Address.export(outfile, level, namespace_, name_='Virtual_Address')
+            showIndent(outfile, level)
+            outfile.write('<%sVirtual_Address>%s</%sVirtual_Address>\n' % (namespace_, self.gds_format_string(quote_xml(self.Virtual_Address).encode(ExternalEncoding), input_name='Virtual_Address'), namespace_))
         if self.Virtual_Size is not None:
             showIndent(outfile, level)
             outfile.write('<%sVirtual_Size>%s</%sVirtual_Size>\n' % (namespace_, self.gds_format_integer(self.Virtual_Size, input_name='Virtual_Size'), namespace_))
@@ -19291,7 +19294,8 @@ class Imported_FunctionType(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('<%sFunction_Name>%s</%sFunction_Name>\n' % (namespace_, self.gds_format_string(quote_xml(self.Function_Name).encode(ExternalEncoding), input_name='Function_Name'), namespace_))
         if self.Virtual_Address is not None:
-            self.Virtual_Address.export(outfile, level, namespace_, name_='Virtual_Address')
+            showIndent(outfile, level)
+            outfile.write('<%sVirtual_Address>%s</%sVirtual_Address>\n' % (namespace_, self.gds_format_string(quote_xml(self.Virtual_Address).encode(ExternalEncoding), input_name='Virtual_Address'), namespace_))
         if self.Hint is not None:
             self.Hint.export(outfile, level, namespace_, name_='Hint')
         if self.Ordinal is not None:
