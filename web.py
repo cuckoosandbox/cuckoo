@@ -98,10 +98,13 @@ class MyHandler(BaseHTTPRequestHandler):
         content_len = int(self.headers.getheader("Content-length"))
         postvars = urlparse.parse_qs(self.rfile.read(content_len))
 
-        md5 = postvars["md5"][0].strip()
+        if "md5" in postvars:
+            md5 = postvars["md5"][0].strip()
+        else:
+            self.send_error(404)
+            return
 
         if not md5.isalnum() or len(md5) != 32:
-            print "invalid"
             self.send_error(404)
             return
 
