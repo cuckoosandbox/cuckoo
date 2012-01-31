@@ -125,8 +125,9 @@ class CuckooDict:
 
         results["static"] = {}
         if "type" in results["file"]:
-            if re.search("PE32", results["file"]["type"]):
-                results["static"] = PortableExecutable(file_path).process()
+            if results["file"]["type"] not None and results["file"]["type"] != "":
+                if re.search("PE32", results["file"]["type"]):
+                    results["static"] = PortableExecutable(file_path).process()
 
         results["dropped"] = self._get_dropped()
         results["screenshots"] = self._get_screenshots()
