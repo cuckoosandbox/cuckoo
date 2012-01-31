@@ -18,10 +18,10 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.    
 
 import os
-from datetime import datetime
 
 from cuckoo.reporting.observers import BaseObserver
 from cuckoo.reporting import maec
+from cuckoo.reporting.utils import convertTime
 
 class Report(BaseObserver):
     """
@@ -313,9 +313,9 @@ class Report(BaseObserver):
         analysis = maec.AnalysisType(
                                 id = "%s:ana:1" % self.idMap['prefix'],
                                 analysis_method = 'Dynamic',
-                                start_datetime = self.convertTime(self.results["info"]["started"]),
-                                complete_datetime = self.convertTime(self.results["info"]["ended"]),
-                                lastupdate_datetime = self.convertTime(self.results["info"]["ended"])
+                                start_datetime = convertTime(self.results["info"]["started"]),
+                                complete_datetime = convertTime(self.results["info"]["ended"]),
+                                lastupdate_datetime = convertTime(self.results["info"]["ended"])
                                 )
         # Add tool
         analysis.set_Tools_Used(self.createTools())
@@ -323,21 +323,6 @@ class Report(BaseObserver):
         analysis.add_Subject(self.createSubject(self.results['file']))
         # 
         self.analyses.add_Analysis(analysis)
-    
-    def convertTime(self, timestamp):
-        """
-        Parse a datatime string and returns a datetime in iso format.
-        @param timestamp: timestamp string
-        @return: ISO datetime
-        """  
-        if hasattr(datetime, 'strptime'):
-            # python 2.6
-            strptime = datetime.strptime
-        else:
-            # python 2.4 equivalent
-            import time
-            strptime = lambda date_string, format: datetime(*(time.strptime(date_string, format)[0:6]))  
-        return datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat()
         
     def addPools(self):
         """
