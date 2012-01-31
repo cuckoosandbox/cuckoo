@@ -50,7 +50,7 @@ based upon attributes such as behaviors, artifacts, and attack patterns.
 By eliminating the ambiguity and inaccuracy that currently exists in malware descriptions and
 by reducing reliance on signatures, MAEC aims to improve human-to-human, human-to-tool,
 tool-to-tool, and tool-to-human communication about malware; reduce potential duplication of
-malware analysis efforts by researchers; and allow for the faster development of countermeasures
+malware analysis efforts by researchers and allow a faster development of countermeasures
 by enabling the ability to leverage responses to previously observed malware instances.
 
 Generating malware analysis in MAEC format brings some benefits to individuals and communities:
@@ -76,7 +76,6 @@ JSON Dump
 +++++++++
 
 This module dumps all Cuckoo's analysis results in JSON format.
-This is useful when you need to export Cuckoo's data to other tools or services.
 
 Writing your own reporting module
 =================================
