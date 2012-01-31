@@ -23,7 +23,7 @@ from optparse import OptionParser
 
 from cuckoo.processing.data import CuckooDict
 from cuckoo.reporting.reporter import ReportProcessor
-from cuckoo.logging.crash import help
+from cuckoo.logging.crash import crash
 
 def main():
     analysis_path = None
@@ -68,5 +68,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print "User aborted."
     except:
-        help()
+        crash()
 

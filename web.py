@@ -24,7 +24,7 @@ from optparse import OptionParser
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 from cuckoo.core.db import CuckooDatabase
-from cuckoo.logging.crash import help
+from cuckoo.logging.crash import crash
 
 try:
     from mako.template import Template
@@ -145,5 +145,5 @@ if __name__ == "__main__":
     try:
         main()
     except:
-        help()
+        crash()
 

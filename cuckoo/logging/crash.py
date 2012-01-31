@@ -22,23 +22,26 @@ import traceback
 
 import cuckoo.config.constants as constants
 
-def help():
+def crash():
     """
     Called when a unhandled exception happens, reports all information needed to user to ask developer support.
     """
-    
     print
-    print "Cuckoo stumbles in an unhandled error!"
-    print "Before reporting the problem, please run with latest release from "
-    print "the development Git repository (http://github.com/cuckoobox/cuckoo)."
-    print "If the exception persists, please send to %s " % constants.ML
-    print "the following traceback."
-    print "The developers will try to reproduce the bug, fix it and get in "
-    print "touch with you."
+    print "------------------------------------[ERROR]-------------------------------------"
+    print "Cuckoo stumbled in an unhandled error!"
+    print "Before reporting the problem, please run with latest release from the development"
+    print "Git repository at:"
+    print "  http://github.com/cuckoobox/cuckoo"
+    print "If the exception persists, please send the following traceback to:"
+    print "  %s" % constants.ML
+    print "The developers will try to reproduce the bug, fix it and get in touch with you."
     print
+    print "----------------------------------[TRACEBACK]-----------------------------------"
     print "Cuckoo version: %s" % constants.VERSION
     print "Python version: %s" % sys.version
     print "OS: %s" % sys.platform
     print "Command line: %s" % " ".join(sys.argv)
     traceback.print_exc()
+    print "--------------------------------------------------------------------------------"
+    print
 

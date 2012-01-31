@@ -33,7 +33,7 @@ from cuckoo.config.constants import *
 from cuckoo.logging.logo import logo
 from cuckoo.core.db import CuckooDatabase
 from cuckoo.core.getfiletype import get_filetype
-from cuckoo.logging.crash import help
+from cuckoo.logging.crash import crash
 
 # Check the virtualization engine from the config fle and tries to retrieve
 # and import the corresponding Cuckoo's module.
@@ -730,5 +730,5 @@ if __name__ == "__main__":
 
         sys.exit()
     except:
-        help()
+        crash()
 
