@@ -103,10 +103,18 @@ class Report(BaseObserver):
     
     
     def addActions(self):
+        """
+        Adds actions section
+        """
         for process in self.results['behavior']['processes']:
-            self.createActionAPI(process)
+            self.createActionAPI(process)         
     
     def createActionAPI(self, process):
+        """
+        Creates an action object which describes a process.
+        @param process: process from cuckoo dict
+        @return: created action object
+        """ 
         pid = self.getProcessId()
         pos = 1
         
