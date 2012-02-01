@@ -20,7 +20,7 @@
 import os
 
 from cuckoo.reporting.observers import BaseObserver
-from cuckoo.reporting import maec
+import cuckoo.reporting.maec11 as maec
 from cuckoo.reporting.utils import convertTime
 
 class Report(BaseObserver):
