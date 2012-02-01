@@ -6,8 +6,8 @@ Copyright (c) 2005-2011 Ero Carrera <ero.carrera@gmail.com>
 
 All rights reserved.
 
-For detailed copyright information see the file COPYING in
-the root of the distribution archive.
+For detailed copyright information see the file LICENSE in
+the distribution archive.
 """
 
 import os
