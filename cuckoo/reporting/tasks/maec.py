@@ -100,20 +100,50 @@ class Report(BaseObserver):
         except AttributeError:
             self.apiCallId = 1
         return self.apiCallId
-    
-    
+      
     def addActions(self):
         """
         Adds actions section
         """
+        # Processes
         for process in self.results['behavior']['processes']:
-            self.createActionAPI(process)         
+            self.createActionAPI(process)      
+        # Network
+        for pkt in self.results['network']['udp']:
+            self.createActionNet(pkt)
+        for pkt in self.results['network']['tcp']:
+            self.createActionNet(pkt)
+            
+    def createActionNet(self, packet):
+        act = maec.ActionType(
+                              id = "%s:act:%s" % (self.idMap['prefix'], self.getActionId()),
+                              )
+        act.set_Action_Initiator(maec.Action_InitiatorType(
+                                                           type_ = 'Process',
+                                                           Initiator_Object = maec.ObjectReferenceType(
+                                                                                                       type_ = 'Object',
+                                                                                                       object_id = self.idMap['subject']
+                                                                                                       )
+                                                           )
+                                 )
+        ai = maec.ActionImplementationType(
+                                           type_ = 'Other',
+                                           id = "%s:imp:%s" % (self.idMap['prefix'], self.getActImpId()),
+                                           )
+        net = maec.Network_Action_AttributesType(
+                                                 Internal_Port = packet['sport'],
+                                                 External_Port = packet['dport'],
+                                                 Internal_IP_Address = packet['src'],
+                                                 External_IP_Address = packet['dst']
+                                                 )
+        ai.set_Network_Action_Attributes(net)
+        act.set_Action_Implementation(ai)
+        self.actions.add_Action(act)
     
     def createActionAPI(self, process):
         """
         Creates an action object which describes a process.
         @param process: process from cuckoo dict
-        @return: created action object
         """ 
         pid = self.getProcessId()
         pos = 1
