@@ -24,24 +24,25 @@ import cuckoo.config.constants as constants
 
 def crash():
     """
-    Called when a unhandled exception happens, reports all information needed to user to ask developer support.
+    Called when a unhandled exception happens, reports all information needed to
+    user to ask for support.
     """
     print
-    print "------------------------------------[ERROR]-------------------------------------"
-    print "Cuckoo stumbled in an unhandled error!"
-    print "Before reporting the problem, please run with latest release from the development"
-    print "Git repository at:"
-    print "  http://github.com/cuckoobox/cuckoo"
-    print "If the exception persists, please send the following traceback to:"
-    print "  %s" % constants.ML
-    print "The developers will try to reproduce the bug, fix it and get in touch with you."
+    print("------------------------------------[ERROR]-------------------------------------")
+    print("Cuckoo stumbled in an unhandled error!")
+    print("Before reporting the problem, please run with latest release from the development")
+    print("Git repository at:")
+    print("  http://github.com/cuckoobox/cuckoo")
+    print("If the exception persists, please send the following traceback to:")
+    print("  %s" % constants.ML)
+    print("The developers will try to reproduce the bug, fix it and get in touch with you.")
     print
-    print "----------------------------------[TRACEBACK]-----------------------------------"
-    print "Cuckoo version: %s" % constants.VERSION
-    print "Python version: %s" % sys.version
-    print "OS: %s" % sys.platform
-    print "Command line: %s" % " ".join(sys.argv)
+    print("----------------------------------[TRACEBACK]-----------------------------------")
+    print("Cuckoo version: %s" % constants.VERSION)
+    print("Python version: %s" % sys.version)
+    print("OS: %s" % sys.platform)
+    print("Command line: %s" % " ".join(sys.argv))
     traceback.print_exc()
-    print "--------------------------------------------------------------------------------"
+    print("--------------------------------------------------------------------------------")
     print
 

@@ -24,10 +24,10 @@ import hashlib
 import urllib2
 from optparse import OptionParser
 
-from cuckoo.config.config import CuckooConfig
 from cuckoo.logging.crash import crash
-from cuckoo.core.db import CuckooDatabase
 from cuckoo.logging.colors import *
+from cuckoo.core.db import CuckooDatabase
+from cuckoo.config.config import CuckooConfig
 
 DESTINATION = "/tmp/"
 
@@ -110,10 +110,8 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    # Check if the target file path has been specified, otherwise terminate
-    # script.
     if len(args) != 1:
-        parser.error("You didn't specify the target file path")
+        parser.error("You didn't specify a target path.")
         return False
 
     # If the specified argument is an URL, download it first and retrieve the
@@ -130,12 +128,8 @@ def main():
                   "but didn't specify any package, I'm gonna user the default " \
                   "Internet Explorer package.")
             options.package = "ie"
-    # Otherwise just assign the argument to target path.
     else:
         target = args[0]
-
-    if not target:
-        return False
 
     # Check if the target file actually exists, otherwise terminate script.
     if not os.path.exists(target):
@@ -174,6 +168,8 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print "User aborted."
+    except SystemExit:
+        pass
     except:
         crash()
 

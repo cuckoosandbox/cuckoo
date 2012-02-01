@@ -67,6 +67,8 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print "User aborted."
+    except SystemExit:
+        pass
     except:
         crash()
 
