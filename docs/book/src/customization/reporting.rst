@@ -66,6 +66,21 @@ Cuckoo supports MAEC 1.1 Malware Metadata Sharing reports.
 MAEC Malware Metadata Sharing is a schema for sharing data associated with malicious software 
 as defined in `metadataSharing.xsd <http://maec.mitre.org/language/version1.1/xsddocs/http___xml_metadataSharing.xsd/index.html>`_.
 
+MAEC Bundle Report
+++++++++++++++++++
+
+Cuckoo supports MAEC 1.1 Bundle reports.
+The MAEC schema (or report) is a set of attributes that characterize a malware using a 
+predefined language, as defined by MITRE:
+
+The primary intent of the MAEC Schema is to define a syntax for the discrete MAEC Language
+elements. The schema also serves as an interchange format for the MAEC Language, and can be
+utilized as a baseline for the creation of malware repositories or intermediate format for
+the sharing of information between repositories.
+The revision 1.1 of the schema has four key types: analyses, actions, objects, and behaviors. 
+For more detailed information on these and other types, please refer to the MAEC Schema itself
+or its associated HTML documentation.
+
 Data exports
 ------------
 
