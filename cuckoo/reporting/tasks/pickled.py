@@ -17,14 +17,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-[Tasks]
-# Enable/Disable reporting tasks. 
-# Here you can choose what report enable or disable.
-# By default all available reporting tasks are enabled.
-# Available values are [on/off]
-jsondump = on
-reporttxt = on
-reporthtml = on
-metadata = on
-maec = on
-pickled = on
+import os
+import sys
+import pickle
+
+from cuckoo.reporting.observers import BaseObserver
+
+class Report(BaseObserver):
+    """
+    Save report in pickle format.
+    """
+    
+    def update(self, results):
+        try:
+            pickle.dump(results, open(os.path.join(self.report_path, "report.pickle"), "w"), 2)
+        except Exception, e:
+            print "Failed writing pickle report: %s" % e

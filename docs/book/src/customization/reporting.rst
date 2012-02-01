@@ -92,6 +92,11 @@ JSON Dump
 
 This module dumps all Cuckoo's analysis results in JSON format.
 
+Pickle Dump
++++++++++++
+
+This module dumps Cuckoo's session dict in Python pickle format.
+
 Writing your own reporting module
 =================================
 
