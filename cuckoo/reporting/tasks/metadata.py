@@ -76,7 +76,12 @@ class Report(BaseObserver):
         # URI objects
         if self.results['network']:
             for req in self.results['network']['http']:
-                self.objects.add_uri(self.createUriObject(req))
+                found = False
+                for exist in self.objects.get_uri():
+                    if exist.get_id() == req['uri']:
+                        found = True
+                if not found:
+                    self.objects.add_uri(self.createUriObject(req))
             
     def createFileObject(self, f):
         """
