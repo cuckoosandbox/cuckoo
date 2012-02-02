@@ -159,7 +159,15 @@ class Report(BaseObserver):
                                                                             dst = "uri[@id='%s']" % req.id
                                                                             )
                                                         )
-                    
+        # HTTP requests
+        for req in self.results['network']['http']:
+            self.relationships.add_relationship(self.createRelation(
+                                                                    action = 'contactedBy',
+                                                                    src = "file[@id='%s']" % self.results['file']['md5'],
+                                                                    dst = "uri[@id='%s']" % req['uri']
+                                                                    )
+                                                )
+            
     def createRelation(self, action, src, dst):
         """
         Creates a relation between objects.
