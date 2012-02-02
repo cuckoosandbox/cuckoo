@@ -54,6 +54,20 @@
             <td><strong>Ssdeep</strong>:</td>
             <td><span class="mono">${file["ssdeep"]}</span></td>
         </tr>
+        %if isinstance(static, dict) and "peid_signatures" in static:
+        <tr>
+            <td><strong>PEiD Signatures</strong>:</td>
+            <td>
+            %if static["peid_signatures"] and len(static["peid_signatures"]) > 0:
+                %for peid_signature in static["peid_signatures"]:
+                    <div>&bull; ${peid_signature}</div>
+                %endfor
+            %else:
+                None matched
+            %endif
+            </td>
+        </tr>
+        %endif
     </table>
     <div class="space"></div>
     <fieldset>
