@@ -139,7 +139,7 @@ class PortableExecutable:
         for entry in self.pe.sections:
             try:
                 section = {}
-                section["name"] = self._convert_to_printable(entry.Name.strip())
+                section["name"] = convert_to_printable(entry.Name.strip())
                 section["virtual_address"] = hex(entry.VirtualAddress)
                 section["virtual_size"] = hex(entry.Misc_VirtualSize)
                 section["size_of_data"] = hex(entry.SizeOfRawData)
@@ -210,15 +210,15 @@ class PortableExecutable:
                             for st_entry in entry.StringTable:
                                 for str_entry in st_entry.entries.items():
                                     entry = {}
-                                    entry["name"] = self._convert_to_printable(str_entry[0])
-                                    entry["value"] = self._convert_to_printable(str_entry[1])
+                                    entry["name"] = convert_to_printable(str_entry[0])
+                                    entry["value"] = convert_to_printable(str_entry[1])
                                     infos.append(entry)
                         elif hasattr(entry, "Var"):
                             for var_entry in entry.Var:
                                 if hasattr(var_entry, "entry"):
                                     entry = {}
-                                    entry["name"] = self._convert_to_printable(var_entry.entry.keys()[0])
-                                    entry["value"] = self._convert_to_printable(var_entry.entry.values()[0])
+                                    entry["name"] = convert_to_printable(var_entry.entry.keys()[0])
+                                    entry["value"] = convert_to_printable(var_entry.entry.values()[0])
                                     infos.append(entry)
                     except:
                         continue
