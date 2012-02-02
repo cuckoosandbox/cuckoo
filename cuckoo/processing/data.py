@@ -30,7 +30,7 @@ from cuckoo.processing.file import File
 from cuckoo.processing.pcap import Pcap
 from cuckoo.processing.config import AnalysisConfig
 from cuckoo.processing.pe import PortableExecutable
-from cuckoo.processing.analysis import Analysis, ProcessTree
+from cuckoo.processing.analysis import BehaviorAnalysis, BehaviorSummary, ProcessTree
 
 class CuckooDict:
     def __init__(self, analysis_path):
@@ -134,8 +134,9 @@ class CuckooDict:
         results["network"] = Pcap(self._pcap_path).process()
 
         results["behavior"] = {}
-        results["behavior"]["processes"] = Analysis(self._logs_path).process()
+        results["behavior"]["processes"] = BehaviorAnalysis(self._logs_path).process()
         results["behavior"]["processtree"] = ProcessTree(results["behavior"]["processes"]).process()
+        results["behavior"]["summary"] = BehaviorSummary(results["behavior"]["processes"]).process()
 
         if not results or len(results) == 0:
             return None

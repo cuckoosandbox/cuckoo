@@ -22,7 +22,7 @@ import sys
 import csv
 from cuckoo.processing.convert import convert_to_printable
 
-class ParseLog:
+class ParseBehaviorLog:
     """
     Parses the specified process log file.
     """
@@ -130,7 +130,7 @@ class ParseLog:
 
         return True
 
-class Analysis:
+class BehaviorAnalysis:
     """
     Processes all the results from the specified analysis.
     """
@@ -166,7 +166,7 @@ class Analysis:
                 continue
 
             # Invoke parsing of current log file.
-            current_log = ParseLog(file_path)
+            current_log = ParseBehaviorLog(file_path)
             current_log.extract()
 
             # If the current log actually contains any data, add its data to
@@ -186,6 +186,89 @@ class Analysis:
         results.sort(key=lambda process: process["first_seen"])
 
         return results
+
+class BehaviorSummary:
+    """
+    Generates a summary containing key information out of the behavior analysis.
+    """
+
+    def __init__(self, proc_results):
+        """
+        Creates a new instance
+        @param proc_results: processes results from analysis
+        """
+        self.proc_results = proc_results
+
+    def _gen_files(self):
+        """
+        Generates a list of the accessed files.
+        @return: list of the accessed files.
+        """
+        files = []
+
+        for entry in self.proc_results:
+            for call in entry["calls"]:
+                if call["category"] == "filesystem":
+                    for argument in call["arguments"]:
+                        if argument["name"] == "lpFileName":
+                            if argument["value"] not in files:
+                                files.append(argument["value"])
+
+        return files
+
+    def _gen_keys(self):
+        """
+        Generates a list of registry keys the malware operated on.
+        @return: list of registry keys the malware operated on
+        """
+        keys = []
+
+        for entry in self.proc_results:
+            for call in entry["calls"]:
+                if call["category"] == "registry":
+                    hKey = None
+                    lpSubKey = None
+                    for argument in call["arguments"]:
+                        if argument["name"] == "hKey":
+                            hKey = argument["value"]
+                        elif argument["name"] == "lpSubKey":
+                            lpSubKey = argument["value"]
+
+                    if lpSubKey:
+                        key = "%s\\\\%s" % (hKey, lpSubKey)
+                        if key not in keys:
+                            keys.append(key)
+
+        return keys
+
+    def _gen_mutexes(self):
+        """
+        Generates a list of accessed mutexes.
+        @return: list of accessed mutexes
+        """
+        mutexes = []
+
+        for entry in self.proc_results:
+            for call in entry["calls"]:
+                if call["category"] == "synchronization":
+                    for argument in call["arguments"]:
+                        if argument["name"] == "lpName":
+                            if argument["value"] not in mutexes:
+                                mutexes.append(argument["value"])
+
+        return mutexes
+
+    def process(self):
+        """
+        Collect information and create a summary dictionary.
+        @return: a dictionary containing summary information
+        """
+        summary = {}
+        summary["files"] = self._gen_files()
+        summary["keys"] = self._gen_keys()
+        summary["mutexes"] = self._gen_mutexes()
+
+        return summary  
 
 class ProcessTree:
     """
@@ -268,3 +351,4 @@ class ProcessTree:
         self.populate(self.processes[0])
 
         return self.proctree
+
