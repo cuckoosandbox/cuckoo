@@ -140,34 +140,36 @@ class Report(BaseObserver):
         # DNS requests
         for req in self.objects.get_uri():
             # Get IP
-            for res in self.results['network']['dns']: 
-                if res['hostname'] == req.get_hostname():
-                    ip = res['ip']
-                    # Check if obj exist
-                    found = None
-                    for obj in self.objects.get_ip():
-                        if ip == obj.get_startAddress().get_valueOf_():
-                            found = obj
-                    # Create obj
-                    if found is None:
-                        found = self.createIpObject(ip)
-                        self.objects.add_ip(found)
-                    # Create relation
-                    self.relationships.add_relationship(self.createRelation(
-                                                                            action = 'isServerOfService', 
-                                                                            src = "ip[@id='%s']" % found.id, 
-                                                                            dst = "uri[@id='%s']" % req.id
-                                                                            )
-                                                        )
+            if len(self.results['network']['dns']) > 0:
+                for res in self.results['network']['dns']: 
+                    if res['hostname'] == req.get_hostname():
+                        ip = res['ip']
+                        # Check if obj exist
+                        found = None
+                        for obj in self.objects.get_ip():
+                            if ip == obj.get_startAddress().get_valueOf_():
+                                found = obj
+                        # Create obj
+                        if found is None:
+                            found = self.createIpObject(ip)
+                            self.objects.add_ip(found)
+                        # Create relation
+                        self.relationships.add_relationship(self.createRelation(
+                                                                                action = 'isServerOfService', 
+                                                                                src = "ip[@id='%s']" % found.id, 
+                                                                                dst = "uri[@id='%s']" % req.id
+                                                                                )
+                                                            )
         # HTTP requests
-        for req in self.results['network']['http']:
-            self.relationships.add_relationship(self.createRelation(
-                                                                    action = 'contactedBy',
-                                                                    src = "file[@id='%s']" % self.results['file']['md5'],
-                                                                    dst = "uri[@id='%s']" % req['uri']
-                                                                    )
-                                                )
-            
+        if len(self.results['network']['http']) > 0:
+            for req in self.results['network']['http']:
+                self.relationships.add_relationship(self.createRelation(
+                                                                        action = 'contactedBy',
+                                                                        src = "file[@id='%s']" % self.results['file']['md5'],
+                                                                        dst = "uri[@id='%s']" % req['uri']
+                                                                        )
+                                                    )
+                
     def createRelation(self, action, src, dst):
         """
         Creates a relation between objects.
