@@ -28,7 +28,7 @@ After initial work during the summer 2010, the first beta release was published
 on Feb. 5th 2011, when Cuckoo was publicly announced and distributed for the
 first time.
 
-In March 2011, Cuckoo as been selected again as a supported project during
+In March 2011, Cuckoo has been selected again as a supported project during
 Google Summer of Code 2011 with The Honeynet Project, during which
 *Dario Fernandes* joined the project and extended its functionalities.
 
@@ -38,10 +38,16 @@ first real stable release.
 On late November 2011 *Alessandro "jekil" Tanasi* joined the team expanding
 Cuckoo's processing and reporting functionalities.
 
-On December 2011 Cuckoo v0.3 gets released.
+On December 2011 Cuckoo v0.3 gets released and quickly hitting release 0.3.2 in
+early February.
+
+In late January 2012 we opened `Malwr.com`_, a free and public running Cuckoo
+Sandbox instance provided with a full fledged interface through which people
+can submit files to be analysed and get results back.
 
 .. _`Google Summer of Code`: http://www.google-melange.com
 .. _`The Honeynet Project`: http://www.honeynet.org
+.. _`Malwr.com`: http://malwr.com
 
 Use Cases
 =========

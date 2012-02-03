@@ -35,7 +35,6 @@ Some Python libraries are optionals and provide some additional features to
 Cuckoo guest component. They include:
 
     * `Python Image Library`_: it's used for taking screenshots of Windows desktop during the analysis.
-    * `WinAppDbg`_: it's used by the :doc:`tracer package <../../usage/packages>` to dump assembly instructions.
 
 They are not strictly required by Cuckoo to work properly, but you are encouraged
 to install them if you want to have access to all features available. Make sure
@@ -43,7 +42,6 @@ to download and install the proper packages according to your Python version.
 
 .. _`official website`: http://www.python.org/getit/
 .. _`Python Image Library`: http://www.pythonware.com/products/pil/
-.. _`WinAppDbg`: http://winappdbg.sourceforge.net/
 
 Additional Softwares
 ====================
