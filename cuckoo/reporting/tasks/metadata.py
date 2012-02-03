@@ -66,22 +66,24 @@ class Report(BaseObserver):
         # Subject
         self.objects.add_file(self.createFileObject(self.results['file']))
         # Dropped files
-        for f in self.results['dropped']:
-            found = False
-            for exist in self.objects.get_file():
-                if exist.get_md5() == f['md5']:
-                    found = True
-            if not found:        
-                self.objects.add_file(self.createFileObject(f))
+        if len(self.results['dropped']) > 0:
+            for f in self.results['dropped']:
+                found = False
+                for exist in self.objects.get_file():
+                    if exist.get_md5() == f['md5']:
+                        found = True
+                if not found:        
+                    self.objects.add_file(self.createFileObject(f))
         # URI objects
         if self.results['network']:
-            for req in self.results['network']['http']:
-                found = False
-                for exist in self.objects.get_uri():
-                    if exist.get_id() == req['uri']:
-                        found = True
-                if not found:
-                    self.objects.add_uri(self.createUriObject(req))
+            if len(self.results['network']['http']) > 0: 
+                for req in self.results['network']['http']:
+                    found = False
+                    for exist in self.objects.get_uri():
+                        if exist.get_id() == req['uri']:
+                            found = True
+                    if not found:
+                        self.objects.add_uri(self.createUriObject(req))
             
     def createFileObject(self, f):
         """

@@ -109,10 +109,12 @@ class Report(BaseObserver):
         for process in self.results['behavior']['processes']:
             self.createActionAPI(process)      
         # Network
-        for pkt in self.results['network']['udp']:
-            self.createActionNet(pkt)
-        for pkt in self.results['network']['tcp']:
-            self.createActionNet(pkt)
+        if len(self.results['network']['udp']) > 0:
+            for pkt in self.results['network']['udp']:
+                self.createActionNet(pkt)
+        if len(self.results['network']['tcp']) > 0:
+            for pkt in self.results['network']['tcp']:
+                self.createActionNet(pkt)
             
     def createActionNet(self, packet):
         act = maec.ActionType(
