@@ -22,7 +22,8 @@ so please refer to the `official documentation`_ for it.
     .. note::
 
         For analysis purposes you are recommended to use Windows XP Service Pack
-        3.
+        3, but Cuckoo Sandbox also proved to work with Windows 7 with User
+        Access Control disabled.
 
 When creating the virtual machine, Cuckoo doesn't require any specific
 configuration. You can choose the options that best fit your needs.

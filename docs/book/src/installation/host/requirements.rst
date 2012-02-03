@@ -28,6 +28,9 @@ On Ubuntu you can install all of them with the following command::
 
 On different distributions refer to the provided official homepage to retrieve
 other installers or sources.
+Please notice that there are two libmagic Python bindings available on the
+Internet: while we highly encourage you to use the official ones provided by the
+link from this guide, Cuckoo Sandbox should be able to work with both of them.
 
 Other optional libraries, which do not affect Cuckoo's execution, include:
 

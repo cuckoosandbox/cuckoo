@@ -31,5 +31,4 @@ Cuckoo provides some default analysis packages which include:
     * ``php``: used to analyze PHP scripts.
     * ``ie``: used to analyze Internet Explorer while opening the given URL.
     * ``firefox``: used to analyze Mozilla Firefox while opening the given URL.
-    * ``tracer``: used to trace assembly instructions performed by the given file.
 

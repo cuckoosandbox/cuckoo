@@ -327,34 +327,3 @@ Following is a list of available modules and the contained functions.
             print "Process monitoring started successfully!"
         else:
             print "Process monitoring failed!"
-
-``cuckoo.trace``
-----------------
-
-* **Function** ``cuckoo_trace()``:
-
-    **Prototype**:
-
-    .. code-block:: python
-
-        def cuckoo_trace(pid = -1)
-
-    **Description**: instructs Cuckoo to trace assembly instructions from the
-    specified process.
-
-    **Parameter** ``pid``: ID of the process to monitor.
-
-    **Return**: returns True if tracing was successful, otherwise False.
-
-    **Usage Example**:
-
-    .. code-block:: python
-        :linenos:
-
-        from cuckoo.trace import cuckoo_trace
-
-        if cuckoo_trace(pid):
-            print "Process traced successfully!"
-        else:
-            print "Process trace failed!"
-

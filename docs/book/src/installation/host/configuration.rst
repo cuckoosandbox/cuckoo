@@ -43,6 +43,9 @@ Following is the analysis section::
     watchdog_timeout = 600
     # Specify here the path where analysis results shall be stored.
     results_path = analysis/
+    # Enable or disable this option to instruct Cuckoo to delete the original file
+    # submitted for the analysis. [on/off]
+    delete_original = on
 
 This section defines two analysis time boundaries:
 
@@ -59,6 +62,10 @@ therefore need to be killed. When this happens, you'll most likely lose any
 analysis results from that run.
 
 The **results_path** option defines where to store the analysis results.
+
+The **delete_original** option is very self-explainatory: when enabled Cuckoo
+will delete the submitted file from the original path and will just keep a copy
+along with the analysis results.
 
 Processing
 ----------
@@ -176,7 +183,7 @@ An example of such section is::
 
     [cuckoo1]
     name = Cuckoo1
-    username = Me
+    username = User
     password = cuckoo
     # Please notice that the shared folder name must coincide with the current
     # virtual machine id, which is the name you assigned between the square
@@ -211,13 +218,13 @@ If for example you defined more than one virtual machine in the *enabled* option
 
     [cuckoo1]
     name = Cuckoo1
-    username = Me
+    username = User
     password = cuckoo
     share = shares/cuckoo1
 
     [cuckoo2]
     name = Cuckoo2
-    username = Me
+    username = User
     password = cuckoo
     share = shares/cuckoo2
 
@@ -239,6 +246,9 @@ It contains the following section::
     jsondump = on
     reporttxt = on
     reporthtml = on
+    metadata = on
+    maec = on
+    pickled = on
 
 By setting those option to *on* or *off* you enable or disable the generation
 of such reports.

@@ -1,14 +1,44 @@
                                   CHANGELOG
                                   
-Cuckoo Sandbox 0.3.1
-====================
+Cuckoo Sandbox 0.3.2 (2012-02-03)
+=================================
+
+* Introduced MAEC analysis report.
+* Introduced MAEC metadata report.
+* Introduced Python pickled report.
+* Added base64 encoded screenshots to CuckooDict.
+* Added screenshots to HTML report.
+* Added static analysis Python modules.
+* Added static analysis to HTML report.
+* Added list of unique involved hosts to HTML report.
+* Added forced restore of snapshot at startup before checking if a virtual machine is in a valid state.
+* Added forced restore of snapshots at Cuckoo's termination.
+* Improved logging capabilities.
+* Added invocation of processor.py also at analysis failures.
+* Added IPv6 support to PCAP processing.
+* Added option to delete original files after submission.
+* Added folder for additional files and data to drop.
+* Added API category and parent ID to raw behavioral logs entries.
+* Removed distorm3.dll as a system dependency.
+* Fixed issue with dumped files' names.
+* Fixed bug in web server's search functionality.
+* Fixed generation of analysis duration time and timestamps.
+* Fixed bug in acquisition of a user-specified virtual machine.
+* Fixed PHP analysis package.
+* Fixed processing of screenshots and refactored their file names to a 3 digit format.
+* Fixed bugs on encoding special characters in analysis data and network packets.
+* Decreased default analysis timeout.
+* Removed instructions trace functionalities and analysis package.
+
+Cuckoo Sandbox 0.3.1 (2011-12-28)
+=================================
 
 * Reintroduced an older version of cmonitor, in order to address troubles encountered in 0.3 release.
 * Fixed a bug in files dump caused by invalid/not regular files such as named pipes.
 * Disabled suspended mode in browsers' packages.
 
-Cuckoo Sandbox 0.3
-==================
+Cuckoo Sandbox 0.3 (2011-12-27)
+===============================
 
  * Introduced minimal web server with web interface to browse through the analysis reports.
  * Added a reporting engine, configurable via reporting.conf, which supports reporting modules.
@@ -35,12 +65,12 @@ Cuckoo Sandbox 0.3
  * Added changelog file.
  * Some minor fixes.
 
-Cuckoo Sandbox 0.2
-==================
+Cuckoo Sandbox 0.2 (2011-11-02)
+===============================
 
 First stable release, completely refactored.
 
-Cuckoo Sandbox 0.1 beta
-=======================
+Cuckoo Sandbox 0.1 beta (2011-02-05)
+====================================
 
 First public beta release.

@@ -26,3 +26,6 @@ Using the GUI, you should see something similar to this:
     .. figure:: ../../_images/screenshots/shared_folders.png
         :align: center
 
+When using the GUI, remember to check the option to make the shared folders
+permanent.
+
