@@ -28,7 +28,7 @@ class Report(BaseObserver):
     Generates a MAEC Malware Metadata Sharing report.
     """
         
-    def update(self, results):    
+    def update(self, results):
         # Save results    
         self.results = results       
         # Reporting steps
@@ -66,7 +66,7 @@ class Report(BaseObserver):
         # Subject
         self.objects.add_file(self.createFileObject(self.results['file']))
         # Dropped files
-        if len(self.results['dropped']) > 0:
+        if self.results.has_key('dropped') and isinstance(self.results['dropped'], list):
             for f in self.results['dropped']:
                 found = False
                 for exist in self.objects.get_file():
@@ -75,8 +75,8 @@ class Report(BaseObserver):
                 if not found:        
                     self.objects.add_file(self.createFileObject(f))
         # URI objects
-        if self.results['network']:
-            if len(self.results['network']['http']) > 0: 
+        if self.results.has_key('network') and isinstance(self.results['network'], dict):
+            if self.results['network'].has_key('http') and isinstance(self.results['network']['http'], list): 
                 for req in self.results['network']['http']:
                     found = False
                     for exist in self.objects.get_uri():
@@ -139,38 +139,40 @@ class Report(BaseObserver):
                                                                     dst = "file[@id='%s']" % file['md5']
                                                                     )
                                                 )
-        # DNS requests
-        for req in self.objects.get_uri():
-            # Get IP
-            if len(self.results['network']['dns']) > 0:
-                for res in self.results['network']['dns']: 
-                    if res['hostname'] == req.get_hostname():
-                        ip = res['ip']
-                        # Check if obj exist
-                        found = None
-                        for obj in self.objects.get_ip():
-                            if ip == obj.get_startAddress().get_valueOf_():
-                                found = obj
-                        # Create obj
-                        if found is None:
-                            found = self.createIpObject(ip)
-                            self.objects.add_ip(found)
-                        # Create relation
-                        self.relationships.add_relationship(self.createRelation(
-                                                                                action = 'isServerOfService', 
-                                                                                src = "ip[@id='%s']" % found.id, 
-                                                                                dst = "uri[@id='%s']" % req.id
-                                                                                )
-                                                            )
-        # HTTP requests
-        if len(self.results['network']['http']) > 0:
-            for req in self.results['network']['http']:
-                self.relationships.add_relationship(self.createRelation(
-                                                                        action = 'contactedBy',
-                                                                        src = "file[@id='%s']" % self.results['file']['md5'],
-                                                                        dst = "uri[@id='%s']" % req['uri']
-                                                                        )
-                                                    )
+        # Network
+        if self.results.has_key('network') and isinstance(self.results['network'], dict):
+            # DNS requests
+            for req in self.objects.get_uri():
+                # Get IP
+                if self.results['network'].has_key('dns') and isinstance(self.results['network']['dns'], list):
+                    for res in self.results['network']['dns']: 
+                        if res['hostname'] == req.get_hostname():
+                            ip = res['ip']
+                            # Check if obj exist
+                            found = None
+                            for obj in self.objects.get_ip():
+                                if ip == obj.get_startAddress().get_valueOf_():
+                                    found = obj
+                            # Create obj
+                            if found is None:
+                                found = self.createIpObject(ip)
+                                self.objects.add_ip(found)
+                            # Create relation
+                            self.relationships.add_relationship(self.createRelation(
+                                                                                    action = 'isServerOfService', 
+                                                                                    src = "ip[@id='%s']" % found.id, 
+                                                                                    dst = "uri[@id='%s']" % req.id
+                                                                                    )
+                                                                )
+            # HTTP requests
+            if self.results['network'].has_key('http') and isinstance(self.results['network']['http'], list):
+                for req in self.results['network']['http']:
+                    self.relationships.add_relationship(self.createRelation(
+                                                                            action = 'contactedBy',
+                                                                            src = "file[@id='%s']" % self.results['file']['md5'],
+                                                                            dst = "uri[@id='%s']" % req['uri']
+                                                                            )
+                                                        )
                 
     def createRelation(self, action, src, dst):
         """
