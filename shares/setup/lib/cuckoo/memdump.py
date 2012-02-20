@@ -69,11 +69,11 @@ def memory_dump():
         ## default value memdump = on
         memdump_enable = analyser_config.getboolean("Analysis", "memdump")
         ## default value memdump_exec = extensions\_fdpro.exe
-	memdump_exec = analyser_config.get("Analysis", "memdump_exec")
+        memdump_exec = analyser_config.get("Analysis", "memdump_exec")
         ## default value memdump_exec_args = 
-	memdump_exec_args = analyser_config.get("Analysis", "memdump_exec_args")
+        memdump_exec_args = analyser_config.get("Analysis", "memdump_exec_args")
         ## default value memdump_target_file = memdump.bin
-	memdump_target_file = analyser_config.get("Analysis", "memdump_target_file")
+        memdump_target_file = analyser_config.get("Analysis", "memdump_target_file")
     except:
         ## Incase people have not enabled this module or completed the configuration, 
         ## fail gracefully and set safe default.
