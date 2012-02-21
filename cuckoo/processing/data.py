@@ -41,7 +41,7 @@ class CuckooDict:
         self._logs_path     = os.path.join(analysis_path, "logs")
         self._dropped_path  = os.path.join(analysis_path, "files")
         self._shots_path    = os.path.join(analysis_path, "shots")
-        self._trace_path    = os.path.join(analysis_path, "trace")
+        self._additional_path    = os.path.join(analysis_path, "additional")
 
     def _get_dropped(self):
         """

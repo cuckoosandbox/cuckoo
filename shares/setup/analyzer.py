@@ -511,7 +511,7 @@ def main(config_path):
         package = __import__(package_name,
                              globals(),
                              locals(),
-                             ['cuckoo_run'],
+                             ['cuckoo_run', 'cuckoo_check', 'cuckoo_finish'],
                              -1)
         log.info("Analysis package imported from \"%s\"." % package_name)
     except ImportError, why:
