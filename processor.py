@@ -18,15 +18,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
+import os
 import sys
+import logging
 from optparse import OptionParser
 
 from cuckoo.processing.data import CuckooDict
 from cuckoo.reporting.reporter import ReportProcessor
 from cuckoo.logging.crash import crash
 
+def init_logging(analysis_path = None):
+    root = logging.getLogger()
+    formatter = logging.Formatter('[%(asctime)s] [%(name)s] %(levelname)s: %(message)s')
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    root.addHandler(stream_handler)
+    
+    if analysis_path:
+        if os.path.exists(analysis_path):
+            file_handler = logging.FileHandler(os.path.join(analysis_path, "processor.log"))
+            file_handler.setFormatter(formatter)
+            root.addHandler(file_handler)
+    
+    root.setLevel(logging.DEBUG)
+    
+    return True
+
 def main():
     analysis_path = None
+    log = logging.getLogger("Processor")
 
     parser = OptionParser(usage="usage: %prog [options] analysispath")
     parser.add_option("-m", "--message",
@@ -50,6 +70,16 @@ def main():
         except IndexError, why:
             pass
 
+    init_logging(analysis_path)
+    log.info("Post-analysis processing started.")
+    
+    if not analysis_path:
+        log.warning("No analysis results path specified.")
+    if not os.path.exists(analysis_path):
+        log.error("The analysis results folder at path \"%s\" does not exist." % analysis_path)
+    else:
+        log.info("Starting processing of results at path \"%s\"." % analysis_path)
+
     if options.message:
         print options.message
 
@@ -59,11 +89,13 @@ def main():
     if analysis_path:
         # Generate reports out of abstracted analysis results.
         ReportProcessor(analysis_path).report(CuckooDict(analysis_path).process())
+    
+    log.info("Post-analysis processing completed.")
 
     return True
 
 if __name__ == "__main__": 
-    try:
+    try:        
         main()
     except KeyboardInterrupt:
         print "User aborted."
@@ -71,4 +103,3 @@ if __name__ == "__main__":
         pass
     except:
         crash()
-

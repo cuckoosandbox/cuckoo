@@ -19,6 +19,7 @@
 
 import os
 import sys
+import logging
 import hashlib
 import binascii
 
@@ -113,12 +114,18 @@ class File:
         Generates the ssdeep fuzzy hash of the file.
         @return: ssdeep fuzzy hash of the file
         """
+        log = logging.getLogger("Processor.File")
+        
         if not IS_SSDEEP:
+            log.warning("Ssdeep Python bindings are not installed, " \
+                        "skipping fuzzy hash of file \"%s\"." % self.file_path)
             return None
 
         try:
             return ssdeep.ssdeep().hash_file(self.file_path)
-        except:
+        except Exception, why:
+            log.warning("Something went wrong while generating ssdeep hash " \
+                        "for file at path \"%s\": %s" % (self.file_path, why))
             return None
 
     def _get_type(self):
@@ -126,22 +133,36 @@ class File:
         Retrieves the libmagic type of the file.
         @return: file type
         """
+        log = logging.getLogger("Processor.File")
+        
         if not IS_MAGIC:
+            log.warning("Libmagic Python bindings are not installed, " \
+                        "skipping file type of file \"%s\"." % self.file_path)
             return None
 
         try:
             ms = magic.open(magic.MAGIC_NONE)
             ms.load()
-            return ms.buffer(self.file_data)
+            file_type = ms.buffer(self.file_data)
         except:
-            return None
+            try:
+                file_type = magic.from_buffer(self.file_data)
+            except Exception, why:
+                log.warning("Something went wrong while retrieving magic for file \"%s\": %s"
+                            % (self.file_path, why))
+                return None
+        
+        return file_type
 
     def process(self):
         """
         Generates file information dictionary.
         @return: dictionary containing all the file's information
         """
+        log = logging.getLogger("Processor.File")
+        
         if not os.path.exists(self.file_path):
+            log.error("File at path \"%s\" does not exist." % self.file_path)
             return None
 
         self.file_data = open(self.file_path, "rb").read()
@@ -149,7 +170,7 @@ class File:
         infos = {}
         infos["name"]   = self._get_name()
         infos["size"]   = self._get_size()
-        infos["crc32"]    = self._get_crc32()
+        infos["crc32"]  = self._get_crc32()
         infos["md5"]    = self._get_md5()
         infos["sha1"]   = self._get_sha1()
         infos["sha256"] = self._get_sha256()

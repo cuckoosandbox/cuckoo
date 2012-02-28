@@ -248,4 +248,3 @@ class PortableExecutable:
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.has_key('dll') and x['dll'] is not None ])
 
         return results
-

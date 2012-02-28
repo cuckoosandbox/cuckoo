@@ -20,6 +20,8 @@
 import os
 import sys
 import csv
+import logging
+
 from cuckoo.processing.convert import convert_to_printable
 
 class ParseBehaviorLog:
@@ -46,6 +48,7 @@ class ParseBehaviorLog:
         """
         call = {}
         arguments = []
+        log = logging.getLogger("Processor.ParseBehaviorLog")
 
         # Try to acquire the first fixed columns.
         try:
@@ -58,6 +61,7 @@ class ParseBehaviorLog:
             status_value = row[6]   # Success or Failure?
             return_value = row[7]   # Value returned by the function.
         except IndexError, why:
+            log.warning("Unable to parse analysis log row: %s" % why)
             return False
 
         if not self.process_id:
@@ -74,13 +78,15 @@ class ParseBehaviorLog:
 
         # Now walk through the remaining columns, which will contain API
         # arguments.
-        for index in range(6, len(row)):
+        for index in range(8, len(row)):
             argument = {}
 
             # Split the argument name with its value based on the separator.
             try:                
                 (arg_name, arg_value) = row[index].split("->")
             except ValueError, why:
+                print row[index]
+                log.warning("Unable to parse analysis row argument: %s" % why)
                 continue
 
             argument["name"]  = arg_name
@@ -115,7 +121,11 @@ class ParseBehaviorLog:
         """
         Processes the specified process log file.
         """
+        log = logging.getLogger("Processor.ParseBehaviorLog")
+        
         if not os.path.exists(self._log_path):
+            log.error("Analysis logs folder does not exist at path \"%s\"."
+                      % self._log_path)
             return False
 
         # Open current file with the CSV reader.
@@ -126,7 +136,8 @@ class ParseBehaviorLog:
             for row in reader:
                 self._parse(row)
         except csv.Error, why:
-            pass
+            log.warning("Something went wrong while parsing analysis log: %s"
+                        % why)
 
         return True
 
@@ -148,13 +159,17 @@ class BehaviorAnalysis:
         @return: dictionary containing the abstracted analysis results
         """
         results = []
+        log = logging.getLogger("Processor.BehaviorAnalysis")
 
         # Check if the specified directory exists.
         if not os.path.exists(self._logs_path):
+            log.error("Analysis results folder does not exist at path \"%s\"."
+                      % self._logs_path)
             return results
 
         # Check if the specified directory contains any file.
         if len(os.listdir(self._logs_path)) == 0:
+            log.error("Analysis results folder does not contain any file.")
             return results
 
         # Walk through all the files.
@@ -351,4 +366,3 @@ class ProcessTree:
         self.populate(self.processes[0])
 
         return self.proctree
-

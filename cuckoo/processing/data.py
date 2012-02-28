@@ -23,6 +23,7 @@ import sys
 import time
 import shutil
 import base64
+import logging
 from datetime import datetime
 
 from cuckoo.config.constants import VERSION
@@ -34,13 +35,13 @@ from cuckoo.processing.analysis import BehaviorAnalysis, BehaviorSummary, Proces
 
 class CuckooDict:
     def __init__(self, analysis_path):
-        self._analysis_path = analysis_path
-        self._config_path   = os.path.join(analysis_path, "analysis.conf")
-        self._log_path      = os.path.join(analysis_path, "analysis.log")
-        self._pcap_path     = os.path.join(analysis_path, "dump.pcap")
-        self._logs_path     = os.path.join(analysis_path, "logs")
-        self._dropped_path  = os.path.join(analysis_path, "files")
-        self._shots_path    = os.path.join(analysis_path, "shots")
+        self._analysis_path      = analysis_path
+        self._config_path        = os.path.join(analysis_path, "analysis.conf")
+        self._log_path           = os.path.join(analysis_path, "analysis.log")
+        self._pcap_path          = os.path.join(analysis_path, "dump.pcap")
+        self._logs_path          = os.path.join(analysis_path, "logs")
+        self._dropped_path       = os.path.join(analysis_path, "files")
+        self._shots_path         = os.path.join(analysis_path, "shots")
         self._additional_path    = os.path.join(analysis_path, "additional")
 
     def _get_dropped(self):
@@ -100,14 +101,19 @@ class CuckooDict:
         Process the analysis results and generate a dictionary containing all
         abstracted information.
         """
+        log = logging.getLogger("Processor.CuckooDict")
+        
         if not os.path.exists(self._analysis_path):
-            print "Analysis not found, check analysis path."
+            log.error("Analysis results folder does not exist at path \"%s\"."
+                      % self._analysis_path)
             return None
 
         config = AnalysisConfig(self._config_path)
         file_path = os.path.join(self._analysis_path, config.target)
 
+        # This is the root dictionary.
         results = {}
+        
         results["info"] = {}
         results["info"]["version"] = VERSION
         results["info"]["started"] = datetime.fromtimestamp(config.started).strftime("%Y-%m-%d %H:%M:%S")

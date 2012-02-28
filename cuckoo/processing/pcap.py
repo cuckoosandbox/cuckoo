@@ -21,6 +21,7 @@ import os
 import re
 import sys
 import socket
+import logging
 from urlparse import urlunparse
 
 from cuckoo.processing.convert import convert_to_printable
@@ -177,13 +178,18 @@ class Pcap:
         Process PCAP.
         @return: dict with network analysis data
         """
+        log = logging.getLogger("Processor.Pcap")
+        
         if not IS_DPKT:
+            log.error("Python DPKT is not installed, aborting PCAP analysis.")
             return None
 
         if not os.path.exists(self.filepath):
+            log.error("The PCAP file does not exist at path \"%s\"." % self.filepath)
             return None
 
         if os.path.getsize(self.filepath) == 0:
+            log.error("The PCAP file at path \"%s\" is empty." % self.filepath)
             return None
 
         file = open(self.filepath, "rb")
@@ -191,6 +197,7 @@ class Pcap:
         try:
             pcap = dpkt.pcap.Reader(file)
         except dpkt.dpkt.NeedData:
+            log.error("Unable to read PCAP file at path \"%s\"." % self.filepath)
             return None
 
         for ts, buf in pcap:
