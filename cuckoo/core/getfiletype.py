@@ -62,5 +62,7 @@ def get_filetype(file_path):
         return "exe"
     elif re.match("PDF", file_type):
         return "pdf"
+    elif re.search("HTML", file_type):
+        return "html"
     else:
         return file_type
