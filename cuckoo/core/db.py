@@ -21,20 +21,21 @@ import os
 import sys
 import logging
 
-from cuckoo.config.config import CuckooConfig
+from cuckoo.config.cuckooconfig import CuckooConfig
 from cuckoo.config.constants import CUCKOO_DB_FILE
 
 try:
     import sqlite3
 except ImportError:
-    sys.stderr.write("ERROR: Unable to locate Python SQLite3 module. " \
-                     "Please verify your installation. Exiting...\n")
-    sys.exit(-1)
+    sys.stderr.write("Unable to locate Python SQLite3 module, " \
+                     "please verify your installation. Abort.\n")
+    raise SystemExit
 
 class CuckooDatabase:
     """
     Database abstraction layer.
     """
+
     def __init__(self):
         log = logging.getLogger("Database.Init")
         self._conn = None
@@ -62,7 +63,7 @@ class CuckooDatabase:
 
     def _generate(self):
         """
-        Creates database structure in a SQLite file.
+        Generate SQLite database file.
         """
         if os.path.exists(CUCKOO_DB_FILE):
             return False
@@ -79,42 +80,42 @@ class CuckooDatabase:
         conn = sqlite3.connect(CUCKOO_DB_FILE)
         cursor = conn.cursor()
 
-        cursor.execute("CREATE TABLE queue (\n"                            \
-                       "  id INTEGER PRIMARY KEY,\n"                       \
-                       "  md5 TEXT DEFAULT NULL,\n"                        \
-                       "  target TEXT NOT NULL,\n"                         \
-                       "  timeout INTEGER DEFAULT NULL,\n"                 \
-                       "  priority INTEGER DEFAULT 0,\n"                   \
-                       "  added_on DATE DEFAULT CURRENT_TIMESTAMP,\n"      \
-                       "  completed_on DATE DEFAULT NULL,\n"               \
-                       "  package TEXT DEFAULT NULL,\n"                    \
-                       "  lock INTEGER DEFAULT 0,\n"                       \
+        cursor.execute("CREATE TABLE queue (\n"                       \
+                       "  id INTEGER PRIMARY KEY,\n"                  \
+                       "  md5 TEXT DEFAULT NULL,\n"                   \
+                       "  target TEXT NOT NULL,\n"                    \
+                       "  timeout INTEGER DEFAULT NULL,\n"            \
+                       "  priority INTEGER DEFAULT 0,\n"              \
+                       "  added_on DATE DEFAULT CURRENT_TIMESTAMP,\n" \
+                       "  completed_on DATE DEFAULT NULL,\n"          \
+                       "  package TEXT DEFAULT NULL,\n"               \
+                       "  lock INTEGER DEFAULT 0,\n"                  \
                        # Status possible values:
                        #   0 = not completed
                        #   1 = completed successfully
                        #   2 = error occurred.
-                       "  status INTEGER DEFAULT 0,\n"                     \
-                       "  custom TEXT DEFAULT NULL,\n"                      \
-                       "  vm_id TEXT DEFAULT NULL\n"                       \
+                       "  status INTEGER DEFAULT 0,\n"                \
+                       "  custom TEXT DEFAULT NULL,\n"                \
+                       "  vm_id TEXT DEFAULT NULL\n"                  \
                        ");")
 
         return True
 
     def _get_task_dict(self, row):
         try:
-            task = {}
-            task["id"] = row[0]
-            task["md5"] = row[1]
-            task["target"] = row[2]
-            task["timeout"] = row[3]
-            task["priority"] = row[4]
-            task["added_on"] = row[5]
+            task                 = {}
+            task["id"]           = row[0]
+            task["md5"]          = row[1]
+            task["target"]       = row[2]
+            task["timeout"]      = row[3]
+            task["priority"]     = row[4]
+            task["added_on"]     = row[5]
             task["completed_on"] = row[6]
-            task["package"] = row[7]
-            task["lock"] = row[8]
-            task["status"] = row[9]
-            task["custom"] = row[10]
-            task["vm_id"] = row[11]
+            task["package"]      = row[7]
+            task["lock"]         = row[8]
+            task["status"]       = row[9]
+            task["custom"]       = row[10]
+            task["vm_id"]        = row[11]
 
             return task
         except Exception, why:
@@ -122,7 +123,7 @@ class CuckooDatabase:
 
     def add_task(self, target, md5 = None, timeout = None, package = None, priority = None, custom = None, vm_id = None):
         """
-        Adds a new task to the database.
+        Add a new task to the database.
         @param target: database file path
         @param timeout: analysis timeout
         @param package: analysis package
@@ -153,7 +154,7 @@ class CuckooDatabase:
 
     def get_task(self):
         """
-        Gets a task from pending queue.
+        Acquire a task from the queue.
         """
         log = logging.getLogger("Database.GetTask")
 
@@ -181,8 +182,8 @@ class CuckooDatabase:
 
     def lock(self, task_id):
         """
-        Locks a task.
-        @param task_id: task id 
+        Lock a task.
+        @param task_id: task ID 
         """
         log = logging.getLogger("Database.Lock")
 
@@ -218,8 +219,8 @@ class CuckooDatabase:
 
     def unlock(self, task_id):
         """
-        Unlocks a task.
-        @param task_id: task id
+        Unlock a task.
+        @param task_id: task ID
         """ 
         log = logging.getLogger("Database.Unlock")
 
@@ -256,9 +257,9 @@ class CuckooDatabase:
 
     def complete(self, task_id, success = True):
         """
-        Marks a task as ended.
-        @param task_id: completed task id
-        @param success: if task completed successfully
+        Mark a task as completed.
+        @param task_id: completed task ID
+        @param success: boolean representing the analysis sucess or failure
         """ 
         log = logging.getLogger("Database.Complete")
 
@@ -304,7 +305,7 @@ class CuckooDatabase:
 
     def search_tasks(self, md5):
         """
-        Searches tasks by MD5.
+        Search tasks by specified MD5.
         @param md5: MD5 hash of the analyzed files to search for
         @return: list of tasks matching the parameters
         """
@@ -333,7 +334,7 @@ class CuckooDatabase:
 
     def completed_tasks(self, limit = None):
         """
-        Retrieves a list of all completed analysis.
+        Retrieve a list of all completed analysis.
         @return: list of all completed tasks
         """
 

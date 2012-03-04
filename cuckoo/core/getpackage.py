@@ -17,20 +17,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-from datetime import datetime
+import re
 
-def convertTime(timestamp):
-    """
-    Parse a datatime string and returns a datetime in iso format.
-    @param timestamp: timestamp string
-    @return: ISO datetime
-    """  
-    if hasattr(datetime, 'strptime'):
-        # python 2.6
-        strptime = datetime.strptime
+def get_package(file_type):
+    if re.search("DLL", file_type):
+        return "dll"
+    elif re.search("PE32", file_type) or re.search("MS-DOS", file_type):
+        return "exe"
+    elif re.match("PDF", file_type):
+        return "pdf"
+    elif re.search("HTML", file_type):
+        return "html"
     else:
-        # python 2.4 equivalent
-        import time
-        strptime = lambda date_string, format: datetime(*(time.strptime(date_string, format)[0:6]))  
-    return strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat()
-
+        return None

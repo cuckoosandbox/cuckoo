@@ -25,9 +25,8 @@ import urllib2
 from optparse import OptionParser
 
 from cuckoo.logging.crash import crash
-from cuckoo.logging.colors import *
 from cuckoo.core.db import CuckooDatabase
-from cuckoo.config.config import CuckooConfig
+from cuckoo.config.cuckooconfig import CuckooConfig
 
 DESTINATION = "/tmp/"
 
@@ -35,13 +34,13 @@ def filename_from_url(url):
     return url.split('/')[-1].split('#')[0].split('?')[0]
 
 def download(url):
-    print(bold(cyan("INFO")) + ": Downloading URL %s" % url)
+    print("INFO: Downloading URL %s" % url)
 
     try:
         url_handle = urllib2.urlopen(url)
         binary_data = url_handle.read()
     except Exception, why:
-        print(bold(red("ERROR")) + ": Unable to download file: %s" % why)
+        print("ERROR: Unable to download file: %s" % why)
         return False
 
     filename = filename_from_url(url)
@@ -52,7 +51,7 @@ def download(url):
         f.write(binary_data)
         f.close()
     except Exception, why:
-        print(bold(red("ERROR")) + ": Unable to store file: %s" % why)
+        print("ERROR: Unable to store file: %s" % why)
         return False
 
     return dest
@@ -124,7 +123,7 @@ def main():
         # If the user didn't specify any analysis package, I'll use the default
         # Internet Explorer package.
         if not options.package:
-            print(bold(yellow("NOTICE")) + ": You submitted an URL to be analyzed " \
+            print("NOTICE: You submitted an URL to be analyzed " \
                   "but didn't specify any package, I'm gonna user the default " \
                   "Internet Explorer package.")
             options.package = "ie"
@@ -133,7 +132,7 @@ def main():
 
     # Check if the target file actually exists, otherwise terminate script.
     if not os.path.exists(target):
-        print(bold(red("ERROR")) + ": The target file \"%s\" does not exist." % target)
+        print("ERROR: The target file \"%s\" does not exist." % target)
         return False
 
     try:
@@ -152,13 +151,13 @@ def main():
                               options.custom,
                               options.machine)
         if not task_id:
-            print(bold(red("ERROR")) + ": Unable to add task to database.")
+            print("ERROR: Unable to add task to database.")
             return False
         else:
-            print(bold(cyan("DONE")) + ": Task successfully added with ID %d."
+            print("DONE: Task successfully added with ID %d."
                   % task_id)
     except Exception, why:
-        print(bold(red("ERROR")) + ": Unable to add new task: %s" % why)
+        print("ERROR: Unable to add new task: %s" % why)
         return False
 
     return True
@@ -172,4 +171,3 @@ if __name__ == "__main__":
         pass
     except:
         crash()
-

@@ -17,12 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
+# Version
+CUCKOO_VERSION = "v0.3.3-dev"
+
+# Paths
 CUCKOO_LOG_FILE = "log/cuckoo.log"
 CUCKOO_DB_FILE = "db/cuckoo.db"
 CUCKOO_CONFIG_FILE = "conf/cuckoo.conf"
-REPORTING_CONF_FILE = "conf/reporting.conf"
-VERSION = "v0.3.2"
-ML = "cuckoo@public.honeynet.org"
+CUCKOO_REPORTING_CONFIG_FILE = "conf/reporting.conf"
 
 # Errors
 CUCKOO_ERROR_DUPLICATE_TASK = "Cuckoo Operational Error: task already exists"

@@ -17,20 +17,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-import sys
+from datetime import datetime
 
-from cuckoo.config.constants import CUCKOO_VERSION
+def convert_time(timestamp):
+    """
+    Parse a datatime string and returns a datetime in iso format.
+    @param timestamp: timestamp string
+    @return: ISO datetime
+    """  
+    if hasattr(datetime, 'strptime'):
+        # python 2.6
+        strptime = datetime.strptime
+    else:
+        # python 2.4 equivalent
+        import time
+        strptime = lambda date_string, format: datetime(*(time.strptime(date_string, format)[0:6]))  
+    return strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat()
 
-def logo():
-    """
-    Prints Cuckoo Sandbox logo.
-    """
-    sys.stdout.write("                     _                  \n")
-    sys.stdout.write("    ____ _   _  ____| |  _ ___   ___    \n")
-    sys.stdout.write("   / ___) | | |/ ___) |_/ ) _ \\ / _ \\ \n")
-    sys.stdout.write("  ( (___| |_| ( (___|  _ ( |_| | |_| |  \n")
-    sys.stdout.write("   \\____)____/ \\____)_| \_)___/ \\___/ " + CUCKOO_VERSION + "\n")
-    sys.stdout.write("\n")
-    sys.stdout.write(" www.cuckoobox.org\n")
-    sys.stdout.write(" Copyright (C) 2010-2012\n")
-    sys.stdout.write("\n")

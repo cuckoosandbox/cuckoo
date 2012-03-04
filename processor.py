@@ -75,7 +75,7 @@ def main():
     
     if not analysis_path:
         log.warning("No analysis results path specified.")
-    if not os.path.exists(analysis_path):
+    elif not os.path.exists(analysis_path):
         log.error("The analysis results folder at path \"%s\" does not exist." % analysis_path)
     else:
         log.info("Starting processing of results at path \"%s\"." % analysis_path)
@@ -95,7 +95,7 @@ def main():
     return True
 
 if __name__ == "__main__": 
-    try:        
+    try:
         main()
     except KeyboardInterrupt:
         print "User aborted."

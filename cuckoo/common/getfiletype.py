@@ -18,7 +18,6 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 import os
-import re
 import sys
 import logging
 
@@ -27,9 +26,9 @@ try:
 except ImportError, why:
     sys.stderr.write("ERROR: Unable to locate Python libmagic bindings. " \
                      "Please verify your installation. Exiting...\n")
-    sys.exit(-1)
+    raise SystemExit
 
-def get_filetype(file_path):
+def get_file_type(file_path):
     """
     Get file format identifier based on the type of the given file.
     @param file_path: file path
@@ -55,14 +54,5 @@ def get_filetype(file_path):
         except Exception, why:
             log.error("Something went wrong while retrieving magic: %s" % why)
             return None
-
-    if re.search("DLL", file_type):
-        return "dll"
-    elif re.search("PE32", file_type) or re.search("MS-DOS", file_type):
-        return "exe"
-    elif re.match("PDF", file_type):
-        return "pdf"
-    elif re.search("HTML", file_type):
-        return "html"
-    else:
-        return file_type
+    
+    return file_type

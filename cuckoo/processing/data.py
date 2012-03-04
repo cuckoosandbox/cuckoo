@@ -26,7 +26,7 @@ import base64
 import logging
 from datetime import datetime
 
-from cuckoo.config.constants import VERSION
+from cuckoo.config.constants import CUCKOO_VERSION
 from cuckoo.processing.file import File
 from cuckoo.processing.pcap import Pcap
 from cuckoo.processing.config import AnalysisConfig
@@ -115,7 +115,7 @@ class CuckooDict:
         results = {}
         
         results["info"] = {}
-        results["info"]["version"] = VERSION
+        results["info"]["version"] = CUCKOO_VERSION
         results["info"]["started"] = datetime.fromtimestamp(config.started).strftime("%Y-%m-%d %H:%M:%S")
         results["info"]["duration"] = "%d seconds" % (config.completed - config.started)
         results["info"]["ended"] = datetime.fromtimestamp(config.completed).strftime("%Y-%m-%d %H:%M:%S")

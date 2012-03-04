@@ -21,7 +21,7 @@ import re
 import sys
 import logging
 
-from cuckoo.config.config import CuckooConfig
+from cuckoo.config.cuckooconfig import CuckooConfig
 
 # Load VirtualBox's SDK APIs.
 try:
@@ -63,9 +63,9 @@ class VirtualMachine:
 
         # If a virtual machine name is specified than open handle.
         if vm_id is not None:
-            self.name = CuckooConfig().get_vm_name(vm_id)
-            self.username = CuckooConfig().get_vm_username(vm_id)
-            self.password = CuckooConfig().get_vm_password(vm_id)
+            self.name = CuckooConfig().vm_name(vm_id)
+            self.username = CuckooConfig().vm_username(vm_id)
+            self.password = CuckooConfig().vm_password(vm_id)
         
             try:
                 self.mach = self.vbox.findMachine(self.name)
@@ -117,9 +117,10 @@ class VirtualMachine:
             log.info("Virtual machine \"%s\" information:" % self.name)
             log.info("\t\_| Name: %s" % self.mach.name)
             log.info("\t  | ID: %s" % self.mach.id)
+            log.info("\t  | VRAM Size: %s MB" % self.mach.VRAMSize)
+            log.info("\t  | OS Type: %s" % self.mach.OSTypeId)
             log.info("\t  | CPU Count: %s Core/s" % self.mach.CPUCount)
-            log.info("\t  | Memory Size: %s MB" % self.mach.memorySize)
-            log.info("\t  | VRAM Size: %s MB" % self.mach.VRAMSize)       
+            log.info("\t  | Memory Size: %s MB" % self.mach.memorySize)   
             log.info("\t  | State: %s" % state)
             log.info("\t  | Current Snapshot: \"%s\""
                      % self.mach.currentSnapshot.name)
@@ -174,7 +175,7 @@ class VirtualMachine:
                 session = self.mgr.getSessionObject(self.vbox)
 
                 # Launch virtual machine with specified running mode.
-                mode = CuckooConfig().get_vm_mode()
+                mode = CuckooConfig().virt_mode()
 
                 if not mode:
                     log.error("No mode specified. Check your configuration.")
@@ -358,7 +359,7 @@ class VirtualMachine:
             # global configuration file.
             # The watchdog timeout shouldn't generally be specified.
             if not timeout:
-                watchdog = int(CuckooConfig().get_analysis_watchdog_timeout())
+                watchdog = CuckooConfig().analysis_watchdog()
                 # Calculate timeout in milliseconds.
                 timeout = watchdog * 1000
                 log.debug("Watchdog timeout is %d seconds." % watchdog)

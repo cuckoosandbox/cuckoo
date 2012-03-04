@@ -28,36 +28,37 @@ import ConfigParser
 from time import time, sleep
 from threading import Thread
 
-from cuckoo.config.config import CuckooConfig
-from cuckoo.config.constants import *
 from cuckoo.logging.logo import logo
+from cuckoo.config.cuckooconfig import CuckooConfig
+from cuckoo.config.constants import *
 from cuckoo.core.db import CuckooDatabase
-from cuckoo.core.getfiletype import get_filetype
+from cuckoo.core.getpackage import get_package
+from cuckoo.common.getfiletype import get_file_type
 from cuckoo.logging.crash import crash
 
 # Check the virtualization engine from the config fle and tries to retrieve
 # and import the corresponding Cuckoo's module.
-if CuckooConfig().get_vm_engine().lower() == "virtualbox":
+if CuckooConfig().virt_engine().lower() == "virtualbox":
     try:
         from cuckoo.core.virtualbox import VirtualMachine
     except ImportError, why:
-        sys.stderr.write("ERROR: Unable to load Cuckoo's VirtualBox module. " \
-                         "Please verify your installation.\n")
-        sys.exit(-1)
+        sys.stderr.write("Unable to load Cuckoo's VirtualBox module, " \
+                         "please verify your installation. Abort.\n")
+        raise SystemExit
 # If no valid option has been specified, aborts the execution.
 else:
-    sys.stderr.write("ERROR: No valid virtualization option identified. " \
-                     "Please check your configuration file.\n")
-    sys.exit(-1)
+    sys.stderr.write("No valid virtualization option identified, " \
+                     "please check your configuration file. Abort.\n")
+    raise SystemExit
 
 # Import the external sniffer module only if required.
-if CuckooConfig().use_external_sniffer():
+if CuckooConfig().sniffer_use():
     try:
         from cuckoo.core.sniffer import Sniffer
     except ImportError, why:
-        sys.stderr.write("ERROR: Unable to import sniffer module. " \
-                         "Please verify your installation.\n")
-        sys.exit(-1)
+        sys.stderr.write("Unable to import sniffer module, " \
+                         "please verify your installation. Abort.\n")
+        raise SystemExit
 
 #------------------------------ Global Variables ------------------------------#
 # Initialize complete list of virtual machines.
@@ -249,7 +250,7 @@ class Analysis(Thread):
         """
         log = logging.getLogger("Core.Analysis.Processing")
 
-        interpreter = CuckooConfig().get_processing_interpreter()
+        interpreter = CuckooConfig().processing_interpreter()
 
         if not interpreter:
             return False
@@ -258,7 +259,7 @@ class Analysis(Thread):
             log.error("Cannot find interpreter at path \"%s\"." % interpreter)
             return False
 
-        processor = CuckooConfig().get_processing_processor()
+        processor = CuckooConfig().processing_script()
 
         if not processor:
             return False
@@ -304,7 +305,7 @@ class Analysis(Thread):
         self.db = CuckooDatabase()
 
         # Generate analysis results storage folder path with current task id.
-        results_path = CuckooConfig().get_analysis_results_path()
+        results_path = CuckooConfig().analysis_results_path()
         save_path = os.path.join(results_path, str(self.task["id"]))
 
         # Additional check to verify that the are not saved results with the
@@ -339,54 +340,40 @@ class Analysis(Thread):
         # 4. If analysis package has not been specified, I'll try to identify
         # the correct one depending on the file type of the target.
         if self.task["package"] is None:
-            file_type = get_filetype(self.task["target"]).lower()
-            file_extension = os.path.splitext(self.dst_filename)[1].lower()
+            file_type = get_file_type(self.task["target"])
+            package = get_package(file_type)
+            current_extension = os.path.splitext(self.dst_filename)[1].lower()
+            
+            if package:
+                correct_extension = ".%s" % package
 
-            if file_type:
-                # Check the file format and see if the file name has the
-                # appropriate extension, otherwise fix it. Assign proper
-                # default analysis package.
-                if file_type == "exe":
-                    if file_extension != ".exe":
-                        self.dst_filename += ".exe"
-                        
-                    self.task["package"] = "exe"
-                elif file_type == "dll":
-                    if file_extension != ".dll":
-                        self.dst_filename += ".dll"
+                if current_extension != correct_extension:
+                    self.dst_filename += correct_extension
 
-                    self.task["package"] = "dll"
-                elif file_type == "pdf":
-                    if file_extension != ".pdf":
-                        self.dst_filename += ".pdf"
-
-                    self.task["package"] = "pdf"
-                else:
-                    log.error("Unsupported file format (%s) for target \"%s\"."\
-                              " Abort." % (file_type, self.task["target"]))
-                    self.db.complete(self.task["id"], False)
-                    self._processing(None,
-                                     CUCKOO_ERROR_INVALID_TARGET_FILE_TYPE)
-                    return False
+                self.task["package"] = package
             else:
+                log.error("Unsupported file format (%s) for target \"%s\"."\
+                          " Abort." % (file_type, self.task["target"]))
                 self.db.complete(self.task["id"], False)
+                self._processing(None,
+                                 CUCKOO_ERROR_INVALID_TARGET_FILE_TYPE)
                 return False
 
         # 5. If no analysis timeout is set, get the default from the config
         # file.
         if self.task["timeout"] is None:
-            timeout = int(CuckooConfig().get_analysis_analysis_timeout())
+            timeout = int(CuckooConfig().analysis_timeout())
             self.task["timeout"] = timeout
         # If the specified timeout is bigger than the watchdog timeout set in
         # the configuration file, I redefine it to the maximum - 30 seconds.
-        elif int(self.task["timeout"]) > CuckooConfig().get_analysis_watchdog_timeout():
-            self.task["timeout"] = CuckooConfig().get_analysis_watchdog_timeout() - 30
+        elif int(self.task["timeout"]) > CuckooConfig().analysis_watchdog():
+            self.task["timeout"] = CuckooConfig().analysis_watchdog() - 30
             log.info("Specified analysis timeout is bigger than the watchdog " \
                      "timeout (see cuckoo.conf). Redefined to %s seconds."
                      % self.task["timeout"])
 
         # 6. Acquire a virtual machine from pool.
-        vm_pop_timeout = CuckooConfig().get_analysis_watchdog_timeout() * 3
+        vm_pop_timeout = CuckooConfig().analysis_watchdog() * 3
         for i in xrange(0, vm_pop_timeout):
             if self.task["vm_id"]:
                 if not VM_LIST.has_key(self.task["vm_id"]):
@@ -423,7 +410,7 @@ class Analysis(Thread):
             return False
 
         # Get path to current virtual machine's shared folder.
-        self.vm_share = CuckooConfig().get_vm_share(self.vm_id)           
+        self.vm_share = CuckooConfig().vm_share(self.vm_id)           
 
         if not os.path.exists(self.vm_share):
             log.error("Shared folder \"%s\" for virtual machine \"%s\" " \
@@ -459,7 +446,7 @@ class Analysis(Thread):
             return False
         
         # If necessary, delete the original file.
-        if CuckooConfig().get_analysis_delete_original():
+        if CuckooConfig().analysis_delete_file():
             try:
                 os.remove(self.task["target"])
                 log.debug("Successfuly deleted original file at path \"%s\"."
@@ -471,11 +458,11 @@ class Analysis(Thread):
         # 9. Start sniffer.
         # Check if the user has decided to adopt the external sniffer or not.
         # In first case, initialize the sniffer and start it.
-        if CuckooConfig().use_external_sniffer():
+        if CuckooConfig().sniffer_use():
             pcap_file = os.path.join(self.vm_share, "dump.pcap")
             self.sniffer = Sniffer(pcap_file)
         
-            interface = CuckooConfig().get_sniffer_interface().lower()
+            interface = CuckooConfig().sniffer_interface().lower()
             guest_mac = VM_LIST[self.vm_id]
 
             if not self.sniffer.start(interface, guest_mac):
@@ -513,7 +500,7 @@ class Analysis(Thread):
 
         # Get virtual machines' local Python installation path from config
         # file.
-        python_path = CuckooConfig().get_vm_python()
+        python_path = CuckooConfig().virt_python()
         python_path = python_path.replace("\\", "\\\\")
 
         args = []
@@ -645,7 +632,7 @@ def init_logging():
 
     # If user enabled debug logging in the configuration file, I modify the
     # root logger level accordingly.
-    if CuckooConfig().get_logging_debug():
+    if CuckooConfig().logging_debug():
         root = logging.getLogger()
         root.setLevel(logging.DEBUG)
 
@@ -668,7 +655,7 @@ if __name__ == "__main__":
         log.info("Populating virtual machines pool...")
 
         # Acquire Virtual Machines IDs list from the config file.
-        virtual_machines = CuckooConfig().get_vms()
+        virtual_machines = CuckooConfig().virt_machines()
 		
         # Start checking informations regarding each enabled virtual machine
         # specified in the config file. Detailed errors and informations are
@@ -733,4 +720,3 @@ if __name__ == "__main__":
         pass
     except:
         crash()
-
