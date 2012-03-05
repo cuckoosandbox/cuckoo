@@ -39,9 +39,9 @@ class BaseObserver:
     def update(self):
         """
         Called when a new event must be notified to observers. You have to implement it.
-        @raise NotImplementError: if not implemented in reporting module.
+        @raise NotImplementedError: if not implemented in reporting module.
         """
-        raise NotImplementError
+        raise NotImplementedError
     
 class AnalysisObservable:
     """

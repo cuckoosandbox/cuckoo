@@ -22,8 +22,6 @@ import pkgutil
 
 import cuckoo.processing.sigs as sigs
 
-class NotImplementError: pass
-
 class BaseSignature:
     def __init__(self):
         self.name        = ""
@@ -33,7 +31,7 @@ class BaseSignature:
         self.enabled     = True
 
     def process(self, results = None):
-        raise NotImplementError
+        raise NotImplementedError
 
 class SignaturesProcessor:
     def __init__(self):
@@ -61,7 +59,7 @@ class SignaturesProcessor:
                 
                 try:
                     matched = sig.process(results)
-                except NotImplementError:
+                except NotImplementedError:
                     continue
             else:
                 continue
