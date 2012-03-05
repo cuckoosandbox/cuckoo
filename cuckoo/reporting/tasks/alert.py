@@ -19,15 +19,34 @@
 
 import os
 import json
+import smtplib
 
 from cuckoo.reporting.observers import BaseObserver
+
+SERVER = ""
+USERNAME = ""
+PASSWORD = ""
+FROM = ""
+TO = []
 
 class Report(BaseObserver):
     """
     Alert matched signatures.
     """
 
+    def send_alert(self, signature):
+        message = "Signature matched: %s" % signature["name"]
+
+        try:
+            smtp = smtplib.SMTP(SERVER)
+            smtp.starttls()
+            smtp.login(USERNAME, PASSWORD)
+            smtp.sendmail(FROM, TO, message)
+        except smtplib.SMTPException, why:
+            print why
+
     def update(self, results):
         if len(results["signatures"]) > 0:
             for signature in results["signatures"]:
-                print "OMG MATCHED \"%s\"" % signature["name"]
+                self.send_alert(signature)
+
