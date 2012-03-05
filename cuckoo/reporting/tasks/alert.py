@@ -17,3 +17,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
+import os
+import json
+
+from cuckoo.reporting.observers import BaseObserver
+
+class Report(BaseObserver):
+    """
+    Alert matched signatures.
+    """
+
+    def update(self, results):
+        if len(results["signatures"]) > 0:
+            for signature in results["signatures"]:
+                print "OMG MATCHED \"%s\"" % signature["name"]

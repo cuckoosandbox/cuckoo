@@ -32,7 +32,7 @@ except ImportError, why:
 
 class Report(BaseObserver):
     """
-    Generates a human readable HTML report.
+    Generate a human readable HTML report.
     """
 
     def update(self, results):
@@ -54,4 +54,3 @@ class Report(BaseObserver):
             print "Failed writing HTML report: %s" % e
 
         return True
-

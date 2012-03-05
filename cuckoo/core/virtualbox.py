@@ -21,7 +21,7 @@ import re
 import sys
 import logging
 
-from cuckoo.config.cuckooconfig import CuckooConfig
+from cuckoo.common.cuckooconfig import CuckooConfig
 
 # Load VirtualBox's SDK APIs.
 try:
@@ -85,7 +85,7 @@ class VirtualMachine:
         Gets virtual machine infomation.
         @return: boolean identifying the success of the operation
         """
-        log = logging.getLogger("VirtualMachine.Infos")
+        log = logging.getLogger("Core.VirtualBox.Infos")
 
         if self.mach:
             # Check if machine is accessible.
@@ -117,8 +117,8 @@ class VirtualMachine:
             log.info("Virtual machine \"%s\" information:" % self.name)
             log.info("\t\_| Name: %s" % self.mach.name)
             log.info("\t  | ID: %s" % self.mach.id)
-            log.info("\t  | VRAM Size: %s MB" % self.mach.VRAMSize)
             log.info("\t  | OS Type: %s" % self.mach.OSTypeId)
+            log.info("\t  | VRAM Size: %s MB" % self.mach.VRAMSize)
             log.info("\t  | CPU Count: %s Core/s" % self.mach.CPUCount)
             log.info("\t  | Memory Size: %s MB" % self.mach.memorySize)   
             log.info("\t  | State: %s" % state)
@@ -136,7 +136,7 @@ class VirtualMachine:
         Checks if VirtualBox version is supported
         @return: boolean saying if VirtualBox version is supported or not
         """
-        log = logging.getLogger("VirtualMachine.Check")
+        log = logging.getLogger("Core.VirtualBox.Check")
 
         # Check if VirtualBox version is supported.
         if not re.match(VBOX_VERSION, self.vbox.version):
@@ -154,7 +154,7 @@ class VirtualMachine:
         Starts virtual machine.
         @return: boolean identifying the success of the operation
         """
-        log = logging.getLogger("VirtualMachine.Start")
+        log = logging.getLogger("Core.VirtualBox.Start")
 
         if self.mach:
             try:
@@ -212,7 +212,7 @@ class VirtualMachine:
         Stops virtual machine.
         @return: boolean identifying the success of the operation
         """
-        log = logging.getLogger("VirtualMachine.Stop")
+        log = logging.getLogger("Core.VirtualBox.Stop")
 
         if self.mach:
             try:
@@ -264,7 +264,7 @@ class VirtualMachine:
         Restores virtual machine.
         @return: boolean identifying the success of the operation
         """
-        log = logging.getLogger("VirtualMachine.Restore")
+        log = logging.getLogger("Core.VirtualBox.Restore")
 
         if self.mach:
             try:
@@ -326,7 +326,7 @@ class VirtualMachine:
         @param timeout: process execution timeout
         @return: boolean identifying the success of the operation
         """   
-        log = logging.getLogger("VirtualMachine.Execute")
+        log = logging.getLogger("Core.VirtualBox.Execute")
 
         # Check if program name is specified.
         if not exec_name or exec_name == "":

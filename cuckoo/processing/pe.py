@@ -29,7 +29,7 @@ except ImportError, why:
 
 import cuckoo.processing.pefile as pefile
 import cuckoo.processing.peutils as peutils
-from cuckoo.processing.convert import convert_to_printable
+from cuckoo.common.stringutils import convert_to_printable
 
 # Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 

@@ -17,21 +17,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
+import os
 import ConfigParser
+
+from cuckoo.common.constants import CUCKOO_REPORTING_CONFIG_FILE
 
 class ReportingConfig:
     """
     Reporting configuration parser
     """
     
-    def __init__(self, config_path):
+    def __init__(self):
         """
         Creates a new reporting configuration
         @param config_path: path to reporting config file
         """ 
+        if not os.path.exists(CUCKOO_REPORTING_CONFIG_FILE):
+            raise SystemExit
+        
         config = ConfigParser.ConfigParser()
-        config.read(config_path)
+        config.read(CUCKOO_REPORTING_CONFIG_FILE)
+        
         self.enabled = {}
+
         for option in config.options('Tasks'):
             try:
                 self.enabled[option] = config.getboolean('Tasks', option)
@@ -49,4 +57,3 @@ class ReportingConfig:
                 if status:
                     return True
         return False
-                

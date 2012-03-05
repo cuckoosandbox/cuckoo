@@ -19,7 +19,7 @@
 
 import sys
 
-from cuckoo.config.constants import CUCKOO_VERSION
+from cuckoo.common.constants import CUCKOO_VERSION
 
 def logo():
     """

@@ -22,7 +22,7 @@ import stat
 import logging
 import subprocess
 
-from cuckoo.config.cuckooconfig import CuckooConfig
+from cuckoo.common.cuckooconfig import CuckooConfig
 
 class Sniffer:
     """
@@ -39,8 +39,6 @@ class Sniffer:
         self.proc = None
         self.guest_mac = None
 
-        log = logging.getLogger("Sniffer")
-
     def start(self, interface, guest_mac):
         """
         Start sniffing.
@@ -48,7 +46,7 @@ class Sniffer:
         @param guest_mac: virtual machine MAC address to filter
         @return: boolean identifying the success of the operation
         """  
-        log = logging.getLogger("Sniffer.Start")
+        log = logging.getLogger("Core.Sniffer.Start")
         self.guest_mac = guest_mac
 
         if not self.tcpdump:
@@ -92,7 +90,7 @@ class Sniffer:
         Stop sniffing.
         @return: boolean identifying the success of the operation
         """
-        log = logging.getLogger("Sniffer.Stop")
+        log = logging.getLogger("Core.Sniffer.Stop")
 
         if self.proc != None and self.proc.poll() == None:
             try:
@@ -103,3 +101,5 @@ class Sniffer:
                 return False
 
             log.info("Sniffer stopped monitoring %s." % self.guest_mac)
+
+        return True

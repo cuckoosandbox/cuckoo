@@ -28,13 +28,13 @@ import ConfigParser
 from time import time, sleep
 from threading import Thread
 
-from cuckoo.logging.logo import logo
-from cuckoo.config.cuckooconfig import CuckooConfig
-from cuckoo.config.constants import *
+from cuckoo.common.logo import logo
+from cuckoo.common.cuckooconfig import CuckooConfig
+from cuckoo.common.constants import *
 from cuckoo.core.db import CuckooDatabase
 from cuckoo.core.getpackage import get_package
 from cuckoo.common.getfiletype import get_file_type
-from cuckoo.logging.crash import crash
+from cuckoo.common.crash import crash
 
 # Check the virtualization engine from the config fle and tries to retrieve
 # and import the corresponding Cuckoo's module.

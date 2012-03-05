@@ -21,7 +21,7 @@ import os
 
 from cuckoo.reporting.observers import BaseObserver
 import cuckoo.reporting.lib.maec11 as maec
-from cuckoo.reporting.lib.utils import convert_time
+from cuckoo.common.dateutils import datetime_to_iso
 
 class Report(BaseObserver):
     """
@@ -46,7 +46,7 @@ class Report(BaseObserver):
             id = "cuckoo:%s" % self.results['file']['md5'],
             author = "Cuckoo Sandbox %s" % self.results["info"]["version"],
             comment = "Report created with Cuckoo Sandbox %s automated and open source malware sandbox: http://www.cuckoobox.org" % self.results["info"]["version"],
-            timestamp = convert_time(self.results["info"]["started"])
+            timestamp = datetime_to_iso(self.results["info"]["started"])
         )        
         # Objects
         self.objects = maec.objectsType()

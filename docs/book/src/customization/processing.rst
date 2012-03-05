@@ -20,9 +20,9 @@ The default processor looks like following:
         import sys
         from optparse import OptionParser
 
-        from cuckoo.processing.data import CuckooDict
+        from cuckoo.processing.cuckoodict import CuckooDict
         from cuckoo.reporting.reporter import ReportProcessor
-        from cuckoo.logging.crash import crash
+        from cuckoo.common.crash import crash
 
         def main():
             analysis_path = None
@@ -290,14 +290,14 @@ Putting all together
 If you don't want to bother invoking all the necessary classes but just want
 a comprehensive (and huge) dictionary containing everything you need, you can
 simply use the ``CuckooDict`` class provided by the module
-``cuckoo.processing.data``, just like the default package do.
+``cuckoo.processing.cuckoodict``, just like the default package do.
 
 Following is an example usage and output:
 
     .. code-block:: python
 
         >>> import pprint
-        >>> from cuckoo.processing.data import CuckooDict
+        >>> from cuckoo.processing.cuckoodict import CuckooDict
         >>> analysis = CuckooDict("analysis/2/").process()
         >>> pprint.pprint(analysis)
         {'behavior': {'processes': [<results provided by class BehaviorAnalysis>],

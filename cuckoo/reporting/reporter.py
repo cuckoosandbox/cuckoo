@@ -19,11 +19,12 @@
 
 import os
 import sys
+import pkgutil
 from string import split
 
 from cuckoo.reporting.observers import AnalysisObservable
-from cuckoo.reporting.config import ReportingConfig
-from cuckoo.config.constants import CUCKOO_REPORTING_CONFIG_FILE
+from cuckoo.reporting.reportingconfig import ReportingConfig
+import cuckoo.reporting.tasks as tasks
 
 class ReportProcessor:
     """
@@ -33,17 +34,9 @@ class ReportProcessor:
     def __init__(self, analysis_path):
         self._analysis_path = analysis_path
         self._observable = AnalysisObservable()
+        self.config = ReportingConfig()
 
-        # Load configuration
-        if os.path.exists(CUCKOO_REPORTING_CONFIG_FILE):
-            try:
-                self.config = ReportingConfig(CUCKOO_REPORTING_CONFIG_FILE)
-            except Exception, why:
-                raise SystemExit
-        else:
-            raise SystemExit
-
-        # Load modules
+        # Load tasks.
         self._tasklist()
 
     def report(self, report):
@@ -57,17 +50,17 @@ class ReportProcessor:
         """
         This is where reporting modules order comes true.
         """
-        for file in [tga for tga in os.listdir(os.path.join('.', "cuckoo/reporting/tasks")) if tga.endswith(".py")]:
-            # Skip package file
-            if file == '__init__.py':
+        package = tasks
+
+        for loader, name, ispkg in pkgutil.iter_modules(package.__path__):
+            if not self.config.check(name):
                 continue
 
-            # Check if reporting module is enabled
-            report = split(file, '.')[0]
-            if self.config.check(report):           
-                # Import reporting class
-                module = "cuckoo.reporting.tasks.%s" % report
-                imp = __import__(module, globals(), locals(), ['Report'], -1)
-                
-                # Subscribe
-                self._observable.subscribe(imp.Report(self._analysis_path))
+            path = "%s.%s" % (package.__name__, name)
+            task = __import__(path,
+                              globals(), 
+                              locals(),
+                              ['Report'],
+                              -1)
+
+            self._observable.subscribe(task.Report(self._analysis_path))

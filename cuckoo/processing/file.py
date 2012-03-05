@@ -23,7 +23,7 @@ import logging
 import hashlib
 import binascii
 
-from cuckoo.processing.convert import convert_to_printable
+from cuckoo.common.stringutils import convert_to_printable
 
 try:
     # Try to import libmagic python bindings. You can install them with Ubuntu's
@@ -114,7 +114,7 @@ class File:
         Generates the ssdeep fuzzy hash of the file.
         @return: ssdeep fuzzy hash of the file
         """
-        log = logging.getLogger("Processor.File")
+        log = logging.getLogger("Processing.File")
         
         if not IS_SSDEEP:
             log.warning("Ssdeep Python bindings are not installed, " \
@@ -133,7 +133,7 @@ class File:
         Retrieves the libmagic type of the file.
         @return: file type
         """
-        log = logging.getLogger("Processor.File")
+        log = logging.getLogger("Processing.File")
         
         if not IS_MAGIC:
             log.warning("Libmagic Python bindings are not installed, " \
@@ -159,7 +159,7 @@ class File:
         Generates file information dictionary.
         @return: dictionary containing all the file's information
         """
-        log = logging.getLogger("Processor.File")
+        log = logging.getLogger("Processing.File")
         
         if not os.path.exists(self.file_path):
             log.error("File at path \"%s\" does not exist." % self.file_path)

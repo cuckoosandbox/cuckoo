@@ -24,9 +24,9 @@ import hashlib
 import urllib2
 from optparse import OptionParser
 
-from cuckoo.logging.crash import crash
+from cuckoo.common.crash import crash
 from cuckoo.core.db import CuckooDatabase
-from cuckoo.config.cuckooconfig import CuckooConfig
+from cuckoo.common.cuckooconfig import CuckooConfig
 
 DESTINATION = "/tmp/"
 
@@ -166,7 +166,7 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print "User aborted."
+        pass
     except SystemExit:
         pass
     except:

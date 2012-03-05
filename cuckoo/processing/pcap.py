@@ -24,7 +24,7 @@ import socket
 import logging
 from urlparse import urlunparse
 
-from cuckoo.processing.convert import convert_to_printable
+from cuckoo.common.stringutils import convert_to_printable
 
 try:
     import dpkt
@@ -178,7 +178,7 @@ class Pcap:
         Process PCAP.
         @return: dict with network analysis data
         """
-        log = logging.getLogger("Processor.Pcap")
+        log = logging.getLogger("Processing.Pcap")
         
         if not IS_DPKT:
             log.error("Python DPKT is not installed, aborting PCAP analysis.")

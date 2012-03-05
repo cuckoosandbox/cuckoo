@@ -19,10 +19,9 @@
 
 import os
 import sys
-import logging
 import ConfigParser
 
-from cuckoo.config.constants import CUCKOO_CONFIG_FILE
+from cuckoo.common.constants import CUCKOO_CONFIG_FILE
 
 class CuckooConfig:
     """

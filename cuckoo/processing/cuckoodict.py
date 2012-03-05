@@ -26,12 +26,13 @@ import base64
 import logging
 from datetime import datetime
 
-from cuckoo.config.constants import CUCKOO_VERSION
+from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.processing.file import File
 from cuckoo.processing.pcap import Pcap
-from cuckoo.processing.config import AnalysisConfig
+from cuckoo.processing.analysisconfig import AnalysisConfig
 from cuckoo.processing.pe import PortableExecutable
 from cuckoo.processing.analysis import BehaviorAnalysis, BehaviorSummary, ProcessTree
+from cuckoo.processing.signatures import SignaturesProcessor
 
 class CuckooDict:
     def __init__(self, analysis_path):
@@ -101,7 +102,7 @@ class CuckooDict:
         Process the analysis results and generate a dictionary containing all
         abstracted information.
         """
-        log = logging.getLogger("Processor.CuckooDict")
+        log = logging.getLogger("Processing.CuckooDict")
         
         if not os.path.exists(self._analysis_path):
             log.error("Analysis results folder does not exist at path \"%s\"."
@@ -136,13 +137,15 @@ class CuckooDict:
                     results["static"] = PortableExecutable(file_path).process()
 
         results["dropped"] = self._get_dropped()
-        results["screenshots"] = self._get_screenshots()
+        #results["screenshots"] = self._get_screenshots()
         results["network"] = Pcap(self._pcap_path).process()
 
         results["behavior"] = {}
         results["behavior"]["processes"] = BehaviorAnalysis(self._logs_path).process()
         results["behavior"]["processtree"] = ProcessTree(results["behavior"]["processes"]).process()
         results["behavior"]["summary"] = BehaviorSummary(results["behavior"]["processes"]).process()
+        
+        results["signatures"] = SignaturesProcessor().process(results)
 
         if not results or len(results) == 0:
             return None

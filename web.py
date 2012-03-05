@@ -24,7 +24,7 @@ from optparse import OptionParser
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 from cuckoo.core.db import CuckooDatabase
-from cuckoo.logging.crash import crash
+from cuckoo.common.crash import crash
 
 try:
     from mako.template import Template
@@ -140,7 +140,7 @@ def main():
         server = HTTPServer((options.host, options.port), MyHandler)
         server.serve_forever()
     except KeyboardInterrupt:
-        print "User aborted."
+        pass
     finally:
         server.socket.close()
 

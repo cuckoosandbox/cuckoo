@@ -22,7 +22,7 @@ import sys
 import csv
 import logging
 
-from cuckoo.processing.convert import convert_to_printable
+from cuckoo.common.stringutils import convert_to_printable
 
 class ParseBehaviorLog:
     """
@@ -48,7 +48,7 @@ class ParseBehaviorLog:
         """
         call = {}
         arguments = []
-        log = logging.getLogger("Processor.ParseBehaviorLog")
+        log = logging.getLogger("Processing.ParseBehaviorLog")
 
         # Try to acquire the first fixed columns.
         try:
@@ -121,7 +121,7 @@ class ParseBehaviorLog:
         """
         Processes the specified process log file.
         """
-        log = logging.getLogger("Processor.ParseBehaviorLog")
+        log = logging.getLogger("Processing.ParseBehaviorLog")
         
         if not os.path.exists(self._log_path):
             log.error("Analysis logs folder does not exist at path \"%s\"."
@@ -159,7 +159,7 @@ class BehaviorAnalysis:
         @return: dictionary containing the abstracted analysis results
         """
         results = []
-        log = logging.getLogger("Processor.BehaviorAnalysis")
+        log = logging.getLogger("Processing.BehaviorAnalysis")
 
         # Check if the specified directory exists.
         if not os.path.exists(self._logs_path):

@@ -21,7 +21,7 @@ import os
 
 from cuckoo.reporting.observers import BaseObserver
 import cuckoo.reporting.lib.maec11 as maec
-from cuckoo.reporting.lib.utils import convert_time
+from cuckoo.common.dateutils import datetime_to_iso
 
 class Report(BaseObserver):
     """
@@ -354,9 +354,9 @@ class Report(BaseObserver):
         analysis = maec.AnalysisType(
                                 id = "%s:ana:1" % self.idMap['prefix'],
                                 analysis_method = 'Dynamic',
-                                start_datetime = convert_time(self.results["info"]["started"]),
-                                complete_datetime = convert_time(self.results["info"]["ended"]),
-                                lastupdate_datetime = convert_time(self.results["info"]["ended"])
+                                start_datetime = datetime_to_iso(self.results["info"]["started"]),
+                                complete_datetime = datetime_to_iso(self.results["info"]["ended"]),
+                                lastupdate_datetime = datetime_to_iso(self.results["info"]["ended"])
                                 )
         # Add tool
         analysis.set_Tools_Used(self.createTools())

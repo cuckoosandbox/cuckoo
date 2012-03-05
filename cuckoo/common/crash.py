@@ -20,7 +20,7 @@
 import sys
 import traceback
 
-import cuckoo.config.constants as constants
+import cuckoo.common.constants as constants
 
 def crash():
     """

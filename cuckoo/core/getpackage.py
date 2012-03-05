@@ -17,16 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-import re
-
 def get_package(file_type):
-    if re.search("DLL", file_type):
+    if "DLL" in file_type:
         return "dll"
-    elif re.search("PE32", file_type) or re.search("MS-DOS", file_type):
+    elif "PE32" in file_type or "MS-DOS" in file_type:
         return "exe"
-    elif re.match("PDF", file_type):
+    elif "PDF" in file_type:
         return "pdf"
-    elif re.search("HTML", file_type):
+    elif "HTML" in file_type:
         return "html"
     else:
         return None

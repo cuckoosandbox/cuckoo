@@ -23,9 +23,9 @@ import sys
 import logging
 from optparse import OptionParser
 
-from cuckoo.processing.data import CuckooDict
+from cuckoo.processing.cuckoodict import CuckooDict
 from cuckoo.reporting.reporter import ReportProcessor
-from cuckoo.logging.crash import crash
+from cuckoo.common.crash import crash
 
 def init_logging(analysis_path = None):
     root = logging.getLogger()
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print "User aborted."
+        pass
     except SystemExit:
         pass
     except:

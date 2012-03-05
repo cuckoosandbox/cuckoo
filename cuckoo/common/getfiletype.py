@@ -34,7 +34,7 @@ def get_file_type(file_path):
     @param file_path: file path
     @return: file type identifier or magic signature if format is not supported
     """
-    log = logging.getLogger("Core.GetFileType")
+    log = logging.getLogger("Common.GetFileType")
     
     if not os.path.exists(file_path):
         return None

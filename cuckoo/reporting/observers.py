@@ -66,4 +66,3 @@ class AnalysisObservable:
         """ 
         for observer in self._observers:
             observer.update(results)
-

@@ -21,8 +21,8 @@ import os
 import sys
 import logging
 
-from cuckoo.config.cuckooconfig import CuckooConfig
-from cuckoo.config.constants import CUCKOO_DB_FILE
+from cuckoo.common.cuckooconfig import CuckooConfig
+from cuckoo.common.constants import CUCKOO_DB_FILE
 
 try:
     import sqlite3
@@ -37,7 +37,7 @@ class CuckooDatabase:
     """
 
     def __init__(self):
-        log = logging.getLogger("Database.Init")
+        log = logging.getLogger("Core.CuckooDatabase")
         self._conn = None
         self._cursor = None
 
@@ -156,7 +156,7 @@ class CuckooDatabase:
         """
         Acquire a task from the queue.
         """
-        log = logging.getLogger("Database.GetTask")
+        log = logging.getLogger("Core.CuckooDatabase.GetTask")
 
         if not self._cursor:
             log.error("Unable to acquire cursor.")
@@ -185,7 +185,7 @@ class CuckooDatabase:
         Lock a task.
         @param task_id: task ID 
         """
-        log = logging.getLogger("Database.Lock")
+        log = logging.getLogger("Core.CuckooDatabase.Lock")
 
         if not self._cursor:
             log.error("Unable to acquire cursor.")
@@ -222,7 +222,7 @@ class CuckooDatabase:
         Unlock a task.
         @param task_id: task ID
         """ 
-        log = logging.getLogger("Database.Unlock")
+        log = logging.getLogger("Core.CuckooDatabase.Unlock")
 
         if not self._cursor:
             log.error("Unable to acquire cursor.")
@@ -261,7 +261,7 @@ class CuckooDatabase:
         @param task_id: completed task ID
         @param success: boolean representing the analysis sucess or failure
         """ 
-        log = logging.getLogger("Database.Complete")
+        log = logging.getLogger("Core.CuckooDatabase.Complete")
 
         if not self._cursor:
             log("Unable to acquire cursor.")
