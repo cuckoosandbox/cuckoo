@@ -50,17 +50,18 @@ class ReportProcessor:
         """
         This is where reporting modules order comes true.
         """
-        package = tasks
 
-        for loader, name, ispkg in pkgutil.iter_modules(package.__path__):
+        for loader, name, ispkg in pkgutil.iter_modules(tasks.__path__):
             if not self.config.check(name):
                 continue
 
-            path = "%s.%s" % (package.__name__, name)
+            path = "%s.%s" % (tasks.__name__, name)
             task = __import__(path,
-                              globals(), 
+                              globals(),
                               locals(),
                               ['Report'],
                               -1)
 
-            self._observable.subscribe(task.Report(self._analysis_path))
+            report = task.Report(self._analysis_path)
+            report.setOptions(self.config.get(name))
+            self._observable.subscribe(report)

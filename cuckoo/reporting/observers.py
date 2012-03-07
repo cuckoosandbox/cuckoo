@@ -36,6 +36,13 @@ class BaseObserver:
         if not os.path.exists(self.report_path):
             os.mkdir(self.report_path)
     
+    def setOptions(self, opts):
+        """
+        Set post-processor module options.
+        @param opts: options hash
+        """
+        self._options = opts 
+    
     def update(self):
         """
         Called when a new event must be notified to observers. You have to implement it.
@@ -57,11 +64,11 @@ class AnalysisObservable:
         @param observer: a BaseObserver instance. 
         """
         assert isinstance(observer, BaseObserver)
-        self._observers.append(observer)    
+        self._observers.append(observer)
         
     def notify(self, results):
         """
-        Notifies all observer. 
+        Notifies all observer.
         @param results: results to pass to observers.
         """ 
         for observer in self._observers:

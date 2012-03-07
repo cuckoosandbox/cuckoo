@@ -38,22 +38,36 @@ class ReportingConfig:
         config = ConfigParser.ConfigParser()
         config.read(CUCKOO_REPORTING_CONFIG_FILE)
         
-        self.enabled = {}
-
-        for option in config.options('Tasks'):
-            try:
-                self.enabled[option] = config.getboolean('Tasks', option)
-            except:
-                self.enabled[option] = None
+        self.options = {}
+        
+        # Sections (example: [jsondump])
+        for task in config.sections():
+            # Options (example: enabled = on)
+            self.options[task.lower()] = {}
+            for option in config.options(task):
+                try:
+                    # Try first to parse as boolean, if type mismatch raise
+                    # a ValueError
+                    self.options[task.lower()][option] = config.getboolean(task, option)
+                except:
+                    self.options[task.lower()][option] = config.get(task, option)
     
     def check(self, report):
         """
         Checks if a module is enabled from configuration
         @param task: report module
         @return: True or false
+        """
+        if self.options[report.lower()]['enabled']:
+            return True
+        else:
+            return False
+
+    def get(self, report):
+        """
+        Get options for a report.
+        @param task: report module
+        @return: Hash with report options
         """ 
-        for module, status in self.enabled.items():
-            if module.lower() == report:
-                if status:
-                    return True
-        return False
+        return self.options[report.lower()]
+    
