@@ -236,20 +236,16 @@ reporting.conf
 The *conf/reporting.conf* file contains information on the automated reports
 generation.
 
-It contains the following section::
+It contains a section for each reporting module, as the following::
 
-    [Tasks]
+    [maec]
     # Enable/Disable reporting tasks. 
     # Here you can choose what report enable or disable.
     # By default all available reporting tasks are enabled.
     # Available values are [on/off]
-    jsondump = on
-    reporttxt = on
-    reporthtml = on
-    metadata = on
-    maec = on
-    pickled = on
+    enabled = on
 
-By setting those option to *on* or *off* you enable or disable the generation
-of such reports.
+By setting the option "enabled" to *on* or *off* you can enable or disable the 
+generation of such reports.
+
 

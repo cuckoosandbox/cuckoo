@@ -108,11 +108,15 @@ If you want to write your own reporting module you have to:
 
     * Create a Python file inside the reporting module folder (*cuckoo/reporting/tasks*),
       e.g. *foo.py*.
-    * Append an option inside the reporting configuration file (*reporting.conf*) with
-      the lowercase name of the file and enable it, like following::
+    * Append a section inside the reporting configuration file (*reporting.conf*) with
+      the lowercase name of the file followed by module options, like following::
        
-        foo = on
+        [foo]
+        enabled = on
+        baroption = test
        
+       All options loaded from reporting.conf are available in your module in a dict
+       inside self._options.
     * Inside your Python script you have to implement the ``BaseObserver`` interface in a
       class named "``Report``". When new analysis results are available, Cuckoo calls your 
       ``update()`` method passing the analysis results as a parameter.
