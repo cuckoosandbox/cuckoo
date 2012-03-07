@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-import os
-import json
 import smtplib
 
 from cuckoo.reporting.observers import BaseObserver
@@ -34,8 +32,29 @@ class Report(BaseObserver):
     Alert matched signatures.
     """
 
-    def send_alert(self, signature):
-        message = "Signature matched: %s" % signature["name"]
+    def send_alert(self, file_info, signature):
+        """
+        Send email alert containing trigger information.
+        @param file_info = dictionary containing metadata of the analyzed file
+        @param signature = dictionary containing info on the triggered signature
+        """
+        message =  "From: %s\n" % FROM
+        message += "To: %s\n" % ", ".join(TO)
+        message += ("Subject: [Cuckoo Alert] Signature \"%s\" triggered by %s\n"
+                    % (signature["name"], file_info["md5"]))
+        message += "\n"
+        message += "This is an automated alert to notify you that one of the " \
+                   "analysis performed by your Cuckoo Sandbox triggered a "    \
+                   "signature.\n"
+        message += "\n"
+        message += "File name: %s\n" % file_info["name"]
+        message += "File type: %s\n" % file_info["type"]
+        message += "File MD5: %s\n" % file_info["md5"]
+        message += "File SHA-1: %s\n" % file_info["sha1"]
+        message += "\n"
+        message += "Signature name: %s\n" % signature["name"]
+        message += "Signature severity: %s\n" % signature["severity"]
+        message += "Signature description: %s\n" % signature["description"]
 
         try:
             smtp = smtplib.SMTP(SERVER)
@@ -43,10 +62,12 @@ class Report(BaseObserver):
             smtp.login(USERNAME, PASSWORD)
             smtp.sendmail(FROM, TO, message)
         except smtplib.SMTPException, why:
-            print why
+            return False
+
+        return True
 
     def update(self, results):
         if len(results["signatures"]) > 0:
             for signature in results["signatures"]:
-                self.send_alert(signature)
+                self.send_alert(results["file"], signature)
 
