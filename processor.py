@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Cuckoo Sandbox - Automated Malware Analysis
 # Copyright (C) 2010-2012  Claudio "nex" Guarnieri (nex@cuckoobox.org)
 # http://www.cuckoobox.org
