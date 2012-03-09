@@ -17,11 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
+import sys
 import random
 
 from cuckoo.common.constants import CUCKOO_VERSION
 
 def color(t, c):
+    if sys.platform == "win32":
+        return t
+
     return chr(0x1b)+"["+str(c)+"m"+t+chr(0x1b)+"[0m"
 
 def logo():
