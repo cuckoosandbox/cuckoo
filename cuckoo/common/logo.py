@@ -121,4 +121,3 @@ def logo():
     print(" www.cuckoobox.org")
     print(" Copyright (c) 2010-2012")
     print
-
