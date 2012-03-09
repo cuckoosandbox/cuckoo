@@ -105,7 +105,7 @@ def logo():
 
     logos.append("""
   .-----------------.
-  | Cuckoo Sandbox? |   \\
+  | Cuckoo Sandbox? |
   |     OH NOES!    |\\  '-.__.-'   
   '-----------------' \\  /oo |--.--,--,--.
                          \\_.-'._i__i__i_.'
