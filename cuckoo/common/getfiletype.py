@@ -23,10 +23,9 @@ import logging
 
 try:
     import magic
+    IS_MAGIC = True
 except ImportError, why:
-    sys.stderr.write("ERROR: Unable to locate Python libmagic bindings. " \
-                     "Please verify your installation. Exiting...\n")
-    raise SystemExit
+    IS_MAGIC = False
 
 def get_file_type(file_path):
     """
@@ -37,6 +36,9 @@ def get_file_type(file_path):
     log = logging.getLogger("Common.GetFileType")
     
     if not os.path.exists(file_path):
+        return None
+    
+    if not IS_MAGIC:
         return None
 
     data = open(file_path, "rb").read()

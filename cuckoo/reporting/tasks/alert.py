@@ -21,12 +21,6 @@ import smtplib
 
 from cuckoo.reporting.observers import BaseObserver
 
-SERVER = ""
-USERNAME = ""
-PASSWORD = ""
-FROM = ""
-TO = []
-
 class Report(BaseObserver):
     """
     Alert matched signatures.
@@ -38,8 +32,8 @@ class Report(BaseObserver):
         @param file_info = dictionary containing metadata of the analyzed file
         @param signature = dictionary containing info on the triggered signature
         """
-        message =  "From: %s\n" % FROM
-        message += "To: %s\n" % ", ".join(TO)
+        message =  "From: %s\n" % self._options["from"]
+        message += "To: %s\n" % ", ".join(self._options["to"].strip().split(","))
         message += ("Subject: [Cuckoo Alert] Signature \"%s\" triggered by %s\n"
                     % (signature["name"], file_info["md5"]))
         message += "\n"
@@ -57,10 +51,15 @@ class Report(BaseObserver):
         message += "Signature description: %s\n" % signature["description"]
 
         try:
-            smtp = smtplib.SMTP(SERVER)
-            smtp.starttls()
-            smtp.login(USERNAME, PASSWORD)
-            smtp.sendmail(FROM, TO, message)
+            smtp = smtplib.SMTP(self._options["server"])
+            
+            if self._options["tls"]:
+                smtp.starttls()
+
+            smtp.login(self._options["username"], self._options["password"])
+            smtp.sendmail(self._options["from"],
+                          self._options["to"].strip().split(","),
+                          message)
         except smtplib.SMTPException, why:
             return False
 
@@ -70,4 +69,3 @@ class Report(BaseObserver):
         if len(results["signatures"]) > 0:
             for signature in results["signatures"]:
                 self.send_alert(results["file"], signature)
-
