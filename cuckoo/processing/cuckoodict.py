@@ -137,7 +137,7 @@ class CuckooDict:
                     results["static"] = PortableExecutable(file_path).process()
 
         results["dropped"] = self._get_dropped()
-        #results["screenshots"] = self._get_screenshots()
+        results["screenshots"] = self._get_screenshots()
         results["network"] = Pcap(self._pcap_path).process()
 
         results["behavior"] = {}
