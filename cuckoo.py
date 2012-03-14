@@ -335,7 +335,7 @@ class Analysis(Thread):
             return False
 
         # Copy original target file name to destination target.
-        self.dst_filename = os.path.basename(self.task["target"])
+        self.dst_filename = os.path.basename(self.task["target"].strip())
 
         # 4. If analysis package has not been specified, I'll try to identify
         # the correct one depending on the file type of the target.
