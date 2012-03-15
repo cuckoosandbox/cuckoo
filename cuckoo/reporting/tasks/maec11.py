@@ -25,7 +25,7 @@ from cuckoo.common.dateutils import datetime_to_iso
 
 class Report(BaseObserver):
     """
-    Generates a MAEC report.
+    Generates a MAEC 1.1 report.
     """
     
     def __init__(self, analysis_path):
@@ -381,7 +381,7 @@ class Report(BaseObserver):
         Writes report to disk.
         """
         try:
-            report = open(os.path.join(self.report_path, "report.maec.xml"), "w")
+            report = open(os.path.join(self.report_path, "report.maec-1.1.xml"), "w")
             report.write('<?xml version="1.0" ?>\n')
             report.write('<!--\n')
             report.write('Cuckoo Sandbox MAEC malware analysis report\n')
