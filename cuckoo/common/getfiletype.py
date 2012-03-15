@@ -23,9 +23,8 @@ import logging
 
 try:
     import magic
-    IS_MAGIC = True
 except (ImportError, AttributeError), why:
-    IS_MAGIC = False
+    pass
 
 def get_file_type(file_path):
     """
@@ -38,9 +37,6 @@ def get_file_type(file_path):
     if not os.path.exists(file_path):
         return None
     
-    if not IS_MAGIC:
-        return None
-
     data = open(file_path, "rb").read()
 
     # Thanks to Jesse from malc0de.com for this suggestion.
