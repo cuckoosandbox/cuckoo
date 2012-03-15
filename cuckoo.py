@@ -340,16 +340,6 @@ class Analysis(Thread):
         # 4. If analysis package has not been specified, I'll try to identify
         # the correct one depending on the file type of the target.
         if self.task["package"] is None:
-            if not IS_MAGIC:
-                log.error("You don't have Python magic bindings installed "   \
-                          "and you didn't specify any analysis package, I'm " \
-                          "unable to determine how to perform the analysis. " \
-                          "Abort.")
-                self.db.complete(self.task["id"], False)
-                self._processing(None,
-                                 CUCKOO_ERROR_NO_MAGIC)
-                return False
-            
             file_type = get_file_type(self.task["target"])
             package = get_package(file_type)
             current_extension = os.path.splitext(self.dst_filename)[1].lower()
