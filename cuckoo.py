@@ -33,7 +33,7 @@ from cuckoo.common.cuckooconfig import CuckooConfig
 from cuckoo.common.constants import *
 from cuckoo.core.db import CuckooDatabase
 from cuckoo.core.getpackage import get_package
-from cuckoo.common.getfiletype import get_file_type, IS_MAGIC
+from cuckoo.common.getfiletype import get_file_type
 from cuckoo.common.crash import crash
 
 # Check the virtualization engine from the config fle and tries to retrieve
@@ -335,22 +335,21 @@ class Analysis(Thread):
             return False
 
         # Copy original target file name to destination target.
-        self.dst_filename = os.path.basename(self.task["target"])
+        self.dst_filename = os.path.basename(self.task["target"]).strip()
 
         # 4. If analysis package has not been specified, I'll try to identify
         # the correct one depending on the file type of the target.
         if self.task["package"] is None:
-            if not IS_MAGIC:
-                log.error("You don't have Python magic bindings installed "   \
-                          "and you didn't specify any analysis package, I'm " \
-                          "unable to determine how to perform the analysis. " \
-                          "Abort.")
+            file_type = get_file_type(self.task["target"])
+            
+            if not file_type:
+                log.error("You didn't specify an analysis package and I was "   \
+                          "not able to automatically detect it, therefore the " \
+                          "analysis cannot be initiated. Abort.")
                 self.db.complete(self.task["id"], False)
-                self._processing(None,
-                                 CUCKOO_ERROR_NO_MAGIC)
+                self._processing(None, CUCKOO_ERROR_NO_MAGIC)
                 return False
             
-            file_type = get_file_type(self.task["target"])
             package = get_package(file_type)
             current_extension = os.path.splitext(self.dst_filename)[1].lower()
             

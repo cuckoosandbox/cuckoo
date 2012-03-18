@@ -23,9 +23,8 @@ import logging
 
 try:
     import magic
-    IS_MAGIC = True
-except ImportError, why:
-    IS_MAGIC = False
+except (ImportError, AttributeError), why:
+    pass
 
 def get_file_type(file_path):
     """
@@ -38,9 +37,6 @@ def get_file_type(file_path):
     if not os.path.exists(file_path):
         return None
     
-    if not IS_MAGIC:
-        return None
-
     data = open(file_path, "rb").read()
 
     # Thanks to Jesse from malc0de.com for this suggestion.
@@ -53,8 +49,13 @@ def get_file_type(file_path):
     except:
         try:
             file_type = magic.from_buffer(data)
-        except Exception, why:
-            log.error("Something went wrong while retrieving magic: %s" % why)
-            return None
-    
+        except:
+            try:
+                import subprocess
+                file_process = subprocess.Popen(['file', '-b', file_path], stdout = subprocess.PIPE)
+                file_type = file_process.stdout.read().strip()
+            except Exception, why:
+                log.error("Something went wrong while retrieving magic: %s" % why)
+                return None
+
     return file_type
