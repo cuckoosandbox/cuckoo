@@ -384,10 +384,10 @@ class Report(BaseObserver):
             report = open(os.path.join(self.report_path, "report.maec-1.1.xml"), "w")
             report.write('<?xml version="1.0" ?>\n')
             report.write('<!--\n')
-            report.write('Cuckoo Sandbox MAEC malware analysis report\n')
+            report.write('Cuckoo Sandbox MAEC 1.1 malware analysis report\n')
             report.write('http://www.cuckoobox.org\n')
             report.write('-->\n')
             self.m.export(report, 0, namespace_ = '', name_ = 'MAEC_Bundle', namespacedef_ = 'xsi:schemaLocation="http://maec.mitre.org/XMLSchema/maec-core-1 file:MAEC_v1.1.xsd"')
             report.close()
         except Exception, e:
-            print "Failed writing MAEC report: %s" % e
+            print "Failed writing MAEC 1.1 report: %s" % e
