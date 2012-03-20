@@ -58,7 +58,7 @@ class ReportingConfig:
         @param task: report module
         @return: True or false
         """
-        if self.options[report.lower()]['enabled']:
+        if self.options.has_key(report.lower()) and self.options[report.lower()]['enabled']:
             return True
         else:
             return False
