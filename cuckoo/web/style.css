@@ -234,3 +234,28 @@ td.row {
 td.form {
    padding-bottom: 6px;
 }
+/* Signatures Styles */
+.severity_1 {
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    padding: 2px;
+    padding-left: 8px;
+    background-color: #92ec99;
+    margin-bottom: 3px;
+}
+.severity_2 {
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    padding: 2px;
+    padding-left: 8px;
+    background-color: #ffe380;
+    margin-bottom: 3px;
+}
+.severity_3 {
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    padding: 2px;
+    padding-left: 8px;
+    background-color: #ff6060;
+    margin-bottom: 3px;
+}

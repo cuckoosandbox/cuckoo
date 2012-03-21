@@ -1,0 +1,7 @@
+<div class="section">
+<div class="section-title">Signatures</div>
+%for signature in signatures:
+    <div class="severity_${signature["severity"]}">${signature["description"]}</div>
+%endfor
+</div>
+<div class="space"></div>
