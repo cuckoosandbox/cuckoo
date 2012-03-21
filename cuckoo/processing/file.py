@@ -33,9 +33,8 @@ except ImportError, why:
     IS_MAGIC = False
 
 try:
-    # Try to import Jose's pyssdeep bindings.
-    # You can get them at http://code.google.com/p/pyssdeep/
-    import ssdeep
+    # Try to import pydeep [https://github.com/kbandla/pydeep] 
+    import pydeep
     IS_SSDEEP = True
 except ImportError, why:
     IS_SSDEEP = False
@@ -117,7 +116,7 @@ class File:
             return None
 
         try:
-            return ssdeep.ssdeep().hash_file(self.file_path)
+            return pydeep.hash_file(self.file_path)
         except:
             return None
 
