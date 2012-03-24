@@ -28,7 +28,7 @@ class Static(Analysis):
 
         file_info = File(self._file_path).process()
 
-        if "PE32" in file_info["type"]:
+        if file_info["type"] and "PE32" in file_info["type"]:
             static = PortableExecutable(self._file_path).process()
 
         return static
