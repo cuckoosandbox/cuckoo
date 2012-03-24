@@ -340,7 +340,7 @@ class Report(BaseObserver):
         tools = maec.Tools_UsedType()
         tool = maec.ToolType(
                              id = "%s:tol:1" % self.idMap['prefix'],
-                             Name = 'Cucko Sandbox',
+                             Name = 'Cuckoo Sandbox',
                              Version = self.results['info']['version'],
                              Organization = 'http://www.cuckoobox.org'
                              )
