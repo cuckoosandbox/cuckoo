@@ -17,7 +17,7 @@ After the snapshot creation is completed, you can power off the machine and
 restore it::
 
     $ VBoxManage controlvm "<Name of VM>" poweroff
-    $ VBoxManage snapshot "<Name of VM"> restorecurrent
+    $ VBoxManage snapshot "<Name of VM>" restorecurrent
 
 If you followed all the steps properly, your virtual machine should be ready to
 be used by Cuckoo.
