@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-from cuckoo.processing.signatures import BaseSignature
+from cuckoo.processing.observers import Signature
 
 # This is a working example of a possible signature.
 # You should follow the skeleton presented here when writing your own
 # signatures.
 
-class Signature(BaseSignature):
+class Example(Signature):
     def __init__(self):
         # When creating the signature you should define some basic
         # attributes that will both describe and influence the execution

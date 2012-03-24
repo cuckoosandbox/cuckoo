@@ -25,6 +25,7 @@ import logging
 from urlparse import urlunparse
 
 from cuckoo.common.stringutils import convert_to_printable
+from cuckoo.processing.observers import Analysis
 
 try:
     import dpkt
@@ -257,3 +258,11 @@ class Pcap:
         self.results["dns"] = self.dns_requests
         
         return self.results
+
+class NetworkAnalysis(Analysis):
+    def process(self):
+        self.key = "network"
+
+        results = Pcap(self._pcap_path).process()
+
+        return results

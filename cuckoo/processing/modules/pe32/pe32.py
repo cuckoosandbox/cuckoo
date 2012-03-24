@@ -27,8 +27,8 @@ try:
 except ImportError, why:
     IS_MAGIC = False
 
-import cuckoo.processing.pefile as pefile
-import cuckoo.processing.peutils as peutils
+import cuckoo.processing.modules.pe32.pefile as pefile
+import cuckoo.processing.modules.pe32.peutils as peutils
 from cuckoo.common.stringutils import convert_to_printable
 
 # Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py

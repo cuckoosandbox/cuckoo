@@ -23,7 +23,7 @@ import sys
 import logging
 from optparse import OptionParser
 
-from cuckoo.processing.cuckoodict import CuckooDict
+from cuckoo.processing.data import DataProcessor
 from cuckoo.reporting.reporter import ReportProcessor
 from cuckoo.common.crash import crash
 
@@ -88,7 +88,7 @@ def main():
 
     if analysis_path:
         # Generate reports out of abstracted analysis results.
-        ReportProcessor(analysis_path).report(CuckooDict(analysis_path).process())
+        ReportProcessor(analysis_path).report(DataProcessor(analysis_path).process())
     
     log.info("Post-analysis processing completed.")
 

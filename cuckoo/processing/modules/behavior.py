@@ -23,8 +23,9 @@ import csv
 import logging
 
 from cuckoo.common.stringutils import convert_to_printable
+from cuckoo.processing.observers import Analysis
 
-class ParseBehaviorLog:
+class ParseProcessLog:
     """
     Parses the specified process log file.
     """
@@ -48,7 +49,7 @@ class ParseBehaviorLog:
         """
         call = {}
         arguments = []
-        log = logging.getLogger("Processing.ParseBehaviorLog")
+        log = logging.getLogger("Processing.ParseProcessLog")
 
         # Try to acquire the first fixed columns.
         try:
@@ -121,7 +122,7 @@ class ParseBehaviorLog:
         """
         Processes the specified process log file.
         """
-        log = logging.getLogger("Processing.ParseBehaviorLog")
+        log = logging.getLogger("Processing.ParseProcessLog")
         
         if not os.path.exists(self._log_path):
             log.error("Analysis logs folder does not exist at path \"%s\"."
@@ -141,7 +142,7 @@ class ParseBehaviorLog:
 
         return True
 
-class BehaviorAnalysis:
+class Processes:
     """
     Processes all the results from the specified analysis.
     """
@@ -159,7 +160,7 @@ class BehaviorAnalysis:
         @return: dictionary containing the abstracted analysis results
         """
         results = []
-        log = logging.getLogger("Processing.BehaviorAnalysis")
+        log = logging.getLogger("Processing.Processes")
 
         # Check if the specified directory exists.
         if not os.path.exists(self._logs_path):
@@ -181,7 +182,7 @@ class BehaviorAnalysis:
                 continue
 
             # Invoke parsing of current log file.
-            current_log = ParseBehaviorLog(file_path)
+            current_log = ParseProcessLog(file_path)
             current_log.extract()
 
             # If the current log actually contains any data, add its data to
@@ -202,7 +203,7 @@ class BehaviorAnalysis:
 
         return results
 
-class BehaviorSummary:
+class Summary:
     """
     Generates a summary containing key information out of the behavior analysis.
     """
@@ -366,3 +367,14 @@ class ProcessTree:
         self.populate(self.processes[0])
 
         return self.proctree
+
+class BehaviorAnalysis(Analysis):
+    def process(self):
+        self.key = "behavior"
+
+        behavior = {}
+        behavior["processes"]   = Processes(self._logs_path).process()
+        behavior["processtree"] = ProcessTree(behavior["processes"]).process()
+        behavior["summary"]     = Summary(behavior["processes"]).process()
+
+        return behavior
