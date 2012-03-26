@@ -65,6 +65,8 @@ class CuckooDatabase:
         """
         Generate SQLite database file.
         """
+        log = logging.getLogger("Core.CuckooDatabase.Generate")
+
         if os.path.exists(CUCKOO_DB_FILE):
             return False
 
