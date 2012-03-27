@@ -35,7 +35,7 @@ def cuckoo_run(target_path):
     rundll32 = "C:\\WINDOWS\\system32\\rundll32.exe"
 
     suspended = True
-    (pid, h_thread) = cuckoo_execute(rundll32, target_path, suspended)
+    (pid, h_thread) = cuckoo_execute(rundll32, "%s,DllMain" % target_path, suspended)
     cuckoo_monitor(pid, h_thread, suspended)
 
     pids.append(pid)
