@@ -140,6 +140,8 @@ class Report(BaseObserver):
                                                                     )
                                                 )
         # DNS requests
+	if not self.results["network"]:
+		return 
         for req in self.objects.get_uri():
             # Get IP
             if len(self.results['network']['dns']) > 0:
