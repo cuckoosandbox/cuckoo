@@ -109,6 +109,9 @@ class Report(BaseObserver):
         for process in self.results['behavior']['processes']:
             self.createActionAPI(process)      
         # Network
+        if not self.results["network"]:
+		print "No network data"
+		return
         if len(self.results['network']['udp']) > 0:
             for pkt in self.results['network']['udp']:
                 self.createActionNet(pkt)
