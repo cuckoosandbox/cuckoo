@@ -25,8 +25,10 @@ from cuckoo.processing.observers import Analysis
 class Dropped(Analysis):
     def process(self):
         self.key = "dropped"
-
         dropped_files = []
+
+        if not os.path.exists(self._dropped_path):
+            return dropped_files
 
         for file_name in os.listdir(self._dropped_path):
             file_path = os.path.join(self._dropped_path, file_name)

@@ -27,6 +27,9 @@ class Screenshots(Analysis):
         self.key = "screenshots"
         shots = []
 
+        if not os.path.exists(self._shots_path):
+            return shots
+
         counter = 1
         for shot_name in os.listdir(self._shots_path):
             shot_path = os.path.join(self._shots_path, shot_name)
