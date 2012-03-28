@@ -461,7 +461,7 @@ class Analysis(Thread):
                 log.debug("Successfuly deleted original file at path \"%s\"."
                           % self.task["target"])
             except Exception, why:
-                self.warning("Cannot delete original file \"%s\": %s"
+                log.warning("Cannot delete original file \"%s\": %s"
                              % (self.task["target"], why))
 
         # 9. Start sniffer.
