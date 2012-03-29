@@ -20,6 +20,7 @@
 import re
 import sys
 import logging
+from time import sleep
 
 from cuckoo.common.cuckooconfig import CuckooConfig
 
@@ -279,11 +280,21 @@ class VirtualMachine:
 
                 # Lock is needed to create a session and modify the state of the 
                 # current virtual machine.
-                try:
-                    self.mach.lockMachine(session, VBOX.LockType_Shared)
-                except Exception, why:
-                    log.error("Unable to lock machine \"%s\": %s."
-                              % (self.mach.name, why))
+                locked = False
+                counter = 1
+                while not locked and counter < VBOX_TIMEOUT:
+                    try:
+                        self.mach.lockMachine(session, VBOX.LockType_Shared)
+                        locked = True
+                    except Exception, why:
+                        log.debug("Unable to lock machine \"%s\": %s."
+                                  % (self.mach.name, why))
+                        counter += 1
+                        sleep(1)
+
+                if not locked:
+                    log.error("Unable to lock virtual machine \"%s\". " \
+                              "Aborting snapshot restore." % self.mach.name)
                     return False
                 
                 # Restore virtual machine snapshot.
