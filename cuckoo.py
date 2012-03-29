@@ -403,7 +403,10 @@ class Analysis(Thread):
                                   % self.task["vm_id"])
                         sleep(1)
             else:
-                self.vm_id = VM_POOL.pop()
+                try:
+                    self.vm_id = VM_POOL.pop()
+                except IndexError:
+                    log.debug("Virtual machines pool is empty, retrying.")
 
             if self.vm_id:
                 log.info("Acquired virtual machine \"%s\"." % self.vm_id)
