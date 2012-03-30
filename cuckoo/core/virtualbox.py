@@ -298,12 +298,21 @@ class VirtualMachine:
                     return False
                 
                 # Restore virtual machine snapshot.
-                try:
-                    progress = session.console.restoreSnapshot(
-                        self.mach.currentSnapshot)
-                except Exception, why:
-                    log.error("Unable to restore virtual machine \"%s\": %s."
-                              % (self.mach.name, why))
+                restored = False
+                counter = 1
+                while not restored and counter < VBOX_TIMEOUT:
+                    try:
+                        progress = session.console.restoreSnapshot(self.mach.currentSnapshot)
+                        restored = True
+                    except Exception, why:
+                        log.debug("Unable to restore virtual machine \"%s\": %s."
+                                  % (self.mach.name, why))
+                        counter += 1
+                        sleep(1)
+
+                if not restored:
+                    log.error("Unable to restore virtual machine \"%s\" snapshot."
+                              % self.mach.name)
                     return False
 
                 # Wait for task to complete with a 60 seconds timeout.
