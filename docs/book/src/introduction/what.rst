@@ -114,3 +114,10 @@ repository`_.
 .. _`official website`: http://www.cuckoobox.org
 .. _`official git repository`: http://github.com/cuckoobox/cuckoo
 
+Cuckoo git repository provides three branches:
+    * `master`: `stable` repository, this branch follows Cuckoo release cycle
+    * `unstable`: `testing` repository, this branch follows Cuckoo developments
+    but aims to be stable, you can use this branch if you want be on the cutting
+    edge of Cuckoo's new features
+    * `development`: `development` repository, where Cuckoo's developers works,
+    this branch can be really unstable and it's use is not suggested
