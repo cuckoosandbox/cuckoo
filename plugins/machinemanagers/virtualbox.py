@@ -2,16 +2,15 @@ import os
 import subprocess
 import ConfigParser
 
-from lib.cuckoo.base.machiner import BaseMachiner
+from lib.cuckoo.abstract.machinemanager import MachineManager
 
-class Machiner(BaseMachiner):
+class VirtualBox(MachineManager):
     def __init__(self):
         self.config = ConfigParser.ConfigParser()
         self.config.read("conf/virtualbox.conf")
-        self.headless = self.config.getboolean("VirtualBox", "headless")
         self.machines = []
 
-    def prepare(self):
+    def initialize(self):
         machines_list = self.config.get("VirtualBox", "machines").strip().split(",")
         for machine_id in machines_list:
             machine = {"id"       : machine_id,
@@ -23,7 +22,7 @@ class Machiner(BaseMachiner):
                        "locked"   : False}
             self.machines.append(machine)
 
-    def get_machine(self, label=None, platform=None):
+    def acquire(self, label=None, platform=None):
         if label:
             for machine in self.machines:
                 if machine["label"] == label and not machine["locked"]:
@@ -43,7 +42,7 @@ class Machiner(BaseMachiner):
         return None
 
     def start(self, label):
-        if self.headless:
+        if self.config.getboolean("VirtualBox", "headless"):
             subprocess.call(["VBoxHeadless", "-startvm", label])
         else:
             subprocess.call(["VBoxManage", "startvm", label])

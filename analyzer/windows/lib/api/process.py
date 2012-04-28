@@ -108,7 +108,7 @@ class Process:
         else:
             return False
 
-    def inject(self, dll = "dll\\cmonitor.dll"):
+    def inject(self, dll="dll\\cmonitor.dll"):
         if self.pid == 0:
             return False
 

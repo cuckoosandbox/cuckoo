@@ -1,18 +1,18 @@
-import os
-import sys
 import ConfigParser
 
 class Config:
-    def __init__(self, root="."):
-        config_path = os.path.join(root, "conf/cuckoo.conf")
-        if not os.path.exists(config_path):
-            sys.exit("Configuration file does not exist")
-
+    def __init__(self, cfg="conf/cuckoo.conf"):
         config = ConfigParser.ConfigParser()
-        config.read(config_path)
+        config.read(cfg)
 
-        self.debug = config.getboolean("Cuckoo", "debug")
-        self.analysis_timeout = config.getint("Cuckoo", "analysis_timeout")
-        self.critical_timeout = config.getint("Cuckoo", "critical_timeout")
-        self.delete_original = config.getboolean("Cuckoo", "delete_original")
-        self.machiner = config.get("Cuckoo", "machiner")
+        for section in config.sections():
+            for name, raw_value in config.items(section):
+                try:
+                    value = config.getboolean(section, name)
+                except ValueError:
+                    try:
+                        value = config.getint(section, name)
+                    except ValueError:
+                        value = config.get(section, name)
+
+                setattr(self, name, value)

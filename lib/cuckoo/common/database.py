@@ -2,6 +2,8 @@ import os
 import sys
 import sqlite3
 
+from lib.cuckoo.abstract.dictionary import Dictionary
+
 class Database:
     def __init__(self, root="."):
         self.db_file = os.path.join(root, "db/cuckoo.db")
@@ -28,11 +30,11 @@ class Database:
             cursor.execute("CREATE TABLE tasks (\n"                         \
                            "    id INTEGER PRIMARY KEY,\n"                  \
                            "    md5 TEXT DEFAULT NULL,\n"                   \
-                           "    target TEXT NOT NULL,\n"                    \
+                           "    file_path TEXT NOT NULL,\n"                 \
                            "    timeout INTEGER DEFAULT NULL,\n"            \
                            "    priority INTEGER DEFAULT 0,\n"              \
                            "    custom TEXT DEFAULT NULL,\n"                \
-                           "    vm_id TEXT DEFAULT NULL,\n"                 \
+                           "    machine TEXT DEFAULT NULL,\n"               \
                            "    package TEXT DEFAULT NULL,\n"               \
                            "    platform TEXT DEFAULT NULL,\n"              \
                            "    added_on DATE DEFAULT CURRENT_TIMESTAMP,\n" \
@@ -49,60 +51,63 @@ class Database:
 
         return True
 
-    def get_dict(self, row):
+    def dictify(self, row):
         try:
-            task = {"id"           : row[0],
-                    "md5"          : row[1],
-                    "target"       : row[2],
-                    "timeout"      : row[3],
-                    "priority"     : row[4],
-                    "custom"       : row[5],
-                    "vm_id"        : row[6],
-                    "package"      : row[7],
-                    "platform"     : row[8],
-                    "added_on"     : row[9],
-                    "completed_on" : row[10],
-                    "lock"         : row[11],
-                    "status"       : row[12]}
+            task = Dictionary()
+            task.id = row[0]
+            task.md5 = row[1]
+            task.file_path = row[2]
+            task.timeout = row[3]
+            task.priority = row[4]
+            task.custom = row[5]
+            task.machine = row[6]
+            task.package = row[7]
+            task.platform = row[8]
+            task.added_on = row[9]
+            task.completed_on = row[10]
+            task.lock = row[11]
+            task.status = row[12]
         except IndexError as e:
+            print e
             return None
 
         return task
 
-    def add_task(self,
-                 target,
-                 md5=None,
-                 timeout=None,
-                 package=None,
-                 priority=None,
-                 custom=None,
-                 vm_id=None):
-        if not target or not os.path.exists(target):
+    def add(self,
+            file_path,
+            md5=None,
+            timeout=None,
+            package=None,
+            priority=None,
+            custom=None,
+            machine=None):
+        if not file_path or not os.path.exists(file_path):
             return None
 
         try:
             self.cursor.execute("INSERT INTO tasks " \
-                                "(target, md5, timeout, package, priority, custom, vm_id) " \
+                                "(file_path, md5, timeout, package, priority, custom, machine) " \
                                 "VALUES (?, ?, ?, ?, ?, ?, ?);",
-                                (target, md5, timeout, package, priority, custom, vm_id))
+                                (file_path, md5, timeout, package, priority, custom, machine))
             self.conn.commit()
             return self.cursor.lastrowid
         except sqlite3.OperationalError as e:
             return None
 
-    def get_task(self):
+    def fetch(self):
         try:        
             self.cursor.execute("SELECT * FROM tasks " \
                                 "WHERE lock = 0 "      \
                                 "AND status = 0 "      \
                                 "ORDER BY priority, added_on LIMIT 1;")
         except sqlite3.OperationalError as e:
+            print e
             return None
 
         row = self.cursor.fetchone()
 
         if row:
-            return self.get_dict(row)
+            return self.dictify(row)
         else:
             return None
 

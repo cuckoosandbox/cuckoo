@@ -1,6 +1,8 @@
 import os
 import sys
 
+from lib.cuckoo.common.utils import create_folders
+
 def check_dependencies():
     dependencies = ["sqlite3"]
 
@@ -12,19 +14,11 @@ def check_dependencies():
 
     return True
 
-def create_folders(root="."):
+def create_structure():
     folders = ["db/",
                "log/",
                "storage/",
                "storage/analyses/",
                "storage/binaries/"]
 
-    for folder in folders:
-        if os.path.exists(folder):
-            continue
-
-        try:
-            folder_path = os.path.join(root, folder)
-            os.mkdir(folder_path)
-        except OSError as e:
-            continue
+    create_folders(folders=folders)

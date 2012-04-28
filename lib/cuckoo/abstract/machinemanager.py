@@ -1,11 +1,8 @@
-class BaseMachiner:
+class MachineManager(object):
     def __init__(self):
         pass
 
-    def prepare(self):
-        raise NotImplementedError
-
-    def get_machine(self, label=None):
+    def acquire(self, label=None):
         raise NotImplementedError
 
     def start(self, label=None):
