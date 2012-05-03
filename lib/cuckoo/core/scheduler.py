@@ -46,7 +46,7 @@ class AnalysisManager(Thread):
         guest = GuestManager(vm.ip, vm.platform)
         guest.start_analysis(self.task)
         guest.wait()
-        guest.get_results()
+        guest.get_results(results_folder)
         MMANAGER.stop(vm.label)
         print "Finished!"
 

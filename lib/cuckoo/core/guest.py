@@ -63,14 +63,13 @@ class GuestManager:
 
         return True
 
-    def get_results(self):
+    def get_results(self, folder):
         data = self.server.get_results()
 
         zip_data = StringIO()
         zip_data.write(data)
 
         with ZipFile(zip_data, "r") as archive:
-            folder = "storage/analyses/%s/" % self.task.id
             if not os.path.exists(folder):
                 try:
                     os.mkdir(folder)
