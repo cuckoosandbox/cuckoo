@@ -5,6 +5,9 @@ class MachineManager(object):
     def acquire(self, label=None):
         raise NotImplementedError
 
+    def release(self, label=None):
+        raise NotImplementedError
+
     def start(self, label=None):
         raise NotImplementedError
 

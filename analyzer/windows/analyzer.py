@@ -1,13 +1,18 @@
+import os
 import sys
+import xmlrpclib
+import ConfigParser
 from ctypes import *
 from threading import Lock, Thread, Timer
 
 from lib.core.defines import *
+from lib.api.process import Process
+from lib.abstract.package import Package
+from lib.core.config import Config
 from lib.core.startup import create_folders
 from lib.core.privileges import grant_debug_privilege
-from lib.api.process import Process
 
-BUFSIZE      = 512
+BUFSIZE = 512
 PROCESS_LIST = []
 PROCESS_LOCK = Lock()
 
@@ -101,14 +106,18 @@ class PipeServer(Thread):
 class Analyzer:
     def __init__(self):
         self.do_run = True
-        self.pipe   = None
+        self.pipe = None
+        self.config = None
+        self.file_path = None
 
     def prepare(self):
         grant_debug_privilege()
         create_folders()
+        self.config = Config(cfg="analysis.conf")
         self.pipe = PipeServer()
         self.pipe.daemon = True
         self.pipe.start()
+        self.file_path = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, self.config.file_name)
 
     def complete(self):
         self.pipe.stop()
@@ -118,26 +127,24 @@ class Analyzer:
 
     def run(self):
         self.prepare()
+        package_name = "packages.%s" % self.config.package
 
         try:
-            package_name = "packages.exe"
-            package = __import__(package_name,
-                                 globals(),
-                                 locals(),
-                                 ["Package"],
-                                 -1)
+            __import__(package_name, globals(), locals(), ["dummy"], -1)
         except ImportError:
             sys.exit("Unable to import package \"%s\", does not exist."
                      % package_name)
 
-        pack = package.Package()
+        Package()
+        package_import = Package.__subclasses__()[0]
+        pack = package_import()
 
         timer = Timer(120.0, self.stop)
         timer.start()
 
         try:
-            pids = pack.run()
-        except AttributeError:
+            pids = pack.run(self.file_path)
+        except NotImplementedError:
             sys.exit("The package \"%s\" doesn't contain a run function."
                      % package_name)
 
@@ -159,7 +166,7 @@ class Analyzer:
                     if not pack.check():
                         timer.cancel()
                         break
-                except AttributeError:
+                except NotImplementedError:
                     pass
             finally:
                 PROCESS_LOCK.release()
@@ -167,7 +174,7 @@ class Analyzer:
 
         try:
             pack.finish()
-        except AttributeError:
+        except NotImplementedError:
             pass
 
         self.complete()
@@ -186,5 +193,5 @@ if __name__ == "__main__":
     except SystemExit as e:
         error = e
     finally:
-        print "STATUS", status
-        print "ERROR", error
+        server = xmlrpclib.Server("http://127.0.0.1:8000")
+        server.complete()

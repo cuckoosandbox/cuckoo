@@ -20,10 +20,11 @@ def randomize_dll(dll_path):
 
 class Process:
     def __init__(self, pid=0, h_process=0, thread_id=0, h_thread=0):
-        self.pid       = pid
+        self.pid = pid
         self.h_process = h_process
         self.thread_id = thread_id
-        self.h_thread  = h_thread
+        self.h_thread = h_thread
+        self.suspended = False
 
     def get_system_info(self):
         self.system_info = SYSTEM_INFO()
@@ -68,6 +69,7 @@ class Process:
 
         creation_flags = CREATE_NEW_CONSOLE
         if suspended:
+            self.suspended = True
             creation_flags += CREATE_SUSPENDED
 
         created = KERNEL32.CreateProcessA(path,
@@ -108,7 +110,7 @@ class Process:
         else:
             return False
 
-    def inject(self, dll="dll\\cmonitor.dll"):
+    def inject(self, dll="dll\\cmonitor.dll", apc=False):
         if self.pid == 0:
             return False
 
@@ -139,15 +141,22 @@ class Process:
         load_library = KERNEL32.GetProcAddress(kernel32_handle,
                                                "LoadLibraryA")
 
-        new_thread_id = c_ulong(0)
-        if not KERNEL32.CreateRemoteThread(self.h_process,
-                                           None,
-                                           0,
-                                           load_library,
-                                           arg,
-                                           0,
-                                           byref(new_thread_id)):
-            return False
+        if apc or self.suspended:
+            if self.h_thread == 0:
+                return False
+            
+            if KERNEL32.QueueUserAPC(load_library, self.h_thread, arg) == 0:
+                return False
+        else:
+            new_thread_id = c_ulong(0)
+            if not KERNEL32.CreateRemoteThread(self.h_process,
+                                               None,
+                                               0,
+                                               load_library,
+                                               arg,
+                                               0,
+                                               byref(new_thread_id)):
+                return False
 
         return True
 
@@ -161,9 +170,9 @@ class Process:
         self.get_system_info()
 
         page_size = self.system_info.dwPageSize
-        min_addr  = self.system_info.lpMinimumApplicationAddress
-        max_addr  = self.system_info.lpMaximumApplicationAddress
-        mem       = min_addr
+        min_addr = self.system_info.lpMinimumApplicationAddress
+        max_addr = self.system_info.lpMaximumApplicationAddress
+        mem = min_addr
 
         root = os.path.join(PATHS["memory"], str(self.pid))
         root = os.path.join(root, str(int(time())))

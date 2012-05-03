@@ -1,13 +1,15 @@
+import os
 import sys
 import time
 from threading import Thread
 
+from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.database import Database
 from lib.cuckoo.abstract.machinemanager import MachineManager
-from lib.cuckoo.abstract.guestmanager import GuestManager
+from lib.cuckoo.core.guest import GuestManager
 
-MACHINES = []
+MMANAGER = []
 
 class AnalysisManager(Thread):
     def __init__(self, task):
@@ -17,17 +19,45 @@ class AnalysisManager(Thread):
         self.task = task
 
     def run(self):
-        print MACHINES
-        print self.task
+        if not os.path.exists(self.task.file_path):
+            return False
+
+        results_folder = os.path.join("storage/analyses/", str(self.task.id))
+
+        if os.path.exists(results_folder):
+            return False
+
+        try:
+            os.mkdir(results_folder)
+        except OSError:
+            return False
+
+        while True:
+            vm = MMANAGER.acquire(label=self.task.machine, platform=self.task.platform)
+            if not vm:
+                time.sleep(1)
+            else:
+                break
+
+        if not self.task.package:
+            self.task.package = "exe"
+
+        MMANAGER.start(vm.label)
+        guest = GuestManager(vm.ip, vm.platform)
+        guest.start_analysis(self.task)
+        guest.wait()
+        guest.get_results()
+        MMANAGER.stop(vm.label)
+        print "Finished!"
 
 class Scheduler:
     def __init__(self):
         self.running = True
-        self.config  = Config()
-        self.db      = Database()
+        self.config = Config()
+        self.db = Database()
 
     def initialize(self):
-        global MACHINES
+        global MMANAGER
 
         name = "plugins.machinemanagers.%s" % self.config.machine_manager
         try:
@@ -37,14 +67,13 @@ class Scheduler:
 
         MachineManager()
         module = MachineManager.__subclasses__()[0]
-        self.manager = module()
-        self.manager.initialize()
+        MMANAGER = module()
+        MMANAGER.initialize()
 
-        if len(self.manager.machines) == 0:
+        if len(MMANAGER.machines) == 0:
             sys.exit("No machines")
         else:
-            MACHINES = self.manager.machines
-            print "Loader %s machine/s" % len(self.manager.machines)
+            print "Loaded %s machine/s" % len(MMANAGER.machines)
 
     def stop(self):
         self.running = False
@@ -57,8 +86,10 @@ class Scheduler:
             task = self.db.fetch()
 
             if not task:
-                print "No pending tasks"
                 continue
 
             analysis = AnalysisManager(task)
+            analysis.daemon = True
             analysis.start()
+            analysis.join()
+            break
