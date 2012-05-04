@@ -1,12 +1,28 @@
 #!/usr/bin/env python
+import logging
+import argparse
+
 from lib.cuckoo.common.logo import logo
-from lib.cuckoo.core.startup import check_dependencies, create_structure
+from lib.cuckoo.core.startup import check_python_version, check_dependencies, create_structure, init_logging
 from lib.cuckoo.core.scheduler import Scheduler
+
+log = logging.getLogger()
 
 def main():
     logo()
-    check_dependencies()
     create_structure()
+    init_logging()
+    check_dependencies()
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
+    parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
+    args = parser.parse_args()
+
+    if args.quiet:
+        log.setLevel(logging.WARN)
+    elif args.debug:
+        log.setLevel(logging.DEBUG)
 
     try:
         sched = Scheduler()
@@ -18,4 +34,5 @@ if __name__ == "__main__":
     try:
         main()
     except SystemExit as e:
-        print e
+        if type(e.message) == str:
+            log.critical(e.message)

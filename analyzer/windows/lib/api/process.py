@@ -1,12 +1,15 @@
 import os
 import string
 import random
+import logging
 from time import time
 from ctypes import *
 from shutil import copy
 
 from lib.core.defines import *
 from lib.core.paths import PATHS
+
+log = logging.getLogger(__name__)
 
 def randomize_dll(dll_path):
     new_dll_name = "".join(random.choice(string.ascii_letters) for x in range(6))
@@ -86,8 +89,11 @@ class Process:
         if created:
             self.pid = process_info.dwProcessId
             self.h_thread = process_info.hThread
+            log.info("Successfully executed process from path \"%s\" with arguments \"%s\" with pid %d"
+                     % (path, args, self.pid))
             return True
         else:
+            log.error("Failed to execute process from path \"%s\" with arguments \"%s\"" % (path, args))
             return False
 
     def resume(self):
@@ -97,8 +103,10 @@ class Process:
         KERNEL32.Sleep(2000)
 
         if KERNEL32.ResumeThread(self.h_thread):
+            log.info("Successfully resumed process with pid %d" % self.pid)
             return True
         else:
+            log.error("Failed to resume process with pid %d" % self.pid)
             return False
 
     def terminate(self):
@@ -106,20 +114,25 @@ class Process:
             self.open()
 
         if KERNEL32.TerminateProcess(self.h_process, 1):
+            log.info("Successfully terminated process with pid %d" % self.pid)
             return True
         else:
+            log.error("Failed to terminate process with pid %d" % self.pid)
             return False
 
     def inject(self, dll="dll\\cmonitor.dll", apc=False):
         if self.pid == 0:
+            log.warning("No valid pid specified, injection aborted")
             return False
 
-        if self.h_process == 0:
-            self.open()
+        if not self.is_alive():
+            log.warning("The process with pid %d is not alive, injection aborted" % self.pid)
+            return False
 
         dll = randomize_dll(dll)
 
         if not dll or not os.path.exists(dll):
+            log.warning("No valid DLL specified to be injected in process with pid %d, injection aborted" % self.pid)
             return False
 
         KERNEL32.Sleep(2000)
@@ -129,12 +142,20 @@ class Process:
                                       len(dll),
                                       MEM_RESERVE | MEM_COMMIT,
                                       PAGE_READWRITE)
+
+        if not arg:
+            log.error("VirtualAllocEx failed when injecting process with pid %d, injection aborted (Error %d)"
+                      % (self.pid, KERNEL32.GetLastError()))
+            return False
+
         bytes_written = c_int(0)
         if not KERNEL32.WriteProcessMemory(self.h_process,
                                            arg,
                                            dll,
                                            len(dll),
                                            byref(bytes_written)):
+            log.error("WriteProcessMemory failed when injecting process with pid %d, injection aborted (Error %d)"
+                      % (self.pid, KERNEL32.GetLastError()))
             return False
 
         kernel32_handle = KERNEL32.GetModuleHandleA("kernel32.dll")
@@ -142,12 +163,17 @@ class Process:
                                                "LoadLibraryA")
 
         if apc or self.suspended:
+            log.info("Using QueueUserAPC injection")
             if self.h_thread == 0:
+                log.info("No valid thread handle specified for injecting process with pid %d, injection aborted" % self.pid)
                 return False
             
             if KERNEL32.QueueUserAPC(load_library, self.h_thread, arg) == 0:
+                log.error("QueueUserAPC failed when injecting process with pid %d (Error %d)"
+                          % (self.pid, KERNEL32.GetLastError()))
                 return False
         else:
+            log.info("Using CreateRemoteThread injection")
             new_thread_id = c_ulong(0)
             if not KERNEL32.CreateRemoteThread(self.h_process,
                                                None,
@@ -156,16 +182,22 @@ class Process:
                                                arg,
                                                0,
                                                byref(new_thread_id)):
+                log.error("CreateRemoteThread failed when injecting process with pid %d (Error %d)"
+                          % (self.pid, KERNEL32.GetLastError()))
                 return False
+
+        log.info("Successfully injected process with pid %d" % self.pid)
 
         return True
 
     def dump_memory(self):
         if self.pid == 0:
+            log.warning("No valid pid specified, memory dump aborted")
             return False
 
-        if self.h_process == 0:
-            self.open()
+        if not self.is_alive():
+            log.warning("The process with pid %d is not alive, memory dump aborted" % self.pid)
+            return False
 
         self.get_system_info()
 
@@ -202,5 +234,7 @@ class Process:
                 mem += mbi.RegionSize
             else:
                 mem += page_size
+
+        log.info("Memory dump of process with pid %d completed" % self.pid)
 
         return True

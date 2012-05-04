@@ -1,25 +1,40 @@
 import os
 import sys
+import logging
 import xmlrpclib
 import ConfigParser
 from ctypes import *
 from threading import Lock, Thread, Timer
 
 from lib.core.defines import *
+from lib.core.paths import PATHS
 from lib.api.process import Process
 from lib.abstract.package import Package
 from lib.core.config import Config
-from lib.core.startup import create_folders
+from lib.core.startup import create_folders, init_logging
 from lib.core.privileges import grant_debug_privilege
 
+log = logging.getLogger()
+
 BUFSIZE = 512
+FILES_LIST = []
 PROCESS_LIST = []
 PROCESS_LOCK = Lock()
+
+def add_file(file_path):
+    if file_path.startswith("\\\\."):
+        return
+
+    if os.path.exists(file_path):
+        if file_path not in FILES_LIST:
+            log.info("Added new file to list with path: %s" % file_path)
+            FILES_LIST.append(file_path)
 
 def add_pid(pid):
     PROCESS_LOCK.acquire()
 
     if type(pid) == long or type(pid) == int or type(pid) == str:
+        log.info("Added new process to list with pid: %d" % pid)
         PROCESS_LIST.append(pid)
 
     PROCESS_LOCK.release()
@@ -61,11 +76,12 @@ class PipeHandler(Thread):
                 if pid.isdigit():
                     pid = int(pid)
                     if pid not in PROCESS_LIST:
+                        add_pids(pid)
                         proc = Process(pid=pid)
                         proc.inject()
-                        add_pids(proc.pid)
             elif command.startswith("FILE:"):
                 file_path = command[5:]
+                add_file(file_path)
 
         return True
 
@@ -113,6 +129,7 @@ class Analyzer:
     def prepare(self):
         grant_debug_privilege()
         create_folders()
+        init_logging()
         self.config = Config(cfg="analysis.conf")
         self.pipe = PipeServer()
         self.pipe.daemon = True
@@ -121,12 +138,14 @@ class Analyzer:
 
     def complete(self):
         self.pipe.stop()
+        log.info("Analysis completed")
 
     def stop(self):
         self.do_run = False
 
     def run(self):
         self.prepare()
+
         package_name = "packages.%s" % self.config.package
 
         try:
@@ -156,6 +175,7 @@ class Analyzer:
             try:
                 for pid in PROCESS_LIST:
                     if not Process(pid=pid).is_alive():
+                        log.info("Process with pid %d has terminated" % pid)
                         PROCESS_LIST.remove(pid)
 
                 if len(PROCESS_LIST) == 0:
@@ -192,6 +212,7 @@ if __name__ == "__main__":
         error = "Keyboard Interrupt"
     except SystemExit as e:
         error = e
+        log.critical(error)
     finally:
         server = xmlrpclib.Server("http://127.0.0.1:8000")
         server.complete()

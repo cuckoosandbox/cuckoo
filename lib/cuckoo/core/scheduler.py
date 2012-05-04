@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import logging
 from threading import Thread
 
 from lib.cuckoo.common.utils import create_folders
@@ -8,6 +9,8 @@ from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.database import Database
 from lib.cuckoo.abstract.machinemanager import MachineManager
 from lib.cuckoo.core.guest import GuestManager
+
+log = logging.getLogger(__name__)
 
 MMANAGER = []
 
@@ -18,18 +21,29 @@ class AnalysisManager(Thread):
         self.db = Database()
         self.task = task
 
-    def run(self):
-        if not os.path.exists(self.task.file_path):
-            return False
+    def init_storage(self):
+        self.task.results_folder = os.path.join("storage/analyses/", str(self.task.id))
 
-        results_folder = os.path.join("storage/analyses/", str(self.task.id))
-
-        if os.path.exists(results_folder):
+        if os.path.exists(self.task.results_folder):
+            log.error("Analysis results folder already exists at path: %s" % self.task.results_folder)
             return False
 
         try:
-            os.mkdir(results_folder)
-        except OSError:
+            os.mkdir(self.task.results_folder)
+        except OSError as e:
+            log.error("Unable to create analysis results \"%s\" folder: %s" % (self.task.results_folder, e))
+            return False
+        
+        return True
+
+    def run(self):
+        self.task.file_name = os.path.basename(self.task.file_path)
+
+        if not os.path.exists(self.task.file_path):
+            log.error("The file to analyze does not exist at path: %s" % self.task.file_path)
+            return False
+
+        if not self.init_storage():
             return False
 
         while True:
@@ -46,9 +60,8 @@ class AnalysisManager(Thread):
         guest = GuestManager(vm.ip, vm.platform)
         guest.start_analysis(self.task)
         guest.wait()
-        guest.get_results(results_folder)
+        guest.save_results(self.task.results_folder)
         MMANAGER.stop(vm.label)
-        print "Finished!"
 
 class Scheduler:
     def __init__(self):
@@ -63,7 +76,7 @@ class Scheduler:
         try:
             __import__(name, globals(), locals(), ["dummy"], -1)
         except ImportError as e:
-            sys.exit("Unable to import machime manager plugin: %s" % e)
+            sys.exit("Unable to import machine manager plugin: %s" % e)
 
         MachineManager()
         module = MachineManager.__subclasses__()[0]
@@ -71,9 +84,9 @@ class Scheduler:
         MMANAGER.initialize()
 
         if len(MMANAGER.machines) == 0:
-            sys.exit("No machines")
+            sys.exit("No machines available")
         else:
-            print "Loaded %s machine/s" % len(MMANAGER.machines)
+            log.info("Loaded %s machine/s" % len(MMANAGER.machines))
 
     def stop(self):
         self.running = False
@@ -86,6 +99,7 @@ class Scheduler:
             task = self.db.fetch()
 
             if not task:
+                log.debug("No pending tasks")
                 continue
 
             analysis = AnalysisManager(task)

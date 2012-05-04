@@ -4,26 +4,36 @@ import xmlrpclib
 from StringIO import StringIO
 from zipfile import ZipFile, BadZipfile, ZIP_DEFLATED
 
-from lib.cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
+from lib.cuckoo.common.constants import CUCKOO_GUEST_INIT, CUCKOO_GUEST_COMPLETED
 
 class GuestManager:
     def __init__(self, ip, platform="windows"):
-        self.ip = ip
         self.platform = platform
+        self.ip = ip
         self.port = 8000
         self.server = xmlrpclib.Server("http://%s:%s" % (self.ip, self.port))
-        self.task = None
+
+    def wait(self, status=CUCKOO_GUEST_COMPLETED):
+        while True:
+            try:
+                if self.server.get_status() == status:
+                    break
+            except:
+                pass
+
+            time.sleep(1)
+
+        return True
 
     def upload_analyzer(self):
         zip_data = StringIO()
         zip_file = ZipFile(zip_data, "w", ZIP_DEFLATED)
 
-        root = "analyzer/%s/" % self.platform
+        root = os.path.join("analyzer", self.platform)
+        root_len = len(os.path.abspath(root))
 
         if not os.path.exists(root):
             return False
-
-        root_len = len(os.path.abspath(root))
 
         for root, dirs, files in os.walk(root):
             archive_root = os.path.abspath(root)[root_len:]
@@ -39,31 +49,21 @@ class GuestManager:
         self.server.add_analyzer(data)
 
     def start_analysis(self, task):
-        self.task = task
-
         if not os.path.exists(task.file_path):
             return False
 
+        self.wait(CUCKOO_GUEST_INIT)
         self.upload_analyzer()
-        options = {"package" : task.package,
-                   "file_name" : os.path.basename(task.file_path)}
-        self.server.add_config(options)
+        self.server.add_config({"package" : task.package,
+                                "file_name" : task.file_name})
 
         file_data = open(task.file_path, "rb").read()
         data = xmlrpclib.Binary(file_data)
-        self.server.add_malware(data, os.path.basename(task.file_path))
 
+        self.server.add_malware(data, task.file_name)
         self.server.execute()
 
-    def wait(self):
-        while True:
-            if self.server.get_status() == CUCKOO_GUEST_COMPLETED:
-                break
-            time.sleep(1)
-
-        return True
-
-    def get_results(self, folder):
+    def save_results(self, folder):
         data = self.server.get_results()
 
         zip_data = StringIO()
