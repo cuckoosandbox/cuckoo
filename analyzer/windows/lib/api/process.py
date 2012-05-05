@@ -8,6 +8,7 @@ from shutil import copy
 
 from lib.core.defines import *
 from lib.core.paths import PATHS
+from lib.core.errors import get_error_string
 
 log = logging.getLogger(__name__)
 
@@ -144,8 +145,8 @@ class Process:
                                       PAGE_READWRITE)
 
         if not arg:
-            log.error("VirtualAllocEx failed when injecting process with pid %d, injection aborted (Error %d)"
-                      % (self.pid, KERNEL32.GetLastError()))
+            log.error("VirtualAllocEx failed when injecting process with pid %d, injection aborted (Error: %s)"
+                      % (self.pid, get_error_string(KERNEL32.GetLastError())))
             return False
 
         bytes_written = c_int(0)
@@ -154,8 +155,8 @@ class Process:
                                            dll,
                                            len(dll),
                                            byref(bytes_written)):
-            log.error("WriteProcessMemory failed when injecting process with pid %d, injection aborted (Error %d)"
-                      % (self.pid, KERNEL32.GetLastError()))
+            log.error("WriteProcessMemory failed when injecting process with pid %d, injection aborted (Error: %s)"
+                      % (self.pid, get_error_string(KERNEL32.GetLastError())))
             return False
 
         kernel32_handle = KERNEL32.GetModuleHandleA("kernel32.dll")
@@ -169,8 +170,8 @@ class Process:
                 return False
             
             if KERNEL32.QueueUserAPC(load_library, self.h_thread, arg) == 0:
-                log.error("QueueUserAPC failed when injecting process with pid %d (Error %d)"
-                          % (self.pid, KERNEL32.GetLastError()))
+                log.error("QueueUserAPC failed when injecting process with pid %d (Error: %s)"
+                          % (self.pid, get_error_string(KERNEL32.GetLastError())))
                 return False
         else:
             log.info("Using CreateRemoteThread injection")
@@ -182,8 +183,8 @@ class Process:
                                                arg,
                                                0,
                                                byref(new_thread_id)):
-                log.error("CreateRemoteThread failed when injecting process with pid %d (Error %d)"
-                          % (self.pid, KERNEL32.GetLastError()))
+                log.error("CreateRemoteThread failed when injecting process with pid %d (Error: %s)"
+                          % (self.pid, get_error_string(KERNEL32.GetLastError())))
                 return False
 
         log.info("Successfully injected process with pid %d" % self.pid)
