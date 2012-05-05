@@ -1,10 +1,13 @@
 import os
 import time
+import logging
 import xmlrpclib
 from StringIO import StringIO
 from zipfile import ZipFile, BadZipfile, ZIP_DEFLATED
 
-from lib.cuckoo.common.constants import CUCKOO_GUEST_INIT, CUCKOO_GUEST_COMPLETED
+from lib.cuckoo.common.constants import CUCKOO_GUEST_INIT, CUCKOO_GUEST_COMPLETED, CUCKOO_GUEST_FAILED
+
+log = logging.getLogger(__name__)
 
 class GuestManager:
     def __init__(self, ip, platform="windows"):
@@ -13,7 +16,7 @@ class GuestManager:
         self.port = 8000
         self.server = xmlrpclib.Server("http://%s:%s" % (self.ip, self.port))
 
-    def wait(self, status=CUCKOO_GUEST_COMPLETED):
+    def wait(self, status):
         while True:
             try:
                 if self.server.get_status() == status:
@@ -48,20 +51,36 @@ class GuestManager:
 
         self.server.add_analyzer(data)
 
-    def start_analysis(self, task):
-        if not os.path.exists(task.file_path):
+    def start_analysis(self, options):
+        if not os.path.exists(options["file_path"]):
             return False
 
         self.wait(CUCKOO_GUEST_INIT)
         self.upload_analyzer()
-        self.server.add_config({"package" : task.package,
-                                "file_name" : task.file_name})
+        self.server.add_config(options)
 
-        file_data = open(task.file_path, "rb").read()
+        file_data = open(options["file_path"], "rb").read()
         data = xmlrpclib.Binary(file_data)
 
-        self.server.add_malware(data, task.file_name)
+        self.server.add_malware(data, options["file_name"])
         self.server.execute()
+
+    def wait_for_completion(self):
+        while True:
+            try:
+                status = self.server.get_status()
+                if status == CUCKOO_GUEST_COMPLETED:
+                    log.info("Analysis completed successfully")
+                    break
+                elif status == CUCKOO_GUEST_FAILED:
+                    log.error("Analysis failed: %s" % self.server.get_error())
+                    return False
+            except:
+                pass
+
+            time.sleep(1)
+        
+        return True
 
     def save_results(self, folder):
         data = self.server.get_results()

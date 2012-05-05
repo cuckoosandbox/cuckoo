@@ -9,7 +9,14 @@ log = logging.getLogger()
 def check_python_version():
     version = sys.version.split()[0]
     if version < "2.6" or version >= "3":
-        sys.exit("You are running an incompatible version of Python, please use 2.6 or 2.7")
+        sys.stderr.write("ERROR: You are running an incompatible version of Python, please use 2.6 or 2.7\n")
+        sys.exit(1)
+
+def check_working_directory():
+    cwd = os.path.join(os.getcwd(), "cuckoo.py")
+    if not os.path.exists(cwd):
+        sys.stderr.write("ERROR: You are not running Cuckoo from it's root directory\n")
+        sys.exit(1)
 
 def check_dependencies():
     check_python_version()

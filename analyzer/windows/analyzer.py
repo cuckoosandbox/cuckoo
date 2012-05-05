@@ -130,7 +130,7 @@ class Analyzer:
         grant_debug_privilege()
         create_folders()
         init_logging()
-        self.config = Config(cfg="analysis.conf")
+        self.config = Config(cfg=os.path.join(PATHS["root"], "analysis.conf"))
         self.pipe = PipeServer()
         self.pipe.daemon = True
         self.pipe.start()
@@ -202,17 +202,20 @@ class Analyzer:
         return True
 
 if __name__ == "__main__":
-    status = False
-    error  = None
+    success = False
+    error = ""
 
     try:
         analyzer = Analyzer()
-        status = analyzer.run()
+        success = analyzer.run()
     except KeyboardInterrupt:
         error = "Keyboard Interrupt"
     except SystemExit as e:
-        error = e
+        error = e.message
         log.critical(error)
     finally:
         server = xmlrpclib.Server("http://127.0.0.1:8000")
-        server.complete()
+        if error:
+            server.complete(success, error)
+        else:
+            server.complete(success)

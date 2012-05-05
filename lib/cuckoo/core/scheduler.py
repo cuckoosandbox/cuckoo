@@ -5,65 +5,98 @@ import shutil
 import logging
 from threading import Thread
 
-from lib.cuckoo.common.utils import create_folders, get_file_md5
+from lib.cuckoo.abstract.dictionary import Dictionary
+from lib.cuckoo.abstract.machinemanager import MachineManager
+from lib.cuckoo.common.utils import create_folders, get_file_md5, get_file_type
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.database import Database
-from lib.cuckoo.abstract.machinemanager import MachineManager
 from lib.cuckoo.core.guest import GuestManager
+from lib.cuckoo.core.packages import choose_package
 
 log = logging.getLogger(__name__)
 
-MMANAGER = []
+MMANAGER = None
 
 class AnalysisManager(Thread):
     def __init__(self, task):
         Thread.__init__(self)
+        self.task = task
         self.cfg = Config()
         self.db = Database()
-        self.task = task
+        self.analysis = Dictionary()
 
     def init_storage(self):
-        self.task.results_folder = os.path.join("storage/analyses/", str(self.task.id))
+        self.analysis.results_folder = os.path.join(os.path.join(os.getcwd(), "storage/analyses/"), str(self.task.id))
 
-        if os.path.exists(self.task.results_folder):
-            log.error("Analysis results folder already exists at path: %s" % self.task.results_folder)
+        if os.path.exists(self.analysis.results_folder):
+            log.error("Analysis results folder already exists at path \"%s\", analysis aborted" % self.analysis.results_folder)
             return False
 
         try:
-            os.mkdir(self.task.results_folder)
+            os.mkdir(self.analysis.results_folder)
         except OSError as e:
-            log.error("Unable to create analysis results \"%s\" folder: %s" % (self.task.results_folder, e))
+            log.error("Unable to create analysis results \"%s\" folder: %s, analysis aborted" % (self.analysis.results_folder, e))
             return False
         
         return True
 
     def store_file(self):
         md5 = get_file_md5(self.task.file_path)
-        storage_path = os.path.join("storage/binaries/", md5)
+        self.analysis.stored_file_path = os.path.join(os.path.join(os.getcwd(), "storage/binaries/"), md5)
 
-        if os.path.exists(storage_path):
-            log.info("File already exists at \"%s\"" % storage_path)
-            return True
+        if os.path.exists(self.analysis.stored_file_path):
+            log.info("File already exists at \"%s\"" % self.analysis.stored_file_path)
+        else:
+            try:
+                shutil.copy(self.task.file_path, self.analysis.stored_file_path)
+            except shutil.error as e:
+                log.error("Unable to store file from \"%s\" to \"%s\": %s"
+                          % (self.task.file_path, self.analysis.stored_file_path, e))
+                return False
 
         try:
-            shutil.copy(self.task.file_path, storage_path)
-        except shutil.error as e:
-            log.error("Unable to store file from \"%s\" to \"%s\": %s"
-                      % (self.task.file_path, storage_path, e))
+            os.symlink(self.analysis.stored_file_path, os.path.join(self.analysis.results_folder, "binary"))
+        except OSError as e:
             return False
 
         return True
 
-    def run(self):
-        self.task.file_name = os.path.basename(self.task.file_path)
+    def build_options(self):
+        options = {}
+        self.analysis.file_type = get_file_type(self.task.file_path)
+        
+        if not self.task.package:
+            package = choose_package(self.analysis.file_type)
+            if not package:
+                log.error("No default package supports the file format \"%s\", analysis aborted" % self.analysis.file_type)
+                return False
+        else:
+            package = self.task.package
 
+        if not self.task.timeout:
+            timeout = self.cfg.analysis_timeout
+        else:
+            timeout = self.task.timeout
+
+        options["file_path"] = self.task.file_path
+        options["file_name"] = os.path.basename(self.task.file_path)
+        options["package"] = package
+        options["timeout"] = timeout
+
+        return options
+
+    def run(self):
         if not os.path.exists(self.task.file_path):
-            log.error("The file to analyze does not exist at path: %s" % self.task.file_path)
+            log.error("The file to analyze does not exist at path \"%s\", analysis aborted" % self.task.file_path)
+            return False
+
+        if not self.init_storage():
             return False
 
         self.store_file()
 
-        if not self.init_storage():
+        options = self.build_options()
+        if not options:
             return False
 
         while True:
@@ -73,15 +106,12 @@ class AnalysisManager(Thread):
             else:
                 break
 
-        if not self.task.package:
-            self.task.package = "exe"
-
-        MMANAGER.start(vm.label)
+        #MMANAGER.start(vm.label)
         guest = GuestManager(vm.ip, vm.platform)
-        guest.start_analysis(self.task)
-        guest.wait()
-        guest.save_results(self.task.results_folder)
-        MMANAGER.stop(vm.label)
+        guest.start_analysis(options)
+        guest.wait_for_completion()
+        guest.save_results(self.analysis.results_folder)
+        #MMANAGER.stop(vm.label)
 
 class Scheduler:
     def __init__(self):

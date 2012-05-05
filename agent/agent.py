@@ -15,6 +15,7 @@ BIND_PORT = 8000
 STATUS_INIT = 0x0001
 STATUS_RUNNING = 0x0002
 STATUS_COMPLETED = 0x0003
+STATUS_FAILED = 0x0004
 
 CURRENT_STATUS = STATUS_INIT
 
@@ -45,8 +46,13 @@ class Agent:
         return CURRENT_STATUS
    
     def get_error(self):
-        # TODO need to fix this, sometimes string sometimes list/dict
-        return "%s" % self.error
+        if isinstance(self.error, Exception):
+            if hasattr(self.error, "message"):
+                return self.error.message
+            else:
+                return str(self.error)
+        elif isinstance(self.error, str):
+            return self.error
 
     def add_malware(self, data, name, iszip=False):
         data = data.data
@@ -83,8 +89,8 @@ class Agent:
         return True
 
     def add_config(self, options):
-        root = self._get_root(container="analyzer")
-        
+        root = self._get_root()
+
         if not root:
             return False
 
@@ -93,14 +99,14 @@ class Agent:
 
         config = ConfigParser.RawConfigParser()
         config.add_section("analysis")
-        
+
         for key, value in options.items():
             config.set("analysis", key, value)
-        
+
         config_path = os.path.join(root, "analysis.conf")
         with open(config_path, "wb") as config_file:
             config.write(config_file)
-        
+
         return True
 
     def add_analyzer(self, data):
@@ -140,9 +146,17 @@ class Agent:
 
         return self.analyzer_pid
 
-    def complete(self):
+    def complete(self, success=True, error=None):
         global CURRENT_STATUS
-        CURRENT_STATUS = STATUS_COMPLETED
+
+        if success:
+            CURRENT_STATUS = STATUS_COMPLETED
+        else:
+            if error:
+                self.error = error
+
+            CURRENT_STATUS = STATUS_FAILED
+
         return True
 
     def get_results(self):
@@ -176,7 +190,7 @@ if __name__ == "__main__":
 
         print("[+] Starting agent on %s:%s ..." % (BIND_IP, BIND_PORT))
 
-        server = SimpleXMLRPCServer((BIND_IP, BIND_PORT))
+        server = SimpleXMLRPCServer((BIND_IP, BIND_PORT), allow_none=True)
         server.register_instance(Agent())
         server.serve_forever()
     except KeyboardInterrupt:
