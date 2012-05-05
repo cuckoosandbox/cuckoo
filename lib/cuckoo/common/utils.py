@@ -1,4 +1,5 @@
 import os
+import hashlib
 
 try:
     import magic
@@ -38,3 +39,10 @@ def get_file_type(file_path):
                 return None
 
     return file_type
+
+def get_file_md5(file_path):
+    if not os.path.exists(file_path):
+        return None
+
+    file_data = open(file_path, "rb").read()
+    return hashlib.md5(file_data).hexdigest()

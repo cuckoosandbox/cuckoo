@@ -1,10 +1,11 @@
 import os
 import sys
 import time
+import shutil
 import logging
 from threading import Thread
 
-from lib.cuckoo.common.utils import create_folders
+from lib.cuckoo.common.utils import create_folders, get_file_md5
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.database import Database
 from lib.cuckoo.abstract.machinemanager import MachineManager
@@ -36,12 +37,31 @@ class AnalysisManager(Thread):
         
         return True
 
+    def store_file(self):
+        md5 = get_file_md5(self.task.file_path)
+        storage_path = os.path.join("storage/binaries/", md5)
+
+        if os.path.exists(storage_path):
+            log.info("File already exists at \"%s\"" % storage_path)
+            return True
+
+        try:
+            shutil.copy(self.task.file_path, storage_path)
+        except shutil.error as e:
+            log.error("Unable to store file from \"%s\" to \"%s\": %s"
+                      % (self.task.file_path, storage_path, e))
+            return False
+
+        return True
+
     def run(self):
         self.task.file_name = os.path.basename(self.task.file_path)
 
         if not os.path.exists(self.task.file_path):
             log.error("The file to analyze does not exist at path: %s" % self.task.file_path)
             return False
+
+        self.store_file()
 
         if not self.init_storage():
             return False
