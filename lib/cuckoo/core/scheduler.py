@@ -3,8 +3,9 @@ import sys
 import time
 import shutil
 import logging
-from threading import Thread
+from multiprocessing import Process
 
+from lib.cuckoo.abstract.exceptions import CuckooError
 from lib.cuckoo.abstract.dictionary import Dictionary
 from lib.cuckoo.abstract.machinemanager import MachineManager
 from lib.cuckoo.common.utils import create_folders, get_file_md5, get_file_type
@@ -12,14 +13,17 @@ from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.database import Database
 from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.packages import choose_package
+from lib.cuckoo.processing.processor import Processor
+from lib.cuckoo.reporting.reporter import Reporter
 
 log = logging.getLogger(__name__)
 
 MMANAGER = None
 
-class AnalysisManager(Thread):
+class AnalysisManager(Process):
     def __init__(self, task):
-        Thread.__init__(self)
+        Process.__init__(self)
+        Process.daemon = True
         self.task = task
         self.cfg = Config()
         self.db = Database()
@@ -32,12 +36,8 @@ class AnalysisManager(Thread):
             log.error("Analysis results folder already exists at path \"%s\", analysis aborted" % self.analysis.results_folder)
             return False
 
-        try:
-            os.mkdir(self.analysis.results_folder)
-        except OSError as e:
-            log.error("Unable to create analysis results \"%s\" folder: %s, analysis aborted" % (self.analysis.results_folder, e))
-            return False
-        
+        os.mkdir(self.analysis.results_folder)
+
         return True
 
     def store_file(self):
@@ -47,17 +47,9 @@ class AnalysisManager(Thread):
         if os.path.exists(self.analysis.stored_file_path):
             log.info("File already exists at \"%s\"" % self.analysis.stored_file_path)
         else:
-            try:
-                shutil.copy(self.task.file_path, self.analysis.stored_file_path)
-            except shutil.error as e:
-                log.error("Unable to store file from \"%s\" to \"%s\": %s"
-                          % (self.task.file_path, self.analysis.stored_file_path, e))
-                return False
+            shutil.copy(self.task.file_path, self.analysis.stored_file_path)
 
-        try:
-            os.symlink(self.analysis.stored_file_path, os.path.join(self.analysis.results_folder, "binary"))
-        except OSError as e:
-            return False
+        os.symlink(self.analysis.stored_file_path, os.path.join(self.analysis.results_folder, "binary"))
 
         return True
 
@@ -73,10 +65,10 @@ class AnalysisManager(Thread):
         else:
             package = self.task.package
 
-        if not self.task.timeout:
-            timeout = self.cfg.analysis_timeout
-        else:
+        if self.task.timeout:
             timeout = self.task.timeout
+        else:
+            timeout = self.cfg.analysis_timeout
 
         options["file_path"] = self.task.file_path
         options["file_name"] = os.path.basename(self.task.file_path)
@@ -86,6 +78,8 @@ class AnalysisManager(Thread):
         return options
 
     def run(self):
+        #self.db.lock(self.task.id)
+
         if not os.path.exists(self.task.file_path):
             log.error("The file to analyze does not exist at path \"%s\", analysis aborted" % self.task.file_path)
             return False
@@ -99,19 +93,25 @@ class AnalysisManager(Thread):
         if not options:
             return False
 
+        log.debug("Acquiring virtual machine")
+
         while True:
             vm = MMANAGER.acquire(label=self.task.machine, platform=self.task.platform)
             if not vm:
+                log.debug("No machine available")
                 time.sleep(1)
             else:
+                log.info("Acquired machine %s" % vm.label)
                 break
 
-        #MMANAGER.start(vm.label)
+        MMANAGER.start(vm.label)
         guest = GuestManager(vm.ip, vm.platform)
         guest.start_analysis(options)
         guest.wait_for_completion()
         guest.save_results(self.analysis.results_folder)
-        #MMANAGER.stop(vm.label)
+        MMANAGER.stop(vm.label)
+
+        Reporter(self.analysis.results_folder).run(Processor(self.analysis.results_folder).run())
 
 class Scheduler:
     def __init__(self):
@@ -126,7 +126,7 @@ class Scheduler:
         try:
             __import__(name, globals(), locals(), ["dummy"], -1)
         except ImportError as e:
-            sys.exit("Unable to import machine manager plugin: %s" % e)
+            raise CuckooError("Unable to import machine manager plugin: %s" % e)
 
         MachineManager()
         module = MachineManager.__subclasses__()[0]
@@ -134,14 +134,17 @@ class Scheduler:
         MMANAGER.initialize()
 
         if len(MMANAGER.machines) == 0:
-            sys.exit("No machines available")
+            raise CuckooError("No machines available")
         else:
             log.info("Loaded %s machine/s" % len(MMANAGER.machines))
 
     def stop(self):
+        log.info("STOP")
         self.running = False
 
     def start(self):
+        log.info("START")
+
         self.initialize()
 
         while self.running:

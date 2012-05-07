@@ -1,0 +1,2 @@
+class CuckooError(Exception):
+    pass

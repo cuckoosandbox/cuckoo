@@ -1,7 +1,9 @@
 #!/usr/bin/env python
+import sys
 import logging
 import argparse
 
+from lib.cuckoo.abstract.exceptions import CuckooError
 from lib.cuckoo.common.logo import logo
 from lib.cuckoo.core.startup import check_python_version, check_dependencies, create_structure, check_working_directory, init_logging
 from lib.cuckoo.core.scheduler import Scheduler
@@ -34,6 +36,10 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except SystemExit as e:
-        if type(e.message) == str:
-            log.critical(e.message)
+    except CuckooError as e:
+        if hasattr(e, "message"):
+            if len(log.handlers) > 0:
+                log.critical(e.message)
+            else:
+                sys.stderr.write("%s\n" % e.message)
+        sys.exit(1)

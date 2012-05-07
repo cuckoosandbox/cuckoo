@@ -2,6 +2,7 @@ import os
 import sys
 import sqlite3
 
+from lib.cuckoo.abstract.exceptions import CuckooError
 from lib.cuckoo.abstract.dictionary import Dictionary
 
 class Database:
@@ -42,12 +43,12 @@ class Database:
                            "    lock INTEGER DEFAULT 0,\n"                  \
                            # Status possible values:
                            #   0 = not completed
-                           #   1 = completed successfully
-                           #   2 = error occurred.
+                           #   1 = error occurred
+                           #   2 = completed successfully.
                            "    status INTEGER DEFAULT 0\n"                 \
                            ");")
         except sqlite3.OperationalError as e:
-            sys.exit("Unable to create database: %s" % e)
+            raise CuckooError("Unable to create database: %s" % e)
 
         return True
 
@@ -161,9 +162,9 @@ class Database:
 
         if row:
             if success:
-                status = 1
-            else:
                 status = 2
+            else:
+                status = 1
 
             try:
                 self.cursor.execute("UPDATE tasks SET lock = 0, "     \

@@ -1,26 +1,30 @@
 import os
 import pkgutil
 
-from lib.cuckoo.base.report import Report
-import plugins.reporting as modules
+from lib.cuckoo.abstract.report import Report
+import plugins.reporting as plugins
 
 class Reporter:
-    def __init__(self, analysis_path):
+    def __init__(self, analysis_path,):
         self.analysis_path = analysis_path
+        self.__populate(plugins)
 
-    def run(self):
-        prefix = modules.__name__ = "."
-        for loader, name, ispkg in pkgutil.iter_modules(module.__path__, prefix):
-            if ispkt:
+    def __populate(self, modules):
+        prefix = modules.__name__ + "."
+        for loader, name, ispkg in pkgutil.iter_modules(modules.__path__, prefix):
+            if ispkg:
                 continue
 
             __import__(name, globals(), locals(), ["dummy"], -1)
- 
+
+    def run(self, results):
         Report()
-        for module in Report.__subclasses__():
-            current = module(self.analysis_path)
+
+        for plugin in Report.__subclasses__():
+            current = plugin()
+            current.set_path(self.analysis_path)
 
             try:
-                current.run()
+                current.run(results)
             except NotImplementedError:
                 continue

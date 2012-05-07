@@ -9,6 +9,7 @@ from threading import Lock, Thread, Timer
 from lib.core.defines import *
 from lib.core.paths import PATHS
 from lib.api.process import Process
+from lib.abstract.exceptions import CuckooError
 from lib.abstract.package import Package
 from lib.core.config import Config
 from lib.core.startup import create_folders, init_logging
@@ -151,8 +152,7 @@ class Analyzer:
         try:
             __import__(package_name, globals(), locals(), ["dummy"], -1)
         except ImportError:
-            sys.exit("Unable to import package \"%s\", does not exist."
-                     % package_name)
+            raise CuckooError("Unable to import package \"%s\", does not exist." % package_name)
 
         Package()
         package_import = Package.__subclasses__()[0]
@@ -164,8 +164,7 @@ class Analyzer:
         try:
             pids = pack.run(self.file_path)
         except NotImplementedError:
-            sys.exit("The package \"%s\" doesn't contain a run function."
-                     % package_name)
+            raise CuckooError("The package \"%s\" doesn't contain a run function." % package_name)
 
         add_pids(pids)
 
@@ -210,9 +209,12 @@ if __name__ == "__main__":
         success = analyzer.run()
     except KeyboardInterrupt:
         error = "Keyboard Interrupt"
-    except SystemExit as e:
+    except CuckooError as e:
         error = e.message
-        log.critical(error)
+        if len(log.handlers) > 0:
+            log.critical(error)
+        else:
+            sys.stderr.write("%s\n" % e.message)
     finally:
         server = xmlrpclib.Server("http://127.0.0.1:8000")
         if error:
