@@ -3,8 +3,7 @@ import time
 import subprocess
 import ConfigParser
 
-from lib.cuckoo.abstract.dictionary import Dictionary
-from lib.cuckoo.abstract.machinemanager import MachineManager
+from lib.cuckoo.common.abstracts import Dictionary, MachineManager
 
 class VirtualBox(MachineManager):
     def __init__(self):

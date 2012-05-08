@@ -6,11 +6,11 @@ import ConfigParser
 from ctypes import *
 from threading import Lock, Thread, Timer
 
-from lib.core.defines import *
-from lib.core.paths import PATHS
 from lib.api.process import Process
-from lib.abstract.exceptions import CuckooError
-from lib.abstract.package import Package
+from lib.common.exceptions import CuckooError
+from lib.common.abstracts import Package
+from lib.common.defines import *
+from lib.common.paths import PATHS
 from lib.core.config import Config
 from lib.core.startup import create_folders, init_logging
 from lib.core.privileges import grant_debug_privilege

@@ -2,8 +2,8 @@ import os
 import sys
 import sqlite3
 
-from lib.cuckoo.abstract.exceptions import CuckooError
-from lib.cuckoo.abstract.dictionary import Dictionary
+from lib.cuckoo.common.exceptions import CuckooDatabaseError
+from lib.cuckoo.common.abstracts import Dictionary
 
 class Database:
     def __init__(self, root="."):
@@ -48,7 +48,7 @@ class Database:
                            "    status INTEGER DEFAULT 0\n"                 \
                            ");")
         except sqlite3.OperationalError as e:
-            raise CuckooError("Unable to create database: %s" % e)
+            raise CuckooDatabaseError("Unable to create database: %s" % e)
 
         return True
 

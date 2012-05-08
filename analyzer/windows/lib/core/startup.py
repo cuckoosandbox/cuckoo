@@ -1,7 +1,7 @@
 import os
 import logging
 
-from lib.core.paths import PATHS
+from lib.common.paths import PATHS
 
 log = logging.getLogger()
 

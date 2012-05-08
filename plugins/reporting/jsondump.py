@@ -1,7 +1,7 @@
 import os
 import json
 
-from lib.cuckoo.abstract.report import Report
+from lib.cuckoo.common.abstracts import Report
 
 class JsonDump(Report):
     def run(self, results):

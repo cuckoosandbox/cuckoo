@@ -5,16 +5,15 @@ import shutil
 import logging
 from multiprocessing import Process
 
-from lib.cuckoo.abstract.exceptions import CuckooError
-from lib.cuckoo.abstract.dictionary import Dictionary
-from lib.cuckoo.abstract.machinemanager import MachineManager
+from lib.cuckoo.common.exceptions import CuckooMachineError
+from lib.cuckoo.common.abstracts import Dictionary, MachineManager
 from lib.cuckoo.common.utils import create_folders, get_file_md5, get_file_type
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.database import Database
+from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.packages import choose_package
-from lib.cuckoo.processing.processor import Processor
-from lib.cuckoo.reporting.reporter import Reporter
+from lib.cuckoo.core.processor import Processor
+from lib.cuckoo.core.reporter import Reporter
 
 log = logging.getLogger(__name__)
 
@@ -126,7 +125,7 @@ class Scheduler:
         try:
             __import__(name, globals(), locals(), ["dummy"], -1)
         except ImportError as e:
-            raise CuckooError("Unable to import machine manager plugin: %s" % e)
+            raise CuckooMachineError("Unable to import machine manager plugin: %s" % e)
 
         MachineManager()
         module = MachineManager.__subclasses__()[0]
@@ -134,7 +133,7 @@ class Scheduler:
         MMANAGER.initialize()
 
         if len(MMANAGER.machines) == 0:
-            raise CuckooError("No machines available")
+            raise CuckooMachineError("No machines available")
         else:
             log.info("Loaded %s machine/s" % len(MMANAGER.machines))
 

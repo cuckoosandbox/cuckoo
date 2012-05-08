@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 
-from lib.cuckoo.abstract.exceptions import CuckooError
+from lib.cuckoo.common.exceptions import CuckooStartupError
 from lib.cuckoo.common.utils import create_folders
 
 log = logging.getLogger()
@@ -10,12 +10,12 @@ log = logging.getLogger()
 def check_python_version():
     version = sys.version.split()[0]
     if version < "2.6" or version >= "3":
-        raise CuckooError("You are running an incompatible version of Python, please use 2.6 or 2.7")
+        raise CuckooStartupError("You are running an incompatible version of Python, please use 2.6 or 2.7")
 
 def check_working_directory():
     cwd = os.path.join(os.getcwd(), "cuckoo.py")
     if not os.path.exists(cwd):
-        raise CuckooError("You are not running Cuckoo from it's root directory")
+        raise CuckooStartupError("You are not running Cuckoo from it's root directory")
 
 def check_dependencies():
     check_python_version()
@@ -26,7 +26,7 @@ def check_dependencies():
         try:
             __import__(dependency)
         except ImportError as e:
-            raise CuckooError("Unable to import \"%s\"." % dependency)
+            raise CuckooStartupError("Unable to import \"%s\"." % dependency)
 
     return True
 

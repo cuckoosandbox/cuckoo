@@ -3,8 +3,8 @@ import sys
 import csv
 import logging
 
-from lib.cuckoo.abstract.analysis import Analysis
-from lib.cuckoo.common.stringutils import convert_to_printable
+from lib.cuckoo.common.abstracts import Analysis
+from lib.cuckoo.common.utils import convert_to_printable
 
 log = logging.getLogger(__name__)
 
@@ -61,8 +61,6 @@ class ParseProcessLog:
 
             argument["name"] = arg_name
             argument["value"] = convert_to_printable(arg_value)
-
-            # Add the current argument to the complete arguments list.
             arguments.append(argument)
 
         call["timestamp"] = timestamp
@@ -82,7 +80,6 @@ class ParseProcessLog:
                 self.calls[-1]["repeated"] += 1
                 return True
 
-        # If it's a new one, add it to the list.
         self.calls.append(call)
 
         return True
@@ -93,10 +90,8 @@ class ParseProcessLog:
                       % self._log_path)
             return False
 
-        # Open current file with the CSV reader.
         reader = csv.reader(open(self._log_path, "rb"))
 
-        # Walk to all file's rows and parse them.
         try:
             for row in reader:
                 self._parse(row)

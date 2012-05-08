@@ -3,9 +3,9 @@ import sys
 import logging
 import argparse
 
-from lib.cuckoo.abstract.exceptions import CuckooError
 from lib.cuckoo.common.logo import logo
-from lib.cuckoo.core.startup import check_python_version, check_dependencies, create_structure, check_working_directory, init_logging
+from lib.cuckoo.common.exceptions import CuckooError
+from lib.cuckoo.core.startup import *
 from lib.cuckoo.core.scheduler import Scheduler
 
 log = logging.getLogger()
@@ -38,8 +38,9 @@ if __name__ == "__main__":
         main()
     except CuckooError as e:
         if hasattr(e, "message"):
+            message = "%s: %s" % (e.__class__.__name__, e.message)
             if len(log.handlers) > 0:
-                log.critical(e.message)
+                log.critical(message)
             else:
-                sys.stderr.write("%s\n" % e.message)
+                sys.stderr.write("%s\n" % message)
         sys.exit(1)

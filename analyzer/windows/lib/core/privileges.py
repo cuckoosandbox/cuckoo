@@ -1,7 +1,7 @@
 from ctypes import sizeof, byref, c_int, c_ulong, wintypes
 import ctypes
 
-from lib.core.defines import *
+from lib.common.defines import *
 
 def grant_debug_privilege(pid=0):
     ADVAPI32.OpenProcessToken.argtypes = (wintypes.HANDLE,

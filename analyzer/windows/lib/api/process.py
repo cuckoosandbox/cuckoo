@@ -6,8 +6,8 @@ from time import time
 from ctypes import *
 from shutil import copy
 
-from lib.core.defines import *
-from lib.core.paths import PATHS
+from lib.common.defines import *
+from lib.common.paths import PATHS
 from lib.core.errors import get_error_string
 
 log = logging.getLogger(__name__)

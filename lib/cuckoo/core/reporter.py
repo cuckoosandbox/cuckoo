@@ -1,7 +1,7 @@
 import os
 import pkgutil
 
-from lib.cuckoo.abstract.report import Report
+from lib.cuckoo.common.abstracts import Report
 import plugins.reporting as plugins
 
 class Reporter:
