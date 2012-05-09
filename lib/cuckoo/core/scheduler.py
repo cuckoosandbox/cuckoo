@@ -130,7 +130,7 @@ class Scheduler:
         MachineManager()
         module = MachineManager.__subclasses__()[0]
         MMANAGER = module()
-        MMANAGER.initialize()
+        MMANAGER.initialize(self.config.machine_manager)
 
         if len(MMANAGER.machines) == 0:
             raise CuckooMachineError("No machines available")
