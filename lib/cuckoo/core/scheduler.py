@@ -7,7 +7,7 @@ from multiprocessing import Process
 
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.abstracts import Dictionary, MachineManager
-from lib.cuckoo.common.utils import create_folders, get_file_md5, get_file_type
+from lib.cuckoo.common.utils import File, create_folders
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.guest import GuestManager
@@ -40,7 +40,7 @@ class AnalysisManager(Process):
         return True
 
     def store_file(self):
-        md5 = get_file_md5(self.task.file_path)
+        md5 = File(self.task.file_path).get_md5()
         self.analysis.stored_file_path = os.path.join(os.path.join(os.getcwd(), "storage/binaries/"), md5)
 
         if os.path.exists(self.analysis.stored_file_path):
@@ -54,7 +54,7 @@ class AnalysisManager(Process):
 
     def build_options(self):
         options = {}
-        self.analysis.file_type = get_file_type(self.task.file_path)
+        self.analysis.file_type = File(self.task.file_path).get_type()
         
         if not self.task.package:
             package = choose_package(self.analysis.file_type)
@@ -70,7 +70,7 @@ class AnalysisManager(Process):
             timeout = self.cfg.analysis_timeout
 
         options["file_path"] = self.task.file_path
-        options["file_name"] = os.path.basename(self.task.file_path)
+        options["file_name"] = File(self.task.file_path).get_name()
         options["package"] = package
         options["timeout"] = timeout
 
@@ -121,7 +121,7 @@ class Scheduler:
     def initialize(self):
         global MMANAGER
 
-        name = "plugins.machinemanagers.%s" % self.config.machine_manager
+        name = "modules.machinemanagers.%s" % self.config.machine_manager
         try:
             __import__(name, globals(), locals(), ["dummy"], -1)
         except ImportError as e:

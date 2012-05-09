@@ -2,7 +2,7 @@ import os
 import pkgutil
 
 from lib.cuckoo.common.abstracts import Report
-import plugins.reporting as plugins
+import modules.reporting as plugins
 
 class Reporter:
     def __init__(self, analysis_path,):

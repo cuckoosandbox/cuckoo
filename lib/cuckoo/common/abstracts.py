@@ -23,13 +23,17 @@ class MachineManager(object):
     def stop(self, label=None):
         raise NotImplementedError
 
-class Analysis(object):
+class Processing(object):
     def __init__(self):
         self.analysis_path = ""
         self.logs_path = ""
 
     def set_path(self, analysis_path):
         self.analysis_path = analysis_path
+        self.log_path = os.path.join(analysis_path, "analysis.log")
+        self.conf_path = os.path.join(analysis_path, "analysis.conf")
+        self.file_path = os.path.join(analysis_path, "binary")
+        self.dropped_path = os.path.join(analysis_path, "files")
         self.logs_path = os.path.join(analysis_path, "logs")
 
     def run(self):

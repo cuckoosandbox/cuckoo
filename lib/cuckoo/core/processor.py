@@ -1,13 +1,13 @@
 import pkgutil
 
-from lib.cuckoo.common.abstracts import Analysis, Signature
-import plugins.processing as plugins
-import plugins.signatures as signatures
+from lib.cuckoo.common.abstracts import Processing, Signature
+import modules.processing as processing
+import modules.signatures as signatures
 
 class Processor:
     def __init__(self, analysis_path):
         self.analysis_path = analysis_path
-        self.__populate(plugins)
+        self.__populate(processing)
         self.__populate(signatures)
 
     def __populate(self, modules):
@@ -20,10 +20,10 @@ class Processor:
 
     def run(self):
         results = {}
-        Analysis()
+        Processing()
 
-        for plugin in Analysis.__subclasses__():
-            current = plugin()
+        for module in Processing.__subclasses__():
+            current = module()
             current.set_path(self.analysis_path)
 
             try:
@@ -34,20 +34,20 @@ class Processor:
         Signature()
         sigs = []
 
-        for sig_class in Signature.__subclasses__():
-            sig_current = sig_class()
-            if not sig_current.enabled:
+        for signature in Signature.__subclasses__():
+            current = signature()
+            if not current.enabled:
                 continue
 
             try:
-                if sig_current.run(results):
-                    sig_matched = {"name" : sig_current.name,
-                                   "description" : sig_current.description,
-                                   "severity" : sig_current.severity,
-                                   "references" : sig_current.references,
-                                   "data" : sig_current.data,
-                                   "alert" : sig_current.alert}
-                    sigs.append(sig_matched)
+                if current.run(results):
+                    matched = {"name" : current.name,
+                               "description" : current.description,
+                               "severity" : current.severity,
+                               "references" : current.references,
+                               "data" : current.data,
+                               "alert" : current.alert}
+                    sigs.append(matched)
             except NotImplementedError:
                 continue
 

@@ -1,2 +1,1 @@
-class CuckooError(Exception):
-    pass
+class CuckooError(Exception): pass

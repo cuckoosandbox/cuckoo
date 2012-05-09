@@ -158,7 +158,7 @@ class Analyzer:
         package_import = Package.__subclasses__()[0]
         pack = package_import()
 
-        timer = Timer(120.0, self.stop)
+        timer = Timer(self.config.timeout, self.stop)
         timer.start()
 
         try:

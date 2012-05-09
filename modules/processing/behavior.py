@@ -3,7 +3,7 @@ import sys
 import csv
 import logging
 
-from lib.cuckoo.common.abstracts import Analysis
+from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.utils import convert_to_printable
 
 log = logging.getLogger(__name__)
@@ -263,7 +263,7 @@ class ProcessTree:
 
         return self.proctree
 
-class BehaviorAnalysis(Analysis):
+class BehaviorAnalysis(Processing):
     def run(self):
         self.key = "behavior"
 
