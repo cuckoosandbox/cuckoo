@@ -1,6 +1,11 @@
-class CuckooError(Exception): pass
+class CuckooCriticalError(Exception): pass
 
-class CuckooStartupError(CuckooError): pass
-class CuckooDatabaseError(CuckooError): pass
-class CuckooMachineError(CuckooError): pass
-class CuckooDependencyError(CuckooError): pass
+class CuckooStartupError(CuckooCriticalError): pass
+class CuckooDatabaseError(CuckooCriticalError): pass
+class CuckooMachineError(CuckooCriticalError): pass
+class CuckooDependencyError(CuckooCriticalError): pass
+
+class CuckooOperationalError(Exception): pass
+
+class CuckooProcessingError(CuckooOperationalError): pass
+class CuckooReportError(CuckooOperationalError): pass

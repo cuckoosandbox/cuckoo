@@ -1,8 +1,12 @@
 import os
 import pkgutil
+import logging
 
 from lib.cuckoo.common.abstracts import Report
+from lib.cuckoo.common.exceptions import CuckooReportError
 import modules.reporting as plugins
+
+log = logging.getLogger(__name__)
 
 class Reporter:
     def __init__(self, analysis_path,):
@@ -28,3 +32,5 @@ class Reporter:
                 current.run(results)
             except NotImplementedError:
                 continue
+            except CuckooReportError as e:
+                log.error(e.message)

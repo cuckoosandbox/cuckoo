@@ -4,7 +4,7 @@ import logging
 import argparse
 
 from lib.cuckoo.common.logo import logo
-from lib.cuckoo.common.exceptions import CuckooError
+from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.core.startup import *
 from lib.cuckoo.core.scheduler import Scheduler
 
@@ -36,7 +36,7 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except CuckooError as e:
+    except CuckooCriticalError as e:
         if hasattr(e, "message"):
             message = "%s: %s" % (e.__class__.__name__, e.message)
             if len(log.handlers) > 0:

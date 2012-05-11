@@ -2,6 +2,7 @@ import os
 import json
 
 from lib.cuckoo.common.abstracts import Report
+from lib.cuckoo.common.exceptions import CuckooReportError
 
 class JsonDump(Report):
     def run(self, results):
@@ -9,8 +10,5 @@ class JsonDump(Report):
             report = open(os.path.join(self.reports_path, "report.json"), "w")
             report.write(json.dumps(results, sort_keys=False, indent=4))
             report.close()
-        except TypeError, why:
-            print "Failed to create JSON: %s" % why
-        except IOError, why:
-            print "Failed writing JSON report: %s" % why
-
+        except (TypeError, IOError) as e:
+            raise CuckooReportError("Failed to generate JSON report: %s" % e.message)
