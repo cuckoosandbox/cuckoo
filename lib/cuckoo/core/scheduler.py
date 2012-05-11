@@ -72,6 +72,7 @@ class AnalysisManager(Process):
         options["file_path"] = self.task.file_path
         options["file_name"] = File(self.task.file_path).get_name()
         options["package"] = package
+        options["options"] = self.task.options
         options["timeout"] = timeout
 
         return options

@@ -4,7 +4,12 @@ from lib.api.process import Process
 class Exe(Package):
     def run(self, path):
         p = Process()
-        p.execute(path=path, suspended=True)
+
+        if "arguments" in self.options:
+            p.execute(path=path, args=self.options["arguments"], suspended=True)
+        else:
+            p.execute(path=path, suspended=True)
+
         p.inject()
         p.resume()
 

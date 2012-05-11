@@ -9,8 +9,9 @@ import modules.reporting as plugins
 log = logging.getLogger(__name__)
 
 class Reporter:
-    def __init__(self, analysis_path,):
+    def __init__(self, analysis_path, custom=""):
         self.analysis_path = analysis_path
+        self.custom = custom
         self.__populate(plugins)
 
     def __populate(self, modules):

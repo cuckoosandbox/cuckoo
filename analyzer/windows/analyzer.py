@@ -137,6 +137,19 @@ class Analyzer:
         self.pipe.start()
         self.file_path = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, self.config.file_name)
 
+    def get_options(self):
+        options = {}
+        if self.config.options:
+            try:
+                fields = self.config.options.strip().split(",")
+                for field in fields:
+                    key, value = field.strip().split("=")
+                    options[key.strip()] = value.strip()
+            except IndexError:
+                pass
+
+        return options
+
     def complete(self):
         self.pipe.stop()
         log.info("Analysis completed")
@@ -155,8 +168,8 @@ class Analyzer:
             raise CuckooError("Unable to import package \"%s\", does not exist." % package_name)
 
         Package()
-        package_import = Package.__subclasses__()[0]
-        pack = package_import()
+        package_class = Package.__subclasses__()[0]
+        pack = package_class(self.get_options())
 
         timer = Timer(self.config.timeout, self.stop)
         timer.start()

@@ -98,6 +98,10 @@ class Process:
             return False
 
     def resume(self):
+        if not self.suspended:
+            log.warning("The process with pid %d was not suspended at creation" % self.pid)
+            return False
+
         if self.h_thread == 0:
             return False
 

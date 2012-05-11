@@ -37,6 +37,7 @@ class Database:
                            "    custom TEXT DEFAULT NULL,\n"                \
                            "    machine TEXT DEFAULT NULL,\n"               \
                            "    package TEXT DEFAULT NULL,\n"               \
+                           "    options TEXT DEFAULT NULL,\n"               \
                            "    platform TEXT DEFAULT NULL,\n"              \
                            "    added_on DATE DEFAULT CURRENT_TIMESTAMP,\n" \
                            "    completed_on DATE DEFAULT NULL,\n"          \
@@ -63,11 +64,12 @@ class Database:
             task.custom = row[5]
             task.machine = row[6]
             task.package = row[7]
-            task.platform = row[8]
-            task.added_on = row[9]
-            task.completed_on = row[10]
-            task.lock = row[11]
-            task.status = row[12]
+            task.options = row[8]
+            task.platform = row[9]
+            task.added_on = row[10]
+            task.completed_on = row[11]
+            task.lock = row[12]
+            task.status = row[13]
         except IndexError as e:
             print e
             return None
@@ -79,6 +81,7 @@ class Database:
             md5=None,
             timeout=None,
             package=None,
+            options=None,
             priority=None,
             custom=None,
             machine=None):
@@ -87,9 +90,9 @@ class Database:
 
         try:
             self.cursor.execute("INSERT INTO tasks " \
-                                "(file_path, md5, timeout, package, priority, custom, machine) " \
-                                "VALUES (?, ?, ?, ?, ?, ?, ?);",
-                                (file_path, md5, timeout, package, priority, custom, machine))
+                                "(file_path, md5, timeout, package, options, priority, custom, machine) " \
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+                                (file_path, md5, timeout, package, options, priority, custom, machine))
             self.conn.commit()
             return self.cursor.lastrowid
         except sqlite3.OperationalError as e:
