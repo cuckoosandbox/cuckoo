@@ -12,6 +12,7 @@ from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.packages import choose_package
+from lib.cuckoo.core.sniffer import Sniffer
 from lib.cuckoo.core.processor import Processor
 from lib.cuckoo.core.reporter import Reporter
 
@@ -104,12 +105,15 @@ class AnalysisManager(Process):
                 log.info("Acquired machine %s" % vm.label)
                 break
 
+        sniffer = Sniffer(self.cfg.tcpdump)
+        sniffer.start(interface=self.cfg.interface, host=vm.ip, file_path=os.path.join(self.analysis.results_folder, "dump.pcap"))
         MMANAGER.start(vm.label)
         guest = GuestManager(vm.ip, vm.platform)
         guest.start_analysis(options)
         guest.wait_for_completion()
         guest.save_results(self.analysis.results_folder)
         MMANAGER.stop(vm.label)
+        sniffer.stop()
 
         Reporter(self.analysis.results_folder).run(Processor(self.analysis.results_folder).run())
 
