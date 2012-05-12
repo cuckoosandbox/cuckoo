@@ -1,8 +1,5 @@
 class Package(object):
-    def __init__(self, options=None):
-        if not options:
-            return
-
+    def __init__(self, options={}):
         self.options = options
 
     def run(self, path=None):

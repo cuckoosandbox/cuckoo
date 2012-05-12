@@ -14,7 +14,7 @@ class GuestManager:
         self.platform = platform
         self.ip = ip
         self.port = 8000
-        self.server = xmlrpclib.Server("http://%s:%s" % (self.ip, self.port))
+        self.server = xmlrpclib.Server("http://%s:%s" % (self.ip, self.port), allow_none=True)
 
     def wait(self, status):
         while True:

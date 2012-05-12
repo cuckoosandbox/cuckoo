@@ -143,9 +143,12 @@ class Analyzer:
             try:
                 fields = self.config.options.strip().split(",")
                 for field in fields:
-                    key, value = field.strip().split("=")
+                    try:
+                        key, value = field.strip().split("=")
+                    except ValueError:
+                        continue
                     options[key.strip()] = value.strip()
-            except IndexError:
+            except ValueError:
                 pass
 
         return options
