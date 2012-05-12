@@ -5,16 +5,14 @@ import xmlrpclib
 from StringIO import StringIO
 from zipfile import ZipFile, BadZipfile, ZIP_DEFLATED
 
-from lib.cuckoo.common.constants import CUCKOO_GUEST_INIT, CUCKOO_GUEST_COMPLETED, CUCKOO_GUEST_FAILED
+from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT, CUCKOO_GUEST_COMPLETED, CUCKOO_GUEST_FAILED
 
 log = logging.getLogger(__name__)
 
 class GuestManager:
     def __init__(self, ip, platform="windows"):
         self.platform = platform
-        self.ip = ip
-        self.port = 8000
-        self.server = xmlrpclib.Server("http://%s:%s" % (self.ip, self.port), allow_none=True)
+        self.server = xmlrpclib.Server("http://%s:%s" % (ip, CUCKOO_GUEST_PORT), allow_none=True)
 
     def wait(self, status):
         while True:
