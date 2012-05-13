@@ -79,6 +79,8 @@ class AnalysisManager(Process):
         return options
 
     def run(self):
+        log.info("Starting analysis of file \"%s\"" % self.task.file_path)
+
         #self.db.lock(self.task.id)
 
         if not os.path.exists(self.task.file_path):
@@ -93,8 +95,6 @@ class AnalysisManager(Process):
         options = self.build_options()
         if not options:
             return False
-
-        log.debug("Acquiring virtual machine")
 
         while True:
             vm = MMANAGER.acquire(label=self.task.machine, platform=self.task.platform)
@@ -112,7 +112,9 @@ class AnalysisManager(Process):
         guest.start_analysis(options)
         guest.wait_for_completion()
         guest.save_results(self.analysis.results_folder)
+        #self.db.complete(self.task.id)
         MMANAGER.stop(vm.label)
+        MMANAGER.release(vm.label)
         sniffer.stop()
 
         Reporter(self.analysis.results_folder).run(Processor(self.analysis.results_folder).run())
