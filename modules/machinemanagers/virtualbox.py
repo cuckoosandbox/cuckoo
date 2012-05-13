@@ -2,7 +2,7 @@ import os
 import time
 import subprocess
 
-from lib.cuckoo.common.abstracts import Dictionary, MachineManager
+from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.exceptions import CuckooMachineError
 
 class VirtualBox(MachineManager):
