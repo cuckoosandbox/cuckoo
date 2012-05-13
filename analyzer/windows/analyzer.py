@@ -14,6 +14,7 @@ from lib.common.paths import PATHS
 from lib.core.config import Config
 from lib.core.startup import create_folders, init_logging
 from lib.core.privileges import grant_debug_privilege
+from lib.core.packages import choose_package
 
 log = logging.getLogger()
 
@@ -23,7 +24,7 @@ PROCESS_LIST = []
 PROCESS_LOCK = Lock()
 
 def add_file(file_path):
-    if file_path.startswith("\\\\."):
+    if file_path.startswith("\\\\.\\"):
         return
 
     if os.path.exists(file_path):
@@ -139,7 +140,7 @@ class Analyzer:
 
     def get_options(self):
         options = {}
-        if self.config.options:
+        if self.config.options != "None":
             try:
                 fields = self.config.options.strip().split(",")
                 for field in fields:
@@ -163,7 +164,16 @@ class Analyzer:
     def run(self):
         self.prepare()
 
-        package_name = "packages.%s" % self.config.package
+        # TODO: checking for "None" string sucks, need to find a fix
+        if self.config.package == "None":
+            log.info("No analysis package specified, trying to detect it automagically")
+            package = choose_package(self.config.file_type)
+            if not package:
+                raise CuckooError("No valid package available for file type: %s" % self.config.file_type)
+        else:
+            package = self.config.package
+
+        package_name = "packages.%s" % package
 
         try:
             __import__(package_name, globals(), locals(), ["dummy"], -1)

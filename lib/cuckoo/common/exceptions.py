@@ -7,5 +7,6 @@ class CuckooDependencyError(CuckooCriticalError): pass
 
 class CuckooOperationalError(Exception): pass
 
+class CuckooAnalysisError(CuckooOperationalError): pass
 class CuckooProcessingError(CuckooOperationalError): pass
 class CuckooReportError(CuckooOperationalError): pass
