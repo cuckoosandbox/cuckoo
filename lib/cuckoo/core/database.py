@@ -84,15 +84,16 @@ class Database:
             options=None,
             priority=None,
             custom=None,
-            machine=None):
+            machine=None,
+            platform=None):
         if not file_path or not os.path.exists(file_path):
             return None
 
         try:
             self.cursor.execute("INSERT INTO tasks " \
-                                "(file_path, md5, timeout, package, options, priority, custom, machine) " \
-                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
-                                (file_path, md5, timeout, package, options, priority, custom, machine))
+                                "(file_path, md5, timeout, package, options, priority, custom, machine, platform) " \
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+                                (file_path, md5, timeout, package, options, priority, custom, machine, platform))
             self.conn.commit()
             return self.cursor.lastrowid
         except sqlite3.OperationalError as e:
