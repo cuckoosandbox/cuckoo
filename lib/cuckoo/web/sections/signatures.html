@@ -1,0 +1,13 @@
+<div class="section">
+<div class="section-title">Signatures</div>
+%for signature in signatures:
+    <div class="severity_${signature["severity"]}">
+    %if signature["severity"] == 3:
+        <strong>${signature["description"]}</strong>
+    %else:
+        ${signature["description"]}
+    %endif
+    </div>
+%endfor
+</div>
+<div class="space"></div>
