@@ -45,7 +45,7 @@ class AnalysisManager(Process):
         else:
             try:
                 shutil.copy(self.task.file_path, self.analysis.stored_file_path)
-            except (IOError, shutil.error) as e:
+            except (IOError, shutil.Error) as e:
                 raise CuckooAnalysisError("Unable to store file from \"%s\" to \"%s\", analysis aborted"
                                           % (self.task.file_path, self.analysis.stored_file_path))
 

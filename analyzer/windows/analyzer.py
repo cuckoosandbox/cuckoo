@@ -54,7 +54,7 @@ def dump_files():
         try:
             shutil.copy(file_path, PATHS["files"])
             log.info("Dropped file \"%s\" dumped successfully" % file_path)
-        except (IOError, shutil.error) as e:
+        except (IOError, shutil.Error) as e:
             log.error("Unable to dump dropped file at path \"%s\": %s" % (file_path, e.message))
 
 class PipeHandler(Thread):
