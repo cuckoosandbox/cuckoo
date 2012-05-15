@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 import logging
 import xmlrpclib
 import ConfigParser
@@ -47,6 +48,14 @@ def add_pids(pids):
             add_pid(pid)
     else:
         add_pid(pids)
+
+def dump_files():
+    for file_path in FILES_LIST:
+        try:
+            shutil.copy(file_path, PATHS["files"])
+            log.info("Dropped file \"%s\" dumped successfully" % file_path)
+        except (IOError, shutil.error) as e:
+            log.error("Unable to dump dropped file at path \"%s\": %s" % (file_path, e.message))
 
 class PipeHandler(Thread):
     def __init__(self, h_pipe):
@@ -156,6 +165,7 @@ class Analyzer:
 
     def complete(self):
         self.pipe.stop()
+        dump_files()
         log.info("Analysis completed")
 
     def stop(self):
