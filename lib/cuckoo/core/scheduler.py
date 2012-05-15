@@ -45,7 +45,7 @@ class AnalysisManager(Process):
         else:
             try:
                 shutil.copy(self.task.file_path, self.analysis.stored_file_path)
-            except (OSError, shutil.error) as e:
+            except (IOError, shutil.error) as e:
                 raise CuckooAnalysisError("Unable to store file from \"%s\" to \"%s\", analysis aborted"
                                           % (self.task.file_path, self.analysis.stored_file_path))
 
@@ -104,9 +104,9 @@ class AnalysisManager(Process):
         # Save results
         guest.save_results(self.analysis.results_folder)
         # Stop machine
-        mmanager.stop(vm.label)
+        #mmanager.stop(vm.label)
         # Release the machine from lock
-        mmanager.release(vm.label)
+        #mmanager.release(vm.label)
         # Stop sniffer
         sniffer.stop()
         # Launch reports generation
