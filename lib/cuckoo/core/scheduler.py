@@ -60,7 +60,7 @@ class AnalysisManager(Process):
         if self.task.timeout:
             timeout = self.task.timeout
         else:
-            timeout = self.cfg.analysis_timeout
+            timeout = self.cfg.cuckoo.analysis_timeout
 
         options["file_path"] = self.task.file_path
         options["file_name"] = File(self.task.file_path).get_name()
@@ -91,8 +91,8 @@ class AnalysisManager(Process):
         options = self.build_options()
 
         # Initialize sniffer
-        sniffer = Sniffer(self.cfg.tcpdump)
-        sniffer.start(interface=self.cfg.interface, host=vm.ip, file_path=os.path.join(self.analysis.results_folder, "dump.pcap"))
+        sniffer = Sniffer(self.cfg.cuckoo.tcpdump)
+        sniffer.start(interface=self.cfg.cuckoo.interface, host=vm.ip, file_path=os.path.join(self.analysis.results_folder, "dump.pcap"))
         # Start machine
         mmanager.start(vm.label)
         # Initialize guest manager
@@ -128,13 +128,13 @@ class AnalysisManager(Process):
 class Scheduler:
     def __init__(self):
         self.running = True
-        self.config = Config()
+        self.cfg = Config()
         self.db = Database()
 
     def initialize(self):
         global mmanager
 
-        name = "modules.machinemanagers.%s" % self.config.machine_manager
+        name = "modules.machinemanagers.%s" % self.cfg.cuckoo.machine_manager
         try:
             __import__(name, globals(), locals(), ["dummy"], -1)
         except ImportError as e:
@@ -143,7 +143,7 @@ class Scheduler:
         MachineManager()
         module = MachineManager.__subclasses__()[0]
         mmanager = module()
-        mmanager.initialize(self.config.machine_manager)
+        mmanager.initialize(self.cfg.cuckoo.machine_manager)
 
         if len(mmanager.machines) == 0:
             raise CuckooMachineError("No machines available")
