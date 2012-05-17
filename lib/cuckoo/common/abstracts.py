@@ -1,6 +1,8 @@
 import os
 import ConfigParser
 
+from lib.cuckoo.common.constants import CUCKOO_GUEST_PROTOCOL, CUCKOO_GUEST_PORT
+
 class Dictionary(dict):
     def __getattr__(self, key):
         return self.get(key, None)
@@ -28,6 +30,12 @@ class MachineManager(object):
             machine.label = self.config.get(machine_id, "label")
             machine.platform = self.config.get(machine_id, "platform")
             machine.ip = self.config.get(machine_id, "ip")
+
+            try:
+                machine.agent_url = self.config.get(machine_id, "agent_url")
+            except:
+                machine.agent_url = "%s://%s:%s" % CUCKOO_GUEST_PROTOCOL, machine.ip, CUCKOO_GUEST_PORT
+
             machine.locked = False
             self.machines.append(machine)
 
