@@ -10,5 +10,7 @@ def choose_package(file_type):
         return "pdf"
     elif "Rich Text Format" in file_type:
         return "doc"
+    elif "Microsoft Excel" in file_type:
+        return "xls"
     else:
         return None
