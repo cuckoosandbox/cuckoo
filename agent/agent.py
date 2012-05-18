@@ -7,7 +7,17 @@ import subprocess
 import ConfigParser
 from StringIO import StringIO
 from zipfile import ZipFile, BadZipfile, ZIP_DEFLATED
-from SimpleXMLRPCServer import SimpleXMLRPCServer
+import SocketServer
+import ssl
+from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCDispatcher, SimpleXMLRPCRequestHandler
+import os.path
+import getopt
+
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
+
 
 BIND_IP = "0.0.0.0"
 BIND_PORT = 8000
@@ -18,6 +28,39 @@ STATUS_COMPLETED = 0x0003
 STATUS_FAILED = 0x0004
 
 CURRENT_STATUS = STATUS_INIT
+
+class AgentXMLRPCServer(SimpleXMLRPCServer):
+    def __init__(self, addr, requestHandler=SimpleXMLRPCRequestHandler,
+                 logRequests=True, allow_none=False, encoding=None, bind_and_activate=True, useSSL=False, SSLCert=None):
+
+        self.logRequests = logRequests
+
+        SimpleXMLRPCDispatcher.__init__(self, allow_none, encoding)
+
+        SocketServer.BaseServer.__init__(self, addr, requestHandler)
+        if useSSL:
+            self.socket = ssl.wrap_socket(
+                socket.socket(self.address_family, self.socket_type),
+                server_side=True,
+                certfile=SSLCert,
+                cert_reqs=ssl.CERT_NONE,
+                ssl_version=ssl.PROTOCOL_SSLv23,
+                )
+        else:
+            self.socket = socket.socket(self.address_family, self.socket_type)
+
+        if bind_and_activate:
+            self.server_bind()
+            self.server_activate()
+
+        # [Bug #1222790] If possible, set close-on-exec flag; if a
+        # method spawns a subprocess, the subprocess shouldn't have
+        # the listening socket open.
+        if fcntl is not None and hasattr(fcntl, 'FD_CLOEXEC'):
+            flags = fcntl.fcntl(self.fileno(), fcntl.F_GETFD)
+            flags |= fcntl.FD_CLOEXEC
+            fcntl.fcntl(self.fileno(), fcntl.F_SETFD, flags)
+
 
 class Agent:
     def __init__(self):
@@ -184,14 +227,39 @@ class Agent:
         return data
 
 if __name__ == "__main__":
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "s:p:",["ssl=,port="])
+    except getopt.GetoptError:
+        print "ERROR: usage: test.py [--ssl certfile.pem]"
+        sys.exit(1)
+
+    bind_port = BIND_PORT
+    certfile = None
+    for opt, arg in opts:
+        if opt in ("-s", "--ssl"):
+            if (os.path.exists(arg) and os.path.isfile(arg)):
+                certfile = arg
+            else:
+                print("ERROR: certificate file '%s' does not exist" % arg)
+                sys.exit(1)
+        elif opt in ("-p", "--port"):
+            bind_port = int(arg)
+
     try:
         if not BIND_IP:
             BIND_IP = socket.gethostbyname(socket.gethostname())
 
-        print("[+] Starting agent on %s:%s ..." % (BIND_IP, BIND_PORT))
+        print("[+] Starting agent on %s:%s ..." % (BIND_IP, bind_port))
 
-        server = SimpleXMLRPCServer((BIND_IP, BIND_PORT), allow_none=True)
+        if certfile:
+            server = AgentXMLRPCServer((BIND_IP, bind_port), allow_none=True, useSSL=True, SSLCert=certfile)
+        else:
+            server = AgentXMLRPCServer((BIND_IP, bind_port), allow_none=True)
+     
+
         server.register_instance(Agent())
         server.serve_forever()
+
     except KeyboardInterrupt:
         server.shutdown()
