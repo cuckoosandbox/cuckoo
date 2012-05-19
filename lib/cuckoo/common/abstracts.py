@@ -74,6 +74,7 @@ class Processing(object):
         self.file_path = os.path.join(analysis_path, "binary")
         self.dropped_path = os.path.join(analysis_path, "files")
         self.logs_path = os.path.join(analysis_path, "logs")
+        self.pcap_path = os.path.join(analysis_path, "dump.pcap")
 
     def run(self):
         raise NotImplementedError
