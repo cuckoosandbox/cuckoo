@@ -4,6 +4,7 @@ import logging
 import argparse
 
 from lib.cuckoo.common.logo import logo
+from lib.cuckoo.common.constants import CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.core.startup import *
 from lib.cuckoo.core.scheduler import Scheduler
@@ -20,6 +21,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
+    parser.add_argument("-v", "--version", action="version", version="You are running Cuckoo Sandbox %s" % CUCKOO_VERSION)
     args = parser.parse_args()
 
     if args.quiet:

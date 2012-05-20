@@ -3,6 +3,7 @@ import inspect
 import pkgutil
 import logging
 
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
@@ -14,7 +15,7 @@ class Reporter:
     def __init__(self, analysis_path, custom=""):
         self.analysis_path = analysis_path
         self.custom = custom
-        self.cfg = Config(cfg="conf/reporting.conf")
+        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf/reporting.conf"))
         self.__populate(plugins)
 
     def __populate(self, modules):

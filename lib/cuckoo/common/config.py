@@ -1,9 +1,11 @@
+import os
 import ConfigParser
 
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Dictionary
 
 class Config:
-    def __init__(self, cfg="conf/cuckoo.conf"):
+    def __init__(self, cfg=os.path.join(CUCKOO_ROOT, "conf/cuckoo.conf")):
         config = ConfigParser.ConfigParser()
         config.read(cfg)
 
