@@ -2,12 +2,13 @@ import os
 import sys
 import sqlite3
 
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.abstracts import Dictionary
 
 class Database:
     def __init__(self, root="."):
-        self.db_file = os.path.join(root, "db/cuckoo.db")
+        self.db_file = os.path.join(root, os.path.join(CUCKOO_ROOT, "db/cuckoo.db"))
 
         self.generate()
         self.conn = sqlite3.connect(self.db_file)
