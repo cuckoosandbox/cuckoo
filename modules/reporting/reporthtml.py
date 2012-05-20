@@ -1,5 +1,6 @@
 import os
 
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
 
@@ -15,12 +16,16 @@ class ReportHTML(Report):
         if not HAVE_MAKO:
             raise CuckooReportError("Failed to generate HTML report: python Mako library is not installed")
 
-        lookup = TemplateLookup(directories=["lib/cuckoo/web/"],
+        lookup = TemplateLookup(directories=[os.path.join(CUCKOO_ROOT, "lib/cuckoo/web/")],
                                 output_encoding='utf-8',
                                 encoding_errors='replace')
         
         template = lookup.get_template("report.html")
-        html = template.render(**results)
+
+        try:
+            html = template.render(**results)
+        except Exception as e:
+            raise CuckooReportError("Failed to generate HTML report: %s" % e.message)
         
         try:
             report = open(os.path.join(self.reports_path, "report.html"), "w")

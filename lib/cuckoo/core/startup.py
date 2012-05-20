@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooStartupError
 from lib.cuckoo.common.utils import create_folders
 
@@ -13,6 +14,9 @@ def check_python_version():
         raise CuckooStartupError("You are running an incompatible version of Python, please use 2.6 or 2.7")
 
 def check_working_directory():
+    if not os.path.exists(CUCKOO_ROOT):
+        raise CuckooStartupError("You specified a non-existing root directory: %s" % CUCKOO_ROOT)
+
     cwd = os.path.join(os.getcwd(), "cuckoo.py")
     if not os.path.exists(cwd):
         raise CuckooStartupError("You are not running Cuckoo from it's root directory")

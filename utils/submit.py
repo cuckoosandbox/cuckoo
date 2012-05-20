@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 import os
 import sys
+import logging
 import argparse
+
+logging.basicConfig()
 
 sys.path.append("../")
 

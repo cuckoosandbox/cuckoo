@@ -1,4 +1,8 @@
+#!/usr/bin/env python
 import sys
+import logging
+
+logging.basicConfig()
 
 sys.path.append("../")
 

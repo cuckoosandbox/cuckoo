@@ -35,7 +35,7 @@ class Reporter:
             path = "%s.%s" % (plugins.__name__, name)
             __import__(path, globals(), locals(), ["dummy"], -1)
 
-    def run(self, results):
+    def run(self, data):
         Report()
 
         for plugin in Report.__subclasses__():
@@ -46,7 +46,7 @@ class Reporter:
             current.set_options(self.cfg.get(module_name))
 
             try:
-                current.run(results)
+                current.run(data)
             except NotImplementedError:
                 continue
             except CuckooReportError as e:
