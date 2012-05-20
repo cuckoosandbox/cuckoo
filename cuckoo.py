@@ -22,7 +22,17 @@ def main():
     parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
     parser.add_argument("-v", "--version", action="version", version="You are running Cuckoo Sandbox %s" % CUCKOO_VERSION)
+    parser.add_argument("-l", "--logo", help="Show artwork", action="store_true", required=False)
     args = parser.parse_args()
+
+    if args.logo:
+        import time
+        try:
+            while True:
+                time.sleep(1)
+                logo()
+        except KeyboardInterrupt:
+            return
 
     if args.quiet:
         log.setLevel(logging.WARN)
