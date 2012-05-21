@@ -1,6 +1,8 @@
 import os
 import ConfigParser
 
+from lib.cuckoo.common.constants import CUCKOO_GUEST_SSL, CUCKOO_GUEST_PORT
+
 class Dictionary(dict):
     def __getattr__(self, key):
         return self.get(key, None)
@@ -28,6 +30,20 @@ class MachineManager(object):
             machine.label = self.config.get(machine_id, "label")
             machine.platform = self.config.get(machine_id, "platform")
             machine.ip = self.config.get(machine_id, "ip")
+
+            try:
+                machine.ssl = self.config.get(machine_id, "agent_ssl_enabled")
+            except:
+                machine.ssl = CUCKOO_GUEST_SSL
+
+            try:
+                machine.agent_url = self.config.get(machine_id, "agent_url")
+            except:
+                ssl = "http"
+                if machine.ssl:
+                    ssl = "https"
+                machine.agent_url = "%s://%s:%s" % (ssl, machine.ip, CUCKOO_GUEST_PORT)
+
             machine.locked = False
             self.machines.append(machine)
 

@@ -101,7 +101,7 @@ class AnalysisManager(Thread):
         except CuckooMachineError as e:
             raise CuckooAnalysisError(e.message)
         # Initialize guest manager
-        guest = GuestManager(vm.ip, vm.platform)
+        guest = GuestManager(vm.agent_url, vm.platform)
         # Launch analysis
         guest.start_analysis(options)
         # Wait for analysis to complete
