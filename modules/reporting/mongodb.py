@@ -24,7 +24,10 @@ class MongoDb(Report):
         if os.path.exists(pcap_file) and os.path.getsize(pcap_file) != 0:
             pcap = open(pcap_file, 'r')
             pcap_id = fs.put(pcap, filename="dump.pcap")
-            results["network"]["pcap_id"] = pcap_id
+            if results.has_key("network"):
+                results["network"]["pcap_id"] = pcap_id
+            else:
+                results["network"] = {"pcap_id": pcap_id}
 
         if results.has_key("dropped"):
             for dropped in results["dropped"]:
