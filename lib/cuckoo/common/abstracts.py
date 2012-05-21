@@ -39,7 +39,7 @@ class MachineManager(object):
             try:
                 machine.agent_url = self.config.get(machine_id, "agent_url")
             except:
-                machine.agent_url = "%s://%s:%s" % machine.ssl ? "https" : "http", machine.ip, CUCKOO_GUEST_PORT
+                machine.agent_url = "%s://%s:%s" % (machine.ssl ? "https" : "http", machine.ip, CUCKOO_GUEST_PORT)
 
             machine.locked = False
             self.machines.append(machine)
