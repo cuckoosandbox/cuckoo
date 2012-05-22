@@ -12,4 +12,6 @@ results = Processor(sys.argv[1]).run()
 
 if "signatures" in results:
     for signature in results["signatures"]:
-        print("%s matched" % signature["name"])
+        print("%s matched:" % signature["name"])
+        print("\tDescription: %s" % signature["description"])
+        print("\tSeverity: %d" % signature["severity"])

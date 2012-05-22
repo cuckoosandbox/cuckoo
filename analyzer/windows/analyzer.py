@@ -16,6 +16,7 @@ from lib.core.config import Config
 from lib.core.startup import create_folders, init_logging
 from lib.core.privileges import grant_debug_privilege
 from lib.core.packages import choose_package
+from lib.core.screenshots import Screenshots
 
 log = logging.getLogger()
 
@@ -196,6 +197,9 @@ class Analyzer:
 
         timer = Timer(self.config.timeout, self.stop)
         timer.start()
+        
+        shots = Screenshots()
+        shots.start()
 
         try:
             pids = pack.run(self.file_path)
@@ -232,6 +236,7 @@ class Analyzer:
         except NotImplementedError:
             pass
 
+        shots.stop()
         self.complete()
 
         return True
