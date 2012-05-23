@@ -4,6 +4,7 @@ import string
 import logging
 import hashlib
 import binascii
+from datetime import datetime
 
 try:
     import magic
@@ -38,6 +39,20 @@ def convert_char(c):
 
 def convert_to_printable(s):
     return ''.join([convert_char(c) for c in s])
+
+def datetime_to_iso(timestamp):
+    """Parse a datatime string and returns a datetime in iso format.
+    @param timestamp: timestamp string
+    @return: ISO datetime
+    """  
+    if hasattr(datetime, 'strptime'):
+        # Python 2.6
+        strptime = datetime.strptime
+    else:
+        # Python 2.4 equivalent
+        import time
+        strptime = lambda date_string, format: datetime(*(time.strptime(date_string, format)[0:6]))
+    return strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat()
 
 class File:
     def __init__(self, file_path):
