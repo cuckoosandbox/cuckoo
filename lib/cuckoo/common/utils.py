@@ -47,6 +47,9 @@ class File:
     def get_name(self):
         return convert_to_printable(os.path.basename(self.file_path))
 
+    def get_data(self):
+        return self.file_data
+
     def get_size(self):
         return os.path.getsize(self.file_path)
 
