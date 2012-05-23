@@ -38,9 +38,9 @@ class ReportHTML(Report):
                 counter += 1
 
             shots.sort(key=lambda shot: shot["id"])
-            results["shots"] = shots
+            results["screenshots"] = shots
         else:
-            results["shots"] = []
+            results["screenshots"] = []
 
         lookup = TemplateLookup(directories=[os.path.join(CUCKOO_ROOT, "lib/cuckoo/web/")],
                                 output_encoding='utf-8',
