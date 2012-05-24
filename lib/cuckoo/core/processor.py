@@ -1,8 +1,11 @@
+import logging
 import pkgutil
 
 from lib.cuckoo.common.abstracts import Processing, Signature
 import modules.processing as processing
 import modules.signatures as signatures
+
+log = logging.getLogger(__name__)
 
 class Processor:
     def __init__(self, analysis_path):
@@ -28,6 +31,7 @@ class Processor:
 
             try:
                 results[current.key] = current.run()
+                log.debug("Executed processing module \"%s\"" % current.__class__.__name__)
             except NotImplementedError:
                 continue
 
@@ -48,6 +52,7 @@ class Processor:
                                "data" : current.data,
                                "alert" : current.alert}
                     sigs.append(matched)
+                    log.debug("Analysis at \"%s\" matched signature \"%s\"" % (self.analysis_path, current.name))
             except NotImplementedError:
                 continue
 

@@ -1,8 +1,11 @@
 import os
 import stat
+import logging
 import subprocess
 
 from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT
+
+log = logging.getLogger(__name__)
 
 class Sniffer:
     def __init__(self, tcpdump):
@@ -30,7 +33,10 @@ class Sniffer:
         try:
             self.proc = subprocess.Popen(pargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except (OSError, ValueError) as e:
+            log.error("Failed to start sniffer (interface=%s, host=%s, dump path=%s): %s" % (interface, host, file_path, e.message))
             return False
+
+        log.info("Started sniffer (interface=%s, host=%s, dump path=%s)" % (interface, host, file_path))
 
         return True
 

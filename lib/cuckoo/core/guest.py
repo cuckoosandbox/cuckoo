@@ -13,6 +13,7 @@ log = logging.getLogger(__name__)
 class GuestManager:
     def __init__(self, ip, platform="windows"):
         self.platform = platform
+        self.ip = ip
         self.server = xmlrpclib.Server("http://%s:%s" % (ip, CUCKOO_GUEST_PORT), allow_none=True)
 
     def wait(self, status):
@@ -53,14 +54,14 @@ class GuestManager:
         data = xmlrpclib.Binary(zip_data.getvalue())
         zip_data.close()
 
-        log.debug("Uploading analyzer to guest")
+        log.debug("Uploading analyzer to guest (ip=%s)" % self.ip)
         self.server.add_analyzer(data)
 
     def start_analysis(self, options):
         if not os.path.exists(options["file_path"]):
             return False
 
-        log.info("Starting analysis on guest")
+        log.info("Starting analysis on guest (ip=%s)" % self.ip)
 
         socket.setdefaulttimeout(5)
         self.wait(CUCKOO_GUEST_INIT)

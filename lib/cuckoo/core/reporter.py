@@ -47,7 +47,8 @@ class Reporter:
 
             try:
                 current.run(data)
+                log.debug("Executed reporting module \"%s\"" % current.__class__.__name__)
             except NotImplementedError:
                 continue
             except CuckooReportError as e:
-                log.error(e.message)
+                log.warning("Failed to execute reporting module \"%s\": %s" % (current.__class__.__name__, e.message))
