@@ -47,7 +47,7 @@ class MongoDb(Report):
                         drop = open(drop_file, 'r')
                         try:
                             drop_id = self._fs.put(drop, filename=dropped["name"])
-                        except FileExists, e:
+                        except FileExists as e:
                             drop_id = self._db.fs.files.find({"md5": dropped["md5"]})[0][u"_id"]
                         dropped["dropped_id"] = drop_id
         # Save all remaining results.
