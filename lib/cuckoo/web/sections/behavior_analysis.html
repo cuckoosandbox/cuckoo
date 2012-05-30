@@ -1,5 +1,36 @@
 <div class="section">
     <div class="section-title">Behavior Analysis</div>
+    <div class="section-subtitle">Summary</div>
+    %if behavior["summary"]:
+        <fieldset>
+            <legend><span class="blue">Files</span></legend>
+            <ul>
+                %for file in behavior["summary"]["files"]:
+                <li><span class="mono">${file}</span></li>
+                %endfor
+            </ul>
+        </fieldset>
+        <div class="space-small"></div>
+        <fieldset>
+            <legend><span class="blue">Mutexes</span></legend>
+            <ul>
+                %for mutex in behavior["summary"]["mutexes"]:
+                <li><span class="mono">${mutex}</span></li>
+                %endfor
+            </ul>
+        </fieldset>
+        <div class="space-small"></div>
+        <fieldset>
+            <legend><span class="blue">Registry Keys</span></legend>
+            <ul>
+                %for key in behavior["summary"]["keys"]:
+                <li><span class="mono">${key}</span></li>
+                %endfor
+            </ul>
+        </fieldset>
+    %endif
+    <div class="space"></div>
+    <div class="section-subtitle">Process Tracking</div>
     %if behavior["processes"]:
         %for process in behavior["processes"]:
         <fieldset>
