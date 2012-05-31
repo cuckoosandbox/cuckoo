@@ -77,6 +77,10 @@ class AnalysisManager(Thread):
         if not os.path.exists(self.task.file_path):
             raise CuckooAnalysisError("The file to analyze does not exist at path \"%s\", analysis aborted" % self.task.file_path)
 
+        self.init_storage()
+        self.store_file()
+        options = self.build_options()
+
         while True:
             machine_lock.acquire()
             vm = mmanager.acquire(label=self.task.machine, platform=self.task.platform)
@@ -87,10 +91,6 @@ class AnalysisManager(Thread):
             else:
                 log.info("Acquired machine %s (Label: %s)" % (vm.id, vm.label))
                 break
-
-        self.init_storage()
-        self.store_file()
-        options = self.build_options()
 
         # Initialize sniffer
         sniffer = Sniffer(self.cfg.cuckoo.tcpdump)
@@ -175,6 +175,6 @@ class Scheduler:
             analysis = AnalysisManager(task)
             analysis.daemon = True
             analysis.start()
-            analysis.join()
+            #analysis.join()
 
-            break
+            #break
