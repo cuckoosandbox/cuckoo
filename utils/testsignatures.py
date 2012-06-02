@@ -8,7 +8,7 @@ import logging
 
 logging.basicConfig()
 
-sys.path.append("../")
+sys.path.append("..")
 
 from lib.cuckoo.core.processor import Processor
 
