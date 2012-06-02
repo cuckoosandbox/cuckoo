@@ -8,9 +8,14 @@ import logging
 
 logging.basicConfig()
 
-sys.path.append("../")
+sys.path.append(".")
+sys.path.append("..")
 
 from lib.cuckoo.core.processor import Processor
 from lib.cuckoo.core.reporter import Reporter
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 
-Reporter(sys.argv[1]).run(Processor(sys.argv[1]).run())
+if CUCKOO_ROOT == ".":
+    print "You must set CUCKOO_ROOT to an absolute path to use this."
+else:
+    Reporter(sys.argv[1]).run(Processor(sys.argv[1]).run())
