@@ -19,3 +19,5 @@ if "signatures" in results:
         print("%s matched:" % signature["name"])
         print("\tDescription: %s" % signature["description"])
         print("\tSeverity: %d" % signature["severity"])
+else:
+    print("No signatures in results.")
