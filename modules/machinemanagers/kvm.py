@@ -1,3 +1,7 @@
+# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+# See the file 'docs/LICENSE' for copying permission.
+
 from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.exceptions import CuckooDependencyError, CuckooMachineError
 
