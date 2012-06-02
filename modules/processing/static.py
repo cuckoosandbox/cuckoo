@@ -12,6 +12,7 @@ try:
 except:
     HAVE_MAGIC = False
 
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.utils import convert_to_printable, File
 import lib.pefile.pefile as pefile
@@ -45,7 +46,7 @@ class PortableExecutable:
             return None
 
         try:
-            signatures = peutils.SignatureDatabase("lib/pefile/UserDB.TXT")
+            signatures = peutils.SignatureDatabase(os.path.join(CUCKOO_ROOT, "data/peutils/UserDB.TXT"))
             return signatures.match(self.pe, ep_only = True)
         except:
             return None
