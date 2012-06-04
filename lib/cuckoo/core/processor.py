@@ -5,6 +5,7 @@
 import logging
 import pkgutil
 
+from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.abstracts import Processing, Signature
 import modules.processing as processing
 import modules.signatures as signatures
@@ -32,6 +33,7 @@ class Processor:
         for module in Processing.__subclasses__():
             current = module()
             current.set_path(self.analysis_path)
+            current.cfg = Config(current.conf_path)
 
             try:
                 results[current.key] = current.run()
@@ -44,6 +46,7 @@ class Processor:
 
         for signature in Signature.__subclasses__():
             current = signature()
+
             if not current.enabled:
                 continue
 
