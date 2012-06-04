@@ -23,7 +23,7 @@ CUCKOO_SETUP_SHARE = "\\\\VBOXSVR\\setup\\"
 SYSTEM_SETUP_SRC = os.path.join(CUCKOO_SETUP_SHARE, "system\\")
 CUCKOO_SETUP_SRC = os.path.join(CUCKOO_SETUP_SHARE, "cuckoo\\")
 
-CUCKOO_PATH = "%s\\cuckoo\\" % os.getenv("SystemDrive")
+CUCKOO_PATH = "%s\\cuckoo\\" % os.getenv("TEMP")
 CUCKOO_DLL_FOLDER = os.path.join(CUCKOO_PATH, "dll")
 CUCKOO_DLL_PATH = os.path.join(CUCKOO_PATH, "dll\\cmonitor.dll")
 
