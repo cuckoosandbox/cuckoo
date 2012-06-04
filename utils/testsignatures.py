@@ -9,7 +9,7 @@ import logging
 
 logging.basicConfig()
 
-sys.path.append("../")
+sys.path.append("..")
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.processor import Processor

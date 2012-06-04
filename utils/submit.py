@@ -10,7 +10,7 @@ import argparse
 
 logging.basicConfig()
 
-sys.path.append("../")
+sys.path.append("..")
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import File

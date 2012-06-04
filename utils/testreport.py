@@ -9,11 +9,13 @@ import logging
 
 logging.basicConfig()
 
-sys.path.append("../")
+sys.path.append(".")
+sys.path.append("..")
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.processor import Processor
 from lib.cuckoo.core.reporter import Reporter
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 if CUCKOO_ROOT == "." or not os.path.exists(CUCKOO_ROOT):
     print("ERROR: you need to specify a valid absolute root directory in lib/cuckoo/common/constants.py")
