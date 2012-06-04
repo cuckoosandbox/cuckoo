@@ -1,11 +1,15 @@
-.. Development chapter frontpage
+.. Customization chapter frontpage
 
-Development
-===========
+Customization
+=============
 
-This chapter explains how to write Cuckoo's code and how to contribute.
+This chapter explains how to customize Cuckoo.
+Cuckoo is written in a modular architecture built to be as much customizable it can, 
+to fit all user's needs.
 
 .. toctree::
 
-    code_style
+    packages
+    processing
+    reporting
 
