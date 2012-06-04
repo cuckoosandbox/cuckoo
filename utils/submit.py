@@ -12,10 +12,15 @@ logging.basicConfig()
 
 sys.path.append("../")
 
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import File
 from lib.cuckoo.core.database import Database
 
 def main():
+    if CUCKOO_ROOT == "." or not os.path.exists(CUCKOO_ROOT):
+        print("ERROR: you need to specify a valid absolute root directory in lib/cuckoo/common/constants.py")
+        return False
+
     parser = argparse.ArgumentParser()
     parser.add_argument("path", type=str, help="Path to the file to analyze")
     parser.add_argument("--package", type=str, action="store", help="Specify an analysis package", required=False)
