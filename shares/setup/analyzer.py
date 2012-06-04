@@ -192,7 +192,7 @@ def install_target(share_path, target_name):
     log = logging.getLogger("Core.InstallTarget")
 
     target_src = os.path.join(share_path, target_name)
-    target_dst = "%s\\" % os.getenv("SystemDrive")
+    target_dst = "%s\\" % os.getenv("TEMP")
 
     if not os.path.exists(target_src):
         log.critical("Cannot find target file at path \"%s\"." % target_src)
@@ -208,7 +208,7 @@ def install_target(share_path, target_name):
                      "\"%s\": %s." % (target_src, target_dst, why))
         return False
 
-    return "%s\\%s" % (os.getenv("SystemDrive"), target_name)
+    return "%s\\%s" % (os.getenv("TEMP"), target_name)
 
 def add_file_to_list(file_path):
     """
