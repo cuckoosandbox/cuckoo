@@ -9,4 +9,5 @@ class FileAnalysis(Processing):
     def run(self):
         self.key = "file"
         file_info = File(self.file_path).get_all()
+        file_info["name"] = self.cfg.analysis.file_name
         return file_info
