@@ -72,6 +72,7 @@ class AnalysisManager(Thread):
         options["package"] = self.task.package
         options["options"] = self.task.options
         options["timeout"] = timeout
+        options["started"] = time.time()
 
         return options
 
@@ -170,6 +171,11 @@ class Scheduler:
 
         while self.running:
             time.sleep(1)
+
+            if mmanager.availables() == 0:
+                log.debug("No machines available, try again")
+                continue
+
             task = self.db.fetch()
 
             if not task:
@@ -179,6 +185,3 @@ class Scheduler:
             analysis = AnalysisManager(task)
             analysis.daemon = True
             analysis.start()
-            #analysis.join()
-
-            #break

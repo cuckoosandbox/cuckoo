@@ -35,6 +35,14 @@ class MachineManager(object):
             machine.locked = False
             self.machines.append(machine)
 
+    def availables(self):
+        count = 0
+        for machine in self.machines:
+            if not machine.locked:
+                count += 1
+
+        return count
+
     def acquire(self, label=None, platform=None):
         if label:
             for machine in self.machines:
