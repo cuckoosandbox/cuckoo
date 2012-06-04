@@ -17,7 +17,12 @@ from lib.cuckoo.common.abstracts import Processing
 log = logging.getLogger(__name__)
 
 class YaraSignatures(Processing):
+    """Yara signature processing."""
+
     def run(self):
+        """Run Yara processing.
+        @return: hash with matches.
+        """
         self.key = "yara"
         matches = []
 

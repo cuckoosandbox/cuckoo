@@ -10,7 +10,13 @@ from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.exceptions import CuckooMachineError
 
 class VirtualBox(MachineManager):
+    """Virtualization layer forVirtualBox."""
+
     def start(self, label):
+        """Start a virtual machine.
+        @param label: virtual machine name.
+        @raise CuckooMachineError: if unable to start.
+        """
         if self.config.getboolean("virtualbox", "headless"):
             try:
                 if subprocess.call(["VBoxHeadless", "-startvm", label],
@@ -29,6 +35,10 @@ class VirtualBox(MachineManager):
                 raise CuckooMachineError("VBoxManage OS error starting vm or file not found")
 
     def stop(self, label):
+        """Stops a virtual machine.
+        @param label: virtual machine name.
+        @raise CuckooMachineError: if unable to stop.
+        """
         try:
             if subprocess.call(["VBoxManage", "controlvm", label, "poweroff"],
                                stdout=subprocess.PIPE,

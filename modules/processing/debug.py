@@ -7,7 +7,12 @@ import os
 from lib.cuckoo.common.abstracts import Processing
 
 class Debug(Processing):
+    """Analysis debug information."""
+
     def run(self):
+        """Run debug analysis.
+        @return: debug information dict.
+        """
         self.key = "debug"
         debug = {}
 

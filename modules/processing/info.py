@@ -9,7 +9,12 @@ from lib.cuckoo.common.constants import CUCKOO_VERSION
 from lib.cuckoo.common.abstracts import Processing
 
 class AnalysisInformation(Processing):
+    """General information about analysis session."""
+
     def run(self):
+        """Run information gathering.
+        @return: information dict.
+        """
         self.key = "info"
 
         started = float(self.cfg.analysis.started)

@@ -8,7 +8,12 @@ from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.utils import File
 
 class Dropped(Processing):
+    """Dropped files analysis."""
+
     def run(self):
+        """Run analysis.
+        @return: list of dropped files with related information.
+        """
         self.key = "dropped"
         dropped_files = []
 

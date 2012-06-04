@@ -17,7 +17,13 @@ except ImportError:
     HAVE_MAKO = False
 
 class ReportHTML(Report):
+    """Stores report in HTML format."""
+
     def run(self, results):
+        """Writes report.
+        @param results: Cuckoo results dict.
+        @raise CuckooReportError: if fails to write report.
+        """
         if not HAVE_MAKO:
             raise CuckooReportError("Failed to generate HTML report: python Mako library is not installed")
 

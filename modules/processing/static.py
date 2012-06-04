@@ -21,11 +21,20 @@ import lib.pefile.peutils as peutils
 # Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 
 class PortableExecutable:
+    """PE analysis.
+    @note: Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py.
+    """
+
     def __init__(self, file_path):
+        """@param file_path: file path."""
         self.file_path = file_path
         self.pe = None
 
     def _get_filetype(self, data):
+        """Gets filetype, uses libmagic if available.
+        @param data: data to be analyzed.
+        @return: file type or None.
+        """
         if not IS_MAGIC:
             return None
 
@@ -42,6 +51,9 @@ class PortableExecutable:
         return file_type
 
     def _get_peid_signatures(self):
+        """Gets PEID signatures.
+        @return: matched signatures or None.
+        """
         if not self.pe:
             return None
 
@@ -52,6 +64,9 @@ class PortableExecutable:
             return None
 
     def _get_imported_symbols(self):
+        """Gets imported symbols.
+        @return: imported symbols dict or None.
+        """
         if not self.pe:
             return None
 
@@ -77,6 +92,9 @@ class PortableExecutable:
         return imports
     
     def _get_exported_symbols(self):
+        """Gets exported symbols.
+        @return: exported symbols dict or None.
+        """
         if not self.pe:
             return None
         
@@ -93,6 +111,9 @@ class PortableExecutable:
         return exports
 
     def _get_sections(self):
+        """Gets sections.
+        @return: sections dict or None.
+        """
         if not self.pe:
             return None
 
@@ -113,6 +134,9 @@ class PortableExecutable:
         return sections
 
     def _get_resources(self):
+        """Get resources.
+        @return: resources dict or None.
+        """
         if not self.pe:
             return None
 
@@ -152,6 +176,9 @@ class PortableExecutable:
         return resources
 
     def _get_versioninfo(self):
+        """Get version info.
+        @return: info dict or None.
+        """
         if not self.pe:
             return None
 
@@ -180,6 +207,9 @@ class PortableExecutable:
         return infos
 
     def run(self):
+        """Run analysis.
+        @return: analysis results dict or None.
+        """
         if not os.path.exists(self.file_path):
             return None
 
@@ -200,7 +230,12 @@ class PortableExecutable:
         return results
 
 class Static(Processing):
+    """Static analysis."""
+    
     def run(self):
+        """Run analysis.
+        @return: results dict.
+        """
         self.key = "static"
         static = {}
 

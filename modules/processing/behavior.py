@@ -13,7 +13,10 @@ from lib.cuckoo.common.utils import convert_to_printable
 log = logging.getLogger(__name__)
 
 class ParseProcessLog:
+    """Parses process log file."""
+    
     def __init__(self, log_path):
+        """@param log_path: log file path."""
         self._log_path = log_path
         self.process_id = None
         self.process_name = None
@@ -22,6 +25,10 @@ class ParseProcessLog:
         self.calls = []
 
     def _parse(self, row):
+        """Parse log row.
+        @param row: row data.
+        @return: parsed information dict.
+        """
         call = {}
         arguments = []
 
@@ -89,6 +96,9 @@ class ParseProcessLog:
         return True
 
     def extract(self):
+        """Get data from CSV file.
+        @return: boolean with status of parsing process.
+        """
         if not os.path.exists(self._log_path):
             log.error("Analysis logs folder does not exist at path \"%s\"."
                       % self._log_path)
@@ -106,10 +116,16 @@ class ParseProcessLog:
         return True
 
 class Processes:
+    """Processes analyzer."""
+
     def __init__(self, logs_path):
+        """@param  logs_path: logs path."""
         self._logs_path = logs_path
 
     def run(self):
+        """Run analysis.
+        @return: processes infomartion list.
+        """
         results = []
 
         if not os.path.exists(self._logs_path):
@@ -150,10 +166,16 @@ class Processes:
         return results
 
 class Summary:
+    """Generates summary information."""
+    
     def __init__(self, proc_results):
+        """@param oroc_results: enumerated processes results."""
         self.proc_results = proc_results
 
     def _gen_files(self):
+        """Gets files calls.
+        @return: information list.
+        """
         files = []
 
         for entry in self.proc_results:
@@ -167,6 +189,9 @@ class Summary:
         return files
 
     def _gen_keys(self):
+        """Get registry calls.
+        @return: keys information list.
+        """
         keys = []
 
         for entry in self.proc_results:
@@ -188,6 +213,9 @@ class Summary:
         return keys
 
     def _gen_mutexes(self):
+        """Get mutexes information.
+        @return: Mutexes information list.
+        """
         mutexes = []
 
         for entry in self.proc_results:
@@ -201,20 +229,29 @@ class Summary:
         return mutexes
 
     def run(self):
+        """Run analysis.
+        @return: information dict.
+        """
         summary = {}
         summary["files"] = self._gen_files()
         summary["keys"] = self._gen_keys()
         summary["mutexes"] = self._gen_mutexes()
 
-        return summary  
+        return summary
 
 class ProcessTree:
+    """Creates process tree."""
+
     def __init__(self, proc_results):
+        """@param proc_results: enumerated processes information."""
         self.proc_results = proc_results
         self.processes = []
         self.proctree = []
 
     def gen_proclist(self):
+        """Generate processes list.
+        @return: True.
+        """
         for entry in self.proc_results:
             process = {}
             process["name"] = entry["process_name"]
@@ -232,6 +269,12 @@ class ProcessTree:
         return True
 
     def add_node(self, node, parent_id, tree):
+        """Add a node to a tree.
+        @param node: node to add.
+        @param parent_id: parent node.
+        @param tree: processes tree.
+        @return: boolean with operation success status.
+        """
         for process in tree:
             if process["pid"] == parent_id:
                 new = {}
@@ -245,6 +288,10 @@ class ProcessTree:
         return False
 
     def populate(self, node):
+        """Populate tree.
+        @param node: node to add.
+        @return: True.
+        """
         for children in node["children"]:
             for proc in self.processes:
                 if int(proc["pid"]) == int(children):
@@ -254,6 +301,9 @@ class ProcessTree:
         return True
 
     def run(self):
+        """Run analysis.
+        @return: results dict or None.
+        """
         if not self.proc_results or len(self.proc_results) == 0:
             return None
     
@@ -268,7 +318,12 @@ class ProcessTree:
         return self.proctree
 
 class BehaviorAnalysis(Processing):
+    """Behavior Analyzer."""
+
     def run(self):
+        """Run analysis.
+        @return: results dict.
+        """
         self.key = "behavior"
 
         behavior = {}

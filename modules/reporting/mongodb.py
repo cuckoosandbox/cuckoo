@@ -18,11 +18,13 @@ except ImportError:
 
 
 class MongoDb(Report):
-    """
-    Save report in MongoDB.
-    """
-    
+    """Stores report in MongoDB."""
+
     def run(self, results):
+        """Writes report.
+        @param results: Cuckoo results dict.
+        @raise CuckooReportError: if fails to connect or write to MongoDB.
+        """
         self._connect()
         # Set an unique index on stored files, to avoid duplicates.
         if not self._db.fs.files.ensure_index("md5", unique=True):
