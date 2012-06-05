@@ -41,8 +41,8 @@ class ParseProcessLog:
             api_name = row[5]     # Name of the Windows API.
             status_value = row[6] # Success or Failure?
             return_value = row[7] # Value returned by the function.
-        except IndexError, why:
-            log.warning("Unable to parse analysis log row: %s" % why)
+        except IndexError as e:
+            log.warning("Unable to parse analysis log row: %s" % e.message)
             return False
 
         if not self.process_id:
@@ -65,9 +65,9 @@ class ParseProcessLog:
             # Split the argument name with its value based on the separator.
             try:                
                 (arg_name, arg_value) = row[index].split("->")
-            except ValueError, why:
+            except ValueError as e:
                 print row[index]
-                log.warning("Unable to parse analysis row argument: %s" % why)
+                log.warning("Unable to parse analysis row argument: %s" % e.message)
                 continue
 
             argument["name"] = arg_name
@@ -109,9 +109,9 @@ class ParseProcessLog:
         try:
             for row in reader:
                 self._parse(row)
-        except csv.Error, why:
+        except csv.Error as e:
             log.warning("Something went wrong while parsing analysis log: %s"
-                        % why)
+                        % e.message)
 
         return True
 

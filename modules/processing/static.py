@@ -45,7 +45,7 @@ class PortableExecutable:
         except:
             try:
                 file_type = magic.from_buffer(data)
-            except Exception, why:
+            except Exception:
                 return None
 
         return file_type
@@ -215,7 +215,7 @@ class PortableExecutable:
 
         try:
             self.pe = pefile.PE(self.file_path)
-        except pefile.PEFormatError, why:
+        except pefile.PEFormatError:
             return None
 
         results = {}

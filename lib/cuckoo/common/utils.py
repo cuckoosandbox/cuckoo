@@ -18,7 +18,7 @@ except ImportError:
 try:
     import ssdeep
     HAVE_SSDEEP = True
-except ImportError, why:
+except ImportError:
     HAVE_SSDEEP = False
 
 def create_folders(root=".", folders=[]):
@@ -99,7 +99,7 @@ class File:
 
         try:
             return ssdeep.ssdeep().hash_file(self.file_path)
-        except Exception, why:
+        except Exception:
             return None
 
     def get_type(self):

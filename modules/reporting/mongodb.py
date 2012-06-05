@@ -35,7 +35,7 @@ class MongoDb(Report):
             pcap = File(pcap_file)
             try:
                 pcap_id = self._fs.put(pcap.get_data(), filename=pcap.get_name())
-            except FileExists, e:
+            except FileExists:
                 pcap_id = self._db.fs.files.find({"md5": pcap.get_md5()})[0][u"_id"]
             # Preventive key check.
             if results.has_key("network"):
