@@ -4,6 +4,3 @@
 
 include "embedded.yar"
 include "shellcodes.yar"
-
-include "capabilities.yar"
-include "xorsigs.yar"
