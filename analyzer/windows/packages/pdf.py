@@ -6,6 +6,8 @@ from lib.common.abstracts import Package
 from lib.api.process import Process
 
 class PDF(Package):
+    """PDF analysis package."""
+
     def run(self, path):
         arg = "\"%s\"" % path
         p = Process()

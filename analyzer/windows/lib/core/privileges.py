@@ -8,6 +8,10 @@ import ctypes
 from lib.common.defines import *
 
 def grant_debug_privilege(pid=0):
+    """Grant debug privileges.
+    @param pid: PID.
+    @return: operation status.
+    """
     ADVAPI32.OpenProcessToken.argtypes = (wintypes.HANDLE,
                                           wintypes.DWORD,
                                           ctypes.POINTER(wintypes.HANDLE))

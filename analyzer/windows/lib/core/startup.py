@@ -10,6 +10,7 @@ from lib.common.paths import PATHS
 log = logging.getLogger()
 
 def create_folders():
+    """Create folders in PATHS."""
     for name, folder in PATHS.items():
         if os.path.exists(folder):
             continue
@@ -20,6 +21,7 @@ def create_folders():
             pass
 
 def init_logging():
+    """Initialize logger."""
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
     sh = logging.StreamHandler()
     sh.setFormatter(formatter)

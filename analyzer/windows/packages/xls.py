@@ -6,6 +6,8 @@ from lib.common.abstracts import Package
 from lib.api.process import Process
 
 class XLS(Package):
+    """Excel analysis package."""
+
     def run(self, path):
         arg = "\"%s\"" % path
         p = Process()

@@ -17,6 +17,9 @@ from lib.core.errors import get_error_string
 log = logging.getLogger(__name__)
 
 def randomize_dll(dll_path):
+    """Randomize DLL name.
+    @return: new DLL path.
+    """
     new_dll_name = "".join(random.choice(string.ascii_letters) for x in range(6))
     new_dll_path = os.path.join("dll\\%s.dll" % new_dll_name)
 
@@ -27,7 +30,14 @@ def randomize_dll(dll_path):
         return dll_path
 
 class Process:
+    """Windows process."""
+
     def __init__(self, pid=0, h_process=0, thread_id=0, h_thread=0):
+        """@param pid: PID.
+        @param h_process: process handle.
+        @param thread_id: thread id.
+        @param h_thread: thread handle.
+        """
         self.pid = pid
         self.h_process = h_process
         self.thread_id = thread_id
@@ -35,10 +45,14 @@ class Process:
         self.suspended = False
 
     def get_system_info(self):
+        """Get system information."""
         self.system_info = SYSTEM_INFO()
         KERNEL32.GetSystemInfo(byref(self.system_info))
 
     def open(self):
+        """Open a process.
+        @return: operation status.
+        """
         if self.pid == 0:
             return False
 
@@ -48,6 +62,9 @@ class Process:
         return True
 
     def exit_code(self):
+        """Get process exit code.
+        @return: exit code value.
+        """
         if not self.h_process:
             self.open()
 
@@ -57,12 +74,21 @@ class Process:
         return exit_code.value
 
     def is_alive(self):
+        """Process is alive?
+        @return: process status.
+        """
         if self.exit_code() == STILL_ACTIVE:
             return True
         else:
             return False
 
     def execute(self, path=None, args=None, suspended=False):
+        """Execute sample process.
+        @param path: sample path.
+        @param args: process args.
+        @param suspended: is suspended.
+        @return: operation status.
+        """
         if not os.access(path, os.X_OK):
             return False
 
@@ -102,6 +128,9 @@ class Process:
             return False
 
     def resume(self):
+        """Resume a suspended thread.
+        @return: operation status.
+        """
         if not self.suspended:
             log.warning("The process with pid %d was not suspended at creation" % self.pid)
             return False
@@ -119,6 +148,9 @@ class Process:
             return False
 
     def terminate(self):
+        """Terminate process.
+        @return: operation status.
+        """
         if self.h_process == 0:
             self.open()
 
@@ -130,6 +162,10 @@ class Process:
             return False
 
     def inject(self, dll="dll\\cmonitor.dll", apc=False):
+        """Cuckoo DLL injection.
+        @param dll: Cuckoo DLL path.
+        @param apc: APC use.
+        """
         if self.pid == 0:
             log.warning("No valid pid specified, injection aborted")
             return False
@@ -200,6 +236,9 @@ class Process:
         return True
 
     def dump_memory(self):
+        """Dump process memory.
+        @return: operation status.
+        """
         if self.pid == 0:
             log.warning("No valid pid specified, memory dump aborted")
             return False

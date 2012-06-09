@@ -30,6 +30,7 @@ PROCESS_LIST = []
 PROCESS_LOCK = Lock()
 
 def add_file(file_path):
+    """Add a file to file list."""
     if file_path.startswith("\\\\.\\"):
         return
 
@@ -39,6 +40,7 @@ def add_file(file_path):
             FILES_LIST.append(file_path)
 
 def add_pid(pid):
+    """Add a process to process list."""
     PROCESS_LOCK.acquire()
 
     if type(pid) == long or type(pid) == int or type(pid) == str:
@@ -48,6 +50,7 @@ def add_pid(pid):
     PROCESS_LOCK.release()
 
 def add_pids(pids):
+    """Add PID."""
     if type(pids) == list:
         for pid in pids:
             add_pid(pid)
@@ -55,6 +58,7 @@ def add_pids(pids):
         add_pid(pids)
 
 def dump_files():
+    """Dump dropped file."""
     for file_path in FILES_LIST:
         try:
             shutil.copy(file_path, PATHS["files"])
@@ -63,11 +67,17 @@ def dump_files():
             log.error("Unable to dump dropped file at path \"%s\": %s" % (file_path, e.message))
 
 class PipeHandler(Thread):
+    """PIPE handler, reads on PIPE."""
+
     def __init__(self, h_pipe):
+        """@param h_pipe: PIPE to read."""
         Thread.__init__(self)
         self.h_pipe = h_pipe
 
     def run(self):
+        """Run handler.
+        @return: operation status.
+        """
         data = create_string_buffer(BUFSIZE)
 
         while True:
@@ -102,15 +112,22 @@ class PipeHandler(Thread):
         return True
 
 class PipeServer(Thread):
+    """Cuckoo PIPE server."""
+
     def __init__(self, pipe_name = "\\\\.\\pipe\\cuckoo"):
+        """@param pipe_name: Cuckoo PIPE server name."""
         Thread.__init__(self)
         self.pipe_name = pipe_name
         self.do_run = True
 
     def stop(self):
+        """Stop PIPE server."""
         self.do_run = False
 
     def run(self):
+        """Create and run PIPE server.
+        @return: operation status.
+        """
         while self.do_run:
             h_pipe = KERNEL32.CreateNamedPipeA(self.pipe_name,
                                                PIPE_ACCESS_DUPLEX,
@@ -136,6 +153,8 @@ class PipeServer(Thread):
         return True
 
 class Analyzer:
+    """Cuckoo analyzer. Runs in guest and perform sample analysis."""
+
     def __init__(self):
         self.do_run = True
         self.pipe = None
@@ -143,6 +162,7 @@ class Analyzer:
         self.file_path = None
 
     def prepare(self):
+        """Prepare env for analysis."""
         grant_debug_privilege()
         create_folders()
         init_logging()
@@ -153,6 +173,9 @@ class Analyzer:
         self.file_path = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, self.config.file_name)
 
     def get_options(self):
+        """Get analysis options.
+        @return: options dict.
+        """
         options = {}
         if self.config.options != "None":
             try:
@@ -169,14 +192,19 @@ class Analyzer:
         return options
 
     def complete(self):
+        """End analysis."""
         self.pipe.stop()
         dump_files()
         log.info("Analysis completed")
 
     def stop(self):
+        """Stop analysis process."""
         self.do_run = False
 
     def run(self):
+        """Run analysis.
+        @return: operation status.
+        """
         self.prepare()
 
         # TODO: checking for "None" string sucks, need to find a fix

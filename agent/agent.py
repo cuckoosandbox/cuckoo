@@ -24,6 +24,8 @@ STATUS_FAILED = 0x0004
 CURRENT_STATUS = STATUS_INIT
 
 class Agent:
+    """Cuckoo agent, it runs inside guest."""
+    
     def __init__(self):
         self.error = ""
         self.system = platform.system().lower()
@@ -31,6 +33,11 @@ class Agent:
         self.analyzer_pid = 0
 
     def _get_root(self, root="", container="cuckoo", create=True):
+        """Get Cuckoo path.
+        @param root: root folder.
+        @param container: folder which will contain Cuckoo.
+        @param create: create folder.
+        """
         if not root:
             if self.system == "windows":
                 root = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, container)
@@ -47,9 +54,15 @@ class Agent:
         return root
 
     def get_status(self):
+        """Get current status.
+        @return: status.
+        """
         return CURRENT_STATUS
    
     def get_error(self):
+        """Get error message.
+        @return: error message.
+        """
         if isinstance(self.error, Exception):
             if hasattr(self.error, "message"):
                 return self.error.message
@@ -59,6 +72,12 @@ class Agent:
             return self.error
 
     def add_malware(self, data, name, iszip=False):
+        """Get analysis data.
+        @param data: analysis data.
+        @param name: file name.
+        @param iszip: is a zip file.
+        @return: operation status.
+        """
         data = data.data
         root = self._get_root(container="")
 
@@ -93,6 +112,10 @@ class Agent:
         return True
 
     def add_config(self, options):
+        """Add configuration.
+        @param options: configuration options.
+        @return: operation status.
+        """
         root = self._get_root()
 
         if not root:
@@ -114,6 +137,10 @@ class Agent:
         return True
 
     def add_analyzer(self, data):
+        """Add analyzer.
+        @param data: analyzer data.
+        @return: operation status.
+        """
         data = data.data
         root = self._get_root(container="analyzer")
 
@@ -134,6 +161,9 @@ class Agent:
         return True
 
     def execute(self):
+        """Execute analysis.
+        @return: analyzer PID.
+        """
         global CURRENT_STATUS
 
         if not self.analyzer_path or not os.path.exists(self.analyzer_path):
@@ -151,6 +181,10 @@ class Agent:
         return self.analyzer_pid
 
     def complete(self, success=True, error=None):
+        """Complete analysis.
+        @param success: success status.
+        @param error: error status.
+        """ 
         global CURRENT_STATUS
 
         if success:
@@ -164,6 +198,9 @@ class Agent:
         return True
 
     def get_results(self):
+        """Get analysis results.
+        @return: data.
+        """
         root = self._get_root(container="cuckoo", create=False)
 
         if not os.path.exists(root):

@@ -3,6 +3,10 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 def choose_package(file_type):
+    """Choose analysis package due to file type.
+    @param file_type: file type.
+    @return: package or None.
+    """
     if not file_type:
         return None
 

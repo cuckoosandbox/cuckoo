@@ -6,6 +6,7 @@ import ConfigParser
 
 class Config:
     def __init__(self, cfg):
+        """@param cfg: configuration file."""
         config = ConfigParser.ConfigParser()
         config.read(cfg)
 

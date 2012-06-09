@@ -6,6 +6,8 @@ from lib.common.abstracts import Package
 from lib.api.process import Process
 
 class Dll(Package):
+    """DLL analysis package."""
+
     def run(self, path):
         p = Process()
 

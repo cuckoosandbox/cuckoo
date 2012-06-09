@@ -14,15 +14,22 @@ log = logging.getLogger(__name__)
 SHOT_DELAY = 1
 
 class Screenshots(Thread):
+    """Take screenshots."""
+    
     def __init__(self, save_path = PATHS["shots"]):
+        """@param save_path: where screenshots are saved."""
         Thread.__init__(self)
         self.save_path = save_path
         self.do_run = True
 
     def stop(self):
+        """Stop screenshotting."""
         self.do_run = False
 
     def run(self):
+        """Run screenshotting.
+        @return: operation status.
+        """
         if not Screenshot().have_pil():
             log.warning("Python Image Library is not installed, screenshots are disabled")
             return False
