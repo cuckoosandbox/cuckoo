@@ -7,15 +7,18 @@ Proceed with download and installation.
 Create a user
 =============
 
-Even if you obviously can run Cuckoo with your current user, creating a dedicated
-one is always a good practice.
+You either can run Cuckoo from your own user or create a new one dedicated just
+to your sandbox setup.
+Make sure that the user that runs Cuckoo is the same user that you will
+use to create and run the virtual machines, otherwise Cuckoo won't be able to
+identify and launch them.
 
 Create a new user::
 
     $ sudo adduser cuckoo
 
-Make sure the new user belongs to the "vboxusers" group (or the group you used to
-run VirtualBox)::
+If you're using VirtualBox, make sure the new user belongs to the "vboxusers"
+group (or the group you used to run VirtualBox)::
 
     $ sudo useradd -G vboxusers cuckoo
 
@@ -29,7 +32,7 @@ Please notice that the archives to be downloaded from the website are core
 releases, while the version on git has to be considered an **under
 development** stage, therefore possibly unstable and not yet fully documented.
 
-.. _official website: http://www.cuckoobox.org
+.. _official website: http://www.cuckoosandbox.org
 .. _git repository: https://github.com/cuckoobox/cuckoo
 
 Install it

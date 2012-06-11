@@ -12,17 +12,18 @@ It can retrieve the following type of results:
 
     * Traces of win32 API calls performed by all processes spawned by the malware.
     * Files being created, deleted and downloaded by the malware during its execution.
+    * Memory dumps of the malware processes.
     * Network traffic trace in PCAP format.
     * Screenshots of Windows desktop taken during the execution of the malware.
-    * Traces of assembly instructions performed by the malware.
 
 Some History
 ============
 
 Cuckoo Sandbox started as a `Google Summer of Code`_ project in 2010 within
 `The Honeynet Project`_.
-It was originally designed and developed by *Claudio “nex” Guarnieri*, who still
-mantains it and coordinates all efforts from joined developers and contributors.
+It was originally designed and developed by *Claudio “nex” Guarnieri*, who is
+still the main developer and coordinates all efforts from joined developers and
+contributors.
 
 After initial work during the summer 2010, the first beta release was published
 on Feb. 5th 2011, when Cuckoo was publicly announced and distributed for the
@@ -34,27 +35,30 @@ Google Summer of Code 2011 with The Honeynet Project, during which
 
 On November 2nd 2011 Cuckoo the release of its 0.2 version to the public as the
 first real stable release.
-
 On late November 2011 *Alessandro "jekil" Tanasi* joined the team expanding
 Cuckoo's processing and reporting functionalities.
 
-On December 2011 Cuckoo v0.3 gets released and quickly hitting release 0.3.2 in
+On December 2011 Cuckoo v0.3 gets released and quickly hits release 0.3.2 in
 early February.
 
 In late January 2012 we opened `Malwr.com`_, a free and public running Cuckoo
 Sandbox instance provided with a full fledged interface through which people
 can submit files to be analysed and get results back.
 
+In March 2012 Cuckoo Sandbox wins the first round of the `Magnificent7`_ program
+organized by `Rapid7`_.
+
 .. _`Google Summer of Code`: http://www.google-melange.com
 .. _`The Honeynet Project`: http://www.honeynet.org
 .. _`Malwr.com`: http://malwr.com
+.. _`Magnificent7`: http://community.rapid7.com/community/open_source/magnificent7
+.. _`Rapid7`: http://www.rapid7.com
 
 Use Cases
 =========
 
 Cuckoo is designed to be used both as a standalone application as well as to be
-integrated in larger frameworks, thanks to its submission and processing
-automation capabilities.
+integrated in larger frameworks, thanks to its extremely modular design.
 
 It can be used to analyze:
 
@@ -64,12 +68,10 @@ It can be used to analyze:
     * Microsoft Office documents
     * URLs
     * PHP scripts
-    * *Almost everything else*
+    * *Almost anything else*
 
-Thanks to its scripting and customization capabilities there's basically no
-limit to what you can achieve with Cuckoo, for example automating malware
-unpacking or automating the dump of configuration files and web-injects
-from banking trojans.
+Thanks to its modularity and powerful scripting capabilities, there's not limit
+to what you can achieve with Cuckoo.
 
 For more information on customizing Cuckoo, see the :doc:`../customization/index`
 chapter.
@@ -85,7 +87,7 @@ Cuckoo's infrastructure is composed by an Host machine (the management
 software) and a number of Guest machines (virtual machines for analysis).
 
 The Host runs the core component of the sandbox that manages the whole
-analysis and execution process, while the Guests are the isolated environments
+analysis process, while the Guests are the isolated environments
 where the malwares get actually safely executed and analyzed.
 
 The following picture explains Cuckoo's architecture:
@@ -111,6 +113,6 @@ repository`_.
         *under development* stage. Therefore its stability is not guaranteed
         and it most likely lacks updated documentation.
 
-.. _`official website`: http://www.cuckoobox.org
+.. _`official website`: http://www.cuckoosandbox.org
 .. _`official git repository`: http://github.com/cuckoobox/cuckoo
 

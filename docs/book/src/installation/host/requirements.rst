@@ -3,7 +3,7 @@ Requirements
 ============
 
 Before proceeding on configuring Cuckoo, you'll need to install some required
-software and libraries.
+softwares and libraries.
 
 Installing Python libraries
 ===========================
@@ -16,46 +16,52 @@ Install Python on Ubuntu::
 
     $ sudo apt-get install python
 
-Cuckoo makes use of several libraries which include:
+In order to properly execute, Cuckoo really just needs the default installation
+of Python.
 
-    * `Magic`_: for detecting file types.
-    * `Dpkt`_: for extracting relevant information from PCAP files.
-    * `Mako`_: for rendering the HTML reports and the web interface.
+However several additional features and modules require some Python libraries
+you will need to install in order to make them run successfully.
+We suggest you to install all of them so that you can take advantage of the
+project at its full potential.
 
-On Ubuntu you can install all of them with the following command::
+    * `Magic`_ (Highly Recommended): for identifying files' formats (otherwise use "file" command line utility)
+    * `Pyssdeep`_ (Recommended): for calculating ssdeep fuzzy hash of files.
+    * `Dpkt`_ (Highly Recommended): for extracting relevant information from PCAP files.
+    * `Mako`_ (Highly Recommended): for rendering the HTML reports and the web interface.
+    * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
+    * `Yara`_ and Yara Python (Optional): for matching Yara signatures.
 
-    $ sudo apt-get install python-magic python-dpkt python-mako
+Some of them are packaged in GNU/Linux Ubuntu and you can install them with the following command::
 
-On different distributions refer to the provided official homepage to retrieve
-other installers or sources.
-Please notice that there are two libmagic Python bindings available on the
-Internet: while we highly encourage you to use the official ones provided by the
-link from this guide, Cuckoo Sandbox should be able to work with both of them.
+    $ sudo apt-get install python-magic python-dpkt python-mako python-pymongo
 
-Other optional libraries, which do not affect Cuckoo's execution, include:
-
-    * `Pyssdeep`_: for calculating ssdeep fuzzy hash of files.
+For the rest refer to their websites.
 
 .. _Magic: http://www.darwinsys.com/file/
 .. _Dpkt: http://code.google.com/p/dpkt/
 .. _Mako: http://www.makotemplates.org
 .. _Pyssdeep: http://code.google.com/p/pyssdeep/
+.. _Pymongo: http://pypi.python.org/pypi/pymongo/
+.. _Yara: http://code.google.com/p/yara-project/
 
-Installing VirtualBox
-=====================
+Virtualization Software
+=======================
 
-At current stage, Cuckoo heavily relies on `VirtualBox`_ as it's unique
-virtualization engine.
+Despite heavily relying on `VirtualBox`_ in the past, Cuckoo has moved on being
+architecturally independent from the virtualization software.
+As you will see throughout this documentation, you'll be able to define and write
+modules to support any software of your choice.
 
-Despite being often packaged by all GNU/Linux distributions, you are encouraged
-to download and install the latest version from the official website. The reason
-behind this choice is that packaged versions of VirtualBox (called OSE)
-generally have some limitations or adjustments in order to meet requirements of
-the GNU GPL license.
+For the sake of this guide we will assume that you have VirtualBox installed
+(which still is the default option), but this does **not** affect anyhow the
+execution and general configuration of the sandbox.
 
-You can get the proper package for your distribution at the `official download
-page`_.
+You are completely responsible for the choice, configuration and execution of
+your virtualization software, therefore please hold from asking help on it in our
+channels and lists: refer to the software's official documentation and support.
 
+Assuming you decide to go for VirtualBox, you can get the proper package for
+your distribution at the `official download page`_.
 The installation of VirtualBox is not in purposes of this documentation, if you
 are not familiar with it please refer to the `official documentation`_.
 
@@ -66,13 +72,11 @@ are not familiar with it please refer to the `official documentation`_.
 Installing Tcpdump
 ==================
 
-By default Cuckoo makes use of VirtualBox's embedded network tracing
-functionalities, but in some cases or some network configurations you might need
-to adopt an external network sniffer.
+In order to dump the network activity performed by the malware during
+execution, you'll need a network sniffer properly configured to capture
+the traffic and dump it to a file.
 
-If you intend to use VirtualBox's own network trace, you can skip this section.
-
-The best choice for packet interception is `tcpdump`_ of course.
+By default Cuckoo adopts `tcpdump`_, the prominent open source solution.
 
 Install it on Ubuntu::
 
@@ -87,6 +91,10 @@ You can verify the results of last command with::
 
     $ getcap /usr/sbin/tcpdump 
     /usr/sbin/tcpdump = cap_net_admin,cap_net_raw+eip
+
+Or otherwise (**not recommended**) do::
+
+    $ sudo chmod +s /usr/sbin/tcpdump
 
 .. _tcpdump: http://www.tcpdump.org
 

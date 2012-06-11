@@ -4,12 +4,13 @@ Saving the Virtual Machine
 
 Now you should be ready to go and save the virtual machine to a snapshot state.
 
-Before doing this make sure you rebooted it softly and that it's currently
-running and with your Windows user logged in. Once you are sure that the
-operating system is fully booted and ready to be snapshotted you can proceed.
+Before doing this **make sure you rebooted it softly and that it's currently
+running and with Windows fully booted**. 
 
-You can take the snapshot from the graphical user interface or from the command
-line::
+Now you can proceed saving the machine. The way to do it obviously depends on
+the virtualization software you decided to use, but if for example you are
+going for VirtualBox you can take the snapshot from the graphical user 
+interface or from the command line::
 
     $ VBoxManage snapshot "<Name of VM>" take "<Name of snapshot>" --pause
 

@@ -12,5 +12,3 @@ This chapter explains how to use Cuckoo.
     packages
     execution
     results
-    web
-
