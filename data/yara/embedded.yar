@@ -4,6 +4,9 @@
 
 rule embedded_macho
 {
+    meta:
+        description = "Contains an embedded Mach-O file"
+
     strings:
         $magic1 = { ca fe ba be }
         $magic2 = { ce fa ed fe }
@@ -14,6 +17,9 @@ rule embedded_macho
 
 rule embedded_pe
 {
+    meta:
+        description = "Contains an embedded PE32 file"
+
     strings:
         $a = "PE32"
         $b = "This program"
@@ -24,6 +30,9 @@ rule embedded_pe
 
 rule embedded_win_api
 {
+    meta:
+        description = "A non-Windows executable contains win32 API functions names"
+
     strings:
         $mz = { 4d 5a }
         $api1 = "CreateFileA"

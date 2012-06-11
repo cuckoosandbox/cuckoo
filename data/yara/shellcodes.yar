@@ -4,6 +4,9 @@
 
 rule shellcode
 {
+    meta:
+        description = "Matched shellcode byte patterns"
+
     strings:
         $a = { 64 8b 64 }
         $b = { 64 a1 30 }
