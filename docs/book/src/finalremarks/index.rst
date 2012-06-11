@@ -70,19 +70,20 @@ Active Developers
     | Alessandro "*jekil*" Tanasi | Developer          | ``alessandro at tanasi dot it`` |
     +-----------------------------+--------------------+---------------------------------+
 
-Inactive Developers & Contributors
-----------------------------------
+Contributors
+------------
 
     * Dario Fernandes :sub:`(participated to Google Summer of Code 2011, introduced chook and improved cmonitor)`
     * Stefan Hausotte :sub:`(provided suggestions on improving the injection and hooking mechanisms)`
     * Giacomo Milani :sub:`(notified some bugs)`
     * Andre' Nordbo :sub:`(contributed to data visualization)`
+    * Kjell Christian Nilsen :sub:`(provided valuable feedback and several feature suggestions$
+    * JD :sub:`(contributed with multi-platform code optimization)`
 
-Friends & Acknowledgements
---------------------------
+Acknowledgements
+----------------
 
     * Felix Leder :sub:`(for mentoring and believing in the project in the first place)`
-    * Kjell Christian Nilsen :sub:`(for providing valuable feedback and several feature suggestions)`
     * Mark Schloesser :sub:`and` Angelo dell'Aera :sub:`(for helping on Python matters)`
     * Georg Wicherski :sub:`(for supporting the project and giving it a home at first place)`
     * Carsten Willems :sub:`(for the precious suggestions provided)`
