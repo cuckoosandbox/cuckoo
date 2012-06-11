@@ -33,7 +33,7 @@ class Metadata(Report):
             version = "1.1",
             id = "cuckoo:%s" % self.results['file']['md5'],
             author = "Cuckoo Sandbox %s" % self.results["info"]["version"],
-            comment = "Report created with Cuckoo Sandbox %s automated and open source malware sandbox: http://www.cuckoobox.org" % self.results["info"]["version"],
+            comment = "Report created with Cuckoo Sandbox %s automated and open source malware sandbox: http://www.cuckoosandbox.org" % self.results["info"]["version"],
             timestamp = datetime_to_iso(self.results["info"]["started"])
         )
         # Objects
@@ -239,7 +239,7 @@ class Metadata(Report):
             report.write('<?xml version="1.0" ?>\n')
             report.write('<!--\n')
             report.write('Cuckoo Sandbox malware analysis report\n')
-            report.write('http://www.cuckoobox.org\n')
+            report.write('http://www.cuckoosandbox.org\n')
             report.write('-->\n')
             self.m.export(report, 0, namespace_ = '', namespacedef_ = 'xmlns="http://xml/metadataSharing.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xml/metadataSharing.xsd"')
             report.close()

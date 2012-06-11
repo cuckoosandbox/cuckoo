@@ -339,7 +339,7 @@ class Report(Report):
                              id = "%s:tol:1" % self.idMap['prefix'],
                              Name = 'Cuckoo Sandbox',
                              Version = self.results['info']['version'],
-                             Organization = 'http://www.cuckoobox.org'
+                             Organization = 'http://www.cuckoosandbox.org'
                              )
         tools.add_Tool(tool)
         return tools
@@ -375,7 +375,7 @@ class Report(Report):
             report.write('<?xml version="1.0" ?>\n')
             report.write('<!--\n')
             report.write('Cuckoo Sandbox MAEC 1.1 malware analysis report\n')
-            report.write('http://www.cuckoobox.org\n')
+            report.write('http://www.cuckoosandbox.org\n')
             report.write('-->\n')
             self.m.export(report, 0, namespace_ = '', name_ = 'MAEC_Bundle', namespacedef_ = 'xsi:schemaLocation="http://maec.mitre.org/XMLSchema/maec-core-1 file:MAEC_v1.1.xsd"')
             report.close()
