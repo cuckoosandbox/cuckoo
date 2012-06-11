@@ -38,14 +38,14 @@ class MongoDb(Report):
             except FileExists:
                 pcap_id = self._db.fs.files.find({"md5": pcap.get_md5()})[0][u"_id"]
             # Preventive key check.
-            if results.has_key("network"):
+            if "network" in results:
                 results["network"]["pcap_id"] = pcap_id
             else:
                 results["network"] = {"pcap_id": pcap_id}
         # Add dropped files, check for dups and in case add only reference.
-        if results.has_key("dropped"):
+        if "dropped" in results:
             for dropped in results["dropped"]:
-                if dropped.has_key("name"):
+                if "name" in dropped:
                     drop_file = os.path.join(self.analysis_path,
                                              "files",
                                              dropped["name"])
@@ -63,11 +63,11 @@ class MongoDb(Report):
         """Connects to Mongo database, loads options and set connectors.
         @raise CuckooReportError: if unable to connect.
         """
-        if self.options.has_key("host"):
+        if "host" in self.options:
             host = self.options["host"]
         else:
             host = "localhost"
-        if self.options.has_key("port"):
+        if "port" in self.options:
             port = self.options["port"]
         else:
             port = 27017

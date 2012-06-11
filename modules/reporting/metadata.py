@@ -52,7 +52,7 @@ class Metadata(Report):
         # Subject
         self.objects.add_file(self.createFileObject(self.results['file']))
         # Dropped files
-        if self.results.has_key('dropped') and isinstance(self.results['dropped'], list):
+        if 'dropped' in self.results and isinstance(self.results['dropped'], list):
             for f in self.results['dropped']:
                 found = False
                 for exist in self.objects.get_file():
@@ -61,8 +61,8 @@ class Metadata(Report):
                 if not found:        
                     self.objects.add_file(self.createFileObject(f))
         # URI objects
-        if self.results.has_key('network') and isinstance(self.results['network'], dict):
-            if self.results['network'].has_key('http') and isinstance(self.results['network']['http'], list): 
+        if 'network' in self.results and isinstance(self.results['network'], dict):
+            if 'http' in self.results['network'] and isinstance(self.results['network']['http'], list): 
                 for req in self.results['network']['http']:
                     found = False
                     for exist in self.objects.get_uri():
@@ -122,11 +122,11 @@ class Metadata(Report):
                                                                     )
                                                 )
         # Network
-        if self.results.has_key('network') and isinstance(self.results['network'], dict):
+        if 'network' in self.results and isinstance(self.results['network'], dict):
             # DNS requests
             for req in self.objects.get_uri():
                 # Get IP
-                if self.results['network'].has_key('dns') and isinstance(self.results['network']['dns'], list):
+                if 'dns' in self.results['network'] and isinstance(self.results['network']['dns'], list):
                     for res in self.results['network']['dns']: 
                         if res['hostname'] == req.get_hostname():
                             ip = res['ip']
@@ -147,7 +147,7 @@ class Metadata(Report):
                                                                                     )
                                                                 )
             # HTTP requests
-            if self.results['network'].has_key('http') and isinstance(self.results['network']['http'], list):
+            if 'http' in self.results['network'] and isinstance(self.results['network']['http'], list):
                 for req in self.results['network']['http']:
                     self.relationships.add_relationship(self.createRelation(
                                                                             action = 'contactedBy',
@@ -218,7 +218,7 @@ class Metadata(Report):
                                         valueOf_ = "<![CDATA[%s]]>" % req['body']
                                         )
                           )
-        if req.has_key('user-agent'):
+        if 'user-agent' in req:
             prop.add_property(maec.property(
                                         type_= 'userAgent',
                                         valueOf_ = req['user-agent']

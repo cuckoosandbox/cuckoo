@@ -85,7 +85,7 @@ class Pcap:
         try:
             entry = {}
 
-            if http.headers.has_key('host'):
+            if "host" in http.headers:
                 entry["host"] = convert_to_printable(http.headers['host'])
             else:
                 entry["host"] = ""
@@ -102,7 +102,7 @@ class Pcap:
             entry["body"] = convert_to_printable(http.body)
             entry["path"] = convert_to_printable(http.uri)
 
-            if http.headers.has_key("user-agent"):
+            if "user-agent" in http.headers:
                 entry["user-agent"] = convert_to_printable(http.headers["user-agent"])
 
             entry["version"] = convert_to_printable(http.version)
