@@ -16,13 +16,21 @@ import modules.reporting as plugins
 log = logging.getLogger(__name__)
 
 class Reporter:
+    """Report generator."""
+
     def __init__(self, analysis_path, custom=""):
+        """@param analysis_path: analysis folder path.
+        @param custom: custom options.
+        """
         self.analysis_path = analysis_path
         self.custom = custom
         self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf/reporting.conf"))
         self.__populate(plugins)
 
     def __populate(self, modules):
+        """Load modules.
+        @param modules: modules.
+        """
         prefix = modules.__name__ + "."
         for loader, name, ispkg in pkgutil.iter_modules(modules.__path__):
             if ispkg:
@@ -40,6 +48,10 @@ class Reporter:
             __import__(path, globals(), locals(), ["dummy"], -1)
 
     def run(self, data):
+        """Generates all reports.
+        @param data: analysis results.
+        @raise CuckooReportError: if a report module fails.
+        """
         Report()
 
         for plugin in Report.__subclasses__():

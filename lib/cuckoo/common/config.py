@@ -9,7 +9,10 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Dictionary
 
 class Config:
+    """Configuration file parser."""
+
     def __init__(self, cfg=os.path.join(CUCKOO_ROOT, "conf/cuckoo.conf")):
+        """@param cfg: configuration file path."""
         config = ConfigParser.ConfigParser()
         config.read(cfg)
 
@@ -27,4 +30,8 @@ class Config:
                 setattr(getattr(self, section), name, value)
 
     def get(self, section):
+        """Get option.
+        @param section: section to fetch.
+        @return: option value.
+        """
         return getattr(self, section)

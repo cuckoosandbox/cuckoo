@@ -11,7 +11,10 @@ from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.abstracts import Dictionary
 
 class Database:
+    """Analysis queue database."""
+
     def __init__(self, root="."):
+        """@param root: database path."""
         self.db_file = os.path.join(root, os.path.join(CUCKOO_ROOT, "db/cuckoo.db"))
 
         self.generate()
@@ -19,6 +22,9 @@ class Database:
         self.cursor = self.conn.cursor()
 
     def generate(self):
+        """Create database.
+        @return: operation status.
+        """
         if os.path.exists(self.db_file):
             return False
 
@@ -59,6 +65,10 @@ class Database:
         return True
 
     def dictify(self, row):
+        """Transform a database row in a dict.
+        @param row: database row.
+        @return: dict.
+        """
         try:
             task = Dictionary()
             task.id = row[0]
@@ -91,6 +101,17 @@ class Database:
             custom=None,
             machine=None,
             platform=None):
+        """Add a task to database.
+        @param file_path: sample path.
+        @param md5: sample MD5.
+        @param timeout: selected timeout.
+        @param options: analysis options.
+        @param priority: analysis priority.
+        @param custom: custom options.
+        @param machine: selected machine.
+        @param platform: platform
+        @return: cursor or None.
+        """
         if not file_path or not os.path.exists(file_path):
             return None
 
@@ -105,7 +126,10 @@ class Database:
             return None
 
     def fetch(self):
-        try:        
+        """Fetch a task.
+        @return: task dict or None.
+        """
+        try:
             self.cursor.execute("SELECT * FROM tasks " \
                                 "WHERE lock = 0 "      \
                                 "AND status = 0 "      \
@@ -122,6 +146,10 @@ class Database:
             return None
 
     def lock(self, task_id):
+        """Lock a task.
+        @param task_id: task id.
+        @return: operation status.
+        """
         try:
             self.cursor.execute("SELECT id FROM tasks WHERE id = ?;",
                                 (task_id,))
@@ -142,6 +170,10 @@ class Database:
         return True
 
     def unlock(self, task_id):
+        """Unlock a task.
+        @param task_id: task id.
+        @return: operation status.
+        """
         try:
             self.cursor.execute("SELECT id FROM tasks WHERE id = ?;",
                                 (task_id,))
@@ -162,6 +194,11 @@ class Database:
         return True
 
     def complete(self, task_id, success=True):
+        """Mark a task as completed.
+        @param task_id: task id.
+        @param success: completed with status.
+        @return: operation status.
+        """
         try:
             self.cursor.execute("SELECT id FROM tasks WHERE id = ?;",
                                 (task_id,))

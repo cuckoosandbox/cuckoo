@@ -12,11 +12,20 @@ from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT
 log = logging.getLogger(__name__)
 
 class Sniffer:
+    """Sniffer manager."""
+
     def __init__(self, tcpdump):
+        """@param tcpdump: tcpdump path."""
         self.tcpdump = tcpdump
         self.proc = None
 
     def start(self, interface="eth0", host="", file_path=""):
+        """Start sniffing.
+        @param interface: network interface name.
+        @param host: guest host IP address.
+        @param file_path: tcpdump path.
+        @return: operation status.
+        """
         if not os.path.exists(self.tcpdump):
             return False
 
@@ -45,6 +54,9 @@ class Sniffer:
         return True
 
     def stop(self):
+        """Stop sniffing.
+        @return: operation status.
+        """
         if self.proc and not self.proc.poll():
             try:
                 self.proc.terminate()

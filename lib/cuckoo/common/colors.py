@@ -5,6 +5,11 @@
 import sys
 
 def color(text, color_code):
+    """Colrize text.
+    @param text: text.
+    @param color_code: color.
+    @return: colorized text.
+    """
     if sys.platform == "win32":
         return text
 

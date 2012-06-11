@@ -25,7 +25,10 @@ mmanager = None
 machine_lock = Lock()
 
 class AnalysisManager(Thread):
+    """Analysis manager thread."""
+
     def __init__(self, task):
+        """@param task: task."""
         Thread.__init__(self)
         Thread.daemon = True
         self.task = task
@@ -33,6 +36,8 @@ class AnalysisManager(Thread):
         self.analysis = Dictionary()
 
     def init_storage(self):
+        """Initialize analyses storage folder.
+        @raise CuckooAnalysisError: if storage folder already exists."""
         self.analysis.results_folder = os.path.join(os.path.join(os.getcwd(), "storage/analyses/"), str(self.task.id))
 
         if os.path.exists(self.analysis.results_folder):
@@ -41,6 +46,8 @@ class AnalysisManager(Thread):
         os.mkdir(self.analysis.results_folder)
 
     def store_file(self):
+        """Store sample file.
+        @raise CuckooAnalysisError: if unable to store file."""
         md5 = File(self.task.file_path).get_md5()
         self.analysis.stored_file_path = os.path.join(os.path.join(os.getcwd(), "storage/binaries/"), md5)
 
@@ -59,6 +66,9 @@ class AnalysisManager(Thread):
             raise CuckooAnalysisError("Unable to create symlink from \"%s\" to \"%s\"" % (self.analysis.stored_file_path, self.analysis.results_folder))
 
     def build_options(self):
+        """Get analysis options.
+        @return: options dict.
+        """
         options = {}
 
         if self.task.timeout:
@@ -77,6 +87,9 @@ class AnalysisManager(Thread):
         return options
 
     def launch_analysis(self):
+        """Start analysis.
+        @raise CuckooAnalysisError: if unable to start analysis.
+        """
         log.info("Starting analysis of file \"%s\"" % self.task.file_path)
 
         if not os.path.exists(self.task.file_path):
@@ -125,6 +138,7 @@ class AnalysisManager(Thread):
         Reporter(self.analysis.results_folder).run(Processor(self.analysis.results_folder).run())
 
     def run(self):
+        """Run manager thread."""
         success = True
 
         db = Database()
@@ -139,12 +153,15 @@ class AnalysisManager(Thread):
             db.complete(self.task.id, success)
 
 class Scheduler:
+    """Task scheduler."""
+
     def __init__(self):
         self.running = True
         self.cfg = Config()
         self.db = Database()
 
     def initialize(self):
+        """Initialize machine manager."""
         global mmanager
 
         name = "modules.machinemanagers.%s" % self.cfg.cuckoo.machine_manager
@@ -164,9 +181,11 @@ class Scheduler:
             log.info("Loaded %s machine/s" % len(mmanager.machines))
 
     def stop(self):
+        """Stop scheduler."""
         self.running = False
 
     def start(self):
+        """Start scheduler."""
         self.initialize()
 
         while self.running:

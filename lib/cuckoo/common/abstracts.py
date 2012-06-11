@@ -6,6 +6,8 @@ import os
 import ConfigParser
 
 class Dictionary(dict):
+    """Cuckko custom dict."""
+    
     def __getattr__(self, key):
         return self.get(key, None)
 
@@ -13,6 +15,8 @@ class Dictionary(dict):
     __delattr__ = dict.__delitem__
 
 class MachineManager(object):
+    """Base abstract class for analysis machine manager."""
+
     def __init__(self):
         self.module_name = ""
         self.config_path = ""
@@ -21,6 +25,9 @@ class MachineManager(object):
         self.machines = []
 
     def initialize(self, module_name):
+        """Read configuration.
+        @param module_name: module name.
+        """
         self.module_name = module_name
         self.config_path = "conf/%s.conf" % module_name
         self.config.read(self.config_path)
@@ -36,6 +43,9 @@ class MachineManager(object):
             self.machines.append(machine)
 
     def availables(self):
+        """How many machines are free.
+        @return: free machines count.
+        """
         count = 0
         for machine in self.machines:
             if not machine.locked:
@@ -44,6 +54,11 @@ class MachineManager(object):
         return count
 
     def acquire(self, label=None, platform=None):
+        """Acquire a machine to start analysis.
+        @param label: machine name.
+        @param platform: machine platform.
+        @return: machine or None.
+        """
         if label:
             for machine in self.machines:
                 if machine.label == label and not machine.locked:
@@ -63,23 +78,39 @@ class MachineManager(object):
         return None
 
     def release(self, label=None):
+        """Release a machine.
+        @param label: machine name.
+        """
         if label:
             for machine in self.machines:
                 if machine.label == label:
                     machine.locked = False
 
     def start(self, label=None):
+        """Start a machine.
+        @param label: machine name.
+        @raise NotImplementedError: this method is abstract.
+        """
         raise NotImplementedError
 
     def stop(self, label=None):
+        """Stop a machine.
+        @param label: machine name.
+        @raise NotImplementedError: this method is abstract.
+        """
         raise NotImplementedError
 
 class Processing(object):
+    """Base abstract class for processing module."""
+
     def __init__(self):
         self.analysis_path = ""
         self.logs_path = ""
 
     def set_path(self, analysis_path):
+        """Set paths.
+        @param analysis_path: analysis folder path.
+        """
         self.analysis_path = analysis_path
         self.log_path = os.path.join(analysis_path, "analysis.log")
         self.conf_path = os.path.join(analysis_path, "analysis.conf")
@@ -90,9 +121,14 @@ class Processing(object):
         self.pcap_path = os.path.join(analysis_path, "dump.pcap")
 
     def run(self):
+        """Start processing.
+        @raise NotImplementedError: this method is abstract.
+        """
         raise NotImplementedError
 
 class Signature(object):
+    """Base abstract class for signature."""
+
     name = ""
     description = ""
     severity = 1
@@ -104,15 +140,24 @@ class Signature(object):
         self.data = []
 
     def run(self, results=None):
+        """Start signature processing.
+        @param results: analysis results.
+        @raise NotImplementedError: this method is abstract.
+        """
         raise NotImplementedError
-        
+
 class Report(object):
+    """Base abstract class for reporting module."""
+
     def __init__(self):
         self.analysis_path = ""
         self.reports_path = ""
         self.options = None
 
     def set_path(self, analysis_path):
+        """Set analysis folder path.
+        @param analysis_path: analysis folder path.
+        """
         self.analysis_path = analysis_path
         self.reports_path = os.path.join(self.analysis_path, "reports")
 
@@ -120,7 +165,13 @@ class Report(object):
             os.mkdir(self.reports_path)
 
     def set_options(self, options):
+        """Set report options.
+        @param options: report options dict.
+        """
         self.options = options
 
     def run(self):
+        """Start report processing.
+        @raise NotImplementedError: this method is abstract.
+        """
         raise NotImplementedError

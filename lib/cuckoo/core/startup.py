@@ -13,11 +13,17 @@ from lib.cuckoo.common.utils import create_folders
 log = logging.getLogger()
 
 def check_python_version():
+    """Checks if Python version is supported by Cuckoo.
+    @raise CuckooStartupError: if version is not supported.
+    """
     version = sys.version.split()[0]
     if version < "2.6" or version >= "3":
         raise CuckooStartupError("You are running an incompatible version of Python, please use 2.6 or 2.7")
 
 def check_working_directory():
+    """Checks if working directories are ready.
+    @raise CuckooStartupError: if directories are not properly configured.
+    """
     if not os.path.exists(CUCKOO_ROOT):
         raise CuckooStartupError("You specified a non-existing root directory: %s" % CUCKOO_ROOT)
 
@@ -26,6 +32,9 @@ def check_working_directory():
         raise CuckooStartupError("You are not running Cuckoo from it's root directory")
 
 def check_dependencies():
+    """Checks if dependencies ara installed.
+    @raise CuckooStartupError: if dependencies aren't met.
+    """
     check_python_version()
 
     dependencies = ["sqlite3"]
@@ -39,6 +48,7 @@ def check_dependencies():
     return True
 
 def create_structure():
+    """Creates Cuckoo directories."""
     folders = ["db/",
                "log/",
                "storage/",
@@ -48,6 +58,7 @@ def create_structure():
     create_folders(folders=folders)
 
 def init_logging():
+    """Initialize logging."""
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
     sh = logging.StreamHandler()
     sh.setFormatter(formatter)

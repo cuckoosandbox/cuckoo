@@ -13,12 +13,18 @@ import modules.signatures as signatures
 log = logging.getLogger(__name__)
 
 class Processor:
+    """Analysis processor."""
+
     def __init__(self, analysis_path):
+        """@param analysis_path: analysis folder path."""
         self.analysis_path = analysis_path
         self.__populate(processing)
         self.__populate(signatures)
 
     def __populate(self, modules):
+        """Load modules.
+        @param modules: modules.
+        """
         prefix = modules.__name__ + "."
         for loader, name, ispkg in pkgutil.iter_modules(modules.__path__, prefix):
             if ispkg:
@@ -27,6 +33,9 @@ class Processor:
             __import__(name, globals(), locals(), ["dummy"], -1)
 
     def run(self):
+        """Run all processors.
+        @return: processing results.
+        """
         results = {}
         Processing()
 

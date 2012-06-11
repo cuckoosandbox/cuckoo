@@ -22,6 +22,10 @@ except ImportError:
     HAVE_SSDEEP = False
 
 def create_folders(root=".", folders=[]):
+    """Create direcotry.
+    @param root: root path.
+    @param folders: folders name to be created.
+    """
     for folder in folders:
         if os.path.exists(folder):
             continue
@@ -33,6 +37,10 @@ def create_folders(root=".", folders=[]):
             continue
 
 def convert_char(c):
+    """Escapes characters.
+    @param c: dirty char.
+    @return: sanitized char.
+    """
     if c in string.ascii_letters or \
        c in string.digits or \
        c in string.punctuation or \
@@ -42,6 +50,10 @@ def convert_char(c):
         return r'\x%02x' % ord(c)
 
 def convert_to_printable(s):
+    """Convert char to printable.
+    @param s: string.
+    @return: sanitized string.
+    """
     return ''.join([convert_char(c) for c in s])
 
 def datetime_to_iso(timestamp):
@@ -59,41 +71,72 @@ def datetime_to_iso(timestamp):
     return strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat()
 
 class File:
+    """Basic file object class with all useful utilities."""
+
     def __init__(self, file_path):
+        """@param file_path: file path."""
         self.file_path = file_path
         self.file_data = open(self.file_path, "rb").read()
 
     def get_name(self):
+        """Get file name.
+        @return: file name.
+        """
         return convert_to_printable(os.path.basename(self.file_path))
 
     def get_data(self):
+        """Read file contents.
+        @return: data.
+        """
         return self.file_data
 
     def get_size(self):
+        """Get file size.
+        @return: file size.
+        """
         return os.path.getsize(self.file_path)
 
     def get_crc32(self):
+        """Get CRC32.
+        @return: CRC32.
+        """
         res = ''
         crc = binascii.crc32(self.file_data)
         for i in range(4):
             t = crc & 0xFF
             crc >>= 8
-            res = '%02X%s' % (t, res) 
+            res = '%02X%s' % (t, res)
         return res
 
     def get_md5(self):
+        """Get MD5.
+        @return: MD5.
+        """
         return hashlib.md5(self.file_data).hexdigest()
 
     def get_sha1(self):
+        """Get SHA1.
+        @return: SHA1.
+        """
         return hashlib.sha1(self.file_data).hexdigest()
 
     def get_sha256(self):
+        """Get SHA256.
+        @return: SHA256.
+        """
         return hashlib.sha256(self.file_data).hexdigest()
 
     def get_sha512(self):
+        """
+        Get SHA512.
+        @return: SHA512.
+        """
         return hashlib.sha512(self.file_data).hexdigest()
 
     def get_ssdeep(self):
+        """Get SSDEEP.
+        @return: SSDEEP.
+        """
         if not HAVE_SSDEEP:
             return None
 
@@ -103,6 +146,9 @@ class File:
             return None
 
     def get_type(self):
+        """Get MIME file type.
+        @return: file type.
+        """
         try:
             ms = magic.open(magic.MAGIC_NONE)
             ms.load()
@@ -121,6 +167,9 @@ class File:
         return file_type
 
     def get_all(self):
+        """Get all information available.
+        @return: information dict.
+        """
         infos = {}
         infos["name"] = self.get_name()
         infos["size"] = self.get_size()

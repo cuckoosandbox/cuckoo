@@ -15,12 +15,21 @@ from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT, CU
 log = logging.getLogger(__name__)
 
 class GuestManager:
+    """Guest machine manager."""
+
     def __init__(self, ip, platform="windows"):
+        """@param ip: IP address.
+        @param platform: OS type.
+        """
         self.platform = platform
         self.ip = ip
         self.server = xmlrpclib.Server("http://%s:%s" % (ip, CUCKOO_GUEST_PORT), allow_none=True)
 
     def wait(self, status):
+        """Waiting for status.
+        @param status: status.
+        @return: always True.
+        """
         log.debug("Waiting for status 0x%.04x" % status)
 
         while True:
@@ -37,6 +46,9 @@ class GuestManager:
         return True
 
     def upload_analyzer(self):
+        """Upload analyzer to guest.
+        @return: operation status.
+        """
         zip_data = StringIO()
         zip_file = ZipFile(zip_data, "w", ZIP_DEFLATED)
 
@@ -62,6 +74,10 @@ class GuestManager:
         self.server.add_analyzer(data)
 
     def start_analysis(self, options):
+        """Start analysis.
+        @param options: options.
+        @return: operation status.
+        """
         if not os.path.exists(options["file_path"]):
             return False
 
@@ -80,6 +96,9 @@ class GuestManager:
         self.server.execute()
 
     def wait_for_completion(self):
+        """Wai for analysis completion.
+        @return: operation status.
+        """
         while True:
             try:
                 status = self.server.get_status()
@@ -99,6 +118,10 @@ class GuestManager:
         return True
 
     def save_results(self, folder):
+        """Save analysis results.
+        @param folder: analysis folder path.
+        @return: operation status.
+        """
         data = self.server.get_results()
 
         zip_data = StringIO()

@@ -9,6 +9,9 @@ from lib.cuckoo.common.colors import color, yellow
 from lib.cuckoo.common.constants import CUCKOO_VERSION
 
 def logo():
+    """Cuckoo asciiarts.
+    @return: asciiarts array.
+    """
     logos = []
 
     logos.append("""
