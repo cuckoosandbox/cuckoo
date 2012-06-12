@@ -62,19 +62,21 @@ class MongoDb(Report):
 
         # Add screenshots.
         results["shots"] = []
-        shots = [f for f in os.listdir(os.path.join(self.analysis_path, "shots")) if f.endswith(".jpg")]
-        for shot_file in shots:
-            shot_path = os.path.join(self.analysis_path, "shots", shot_file)
-            try:
-                shot = File(shot_path)
-            except IOError as e:
-                raise CuckooReportError("Failed to read screenshot %s: %s" % (shot_path, e.message))
+        if os.path.exists(os.path.join(self.anlaysis_path, "shots")):
+            shots = [f for f in os.listdir(os.path.join(self.analysis_path, "shots")) if f.endswith(".jpg")]
+            for shot_file in shots:
+                shot_path = os.path.join(self.analysis_path, "shots", shot_file)
+                try:
+                    shot = File(shot_path)
+                except IOError as e:
+                    raise CuckooReportError("Failed to read screenshot %s: %s" % (shot_path, e.message))
 
-            try:
-                shot_id = self._fs.put(shot.get_data(), filename=shot.get_name())
-            except FileExists:
-                shot_id = self._db.fs.files.find({"md5": shot.get_md5()})[0][u"_id"]
-            results["shots"].append(shot_id)
+                try:
+                    shot_id = self._fs.put(shot.get_data(), filename=shot.get_name())
+                except FileExists:
+                    shot_id = self._db.fs.files.find({"md5": shot.get_md5()})[0][u"_id"]
+                results["shots"].append(shot_id)
+
         # Save all remaining results.
         self._db.analysis.save(results)
 
