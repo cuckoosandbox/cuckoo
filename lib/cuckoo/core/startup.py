@@ -32,7 +32,7 @@ def check_working_directory():
         raise CuckooStartupError("You are not running Cuckoo from it's root directory")
 
 def check_dependencies():
-    """Checks if dependencies ara installed.
+    """Checks if dependencies are installed.
     @raise CuckooStartupError: if dependencies aren't met.
     """
     check_python_version()
