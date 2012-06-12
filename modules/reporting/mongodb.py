@@ -62,7 +62,7 @@ class MongoDb(Report):
 
         # Add screenshots.
         results["shots"] = []
-        if os.path.exists(os.path.join(self.anlaysis_path, "shots")):
+        if os.path.exists(os.path.join(self.analysis_path, "shots")):
             shots = [f for f in os.listdir(os.path.join(self.analysis_path, "shots")) if f.endswith(".jpg")]
             for shot_file in shots:
                 shot_path = os.path.join(self.analysis_path, "shots", shot_file)
