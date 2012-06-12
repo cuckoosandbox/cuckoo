@@ -53,17 +53,21 @@ class MongoDb(Report):
                                              "files",
                                              dropped["name"])
                     if os.path.exists(drop_file) and os.path.getsize(drop_file) != 0:
-                        drop = open(drop_file, 'r')
+                        try:
+                            drop = open(drop_file, 'r')
+                        except IOError as e:
+                            raise CuckooReportError("Failed to read file %s: %s" % (drop_file, e.message))
                         try:
                             drop_id = self._fs.put(drop, filename=dropped["name"])
-                        except FileExists as e:
+                        except FileExists:
                             drop_id = self._db.fs.files.find({"md5": dropped["md5"]})[0][u"_id"]
                         dropped["dropped_id"] = drop_id
 
         # Add screenshots.
         results["shots"] = []
-        if os.path.exists(os.path.join(self.analysis_path, "shots")):
-            shots = [f for f in os.listdir(os.path.join(self.analysis_path, "shots")) if f.endswith(".jpg")]
+        shots_path = os.path.join(self.analysis_path, "shots")
+        if os.path.exists(shots_path):
+            shots = [f for f in os.listdir(shots_path) if f.endswith(".jpg")]
             for shot_file in shots:
                 shot_path = os.path.join(self.analysis_path, "shots", shot_file)
                 try:
@@ -87,7 +91,7 @@ class MongoDb(Report):
         if "host" in self.options:
             host = self.options["host"]
         else:
-            host = "localhost"
+            host = "127.0.0.1"
         if "port" in self.options:
             port = self.options["port"]
         else:
