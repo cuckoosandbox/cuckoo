@@ -62,11 +62,11 @@ def check_configs():
 
 def create_structure():
     """Creates Cuckoo directories."""
-    folders = ["db/",
-               "log/",
-               "storage/",
-               "storage/analyses/",
-               "storage/binaries/"]
+    folders = ["db",
+               "log",
+               "storage",
+               "storage/analyses",
+               "storage/binaries"]
 
     create_folders(folders=folders)
 
