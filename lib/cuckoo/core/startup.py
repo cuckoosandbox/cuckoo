@@ -47,6 +47,19 @@ def check_dependencies():
 
     return True
 
+def check_configs():
+    """Checks if config files exist.
+    @raise CuckooStartupError: if config files do not exist.
+    """
+    configs = [os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"),
+               os.path.join(CUCKOO_ROOT, "conf", "reporting.conf")]
+
+    for config in configs:
+        if not os.path.exists(config):
+            raise CuckooStartupError("Config file does not exist at path: %s" % config)
+
+    return True
+
 def create_structure():
     """Creates Cuckoo directories."""
     folders = ["db/",

@@ -19,6 +19,7 @@ def main():
     logo()
     check_dependencies()
     check_working_directory()
+    check_configs()
     create_structure()
     init_logging()
     
