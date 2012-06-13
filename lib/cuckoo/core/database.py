@@ -15,7 +15,7 @@ class Database:
 
     def __init__(self, root="."):
         """@param root: database path."""
-        self.db_file = os.path.join(root, os.path.join(CUCKOO_ROOT, "db/cuckoo.db"))
+        self.db_file = os.path.join(root, os.path.join(CUCKOO_ROOT, "db", "cuckoo.db"))
 
         self.generate()
         self.conn = sqlite3.connect(self.db_file)

@@ -11,7 +11,7 @@ from lib.cuckoo.common.abstracts import Dictionary
 class Config:
     """Configuration file parser."""
 
-    def __init__(self, cfg=os.path.join(CUCKOO_ROOT, "conf/cuckoo.conf")):
+    def __init__(self, cfg=os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf")):
         """@param cfg: configuration file path."""
         config = ConfigParser.ConfigParser()
         config.read(cfg)

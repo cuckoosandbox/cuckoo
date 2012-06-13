@@ -28,7 +28,7 @@ class YaraSignatures(Processing):
 
         if HAVE_YARA:
             try:
-                rules = yara.compile(filepath=os.path.join(CUCKOO_ROOT, "data/yara/index.yar"))
+                rules = yara.compile(filepath=os.path.join(CUCKOO_ROOT, "data", "yara", "index.yar"))
                 for match in rules.match(self.file_path):
                     matches.append({"name" : match.rule, "meta" : match.meta})
             except yara.Error as e:
