@@ -111,8 +111,12 @@ class AnalysisManager(Thread):
                 break
 
         # Initialize sniffer
-        sniffer = Sniffer(self.cfg.cuckoo.tcpdump)
-        sniffer.start(interface=self.cfg.cuckoo.interface, host=vm.ip, file_path=os.path.join(self.analysis.results_folder, "dump.pcap"))
+        if self.cfg.cuckoo.use_sniffer:
+            sniffer = Sniffer(self.cfg.cuckoo.tcpdump)
+            sniffer.start(interface=self.cfg.cuckoo.interface, host=vm.ip, file_path=os.path.join(self.analysis.results_folder, "dump.pcap"))
+        else:
+            sniffer = False
+
         # Start machine
         try:
             mmanager.start(vm.label)
@@ -125,7 +129,9 @@ class AnalysisManager(Thread):
         # Wait for analysis to complete
         success = guest.wait_for_completion()
         # Stop sniffer
-        sniffer.stop()
+        if sniffer:
+            sniffer.stop()
+
         if not success:
             raise CuckooAnalysisError("Analysis failed, review previous errors")
         # Save results
@@ -136,6 +142,8 @@ class AnalysisManager(Thread):
         mmanager.release(vm.label)
         # Launch reports generation
         Reporter(self.analysis.results_folder).run(Processor(self.analysis.results_folder).run())
+
+        log.info("Reports generation completed (path=%s)" % self.analysis.results_folder)
 
     def run(self):
         """Run manager thread."""
