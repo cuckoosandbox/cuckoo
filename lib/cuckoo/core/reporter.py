@@ -24,7 +24,7 @@ class Reporter:
         """
         self.analysis_path = analysis_path
         self.custom = custom
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf/reporting.conf"))
+        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "reporting.conf"))
         self.__populate(plugins)
 
     def __populate(self, modules):

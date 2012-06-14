@@ -29,7 +29,7 @@ class MachineManager(object):
         @param module_name: module name.
         """
         self.module_name = module_name
-        self.config_path = "conf/%s.conf" % module_name
+        self.config_path = os.path.join("conf", "%s.conf" % module_name)
         self.config.read(self.config_path)
 
         machines_list = self.config.get(self.module_name, "machines").strip().split(",")

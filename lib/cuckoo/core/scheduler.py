@@ -38,7 +38,7 @@ class AnalysisManager(Thread):
     def init_storage(self):
         """Initialize analyses storage folder.
         @raise CuckooAnalysisError: if storage folder already exists."""
-        self.analysis.results_folder = os.path.join(os.path.join(os.getcwd(), "storage/analyses/"), str(self.task.id))
+        self.analysis.results_folder = os.path.join(os.path.join(os.getcwd(), "storage", "analyses"), str(self.task.id))
 
         if os.path.exists(self.analysis.results_folder):
             raise CuckooAnalysisError("Analysis results folder already exists at path \"%s\", analysis aborted" % self.analysis.results_folder)
@@ -49,7 +49,7 @@ class AnalysisManager(Thread):
         """Store sample file.
         @raise CuckooAnalysisError: if unable to store file."""
         md5 = File(self.task.file_path).get_md5()
-        self.analysis.stored_file_path = os.path.join(os.path.join(os.getcwd(), "storage/binaries/"), md5)
+        self.analysis.stored_file_path = os.path.join(os.path.join(os.getcwd(), "storage", "binaries"), md5)
 
         if os.path.exists(self.analysis.stored_file_path):
             log.info("File already exists at \"%s\"" % self.analysis.stored_file_path)

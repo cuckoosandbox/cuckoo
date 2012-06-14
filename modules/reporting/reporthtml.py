@@ -52,7 +52,7 @@ class ReportHTML(Report):
         else:
             results["screenshots"] = []
 
-        lookup = TemplateLookup(directories=[os.path.join(CUCKOO_ROOT, "data/html/")],
+        lookup = TemplateLookup(directories=[os.path.join(CUCKOO_ROOT, "data", "html")],
                                 output_encoding='utf-8',
                                 encoding_errors='replace')
         

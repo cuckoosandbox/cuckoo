@@ -62,11 +62,11 @@ def check_configs():
 
 def create_structure():
     """Creates Cuckoo directories."""
-    folders = ["db/",
-               "log/",
-               "storage/",
-               "storage/analyses/",
-               "storage/binaries/"]
+    folders = ["db",
+               "log",
+               "storage",
+               "storage/analyses",
+               "storage/binaries"]
 
     create_folders(folders=folders)
 
@@ -76,7 +76,7 @@ def init_logging():
     sh = logging.StreamHandler()
     sh.setFormatter(formatter)
     log.addHandler(sh)
-    fh = logging.FileHandler("log/cuckoo.log")
+    fh = logging.FileHandler(os.path.join("log", "cuckoo.log"))
     fh.setFormatter(formatter)
     log.addHandler(fh)
     log.setLevel(logging.INFO)
