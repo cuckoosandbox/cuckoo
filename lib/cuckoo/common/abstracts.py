@@ -5,6 +5,9 @@
 import os
 import ConfigParser
 
+from lib.cuckoo.common.exceptions import CuckooMachineError
+
+
 class Dictionary(dict):
     """Cuckko custom dict."""
     
@@ -41,6 +44,15 @@ class MachineManager(object):
             machine.ip = self.config.get(machine_id, "ip")
             machine.locked = False
             self.machines.append(machine)
+
+        # Checks if machines configured are really available.
+        try:
+            configured_vm = self._list()
+            for machine in self.machines:
+                if machine.label not in configured_vm:
+                    raise CuckooMachineError("Configured VM %s was not detected" % machine.label)
+        except NotImplementedError:
+            pass
 
     def availables(self):
         """How many machines are free.
@@ -96,6 +108,12 @@ class MachineManager(object):
     def stop(self, label=None):
         """Stop a machine.
         @param label: machine name.
+        @raise NotImplementedError: this method is abstract.
+        """
+        raise NotImplementedError
+
+    def _list(self):
+        """Lists virtual machines configured.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError

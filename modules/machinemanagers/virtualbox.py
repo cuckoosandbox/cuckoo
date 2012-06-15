@@ -4,10 +4,14 @@
 
 import os
 import time
+import logging
 import subprocess
 
 from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.exceptions import CuckooMachineError
+
+log = logging.getLogger(__name__)
+
 
 class VirtualBox(MachineManager):
     """Virtualization layer forVirtualBox."""
@@ -56,3 +60,27 @@ class VirtualBox(MachineManager):
                 raise CuckooMachineError("VBoxManage exited with error restoring vm's snapshot")
         except OSError:
             raise CuckooMachineError("VBoxManage OS error restoring vm's snapshot or file not found")
+
+    def _list(self):
+        """Lists virtual machines installed.
+        @return: virtual machine names list.
+        """
+        try:
+            proc = subprocess.Popen(["VBoxManage", "list", "vms"],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            output = proc.communicate()
+        except OSError:
+            raise CuckooMachineError("VBoxManage error listing installed VMs")
+
+        machines = []
+        for line in output[0].split("\n"):
+            try:
+                label = line.split('"')[1]
+                if label == "<inaccessible>":
+                    log.warning("Found an inacessible vitual machine. Please check his state")
+                else:
+                    machines.append(label)
+            except IndexError:
+                continue
+        return machines
