@@ -24,6 +24,7 @@ class GuestManager:
         self.platform = platform
         self.ip = ip
         self.server = xmlrpclib.Server("http://%s:%s" % (ip, CUCKOO_GUEST_PORT), allow_none=True)
+        self.internal_error = None
 
     def wait(self, status):
         """Waiting for status.
@@ -71,7 +72,11 @@ class GuestManager:
         zip_data.close()
 
         log.debug("Uploading analyzer to guest (ip=%s)" % self.ip)
+        try:
         self.server.add_analyzer(data)
+        except: # Handling the timeouts
+            self.internal_error = "XMLRPC timeout adding analyzer"
+            return False
 
     def start_analysis(self, options):
         """Start analysis.
@@ -87,18 +92,29 @@ class GuestManager:
         self.wait(CUCKOO_GUEST_INIT)
         socket.setdefaulttimeout(60)
         self.upload_analyzer()
+        try:
         self.server.add_config(options)
+        except: # Handling the timeouts
+            self.internal_error = "XMLRPC timeout adding config"
+            return False
 
         file_data = open(options["file_path"], "rb").read()
         data = xmlrpclib.Binary(file_data)
 
+        try:
         self.server.add_malware(data, options["file_name"])
         self.server.execute()
+        except: # Handling the timeouts
+            self.internal_error = "XMLRPC timeout executing malware"
+            return False
 
     def wait_for_completion(self):
         """Wai for analysis completion.
         @return: operation status.
         """
+        if self.internal_error:
+            log.error("Analysis failed: %s" % self.internal_error)
+            return False
         while True:
             try:
                 status = self.server.get_status()
@@ -122,7 +138,11 @@ class GuestManager:
         @param folder: analysis folder path.
         @return: operation status.
         """
+        try:
         data = self.server.get_results()
+        except: # Handling the timeouts
+            self.internal_error = "XMLRPC timeout requesting results"
+            return False
 
         zip_data = StringIO()
         zip_data.write(data)
