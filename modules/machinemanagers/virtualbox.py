@@ -53,6 +53,6 @@ class VirtualBox(MachineManager):
             if subprocess.call(["VBoxManage", "snapshot", label, "restorecurrent"],
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE):
-                raise CuckooMachineError("VBoxManage exited with error restoging vm's snapshot")
+                raise CuckooMachineError("VBoxManage exited with error restoring vm's snapshot")
         except OSError:
             raise CuckooMachineError("VBoxManage OS error restoring vm's snapshot or file not found")
