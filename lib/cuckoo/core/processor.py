@@ -7,6 +7,7 @@ import pkgutil
 
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.abstracts import Processing, Signature
+from lib.cuckoo.common.exceptions import CuckooProcessingError
 import modules.processing as processing
 import modules.signatures as signatures
 
@@ -49,6 +50,8 @@ class Processor:
                 log.debug("Executed processing module \"%s\"" % current.__class__.__name__)
             except NotImplementedError:
                 continue
+            except CuckooProcessingError as e:
+                log.warning("Failed to execute processing module \"%s\": %s" % (current.__class__.__name__, e.message))
 
         Signature()
         sigs = []
