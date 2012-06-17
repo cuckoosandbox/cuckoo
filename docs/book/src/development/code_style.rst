@@ -58,7 +58,7 @@ Checking for key in data structures
 When checking for a key in a data structure use the clause "in" instead of
 methods like "has_key()", for example::
 
-    if 'bar' in foo:
+    if "bar" in foo:
         do_something()
 
 Exceptions
