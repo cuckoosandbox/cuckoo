@@ -15,7 +15,13 @@ VIRUSTOTAL_URL = "https://www.virustotal.com/vtapi/v2/file/report"
 VIRUSTOTAL_KEY = ""
 
 class VirusTotal(Processing):
+    """Gets antivirus signatures from VirusTotal.com"""
+
     def run(self):
+        """Runs VirusTotal processing
+        @return: full VirusTotal report.
+        """
+
         self.key = "virustotal"
         virustotal = []
 
