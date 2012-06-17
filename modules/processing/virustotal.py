@@ -20,22 +20,23 @@ class VirusTotal(Processing):
         virustotal = []
 
         if not os.path.exists(self.file_path):
-            raise CuckooProcessingError("File %s not found. Skipping." % self.file_path)
+            raise CuckooProcessingError("File %s not found, skip" % self.file_path)
 
         if not VIRUSTOTAL_KEY:
-            raise CuckooProcessingError("API key not configured. Skipping.")
+            raise CuckooProcessingError("VirusTotal API key not configured, skip")
 
         try:
             md5 = File(self.file_path).get_md5()
         except IOError as e:
-            raise CuckooProcessingError("Unable to open %s: %s" % (self.file_path, e.message))
-        parameters = {"resource" : md5, "apikey" : VIRUSTOTAL_KEY}
-        data = urllib.urlencode(parameters)
+            raise CuckooProcessingError("Unable to open \"%s\": %s" % (self.file_path, e.message))
+
+        data = urllib.urlencode({"resource" : md5, "apikey" : VIRUSTOTAL_KEY})
+
         try:
             req = urllib2.Request(VIRUSTOTAL_URL, data)
             response = urllib2.urlopen(req)
+            virustotal = json.loads(response.read())
         except urllib2.HTTPError as e:
-            raise CuckooProcessingError("Error in request to %s: HTTP error code %s" %(VIRUSTOTAL_URL, e.code))
-        virustotal = json.loads(response.read())
+            raise CuckooProcessingError("Failed performing request to VirusTotal (http code=%s)" % e.code)
 
         return virustotal
