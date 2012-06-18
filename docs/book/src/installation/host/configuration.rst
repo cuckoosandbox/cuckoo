@@ -40,6 +40,9 @@ The first file to edit is *conf/cuckoo.conf*, whose content is::
     # of choice.
     machine_manager = virtualbox
 
+    # Enable or disable the use of an external sniffer (tcpdump) [yes/no].
+    use_sniffer = yes
+
     # Specify the path to your local installation of tcpdump. Make sure this
     # path is correct.
     tcpdump = /usr/sbin/tcpdump

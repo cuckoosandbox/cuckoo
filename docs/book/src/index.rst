@@ -37,5 +37,6 @@ Contents
     installation/index
     usage/index
     customization/index
+    development/index
     finalremarks/index
 
