@@ -18,7 +18,7 @@ class Database:
         self.db_file = os.path.join(root, os.path.join(CUCKOO_ROOT, "db", "cuckoo.db"))
 
         self.generate()
-        self.conn = sqlite3.connect(self.db_file)
+        self.conn = sqlite3.connect(self.db_file, timeout=60)
         self.cursor = self.conn.cursor()
 
     def generate(self):
