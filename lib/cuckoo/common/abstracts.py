@@ -50,7 +50,7 @@ class MachineManager(object):
             configured_vm = self._list()
             for machine in self.machines:
                 if machine.label not in configured_vm:
-                    raise CuckooMachineError("Configured VM %s was not detected" % machine.label)
+                    raise CuckooMachineError("Configured VM %s was not detected or not in proper state" % machine.label)
         except NotImplementedError:
             pass
 
@@ -97,6 +97,12 @@ class MachineManager(object):
             for machine in self.machines:
                 if machine.label == label:
                     machine.locked = False
+
+    def running(self):
+        """Returns running virutal machines.
+        @return: runninv virtual machines list.
+        """
+        return [m for m in self.machines if m.locked]
 
     def start(self, label=None):
         """Start a machine.
