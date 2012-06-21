@@ -141,6 +141,7 @@ class AnalysisManager(Thread):
             mmanager.stop(vm.label)
             # Release the machine from lock
             mmanager.release(vm.label)
+
         # Launch reports generation
         Reporter(self.analysis.results_folder).run(Processor(self.analysis.results_folder).run())
 

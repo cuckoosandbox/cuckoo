@@ -100,7 +100,7 @@ class MachineManager(object):
 
     def running(self):
         """Returns running virutal machines.
-        @return: runninv virtual machines list.
+        @return: running virtual machines list.
         """
         return [m for m in self.machines if m.locked]
 
