@@ -18,6 +18,7 @@ from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.sniffer import Sniffer
 from lib.cuckoo.core.processor import Processor
 from lib.cuckoo.core.reporter import Reporter
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 log = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class AnalysisManager(Thread):
     def init_storage(self):
         """Initialize analyses storage folder.
         @raise CuckooAnalysisError: if storage folder already exists."""
-        self.analysis.results_folder = os.path.join(os.path.join(os.getcwd(), "storage", "analyses"), str(self.task.id))
+        self.analysis.results_folder = os.path.join(os.path.join(CUCKOO_ROOT, "storage", "analyses"), str(self.task.id))
 
         if os.path.exists(self.analysis.results_folder):
             raise CuckooAnalysisError("Analysis results folder already exists at path \"%s\", analysis aborted" % self.analysis.results_folder)
