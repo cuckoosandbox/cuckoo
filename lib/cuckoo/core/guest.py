@@ -88,7 +88,7 @@ class GuestManager:
         try:
             self.wait(CUCKOO_GUEST_INIT)
             # Set timeout for running analysis.
-            socket.setdefaulttimeout(60)
+            socket.setdefaulttimeout(180)
             self.upload_analyzer()
             self.server.add_config(options)
     
