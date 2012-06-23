@@ -1,7 +1,7 @@
 # Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
-
+import re
 import os
 import time
 import logging
@@ -15,7 +15,40 @@ log = logging.getLogger(__name__)
 
 class VirtualBox(MachineManager):
     """Virtualization layer forVirtualBox."""
+    def initialize(self, *args):
+        '''
+        Call the abstract classes initialize function and then
+        attempt to enumerate the ip address assign to the host
+        using the VirualBox management console.
+        '''
+        super(VirtualBox, self).initialize(*args)
+        ip_add_re = re.compile(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b')
+        # example IPv4 propert
+        # Name: /VirtualBox/GuestInfo/Net/.*/V4/IP,.*
+        ip_prop = re.compile(r"/VirtualBox/GuestInfo/Net/[0-9]+/V4/IP")
+        get_ip = lambda props: [ip_add_re.findall(prop)[0] for prop in props.splitlines() \
+                                if len(ip_prop.findall(prop))  > 0 ]
+        # lets actually get the ip address of the machine
+        for machine in self.machines:
+            try:
+                proc  = subprocess.Popen(["VBoxManage", "guestproperty", 'enumerate', machine.label],
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+                props = proc.stdout.read()
+                ips = get_ip(props)
+                if len(ips) > 0 and (machine.ip is None or machine.ip == ''):
+                    past_ip = machine.ip
+                    machine.ip = ips[0]
+                    log.info(u"%s IP was missing, so it was set to: %s"%(machine.label, ips[0]))
+                elif not machine.ip in ips:
+                    log.warning(u'Potential misconfiguration: %s\'s IP configured as: %s, but these are the IPs found: (%s)'%\
+                           (machine.label, machine.ip, ", ".join(ips)))
 
+            except OSError:
+                raise CuckooMachineError("VBoxManage OS error starting vm or file not found")
+        
+        
+    
     def start(self, label):
         """Start a virtual machine.
         @param label: virtual machine name.
