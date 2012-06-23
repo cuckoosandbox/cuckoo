@@ -5,6 +5,7 @@ Configuration
 Cuckoo relies on two main configuration files:
 
     * :ref:`cuckoo_conf`: for configuring general behavior and analysis options.
+    * :ref:`<machinemanager>_conf`: for defining the options for your virtualization software.
     * :ref:`reporting_conf`: for enabling or disabling report formats.
 
 .. _cuckoo_conf:
@@ -12,221 +13,92 @@ Cuckoo relies on two main configuration files:
 cuckoo.conf
 ===========
 
-We'll first start editing *conf/cuckoo.conf* walking through every section and
-option available.
+The first file to edit is *conf/cuckoo.conf*, whose content is::
 
-Logging
--------
-
-Following is the logging section::
-
-    [Logging]
-    # Enable/Disable additional debugging messages. This messages won't wrote to
-    # log file but just printed on screen. [on/off]
+    [cuckoo]
+    # Enable or disable debug logging [on/off].
     debug = off
 
-The **debug** option enables or disables debug messages that will be both printed
-on standard output as well as stored in the log file.
+    # Set the default analysis timeout expressed in seconds. This value will be
+    # used to define after how many seconds the analysis will terminate unless
+    # otherwise specified at submission.
+    analysis_timeout = 120
 
-Analysis
---------
+    # Set the critical timeout expressed in seconds. After this timeout is hit
+    # Cuckoo will consider the analysis failed and it will shutdown the machine
+    # no matter what. When this happens the analysis results will most likely
+    # be lost. Make sure to have a critical_timeout greater than the
+    # analysis_timeout.
+    critical_timeout = 600
 
-Following is the analysis section::
+    # If turned on, Cuckoo will delete the original file and will just store a
+    # copy in the local binaries repository.
+    delete_original = off
 
-    [Analysis]
-    # This is the actual analysis timeout (expressed in seconds). This represents
-    # the default timeout performed by analysis core if none is specified.
-    analysis_timeout = 200
-    # Watchdog timeout (expressed in seconds) for analysis execution to complete, 
-    # when this timeout gets hit, current execution is aborted and virtual machine 
-    # is restored and freed.
-    watchdog_timeout = 600
-    # Specify here the path where analysis results shall be stored.
-    results_path = analysis/
-    # Enable or disable this option to instruct Cuckoo to delete the original file
-    # submitted for the analysis. [on/off]
-    delete_original = on
+    # Specify the name of the machine manager module to use, this module will
+    # define the interaction between Cuckoo and your virtualization software
+    # of choice.
+    machine_manager = virtualbox
 
-This section defines two analysis time boundaries:
+    # Enable or disable the use of an external sniffer (tcpdump) [yes/no].
+    use_sniffer = yes
 
-    * **analysis timeout**: this timeout represent the maximum time an analysis should last, it can be overridden when submitting a file to analyze.
-    * **watchdog timeout**: this is the time limit for which Cuckoo host should wait for the guest component (*analyzer*) to terminate its operations.
+    # Specify the path to your local installation of tcpdump. Make sure this
+    # path is correct.
+    tcpdump = /usr/sbin/tcpdump
 
-The *analysis timeout* should be smaller than the *watchdog timeout*. If by
-mistake it's configured differently, Cuckoo will force the *analysis timeout*
-to a smaller value.
+    # Specify the network interface name on which tcpdump should monitor the
+    # traffic. Make sure the interface is active.
+    interface = vboxnet0
 
-Consider that the *watchdog timeout* should be raised just under critical
-circumstances, where the analyzer or virtual machine are not responding and
-therefore need to be killed. When this happens, you'll most likely lose any
-analysis results from that run.
 
-The **results_path** option defines where to store the analysis results.
+The configuration file is self-explainatory.
 
-The **delete_original** option is very self-explainatory: when enabled Cuckoo
-will delete the submitted file from the original path and will just keep a copy
-along with the analysis results.
+.. _<machinemanager>_conf:
 
-Processing
-----------
+<machinemanager>.conf
+=====================
 
-Following is the processing section::
+Machine managers are the modules that define how Cuckoo should interact with
+your virtualization software of choice.
 
-    [Processing]
-    # Specify here the interpreter path to be used to launch the script.
-    interpreter = /usr/bin/python
-    # Specify here the path to the analysis results processing script.
-    processor = processor.py
+Every module should have a dedicated configuration file which defines the
+details on the available machines. For example, if you created a *vmware.py*
+machine manager module, you should specify *vmware* in *conf/cuckoo.conf*
+and have a *conf/vmware.conf* file.
 
-This section defines where the post-analysis processing script is located and
-how it should be executed.
+Cuckoo provides some modules by default and for the sake of this guide, we'll
+assume you're going to use VirtualBox.
 
-This script should be your interface to the analysis results and you should
-use it and customize it at your will in order to consume the data generated by
-Cuckoo. We'll get more into details on this in the :doc:`../../customization/index`
-chapter.
+Following is the default *conf/virtualbox.conf* file::
 
-By default Cuckoo provides a Python processing script that invokes some Python
-classes used to process the results and to generate human readable analysis
-reports (text, HTML, JSON).
+    [virtualbox]
+    # Enable or disable the headless mode [on/off]. If enabled, the graphical user
+    # interface will be hidden.
+    headless = no
 
-The **interpreter** option defines the path to the application to be used to
-execute the script.
-
-The **processor** option defines the path to the script to be executed.
-
-Sniffer
--------
-
-Following is the sniffer section::
-
-    [Sniffer]
-    # Enable or disable the following option by assigning a True or False value.
-    # In case you decide to disable it, you're supposed to either not have any
-    # network dump or to used VirtualBox's (or any other virtualization engine
-    # you are using) to handle the network monitoring instead of using an external
-    # sniffer such as tcpdump. [on/off]
-    sniffer = off
-    # Path to the sniffer (tcpdump) binary.
-    path = /usr/sbin/tcpdump
-    # This specifies the network interface where the sniffer will bind to in order
-    # to monitor virtual machines' generated traffic.
-    interface = eth0
-
-This section should be considered and edited just in the case you decided to use
-an external sniffer (assuming that you :doc:`properly installed <requirements>`
-it already).
-
-If otherwise you don't plan to use an external sniffer, you can skip this section.
-
-First you'll need to enable the **snifer** option by setting it to "*on*".
-
-The **path** option defines where the sniffer (tcpdump) binary is located. It
-should be generally correct by default.
-
-The **interface** option defines which network interface the sniffer should
-monitor. This obviously depends on your network configuration and on how you
-are planning to configure your virtual machines' networking. It's up to you.
-
-Virtual Machines
-----------------
-
-Following is the Virtual Machines section::
-
-    [VirtualMachines]
-    # Virtualization product.
-    engine = VirtualBox
-    # List virtual machines IDs separated by commas.
-    enabled = cuckoo1
-    # Set to "gui" if you want Cuckoo to spawn virtual machines' GUIs or set to
-    # "headless" if you don't.
-    mode = gui
-    # Path to local Python installation on guest machines. Please be sure to have
-    # correctly set this value as it's critical to Cuckoo's proper execution.
-    python = C:\Python27\python.exe
-
-This is probably the most important section in the configuration file, as it
-defines the core options for the virtualization engine.
-
-The **engine** option defines which virtualization module to use. At current
-stage only VirtualBox is supported, therefore you shouldn't modify this option
-unless you really know what you're doing.
-
-The **enabled** option defines a comma-separated list of enabled virtual
-machines.
-
-    .. note::
-
-        The virtual machines' IDs used by Cuckoo are user-defined names that are
-        exclusively used internally by Cuckoo. They are **not** the names used
-        to label the virtual machines inside VirtualBox. Even if they could have
-        the same values (*not recommended*), it's important to understand that
-        they are not the same thing.
-
-The **mode** option defines if the virtualization software should spawn the
-machines in *gui* mode (with regular window) or in *headless*, which will not
-create any graphical interface.
-
-The **python** option defines the location of the Python interpreter *inside
-the virtualized Windows environment*. This is critical to proper execution of
-Cuckoo, so take care to use the path you define here when installing Python on
-Windows or to come back here later and modify this value accordingly.
-
-Virtual machines details
-------------------------
-
-For each virtual machine you specified in the comma-separated list in the
-**enabled** option of the previous section, you have to create a dedicated
-section named with the ID value you assigned in the list.
-
-An example of such section is::
+    # Specify a comma-separated list of available machines to be used. For each
+    # specified ID you have to define a dedicated section containing the details
+    # on the respective machine. (E.g. cuckoo1,cuckoo2,cuckoo3)
+    machines = cuckoo1
 
     [cuckoo1]
-    name = Cuckoo1
-    username = User
-    password = cuckoo
-    # Please notice that the shared folder name must coincide with the current
-    # virtual machine id, which is the name you assigned between the square
-    # brackets (e.g. [cuckoo1]).
-    share = shares/cuckoo1
+    # Specify the label name of the current machine as specified in your
+    # VirtualBox configuration.
+    label = Cuckoo_1
 
-As you notice the section name **[cuckoo1]** has to contain the ID you assigned
-to the virtual machine.
+    # Specify the operating system platform used by current machine
+    # [windows/darwin/linux].
+    platform = windows
+    
+    # Specify the IP address of the current machine. Make sure that the IP address
+    # is valid and that the host machine is able to reach it. If not, the analysis
+    # will fail.
+    ip = 192.168.56.101
 
-The **name** option is the name you're going to use to create the virtual machine
-in VirtualBox.
+You can use this same configuration structure for any other machine manager module.
 
-The **username** option defines the name of the Windows account you're going to
-create.
-
-The **password** option defines the password for such Windows account.
-
-    .. note::
-
-        The Windows account is mandatory. It is needed to allow the host
-        to execute commands inside the guest operating system, therefore the
-        *username* and *password* options must containd valid values.
-
-The **share** option defines the path to the shared folder you're going to
-assign to this specific virtual machine. This folder has to exist, therefore
-make sure to create it. The name of such folder must coincide with the ID you
-assigned to current virtual machine. In the example given, the current virtual
-machine ID is "*cuckoo1*", so the shared folder is named "*cuckoo1*" as well.
-
-If for example you defined more than one virtual machine in the *enabled* option
-(e.g. "cuckoo1,cuckoo2") you'll have to create multiple details sections like::
-
-    [cuckoo1]
-    name = Cuckoo1
-    username = User
-    password = cuckoo
-    share = shares/cuckoo1
-
-    [cuckoo2]
-    name = Cuckoo2
-    username = User
-    password = cuckoo
-    share = shares/cuckoo2
+The comments for the options are self-explainatory.
 
 .. _reporting_conf:
 
@@ -236,20 +108,31 @@ reporting.conf
 The *conf/reporting.conf* file contains information on the automated reports
 generation.
 
-It contains the following section::
+It contains the following sections::
 
-    [Tasks]
-    # Enable/Disable reporting tasks. 
-    # Here you can choose what report enable or disable.
-    # By default all available reporting tasks are enabled.
-    # Available values are [on/off]
-    jsondump = on
-    reporttxt = on
-    reporthtml = on
-    metadata = on
-    maec = on
-    pickled = on
+    # Enable or disable the available reporting modules [on/off].
+    # If you add a custom reporting module to your Cuckoo setup, you have to add
+    # a dedicated entry in this file, or it won't be executed.
+    # You can also add additional options under the section of your module and
+    # they will be available in your Python class.
+
+    [jsondump]
+    enabled = on
+
+    [reporthtml]
+    enabled = on
+
+    [pickled]
+    enabled = on
+
+    [mongodb]
+    enabled = on
+
+    [metadata]
+    enabled = on
+
+    [maec11]
+    enabled = on
 
 By setting those option to *on* or *off* you enable or disable the generation
 of such reports.
-

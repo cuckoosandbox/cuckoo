@@ -59,15 +59,13 @@ Cuckoo Sandbox is an open source project result of the efforts and contributions
 of a lot of people who enjoyed volunteering some of their time for a greater
 good :).
 
-Developers
-----------
+Active Developers
+-----------------
 
     +-----------------------------+--------------------+---------------------------------+
     | Name                        | Role               | Contact                         |
     +=============================+====================+=================================+
     | Claudio "*nex*" Guarnieri   | Lead Developer     | ``nex at cuckoobox dot org``    |
-    +-----------------------------+--------------------+---------------------------------+
-    | Dario Fernandes             | Developer          | ``dario at cuckoobox dot org``  |
     +-----------------------------+--------------------+---------------------------------+
     | Alessandro "*jekil*" Tanasi | Developer          | ``alessandro at tanasi dot it`` |
     +-----------------------------+--------------------+---------------------------------+
@@ -75,20 +73,25 @@ Developers
 Contributors
 ------------
 
-    * Ryan Sommers :sub:`(contributed with the concept of the DLL analysis package)`
+    * Dario Fernandes :sub:`(participated to Google Summer of Code 2011, introduced chook and improved cmonitor)`
+    * Stefan Hausotte :sub:`(provided suggestions on improving the injection and hooking mechanisms)`
+    * Giacomo Milani :sub:`(notified some bugs)`
+    * Andre' Nordbo :sub:`(contributed to data visualization)`
+    * Kjell Christian Nilsen :sub:`(provided valuable feedback and several feature suggestions$
+    * JD :sub:`(contributed with multi-platform code optimization)`
 
 Acknowledgements
 ----------------
 
     * Felix Leder :sub:`(for mentoring and believing in the project in the first place)`
-    * Kjell Christian Nilsen :sub:`(for providing valuable feedback and several feature suggestions)`
-    * Mark Schloesser :sub:`and` Angelo dell'Aera :sub:`(for helping on Python matters :P)`
+    * Mark Schloesser :sub:`and` Angelo dell'Aera :sub:`(for helping on Python matters)`
     * Georg Wicherski :sub:`(for supporting the project and giving it a home at first place)`
     * Carsten Willems :sub:`(for the precious suggestions provided)`
     * `The Honeynet Project`_ :sub:`(for supporting the project)`
     * `The Shadowserver Foundation`_ :sub:`(for supporting the project)`
+    * `Rapid7`_ :sub:`(for supporting the project)`
     * Everyone using Cuckoo :sub:`(for giving a sense to all of this)`
 
 .. _`The Honeynet Project`: http://www.honeynet.org
 .. _`The Shadowserver Foundation`: http://www.shadowserver.org
-
+.. _`Rapid7`: http://www.rapid7.com
