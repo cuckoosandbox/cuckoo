@@ -61,6 +61,20 @@ class VirtualBox(MachineManager):
         except OSError:
             raise CuckooMachineError("VBoxManage OS error restoring vm's snapshot or file not found")
 
+    def memdump(self, label, filename):
+        """Dump the memory of the whole machine
+		@param label: machine name.
+		@param filename: target filename.
+		@raise NotImplementedError: this method is abstract.
+		"""
+        try:
+            if subprocess.call(["VBoxManage", "debugvm", label, "dumpguestcore", "--filename", filename],
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE):
+                raise CuckooMachineError("VBoxManage exited with error memdumping vm")
+        except OSError:
+            raise CuckooMachineError("VBoxManage OS error memdumping vm or file not found")
+
     def _list(self):
         """Lists virtual machines installed.
         @return: virtual machine names list.
