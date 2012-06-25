@@ -122,10 +122,16 @@ class AnalysisManager(Thread):
             mmanager.start(vm.label)
             # Initialize guest manager
             guest = GuestManager(vm.ip, vm.platform)
+            # Pre memdump
+            if self.cfg.cuckoo.do_predump:
+                mmanager.memdump(vm.label, os.path.join(self.analysis.results_folder,"pre.memdump"))
             # Launch analysis
             guest.start_analysis(options)
             # Wait for analysis to complete
             success = guest.wait_for_completion()
+            # Post memdump
+            if self.cfg.cuckoo.do_postdump:
+                mmanager.memdump(vm.label, os.path.join(self.analysis.results_folder,"post.memdump"))
             # Stop sniffer
             if sniffer:
                 sniffer.stop()
