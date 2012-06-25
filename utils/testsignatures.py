@@ -15,7 +15,7 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.processor import Processor
 
 if CUCKOO_ROOT == "." or not os.path.exists(CUCKOO_ROOT):
-    print("ERROR: you need to specify a valid absolute root directory in lib/cuckoo/common/constant$
+    print("ERROR: you need to specify a valid absolute root directory in lib/cuckoo/common/constants")
 else:
     results = Processor(sys.argv[1]).run()
 

@@ -11,6 +11,7 @@ from urlparse import urlunparse
 
 from lib.cuckoo.common.utils import convert_to_printable
 from lib.cuckoo.common.abstracts import Processing
+from lib.cuckoo.common.config import Config
 
 try:
     import dpkt
@@ -166,6 +167,10 @@ class Pcap:
         """
         log = logging.getLogger("Processing.Pcap")
         
+        if not Config().cuckoo.use_sniffer:
+            log.debug("Sniffing not enabled. Skip")
+            return None
+
         if not IS_DPKT:
             log.error("Python DPKT is not installed, aborting PCAP analysis.")
             return None

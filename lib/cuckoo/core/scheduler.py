@@ -9,7 +9,7 @@ import shutil
 import logging
 from threading import Thread, Lock
 
-from lib.cuckoo.common.exceptions import CuckooAnalysisError, CuckooMachineError
+from lib.cuckoo.common.exceptions import CuckooAnalysisError, CuckooMachineError, CuckooGuestError
 from lib.cuckoo.common.abstracts import Dictionary, MachineManager
 from lib.cuckoo.common.utils import File, create_folders
 from lib.cuckoo.common.config import Config
@@ -117,29 +117,31 @@ class AnalysisManager(Thread):
         else:
             sniffer = False
 
-        # Start machine
         try:
+            # Start machine
             mmanager.start(vm.label)
-        except CuckooMachineError as e:
+            # Initialize guest manager
+            guest = GuestManager(vm.ip, vm.platform)
+            # Launch analysis
+            guest.start_analysis(options)
+            # Wait for analysis to complete
+            success = guest.wait_for_completion()
+            # Stop sniffer
+            if sniffer:
+                sniffer.stop()
+    
+            if not success:
+                raise CuckooAnalysisError("Analysis failed, review previous errors")
+            # Save results
+            guest.save_results(self.analysis.results_folder)
+        except (CuckooMachineError, CuckooGuestError) as e:
             raise CuckooAnalysisError(e.message)
-        # Initialize guest manager
-        guest = GuestManager(vm.ip, vm.platform)
-        # Launch analysis
-        guest.start_analysis(options)
-        # Wait for analysis to complete
-        success = guest.wait_for_completion()
-        # Stop sniffer
-        if sniffer:
-            sniffer.stop()
+        finally:
+            # Stop machine
+            mmanager.stop(vm.label)
+            # Release the machine from lock
+            mmanager.release(vm.label)
 
-        if not success:
-            raise CuckooAnalysisError("Analysis failed, review previous errors")
-        # Save results
-        guest.save_results(self.analysis.results_folder)
-        # Stop machine
-        mmanager.stop(vm.label)
-        # Release the machine from lock
-        mmanager.release(vm.label)
         # Launch reports generation
         Reporter(self.analysis.results_folder).run(Processor(self.analysis.results_folder).run())
 
@@ -154,6 +156,9 @@ class AnalysisManager(Thread):
 
         try:
             self.launch_analysis()
+        except CuckooMachineError as e:
+            log.error("Please check virtual machine status: %s" % e.message)
+            success = False
         except CuckooAnalysisError as e:
             log.error(e.message)
             success = False

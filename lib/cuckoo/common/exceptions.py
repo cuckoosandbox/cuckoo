@@ -37,3 +37,7 @@ class CuckooProcessingError(CuckooOperationalError):
 class CuckooReportError(CuckooOperationalError):
     """Error in reporting module."""
     pass
+
+class CuckooGuestError(Exception):
+    """Cuckoo guest agent error."""
+    pass

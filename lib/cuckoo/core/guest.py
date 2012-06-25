@@ -10,6 +10,7 @@ import xmlrpclib
 from StringIO import StringIO
 from zipfile import ZipFile, BadZipfile, ZIP_DEFLATED
 
+from lib.cuckoo.common.exceptions import CuckooGuestError
 from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT, CUCKOO_GUEST_COMPLETED, CUCKOO_GUEST_FAILED
 
 log = logging.getLogger(__name__)
@@ -87,26 +88,22 @@ class GuestManager:
             return False
 
         log.info("Starting analysis on guest (ip=%s)" % self.ip)
-
+        # Set timeout for waiting for the agent.
         socket.setdefaulttimeout(5)
-        self.wait(CUCKOO_GUEST_INIT)
-        socket.setdefaulttimeout(60)
-        self.upload_analyzer()
         try:
-        self.server.add_config(options)
-        except: # Handling the timeouts
-            self.internal_error = "XMLRPC timeout adding config"
-            return False
-
-        file_data = open(options["file_path"], "rb").read()
-        data = xmlrpclib.Binary(file_data)
-
-        try:
-        self.server.add_malware(data, options["file_name"])
-        self.server.execute()
-        except: # Handling the timeouts
-            self.internal_error = "XMLRPC timeout executing malware"
-            return False
+            self.wait(CUCKOO_GUEST_INIT)
+            # Set timeout for running analysis.
+            socket.setdefaulttimeout(180)
+            self.upload_analyzer()
+            self.server.add_config(options)
+    
+            file_data = open(options["file_path"], "rb").read()
+            data = xmlrpclib.Binary(file_data)
+    
+            self.server.add_malware(data, options["file_name"])
+            self.server.execute()
+        except socket.timeout:
+            raise CuckooGuestError("Guest communication timeout. Check networking or try to increase timeout")
 
     def wait_for_completion(self):
         """Wai for analysis completion.
