@@ -118,6 +118,14 @@ class MachineManager(object):
         """
         raise NotImplementedError
 
+	def memdump(self, label, filename):
+		"""Dump the memory of the whole machine
+		@param label: machine name.
+		@param filename: target filename.
+		@raise NotImplementedError: this method is abstract.
+		"""
+		raise NotImplementedError
+
     def _list(self):
         """Lists virtual machines configured.
         @raise NotImplementedError: this method is abstract.
