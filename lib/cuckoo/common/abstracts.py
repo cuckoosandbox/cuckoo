@@ -50,7 +50,7 @@ class MachineManager(object):
             configured_vm = self._list()
             for machine in self.machines:
                 if machine.label not in configured_vm:
-                    raise CuckooMachineError("Configured VM %s was not detected or not in proper state" % machine.label)
+                    raise CuckooMachineError("Configured machine %s was not detected or it's not in proper state" % machine.label)
         except NotImplementedError:
             pass
 
