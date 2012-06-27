@@ -65,15 +65,15 @@ class MachineManager(object):
 
         return count
 
-    def acquire(self, label=None, platform=None):
+    def acquire(self, machine_id=None, platform=None):
         """Acquire a machine to start analysis.
-        @param label: machine name.
+        @param machine_id: machine ID.
         @param platform: machine platform.
         @return: machine or None.
         """
-        if label:
+        if machine_id:
             for machine in self.machines:
-                if machine.label == label and not machine.locked:
+                if machine.id == machine_id and not machine.locked:
                     machine.locked = True
                     return machine
         elif platform:

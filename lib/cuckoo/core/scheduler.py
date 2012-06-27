@@ -105,7 +105,7 @@ class AnalysisManager(Thread):
 
         while True:
             machine_lock.acquire()
-            vm = mmanager.acquire(label=self.task.machine, platform=self.task.platform)
+            vm = mmanager.acquire(machine_id=self.task.machine, platform=self.task.platform)
             machine_lock.release()
             if not vm:
                 log.debug("No machine available")
