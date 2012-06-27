@@ -57,6 +57,7 @@ class Reporter:
         for plugin in Report.__subclasses__():
             current = plugin()
             current.set_path(self.analysis_path)
+            current.cfg = Config(current.conf_path)
             module = inspect.getmodule(current)
             module_name = module.__name__.rsplit(".", 1)[1]
             current.set_options(self.cfg.get(module_name))

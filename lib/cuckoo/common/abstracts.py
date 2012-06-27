@@ -136,13 +136,13 @@ class Processing(object):
         @param analysis_path: analysis folder path.
         """
         self.analysis_path = analysis_path
-        self.log_path = os.path.join(analysis_path, "analysis.log")
-        self.conf_path = os.path.join(analysis_path, "analysis.conf")
-        self.file_path = os.path.join(analysis_path, "binary")
-        self.dropped_path = os.path.join(analysis_path, "files")
-        self.logs_path = os.path.join(analysis_path, "logs")
-        self.shots_path = os.path.join(analysis_path, "shots")
-        self.pcap_path = os.path.join(analysis_path, "dump.pcap")
+        self.log_path = os.path.join(self.analysis_path, "analysis.log")
+        self.conf_path = os.path.join(self.analysis_path, "analysis.conf")
+        self.file_path = os.path.join(self.analysis_path, "binary")
+        self.dropped_path = os.path.join(self.analysis_path, "files")
+        self.logs_path = os.path.join(self.analysis_path, "logs")
+        self.shots_path = os.path.join(self.analysis_path, "shots")
+        self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
 
     def run(self):
         """Start processing.
@@ -183,6 +183,7 @@ class Report(object):
         @param analysis_path: analysis folder path.
         """
         self.analysis_path = analysis_path
+        self.conf_path = os.path.join(self.analysis_path, "analysis.conf")
         self.reports_path = os.path.join(self.analysis_path, "reports")
 
         if not os.path.exists(self.reports_path):

@@ -82,6 +82,9 @@ class AnalysisManager(Thread):
         options["file_type"] = File(self.task.file_path).get_type()
         options["package"] = self.task.package
         options["options"] = self.task.options
+        options["platform"] = self.task.platform
+        options["machine"] = self.task.machine
+        options["custom"] = self.task.custom
         options["timeout"] = timeout
         options["started"] = time.time()
 
