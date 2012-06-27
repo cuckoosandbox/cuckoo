@@ -22,7 +22,7 @@ def main():
     check_configs()
     create_structure()
     init_logging()
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
