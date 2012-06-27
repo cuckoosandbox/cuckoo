@@ -23,20 +23,18 @@ class VirtualBox(MachineManager):
         """
         if self.config.getboolean("virtualbox", "headless"):
             try:
-                if subprocess.call(["VBoxHeadless", "-startvm", label],
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE):
-                    raise CuckooMachineError("VBoxHeadless exited with error starting vm")
-            except OSError:
-                raise CuckooMachineError("VBoxHeadless OS error starting vm or file not found")
+                subprocess.Popen(["VBoxHeadless", "-startvm", label],
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
+            except OSError as e:
+                raise CuckooMachineError("VBoxHeadless failed starting the machine in headless mode: %s" % e.message)
         else:
             try:
-                if subprocess.call(["VBoxManage", "startvm", label],
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE):
-                    raise CuckooMachineError("VBoxManage exited with error starting vm")
-            except OSError:
-                raise CuckooMachineError("VBoxManage OS error starting vm or file not found")
+                subprocess.Popen(["VBoxManage", "startvm", label],
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
+            except OSError as e:
+                raise CuckooMachineError("VBoxManage failed starting the machine in GUI mode: %s" % e.message)
 
     def stop(self, label):
         """Stops a virtual machine.
@@ -47,19 +45,19 @@ class VirtualBox(MachineManager):
             if subprocess.call(["VBoxManage", "controlvm", label, "poweroff"],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE):
-                raise CuckooMachineError("VBoxManage exited with error powering off vm")
-        except OSError:
-            raise CuckooMachineError("VBoxManage OS error powering off vm or file not found")
+                raise CuckooMachineError("VBoxManage exited with error powering off the machine")
+        except OSError as e:
+            raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e.message)
 
         time.sleep(3)
 
         try:
             if subprocess.call(["VBoxManage", "snapshot", label, "restorecurrent"],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE):
-                raise CuckooMachineError("VBoxManage exited with error restoring vm's snapshot")
-        except OSError:
-            raise CuckooMachineError("VBoxManage OS error restoring vm's snapshot or file not found")
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE):
+                raise CuckooMachineError("VBoxManage exited with error restoring the machine's snapshot")
+        except OSError as e:
+            raise CuckooMachineError("VBoxManage failed restoring the machine: %s" % e.message)
 
     def _list(self):
         """Lists virtual machines installed.
@@ -70,17 +68,18 @@ class VirtualBox(MachineManager):
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
             output = proc.communicate()
-        except OSError:
-            raise CuckooMachineError("VBoxManage error listing installed VMs")
+        except OSError as e:
+            raise CuckooMachineError("VBoxManage error listing installed machines: %s" % e.message)
 
         machines = []
         for line in output[0].split("\n"):
             try:
                 label = line.split('"')[1]
                 if label == "<inaccessible>":
-                    log.warning("Found an inacessible vitual machine. Please check his state")
+                    log.warning("Found an inaccessible vitual machine: please check his state")
                 else:
                     machines.append(label)
             except IndexError:
                 continue
+
         return machines
