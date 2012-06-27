@@ -9,18 +9,15 @@ import logging
 
 logging.basicConfig()
 
-sys.path.append("..")
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../"))
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.processor import Processor
 
-if CUCKOO_ROOT == "." or not os.path.exists(CUCKOO_ROOT):
-    print("ERROR: you need to specify a valid absolute root directory in lib/cuckoo/common/constants")
-else:
-    results = Processor(sys.argv[1]).run()
+results = Processor(sys.argv[1]).run()
 
-    if "signatures" in results:
-        for signature in results["signatures"]:
-            print("%s matched:" % signature["name"])
-            print("\tDescription: %s" % signature["description"])
-            print("\tSeverity: %d" % signature["severity"])
+if "signatures" in results:
+    for signature in results["signatures"]:
+        print("%s matched:" % signature["name"])
+        print("\tDescription: %s" % signature["description"])
+        print("\tSeverity: %d" % signature["severity"])

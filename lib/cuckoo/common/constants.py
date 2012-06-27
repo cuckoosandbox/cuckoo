@@ -2,7 +2,9 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-CUCKOO_ROOT = "."
+import os
+
+CUCKOO_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../../../")
 CUCKOO_VERSION = "0.4-dev"
 CUCKOO_GUEST_PORT = 8000
 CUCKOO_GUEST_INIT = 0x001
