@@ -1,0 +1,76 @@
+                                  CHANGELOG
+
+Cuckoo Sandbox 0.3.2 (2012-02-04)
+=================================
+
+* Introduced MAEC analysis report.
+* Introduced MAEC metadata report.
+* Introduced Python pickled report.
+* Added base64 encoded screenshots to CuckooDict.
+* Added screenshots to HTML report.
+* Added static analysis Python modules.
+* Added static analysis to HTML report.
+* Added list of unique involved hosts to HTML report.
+* Added forced restore of snapshot at startup before checking if a virtual machine is in a valid state.
+* Added forced restore of snapshots at Cuckoo's termination.
+* Improved logging capabilities.
+* Added invocation of processor.py also at analysis failures.
+* Added IPv6 support to PCAP processing.
+* Added option to delete original files after submission.
+* Added folder for additional files and data to drop.
+* Added API category and parent ID to raw behavioral logs entries.
+* Removed distorm3.dll as a system dependency.
+* Fixed issue with dumped files' names.
+* Fixed bug in web server's search functionality.
+* Fixed generation of analysis duration time and timestamps.
+* Fixed bug in acquisition of a user-specified virtual machine.
+* Fixed PHP analysis package.
+* Fixed processing of screenshots and refactored their file names to a 3 digit format.
+* Fixed bugs on encoding special characters in analysis data and network packets.
+* Decreased default analysis timeout.
+* Removed instructions trace functionalities and analysis package.
+
+Cuckoo Sandbox 0.3.1 (2011-12-28)
+=================================
+
+* Reintroduced an older version of cmonitor, in order to address troubles encountered in 0.3 release.
+* Fixed a bug in files dump caused by invalid/not regular files such as named pipes.
+* Disabled suspended mode in browsers' packages.
+
+Cuckoo Sandbox 0.3 (2011-12-27)
+===============================
+
+ * Introduced minimal web server with web interface to browse through the analysis reports.
+ * Added a reporting engine, configurable via reporting.conf, which supports reporting modules.
+ * Added HTML report.
+ * Added TXT report.
+ * Added JSON data export.
+ * Introduced support to URL submission.
+ * Added possibility to specify on which virtual machine run the analysis.
+ * Added database interaction functions to search analysis by MD5.
+ * Introduced DLL analysis package.
+ * Introduced assembly instructions trace analysis package.
+ * Added MD5 filtering of dropped files.
+ * Added libmagic bindings to identify file types.
+ * Added pydoc comments to all sources.
+ * Added CRC32 hash.
+ * Added ssdeep hash.
+ * Added process tree generation class.
+ * Added UDP connections extraction.
+ * Distorm3 built-in into cmonitor
+ * Fixed cmonitor.
+ * Fixed chook.
+ * Migrated Cuckoo to Python's logging library.
+ * Improved Cuckoo User Guide.
+ * Added changelog file.
+ * Some minor fixes.
+
+Cuckoo Sandbox 0.2 (2011-11-02)
+===============================
+
+First stable release, completely refactored.
+
+Cuckoo Sandbox 0.1 beta (2011-02-05)
+====================================
+
+First public beta release.

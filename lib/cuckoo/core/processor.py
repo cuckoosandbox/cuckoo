@@ -75,6 +75,7 @@ class Processor:
             except NotImplementedError:
                 continue
 
+        sigs.sort(key=lambda key: key["severity"])
         results["signatures"] = sigs
 
         return results
