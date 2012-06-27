@@ -27,7 +27,7 @@ def create_folders(root=".", folders=[]):
     @param folders: folders name to be created.
     """
     for folder in folders:
-        if os.path.exists(folder):
+        if os.path.exists(os.path.join(root, folder)):
             continue
 
         try:
