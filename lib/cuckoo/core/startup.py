@@ -68,7 +68,7 @@ def create_structure():
                "storage/analyses",
                "storage/binaries"]
 
-    create_folders(folders=folders)
+    create_folders(root=CUCKOO_ROOT,folders=folders)
 
 def init_logging():
     """Initialize logging."""
