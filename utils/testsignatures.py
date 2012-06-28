@@ -11,7 +11,6 @@ logging.basicConfig()
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.processor import Processor
 
 results = Processor(sys.argv[1]).run()

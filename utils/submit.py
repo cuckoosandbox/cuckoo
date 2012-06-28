@@ -14,7 +14,6 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.utils import File
 from lib.cuckoo.core.database import Database
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 def main():
     parser = argparse.ArgumentParser()
