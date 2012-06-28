@@ -8,7 +8,7 @@ from lib.api.process import Process
 class PDF(Package):
     """PDF analysis package."""
 
-    def run(self, path):
+    def start(self, path):
         arg = "\"%s\"" % path
         p = Process()
         p.execute(path="C:\\Program Files\\Adobe\\Reader 9.0\\Reader\\AcroRd32.exe", args=arg, suspended=True)

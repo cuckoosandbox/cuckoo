@@ -234,7 +234,7 @@ class Analyzer:
         shots.start()
 
         try:
-            pids = pack.run(self.file_path)
+            pids = pack.start(self.file_path)
         except NotImplementedError:
             raise CuckooError("The package \"%s\" doesn't contain a run function." % package_name)
 

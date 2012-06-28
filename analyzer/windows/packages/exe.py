@@ -8,7 +8,7 @@ from lib.api.process import Process
 class Exe(Package):
     """EXE analysis package."""
 
-    def run(self, path):
+    def start(self, path):
         p = Process()
 
         if "arguments" in self.options:

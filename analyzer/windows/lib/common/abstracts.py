@@ -9,7 +9,7 @@ class Package(object):
         """@param options: options dict."""
         self.options = options
 
-    def run(self, path=None):
+    def start(self, path=None):
         """Run analysis packege.
         @param path: sample path.
         @raise NotImplementedError: this method is abstract.

@@ -8,7 +8,7 @@ from lib.api.process import Process
 class Dll(Package):
     """DLL analysis package."""
 
-    def run(self, path):
+    def start(self, path):
         p = Process()
 
         rundll32 = "C:\\WINDOWS\\system32\\rundll32.exe"

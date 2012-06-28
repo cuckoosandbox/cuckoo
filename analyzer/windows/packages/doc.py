@@ -8,7 +8,7 @@ from lib.api.process import Process
 class DOC(Package):
     """Word analysis package."""
 
-    def run(self, path):
+    def start(self, path):
         arg = "\"%s\"" % path
         p = Process()
         p.execute(path="C:\\Program Files\\Microsoft Office\\Office12\\WINWORD.EXE", args=arg, suspended=True)
