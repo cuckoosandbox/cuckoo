@@ -21,7 +21,7 @@ def randomize_dll(dll_path):
     @return: new DLL path.
     """
     new_dll_name = "".join(random.choice(string.ascii_letters) for x in range(6))
-    new_dll_path = os.path.join("dll\\%s.dll" % new_dll_name)
+    new_dll_path = os.path.join("dll", "%s.dll" % new_dll_name)
 
     try:
         copy(dll_path, new_dll_path)
@@ -161,7 +161,7 @@ class Process:
             log.error("Failed to terminate process with pid %d" % self.pid)
             return False
 
-    def inject(self, dll="dll\\cmonitor.dll", apc=False):
+    def inject(self, dll=os.path.join("dll", "cmonitor.dll"), apc=False):
         """Cuckoo DLL injection.
         @param dll: Cuckoo DLL path.
         @param apc: APC use.
