@@ -10,7 +10,7 @@ import logging
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.abstracts import Report
-from lib.cuckoo.common.exceptions import CuckooReportError
+from lib.cuckoo.common.exceptions import CuckooDependencyError, CuckooReportError
 import modules.reporting as plugins
 
 log = logging.getLogger(__name__)
@@ -45,7 +45,11 @@ class Reporter:
                 continue
 
             path = "%s.%s" % (plugins.__name__, name)
-            __import__(path, globals(), locals(), ["dummy"], -1)
+
+            try:
+                __import__(path, globals(), locals(), ["dummy"], -1)
+            except CuckooDependencyError as e:
+                log.warning("Unable to import reporting module \"%s\": %s" % (name, e.message))
 
     def run(self, data):
         """Generates all reports.
