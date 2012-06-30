@@ -50,7 +50,7 @@ class AnalysisManager(Thread):
         """Store sample file.
         @raise CuckooAnalysisError: if unable to store file."""
         md5 = File(self.task.file_path).get_md5()
-        self.analysis.stored_file_path = os.path.join(os.path.join(os.getcwd(), "storage", "binaries"), md5)
+        self.analysis.stored_file_path = os.path.join(os.path.join(CUCKOO_ROOT), "storage", "binaries"), md5)
 
         if os.path.exists(self.analysis.stored_file_path):
             log.info("File already exists at \"%s\"" % self.analysis.stored_file_path)
