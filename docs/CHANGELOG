@@ -14,6 +14,7 @@ Cuckoo Sandbox 0.4 (TBA)
 * Added VirusTotal support
 * Added Yara support
 * Added MongoDB reporting module
+* Added HPFeeds reporting module
 * Refactored Windows analyzer
 * Refactored the analysis packages structure
 * Introduced support for analysis packages' options
