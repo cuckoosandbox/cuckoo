@@ -83,12 +83,11 @@ class GuestManager:
             return False
 
         log.info("Starting analysis on guest (ip=%s)" % self.ip)
-        # Set timeout for waiting for the agent.
-        socket.setdefaulttimeout(5)
+
+        socket.setdefaulttimeout(180)
+
         try:
             self.wait(CUCKOO_GUEST_INIT)
-            # Set timeout for running analysis.
-            socket.setdefaulttimeout(180)
             self.upload_analyzer()
             self.server.add_config(options)
     
@@ -99,6 +98,7 @@ class GuestManager:
             self.server.execute()
         except socket.timeout:
             raise CuckooGuestError("Guest communication timeout. Check networking or try to increase timeout")
+
     def wait_for_completion(self):
         """Wai for analysis completion.
         @return: operation status.
