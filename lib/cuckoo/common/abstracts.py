@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import socket
 import ConfigParser
 
 from lib.cuckoo.common.exceptions import CuckooMachineError
@@ -34,7 +35,7 @@ class MachineManager(object):
         self.module_name = module_name
         self.config_path = os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % module_name)
         self.config.read(self.config_path)
-
+        
         machines_list = self.config.get(self.module_name, "machines").strip().split(",")
         for machine_id in machines_list:
             machine = Dictionary()
@@ -43,6 +44,12 @@ class MachineManager(object):
             machine.platform = self.config.get(machine_id, "platform")
             machine.ip = self.config.get(machine_id, "ip")
             machine.locked = False
+            machine.resolver = None
+            try:
+                machine.resolver = self.config.get(machine_id, "resolver")
+            except:
+                pass
+
             self.machines.append(machine)
 
         # Checks if machines configured are really available.
@@ -53,6 +60,19 @@ class MachineManager(object):
                     raise CuckooMachineError("Configured machine %s was not detected or it's not in proper state" % machine.label)
         except NotImplementedError:
             pass
+
+    def resolve(self, vm):
+        ''' Resolve the VM's IP address using the vm's resolver
+        this method can be overridden for other types of guest machine resolutions
+        @param: vm whose ip needs to be resolved
+        '''
+        if vm.resolver and isinstance(vm.resolver, str) and\
+           vm.resolver == "dns":
+           addrinfos = socket.getaddrinfo(vm.label, 80) # just use 80 as a default
+           if len(addrinfos) > 0 and len(addrinfos[0]) > 4 and len(addrinfos[0][4]) > 1:
+               vm.ip = addrinfos[0][4][0]
+               return vm.ip
+        raise CuckooMachineError("Unable to obtain the IP Address for the following machine: %s"%vm.label)
 
     def availables(self):
         """How many machines are free.

@@ -50,7 +50,7 @@ class AnalysisManager(Thread):
         """Store sample file.
         @raise CuckooAnalysisError: if unable to store file."""
         md5 = File(self.task.file_path).get_md5()
-        self.analysis.stored_file_path = os.path.join(os.path.join(os.getcwd(), "storage", "binaries"), md5)
+        self.analysis.stored_file_path = os.path.join(os.path.join(CUCKOO_ROOT, "storage", "binaries"), md5)
 
         if os.path.exists(self.analysis.stored_file_path):
             log.info("File already exists at \"%s\"" % self.analysis.stored_file_path)
@@ -107,21 +107,31 @@ class AnalysisManager(Thread):
             machine_lock.acquire()
             vm = mmanager.acquire(machine_id=self.task.machine, platform=self.task.platform)
             machine_lock.release()
+
+ 
             if not vm:
                 log.debug("No machine available")
                 time.sleep(1)
             else:
                 log.info("Acquired machine %s (Label: %s)" % (vm.id, vm.label))
                 break
-
-        # Initialize sniffer
-        if self.cfg.cuckoo.use_sniffer:
-            sniffer = Sniffer(self.cfg.cuckoo.tcpdump)
-            sniffer.start(interface=self.cfg.cuckoo.interface, host=vm.ip, file_path=os.path.join(self.analysis.results_folder, "dump.pcap"))
-        else:
-            sniffer = False
+        
 
         try:
+            if vm.resolver:
+               log.debug("Performing name resolution of %s"%(vm.label))
+               vm.ip = mmanager.resolve(vm)
+            if not vm.ip or vm.ip == "":
+               debug.warn("%s deos not have an IP Address assigned."%vm.label)
+               raise CuckooMachineError("%s has not IP Address."%vm.label)
+            
+            # Initialize sniffer
+            if self.cfg.cuckoo.use_sniffer:
+                sniffer = Sniffer(self.cfg.cuckoo.tcpdump)
+                sniffer.start(interface=self.cfg.cuckoo.interface, host=vm.ip, file_path=os.path.join(self.analysis.results_folder, "dump.pcap"))
+            else:
+                sniffer = False
+            
             # Start machine
             mmanager.start(vm.label)
             # Initialize guest manager
