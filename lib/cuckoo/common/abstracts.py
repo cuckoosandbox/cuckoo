@@ -50,7 +50,7 @@ class MachineManager(object):
             except:
                 pass
             
-            if not machine.resolver and machine.ip == "":
+            if (not machine.resolver or machine.resolver == "") and machine.ip == "":
                 raise CuckooMachineError("Machine %s was not configured with a resolver or IP address" % machine.label)
 
             self.machines.append(machine)
