@@ -49,6 +49,9 @@ class MachineManager(object):
                 machine.resolver = self.config.get(machine_id, "resolver")
             except:
                 pass
+            
+            if not resolver and ip == "":
+                raise CuckooMachineError("Machine %s was not configured with a resolver or IP address" % machine.label)
 
             self.machines.append(machine)
 
