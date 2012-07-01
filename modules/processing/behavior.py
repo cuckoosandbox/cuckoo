@@ -66,8 +66,7 @@ class ParseProcessLog:
             try:                
                 (arg_name, arg_value) = row[index].split("->")
             except ValueError as e:
-                print row[index]
-                log.warning("Unable to parse analysis row argument: %s" % e.message)
+                log.warning("Unable to parse analysis row argument (row=%s): %s" % (row[index], e.message))
                 continue
 
             argument["name"] = arg_name
