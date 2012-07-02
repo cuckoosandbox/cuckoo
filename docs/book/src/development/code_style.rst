@@ -1,26 +1,34 @@
-=================
-Cuckoo Code Style
-=================
+============
+Coding Style
+============
 
-All Cuckoo Sandbox code must follow the code style described in this chapter.
-Essentially Cuckoo code style is based on `PEP 8 - Style Guide for Python Code
+In order to contribute code to the project, you must diligently follow the
+style rules describe in this chapter. Having a clean and structured code is
+very important for our development lifecycle, and not compliant code will
+most likely be rejected.
+
+Essentially Cuckoo's code style is based on `PEP 8 - Style Guide for Python Code
 <http://www.python.org/dev/peps/pep-0008/>`_ and `PEP 257 -- Docstring
 Conventions <http://www.python.org/dev/peps/pep-0257/>`_.
 
 Formatting
 ==========
 
-Cuckoo source code files must be written in the following format.
-
 Copyright header
 ----------------
 
-All source code files must start with copyright header.
+All source code files must start with the following copyright header::
+
+    # Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+    # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+    # See the file 'docs/LICENSE' for copying permission.
 
 Indentation
 -----------
 
-Use only 4 spaces per indentation level.
+The code must have a 4-spaces-tabs indentation.
+Since Python enforce the indentation, make sure to configure your editor
+properly or your code might cause malfunctioning.
 
 Maximum Line Length
 -------------------
@@ -29,66 +37,129 @@ Limit all lines to a maximum of 79 characters.
 
 Blank Lines
 -----------
-Separate top-level function and class definitions with two blank lines.
-Method definitions inside a class are separated by a single blank line.
-Use blank lines in functions, sparingly, to indicate logical sections.
+
+Separate the class definition and the top level function with one blank line.
+Methods definitions inside a class are separated by a single blank line::
+
+    class MyClass:
+        """Doing something."""
+
+        def __init__(self):
+            """Initialize"""
+            pass
+
+        def do_it(self, what):
+            """Do it.
+            @param what: do what.
+            """
+            pass
+
+Use blank lines in functions, sparingly, to isolate logic sections.
 Import blocks are separated by a single blank line, import blocks are separeted
 from classes by two blank lines.
 
 Imports
 -------
 
-Imports should usually be on separate lines.
+Imports must be on separate lines. If you're importing multiple objects from a
+package, use a single line::
+
+    from lib import a, b, c
+
+**NOT**::
+
+    from lib import a
+    from lib import b
+    from lib import c
+
+Always specify explicitly the objects to import::
+
+    from lib import a, b, c
+
+**NOT**::
+
+    from lib import *
 
 Strings
 -------
 
 Strings must be delimited by double quotes (").
 
-Printing strings
-----------------
+Printing and Logging
+--------------------
 
-Use only print with brackets, for example::
+We discourage the use of ``print()``: if you need to log an event please use
+Python's ``logging`` which is already initialized by Cucoko.
+
+In your module add::
+
+    import logging
+    log = logging.getLogger(__name__)
+
+And use the ``log`` handle, refer to Python's documentation.
+
+In case you really need to print a string to standard output, use the 
+``print()`` function::
 
     print("foo")
 
-Checking for key in data structures
------------------------------------
+**NOT** the statement::
+
+    print "foo"
+
+Checking for keys in data structures
+------------------------------------
 
 When checking for a key in a data structure use the clause "in" instead of
 methods like "has_key()", for example::
 
     if "bar" in foo:
-        do_something()
+        do_something(foo["bar"])
 
 Exceptions
 ==========
 
-All exceptions must be defined in exceptions.py file.
+Custom exceptions must be defined in the *lib/cuckoo/common/exceptions.py* file
+or in the local module if the exception should not be global.
+
+Following is current Cuckoo's exceptions chain::
+
+    .-- CuckooCriticalError
+    |   |-- CuckooStartupError
+    |   |-- CuckooDatabaseError
+    |   |-- CuckooMachineError
+    |   `-- CuckooDependencyError
+    |-- CuckooOperationalError
+    |   |-- CuckooAnalysisError
+    |   |-- CuckooProcessingError
+    |   `-- CuckooReportError
+    `-- CuckooGuestError
+
+Beware that the use of ``CuckooCriticalError`` and its child exceptions will
+cause Cuckoo to terminate.
 
 Naming
 ------
 
-Custom exception name must prefix with "Cuckoo" and end with "Error" if it's
-related to an error.
+Custom exceptions name must prefix with "Cuckoo" and end with "Error" if it
+represents an unexpected malfunction.
 
 Exception handling
 ------------------
-When dealing with exceptions we use the "as" instread of "," and the local
-variable name is "e". As in the example::
+
+When catching an exception and accessing its handle, use ``as e``::
 
     try:
         foo()
     except Exception as e:
         bar()
 
-Logging
-=======
+**NOT**::
 
-Format
-------
-
-End log line always with a dot.
+    try:
+        foo()
+    except Exception, something:
+        bar()
 
 Documentation
 =============

@@ -125,14 +125,22 @@ It contains the following sections::
     [pickled]
     enabled = on
 
-    [mongodb]
-    enabled = on
-
     [metadata]
     enabled = on
 
     [maec11]
     enabled = on
+
+    [mongodb]
+    enabled = off
+
+    [hpfclient]
+    enabled = off
+    host = 
+    port = 10000
+    ident = 
+    secret = 
+    channel = 
 
 By setting those option to *on* or *off* you enable or disable the generation
 of such reports.

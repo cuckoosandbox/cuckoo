@@ -7,6 +7,7 @@ Cuckoo Sandbox 0.4 (TBA)
 * Removed dependency from VirtualBox
 * Introduced XMLRPC-based agent that handles the data exchange between host and guests
 * Refactored the project structure
+* Removed processor.py script
 * Introduced support for multiple platforms and multiple analyzers
 * Introduced support for custom virtualization modules
 * Introduced support for custom post-analysis processing modules

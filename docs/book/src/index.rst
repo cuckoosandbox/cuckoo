@@ -18,14 +18,9 @@ If you're having troubles you might want to check out the :doc:`FAQ <faq/index>`
 it might already have the answers to your questions.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     faq/index
-
-Otherwise you can ask to the developers and to other Cuckoo users in the 
-`#cuckoobox`_ IRC channel.
-
-.. _#cuckoobox: irc://irc.freenode.net/cuckoobox
 
 Contents
 ========
@@ -39,4 +34,3 @@ Contents
     customization/index
     development/index
     finalremarks/index
-

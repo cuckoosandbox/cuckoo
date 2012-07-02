@@ -1,5 +1,5 @@
 =================
-Reporting Results
+Reporting Modules
 =================
 
 The *processor* script is responsible for taking analysis results and elaborate them,

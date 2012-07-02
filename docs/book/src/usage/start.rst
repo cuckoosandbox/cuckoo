@@ -21,6 +21,6 @@ You will get an output similar to this::
      Copyright (c) 2010-2012
 
     2012-06-11 20:17:29,694 [lib.cuckoo.core.scheduler] INFO: Loaded 1 machine/s
+    2012-06-11 20:17:29,694 [lib.cuckoo.core.scheduler] INFO: Waiting for analysis tasks...
 
 Now Cuckoo is ready to run and it's waiting for submissions.
-

@@ -10,5 +10,4 @@ This chapter explains how to use Cuckoo.
     start
     submit
     packages
-    execution
     results

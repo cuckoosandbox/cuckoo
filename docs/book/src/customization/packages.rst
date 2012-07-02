@@ -3,327 +3,257 @@ Analysis Packages
 =================
 
 As explained in :doc:`../usage/packages`, analysis packages are structured
-Python scripts that allow you to customize the analysis procedure inside the
-virtualized Windows environment.
+Python classes that describe how Cuckoo's analyzer component should conduct
+the analysis procedure for a given file inside the guest environment.
 
-By default Cuckoo provides some default packages you can already use, but you
-are able to create and use some of your own.
-
-Creating new packages is really easy and just requires minimal knowledge of the
-Python language.
+As you already know, you can create your own packages and add them along with
+the default ones.
+Designing new packages is very easy and requires just a minimal understanding
+of programming and of the Python language.
 
 Getting started
 ===============
 
-As first example we'll take a look at the default package for analyzing generic
-Windows executables (located at *shares/setup/packages/exe.py*):
+As an example we'll take a look at the default package for analyzing generic
+Windows executables (located at *analyzer/windows/packages/exe.py*):
 
     .. code-block:: python
         :linenos:
 
-        import os
-        import sys
+        from lib.common.abstracts import Package
+        from lib.api.process import Process
 
-        sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
+        class Exe(Package):
+            """EXE analysis package."""
 
-        from cuckoo.execute import cuckoo_execute
-        from cuckoo.monitor import cuckoo_monitor
+            def start(self, path):
+                p = Process()
 
-        # The package main function "cuckoo_run" should follow a fixed structure in
-        # order for Cuckoo to correctly handle it and its results.
-        def cuckoo_run(target_path):
-            # Every analysis package can retrieve a list of multiple process IDs it
-            # might have generated. All processes added to this list will be added to
-            # the monitored list, and Cuckoo will wait for all of the to complete their
-            # execution before ending the analysis.
-            pids = []
+                if "arguments" in self.options:
+                    p.execute(path=path, args=self.options["arguments"], suspended=True)
+                else:
+                    p.execute(path=path, suspended=True)
 
-            # The following functions are used to launch a process with the simplified
-            # "cuckoo_execute" function. This function takes as arguments (in specific
-            # order):
-            # - a path to the executable to launch
-            # - arguments to be passed on execution
-            # - a boolean value to specify if the process have to be created in
-            #   suspended mode or not (it's recommended to set it to True if the
-            #   process is supposed to be injected and monitored).
-            suspended = True
-            (pid, h_thread) = cuckoo_execute(target_path, None, suspended)
+                p.inject()
+                p.resume()
 
-            # The function "cuckoo_monitor" invoke the DLL injection and resume the
-            # process if it was suspended. It needs the process id and the main thread
-            # handle returned by "cuckoo_execute" and the same boolean value to tell it
-            # if it needs to resume the process.
-            cuckoo_monitor(pid, h_thread, suspended)
+                return p.pid
 
-            # Append all the process IDs you want to the list, and return the list.
-            pids.append(pid)
-            return pids
+            def check(self):
+                return True
 
-        def cuckoo_check():
-            return True
+            def finish(self):
+                return True
 
-        def cuckoo_finish():
-            return True
+Let's walk through the code.
 
-Let's walk through the given code.
+At line **1** we import the parent class ``Package``, all analysis packages must
+inherit this abstract class otherwise Cuckoo won't be able to load them.
+At line **2** we import the class ``Process``, which is an API module provided
+by Cuckoo's Windows analyzer for accessing several process-related features.
 
-At line **1** and **2** we import the ``os`` and ``sys`` Python modules.
-At line **4** we append "*\\\\VBOXSVR\\setup\\lib\\*" to Python's modules paths list:
-this will allow us to invoke Cuckoo's modules directly from the shared folder.
+At line **4** we define our class.
 
-Then we can see that three functions are defined:
+At line **7** we define the ``start()`` function, at line **20** the ``check()``
+function and at line **23** the ``finish()`` function.
+These three functions are required as they are used for customizing the package's
+operations at three different stages of the analysis.
 
-    * :ref:`cuckoo_run`
-    * :ref:`cuckoo_check`
-    * :ref:`cuckoo_finish`
+In this case we just create a ``Process`` instance, check if the user specified any
+arguments as option and launch the malware located at ``path``, which then gets
+injected and resumed.
 
-In the given example the package just executes the binary located at ``target_path``
-in suspended mode and instructs Cuckoo to inject the process and start
-monitoring it.
+``start()``
+-----------
 
-A slightly more complex example is the PDF analysis package (located at
-*shares/setup/packages/pdf.py*):
+In this function you have to place all the initialization operations you want to run.
+This might include running the malware process, launching additional applications,
+taking memory snapshots and more.
 
-    .. code-block:: python
-        :linenos:
+``check()``
+-----------
 
-        import os
-        import sys
+This function is executed by Cuckoo every second while the malware is running.
+You can use this function to perform any kind of recurrent operation.
 
-        sys.path.append("\\\\VBOXSVR\\setup\\lib\\")
+For example if in your analysis you are looking for just one specific indicator to
+be created (e.g. a file) you could place your condition in this function and if
+it returns ``False``, the analysis will terminate straight away.
 
-        from cuckoo.execute import cuckoo_execute
-        from cuckoo.monitor import cuckoo_monitor
+For example::
 
-        def cuckoo_run(target_path):
-            pids = []
-
-            # Customize this Path with the correct one on your Windows setup.
-            adobe_reader = "C:\\Program Files\\Adobe\\Reader 9.0\\Reader\\AcroRd32.exe"
-
-            suspended = True
-            (pid, h_thread) = cuckoo_execute(adobe_reader, "\"%s\"" % target_path, suspended)
-            cuckoo_monitor(pid, h_thread, suspended)
-
-            pids.append(pid)
-            return pids
-
-        def cuckoo_check():
-            return True
-
-        def cuckoo_finish():
-            return True
-
-In this example we have the same structure, with the only difference being that
-instead of executing the file at *target_path*, it executes Adobe Reader with
-*target_path* as argument. In this way it basically instructs Cuckoo to monitor
-what Adobe Reader is doing while opening the given PDF file. As you understand,
-this opens a large spectrum of possibilities on what Cuckoo can be used for.
-
-.. _cuckoo_run:
-
-``cuckoo_run()``
-----------------
-
-This function is the starting point of the analysis. In this block you
-should define every operation that should performed as initialization of the
-analysis.
-
-This could include the execution of processes, creation of files, injection of
-processes and whatever you might need to perform.
-
-It should return a list of PIDs that will be used by Cuckoo to monitor their
-process status: when all monitored processes complete their execution, Cuckoo
-will terminate the analysis and exit earlier.
-If none are returned, Cuckoo will assume that there is no
-process monitored and will just run for the amount of seconds specified by
-the analysis timeout.
-
-.. _cuckoo_check:
-
-``cuckoo_check()``
-------------------
-
-This function is performed regularly every second during the analysis. It can
-be used to perform custom checks or any other operation needed.
-
-If the ``cuckoo_check()`` function returns *False*, Cuckoo will assume that the
-package matched a conditional check and it will terminate the analysis earlier.
-
-.. _cuckoo_finish:
-
-``cuckoo_finish()``
--------------------
-
-This function is executed when the analysis is completed. It can be used for any
-post-analysis purpose such as copying files or any other operation you might
-need to perform before the virtual machine is shut down.
-
-Cuckoo Modules
-==============
-
-As you noticed in the packages examples, Cuckoo provides some custom functions
-that facilitates some complex Windows actions.
-
-These functions are defined in some Python modules that Cuckoo provide by
-default. You can use any of these modules in your analysis packages.
-
-Following is a list of available modules and the contained functions.
-
-``cuckoo.checkprocess``
------------------------
-
-* **Function** ``check_process()``:
-
-    **Prototype**:
-
-    .. code-block:: python
-
-        def check_process(pid)
-
-    **Description**: check if the specified process is still active and running.
-
-    **Parameter** ``pid``: process ID of the process to check.
-
-    **Return**: True if the process is active, otherwise False.
-
-    **Usage Example**:
-
-    .. code-block:: python
-        :linenos:
-
-        from cuckoo.checkprocess import check_process
-
-        if check_process(pid):
-            print "Process is active!"
+    def check(self):
+        if os.path.exists("C:\\config.bin"):
+            return False
         else:
-            print "Process is NOT active!"
+            return True
 
+This ``check()`` function will cause Cuckoo to immediately terminate the analysis
+whenever *C:\config.bin* is created.
 
-``cuckoo.execute``
-------------------
+``finish()``
+------------
 
-* **Function** ``cuckoo_execute()``:
+This function is simply called by Cuckoo before terminating the analysis and powering
+off the machine.
+There's no predefined use for this function and it's not going to affect Cuckoo's
+execution whatsoever, so you could simply use it to perform any last operation on
+the system.
 
-    **Prototype**:
+Options
+=======
 
-    .. code-block:: python
+Every package have automatically access to a dictionary containing all user-specified
+options (see :doc:`../usage/submit`).
 
-        def cuckoo_execute(target_path, args = None, suspend = False)
+Such options are made available in the attribute ``self.options``. For example let's
+assume that the user specified the following string at submission::
 
-    **Description**: creates a process from the specified file.
+    foo=1,bar=2
 
-    **Parameter** ``target_path``: path to the file to execute.
+The analysis package selected will have access to these values::
 
-    **Parameter** ``args``: arguments to pass to the process.
+    from lib.common.abstracts import Package
 
-    **Parameter** ``suspend``: set to True if should be created in suspended
-    mode, otherwise set to False.
+    class Example(Package):
 
-    **Return**: returns a list with PID and thread handle.
+        def start(self, path):
+            foo = self.options["foo"]
+            bar = self.options["bar"]
 
-    **Usage Example**:
+        def check():
+            return True
 
-    .. code-block:: python
-        :linenos:
+        def finish():
+            return True
 
-        from cuckoo.execute import cuckoo_execute
+These options can be used for anything you might need to configure inside your package.
 
-        (pid, h_thread) = cuckoo_execute("C:\\binary.exe")
+Process API
+===========
 
-``cuckoo.inject``
+The ``Process`` class provides access to different process-related features and functions.
+You can import it in your analysis packages with::
+
+    from lib.api.process import Process
+
+You then initialize an instance with::
+
+    p = Process()
+
+In case you want to open an existing process instead of creating a new one, you can
+specify multiple arguments:
+
+    * ``pid``: PID of the process you want to operate on.
+    * ``h_process``: handle of a process you want to operate on.
+    * ``thread_id``: thread ID of a process you want to operate on.
+    * ``h_thread``: handle of the thread of a process you want to operate on.
+
+This class implements several methods that you can use in your own scripts.
+
+``open()``
+----------
+
+This method allows you to open an handle to a running process::
+
+    p = Process(pid=1234)
+    p.open()
+    handle = p.h_process
+
+**Return**: True/False in case of success or failure of the operation.
+
+``exit_code()``
+---------------
+
+This method allows you to acquire the exit code of a given process::
+
+    p = Process(pid=1234)
+    code = p.exit_code()
+
+If it wasn't already done before, ``exit_code()`` will perform a call
+to ``open()`` in order to acquire an handle to the given process.
+
+**Return**: process exit code (ulong).
+
+``is_alive()``
+--------------
+
+This method simply calls ``exit_code()`` and verify if the returned code
+is ``STILL_ACTIVE``, meaning that the given process is still running::
+
+    p = Process(pid=1234)
+    if p.is_alive():
+        print("Still running!")
+
+``execute()``
+-------------
+
+This method simply allows you to execute a process. It accepts the following
+arguments:
+
+    * ``path``: path to the file to execute.
+    * ``args``: arguments to pass at process creation.
+    * ``suspended``: (True/False) boolean saying if the process should be created in suspended mode or not (default is False)
+
+Example::
+
+    p = Process()
+    p.execute(path="C:\\WINDOWS\\system32\\calc.exe", args="Something", suspended=True)
+
+**Return**: True/False in case of success or failure of the operation.
+
+``resume()``
+------------
+
+This method resumes a process from a suspended state.
+
+Example::
+
+    p = Process()
+    p.execute(path="C:\\WINDOWS\\system32\\calc.exe", args="Something", suspended=True)
+    p.resume()
+
+``terminate()``
+---------------
+
+This method allows you to terminate any given process::
+
+    p = Process(pid=1234)
+    if p.terminate():
+        print("Process terminated!")
+    else:
+        print("Could not terminate the process!")
+
+**Return**: True/False in case of success or failure of the operation.
+
+``inject()``
+------------
+
+This method allows you to inject a DLL file into a given process.
+You can specify the following arguments:
+
+    * ``dll``: path to the DLL to inject, if none is specified it will use Cuckoo's default DLL.
+    * ``apc``: True/False in case you want to use *QueueUserAPC* injection or not. Default is False, which will result in a *CreateRemoteThread* injection.
+
+Example::
+
+    p = Process()
+    p.execute(path="C:\\WINDOWS\\system32\\calc.exe", args="Something", suspended=True)
+    p.inject()
+    p.resume()
+
+**Return**: True/False in case of success or failure of the operation.
+
+``dump_memory()``
 -----------------
 
-* **Function** ``cuckoo_inject()``:
+This method allows you to take a snapshot of the given process' memory space.
+When invoked, it will create a result folder called *memory/<pid>/<timestamp>/* containing
+all the dumps sorted as *<memory region address>.dmp* (e.g. *0x12345678.dmp*).
 
-    **Prototype**:
+Example::
 
-    .. code-block:: python
+    p = Process(pid=1234)
+    p.dump_memory()
 
-        def cuckoo_inject(pid, dll_path)
-
-    **Description**: injects the process with the specified PID with the DLL
-    located at *dll_path*.
-
-    **Parameter** ``pid``: ID of the process to inject.
-
-    **Parameter** ``dll_path``: path to the DLL to be injected.
-
-    **Return**: returns True if injection succeeded, otherwise False.
-
-    **Usage Example**:
-
-    .. code-block:: python
-        :linenos:
-
-        from cuckoo.inject import cuckoo_inject
-
-        if cuckoo_inject(pid, "C:\\library.dll"):
-            print "Process injected successfully!"
-        else:
-            print "Injection failed!"
-
-``cuckoo.monitor``
-------------------
-
-* **Function** ``cuckoo_resumethread()``:
-
-    **Prototype**:
-
-    .. code-block:: python
-
-        def cuckoo_resumethread(h_thread = -1)
-
-    **Description**: resumes a thread from suspended mode.
-
-    **Parameter** ``h_thread``: handle to the thread to be resumed (as returned
-    by ``cuckoo_execute()``.
-
-    **Return**: returns True if resume succeeded, otherwise False.
-
-    **Usage Example**:
-
-    .. code-block:: python
-        :linenos:
-
-        from cuckoo.monitor import cuckoo_resumethread
-
-        if cuckoo_resumethread(h_thread):
-            print "Process resumed!"
-        else:
-            print "Process resume failed!"
-
-* **Function** ``cuckoo_monitor()``:
-
-    **Prototype**:
-
-    .. code-block:: python
-
-        def cuckoo_monitor(pid = -1, h_thread = -1, suspended = False, dll_path = None)
-
-    **Description**: instructs Cuckoo to inject and monitor the specified process.
-
-    **Parameter** ``pid``: ID of the process to monitor.
-
-    **Parameter** ``h_thread``: handle to the main thread of the process to
-    monitor (as returned by ``cuckoo_execute()``).
-
-    **Parameter** ``suspended``: set to True if the process was created
-    suspended and has to be resumed, otherwise False.
-
-    **Parameter** ``dll_path`` (optional): path to the DLL to inject into the
-    process. If none is specified it will use the default one.
-
-    **Return**: returns True if monitor succeeded, otherwise False.
-
-    **Usage Example**:
-
-    .. code-block:: python
-        :linenos:
-
-        from cuckoo.monitor import cuckoo_monitor
-
-        if cuckoo_monitor(pid, h_thread, True):
-            print "Process monitoring started successfully!"
-        else:
-            print "Process monitoring failed!"
+**Return**: True/False in case of success or failure of the operation.
