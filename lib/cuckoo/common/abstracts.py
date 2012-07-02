@@ -156,6 +156,7 @@ class Signature(object):
     name = ""
     description = ""
     severity = 1
+    authors = []
     references = []
     alert = False
     enabled = True
