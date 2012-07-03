@@ -10,25 +10,24 @@ try:
 except ImportError:
     raise CuckooDependencyError("Unable to import libvirt")
 
-
-class Kvm(MachineManager):
+class KVM(MachineManager):
     """Virtualization layer for KVM based on python-libvirt."""
 
     def start(self, label):
-        """Start a virtual machine.
+        """Starts a virtual machine.
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to start virtual machine.
         """
-        # Connect.
         conn = self._connect()
-        # Search.
         vm = self._lookup(conn, label)
+
         # Get current snapshot.
         try:
             snap = vm.hasCurrentSnapshot(flags=0)
         except libvirt.libvirtError:
             self._disconnect(conn)
             raise CuckooMachineError("Unable to get current snapshots for virtual machine %s" % label)
+
         # Revert to latest snapshot.
         if snap:
             try:
@@ -46,13 +45,12 @@ class Kvm(MachineManager):
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to stop virtual machine.
         """
-        # Connect.
         conn = self._connect()
-        # Search.
         vm = self._lookup(conn, label)
-        # Force virtual machine shutdown (hardcore way).
+
+        # Force virtual machine shutdown.
         try:
-            vm.destroy()
+            vm.destroy() # Machete's way!
         except libvirt.libvirtError:
             raise CuckooMachineError("Error stopping virtual machine %s" % label)
         finally:
@@ -86,6 +84,7 @@ class Kvm(MachineManager):
             vm = conn.lookupByName(label)
         except libvirt.libvirtError:
                 raise CuckooMachineError("Cannot found machine %s" % label)
+
         return vm
 
     def _list(self):
@@ -99,6 +98,7 @@ class Kvm(MachineManager):
             raise CuckooMachineError("Cannot list domains")
         finally:
             self._disconnect(conn)
+
         return names
 
     def _version_check(self):
