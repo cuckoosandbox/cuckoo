@@ -209,7 +209,7 @@ class Scheduler:
                 try:
                     mmanager.stop(machine.label)
                 except CuckooMachineError as e:
-                    log.error("Unable to shudown machine %s, please check manually. Error: %s" % (machine.label, e.message))
+                    log.error("Unable to shutdown machine %s, please check manually. Error: %s" % (machine.label, e.message))
 
     def start(self):
         """Start scheduler."""

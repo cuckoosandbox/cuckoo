@@ -26,7 +26,7 @@ class KVM(MachineManager):
             snap = vm.hasCurrentSnapshot(flags=0)
         except libvirt.libvirtError:
             self._disconnect(conn)
-            raise CuckooMachineError("Unable to get current snapshots for virtual machine %s" % label)
+            raise CuckooMachineError("Unable to get current snapshot for virtual machine %s" % label)
 
         # Revert to latest snapshot.
         if snap:
@@ -38,7 +38,7 @@ class KVM(MachineManager):
                 self._disconnect(conn)
         else:
             self._disconnect(conn)
-            raise CuckooMachineError("No snapshots found for virtual machine %s" % label)
+            raise CuckooMachineError("No snapshot found for virtual machine %s" % label)
 
     def stop(self, label):
         """Stops a virtual machine. Kill them all.
