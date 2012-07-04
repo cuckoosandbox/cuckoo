@@ -8,7 +8,20 @@
             <thead><tr><th>ID</th><th style="width: 20%;">md5 sum</th><th style="width: 40%;">File name</th><th>Added</th><th>Status</th></tr></thead>
             <tbody>
 			% for r in rows:
-    			<tr><td>${r.id}</td><td>${r.md5}</td><td>${os.path.basename(r.file_path)}</td><td>${r.added_on}</td><td>${r.status}</td></tr>
+    			<tr><td>${r.id}</td><td>${r.md5}</td><td>${os.path.basename(r.file_path)}</td><td>${r.added_on}</td>
+                <td>
+                    % if r.status == 0:
+                        % if r.lock == 0:
+                            PENDING
+                        % elif r.lock == 1:
+                            PROCESSING
+                        % endif
+                    % elif r.status == 1:
+                        FAILED
+                    % elif r.status == 2:
+                        SUCCEEDED
+                    % endif
+                </td></tr>
 			% endfor
 			</tbody>
 			</table>

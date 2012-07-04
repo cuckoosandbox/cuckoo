@@ -7,7 +7,7 @@ import ConfigParser
 class Config:
     def __init__(self, cfg):
         """@param cfg: configuration file."""
-        config = ConfigParser.ConfigParser()
+        config = ConfigParser.ConfigParser(allow_no_value=True)
         config.read(cfg)
 
         for section in config.sections():

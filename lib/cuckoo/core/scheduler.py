@@ -79,10 +79,10 @@ class AnalysisManager(Thread):
         options["options"] = self.task.options
         options["custom"] = self.task.custom
 
-        if self.task.timeout:
-            options["timeout"] = self.task.timeout
-        else:
+        if not self.task.timeout or self.task.timeout == 0:
             options["timeout"] = self.cfg.cuckoo.analysis_timeout
+        else:
+            options["timeout"] = self.task.timeout
 
         options["file_name"] = File(self.task.file_path).get_name()
         options["file_type"] = File(self.task.file_path).get_type()

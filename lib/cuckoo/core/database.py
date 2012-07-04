@@ -74,14 +74,14 @@ class Database:
 
     def add(self,
             file_path,
-            md5=None,
-            timeout=None,
-            package=None,
-            options=None,
-            priority=None,
-            custom=None,
-            machine=None,
-            platform=None):
+            md5="",
+            timeout=0,
+            package="",
+            options="",
+            priority=1,
+            custom="",
+            machine="",
+            platform=""):
         """Add a task to database.
         @param file_path: sample path.
         @param md5: sample MD5.

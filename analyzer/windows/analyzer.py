@@ -177,7 +177,7 @@ class Analyzer:
         @return: options dict.
         """
         options = {}
-        if self.config.options != "None":
+        if not self.config.options:
             try:
                 fields = self.config.options.strip().split(",")
                 for field in fields:
@@ -207,12 +207,13 @@ class Analyzer:
         """
         self.prepare()
 
-        # TODO: checking for "None" string sucks, need to find a fix
-        if self.config.package == "None":
+        if not self.config.package:
             log.info("No analysis package specified, trying to detect it automagically")
             package = choose_package(self.config.file_type)
             if not package:
                 raise CuckooError("No valid package available for file type: %s" % self.config.file_type)
+            else:
+                log.info("Automatically selected analysis package \"%s\"" % package)
         else:
             package = self.config.package
 
@@ -224,7 +225,12 @@ class Analyzer:
             raise CuckooError("Unable to import package \"%s\", does not exist." % package_name)
 
         Package()
-        package_class = Package.__subclasses__()[0]
+
+        try:
+            package_class = Package.__subclasses__()[0]
+        except IndexError as e:
+            raise CuckooError("Unable to select package class (package=%s): %s" % (package_name, e.message))
+        
         pack = package_class(self.get_options())
 
         timer = Timer(self.config.timeout, self.stop)

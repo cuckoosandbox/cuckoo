@@ -40,7 +40,7 @@
 			    <div class="control-group ${'error' if context.get('error_timeout','') else ''}">
 			      <label class="control-label" for="input04">Timeout</label>
 			      <div class="controls">
-			        <input type="text" name="timeout" class="input-xlarge" id="input04" value="${context.get('timeout','120')}">
+			        <input type="text" name="timeout" class="input-xlarge" id="input04" value="${context.get('timeout','')}">
 			        % if error_timeout != UNDEFINED:
 			        <span class="help-inline">${error_timeout}</span>
 			        % endif
