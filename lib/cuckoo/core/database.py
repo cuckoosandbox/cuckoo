@@ -114,7 +114,7 @@ class Database:
             self.cursor.execute("SELECT * FROM tasks " \
                                 "WHERE lock = 0 "      \
                                 "AND status = 0 "      \
-                                "ORDER BY priority, added_on LIMIT 1;")
+                                "ORDER BY priority DESC, added_on LIMIT 1;")
         except sqlite3.OperationalError as e:
             print e
             return None
