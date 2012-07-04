@@ -56,6 +56,7 @@ body {
 #menu li {
     float: right;
     margin-right: 10px;
+    line-height: 35px;
 }
 #menu a:link, #menu a:visited {
     text-decoration: none;
@@ -258,4 +259,42 @@ td.form {
     padding-left: 8px;
     background-color: #ff6060;
     margin-bottom: 3px;
+}
+.headline {
+        font-family: Georgia, "Times New Roman", Times, serif;
+        font-size: 24px;
+    margin-top: 5px;
+    margin-bottom: 0px;
+    text-align: center;
+        font-weight: normal;
+        color: #222;
+}
+.subheadline {
+        font-family: "Lucida Grande", Tahoma;
+    font-size: 10px;
+    font-weight: lighter;
+    font-variant: normal;
+    text-transform: uppercase;
+    color: #666666;
+        margin-top: 10px;
+    text-align: center!important;
+    letter-spacing: 0.3em;
+}
+.title {
+    color: #222;
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-weight: normal;
+    margin-top: 30px;
+}
+.box {
+    background: #ecf2f5;
+    border: 1px solid #bcd;
+    padding: 20px;
+}
+.tasks .table {
+    margin-top: 10px;
 }
