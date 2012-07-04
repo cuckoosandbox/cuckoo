@@ -25,12 +25,20 @@ def main():
     parser.add_argument("--priority", type=int, action="store", default=1, help="Specify a priority for the analysis represented by an integer", required=False)
     parser.add_argument("--machine", type=str, action="store", default="", help="Specify the identifier of a machine you want to use", required=False)
     parser.add_argument("--platform", type=str, action="store", default="", help="Specify the operating system platform you want to use (windows/darwin/linux)", required=False)
-
+    parser.add_argument("--url", action="store_true", help="Specify a url", required=False, default=False)
+    
     try:
         args = parser.parse_args()
     except IOError as e:
         parser.error(e.message)
         return False
+
+    if args.url:
+       filename = hashlib.md5(args.path).hexdigest()
+       tmp_path = os.path.join("/", "tmp", "%s.url"%filename)
+       open(tmp_path, 'w').write("[InternetShortcut]\nURL=%s\n"%args.path)
+       args.path = tmp_path
+
 
     if not os.path.exists(args.path):
         print("ERROR: the specified file does not exist at path \"%s\"" % args.path)
