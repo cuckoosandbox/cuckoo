@@ -9,6 +9,4 @@ installed.
 
 The new virtual machine will eventually bring along also the settings of the
 original one, which is not good. Now you need to proceed repeating the steps
-explained in :doc:`network`, :doc:`shares` and :doc:`saving` for this new
-machine.
-
+explained in :doc:`network`, :doc:`agent` and :doc:`saving` for this new machine.

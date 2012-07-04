@@ -16,9 +16,6 @@ cuckoo.conf
 The first file to edit is *conf/cuckoo.conf*, whose content is::
 
     [cuckoo]
-    # Enable or disable debug logging [on/off].
-    debug = off
-
     # Set the default analysis timeout expressed in seconds. This value will be
     # used to define after how many seconds the analysis will terminate unless
     # otherwise specified at submission.

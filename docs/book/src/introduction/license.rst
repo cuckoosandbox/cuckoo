@@ -14,7 +14,7 @@ See the `GNU General Public License`_ for more details.
 
 .. _`GNU General Public License`: http://www.gnu.org/licenses/gpl.txt
 
-The files ``peutils.py`` and ``pefile.py`` are copyrighted by Ero Carrera <ero.carrera@gmail.com>
+The files **peutils.py** and **pefile.py** are copyrighted by Ero Carrera <ero.carrera@gmail.com>
 and distributed under the following license.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@ and/or other materials provided with the distribution.
 3. The name of the author may not be used to endorse or promote products
 derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
 EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
@@ -41,7 +41,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 OF SUCH DAMAGE.
 
-The file ``UserDB.txt`` is copyrighted by BoB / Team PEiD distributed under the following
+The file **UserDB.txt** is copyrighted by BoB / Team PEiD distributed under the following
 MIT license.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this 

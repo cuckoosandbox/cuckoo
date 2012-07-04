@@ -30,6 +30,7 @@ project at its full potential.
     * `Mako`_ (Highly Recommended): for rendering the HTML reports and the web interface.
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
     * `Yara`_ and Yara Python (Optional): for matching Yara signatures.
+    * `Libvirt`_ (Optional): for using the KVM module.
 
 Some of them are packaged in GNU/Linux Ubuntu and you can install them with the following command::
 
@@ -43,6 +44,7 @@ For the rest refer to their websites.
 .. _Pyssdeep: http://code.google.com/p/pyssdeep/
 .. _Pymongo: http://pypi.python.org/pypi/pymongo/
 .. _Yara: http://code.google.com/p/yara-project/
+.. _Libvirt: http://www.libvirt.org
 
 Virtualization Software
 =======================
@@ -62,7 +64,7 @@ channels and lists: refer to the software's official documentation and support.
 
 Assuming you decide to go for VirtualBox, you can get the proper package for
 your distribution at the `official download page`_.
-The installation of VirtualBox is not in purposes of this documentation, if you
+The installation of VirtualBox is not in the purpose of this documentation, if you
 are not familiar with it please refer to the `official documentation`_.
 
 .. _VirtualBox: http://www.virtualbox.org

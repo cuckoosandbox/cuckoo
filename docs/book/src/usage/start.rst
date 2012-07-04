@@ -24,3 +24,17 @@ You will get an output similar to this::
     2012-06-11 20:17:29,694 [lib.cuckoo.core.scheduler] INFO: Waiting for analysis tasks...
 
 Now Cuckoo is ready to run and it's waiting for submissions.
+
+``cuckoo.py`` accepts some command line options as shown by the help::
+
+    usage: cuckoo.py [-h] [-q] [-d] [-v] [-l]
+
+    optional arguments:
+      -h, --help     show this help message and exit
+      -q, --quiet    Display only error messages
+      -d, --debug    Display debug messages
+      -v, --version  show program's version number and exit
+      -l, --logo     Show artwork
+
+Most importantly ``--debug`` and ``--quiet`` respectively increase and decrease the logging
+verbosity.

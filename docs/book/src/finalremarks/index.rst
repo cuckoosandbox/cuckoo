@@ -83,7 +83,7 @@ Acknowledgements
     * Carsten Willems
     * `The Honeynet Project`_
     * `The Shadowserver Foundation`_
-    * `Rapid7`_ :sub:`
+    * `Rapid7`_
     * Everyone using Cuckoo :sub:`(for giving a sense to all of this)`
 
 .. _`The Honeynet Project`: http://www.honeynet.org
