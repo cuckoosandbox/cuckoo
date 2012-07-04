@@ -28,7 +28,7 @@ class WebifException(Exception):
     pass
 
 # templates directory
-lookup = TemplateLookup(directories=[os.path.join(CUCKOO_ROOT, "data", "html", "webif")],
+lookup = TemplateLookup(directories=[os.path.join(CUCKOO_ROOT, "data", "html")],
             output_encoding='utf-8',
             encoding_errors='replace',
             strict_undefined=False)
@@ -69,7 +69,7 @@ def store_and_submit_fileobj(fobj, filename, package='', options='', timeout=120
 @route('/')
 def index():
     context = {}
-    template = lookup.get_template("submit.html")
+    template = lookup.get_template("webif/submit.html")
     return template.render(**context)
 
 @route('/browse')
@@ -91,7 +91,7 @@ def browse():
     #'id': 1, 'file_path': u'/home/rep/Documents/taiwan12/honeynet/demo/karonzo/Open.exe', 
     #'added_on': u'2012-06-27 16:07:54', 'md5': u'1cfbccca2a84d0ee450a3f4036fd6fe3'}]
 
-    template = lookup.get_template("browse.html")
+    template = lookup.get_template("webif/browse.html")
     return template.render(os=os, rows=rows, **context)
 
 @route('/static/<filename:path>')
@@ -131,14 +131,14 @@ def submit():
 
     # on errors, tell user
     if errors:
-        template = lookup.get_template("submit.html")
+        template = lookup.get_template("webif/submit.html")
         return template.render(timeout=timeout, priority=priority, options=options, package=package, **context)
     
     # finally real store and submit
     taskid = store_and_submit_fileobj(data.file,data.filename, timeout=timeout, priority=priority, options=options, package=package)
 
     # show result
-    template = lookup.get_template("success.html")
+    template = lookup.get_template("webif/success.html")
     return template.render(taskid=taskid, submitfile=data.filename)
 
 if __name__ == '__main__':
