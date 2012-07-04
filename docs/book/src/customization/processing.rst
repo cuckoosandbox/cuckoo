@@ -190,3 +190,68 @@ Every processing module should contain:
     * A ``run()`` function.
     * A ``self.key`` attribute defining the name to be used as a subcontainer for the returned data.
     * A set of data (list, dictionary or string etc.) that will be appended to the global container.
+
+The processing modules are provided with some attributes that can be used to access the raw results
+for the given analysis:
+
+    * ``self.analysis_path``: path to the folder containing the results (e.g. *storage/analysis/1*)
+    * ``self.log_path``: path to the *analysis.log* file.
+    * ``self.conf_path``: path to the *analysis.conf* file.
+    * ``self.file_path``: path to the analyzed file.
+    * ``self.dropped_path``: path to the folder containing the dropped files.
+    * ``self.logs_path``: path to the folder containing the raw behavioral logs.
+    * ``self.shots_path``: path to the folder containing the screenshots.
+    * ``self.pcap_path``: path to the network pcap dump.
+
+Example
+=======
+
+A good example to understand better the mechanics behind this is the Yara module.
+Yara is a tool and library used to match user's defined signatures containing
+static binary patterns against the analyzed file.
+
+
+    .. code-block:: python
+        :linenos:
+
+        import os
+        import logging
+
+        try:
+            import yara
+            HAVE_YARA = True
+        except ImportError:
+            HAVE_YARA = False
+
+        from lib.cuckoo.common.constants import CUCKOO_ROOT
+        from lib.cuckoo.common.abstracts import Processing
+
+        log = logging.getLogger(__name__)
+
+        class YaraSignatures(Processing):
+            """Yara signature processing."""
+
+            def run(self):
+                """Run Yara processing.
+                @return: hash with matches.
+                """
+                self.key = "yara"
+                matches = []
+
+                if HAVE_YARA:
+                    try:
+                        rules = yara.compile(filepath=os.path.join(CUCKOO_ROOT, "data", "yara", "index.yar"))
+                        for match in rules.match(self.file_path):
+                            matches.append({"name" : match.rule, "meta" : match.meta})
+                    except yara.Error as e:
+                        log.warning("Unable to match Yara signatures: %s" % e[1])
+                else:
+                    log.warning("Yara is not installed, skip")
+
+                return matches
+
+As you can see in line #22 we defined the key name for the module.
+Next in the ``run()`` function we compile the signatures file and match every
+signature against the file located at ``self.file_path``.
+The matched signatures are appended in the ``matches`` dictionary which is then
+returned and that will be included in the global container under the section "yara".
