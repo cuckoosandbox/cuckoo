@@ -1,12 +1,8 @@
-#!/usr/bin/env python
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
-# This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
-# See the file 'docs/LICENSE' for copying permission.
-
 import os
 import sys
 import logging
 import argparse
+import hashlib
 
 logging.basicConfig()
 
@@ -20,6 +16,7 @@ def main():
     parser.add_argument("path", type=str, help="Path to the file to analyze")
     parser.add_argument("--package", type=str, action="store", help="Specify an analysis package", required=False)
     parser.add_argument("--custom", type=str, action="store", help="Specify any custom value", required=False)
+    parser.add_argument("--url", action="store_true", help="Specify a url", required=False, default=False)
     parser.add_argument("--timeout", type=int, action="store", help="Specify an analysis timeout", required=False)
     parser.add_argument("--options", type=str, action="store", help="Specify options for the analysis package (e.g. \"name=value,name2=value2\")", required=False)
     parser.add_argument("--priority", type=int, action="store", help="Specify a priority for the analysis represented by an integer", required=False)
@@ -31,6 +28,13 @@ def main():
     except IOError as e:
         parser.error(e.message)
         return False
+
+
+    if args.url:
+       filename = hashlib.md5(args.path).hexdigest()
+       tmp_path = os.path.join("/", "tmp", "%s.url"%filename)
+       open(tmp_path, 'w').write("[InternetShortcut]\nURL=%s\n"%args.path)
+       args.path = tmp_path
 
     if not os.path.exists(args.path):
         print("ERROR: the specified file does not exist at path \"%s\"" % args.path)
