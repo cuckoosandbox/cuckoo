@@ -10,6 +10,13 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.abstracts import Dictionary
 
+# from http://docs.python.org/library/sqlite3.html
+def dict_factory(cursor, row):
+    d = Dictionary()
+    for idx, col in enumerate(cursor.description):
+        setattr(d, col[0], row[idx])
+    return d
+
 class Database:
     """Analysis queue database."""
 
@@ -19,6 +26,7 @@ class Database:
 
         self.generate()
         self.conn = sqlite3.connect(self.db_file, timeout=60)
+        self.conn.row_factory = dict_factory
         self.cursor = self.conn.cursor()
 
     def generate(self):
@@ -63,33 +71,6 @@ class Database:
             raise CuckooDatabaseError("Unable to create database: %s" % e)
 
         return True
-
-    def dictify(self, row):
-        """Transform a database row in a dict.
-        @param row: database row.
-        @return: dict.
-        """
-        try:
-            task = Dictionary()
-            task.id = row[0]
-            task.md5 = row[1]
-            task.file_path = row[2]
-            task.timeout = row[3]
-            task.priority = row[4]
-            task.custom = row[5]
-            task.machine = row[6]
-            task.package = row[7]
-            task.options = row[8]
-            task.platform = row[9]
-            task.added_on = row[10]
-            task.completed_on = row[11]
-            task.lock = row[12]
-            task.status = row[13]
-        except IndexError as e:
-            print e
-            return None
-
-        return task
 
     def add(self,
             file_path,
@@ -140,10 +121,7 @@ class Database:
 
         row = self.cursor.fetchone()
 
-        if row:
-            return self.dictify(row)
-        else:
-            return None
+        return row
 
     def lock(self, task_id):
         """Lock a task.
