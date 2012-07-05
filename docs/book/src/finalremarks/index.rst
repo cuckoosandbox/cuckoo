@@ -60,31 +60,39 @@ Active Developers
     | Alessandro "*jekil*" Tanasi | Developer          | ``alessandro at tanasi dot it`` |
     +-----------------------------+--------------------+---------------------------------+
 
-Contributors
-------------
-
-    * Mark Schloesser :sub:`(contributed with a local web utility for uploading files and browsing results)`
-    * Stefan Hausotte :sub:`(provided suggestions on improving the injection and hooking mechanisms)`
-    * Giacomo Milani :sub:`(notified some bugs)`
-    * Andre' Nordbo :sub:`(contributed to data visualization)`
-    * JD :sub:`(contributed with multi-platform code optimization)`
-
 Inactive Developers
 -------------------
 
-    * Dario Fernandes :sub:`(participated to Google Summer of Code 2011, introduced chook and improved cmonitor)`
+    * Dario Fernandes
 
-Acknowledgements
-----------------
+Contributors
+------------
 
+    * Mark Schloesser
+    * Jurriaan Bremer
+    * Thorsten Sick
+    * Adam Pridgen
+
+Bug Reporters/Advisors
+----------------------
+
+    * Giacomo Milani
+    * Stefan Hausotte
     * Felix Leder
     * Georg Wicherski
     * Kjell Christian Nilsen
     * Carsten Willems
+
+Supporters
+==========
+
     * `The Honeynet Project`_
     * `The Shadowserver Foundation`_
+
+Sponsors
+========
+
     * `Rapid7`_
-    * Everyone using Cuckoo :sub:`(for giving a sense to all of this)`
 
 .. _`The Honeynet Project`: http://www.honeynet.org
 .. _`The Shadowserver Foundation`: http://www.shadowserver.org
