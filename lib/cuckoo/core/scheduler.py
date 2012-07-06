@@ -181,7 +181,9 @@ class Scheduler:
         """Initialize machine manager."""
         global mmanager
 
+        log.info("Using \"%s\" machine manager" % self.cfg.cuckoo.machine_manager)
         name = "modules.machinemanagers.%s" % self.cfg.cuckoo.machine_manager
+
         try:
             __import__(name, globals(), locals(), ["dummy"], -1)
         except ImportError as e:
