@@ -56,7 +56,7 @@ There are few requirements for writing a valid reporting module:
 
     * Declare your class inheriting ``Report``.
     * Have a ``run()`` function performing the main operations.
-    * Try to cath most exceptions and raise ``CuckooReportError`` to notify the issue.
+    * Try to catch most exceptions and raise ``CuckooReportError`` to notify the issue.
 
 All reporting modules have access to some attributes:
 
