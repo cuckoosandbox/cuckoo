@@ -1,14 +1,16 @@
-<div class="section">
-    <div class="section-title">Dropped Files</div>
+<section id="dropped">
+    <div class="page-header">
+        <h1>Dropped Files</h1>
+    </div>
     %if dropped:
         <%
             counter = 1
         %>
         %for dropped_file in dropped:
             <fieldset>
-                <legend><%include file="../images/file.html" />File: <span class="blue"><span class="mono">${dropped_file["name"]}</span></span> <a href="javascript:showHide('dropped_${counter}');"><%include file="../images/plus.html" /></a></legend>
-                <div id="dropped_${counter}" class="section-nested" style="display: none;">
-                    <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                <legend><a href="javascript:showHide('dropped_${counter}');">${dropped_file["name"]}</a></legend>
+                <div id="dropped_${counter}" style="display: none;">
+                    <table class="table table-striped">
                         <colgroup>
                             <col width="150" />
                             <col width="*" />
@@ -48,7 +50,6 @@
                     </table>
                 </div>
             </fieldset>
-            <div class="space-small"></div>
             <%
                 counter += 1
             %>
@@ -56,5 +57,5 @@
     %else:
         Nothing to display.
     %endif
-    <%include file="../images/arrow_up.html" />
-</div>
+    <p style="text-align: right;"><a href="#">Back to top</a></p>
+</section>

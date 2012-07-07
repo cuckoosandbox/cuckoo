@@ -33,6 +33,9 @@ over the network using a simple XMLRPC protocol.
 
 In order to make it work properly you'll have to configure your machine's
 network so that the Host and the Guest can communicate.
+Test network trying to ping a guest is a good practice, to be sure about
+virtual network setup.
 
 This stage is very much up to your own requirements and to the
 characteristics of your virtualization software.
+

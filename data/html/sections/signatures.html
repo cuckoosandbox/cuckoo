@@ -1,13 +1,19 @@
-<div class="section">
-<div class="section-title">Signatures</div>
-%for signature in signatures:
-    <div class="severity_${signature["severity"]}">
-    %if signature["severity"] == 3:
-        <strong>${signature["description"]}</strong>
-    %else:
-        ${signature["description"]}
-    %endif
+<section id="signatures">
+    <div class="page-header">
+        <h1>Signatures</h1>
     </div>
-%endfor
-</div>
-<div class="space"></div>
+    %for signature in signatures:
+        %if signature["severity"] == 1:
+            <div class="alert alert-success signature">
+        %elif signature["severity"] == 2:
+            <div class="alert alert-warning signature">
+        %elif signature["severity"] >= 3:
+            <div class="alert alert-error signature">
+        %else:
+            <div class="alert alert-info signature">
+        %endif
+        ${signature["description"]}
+        </div>
+    %endfor
+    <p style="text-align: right;"><a href="#">Back to top</a></p>
+</section>

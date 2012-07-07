@@ -36,6 +36,10 @@ Some of them are packaged in GNU/Linux Ubuntu and you can install them with the 
 
     $ sudo apt-get install python-magic python-dpkt python-mako python-pymongo
 
+If want to use KVM it's packaged too and you can install it with the following command::
+
+	$ sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+
 For the rest refer to their websites.
 
 .. _Magic: http://www.darwinsys.com/file/

@@ -22,6 +22,12 @@ group (or the group you used to run VirtualBox)::
 
     $ sudo useradd -G vboxusers cuckoo
 
+If you're using KVM or any other libvirt based module, make sure the new user
+belongs to the "libvirtd" group (or the group your Linux distribution uses to
+run libvirt)::
+
+	$ sudo useradd -G libvirtd cuckoo
+
 Download Cuckoo
 ===============
 
