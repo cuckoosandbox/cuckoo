@@ -19,8 +19,8 @@ Following is the list of existing packages:
     * ``dll``: used to run and analyze **Dinamically Linked Libraries**.
                You can specify a "function" option that will instruct Cuckoo to
                execute the specified exported function. If this option is not set,
-               Cuckoo will try to execute the regulular ``DllMain`` function.
-               You can laso specify a "free" option that will instruct Cuckoo not
+               Cuckoo will try to execute the regular ``DllMain`` function.
+               You can also specify a "free" option that will instruct Cuckoo not
                to inject and hook the ``rundll32`` process and let the library run
                (not behavior results will be produced).
     * ``pdf``: used to run and analyze **PDF documents**.
