@@ -51,7 +51,8 @@ Make sure when you ask for help to:
 
     * Use a clear and explicit title for your emails: "I have a problem", "Help me" or
       "Cuckoo error" are **NOT** good titles.
-    * Explain **in details** what you're experiencing.
+    * Explain **in details** what you're experiencing. Try to reproduce several
+      times your issue and write down all steps to achieve that.
     * Use no-paste services and link your logs, configuration files and details on your
       setup.
     * Eventually provide a copy of the analysis that generated the problem.
