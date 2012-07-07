@@ -1,0 +1,74 @@
+<%inherit file="base-web.html" />
+<%def name="content()">
+    <div class="fileupload">
+        <div class="page-header">
+            <h1>New Analysis</h1>
+        </div>
+        <p>This form can be used to submit files for analysis.</p>
+        % if error_toggle != UNDEFINED:
+            <div class="alert alert-error"><strong>OOPS!</strong> Some error occurred, please check the instructions below!</div>
+        % endif
+        <form method="POST" action="/submit" class="form-horizontal" enctype="multipart/form-data">
+            <fieldset>
+                <div class="control-group ${'error' if context.get('error_file','') else ''}">
+                    <label class="control-label" for="input01">File to upload</label>
+                    <div class="controls">
+                        <input type="file" name="file" class="input-xlarge" id="input01">
+                        % if error_file != UNDEFINED:
+                            <span class="help-inline">${error_file}</span>
+                        % endif
+                    </div>
+                </div>
+
+                <div class="control-group ${'error' if context.get('error_package','') else ''}">
+                    <label class="control-label" for="input02">Package to use</label>
+                    <div class="controls">
+                        <input type="text" name="package" class="input-xlarge" id="input02" value="${context.get('package','')}">
+                        % if error_package != UNDEFINED:
+                            <span class="help-inline">${error_package}</span>
+                        % endif
+                    </div>
+                </div>
+
+                <div class="control-group ${'error' if context.get('error_options','') else ''}">
+                    <label class="control-label" for="input03">Options</label>
+                    <div class="controls">
+                        <input type="text" name="options" class="input-xlarge" id="input03" value="${context.get('options','')}">
+                        % if error_options != UNDEFINED:
+                            <span class="help-inline">${error_options}</span>
+                        % endif
+                    </div>
+                </div>
+
+                <div class="control-group ${'error' if context.get('error_timeout','') else ''}">
+                    <label class="control-label" for="input04">Timeout</label>
+                    <div class="controls">
+                        <input type="text" name="timeout" class="input-xlarge" id="input04" value="${context.get('timeout','')}">
+                        % if error_timeout != UNDEFINED:
+                            <span class="help-inline">${error_timeout}</span>
+                        % endif
+                    </div>
+                </div>
+
+                <div class="control-group ${'error' if context.get('error_priority','') else ''}">
+                    <label class="control-label" for="select01">Priority</label>
+                    <div class="controls">
+                        <select id="select01" name="priority">
+                            <option ${'selected' if context.get('priority',1) == 1 else ''} value="1">Low</option>
+                            <option ${'selected' if context.get('priority',None) == 2 else ''} value="2">Medium</option>
+                            <option ${'selected' if context.get('priority',None) == 3 else ''} value="3">High</option>
+                        </select>
+                        % if error_priority != UNDEFINED:
+                            <span class="help-inline">${error_priority}</span>
+                        % endif
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button class="btn">Cancel</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</%def>

@@ -1,0 +1,81 @@
+<section id="behavior">
+    %if behavior["summary"]:
+        <div class="page-header">
+            <h1>Summary</h1>
+        </div>
+        <fieldset>
+            <legend>Files</legend>
+            <ul>
+                %for file in behavior["summary"]["files"]:
+                <li><span class="mono">${file}</span></li>
+                %endfor
+            </ul>
+        </fieldset>
+        <fieldset>
+            <legend>Mutexes</legend>
+            <ul>
+                %for mutex in behavior["summary"]["mutexes"]:
+                <li><span class="mono">${mutex}</span></li>
+                %endfor
+            </ul>
+        </fieldset>
+        <fieldset>
+            <legend>Registry Keys</legend>
+            <ul>
+                %for key in behavior["summary"]["keys"]:
+                <li><span class="mono">${key}</span></li>
+                %endfor
+            </ul>
+        </fieldset>
+        <p style="text-align: right;"><a href="#">Back to top</a></p>
+    %endif
+
+    <div class="page-header">
+        <h1>Processes</h1>
+    </div>
+    %if behavior["processes"]:
+        %for process in behavior["processes"]:
+        <fieldset>
+            <legend><a href="javascript:showHide('process_${process["process_id"]}');">${process["process_name"]}</a>, PID: <span class="mono">${process["process_id"]}</span></legend>
+            <div id="process_${process["process_id"]}" style="display: none;">
+                <table class="table table-striped">
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Function</th>
+                        <th>Arguments</th>
+                        <th>Status</th>
+                        <th>Return</th>
+                        <th>Repeated</th>
+                    </tr>
+                    %for i, call in enumerate(process["calls"]):
+                    <tr>
+                        <td>${call["timestamp"][8:10]}:${call["timestamp"][10:12]}:${call["timestamp"][12:14]}:${call["timestamp"][15:18]}</td>
+                        <td><span class="mono">${call["api"]}</span></td>
+                        <td>
+                        %for argument in call["arguments"]:
+                            ${argument["name"]} => <span class="mono">${argument["value"]}</span><br />
+                        %endfor
+                        </td>
+                        <td>${call["status"]}</td>
+                        <td>${call["return"]}</td>
+                        <td>
+                        %if call["repeated"] and call["repeated"] > 0:
+                            ${call["repeated"]}
+                            %if call["repeated"] == 1:
+                             time
+                            %elif call["repeated"] > 1:
+                             times
+                            %endif
+                        %endif
+                        </td>
+                    </tr>
+                    %endfor
+                </table>
+            </div>
+        </fieldset>
+        %endfor
+    %else:
+        Nothing to display.
+    %endif
+    <p style="text-align: right;"><a href="#">Back to top</a></p>
+</section>

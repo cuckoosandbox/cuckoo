@@ -1,22 +1,10 @@
-<%inherit file="base.html" />
-<%def name="title()"> - Report ${file["md5"]}</%def>
+<%inherit file="base-report.html" />
 <%def name="content()">
-    <div id="menu">
-        <ul id="menu">
-            <li style="margin-right: 20px;"><a href="#behavior_analysis">Behavior Analysis</a></li>
-            <li><a href="#network_analysis">Network Analysis</a></li>
-            <li><a href="#dropped_files">Dropped Files</a></li>
-            <li><a href="#screenshots">Screenshots</a></li>
-            <li><a href="#general_information">General Information</a></li>
-        </ul>
-    </div>
-    <div id="content">
-        <tag id="general_information" /><%include file="sections/general_information.html" />
-        <tag id="signatures" /><%include file="sections/signatures.html" />
-        <tag id="screenshots" /><%include file="sections/screenshots.html" />
-        <tag id="dropped_files" /><%include file="sections/dropped_files.html" />
-        <tag id="static_analysis" /><%include file="sections/static_analysis.html" />
-        <tag id="network_analysis" /><%include file="sections/network_analysis.html" />
-        <tag id="behavior_analysis" /><%include file="sections/behavior_analysis.html" />
-    </div>
+    <%include file="sections/info.html" />
+    <%include file="sections/file.html" />
+    <%include file="sections/signatures.html" />
+    <%include file="sections/static.html" />
+    <%include file="sections/dropped.html" />
+    <%include file="sections/network.html" />
+    <%include file="sections/behavior.html" />
 </%def>

@@ -1,0 +1,68 @@
+<section id="network">
+    <div class="page-header">
+        <h1>Network Analysis</h1>
+    </div>
+    %if not isinstance(network, dict) or (not network["hosts"] and not network["dns"] and not network["http"]):
+        Nothing to display.
+    %else:
+        %if network["hosts"]:
+            <fieldset>
+                <legend><a href="javascript:showHide('hosts');">Hosts Involved</a></legend>
+                <div id="hosts" style="display: none;">
+                    <table class="table table-striped">
+                        <tr>
+                            <th>IP Address</th>
+                        </tr>
+                        %for i, host in enumerate(network["hosts"]):
+                        <tr>
+                            <td><span class="mono">${host}</span></td>
+                        </tr>
+                        %endfor
+                    </table>
+                </div>
+            </fieldset>
+        %endif
+
+        %if network["dns"]:
+        <fieldset>
+            <legend><a href="javascript:showHide('dns');">DNS Requests</a></legend>
+            <div id="dns" style="display: none;">
+                <table class="table table-striped">
+                    <tr>
+                        <th>Hostname</th>
+                        <th>IP Address</th>
+                    </tr>
+                    %for i, dns in enumerate(network["dns"]):
+                    <tr>
+                        <td><span class="mono">${dns["hostname"]}</span></td>
+                        <td><span class="mono">${dns["ip"]}</span></td>
+                    </tr>
+                    %endfor
+                </table>
+            </div>
+        </fieldset>
+        %endif
+
+        %if network["http"]:
+        <fieldset>
+            <legend><a href="javascript:showHide('http');">HTTP Requests</a></legend>
+            <div id="http" style="display: none;">
+                <table class="table table-striped">
+                    <tr>
+                        <th>URL</th>
+                        <th>Data</th>
+                    </tr>
+                    %for i, http in enumerate(network["http"]):
+                    <tr>
+                        <td><span class="mono">${http["uri"]}</span></td>
+                        <td><span class="mono"><pre>${http["data"]}</pre></span></td>
+                    </tr>
+                    %endfor
+                </table>
+            </div>
+        </fieldset>
+        %endif
+
+    %endif
+    <p style="text-align: right;"><a href="#">Back to top</a></p>
+</section>

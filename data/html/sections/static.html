@@ -1,0 +1,121 @@
+<section id="static">
+    <div class="page-header">
+        <h1>Static Analysis</h1>
+    </div>
+    %if not isinstance(static, dict) or len(static.keys()) == 0:
+        Nothing to display.
+    %else:
+        %if static["pe_versioninfo"]:
+        <fieldset>
+            <legend><a href="javascript:showHide('pe_versioninfo');">Version Infos</a></legend>
+            <div id="pe_versioninfo" style="display: none;">
+                <table class="table table-striped">
+                    <colgroup>
+                        <col width="150" />
+                        <col width="*" />
+                    </colgroup>
+                    %for i, info in enumerate(static["pe_versioninfo"]):
+                    <tr>
+                        <td><strong>${info["name"]}</strong>:</td>
+                        <td><span class="mono">${info["value"]}</span></td>
+                    </tr>
+                    %endfor
+                </table>
+            </div>
+        </fieldset>
+        %endif
+
+        %if static["pe_sections"]:
+        <fieldset>
+            <legend><a href="javascript:showHide('pe_sections');">Sections</a></legend>
+            <div id="pe_sections" style="display: none;">
+                <table class="table table-striped">
+                    <tr>
+                        <th>Name</th>
+                        <th>Virtual Address</th>
+                        <th>Virtual Size</th>
+                        <th>Size of Raw Data</th>
+                        <th>Entropy</th>
+                    </tr>
+                    %for i, section in enumerate(static["pe_sections"]):
+                    <tr>
+                        <td>${section["name"]}</td>
+                        <td>${section["virtual_address"]}</td>
+                        <td>${section["virtual_size"]}</td>
+                        <td>${section["size_of_data"]}</td>
+                        <td>${section["entropy"]}</td>
+                    </tr>
+                    %endfor
+                </table>
+            </div>
+        </fieldset>
+        %endif
+
+        %if static["pe_resources"]:
+        <fieldset>
+            <legend><a href="javascript:showHide('pe_resources');">Resources</a></legend>
+            <div id="pe_resources" style="display: none;">
+                <table class="table table-striped">
+                    <tr>
+                        <th>Name</th>
+                        <th>Offset</th>
+                        <th>Size</th>
+                        <th>Language</th>
+                        <th>Sub-language</th>
+                        <th>File type</th>
+                    </tr>
+                    %for i, section in enumerate(static["pe_resources"]):
+                    <tr>
+                        <td>${section["name"]}</td>
+                        <td>${section["offset"]}</td>
+                        <td>${section["size"]}</td>
+                        <td>${section["language"]}</td>
+                        <td>${section["sublanguage"]}</td>
+                        <td>${section["filetype"]}</td>
+                    </tr>
+                    %endfor
+                </table>
+            </div>
+        </fieldset>
+        %endif
+
+        %if static["pe_imports"]:
+        <fieldset>
+            <legend><a href="javascript:showHide('pe_imports');">Imports</a></legend>
+            <div id="pe_imports" style="display: none;">
+                %for library in static["pe_imports"]:
+                    <div class="well">
+                        <div><strong>Library ${library["dll"]}</strong>:</div>
+                        %for function in library["imports"]:
+                        <div>&bull; <span class="mono">${function["address"]}</span> - ${function["name"]}</div>
+                    %endfor
+                    </div>
+                %endfor
+            </div>
+        </fieldset>
+        %endif
+
+        %if static["pe_exports"]:
+        <fieldset>
+            <legend><a href="javascript:showHide('pe_exports');">Exports</a></legend>
+            <div id="pe_exports" style="display: none;">
+                <table class="table table-striped">
+                    <tr>
+                        <th>Ordinal</th>
+                        <th>Address</th>
+                        <th>Name</th>
+                    </tr>
+                    %for i, export in enumerate(static["pe_exports"]):
+                    <tr>
+                        <td>${export["ordinal"]}</td>
+                        <td>${export["address"]}</td>
+                        <td>${export["name"]}</td>
+                    </tr>
+                    %endfor
+                </table>
+            </div>
+        </fieldset>
+        %endif
+    %endif
+    <p style="text-align: right;"><a href="#">Back to top</a></p>
+</section>
