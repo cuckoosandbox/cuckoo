@@ -17,7 +17,7 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../"))
 
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.bottle import route, run, static_file, redirect, request
+from lib.bottle import route, run, static_file, redirect, request, HTTPError
 
 # This directory will be created in $tmppath (see store_and_submit)
 TMPSUBDIR = "cuckoo-web"
@@ -128,6 +128,22 @@ def submit():
     # Show result
     template = lookup.get_template("success.html")
     return template.render(taskid=taskid, submitfile=data.filename)
+
+# Find an HTML report and render it
+@route("/view/<task_id>")
+def view(task_id):
+    # Check if the specified task ID is valid
+    if not task_id.isdigit():
+        return HTTPError(code=404, output="The specified ID is invalid")
+
+    report_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "reports", "report.html")
+
+    # Check if the HTML report exists
+    if not os.path.exists(report_path):
+        return HTTPError(code=404, output="Report not found")
+
+    # Return content of the HTML report
+    return open(report_path, "rb").read()
 
 if __name__ == "__main__":
     run(host="0.0.0.0", port=8080, debug=True, reloader=True)
