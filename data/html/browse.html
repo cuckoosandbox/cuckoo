@@ -10,7 +10,13 @@
             % for r in rows:
                 <tr>
                     <td>${r.id}</td>
-                    <td><a href="/view/${r.id}"><span class="mono">${r.md5}</span></a></td>
+                    <td>
+                        % if r.status == 2:
+                            <a href="/view/${r.id}"><span class="mono">${r.md5}</span></a>
+                        % else:
+                            <span class="mono">${r.md5}</span>
+                        % endif
+                    </td>
                     <td>${os.path.basename(r.file_path)}</td>
                     <td>${r.added_on}</td>
                     <td>
