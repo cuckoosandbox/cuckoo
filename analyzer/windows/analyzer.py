@@ -34,6 +34,9 @@ def add_file(file_path):
     if file_path.startswith("\\\\.\\"):
         return
 
+    if file_path.startswith("\\??\\"):
+        file_path = file_path[4:]
+
     if os.path.exists(file_path):
         if file_path not in FILES_LIST:
             log.info("Added new file to list with path: %s" % file_path)
@@ -78,25 +81,31 @@ class PipeHandler(Thread):
         """Run handler.
         @return: operation status.
         """
-        data = create_string_buffer(BUFSIZE)
+        data = ""
 
         while True:
             bytes_read = c_int(0)
 
+            buf = create_string_buffer(BUFSIZE)
             success = KERNEL32.ReadFile(self.h_pipe,
-                                        data,
-                                        sizeof(data),
+                                        buf,
+                                        sizeof(buf),
                                         byref(bytes_read),
                                         None)
 
-            if not success or bytes_read.value == 0:
-                if KERNEL32.GetLastError() == ERROR_BROKEN_PIPE:
-                    pass
-                break
+            data += buf.value
+
+            if not success and KERNEL32.GetLastError() == ERROR_MORE_DATA:
+                continue
+            #elif not success or bytes_read.value == 0:
+            #    if KERNEL32.GetLastError() == ERROR_BROKEN_PIPE:
+            #        pass
+            
+            break
 
         if data:
-            command = data.value.strip()
-                
+            command = data.strip()
+
             if command.startswith("PID:"):
                 pid = command[4:]
                 if pid.isdigit():
@@ -105,6 +114,11 @@ class PipeHandler(Thread):
                         add_pids(pid)
                         proc = Process(pid=pid)
                         proc.inject()
+                        KERNEL32.WriteFile(self.h_pipe,
+                                           create_string_buffer("OK"),
+                                           2,
+                                           byref(bytes_read),
+                                           None)
             elif command.startswith("FILE:"):
                 file_path = command[5:]
                 add_file(file_path)

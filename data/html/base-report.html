@@ -48,6 +48,14 @@ body {
     padding: 6px;
     margin-bottom: 3px;
 }
+img.fade {
+    opacity:0.4;
+    filter:alpha(opacity=40); /* For IE8 and earlier */
+}
+img.fade:hover {
+    opacity:1.0;
+    filter:alpha(opacity=100); /* For IE8 and earlier */
+}
 </style>
 
 <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -78,6 +86,7 @@ body {
                         <ul class="nav">
                             <li><a href="#file">File</a></li>
                             <li><a href="#signatures">Signatures</a></li>
+                            <li><a href="#screenshots">Screenshots</a></li>
                             <li><a href="#static">Static</a></li>
                             <li><a href="#dropped">Dropped</a></li>
                             <li><a href="#network">Network</a></li>

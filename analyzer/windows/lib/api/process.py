@@ -161,7 +161,7 @@ class Process:
             log.error("Failed to terminate process with pid %d" % self.pid)
             return False
 
-    def inject(self, dll=os.path.join("dll", "cmonitor.dll"), apc=False):
+    def inject(self, dll=os.path.join("dll", "cuckoomon.dll"), apc=False):
         """Cuckoo DLL injection.
         @param dll: Cuckoo DLL path.
         @param apc: APC use.

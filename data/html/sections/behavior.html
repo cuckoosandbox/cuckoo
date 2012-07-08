@@ -49,7 +49,7 @@
                     </tr>
                     %for i, call in enumerate(process["calls"]):
                     <tr>
-                        <td>${call["timestamp"][8:10]}:${call["timestamp"][10:12]}:${call["timestamp"][12:14]}:${call["timestamp"][15:18]}</td>
+                        <td>${call["timestamp"][11:]}</td>
                         <td><span class="mono">${call["api"]}</span></td>
                         <td>
                         %for argument in call["arguments"]:

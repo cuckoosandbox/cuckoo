@@ -181,7 +181,7 @@ class Summary:
             for call in entry["calls"]:
                 if call["category"] == "filesystem":
                     for argument in call["arguments"]:
-                        if argument["name"] == "lpFileName":
+                        if argument["name"] == "FileName":
                             if argument["value"] not in files:
                                 files.append(argument["value"])
 
@@ -199,15 +199,9 @@ class Summary:
                     hKey = None
                     lpSubKey = None
                     for argument in call["arguments"]:
-                        if argument["name"] == "hKey":
-                            hKey = argument["value"]
-                        elif argument["name"] == "lpSubKey":
-                            lpSubKey = argument["value"]
-
-                    if lpSubKey:
-                        key = "%s\\\\%s" % (hKey, lpSubKey)
-                        if key not in keys:
-                            keys.append(key)
+                        if argument["name"] == "SubKey":
+                            if argument["value"] not in keys:
+                                keys.append(argument["value"])
 
         return keys
 
@@ -221,7 +215,7 @@ class Summary:
             for call in entry["calls"]:
                 if call["category"] == "synchronization":
                     for argument in call["arguments"]:
-                        if argument["name"] == "lpName":
+                        if argument["name"] == "MutexName":
                             if argument["value"] not in mutexes:
                                 mutexes.append(argument["value"])
 
