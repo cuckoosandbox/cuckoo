@@ -42,7 +42,7 @@ class ParseProcessLog:
             status_value = row[6] # Success or Failure?
             return_value = row[7] # Value returned by the function.
         except IndexError as e:
-            log.warning("Unable to parse analysis log row: %s" % e.message)
+            log.debug("Unable to parse process log row: %s" % e.message)
             return False
 
         if not self.process_id:
