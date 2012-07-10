@@ -26,7 +26,7 @@ class MachineManager(object):
         self.machines = []
 
     def set_options(self, options):
-        """Set report options.
+        """Set machine manager options.
         @param options: machine manager options dict.
         """
         self.options = options
