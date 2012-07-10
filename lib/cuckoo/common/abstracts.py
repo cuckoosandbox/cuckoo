@@ -39,9 +39,9 @@ class MachineManager(object):
         for machine_id in machines_list:
             machine = Dictionary()
             machine.id = machine_id
-            machine.label = self.config.get(machine_id, "label")
-            machine.platform = self.config.get(machine_id, "platform")
-            machine.ip = self.config.get(machine_id, "ip")
+            machine.label = self.config.get(machine_id, "label").strip()
+            machine.platform = self.config.get(machine_id, "platform").strip()
+            machine.ip = self.config.get(machine_id, "ip").strip()
             machine.locked = False
             self.machines.append(machine)
 
