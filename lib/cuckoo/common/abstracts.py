@@ -36,9 +36,9 @@ class MachineManager(object):
         @param module_name: module name.
         """
         self.module_name = module_name
-        mmanager = self.options.get(module_name)
+        mmanager_opts = self.options.get(module_name)
 
-        for machine_id in mmanager["machines"].strip().split(","):
+        for machine_id in mmanager_opts["machines"].strip().split(","):
             machine_opts = self.options.get(machine_id)
             machine = Dictionary()
             machine.id = machine_id
