@@ -192,6 +192,13 @@ class Scheduler:
         MachineManager()
         module = MachineManager.__subclasses__()[0]
         mmanager = module()
+        mmanager_conf = os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % self.cfg.cuckoo.machine_manager)
+
+        if not os.path.exists(mmanager_conf):
+            raise CuckooMachineError("The configuration file for machine manager \"%s\" does not exist at path: %s"
+                                     % (self.cfg.cuckoo.machine_manager, mmanager_conf))
+
+        mmanager.set_options(Config(mmanager_conf))
         mmanager.initialize(self.cfg.cuckoo.machine_manager)
 
         if len(mmanager.machines) == 0:

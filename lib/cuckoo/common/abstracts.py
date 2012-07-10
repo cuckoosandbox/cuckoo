@@ -22,26 +22,29 @@ class MachineManager(object):
 
     def __init__(self):
         self.module_name = ""
-        self.config_path = ""
-        self.config = ConfigParser.ConfigParser()
-        self.options = {}
+        self.options = None
         self.machines = []
+
+    def set_options(self, options):
+        """Set report options.
+        @param options: machine manager options dict.
+        """
+        self.options = options
 
     def initialize(self, module_name):
         """Read configuration.
         @param module_name: module name.
         """
         self.module_name = module_name
-        self.config_path = os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % module_name)
-        self.config.read(self.config_path)
+        mmanager = self.options.get(module_name)
 
-        machines_list = self.config.get(self.module_name, "machines").strip().split(",")
-        for machine_id in machines_list:
+        for machine_id in mmanager["machines"].strip().split(","):
+            machine_opts = self.options.get(machine_id)
             machine = Dictionary()
             machine.id = machine_id
-            machine.label = self.config.get(machine_id, "label")
-            machine.platform = self.config.get(machine_id, "platform")
-            machine.ip = self.config.get(machine_id, "ip")
+            machine.label = machine_opts["label"]
+            machine.platform = machine_opts["platform"]
+            machine.ip = machine_opts["ip"]
             machine.locked = False
             self.machines.append(machine)
 

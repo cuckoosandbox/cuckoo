@@ -20,20 +20,17 @@ class VirtualBox(MachineManager):
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to start.
         """
-        if self.config.getboolean("virtualbox", "headless"):
-            try:
-                subprocess.Popen(["VBoxHeadless", "-startvm", label],
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE)
-            except OSError as e:
-                raise CuckooMachineError("VBoxHeadless failed starting the machine in headless mode: %s" % e.message)
-        else:
-            try:
-                subprocess.Popen(["VBoxManage", "startvm", label],
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE)
-            except OSError as e:
-                raise CuckooMachineError("VBoxManage failed starting the machine in GUI mode: %s" % e.message)
+        try:
+            subprocess.Popen([self.options.virtualbox.path,
+                              "startvm",
+                              label,
+                              "--type",
+                              self.options.virtualbox.mode],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+        except OSError as e:
+            raise CuckooMachineError("VBoxManage failed starting the machine in %s mode: %s"
+                                     % (mode.upper(), e.message))
 
     def stop(self, label):
         """Stops a virtual machine.
@@ -41,7 +38,7 @@ class VirtualBox(MachineManager):
         @raise CuckooMachineError: if unable to stop.
         """
         try:
-            if subprocess.call(["VBoxManage", "controlvm", label, "poweroff"],
+            if subprocess.call([self.options.virtualbox.path, "controlvm", label, "poweroff"],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE):
                 raise CuckooMachineError("VBoxManage exited with error powering off the machine")
@@ -51,7 +48,7 @@ class VirtualBox(MachineManager):
         time.sleep(3)
 
         try:
-            if subprocess.call(["VBoxManage", "snapshot", label, "restorecurrent"],
+            if subprocess.call([self.options.virtualbox.path, "snapshot", label, "restorecurrent"],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE):
                 raise CuckooMachineError("VBoxManage exited with error restoring the machine's snapshot")
@@ -63,7 +60,7 @@ class VirtualBox(MachineManager):
         @return: virtual machine names list.
         """
         try:
-            proc = subprocess.Popen(["VBoxManage", "list", "vms"],
+            proc = subprocess.Popen([self.options.virtualbox.path, "list", "vms"],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
             output = proc.communicate()
