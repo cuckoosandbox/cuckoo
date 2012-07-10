@@ -105,6 +105,7 @@ class PipeHandler(Thread):
 
         if data:
             command = data.strip()
+            log.debug("Connection received (data=%s)" % command)
 
             if command.startswith("PID:"):
                 pid = command[4:]
@@ -191,14 +192,16 @@ class Analyzer:
         @return: options dict.
         """
         options = {}
-        if not self.config.options:
+        if self.config.options:
             try:
                 fields = self.config.options.strip().split(",")
                 for field in fields:
                     try:
                         key, value = field.strip().split("=")
-                    except ValueError:
+                    except ValueError as e:
+                        log.warning("Failed parsing option (%s): %s" % (field, e.message))
                         continue
+
                     options[key.strip()] = value.strip()
             except ValueError:
                 pass
