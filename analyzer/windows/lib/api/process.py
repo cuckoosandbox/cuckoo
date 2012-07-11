@@ -61,19 +61,6 @@ class Process:
                                               int(self.pid))
         return True
 
-    def open_thread(self):
-        """Open a thread.
-        @return: opeation status.
-        """
-        if self.thread_id == 0:
-            return False
-
-        self.h_thread = KERNEL32.OpenThread(THREAD_ALL_ACCESS,
-                                            False,
-                                            int(self.thread_id))
-
-        return True
-
     def exit_code(self):
         """Get process exit code.
         @return: exit code value.
@@ -222,9 +209,6 @@ class Process:
 
         if apc or self.suspended:
             log.info("Using QueueUserAPC injection")
-
-            self.open_thread()
-
             if self.h_thread == 0:
                 log.info("No valid thread handle specified for injecting process with pid %d, injection aborted" % self.pid)
                 return False
