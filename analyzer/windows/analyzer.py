@@ -108,13 +108,27 @@ class PipeHandler(Thread):
             log.debug("Connection received (data=%s)" % command)
 
             if command.startswith("PID:"):
-                pid = command[4:]
+                if "," in command:
+                    pid, tid = command.split(",")
+                    pid = pid[4:]
+                    tid = tid[4:]
+                else:
+                    pid = command[4:]
+                    tid = 0
+
                 if pid.isdigit():
                     pid = int(pid)
+                    tid = int(tid)
                     if pid not in PROCESS_LIST:
                         add_pids(pid)
-                        proc = Process(pid=pid)
-                        proc.inject()
+
+                        if tid > 0:
+                            proc = Process(pid=pid, thread_id=tid)
+                            proc.inject(apc=True)
+                        else:
+                            proc = Process(pid=pid)
+                            proc.inject()
+
                         KERNEL32.WriteFile(self.h_pipe,
                                            create_string_buffer("OK"),
                                            2,
