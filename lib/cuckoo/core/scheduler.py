@@ -66,7 +66,7 @@ class AnalysisManager(Thread):
 
             # On Windows systems, symlink is obviously not supported, therefore we'll just copy
             # the binary until we find a more efficient solution.
-            if "symlink" in dir(os):
+            if hasattr(os, "symlink"):
                 os.symlink(self.analysis.stored_file_path, new_binary_path)
             else:
                 shutil.copy(self.analysis.stored_file_path, new_binary_path)
