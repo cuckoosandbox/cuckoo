@@ -20,7 +20,6 @@ class ParseProcessLog:
         self._log_path = log_path
         self.process_id = None
         self.process_name = None
-        self.thread_id = None
         self.parent_id = None
         self.process_first_seen = None
         self.calls = []
@@ -53,9 +52,6 @@ class ParseProcessLog:
         if not self.process_name:
             self.process_name = process_name
 
-        if not self.thread_id:
-            self.thread_id = thread_id
-            
         if not self.parent_id:
             self.parent_id = parent_id
 
@@ -79,6 +75,7 @@ class ParseProcessLog:
             arguments.append(argument)
 
         call["timestamp"] = timestamp
+        call["thread_id"] = thread_id
         call["category"] = category
         call["api"] = api_name
         call["status"] = status_value
@@ -157,7 +154,6 @@ class Processes:
                 process = {}
                 process["process_id"]   = current_log.process_id
                 process["process_name"] = current_log.process_name
-                process["thread_id"]    = current_log.thread_id
                 process["parent_id"]    = current_log.parent_id
                 process["first_seen"]   = current_log.process_first_seen
                 process["calls"]        = current_log.calls

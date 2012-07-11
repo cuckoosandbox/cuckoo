@@ -41,6 +41,7 @@
                 <table class="table table-striped">
                     <tr>
                         <th>Timestamp</th>
+                        <th>Thread ID</th>
                         <th>Function</th>
                         <th>Arguments</th>
                         <th>Status</th>
@@ -50,6 +51,7 @@
                     %for i, call in enumerate(process["calls"]):
                     <tr>
                         <td>${call["timestamp"][11:]}</td>
+                        <td>${call["thread_id"]}</td>
                         <td><span class="mono">${call["api"]}</span></td>
                         <td>
                         %for argument in call["arguments"]:
