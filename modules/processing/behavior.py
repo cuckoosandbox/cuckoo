@@ -20,6 +20,7 @@ class ParseProcessLog:
         self._log_path = log_path
         self.process_id = None
         self.process_name = None
+        self.thread_id = None
         self.parent_id = None
         self.process_first_seen = None
         self.calls = []
@@ -36,11 +37,12 @@ class ParseProcessLog:
             timestamp = row[0]    # Timestamp of current API call invocation.
             process_id = row[1]   # ID of the process that performed the call.
             process_name = row[2] # Name of the process.
-            parent_id = row[3]    # PID of the parent process
-            category = row[4]     # Win32 function category
-            api_name = row[5]     # Name of the Windows API.
-            status_value = row[6] # Success or Failure?
-            return_value = row[7] # Value returned by the function.
+            thread_id = row[3]    # Thread ID.
+            parent_id = row[4]    # PID of the parent process.
+            category = row[5]     # Win32 function category.
+            api_name = row[6]     # Name of the Windows API.
+            status_value = row[7] # Success or Failure?
+            return_value = row[8] # Value returned by the function.
         except IndexError as e:
             log.debug("Unable to parse process log row: %s" % e.message)
             return False
@@ -50,6 +52,9 @@ class ParseProcessLog:
 
         if not self.process_name:
             self.process_name = process_name
+
+        if not self.thread_id:
+            self.thread_id = thread_id
             
         if not self.parent_id:
             self.parent_id = parent_id
@@ -59,7 +64,7 @@ class ParseProcessLog:
 
         # Now walk through the remaining columns, which will contain API
         # arguments.
-        for index in range(8, len(row)):
+        for index in range(9, len(row)):
             argument = {}
 
             # Split the argument name with its value based on the separator.
@@ -152,6 +157,7 @@ class Processes:
                 process = {}
                 process["process_id"]   = current_log.process_id
                 process["process_name"] = current_log.process_name
+                process["thread_id"]    = current_log.thread_id
                 process["parent_id"]    = current_log.parent_id
                 process["first_seen"]   = current_log.process_first_seen
                 process["calls"]        = current_log.calls
