@@ -241,7 +241,8 @@ class Static(Processing):
 
         file_type = File(self.file_path).get_type()
 
-        if "PE32" in file_type:
-            static = PortableExecutable(self.file_path).run()
+        if file_type:
+            if "PE32" in file_type:
+                static = PortableExecutable(self.file_path).run()
 
         return static

@@ -62,9 +62,16 @@ class AnalysisManager(Thread):
                                           % (self.task.file_path, self.analysis.stored_file_path))
 
         try:
-            os.symlink(self.analysis.stored_file_path, os.path.join(self.analysis.results_folder, "binary"))
-        except OSError as e:
-            raise CuckooAnalysisError("Unable to create symlink from \"%s\" to \"%s\"" % (self.analysis.stored_file_path, self.analysis.results_folder))
+            new_binary_path = os.path.join(self.analysis.results_folder, "binary")
+
+            # On Windows systems, symlink is obviously not supported, therefore we'll just copy
+            # the binary until we find a more efficient solution.
+            if "symlink" in dir(os):
+                os.symlink(self.analysis.stored_file_path, new_binary_path)
+            else:
+                shutil.copy(self.analysis.stored_file_path, new_binary_path)
+        except (AttributeError, OSError) as e:
+            raise CuckooAnalysisError("Unable to create symlink/copy from \"%s\" to \"%s\"" % (self.analysis.stored_file_path, self.analysis.results_folder))
 
     def build_options(self):
         """Get analysis options.
