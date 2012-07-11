@@ -9,7 +9,7 @@ from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 class Dictionary(dict):
-    """Cuckko custom dict."""
+    """Cuckoo custom dict."""
     
     def __getattr__(self, key):
         return self.get(key, None)
