@@ -140,7 +140,7 @@ class Process:
 
         KERNEL32.Sleep(2000)
 
-        if KERNEL32.ResumeThread(self.h_thread):
+        if KERNEL32.ResumeThread(self.h_thread) != -1:
             log.info("Successfully resumed process with pid %d" % self.pid)
             return True
         else:
@@ -183,8 +183,8 @@ class Process:
         KERNEL32.Sleep(2000)
 
         arg = KERNEL32.VirtualAllocEx(self.h_process,
-                                      0,
-                                      len(dll),
+                                      None,
+                                      len(dll) + 1,
                                       MEM_RESERVE | MEM_COMMIT,
                                       PAGE_READWRITE)
 
@@ -196,8 +196,8 @@ class Process:
         bytes_written = c_int(0)
         if not KERNEL32.WriteProcessMemory(self.h_process,
                                            arg,
-                                           dll,
-                                           len(dll),
+                                           dll + '\x00',
+                                           len(dll) + 1,
                                            byref(bytes_written)):
             log.error("WriteProcessMemory failed when injecting process with pid %d, injection aborted (Error: %s)"
                       % (self.pid, get_error_string(KERNEL32.GetLastError())))
