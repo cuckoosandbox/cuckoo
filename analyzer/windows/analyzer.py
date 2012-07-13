@@ -63,8 +63,11 @@ def add_pids(pids):
 def dump_files():
     """Dump dropped file."""
     for file_path in FILES_LIST:
+        file_name = os.path.basename(file_path)
+        dump_path = os.path.join(PATHS["files"], "%s.bin" % file_name)
+
         try:
-            shutil.copy(file_path, PATHS["files"])
+            shutil.copy(file_path, dump_path)
             log.info("Dropped file \"%s\" dumped successfully" % file_path)
         except (IOError, shutil.Error) as e:
             log.error("Unable to dump dropped file at path \"%s\": %s" % (file_path, e.message))

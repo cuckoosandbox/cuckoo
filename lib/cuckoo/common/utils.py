@@ -73,16 +73,22 @@ def datetime_to_iso(timestamp):
 class File:
     """Basic file object class with all useful utilities."""
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, strip_name=False):
         """@param file_path: file path."""
         self.file_path = file_path
         self.file_data = open(self.file_path, "rb").read()
+        self.strip_name = strip_name
 
     def get_name(self):
         """Get file name.
         @return: file name.
         """
-        return convert_to_printable(os.path.basename(self.file_path))
+        if self.strip_name:
+            file_name = os.path.basename(self.file_path.rstrip(".bin"))
+        else:
+            file_name = os.path.basename(self.file_path)
+
+        return convert_to_printable(file_name)
 
     def get_data(self):
         """Read file contents.

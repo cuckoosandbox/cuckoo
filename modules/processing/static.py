@@ -122,7 +122,7 @@ class PortableExecutable:
         for entry in self.pe.sections:
             try:
                 section = {}
-                section["name"] = convert_to_printable(entry.Name.strip())
+                section["name"] = convert_to_printable(entry.Name.strip("\x00"))
                 section["virtual_address"] = hex(entry.VirtualAddress)
                 section["virtual_size"] = hex(entry.Misc_VirtualSize)
                 section["size_of_data"] = hex(entry.SizeOfRawData)
