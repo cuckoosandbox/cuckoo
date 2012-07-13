@@ -17,9 +17,9 @@ class Dropped(Processing):
         self.key = "dropped"
         dropped_files = []
 
-        if os.path.exists(self.dropped_path):
-            for file_name in os.listdir(self.dropped_path):
-                file_path = os.path.join(self.dropped_path, file_name)
+        for dir_name, dir_names, file_names in os.walk(self.dropped_path):
+            for file_name in file_names:
+                file_path = os.path.join(dir_name, file_name)
                 file_info = File(file_path).get_all()
                 dropped_files.append(file_info)
 
