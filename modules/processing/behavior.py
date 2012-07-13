@@ -254,11 +254,11 @@ class ProcessTree:
             process["children"] = []
             
             for call in entry["calls"]:
-                if call["api"] == "CreateProcessA" or \
-                   call["api"] == "CreateProcessW":
-                    if call["return"].strip() != "":
-                        process["children"].append(int(call["return"].strip()))
-                    
+                if call["api"] == "CreateProcessInternalW":
+                    for argument in call["arguments"]:
+                        if argument["name"] == "ProcessId":
+                            process["children"].append(int(argument["value"]))
+
             self.processes.append(process)
 
         return True
