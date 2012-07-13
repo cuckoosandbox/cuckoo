@@ -2,9 +2,8 @@
 <%def name="content()">
     <div class="fileupload">
         <div class="page-header">
-            <h1>New Analysis</h1>
+            <h1>New Analysis <small>use this form to add a new analysis task</smalll></h1>
         </div>
-        <p>This form can be used to submit files for analysis.</p>
         % if error_toggle != UNDEFINED:
             <div class="alert alert-error"><strong>OOPS!</strong> Some error occurred, please check the instructions below!</div>
         % endif
