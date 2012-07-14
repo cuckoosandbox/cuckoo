@@ -4,11 +4,56 @@ FAQ
 
 Frequently Asked Questions:
 
-    * :ref:`troubles_problem`
+    * :ref:`general_vmware`
+    * :ref:`general_volatility`
     * :ref:`troubles_upgrade`
+    * :ref:`troubles_problem`
+
+
+General Questions
+=================
+
+.. _general_vmware:
+
+Can I use VMWare?
+-----------------
+
+Cuckoo does not provide support for VMWare by default, but it provides a modular
+engine that allows you to write your own plugin for supporting any virtualization
+software you might want to use. Refer to :doc:`../customization/machinemanagers`.
+
+.. _general_volatility:
+
+Can I use Volatility with Cuckoo?
+---------------------------------
+
+Cuckoo does not provide support for Volatility by default. If you want to perform
+additional forensics on the analysis machine, at the moment you'll have to implement
+such support by yourself.
+In the future we might support a full memory dump of the virtual machines, but it's
+not in our short term plans at the moment.
+
+Please also consider that we don't particularly encourage this: since Cuckoo employs
+some rootkit-like technologies to perform its operaitons, the results of a forensic
+analysis would be polluted by the sandbox's components.
+
+Despite being highly customizable, please also consider that Cuckoo has been designed
+for full automation. If you're planning to perform manual analysis of your
+malwares, probably Cuckoo is not the best choice.
 
 Troubleshooting
 ===============
+
+.. _troubles_upgrade:
+
+After upgrade Cuckoo stops to work
+----------------------------------
+
+Probably you upgraded it in a wrong way.
+It's not a good practice to rewrite the files due to Cuckoo's complexity and
+quick evolution.
+
+Please follow the upgrade steps described in :doc:`../installation/upgrade`.
 
 .. _troubles_problem:
 
@@ -58,14 +103,3 @@ Make sure when you ask for help to:
     * Eventually provide a copy of the analysis that generated the problem.
 
 .. _`Google`: http://www.google.com
-
-.. _troubles_upgrade:
-
-After upgrade Cuckoo stops to work
-----------------------------------
-
-Probably you upgraded it in a wrong way.
-It's not a good practice to rewrite the files due to Cuckoo's complexity and
-quick evolution.
-
-Please follow the upgrade steps described in :doc:`../installation/upgrade`.
