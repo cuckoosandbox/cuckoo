@@ -16,7 +16,15 @@ class Exe(Package):
         else:
             p.execute(path=path, suspended=True)
 
-        p.inject()
+
+        inject = True
+        if "free" in self.options:
+            if self.options["free"] == "yes":
+                inject = False
+
+        if inject:
+            p.inject()
+
         p.resume()
 
         return p.pid
