@@ -3,7 +3,8 @@
 Cuckoo Sandbox 0.4 (TBA)
 ========================
 
-* Completely re-engineered the code
+* Completely re-engineered the code base
+* Replaced hooking mechanism and DLL with new, more solid code
 * Removed dependency from VirtualBox
 * Added support for KVM
 * Introduced XMLRPC-based agent that handles the data exchange between host and guests
