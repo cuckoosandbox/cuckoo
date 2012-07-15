@@ -49,7 +49,7 @@ the disk to QCOW2 with the following command::
 Now you have to edit your VM definition, use the following command to edit the
 virtual machine XML::
 
-	$ virsh edit machine_name
+	$ virsh edit "<Name of VM>"
 
 Search the disk section, it looks like this::
 
@@ -73,4 +73,4 @@ Now test your virtual machine, if all works prepare it for snapshotting running
 Cuckoo agent.
 Take a snapshot with the following command::
 
-	$ virsh snapshot-create machine_name
+	$ virsh snapshot-create "<Name of VM>"
