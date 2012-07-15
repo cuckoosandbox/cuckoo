@@ -8,6 +8,7 @@ import base64
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
+from lib.cuckoo.common.utils import File
 
 try:
     from mako.template import Template
@@ -41,7 +42,7 @@ class ReportHTML(Report):
                     continue
 
                 shot = {}
-                shot["id"] = counter
+                shot["id"] = os.path.splitext(File(shot_path).get_name())[0]
                 shot["data"] = base64.b64encode(open(shot_path, "rb").read())
                 shots.append(shot)
 
