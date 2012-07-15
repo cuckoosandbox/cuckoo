@@ -48,6 +48,14 @@ class MachineManager(object):
             machine.locked = False
             self.machines.append(machine)
 
+        # Run initialization checks.
+        self._initialize_check()
+
+    def _initialize_check(self):
+        """Runs all checks when a machine manager is initialized.
+        @note: in machine manager modules you may override or superclass this method.
+        @raise CuckooMachineError: if a misconfiguration or a unkown vm state is found.
+        """
         # Checks if machines configured are really available.
         try:
             configured_vm = self._list()
