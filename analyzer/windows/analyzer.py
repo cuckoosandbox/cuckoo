@@ -4,6 +4,7 @@
 
 import os
 import sys
+import random
 import shutil
 import logging
 import xmlrpclib
@@ -64,13 +65,25 @@ def dump_files():
     """Dump dropped file."""
     for file_path in FILES_LIST:
         file_name = os.path.basename(file_path)
-        dump_path = os.path.join(PATHS["files"], "%s.bin" % file_name)
+
+        while True:
+            dir_path = os.path.join(PATHS["files"], str(random.randint(100000000, 9999999999)))
+            if os.path.exists(dir_path):
+                continue
+
+            try:
+                os.mkdir(dir_path)
+                dump_path = os.path.join(dir_path, "%s.bin" % file_name)
+            except OSError as e:
+                dump_path = os.path.join(PATHS["files"], "%s.bin" % file_name)
+
+            break
 
         try:
             shutil.copy(file_path, dump_path)
-            log.info("Dropped file \"%s\" dumped successfully" % file_path)
+            log.info("Dropped file \"%s\" dumped successfully to path \"%s\"" % (file_path, dump_path))
         except (IOError, shutil.Error) as e:
-            log.error("Unable to dump dropped file at path \"%s\": %s" % (file_path, e.message))
+            log.error("Unable to dump dropped file at path \"%s\": %s" % (file_path, e))
 
 class PipeHandler(Thread):
     """PIPE handler, reads on PIPE."""
@@ -108,7 +121,7 @@ class PipeHandler(Thread):
 
         if data:
             command = data.strip()
-            log.debug("Connection received (data=%s)" % command)
+            #log.debug("Connection received (data=%s)" % command)
 
             if command.startswith("PID:"):
                 pid = command[4:]
