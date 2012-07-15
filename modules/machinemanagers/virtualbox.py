@@ -6,6 +6,7 @@ import os
 import time
 import logging
 import subprocess
+import os.path
 
 from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.exceptions import CuckooMachineError
@@ -14,6 +15,18 @@ log = logging.getLogger(__name__)
 
 class VirtualBox(MachineManager):
     """Virtualization layer forVirtualBox."""
+
+    def _initialize_check(self):
+        """Runs all checks when a machine manager is initialized.
+        @raise CuckooMachineError: if VBoxManage is not found.
+        """
+        # VirtualBox specific checks.
+        if not self.options.virtualbox.path:
+            raise CuckooMachineError("VirtualBox VBoxManage path missing, please add it to configuration")
+        if not os.path.exists(self.options.virtualbox.path):
+            raise CuckooMachineError("VirtualBox VBoxManage not found in specified path %s" % self.options.virtualbox.path)
+        # Base checks.
+        super(VirtualBox, self)._initialize_check()
 
     def start(self, label):
         """Start a virtual machine.
