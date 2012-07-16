@@ -92,7 +92,7 @@ where the malwares get actually safely executed and analyzed.
 
 The following picture explains Cuckoo's architecture:
 
-    .. figure:: ../_images/schemas/architecture.png
+    .. image:: ../_images/schemas/architecture.png
         :align: center
 
 Although recommended setup is *GNU/Linux* (Ubuntu preferrably) as host and
