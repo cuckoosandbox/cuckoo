@@ -18,7 +18,6 @@ If you're having troubles you might want to check out the :doc:`FAQ <faq/index>`
 it might already have the answers to your questions.
 
 .. toctree::
-    :maxdepth: 3
 
     faq/index
 
@@ -29,7 +28,6 @@ Contents
 ========
 
 .. toctree::
-    :maxdepth: 3
 
     introduction/index
     installation/index
