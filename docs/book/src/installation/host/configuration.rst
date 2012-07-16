@@ -2,7 +2,7 @@
 Configuration
 =============
 
-Cuckoo relies on two main configuration files:
+Cuckoo relies on three main configuration files:
 
     * :ref:`cuckoo_conf`: for configuring general behavior and analysis options.
     * :ref:`<machinemanager>_conf`: for defining the options for your virtualization software.
