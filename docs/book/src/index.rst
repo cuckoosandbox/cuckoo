@@ -22,6 +22,9 @@ it might already have the answers to your questions.
 
     faq/index
 
+Otherwise you can ask to the developers and to other Cuckoo users, see 
+:doc:`Join the discussion <finalremarks/index>`.
+
 Contents
 ========
 
