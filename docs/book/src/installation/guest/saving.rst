@@ -30,28 +30,26 @@ restore it::
 KVM
 ===
 
-If you are going for KVM, first of all, you must be sure to use a disk format for 
+If decided to adopt KVM, you must fist of all be sure to use a disk format for 
 your virtual machines which supports snapshots.
-By default libvirt tools create virtual machine with default disk format RAW, we
-need to use snapshots so the disk format must support it, you can choose for 
-QCOW2 or LVM format. For the scope of this guide we show an example with QCOW2,
+By default libvirt tools create RAW virtual disks, and since we need snapshots
+you'll either have to use QCOW2 or LVM. For the scope of this guide we adopt QCOW2,
 which is easier to setup than LVM.
 
-The easy way to create a virtual machine which supports snapshots, if you don't
-know how to do it from scratch, is to create a KVM machine with RAW disk using
-the libvirt creation tools (we suggest virsh if you like line interfaces or 
-virt-manager if you like graphical interfaces), after the creation you can covert
-the disk to QCOW2 with the following command::
+The easiest way to create such a virtual disk in the correct way is using the
+tools provided by the libvirt suite. You can either use ``virsh`` if you prefer
+command-line interfaces or ``virt-manager`` for a nice GUI.
+You should be able to directly create it in QCOW2 format, but in case you have
+a RAW disk you can convert it like following::
 
 	$ cd /your/disk/image/path
 	$ qemu-img convert -O qcow2 your_disk.raw your_disk.qcow2
 
-Now you have to edit your VM definition, use the following command to edit the
-virtual machine XML::
+Now you have to edit your VM definition like following::
 
 	$ virsh edit "<Name of VM>"
 
-Search the disk section, it looks like this::
+Find the disk section, it looks like this::
 
 	<disk type='file' device='disk'>
 		<driver name='qemu' type='raw'/>
@@ -69,8 +67,8 @@ And change "type" to qcow2 and "source file" to your qcow2 disk image, like this
 		<address type='drive' controller='0' bus='0' unit='0'/>
 	</disk>
 
-Now test your virtual machine, if all works prepare it for snapshotting running
-Cuckoo agent.
-Take a snapshot with the following command::
+Now test your virtual machine, if all works prepare it for snapshotting while
+running Cuckoo's agent.
+You can finally take a snapshot with the following command::
 
 	$ virsh snapshot-create "<Name of VM>"
