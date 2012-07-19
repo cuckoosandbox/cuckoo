@@ -33,3 +33,13 @@ The testing stage from git ends with "-beta" and development stage with "-dev".
         problem is not related to your own misconfiguration and collect all the details
         to be notified to our developers. Make sure to specify which exact version you
         are using, eventually with your current git commit id.
+
+Ticketing system
+================
+
+We use a ticketing system to track all Cuckoo's developments, bugs and features.
+`Official tracking system` is public available, if you want to contribute to
+Cuckoo please take a look to it before reporting bugs or asking for new
+features.
+
+.. _`Official tracking system`: http://dev.cuckoosandbox.org
