@@ -57,5 +57,35 @@
             </td>
         </tr>
         %endif
+        <tr>
+            <td><strong>Antivirus Results</strong>:</td>
+            <td>
+            %if virustotal is not UNDEFINED:
+                %if virustotal["response_code"] == 1:
+                    ${virustotal["positives"]}/${virustotal["total"]} (<a href="javascript:showHide('virustotal');">collapse</a>)
+                    <div id="virustotal" style="display: none;margin-top: 5px;">
+                        <table class="table table-bordered table-condensed">
+                            <tr>
+                                <th>Antivirus</th>
+                                <th>Result</th>
+                            </tr>
+                        %for key in virustotal["scans"]:
+                            %if virustotal["scans"][key]["detected"]:
+                            <tr>
+                                <td>${key}</td>
+                                <td>${virustotal["scans"][key]["result"]}</td>
+                            </tr>
+                            %endif
+                        %endfor
+                        </table>
+                    </div>
+                %else:
+                    File not found on VirusTotal
+                %endif
+            %else:
+                VirusTotal lookup disabled
+            %endif
+            </td>
+        </tr>
     </table>
 </section>
