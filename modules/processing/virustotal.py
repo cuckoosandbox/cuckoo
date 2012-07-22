@@ -12,7 +12,7 @@ from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.exceptions import CuckooProcessingError
 
 VIRUSTOTAL_URL = "https://www.virustotal.com/vtapi/v2/file/report"
-VIRUSTOTAL_KEY = "a"
+VIRUSTOTAL_KEY = ""
 
 class VirusTotal(Processing):
     """Gets antivirus signatures from VirusTotal.com"""
