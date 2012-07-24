@@ -26,7 +26,7 @@ analysis.
 .. _`Wikipedia`: http://en.wikipedia.org/wiki/Sandbox_%28computer_security%29
 
 Using a Sandbox
-===================
+===============
 
 Before starting installing, configuring and using Cuckoo you should take some
 time to think on what you want to achieve with it and how.

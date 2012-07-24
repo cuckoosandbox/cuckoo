@@ -4,114 +4,158 @@ FAQ
 
 Frequently Asked Questions:
 
-    * :ref:`question_1`
-    * :ref:`question_2`
-    * :ref:`question_3`
-    * :ref:`question_4`
-    * :ref:`question_5`
-    * :ref:`question_6`
-    * :ref:`question_7`
-    * :ref:`question_8`
-    * :ref:`question_9`
+    * :ref:`general_vmware`
+    * :ref:`general_volatility`
+    * :ref:`troubles_upgrade`
+    * :ref:`troubles_problem`
 
-Usage questions
-===============
 
-.. _question_1:
-
-How to start an analysis?
--------------------------
-
-You can simply start an analysis via command-line utility ``submit.py``.
-Check :doc:`../usage/submit`.
-
-.. _question_2:
-
-How to change Cuckoo default behaviour?
----------------------------------------
-
-Depending on what you mean, you can edit Cuckoo's configuration files (see
-:doc:`../installation/host/configuration`) or work on the analysis packages
-(see :doc:`../customization/packages`).
-
-General questions
+General Questions
 =================
 
-.. _question_3:
+.. _general_vmware:
 
-Can I redistribute Cuckoo Sandbox?
-----------------------------------
+Can I use VMWare?
+-----------------
 
-Yes, you can. Cuckoo Sandbox is distributed under the GNU General Public
-License version 3. See :doc:`../introduction/license`.
+Cuckoo does not provide support for VMWare by default, but it provides a modular
+engine that allows you to write your own plugin for supporting any virtualization
+software you might want to use. Refer to :doc:`../customization/machinemanagers`.
 
-.. _question_4:
+.. _general_volatility:
 
-Can I include Cuckoo Sandbox in my closed source commercial product?
---------------------------------------------------------------------
+Can I use Volatility with Cuckoo?
+---------------------------------
 
-Generally no, you can't. Cuckoo Sandbox is distributed under the GNU General
-Public License version 3. See :doc:`../introduction/license`.
+Cuckoo does not provide support for Volatility by default. If you want to perform
+additional forensics on the analysis machine, at the moment you'll have to implement
+such support by yourself.
+In the future we might support a full memory dump of the virtual machines, but it's
+not in our short term plans at the moment.
 
-.. _question_5:
+Please also consider that we don't particularly encourage this: since Cuckoo employs
+some rootkit-like technologies to perform its operaitons, the results of a forensic
+analysis would be polluted by the sandbox's components.
 
-I want to help Cuckoo, what can I do?
--------------------------------------
-
-Your help is very appreciated, you can help Cuckoo Sandbox in several ways,
-from coding to send bug reports. See :doc:`../finalremarks/index`.
-
-.. _question_6:
-
-I want to help but I don't have time
-------------------------------------
-
-There are many ways to help Cuckoo: coding, testing, reporting bugs, donating
-money or hardware, reviewing code and documentation or submitting feature
-requests or feedback.
-Just do whatever you feel could help the project with your possibilities.
+Despite being highly customizable, please also consider that Cuckoo has been designed
+for full automation. If you're planning to perform manual analysis of your
+malwares, probably Cuckoo is not the best choice.
 
 Troubleshooting
 ===============
 
-.. _question_7:
+.. _troubles_upgrade:
 
 After upgrade Cuckoo stops to work
 ----------------------------------
 
-Probably Cuckoo was upgraded in a wrong way.
-You cannot simply overwrite old Cuckoo release files with the new one.
+Probably you upgraded it in a wrong way.
+It's not a good practice to rewrite the files due to Cuckoo's complexity and
+quick evolution.
 
 Please follow the upgrade steps described in :doc:`../installation/upgrade`.
 
-.. _question_8:
+.. _troubles_problem:
 
-Cuckoo exits with error code 2 and no report is generated
----------------------------------------------------------
+Cuckoo stumbles in some error I don't understand
+------------------------------------------------
 
-When Cuckoo's analyzer exits with error code 2 and in the analysis results
-folder there is no report and no ``analysis.log`` file, it most likely means
-that you made some mistake while configuring your shared folders.
-Check your configuration and if necessary repeat the steps explained at
-:doc:`../installation/guest/shares`.
+Cuckoo is a young and still evolving project, it might definitely happen that
+you will occur in some problems while running it, but before you rush into
+sending emails to everyone make sure to read what follows.
 
-If the problem persists, try to reinstall VirtualBox's Guest Additions.
+Cuckoo is not meant to be a point-and-click tool: it's designed to be a highly
+customizable and configurable solution for somewhat experienced users and
+malware analysts.
 
-.. _question_9:
+It requires you to have a decent understanding of your operating systems, Python,
+the concepts behind virtualization and sandboxing.
+We try to make it as easy to use as possible, but you have to keep in mind that
+it's not a technology meant to be accessible to just anyone.
 
-The analysis keeps failing and I can't figure out the reason
-------------------------------------------------------------
+That being said, if a problem occurs you have to make sure that you did everything
+you could before asking for time and efforts from our developers and users.
+We just can't help everyone, we have limited time and it has to be dedicated to
+the development and fixing actual bugs.
 
-The best way to troubleshoot any issue happening inside the virtual machine is
-to replicate the command that Cuckoo launches inside the Guest.
+    * We have an extensive documentation, read it carefully. You can't just skip parts
+      of it.
+    * We have a mailing list archive, search through it for previous threads where
+      your same problem could have been already addressed and solved.
+    * We have a blog, read it.
+    * We have lot of users producing content on Internet, `Google`_ it.
+    * Spend some of your own time trying fixing the issues before asking ours, you
+      might even get to learn and understand Cuckoo better.
 
-To do so copy the files from the analysis results folder to the shared folder of
-your virtual machine, launch the virtual machine manually and from a ``cmd``
-execute::
+Long story short: use the existing resources, put some efforts into it and don't
+abuse people.
 
-    cd C:\Python27
-    python.exe \\VBOXSVR\setup\analyzer.py \\VBOXSVR\cuckoo1\
+If you still can't figure out your problem, you can ask help on our online communities
+(see :doc:`../finalremarks/index`).
+Make sure when you ask for help to:
 
-In this way you'll be able to see the output from the analyzer's execution and
-understand what's going wrong.
+    * Use a clear and explicit title for your emails: "I have a problem", "Help me" or
+      "Cuckoo error" are **NOT** good titles.
+    * Explain **in details** what you're experiencing. Try to reproduce several
+      times your issue and write down all steps to achieve that.
+    * Use no-paste services and link your logs, configuration files and details on your
+      setup.
+    * Eventually provide a copy of the analysis that generated the problem.
 
+.. _`Google`: http://www.google.com
+
+Check and restore current snapshot with KVM
+-------------------------------------------
+
+If something goes wrong with virtual machine it's best practice to check curent snapshot
+status.
+You can do that with the following::
+
+	$ virsh snapshot-current "<Name of VM>"
+
+If you got a long XML as output your current snapshot is configured and you can skip
+the rest of this chapter; anyway if you got an error like the following your current
+snapshot is broken::
+
+	$ virsh snapshot-current "<Name of VM>"
+	error: domain '<Name of VM>' has no current snapshot
+
+To fix and create a current snapshot firt list all machine's snapshots::
+
+	$ virsh snapshot-list "<Name of VM>"
+	 Name                 Creation Time             State
+	 ------------------------------------------------------------
+	 1339506531           2012-06-12 15:08:51 +0200 running
+
+Choose one snapshot name and set it as current::
+
+	$ snapshot-current "<Name of VM>" --snapshotname 1339506531
+	Snapshot 1339506531 set as current
+
+Now the virtual machine state is fixed.
+
+Check and restore current snapshot with VirtualBox
+--------------------------------------------------
+
+If something goes wrong with virtual it's best practice to check the virtual machine
+status and the curent snapshot.
+First of all check the virtual machine status with the following::
+
+	$ VBoxManage showvminfo "<Name of VM>" | grep State
+	State:           powered off (since 2012-06-27T22:03:57.000000000)
+
+If the state is "powered off" you can go ahead with the next check, if the state is
+"aborted" or something else you have to restore it to "powered off" before::
+
+	$ VBoxManage controlvm "<Name of VM>" poweroff
+
+With the following check the current snapshots state::
+
+	$ VBoxManage snapshot "<Name of VM>" list --details
+	   Name: s1 (UUID: 90828a77-72f4-4a5e-b9d3-bb1fdd4cef5f)
+	      Name: s2 (UUID: 97838e37-9ca4-4194-a041-5e9a40d6c205) *
+
+If you have a snapshot marked with a star "*" your snapshot is ready, anyway
+you have to restore the current snapshot::
+
+	$ VBoxManage snapshot "<Name of VM>" restorecurrent

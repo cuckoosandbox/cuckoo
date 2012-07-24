@@ -2,33 +2,46 @@
 Analysis Packages
 =================
 
-The **analysis packages** are a key component in Cuckoo Sandbox.
+The **analysis packages** are a core component of Cuckoo Sandbox.
 
-They consist in structured Python scripts which are executed inside the virtual
-machine and that define how Cuckoo should conduct the analysis.
+They consist in structured Python classes which, executed in the guest machines,
+describe how Cuckoo's analyzer component should conduct the analysis.
 
-As you already know, you can choose which analysis package to use by specifying
+Cuckoo provides some default analysis packages that you can use, but you are
+able to create your own or eventually modify the existing ones.
+You can find them located at *analyzer/windows/packages/*.
+
+Following is the list of existing packages:
+
+    * ``exe``: default analysis package used to analyze generic **Windows executables**.
+               You can specify an "arguments" option if you want to pass arguments
+               to the process creation (see :doc:`../usage/submit`).
+    * ``dll``: used to run and analyze **Dinamically Linked Libraries**.
+               You can specify a "function" option that will instruct Cuckoo to
+               execute the specified exported function. If this option is not set,
+               Cuckoo will try to execute the regular ``DllMain`` function.
+               You can also specify a "free" option that will instruct Cuckoo not
+               to inject and hook the ``rundll32`` process and let the library run
+               (not behavior results will be produced).
+    * ``pdf``: used to run and analyze **PDF documents**.
+               The path to Acrobat Reader is hardcoded in the package, so make sure
+               to verify that it's matches the correct one in your guest environment.
+    * ``doc``: used to run and analyze **Microsoft Word documents**.
+               Same as the ``pdf`` package, verify Office Word path.
+    * ``xls``: used to run and analyze **Microsoft Excel documents**.
+               Verify Office Excel path.
+    * ``ie``: used to analyze **Internet Explorer**'s behavior when opening the
+              given file (e.g. browser exploits).
+
+You can find more details on how to start creating new analysis packages in the
+:doc:`../customization/packages` customization chapter.
+
+As you already know, you can select which analysis package to use by specifying
 its name at submission time (see :doc:`submit`) like following::
 
-    $ python submit.py /path/to/malware --package <package name>
+    $ python submit.py --package <package name> /path/to/malware
 
-If none is specified, Cuckoo will try to detect the type of the file and choose
-the proper analysis package accordingly. If the file type is not supported and
-no package was specified, the analysis will be aborted and marked as failed in
-the database.
-
-This functionality allows you not only to use existing analysis packages, but
-also create some of your own and customize your Cuckoo setup. Ths topic will
-be dealt in details in the :doc:`../customization/packages` customization
-chapter.
-
-Cuckoo provides some default analysis packages which include:
-
-    * ``exe``: default analysis package used to analyze generic Windows executables.
-    * ``dll``: used to analyze Dynamic Linked Libraries.
-    * ``pdf``: used to analyze Adobe Reader while opening the given PDF file.
-    * ``doc``: used to analyze Microsoft Office while opening documents.
-    * ``php``: used to analyze PHP scripts.
-    * ``ie``: used to analyze Internet Explorer while opening the given URL.
-    * ``firefox``: used to analyze Mozilla Firefox while opening the given URL.
-
+If none is specified, Cuckoo will try to detect the file type and select
+the correct analysis package accordingly. If the file type is not supported by
+default the analysis will be aborted, therefore you are always invited to
+specify the package name whenever it's possible.

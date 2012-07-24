@@ -1,5 +1,30 @@
                                   CHANGELOG
-                                  
+
+Cuckoo Sandbox 0.4 (2012-07-24)
+===============================
+
+* Completely re-engineered the code base
+* Replaced hooking mechanism and DLL with new, more solid code
+* Removed dependency from VirtualBox
+* Added support for KVM
+* Introduced XMLRPC-based agent that handles the data exchange between host and guests
+* Refactored the project structure
+* Removed processor.py script
+* Introduced support for multiple platforms and multiple analyzers
+* Introduced support for custom virtualization modules
+* Introduced support for custom post-analysis processing modules
+* Introduced support for custom behavioral signatures
+* Added VirusTotal support
+* Added Yara support
+* Added MongoDB reporting module
+* Added HPFeeds reporting module
+* Refactored Windows analyzer
+* Refactored the analysis packages structure
+* Introduced support for analysis packages' options
+* Refactored Windows analyzer's API functions
+* Introduced process memory dump support
+* Introduced support for QueueUserAPC injection
+
 Cuckoo Sandbox 0.3.2 (2012-02-04)
 =================================
 

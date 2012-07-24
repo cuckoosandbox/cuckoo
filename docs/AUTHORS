@@ -4,13 +4,23 @@ Cuckoo is the result of the work and efforts of many people. Some main developer
 and some friends and users who kindly provided us with feedback and new features.
 You'll find contributions to the code mentioned in the specific source files.
 
-MAIN DEVELOPERS:
+ACTIVE DEVELOPERS:
 Claudio "nex" Guarnieri     Lead Developer    <nex at cuckoobox dot org>
-Dario Fernandes             Developer         <dario at cuckoobox dot org>
 Alessandro "jekil" Tanasi   Developer         <alessandro at lonerunners dot net>
+Jurriaan "skier" Bremer     Developer         <jurriaanbremer at gmail dot com>
 
-CONTRIBUTORS AND TESTERS:
-Ryan Sommers
-Kjell Christian
-JD
+INACTIVE DEVELOPERS:
+Dario Fernandes
 
+CONTRIBUTORS:
+Mark Schloesser
+Thorsten Sick
+Adam Pridgen
+
+BUG REPORTERS/ADVISORS:
+Giacomo Milani
+Stefan Hausotte
+Felix Leder
+Georg Wicherski
+Kjell Christian Nilsen
+Carsten Willems

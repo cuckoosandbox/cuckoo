@@ -9,7 +9,8 @@ to fit all user's needs.
 
 .. toctree::
 
+    machinemanagers
     packages
     processing
+    signatures
     reporting
-
