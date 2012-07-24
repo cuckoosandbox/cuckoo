@@ -22,7 +22,7 @@ except ImportError:
     HAVE_SSDEEP = False
 
 def create_folders(root=".", folders=[]):
-    """Create direcotry.
+    """Create directory.
     @param root: root path.
     @param folders: folders name to be created.
     """
