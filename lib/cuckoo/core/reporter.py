@@ -6,6 +6,7 @@ import os
 import inspect
 import pkgutil
 import logging
+import copy
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
@@ -67,7 +68,10 @@ class Reporter:
             current.set_options(self.cfg.get(module_name))
 
             try:
-                current.run(data)
+                # Run report, for each report a brand new copy of results is
+                # created, to prevent a reporting module to edit global 
+                # result set and affect other reporting modules.
+                current.run(copy.deepcopy(data))
                 log.debug("Executed reporting module \"%s\"" % current.__class__.__name__)
             except NotImplementedError:
                 continue

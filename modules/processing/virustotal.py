@@ -42,7 +42,9 @@ class VirusTotal(Processing):
             req = urllib2.Request(VIRUSTOTAL_URL, data)
             response = urllib2.urlopen(req)
             virustotal = json.loads(response.read())
+        except urllib2.URLError as e:
+            raise CuckooProcessingError("Unable to establish connection to VirusTotal: %s" % e)
         except urllib2.HTTPError as e:
-            raise CuckooProcessingError("Failed performing request to VirusTotal (http code=%s)" % e.code)
+            raise CuckooProcessingError("Unable to perform HTTP request to VirusTotal (http code=%s)" % e.code)
 
         return virustotal

@@ -13,6 +13,16 @@ except ImportError:
 class KVM(MachineManager):
     """Virtualization layer for KVM based on python-libvirt."""
 
+    def _initialize_check(self):
+        """Runs all checks when a machine manager is initialized.
+        @raise CuckooMachineError: if libvirt version is not supported.
+        """
+        # KVM specific checks.
+        if not self._version_check():
+            raise CuckooMachineError("Libvirt version is not supported, please get an updated version")
+        # Base checks.
+        super(KVM, self)._initialize_check()
+
     def start(self, label):
         """Starts a virtual machine.
         @param label: virtual machine name.

@@ -14,4 +14,5 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 from lib.cuckoo.core.processor import Processor
 from lib.cuckoo.core.reporter import Reporter
 
-Reporter(sys.argv[1]).run(Processor(sys.argv[1]).run())
+results = Processor(sys.argv[1]).run()
+Reporter(sys.argv[1]).run(results)

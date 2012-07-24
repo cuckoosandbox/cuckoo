@@ -233,7 +233,7 @@ This method allows you to inject a DLL file into a given process.
 You can specify the following arguments:
 
     * ``dll``: path to the DLL to inject, if none is specified it will use Cuckoo's default DLL.
-    * ``apc``: True/False in case you want to use *QueueUserAPC* injection or not. Default is False, which will result in a *CreateRemoteThread* injection.
+    * ``apc``: True/False in case you want to use *QueueUserAPC* injection or not. Default is False, which will result in a *CreateRemoteThread* injection. If you try to inject a process that you created in suspended more, *QueueUserAPC* injection will be automatically selected.
 
 Example::
 

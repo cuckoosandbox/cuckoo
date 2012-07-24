@@ -9,7 +9,7 @@ from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 class Dictionary(dict):
-    """Cuckko custom dict."""
+    """Cuckoo custom dict."""
     
     def __getattr__(self, key):
         return self.get(key, None)
@@ -22,29 +22,40 @@ class MachineManager(object):
 
     def __init__(self):
         self.module_name = ""
-        self.config_path = ""
-        self.config = ConfigParser.ConfigParser()
-        self.options = {}
+        self.options = None
         self.machines = []
+
+    def set_options(self, options):
+        """Set machine manager options.
+        @param options: machine manager options dict.
+        """
+        self.options = options
 
     def initialize(self, module_name):
         """Read configuration.
         @param module_name: module name.
         """
         self.module_name = module_name
-        self.config_path = os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % module_name)
-        self.config.read(self.config_path)
+        mmanager_opts = self.options.get(module_name)
 
-        machines_list = self.config.get(self.module_name, "machines").strip().split(",")
-        for machine_id in machines_list:
+        for machine_id in mmanager_opts["machines"].strip().split(","):
+            machine_opts = self.options.get(machine_id)
             machine = Dictionary()
             machine.id = machine_id
-            machine.label = self.config.get(machine_id, "label")
-            machine.platform = self.config.get(machine_id, "platform")
-            machine.ip = self.config.get(machine_id, "ip")
+            machine.label = machine_opts["label"]
+            machine.platform = machine_opts["platform"]
+            machine.ip = machine_opts["ip"]
             machine.locked = False
             self.machines.append(machine)
 
+        # Run initialization checks.
+        self._initialize_check()
+
+    def _initialize_check(self):
+        """Runs all checks when a machine manager is initialized.
+        @note: in machine manager modules you may override or superclass this method.
+        @raise CuckooMachineError: if a misconfiguration or a unkown vm state is found.
+        """
         # Checks if machines configured are really available.
         try:
             configured_vm = self._list()
@@ -156,6 +167,7 @@ class Signature(object):
     name = ""
     description = ""
     severity = 1
+    categories = []
     authors = []
     references = []
     alert = False

@@ -1,5 +1,7 @@
-<div class="section">
-    <div class="section-title">Screenshots</div>
+<section id="screenshots">
+    <div class="page-header">
+        <h1>Screenshots <small>pictures of the desktop during execution</small></h1>
+    </div>
     %if screenshots:
         %for shot in screenshots:
             <a href="data:image/png;base64,${shot["data"]}"><img class="fade" src="data:image/png;base64,${shot["data"]}" height="100px" width="150px" /></a>
@@ -7,5 +9,4 @@
     %else:
         No screenshots available.
     %endif
-    <%include file="../images/arrow_up.html" />
-</div>
+</section>

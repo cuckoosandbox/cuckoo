@@ -171,7 +171,7 @@ class Pcap:
             return None
 
         if not os.path.exists(self.filepath):
-            log.error("The PCAP file does not exist at path \"%s\"." % self.filepath)
+            log.warning("The PCAP file does not exist at path \"%s\"." % self.filepath)
             return None
 
         if os.path.getsize(self.filepath) == 0:

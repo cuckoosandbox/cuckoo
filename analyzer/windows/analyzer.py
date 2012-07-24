@@ -4,6 +4,7 @@
 
 import os
 import sys
+import random
 import shutil
 import logging
 import xmlrpclib
@@ -34,6 +35,9 @@ def add_file(file_path):
     if file_path.startswith("\\\\.\\"):
         return
 
+    if file_path.startswith("\\??\\"):
+        file_path = file_path[4:]
+
     if os.path.exists(file_path):
         if file_path not in FILES_LIST:
             log.info("Added new file to list with path: %s" % file_path)
@@ -60,11 +64,26 @@ def add_pids(pids):
 def dump_files():
     """Dump dropped file."""
     for file_path in FILES_LIST:
+        file_name = os.path.basename(file_path)
+
+        while True:
+            dir_path = os.path.join(PATHS["files"], str(random.randint(100000000, 9999999999)))
+            if os.path.exists(dir_path):
+                continue
+
+            try:
+                os.mkdir(dir_path)
+                dump_path = os.path.join(dir_path, "%s.bin" % file_name)
+            except OSError as e:
+                dump_path = os.path.join(PATHS["files"], "%s.bin" % file_name)
+
+            break
+
         try:
-            shutil.copy(file_path, PATHS["files"])
-            log.info("Dropped file \"%s\" dumped successfully" % file_path)
+            shutil.copy(file_path, dump_path)
+            log.info("Dropped file \"%s\" dumped successfully to path \"%s\"" % (file_path, dump_path))
         except (IOError, shutil.Error) as e:
-            log.error("Unable to dump dropped file at path \"%s\": %s" % (file_path, e.message))
+            log.error("Unable to dump dropped file at path \"%s\": %s" % (file_path, e))
 
 class PipeHandler(Thread):
     """PIPE handler, reads on PIPE."""
@@ -78,25 +97,32 @@ class PipeHandler(Thread):
         """Run handler.
         @return: operation status.
         """
-        data = create_string_buffer(BUFSIZE)
+        data = ""
 
         while True:
             bytes_read = c_int(0)
 
+            buf = create_string_buffer(BUFSIZE)
             success = KERNEL32.ReadFile(self.h_pipe,
-                                        data,
-                                        sizeof(data),
+                                        buf,
+                                        sizeof(buf),
                                         byref(bytes_read),
                                         None)
 
-            if not success or bytes_read.value == 0:
-                if KERNEL32.GetLastError() == ERROR_BROKEN_PIPE:
-                    pass
-                break
+            data += buf.value
+
+            if not success and KERNEL32.GetLastError() == ERROR_MORE_DATA:
+                continue
+            #elif not success or bytes_read.value == 0:
+            #    if KERNEL32.GetLastError() == ERROR_BROKEN_PIPE:
+            #        pass
+            
+            break
 
         if data:
-            command = data.value.strip()
-                
+            command = data.strip()
+            #log.debug("Connection received (data=%s)" % command)
+
             if command.startswith("PID:"):
                 pid = command[4:]
                 if pid.isdigit():
@@ -105,6 +131,11 @@ class PipeHandler(Thread):
                         add_pids(pid)
                         proc = Process(pid=pid)
                         proc.inject()
+                        KERNEL32.WriteFile(self.h_pipe,
+                                           create_string_buffer("OK"),
+                                           2,
+                                           byref(bytes_read),
+                                           None)
             elif command.startswith("FILE:"):
                 file_path = command[5:]
                 add_file(file_path)
@@ -177,14 +208,16 @@ class Analyzer:
         @return: options dict.
         """
         options = {}
-        if not self.config.options:
+        if self.config.options:
             try:
                 fields = self.config.options.strip().split(",")
                 for field in fields:
                     try:
                         key, value = field.strip().split("=")
-                    except ValueError:
+                    except ValueError as e:
+                        log.warning("Failed parsing option (%s): %s" % (field, e.message))
                         continue
+
                     options[key.strip()] = value.strip()
             except ValueError:
                 pass

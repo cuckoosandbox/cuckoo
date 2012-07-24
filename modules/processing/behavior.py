@@ -36,13 +36,14 @@ class ParseProcessLog:
             timestamp = row[0]    # Timestamp of current API call invocation.
             process_id = row[1]   # ID of the process that performed the call.
             process_name = row[2] # Name of the process.
-            parent_id = row[3]    # PID of the parent process
-            category = row[4]     # Win32 function category
-            api_name = row[5]     # Name of the Windows API.
-            status_value = row[6] # Success or Failure?
-            return_value = row[7] # Value returned by the function.
+            thread_id = row[3]    # Thread ID.
+            parent_id = row[4]    # PID of the parent process.
+            category = row[5]     # Win32 function category.
+            api_name = row[6]     # Name of the Windows API.
+            status_value = row[7] # Success or Failure?
+            return_value = row[8] # Value returned by the function.
         except IndexError as e:
-            log.warning("Unable to parse analysis log row: %s" % e.message)
+            log.debug("Unable to parse process log row: %s" % e.message)
             return False
 
         if not self.process_id:
@@ -50,7 +51,7 @@ class ParseProcessLog:
 
         if not self.process_name:
             self.process_name = process_name
-            
+
         if not self.parent_id:
             self.parent_id = parent_id
 
@@ -59,7 +60,7 @@ class ParseProcessLog:
 
         # Now walk through the remaining columns, which will contain API
         # arguments.
-        for index in range(8, len(row)):
+        for index in range(9, len(row)):
             argument = {}
 
             # Split the argument name with its value based on the separator.
@@ -74,6 +75,7 @@ class ParseProcessLog:
             arguments.append(argument)
 
         call["timestamp"] = timestamp
+        call["thread_id"] = thread_id
         call["category"] = category
         call["api"] = api_name
         call["status"] = status_value
@@ -181,7 +183,7 @@ class Summary:
             for call in entry["calls"]:
                 if call["category"] == "filesystem":
                     for argument in call["arguments"]:
-                        if argument["name"] == "lpFileName":
+                        if argument["name"] == "FileName":
                             if argument["value"] not in files:
                                 files.append(argument["value"])
 
@@ -199,15 +201,9 @@ class Summary:
                     hKey = None
                     lpSubKey = None
                     for argument in call["arguments"]:
-                        if argument["name"] == "hKey":
-                            hKey = argument["value"]
-                        elif argument["name"] == "lpSubKey":
-                            lpSubKey = argument["value"]
-
-                    if lpSubKey:
-                        key = "%s\\\\%s" % (hKey, lpSubKey)
-                        if key not in keys:
-                            keys.append(key)
+                        if argument["name"] == "SubKey":
+                            if argument["value"] not in keys:
+                                keys.append(argument["value"])
 
         return keys
 
@@ -221,7 +217,7 @@ class Summary:
             for call in entry["calls"]:
                 if call["category"] == "synchronization":
                     for argument in call["arguments"]:
-                        if argument["name"] == "lpName":
+                        if argument["name"] == "MutexName":
                             if argument["value"] not in mutexes:
                                 mutexes.append(argument["value"])
 
@@ -258,11 +254,11 @@ class ProcessTree:
             process["children"] = []
             
             for call in entry["calls"]:
-                if call["api"] == "CreateProcessA" or \
-                   call["api"] == "CreateProcessW":
-                    if call["return"].strip() != "":
-                        process["children"].append(int(call["return"].strip()))
-                    
+                if call["api"] == "CreateProcessInternalW":
+                    for argument in call["arguments"]:
+                        if argument["name"] == "ProcessId":
+                            process["children"].append(int(argument["value"]))
+
             self.processes.append(process)
 
         return True

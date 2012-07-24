@@ -1,15 +1,15 @@
 <section id="static">
     <div class="page-header">
-        <h1>Static Analysis</h1>
+        <h1>Static Analysis <small>binary details</small></h1>
     </div>
     %if not isinstance(static, dict) or len(static.keys()) == 0:
         Nothing to display.
     %else:
         %if static["pe_versioninfo"]:
-        <fieldset>
-            <legend><a href="javascript:showHide('pe_versioninfo');">Version Infos</a></legend>
+        <div>
+            <h3><a href="javascript:showHide('pe_versioninfo');">Version Infos</a></h3>
             <div id="pe_versioninfo" style="display: none;">
-                <table class="table table-striped">
+                <table class="table table-striped table-bordered">
                     <colgroup>
                         <col width="150" />
                         <col width="*" />
@@ -22,14 +22,14 @@
                     %endfor
                 </table>
             </div>
-        </fieldset>
+        </div>
         %endif
 
         %if static["pe_sections"]:
-        <fieldset>
-            <legend><a href="javascript:showHide('pe_sections');">Sections</a></legend>
+        <div>
+            <h3><a href="javascript:showHide('pe_sections');">Sections</a></h3>
             <div id="pe_sections" style="display: none;">
-                <table class="table table-striped">
+                <table class="table table-striped table-bordered">
                     <tr>
                         <th>Name</th>
                         <th>Virtual Address</th>
@@ -48,14 +48,14 @@
                     %endfor
                 </table>
             </div>
-        </fieldset>
+        </div>
         %endif
 
         %if static["pe_resources"]:
-        <fieldset>
-            <legend><a href="javascript:showHide('pe_resources');">Resources</a></legend>
+        <div>
+            <h3><a href="javascript:showHide('pe_resources');">Resources</a></h3>
             <div id="pe_resources" style="display: none;">
-                <table class="table table-striped">
+                <table class="table table-striped table-bordered">
                     <tr>
                         <th>Name</th>
                         <th>Offset</th>
@@ -76,12 +76,12 @@
                     %endfor
                 </table>
             </div>
-        </fieldset>
+        </div>
         %endif
 
         %if static["pe_imports"]:
-        <fieldset>
-            <legend><a href="javascript:showHide('pe_imports');">Imports</a></legend>
+        <div>
+            <h3><a href="javascript:showHide('pe_imports');">Imports</a></h3>
             <div id="pe_imports" style="display: none;">
                 %for library in static["pe_imports"]:
                     <div class="well">
@@ -92,14 +92,14 @@
                     </div>
                 %endfor
             </div>
-        </fieldset>
+        </div>
         %endif
 
         %if static["pe_exports"]:
-        <fieldset>
-            <legend><a href="javascript:showHide('pe_exports');">Exports</a></legend>
+        <div>
+            <h3><a href="javascript:showHide('pe_exports');">Exports</a></h3>
             <div id="pe_exports" style="display: none;">
-                <table class="table table-striped">
+                <table class="table table-striped table-bordered">
                     <tr>
                         <th>Ordinal</th>
                         <th>Address</th>
@@ -114,8 +114,7 @@
                     %endfor
                 </table>
             </div>
-        </fieldset>
+        </div>
         %endif
     %endif
-    <p style="text-align: right;"><a href="#">Back to top</a></p>
 </section>

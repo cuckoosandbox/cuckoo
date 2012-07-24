@@ -2,7 +2,7 @@
 Configuration
 =============
 
-Cuckoo relies on two main configuration files:
+Cuckoo relies on three main configuration files:
 
     * :ref:`cuckoo_conf`: for configuring general behavior and analysis options.
     * :ref:`<machinemanager>_conf`: for defining the options for your virtualization software.
@@ -70,9 +70,13 @@ assume you're going to use VirtualBox.
 Following is the default *conf/virtualbox.conf* file::
 
     [virtualbox]
-    # Enable or disable the headless mode [on/off]. If enabled, the graphical user
-    # interface will be hidden.
-    headless = no
+    # Specify which VirtualBox mode you want to run your machines on.
+    # Can be "gui", "sdl" or "headless". Refer to VirtualBox's official
+    # documentation to understand the differences.
+    mode = gui
+
+    # Path to the local installation of the VBoxManage utility.
+    path = /usr/bin/VBoxManage
 
     # Specify a comma-separated list of available machines to be used. For each
     # specified ID you have to define a dedicated section containing the details
@@ -82,12 +86,12 @@ Following is the default *conf/virtualbox.conf* file::
     [cuckoo1]
     # Specify the label name of the current machine as specified in your
     # VirtualBox configuration.
-    label = Cuckoo_1
+    label = cuckoo1
 
     # Specify the operating system platform used by current machine
     # [windows/darwin/linux].
     platform = windows
-    
+
     # Specify the IP address of the current machine. Make sure that the IP address
     # is valid and that the host machine is able to reach it. If not, the analysis
     # will fail.

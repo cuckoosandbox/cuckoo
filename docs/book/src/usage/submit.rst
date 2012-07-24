@@ -5,6 +5,7 @@ Submit an analysis
 In order to submit a file to be analyzed you can:
 
     * Use provided **submit.py** utility.
+    * Use provided **web.py** utility.
     * Directly interact with the **SQLite database**.
     * Use Cuckoo **Python functions** directly from Cuckoo's library.
 
@@ -39,33 +40,61 @@ The concept of analysis packages will be dealt later in this documentation (at
 
 **Example**: submit a local binary::
 
-    $ ./submit.py /path/to/binary
+    $ ./utils/submit.py /path/to/binary
 
 **Example**: submit a local binary and specify an higher priority::
 
-    $ ./submit.py --priority 5 /path/to/binary
+    $ ./utils/submit.py --priority 5 /path/to/binary
 
 **Example**: submit a local binary and specify a custom analysis timeout of
 60 seconds::
 
-    $ ./submit.py --timeout 60 /path/to/binary
+    $ ./utils/submit.py --timeout 60 /path/to/binary
 
 **Example**: submit a local binary and specify a custom analysis package::
 
-    $ ./submit.py --package <name of package> /path/to/binary
+    $ ./utils/submit.py --package <name of package> /path/to/binary
 
 **Example**: submit a local binary and specify a custom analysis package and 
 some options (in this case a command line argument for the malware)::
 
-    $ ./submit.py --package exe --options arguments=--dosomething /path/to/binary.exe
+    $ ./utils/submit.py --package exe --options arguments=--dosomething /path/to/binary.exe
 
 **Example**: submit a local binary to be run on virtual machine *cuckoo1*::
 
-    $ ./submit.py --machine cuckoo1 /path/to/binary
+    $ ./utils/submit.py --machine cuckoo1 /path/to/binary
 
 **Example**: submit a local binary to be run on a Windows machine::
 
-    $ ./submit.py --platform windows /path/to/binary
+    $ ./utils/submit.py --platform windows /path/to/binary
+
+Web Utility
+===========
+
+Cuckoo provides a very basic web utility that you can use to submit files to
+be analyzed.
+
+You can find the script at path *utils/web.py* and you can start it with::
+
+    $ python utils/web.py
+
+By default it will create a webserver on localhost and port 8080. Open your
+browser at *http://localhost:8080* and it will prompt you a simple form that
+allows you to upload a file, specify some options (with the same format as
+the *submit.py* utility) and submit it.
+
+In the *Browse* section you can track the status of pending, failed and
+succeeded analyses and, when available, you'll be prompted a link to view
+the HTML report.
+
+    .. note::
+
+        This is by no means supposed to be a full fledged web interface:
+        it's a very simple utility that we put together to allow users to
+        simply upload files and consumes the generated HTML report.
+        Despite being incorporated and rendered dynamically, the results
+        displayed are nothing else than the *report.html* file, therefore
+        it is supposed to be independent from the utility.
 
 Interact with SQLite
 ====================

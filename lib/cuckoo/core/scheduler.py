@@ -62,9 +62,22 @@ class AnalysisManager(Thread):
                                           % (self.task.file_path, self.analysis.stored_file_path))
 
         try:
-            os.symlink(self.analysis.stored_file_path, os.path.join(self.analysis.results_folder, "binary"))
-        except OSError as e:
-            raise CuckooAnalysisError("Unable to create symlink from \"%s\" to \"%s\"" % (self.analysis.stored_file_path, self.analysis.results_folder))
+            new_binary_path = os.path.join(self.analysis.results_folder, "binary")
+
+            # On Windows systems, symlink is obviously not supported, therefore we'll just copy
+            # the binary until we find a more efficient solution.
+            if hasattr(os, "symlink"):
+                os.symlink(self.analysis.stored_file_path, new_binary_path)
+            else:
+                shutil.copy(self.analysis.stored_file_path, new_binary_path)
+        except (AttributeError, OSError) as e:
+            raise CuckooAnalysisError("Unable to create symlink/copy from \"%s\" to \"%s\"" % (self.analysis.stored_file_path, self.analysis.results_folder))
+
+        if self.cfg.cuckoo.delete_original:
+            try:
+                os.remove(self.task.file_path)
+            except OSError as e:
+                log.warning("Unable to delete original file at path \"%s\": %s" % (self.task.file_path, e.message))
 
     def build_options(self):
         """Get analysis options.
@@ -192,6 +205,13 @@ class Scheduler:
         MachineManager()
         module = MachineManager.__subclasses__()[0]
         mmanager = module()
+        mmanager_conf = os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % self.cfg.cuckoo.machine_manager)
+
+        if not os.path.exists(mmanager_conf):
+            raise CuckooMachineError("The configuration file for machine manager \"%s\" does not exist at path: %s"
+                                     % (self.cfg.cuckoo.machine_manager, mmanager_conf))
+
+        mmanager.set_options(Config(mmanager_conf))
         mmanager.initialize(self.cfg.cuckoo.machine_manager)
 
         if len(mmanager.machines) == 0:

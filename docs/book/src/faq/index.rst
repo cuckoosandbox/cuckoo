@@ -4,11 +4,56 @@ FAQ
 
 Frequently Asked Questions:
 
-    * :ref:`troubles_problem`
+    * :ref:`general_vmware`
+    * :ref:`general_volatility`
     * :ref:`troubles_upgrade`
+    * :ref:`troubles_problem`
+
+
+General Questions
+=================
+
+.. _general_vmware:
+
+Can I use VMWare?
+-----------------
+
+Cuckoo does not provide support for VMWare by default, but it provides a modular
+engine that allows you to write your own plugin for supporting any virtualization
+software you might want to use. Refer to :doc:`../customization/machinemanagers`.
+
+.. _general_volatility:
+
+Can I use Volatility with Cuckoo?
+---------------------------------
+
+Cuckoo does not provide support for Volatility by default. If you want to perform
+additional forensics on the analysis machine, at the moment you'll have to implement
+such support by yourself.
+In the future we might support a full memory dump of the virtual machines, but it's
+not in our short term plans at the moment.
+
+Please also consider that we don't particularly encourage this: since Cuckoo employs
+some rootkit-like technologies to perform its operaitons, the results of a forensic
+analysis would be polluted by the sandbox's components.
+
+Despite being highly customizable, please also consider that Cuckoo has been designed
+for full automation. If you're planning to perform manual analysis of your
+malwares, probably Cuckoo is not the best choice.
 
 Troubleshooting
 ===============
+
+.. _troubles_upgrade:
+
+After upgrade Cuckoo stops to work
+----------------------------------
+
+Probably you upgraded it in a wrong way.
+It's not a good practice to rewrite the files due to Cuckoo's complexity and
+quick evolution.
+
+Please follow the upgrade steps described in :doc:`../installation/upgrade`.
 
 .. _troubles_problem:
 
@@ -59,13 +104,58 @@ Make sure when you ask for help to:
 
 .. _`Google`: http://www.google.com
 
-.. _troubles_upgrade:
+Check and restore current snapshot with KVM
+-------------------------------------------
 
-After upgrade Cuckoo stops to work
-----------------------------------
+If something goes wrong with virtual machine it's best practice to check curent snapshot
+status.
+You can do that with the following::
 
-Probably you upgraded it in a wrong way.
-It's not a good practice to rewrite the files due to Cuckoo's complexity and
-quick evolution.
+	$ virsh snapshot-current "<Name of VM>"
 
-Please follow the upgrade steps described in :doc:`../installation/upgrade`.
+If you got a long XML as output your current snapshot is configured and you can skip
+the rest of this chapter; anyway if you got an error like the following your current
+snapshot is broken::
+
+	$ virsh snapshot-current "<Name of VM>"
+	error: domain '<Name of VM>' has no current snapshot
+
+To fix and create a current snapshot firt list all machine's snapshots::
+
+	$ virsh snapshot-list "<Name of VM>"
+	 Name                 Creation Time             State
+	 ------------------------------------------------------------
+	 1339506531           2012-06-12 15:08:51 +0200 running
+
+Choose one snapshot name and set it as current::
+
+	$ snapshot-current "<Name of VM>" --snapshotname 1339506531
+	Snapshot 1339506531 set as current
+
+Now the virtual machine state is fixed.
+
+Check and restore current snapshot with VirtualBox
+--------------------------------------------------
+
+If something goes wrong with virtual it's best practice to check the virtual machine
+status and the curent snapshot.
+First of all check the virtual machine status with the following::
+
+	$ VBoxManage showvminfo "<Name of VM>" | grep State
+	State:           powered off (since 2012-06-27T22:03:57.000000000)
+
+If the state is "powered off" you can go ahead with the next check, if the state is
+"aborted" or something else you have to restore it to "powered off" before::
+
+	$ VBoxManage controlvm "<Name of VM>" poweroff
+
+With the following check the current snapshots state::
+
+	$ VBoxManage snapshot "<Name of VM>" list --details
+	   Name: s1 (UUID: 90828a77-72f4-4a5e-b9d3-bb1fdd4cef5f)
+	      Name: s2 (UUID: 97838e37-9ca4-4194-a041-5e9a40d6c205) *
+
+If you have a snapshot marked with a star "*" your snapshot is ready, anyway
+you have to restore the current snapshot::
+
+	$ VBoxManage snapshot "<Name of VM>" restorecurrent

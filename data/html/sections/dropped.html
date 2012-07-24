@@ -1,16 +1,16 @@
 <section id="dropped">
     <div class="page-header">
-        <h1>Dropped Files</h1>
+        <h1>Dropped Files <small>files created or deleted by the malware</small></h1>
     </div>
     %if dropped:
         <%
             counter = 1
         %>
         %for dropped_file in dropped:
-            <fieldset>
-                <legend><a href="javascript:showHide('dropped_${counter}');">${dropped_file["name"]}</a></legend>
+            <div>
+                <h3><a href="javascript:showHide('dropped_${counter}');">${dropped_file["name"]}</a></h3>
                 <div id="dropped_${counter}" style="display: none;">
-                    <table class="table table-striped">
+                    <table class="table table-striped table-bordered">
                         <colgroup>
                             <col width="150" />
                             <col width="*" />
@@ -49,7 +49,7 @@
                         </tr>
                     </table>
                 </div>
-            </fieldset>
+            </div>
             <%
                 counter += 1
             %>
@@ -57,5 +57,4 @@
     %else:
         Nothing to display.
     %endif
-    <p style="text-align: right;"><a href="#">Back to top</a></p>
 </section>
