@@ -21,10 +21,14 @@ try:
 except ImportError:
     HAVE_SSDEEP = False
 
+from lib.cuckoo.common.exceptions import CuckooOperationalError
+
+
 def create_folders(root=".", folders=[]):
-    """Create directory.
+    """Create directories. If directory already exist does nothing.
     @param root: root path.
     @param folders: folders name to be created.
+    @raise CuckooOperationalError: if fails to create folder.
     """
     for folder in folders:
         if os.path.exists(os.path.join(root, folder)):
@@ -34,7 +38,7 @@ def create_folders(root=".", folders=[]):
             folder_path = os.path.join(root, folder)
             os.makedirs(folder_path)
         except OSError as e:
-            continue
+            raise CuckooOperationalError("Unable to create folder: %s" % folder_path)
 
 def convert_char(c):
     """Escapes characters.
