@@ -32,6 +32,16 @@ class MachineManager(object):
         self.options = options
 
     def initialize(self, module_name):
+        """Read and load machines configuration, try to check the configuration.
+        @param module_name: module name.
+        """
+        # Load.
+        self._initialize(module_name)
+
+        # Run initialization checks.
+        self._initialize_check()
+
+    def _initialize(self, module_name):
         """Read configuration.
         @param module_name: module name.
         """
@@ -47,9 +57,6 @@ class MachineManager(object):
             machine.ip = machine_opts["ip"]
             machine.locked = False
             self.machines.append(machine)
-
-        # Run initialization checks.
-        self._initialize_check()
 
     def _initialize_check(self):
         """Runs all checks when a machine manager is initialized.
