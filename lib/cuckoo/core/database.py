@@ -20,9 +20,12 @@ def dict_factory(cursor, row):
 class Database:
     """Analysis queue database."""
 
-    def __init__(self, root="."):
-        """@param root: database path."""
-        self.db_file = os.path.join(root, os.path.join(CUCKOO_ROOT, "db", "cuckoo.db"))
+    def __init__(self, db_file=None):
+        """@param db_file: database file path."""
+        if db_file:
+            self.db_file = db_file
+        else:
+            self.db_file = os.path.join(CUCKOO_ROOT, "db", "cuckoo.db")
 
         self.generate()
         self.conn = sqlite3.connect(self.db_file, timeout=60)
