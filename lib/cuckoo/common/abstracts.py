@@ -3,10 +3,14 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import logging
 import ConfigParser
 
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.constants import CUCKOO_ROOT
+
+log = logging.getLogger(__name__)
+
 
 class Dictionary(dict):
     """Cuckoo custom dict."""
@@ -49,14 +53,18 @@ class MachineManager(object):
         mmanager_opts = self.options.get(module_name)
 
         for machine_id in mmanager_opts["machines"].strip().split(","):
-            machine_opts = self.options.get(machine_id)
-            machine = Dictionary()
-            machine.id = machine_id
-            machine.label = machine_opts["label"]
-            machine.platform = machine_opts["platform"]
-            machine.ip = machine_opts["ip"]
-            machine.locked = False
-            self.machines.append(machine)
+            try:
+                machine_opts = self.options.get(machine_id)
+                machine = Dictionary()
+                machine.id = machine_id
+                machine.label = machine_opts["label"]
+                machine.platform = machine_opts["platform"]
+                machine.ip = machine_opts["ip"]
+                machine.locked = False
+                self.machines.append(machine)
+            except AttributeError:
+                log.warning("Configuration details about machine %s are missing. Continue" % machine_id)
+                continue
 
     def _initialize_check(self):
         """Runs all checks when a machine manager is initialized.
