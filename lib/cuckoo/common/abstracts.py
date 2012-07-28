@@ -67,11 +67,10 @@ class MachineManager(object):
                 continue
 
     def _initialize_check(self):
-        """Runs all checks when a machine manager is initialized.
+        """Runs checks against virtualization software when a machine manager is initialized.
         @note: in machine manager modules you may override or superclass this method.
         @raise CuckooMachineError: if a misconfiguration or a unkown vm state is found.
         """
-        # Checks if machines configured are really available.
         try:
             configured_vm = self._list()
             for machine in self.machines:
