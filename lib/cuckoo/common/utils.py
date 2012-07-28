@@ -25,7 +25,7 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 
 
 def create_folders(root=".", folders=[]):
-    """Create directories. If directory already exist does nothing.
+    """Create directories.
     @param root: root path.
     @param folders: folders list to be created.
     @raise CuckooOperationalError: if fails to create folder.
