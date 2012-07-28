@@ -58,7 +58,7 @@ class Agent:
         @return: status.
         """
         return CURRENT_STATUS
-   
+
     def get_error(self):
         """Get error message.
         @return: error message.
