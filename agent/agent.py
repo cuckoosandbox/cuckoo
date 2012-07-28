@@ -34,8 +34,8 @@ class Agent:
 
     def _get_root(self, root="", container="cuckoo", create=True):
         """Get Cuckoo path.
-        @param root: root folder.
-        @param container: folder which will contain Cuckoo.
+        @param root: force root folder, don't detect it.
+        @param container: folder which will contain Cuckoo, not used root parameter is used.
         @param create: create folder.
         """
         if not root:
