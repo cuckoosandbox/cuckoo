@@ -124,7 +124,7 @@ class MachineManager(object):
                     machine.locked = False
 
     def running(self):
-        """Returns running virutal machines.
+        """Returns running virtual machines.
         @return: running virtual machines list.
         """
         return [m for m in self.machines if m.locked]
