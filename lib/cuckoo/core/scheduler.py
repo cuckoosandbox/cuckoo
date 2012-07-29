@@ -73,12 +73,6 @@ class AnalysisManager(Thread):
         except (AttributeError, OSError) as e:
             raise CuckooAnalysisError("Unable to create symlink/copy from \"%s\" to \"%s\"" % (self.analysis.stored_file_path, self.analysis.results_folder))
 
-        if self.cfg.cuckoo.delete_original:
-            try:
-                os.remove(self.task.file_path)
-            except OSError as e:
-                log.warning("Unable to delete original file at path \"%s\": %s" % (self.task.file_path, e.message))
-
     def build_options(self):
         """Get analysis options.
         @return: options dict.
@@ -154,6 +148,13 @@ class AnalysisManager(Thread):
         except (CuckooMachineError, CuckooGuestError) as e:
             raise CuckooAnalysisError(e.message)
         finally:
+            # Delete original file.
+            if self.cfg.cuckoo.delete_original:
+                try:
+                    os.remove(self.task.file_path)
+                except OSError as e:
+                    log.warning("Unable to delete original file at path \"%s\": %s" % (self.task.file_path, e.message))
+
             # Stop machine
             mmanager.stop(vm.label)
             # Release the machine from lock
