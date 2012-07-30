@@ -35,7 +35,7 @@ class Processor:
             __import__(name, globals(), locals(), ["dummy"], -1)
 
     def run(self):
-        """Run all processors.
+        """Run all processors and all signatures.
         @return: processing results.
         """
         results = {}
