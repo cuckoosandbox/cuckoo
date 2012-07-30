@@ -60,20 +60,27 @@ class Reporter:
         Report()
 
         for plugin in Report.__subclasses__():
-            current = plugin()
-            current.set_path(self.analysis_path)
-            current.cfg = Config(current.conf_path)
-            module = inspect.getmodule(current)
-            module_name = module.__name__.rsplit(".", 1)[1]
-            current.set_options(self.cfg.get(module_name))
+            self._run_report(plugin, data)
 
-            try:
-                # Run report, for each report a brand new copy of results is
-                # created, to prevent a reporting module to edit global 
-                # result set and affect other reporting modules.
-                current.run(copy.deepcopy(data))
-                log.debug("Executed reporting module \"%s\"" % current.__class__.__name__)
-            except NotImplementedError:
-                continue
-            except CuckooReportError as e:
-                log.warning("Failed to execute reporting module \"%s\": %s" % (current.__class__.__name__, e.message))
+    def _run_report(self, plugin, data):
+        """Run a single report plugin.
+        @param plugin: report plugin.
+        @param data: results data from analysis.
+        """
+        current = plugin()
+        current.set_path(self.analysis_path)
+        current.cfg = Config(current.conf_path)
+        module = inspect.getmodule(current)
+        module_name = module.__name__.rsplit(".", 1)[1]
+        current.set_options(self.cfg.get(module_name))
+
+        try:
+            # Run report, for each report a brand new copy of results is
+            # created, to prevent a reporting module to edit global
+            # result set and affect other reporting modules.
+            current.run(copy.deepcopy(data))
+            log.debug("Executed reporting module \"%s\"" % current.__class__.__name__)
+        except NotImplementedError:
+            return
+        except CuckooReportError as e:
+            log.warning("Failed to execute reporting module \"%s\": %s" % (current.__class__.__name__, e.message))
