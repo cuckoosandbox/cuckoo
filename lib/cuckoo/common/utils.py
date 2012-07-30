@@ -74,14 +74,7 @@ def datetime_to_iso(timestamp):
     @param timestamp: timestamp string
     @return: ISO datetime
     """  
-    if hasattr(datetime, 'strptime'):
-        # Python 2.6
-        strptime = datetime.strptime
-    else:
-        # Python 2.4 equivalent
-        import time
-        strptime = lambda date_string, format: datetime(*(time.strptime(date_string, format)[0:6]))
-    return strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat()
+    return datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat()
 
 class File:
     """Basic file object class with all useful utilities."""
