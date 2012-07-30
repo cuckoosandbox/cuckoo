@@ -70,7 +70,9 @@ class Processor:
         except NotImplementedError:
             return
         except CuckooProcessingError as e:
-            log.warning("Failed to execute processing module \"%s\": %s" % (current.__class__.__name__, e.message))
+            log.warning("The processing module \"%s\" returned the following error: %s" % (current.__class__.__name__, e.message))
+        except Exception as e:
+            log.warning("Failed to run the processing module \"%s\": %s" % (current.__class__.__name__, e))
 
     def _run_signature(self, signature, results, sigs):
         """Run a signature.
@@ -78,6 +80,7 @@ class Processor:
         @param signs: signature results dict.
         """
         current = signature()
+        log.debug("Running signature \"%s\"" % current.name)
 
         if not current.enabled:
             return
@@ -94,3 +97,5 @@ class Processor:
                 log.debug("Analysis at \"%s\" matched signature \"%s\"" % (self.analysis_path, current.name))
         except NotImplementedError:
             return
+        except Exception as e:
+            log.warning("Failed to run signature \"%s\": %s" % (current.name, e))
