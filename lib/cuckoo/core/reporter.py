@@ -71,7 +71,10 @@ class Reporter:
         current.set_path(self.analysis_path)
         current.cfg = Config(current.conf_path)
         module = inspect.getmodule(current)
-        module_name = module.__name__.rsplit(".", 1)[1]
+        if "." in module.__name__:
+            module_name = module.__name__.rsplit(".", 1)[1]
+        else:
+            module_name = module.__name__
 
         try:
             current.set_options(self.cfg.get(module_name))
