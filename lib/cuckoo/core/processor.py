@@ -42,41 +42,55 @@ class Processor:
         Processing()
 
         for module in Processing.__subclasses__():
-            current = module()
-            current.set_path(self.analysis_path)
-            current.cfg = Config(current.conf_path)
-
-            try:
-                results[current.key] = current.run()
-                log.debug("Executed processing module \"%s\"" % current.__class__.__name__)
-            except NotImplementedError:
-                continue
-            except CuckooProcessingError as e:
-                log.warning("Failed to execute processing module \"%s\": %s" % (current.__class__.__name__, e.message))
+            self._run_processor(module, results)
 
         Signature()
         sigs = []
 
         for signature in Signature.__subclasses__():
-            current = signature()
-
-            if not current.enabled:
-                continue
-
-            try:
-                if current.run(copy.deepcopy(results)):
-                    matched = {"name" : current.name,
-                               "description" : current.description,
-                               "severity" : current.severity,
-                               "references" : current.references,
-                               "data" : current.data,
-                               "alert" : current.alert}
-                    sigs.append(matched)
-                    log.debug("Analysis at \"%s\" matched signature \"%s\"" % (self.analysis_path, current.name))
-            except NotImplementedError:
-                continue
+            self._run_signature(signature, results, sigs)
 
         sigs.sort(key=lambda key: key["severity"])
         results["signatures"] = sigs
 
         return results
+
+    def _run_processor(self, module, results):
+        """Run a processor.
+        @param module: processor to run.
+        @param results: results dict.
+        """
+        current = module()
+        current.set_path(self.analysis_path)
+        current.cfg = Config(current.conf_path)
+
+        try:
+            results[current.key] = current.run()
+            log.debug("Executed processing module \"%s\"" % current.__class__.__name__)
+        except NotImplementedError:
+            return
+        except CuckooProcessingError as e:
+            log.warning("Failed to execute processing module \"%s\": %s" % (current.__class__.__name__, e.message))
+
+    def _run_signature(self, signature, results, sigs):
+        """Run a signature.
+        @param signature: signature to run.
+        @param signs: signature results dict.
+        """
+        current = signature()
+
+        if not current.enabled:
+            return
+
+        try:
+            if current.run(copy.deepcopy(results)):
+                matched = {"name" : current.name,
+                           "description" : current.description,
+                           "severity" : current.severity,
+                           "references" : current.references,
+                           "data" : current.data,
+                           "alert" : current.alert}
+                sigs.append(matched)
+                log.debug("Analysis at \"%s\" matched signature \"%s\"" % (self.analysis_path, current.name))
+        except NotImplementedError:
+            return
