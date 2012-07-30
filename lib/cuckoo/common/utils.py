@@ -33,7 +33,16 @@ def create_folders(root=".", folders=[]):
     for folder in folders:
         if os.path.exists(os.path.join(root, folder)):
             continue
+        else:
+            create_folder(root, folder)
 
+def create_folder(root=".", folder=None):
+    """Create directory.
+    @param root: root path.
+    @param folder: folder name to be created.
+    @raise CuckooOperationalError: if fails to create folder.
+    """
+    if not os.path.exists(os.path.join(root, folder)) and folder:
         try:
             folder_path = os.path.join(root, folder)
             os.makedirs(folder_path)

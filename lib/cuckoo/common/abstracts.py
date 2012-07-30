@@ -6,8 +6,9 @@ import os
 import logging
 import ConfigParser
 
-from lib.cuckoo.common.exceptions import CuckooMachineError
+from lib.cuckoo.common.exceptions import CuckooMachineError, CuckooOperationalError, CuckooReportError
 from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.utils import create_folder
 
 log = logging.getLogger(__name__)
 
@@ -213,8 +214,10 @@ class Report(object):
         self.conf_path = os.path.join(self.analysis_path, "analysis.conf")
         self.reports_path = os.path.join(self.analysis_path, "reports")
 
-        if not os.path.exists(self.reports_path):
-            os.mkdir(self.reports_path)
+        try:
+            create_folder(folder=self.reports_path)
+        except CuckooOperationalError as e:
+            CuckooReportError(e.message)
 
     def set_options(self, options):
         """Set report options.

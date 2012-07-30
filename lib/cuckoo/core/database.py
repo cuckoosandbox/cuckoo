@@ -7,8 +7,10 @@ import sys
 import sqlite3
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.exceptions import CuckooDatabaseError
+from lib.cuckoo.common.exceptions import CuckooDatabaseError, CuckooOperationalError
 from lib.cuckoo.common.abstracts import Dictionary
+from lib.cuckoo.common.utils import create_folder
+
 
 # from http://docs.python.org/library/sqlite3.html
 def dict_factory(cursor, row):
@@ -42,9 +44,9 @@ class Database:
         db_dir = os.path.dirname(self.db_file)
         if not os.path.exists(db_dir):
             try:
-                os.makedirs(db_dir)
-            except OSError as e:
-                return False
+                create_folder(folder=db_dir)
+            except CuckooOperationalError as e:
+                raise CuckooDatabaseError("Unable to create database directory: %s" % e.message)
 
         conn = sqlite3.connect(self.db_file)
         cursor = conn.cursor()
