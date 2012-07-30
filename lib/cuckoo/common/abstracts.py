@@ -63,7 +63,7 @@ class MachineManager(object):
                 machine.ip = machine_opts["ip"]
                 machine.locked = False
                 self.machines.append(machine)
-            except AttributeError:
+            except (AttributeError, CuckooOperationalError):
                 log.warning("Configuration details about machine %s are missing. Continue" % machine_id)
                 continue
 
