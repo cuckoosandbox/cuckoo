@@ -120,8 +120,7 @@ class Database:
                                 "WHERE lock = 0 "      \
                                 "AND status = 0 "      \
                                 "ORDER BY priority DESC, added_on LIMIT 1;")
-        except sqlite3.OperationalError as e:
-            print e
+        except sqlite3.OperationalError:
             return None
 
         row = self.cursor.fetchone()
