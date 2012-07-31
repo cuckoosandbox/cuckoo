@@ -19,7 +19,7 @@ class GuestManager:
     """Guest machine manager."""
 
     def __init__(self, ip, platform="windows"):
-        """@param ip: IP address.
+        """@param ip: guest IP address.
         @param platform: OS type.
         """
         self.platform = platform
