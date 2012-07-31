@@ -9,9 +9,9 @@ import shutil
 import logging
 from threading import Thread, Lock
 
-from lib.cuckoo.common.exceptions import CuckooAnalysisError, CuckooMachineError, CuckooGuestError
+from lib.cuckoo.common.exceptions import CuckooAnalysisError, CuckooMachineError, CuckooGuestError, CuckooOperationalError
 from lib.cuckoo.common.abstracts import Dictionary, MachineManager
-from lib.cuckoo.common.utils import File, create_folders
+from lib.cuckoo.common.utils import File, create_folders, create_folder
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.guest import GuestManager
@@ -44,7 +44,10 @@ class AnalysisManager(Thread):
         if os.path.exists(self.analysis.results_folder):
             raise CuckooAnalysisError("Analysis results folder already exists at path \"%s\", analysis aborted" % self.analysis.results_folder)
 
-        os.mkdir(self.analysis.results_folder)
+        try:
+            create_folder(folder=self.analysis.results_folder)
+        except CuckooOperationalError:
+            raise CuckooAnalysisError("Unable to create analysis folder %s" % self.analysis.results_folder)
 
     def store_file(self):
         """Store sample file.
