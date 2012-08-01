@@ -43,6 +43,9 @@ class Agent:
                 root = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, container)
             elif self.system == "linux" or self.system == "darwin":
                 root = os.path.join(os.environ["HOME"], container)
+            else:
+                self.error = "Unable to detect OS system"
+                return False
 
         if create and not os.path.exists(root):
             try:
