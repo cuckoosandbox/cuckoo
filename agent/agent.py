@@ -53,6 +53,10 @@ class Agent:
             except OSError as e:
                 self.error = e
                 return False
+        else:
+            if not os.path.exists(root):
+                self.error = "Directory not found: %s" % root
+                return False
 
         return root
 
