@@ -11,3 +11,4 @@ This chapter explains how to use Cuckoo.
     submit
     packages
     results
+    utilities
