@@ -181,7 +181,8 @@ class Agent:
             return False
 
         try:
-            proc = subprocess.Popen([sys.executable, self.analyzer_path], cwd=os.path.dirname(self.analyzer_path))
+            proc = subprocess.Popen([sys.executable, self.analyzer_path],
+                                    cwd=os.path.dirname(self.analyzer_path))
             self.analyzer_pid = proc.pid
         except OSError as e:
             self.error = e
