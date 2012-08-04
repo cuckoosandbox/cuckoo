@@ -119,8 +119,8 @@ class Agent:
         return True
 
     def add_config(self, options):
-        """Add configuration.
-        @param options: configuration options.
+        """Creates analysis.cond file from current analysis options.
+        @param options: current configuration options, dict format.
         @return: operation status.
         """
         root = self._get_root()
