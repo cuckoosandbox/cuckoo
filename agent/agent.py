@@ -138,8 +138,12 @@ class Agent:
             config.set("analysis", key, value)
 
         config_path = os.path.join(root, "analysis.conf")
-        with open(config_path, "wb") as config_file:
-            config.write(config_file)
+        try:
+            with open(config_path, "wb") as config_file:
+                config.write(config_file)
+        except OSError as e:
+            self.error = e
+            return False
 
         return True
 
