@@ -7,6 +7,7 @@ import tempfile
 from nose.tools import assert_equals
 
 from lib.cuckoo.core.processor import Processor
+from lib.cuckoo.common.constants import CUCKOO_VERSION
 from lib.cuckoo.common.abstracts import Processing, Signature
 
 
@@ -15,28 +16,21 @@ class TestProcessor:
         self.tmp = tempfile.mkdtemp()
         self.p = Processor(self.tmp)
 
-    def test_run_processor(self):
-        res = {"a": "b"}
-        tmp = self.p._run_processor(ProcessingMock, res)
+    def test_run_processing(self):
+        res = self.p._run_processing(ProcessingMock)
         assert "foo" in res
-
-    def test_run_processor_alter_results(self):
-        """@note: regression test."""
-        res = {"bar": "b"}
-        self.p._run_processor(ProcessingMock, res)
-        assert_equals(res["bar"], "b")
+        assert "bar" in res["foo"]
 
     def test_run_signature(self):
-        res = {"foo": "bar"}
-        sigs = []
-        self.p._run_signature(SignatureMock, res, sigs)
-        assert sigs
+        data = {"foo": "bar"}
+        res = self.p._run_signature(SignatureMock, data)
+        assert "name" in res
+        assert_equals("mock", res["name"])
 
     def test_run_signature_alter_results(self):
         """@note: regression test."""
         res = {"foo": "bar"}
-        sigs = []
-        self.p._run_signature(SignatureMock, res, sigs)
+        self.p._run_signature(SignatureMock, res)
         assert_equals(res["foo"], "bar")
         
     def tearDown(self):
@@ -51,6 +45,10 @@ class ProcessingMock(Processing):
         return foo
 
 class SignatureMock(Signature):
+    name = "mock"
+    minimum = CUCKOO_VERSION.split("-")[0]
+    maximum = CUCKOO_VERSION.split("-")[0]
+
     def run(self, results):
         if "foo" in results:
             return True
