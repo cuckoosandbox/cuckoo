@@ -16,7 +16,7 @@ except ImportError:
     pass
 
 try:
-    import ssdeep
+    import pydeep
     HAVE_SSDEEP = True
 except ImportError:
     HAVE_SSDEEP = False
@@ -153,7 +153,7 @@ class File:
             return None
 
         try:
-            return ssdeep.ssdeep().hash_file(self.file_path)
+            return pydeep.hash_file(self.file_path)
         except Exception:
             return None
 
