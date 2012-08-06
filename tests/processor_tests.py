@@ -32,7 +32,15 @@ class TestProcessor:
         res = {"foo": "bar"}
         self.p._run_signature(SignatureMock, res)
         assert_equals(res["foo"], "bar")
-        
+
+    def test_signature_disabled(self):
+        res = {"foo": "bar"}
+        assert_equals(None, self.p._run_signature(SignatureDisabledMock, res))
+
+    def test_signature_wrong_version(self):
+        res = {"foo": "bar"}
+        assert_equals(None, self.p._run_signature(SignatureWrongVersionMock, res))
+
     def tearDown(self):
         os.rmdir(self.tmp)
 
@@ -55,7 +63,14 @@ class SignatureMock(Signature):
         else:
             return False
 
-class SignatureAlterMock(Signature):
+class SignatureAlterMock(SignatureMock):
     def run(self, results):
         results = None
-        return True
+
+class SignatureDisabledMock(SignatureMock):
+    enabled = False
+
+class SignatureWrongVersionMock(SignatureMock):
+    minimum = "0.0..-abc"
+    maximum = "0.0..-abc"
+
