@@ -48,14 +48,14 @@ class Processor:
 
         try:
             data = current.run()
-            log.debug("Executed processing module \"%s\"" % current.__class__.__name__)
+            log.debug("Executed processing module \"%s\" on analysis at \"%s\"" % (current.__class__.__name__, self.analysis_path))
             return {current.key : data}
         except NotImplementedError:
             log.debug("The processing module \"%s\" is not correctly implemented" % current.__classs__.__name__)
         except CuckooProcessingError as e:
-            log.warning("The processing module \"%s\" returned the following error: %s" % (current.__class__.__name__, e.message))
+            log.warning("The processing module \"%s\" returned the following error: %s" % (current.__class__.__name__, e))
         except Exception as e:
-            log.warning("Failed to run the processing module \"%s\": %s" % (current.__class__.__name__, e))
+            log.exception("Failed to run the processing module \"%s\":" % (current.__class__.__name__))
 
         return None
 
@@ -97,7 +97,7 @@ class Processor:
         except NotImplementedError:
             log.debug("The signature \"%s\" is not correctly implemented" % current.name)
         except Exception as e:
-            log.warning("Failed to run signature \"%s\": %s" % (current.name, e))
+            log.exception("Failed to run signature \"%s\":" % (current.name))
 
         return None
 

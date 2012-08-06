@@ -50,7 +50,7 @@ class Reporter:
             try:
                 __import__(path, globals(), locals(), ["dummy"], -1)
             except CuckooDependencyError as e:
-                log.warning("Unable to import reporting module \"%s\": %s" % (name, e.message))
+                log.warning("Unable to import reporting module \"%s\": %s" % (name, e))
 
     def run(self, data):
         """Generates all reports.
@@ -71,6 +71,7 @@ class Reporter:
         current.set_path(self.analysis_path)
         current.cfg = Config(current.conf_path)
         module = inspect.getmodule(current)
+
         if "." in module.__name__:
             module_name = module.__name__.rsplit(".", 1)[1]
         else:
@@ -90,4 +91,4 @@ class Reporter:
         except NotImplementedError:
             return
         except CuckooReportError as e:
-            log.warning("Failed to execute reporting module \"%s\": %s" % (current.__class__.__name__, e.message))
+            log.warning("Failed to execute reporting module \"%s\": %s" % (current.__class__.__name__, e))

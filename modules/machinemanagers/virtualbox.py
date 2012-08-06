@@ -43,7 +43,7 @@ class VirtualBox(MachineManager):
                              stderr=subprocess.PIPE)
         except OSError as e:
             raise CuckooMachineError("VBoxManage failed starting the machine in %s mode: %s"
-                                     % (mode.upper(), e.message))
+                                     % (mode.upper(), e))
 
     def stop(self, label):
         """Stops a virtual machine.
@@ -56,7 +56,7 @@ class VirtualBox(MachineManager):
                                stderr=subprocess.PIPE):
                 raise CuckooMachineError("VBoxManage exited with error powering off the machine")
         except OSError as e:
-            raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e.message)
+            raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e)
 
         time.sleep(3)
 
@@ -66,7 +66,7 @@ class VirtualBox(MachineManager):
                                stderr=subprocess.PIPE):
                 raise CuckooMachineError("VBoxManage exited with error restoring the machine's snapshot")
         except OSError as e:
-            raise CuckooMachineError("VBoxManage failed restoring the machine: %s" % e.message)
+            raise CuckooMachineError("VBoxManage failed restoring the machine: %s" % e)
 
     def _list(self):
         """Lists virtual machines installed.
@@ -78,7 +78,7 @@ class VirtualBox(MachineManager):
                                     stderr=subprocess.PIPE)
             output = proc.communicate()
         except OSError as e:
-            raise CuckooMachineError("VBoxManage error listing installed machines: %s" % e.message)
+            raise CuckooMachineError("VBoxManage error listing installed machines: %s" % e)
 
         machines = []
         for line in output[0].split("\n"):

@@ -47,7 +47,7 @@ Following is an example of a working JSON reporting module:
                     report.write(json.dumps(results, sort_keys=False, indent=4))
                     report.close()
                 except (TypeError, IOError) as e:
-                    raise CuckooReportError("Failed to generate JSON report: %s" % e.message)
+                    raise CuckooReportError("Failed to generate JSON report: %s" % e)
 
 This code is very simple, it basically just receives the global container produced by the
 processing modules, converts it into JSON and writes it to a file.

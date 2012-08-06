@@ -215,7 +215,7 @@ class Analyzer:
                     try:
                         key, value = field.strip().split("=")
                     except ValueError as e:
-                        log.warning("Failed parsing option (%s): %s" % (field, e.message))
+                        log.warning("Failed parsing option (%s): %s" % (field, e))
                         continue
 
                     options[key.strip()] = value.strip()
@@ -262,7 +262,7 @@ class Analyzer:
         try:
             package_class = Package.__subclasses__()[0]
         except IndexError as e:
-            raise CuckooError("Unable to select package class (package=%s): %s" % (package_name, e.message))
+            raise CuckooError("Unable to select package class (package=%s): %s" % (package_name, e))
         
         pack = package_class(self.get_options())
 
@@ -322,11 +322,11 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         error = "Keyboard Interrupt"
     except CuckooError as e:
-        error = e.message
+        error = e
         if len(log.handlers) > 0:
             log.critical(error)
         else:
-            sys.stderr.write("%s\n" % e.message)
+            sys.stderr.write("%s\n" % e)
     finally:
         server = xmlrpclib.Server("http://127.0.0.1:8000")
         if error:

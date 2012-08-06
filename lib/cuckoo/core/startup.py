@@ -43,7 +43,7 @@ def check_dependencies():
         try:
             __import__(dependency)
         except ImportError as e:
-            raise CuckooStartupError("Unable to import \"%s\"." % dependency)
+            raise CuckooStartupError("Unable to import \"%s\"" % dependency)
 
     return True
 
@@ -71,7 +71,7 @@ def create_structure():
     try:
         create_folders(root=CUCKOO_ROOT,folders=folders)
     except CuckooOperationalError as e:
-        raise CuckooStartupError(e.message)
+        raise CuckooStartupError(e)
 
 def init_logging():
     """Initialize logging."""

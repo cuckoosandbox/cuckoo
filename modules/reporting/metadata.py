@@ -244,5 +244,5 @@ class Metadata(Report):
             self.m.export(report, 0, namespace_ = '', namespacedef_ = 'xmlns="http://xml/metadataSharing.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xml/metadataSharing.xsd"')
             report.close()
         except (TypeError, IOError) as e:
-            raise CuckooReportError("Failed to generate MAEC Metadata report: %s" % e.message)
+            raise CuckooReportError("Failed to generate MAEC Metadata report: %s" % e)
 

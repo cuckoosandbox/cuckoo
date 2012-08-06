@@ -187,6 +187,8 @@ class Signature(object):
     references = []
     alert = False
     enabled = True
+    minimum = None
+    maximum = None
 
     def __init__(self):
         self.data = []
@@ -217,7 +219,7 @@ class Report(object):
         try:
             create_folder(folder=self.reports_path)
         except CuckooOperationalError as e:
-            CuckooReportError(e.message)
+            CuckooReportError(e)
 
     def set_options(self, options):
         """Set report options.

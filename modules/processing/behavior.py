@@ -43,7 +43,7 @@ class ParseProcessLog:
             status_value = row[7] # Success or Failure?
             return_value = row[8] # Value returned by the function.
         except IndexError as e:
-            log.debug("Unable to parse process log row: %s" % e.message)
+            log.debug("Unable to parse process log row: %s" % e)
             return False
 
         if not self.process_id:
@@ -67,7 +67,7 @@ class ParseProcessLog:
             try:                
                 (arg_name, arg_value) = row[index].split("->")
             except ValueError as e:
-                log.debug("Unable to parse analysis row argument (row=%s): %s" % (row[index], e.message))
+                log.debug("Unable to parse analysis row argument (row=%s): %s" % (row[index], e))
                 continue
 
             argument["name"] = arg_name
@@ -112,7 +112,7 @@ class ParseProcessLog:
                 self._parse(row)
         except csv.Error as e:
             log.warning("Something went wrong while parsing analysis log: %s"
-                        % e.message)
+                        % e)
 
         return True
 

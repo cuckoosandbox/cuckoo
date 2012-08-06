@@ -34,7 +34,7 @@ class VirusTotal(Processing):
         try:
             md5 = File(self.file_path).get_md5()
         except IOError as e:
-            raise CuckooProcessingError("Unable to open \"%s\": %s" % (self.file_path, e.message))
+            raise CuckooProcessingError("Unable to open \"%s\": %s" % (self.file_path, e))
 
         data = urllib.urlencode({"resource" : md5, "apikey" : VIRUSTOTAL_KEY})
 

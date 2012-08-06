@@ -18,12 +18,13 @@ log = logging.getLogger(__name__)
 class GuestManager:
     """Guest machine manager."""
 
-    def __init__(self, ip, platform="windows"):
+    def __init__(self, vm_id, ip, platform="windows"):
         """@param ip: guest IP address.
         @param platform: OS type.
         """
-        self.platform = platform
+        self.id = vm_id
         self.ip = ip
+        self.platform = platform
         self.server = xmlrpclib.Server("http://%s:%s" % (ip, CUCKOO_GUEST_PORT), allow_none=True)
 
     def wait(self, status):
@@ -31,17 +32,17 @@ class GuestManager:
         @param status: status.
         @return: always True.
         """
-        log.debug("Waiting for status 0x%.04x" % status)
+        log.debug("%s: waiting for status 0x%.04x" % (self.id, status))
 
         while True:
             try:
                 if self.server.get_status() == status:
-                    log.debug("Status ready")
+                    log.debug("%s: status ready" % self.id)
                     break
             except:
                 pass
 
-            log.debug("Not ready yet")
+            log.debug("%s: not ready yet" % self.id)
             time.sleep(1)
 
         return True
@@ -71,7 +72,7 @@ class GuestManager:
         data = xmlrpclib.Binary(zip_data.getvalue())
         zip_data.close()
 
-        log.debug("Uploading analyzer to guest (ip=%s)" % self.ip)
+        log.debug("Uploading analyzer to guest (id=%s, ip=%s)" % (self.id, self.ip))
         self.server.add_analyzer(data)
 
     def start_analysis(self, options):
@@ -82,7 +83,7 @@ class GuestManager:
         if not os.path.exists(options["file_path"]):
             return False
 
-        log.info("Starting analysis on guest (ip=%s)" % self.ip)
+        log.info("Starting analysis on guest (id=%s, ip=%s)" % (self.id, self.ip))
 
         socket.setdefaulttimeout(180)
 
@@ -97,7 +98,7 @@ class GuestManager:
             self.server.add_malware(data, options["file_name"])
             self.server.execute()
         except socket.timeout:
-            raise CuckooGuestError("Guest communication timeout. Check networking or try to increase timeout")
+            raise CuckooGuestError("%s: guest communication timeout, check networking or try to increase timeout" % self.id)
 
     def wait_for_completion(self):
         """Wai for analysis completion.
@@ -107,13 +108,13 @@ class GuestManager:
             try:
                 status = self.server.get_status()
                 if status == CUCKOO_GUEST_COMPLETED:
-                    log.info("Analysis completed successfully")
+                    log.info("%s: analysis completed successfully" % self.id)
                     break
                 elif status == CUCKOO_GUEST_FAILED:
-                    log.error("Analysis failed: %s" % self.server.get_error())
+                    log.error("%s: analysis failed: %s" % (self.id, self.server.get_error()))
                     return False
                 else:
-                    log.debug("Analysis not completed yet")
+                    log.debug("%s: analysis not completed yet" % self.id)
             except:
                 pass
 
@@ -131,15 +132,16 @@ class GuestManager:
         zip_data = StringIO()
         zip_data.write(data)
 
-        with ZipFile(zip_data, "r") as archive:
-            if not os.path.exists(folder):
-                try:
-                    os.mkdir(folder)
-                except OSError as e:
-                    log.error("Failed to create results folder: %s" % e.message)
-                    return False
+        archive = ZipFile(zip_data, "r")
+        if not os.path.exists(folder):
+            try:
+                os.mkdir(folder)
+            except (IOError, OSError) as e:
+                log.exception("Failed to create the results folder")
+                return False
 
-            log.debug("Extracting results to %s" % folder)
-            archive.extractall(folder)
+        log.debug("Extracting results to %s" % folder)
+        archive.extractall(folder)
+        archive.close()
 
         return True

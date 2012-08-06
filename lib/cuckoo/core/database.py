@@ -11,8 +11,7 @@ from lib.cuckoo.common.exceptions import CuckooDatabaseError, CuckooOperationalE
 from lib.cuckoo.common.abstracts import Dictionary
 from lib.cuckoo.common.utils import create_folder
 
-
-# from http://docs.python.org/library/sqlite3.html
+# From http://docs.python.org/library/sqlite3.html
 def dict_factory(cursor, row):
     d = Dictionary()
     for idx, col in enumerate(cursor.description):
@@ -46,7 +45,7 @@ class Database:
             try:
                 create_folder(folder=db_dir)
             except CuckooOperationalError as e:
-                raise CuckooDatabaseError("Unable to create database directory: %s" % e.message)
+                raise CuckooDatabaseError("Unable to create database directory: %s" % e)
 
         conn = sqlite3.connect(self.db_file)
         cursor = conn.cursor()

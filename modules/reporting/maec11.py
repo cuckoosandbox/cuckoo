@@ -380,4 +380,4 @@ class Report(Report):
             self.m.export(report, 0, namespace_ = '', name_ = 'MAEC_Bundle', namespacedef_ = 'xsi:schemaLocation="http://maec.mitre.org/XMLSchema/maec-core-1 file:MAEC_v1.1.xsd"')
             report.close()
         except (TypeError, IOError) as e:
-            raise CuckooReportError("Failed to generate MAEC 1.1 report: %s" % e.message)
+            raise CuckooReportError("Failed to generate MAEC 1.1 report: %s" % e)
