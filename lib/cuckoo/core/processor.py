@@ -74,7 +74,7 @@ class Processor:
         version = CUCKOO_VERSION.split("-")[0]
         if current.minimum:
             try:
-                if StrictVersion(version) < StrictVersion(current.minimum):
+                if StrictVersion(version) < StrictVersion(current.minimum.split("-")[0]):
                     log.debug("You are running an older incompatible version of Cuckoo, the signature \"%s\" requires minimum version %s"
                               % (current.name, current.minimum))
                     return None
@@ -84,7 +84,7 @@ class Processor:
 
         if current.maximum:
             try:
-                if StrictVersion(version) > StrictVersion(current.maximum):
+                if StrictVersion(version) > StrictVersion(current.maximum.split("-")[0]):
                     log.debug("You are running a newer incompatible version of Cuckoo, the signature \"%s\" requires maximum version %s"
                               % (current.name, current.maximum))
                     return None
