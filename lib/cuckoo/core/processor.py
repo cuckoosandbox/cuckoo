@@ -99,7 +99,9 @@ class Processor:
                            "severity" : current.severity,
                            "references" : current.references,
                            "data" : current.data,
-                           "alert" : current.alert}
+                           "alert" : current.alert,
+                           "categories": current.categories,
+                           "authors": current.authors}
                 log.debug("Analysis at \"%s\" matched signature \"%s\"" % (self.analysis_path, current.name))
                 return matched
         except NotImplementedError:

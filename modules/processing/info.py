@@ -24,7 +24,8 @@ class AnalysisInformation(Processing):
             "version" : CUCKOO_VERSION,
             "started" : datetime.fromtimestamp(started).strftime("%Y-%m-%d %H:%M:%S"),
             "ended" : datetime.fromtimestamp(ended).strftime("%Y-%m-%d %H:%M:%S"),
-            "duration" : "%d seconds" % (ended - started)
+            "duration" : "%d seconds" % (ended - started),
+            "analysis_path": self.analysis_path
         }
 
         return info
