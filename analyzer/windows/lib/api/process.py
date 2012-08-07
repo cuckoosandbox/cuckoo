@@ -59,7 +59,12 @@ class Process:
         self.h_process = KERNEL32.OpenProcess(PROCESS_ALL_ACCESS,
                                               False,
                                               int(self.pid))
-        return True
+        if self.h_process:
+            return True
+        else:
+            err = get_error_string(KERNEL32.GetLastError())
+            log.error("Failed to open process %d (Error: %s)" % (int(self.pid), err))
+            return False
 
     def exit_code(self):
         """Get process exit code.
