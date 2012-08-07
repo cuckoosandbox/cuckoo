@@ -59,7 +59,12 @@ class Process:
         self.h_process = KERNEL32.OpenProcess(PROCESS_ALL_ACCESS,
                                               False,
                                               int(self.pid))
-        return True
+        if self.h_process:
+            return True
+        else:
+            err = get_error_string(KERNEL32.GetLastError())
+            log.error("Failed to open process %d (Error: %s)" % (int(self.pid), err))
+            return False
 
     def exit_code(self):
         """Get process exit code.
@@ -90,6 +95,7 @@ class Process:
         @return: operation status.
         """
         if not os.access(path, os.X_OK):
+            log.error("Cannot access path of executable \"%s\"." % path)
             return False
 
         startup_info = STARTUPINFO()
@@ -124,7 +130,8 @@ class Process:
                      % (path, args, self.pid))
             return True
         else:
-            log.error("Failed to execute process from path \"%s\" with arguments \"%s\"" % (path, args))
+            err = get_error_string(KERNEL32.GetLastError())
+            log.error("Failed to execute process from path \"%s\" with arguments \"%s\" (Error: %s)" % (path, args, err))
             return False
 
     def resume(self):
@@ -144,7 +151,8 @@ class Process:
             log.info("Successfully resumed process with pid %d" % self.pid)
             return True
         else:
-            log.error("Failed to resume process with pid %d" % self.pid)
+            err = get_error_string(KERNEL32.GetLastError())
+            log.error("Failed to resume process with pid %d (Error: %s)" % (self.pid, err))
             return False
 
     def terminate(self):
@@ -158,7 +166,8 @@ class Process:
             log.info("Successfully terminated process with pid %d" % self.pid)
             return True
         else:
-            log.error("Failed to terminate process with pid %d" % self.pid)
+            err = get_error_string(KERNEL32.GetLastError())
+            log.error("Failed to terminate process with pid %d (Error: %s)" % (self.pid, err))
             return False
 
     def inject(self, dll=os.path.join("dll", "cuckoomon.dll"), apc=False):

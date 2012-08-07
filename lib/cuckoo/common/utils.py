@@ -192,5 +192,6 @@ class File:
         infos["sha512"] = self.get_sha512()
         infos["ssdeep"] = self.get_ssdeep()
         infos["type"] = self.get_type()
+        infos["path"] = self.file_path
 
         return infos

@@ -17,7 +17,8 @@ class Debug(Processing):
         debug = {}
 
         if os.path.exists(self.log_path):
-            debug["log"] = open(self.log_path, "rb").read()
+            with open(self.log_path, "rb") as log:
+                debug["log"] = log.read()
         else:
             debug["log"] = ""
 
