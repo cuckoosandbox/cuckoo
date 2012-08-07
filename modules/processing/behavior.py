@@ -71,7 +71,7 @@ class ParseProcessLog:
                 continue
 
             argument["name"] = arg_name
-            argument["value"] = convert_to_printable(arg_value)
+            argument["value"] = convert_to_printable(arg_value).lstrip("\\??\\")
             arguments.append(argument)
 
         call["timestamp"] = timestamp
