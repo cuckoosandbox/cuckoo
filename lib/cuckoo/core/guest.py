@@ -92,8 +92,9 @@ class GuestManager:
             self.upload_analyzer()
             self.server.add_config(options)
     
-            file_data = open(options["file_path"], "rb").read()
-            data = xmlrpclib.Binary(file_data)
+            with open(options["file_path"], "rb") as malware_file:
+                data = xmlrpclib.Binary(malware_file.read())
+                self.server.add_malware(data, options["file_name"])
     
             self.server.add_malware(data, options["file_name"])
             self.server.execute()
