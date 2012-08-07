@@ -219,9 +219,9 @@ class Summary:
 
             for call in process["calls"]:
                 if call["api"].startswith("RegOpenKeyEx"):
-                    registry = ""
+                    registry = 0
                     subkey = ""
-                    handle = ""
+                    handle = 0
 
                     for argument in call["arguments"]:
                         if argument["name"] == "Registry":
