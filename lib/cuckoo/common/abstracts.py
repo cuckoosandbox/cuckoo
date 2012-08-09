@@ -3,10 +3,15 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import logging
 import ConfigParser
 
-from lib.cuckoo.common.exceptions import CuckooMachineError
+from lib.cuckoo.common.exceptions import CuckooMachineError, CuckooOperationalError, CuckooReportError
 from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.utils import create_folder
+
+log = logging.getLogger(__name__)
+
 
 class Dictionary(dict):
     """Cuckoo custom dict."""
@@ -32,6 +37,16 @@ class MachineManager(object):
         self.options = options
 
     def initialize(self, module_name):
+        """Read and load machines configuration, try to check the configuration.
+        @param module_name: module name.
+        """
+        # Load.
+        self._initialize(module_name)
+
+        # Run initialization checks.
+        self._initialize_check()
+
+    def _initialize(self, module_name):
         """Read configuration.
         @param module_name: module name.
         """
@@ -39,24 +54,24 @@ class MachineManager(object):
         mmanager_opts = self.options.get(module_name)
 
         for machine_id in mmanager_opts["machines"].strip().split(","):
-            machine_opts = self.options.get(machine_id)
-            machine = Dictionary()
-            machine.id = machine_id
-            machine.label = machine_opts["label"]
-            machine.platform = machine_opts["platform"]
-            machine.ip = machine_opts["ip"]
-            machine.locked = False
-            self.machines.append(machine)
-
-        # Run initialization checks.
-        self._initialize_check()
+            try:
+                machine_opts = self.options.get(machine_id)
+                machine = Dictionary()
+                machine.id = machine_id
+                machine.label = machine_opts["label"]
+                machine.platform = machine_opts["platform"]
+                machine.ip = machine_opts["ip"]
+                machine.locked = False
+                self.machines.append(machine)
+            except (AttributeError, CuckooOperationalError):
+                log.warning("Configuration details about machine %s are missing. Continue" % machine_id)
+                continue
 
     def _initialize_check(self):
-        """Runs all checks when a machine manager is initialized.
+        """Runs checks against virtualization software when a machine manager is initialized.
         @note: in machine manager modules you may override or superclass this method.
         @raise CuckooMachineError: if a misconfiguration or a unkown vm state is found.
         """
-        # Checks if machines configured are really available.
         try:
             configured_vm = self._list()
             for machine in self.machines:
@@ -110,7 +125,7 @@ class MachineManager(object):
                     machine.locked = False
 
     def running(self):
-        """Returns running virutal machines.
+        """Returns running virtual machines.
         @return: running virtual machines list.
         """
         return [m for m in self.machines if m.locked]
@@ -172,6 +187,8 @@ class Signature(object):
     references = []
     alert = False
     enabled = True
+    minimum = None
+    maximum = None
 
     def __init__(self):
         self.data = []
@@ -199,8 +216,10 @@ class Report(object):
         self.conf_path = os.path.join(self.analysis_path, "analysis.conf")
         self.reports_path = os.path.join(self.analysis_path, "reports")
 
-        if not os.path.exists(self.reports_path):
-            os.mkdir(self.reports_path)
+        try:
+            create_folder(folder=self.reports_path)
+        except CuckooOperationalError as e:
+            CuckooReportError(e)
 
     def set_options(self, options):
         """Set report options.

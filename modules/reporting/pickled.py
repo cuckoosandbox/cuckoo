@@ -19,4 +19,4 @@ class Pickled(Report):
         try:
             pickle.dump(results, open(os.path.join(self.reports_path, "report.pickle"), "w"), 2)
         except (pickle.PickleError, IOError) as e:
-            raise CuckooReportError("Failed to generate Pickle report: %s" % e.message)
+            raise CuckooReportError("Failed to generate Pickle report: %s" % e)

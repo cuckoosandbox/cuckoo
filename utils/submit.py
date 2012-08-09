@@ -29,7 +29,7 @@ def main():
     try:
         args = parser.parse_args()
     except IOError as e:
-        parser.error(e.message)
+        parser.error(e)
         return False
 
     if not os.path.exists(args.path):

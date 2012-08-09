@@ -43,7 +43,7 @@ class ParseProcessLog:
             status_value = row[7] # Success or Failure?
             return_value = row[8] # Value returned by the function.
         except IndexError as e:
-            log.debug("Unable to parse process log row: %s" % e.message)
+            log.debug("Unable to parse process log row: %s" % e)
             return False
 
         if not self.process_id:
@@ -67,11 +67,11 @@ class ParseProcessLog:
             try:                
                 (arg_name, arg_value) = row[index].split("->")
             except ValueError as e:
-                log.debug("Unable to parse analysis row argument (row=%s): %s" % (row[index], e.message))
+                log.debug("Unable to parse analysis row argument (row=%s): %s" % (row[index], e))
                 continue
 
             argument["name"] = arg_name
-            argument["value"] = convert_to_printable(arg_value)
+            argument["value"] = convert_to_printable(arg_value).lstrip("\\??\\")
             arguments.append(argument)
 
         call["timestamp"] = timestamp
@@ -112,7 +112,7 @@ class ParseProcessLog:
                 self._parse(row)
         except csv.Error as e:
             log.warning("Something went wrong while parsing analysis log: %s"
-                        % e.message)
+                        % e)
 
         return True
 
@@ -195,15 +195,47 @@ class Summary:
         """
         keys = []
 
-        for entry in self.proc_results:
-            for call in entry["calls"]:
-                if call["category"] == "registry":
-                    hKey = None
-                    lpSubKey = None
+        def _check_registry(handles, registry, subkey, handle):
+            for known_handle in handles:
+                if handle != 0 and handle == known_handle["handle"]:
+                    return
+
+            name = ""
+            if registry == 0x80000000:
+                name = "HKEY_CLASSES_ROOT\\"
+            elif registry == 0x80000001:
+                name = "HKEY_CURRENT_USER\\"
+            elif registry == 0x80000002:
+                name = "HKEY_LOCAL_MACHINE\\"
+            else:
+                for known_handle in handles:
+                    if registry == known_handle["handle"]:
+                        name = known_handle["name"] + "\\"
+
+            handles.append({"handle" : handle, "name" : name + subkey})
+
+        for process in self.proc_results:
+            handles = []
+
+            for call in process["calls"]:
+                if call["api"].startswith("RegOpenKeyEx"):
+                    registry = 0
+                    subkey = ""
+                    handle = 0
+
                     for argument in call["arguments"]:
-                        if argument["name"] == "SubKey":
-                            if argument["value"] not in keys:
-                                keys.append(argument["value"])
+                        if argument["name"] == "Registry":
+                            registry = int(argument["value"], 16)
+                        elif argument["name"] == "SubKey":
+                            subkey = argument["value"]
+                        elif argument["name"] == "Handle":
+                            handle = int(argument["value"], 16)
+
+                    _check_registry(handles, registry, subkey, handle)
+
+            for handle in handles:
+                if handle["name"] not in keys:
+                    keys.append(handle["name"])
 
         return keys
 

@@ -25,4 +25,4 @@ class HPFClient(Report):
 			hpc.publish(self.options["channel"], json.dumps(results, sort_keys=False, indent=4))
 			hpc.close()
 		except hpfeeds.FeedException as e:
-			raise CuckooReportError("Failed to publish on HPFeeds channel: %s" % e.message)
+			raise CuckooReportError("Failed to publish on HPFeeds channel: %s" % e)

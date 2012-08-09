@@ -16,25 +16,38 @@ except ImportError:
     pass
 
 try:
-    import ssdeep
+    import pydeep
     HAVE_SSDEEP = True
 except ImportError:
     HAVE_SSDEEP = False
 
+from lib.cuckoo.common.exceptions import CuckooOperationalError
+
+
 def create_folders(root=".", folders=[]):
-    """Create direcotry.
+    """Create directories.
     @param root: root path.
-    @param folders: folders name to be created.
+    @param folders: folders list to be created.
+    @raise CuckooOperationalError: if fails to create folder.
     """
     for folder in folders:
         if os.path.exists(os.path.join(root, folder)):
             continue
+        else:
+            create_folder(root, folder)
 
+def create_folder(root=".", folder=None):
+    """Create directory.
+    @param root: root path.
+    @param folder: folder name to be created.
+    @raise CuckooOperationalError: if fails to create folder.
+    """
+    if not os.path.exists(os.path.join(root, folder)) and folder:
         try:
             folder_path = os.path.join(root, folder)
             os.makedirs(folder_path)
         except OSError as e:
-            continue
+            raise CuckooOperationalError("Unable to create folder: %s" % folder_path)
 
 def convert_char(c):
     """Escapes characters.
@@ -61,14 +74,7 @@ def datetime_to_iso(timestamp):
     @param timestamp: timestamp string
     @return: ISO datetime
     """  
-    if hasattr(datetime, 'strptime'):
-        # Python 2.6
-        strptime = datetime.strptime
-    else:
-        # Python 2.4 equivalent
-        import time
-        strptime = lambda date_string, format: datetime(*(time.strptime(date_string, format)[0:6]))
-    return strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat()
+    return datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat()
 
 class File:
     """Basic file object class with all useful utilities."""
@@ -147,7 +153,7 @@ class File:
             return None
 
         try:
-            return ssdeep.ssdeep().hash_file(self.file_path)
+            return pydeep.hash_file(self.file_path)
         except Exception:
             return None
 

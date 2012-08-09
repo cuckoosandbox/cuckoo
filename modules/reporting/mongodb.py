@@ -56,7 +56,7 @@ class MongoDb(Report):
                         try:
                             drop = open(drop_file, 'r')
                         except IOError as e:
-                            raise CuckooReportError("Failed to read file %s: %s" % (drop_file, e.message))
+                            raise CuckooReportError("Failed to read file %s: %s" % (drop_file, e))
                         try:
                             drop_id = self._fs.put(drop, filename=dropped["name"])
                         except FileExists:
@@ -73,7 +73,7 @@ class MongoDb(Report):
                 try:
                     shot = File(shot_path)
                 except IOError as e:
-                    raise CuckooReportError("Failed to read screenshot %s: %s" % (shot_path, e.message))
+                    raise CuckooReportError("Failed to read screenshot %s: %s" % (shot_path, e))
 
                 try:
                     shot_id = self._fs.put(shot.get_data(), filename=shot.get_name())

@@ -9,9 +9,9 @@ import shutil
 import logging
 from threading import Thread, Lock
 
-from lib.cuckoo.common.exceptions import CuckooAnalysisError, CuckooMachineError, CuckooGuestError
+from lib.cuckoo.common.exceptions import CuckooAnalysisError, CuckooMachineError, CuckooGuestError, CuckooOperationalError
 from lib.cuckoo.common.abstracts import Dictionary, MachineManager
-from lib.cuckoo.common.utils import File, create_folders
+from lib.cuckoo.common.utils import File, create_folders, create_folder
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.guest import GuestManager
@@ -44,7 +44,10 @@ class AnalysisManager(Thread):
         if os.path.exists(self.analysis.results_folder):
             raise CuckooAnalysisError("Analysis results folder already exists at path \"%s\", analysis aborted" % self.analysis.results_folder)
 
-        os.mkdir(self.analysis.results_folder)
+        try:
+            create_folder(folder=self.analysis.results_folder)
+        except CuckooOperationalError:
+            raise CuckooAnalysisError("Unable to create analysis folder %s" % self.analysis.results_folder)
 
     def store_file(self):
         """Store sample file.
@@ -77,7 +80,7 @@ class AnalysisManager(Thread):
             try:
                 os.remove(self.task.file_path)
             except OSError as e:
-                log.warning("Unable to delete original file at path \"%s\": %s" % (self.task.file_path, e.message))
+                log.error("Unable to delete original file at path \"%s\": %s" % (self.task.file_path, e))
 
     def build_options(self):
         """Get analysis options.
@@ -107,7 +110,7 @@ class AnalysisManager(Thread):
         """Start analysis.
         @raise CuckooAnalysisError: if unable to start analysis.
         """
-        log.info("Starting analysis of file \"%s\"" % self.task.file_path)
+        log.info("Starting analysis of file \"%s\" (task=%s)" % (self.task.file_path, self.task.id))
 
         if not os.path.exists(self.task.file_path):
             raise CuckooAnalysisError("The file to analyze does not exist at path \"%s\", analysis aborted" % self.task.file_path)
@@ -121,10 +124,10 @@ class AnalysisManager(Thread):
             vm = mmanager.acquire(machine_id=self.task.machine, platform=self.task.platform)
             machine_lock.release()
             if not vm:
-                log.debug("No machine available")
+                log.debug("Task #%s: no machine available" % self.task.id)
                 time.sleep(1)
             else:
-                log.info("Acquired machine %s (Label: %s)" % (vm.id, vm.label))
+                log.info("Task #%s: acquired machine %s (label=%s)" % (self.task.id, vm.id, vm.label))
                 break
 
         # Initialize sniffer
@@ -138,7 +141,7 @@ class AnalysisManager(Thread):
             # Start machine
             mmanager.start(vm.label)
             # Initialize guest manager
-            guest = GuestManager(vm.ip, vm.platform)
+            guest = GuestManager(vm.id, vm.ip, vm.platform)
             # Launch analysis
             guest.start_analysis(options)
             # Wait for analysis to complete
@@ -148,11 +151,11 @@ class AnalysisManager(Thread):
                 sniffer.stop()
     
             if not success:
-                raise CuckooAnalysisError("Analysis failed, review previous errors")
+                raise CuckooAnalysisError("Task #%s: analysis failed, review previous errors" % self.task.id)
             # Save results
             guest.save_results(self.analysis.results_folder)
         except (CuckooMachineError, CuckooGuestError) as e:
-            raise CuckooAnalysisError(e.message)
+            raise CuckooAnalysisError(e)
         finally:
             # Stop machine
             mmanager.stop(vm.label)
@@ -162,7 +165,7 @@ class AnalysisManager(Thread):
         # Launch reports generation
         Reporter(self.analysis.results_folder).run(Processor(self.analysis.results_folder).run())
 
-        log.info("Reports generation completed (path=%s)" % self.analysis.results_folder)
+        log.info("Task #%s: reports generation completed (path=%s)" % (self.task.id, self.analysis.results_folder))
 
     def run(self):
         """Run manager thread."""
@@ -174,10 +177,10 @@ class AnalysisManager(Thread):
         try:
             self.launch_analysis()
         except CuckooMachineError as e:
-            log.error("Please check virtual machine status: %s" % e.message)
+            log.error("Please check virtual machine status: %s" % e)
             success = False
         except CuckooAnalysisError as e:
-            log.error(e.message)
+            log.error(e)
             success = False
         finally:
             db.complete(self.task.id, success)
@@ -231,7 +234,7 @@ class Scheduler:
                 try:
                     mmanager.stop(machine.label)
                 except CuckooMachineError as e:
-                    log.error("Unable to shutdown machine %s, please check manually. Error: %s" % (machine.label, e.message))
+                    log.error("Unable to shutdown machine %s, please check manually. Error: %s" % (machine.label, e))
 
     def start(self):
         """Start scheduler."""
@@ -243,13 +246,13 @@ class Scheduler:
             time.sleep(1)
 
             if mmanager.availables() == 0:
-                log.debug("No machines available, try again")
+                #log.debug("No machines available, try again")
                 continue
 
             task = self.db.fetch()
 
             if not task:
-                log.debug("No pending tasks, try again")
+                #log.debug("No pending tasks, try again")
                 continue
 
             analysis = AnalysisManager(task)

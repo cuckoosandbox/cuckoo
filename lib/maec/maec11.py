@@ -490,7 +490,7 @@ class BundleType(GeneratedsSuper):
             try:
                 self.schema_version = float(value)
             except ValueError as e:
-                raise ValueError('Bad float/double attribute (schema_version): %s' % e.message)
+                raise ValueError('Bad float/double attribute (schema_version): %s' % e)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'Analyses':
             obj_ = AnalysesType.factory()
@@ -947,7 +947,7 @@ class BehaviorType(GeneratedsSuper):
             try:
                 self.ordinal_position = int(value)
             except ValueError as e:
-                raise_parse_error(node, 'Bad integer attribute: %s' % e.message)
+                raise_parse_error(node, 'Bad integer attribute: %s' % e)
             if self.ordinal_position <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
         value = find_attr_value_('id', node)
@@ -1542,7 +1542,7 @@ class ActionType(GeneratedsSuper):
             try:
                 self.ordinal_position = int(value)
             except ValueError as e:
-                raise_parse_error(node, 'Bad integer attribute: %s' % e.message)
+                raise_parse_error(node, 'Bad integer attribute: %s' % e)
             if self.ordinal_position <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
         value = find_attr_value_('type', node)
@@ -4752,7 +4752,7 @@ class PEDataDirectoryStruct(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Size')
             self.Size = ival_
 # end class PEDataDirectoryStruct
@@ -4970,7 +4970,7 @@ class PESectionHeaderStruct(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Number_Of_Relocations')
             self.Number_Of_Relocations = ival_
         elif nodeName_ == 'Number_Of_Linenumbers':
@@ -4978,7 +4978,7 @@ class PESectionHeaderStruct(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Number_Of_Linenumbers')
             self.Number_Of_Linenumbers = ival_
         elif nodeName_ == 'Characteristics':
@@ -5096,7 +5096,7 @@ class PEStringType(GeneratedsSuper):
             try:
                 self.length = int(value)
             except ValueError as e:
-                raise_parse_error(node, 'Bad integer attribute: %s' % e.message)
+                raise_parse_error(node, 'Bad integer attribute: %s' % e)
         value = find_attr_value_('encoding', node)
         if value is not None and 'encoding' not in already_processed:
             already_processed.append('encoding')
@@ -5348,7 +5348,7 @@ class PEExportType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Ordinal')
             self.Ordinal = ival_
 # end class PEExportType
@@ -5509,7 +5509,7 @@ class PESectionType(GeneratedsSuper):
             try:
                 fval_ = float(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires float or double: %s' % e.message)
+                raise_parse_error(child_, 'requires float or double: %s' % e)
             fval_ = self.gds_validate_float(fval_, node, 'Entropy')
             self.Entropy = fval_
         elif nodeName_ == 'Virtual_Address':
@@ -5521,7 +5521,7 @@ class PESectionType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Virtual_Size')
             self.Virtual_Size = ival_
         elif nodeName_ == 'Flags':
@@ -5533,7 +5533,7 @@ class PESectionType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Relocations')
             self.Relocations = ival_
 # end class PESectionType
@@ -5870,7 +5870,7 @@ class malwareMetaData(GeneratedsSuper):
             try:
                 self.version = float(value)
             except ValueError as e:
-                raise ValueError('Bad float/double attribute (version): %s' % e.message)
+                raise ValueError('Bad float/double attribute (version): %s' % e)
         value = find_attr_value_('id', node)
         if value is not None and 'id' not in already_processed:
             already_processed.append('id')
@@ -6112,7 +6112,7 @@ class fileObject(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'size')
             self.size = ival_
         elif nodeName_ == 'crc32':
@@ -6468,7 +6468,7 @@ class uriObject(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'port')
             self.port = ival_
         elif nodeName_ == 'path':
@@ -6815,14 +6815,14 @@ class ASNObject(GeneratedsSuper):
             try:
                 self.id = int(value)
             except ValueError as e:
-                raise_parse_error(node, 'Bad integer attribute: %s' % e.message)
+                raise_parse_error(node, 'Bad integer attribute: %s' % e)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'as-number':
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'as_number')
             self.as_number = ival_
 # end class ASNObject
@@ -7225,7 +7225,7 @@ class fieldDataEntry(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'importance')
             self.importance = ival_
             self.validate_intBetween0and100(self.importance)    # validate type intBetween0and100
@@ -10650,7 +10650,7 @@ class File_System_Object_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Maximum_Instances')
             self.Maximum_Instances = ival_
         elif nodeName_ == 'Security_Attributes':
@@ -10991,7 +10991,7 @@ class TrID_TypeType(GeneratedsSuper):
             try:
                 fval_ = float(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires float or double: %s' % e.message)
+                raise_parse_error(child_, 'requires float or double: %s' % e)
             fval_ = self.gds_validate_float(fval_, node, 'TRID_Confidence')
             self.TRID_Confidence = fval_
 # end class TrID_TypeType
@@ -11448,7 +11448,7 @@ class PE_Binary_AttributesType(GeneratedsSuper):
             try:
                 self.dll_count = int(value)
             except ValueError as e:
-                raise_parse_error(node, 'Bad integer attribute: %s' % e.message)
+                raise_parse_error(node, 'Bad integer attribute: %s' % e)
         value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.append('type')
@@ -12246,7 +12246,7 @@ class PE_HeaderType(GeneratedsSuper):
             try:
                 fval_ = float(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires float or double: %s' % e.message)
+                raise_parse_error(child_, 'requires float or double: %s' % e)
             fval_ = self.gds_validate_float(fval_, node, 'Entropy')
             self.Entropy = fval_
         elif nodeName_ == 'Signature':
@@ -12509,7 +12509,7 @@ class File_HeaderType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Number_Of_Symbols')
             self.Number_Of_Symbols = ival_
         elif nodeName_ == 'Size_Of_Optional_Header':
@@ -14272,7 +14272,7 @@ class GUI_Object_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Width')
             self.Width = ival_
         elif nodeName_ == 'Height':
@@ -14280,7 +14280,7 @@ class GUI_Object_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Height')
             self.Height = ival_
         elif nodeName_ == 'Window_Display_Name':
@@ -14408,7 +14408,7 @@ class IPC_Object_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Thread_ID')
             self.Thread_ID = ival_
         elif nodeName_ == 'Start_Address':
@@ -14552,7 +14552,7 @@ class Internet_Object_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'AS_Number')
             self.AS_Number = ival_
 # end class Internet_Object_AttributesType
@@ -15325,7 +15325,7 @@ class HandleType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Name')
             self.Name = ival_
 # end class HandleType
@@ -15553,7 +15553,7 @@ class Network_Object_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Internal_Port')
             self.Internal_Port = ival_
         elif nodeName_ == 'External_Port':
@@ -15561,7 +15561,7 @@ class Network_Object_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'External_Port')
             self.External_Port = ival_
         elif nodeName_ == 'Socket_Type':
@@ -15573,7 +15573,7 @@ class Network_Object_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Socket_ID')
             self.Socket_ID = ival_
         elif nodeName_ == 'Internal_IP_Address':
@@ -16993,7 +16993,7 @@ class IPC_Action_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Thread_ID')
             self.Thread_ID = ival_
         elif nodeName_ == 'Target_PID':
@@ -17001,7 +17001,7 @@ class IPC_Action_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Target_PID')
             self.Target_PID = ival_
         elif nodeName_ == 'Start_Address':
@@ -17147,7 +17147,7 @@ class Process_Action_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Target_PID')
             self.Target_PID = ival_
 # end class Process_Action_AttributesType
@@ -17291,7 +17291,7 @@ class Memory_Action_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Target_PID')
             self.Target_PID = ival_
         elif nodeName_ == 'Requested_Address':
@@ -17515,7 +17515,7 @@ class Network_Action_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Internal_Port')
             self.Internal_Port = ival_
         elif nodeName_ == 'External_Port':
@@ -17523,7 +17523,7 @@ class Network_Action_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'External_Port')
             self.External_Port = ival_
         elif nodeName_ == 'Internal_IP_Address':
@@ -17551,7 +17551,7 @@ class Network_Action_AttributesType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Buffer_Length')
             self.Buffer_Length = ival_
 # end class Network_Action_AttributesType
@@ -18151,7 +18151,7 @@ class meta_item_metadataType(GeneratedsSuper):
             try:
                 self.nvd_id = int(value)
             except ValueError as e:
-                raise_parse_error(node, 'Bad integer attribute: %s' % e.message)
+                raise_parse_error(node, 'Bad integer attribute: %s' % e)
         value = find_attr_value_('xmlns-meta', node)
         if value is not None and 'xmlns-meta' not in already_processed:
             already_processed.append('xmlns-meta')
@@ -18246,7 +18246,7 @@ class APICall_ParameterType(GeneratedsSuper):
             try:
                 self.ordinal_position = int(value)
             except ValueError as e:
-                raise_parse_error(node, 'Bad integer attribute: %s' % e.message)
+                raise_parse_error(node, 'Bad integer attribute: %s' % e)
             if self.ordinal_position <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -19346,7 +19346,7 @@ class Imported_FunctionType(GeneratedsSuper):
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as e:
-                raise_parse_error(child_, 'requires integer: %s' % e.message)
+                raise_parse_error(child_, 'requires integer: %s' % e)
             ival_ = self.gds_validate_integer(ival_, node, 'Ordinal')
             self.Ordinal = ival_
 # end class Imported_FunctionType

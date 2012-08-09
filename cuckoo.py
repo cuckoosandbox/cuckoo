@@ -54,10 +54,9 @@ if __name__ == "__main__":
     try:
         main()
     except CuckooCriticalError as e:
-        if hasattr(e, "message"):
-            message = "%s: %s" % (e.__class__.__name__, e.message)
-            if len(log.handlers) > 0:
-                log.critical(message)
-            else:
-                sys.stderr.write("%s\n" % message)
+        message = "%s: %s" % (e.__class__.__name__, e)
+        if len(log.handlers) > 0:
+            log.critical(message)
+        else:
+            sys.stderr.write("%s\n" % message)
         sys.exit(1)

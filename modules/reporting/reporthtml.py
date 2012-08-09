@@ -62,13 +62,13 @@ class ReportHTML(Report):
         try:
             html = template.render(**results)
         except Exception as e:
-            raise CuckooReportError("Failed to generate HTML report: %s" % e.message)
+            raise CuckooReportError("Failed to generate HTML report: %s" % e)
         
         try:
             report = open(os.path.join(self.reports_path, "report.html"), "w")
             report.write(html)
             report.close()
         except (TypeError, IOError) as e:
-            raise CuckooReportError("Failed to generate HTML report: %s" % e.message)
+            raise CuckooReportError("Failed to generate HTML report: %s" % e)
 
         return True

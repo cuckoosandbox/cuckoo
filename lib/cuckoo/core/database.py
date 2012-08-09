@@ -7,10 +7,11 @@ import sys
 import sqlite3
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.exceptions import CuckooDatabaseError
+from lib.cuckoo.common.exceptions import CuckooDatabaseError, CuckooOperationalError
 from lib.cuckoo.common.abstracts import Dictionary
+from lib.cuckoo.common.utils import create_folder
 
-# from http://docs.python.org/library/sqlite3.html
+# From http://docs.python.org/library/sqlite3.html
 def dict_factory(cursor, row):
     d = Dictionary()
     for idx, col in enumerate(cursor.description):
@@ -20,9 +21,12 @@ def dict_factory(cursor, row):
 class Database:
     """Analysis queue database."""
 
-    def __init__(self, root="."):
-        """@param root: database path."""
-        self.db_file = os.path.join(root, os.path.join(CUCKOO_ROOT, "db", "cuckoo.db"))
+    def __init__(self, db_file=None):
+        """@param db_file: database file path."""
+        if db_file:
+            self.db_file = db_file
+        else:
+            self.db_file = os.path.join(CUCKOO_ROOT, "db", "cuckoo.db")
 
         self.generate()
         self.conn = sqlite3.connect(self.db_file, timeout=60)
@@ -39,9 +43,9 @@ class Database:
         db_dir = os.path.dirname(self.db_file)
         if not os.path.exists(db_dir):
             try:
-                os.makedirs(db_dir)
-            except OSError as e:
-                return False
+                create_folder(folder=db_dir)
+            except CuckooOperationalError as e:
+                raise CuckooDatabaseError("Unable to create database directory: %s" % e)
 
         conn = sqlite3.connect(self.db_file)
         cursor = conn.cursor()
@@ -115,8 +119,7 @@ class Database:
                                 "WHERE lock = 0 "      \
                                 "AND status = 0 "      \
                                 "ORDER BY priority DESC, added_on LIMIT 1;")
-        except sqlite3.OperationalError as e:
-            print e
+        except sqlite3.OperationalError:
             return None
 
         row = self.cursor.fetchone()
