@@ -25,9 +25,9 @@ We suggest you to install all of them so that you can take advantage of the
 project at its full potential.
 
     * `Magic`_ (Highly Recommended): for identifying files' formats (otherwise use "file" command line utility)
-    * `Pyssdeep`_ (Recommended): for calculating ssdeep fuzzy hash of files.
     * `Dpkt`_ (Highly Recommended): for extracting relevant information from PCAP files.
     * `Mako`_ (Highly Recommended): for rendering the HTML reports and the web interface.
+    * `Pydeep`_ (Optional): for calculating ssdeep fuzzy hash of files.
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
     * `Yara`_ and Yara Python (Optional): for matching Yara signatures.
     * `Libvirt`_ (Optional): for using the KVM module.
@@ -45,7 +45,7 @@ For the rest refer to their websites.
 .. _Magic: http://www.darwinsys.com/file/
 .. _Dpkt: http://code.google.com/p/dpkt/
 .. _Mako: http://www.makotemplates.org
-.. _Pyssdeep: http://code.google.com/p/pyssdeep/
+.. _Pydeep: https://github.com/kbandla/pydeep
 .. _Pymongo: http://pypi.python.org/pypi/pymongo/
 .. _Yara: http://code.google.com/p/yara-project/
 .. _Libvirt: http://www.libvirt.org

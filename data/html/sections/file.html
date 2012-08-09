@@ -58,6 +58,24 @@
         </tr>
         %endif
         <tr>
+            <td><strong>Yara Signatures</strong>:</td>
+            <td>
+            %if yara is not UNDEFINED:
+                %if yara:
+                    <ul style="margin-bottom:0">
+                    %for rule in yara:
+                        <li>${rule["name"]} (${rule["meta"]["description"]})</li>
+                    %endfor
+                    </ul>
+                %else:
+                    None matched
+                %endif
+            %else:
+                Yara signatures disabled
+            %endif
+            </td>
+        </tr>
+        <tr>
             <td><strong>Antivirus Results</strong>:</td>
             <td>
             %if virustotal is not UNDEFINED:

@@ -7,6 +7,8 @@ import ConfigParser
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Dictionary
+from lib.cuckoo.common.exceptions import CuckooOperationalError
+
 
 class Config:
     """Configuration file parser."""
@@ -32,6 +34,10 @@ class Config:
     def get(self, section):
         """Get option.
         @param section: section to fetch.
+        @raise CuckooOperationalError: if section not found.
         @return: option value.
         """
-        return getattr(self, section)
+        try:
+            return getattr(self, section)
+        except AttributeError as e:
+            raise CuckooOperationalError("Option %s is not found in configuration, error: %s" % (section, e))

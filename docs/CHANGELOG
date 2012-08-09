@@ -1,5 +1,17 @@
                                   CHANGELOG
 
+Cuckoo Sandbox 0.4.1 (2012-08-09)
+=================================
+
+* Added Yara signatures to HTML report
+* Replaced pyssdeep with pydeep
+* Added support for signatures' version requirements
+* Added unit tests
+* Fixed delete_original race condition
+* Fixed reconstruction of registry keys
+* Fixed logging in cuckoomon
+* Improved exception handling
+
 Cuckoo Sandbox 0.4 (2012-07-24)
 ===============================
 

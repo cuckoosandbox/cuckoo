@@ -34,8 +34,8 @@ class Agent:
 
     def _get_root(self, root="", container="cuckoo", create=True):
         """Get Cuckoo path.
-        @param root: root folder.
-        @param container: folder which will contain Cuckoo.
+        @param root: force root folder, don't detect it.
+        @param container: folder which will contain Cuckoo, not used root parameter is used.
         @param create: create folder.
         """
         if not root:
@@ -43,12 +43,19 @@ class Agent:
                 root = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, container)
             elif self.system == "linux" or self.system == "darwin":
                 root = os.path.join(os.environ["HOME"], container)
+            else:
+                self.error = "Unable to detect OS system"
+                return False
 
         if create and not os.path.exists(root):
             try:
                 os.makedirs(root)
             except OSError as e:
                 self.error = e
+                return False
+        else:
+            if not os.path.exists(root):
+                self.error = "Directory not found: %s" % root
                 return False
 
         return root
@@ -58,7 +65,7 @@ class Agent:
         @return: status.
         """
         return CURRENT_STATUS
-   
+
     def get_error(self):
         """Get error message.
         @return: error message.
@@ -112,8 +119,8 @@ class Agent:
         return True
 
     def add_config(self, options):
-        """Add configuration.
-        @param options: configuration options.
+        """Creates analysis.cond file from current analysis options.
+        @param options: current configuration options, dict format.
         @return: operation status.
         """
         root = self._get_root()
@@ -131,8 +138,12 @@ class Agent:
             config.set("analysis", key, value)
 
         config_path = os.path.join(root, "analysis.conf")
-        with open(config_path, "wb") as config_file:
-            config.write(config_file)
+        try:
+            with open(config_path, "wb") as config_file:
+                config.write(config_file)
+        except OSError as e:
+            self.error = e
+            return False
 
         return True
 
@@ -170,7 +181,8 @@ class Agent:
             return False
 
         try:
-            proc = subprocess.Popen([sys.executable, self.analyzer_path], cwd=os.path.dirname(self.analyzer_path))
+            proc = subprocess.Popen([sys.executable, self.analyzer_path],
+                                    cwd=os.path.dirname(self.analyzer_path))
             self.analyzer_pid = proc.pid
         except OSError as e:
             self.error = e

@@ -8,8 +8,9 @@ class CreatesExe(Signature):
     name = "creates_exe"
     description = "Creates a Windows executable on the filesystem"
     severity = 2
-    category = ["generic"]
+    categories = ["generic"]
     authors = ["Cuckoo Developers"]
+    minimum = "0.4"
 
     def run(self, results):
         for file_name in results["behavior"]["summary"]["files"]:
