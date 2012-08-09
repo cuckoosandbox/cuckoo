@@ -168,3 +168,15 @@ All code must be documented in docstring format, see `PEP 257 -- Docstring
 Conventions <http://www.python.org/dev/peps/pep-0257/>`_.
 Additional comments may be added in logical blocks will be results hard to
 understand.
+
+Automated testing
+=================
+
+We belive in automated testing to provide high quality code and avoid dumb
+bugs.
+When possible, all code must be committed with proper unit tests. Particular
+attention must be placed when fixing bugs: it's good practice to write unit
+tests to reproduce the bug.
+All unit tests and fixtures are placed in the tests folder in the cuckoo
+root.
+We adopt `Nose <http://nose.readthedocs.org/en/latest/>`_ as unit testing framework.
