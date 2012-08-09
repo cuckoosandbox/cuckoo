@@ -83,6 +83,7 @@ class VirtualBox(MachineManager):
     def memdump(self, label, filename):
         """memdump a virtual machine.
         @param label: virtual machine name.
+        @param filename: the destination filename.
         @raise CuckooMachineError: if unable to start.
         """
         ##return # DEBUG
@@ -106,11 +107,12 @@ class VirtualBox(MachineManager):
         return
         
     def wait_for(self, label, state):
+        '''waits 30 secondes for the VM state to change status to a desired state.
+        @param label: virtual machine name.
+        @param state: desired VM state.'''
         i = 0
         while state != self._check(label):
           log.debug('Waiting for VM %s to switch to status %s'%(label, state))
-          if i > 15: # TODO self.options.virtualbox.timeout:
-            log.warning('waiting VM %s to come online from %s to %s '%(label, self._check(label), state))
           if i > 30: # TODO self.options.virtualbox.timeout:
             raise CuckooMachineError("VBoxManage failed to put the VM in running state")
           time.sleep(1)
@@ -118,7 +120,9 @@ class VirtualBox(MachineManager):
         return
         
     def _check(self, label):
-        ''' states: running, saved '''
+        '''returns the VM state.
+        @param label: virtual machine name.
+        @return: VM state'''
         log.debug('Check VM to come online for %s '%(label))
         try:
             proc = subprocess.Popen([self.options.virtualbox.path,
