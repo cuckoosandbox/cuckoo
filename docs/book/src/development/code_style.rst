@@ -161,7 +161,7 @@ When catching an exception and accessing its handle, use ``as e``::
     except Exception, something:
         bar()
 
-It's a good practice use "e" insead of "e.message", as in the example above.
+It's a good practice use "e" instead of "e.message", as in the example above.
 
 Documentation
 =============
