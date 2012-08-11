@@ -81,7 +81,7 @@ class GuestManager:
         @return: operation status.
         """
         if not os.path.exists(options["file_path"]):
-            return False
+            raise CuckooGuestError("File not found: %s" % options["file_path"])
 
         log.info("Starting analysis on guest (id=%s, ip=%s)" % (self.id, self.ip))
 
