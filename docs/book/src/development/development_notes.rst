@@ -43,3 +43,11 @@ Cuckoo please take a look to it before reporting bugs or asking for new
 features.
 
 .. _`Official tracking system`: http://dev.cuckoosandbox.org
+
+Contribute
+==========
+
+To submit your patch just create a Pull Request from yuor GitHub fork.
+If you don't now how to create a Pull Request take a look to `GitHub help`_.
+
+.. _`GitHub help`: https://help.github.com/articles/using-pull-requests/
