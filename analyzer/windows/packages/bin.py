@@ -14,15 +14,7 @@ class Shellcode(Package):
         execsc = "extra/execsc.exe"
 
         p.execute(path=execsc, args=path, suspended=True)
-
-        inject = True
-        if "free" in self.options:
-            if self.options["free"] == "yes":
-                inject = False
-
-        if inject:
-            p.inject()
-
+        p.inject()
         p.resume()
 
         return p.pid
