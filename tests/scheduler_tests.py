@@ -43,16 +43,5 @@ class TestAnalysisManager:
         os.remove(file)
         os.remove(bin_path)
 
-    def test_store_file_delete_original(self):
-        file = tempfile.mkstemp()[1]
-        self.anal["file_path"] = file
-        self.a = AnalysisManager(self.anal)
-        self.a.init_storage()
-        self.a.cfg.cuckoo.delete_original = True
-        self.a.store_file()
-        bin_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", "d41d8cd98f00b204e9800998ecf8427e")
-        assert not os.path.exists(file)
-        os.remove(bin_path)
-
     def tearDown(self):
         shutil.rmtree(self.a.analysis.results_folder)
