@@ -38,8 +38,16 @@ Ticketing system
 ================
 
 We use a ticketing system to track all Cuckoo's developments, bugs and features.
-`Official tracking system` is public available, if you want to contribute to
+`Official tracking system`_ is public available, if you want to contribute to
 Cuckoo please take a look to it before reporting bugs or asking for new
 features.
 
 .. _`Official tracking system`: http://dev.cuckoosandbox.org
+
+Contribute
+==========
+
+To submit your patch just create a Pull Request from yuor GitHub fork.
+If you don't now how to create a Pull Request take a look to `GitHub help`_.
+
+.. _`GitHub help`: https://help.github.com/articles/using-pull-requests/
