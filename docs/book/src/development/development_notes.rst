@@ -38,7 +38,7 @@ Ticketing system
 ================
 
 We use a ticketing system to track all Cuckoo's developments, bugs and features.
-`Official tracking system` is public available, if you want to contribute to
+`Official tracking system`_ is public available, if you want to contribute to
 Cuckoo please take a look to it before reporting bugs or asking for new
 features.
 
