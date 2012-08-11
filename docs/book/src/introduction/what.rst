@@ -90,9 +90,9 @@ The Host runs the core component of the sandbox that manages the whole
 analysis process, while the Guests are the isolated environments
 where the malwares get actually safely executed and analyzed.
 
-The following picture explains Cuckoo's architecture:
+The following picture explains Cuckoo's main architecture:
 
-    .. image:: ../_images/schemas/architecture.png
+    .. image:: ../_images/schemas/architecture-main.png
         :align: center
 
 Although recommended setup is *GNU/Linux* (Ubuntu preferrably) as host and
