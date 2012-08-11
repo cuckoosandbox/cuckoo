@@ -5,22 +5,16 @@
 from lib.common.abstracts import Package
 from lib.api.process import Process
 
-class Dll(Package):
-    """DLL analysis package."""
+class Shellcode(Package):
+    """Shellcode (any x86 executable code) analysis package."""
 
     def start(self, path):
         p = Process()
 
-        rundll32 = "C:\\WINDOWS\\system32\\rundll32.exe"
+        execsc = "extra/execsc.exe"
 
-        if "function" in self.options:
-            p.execute(path=rundll32, args="%s,%s" % (path, self.options["function"]), suspended=True)
-        else:
-            p.execute(path=rundll32, args="%s,DllMain" % path, suspended=True)
-
-        if self.options.get('free', 'no') == 'yes':
-            p.inject()
-
+        p.execute(path=execsc, args=path, suspended=True)
+        p.inject()
         p.resume()
 
         return p.pid
