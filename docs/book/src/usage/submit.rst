@@ -141,7 +141,7 @@ Following are the details on the fields:
     * ``added_on``: it's the timestamp of when the analysis request was added.
     * ``completed_on``: it's the timestamp of when the analysis has been completed.
     * ``lock``: it's field internally used by Cuckoo to lock pending analysis.
-    * ``status``: it's a numeric field representing the status of the analysis (0 = not completed, 1 = completed successfully, 2 = failed).
+    * ``status``: it's a numeric field representing the status of the analysis (0 = not completed, 1 = failed, 2 = succeeded).
 
 Cuckoo Python Functions
 =======================
