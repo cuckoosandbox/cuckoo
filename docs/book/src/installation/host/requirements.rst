@@ -38,7 +38,7 @@ Some of them are packaged in GNU/Linux Ubuntu and you can install them with the 
 
 If want to use KVM it's packaged too and you can install it with the following command::
 
-	$ sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+    $ sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
 
 For the rest refer to their websites.
 

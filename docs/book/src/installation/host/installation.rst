@@ -26,7 +26,7 @@ If you're using KVM or any other libvirt based module, make sure the new user
 belongs to the "libvirtd" group (or the group your Linux distribution uses to
 run libvirt)::
 
-	$ sudo useradd -G libvirtd cuckoo
+    $ sudo useradd -G libvirtd cuckoo
 
 Install Cuckoo
 ==============
