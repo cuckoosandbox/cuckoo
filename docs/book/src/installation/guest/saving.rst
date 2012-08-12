@@ -42,33 +42,33 @@ command-line interfaces or ``virt-manager`` for a nice GUI.
 You should be able to directly create it in QCOW2 format, but in case you have
 a RAW disk you can convert it like following::
 
-	$ cd /your/disk/image/path
-	$ qemu-img convert -O qcow2 your_disk.raw your_disk.qcow2
+    $ cd /your/disk/image/path
+    $ qemu-img convert -O qcow2 your_disk.raw your_disk.qcow2
 
 Now you have to edit your VM definition like following::
 
-	$ virsh edit "<Name of VM>"
+    $ virsh edit "<Name of VM>"
 
 Find the disk section, it looks like this::
 
-	<disk type='file' device='disk'>
-		<driver name='qemu' type='raw'/>
-		<source file='/your/disk/image/path/your_disk.raw'/>
-		<target dev='hda' bus='ide'/>
-		<address type='drive' controller='0' bus='0' unit='0'/>
-	</disk>
+    <disk type='file' device='disk'>
+        <driver name='qemu' type='raw'/>
+        <source file='/your/disk/image/path/your_disk.raw'/>
+        <target dev='hda' bus='ide'/>
+        <address type='drive' controller='0' bus='0' unit='0'/>
+    </disk>
 
 And change "type" to qcow2 and "source file" to your qcow2 disk image, like this::
 
-	<disk type='file' device='disk'>
-		<driver name='qemu' type='qcow2'/>
-		<source file='/your/disk/image/path/your_disk.qcow2'/>
-		<target dev='hda' bus='ide'/>
-		<address type='drive' controller='0' bus='0' unit='0'/>
-	</disk>
+    <disk type='file' device='disk'>
+        <driver name='qemu' type='qcow2'/>
+        <source file='/your/disk/image/path/your_disk.qcow2'/>
+        <target dev='hda' bus='ide'/>
+        <address type='drive' controller='0' bus='0' unit='0'/>
+    </disk>
 
 Now test your virtual machine, if all works prepare it for snapshotting while
 running Cuckoo's agent.
 You can finally take a snapshot with the following command::
 
-	$ virsh snapshot-create "<Name of VM>"
+    $ virsh snapshot-create "<Name of VM>"

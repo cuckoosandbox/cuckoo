@@ -111,26 +111,26 @@ If something goes wrong with virtual machine it's best practice to check curent 
 status.
 You can do that with the following::
 
-	$ virsh snapshot-current "<Name of VM>"
+    $ virsh snapshot-current "<Name of VM>"
 
 If you got a long XML as output your current snapshot is configured and you can skip
 the rest of this chapter; anyway if you got an error like the following your current
 snapshot is broken::
 
-	$ virsh snapshot-current "<Name of VM>"
-	error: domain '<Name of VM>' has no current snapshot
+    $ virsh snapshot-current "<Name of VM>"
+    error: domain '<Name of VM>' has no current snapshot
 
 To fix and create a current snapshot firt list all machine's snapshots::
 
-	$ virsh snapshot-list "<Name of VM>"
-	 Name                 Creation Time             State
-	 ------------------------------------------------------------
-	 1339506531           2012-06-12 15:08:51 +0200 running
+    $ virsh snapshot-list "<Name of VM>"
+     Name                 Creation Time             State
+     ------------------------------------------------------------
+     1339506531           2012-06-12 15:08:51 +0200 running
 
 Choose one snapshot name and set it as current::
 
-	$ snapshot-current "<Name of VM>" --snapshotname 1339506531
-	Snapshot 1339506531 set as current
+    $ snapshot-current "<Name of VM>" --snapshotname 1339506531
+    Snapshot 1339506531 set as current
 
 Now the virtual machine state is fixed.
 
@@ -141,21 +141,21 @@ If something goes wrong with virtual it's best practice to check the virtual mac
 status and the curent snapshot.
 First of all check the virtual machine status with the following::
 
-	$ VBoxManage showvminfo "<Name of VM>" | grep State
-	State:           powered off (since 2012-06-27T22:03:57.000000000)
+    $ VBoxManage showvminfo "<Name of VM>" | grep State
+    State:           powered off (since 2012-06-27T22:03:57.000000000)
 
 If the state is "powered off" you can go ahead with the next check, if the state is
 "aborted" or something else you have to restore it to "powered off" before::
 
-	$ VBoxManage controlvm "<Name of VM>" poweroff
+    $ VBoxManage controlvm "<Name of VM>" poweroff
 
 With the following check the current snapshots state::
 
-	$ VBoxManage snapshot "<Name of VM>" list --details
-	   Name: s1 (UUID: 90828a77-72f4-4a5e-b9d3-bb1fdd4cef5f)
-	      Name: s2 (UUID: 97838e37-9ca4-4194-a041-5e9a40d6c205) *
+    $ VBoxManage snapshot "<Name of VM>" list --details
+       Name: s1 (UUID: 90828a77-72f4-4a5e-b9d3-bb1fdd4cef5f)
+          Name: s2 (UUID: 97838e37-9ca4-4194-a041-5e9a40d6c205) *
 
 If you have a snapshot marked with a star "*" your snapshot is ready, anyway
 you have to restore the current snapshot::
 
-	$ VBoxManage snapshot "<Name of VM>" restorecurrent
+    $ VBoxManage snapshot "<Name of VM>" restorecurrent
