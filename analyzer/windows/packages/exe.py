@@ -16,7 +16,7 @@ class Exe(Package):
         else:
             p.execute(path=path, suspended=True)
 
-        if self.options.get('free', 'no') == 'yes':
+        if self.options.get("free", "no") != "yes":
             p.inject()
 
         p.resume()

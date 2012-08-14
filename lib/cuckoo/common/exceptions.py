@@ -38,6 +38,6 @@ class CuckooReportError(CuckooOperationalError):
     """Error in reporting module."""
     pass
 
-class CuckooGuestError(Exception):
+class CuckooGuestError(CuckooOperationalError):
     """Cuckoo guest agent error."""
     pass

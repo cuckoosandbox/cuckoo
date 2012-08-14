@@ -32,6 +32,7 @@ Following is the list of existing packages:
                Verify Office Excel path.
     * ``ie``: used to analyze **Internet Explorer**'s behavior when opening the
               given file (e.g. browser exploits).
+    * ``bin``: used to analyze generic binary data, such as **shellcodes**.
 
 You can find more details on how to start creating new analysis packages in the
 :doc:`../customization/packages` customization chapter.

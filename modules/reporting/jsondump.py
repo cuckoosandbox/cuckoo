@@ -4,6 +4,7 @@
 
 import os
 import json
+import codecs
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
@@ -17,7 +18,7 @@ class JsonDump(Report):
         @raise CuckooReportError: if fails to write report.
         """
         try:
-            report = open(os.path.join(self.reports_path, "report.json"), "w")
+            report = codecs.open(os.path.join(self.reports_path, "report.json"), "w", "utf-8")
             report.write(json.dumps(results, sort_keys=False, indent=4))
             report.close()
         except (TypeError, IOError) as e:

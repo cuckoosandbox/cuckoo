@@ -69,6 +69,6 @@ class ReportHTML(Report):
             report.write(html)
             report.close()
         except (TypeError, IOError) as e:
-            raise CuckooReportError("Failed to generate HTML report: %s" % e)
+            raise CuckooReportError("Failed to write HTML report: %s" % e)
 
         return True

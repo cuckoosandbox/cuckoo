@@ -18,7 +18,7 @@ class Dll(Package):
         else:
             p.execute(path=rundll32, args="%s,DllMain" % path, suspended=True)
 
-        if self.options.get('free', 'no') == 'yes':
+        if self.options.get("free", "no") != "yes":
             p.inject()
 
         p.resume()

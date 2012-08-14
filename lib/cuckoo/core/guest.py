@@ -81,7 +81,7 @@ class GuestManager:
         @return: operation status.
         """
         if not os.path.exists(options["file_path"]):
-            return False
+            raise CuckooGuestError("File not found: %s" % options["file_path"])
 
         log.info("Starting analysis on guest (id=%s, ip=%s)" % (self.id, self.ip))
 
@@ -91,8 +91,11 @@ class GuestManager:
             self.wait(CUCKOO_GUEST_INIT)
             self.upload_analyzer()
             self.server.add_config(options)
-    
-            file_data = open(options["file_path"], "rb").read()
+
+            try:
+                file_data = open(options["file_path"], "rb").read()
+            except (IOError, OSError) as e:
+                raise CuckooGuestError("Unable to read %s, error: %s" % (options["file_path"], e))
             data = xmlrpclib.Binary(file_data)
     
             self.server.add_malware(data, options["file_name"])

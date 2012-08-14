@@ -3,8 +3,11 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import codecs
 
 from lib.cuckoo.common.abstracts import Processing
+from lib.cuckoo.common.exceptions import CuckooProcessingError
+
 
 class Debug(Processing):
     """Analysis debug information."""
@@ -17,7 +20,12 @@ class Debug(Processing):
         debug = {}
 
         if os.path.exists(self.log_path):
-            debug["log"] = open(self.log_path, "rb").read()
+            try:
+                debug["log"] = codecs.open(self.log_path, "rb", "utf-8").read()
+            except ValueError as e:
+                raise CuckooProcessingError("Error decoding %s: %s" % (self.log_path, e))
+            except (IOError, OSError):
+                raise CuckooProcessingError("Error opening %s: %s" % (self.log_path, e))
         else:
             debug["log"] = ""
 
