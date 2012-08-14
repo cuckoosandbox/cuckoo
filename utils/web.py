@@ -6,8 +6,6 @@
 import os
 import sys
 import logging
-import tempfile
-import hashlib
 import sqlite3
 from mako.template import Template
 from mako.lookup import TemplateLookup
@@ -19,48 +17,13 @@ from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.bottle import route, run, static_file, redirect, request, HTTPError
 
-# This directory will be created in $tmppath (see store_and_submit)
-TMPSUBDIR = "cuckoo-web"
-BUFSIZE = 1024
+from helpers import store_and_submit_fileobj
 
 # Templates directory
 lookup = TemplateLookup(directories=[os.path.join(CUCKOO_ROOT, "data", "html")],
                         output_encoding="utf-8",
                         encoding_errors="replace",
                         strict_undefined=False)
-
-def store_and_submit_fileobj(fobj, filename, package="", options="", timeout=0, priority=1, machine="", platform=""):
-    # Do everything in tmppath/TMPSUBDIR
-    tmppath = tempfile.gettempdir()
-    targetpath = os.path.join(tmppath, TMPSUBDIR)
-    if not os.path.exists(targetpath): os.mkdir(targetpath)
-
-    # Upload will be stored in a tmpdir with the original name
-    tmpdir = tempfile.mkdtemp(prefix="upload_", dir=targetpath)
-    tmpf = open(os.path.join(tmpdir, filename), "wb")
-    t = fobj.read(BUFSIZE)
-
-    # While reading from client also compute md5hash
-    md5h = hashlib.md5()
-    while t:
-        md5h.update(t)
-        tmpf.write(t)
-        t = fobj.read(BUFSIZE)
-
-    tmpf.close()
-
-    # Submit task to cuckoo db
-    db = Database()
-    task_id = db.add(file_path=tmpf.name,
-                     md5=md5h.hexdigest(),
-                     package=package,
-                     timeout=timeout,
-                     options=options,
-                     priority=priority,
-                     machine=machine,
-                     platform=platform)
-
-    return task_id
 
 @route("/")
 def index():
@@ -127,7 +90,7 @@ def submit():
 
     # Show result
     template = lookup.get_template("success.html")
-    return template.render(taskid=taskid, submitfile=data.filename)
+    return template.render(taskid=taskid, submitfile=data.filename.decode('utf8'))
 
 # Find an HTML report and render it
 @route("/view/<task_id>")
