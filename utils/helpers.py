@@ -7,6 +7,7 @@ import os
 import hashlib
 import tempfile
 import fcntl
+import ntpath
 
 from SocketServer import ThreadingTCPServer
 from SimpleXMLRPCServer import SimpleXMLRPCDispatcher, SimpleXMLRPCRequestHandler
@@ -17,9 +18,17 @@ from lib.cuckoo.core.database import Database
 TMPSUBDIR = "cuckoo-web"
 BUFSIZE = 1024
 
+# returns last part of path regardless of OS
+def allos_filename(path):
+	dirpath, filename = ntpath.split(path)
+	return filename if filename else ntpath.basename(dirpath)
+
+
 # helper fn used by web.py and master.py for submitting a task from a file-like object
 def store_and_submit_fileobj(fobj, filename, package="", options="", 
     timeout=0, priority=1, machine="", platform="", tmpsubdir=TMPSUBDIR):
+
+    filename = allos_filename(filename)
 
     # Do everything in tmppath/TMPSUBDIR
     tmppath = tempfile.gettempdir()
