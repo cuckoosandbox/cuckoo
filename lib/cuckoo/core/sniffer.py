@@ -67,7 +67,7 @@ class Sniffer:
                 try:
                     self.proc.kill()
                 except Exception as e:
-                    log.exception("Unable to stop the sniffer (interface=%s, host=%s, dump path=%s" % (interface, host, file_path))
+                    log.exception("Unable to stop the sniffer with pid %d" % self.proc.pid)
                     return False
 
         return True
