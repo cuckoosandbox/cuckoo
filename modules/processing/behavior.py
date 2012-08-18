@@ -65,7 +65,7 @@ class ParseProcessLog:
 
             # Split the argument name with its value based on the separator.
             try:                
-                (arg_name, arg_value) = row[index].split("->")
+                (arg_name, arg_value) = row[index].split("->", 1)
             except ValueError as e:
                 log.debug("Unable to parse analysis row argument (row=%s): %s" % (row[index], e))
                 continue
