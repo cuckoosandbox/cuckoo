@@ -143,11 +143,12 @@ class AnalysisManager(Thread):
             # Stop sniffer
             if sniffer:
                 sniffer.stop()
+
+            # Save results
+            guest.save_results(self.analysis.results_folder)
     
             if not success:
                 raise CuckooAnalysisError("Task #%s: analysis failed, review previous errors" % self.task.id)
-            # Save results
-            guest.save_results(self.analysis.results_folder)
         except (CuckooMachineError, CuckooGuestError) as e:
             raise CuckooAnalysisError(e)
         finally:
