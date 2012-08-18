@@ -104,7 +104,7 @@ class GuestManager:
             raise CuckooGuestError("%s: guest communication timeout, check networking or try to increase timeout" % self.id)
 
     def wait_for_completion(self):
-        """Wai for analysis completion.
+        """Wait for analysis completion.
         @return: operation status.
         """
         while True:
