@@ -78,7 +78,7 @@
         <tr>
             <td><strong>Antivirus Results</strong>:</td>
             <td>
-            %if virustotal is not UNDEFINED:
+            %if virustotal is not UNDEFINED and len(virustotal) > 0:
                 %if virustotal["response_code"] == 1:
                     ${virustotal["positives"]}/${virustotal["total"]} (<a href="javascript:showHide('virustotal');">collapse</a>)
                     <div id="virustotal" style="display: none;margin-top: 5px;">
