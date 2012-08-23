@@ -32,14 +32,17 @@ def main():
         parser.error(e)
         return False
 
-    if not os.path.exists(args.path):
-        print("ERROR: the specified file does not exist at path \"%s\"" % args.path)
+    # Get absolute path to deal with relative.
+    path = os.path.abspath(args.path)
+
+    if not os.path.exists(path):
+        print("ERROR: the specified file does not exist at path \"%s\"" % path)
         return False
 
     db = Database()
 
-    task_id = db.add(file_path=args.path,
-                     md5=File(args.path).get_md5(),
+    task_id = db.add(file_path=path,
+                     md5=File(path).get_md5(),
                      package=args.package,
                      timeout=args.timeout,
                      options=args.options,
