@@ -130,6 +130,18 @@ class MachineManager(object):
         """
         return [m for m in self.machines if m.locked]
 
+    def shutdown(self):
+        """Shutdown the machine manager. Kills all alive machines.
+        @raise CuckooMachineError: if unable to stop machine.
+        """
+        if len(self.running()) > 0:
+            log.info("Still %s guests alive. Shutting down" % len(self.running()))
+            for machine in self.running():
+                try:
+                    self.stop(machine.label)
+                except CuckooMachineError as e:
+                    log.error("Unable to shutdown machine %s, please check manually. Error: %s" % (machine.label, e))
+
     def start(self, label=None):
         """Start a machine.
         @param label: machine name.

@@ -234,15 +234,8 @@ class Scheduler:
         """Stop scheduler."""
         self.running = False
 
-        # Shutdown vm alive.
-        # TODO: in future this code may be moved.
-        if len(mmanager.running()) > 0:
-            log.info("Shutting down guests")
-            for machine in mmanager.running():
-                try:
-                    mmanager.stop(machine.label)
-                except CuckooMachineError as e:
-                    log.error("Unable to shutdown machine %s, please check manually. Error: %s" % (machine.label, e))
+        # Shutdown machine manager (used to kill vm still alive).
+        mmanager.shutdown()
 
     def start(self):
         """Start scheduler."""
