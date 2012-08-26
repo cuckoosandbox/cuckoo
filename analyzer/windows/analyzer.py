@@ -292,6 +292,8 @@ class Analyzer:
                     timer.cancel()
                     break
 
+                pack.set_pids(PROCESS_LIST)
+
                 try:
                     if not pack.check():
                         timer.cancel()

@@ -8,6 +8,13 @@ class Package(object):
     def __init__(self, options={}):
         """@param options: options dict."""
         self.options = options
+        self.pids = []
+
+    def set_pids(self, pids):
+        """Update list of monitored PIDs in the package context.
+        @param pids: list of pids.
+        """
+        self.pids = pids
 
     def start(self, path=None):
         """Run analysis packege.
