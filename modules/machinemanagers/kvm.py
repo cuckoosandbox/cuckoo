@@ -65,9 +65,12 @@ class KVM(MachineManager):
         # Force virtual machine shutdown.
         conn = self._connect()
         try:
-            self.vms[label].destroy() # Machete's way!
-        except libvirt.libvirtError:
-            raise CuckooMachineError("Error stopping virtual machine %s" % label)
+            if self.vms[label].isActive():
+                log.debug("Trying to stop an already stopped vm %s. Skip" % label)
+            else:
+                self.vms[label].destroy() # Machete's way!
+        except libvirt.libvirtError as e:
+            raise CuckooMachineError("Error stopping virtual machine %s: %s" % (label, e))
         finally:
             self._disconnect(conn)
 
