@@ -21,7 +21,8 @@ import os.path
 from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.exceptions import CuckooMachineError
 
-log = logging.getLogger(__name__)
+log =logging.getLogger(__name__)
+
 
 class VMware(MachineManager):
     """Virtualization layer for VMware Workstation using vmrun utility."""
@@ -62,7 +63,7 @@ class VMware(MachineManager):
         """
         vmx_snap = self.get_vmx_snap(label)
         try:
-            if subprocess.call([self.options.vmware.path, 
+            if subprocess.call([self.options.vmware.path,
                                "stop", 
                                vmx_snap[0]],
                                stdout=subprocess.PIPE,
@@ -70,9 +71,9 @@ class VMware(MachineManager):
                 raise CuckooMachineError("vmrun exited with error powering off the machine")
         except OSError as e:
             raise CuckooMachineError("vmrun failed powering off the machine: %s" % e)
-        
+
         time.sleep(3)
-        
+
         try:
             if subprocess.call([self.options.vmware.path, 
                                "revertToSnapshot",
@@ -83,7 +84,7 @@ class VMware(MachineManager):
                 raise CuckooMachineError("vmrun exited with error restoring the machine's snapshot")
         except OSError as e:
             raise CuckooMachineError("vmrun failed restoring the machine: %s" % e)
-        
+
     def get_vmx_snap(self, label):
         """Check label in vmware.conf.
         @param vmx_snap: [path_to_vmx_file, current_snapshot]
@@ -97,4 +98,4 @@ class VMware(MachineManager):
             vmx_snap = label.strip().split(",")
             if len(vmx_snap) != 2:
                 raise CuckooMachineError("Please check vmx and snapshot in vmware.conf: %s" % label)
-        return vmx_snap        
+        return vmx_snap
