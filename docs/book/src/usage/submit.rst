@@ -104,7 +104,7 @@ automated. In order to automate analysis submission or to provide a different
 interface rather than the command-line (for instance a web interface), you can
 directly interact with the SQLite database located at *db/cuckoo.db*.
 
-The database contains the table *queue* which is defined as the following schema:
+The database contains the table *tasks* which is defined as the following schema:
 
     .. code-block:: sql
         :linenos:
