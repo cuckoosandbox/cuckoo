@@ -98,7 +98,3 @@ class VMware(MachineManager):
             if len(vmx_snap) != 2:
                 raise CuckooMachineError("Please check vmx and snapshot in vmware.conf: %s" % label)
         return vmx_snap        
-    
-    def _list(self):
-        return None
-
