@@ -1,5 +1,11 @@
                                   CHANGELOG
 
+Cuckoo Sandbox 0.4.2 (TBA)
+==========================
+
+* Added support for VMWare Workstation
+* Fixed delete_original race condition
+
 Cuckoo Sandbox 0.4.1 (2012-08-09)
 =================================
 
