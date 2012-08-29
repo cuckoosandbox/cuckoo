@@ -218,7 +218,7 @@ class Summary:
             handles = []
 
             for call in process["calls"]:
-                if call["api"].startswith("RegOpenKeyEx"):
+                if (call["api"].startswith("RegOpenKeyEx")) or (call["api"].startswith("RegCreateKeyEx")):
                     registry = 0
                     subkey = ""
                     handle = 0
