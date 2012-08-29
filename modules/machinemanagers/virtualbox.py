@@ -34,6 +34,14 @@ class VirtualBox(MachineManager):
         @raise CuckooMachineError: if unable to start.
         """
         try:
+            if subprocess.call([self.options.virtualbox.path, "snapshot", label, "restorecurrent"],
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE):
+                raise CuckooMachineError("VBoxManage exited with error restoring the machine's snapshot")
+        except OSError as e:
+            raise CuckooMachineError("VBoxManage failed restoring the machine: %s" % e)
+
+        try:
             subprocess.Popen([self.options.virtualbox.path,
                               "startvm",
                               label,
@@ -59,14 +67,6 @@ class VirtualBox(MachineManager):
             raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e)
 
         time.sleep(3)
-
-        try:
-            if subprocess.call([self.options.virtualbox.path, "snapshot", label, "restorecurrent"],
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE):
-                raise CuckooMachineError("VBoxManage exited with error restoring the machine's snapshot")
-        except OSError as e:
-            raise CuckooMachineError("VBoxManage failed restoring the machine: %s" % e)
 
     def _list(self):
         """Lists virtual machines installed.
