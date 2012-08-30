@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import re
 import time
 import logging
 import subprocess
@@ -13,8 +14,14 @@ from lib.cuckoo.common.exceptions import CuckooMachineError
 
 log = logging.getLogger(__name__)
 
+
 class VirtualBox(MachineManager):
-    """Virtualization layer forVirtualBox."""
+    """Virtualization layer for VirtualBox."""
+
+    # VM states.
+    SAVED = "saved"
+    RUNNING = "running"
+    POWEROFF = "poweroff"
 
     def _initialize_check(self):
         """Runs all checks when a machine manager is initialized.
@@ -33,6 +40,11 @@ class VirtualBox(MachineManager):
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to start.
         """
+        log.debug("Starting vm %s" % label)
+
+        if self._status(label) == self.RUNNING:
+            raise CuckooMachineError("Trying to start an already started vm %s" % label)
+
         try:
             if subprocess.call([self.options.virtualbox.path, "snapshot", label, "restorecurrent"],
                                stdout=subprocess.PIPE,
@@ -40,9 +52,10 @@ class VirtualBox(MachineManager):
                 raise CuckooMachineError("VBoxManage exited with error restoring the machine's snapshot")
         except OSError as e:
             raise CuckooMachineError("VBoxManage failed restoring the machine: %s" % e)
+        self._wait_status(label, self.SAVED)
 
         try:
-            subprocess.Popen([self.options.virtualbox.path,
+            subprocess.call([self.options.virtualbox.path,
                               "startvm",
                               label,
                               "--type",
@@ -52,12 +65,14 @@ class VirtualBox(MachineManager):
         except OSError as e:
             raise CuckooMachineError("VBoxManage failed starting the machine in %s mode: %s"
                                      % (mode.upper(), e))
+        self._wait_status(label, self.RUNNING)
 
     def stop(self, label):
         """Stops a virtual machine.
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to stop.
         """
+        log.debug("Stopping vm %s" % label)
         try:
             if subprocess.call([self.options.virtualbox.path, "controlvm", label, "poweroff"],
                                stdout=subprocess.PIPE,
@@ -65,8 +80,7 @@ class VirtualBox(MachineManager):
                 raise CuckooMachineError("VBoxManage exited with error powering off the machine")
         except OSError as e:
             raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e)
-
-        time.sleep(3)
+        self._wait_status(label, self.POWEROFF)
 
     def _list(self):
         """Lists virtual machines installed.
@@ -92,3 +106,49 @@ class VirtualBox(MachineManager):
                 continue
 
         return machines
+
+    def _status(self, label):
+        """Gets current status of a vm.
+        @param label: virtual machine name.
+        @return: status string.
+        @raise CuckooMachineError: if unable to enumerate status.
+        """
+        log.debug("Getting status for %s"% label)
+        try:
+            proc = subprocess.Popen([self.options.virtualbox.path,
+                                     "showvminfo",
+                                     label,
+                                     "--machinereadable"],
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
+            output, err = proc.communicate()
+
+            if proc.returncode != 0:
+              raise CuckooMachineError("VBoxManage returns error checking status for machine %s: %s"
+                                       % (label, err))
+        except OSError as e:
+            raise CuckooMachineError("VBoxManage failed to check status for machine %s: %s"
+                                     % (label, e))
+
+        for line in output.split("\n"):
+            state = re.match(r"VMState=\"(\w+)\"", line, re.M|re.I)
+            if state:
+                status = state.group(1)
+                log.debug("Machine %s status %s" % (label, status))
+                return status
+        raise CuckooMachineError("Unable to get status for %s" % label)
+
+    def _wait_status(self, label, state):
+        """Waits for a vm status.
+        @param label: virtual machine name.
+        @param state: virutal machine status.
+        @raise CuckooMachineError: if default waiting timeout expire.
+        """
+        waitme = 0
+        while state != self._status(label):
+            log.debug("Waiting %i cuckooseconds for vm %s to switch to status %s" % (waitme, label, state))
+            if waitme > int(self.options.virtualbox.timeout):
+                self.stop(label)
+                raise CuckooMachineError("Waiting too much for vm %s status change. Stopping vm and aborting" % label)
+            time.sleep(1)
+            waitme += 1

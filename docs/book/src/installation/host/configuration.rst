@@ -83,6 +83,10 @@ Following is the default *conf/virtualbox.conf* file::
     # Path to the local installation of the VBoxManage utility.
     path = /usr/bin/VBoxManage
 
+    # Maximum time to wait for virtual machine status change. For example when
+    # shutting down a vm. Default is 300 seconds.
+    timeout = 300
+
     # Specify a comma-separated list of available machines to be used. For each
     # specified ID you have to define a dedicated section containing the details
     # on the respective machine. (E.g. cuckoo1,cuckoo2,cuckoo3)
