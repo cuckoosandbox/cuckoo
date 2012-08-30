@@ -92,14 +92,16 @@ class VMware(MachineManager):
 
         log.debug("Starting vm %s" % host)
         try:
-            output, error = subprocess.Popen([self.options.vmware.path,
+            proc = subprocess.Popen([self.options.vmware.path,
                               "start",
                               host,
                               self.options.vmware.mode],
                               stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE).communicate()
-            if output:
-                raise CuckooMachineError ("Unable to start machine %s: %s" % (host, output))
+                              stderr=subprocess.PIPE)
+            if self.options.vmware.mode.lower() == "gui":
+                output, error = proc.communicate()
+                if output:
+                    raise CuckooMachineError("Unable to start machine %s: %s" % (host, output))
         except OSError as e:
             raise CuckooMachineError("Unable to start machine %s in %s mode: %s"
                                      % (host, self.options.vmware.mode.upper(), e))
