@@ -11,7 +11,7 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 
 logging.basicConfig()
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../"))
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -84,7 +84,7 @@ def submit():
     if errors:
         template = lookup.get_template("submit.html")
         return template.render(timeout=timeout, priority=priority, options=options, package=package, **context)
-    
+
     # Finally real store and submit
     taskid = store_and_submit_fileobj(data.file,data.filename, timeout=timeout, priority=priority, options=options, package=package)
 
