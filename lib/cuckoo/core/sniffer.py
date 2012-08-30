@@ -66,8 +66,12 @@ class Sniffer:
             except:
                 try:
                     if not self.proc.poll():
+                        log.debug("Killing sniffer")
                         self.proc.kill()
-                        log.debug("Sniffer killed.")
+                except OSError as e:
+                    # Avoid "tying to kill a died process" error.
+                    log.debug("Error killing sniffer: %s. Continue" % e)
+                    pass
                 except Exception as e:
                     log.exception("Unable to stop the sniffer with pid %d" % self.proc.pid)
                     return False
