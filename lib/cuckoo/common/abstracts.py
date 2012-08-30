@@ -55,12 +55,12 @@ class MachineManager(object):
 
         for machine_id in mmanager_opts["machines"].strip().split(","):
             try:
-                machine_opts = self.options.get(machine_id)
+                machine_opts = self.options.get(machine_id.strip())
                 machine = Dictionary()
-                machine.id = machine_id
-                machine.label = machine_opts["label"]
-                machine.platform = machine_opts["platform"]
-                machine.ip = machine_opts["ip"]
+                machine.id = machine_id.strip()
+                machine.label = machine_opts["label"].strip()
+                machine.platform = machine_opts["platform"].strip()
+                machine.ip = machine_opts["ip"].strip()
                 machine.locked = False
                 self.machines.append(machine)
             except (AttributeError, CuckooOperationalError):
