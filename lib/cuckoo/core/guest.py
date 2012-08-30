@@ -73,7 +73,10 @@ class GuestManager:
         zip_data.close()
 
         log.debug("Uploading analyzer to guest (id=%s, ip=%s)" % (self.id, self.ip))
-        self.server.add_analyzer(data)
+        try:
+            self.server.add_analyzer(data)
+        except socket.timeout:
+            raise CuckooGuestError("%s: guest communication timeout: unable to upload agent, check networking or try to increase timeout" % self.id)
 
     def start_analysis(self, options):
         """Start analysis.
@@ -122,7 +125,7 @@ class GuestManager:
                 pass
 
             time.sleep(1)
-        
+
         return True
 
     def save_results(self, folder):
@@ -130,7 +133,10 @@ class GuestManager:
         @param folder: analysis folder path.
         @return: operation status.
         """
-        data = self.server.get_results()
+        try:
+            data = self.server.get_results()
+        except socket.timeout:
+            raise CuckooGuestError("%s: guest communication timeout: unable to get results, check networking or try to increase timeout" % self.id)
 
         zip_data = StringIO()
         zip_data.write(data)
