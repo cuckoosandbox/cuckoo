@@ -165,10 +165,13 @@ class AnalysisManager(Thread):
             mmanager.release(vm.label)
 
         # Check analysis file size to avoid memory leaks.
-        for csv in os.listdir(os.path.join(self.analysis.results_folder, "logs")):
-            csv = os.path.join(self.analysis.results_folder, "logs", csv)
-            if os.stat(csv).st_size > self.cfg.cuckoo.analysis_size_limit:
-                raise CuckooAnalysisError("Analysis file %s is too big to be processed. Analysis aborted. You can process it manually" % csv)
+        try:
+            for csv in os.listdir(os.path.join(self.analysis.results_folder, "logs")):
+                csv = os.path.join(self.analysis.results_folder, "logs", csv)
+                if os.stat(csv).st_size > self.cfg.cuckoo.analysis_size_limit:
+                    raise CuckooAnalysisError("Analysis file %s is too big to be processed. Analysis aborted. You can process it manually" % csv)
+        except OSError as e:
+            log.warning("Log access error for analysis #%s: %s" % (self.task.id, e))
 
         # Launch reports generation
         Reporter(self.analysis.results_folder).run(Processor(self.analysis.results_folder).run())
