@@ -21,7 +21,7 @@ import time
 from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.exceptions import CuckooMachineError
 
-log =logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class VMware(MachineManager):
