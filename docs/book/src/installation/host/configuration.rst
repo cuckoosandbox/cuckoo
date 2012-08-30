@@ -32,6 +32,11 @@ The first file to edit is *conf/cuckoo.conf*, whose content is::
     # copy in the local binaries repository.
     delete_original = off
 
+    # Set the maximum size of analysis's generated files to process.
+    # This is used to avoid the processing of big files which can bring memory leak.
+    # The value is expressed in bytes, by default 100Mb.
+    analysis_size_limit = 104857600
+
     # Specify the name of the machine manager module to use, this module will
     # define the interaction between Cuckoo and your virtualization software
     # of choice.
