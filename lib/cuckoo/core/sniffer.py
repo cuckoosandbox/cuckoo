@@ -65,7 +65,9 @@ class Sniffer:
                 self.proc.terminate()
             except:
                 try:
-                    self.proc.kill()
+                    if not self.proc.poll():
+                        self.proc.kill()
+                        log.debug("Sniffer killed.")
                 except Exception as e:
                     log.exception("Unable to stop the sniffer with pid %d" % self.proc.pid)
                     return False
