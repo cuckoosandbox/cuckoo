@@ -22,6 +22,8 @@ class VirtualBox(MachineManager):
     SAVED = "saved"
     RUNNING = "running"
     POWEROFF = "poweroff"
+    ABORTED = "aborted"
+    ERROR = "machete"
 
     def _initialize_check(self):
         """Runs all checks when a machine manager is initialized.
@@ -73,14 +75,19 @@ class VirtualBox(MachineManager):
         @raise CuckooMachineError: if unable to stop.
         """
         log.debug("Stopping vm %s" % label)
-        try:
-            if subprocess.call([self.options.virtualbox.path, "controlvm", label, "poweroff"],
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE):
-                raise CuckooMachineError("VBoxManage exited with error powering off the machine")
-        except OSError as e:
-            raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e)
-        self._wait_status(label, self.POWEROFF)
+
+        status = self._status(label)
+        if status == self.POWEROFF or status == self.ABORTED:
+            log.debug("Trying to stop an already stopped vm %s" % label)
+        else:
+            try:
+                if subprocess.call([self.options.virtualbox.path, "controlvm", label, "poweroff"],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE):
+                    log.debug("VBoxManage exited with error powering off the machine")
+            except OSError as e:
+                raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e)
+            self._wait_status(label, self.POWEROFF)
 
     def _list(self):
         """Lists virtual machines installed.
@@ -111,7 +118,6 @@ class VirtualBox(MachineManager):
         """Gets current status of a vm.
         @param label: virtual machine name.
         @return: status string.
-        @raise CuckooMachineError: if unable to enumerate status.
         """
         log.debug("Getting status for %s"% label)
         try:
@@ -124,32 +130,39 @@ class VirtualBox(MachineManager):
             output, err = proc.communicate()
 
             if proc.returncode != 0:
-              raise CuckooMachineError("VBoxManage returns error checking status for machine %s: %s"
+                # It's quite common for virtualbox crap utility to exit with:
+                # VBoxManage: error: Details: code E_ACCESSDENIED (0x80070005)
+                # So we just log to debug this.
+                log.debug("VBoxManage returns error checking status for machine %s: %s"
                                        % (label, err))
+                return self.ERROR
         except OSError as e:
-            raise CuckooMachineError("VBoxManage failed to check status for machine %s: %s"
+            log.warning("VBoxManage failed to check status for machine %s: %s"
                                      % (label, e))
+            return self.ERROR
 
         for line in output.split("\n"):
             state = re.match(r"VMState=\"(\w+)\"", line, re.M|re.I)
             if state:
                 status = state.group(1)
                 log.debug("Machine %s status %s" % (label, status))
-                return status
+                return status.lower()
         raise CuckooMachineError("Unable to get status for %s" % label)
 
     def _wait_status(self, label, state):
         """Waits for a vm status.
         @param label: virtual machine name.
-        @param state: virutal machine status.
+        @param state: virtual machine status.
         @raise CuckooMachineError: if default waiting timeout expire.
         """
         # This block was originally suggested by Loic Jaquemet.
         waitme = 0
-        while state != self._status(label):
+        current = self._status(label)
+        while state != current and current != self.ERROR:
             log.debug("Waiting %i cuckooseconds for vm %s to switch to status %s" % (waitme, label, state))
             if waitme > int(self.options.virtualbox.timeout):
                 self.stop(label)
                 raise CuckooMachineError("Waiting too much for vm %s status change. Stopping vm and aborting" % label)
             time.sleep(1)
             waitme += 1
+            current = self._status(label)
