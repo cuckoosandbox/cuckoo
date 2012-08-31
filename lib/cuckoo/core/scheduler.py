@@ -158,11 +158,13 @@ class AnalysisManager(Thread):
                     os.remove(self.task.file_path)
                 except OSError as e:
                     log.error("Unable to delete original file at path \"%s\": %s" % (self.task.file_path, e))
-
-            # Stop machine
-            mmanager.stop(vm.label)
-            # Release the machine from lock
-            mmanager.release(vm.label)
+            try:
+                # Stop machine
+                mmanager.stop(vm.label)
+                # Release the machine from lock
+                mmanager.release(vm.label)
+            except CuckooMachineError as e:
+                log.error("Unable to release vm %s, reason %s. You have to fix it manually" % (vm.label, e))
 
         # Check analysis file size to avoid memory leaks.
         try:
