@@ -144,6 +144,7 @@ class VirtualBox(MachineManager):
         @param state: virutal machine status.
         @raise CuckooMachineError: if default waiting timeout expire.
         """
+        # This block was originally suggested by Loic Jaquemet.
         waitme = 0
         while state != self._status(label):
             log.debug("Waiting %i cuckooseconds for vm %s to switch to status %s" % (waitme, label, state))
