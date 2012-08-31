@@ -24,6 +24,8 @@ log = logging.getLogger(__name__)
 
 mmanager = None
 machine_lock = Lock()
+db_lock = Lock()
+
 
 class AnalysisManager(Thread):
     """Analysis manager thread."""
@@ -184,9 +186,6 @@ class AnalysisManager(Thread):
         """Run manager thread."""
         success = True
 
-        db = Database()
-        db.lock(self.task.id)
-
         try:
             self.launch_analysis()
         except CuckooMachineError as e:
@@ -196,7 +195,7 @@ class AnalysisManager(Thread):
             log.error(e)
             success = False
         finally:
-            db.complete(self.task.id, success)
+            Database().complete(self.task.id, success)
 
 class Scheduler:
     """Task scheduler."""
@@ -254,13 +253,17 @@ class Scheduler:
             if mmanager.availables() == 0:
                 #log.debug("No machines available, try again")
                 continue
-
+            db_lock.acquire()
             task = self.db.fetch()
 
-            if not task:
+            if task:
+                self.db.lock(task.id)
+                db_lock.release()
+                # Go with analysis.
+                analysis = AnalysisManager(task)
+                analysis.daemon = True
+                analysis.start()
+            else:
                 #log.debug("No pending tasks, try again")
-                continue
+                db_lock.release()
 
-            analysis = AnalysisManager(task)
-            analysis.daemon = True
-            analysis.start()
