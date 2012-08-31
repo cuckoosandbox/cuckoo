@@ -103,7 +103,7 @@ class GuestManager:
     
             self.server.add_malware(data, options["file_name"])
             self.server.execute()
-        except socket.timeout:
+        except (socket.timeout, socket.error):
             raise CuckooGuestError("%s: guest communication timeout, check networking or try to increase timeout" % self.id)
 
     def wait_for_completion(self):
