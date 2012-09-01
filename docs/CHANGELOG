@@ -7,6 +7,9 @@ Cuckoo Sandbox 0.4.2 (TBA)
 * Added VirtualBox status change monitor and option "timeout" to virtualbox.conf
 * Added log file processing size limit and option "analysis_size_limit" to
   cuckoo.conf
+* Added directory submission to submit.py utility
+* Added community.py utility to sync custom modules from the community repository
+* Fixed missing critical_timeout implementation
 * Fixed delete_original race condition
 * Fixed some bugs in virtual machine management
 * Fixed submission with relative path
