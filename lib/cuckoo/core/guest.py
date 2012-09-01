@@ -7,9 +7,11 @@ import time
 import socket
 import logging
 import xmlrpclib
+from threading import Timer, Event
 from StringIO import StringIO
 from zipfile import ZipFile, BadZipfile, ZIP_DEFLATED
 
+from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooGuestError
 from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT, CUCKOO_GUEST_COMPLETED, CUCKOO_GUEST_FAILED
 
@@ -26,6 +28,8 @@ class GuestManager:
         self.ip = ip
         self.platform = platform
         self.server = xmlrpclib.Server("http://%s:%s" % (ip, CUCKOO_GUEST_PORT), allow_none=True)
+        self.cfg = Config()
+        self.timeout = self.cfg.cuckoo.critical_timeout
 
     def wait(self, status):
         """Waiting for status.
@@ -34,7 +38,18 @@ class GuestManager:
         """
         log.debug("%s: waiting for status 0x%.04x" % (self.id, status))
 
+        abort = Event()
+        abort.clear()
+        def die():
+            abort.set()
+
+        timer = Timer(self.timeout, die)
+        timer.start()
+
         while True:
+            if abort.is_set():
+                raise CuckooGuestError("%s: the guest initialization hit the critical timeout, analysis aborted" % self.id)
+
             try:
                 if self.server.get_status() == status:
                     log.debug("%s: status ready" % self.id)
@@ -110,7 +125,19 @@ class GuestManager:
         """Wait for analysis completion.
         @return: operation status.
         """
+
+        abort = Event()
+        abort.clear()
+        def die():
+            abort.set()
+
+        timer = Timer(self.timeout, die)
+        timer.start()
+
         while True:
+            if abort.is_set():
+                raise CuckooGuestError("%s: the analysis hit the critical timeout, aborted" % self.id)
+
             try:
                 status = self.server.get_status()
                 if status == CUCKOO_GUEST_COMPLETED:
