@@ -159,3 +159,20 @@ If you have a snapshot marked with a star "*" your snapshot is ready, anyway
 you have to restore the current snapshot::
 
     $ VBoxManage snapshot "<Name of VM>" restorecurrent
+
+Cuckoo eats all my RAM
+----------------------
+
+It's a rare case, but some sample can generate gigs of logs. These logs must
+be processed by Cuckoo and all reports generated, and eat some RAM.
+To avoid memory leaks, file bigger than analysis_size_limit in cuckoo.conf aren't
+processed.
+If you need to process them, you have to do it manually via submit.py utility.
+
+I got a lot of errors from virtualization
+-----------------------------------------
+
+Proper sizing of VM number running on a host is fundamental, if you oversize
+the VM number you get too much I/O. All virtualization software we have tested,
+under high I/O, raise error when you try to run CLI utilities.
+If you get some errors, try to decrease the number of running VMs.
