@@ -56,3 +56,25 @@ For example if you want run again the singature engine for analysis number 1:
 
     $ cd utils
     $ python testsignatures.py ../storage/analyses/1/
+
+Community Download Utility
+==========================
+
+This utility downloads signatures from `Cuckoo Community Repository`_ and installs
+it. So with just a command you can keep updated all the signatures.
+Following are the usage options.
+
+    $ cd utils
+    $ python community.py
+    You need to enable some category!
+
+    usage: community.py [-h] [-a] [-s] [-f] [-w]
+
+    optional arguments:
+      -h, --help        show this help message and exit
+      -a, --all         Download everything
+      -s, --signatures  Download Cuckoo signatures
+      -f, --force       Install files without confirmation
+      -w, --rewrite     Rewrite existing files
+
+.. _`Cuckoo Community Repository`: https://github.com/cuckoobox/community
