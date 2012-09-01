@@ -164,6 +164,7 @@ class AnalysisManager(Thread):
                 # Stop machine
                 mmanager.stop(vm.label)
                 # Release the machine from lock
+                log.debug("Task #%s: releasing machine %s (label=%s)" % (self.task.id, vm.id, vm.label))
                 mmanager.release(vm.label)
             except CuckooMachineError as e:
                 log.error("Unable to release vm %s, reason %s. You have to fix it manually" % (vm.label, e))
@@ -195,6 +196,7 @@ class AnalysisManager(Thread):
             log.error(e)
             success = False
         finally:
+            log.debug("Releasing db task #%s with status %s" % (self.task.id, success))
             Database().complete(self.task.id, success)
 
 class Scheduler:
@@ -257,6 +259,7 @@ class Scheduler:
             task = self.db.fetch()
 
             if task:
+                log.debug("Locking db task #%s" % task.id)
                 self.db.lock(task.id)
                 db_lock.release()
                 # Go with analysis.
