@@ -81,13 +81,25 @@ class VirtualBox(MachineManager):
             log.debug("Trying to stop an already stopped vm %s" % label)
         else:
             try:
-                if subprocess.call([self.options.virtualbox.path, "controlvm", label, "poweroff"],
+                proc = subprocess.Popen([self.options.virtualbox.path, "controlvm", label, "poweroff"],
                                    stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE):
+                                   stderr=subprocess.PIPE)
+                # Sometimes VBoxManage stucks when stopping vm so we needed
+                # to add a timeout and kill it after that.
+                stop_me = 0
+                while proc.poll() is None:
+                    if stop_me < self.options.virtualbox.timeout:
+                        time.sleep(1)
+                        stop_me += 1
+                    else:
+                        log.debug("Stopping vm %s timeouted. Killing" % label)
+                        proc.terminate()
+
+                if proc.returncode != 0 and stop_me < self.options.virtualbox.timeout:
                     log.debug("VBoxManage exited with error powering off the machine")
             except OSError as e:
                 raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e)
-            self._wait_status(label, self.POWEROFF)
+            self._wait_status(label, [self.POWEROFF, self.ABORTED])
 
     def _list(self):
         """Lists virtual machines installed.
@@ -151,14 +163,16 @@ class VirtualBox(MachineManager):
 
     def _wait_status(self, label, state):
         """Waits for a vm status.
-        @param label: virtual machine name.
+        @param label: virtual machine name, accepts more than one states in a list.
         @param state: virtual machine status.
         @raise CuckooMachineError: if default waiting timeout expire.
         """
         # This block was originally suggested by Loic Jaquemet.
         waitme = 0
         current = self._status(label)
-        while state != current and current != self.ERROR:
+        if isinstance(state, str):
+            state = [state]
+        while current not in state:
             log.debug("Waiting %i cuckooseconds for vm %s to switch to status %s" % (waitme, label, state))
             if waitme > int(self.options.virtualbox.timeout):
                 self.stop(label)
