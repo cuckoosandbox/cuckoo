@@ -116,7 +116,13 @@ class Processor:
         results = {}
         Processing()
 
-        for module in Processing.__subclasses__():
+        # Order modules using the user-defined sequence number.
+        # If none is specified for the modules, they are selected in
+        # alphabetical order.
+        modules_list = Processing.__subclasses__()
+        modules_list.sort(key=lambda module: module.order)
+
+        for module in modules_list:
             result = self._run_processing(module)
             if result:
                 results.update(result)

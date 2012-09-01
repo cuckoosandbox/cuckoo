@@ -164,6 +164,7 @@ class MachineManager(object):
 
 class Processing(object):
     """Base abstract class for processing module."""
+    order = 1
 
     def __init__(self):
         self.analysis_path = ""
