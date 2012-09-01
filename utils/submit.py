@@ -36,22 +36,32 @@ def main():
     path = os.path.abspath(args.path)
 
     if not os.path.exists(path):
-        print("ERROR: the specified file does not exist at path \"%s\"" % path)
+        print("ERROR: the specified file/folder does not exist at path \"%s\"" % path)
         return False
 
+    files = []
+    if os.path.isdir(path):
+        for file_name in os.listdir(path):
+            file_path = os.path.join(path, file_name)
+
+            if os.path.isfile(file_path):
+                files.append(file_path)
+    else:
+        files.append(path)
+
     db = Database()
+    for file_path in files:
+        task_id = db.add(file_path=file_path,
+                         md5=File(file_path).get_md5(),
+                         package=args.package,
+                         timeout=args.timeout,
+                         options=args.options,
+                         priority=args.priority,
+                         machine=args.machine,
+                         platform=args.platform,
+                         custom=args.custom)
 
-    task_id = db.add(file_path=path,
-                     md5=File(path).get_md5(),
-                     package=args.package,
-                     timeout=args.timeout,
-                     options=args.options,
-                     priority=args.priority,
-                     machine=args.machine,
-                     platform=args.platform,
-                     custom=args.custom)
-
-    print("SUCCESS: Task added with id %d" % task_id)
+        print("SUCCESS: File \"%s\" added as task with id %d" % (file_path, task_id))
 
 if __name__ == "__main__":
     main()
