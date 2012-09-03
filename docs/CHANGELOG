@@ -14,7 +14,7 @@ Cuckoo Sandbox 0.4.2 (TBA)
 * Fixed some bugs in virtual machine management
 * Fixed submission with relative path
 * Fixed UTF-8 chars handling in analysis.log
-* Some minor fix
+* Some minor fixes
 
 Cuckoo Sandbox 0.4.1 (2012-08-09)
 =================================
