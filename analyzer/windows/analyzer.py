@@ -131,11 +131,11 @@ class PipeHandler(Thread):
                         add_pids(pid)
                         proc = Process(pid=pid)
                         proc.inject()
-                        KERNEL32.WriteFile(self.h_pipe,
-                                           create_string_buffer("OK"),
-                                           2,
-                                           byref(bytes_read),
-                                           None)
+                KERNEL32.WriteFile(self.h_pipe,
+                                    create_string_buffer("OK"),
+                                    2,
+                                    byref(bytes_read),
+                                    None)
             elif command.startswith("FILE:"):
                 file_path = command[5:]
                 add_file(file_path)
