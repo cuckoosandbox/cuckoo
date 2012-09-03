@@ -40,6 +40,7 @@ def add_file(file_path):
 
     if os.path.exists(file_path):
         if file_path not in FILES_LIST:
+            file_path = file_path.decode("mbcs")
             log.info("Added new file to list with path: %s" % file_path)
             FILES_LIST.append(file_path)
 
