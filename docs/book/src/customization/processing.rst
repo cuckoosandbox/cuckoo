@@ -191,6 +191,25 @@ Every processing module should contain:
     * A ``self.key`` attribute defining the name to be used as a subcontainer for the returned data.
     * A set of data (list, dictionary or string etc.) that will be appended to the global container.
 
+You can also specify an *order* value, which allows you to run the available processing modules in
+an ordered sequence. By default all modules are set with an *order* value of *1* and are executed
+in alphabetical order.
+
+If you want to change this value your module would look like:
+
+    .. code-block:: python
+        :linenos:
+
+        from lib.cuckoo.common.abstracts import Processing
+
+        class MyModule(Processing):
+            order = 2
+
+            def run(self):
+                self.key = "file"
+                data = do_something()
+                return data
+
 The processing modules are provided with some attributes that can be used to access the raw results
 for the given analysis:
 
