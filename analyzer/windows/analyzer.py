@@ -140,6 +140,7 @@ class PipeHandler(Thread):
                 file_path = command[5:]
                 add_file(file_path)
 
+        KERNEL32.CloseHandle(self.h_pipe)
         return True
 
 class PipeServer(Thread):
