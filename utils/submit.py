@@ -25,6 +25,7 @@ def main():
     parser.add_argument("--priority", type=int, action="store", default=1, help="Specify a priority for the analysis represented by an integer", required=False)
     parser.add_argument("--machine", type=str, action="store", default="", help="Specify the identifier of a machine you want to use", required=False)
     parser.add_argument("--platform", type=str, action="store", default="", help="Specify the operating system platform you want to use (windows/darwin/linux)", required=False)
+    parser.add_argument("--filetype", type=str, action="store", default=None, help="File type filter (exe,dll,pe,pdf)")
 
     try:
         args = parser.parse_args()
@@ -46,8 +47,9 @@ def main():
                 file_path = os.path.join(dirname, file_name)
 
             if os.path.isfile(file_path):
+                    if args.filetype == None or File(file_path).get_type().lower().find(args.filetype.lower()) >= 0:
                 files.append(file_path)
-    else:
+    elif args.filetype == None or File(path).get_type().lower().find(args.filetype.lower()) >= 0:
         files.append(path)
 
     db = Database()
