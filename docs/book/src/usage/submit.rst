@@ -21,7 +21,7 @@ command-line utility. It currently has the following options available::
                      path
 
     positional arguments:
-      path                 Path to the file or oflder to analyze
+      path                 Path to the file or folder to analyze
 
     optional arguments:
       -h, --help           show this help message and exit
