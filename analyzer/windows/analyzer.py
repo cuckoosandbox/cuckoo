@@ -40,7 +40,7 @@ def add_file(file_path):
 
     if os.path.exists(file_path):
         if file_path not in FILES_LIST:
-            log.info("Added new file to list with path: %s" % file_path)
+            log.info("Added new file to list with path: %s" % unicode(file_path).encode("utf-8", "replace"))
             FILES_LIST.append(file_path)
 
 def add_pid(pid):
