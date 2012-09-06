@@ -98,9 +98,10 @@ Inactive Developers
 Contributors
 ------------
 
-    * Mark Schloesser
-    * Thorsten Sick
-    * Adam Pridgen
+    * Thorsten Sick   (Various patches and contributions)
+    * Adam Pridgen    (Various patches and contributions)
+    * Mike Tu         (Initial VMWare Workstation machine manager)
+    * Loic Jaquemet   (Improvements in VirtualBox machine manager)
 
 Bug Reporters/Advisors
 ----------------------
