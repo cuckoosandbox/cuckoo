@@ -53,7 +53,7 @@ Please respect netiquette when posting, in detail:
  * Tend to not write HTML emails.
 
 .. _`pastebin.com`: http://pastebin.com/
-.. _`pastie.org`:http://pastie.org/
+.. _`pastie.org`: http://pastie.org/
 
 Donations
 =========
