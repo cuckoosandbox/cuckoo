@@ -175,8 +175,7 @@ class VirtualBox(MachineManager):
         while current not in state:
             log.debug("Waiting %i cuckooseconds for vm %s to switch to status %s" % (waitme, label, state))
             if waitme > int(self.options.virtualbox.timeout):
-                self.stop(label)
-                raise CuckooMachineError("Waiting too much for vm %s status change. Stopping vm and aborting" % label)
+                raise CuckooMachineError("Waiting too much for vm %s status change. Please check manually" % label)
             time.sleep(1)
             waitme += 1
             current = self._status(label)
