@@ -18,7 +18,7 @@ requests.
 
 You can do so from Windows' Control Panel as shown in the picture:
 
-    .. figure:: ../../_images/screenshots/windows_security.png
+    .. image:: ../../_images/screenshots/windows_security.png
         :align: center
 
 Virtual Networking
