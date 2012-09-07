@@ -1,7 +1,7 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 0.4.2 (TBA)
-==========================
+Cuckoo Sandbox 0.4.2 (2012-09-07)
+=================================
 
 * Added support for VMWare Workstation
 * Added VirtualBox status change monitor and option "timeout" to virtualbox.conf
