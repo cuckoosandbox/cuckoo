@@ -248,7 +248,8 @@ class Summary:
                     name = _check_registry(handles, registry, subkey, handle)
                     if name and name not in keys:
                         keys.append(name)
-                elif call["api"].startswith("RegCloseKey"):
+
+                if call["api"].startswith("RegCloseKey"):
                     handle = 0
 
                     for argument in call["arguments"]:
