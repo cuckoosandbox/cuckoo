@@ -45,8 +45,8 @@ def main():
             for file_name in filenames:
                 file_path = os.path.join(dirname, file_name)
 
-            if os.path.isfile(file_path):
-                files.append(file_path)
+                if os.path.isfile(file_path):
+                    files.append(file_path)
     else:
         files.append(path)
 
