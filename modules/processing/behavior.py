@@ -198,7 +198,7 @@ class Summary:
         def _check_registry(handles, registry, subkey, handle):
             for known_handle in handles:
                 if handle != 0 and handle == known_handle["handle"]:
-                    return
+                    return None
 
             name = ""
             if registry == 0x80000000:
@@ -207,12 +207,26 @@ class Summary:
                 name = "HKEY_CURRENT_USER\\"
             elif registry == 0x80000002:
                 name = "HKEY_LOCAL_MACHINE\\"
+            elif registry == 0x80000003:
+                name = "HKEY_USERS\\"
+            elif registry == 0x80000004:
+                name = "HKEY_PERFORMANCE_DATA\\"
+            elif registry == 0x80000005:
+                name = "HKEY_CURRENT_CONFIG\\"
+            elif registry == 0x80000006:
+                name = "HKEY_DYN_DATA\\"
             else:
                 for known_handle in handles:
                     if registry == known_handle["handle"]:
                         name = known_handle["name"] + "\\"
 
             handles.append({"handle" : handle, "name" : name + subkey})
+            return name + subkey
+
+        def _remove_handle(handles, handle):
+            for known_handle in handles:
+                if handle != 0 and handle == known_handle["handle"]:
+                    handles.remove(known_handle)
 
         for process in self.proc_results:
             handles = []
@@ -231,11 +245,16 @@ class Summary:
                         elif argument["name"] == "Handle":
                             handle = int(argument["value"], 16)
 
-                    _check_registry(handles, registry, subkey, handle)
+                    name = _check_registry(handles, registry, subkey, handle)
+                    if name and name not in keys:
+                        keys.append(name)
+                elif call["api"].startswith("RegCloseKey"):
+                    handle = 0
 
-            for handle in handles:
-                if handle["name"] not in keys:
-                    keys.append(handle["name"])
+                    for argument in call["arguments"]:
+                        if argument["name"] == "Handle":
+                            handle = int(argument["value"], 16)
+                    _remove_handle(handles, handle)
 
         return keys
 

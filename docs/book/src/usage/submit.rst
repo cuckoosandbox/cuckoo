@@ -21,7 +21,7 @@ command-line utility. It currently has the following options available::
                      path
 
     positional arguments:
-      path                 Path to the file to analyze
+      path                 Path to the file or folder to analyze
 
     optional arguments:
       -h, --help           show this help message and exit
@@ -34,6 +34,9 @@ command-line utility. It currently has the following options available::
       --machine MACHINE    Specify the identifier of a machine you want to use
       --platform PLATFORM  Specify the operating system platform you want to use
                            (windows/darwin/linux)
+
+If you specify a directory as path, all the files contained in it will be
+submitted for analysis.
 
 The concept of analysis packages will be dealt later in this documentation (at
 :doc:`packages`). Following are some usage examples:

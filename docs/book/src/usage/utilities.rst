@@ -20,7 +20,7 @@ task you need clean.sh utility.
     * Cuckoo task's database
     * Cuckoo logs
 
-To clean your setup, run:
+To clean your setup, run::
 
     $ cd utils
     $ sh clean.sh
@@ -39,9 +39,10 @@ Test Report Utility
 ===================
 
 Run the reporting engine (run all reports) on an already available analysis
-folder. So you don't need to run an analysis again to generate reports.
+folder, in order to not re-run the analysis if you want to re-generate the
+reports for it.
 This is used mainly in debugging and developing Cuckoo.
-For example if you want run again the report engine for analysis number 1:
+For example if you want run again the report engine for analysis number 1::
 
     $ cd utils
     $ python testreport.py ../storage/analyses/1/
@@ -50,9 +51,10 @@ Test Signature Utility
 ======================
 
 Run the signature engine (checks all signatures) on an already available 
-analysis folder. So you don't need to run an analysis again.
-This is used mainly in debugging and developing Cuckoo.
-For example if you want run again the singature engine for analysis number 1:
+analysis folder and see possible matches.
+This is used mainly in debugging and developing Cuckoo and testing new
+signatures.
+For example if you want run again the singature engine for analysis number 1::
 
     $ cd utils
     $ python testsignatures.py ../storage/analyses/1/
@@ -61,8 +63,9 @@ Community Download Utility
 ==========================
 
 This utility downloads signatures from `Cuckoo Community Repository`_ and installs
-it. So with just a command you can keep updated all the signatures.
-Following are the usage options.
+specific additional modules in your local setup and for example update id with
+all the latest available signatures.
+Following are the usage options::
 
     $ cd utils
     $ python community.py
@@ -76,5 +79,9 @@ Following are the usage options.
       -s, --signatures  Download Cuckoo signatures
       -f, --force       Install files without confirmation
       -w, --rewrite     Rewrite existing files
+
+**Example**: install all available signatures::
+
+  $ ./utils/community.py --signatures --force
 
 .. _`Cuckoo Community Repository`: https://github.com/cuckoobox/community

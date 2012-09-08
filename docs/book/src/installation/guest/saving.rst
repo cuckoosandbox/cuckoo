@@ -72,3 +72,17 @@ running Cuckoo's agent.
 You can finally take a snapshot with the following command::
 
     $ virsh snapshot-create "<Name of VM>"
+
+VMware Workstation
+==================
+
+If decided to adopt VMware Workstation, you can take the snapshot from the graphical user
+interface or from the command line::
+
+    $ vmrun snapshot "/your/disk/image/path/wmware_image_name.vmx" your_snapshot_name
+
+Where your_snapshot_name is the name you choose for the snapshot.
+After that power off the machine from the graphical user interface or from the
+command line::
+
+    $ vmrun stop "/your/disk/image/path/wmware_image_name.vmx" hard

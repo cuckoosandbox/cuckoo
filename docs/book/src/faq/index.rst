@@ -4,7 +4,6 @@ FAQ
 
 Frequently Asked Questions:
 
-    * :ref:`general_vmware`
     * :ref:`general_volatility`
     * :ref:`troubles_upgrade`
     * :ref:`troubles_problem`
@@ -12,15 +11,6 @@ Frequently Asked Questions:
 
 General Questions
 =================
-
-.. _general_vmware:
-
-Can I use VMWare?
------------------
-
-Cuckoo does not provide support for VMWare by default, but it provides a modular
-engine that allows you to write your own plugin for supporting any virtualization
-software you might want to use. Refer to :doc:`../customization/machinemanagers`.
 
 .. _general_volatility:
 

@@ -109,7 +109,7 @@ class TestFile:
 
     def test_get_ssdeep(self):
         try:
-            import ssdeep
+            import pydeep
             assert_not_equal(None, self.file.get_ssdeep())
         except ImportError:
             assert_equal(None, self.file.get_ssdeep())

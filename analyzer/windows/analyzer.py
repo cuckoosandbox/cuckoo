@@ -40,21 +40,19 @@ def add_file(file_path):
 
     if os.path.exists(file_path):
         if file_path not in FILES_LIST:
-            log.info("Added new file to list with path: %s" % file_path)
+            log.info("Added new file to list with path: %s" % unicode(file_path).encode("utf-8", "replace"))
             FILES_LIST.append(file_path)
 
 def add_pid(pid):
     """Add a process to process list."""
-    PROCESS_LOCK.acquire()
 
     if type(pid) == long or type(pid) == int or type(pid) == str:
         log.info("Added new process to list with pid: %d" % pid)
         PROCESS_LIST.append(pid)
 
-    PROCESS_LOCK.release()
-
 def add_pids(pids):
     """Add PID."""
+
     if type(pids) == list:
         for pid in pids:
             add_pid(pid)
@@ -124,6 +122,7 @@ class PipeHandler(Thread):
             #log.debug("Connection received (data=%s)" % command)
 
             if command.startswith("PID:"):
+                PROCESS_LOCK.acquire()
                 pid = command[4:]
                 if pid.isdigit():
                     pid = int(pid)
@@ -131,15 +130,18 @@ class PipeHandler(Thread):
                         add_pids(pid)
                         proc = Process(pid=pid)
                         proc.inject()
-                        KERNEL32.WriteFile(self.h_pipe,
-                                           create_string_buffer("OK"),
-                                           2,
-                                           byref(bytes_read),
-                                           None)
+
+                KERNEL32.WriteFile(self.h_pipe,
+                                   create_string_buffer("OK"),
+                                   2,
+                                   byref(bytes_read),
+                                   None)
+                PROCESS_LOCK.release()
             elif command.startswith("FILE:"):
                 file_path = command[5:]
                 add_file(file_path)
 
+        KERNEL32.CloseHandle(self.h_pipe)
         return True
 
 class PipeServer(Thread):
@@ -279,8 +281,12 @@ class Analyzer:
 
         add_pids(pids)
 
+        self.do_run = True
+
         while self.do_run:
-            PROCESS_LOCK.acquire()
+            if PROCESS_LOCK.locked():
+                KERNEL32.Sleep(1000)
+                continue
 
             try:
                 for pid in PROCESS_LIST:
@@ -289,6 +295,7 @@ class Analyzer:
                         PROCESS_LIST.remove(pid)
 
                 if len(PROCESS_LIST) == 0:
+                    log.info("Process list is empty, terminating analysis...")
                     timer.cancel()
                     break
 
@@ -296,12 +303,12 @@ class Analyzer:
 
                 try:
                     if not pack.check():
+                        log.info("The analysis package requested the termination of the analysis...")
                         timer.cancel()
                         break
                 except NotImplementedError:
                     pass
             finally:
-                PROCESS_LOCK.release()
                 KERNEL32.Sleep(1000)
 
         try:

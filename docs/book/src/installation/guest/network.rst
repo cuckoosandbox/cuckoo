@@ -18,7 +18,7 @@ requests.
 
 You can do so from Windows' Control Panel as shown in the picture:
 
-    .. figure:: ../../_images/screenshots/windows_security.png
+    .. image:: ../../_images/screenshots/windows_security.png
         :align: center
 
 Virtual Networking
@@ -39,3 +39,10 @@ virtual network setup.
 This stage is very much up to your own requirements and to the
 characteristics of your virtualization software.
 
+    .. warning:: Virtual networking errors!
+        Virtual networking is a virtual component for Cuckoo, you must be really
+        sure to get connectivity between host and guest.
+        Most of the issues reported by users are related to a wrong setup of
+        their networking.
+        You you aren't sure about that check your virtualization software
+        documentation and test connectivity with ping and telnet.

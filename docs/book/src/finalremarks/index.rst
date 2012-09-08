@@ -37,23 +37,23 @@ the email address you're trying to post with.
 Please respect netiquette when posting, in detail:
 
  * Before  posting read the mailing list archives, read the Cuckoo blog, read
- the documentation and Google about your issue. Stop posting questions that have
- already been answered over and over everywhere.
+   the documentation and Google about your issue. Stop posting questions that
+   have already been answered over and over everywhere.
  * Posting emails saying just like "Doesn't work, help me" are completely
- useless. If something is not working report the error, paste the logs, paste the
- config file, paste the information on the virtual machine, paste the
- results of the troubleshooting, give context. We are not wizards and we
- don't have the crystal ball.
+   useless. If something is not working report the error, paste the logs, paste
+   the config file, paste the information on the virtual machine, paste the
+   results of the troubleshooting, give context. We are not wizards and we
+   don't have the crystal ball.
  * Use a proper title. Stuff like "Doesn't work", "Help me", "Error" is not a
- proper title.
- * Tend to use `pastebin.com`_, `pastie.org`_ and similar services to paste
- logs and configs: make the email more readable.
+   proper title.
+ * Tend to use `pastebin.com`_ or `pastie.org`_ and similar services to paste
+   logs and configs: make the email more readable.
  * Tend to upload your attachment to file upload services, we have a very
- low attachment size limit.
+   low attachment size limit.
  * Tend to not write HTML emails.
 
 .. _`pastebin.com`: http://pastebin.com/
-.. _`pastie.org`:http://pastie.org/
+.. _`pastie.org`: http://pastie.org/
 
 Donations
 =========
@@ -89,6 +89,8 @@ Active Developers
     +-------------------------------+--------------------+-------------------------------------+
     | Jurriaan "*skier*" Bremer     | Developer          | ``jurriaanbremer at gmail dot com`` |
     +-------------------------------+--------------------+-------------------------------------+
+    | Mark "*rep*" Schloesser       | Developer          |                                     |
+    +-------------------------------+--------------------+-------------------------------------+
 
 Inactive Developers
 -------------------
@@ -98,9 +100,10 @@ Inactive Developers
 Contributors
 ------------
 
-    * Mark Schloesser
-    * Thorsten Sick
-    * Adam Pridgen
+    * Thorsten Sick   (Various patches and contributions)
+    * Adam Pridgen    (Various patches and contributions)
+    * Mike Tu         (Initial VMWare Workstation machine manager)
+    * Loic Jaquemet   (Improvements in VirtualBox machine manager)
 
 Bug Reporters/Advisors
 ----------------------
