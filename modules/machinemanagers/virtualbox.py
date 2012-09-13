@@ -34,6 +34,8 @@ class VirtualBox(MachineManager):
             raise CuckooMachineError("VirtualBox VBoxManage path missing, please add it to configuration")
         if not os.path.exists(self.options.virtualbox.path):
             raise CuckooMachineError("VirtualBox VBoxManage not found in specified path %s" % self.options.virtualbox.path)
+        if not self.options.virtualbox.timeout:
+            raise CuckooMachineError("VirtualBox timeout setting not found, please add it to configuration")
         # Base checks.
         super(VirtualBox, self)._initialize_check()
 
