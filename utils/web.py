@@ -38,7 +38,7 @@ def browse():
 
     try:
         db.cursor.execute("SELECT * FROM tasks " \
-                          "ORDER BY status, added_on DESC;")
+                          "ORDER BY status, added_on, id DESC;")
     except sqlite3.OperationalError as e:
         context["error"] = "Could not load tasks from database."
         return template.render(**context)
