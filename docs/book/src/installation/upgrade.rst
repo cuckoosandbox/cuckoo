@@ -27,5 +27,6 @@ release files, as it might raise some problems because:
 
 * You are overwriting Python source files (.py) but Pyhton bytecode files (.pyc)
   are still in place.
-* There are configuration files changes across the two versions.
+* There are configuration files changes across the two versions, check our
+  CHANGELOG file for added or removed configuration options.
 * The part of Cuckoo which runs inside guests may change.
