@@ -283,14 +283,17 @@ class Analyzer:
 
         aux_enabled = []
         for auxiliary in Auxiliary.__subclasses__():
-            #try:
-            aux = auxiliary()
-            aux.start()
-            #except Exception as e:
-            #    log.warning("Cannot execute auxiliary module %s: %s" % (aux.__class__.__name__, e))
-            #    continue
-            #finally:
-            #    aux_enabled.append(aux)
+            try:
+                aux = auxiliary()
+                aux.start()
+            except NotImplementedError:
+                log.warning("Auxiliary module %s was not implemented" % aux.__class__.__name__)
+                continue
+            except Exception as e:
+                log.warning("Cannot execute auxiliary module %s: %s" % (aux.__class__.__name__, e))
+                continue
+            finally:
+                aux_enabled.append(aux)
 
         # Start analysis package
         try:
