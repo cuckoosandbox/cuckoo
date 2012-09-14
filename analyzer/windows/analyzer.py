@@ -6,6 +6,7 @@ import os
 import sys
 import random
 import shutil
+import pkgutil
 import logging
 import xmlrpclib
 import ConfigParser
@@ -14,14 +15,14 @@ from threading import Lock, Thread, Timer
 
 from lib.api.process import Process
 from lib.common.exceptions import CuckooError
-from lib.common.abstracts import Package
+from lib.common.abstracts import Package, Auxiliary
 from lib.common.defines import *
 from lib.common.paths import PATHS
 from lib.core.config import Config
 from lib.core.startup import create_folders, init_logging
 from lib.core.privileges import grant_debug_privilege
 from lib.core.packages import choose_package
-from lib.core.screenshots import Screenshots
+import modules.auxiliaries as auxiliaries
 
 log = logging.getLogger()
 
@@ -252,7 +253,7 @@ class Analyzer:
         else:
             package = self.config.package
 
-        package_name = "packages.%s" % package
+        package_name = "modules.packages.%s" % package
 
         try:
             __import__(package_name, globals(), locals(), ["dummy"], -1)
@@ -270,10 +271,28 @@ class Analyzer:
 
         timer = Timer(self.config.timeout, self.stop)
         timer.start()
-        
-        shots = Screenshots()
-        shots.start()
 
+        # Initialize Auxiliary modules
+        Auxiliary()
+        prefix = auxiliaries.__name__ + "."
+        for loader, name, ispkg in pkgutil.iter_modules(auxiliaries.__path__, prefix):
+            if ispkg:
+                continue
+
+            __import__(name, globals(), locals(), ["dummy"], -1)
+
+        aux_enabled = []
+        for auxiliary in Auxiliary.__subclasses__():
+            #try:
+            aux = auxiliary()
+            aux.start()
+            #except Exception as e:
+            #    log.warning("Cannot execute auxiliary module %s: %s" % (aux.__class__.__name__, e))
+            #    continue
+            #finally:
+            #    aux_enabled.append(aux)
+
+        # Start analysis package
         try:
             pids = pack.start(self.file_path)
         except NotImplementedError:
@@ -316,7 +335,14 @@ class Analyzer:
         except NotImplementedError:
             pass
 
-        shots.stop()
+        # Terminate Auxiliary modules
+        for aux in aux_enabled:
+            try:
+                aux.stop()
+            except Exception as e:
+                log.warning("Cannot terminate auxiliary module %s: %s" % (aux.__class__.__name__, e))
+                pass
+
         self.complete()
 
         return True
