@@ -35,9 +35,4 @@ class Package(object):
         """
         raise NotImplementedError
 
-class Auxiliary(object):
-    def start(self):
-        raise NotImplementedError
-
-    def stop(self):
-        raise NotImplementedError
+class Auxiliary(object): pass
