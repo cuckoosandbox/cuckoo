@@ -286,7 +286,7 @@ class Analyzer:
             try:
                 aux = auxiliary()
                 aux.start()
-            except NotImplementedError:
+            except (NotImplementedError, AttributeError):
                 log.warning("Auxiliary module %s was not implemented" % aux.__class__.__name__)
                 continue
             except Exception as e:
