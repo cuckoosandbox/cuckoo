@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import hashlib
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooDependencyError, CuckooReportError
@@ -46,22 +47,26 @@ class MongoDb(Report):
                 results["network"] = {"pcap_id": pcap_id}
 
         # Add dropped files, check for dups and in case add only reference.
+        # TODO: refactor the following!! It's temporary.
         if "dropped" in results:
-            for dropped in results["dropped"]:
-                if "name" in dropped:
-                    drop_file = os.path.join(self.analysis_path,
-                                             "files",
-                                             dropped["name"])
-                    if os.path.exists(drop_file) and os.path.getsize(drop_file) != 0:
-                        try:
-                            drop = open(drop_file, 'r')
-                        except IOError as e:
-                            raise CuckooReportError("Failed to read file %s: %s" % (drop_file, e))
-                        try:
-                            drop_id = self._fs.put(drop, filename=dropped["name"])
-                        except FileExists:
-                            drop_id = self._db.fs.files.find({"md5": dropped["md5"]})[0][u"_id"]
-                        dropped["dropped_id"] = drop_id
+            for dir_name, dir_names, file_names in os.walk(os.path.join(self.analysis_path, "files")):
+                for file_name in file_names:
+                    file_path = os.path.join(dir_name, file_name)
+                    md5 = hashlib.md5(open(file_path, "rb").read()).hexdigest()
+
+                    for dropped in results["dropped"]:
+                        if "md5" in dropped and dropped["md5"] == md5:
+                            drop_file = os.path.join(file_path)
+                            if os.path.exists(file_path) and os.path.getsize(file_path) != 0:
+                                try:
+                                    drop = open(file_path, 'r')
+                                except IOError as e:
+                                    raise CuckooReportError("Failed to read file %s: %s" % (file_path, e))
+                                try:
+                                    drop_id = self._fs.put(drop, filename=dropped["name"])
+                                except FileExists:
+                                    drop_id = self._db.fs.files.find({"md5": dropped["md5"]})[0][u"_id"]
+                                dropped["dropped_id"] = drop_id
 
         # Add screenshots.
         results["shots"] = []
