@@ -32,7 +32,7 @@ class YaraSignatures(Processing):
                 for match in rules.match(self.file_path):
                     matches.append({"name" : match.rule, "meta" : match.meta})
             except yara.Error as e:
-                log.warning("Unable to match Yara signatures: %s" % e[1])
+                log.warning("Unable to match Yara signatures: %s" % e)
         else:
             log.warning("Yara is not installed, skip")
 
