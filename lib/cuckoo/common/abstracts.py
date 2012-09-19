@@ -215,6 +215,7 @@ class Signature(object):
 
 class Report(object):
     """Base abstract class for reporting module."""
+    order = 1
 
     def __init__(self):
         self.analysis_path = ""

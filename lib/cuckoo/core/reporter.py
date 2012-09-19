@@ -52,16 +52,6 @@ class Reporter:
             except CuckooDependencyError as e:
                 log.warning("Unable to import reporting module \"%s\": %s" % (name, e))
 
-    def run(self, data):
-        """Generates all reports.
-        @param data: analysis results.
-        @raise CuckooReportError: if a report module fails.
-        """
-        Report()
-
-        for plugin in Report.__subclasses__():
-            self._run_report(plugin, data)
-
     def _run_report(self, plugin, data):
         """Run a single report plugin.
         @param plugin: report plugin.
@@ -92,3 +82,17 @@ class Reporter:
             return
         except CuckooReportError as e:
             log.warning("Failed to execute reporting module \"%s\": %s" % (current.__class__.__name__, e))
+
+    def run(self, data):
+        """Generates all reports.
+        @param data: analysis results.
+        @raise CuckooReportError: if a report module fails.
+        """
+        Report()
+
+        # Order reporting modules.
+        modules_list = Report.__subclasses__()
+        modules_list.sort(key=lambda module: module.order)
+
+        for module in modules_list:
+            self._run_report(module, data)
