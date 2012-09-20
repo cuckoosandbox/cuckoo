@@ -35,12 +35,14 @@ In order to make it work properly you'll have to configure your machine's
 network so that the Host and the Guest can communicate.
 Test network trying to ping a guest is a good practice, to be sure about
 virtual network setup.
+Use only static address for your guest, as today Cuckoo doesn't support DHCP and
+using it will break your setup.
 
 This stage is very much up to your own requirements and to the
 characteristics of your virtualization software.
 
     .. warning:: Virtual networking errors!
-        Virtual networking is a virtual component for Cuckoo, you must be really
+        Virtual networking is a vital component for Cuckoo, you must be really
         sure to get connectivity between host and guest.
         Most of the issues reported by users are related to a wrong setup of
         their networking.
