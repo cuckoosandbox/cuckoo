@@ -6,6 +6,7 @@ from ctypes import *
 
 KERNEL32 = windll.kernel32
 ADVAPI32 = windll.advapi32
+USER32   = windll.user32
 
 BYTE      = c_ubyte
 WORD      = c_ushort
@@ -65,6 +66,10 @@ ERROR_BROKEN_PIPE         = 0x0000006d
 ERROR_MORE_DATA           = 0x000000EA
 
 FILE_ATTRIBUTE_HIDDEN     = 0x00000002
+
+WM_GETTEXT                = 0x0000000D
+WM_GETTEXTLENGTH          = 0x0000000E
+BM_CLICK                  = 0x000000F5
 
 class STARTUPINFO(Structure):
     _fields_ = [
