@@ -364,7 +364,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         error = "Keyboard Interrupt"
     except CuckooError as e:
-        error = e
+        error = str(e)
         if len(log.handlers) > 0:
             log.critical(error)
         else:
