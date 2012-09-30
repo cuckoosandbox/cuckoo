@@ -44,7 +44,7 @@ class Agent:
             elif self.system == "linux" or self.system == "darwin":
                 root = os.path.join(os.environ["HOME"], container)
             else:
-                self.error = "Unable to detect OS system"
+                self.error = "Unable to identify operating system"
                 return False
 
         if create and not os.path.exists(root):
@@ -86,9 +86,13 @@ class Agent:
         @return: operation status.
         """
         data = data.data
-        root = self._get_root(container="")
 
-        if not root:
+        if self.system == "windows":
+            root = os.environ["TEMP"]
+        elif self.system == "linux" or self.system == "darwin":
+            root = "/tmp"
+        else:
+            self.error = "Unable to identify operating system"
             return False
 
         if iszip:
