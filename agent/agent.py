@@ -23,11 +23,12 @@ STATUS_FAILED = 0x0004
 
 CURRENT_STATUS = STATUS_INIT
 
+ERROR_MESSAGE = ""
+
 class Agent:
     """Cuckoo agent, it runs inside guest."""
     
     def __init__(self):
-        self.error = ""
         self.system = platform.system().lower()
         self.analyzer_path = ""
         self.analyzer_pid = 0
@@ -38,24 +39,26 @@ class Agent:
         @param container: folder which will contain Cuckoo, not used root parameter is used.
         @param create: create folder.
         """
+        global ERROR_MESSAGE
+
         if not root:
             if self.system == "windows":
                 root = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, container)
             elif self.system == "linux" or self.system == "darwin":
                 root = os.path.join(os.environ["HOME"], container)
             else:
-                self.error = "Unable to identify operating system"
+                ERROR_MESSAGE = "Unable to identify operating system"
                 return False
 
         if create and not os.path.exists(root):
             try:
                 os.makedirs(root)
             except OSError as e:
-                self.error = e
+                ERROR_MESSAGE = e
                 return False
         else:
             if not os.path.exists(root):
-                self.error = "Directory not found: %s" % root
+                ERROR_MESSAGE = "Directory not found: %s" % root
                 return False
 
         return root
@@ -70,21 +73,15 @@ class Agent:
         """Get error message.
         @return: error message.
         """
-        if isinstance(self.error, Exception):
-            if hasattr(self.error, "message"):
-                return self.error.message
-            else:
-                return str(self.error)
-        elif isinstance(self.error, str):
-            return self.error
+        return str(ERROR_MESSAGE)
 
-    def add_malware(self, data, name, iszip=False):
+    def add_malware(self, data, name):
         """Get analysis data.
         @param data: analysis data.
         @param name: file name.
-        @param iszip: is a zip file.
         @return: operation status.
         """
+        global ERROR_MESSAGE
         data = data.data
 
         if self.system == "windows":
@@ -92,33 +89,17 @@ class Agent:
         elif self.system == "linux" or self.system == "darwin":
             root = "/tmp"
         else:
-            self.error = "Unable to identify operating system"
+            ERROR_MESSAGE = "Unable to write malware to disk because of failed identification of the operating system"
             return False
 
-        if iszip:
-            try:
-                zip_data = StringIO()
-                zip_data.write(data)
-            
-                with ZipFile(zip_data, "r") as archive:
-                    try:
-                        archive.extractall(root)
-                    except BadZipfile as e:
-                        self.error = e
-                        return False
-                    except RuntimeError:
-                        try:
-                            archive.extractall(path=root, pwd="infected")
-                        except RuntimeError as e:
-                            self.error = e
-                            return False
-            finally:
-                zip_data.close()
-        else:
-            file_path = os.path.join(root, name)
+        file_path = os.path.join(root, name)
 
+        try:
             with open(file_path, "wb") as malware:
                 malware.write(data)
+        except IOError as e:
+            ERROR_MESSAGE = "Unable to write malware to disk: %s" % e
+            return False
 
         return True
 
@@ -127,6 +108,7 @@ class Agent:
         @param options: current configuration options, dict format.
         @return: operation status.
         """
+        global ERROR_MESSAGE
         root = self._get_root()
 
         if not root:
@@ -146,7 +128,7 @@ class Agent:
             with open(config_path, "wb") as config_file:
                 config.write(config_file)
         except OSError as e:
-            self.error = e
+            ERROR_MESSAGE = str(e)
             return False
 
         return True
@@ -179,6 +161,7 @@ class Agent:
         """Execute analysis.
         @return: analyzer PID.
         """
+        global ERROR_MESSAGE
         global CURRENT_STATUS
 
         if not self.analyzer_path or not os.path.exists(self.analyzer_path):
@@ -189,25 +172,26 @@ class Agent:
                                     cwd=os.path.dirname(self.analyzer_path))
             self.analyzer_pid = proc.pid
         except OSError as e:
-            self.error = e
+            ERROR_MESSAGE = str(e)
             return False
 
         CURRENT_STATUS = STATUS_RUNNING
 
         return self.analyzer_pid
 
-    def complete(self, success=True, error=None):
+    def complete(self, success=True, error=""):
         """Complete analysis.
         @param success: success status.
         @param error: error status.
         """ 
+        global ERROR_MESSAGE
         global CURRENT_STATUS
 
         if success:
             CURRENT_STATUS = STATUS_COMPLETED
         else:
             if error:
-                self.error = error
+                ERROR_MESSAGE = str(error)
 
             CURRENT_STATUS = STATUS_FAILED
 
@@ -232,7 +216,11 @@ class Agent:
             for name in files:
                 path = os.path.join(root, name)
                 archive_name = os.path.join(archive_root, name)
-                zip_file.write(path, archive_name, ZIP_DEFLATED)
+
+                try:
+                    zip_file.write(path, archive_name, ZIP_DEFLATED)
+                except IOError as e:
+                    continue
         
         zip_file.close()
         data = xmlrpclib.Binary(zip_data.getvalue())

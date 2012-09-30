@@ -14,7 +14,7 @@ from ctypes import *
 from threading import Lock, Thread, Timer
 
 from lib.api.process import Process
-from lib.common.exceptions import CuckooError
+from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.abstracts import Package, Auxiliary
 from lib.common.defines import *
 from lib.common.paths import PATHS
@@ -300,6 +300,10 @@ class Analyzer:
             pids = pack.start(self.file_path)
         except NotImplementedError:
             raise CuckooError("The package \"%s\" doesn't contain a run function." % package_name)
+        except CuckooPackageError as e:
+            raise CuckooError("The package \"%s\" start function raised an error: %s" % (package_name, e))
+        except Exception as e:
+            raise CuckooError("The package \"%s\" start function encountered an unhandled exception: %s" %(package_name, e))
 
         add_pids(pids)
 
@@ -328,15 +332,15 @@ class Analyzer:
                         log.info("The analysis package requested the termination of the analysis...")
                         timer.cancel()
                         break
-                except NotImplementedError:
-                    pass
+                except Exception as e:
+                    log.warning("The package \"%s\" check function raised an exception: %s" % (package_name, e))
             finally:
                 KERNEL32.Sleep(1000)
 
         try:
             pack.finish()
-        except NotImplementedError:
-            pass
+        except Exception as e:
+            log.warning("The package \"%s\" finish function raised an exception: %s" % (package_name, e))
 
         # Terminate Auxiliary modules
         for aux in aux_enabled:
