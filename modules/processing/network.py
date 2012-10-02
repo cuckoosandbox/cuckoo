@@ -86,19 +86,13 @@ class Pcap:
             entry = {}
 
             if "host" in http.headers:
-                entry["host"] = convert_to_printable(http.headers['host'])
+                entry["host"] = convert_to_printable(http.headers["host"])
             else:
                 entry["host"] = ""
 
             entry["port"] = dport
             entry["data"] = convert_to_printable(tcpdata)
-
-            if entry["port"] != 80:
-                host = "%s:%d" % (entry["host"], entry["port"])
-            else:
-                host = entry["host"]
-            entry["uri"] = convert_to_printable(urlunparse(("http", host, http.uri, None, None, None)))
-
+            entry["uri"] = convert_to_printable(urlunparse(("http", entry["host"], http.uri, None, None, None)))
             entry["body"] = convert_to_printable(http.body)
             entry["path"] = convert_to_printable(http.uri)
 
