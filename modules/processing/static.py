@@ -12,11 +12,12 @@ try:
 except:
     HAVE_MAGIC = False
 
+import pefile
+import peutils
+
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.utils import convert_to_printable, File
-import lib.pefile.pefile as pefile
-import lib.pefile.peutils as peutils
 
 # Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 

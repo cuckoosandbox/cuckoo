@@ -9,13 +9,13 @@ import logging
 import sqlite3
 from mako.template import Template
 from mako.lookup import TemplateLookup
+from bottle import route, run, static_file, redirect, request, HTTPError
 
 logging.basicConfig()
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.bottle import route, run, static_file, redirect, request, HTTPError
 
 from helpers import store_and_submit_fileobj
 
