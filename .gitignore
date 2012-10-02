@@ -10,6 +10,10 @@ storage/*
 # Ignore Python byte code
 *.pyc
 
+# Ignore certificates
+*.pem
+*.cert
+
 # Ignore OS generated files
 .DS_Store*
 ehthumbs.db
