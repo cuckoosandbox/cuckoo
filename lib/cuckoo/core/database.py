@@ -4,88 +4,89 @@
 
 import os
 import sys
-import sqlite3
+from datetime import datetime
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.exceptions import CuckooDatabaseError, CuckooOperationalError
-from lib.cuckoo.common.abstracts import Dictionary
-from lib.cuckoo.common.utils import create_folder
+from lib.cuckoo.common.exceptions import CuckooDatabaseError, CuckooOperationalError, CuckooDependencyError
+from lib.cuckoo.common.config import Config
 
-# From http://docs.python.org/library/sqlite3.html
-def dict_factory(cursor, row):
-    d = Dictionary()
-    for idx, col in enumerate(cursor.description):
-        setattr(d, col[0], row[idx])
-    return d
+try:
+    from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.sql import func
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy.exc import SQLAlchemyError
+    Base = declarative_base()
+except ImportError:
+    raise CuckooDependencyError("SQLAlchemy library not found. Please install it")
+
+
+class Task(Base):
+    """Analysis task queue."""
+    __tablename__ = 'tasks'
+
+    id = Column(Integer(), primary_key=True)
+    md5 = Column(String(32), nullable=True)
+    file_path = Column(String(255))
+    timeout = Column(Integer(), server_default="0")
+    priority = Column(Integer(), server_default="0")
+    custom = Column(String(255), nullable=True)
+    machine = Column(String(255), nullable=True)
+    package = Column(String(255), nullable=True)
+    options = Column(String(255), nullable=True)
+    platform = Column(String(255), nullable=True)
+    added_on = Column(DateTime(timezone=False), server_default=func.current_timestamp())
+    completed_on = Column(DateTime(timezone=False), nullable=True)
+    lock = Column(Boolean(), default=False)
+    # Status possible values:
+    #   0 = not completed
+    #   1 = error occurred
+    #   2 = completed successfully.
+    status = Column(Integer(), server_default="0")
+
+    def __init__(self, file_path=None):
+        self.file_path = file_path
+
+    def __repr__(self):
+        return "<Task('%s','%s')>" % (self.id, self.file_path)
 
 class Database:
     """Analysis queue database."""
 
-    def __init__(self, db_file=None):
-        """@param db_file: database file path."""
-        if db_file:
-            self.db_file = db_file
+    def __init__(self, dsn=None):
+        """@param dsn: database connection string."""
+        cfg = Config()
+        if dsn:
+            engine = create_engine(dsn)
+        elif cfg.cuckoo.database:
+            engine = create_engine(cfg.cuckoo.database)
         else:
-            self.db_file = os.path.join(CUCKOO_ROOT, "db", "cuckoo.db")
-
-        self.generate()
-        self.conn = sqlite3.connect(self.db_file, timeout=60)
-        self.conn.row_factory = dict_factory
-        self.cursor = self.conn.cursor()
-
-    def generate(self):
-        """Create database.
-        @return: operation status.
-        """
-        if os.path.exists(self.db_file):
-            return False
-
-        db_dir = os.path.dirname(self.db_file)
-        if not os.path.exists(db_dir):
-            try:
-                create_folder(folder=db_dir)
-            except CuckooOperationalError as e:
-                raise CuckooDatabaseError("Unable to create database directory: %s" % e)
-
-        conn = sqlite3.connect(self.db_file)
-        cursor = conn.cursor()
-
+            engine = create_engine("sqlite:///%s" % os.path.join(CUCKOO_ROOT, "db", "cuckoo.db"))
+        # Disable SQL logging. Turn it on for debugging.
+        engine.echo = False
+        # Connection timeout.
+        if cfg.cuckoo.database_timeout:
+            engine.pool_timeout = cfg.cuckoo.database_timeout
+        else:
+            engine.pool_timeout = 60
+        # Create schema.
         try:
-            cursor.execute("CREATE TABLE tasks (\n"                         \
-                           "    id INTEGER PRIMARY KEY,\n"                  \
-                           "    md5 TEXT DEFAULT NULL,\n"                   \
-                           "    file_path TEXT NOT NULL,\n"                 \
-                           "    timeout INTEGER DEFAULT NULL,\n"            \
-                           "    priority INTEGER DEFAULT 0,\n"              \
-                           "    custom TEXT DEFAULT NULL,\n"                \
-                           "    machine TEXT DEFAULT NULL,\n"               \
-                           "    package TEXT DEFAULT NULL,\n"               \
-                           "    options TEXT DEFAULT NULL,\n"               \
-                           "    platform TEXT DEFAULT NULL,\n"              \
-                           "    added_on DATE DEFAULT CURRENT_TIMESTAMP,\n" \
-                           "    completed_on DATE DEFAULT NULL,\n"          \
-                           "    lock INTEGER DEFAULT 0,\n"                  \
-                           # Status possible values:
-                           #   0 = not completed
-                           #   1 = error occurred
-                           #   2 = completed successfully.
-                           "    status INTEGER DEFAULT 0\n"                 \
-                           ");")
-        except sqlite3.OperationalError as e:
-            raise CuckooDatabaseError("Unable to create database: %s" % e)
-
-        return True
+            Base.metadata.create_all(engine)
+        except SQLAlchemyError as e:
+            raise CuckooDatabaseError("Unable to create or connect to database: %s" % e)
+        # Get db session.
+        self.Session = sessionmaker(bind=engine)
 
     def add(self,
             file_path,
-            md5="",
+            md5=None,
             timeout=0,
-            package="",
-            options="",
+            package=None,
+            options=None,
             priority=1,
-            custom="",
-            machine="",
-            platform=""):
+            custom=None,
+            machine=None,
+            platform=None):
         """Add a task to database.
         @param file_path: sample path.
         @param md5: sample MD5.
@@ -100,30 +101,30 @@ class Database:
         if not file_path or not os.path.exists(file_path):
             return None
 
+        session = self.Session()
+        task = Task(file_path)
+        task.md5 = md5
+        task.timeout = timeout
+        task.package = package
+        task.options = options
+        task.priority = priority
+        task.custom = custom
+        task.machine = machine
+        task.platform = platform
+        session.add(task)
         try:
-            self.cursor.execute("INSERT INTO tasks " \
-                                "(file_path, md5, timeout, package, options, priority, custom, machine, platform) " \
-                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
-                                (file_path, md5, timeout, package, options, priority, custom, machine, platform))
-            self.conn.commit()
-            return self.cursor.lastrowid
-        except sqlite3.OperationalError as e:
+            session.commit()
+        except:
+            sessions.rollback()
             return None
+        return task.id
 
     def fetch(self):
         """Fetch a task.
         @return: task dict or None.
         """
-        try:
-            self.cursor.execute("SELECT * FROM tasks " \
-                                "WHERE lock = 0 "      \
-                                "AND status = 0 "      \
-                                "ORDER BY priority DESC, added_on LIMIT 1;")
-        except sqlite3.OperationalError:
-            return None
-
-        row = self.cursor.fetchone()
-
+        session = self.Session()
+        row = session.query(Task).filter(Task.lock == False, Task.status == 0).first() #.order_by(Task.priority).first()
         return row
 
     def lock(self, task_id):
@@ -131,21 +132,12 @@ class Database:
         @param task_id: task id.
         @return: operation status.
         """
+        session = self.Session()
+        session.query(Task).get(task_id).lock = True
         try:
-            self.cursor.execute("SELECT id FROM tasks WHERE id = ?;",
-                                (task_id,))
-            row = self.cursor.fetchone()
-        except sqlite3.OperationalError as e:
-            return False
-
-        if row:
-            try:
-                self.cursor.execute("UPDATE tasks SET lock = 1 WHERE id = ?;",
-                                    (task_id,))
-                self.conn.commit()
-            except sqlite3.OperationalError as e:
-                return False
-        else:
+            session.commit()
+        except:
+            sessions.rollback()
             return False
 
         return True
@@ -155,21 +147,12 @@ class Database:
         @param task_id: task id.
         @return: operation status.
         """
+        session = self.Session()
+        session.query(Task).get(task_id).lock = False
         try:
-            self.cursor.execute("SELECT id FROM tasks WHERE id = ?;",
-                                (task_id,))
-            row = self.cursor.fetchone()
-        except sqlite3.OperationalError as e:
-            return False
-
-        if row:
-            try:
-                self.cursor.execute("UPDATE tasks SET lock = 0 WHERE id = ?;",
-                                    (task_id,))
-                self.conn.commit()
-            except sqlite3.OperationalError as e:
-                return False
-        else:
+            session.commit()
+        except:
+            sessions.rollback()
             return False
 
         return True
@@ -180,28 +163,19 @@ class Database:
         @param success: completed with status.
         @return: operation status.
         """
-        try:
-            self.cursor.execute("SELECT id FROM tasks WHERE id = ?;",
-                                (task_id,))
-            row = self.cursor.fetchone()
-        except sqlite3.OperationalError as e:
-            return False
-
-        if row:
-            if success:
-                status = 2
-            else:
-                status = 1
-
-            try:
-                self.cursor.execute("UPDATE tasks SET lock = 0, "     \
-                                    "status = ?, "                    \
-                                    "completed_on = DATETIME('now') " \
-                                    "WHERE id = ?;", (status, task_id))
-                self.conn.commit()
-            except sqlite3.OperationalError as e:
-                return False
+        session = self.Session()
+        task = session.query(Task).get(task_id)
+        task.lock = False
+        if success:
+            task.status = 2
         else:
+            task.status = 1
+        task.completed_on = datetime.now()
+        try:
+            session.commit()
+        except:
+            sessions.rollback()
             return False
 
         return True
+
