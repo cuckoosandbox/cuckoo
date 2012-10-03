@@ -12,7 +12,7 @@ from lib.cuckoo.common.exceptions import CuckooDatabaseError, CuckooOperationalE
 from lib.cuckoo.common.config import Config
 
 try:
-    from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime
+    from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Enum
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.sql import func
     from sqlalchemy.ext.declarative import declarative_base
@@ -39,11 +39,7 @@ class Task(Base):
     added_on = Column(DateTime(timezone=False), default=datetime.now())
     completed_on = Column(DateTime(timezone=False), nullable=True)
     lock = Column(Boolean(), default=False)
-    # Status possible values:
-    #   0 = not completed
-    #   1 = error occurred
-    #   2 = completed successfully.
-    status = Column(Integer(), server_default="0")
+    status = Column(Enum("pending", "failure", "success", name="status_type"), default="pending")
 
     def to_dict(self):
         """Converts object to dict.
@@ -140,7 +136,7 @@ class Database:
         @return: task dict or None.
         """
         session = self.Session()
-        row = session.query(Task).filter(Task.lock == False, Task.status == 0).order_by("priority desc, added_on").first()
+        row = session.query(Task).filter(Task.lock == False, Task.status == "pending").order_by("priority desc, added_on").first()
         return row
 
     def lock(self, task_id):
@@ -183,9 +179,9 @@ class Database:
         task = session.query(Task).get(task_id)
         task.lock = False
         if success:
-            task.status = 2
+            task.status = "success"
         else:
-            task.status = 1
+            task.status = "failure"
         task.completed_on = datetime.now()
         try:
             session.commit()
