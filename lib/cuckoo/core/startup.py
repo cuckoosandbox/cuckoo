@@ -42,7 +42,7 @@ def check_dependencies():
     """
     check_python_version()
 
-    dependencies = ["sqlite3"]
+    dependencies = ["sqlalchemy", "pefile"]
 
     for dependency in dependencies:
         try:
