@@ -4,14 +4,12 @@
 
 import os
 import logging
-import ConfigParser
 
 from lib.cuckoo.common.exceptions import CuckooMachineError, CuckooOperationalError, CuckooReportError
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import create_folder
 
 log = logging.getLogger(__name__)
-
 
 class Dictionary(dict):
     """Cuckoo custom dict."""
