@@ -79,7 +79,7 @@ def create_structure():
         raise CuckooStartupError(e)
 
 def init_logging():
-    """Initialize logging."""
+    """Initializes logging."""
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
     sh = logging.StreamHandler()
     sh.setFormatter(formatter)
@@ -90,10 +90,13 @@ def init_logging():
     log.setLevel(logging.INFO)
 
 def check_version():
-    """Check version of Cuckoo."""
+    """Checks version of Cuckoo."""
     cfg = Config()
-    url = "http://api.cuckoosandbox.org/checkversion.php"
 
+    if not cfg.cuckoo.version_check:
+        return
+
+    url = "http://api.cuckoosandbox.org/checkversion.php"
     data = urllib.urlencode({"version" : CUCKOO_VERSION})
 
     try:
