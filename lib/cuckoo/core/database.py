@@ -30,7 +30,7 @@ class Task(Base):
     md5 = Column(String(32), nullable=True)
     file_path = Column(String(255))
     timeout = Column(Integer(), server_default="0")
-    priority = Column(Integer(), server_default="0")
+    priority = Column(Integer(), server_default="1")
     custom = Column(String(255), nullable=True)
     machine = Column(String(255), nullable=True)
     package = Column(String(255), nullable=True)

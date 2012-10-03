@@ -4,9 +4,12 @@
 
 import os
 import sys
+import fcntl
+import ntpath
 import string
 import logging
 import hashlib
+import tempfile
 import binascii
 from datetime import datetime
 
@@ -22,7 +25,6 @@ except ImportError:
     HAVE_SSDEEP = False
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
-
 
 def create_folders(root=".", folders=[]):
     """Create directories.
@@ -75,6 +77,35 @@ def datetime_to_iso(timestamp):
     @return: ISO datetime
     """  
     return datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat()
+
+def get_filename_from_path(path):
+    """Cross-platform filename extraction from path.
+    @param path: file path.
+    @return: filename.
+    """
+    dirpath, filename = ntpath.split(path)
+    return filename if filename else ntpath.basename(dirpath)
+
+def store_temp_file(filedata, filename):
+    """Store a temporary file.
+    @param filedata: content of the original file.
+    @param filename: name of the original file.
+    @return: path to the temporary file.
+    """
+    filename = get_filename_from_path(filename)
+
+    tmppath = tempfile.gettempdir()
+    targetpath = os.path.join(tmppath, "cuckoo-tmp")
+    if not os.path.exists(targetpath):
+        os.mkdir(targetpath)
+
+    tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=targetpath)
+    tmp_file_path = os.path.join(tmp_dir, filename)
+    tmp_file = open(tmp_file_path, "wb")
+    tmp_file.write(filedata)
+    tmp_file.close()
+
+    return tmp_file_path
 
 class File:
     """Basic file object class with all useful utilities."""
