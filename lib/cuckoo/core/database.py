@@ -36,7 +36,7 @@ class Task(Base):
     package = Column(String(255), nullable=True)
     options = Column(String(255), nullable=True)
     platform = Column(String(255), nullable=True)
-    added_on = Column(DateTime(timezone=False), server_default=func.current_timestamp())
+    added_on = Column(DateTime(timezone=False), default=datetime.now())
     completed_on = Column(DateTime(timezone=False), nullable=True)
     lock = Column(Boolean(), default=False)
     # Status possible values:
