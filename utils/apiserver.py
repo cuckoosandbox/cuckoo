@@ -27,7 +27,12 @@ def task_list():
     response = {"error" : False}
 
     db = Database()
-    tasks = db.list()
+
+    response["tasks"] = []
+    for row in db.list().all():
+        response["tasks"].append(row.to_dict())
+
+    return jsonize(response)
 
 @app.post("/task/create", method="POST")
 def task_create():
