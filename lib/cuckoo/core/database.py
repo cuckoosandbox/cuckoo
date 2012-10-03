@@ -4,6 +4,7 @@
 
 import os
 import sys
+import json
 from datetime import datetime
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -43,6 +44,21 @@ class Task(Base):
     #   1 = error occurred
     #   2 = completed successfully.
     status = Column(Integer(), server_default="0")
+
+    def to_dict(self):
+        """Converts object to dict.
+        @return: dict
+        """
+        d = {}
+        for column in self.__table__.columns:
+            d[column.name] = str(getattr(self, column.name))
+        return d
+
+    def to_json(self):
+        """Converts object to JSON.
+        @return: JSON data
+        """
+        return json.dumps(self.to_dict())
 
     def __init__(self, file_path=None):
         self.file_path = file_path
