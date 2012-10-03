@@ -28,6 +28,14 @@ class TestDatabase:
         assert_equals(tmp, self.d.fetch().file_path)
         os.remove(tmp)
 
+    def test_fetch_priority(self):
+        tmp = tempfile.mkstemp()[1]
+        self.d.add(file_path=tmp, priority=2)
+        self.d.add(file_path=tmp, priority=5)
+        self.d.add(file_path=tmp, priority=4)
+        assert_equals(2, self.d.fetch().id)
+        os.remove(tmp)
+
     def test_lock(self):
         tmp = tempfile.mkstemp()[1]
         assert_equals(1, self.d.add(file_path=tmp))
@@ -45,4 +53,12 @@ class TestDatabase:
         tmp = tempfile.mkstemp()[1]
         assert_equals(1, self.d.add(file_path=tmp))
         assert self.d.complete(1, True)
+        os.remove(tmp)
+
+    def test_list(self):
+        tmp = tempfile.mkstemp()[1]
+        self.d.add(file_path=tmp)
+        self.d.add(file_path=tmp)
+        assert_equals(2, self.d.list().count())
+        assert_equals(1, self.d.list(1).count())
         os.remove(tmp)

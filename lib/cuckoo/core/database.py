@@ -23,7 +23,7 @@ except ImportError:
 
 class Task(Base):
     """Analysis task queue."""
-    __tablename__ = 'tasks'
+    __tablename__ = "tasks"
 
     id = Column(Integer(), primary_key=True)
     md5 = Column(String(32), nullable=True)
@@ -124,7 +124,7 @@ class Database:
         @return: task dict or None.
         """
         session = self.Session()
-        row = session.query(Task).filter(Task.lock == False, Task.status == 0).first() #.order_by(Task.priority).first()
+        row = session.query(Task).filter(Task.lock == False, Task.status == 0).order_by("priority desc, added_on").first()
         return row
 
     def lock(self, task_id):
@@ -185,5 +185,8 @@ class Database:
         @return: list of tasks.
         """
         session = self.Session()
-        tasks = session.query(Task) # TODO: order by status, added_on, id DESC LIMIT <limit>
+        if limit:
+            tasks = session.query(Task).order_by("status, added_on, id desc").limit(limit)
+        else:
+            tasks = session.query(Task).order_by("status, added_on, id desc")
         return tasks
