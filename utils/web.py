@@ -6,7 +6,6 @@
 import os
 import sys
 import logging
-import sqlite3
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from bottle import route, run, static_file, redirect, request, HTTPError
@@ -36,14 +35,7 @@ def browse():
     db = Database()
     context = {}
 
-    try:
-        db.cursor.execute("SELECT * FROM tasks " \
-                          "ORDER BY status, added_on, id DESC;")
-    except sqlite3.OperationalError as e:
-        context["error"] = "Could not load tasks from database."
-        return template.render(**context)
-
-    rows = db.cursor.fetchall()
+    rows = db.list()
     template = lookup.get_template("browse.html")
     context["cuckoo_root"] = CUCKOO_ROOT
 
@@ -109,4 +101,4 @@ def view(task_id):
     return open(report_path, "rb").read()
 
 if __name__ == "__main__":
-    run(host="0.0.0.0", port=8080, debug=True, reloader=True)
+    run(host="0.0.0.0", port=8080, reloader=True)

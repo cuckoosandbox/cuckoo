@@ -179,3 +179,11 @@ class Database:
 
         return True
 
+    def list(self, limit=None):
+        """Retrieve list of task.
+        @param limit: specify a limit of entries.
+        @return: list of tasks.
+        """
+        session = self.Session()
+        tasks = session.query(Task) # TODO: order by status, added_on, id DESC LIMIT <limit>
+        return tasks
