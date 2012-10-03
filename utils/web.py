@@ -15,8 +15,29 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.utils import store_temp_file, File
 
-from helpers import store_and_submit_fileobj
+#from SocketServer import ThreadingTCPServer
+#from SimpleXMLRPCServer import SimpleXMLRPCDispatcher, SimpleXMLRPCRequestHandler
+#
+# basically same as SimpleXMLRPCServer, but using ThreadedTCPServer
+# see SimpleXMLRPCServer definition in stdlib
+#class ThreadedXMLRPCServer(ThreadingTCPServer, SimpleXMLRPCDispatcher):
+#    allow_reuse_address = True
+#    _send_traceback_header = False
+#    daemon_threads = True
+#
+#    def __init__(self, addr, requestHandler=SimpleXMLRPCRequestHandler,
+#                 logRequests=True, allow_none=False, encoding=None, bind_and_activate=True):
+#        self.logRequests = logRequests
+#
+#        SimpleXMLRPCDispatcher.__init__(self, allow_none, encoding)
+#        ThreadingTCPServer.__init__(self, addr, requestHandler, bind_and_activate)
+#
+#        if fcntl is not None and hasattr(fcntl, 'FD_CLOEXEC'):
+#            flags = fcntl.fcntl(self.fileno(), fcntl.F_GETFD)
+#            flags |= fcntl.FD_CLOEXEC
+#            fcntl.fcntl(self.fileno(), fcntl.F_SETFD, flags)
 
 # Templates directory
 lookup = TemplateLookup(directories=[os.path.join(CUCKOO_ROOT, "data", "html")],
@@ -45,13 +66,11 @@ def browse():
 def server_static(filename):
     return static_file(filename, root=os.path.join(CUCKOO_ROOT, "data", "html"))
 
-# Handle upload form
 @route("/submit", method="POST")
 def submit():
     context = {}
     errors = False
 
-    # Optional, can be empty
     package  = request.forms.get("package", "")
     options  = request.forms.get("options", "")
     priority = request.forms.get("priority", 1)
@@ -77,14 +96,13 @@ def submit():
         template = lookup.get_template("submit.html")
         return template.render(timeout=timeout, priority=priority, options=options, package=package, **context)
 
-    # Finally real store and submit
-    taskid = store_and_submit_fileobj(data.file,data.filename, timeout=timeout, priority=priority, options=options, package=package)
+    temp_file_path = store_temp_file(data.file.read(), data.filename)
+    db = Database()
+    taskid= db.add(file_path=temp_file_path, md5=File(temp_file_path).get_md5(), timeout=timeout, priority=priority, options=options, package=package)
 
-    # Show result
     template = lookup.get_template("success.html")
-    return template.render(taskid=taskid, submitfile=data.filename.decode('utf8'))
+    return template.render(taskid=taskid, submitfile=data.filename.decode("utf8"))
 
-# Find an HTML report and render it
 @route("/view/<task_id>")
 def view(task_id):
     # Check if the specified task ID is valid
@@ -97,7 +115,6 @@ def view(task_id):
     if not os.path.exists(report_path):
         return HTTPError(code=404, output="Report not found")
 
-    # Return content of the HTML report
     return open(report_path, "rb").read()
 
 if __name__ == "__main__":
