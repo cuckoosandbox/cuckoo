@@ -4,11 +4,16 @@
 
 import os
 import sys
+import json
+import urllib
+import urllib2
 import logging
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooStartupError, CuckooOperationalError
 from lib.cuckoo.common.utils import create_folders
+from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.colors import *
 
 log = logging.getLogger()
 
@@ -83,3 +88,21 @@ def init_logging():
     fh.setFormatter(formatter)
     log.addHandler(fh)
     log.setLevel(logging.INFO)
+
+def check_version():
+    """Check version of Cuckoo."""
+    cfg = Config()
+    url = "http://api.cuckoosandbox.org/checkversion.php"
+
+    data = urllib.urlencode({"version" : CUCKOO_VERSION})
+
+    try:
+        request = urllib2.Request(url, data)
+        response = urllib2.urlopen(request)
+    except (URLError, HTTPError):
+        return
+
+    response_data = json.loads(response.read())
+    if not response_data["error"]:
+        if response_data["response"] == "NEW_VERSION":
+            print(" You have an outdated Cuckoo, version %s is available now\n" % green(response_data["current"]))

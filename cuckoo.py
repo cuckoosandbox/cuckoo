@@ -22,6 +22,7 @@ def main():
     check_configs()
     create_structure()
     init_logging()
+    check_version()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
