@@ -47,7 +47,11 @@ class Task(Base):
         """
         d = {}
         for column in self.__table__.columns:
-            d[column.name] = str(getattr(self, column.name))
+            value = getattr(self, column.name)
+            if isinstance(value, datetime):
+                d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                d[column.name] = value
         return d
 
     def to_json(self):
