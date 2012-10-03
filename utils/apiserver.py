@@ -7,7 +7,6 @@ import os
 import sys
 import json
 
-from cherrypy import _cpwsgiserver3
 from bottle import Bottle, run, request, server_names, ServerAdapter
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
