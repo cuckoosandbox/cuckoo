@@ -202,5 +202,5 @@ class Database:
         @return: details on the task.
         """
         session = self.Session()
-        task = session.query(Task).filter(Task.id == task_id).first()
+        task = session.query(Task).get(task_id)
         return task
