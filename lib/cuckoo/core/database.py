@@ -206,3 +206,12 @@ class Database:
         else:
             tasks = session.query(Task).order_by("status, added_on, id desc")
         return tasks
+
+    def view(self, task_id):
+        """Retrieve information on a task.
+        @param id: ID of the task to query.
+        @return: details on the task.
+        """
+        session = self.Session()
+        task = session.query(Task).filter(Task.id == task_id).first()
+        return task

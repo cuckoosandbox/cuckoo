@@ -22,19 +22,6 @@ def report_error(error_code):
 
 app = Bottle()
 
-@app.get("/task/list")
-@app.get("/task/list/<limit>")
-def task_list(limit=None):
-    response = {"error" : False}
-
-    db = Database()
-
-    response["tasks"] = []
-    for row in db.list(limit).all():
-        response["tasks"].append(row.to_dict())
-
-    return jsonize(response)
-
 @app.post("/task/create", method="POST")
 def task_create():
     response = {"error" : False}
@@ -53,6 +40,29 @@ def task_create():
     task_id = db.add(file_path=temp_file_path, md5=File(temp_file_path).get_md5(), package=package, timeout=timeout, priority=priority, options=options, machine=machine, platform=platform, custom=custom)
 
     response["task_id"] = task_id
+    return jsonize(response)
+
+@app.get("/task/list", method="GET")
+@app.get("/task/list/<limit>", method="GET")
+def task_list(limit=None):
+    response = {"error" : False}
+
+    db = Database()
+
+    response["tasks"] = []
+    for row in db.list(limit).all():
+        response["tasks"].append(row.to_dict())
+
+    return jsonize(response)
+
+@app.get("/task/view/<task_id>", method="GET")
+def task_view(task_id):
+    response = {"error" : False}
+
+    db = Database()
+    task = db.view(task_id).to_dict()
+    response["task"] = task
+
     return jsonize(response)
 
 if __name__ == "__main__":
