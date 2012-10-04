@@ -11,7 +11,7 @@
                 <tr>
                     <td>${r.id}</td>
                     <td>
-                        % if r.status == 2:
+                        % if r.status == "success":
                             <a href="/view/${r.id}"><span class="mono">${r.md5}</span></a>
                         % else:
                             <span class="mono">${r.md5}</span>
@@ -19,19 +19,7 @@
                     </td>
                     <td>${os.path.basename(r.file_path)}</td>
                     <td>${r.added_on}</td>
-                    <td>
-                        % if r.status == 0:
-                            % if r.lock == 0:
-                                PENDING
-                            % elif r.lock == 1:
-                                PROCESSING
-                            % endif
-                        % elif r.status == 1:
-                            FAILED
-                        % elif r.status == 2:
-                            SUCCEEDED
-                        % endif
-                    </td>
+                    <td>${r.status}</td>
                 </tr>
             % endfor
             </tbody>
