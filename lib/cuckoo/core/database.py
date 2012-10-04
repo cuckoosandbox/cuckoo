@@ -201,10 +201,7 @@ class Database:
         @return: list of tasks.
         """
         session = self.Session()
-        if limit:
-            tasks = session.query(Task).order_by("status, added_on, id desc").limit(limit)
-        else:
-            tasks = session.query(Task).order_by("status, added_on, id desc")
+        tasks = session.query(Task).order_by("status, added_on, id desc").limit(limit)
         return tasks
 
     def view(self, task_id):
