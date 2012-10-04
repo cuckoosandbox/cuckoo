@@ -5,6 +5,7 @@
 rule embedded_macho
 {
     meta:
+        author = "nex"
         description = "Contains an embedded Mach-O file"
 
     strings:
@@ -18,6 +19,7 @@ rule embedded_macho
 rule embedded_pe
 {
     meta:
+        author = "nex"
         description = "Contains an embedded PE32 file"
 
     strings:
@@ -31,6 +33,7 @@ rule embedded_pe
 rule embedded_win_api
 {
     meta:
+        author = "nex"
         description = "A non-Windows executable contains win32 API functions names"
 
     strings:

@@ -5,6 +5,7 @@
 rule shellcode
 {
     meta:
+        author = "nex"
         description = "Matched shellcode byte patterns"
 
     strings:
