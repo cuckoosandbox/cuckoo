@@ -164,7 +164,11 @@ class Pcap:
             log.error("The PCAP file at path \"%s\" is empty." % self.filepath)
             return None
 
-        file = open(self.filepath, "rb")
+        try:
+            file = open(self.filepath, "rb")
+        except (IOError, OSError):
+            log.error("Unable to open %s" % self.filepath)
+            return None
 
         try:
             pcap = dpkt.pcap.Reader(file)
@@ -215,9 +219,9 @@ class Pcap:
                         self.udp_connections.append(connection)
                 #elif ip.p == dpkt.ip.IP_PROTO_ICMP:
                     #icmp = ip.data
-            except AttributeError, why:
+            except AttributeError:
                 continue
-            except dpkt.dpkt.NeedData, why:
+            except dpkt.dpkt.NeedData:
                 continue
 
         file.close()
