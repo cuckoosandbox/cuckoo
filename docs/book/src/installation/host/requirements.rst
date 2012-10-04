@@ -9,8 +9,8 @@ Installing Python libraries
 ===========================
 
 Cuckoo host components are completely written in Python, therefore make sure to
-have an appropriate version installed. For current release Python 2.6 or 2.7 are
-preferred.
+have an appropriate version installed. For current release Python at least 2.7
+is preferred.
 
 Install Python on Ubuntu::
 
