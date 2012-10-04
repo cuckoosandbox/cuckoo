@@ -10,6 +10,7 @@ from datetime import datetime
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDatabaseError, CuckooOperationalError, CuckooDependencyError
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.utils import create_folder
 
 try:
     from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Enum
@@ -76,7 +77,15 @@ class Database:
         elif cfg.cuckoo.database:
             engine = create_engine(cfg.cuckoo.database)
         else:
-            engine = create_engine("sqlite:///%s" % os.path.join(CUCKOO_ROOT, "db", "cuckoo.db"))
+            db_file = os.path.join(CUCKOO_ROOT, "db", "cuckoo.db")
+            if not os.path.exists(db_file):
+                db_dir = os.path.dirname(db_file)
+                if not os.path.exists(db_dir):
+                    try:
+                        create_folder(folder=db_dir)
+                    except CuckooOperationalError as e:
+                        raise CuckooDatabaseError("Unable to create database directory: %s" % e)
+            engine = create_engine("sqlite:///%s" % db_file)
         # Disable SQL logging. Turn it on for debugging.
         engine.echo = False
         # Connection timeout.
