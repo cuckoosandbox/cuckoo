@@ -131,7 +131,7 @@ class Database:
         try:
             session.commit()
         except:
-            sessions.rollback()
+            session.rollback()
             return None
         return task.id
 
@@ -153,7 +153,7 @@ class Database:
         try:
             session.commit()
         except:
-            sessions.rollback()
+            session.rollback()
             return False
 
         return True
@@ -168,7 +168,7 @@ class Database:
         try:
             session.commit()
         except:
-            sessions.rollback()
+            session.rollback()
             return False
 
         return True
@@ -190,7 +190,7 @@ class Database:
         try:
             session.commit()
         except:
-            sessions.rollback()
+            session.rollback()
             return False
 
         return True
