@@ -259,8 +259,8 @@ class Scheduler:
             task = self.db.fetch()
 
             if task:
-                log.debug("Locking db task #%s" % task.id)
-                self.db.lock(task.id)
+                log.debug("Processing task #%s" % task.id)
+                self.db.process(task.id)
                 db_lock.release()
                 # Go with analysis.
                 analysis = AnalysisManager(task)

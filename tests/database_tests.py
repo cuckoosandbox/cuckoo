@@ -36,19 +36,6 @@ class TestDatabase:
         assert_equals(2, self.d.fetch().id)
         os.remove(tmp)
 
-    def test_lock(self):
-        tmp = tempfile.mkstemp()[1]
-        assert_equals(1, self.d.add(file_path=tmp))
-        assert self.d.lock(1)
-        os.remove(tmp)
-
-    def test_unlock(self):
-        tmp = tempfile.mkstemp()[1]
-        assert_equals(1, self.d.add(file_path=tmp))
-        assert self.d.lock(1)
-        assert self.d.unlock(1)
-        os.remove(tmp)
-
     def test_complete_success(self):
         tmp = tempfile.mkstemp()[1]
         assert_equals(1, self.d.add(file_path=tmp))

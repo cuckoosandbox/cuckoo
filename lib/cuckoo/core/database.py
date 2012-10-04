@@ -38,8 +38,7 @@ class Task(Base):
     platform = Column(String(255), nullable=True)
     added_on = Column(DateTime(timezone=False), default=datetime.now())
     completed_on = Column(DateTime(timezone=False), nullable=True)
-    lock = Column(Boolean(), default=False)
-    status = Column(Enum("pending", "failure", "success", name="status_type"), default="pending")
+    status = Column(Enum("pending", "processing", "failure", "success", name="status_type"), default="pending")
 
     def to_dict(self):
         """Converts object to dict.
@@ -93,6 +92,22 @@ class Database:
         # Get db session.
         self.Session = sessionmaker(bind=engine)
 
+    def _set_status(self, task_id, status):
+        """Set task status.
+        @param task_id: task identifier
+        @param status: status string
+        @return: operation status
+        """
+        session = self.Session()
+        session.query(Task).get(task_id).status = status
+        try:
+            session.commit()
+        except:
+            session.rollback()
+            return False
+
+        return True
+
     def add(self,
             file_path,
             md5=None,
@@ -140,38 +155,8 @@ class Database:
         @return: task dict or None.
         """
         session = self.Session()
-        row = session.query(Task).filter(Task.lock == False, Task.status == "pending").order_by("priority desc, added_on").first()
+        row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
         return row
-
-    def lock(self, task_id):
-        """Lock a task.
-        @param task_id: task id.
-        @return: operation status.
-        """
-        session = self.Session()
-        session.query(Task).get(task_id).lock = True
-        try:
-            session.commit()
-        except:
-            session.rollback()
-            return False
-
-        return True
-
-    def unlock(self, task_id):
-        """Unlock a task.
-        @param task_id: task id.
-        @return: operation status.
-        """
-        session = self.Session()
-        session.query(Task).get(task_id).lock = False
-        try:
-            session.commit()
-        except:
-            session.rollback()
-            return False
-
-        return True
 
     def complete(self, task_id, success=True):
         """Mark a task as completed.
@@ -203,6 +188,13 @@ class Database:
         session = self.Session()
         tasks = session.query(Task).order_by("status, added_on, id desc").limit(limit)
         return tasks
+
+    def process(self, task_id):
+        """Set task status as processing.
+        @param task_id: task identifier
+        @return: operation status
+        """
+        return self._set_status(task_id, "processing")
 
     def view(self, task_id):
         """Retrieve information on a task.
