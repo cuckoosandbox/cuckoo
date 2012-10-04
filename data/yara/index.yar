@@ -4,3 +4,4 @@
 
 include "embedded.yar"
 include "shellcodes.yar"
+include "vmdetect.yar"
