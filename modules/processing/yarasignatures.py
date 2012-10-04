@@ -32,7 +32,9 @@ class YaraSignatures(Processing):
                 for match in rules.match(self.file_path):
                     strings = []
                     for s in match.strings:
-                        # Extreme spaghetti antani code. How it happened:
+                        # Extreme spaghetti antani code. How it happened after hours of curses:
+                        # <nex> screw it, that's how i'll do it <url to code>
+                        # <jekil> ok, i'll pretend i didn't see it and you go on
                         # <nex> ...
                         # <nex> we have no other choice
                         # <jekil> yes, i know
