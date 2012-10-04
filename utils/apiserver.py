@@ -23,13 +23,14 @@ def report_error(error_code):
 app = Bottle()
 
 @app.get("/task/list")
-def task_list():
+@app.get("/task/list/<limit>")
+def task_list(limit=None):
     response = {"error" : False}
 
     db = Database()
 
     response["tasks"] = []
-    for row in db.list().all():
+    for row in db.list(limit).all():
         response["tasks"].append(row.to_dict())
 
     return jsonize(response)
