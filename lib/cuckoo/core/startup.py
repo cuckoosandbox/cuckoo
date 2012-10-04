@@ -22,8 +22,8 @@ def check_python_version():
     @raise CuckooStartupError: if version is not supported.
     """
     version = sys.version.split()[0]
-    if version < "2.6" or version >= "3":
-        raise CuckooStartupError("You are running an incompatible version of Python, please use 2.6 or 2.7")
+    if version < "2.7" or version >= "3":
+        raise CuckooStartupError("You are running an incompatible version of Python, please use 2.7")
 
 def check_working_directory():
     """Checks if working directories are ready.
