@@ -30,7 +30,22 @@ class YaraSignatures(Processing):
             try:
                 rules = yara.compile(filepath=os.path.join(CUCKOO_ROOT, "data", "yara", "index.yar"))
                 for match in rules.match(self.file_path):
-                    matches.append({"name" : match.rule, "meta" : match.meta})
+                    strings = []
+                    for s in match.strings:
+                        # Extreme spaghetti antani code. How it happened:
+                        # <nex> ...
+                        # <nex> we have no other choice
+                        # <jekil> yes, i know
+                        # <jekil> it's like keeping your eyes shut when banging an ugly one
+                        # <jekil> and you have to
+                        try:
+                            strings.append(s[2].encode("utf-8"))
+                        except UnicodeDecodeError:
+                            s = s[2].lstrip("uU").encode("hex").upper()
+                            s = " ".join(s[i:i+2] for i in range(0, len(s), 2))
+                            strings.append("{ %s }" % s)
+
+                    matches.append({"name" : match.rule, "meta" : match.meta, "strings" : strings})
             except yara.Error as e:
                 log.warning("Unable to match Yara signatures: %s" % e)
         else:
