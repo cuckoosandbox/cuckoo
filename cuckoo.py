@@ -11,7 +11,6 @@ from lib.cuckoo.common.logo import logo
 from lib.cuckoo.common.constants import CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.core.startup import *
-from lib.cuckoo.core.scheduler import Scheduler
 
 log = logging.getLogger()
 
@@ -44,6 +43,8 @@ def main():
         log.setLevel(logging.WARN)
     elif args.debug:
         log.setLevel(logging.DEBUG)
+
+    from lib.cuckoo.core.scheduler import Scheduler
 
     try:
         sched = Scheduler()
