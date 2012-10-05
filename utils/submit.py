@@ -12,7 +12,6 @@ logging.basicConfig()
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.common.utils import File
 from lib.cuckoo.core.database import Database
 
 def main():
@@ -52,15 +51,14 @@ def main():
 
     db = Database()
     for file_path in files:
-        task_id = db.add(file_path=file_path,
-                         md5=File(file_path).get_md5(),
-                         package=args.package,
-                         timeout=args.timeout,
-                         options=args.options,
-                         priority=args.priority,
-                         machine=args.machine,
-                         platform=args.platform,
-                         custom=args.custom)
+        task_id = db.add_path(file_path=file_path,
+                             package=args.package,
+                             timeout=args.timeout,
+                             options=args.options,
+                             priority=args.priority,
+                             machine=args.machine,
+                             platform=args.platform,
+                             custom=args.custom)
 
         print("SUCCESS: File \"%s\" added as task with id %d" % (file_path, task_id))
 
