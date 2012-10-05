@@ -28,9 +28,9 @@ class Task(Base):
     __tablename__ = "tasks"
 
     id = Column(Integer(), primary_key=True)
-    file_path = Column(String(255))
-    timeout = Column(Integer(), server_default="0")
-    priority = Column(Integer(), server_default="1")
+    file_path = Column(String(255), nullable=False)
+    timeout = Column(Integer(), server_default="0", nullable=False)
+    priority = Column(Integer(), server_default="1", nullable=False)
     custom = Column(String(255), nullable=True)
     machine = Column(String(255), nullable=True)
     package = Column(String(255), nullable=True)
@@ -38,8 +38,8 @@ class Task(Base):
     platform = Column(String(255), nullable=True)
     added_on = Column(DateTime(timezone=False), default=datetime.now())
     completed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(Enum("pending", "processing", "failure", "success", name="status_type"), default="pending")
-    hash_id = Column(Integer, ForeignKey("hashes.id"))
+    status = Column(Enum("pending", "processing", "failure", "success", name="status_type"), default="pending", nullable=False)
+    hash_id = Column(Integer, ForeignKey("hashes.id"), nullable=False)
 
     def to_dict(self):
         """Converts object to dict.
