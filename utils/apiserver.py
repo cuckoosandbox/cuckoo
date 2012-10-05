@@ -11,7 +11,7 @@ from bottle import Bottle, run, request, server_names, ServerAdapter
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.common.utils import store_temp_file, File
+from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.core.database import Database
 
 def jsonize(data):
@@ -37,7 +37,7 @@ def task_create():
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
     db = Database()
-    task_id = db.add(file_path=temp_file_path, md5=File(temp_file_path).get_md5(), package=package, timeout=timeout, priority=priority, options=options, machine=machine, platform=platform, custom=custom)
+    task_id = db.add_path(file_path=temp_file_path, package=package, timeout=timeout, priority=priority, options=options, machine=machine, platform=platform, custom=custom)
 
     response["task_id"] = task_id
     return jsonize(response)
