@@ -277,3 +277,12 @@ class Database:
         session = self.Session()
         task = session.query(Task).get(task_id)
         return task
+
+    def search(self, md5):
+        """Search for tasks matching the given MD5
+        @param md5: MD5 hash to search for.
+        @return: list of tasks matching the hash.
+        """
+        session = self.Session()
+        tasks = session.query(Task).filter(Task.md5 == md5).order_by("status, added_on, id desc")
+        return tasks

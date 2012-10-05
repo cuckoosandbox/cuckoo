@@ -60,8 +60,19 @@ def task_view(task_id):
     response = {"error" : False}
 
     db = Database()
-    task = db.view(task_id).to_dict()
-    response["task"] = task
+    response["task"] = db.view(task_id).to_dict()
+
+    return jsonize(response)
+
+@app.get("/task/search/<md5>", method="GET")
+def task_search(md5):
+    response = {"error" : False}
+
+    db = Database()
+
+    response["tasks"] = []
+    for row in db.search(md5).all():
+        response["tasks"].append(row.to_dict())
 
     return jsonize(response)
 
