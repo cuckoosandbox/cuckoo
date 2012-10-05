@@ -11,6 +11,7 @@ from urlparse import urlunparse
 
 from lib.cuckoo.common.utils import convert_to_printable
 from lib.cuckoo.common.abstracts import Processing
+from lib.cuckoo.common.config import Config
 
 try:
     import dpkt
@@ -131,20 +132,28 @@ class Pcap:
 
             entry = {}
             entry["hostname"] = name
-
-            try:
-                socket.setdefaulttimeout(10)
-                ip = socket.gethostbyname(name)
-            except socket.gaierror:
-                ip = ""
-
-            entry["ip"] = ip
+            entry["ip"] = self._dns_gethostbyname(name)
 
             self.dns_requests.append(entry)
             self.dns_performed.append(name)
 
             return True
         return False
+
+    def _dns_gethostbyname(self, name):
+        """Get host by name wrapper.
+        @param name: hostname
+        @return: IP address or blank
+        """
+        if Config().cuckoo.resolve_dns:
+            try:
+                socket.setdefaulttimeout(10)
+                ip = socket.gethostbyname(name)
+            except socket.gaierror:
+                ip = ""
+        else:
+            ip = ""
+        return ip
 
     def run(self):
         """Process PCAP.
