@@ -76,7 +76,7 @@ class Hash(Base):
     sha1 = Column(String(40), unique=True, nullable=False)
     sha256 = Column(String(64), unique=True, nullable=False)
     sha512 = Column(String(128), unique=True, nullable=False)
-    ssdeep = Column(String(28), nullable=True)
+    ssdeep = Column(String(255), nullable=True)
 
     def __init__(self, md5, crc32, sha1, sha256, sha512, ssdeep=None):
         self.md5 = md5
@@ -93,6 +93,7 @@ class Database:
     def __init__(self, dsn=None):
         """@param dsn: database connection string."""
         cfg = Config()
+
         if dsn:
             engine = create_engine(dsn)
         elif cfg.cuckoo.database:
@@ -107,6 +108,7 @@ class Database:
                     except CuckooOperationalError as e:
                         raise CuckooDatabaseError("Unable to create database directory: %s" % e)
             engine = create_engine("sqlite:///%s" % db_file)
+
         # Disable SQL logging. Turn it on for debugging.
         engine.echo = False
         # Connection timeout.
@@ -119,6 +121,7 @@ class Database:
             Base.metadata.create_all(engine)
         except SQLAlchemyError as e:
             raise CuckooDatabaseError("Unable to create or connect to database: %s" % e)
+
         # Get db session.
         self.Session = sessionmaker(bind=engine)
 
@@ -139,14 +142,14 @@ class Database:
         return True
 
     def add_path(self,
-                file_path,
-                timeout=0,
-                package=None,
-                options=None,
-                priority=1,
-                custom=None,
-                machine=None,
-                platform=None):
+                 file_path,
+                 timeout=0,
+                 package=None,
+                 options=None,
+                 priority=1,
+                 custom=None,
+                 machine=None,
+                 platform=None):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -171,14 +174,14 @@ class Database:
                         )
 
     def add(self,
-             obj,
-             timeout=0,
-             package=None,
-             options=None,
-             priority=1,
-             custom=None,
-             machine=None,
-             platform=None):
+            obj,
+            timeout=0,
+            package=None,
+            options=None,
+            priority=1,
+            custom=None,
+            machine=None,
+            platform=None):
         """Add a task to database.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -216,11 +219,13 @@ class Database:
             task.platform = platform
             task.hash_id = hash.id
             session.add(task)
+
             try:
                 session.commit()
             except:
                 session.rollback()
                 return None
+
             return task.id
 
     def fetch(self):
@@ -240,11 +245,14 @@ class Database:
         session = self.Session()
         task = session.query(Task).get(task_id)
         task.lock = False
+
         if success:
             task.status = "success"
         else:
             task.status = "failure"
+
         task.completed_on = datetime.now()
+
         try:
             session.commit()
         except:
