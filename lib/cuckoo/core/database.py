@@ -78,6 +78,9 @@ class Hash(Base):
     sha512 = Column(String(128), unique=True, nullable=False)
     ssdeep = Column(String(28), nullable=True)
 
+    def __repr__(self):
+        return "<Hash('%s','%s')>" % (self.id, self.md5)
+
     def __init__(self, md5, crc32, sha1, sha256, sha512, ssdeep=None):
         self.md5 = md5
         self.sha1 = sha1
