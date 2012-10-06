@@ -155,6 +155,23 @@ class Pcap:
             ip = ""
         return ip
 
+    def _tcp_dissect(self, conn, data):
+        """Runs all TCP dissectors.
+        @param conn: connection
+        @param data: payload data
+        """
+        if self._check_http(data):
+            self._add_http(data, conn["dport"])
+
+    def _udp_dissect(self, conn, data):
+        """Runs all UDP dissectors.
+        @param conn: connection
+        @param data: payload data
+        """
+        if conn["dport"] == 53:
+            if self._check_dns(data):
+                self._add_dns(data)
+
     def run(self):
         """Process PCAP.
         @return: dict with network analysis data
@@ -205,12 +222,9 @@ class Pcap:
                     tcp = ip.data
 
                     if len(tcp.data) > 0:
-                        if self._check_http(tcp.data):
-                            self._add_http(tcp.data, tcp.dport)
-
                         connection["sport"] = tcp.sport
                         connection["dport"] = tcp.dport
-
+                        self._tcp_dissect(connection, tcp.data)
                         self.tcp_connections.append(connection)
                     else:
                         continue
@@ -218,13 +232,9 @@ class Pcap:
                     udp = ip.data
 
                     if len(udp.data) > 0:
-                        if udp.dport == 53:
-                            if self._check_dns(udp.data):
-                                self._add_dns(udp.data)
-
                         connection["sport"] = udp.sport
                         connection["dport"] = udp.dport
-
+                        self._udp_dissect(connection, udp.data)
                         self.udp_connections.append(connection)
                 #elif ip.p == dpkt.ip.IP_PROTO_ICMP:
                     #icmp = ip.data
