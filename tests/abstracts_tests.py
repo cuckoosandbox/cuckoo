@@ -8,23 +8,6 @@ from nose.tools import assert_equals, raises
 
 import lib.cuckoo.common.abstracts as abstracts
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.objects import Dictionary
-
-
-class TestDictionary:
-    def setUp(self):
-        self.d = Dictionary()
-
-    def test_usage(self):
-        self.d.a = "foo"
-        assert_equals("foo", self.d.a)
-        self.d.a = "bar"
-        assert_equals("bar", self.d.a)
-
-    @raises(AttributeError)
-    def test_exception(self):
-        self.d.b.a
 
 class TestMachineManager:
 
