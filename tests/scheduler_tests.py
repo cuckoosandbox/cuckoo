@@ -7,9 +7,9 @@ import shutil
 import tempfile
 from nose.tools import assert_equals, raises
 
+from lib.cuckoo.common.objects import Dictionary
 from lib.cuckoo.core.scheduler import AnalysisManager
 from lib.cuckoo.core.startup import create_structure
-from lib.cuckoo.common.abstracts import Dictionary
 from lib.cuckoo.common.exceptions import CuckooAnalysisError
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 

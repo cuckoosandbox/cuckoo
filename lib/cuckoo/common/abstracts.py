@@ -6,19 +6,10 @@ import os
 import logging
 
 from lib.cuckoo.common.exceptions import CuckooMachineError, CuckooOperationalError, CuckooReportError
-from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.objects import Dictionary
 from lib.cuckoo.common.utils import create_folder
 
 log = logging.getLogger(__name__)
-
-class Dictionary(dict):
-    """Cuckoo custom dict."""
-    
-    def __getattr__(self, key):
-        return self.get(key, None)
-
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
 
 class MachineManager(object):
     """Base abstract class for analysis machine manager."""

@@ -6,8 +6,8 @@ import os
 import ConfigParser
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.abstracts import Dictionary
 from lib.cuckoo.common.exceptions import CuckooOperationalError
+from lib.cuckoo.common.objects import Dictionary
 
 
 class Config:

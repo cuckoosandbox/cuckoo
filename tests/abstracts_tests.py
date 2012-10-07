@@ -9,11 +9,12 @@ from nose.tools import assert_equals, raises
 import lib.cuckoo.common.abstracts as abstracts
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.objects import Dictionary
 
 
 class TestDictionary:
     def setUp(self):
-        self.d = abstracts.Dictionary()
+        self.d = Dictionary()
 
     def test_usage(self):
         self.d.a = "foo"
