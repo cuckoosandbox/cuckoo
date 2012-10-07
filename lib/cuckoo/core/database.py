@@ -194,14 +194,13 @@ class Database:
             return None
 
         return self.add(File(file_path),
-                         timeout,
-                         package,
-                         options,
-                         priority,
-                         custom,
-                         machine,
-                         platform
-                        )
+                        timeout,
+                        package,
+                        options,
+                        priority,
+                        custom,
+                        machine,
+                        platform)
 
     def add(self,
             obj,
@@ -227,14 +226,13 @@ class Database:
         if isinstance(obj, File):
             try:
                 sample = Sample(md5=obj.get_md5(),
-                            crc32=obj.get_crc32(),
-                            sha1=obj.get_sha1(),
-                            sha256=obj.get_sha256(),
-                            sha512=obj.get_sha512(),
-                            file_size=obj.get_size(),
-                            file_type=obj.get_type(),
-                            ssdeep=obj.get_ssdeep()
-                            )
+                                crc32=obj.get_crc32(),
+                                sha1=obj.get_sha1(),
+                                sha256=obj.get_sha256(),
+                                sha512=obj.get_sha512(),
+                                file_size=obj.get_size(),
+                                file_type=obj.get_type(),
+                                ssdeep=obj.get_ssdeep())
                 session.add(sample)
                 session.commit()
             except IntegrityError:
