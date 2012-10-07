@@ -14,7 +14,7 @@ from lib.cuckoo.common.utils import create_folder, File
 
 try:
     from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Enum, ForeignKey
-    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.orm import sessionmaker, relationship
     from sqlalchemy.sql import func
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -40,6 +40,7 @@ class Task(Base):
     completed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(Enum("pending", "processing", "failure", "success", name="status_type"), default="pending", nullable=False)
     hash_id = Column(Integer, ForeignKey("hashes.id"), nullable=False)
+    guest = relationship("Guest", uselist=False, backref="tasks")
 
     def to_dict(self):
         """Converts object to dict.
@@ -65,6 +66,26 @@ class Task(Base):
 
     def __repr__(self):
         return "<Task('%s','%s')>" % (self.id, self.file_path)
+
+class Guest(Base):
+    """Tracks guest run."""
+    __tablename__ = "guests"
+
+    id = Column(Integer(), primary_key=True)
+    name = Column(String(255), nullable=False)
+    label = Column(String(255), nullable=False)
+    manager = Column(String(255), nullable=False)
+    started_on = Column(DateTime(timezone=False), default=datetime.now(), nullable=False)
+    shutdown_on = Column(DateTime(timezone=False), nullable=True)
+    task_id = Column(Integer, ForeignKey('tasks.id'), nullable=False, unique=True)
+
+    def __repr__(self):
+        return "<Guest('%s','%s')>" % (self.id, self.name)
+
+    def __init__(self, name, label, manager):
+        self.name = name
+        self.label = label
+        self.manager = manager
 
 class Hash(Base):
     """Submitted files hashes."""
@@ -289,3 +310,34 @@ class Database:
         session = self.Session()
         tasks = session.query(Task).filter(Task.md5 == md5).order_by("status, added_on, id desc")
         return tasks
+
+    def guest_start(self, task_id, name, label, manager):
+        """Logs guest start.
+        @param task_id: task identifier
+        @param name: vm name
+        @param label: vm label
+        @param manager: vm manager
+        @return: guest row id
+        """
+        session = self.Session()
+        guest = Guest(name, label, manager)
+        guest.started_on = datetime.now()
+        session.query(Task).get(task_id).guest = guest
+        try:
+            session.commit()
+        except:
+            session.rollback()
+            return None
+
+        return guest.id
+
+    def guest_stop(self, guest_id):
+        """Logs guest stop.
+        @param guest_id: guest log entry id
+        """
+        session = self.Session()
+        task = session.query(Guest).get(guest_id).shutdown_on = datetime.now()
+        try:
+            session.commit()
+        except:
+            session.rollback()

@@ -135,6 +135,7 @@ class AnalysisManager(Thread):
 
         try:
             # Start machine
+            self.guest_log = Database().guest_start(self.task.id, vm.id, vm.label, mmanager.__class__.__name__)
             mmanager.start(vm.label)
             # Initialize guest manager
             guest = GuestManager(vm.id, vm.ip, vm.platform)
@@ -148,7 +149,7 @@ class AnalysisManager(Thread):
 
             # Save results
             guest.save_results(self.analysis.results_folder)
-    
+
             if not success:
                 raise CuckooAnalysisError("Task #%s: analysis failed, review previous errors" % self.task.id)
         except (CuckooMachineError, CuckooGuestError) as e:
@@ -161,8 +162,9 @@ class AnalysisManager(Thread):
                 except OSError as e:
                     log.error("Unable to delete original file at path \"%s\": %s" % (self.task.file_path, e))
             try:
-                # Stop machine
+                # Stop machine and log.
                 mmanager.stop(vm.label)
+                Database().guest_stop(self.guest_log)
                 # Release the machine from lock
                 log.debug("Task #%s: releasing machine %s (label=%s)" % (self.task.id, vm.id, vm.label))
                 mmanager.release(vm.label)
