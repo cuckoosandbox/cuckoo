@@ -39,7 +39,7 @@ class Task(Base):
     added_on = Column(DateTime(timezone=False), default=datetime.now())
     completed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(Enum("pending", "processing", "failure", "success", name="status_type"), default="pending", nullable=False)
-    hash_id = Column(Integer, ForeignKey("hashes.id"), nullable=False)
+    sample_id = Column(Integer, ForeignKey("samples.id"), nullable=False)
     guest = relationship("Guest", uselist=False, backref="tasks")
 
     def to_dict(self):
@@ -87,11 +87,13 @@ class Guest(Base):
         self.label = label
         self.manager = manager
 
-class Hash(Base):
-    """Submitted files hashes."""
-    __tablename__ = "hashes"
+class Sample(Base):
+    """Submitted files details."""
+    __tablename__ = "samples"
 
     id = Column(Integer(), primary_key=True)
+    file_size = Column(Integer(), nullable=False)
+    file_type = Column(String(255), nullable=False)
     md5 = Column(String(32), unique=True, nullable=False)
     crc32 = Column(String(8), unique=True, nullable=False)
     sha1 = Column(String(40), unique=True, nullable=False)
@@ -100,14 +102,17 @@ class Hash(Base):
     ssdeep = Column(String(255), nullable=True)
 
     def __repr__(self):
-        return "<Hash('%s','%s')>" % (self.id, self.md5)
+        return "<Sample('%s','%s')>" % (self.id, self.md5)
 
-    def __init__(self, md5, crc32, sha1, sha256, sha512, ssdeep=None):
+    def __init__(self, md5, crc32, sha1, sha256, sha512, file_size, file_type=None, ssdeep=None):
         self.md5 = md5
         self.sha1 = sha1
         self.crc32 = crc32
         self.sha256 = sha256
         self.sha512 = sha512
+        self.file_size = file_size
+        if file_type:
+            self.file_type = file_type
         if ssdeep:
             self.ssdeep = ssdeep
 
@@ -220,18 +225,20 @@ class Database:
 
         if isinstance(obj, File):
             try:
-                hash = Hash(md5=obj.get_md5(),
+                sample = Sample(md5=obj.get_md5(),
                             crc32=obj.get_crc32(),
                             sha1=obj.get_sha1(),
                             sha256=obj.get_sha256(),
                             sha512=obj.get_sha512(),
+                            file_size=obj.get_size(),
+                            file_type=obj.get_type(),
                             ssdeep=obj.get_ssdeep()
                             )
-                session.add(hash)
+                session.add(sample)
                 session.commit()
             except IntegrityError:
                 session.rollback()
-                hash = session.query(Hash).filter(Hash.sha512 == obj.get_sha512()).first()
+                hash = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
 
             task = Task(obj.file_path)
             task.timeout = timeout
@@ -241,7 +248,7 @@ class Database:
             task.custom = custom
             task.machine = machine
             task.platform = platform
-            task.hash_id = hash.id
+            task.sample_id = sample.id
             session.add(task)
 
             try:
