@@ -7,7 +7,7 @@ import json
 import urllib
 import urllib2
 
-from lib.cuckoo.common.utils import File
+from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.exceptions import CuckooProcessingError
 

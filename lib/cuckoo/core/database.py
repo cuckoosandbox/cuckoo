@@ -10,7 +10,8 @@ from datetime import datetime
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDatabaseError, CuckooOperationalError, CuckooDependencyError
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.utils import create_folder, File
+from lib.cuckoo.common.objects import File
+from lib.cuckoo.common.utils import create_folder
 
 try:
     from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Enum, ForeignKey

@@ -2,7 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-from lib.cuckoo.common.utils import File
+from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.abstracts import Processing
 
 class FileAnalysis(Processing):

@@ -6,6 +6,7 @@ import os
 import sys
 import string
 
+
 try:
     import magic
     HAVE_MAGIC = True
@@ -15,9 +16,10 @@ except:
 import pefile
 import peutils
 
+from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.utils import convert_to_printable, File
+from lib.cuckoo.common.utils import convert_to_printable
 
 # Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 

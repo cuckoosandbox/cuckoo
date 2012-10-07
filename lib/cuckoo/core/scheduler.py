@@ -11,8 +11,8 @@ from threading import Thread, Lock
 
 from lib.cuckoo.common.exceptions import CuckooAnalysisError, CuckooMachineError, CuckooGuestError, CuckooOperationalError
 from lib.cuckoo.common.abstracts import  MachineManager
-from lib.cuckoo.common.objects import Dictionary
-from lib.cuckoo.common.utils import File, create_folders, create_folder
+from lib.cuckoo.common.objects import Dictionary, File
+from lib.cuckoo.common.utils import  create_folders, create_folder
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.guest import GuestManager

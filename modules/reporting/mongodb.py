@@ -7,7 +7,7 @@ import hashlib
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooDependencyError, CuckooReportError
-from lib.cuckoo.common.utils import File
+from lib.cuckoo.common.objects import File
 
 try:
     from pymongo.connection import Connection

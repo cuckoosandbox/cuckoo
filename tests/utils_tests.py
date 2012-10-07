@@ -5,6 +5,7 @@
 import os
 import tempfile
 from nose.tools import assert_equal, raises, assert_not_equal
+from lib.cuckoo.common.objects import File
 
 import lib.cuckoo.common.utils as utils
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -81,7 +82,7 @@ class TestDatetimeToIso:
 class TestFile:
     def setUp(self):
         self.tmp = tempfile.mkstemp()
-        self.file = utils.File(self.tmp[1])
+        self.file = File(self.tmp[1])
 
     def test_get_name(self):
         assert_equal(self.tmp[1].split("/")[-1], self.file.get_name())

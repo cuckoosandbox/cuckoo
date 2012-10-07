@@ -5,7 +5,7 @@
 import os
 
 from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.utils import File
+from lib.cuckoo.common.objects import File
 
 class Dropped(Processing):
     """Dropped files analysis."""

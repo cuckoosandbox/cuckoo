@@ -8,7 +8,7 @@ import base64
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
-from lib.cuckoo.common.utils import File
+from lib.cuckoo.common.objects import File
 
 try:
     from mako.template import Template
