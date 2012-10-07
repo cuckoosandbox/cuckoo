@@ -37,7 +37,14 @@ def task_create():
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
     db = Database()
-    task_id = db.add_path(file_path=temp_file_path, package=package, timeout=timeout, priority=priority, options=options, machine=machine, platform=platform, custom=custom)
+    task_id = db.add_path(file_path=temp_file_path,
+                          package=package,
+                          timeout=timeout,
+                          priority=priority,
+                          options=options,
+                          machine=machine,
+                          platform=platform,
+                          custom=custom)
 
     response["task_id"] = task_id
     return jsonize(response)
