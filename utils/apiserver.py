@@ -11,14 +11,19 @@ from bottle import Bottle, run, request, server_names, ServerAdapter
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.core.database import Database
+
+errors = {
+    "file_not_found" : "The specified file does not exist"
+}
 
 def jsonize(data):
     return json.dumps(data, sort_keys=False, indent=4)
 
 def report_error(error_code):
-    return jsonize({"error" : True, "error_code" : error_code, "error_message" : ERRORS[error_code]})
+    return jsonize({"error" : True, "error_code" : error_code, "error_message" : errors[error_code]})
 
 app = Bottle()
 
@@ -82,6 +87,14 @@ def task_search(md5):
         response["tasks"].append(row.to_dict())
 
     return jsonize(response)
+
+@app.get("/file/get/<md5>", method="GET")
+def file_get(md5):
+    file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", md5)
+    if os.path.exists(file_path):
+        return open(file_path, "rb").read()
+    else:
+        return report_error("file_not_found")
 
 if __name__ == "__main__":
     run(app, host="0.0.0.0", port=8888)
