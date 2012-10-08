@@ -237,7 +237,7 @@ class Database:
                 session.commit()
             except IntegrityError:
                 session.rollback()
-                hash = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
+                sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
 
             task = Task(obj.file_path)
             task.timeout = timeout
