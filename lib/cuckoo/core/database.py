@@ -10,7 +10,7 @@ from datetime import datetime
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDatabaseError, CuckooOperationalError, CuckooDependencyError
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.objects import File
+from lib.cuckoo.common.objects import File, Url
 from lib.cuckoo.common.utils import create_folder
 
 try:
@@ -29,7 +29,8 @@ class Task(Base):
     __tablename__ = "tasks"
 
     id = Column(Integer(), primary_key=True)
-    file_path = Column(String(255), nullable=False)
+    target = Column(String(255), nullable=False)
+    category = Column(String(255), nullable=False)
     timeout = Column(Integer(), server_default="0", nullable=False)
     priority = Column(Integer(), server_default="1", nullable=False)
     custom = Column(String(255), nullable=True)
@@ -40,7 +41,7 @@ class Task(Base):
     added_on = Column(DateTime(timezone=False), default=datetime.now())
     completed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(Enum("pending", "processing", "failure", "success", name="status_type"), default="pending", nullable=False)
-    sample_id = Column(Integer, ForeignKey("samples.id"), nullable=False)
+    sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     guest = relationship("Guest", uselist=False, backref="tasks")
 
     def to_dict(self):
@@ -62,8 +63,8 @@ class Task(Base):
         """
         return json.dumps(self.to_dict())
 
-    def __init__(self, file_path=None):
-        self.file_path = file_path
+    def __init__(self, target=None):
+        self.target = target
 
     def __repr__(self):
         return "<Task('%s','%s')>" % (self.id, self.file_path)
@@ -202,6 +203,34 @@ class Database:
                         machine,
                         platform)
 
+    def add_url(self,
+                 url,
+                 timeout=0,
+                 package=None,
+                 options=None,
+                 priority=1,
+                 custom=None,
+                 machine=None,
+                 platform=None):
+        """Add a task to database from url.
+        @param url: url.
+        @param timeout: selected timeout.
+        @param options: analysis options.
+        @param priority: analysis priority.
+        @param custom: custom options.
+        @param machine: selected machine.
+        @param platform: platform
+        @return: cursor or None.
+        """
+        return self.add(Url(url),
+            timeout,
+            package,
+            options,
+            priority,
+            custom,
+            machine,
+            platform)
+
     def add(self,
             obj,
             timeout=0,
@@ -240,23 +269,28 @@ class Database:
                 sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
 
             task = Task(obj.file_path)
-            task.timeout = timeout
-            task.package = package
-            task.options = options
-            task.priority = priority
-            task.custom = custom
-            task.machine = machine
-            task.platform = platform
             task.sample_id = sample.id
-            session.add(task)
 
-            try:
-                session.commit()
-            except:
-                session.rollback()
-                return None
+        if isinstance(obj, Url):
+            task = Task(obj.url)
 
-            return task.id
+        task.category = obj.__class__.__name__
+        task.timeout = timeout
+        task.package = package
+        task.options = options
+        task.priority = priority
+        task.custom = custom
+        task.machine = machine
+        task.platform = platform
+        session.add(task)
+
+        try:
+            session.commit()
+        except:
+            session.rollback()
+            return None
+
+        return task.id
 
     def fetch(self):
         """Fetch a task.

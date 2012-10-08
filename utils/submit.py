@@ -16,7 +16,7 @@ from lib.cuckoo.core.database import Database
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("path", type=str, help="Path to the file or folder to analyze")
+    parser.add_argument("target", type=str, help="Url, path to the file or folder to analyze")
     parser.add_argument("--package", type=str, action="store", default="", help="Specify an analysis package", required=False)
     parser.add_argument("--custom", type=str, action="store", default="", help="Specify any custom value", required=False)
     parser.add_argument("--timeout", type=int, action="store", default=0, help="Specify an analysis timeout", required=False)
@@ -31,36 +31,48 @@ def main():
         parser.error(e)
         return False
 
-    # Get absolute path to deal with relative.
-    path = os.path.abspath(args.path)
-
-    if not os.path.exists(path):
-        print("ERROR: the specified file/folder does not exist at path \"%s\"" % path)
-        return False
-
-    files = []
-    if os.path.isdir(path):
-        for dirname, dirnames, filenames in os.walk(path):
-            for file_name in filenames:
-                file_path = os.path.join(dirname, file_name)
-
-                if os.path.isfile(file_path):
-                    files.append(file_path)
-    else:
-        files.append(path)
-
     db = Database()
-    for file_path in files:
-        task_id = db.add_path(file_path=file_path,
-                             package=args.package,
-                             timeout=args.timeout,
-                             options=args.options,
-                             priority=args.priority,
-                             machine=args.machine,
-                             platform=args.platform,
-                             custom=args.custom)
+    target = args.target
 
-        print("SUCCESS: File \"%s\" added as task with id %d" % (file_path, task_id))
+    if target.lower().startswith("http://") or target.lower().startswith("https://"):
+        task_id = db.add_url(target,
+                            package=args.package,
+                            timeout=args.timeout,
+                            options=args.options,
+                            priority=args.priority,
+                            machine=args.machine,
+                            platform=args.platform,
+                            custom=args.custom)
+    else:
+        # Get absolute path to deal with relative.
+        path = os.path.abspath(target)
+
+        if not os.path.exists(path):
+            print("ERROR: the specified file/folder does not exist at path \"%s\"" % path)
+            return False
+
+        files = []
+        if os.path.isdir(path):
+            for dirname, dirnames, filenames in os.walk(path):
+                for file_name in filenames:
+                    file_path = os.path.join(dirname, file_name)
+
+                    if os.path.isfile(file_path):
+                        files.append(file_path)
+        else:
+            files.append(path)
+
+        for file_path in files:
+            task_id = db.add_path(file_path=file_path,
+                                 package=args.package,
+                                 timeout=args.timeout,
+                                 options=args.options,
+                                 priority=args.priority,
+                                 machine=args.machine,
+                                 platform=args.platform,
+                                 custom=args.custom)
+
+    print("SUCCESS: Target \"%s\" added as task with id %d" % (target, task_id))
 
 if __name__ == "__main__":
     main()

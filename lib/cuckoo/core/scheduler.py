@@ -55,17 +55,17 @@ class AnalysisManager(Thread):
     def store_file(self):
         """Store sample file.
         @raise CuckooAnalysisError: if unable to store file."""
-        md5 = File(self.task.file_path).get_md5()
+        md5 = File(self.task.target).get_md5()
         self.analysis.stored_file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", md5)
 
         if os.path.exists(self.analysis.stored_file_path):
             log.info("File already exists at \"%s\"" % self.analysis.stored_file_path)
         else:
             try:
-                shutil.copy(self.task.file_path, self.analysis.stored_file_path)
+                shutil.copy(self.task.target, self.analysis.stored_file_path)
             except (IOError, shutil.Error) as e:
                 raise CuckooAnalysisError("Unable to store file from \"%s\" to \"%s\", analysis aborted"
-                                          % (self.task.file_path, self.analysis.stored_file_path))
+                                          % (self.task.target, self.analysis.stored_file_path))
 
         try:
             new_binary_path = os.path.join(self.analysis.results_folder, "binary")
@@ -85,7 +85,7 @@ class AnalysisManager(Thread):
         """
         options = {}
 
-        options["file_path"] = self.task.file_path
+        options["file_path"] = self.task.target
         options["package"] = self.task.package
         options["machine"] = self.task.machine
         options["platform"] = self.task.platform
@@ -97,8 +97,8 @@ class AnalysisManager(Thread):
         else:
             options["timeout"] = self.task.timeout
 
-        options["file_name"] = File(self.task.file_path).get_name()
-        options["file_type"] = File(self.task.file_path).get_type()
+        options["file_name"] = File(self.task.target).get_name()
+        options["file_type"] = File(self.task.target).get_type()
         options["started"] = time.time()
 
         return options
@@ -107,10 +107,10 @@ class AnalysisManager(Thread):
         """Start analysis.
         @raise CuckooAnalysisError: if unable to start analysis.
         """
-        log.info("Starting analysis of file \"%s\" (task=%s)" % (self.task.file_path, self.task.id))
+        log.info("Starting analysis of file \"%s\" (task=%s)" % (self.task.target, self.task.id))
 
-        if not os.path.exists(self.task.file_path):
-            raise CuckooAnalysisError("The file to analyze does not exist at path \"%s\", analysis aborted" % self.task.file_path)
+        if not os.path.exists(self.task.target):
+            raise CuckooAnalysisError("The file to analyze does not exist at path \"%s\", analysis aborted" % self.task.target)
 
         self.init_storage()
         self.store_file()
@@ -159,9 +159,9 @@ class AnalysisManager(Thread):
             # Delete original file
             if self.cfg.cuckoo.delete_original:
                 try:
-                    os.remove(self.task.file_path)
+                    os.remove(self.task.target)
                 except OSError as e:
-                    log.error("Unable to delete original file at path \"%s\": %s" % (self.task.file_path, e))
+                    log.error("Unable to delete original file at path \"%s\": %s" % (self.task.target, e))
             try:
                 # Stop machine and log.
                 mmanager.stop(vm.label)

@@ -31,6 +31,13 @@ class Dictionary(dict):
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
+class Url:
+    """URL base object."""
+
+    def __init__(self, url):
+        """@param url: URL"""
+        self.url = url
+
 class File:
     """Basic file object class with all useful utilities."""
 
