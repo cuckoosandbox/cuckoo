@@ -237,13 +237,13 @@ class Static(Processing):
         """Run analysis.
         @return: results dict.
         """
+        if self.cfg.analysis.category != "file":
+            return None
+
         self.key = "static"
         static = {}
-
-        file_type = File(self.file_path).get_type()
-
-        if file_type:
-            if "PE32" in file_type:
+        if self.cfg.analysis.file_type:
+            if "PE32" in self.cfg.analysis.file_type:
                 static = PortableExecutable(self.file_path).run()
 
         return static

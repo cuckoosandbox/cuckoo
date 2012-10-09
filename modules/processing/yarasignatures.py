@@ -23,6 +23,9 @@ class YaraSignatures(Processing):
         """Run Yara processing.
         @return: hash with matches.
         """
+        if self.cfg.analysis.category != "file":
+            return None
+
         self.key = "yara"
         matches = []
 
