@@ -78,8 +78,7 @@ class VirtualBox(MachineManager):
         """
         log.debug("Stopping vm %s" % label)
 
-        status = self._status(label)
-        if status == self.POWEROFF or status == self.ABORTED:
+        if self._status(label) in [self.POWEROFF, self.ABORTED]:
             log.debug("Trying to stop an already stopped vm %s" % label)
         else:
             try:
@@ -165,8 +164,8 @@ class VirtualBox(MachineManager):
 
     def _wait_status(self, label, state):
         """Waits for a vm status.
-        @param label: virtual machine name, accepts more than one states in a list.
-        @param state: virtual machine status.
+        @param label: virtual machine name.
+        @param state: virtual machine status, accepts more than one states in a list.
         @raise CuckooMachineError: if default waiting timeout expire.
         """
         # This block was originally suggested by Loic Jaquemet.
