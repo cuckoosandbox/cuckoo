@@ -25,12 +25,12 @@ class VirusTotal(Processing):
         self.key = "virustotal"
         virustotal = []
 
+        if not VIRUSTOTAL_KEY:
+            raise CuckooProcessingError("VirusTotal API key not configured, skip")
+
         if self.cfg.analysis.category == "file":
             if not os.path.exists(self.file_path):
                 raise CuckooProcessingError("File %s not found, skip" % self.file_path)
-
-            if not VIRUSTOTAL_KEY:
-                raise CuckooProcessingError("VirusTotal API key not configured, skip")
 
             resource = File(self.file_path).get_md5()
             url = VIRUSTOTAL_FILE_URL
