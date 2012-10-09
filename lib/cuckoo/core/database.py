@@ -10,7 +10,7 @@ from datetime import datetime
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDatabaseError, CuckooOperationalError, CuckooDependencyError
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.objects import File, Url
+from lib.cuckoo.common.objects import File, URL
 from lib.cuckoo.common.utils import create_folder
 
 try:
@@ -21,7 +21,7 @@ try:
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
     Base = declarative_base()
 except ImportError:
-    raise CuckooDependencyError("SQLAlchemy library not found. Please install it")
+    raise CuckooDependencyError("SQLAlchemy library not found, verify your setup")
 
 
 class Task(Base):
@@ -204,14 +204,14 @@ class Database:
                         platform)
 
     def add_url(self,
-                 url,
-                 timeout=0,
-                 package=None,
-                 options=None,
-                 priority=1,
-                 custom=None,
-                 machine=None,
-                 platform=None):
+                url,
+                timeout=0,
+                package=None,
+                options=None,
+                priority=1,
+                custom=None,
+                machine=None,
+                platform=None):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
@@ -222,14 +222,14 @@ class Database:
         @param platform: platform
         @return: cursor or None.
         """
-        return self.add(Url(url),
-            timeout,
-            package,
-            options,
-            priority,
-            custom,
-            machine,
-            platform)
+        return self.add(URL(url),
+                        timeout,
+                        package,
+                        options,
+                        priority,
+                        custom,
+                        machine,
+                        platform)
 
     def add(self,
             obj,
@@ -270,11 +270,10 @@ class Database:
 
             task = Task(obj.file_path)
             task.sample_id = sample.id
-
-        if isinstance(obj, Url):
+        elif isinstance(obj, URL):
             task = Task(obj.url)
 
-        task.category = obj.__class__.__name__
+        task.category = obj.__class__.__name__.lower()
         task.timeout = timeout
         task.package = package
         task.options = options
