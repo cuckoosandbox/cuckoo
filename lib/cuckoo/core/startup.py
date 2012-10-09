@@ -95,6 +95,8 @@ def check_version():
     if not cfg.cuckoo.version_check:
         return
 
+    print(" Checking for updates...")
+
     url = "http://api.cuckoosandbox.org/checkversion.php"
     data = urllib.urlencode({"version" : CUCKOO_VERSION})
 
@@ -107,4 +109,6 @@ def check_version():
     response_data = json.loads(response.read())
     if not response_data["error"]:
         if response_data["response"] == "NEW_VERSION":
-            print(" You have an outdated Cuckoo, version %s is available now\n" % green(response_data["current"]))
+            print(red(" Outdated! ") + "Cuckoo Sandbox version %s is available now.\n" % response_data["current"])
+        else:
+            print(green(" Good! ") + "You have the latest version available.\n")
