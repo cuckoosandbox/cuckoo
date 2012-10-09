@@ -79,28 +79,28 @@ class VirtualBox(MachineManager):
         log.debug("Stopping vm %s" % label)
 
         if self._status(label) in [self.POWEROFF, self.ABORTED]:
-            log.debug("Trying to stop an already stopped vm %s" % label)
-        else:
-            try:
-                proc = subprocess.Popen([self.options.virtualbox.path, "controlvm", label, "poweroff"],
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-                # Sometimes VBoxManage stucks when stopping vm so we needed
-                # to add a timeout and kill it after that.
-                stop_me = 0
-                while proc.poll() is None:
-                    if stop_me < self.options.virtualbox.timeout:
-                        time.sleep(1)
-                        stop_me += 1
-                    else:
-                        log.debug("Stopping vm %s timeouted. Killing" % label)
-                        proc.terminate()
+            raise CuckooMachineError("Trying to stop an already stopped vm %s" % label)
 
-                if proc.returncode != 0 and stop_me < self.options.virtualbox.timeout:
-                    log.debug("VBoxManage exited with error powering off the machine")
-            except OSError as e:
-                raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e)
-            self._wait_status(label, [self.POWEROFF, self.ABORTED])
+        try:
+            proc = subprocess.Popen([self.options.virtualbox.path, "controlvm", label, "poweroff"],
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+            # Sometimes VBoxManage stucks when stopping vm so we needed
+            # to add a timeout and kill it after that.
+            stop_me = 0
+            while proc.poll() is None:
+                if stop_me < self.options.virtualbox.timeout:
+                    time.sleep(1)
+                    stop_me += 1
+                else:
+                    log.debug("Stopping vm %s timeouted. Killing" % label)
+                    proc.terminate()
+
+            if proc.returncode != 0 and stop_me < self.options.virtualbox.timeout:
+                log.debug("VBoxManage exited with error powering off the machine")
+        except OSError as e:
+            raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e)
+        self._wait_status(label, [self.POWEROFF, self.ABORTED])
 
     def _list(self):
         """Lists virtual machines installed.
