@@ -98,9 +98,6 @@ class GuestManager:
         @param options: options.
         @return: operation status.
         """
-        if not os.path.exists(options["file_path"]):
-            raise CuckooGuestError("File not found: %s" % options["file_path"])
-
         log.info("Starting analysis on guest (id=%s, ip=%s)" % (self.id, self.ip))
 
         socket.setdefaulttimeout(180)
@@ -110,13 +107,15 @@ class GuestManager:
             self.upload_analyzer()
             self.server.add_config(options)
 
-            try:
-                file_data = open(options["file_path"], "rb").read()
-            except (IOError, OSError) as e:
-                raise CuckooGuestError("Unable to read %s, error: %s" % (options["file_path"], e))
-            data = xmlrpclib.Binary(file_data)
-    
-            self.server.add_malware(data, options["file_name"])
+            if options["category"] == "file":
+                try:
+                    file_data = open(options["target"], "rb").read()
+                except (IOError, OSError) as e:
+                    raise CuckooGuestError("Unable to read %s, error: %s" % (options["target"], e))
+                
+                data = xmlrpclib.Binary(file_data)
+                self.server.add_malware(data, options["file_name"])
+
             self.server.execute()
         except (socket.timeout, socket.error):
             raise CuckooGuestError("%s: guest communication timeout, check networking or try to increase timeout" % self.id)
