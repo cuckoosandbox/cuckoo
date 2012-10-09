@@ -16,7 +16,8 @@ from lib.cuckoo.core.database import Database
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("target", type=str, help="Url, path to the file or folder to analyze")
+    parser.add_argument("target", type=str, help="URL, path to the file or folder to analyze")
+    parser.add_argument("--url", action="store_true", default=False, help="Specify whether the target is an URL", required=False)
     parser.add_argument("--package", type=str, action="store", default="", help="Specify an analysis package", required=False)
     parser.add_argument("--custom", type=str, action="store", default="", help="Specify any custom value", required=False)
     parser.add_argument("--timeout", type=int, action="store", default=0, help="Specify an analysis timeout", required=False)
@@ -34,15 +35,15 @@ def main():
     db = Database()
     target = args.target
 
-    if target.lower().startswith("http://") or target.lower().startswith("https://"):
+    if args.url:
         task_id = db.add_url(target,
-                            package=args.package,
-                            timeout=args.timeout,
-                            options=args.options,
-                            priority=args.priority,
-                            machine=args.machine,
-                            platform=args.platform,
-                            custom=args.custom)
+                             package=args.package,
+                             timeout=args.timeout,
+                             options=args.options,
+                             priority=args.priority,
+                             machine=args.machine,
+                             platform=args.platform,
+                             custom=args.custom)
     else:
         # Get absolute path to deal with relative.
         path = os.path.abspath(target)
@@ -64,13 +65,13 @@ def main():
 
         for file_path in files:
             task_id = db.add_path(file_path=file_path,
-                                 package=args.package,
-                                 timeout=args.timeout,
-                                 options=args.options,
-                                 priority=args.priority,
-                                 machine=args.machine,
-                                 platform=args.platform,
-                                 custom=args.custom)
+                                  package=args.package,
+                                  timeout=args.timeout,
+                                  options=args.options,
+                                  priority=args.priority,
+                                  machine=args.machine,
+                                  platform=args.platform,
+                                  custom=args.custom)
 
     print("SUCCESS: Target \"%s\" added as task with id %d" % (target, task_id))
 
