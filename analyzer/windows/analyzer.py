@@ -193,7 +193,7 @@ class Analyzer:
         self.do_run = True
         self.pipe = None
         self.config = None
-        self.file_path = None
+        self.target = None
 
     def prepare(self):
         """Prepare env for analysis."""
@@ -204,7 +204,11 @@ class Analyzer:
         self.pipe = PipeServer()
         self.pipe.daemon = True
         self.pipe.start()
-        self.file_path = os.path.join(os.environ["TEMP"] + os.sep, self.config.file_name)
+
+        if self.config.category == "file":
+            self.target = os.path.join(os.environ["TEMP"] + os.sep, self.config.file_name)
+        else:
+            self.target = self.config.target
 
     def get_options(self):
         """Get analysis options.
@@ -245,7 +249,11 @@ class Analyzer:
 
         if not self.config.package:
             log.info("No analysis package specified, trying to detect it automagically")
-            package = choose_package(self.config.file_type)
+            if self.config.category == "file":
+                package = choose_package(self.config.file_type)
+            else:
+                package = "ie"
+
             if not package:
                 raise CuckooError("No valid package available for file type: %s" % self.config.file_type)
             else:
@@ -297,7 +305,7 @@ class Analyzer:
 
         # Start analysis package
         try:
-            pids = pack.start(self.file_path)
+            pids = pack.start(self.target)
         except NotImplementedError:
             raise CuckooError("The package \"%s\" doesn't contain a run function." % package_name)
         except CuckooPackageError as e:
