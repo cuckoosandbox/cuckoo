@@ -46,8 +46,14 @@ class Processor:
         current.set_path(self.analysis_path)
         current.cfg = Config(current.conf_path)
 
+        if not current.enabled:
+            return None
+
         try:
             data = current.run()
+            if not data:
+                return None
+
             log.debug("Executed processing module \"%s\" on analysis at \"%s\"" % (current.__class__.__name__, self.analysis_path))
             return {current.key : data}
         except NotImplementedError:
