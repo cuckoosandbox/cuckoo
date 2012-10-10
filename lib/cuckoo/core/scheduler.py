@@ -27,7 +27,6 @@ mmanager = None
 machine_lock = Lock()
 db_lock = Lock()
 
-
 class AnalysisManager(Thread):
     """Analysis manager thread."""
 
@@ -35,49 +34,60 @@ class AnalysisManager(Thread):
         """@param task: task."""
         Thread.__init__(self)
         Thread.daemon = True
+
+        # Object pointing to the current task assigned to this analysis
+        # instance.
         self.task = task
+        # Cuckoo configuration.
         self.cfg = Config()
-        self.analysis = Dictionary()
+        # Path to the analysis results folder assigned to this task.
+        self.storage = ""
+        # Path to a copy of the original binary file, if available.
+        self.binary = ""
 
     def init_storage(self):
-        """Initialize analyses storage folder.
-        @raise CuckooAnalysisError: if storage folder already exists."""
-        self.analysis.results_folder = os.path.join(os.path.join(CUCKOO_ROOT, "storage", "analyses"), str(self.task.id))
+        """Initialize analysis storage folder.
+        @raise CuckooAnalysisError: if storage folder already exists.
+        """
+        self.storage = os.path.join(CUCKOO_ROOT,
+                                    "storage",
+                                    "analyses",
+                                    str(self.task.id))
 
-        if os.path.exists(self.analysis.results_folder):
-            raise CuckooAnalysisError("Analysis results folder already exists at path \"%s\", analysis aborted" % self.analysis.results_folder)
+        if os.path.exists(self.storage):
+            raise CuckooAnalysisError("Analysis results folder already exists at path \"%s\", analysis aborted" % self.storage)
 
         try:
-            create_folder(folder=self.analysis.results_folder)
+            create_folder(folder=self.storage)
         except CuckooOperationalError:
-            raise CuckooAnalysisError("Unable to create analysis folder %s" % self.analysis.results_folder)
+            raise CuckooAnalysisError("Unable to create analysis folder %s" % self.storage)
 
     def store_file(self):
         """Store sample file.
-        @raise CuckooAnalysisError: if unable to store file."""
+        @raise CuckooAnalysisError: if unable to store a copy of the file.
+        """
         md5 = File(self.task.target).get_md5()
-        self.analysis.stored_file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", md5)
+        self.binary = os.path.join(CUCKOO_ROOT, "storage", "binaries", md5)
 
-        if os.path.exists(self.analysis.stored_file_path):
-            log.info("File already exists at \"%s\"" % self.analysis.stored_file_path)
+        if os.path.exists(self.binary):
+            log.info("File already exists at \"%s\"" % self.binary)
         else:
             try:
-                shutil.copy(self.task.target, self.analysis.stored_file_path)
+                shutil.copy(self.task.target, self.binary)
             except (IOError, shutil.Error) as e:
-                raise CuckooAnalysisError("Unable to store file from \"%s\" to \"%s\", analysis aborted"
-                                          % (self.task.target, self.analysis.stored_file_path))
+                raise CuckooAnalysisError("Unable to store file from \"%s\" to \"%s\", analysis aborted" % (self.task.target, self.binary))
 
         try:
-            new_binary_path = os.path.join(self.analysis.results_folder, "binary")
+            new_binary_path = os.path.join(self.storage, "binary")
 
             # On Windows systems, symlink is obviously not supported, therefore we'll just copy
             # the binary until we find a more efficient solution.
             if hasattr(os, "symlink"):
-                os.symlink(self.analysis.stored_file_path, new_binary_path)
+                os.symlink(self.binary, new_binary_path)
             else:
-                shutil.copy(self.analysis.stored_file_path, new_binary_path)
+                shutil.copy(self.binary, new_binary_path)
         except (AttributeError, OSError) as e:
-            raise CuckooAnalysisError("Unable to create symlink/copy from \"%s\" to \"%s\"" % (self.analysis.stored_file_path, self.analysis.results_folder))
+            raise CuckooAnalysisError("Unable to create symlink/copy from \"%s\" to \"%s\"" % (self.binary, self.storage))
 
     def build_options(self):
         """Get analysis options.
@@ -109,18 +119,18 @@ class AnalysisManager(Thread):
         """Start analysis.
         @raise CuckooAnalysisError: if unable to start analysis.
         """
-        log.info("Starting analysis of file \"%s\" (task=%d)" % (self.task.target, self.task.id))
-
-        # Check if the submitted target is a file, and if it is, check if it actually
-        # does exist, otherwise abort the analysis.
-        if self.task.category == "file" and not os.path.exists(self.task.target):
-            raise CuckooAnalysisError("The file to analyze does not exist at path \"%s\", analysis aborted" % self.task.target)
+        log.info("Starting analysis of %s \"%s\" (task=%d)" % (self.task.category.upper(), self.task.target, self.task.id))
 
         # Initialize the the analysis folders.
         self.init_storage()
 
-        # If the target is a file, create a copy of it.
+        # Check if the submitted target is a file, and if it is, check if it
+        # actually does exist, otherwise abort the analysis.
         if self.task.category == "file":
+            if not os.path.exists(self.task.target):
+                raise CuckooAnalysisError("The file to analyze does not exist at path \"%s\", analysis aborted" % self.task.target)
+            
+            # Store a copy of the original file.
             self.store_file()
 
         # Generate the analysis configuration file.
@@ -137,18 +147,18 @@ class AnalysisManager(Thread):
 
             # If no machine is available at this moment, wait for one second and try again.
             if not vm:
-                log.debug("Task #%d: no machine available" % self.task.id)
+                log.debug("Task #%d: no machine available yet" % self.task.id)
                 time.sleep(1)
             else:
                 log.info("Task #%d: acquired machine %s (label=%s)" % (self.task.id, vm.id, vm.label))
                 break
 
-        # Initialize sniffer.
+        # If enabled in the configuration, start the tcpdump instance.
         if self.cfg.cuckoo.use_sniffer:
             sniffer = Sniffer(self.cfg.cuckoo.tcpdump)
             sniffer.start(interface=self.cfg.cuckoo.interface,
                           host=vm.ip,
-                          file_path=os.path.join(self.analysis.results_folder, "dump.pcap"))
+                          file_path=os.path.join(self.storage, "dump.pcap"))
         else:
             sniffer = False
 
@@ -170,7 +180,7 @@ class AnalysisManager(Thread):
                 sniffer.stop()
 
             # Save results.
-            guest.save_results(self.analysis.results_folder)
+            guest.save_results(self.storage)
 
             if not success:
                 raise CuckooAnalysisError("Task #%d: analysis failed, review previous errors" % self.task.id)
@@ -194,23 +204,23 @@ class AnalysisManager(Thread):
                 log.debug("Task #%d: releasing machine %s (label=%s)" % (self.task.id, vm.id, vm.label))
                 mmanager.release(vm.label)
             except CuckooMachineError as e:
-                log.error("Unable to release vm %s, reason %s. You have to fix it manually" % (vm.label, e))
+                log.error("Unable to release machine %s, reason %s. You might need to restore it manually" % (vm.label, e))
 
         # Check analysis file size to avoid memory leaks.
         try:
-            analysis_logs_path = os.path.join(self.analysis.results_folder, "logs")
-            for csv in os.listdir(analysis_logs_path):
-                csv = os.path.join(analysis_logs_path, csv)
+            logs_path = os.path.join(self.storage, "logs")
+            for csv in os.listdir(logs_path):
+                csv = os.path.join(logs_path, csv)
                 if os.stat(csv).st_size > self.cfg.cuckoo.analysis_size_limit:
                     raise CuckooAnalysisError("Analysis file %s is too big to be processed, analysis aborted. Process it manually with the provided utilities" % csv)
         except OSError as e:
             log.warning("Log access error for analysis #%d: %s" % (self.task.id, e))
 
         # Launch reports generation.
-        results = Processor(self.analysis.results_folder).run()
-        Reporter(self.analysis.results_folder).run(results)
+        results = Processor(self.storage).run()
+        Reporter(self.storage).run(results)
 
-        log.info("Task #%d: reports generation completed (path=%s)" % (self.task.id, self.analysis.results_folder))
+        log.info("Task #%d: reports generation completed (path=%s)" % (self.task.id, self.storage))
 
     def run(self):
         """Run manager thread."""
@@ -243,23 +253,37 @@ class Scheduler:
         log.info("Using \"%s\" machine manager" % self.cfg.cuckoo.machine_manager)
         name = "modules.machinemanagers.%s" % self.cfg.cuckoo.machine_manager
 
+        # Import the machine manager specified in the configuration file.
         try:
             __import__(name, globals(), locals(), ["dummy"], -1)
         except ImportError as e:
             raise CuckooMachineError("Unable to import machine manager plugin: %s" % e)
 
+        # Initialize the parent class.
         MachineManager()
+        # Select the first subclass of the parent MachineManager. This is
+        # the trick we use for implementing our plugins and identify them.
         module = MachineManager.__subclasses__()[0]
+        # Initialize the machine manager.
         mmanager = module()
-        mmanager_conf = os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % self.cfg.cuckoo.machine_manager)
+        # Find its configuration file.
+        conf = os.path.join(CUCKOO_ROOT,
+                            "conf",
+                            "%s.conf" % self.cfg.cuckoo.machine_manager)
 
-        if not os.path.exists(mmanager_conf):
+        if not os.path.exists(conf):
             raise CuckooMachineError("The configuration file for machine manager \"%s\" does not exist at path: %s"
-                                     % (self.cfg.cuckoo.machine_manager, mmanager_conf))
+                                     % (self.cfg.cuckoo.machine_manager, conf))
 
-        mmanager.set_options(Config(mmanager_conf))
+        # Provide a dictionary with the configuration options to the
+        # machine manager instance.
+        mmanager.set_options(Config(conf))
+        # Initialize the machine manager.
         mmanager.initialize(self.cfg.cuckoo.machine_manager)
 
+        # At this point all the available machines should have been identified
+        # and added to the list. If none were found, Cuckoo needs to abort the
+        # execution.
         if len(mmanager.machines) == 0:
             raise CuckooMachineError("No machines available")
         else:
@@ -268,8 +292,7 @@ class Scheduler:
     def stop(self):
         """Stop scheduler."""
         self.running = False
-
-        # Shutdown machine manager (used to kill vm still alive).
+        # Shutdown machine manager (used to kill machines that still alive).
         mmanager.shutdown()
 
     def start(self):
@@ -278,24 +301,33 @@ class Scheduler:
 
         log.info("Waiting for analysis tasks...")
 
+        # This loop runs forever.
         while self.running:
             time.sleep(1)
 
+            # If no machines are available, it's pointless to fetch for
+            # pending tasks. Loop over.
             if mmanager.availables() == 0:
-                #log.debug("No machines available, try again")
                 continue
+
+            # If there are machines available, acquire a lock on the database.
             db_lock.acquire()
+            # Fetcha a pending analysis task.
             task = self.db.fetch()
 
             if task:
                 log.debug("Processing task #%s" % task.id)
+
+                # Set task's status to "processing" inside the database.
                 self.db.process(task.id)
+                # Release database lock.
                 db_lock.release()
-                # Go with analysis.
+
+                # Initialize the analysis manager.
                 analysis = AnalysisManager(task)
                 analysis.daemon = True
+                # Start.
                 analysis.start()
             else:
-                #log.debug("No pending tasks, try again")
                 db_lock.release()
 
