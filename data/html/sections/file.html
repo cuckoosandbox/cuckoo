@@ -1,6 +1,6 @@
 <section id="file">
-    <div class="page-header">
-        <h1>File Details <small>file indicators</small></h1>
+    <div class="section-title">
+        <h3>File Details <small>file indicators</small></h3>
     </div>
     <table class="table table-striped table-bordered">
         <colgroup>
@@ -8,101 +8,95 @@
             <col width="*" />
         </colgroup>
         <tr>
-            <td><strong>File name</strong>:</td>
-            <td><span class="mono">${file["name"]}</span></td>
+            <th>File name</th>
+            <td><span class="mono">{{results.target.file.name}}</span></td>
         </tr>
         <tr>
-            <td><strong>File size</strong>:</td>
-            <td><span class="mono">${file["size"]} bytes</span></td>
+            <th>File size</th>
+            <td><span class="mono">{{results.target.file.size}} bytes</span></td>
         </tr>
         <tr>
-            <td><strong>File type</strong>:</td>
-            <td><span class="mono">${file["type"]}</span></td>
+            <th>File type</th>
+            <td><span class="mono">{{results.target.file.type}}</span></td>
         </tr>
         <tr>
-            <td><strong>CRC32</strong>:</td>
-            <td><span class="mono">${file["crc32"]}</span></td>
+            <th>CRC32</th>
+            <td><span class="mono">{{results.target.file.crc32}}</span></td>
         </tr>
         <tr>
-            <td><strong>MD5</strong>:</td>
-            <td><span class="mono">${file["md5"]}</span></td>
+            <th>MD5</th>
+            <td><span class="mono">{{results.target.file.md5}}</span></td>
         </tr>
         <tr>
-            <td><strong>SHA1</strong>:</td>
-            <td><span class="mono">${file["sha1"]}</span></td>
+            <th>SHA1</th>
+            <td><span class="mono">{{results.target.file.sha1}}</span></td>
         </tr>
         <tr>
-            <td><strong>SHA256</strong>:</td>
-            <td><span class="mono">${file["sha256"]}</span></td>
+            <th>SHA256</th>
+            <td><span class="mono">{{results.target.file.sha256}}</span></td>
         </tr>
         <tr>
-            <td><strong>SHA512</strong>:</td>
-            <td><span class="mono">${file["sha512"]}</span></td>
+            <th>SHA512</th>
+            <td><span class="mono">{{results.target.file.sha512}}</span></td>
         </tr>
         <tr>
-            <td><strong>Ssdeep</strong>:</td>
-            <td><span class="mono">${file["ssdeep"]}</span></td>
+            <th>Ssdeep</th>
+            <td><span class="mono">{{results.target.file.ssdeep}}</span></td>
         </tr>
-        %if isinstance(static, dict) and "peid_signatures" in static:
         <tr>
-            <td><strong>PEiD Signatures</strong>:</td>
+            <th>PEiD Signatures</th>
             <td>
-            %if static["peid_signatures"] and len(static["peid_signatures"]) > 0:
-                %for peid_signature in static["peid_signatures"]:
-                    <div>&bull; ${peid_signature}</div>
-                %endfor
-            %else:
-                None matched
-            %endif
-            </td>
-        </tr>
-        %endif
-        <tr>
-            <td><strong>Yara Signatures</strong>:</td>
-            <td>
-            %if yara is not UNDEFINED:
-                %if yara:
-                    <ul style="margin-bottom:0">
-                    %for rule in yara:
-                        <li>${rule["name"]} (${rule["meta"]["description"]})</li>
-                    %endfor
-                    </ul>
-                %else:
+                {% if results.static.peid_signatures %}
+                    {% if results.static.peid_signatures|length == 0 %}
+                        None matched
+                    {% else %}
+                        {% for sign in results.static.peid_signatures %}
+                            <div>&bull; {{sign}}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% else %}
                     None matched
-                %endif
-            %else:
-                Yara signatures disabled
-            %endif
+                {% endif %}
             </td>
         </tr>
         <tr>
-            <td><strong>Antivirus Results</strong>:</td>
+            <th>Yara Signatures</th>
             <td>
-            %if virustotal is not UNDEFINED and len(virustotal) > 0:
-                %if virustotal["response_code"] == 1:
-                    ${virustotal["positives"]}/${virustotal["total"]} (<a href="javascript:showHide('virustotal');">collapse</a>)
-                    <div id="virustotal" style="display: none;margin-top: 5px;">
-                        <table class="table table-bordered table-condensed">
-                            <tr>
-                                <th>Antivirus</th>
-                                <th>Result</th>
-                            </tr>
-                        %for key in virustotal["scans"]:
-                            %if virustotal["scans"][key]["detected"]:
-                            <tr>
-                                <td>${key}</td>
-                                <td>${virustotal["scans"][key]["result"]}</td>
-                            </tr>
-                            %endif
-                        %endfor
-                        </table>
-                    </div>
-                %else:
-                    File not found on VirusTotal
-                %endif
-            %else:
-                VirusTotal lookup disabled
-            %endif
+                {% if results.yara %}
+                    <ul style="margin-bottom: 0">
+                        {% for sign in results.yara %}
+                            <li>{{sign.name}} ({{sign.meta.description}})</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Antivirus Results</th>
+            <td>
+                {% if results.virustotal %}
+                    {% if results.virustotal.response_code == 1 %}
+                        {{results.virustotal.positives}}/{{results.virustotal.total}} (<a href="javascript:showHide('virustotal');">collapse</a>)
+                        <div id="virustotal" style="display: none;margin-top: 5px;">
+                            <table class="table table-bordered table-condensed">
+                                <tr>
+                                    <th>Antivirus</th>
+                                    <th>Result</th>
+                                </tr>
+                                {% for key in results.virustotal.scans %}
+                                <tr>
+                                    <td>{{key}}</td>
+                                    <td>{{results["virustotal"]["scans"][key]["result"]}}</td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    {% else %}
+                        File not found on VirusTotal
+                    {% endif %}
+                {% else %}
+                    VirusTotal lookup disabled, add your API key to the module
+                {% endif %}
             </td>
         </tr>
     </table>

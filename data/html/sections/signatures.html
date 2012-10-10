@@ -1,22 +1,22 @@
 <section id="signatures">
-    <div class="page-header">
-        <h1>Signatures <small>matched cuckoo signatures</small></h1>
+    <div class="section-title">
+        <h3>Signatures <small>matched cuckoo signatures</small></h3>
     </div>
-    %if signatures:
-        %for signature in signatures:
-            %if signature["severity"] == 1:
+    {% if results.signatures %}
+        {% for sign in results.signatures %}
+            {% if sign.severity == 1 %}
                 <div class="alert alert-success signature">
-            %elif signature["severity"] == 2:
+            {% elif sign.severity == 2 %}
                 <div class="alert alert-warning signature">
-            %elif signature["severity"] >= 3:
+            {% elif sign.severity >= 3 %}
                 <div class="alert alert-error signature">
-            %else:
+            {% else %}
                 <div class="alert alert-info signature">
-            %endif
-            <b>${signature["description"]}</b>
+            {% endif %}
+            <b>{{sign.description}}</b>
             </div>
-        %endfor
-    %else:
-        No signatures matched.
-    %endif
+        {% endfor %}
+    {% else %}
+        No signatures matched
+    {% endif %}
 </section>

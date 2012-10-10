@@ -1,53 +1,53 @@
 <section id="behavior">
-    <div class="page-header">
-        <h1>Behavior Analysis <small>details on the malware execution</small></h1>
+    <div class="section-title">
+        <h3>Behavior Analysis <small>details on the malware execution</small></h3>
     </div>
-    %if behavior["summary"]:
-        <h2>Summary</h2>
+    {% if results.behavior.summary %}
+        <h4>Summary</h4>
         <div class="well">
-            <h3>Files</h3>
-            %if behavior["summary"]["files"]:
+            <h4>Files</h4>
+            {% if results.behavior.summary.files %}
                 <ul>
-                    %for file in behavior["summary"]["files"]:
-                    <li><span class="mono">${file}</span></li>
-                    %endfor
+                    {% for file in results.behavior.summary.files %}
+                    <li><span class="mono">{{file}}</span></li>
+                    {% endfor %}
                 </ul>
-            %else:
+            {% else %}
                 Nothing to display.
-            %endif
+            {% endif %}
         </div>
         <div class="well">
-            <h3>Mutexes</h3>
-            %if behavior["summary"]["mutexes"]:
+            <h4>Mutexes</h4>
+            {% if results.behavior.summary.mutexes %}
                 <ul>
-                    %for mutex in behavior["summary"]["mutexes"]:
-                    <li><span class="mono">${mutex}</span></li>
-                    %endfor
+                    {% for mutex in results.behavior.summary.mutexes %}
+                    <li><span class="mono">{{mutex}}</span></li>
+                    {% endfor %}
                 </ul>
-            %else:
+            {% else %}
                 Nothing to display.
-            %endif
+            {% endif %}
         </div>
         <div class="well">
-            <h3>Registry Keys</h3>
-            %if behavior["summary"]["keys"]:
+            <h4>Registry Keys</h4>
+            {% if results.behavior.summary["keys"] %}
                 <ul>
-                    %for key in behavior["summary"]["keys"]:
-                    <li><span class="mono">${key}</span></li>
-                    %endfor
+                    {% for key in results.behavior.summary["keys"] %}
+                    <li><span class="mono">{{key}}</span></li>
+                    {% endfor %}
                 </ul>
-            %else:
+            {% else %}
                 Nothing to display.
-            %endif
+            {% endif %}
         </div>
-    %endif
+    {% endif %}
 
-    <h2>Processes</h2>
-    %if behavior["processes"]:
-        %for process in behavior["processes"]:
+    <h4>Processes</h4>
+    {% if results.behavior.processes %}
+        {% for process in results.behavior.processes %}
         <div>
-            <h3><a href="javascript:showHide('process_${process["process_id"]}');">${process["process_name"]}</a> <small>PID: ${process["process_id"]}, Parent PID: ${process["parent_id"]}</small></h3>
-            <div id="process_${process["process_id"]}" style="display: none;">
+            <h4><a href="javascript:showHide('process_{{process.process_id}}');">{{process.process_name}}</a> <small>PID: {{process.process_id}}, Parent PID: {{process.parent_id}}</small></h4>
+            <div id="process_{{process.process_id}}" style="display: none;">
                 <table class="table table-striped table-bordered table-condensed">
                     <tr>
                         <th>Timestamp</th>
@@ -58,35 +58,35 @@
                         <th>Return</th>
                         <th>Repeated</th>
                     </tr>
-                    %for i, call in enumerate(process["calls"]):
+                    {% for call in process.calls %}
                     <tr>
-                        <td>${call["timestamp"][11:]}</td>
-                        <td>${call["thread_id"]}</td>
-                        <td><span class="mono">${call["api"]}</span></td>
+                        <td>{{call.timestamp[11:]}}</td>
+                        <td>{{call.thread_id}}</td>
+                        <td><span class="mono">{{call.api}}</span></td>
                         <td>
-                        %for argument in call["arguments"]:
-                            ${argument["name"]} => <span class="mono">${argument["value"]}</span><br />
-                        %endfor
+                        {% for argument in call.arguments %}
+                            {{argument.name}} => <span class="mono">{{argument.value}}</span><br />
+                        {% endfor %}
                         </td>
-                        <td>${call["status"]}</td>
-                        <td>${call["return"]}</td>
+                        <td>{{call.status}}</td>
+                        <td>{{call.return}}</td>
                         <td>
-                        %if call["repeated"] and call["repeated"] > 0:
-                            ${call["repeated"]}
-                            %if call["repeated"] == 1:
+                        {% if call.repeated and call.repeated > 0 %}
+                            {{call.repeated}}
+                            {% if call.repeated == 1 %}
                              time
-                            %elif call["repeated"] > 1:
+                            {% elif call.repeated > 1 %}
                              times
-                            %endif
-                        %endif
+                            {% endif %}
+                        {% endif %}
                         </td>
                     </tr>
-                    %endfor
+                    {% endfor %}
                 </table>
             </div>
         </div>
-        %endfor
-    %else:
+        {% endfor %}
+    {% else %}
         Nothing to display.
-    %endif
+    {% endif %}
 </section>

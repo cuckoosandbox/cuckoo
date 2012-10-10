@@ -1,11 +1,11 @@
-<%inherit file="base-report.html" />
-<%def name="content()">
-    <%include file="sections/info.html" />
-    <%include file="sections/file.html" />
-    <%include file="sections/signatures.html" />
-    <%include file="sections/screenshots.html" />
-    <%include file="sections/static.html" />
-    <%include file="sections/dropped.html" />
-    <%include file="sections/network.html" />
-    <%include file="sections/behavior.html" />
-</%def>
+{% extends "base-report.html" %}
+{% block content %}
+    {% include "sections/info.html" %}
+    {% include "sections/file.html" %}
+    {% include "sections/signatures.html" %}
+    {% include "sections/screenshots.html" %}
+    {% include "sections/static.html" %}
+    {% include "sections/dropped.html" %}
+    {% include "sections/network.html" %}
+    {% include "sections/behavior.html" %}
+{% endblock %}

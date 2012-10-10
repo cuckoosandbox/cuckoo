@@ -11,11 +11,11 @@ from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.objects import File
 
 try:
-    from mako.template import Template
-    from mako.lookup import TemplateLookup
-    HAVE_MAKO = True
+    from jinja2.loaders import FileSystemLoader
+    from jinja2.environment import Environment
+    HAVE_JINJA2 = True
 except ImportError:
-    HAVE_MAKO = False
+    HAVE_JINJA2 = False
 
 class ReportHTML(Report):
     """Stores report in HTML format."""
@@ -25,8 +25,8 @@ class ReportHTML(Report):
         @param results: Cuckoo results dict.
         @raise CuckooReportError: if fails to write report.
         """
-        if not HAVE_MAKO:
-            raise CuckooReportError("Failed to generate HTML report: python Mako library is not installed")
+        if not HAVE_JINJA2:
+            raise CuckooReportError("Failed to generate HTML report: Jinja2 Python library is not installed")
 
         shots_path = os.path.join(self.analysis_path, "shots")
         if os.path.exists(shots_path):
@@ -53,14 +53,12 @@ class ReportHTML(Report):
         else:
             results["screenshots"] = []
 
-        lookup = TemplateLookup(directories=[os.path.join(CUCKOO_ROOT, "data", "html")],
-                                output_encoding='utf-8',
-                                encoding_errors='replace')
-        
-        template = lookup.get_template("report.html")
+        env = Environment()
+        env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT, "data", "html"))
 
         try:
-            html = template.render(**results)
+            tpl = env.get_template("report.html")
+            html = tpl.render({"results" : results})
         except Exception as e:
             raise CuckooReportError("Failed to generate HTML report: %s" % e)
         

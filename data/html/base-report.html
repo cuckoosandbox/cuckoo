@@ -27,10 +27,10 @@
 <meta name="description" content="">
 <meta name="author" content="">
 <style>
-<%include file="css/bootstrap.min.css" />
-<%include file="css/bootstrap-responsive.min.css" />
+{% include "css/bootstrap.min.css" %}
+{% include "css/bootstrap-responsive.min.css" %}
 body {
-    margin-top: 30px;
+    margin-top: 20px;
 }
 .footer {
     margin-top: 45px;
@@ -50,68 +50,51 @@ body {
 }
 img.fade {
     opacity:0.4;
-    filter:alpha(opacity=40); /* For IE8 and earlier */
+    filter:alpha(opacity=40);
 }
 img.fade:hover {
     opacity:1.0;
-    filter:alpha(opacity=100); /* For IE8 and earlier */
+    filter:alpha(opacity=100);
+}
+.section-title {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+    margin-top: 20px;
+    padding-bottom: 3px;
 }
 </style>
-
-<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-<!--[if lt IE 9]>
-    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-<![endif]-->
-
-<!-- Le fav and touch icons -->
-<link rel="shortcut icon" href="ico/favicon.ico">
-<link rel="apple-touch-icon-precomposed" sizes="144x144" href="ico/apple-touch-icon-144-precomposed.png">
-<link rel="apple-touch-icon-precomposed" sizes="114x114" href="ico/apple-touch-icon-114-precomposed.png">
-<link rel="apple-touch-icon-precomposed" sizes="72x72" href="ico/apple-touch-icon-72-precomposed.png">
-<link rel="apple-touch-icon-precomposed" href="ico/apple-touch-icon-57-precomposed.png">
 </head>
 <body>
-    <div class="container">
-        <%include file="graphic/logo.html" />
-        <div class="navbar" style="margin-top: 10px;">
-            <div class="navbar-inner">
-                <div class="container">
-                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    </a>
-                    <!--<a class="brand" href="/">Cuckoo Sandbox</a>-->
-                    <div class="nav-collapse">
-                        <ul class="nav">
-                            <li><a href="#file">File</a></li>
-                            <li><a href="#signatures">Signatures</a></li>
-                            <li><a href="#screenshots">Screenshots</a></li>
-                            <li><a href="#static">Static</a></li>
-                            <li><a href="#dropped">Dropped</a></li>
-                            <li><a href="#network">Network</a></li>
-                            <li><a href="#behavior">Behavior</a></li>
-                        </ul>
-                    </div><!--/.nav-collapse -->
+<div class="container">
+    {% include "graphic/logo.html" %}
+    <div class="navbar" style="margin-top: 10px;">
+        <div class="navbar-inner">
+            <div class="container">
+                <div class="nav-collapse">
+                    <ul class="nav">
+                        <li><a href="#info">Info</a></li>
+                        <li><a href="#file">File</a></li>
+                        <li><a href="#signatures">Signatures</a></li>
+                        <li><a href="#screenshots">Screenshots</a></li>
+                        <li><a href="#static">Static</a></li>
+                        <li><a href="#dropped">Dropped</a></li>
+                        <li><a href="#network">Network</a></li>
+                        <li><a href="#behavior">Behavior</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
-        <%def name="content()" />
-        ${self.content()}
-        <!-- Footer
-        ================================================== -->
-        <footer class="footer">
-            <p class="pull-right"><a href="#">Back to top</a></p>
-            <p>&copy;2010-2012 <a href="http://www.cuckoosandbox.org">Cuckoo Sandbox</a></p>
-        </footer>
-    </div><!-- Close container -->
+    </div>
+    {% block content %}{% endblock %}
 
-<!-- Le javascript
-================================================== -->
-<!-- Placed at the end of the document so the pages load faster -->
+    <footer class="footer">
+        <p class="pull-right"><a href="#">Back to top</a></p>
+        <p>&copy;2010-2012 <a href="http://www.cuckoosandbox.org">Cuckoo Sandbox</a></p>
+    </footer>
+</div>
 <script>
-<%include file="js/bootstrap.min.js" />
-<%include file="js/functions.js" />
+{% include "js/bootstrap.min.js" %}
+{% include "js/functions.js" %}
 </script>
 </body>
 </html>

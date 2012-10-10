@@ -1,12 +1,12 @@
 <section id="screenshots">
-    <div class="page-header">
-        <h1>Screenshots <small>pictures of the desktop during execution</small></h1>
+    <div class="section-title">
+        <h3>Screenshots <small>pictures of the desktop during execution</small></h3>
     </div>
-    %if screenshots:
-        %for shot in screenshots:
-            <a href="data:image/png;base64,${shot["data"]}"><img class="fade" src="data:image/png;base64,${shot["data"]}" height="100px" width="150px" /></a>
-        %endfor
-    %else:
+    {% if results.screenshots %}
+        {% for shot in results.screenshots %}
+            <a href="data:image/png;base64,{{shot.data}}"><img class="fade" src="data:image/png;base64,{{shot.data}}" height="100px" width="150px" /></a>
+        {% endfor %}
+    {% else %}
         No screenshots available.
-    %endif
+    {% endif %}
 </section>
