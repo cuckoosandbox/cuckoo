@@ -40,7 +40,13 @@ class Task(Base):
     platform = Column(String(255), nullable=True)
     added_on = Column(DateTime(timezone=False), default=datetime.now())
     completed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(Enum("pending", "processing", "failure", "success", name="status_type"), default="pending", nullable=False)
+    status = Column(Enum("pending",
+                         "processing",
+                         "failure",
+                         "success",
+                         name="status_type"),
+                    default="pending",
+                    nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     guest = relationship("Guest", uselist=False, backref="tasks")
 
@@ -106,7 +112,15 @@ class Sample(Base):
     def __repr__(self):
         return "<Sample('%s','%s')>" % (self.id, self.md5)
 
-    def __init__(self, md5, crc32, sha1, sha256, sha512, file_size, file_type=None, ssdeep=None):
+    def __init__(self,
+                 md5,
+                 crc32,
+                 sha1,
+                 sha256,
+                 sha512,
+                 file_size,
+                 file_type=None,
+                 ssdeep=None):
         self.md5 = md5
         self.sha1 = sha1
         self.crc32 = crc32
