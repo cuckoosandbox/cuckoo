@@ -27,8 +27,8 @@ def report_error(error_code):
 
 app = Bottle()
 
-@app.post("/task/create", method="POST")
-def task_create():
+@app.post("/tasks/create/file", method="POST")
+def tasks_create_file():
     response = {"error" : False}
 
     data = request.files.file
@@ -54,42 +54,61 @@ def task_create():
     response["task_id"] = task_id
     return jsonize(response)
 
-@app.get("/task/list", method="GET")
-@app.get("/task/list/<limit>", method="GET")
-def task_list(limit=None):
+@app.post("/tasks/create/url", method="POST")
+def tasks_create_url():
+    response = {"error" : False}
+
+    url = request.forms.get("url")
+    package = request.forms.get("package")
+    timeout = request.forms.get("timeout")
+    priority = request.forms.get("priority", 1)
+    options = request.forms.get("options")
+    machine = request.forms.get("machine")
+    platform = request.forms.get("platform")
+    custom = request.forms.get("custom")
+
+    db = Database()
+    task_id = db.add_url(url=url,
+                         package=package,
+                         timeout=timeout,
+                         options=options,
+                         priority=priority,
+                         machine=machine,
+                         platform=platform,
+                         custom=custom)
+
+    response["task_id"] = task_id
+    return jsonize(response)
+
+@app.get("/tasks/list", method="GET")
+@app.get("/tasks/list/<limit>", method="GET")
+def tasks_list(limit=None):
     response = {"error" : False}
 
     db = Database()
 
     response["tasks"] = []
-    for row in db.list(limit).all():
+    for row in db.list_tasks(limit).all():
         response["tasks"].append(row.to_dict())
 
     return jsonize(response)
 
-@app.get("/task/view/<task_id>", method="GET")
-def task_view(task_id):
+@app.get("/tasks/view/<task_id>", method="GET")
+def tasks_view(task_id):
     response = {"error" : False}
 
     db = Database()
-    response["task"] = db.view(task_id).to_dict()
+    response["task"] = db.view_task(task_id).to_dict()
 
     return jsonize(response)
 
-@app.get("/task/search/<md5>", method="GET")
-def task_search(md5):
-    response = {"error" : False}
+@app.get("/files/view/md5/<md5>", method="GET")
+@app.get("/files/view/id/<sample_id>", method="GET")
+def files_view(md5=None, sample_id=None):
+    return
 
-    db = Database()
-
-    response["tasks"] = []
-    for row in db.search(md5).all():
-        response["tasks"].append(row.to_dict())
-
-    return jsonize(response)
-
-@app.get("/file/get/<md5>", method="GET")
-def file_get(md5):
+@app.get("/files/get/<md5>", method="GET")
+def files_get(md5):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", md5)
     if os.path.exists(file_path):
         return open(file_path, "rb").read()
