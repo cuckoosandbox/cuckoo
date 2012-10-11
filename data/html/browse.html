@@ -1,28 +1,36 @@
-<%inherit file="base-web.html" />
-<%def name="content()">
+{% extends "base-web.html" %}
+{% block content %}
     <div class="tasks">
         <div class="page-header">
-            <h1>Analysis Tasks</h1>
+            <h3>Analysis Tasks <small>performed, processing and pending analyses</small></h3>
         </div>
         <table class="table table-striped table-bordered">
-            <thead><tr><th>ID</th><th style="width: 20%;">MD5</th><th style="width: 40%;">File Name</th><th>Added</th><th>Status</th></tr></thead>
-            <tbody>
-            % for r in rows:
+            <thead>
                 <tr>
-                    <td>${r.id}</td>
-                    <td>
-                        % if r.status == "success":
-                            <a href="/view/${r.id}"><span class="mono">${r.md5}</span></a>
-                        % else:
-                            <span class="mono">${r.md5}</span>
-                        % endif
-                    </td>
-                    <td>${os.path.basename(r.file_path)}</td>
-                    <td>${r.added_on}</td>
-                    <td>${r.status}</td>
+                    <th>ID</th>
+                    <th style="width: 20%;">MD5</th>
+                    <th style="width: 40%;">File Name</th>
+                    <th>Added</th>
+                    <th>Status</th>
                 </tr>
-            % endfor
+            </thead>
+            <tbody>
+            {% for row in rows %}
+                <tr>
+                    <td>{{row.id}}</td>
+                    <td>
+                        {% if row.status == "success" %}
+                            <a href="/view/{{row.id}}"><span class="mono">{{row.md5}}</span></a>
+                        {% else %}
+                            <span class="mono">{{row.md5}}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{os.path.basename(row.target)}}</td>
+                    <td>{{row.added_on}}</td>
+                    <td>{{row.status}}</td>
+                </tr>
+            {% endfor %}
             </tbody>
         </table>
     </div>
-</%def>
+{% endblock %}
