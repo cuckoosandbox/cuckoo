@@ -186,64 +186,78 @@ class Database:
 
         return True
 
-    def add_path(self,
-                 file_path,
-                 timeout=0,
-                 package=None,
-                 options=None,
-                 priority=1,
-                 custom=None,
-                 machine=None,
-                 platform=None):
-        """Add a task to database from file path.
-        @param file_path: sample path.
-        @param timeout: selected timeout.
-        @param options: analysis options.
-        @param priority: analysis priority.
-        @param custom: custom options.
-        @param machine: selected machine.
-        @param platform: platform
-        @return: cursor or None.
+    def fetch(self):
+        """Fetch a task.
+        @return: task dict or None.
         """
-        if not file_path or not os.path.exists(file_path):
+        session = self.Session()
+        row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
+        return row
+
+    def process(self, task_id):
+        """Set task status as processing.
+        @param task_id: task identifier
+        @return: operation status
+        """
+        return self._set_status(task_id, "processing")
+
+    def complete(self, task_id, success=True):
+        """Mark a task as completed.
+        @param task_id: task id.
+        @param success: completed with status.
+        @return: operation status.
+        """
+        session = self.Session()
+        task = session.query(Task).get(task_id)
+        task.lock = False
+
+        if success:
+            task.status = "success"
+        else:
+            task.status = "failure"
+
+        task.completed_on = datetime.now()
+
+        try:
+            session.commit()
+        except:
+            session.rollback()
+            return False
+
+        return True
+
+    def guest_start(self, task_id, name, label, manager):
+        """Logs guest start.
+        @param task_id: task identifier
+        @param name: vm name
+        @param label: vm label
+        @param manager: vm manager
+        @return: guest row id
+        """
+        session = self.Session()
+        guest = Guest(name, label, manager)
+        guest.started_on = datetime.now()
+        session.query(Task).get(task_id).guest = guest
+        try:
+            session.commit()
+        except:
+            session.rollback()
             return None
 
-        return self.add(File(file_path),
-                        timeout,
-                        package,
-                        options,
-                        priority,
-                        custom,
-                        machine,
-                        platform)
+        return guest.id
 
-    def add_url(self,
-                url,
-                timeout=0,
-                package=None,
-                options=None,
-                priority=1,
-                custom=None,
-                machine=None,
-                platform=None):
-        """Add a task to database from url.
-        @param url: url.
-        @param timeout: selected timeout.
-        @param options: analysis options.
-        @param priority: analysis priority.
-        @param custom: custom options.
-        @param machine: selected machine.
-        @param platform: platform
-        @return: cursor or None.
+    def guest_stop(self, guest_id):
+        """Logs guest stop.
+        @param guest_id: guest log entry id
         """
-        return self.add(URL(url),
-                        timeout,
-                        package,
-                        options,
-                        priority,
-                        custom,
-                        machine,
-                        platform)
+        session = self.Session()
+        task = session.query(Guest).get(guest_id).shutdown_on = datetime.now()
+        try:
+            session.commit()
+        except:
+            session.rollback()
+
+    # The following functions are mostly used by external utils.
 
     def add(self,
             obj,
@@ -305,40 +319,66 @@ class Database:
 
         return task.id
 
-    def fetch(self):
-        """Fetch a task.
-        @return: task dict or None.
+    def add_path(self,
+                 file_path,
+                 timeout=0,
+                 package=None,
+                 options=None,
+                 priority=1,
+                 custom=None,
+                 machine=None,
+                 platform=None):
+        """Add a task to database from file path.
+        @param file_path: sample path.
+        @param timeout: selected timeout.
+        @param options: analysis options.
+        @param priority: analysis priority.
+        @param custom: custom options.
+        @param machine: selected machine.
+        @param platform: platform
+        @return: cursor or None.
         """
-        session = self.Session()
-        row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
-        return row
+        if not file_path or not os.path.exists(file_path):
+            return None
 
-    def complete(self, task_id, success=True):
-        """Mark a task as completed.
-        @param task_id: task id.
-        @param success: completed with status.
-        @return: operation status.
+        return self.add(File(file_path),
+                        timeout,
+                        package,
+                        options,
+                        priority,
+                        custom,
+                        machine,
+                        platform)
+
+    def add_url(self,
+                url,
+                timeout=0,
+                package=None,
+                options=None,
+                priority=1,
+                custom=None,
+                machine=None,
+                platform=None):
+        """Add a task to database from url.
+        @param url: url.
+        @param timeout: selected timeout.
+        @param options: analysis options.
+        @param priority: analysis priority.
+        @param custom: custom options.
+        @param machine: selected machine.
+        @param platform: platform
+        @return: cursor or None.
         """
-        session = self.Session()
-        task = session.query(Task).get(task_id)
-        task.lock = False
+        return self.add(URL(url),
+                        timeout,
+                        package,
+                        options,
+                        priority,
+                        custom,
+                        machine,
+                        platform)
 
-        if success:
-            task.status = "success"
-        else:
-            task.status = "failure"
-
-        task.completed_on = datetime.now()
-
-        try:
-            session.commit()
-        except:
-            session.rollback()
-            return False
-
-        return True
-
-    def list(self, limit=None):
+    def list_tasks(self, limit=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @return: list of tasks.
@@ -347,14 +387,7 @@ class Database:
         tasks = session.query(Task).order_by("status, added_on, id desc").limit(limit)
         return tasks
 
-    def process(self, task_id):
-        """Set task status as processing.
-        @param task_id: task identifier
-        @return: operation status
-        """
-        return self._set_status(task_id, "processing")
-
-    def view(self, task_id):
+    def view_task(self, task_id):
         """Retrieve information on a task.
         @param id: ID of the task to query.
         @return: details on the task.
@@ -362,43 +395,3 @@ class Database:
         session = self.Session()
         task = session.query(Task).get(task_id)
         return task
-
-    def search(self, md5):
-        """Search for tasks matching the given MD5
-        @param md5: MD5 hash to search for.
-        @return: list of tasks matching the hash.
-        """
-        session = self.Session()
-        tasks = session.query(Task).filter(Task.md5 == md5).order_by("status, added_on, id desc")
-        return tasks
-
-    def guest_start(self, task_id, name, label, manager):
-        """Logs guest start.
-        @param task_id: task identifier
-        @param name: vm name
-        @param label: vm label
-        @param manager: vm manager
-        @return: guest row id
-        """
-        session = self.Session()
-        guest = Guest(name, label, manager)
-        guest.started_on = datetime.now()
-        session.query(Task).get(task_id).guest = guest
-        try:
-            session.commit()
-        except:
-            session.rollback()
-            return None
-
-        return guest.id
-
-    def guest_stop(self, guest_id):
-        """Logs guest stop.
-        @param guest_id: guest log entry id
-        """
-        session = self.Session()
-        task = session.query(Guest).get(guest_id).shutdown_on = datetime.now()
-        try:
-            session.commit()
-        except:
-            session.rollback()
