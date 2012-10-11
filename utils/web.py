@@ -29,11 +29,27 @@ def index():
 @route("/browse")
 def browse():
     db = Database()
+    rows = db.list_tasks()
 
-    rows = db.list()
+    tasks = []
+    for row in rows:
+        task = {
+            "id" : row.id,
+            "target" : row.target,
+            "category" : row.category,
+            "status" : row.status,
+            "added_on" : row.added_on
+        }
+
+        if row.category == "file":
+            sample = db.view_sample(row.sample_id)
+            task["md5"] = sample.md5
+
+        tasks.append(task)
+
     template = env.get_template("browse.html")
 
-    return template.render({"rows" : rows, "os" : os})
+    return template.render({"rows" : tasks, "os" : os})
 
 @route("/static/<filename:path>")
 def server_static(filename):

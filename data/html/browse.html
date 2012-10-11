@@ -8,8 +8,8 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th style="width: 20%;">MD5</th>
-                    <th style="width: 40%;">File Name</th>
+                    <th>Category</th>
+                    <th style="width: 40%;">Target</th>
                     <th>Added</th>
                     <th>Status</th>
                 </tr>
@@ -18,14 +18,22 @@
             {% for row in rows %}
                 <tr>
                     <td>{{row.id}}</td>
+                    <td>{{row.category|upper}}</td>
                     <td>
                         {% if row.status == "success" %}
-                            <a href="/view/{{row.id}}"><span class="mono">{{row.md5}}</span></a>
-                        {% else %}
-                            <span class="mono">{{row.md5}}</span>
+                            <a href="/view/{{row.id}}">
+                        {% endif %}
+                        <span class="mono">
+                            {% if row.category == "file" %}
+                                {{row.md5}}
+                            {% elif row.category == "url" %}
+                                {{row.target}}
+                            {% endif %}
+                        </span>
+                        {% if row.status == "success" %}
+                            </a>
                         {% endif %}
                     </td>
-                    <td>{{os.path.basename(row.target)}}</td>
                     <td>{{row.added_on}}</td>
                     <td>{{row.status}}</td>
                 </tr>

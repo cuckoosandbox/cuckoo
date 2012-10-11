@@ -384,14 +384,23 @@ class Database:
         @return: list of tasks.
         """
         session = self.Session()
-        tasks = session.query(Task).order_by("status, added_on, id desc").limit(limit)
+        tasks = session.query(Task).order_by("added_on desc").limit(limit)
         return tasks
 
     def view_task(self, task_id):
         """Retrieve information on a task.
-        @param id: ID of the task to query.
+        @param task_id: ID of the task to query.
         @return: details on the task.
         """
         session = self.Session()
         task = session.query(Task).get(task_id)
         return task
+
+    def view_sample(self, sample_id):
+        """Retrieve information on a sample.
+        @param sample_id: ID of the sample to query.
+        @return: details on the sample.
+        """
+        session = self.Session()
+        sample = session.query(Sample).get(sample_id)
+        return sample
