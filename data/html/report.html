@@ -1,10 +1,16 @@
 {% extends "base-report.html" %}
 {% block content %}
     {% include "sections/info.html" %}
-    {% include "sections/file.html" %}
+    {% if results.info.category == "file" %}
+        {% include "sections/file.html" %}
+    {% elif results.info.category == "url" %}
+        {% include "sections/url.html" %}
+    {% endif %}
     {% include "sections/signatures.html" %}
     {% include "sections/screenshots.html" %}
-    {% include "sections/static.html" %}
+    {% if results.info.category == "file" %}
+        {% include "sections/static.html" %}
+    {% endif %}
     {% include "sections/dropped.html" %}
     {% include "sections/network.html" %}
     {% include "sections/behavior.html" %}
