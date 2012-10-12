@@ -38,7 +38,7 @@ class Task(Base):
     package = Column(String(255), nullable=True)
     options = Column(String(255), nullable=True)
     platform = Column(String(255), nullable=True)
-    added_on = Column(DateTime(timezone=False), default=datetime.now())
+    added_on = Column(DateTime(timezone=False), default=datetime.now(), nullable=False)
     completed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(Enum("pending",
                          "processing",
