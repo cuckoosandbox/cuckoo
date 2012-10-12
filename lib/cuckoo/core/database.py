@@ -73,7 +73,7 @@ class Task(Base):
         self.target = target
 
     def __repr__(self):
-        return "<Task('%s','%s')>" % (self.id, self.file_path)
+        return "<Task('%s','%s')>" % (self.id, self.target)
 
 class Guest(Base):
     """Tracks guest run."""
