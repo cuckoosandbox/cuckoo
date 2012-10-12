@@ -61,10 +61,6 @@ class Processor:
 
             log.debug("Executed processing module \"%s\" on analysis at \"%s\"" % (current.__class__.__name__, self.analysis_path))
 
-            # If the module didn't return anything, skip.
-            if not data:
-                return None
-
             # If succeeded, return they module's key name and the data to be
             # appended to it.
             return {current.key : data}

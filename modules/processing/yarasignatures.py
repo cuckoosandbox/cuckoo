@@ -23,13 +23,10 @@ class YaraSignatures(Processing):
         """Run Yara processing.
         @return: hash with matches.
         """
-        if self.cfg.analysis.category != "file":
-            return None
-
         self.key = "yara"
         matches = []
 
-        if HAVE_YARA:
+        if HAVE_YARA and self.cfg.analysis.category == "file":
             try:
                 rules = yara.compile(filepath=os.path.join(CUCKOO_ROOT, "data", "yara", "index.yar"))
                 for match in rules.match(self.file_path):
