@@ -202,6 +202,21 @@ class Database:
         """
         return self._set_status(task_id, "processing")
 
+    def fetch_and_process(self):
+        """Fetches a tesk waiting to be processed and locks it for processing.
+        @return: None or task
+        """
+        session = self.Session()
+        try:
+            row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
+            if row:
+               row.status = "processing"
+            session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+            return None
+        return row
+
     def complete(self, task_id, success=True):
         """Mark a task as completed.
         @param task_id: task id.

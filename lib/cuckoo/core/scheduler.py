@@ -25,7 +25,6 @@ log = logging.getLogger(__name__)
 
 mmanager = None
 machine_lock = Lock()
-db_lock = Lock()
 
 class AnalysisManager(Thread):
     """Analysis manager thread."""
@@ -310,24 +309,15 @@ class Scheduler:
             if mmanager.availables() == 0:
                 continue
 
-            # If there are machines available, acquire a lock on the database.
-            db_lock.acquire()
-            # Fetcha a pending analysis task.
-            task = self.db.fetch()
+            # Fetch a pending analysis task.
+            task = self.db.fetch_and_process()
 
             if task:
                 log.debug("Processing task #%s" % task.id)
-
-                # Set task's status to "processing" inside the database.
-                self.db.process(task.id)
-                # Release database lock.
-                db_lock.release()
 
                 # Initialize the analysis manager.
                 analysis = AnalysisManager(task)
                 analysis.daemon = True
                 # Start.
                 analysis.start()
-            else:
-                db_lock.release()
 
