@@ -4,7 +4,6 @@
 
 import os
 import sys
-import fcntl
 import hashlib
 import binascii
 from datetime import datetime
