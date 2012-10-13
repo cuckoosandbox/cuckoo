@@ -48,6 +48,7 @@ class Task(Base):
                          default="pending",
                          nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
+    sample = relationship("Sample", backref="tasks")
     guest = relationship("Guest", uselist=False, backref="tasks")
 
     def to_dict(self):
