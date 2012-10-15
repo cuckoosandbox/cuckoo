@@ -225,7 +225,6 @@ class Database:
         """
         session = self.Session()
         task = session.query(Task).get(task_id)
-        task.lock = False
 
         if success:
             task.status = "success"
