@@ -203,7 +203,7 @@ class Database:
         return self._set_status(task_id, "processing")
 
     def fetch_and_process(self):
-        """Fetches a tesk waiting to be processed and locks it for processing.
+        """Fetches a task waiting to be processed and locks it for processing.
         @return: None or task
         """
         session = self.Session()
