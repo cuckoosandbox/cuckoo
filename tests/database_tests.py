@@ -14,38 +14,27 @@ class TestDatabase:
     def setUp(self):
         self.d = Database("sqlite:///:memory:")
 
-    def test_add(self):
+    def test_add_path(self):
         tmp = tempfile.mkstemp()[1]
-        assert_equals(1, self.d.add(file_path=tmp))
+        assert_equals(1, self.d.add_path(file_path=tmp))
         os.remove(tmp)
+
+    def test_add_url(self):
+        assert_equals(1, self.d.add_url(url="http://foo.bar.com"))
 
     def test_add_file_not_found(self):
-        assert_equals(None, self.d.add(file_path="foo"))
+        assert_equals(None, self.d.add_path(file_path="foo"))
 
     def test_fetch(self):
-        tmp = tempfile.mkstemp()[1]
-        assert_equals(1, self.d.add(file_path=tmp))
-        assert_equals(tmp, self.d.fetch().file_path)
-        os.remove(tmp)
+        tmp = "http://foo.bar.com"
+        assert_equals(1, self.d.add_url(url=tmp))
+        assert_equals(tmp, self.d.fetch().target)
 
     def test_fetch_priority(self):
-        tmp = tempfile.mkstemp()[1]
-        self.d.add(file_path=tmp, priority=2)
-        self.d.add(file_path=tmp, priority=5)
-        self.d.add(file_path=tmp, priority=4)
+        tmp = "http://foo.bar.com"
+        self.d.add_url(url=tmp, priority=2)
+        self.d.add_url(url=tmp, priority=5)
+        self.d.add_url(url=tmp, priority=4)
         assert_equals(2, self.d.fetch().id)
-        os.remove(tmp)
+        assert_equals(2, self.d.fetch().id)
 
-    def test_complete_success(self):
-        tmp = tempfile.mkstemp()[1]
-        assert_equals(1, self.d.add(file_path=tmp))
-        assert self.d.complete(1, True)
-        os.remove(tmp)
-
-    def test_list(self):
-        tmp = tempfile.mkstemp()[1]
-        self.d.add(file_path=tmp)
-        self.d.add(file_path=tmp)
-        assert_equals(2, self.d.list().count())
-        assert_equals(1, self.d.list(1).count())
-        os.remove(tmp)
