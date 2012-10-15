@@ -266,7 +266,7 @@ class Database:
         @param guest_id: guest log entry id
         """
         session = self.Session()
-        task = session.query(Guest).get(guest_id).shutdown_on = datetime.now()
+        session.query(Guest).get(guest_id).shutdown_on = datetime.now()
         try:
             session.commit()
         except:
