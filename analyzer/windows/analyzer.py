@@ -131,7 +131,6 @@ class PipeHandler(Thread):
                         add_pids(pid)
                         proc = Process(pid=pid)
                         proc.inject()
-                        proc.wait()
 
                 KERNEL32.WriteFile(self.h_pipe,
                                    create_string_buffer("OK"),
