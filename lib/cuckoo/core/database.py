@@ -14,7 +14,7 @@ from lib.cuckoo.common.objects import File, URL
 from lib.cuckoo.common.utils import create_folder
 
 try:
-    from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Enum, ForeignKey
+    from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Enum, ForeignKey, Text
     from sqlalchemy.orm import sessionmaker, relationship
     from sqlalchemy.sql import func
     from sqlalchemy.ext.declarative import declarative_base
@@ -29,7 +29,7 @@ class Task(Base):
     __tablename__ = "tasks"
 
     id = Column(Integer(), primary_key=True)
-    target = Column(String(255), nullable=False)
+    target = Column(Text(), nullable=False)
     category = Column(String(255), nullable=False)
     timeout = Column(Integer(), server_default="0", nullable=False)
     priority = Column(Integer(), server_default="1", nullable=False)
