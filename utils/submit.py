@@ -12,6 +12,7 @@ logging.basicConfig()
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
+from lib.cuckoo.common.colors import *
 from lib.cuckoo.core.database import Database
 
 def main():
@@ -44,12 +45,14 @@ def main():
                              machine=args.machine,
                              platform=args.platform,
                              custom=args.custom)
+
+        print(bold(green("Success")) + ": URL \"%s\" added as task with ID %d" % (target, task_id))
     else:
         # Get absolute path to deal with relative.
         path = os.path.abspath(target)
 
         if not os.path.exists(path):
-            print("ERROR: the specified file/folder does not exist at path \"%s\"" % path)
+            print(bold(red("Error")) + ": the specified file/folder does not exist at path \"%s\"" % path)
             return False
 
         files = []
@@ -73,7 +76,7 @@ def main():
                                   platform=args.platform,
                                   custom=args.custom)
 
-    print("SUCCESS: Target \"%s\" added as task with id %d" % (target, task_id))
+            print(bold(green("Success")) + ": File \"%s\" added as task with ID %d" % (file_path, task_id))
 
 if __name__ == "__main__":
     main()
