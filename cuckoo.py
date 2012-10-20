@@ -27,10 +27,10 @@ def main():
     parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
     parser.add_argument("-v", "--version", action="version", version="You are running Cuckoo Sandbox %s" % CUCKOO_VERSION)
-    parser.add_argument("-l", "--logo", help="Show artwork", action="store_true", required=False)
+    parser.add_argument("-a", "--artwork", help="Show artwork", action="store_true", required=False)
     args = parser.parse_args()
 
-    if args.logo:
+    if args.artwork:
         import time
         try:
             while True:
