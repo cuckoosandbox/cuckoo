@@ -313,7 +313,12 @@ class Analyzer:
         except Exception as e:
             raise CuckooError("The package \"%s\" start function encountered an unhandled exception: %s" %(package_name, e))
 
-        add_pids(pids)
+        if pids:
+            add_pids(pids)
+            pid_check = True
+        else:
+            log.info("No process IDs returned by the package, running for the full timeout")
+            pid_check = False
 
         self.do_run = True
 
@@ -323,17 +328,18 @@ class Analyzer:
                 continue
 
             try:
-                for pid in PROCESS_LIST:
-                    if not Process(pid=pid).is_alive():
-                        log.info("Process with pid %d has terminated" % pid)
-                        PROCESS_LIST.remove(pid)
+                if pid_check:
+                    for pid in PROCESS_LIST:
+                        if not Process(pid=pid).is_alive():
+                            log.info("Process with pid %d has terminated" % pid)
+                            PROCESS_LIST.remove(pid)
 
-                if len(PROCESS_LIST) == 0:
-                    log.info("Process list is empty, terminating analysis...")
-                    timer.cancel()
-                    break
+                    if len(PROCESS_LIST) == 0:
+                        log.info("Process list is empty, terminating analysis...")
+                        timer.cancel()
+                        break
 
-                pack.set_pids(PROCESS_LIST)
+                    pack.set_pids(PROCESS_LIST)
 
                 try:
                     if not pack.check():
