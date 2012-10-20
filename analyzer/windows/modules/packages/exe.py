@@ -4,6 +4,7 @@
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
+from lib.common.exceptions import CuckooPackageError
 
 class Exe(Package):
     """EXE analysis package."""
@@ -11,17 +12,21 @@ class Exe(Package):
     def start(self, path):
         p = Process()
 
-        if "arguments" in self.options:
-            p.execute(path=path, args=self.options["arguments"], suspended=True)
-        else:
-            p.execute(path=path, suspended=True)
+        free = self.options.get("free", False)
+        args = self.options.get("arguments", None)
+        suspended = True
+        if free:
+            suspended = False
 
-        if self.options.get("free", "no") != "yes":
+        if not p.execute(path=path, args=args, suspended=suspended):
+            raise CuckooPackageError("Unable to execute initial process, analysis aborted")
+
+        if not free and suspended:
             p.inject()
-
-        p.resume()
-
-        return p.pid
+            p.resume()
+            return p.pid
+        else:
+            return None
 
     def check(self):
         return True
