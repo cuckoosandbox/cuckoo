@@ -12,7 +12,7 @@ from shutil import copy
 
 from lib.common.defines import *
 from lib.common.paths import PATHS
-from lib.core.errors import get_error_string
+from lib.common.errors import get_error_string
 
 log = logging.getLogger(__name__)
 

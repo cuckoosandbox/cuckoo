@@ -12,5 +12,4 @@ PATHS = {"root"     : root,
          "files"    : os.path.join(root, "files"),
          "shots"    : os.path.join(root, "shots"),
          "memory"   : os.path.join(root, "memory"),
-         "drop"     : os.path.join(root, "drop"),
-         "external" : os.path.join(root, "external")}
+         "drop"     : os.path.join(root, "drop")}
