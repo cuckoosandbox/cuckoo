@@ -124,7 +124,7 @@ class Process:
                      % (path, args, self.pid))
             return True
         else:
-            log.error("Failed to execute process from path \"%s\" with arguments \"%s\"" % (path, args))
+            log.error("Failed to execute process from path \"%s\" with arguments \"%s\" (Error: %s)" % (path, args, get_error_string(KERNEL32.GetLastError())))
             return False
 
     def resume(self):
