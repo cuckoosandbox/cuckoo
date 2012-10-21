@@ -19,6 +19,7 @@ try:
     from sqlalchemy.sql import func
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+    from sqlalchemy.pool import NullPool
     Base = declarative_base()
 except ImportError:
     raise CuckooDependencyError("SQLAlchemy library not found, verify your setup")
@@ -142,9 +143,9 @@ class Database:
         cfg = Config()
 
         if dsn:
-            engine = create_engine(dsn)
+            self.engine = create_engine(dsn, poolclass=NullPool)
         elif cfg.cuckoo.database:
-            engine = create_engine(cfg.cuckoo.database)
+            self.engine = create_engine(cfg.cuckoo.database, poolclass=NullPool)
         else:
             db_file = os.path.join(CUCKOO_ROOT, "db", "cuckoo.db")
             if not os.path.exists(db_file):
@@ -154,23 +155,27 @@ class Database:
                         create_folder(folder=db_dir)
                     except CuckooOperationalError as e:
                         raise CuckooDatabaseError("Unable to create database directory: %s" % e)
-            engine = create_engine("sqlite:///%s" % db_file)
+            self.engine = create_engine("sqlite:///%s" % db_file)
 
         # Disable SQL logging. Turn it on for debugging.
-        engine.echo = False
+        self.engine.echo = False
         # Connection timeout.
         if cfg.cuckoo.database_timeout:
-            engine.pool_timeout = cfg.cuckoo.database_timeout
+            self.engine.pool_timeout = cfg.cuckoo.database_timeout
         else:
-            engine.pool_timeout = 60
+            self.engine.pool_timeout = 60
         # Create schema.
         try:
-            Base.metadata.create_all(engine)
+            Base.metadata.create_all(self.engine)
         except SQLAlchemyError as e:
             raise CuckooDatabaseError("Unable to create or connect to database: %s" % e)
 
         # Get db session.
-        self.Session = sessionmaker(bind=engine)
+        self.Session = sessionmaker(bind=self.engine)
+
+    def __del__(self):
+        """Disconnects pool."""
+        self.engine.dispose()
 
     def _set_status(self, task_id, status):
         """Set task status.
