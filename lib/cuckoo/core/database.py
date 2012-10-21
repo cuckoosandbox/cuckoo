@@ -45,7 +45,7 @@ class Task(Base):
                          "failure",
                          "success",
                          name="status_type"),
-                         default="pending",
+                         server_default="pending",
                          nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     sample = relationship("Sample", backref="tasks")
