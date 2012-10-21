@@ -14,7 +14,7 @@ from lib.cuckoo.common.objects import File, URL
 from lib.cuckoo.common.utils import create_folder
 
 try:
-    from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Enum, ForeignKey, Text
+    from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Enum, ForeignKey, Text, Index
     from sqlalchemy.orm import sessionmaker, relationship
     from sqlalchemy.sql import func
     from sqlalchemy.ext.declarative import declarative_base
@@ -103,12 +103,13 @@ class Sample(Base):
     id = Column(Integer(), primary_key=True)
     file_size = Column(Integer(), nullable=False)
     file_type = Column(String(255), nullable=False)
-    md5 = Column(String(32), unique=True, nullable=False)
-    crc32 = Column(String(8), unique=True, nullable=False)
-    sha1 = Column(String(40), unique=True, nullable=False)
-    sha256 = Column(String(64), unique=True, nullable=False)
-    sha512 = Column(String(128), unique=True, nullable=False)
+    md5 = Column(String(32), nullable=False)
+    crc32 = Column(String(8), nullable=False)
+    sha1 = Column(String(40), nullable=False)
+    sha256 = Column(String(64), nullable=False)
+    sha512 = Column(String(128), nullable=False)
     ssdeep = Column(String(255), nullable=True)
+    __table_args__ = (Index("hash_index", "md5", "crc32", "sha1", "sha256", "sha512", unique=True), )
 
     def __repr__(self):
         return "<Sample('%s','%s')>" % (self.id, self.md5)
