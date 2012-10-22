@@ -157,8 +157,12 @@ class GuestManager:
         timer.start()
 
         while True:
+            # If the analysis hits the critical timeout, just return straight
+            # straight away and try to recover the analysis results from the
+            # guest.
             if abort.is_set():
-                raise CuckooGuestError("%s: the analysis hit the critical timeout, aborted" % self.id)
+                log.error("%s: the analysis hit the critical timeout, terminating" % self.id)
+                return False
 
             try:
                 status = self.server.get_status()
