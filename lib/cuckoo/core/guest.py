@@ -13,21 +13,28 @@ from zipfile import ZipFile, BadZipfile, ZIP_DEFLATED
 
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooGuestError
-from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT, CUCKOO_GUEST_COMPLETED, CUCKOO_GUEST_FAILED
+from lib.cuckoo.common.constants import *
 
 log = logging.getLogger(__name__)
 
+socket.setdefaulttimeout(180)
+
 class GuestManager:
-    """Guest machine manager."""
+    """Guest Mananager.
+
+    This class handles the communications with the agents running in the
+    machines.
+    """
 
     def __init__(self, vm_id, ip, platform="windows"):
-        """@param ip: guest IP address.
-        @param platform: OS type.
+        """@param ip: guest's IP address.
+        @param platform: guest's operating system type.
         """
         self.id = vm_id
         self.ip = ip
         self.platform = platform
-        self.server = xmlrpclib.Server("http://%s:%s" % (ip, CUCKOO_GUEST_PORT), allow_none=True)
+        self.server = xmlrpclib.Server("http://%s:%s" % (ip, CUCKOO_GUEST_PORT),
+                                       allow_none=True)
         self.cfg = Config()
         self.timeout = self.cfg.cuckoo.critical_timeout
 
@@ -52,7 +59,9 @@ class GuestManager:
         while True:
             # Check if the timer was hit and the abort event was set.
             if abort.is_set():
-                raise CuckooGuestError("%s: the guest initialization hit the critical timeout, analysis aborted" % self.id)
+                raise CuckooGuestError("%s: the guest initialization hit the "
+                                       "critical timeout, analysis aborted"
+                                       % self.id)
 
             try:
                 # If the server returns the given status, break the loop
@@ -97,23 +106,25 @@ class GuestManager:
         data = xmlrpclib.Binary(zip_data.getvalue())
         zip_data.close()
 
-        log.debug("Uploading analyzer to guest (id=%s, ip=%s)" % (self.id, self.ip))
+        log.debug("Uploading analyzer to guest (id=%s, ip=%s)"
+                  % (self.id, self.ip))
 
         # Send the zip containing the analyzer to the agent running inside
         # the guest.
         try:
             self.server.add_analyzer(data)
         except socket.timeout:
-            raise CuckooGuestError("%s: guest communication timeout: unable to upload agent, check networking or try to increase timeout" % self.id)
+            raise CuckooGuestError("%s: guest communication timeout: unable "
+                                   "to upload agent, check networking or try "
+                                   "to increase timeout" % self.id)
 
     def start_analysis(self, options):
         """Start analysis.
         @param options: options.
         @return: operation status.
         """
-        log.info("Starting analysis on guest (id=%s, ip=%s)" % (self.id, self.ip))
-
-        socket.setdefaulttimeout(180)
+        log.info("Starting analysis on guest (id=%s, ip=%s)"
+                 % (self.id, self.ip))
 
         try:
             # Wait for the agent to respond. This is done to check the
@@ -131,7 +142,8 @@ class GuestManager:
                 try:
                     file_data = open(options["target"], "rb").read()
                 except (IOError, OSError) as e:
-                    raise CuckooGuestError("Unable to read %s, error: %s" % (options["target"], e))
+                    raise CuckooGuestError("Unable to read %s, error: %s"
+                                           % (options["target"], e))
                 
                 data = xmlrpclib.Binary(file_data)
                 self.server.add_malware(data, options["file_name"])
@@ -141,7 +153,9 @@ class GuestManager:
         # If something goes wrong when establishing the connection, raise an
         # exception and abort the analysis.
         except (socket.timeout, socket.error):
-            raise CuckooGuestError("%s: guest communication timeout, check networking or try to increase timeout" % self.id)
+            raise CuckooGuestError("%s: guest communication timeout, check "
+                                   "networking or try to increase timeout"
+                                   % self.id)
 
     def wait_for_completion(self):
         """Wait for analysis completion.
@@ -161,7 +175,8 @@ class GuestManager:
             # straight away and try to recover the analysis results from the
             # guest.
             if abort.is_set():
-                log.error("%s: the analysis hit the critical timeout, terminating" % self.id)
+                log.error("%s: the analysis hit the critical timeout, "
+                          "terminating" % self.id)
                 return False
 
             try:
@@ -169,9 +184,9 @@ class GuestManager:
                 if status == CUCKOO_GUEST_COMPLETED:
                     log.info("%s: analysis completed successfully" % self.id)
                     break
-                # If the analysis is marked as failed, return false.
                 elif status == CUCKOO_GUEST_FAILED:
-                    log.error("%s: analysis failed: %s" % (self.id, self.server.get_error()))
+                    log.error("%s: analysis failed: %s"
+                              % (self.id, self.server.get_error()))
                     return False
                 else:
                     log.debug("%s: analysis not completed yet" % self.id)
@@ -191,7 +206,9 @@ class GuestManager:
         try:
             data = self.server.get_results()
         except socket.timeout:
-            raise CuckooGuestError("%s: guest communication timeout: unable to get results, check networking or try to increase timeout" % self.id)
+            log.error("%s: guest communication timeout: unable to get results, "
+                      "check networking or try to increase timeout" % self.id)
+            return False
 
         # Write the retrieved binary data to a in-memory zip archive.
         zip_data = StringIO()

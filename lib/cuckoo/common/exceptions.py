@@ -14,16 +14,16 @@ class CuckooDatabaseError(CuckooCriticalError):
     """Cuckoo database error."""
     pass
 
-class CuckooMachineError(CuckooCriticalError):
-    """Error managing analysis machine."""
-    pass
-
 class CuckooDependencyError(CuckooCriticalError):
     """Missing dependency error."""
     pass
 
 class CuckooOperationalError(Exception):
     """Cuckoo operation error."""
+    pass
+
+class CuckooMachineError(CuckooOperationalError):
+    """Error managing analysis machine."""
     pass
 
 class CuckooAnalysisError(CuckooOperationalError):
