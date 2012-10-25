@@ -289,7 +289,7 @@ class AnalysisManager(Thread):
                   % (self.task.id, success))
         Database().complete(self.task.id, success)
 
-        log.info("Task #%d: analysis produre completed"
+        log.info("Task #%d: analysis procedure completed"
                  % self.task.id)
 
 class Scheduler:
