@@ -223,6 +223,11 @@ class AnalysisManager(Thread):
             mmanager.start(machine.label)
         except CuckooMachineError as e:
             log.error(e)
+
+            # Stop the sniffer.
+            if sniffer:
+                sniffer.stop()
+
             return False
         else:
             try:
@@ -232,6 +237,11 @@ class AnalysisManager(Thread):
                 guest.start_analysis(options)
             except CuckooGuestError as e:
                 log.error(e)
+
+                # Stop the sniffer.
+                if sniffer:
+                    sniffer.stop()
+
                 return False
             else:
                 # Wait for analysis completion.
@@ -239,6 +249,10 @@ class AnalysisManager(Thread):
                 # Retrieve the analysis results and store them.
                 stored = guest.save_results(self.storage)
         finally:
+            # Stop the sniffer.
+            if sniffer:
+                sniffer.stop()
+
             # If the target is a file and the user enabled the option,
             # delete the original copy.
             if self.task.category == "file" and self.cfg.cuckoo.delete_original:
