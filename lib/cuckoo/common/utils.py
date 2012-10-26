@@ -33,7 +33,8 @@ def create_folder(root=".", folder=None):
             folder_path = os.path.join(root, folder)
             os.makedirs(folder_path)
         except OSError as e:
-            raise CuckooOperationalError("Unable to create folder: %s" % folder_path)
+            raise CuckooOperationalError("Unable to create folder: %s"
+                                         % folder_path)
 
 def convert_char(c):
     """Escapes characters.

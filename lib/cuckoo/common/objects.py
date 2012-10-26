@@ -132,7 +132,10 @@ class File:
             except:
                 try:
                     import subprocess
-                    file_process = subprocess.Popen(['file', '-b', self.file_path], stdout = subprocess.PIPE)
+                    file_process = subprocess.Popen(['file',
+                                                     '-b',
+                                                     self.file_path],
+                                                    stdout = subprocess.PIPE)
                     file_type = file_process.stdout.read().strip()
                 except:
                     return None

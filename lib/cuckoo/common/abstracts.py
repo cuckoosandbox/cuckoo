@@ -5,7 +5,9 @@
 import os
 import logging
 
-from lib.cuckoo.common.exceptions import CuckooMachineError, CuckooOperationalError, CuckooReportError
+from lib.cuckoo.common.exceptions import CuckooMachineError
+from lib.cuckoo.common.exceptions import CuckooOperationalError
+from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.objects import Dictionary
 from lib.cuckoo.common.utils import create_folder
 
@@ -53,19 +55,24 @@ class MachineManager(object):
                 machine.locked = False
                 self.machines.append(machine)
             except (AttributeError, CuckooOperationalError):
-                log.warning("Configuration details about machine %s are missing. Continue" % machine_id)
+                log.warning("Configuration details about machine %s are "
+                            "missing. Continue" % machine_id)
                 continue
 
     def _initialize_check(self):
-        """Runs checks against virtualization software when a machine manager is initialized.
-        @note: in machine manager modules you may override or superclass this method.
-        @raise CuckooMachineError: if a misconfiguration or a unkown vm state is found.
+        """Runs checks against virtualization software when a machine manager 
+        is initialized.
+        @note: in machine manager modules you may override or superclass 
+               his method.
+        @raise CuckooMachineError: if a misconfiguration or a unkown vm state
+                                   is found.
         """
         try:
             configured_vm = self._list()
             for machine in self.machines:
                 if machine.label not in configured_vm:
-                    raise CuckooMachineError("Configured machine %s was not detected or it's not in proper state" % machine.label)
+                    raise CuckooMachineError("Configured machine %s was not "
+                        "detected or it's not in proper state" % machine.label)
         except NotImplementedError:
             pass
 
@@ -129,7 +136,8 @@ class MachineManager(object):
                 try:
                     self.stop(machine.label)
                 except CuckooMachineError as e:
-                    log.error("Unable to shutdown machine %s, please check manually. Error: %s" % (machine.label, e))
+                    log.error("Unable to shutdown machine %s, please check "
+                              "manually. Error: %s" % (machine.label, e))
 
     def start(self, label=None):
         """Start a machine.
@@ -167,7 +175,8 @@ class Processing(object):
         self.analysis_path = analysis_path
         self.log_path = os.path.join(self.analysis_path, "analysis.log")
         self.conf_path = os.path.join(self.analysis_path, "analysis.conf")
-        self.file_path = os.path.realpath(os.path.join(self.analysis_path, "binary"))
+        self.file_path = os.path.realpath(os.path.join(self.analysis_path,
+                                                       "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
         self.logs_path = os.path.join(self.analysis_path, "logs")
         self.shots_path = os.path.join(self.analysis_path, "shots")
