@@ -282,7 +282,7 @@ class Analyzer:
                 # Split the options by comma.
                 fields = self.config.options.strip().split(",")
             except ValueError as e:
-                log.warning("Failed parsing the options: %s" % else)
+                log.warning("Failed parsing the options: %s" % e)
             else:
                 for field in fields:
                     # Split the name and the value of the option.
