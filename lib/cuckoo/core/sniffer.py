@@ -12,7 +12,10 @@ from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT
 log = logging.getLogger(__name__)
 
 class Sniffer:
-    """Sniffer manager."""
+    """Sniffer Manager.
+
+    This class handles the execution of the external tcpdump instance.
+    """
 
     def __init__(self, tcpdump):
         """@param tcpdump: tcpdump path."""
@@ -27,12 +30,14 @@ class Sniffer:
         @return: operation status.
         """
         if not os.path.exists(self.tcpdump):
-            log.error("Tcpdump does not exist at path \"%s\", network capture aborted" % self.tcpdump)
+            log.error("Tcpdump does not exist at path \"%s\", network capture "
+                      "aborted" % self.tcpdump)
             return False
 
         mode = os.stat(self.tcpdump)[stat.ST_MODE]
         if mode and stat.S_ISUID != 2048:
-            log.error("Tcpdump is not accessible from this user, network capture aborted")
+            log.error("Tcpdump is not accessible from this user, network "
+                      "capture aborted")
             return False
 
         if not interface:
@@ -47,12 +52,16 @@ class Sniffer:
             pargs.extend(['and', 'host', host])
 
         try:
-            self.proc = subprocess.Popen(pargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.proc = subprocess.Popen(pargs,
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE)
         except (OSError, ValueError) as e:
-            log.exception("Failed to start sniffer (interface=%s, host=%s, dump path=%s)" % (interface, host, file_path))
+            log.exception("Failed to start sniffer (interface=%s, host=%s, "
+                          "dump path=%s)" % (interface, host, file_path))
             return False
 
-        log.info("Started sniffer (interface=%s, host=%s, dump path=%s)" % (interface, host, file_path))
+        log.info("Started sniffer (interface=%s, host=%s, dump path=%s)"
+                 % (interface, host, file_path))
 
         return True
 
@@ -73,7 +82,8 @@ class Sniffer:
                     log.debug("Error killing sniffer: %s. Continue" % e)
                     pass
                 except Exception as e:
-                    log.exception("Unable to stop the sniffer with pid %d" % self.proc.pid)
+                    log.exception("Unable to stop the sniffer with pid %d"
+                                  % self.proc.pid)
                     return False
 
         return True

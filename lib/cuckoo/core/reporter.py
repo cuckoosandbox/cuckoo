@@ -11,13 +11,20 @@ import copy
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.abstracts import Report
-from lib.cuckoo.common.exceptions import CuckooDependencyError, CuckooReportError, CuckooOperationalError
+from lib.cuckoo.common.exceptions import CuckooDependencyError
+from lib.cuckoo.common.exceptions import CuckooReportError
+from lib.cuckoo.common.exceptions import CuckooOperationalError
 import modules.reporting as reporting
 
 log = logging.getLogger(__name__)
 
 class Reporter:
-    """Report generator."""
+    """Reporting Engine.
+
+    This class handles the loading and execution of the enabled reporting
+    modules. It receives the analysis results dictionary from the Processing
+    Engine and pass it over to the reporting modules before executing them.
+    """
 
     def __init__(self, analysis_path, custom=""):
         """@param analysis_path: analysis folder path.
@@ -25,7 +32,9 @@ class Reporter:
         """
         self.analysis_path = analysis_path
         self.custom = custom
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "reporting.conf"))
+        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT,
+                                           "conf",
+                                           "reporting.conf"))
         self._populate(reporting)
 
     def _populate(self, package):
@@ -52,7 +61,8 @@ class Reporter:
             try:
                 __import__(name, globals(), locals(), ["dummy"], -1)
             except CuckooDependencyError as e:
-                log.warning("Unable to import reporting module \"%s\": %s" % (name, e))
+                log.warning("Unable to import reporting module \"%s\": %s"
+                            % (name, e))
 
     def _run_report(self, module, results):
         """Run a single reporting module.
@@ -76,18 +86,21 @@ class Reporter:
         try:
             current.set_options(self.cfg.get(module_name))
         except CuckooOperationalError:
-            raise CuckooReportError("Reporting module %s not found in configuration file" % module_name)
+            raise CuckooReportError("Reporting module %s not found in "
+                                    "configuration file" % module_name)
 
         try:
             # Run report, for each report a brand new copy of results is
             # created, to prevent a reporting module to edit global
             # result set and affect other reporting modules.
             current.run(copy.deepcopy(results))
-            log.debug("Executed reporting module \"%s\"" % current.__class__.__name__)
+            log.debug("Executed reporting module \"%s\""
+                      % current.__class__.__name__)
         except NotImplementedError:
             return
         except CuckooReportError as e:
-            log.warning("Failed to execute reporting module \"%s\": %s" % (current.__class__.__name__, e))
+            log.warning("Failed to execute reporting module \"%s\": %s"
+                        % (current.__class__.__name__, e))
 
     def run(self, results):
         """Generates all reports.

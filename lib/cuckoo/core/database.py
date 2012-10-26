@@ -8,13 +8,17 @@ import json
 from datetime import datetime
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.exceptions import CuckooDatabaseError, CuckooOperationalError, CuckooDependencyError
+from lib.cuckoo.common.exceptions import CuckooDatabaseError
+from lib.cuckoo.common.exceptions import CuckooOperationalError
+from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.objects import File, URL
 from lib.cuckoo.common.utils import create_folder
 
 try:
-    from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Enum, ForeignKey, Text, Index
+    from sqlalchemy import create_engine, Column
+    from sqlalchemy import Integer, String, Boolean, DateTime, Enum
+    from sqlalchemy import ForeignKey, Text, Index
     from sqlalchemy.orm import sessionmaker, relationship
     from sqlalchemy.sql import func
     from sqlalchemy.ext.declarative import declarative_base
@@ -22,8 +26,8 @@ try:
     from sqlalchemy.pool import NullPool
     Base = declarative_base()
 except ImportError:
-    raise CuckooDependencyError("SQLAlchemy library not found, verify your setup")
-
+    raise CuckooDependencyError("SQLAlchemy library not found, "
+                                "verify your setup")
 
 class Task(Base):
     """Analysis task queue."""
@@ -39,7 +43,9 @@ class Task(Base):
     package = Column(String(255), nullable=True)
     options = Column(String(255), nullable=True)
     platform = Column(String(255), nullable=True)
-    added_on = Column(DateTime(timezone=False), default=datetime.now(), nullable=False)
+    added_on = Column(DateTime(timezone=False),
+                      default=datetime.now(),
+                      nullable=False)
     completed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(Enum("pending",
                          "processing",
@@ -85,9 +91,14 @@ class Guest(Base):
     name = Column(String(255), nullable=False)
     label = Column(String(255), nullable=False)
     manager = Column(String(255), nullable=False)
-    started_on = Column(DateTime(timezone=False), default=datetime.now(), nullable=False)
+    started_on = Column(DateTime(timezone=False),
+                        default=datetime.now(),
+                        nullable=False)
     shutdown_on = Column(DateTime(timezone=False), nullable=True)
-    task_id = Column(Integer, ForeignKey('tasks.id'), nullable=False, unique=True)
+    task_id = Column(Integer,
+                     ForeignKey('tasks.id'),
+                     nullable=False,
+                     unique=True)
 
     def __repr__(self):
         return "<Guest('%s','%s')>" % (self.id, self.name)
@@ -110,7 +121,13 @@ class Sample(Base):
     sha256 = Column(String(64), nullable=False)
     sha512 = Column(String(128), nullable=False)
     ssdeep = Column(String(255), nullable=True)
-    __table_args__ = (Index("hash_index", "md5", "crc32", "sha1", "sha256", "sha512", unique=True), )
+    __table_args__ = (Index("hash_index",
+                            "md5",
+                            "crc32",
+                            "sha1",
+                            "sha256",
+                            "sha512",
+                            unique=True), )
 
     def __repr__(self):
         return "<Sample('%s','%s')>" % (self.id, self.md5)
@@ -136,7 +153,11 @@ class Sample(Base):
             self.ssdeep = ssdeep
 
 class Database:
-    """Analysis queue database."""
+    """Analysis queue database.
+
+    This class handles the creation of the database user for internal queue
+    management. It also provides some functions for interacting with it.
+    """
 
     def __init__(self, dsn=None):
         """@param dsn: database connection string."""
@@ -154,7 +175,8 @@ class Database:
                     try:
                         create_folder(folder=db_dir)
                     except CuckooOperationalError as e:
-                        raise CuckooDatabaseError("Unable to create database directory: %s" % e)
+                        raise CuckooDatabaseError("Unable to create database "
+                                                  "directory: %s" % e)
             self.engine = create_engine("sqlite:///%s" % db_file)
 
         # Disable SQL logging. Turn it on for debugging.
@@ -168,7 +190,8 @@ class Database:
         try:
             Base.metadata.create_all(self.engine)
         except SQLAlchemyError as e:
-            raise CuckooDatabaseError("Unable to create or connect to database: %s" % e)
+            raise CuckooDatabaseError("Unable to create or connect to "
+                                      "database: %s" % e)
 
         # Get db session.
         self.Session = sessionmaker(bind=self.engine)

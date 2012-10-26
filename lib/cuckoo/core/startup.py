@@ -10,7 +10,8 @@ import urllib2
 import logging
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
-from lib.cuckoo.common.exceptions import CuckooStartupError, CuckooOperationalError
+from lib.cuckoo.common.exceptions import CuckooStartupError
+from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.colors import *
@@ -22,18 +23,21 @@ def check_python_version():
     @raise CuckooStartupError: if version is not supported.
     """
     if sys.version_info[:2] != (2, 7):
-        raise CuckooStartupError("You are running an incompatible version of Python, please use 2.7")
+        raise CuckooStartupError("You are running an incompatible version "
+                                 "of Python, please use 2.7")
 
 def check_working_directory():
     """Checks if working directories are ready.
     @raise CuckooStartupError: if directories are not properly configured.
     """
     if not os.path.exists(CUCKOO_ROOT):
-        raise CuckooStartupError("You specified a non-existing root directory: %s" % CUCKOO_ROOT)
+        raise CuckooStartupError("You specified a non-existing root "
+                                 "directory: %s" % CUCKOO_ROOT)
 
     cwd = os.path.join(os.getcwd(), "cuckoo.py")
     if not os.path.exists(cwd):
-        raise CuckooStartupError("You are not running Cuckoo from it's root directory")
+        raise CuckooStartupError("You are not running Cuckoo from it's "
+                                 "root directory")
 
 def check_dependencies():
     """Checks if dependencies are installed.
@@ -60,7 +64,8 @@ def check_configs():
 
     for config in configs:
         if not os.path.exists(config):
-            raise CuckooStartupError("Config file does not exist at path: %s" % config)
+            raise CuckooStartupError("Config file does not exist at path: %s"
+                                     % config)
 
     return True
 
@@ -108,6 +113,7 @@ def check_version():
     response_data = json.loads(response.read())
     if not response_data["error"]:
         if response_data["response"] == "NEW_VERSION":
-            print(red(" Outdated! ") + "Cuckoo Sandbox version %s is available now.\n" % response_data["current"])
+            print(red(" Outdated! ") + "Cuckoo Sandbox version %s is "
+                  "available now.\n" % response_data["current"])
         else:
             print(green(" Good! ") + "You have the latest version available.\n")

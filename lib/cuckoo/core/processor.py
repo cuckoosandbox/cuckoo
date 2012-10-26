@@ -17,7 +17,12 @@ import modules.signatures as signatures
 log = logging.getLogger(__name__)
 
 class Processor:
-    """Analysis processing module."""
+    """Analysis Results Processing Engine.
+
+    This class handles the loading and execution of the processing modules.
+    It executes the enabled ones sequentially and generates a dictionary which
+    is then passed over the reporting engine.
+    """
 
     def __init__(self, analysis_path):
         """@param analysis_path: analysis folder path."""
@@ -59,17 +64,21 @@ class Processor:
             # appended to the general results container.
             data = current.run()
 
-            log.debug("Executed processing module \"%s\" on analysis at \"%s\"" % (current.__class__.__name__, self.analysis_path))
+            log.debug("Executed processing module \"%s\" on analysis at \"%s\""
+                      % (current.__class__.__name__, self.analysis_path))
 
             # If succeeded, return they module's key name and the data to be
             # appended to it.
             return {current.key : data}
         except NotImplementedError:
-            log.debug("The processing module \"%s\" is not correctly implemented" % current.__classs__.__name__)
+            log.debug("The processing module \"%s\" is not correctly "
+                      "implemented" % current.__classs__.__name__)
         except CuckooProcessingError as e:
-            log.warning("The processing module \"%s\" returned the following error: %s" % (current.__class__.__name__, e))
+            log.warning("The processing module \"%s\" returned the following "
+                        "error: %s" % (current.__class__.__name__, e))
         except Exception as e:
-            log.exception("Failed to run the processing module \"%s\":" % (current.__class__.__name__))
+            log.exception("Failed to run the processing module \"%s\":"
+                          % (current.__class__.__name__))
 
         return None
 
@@ -100,11 +109,14 @@ class Processor:
                 # If the running Cuckoo is older than the required minimum
                 # version, skip this signature.
                 if StrictVersion(version) < StrictVersion(current.minimum.split("-")[0]):
-                    log.debug("You are running an older incompatible version of Cuckoo, the signature \"%s\" requires minimum version %s"
+                    log.debug("You are running an older incompatible version "
+                              "of Cuckoo, the signature \"%s\" requires "
+                              "minimum version %s"
                               % (current.name, current.minimum))
                     return None
             except ValueError:
-                log.debug("Wrong minor version number in signature %s" % current.name)
+                log.debug("Wrong minor version number in signature %s"
+                          % current.name)
                 return None
 
         # If provided, check the maximum working Cuckoo version for this
@@ -114,11 +126,14 @@ class Processor:
                 # If the running Cuckoo is newer than the required maximum
                 # version, skip this signature.
                 if StrictVersion(version) > StrictVersion(current.maximum.split("-")[0]):
-                    log.debug("You are running a newer incompatible version of Cuckoo, the signature \"%s\" requires maximum version %s"
+                    log.debug("You are running a newer incompatible version "
+                              "of Cuckoo, the signature \"%s\" requires "
+                              "maximum version %s"
                               % (current.name, current.maximum))
                     return None
             except ValueError:
-                log.debug("Wrong major version number in signature %s" % current.name)
+                log.debug("Wrong major version number in signature %s"
+                          % current.name)
                 return None
 
         try:
@@ -132,12 +147,14 @@ class Processor:
                            "data" : current.data,
                            "alert" : current.alert}
 
-                log.debug("Analysis at \"%s\" matched signature \"%s\"" % (self.analysis_path, current.name))
+                log.debug("Analysis at \"%s\" matched signature \"%s\""
+                          % (self.analysis_path, current.name))
 
                 # Return information on the matched signature.
                 return matched
         except NotImplementedError:
-            log.debug("The signature \"%s\" is not correctly implemented" % current.name)
+            log.debug("The signature \"%s\" is not correctly implemented"
+                      % current.name)
         except Exception as e:
             log.exception("Failed to run signature \"%s\":" % (current.name))
 
