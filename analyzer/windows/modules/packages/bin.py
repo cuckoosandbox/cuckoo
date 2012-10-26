@@ -11,7 +11,7 @@ class Shellcode(Package):
     def start(self, path):
         p = Process()
 
-        execsc = "extra/execsc.exe"
+        execsc = "bin/execsc.exe"
 
         p.execute(path=execsc, args=path, suspended=True)
         p.inject()

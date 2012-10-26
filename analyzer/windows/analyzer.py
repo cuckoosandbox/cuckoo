@@ -41,7 +41,8 @@ def add_file(file_path):
 
     if os.path.exists(file_path):
         if file_path not in FILES_LIST:
-            log.info("Added new file to list with path: %s" % unicode(file_path).encode("utf-8", "replace"))
+            log.info("Added new file to list with path: %s"
+                     % unicode(file_path).encode("utf-8", "replace"))
             FILES_LIST.append(file_path)
 
 def add_pid(pid):
@@ -66,7 +67,8 @@ def dump_files():
         file_name = os.path.basename(file_path)
 
         while True:
-            dir_path = os.path.join(PATHS["files"], str(random.randint(100000000, 9999999999)))
+            dir_path = os.path.join(PATHS["files"],
+                                    str(random.randint(100000000, 9999999999)))
             if os.path.exists(dir_path):
                 continue
 
@@ -80,9 +82,11 @@ def dump_files():
 
         try:
             shutil.copy(file_path, dump_path)
-            log.info("Dropped file \"%s\" dumped successfully to path \"%s\"" % (file_path, dump_path))
+            log.info("Dropped file \"%s\" dumped successfully to path \"%s\""
+                     % (file_path, dump_path))
         except (IOError, shutil.Error) as e:
-            log.error("Unable to dump dropped file at path \"%s\": %s" % (file_path, e))
+            log.error("Unable to dump dropped file at path \"%s\": %s"
+                      % (file_path, e))
 
 class PipeHandler(Thread):
     """PIPE handler, reads on PIPE."""
@@ -206,7 +210,8 @@ class Analyzer:
         self.pipe.start()
 
         if self.config.category == "file":
-            self.target = os.path.join(os.environ["TEMP"] + os.sep, self.config.file_name)
+            self.target = os.path.join(os.environ["TEMP"] + os.sep,
+                                       self.config.file_name)
         else:
             self.target = self.config.target
 
@@ -222,7 +227,8 @@ class Analyzer:
                     try:
                         key, value = field.strip().split("=")
                     except ValueError as e:
-                        log.warning("Failed parsing option (%s): %s" % (field, e))
+                        log.warning("Failed parsing option (%s): %s"
+                                    % (field, e))
                         continue
 
                     options[key.strip()] = value.strip()
@@ -248,16 +254,19 @@ class Analyzer:
         self.prepare()
 
         if not self.config.package:
-            log.info("No analysis package specified, trying to detect it automagically")
+            log.info("No analysis package specified, trying to detect "
+                     "it automagically")
             if self.config.category == "file":
                 package = choose_package(self.config.file_type)
             else:
                 package = "ie"
 
             if not package:
-                raise CuckooError("No valid package available for file type: %s" % self.config.file_type)
+                raise CuckooError("No valid package available for file type: %s"
+                                  % self.config.file_type)
             else:
-                log.info("Automatically selected analysis package \"%s\"" % package)
+                log.info("Automatically selected analysis package \"%s\""
+                         % package)
         else:
             package = self.config.package
 
@@ -266,14 +275,16 @@ class Analyzer:
         try:
             __import__(package_name, globals(), locals(), ["dummy"], -1)
         except ImportError:
-            raise CuckooError("Unable to import package \"%s\", does not exist." % package_name)
+            raise CuckooError("Unable to import package \"%s\", does not exist."
+                              % package_name)
 
         Package()
 
         try:
             package_class = Package.__subclasses__()[0]
         except IndexError as e:
-            raise CuckooError("Unable to select package class (package=%s): %s" % (package_name, e))
+            raise CuckooError("Unable to select package class (package=%s): %s"
+                              % (package_name, e))
         
         pack = package_class(self.get_options())
 
@@ -295,10 +306,12 @@ class Analyzer:
                 aux = auxiliary()
                 aux.start()
             except (NotImplementedError, AttributeError):
-                log.warning("Auxiliary module %s was not implemented" % aux.__class__.__name__)
+                log.warning("Auxiliary module %s was not implemented"
+                            % aux.__class__.__name__)
                 continue
             except Exception as e:
-                log.warning("Cannot execute auxiliary module %s: %s" % (aux.__class__.__name__, e))
+                log.warning("Cannot execute auxiliary module %s: %s"
+                            % (aux.__class__.__name__, e))
                 continue
             finally:
                 aux_enabled.append(aux)
@@ -307,17 +320,21 @@ class Analyzer:
         try:
             pids = pack.start(self.target)
         except NotImplementedError:
-            raise CuckooError("The package \"%s\" doesn't contain a run function." % package_name)
+            raise CuckooError("The package \"%s\" doesn't contain a run "
+                              "function." % package_name)
         except CuckooPackageError as e:
-            raise CuckooError("The package \"%s\" start function raised an error: %s" % (package_name, e))
+            raise CuckooError("The package \"%s\" start function raised an "
+                              "error: %s" % (package_name, e))
         except Exception as e:
-            raise CuckooError("The package \"%s\" start function encountered an unhandled exception: %s" %(package_name, e))
+            raise CuckooError("The package \"%s\" start function encountered "
+                              "an unhandled exception: %s" %(package_name, e))
 
         if pids:
             add_pids(pids)
             pid_check = True
         else:
-            log.info("No process IDs returned by the package, running for the full timeout")
+            log.info("No process IDs returned by the package, running for "
+                     "the full timeout")
             pid_check = False
 
         self.do_run = True
@@ -335,7 +352,8 @@ class Analyzer:
                             PROCESS_LIST.remove(pid)
 
                     if len(PROCESS_LIST) == 0:
-                        log.info("Process list is empty, terminating analysis...")
+                        log.info("Process list is empty, terminating "
+                                 "analysis...")
                         timer.cancel()
                         break
 
@@ -343,25 +361,29 @@ class Analyzer:
 
                 try:
                     if not pack.check():
-                        log.info("The analysis package requested the termination of the analysis...")
+                        log.info("The analysis package requested the "
+                                 "termination of the analysis...")
                         timer.cancel()
                         break
                 except Exception as e:
-                    log.warning("The package \"%s\" check function raised an exception: %s" % (package_name, e))
+                    log.warning("The package \"%s\" check function raised "
+                                "an exception: %s" % (package_name, e))
             finally:
                 KERNEL32.Sleep(1000)
 
         try:
             pack.finish()
         except Exception as e:
-            log.warning("The package \"%s\" finish function raised an exception: %s" % (package_name, e))
+            log.warning("The package \"%s\" finish function raised an "
+                        "exception: %s" % (package_name, e))
 
         # Terminate Auxiliary modules
         for aux in aux_enabled:
             try:
                 aux.stop()
             except Exception as e:
-                log.warning("Cannot terminate auxiliary module %s: %s" % (aux.__class__.__name__, e))
+                log.warning("Cannot terminate auxiliary module %s: %s"
+                            % (aux.__class__.__name__, e))
                 pass
 
         self.complete()
