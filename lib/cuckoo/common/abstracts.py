@@ -201,6 +201,7 @@ class Signature(object):
     enabled = True
     minimum = None
     maximum = None
+    families = []
 
     def __init__(self):
         self.data = []
