@@ -76,7 +76,10 @@ def main():
                                   platform=args.platform,
                                   custom=args.custom)
 
-            print(bold(green("Success")) + ": File \"%s\" added as task with ID %d" % (file_path, task_id))
+            if task_id:
+                print(bold(green("Success")) + ": File \"%s\" added as task with ID %d" % (file_path, task_id))
+            else:
+                print(bold(red("Error")) + ": adding task to database")
 
 if __name__ == "__main__":
     main()
