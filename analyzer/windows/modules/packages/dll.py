@@ -4,26 +4,37 @@
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
+from lib.common.exceptions import CuckooPackageError
 
 class Dll(Package):
     """DLL analysis package."""
 
     def start(self, path):
-        p = Process()
-
         rundll32 = "C:\\WINDOWS\\system32\\rundll32.exe"
 
-        if "function" in self.options:
-            p.execute(path=rundll32, args="%s,%s" % (path, self.options["function"]), suspended=True)
+        free = self.options.get("free", False)
+        function = self.options.get("function", None)
+        suspended = True
+
+        if free:
+            suspended = False
+
+        if function:
+            args = "%s,%s" % (path, function)
         else:
-            p.execute(path=rundll32, args="%s,DllMain" % path, suspended=True)
+            args = "%s,DllMain" % path
 
-        if self.options.get("free", "no") != "yes":
+        p = Process()
+
+        if not p.execute(path=rundll32, args=args, suspended=suspended):
+            raise CuckooPackageError("Unable to execute rundll32, analysis aborted")
+
+        if not free and suspended:
             p.inject()
-
-        p.resume()
-
-        return p.pid
+            p.resume()
+            return p.pid
+        else:
+            return None
 
     def check(self):
         return True
