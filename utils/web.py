@@ -6,6 +6,7 @@
 import os
 import sys
 import logging
+import argparse
 from jinja2.loaders import FileSystemLoader
 from jinja2.environment import Environment
 from bottle import route, run, static_file, redirect, request, HTTPError
@@ -112,4 +113,9 @@ def view(task_id):
     return open(report_path, "rb").read()
 
 if __name__ == "__main__":
-    run(host="0.0.0.0", port=8080, reloader=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-H", "--host", help="Host to bind the web server on", default="0.0.0.0", action="store", required=False)
+    parser.add_argument("-p", "--port", help="Port to bind the web server on", default=8080, action="store", required=False)
+    args = parser.parse_args()
+
+    run(host=args.host, port=args.port, reloader=True)

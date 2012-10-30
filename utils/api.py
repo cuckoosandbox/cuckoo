@@ -6,6 +6,7 @@
 import os
 import sys
 import json
+import argparse
 
 from bottle import Bottle, run, request, server_names, ServerAdapter
 
@@ -116,4 +117,9 @@ def files_get(md5):
         return report_error("file_not_found")
 
 if __name__ == "__main__":
-    run(app, host="0.0.0.0", port=8081)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-H", "--host", help="Host to bind the API server on", default="0.0.0.0", action="store", required=False)
+    parser.add_argument("-p", "--port", help="Port to bind the API server on", default=8090, action="store", required=False)
+    args = parser.parse_args()
+
+    run(app, host=args.host, port=args.port)
