@@ -143,6 +143,9 @@ class Processes:
 
             if os.path.isdir(file_path):
                 continue
+            
+            if not file_path.endswith(".csv"):
+                continue
 
             # Invoke parsing of current log file.
             current_log = ParseProcessLog(file_path)
