@@ -143,17 +143,21 @@ class PipeHandler(Thread):
                 # If the process ID is valid we proceed with the injection.
                 if pid.isdigit():
                     pid = int(pid)
-                    # We inject the process only if it's not being monitored
-                    # already, otherwise we would generated polluted logs.
-                    if pid not in PROCESS_LIST:
-                        # Add the new process ID to the list of monitored
-                        # processes.
-                        add_pids(pid)
 
-                        # Open the process and inject the DLL.
-                        # Hope it enjoys it.
-                        proc = Process(pid=pid)
-                        proc.inject()
+                    if pid != os.getpid():
+                        # We inject the process only if it's not being monitored
+                        # already, otherwise we would generated polluted logs.
+                        if pid not in PROCESS_LIST:
+                            # Add the new process ID to the list of monitored
+                            # processes.
+                            add_pids(pid)
+
+                            # Open the process and inject the DLL.
+                            # Hope it enjoys it.
+                            proc = Process(pid=pid)
+                            proc.inject()
+                    else:
+                        log.warning("Received request to inject myself, skip")
 
                 KERNEL32.WriteFile(self.h_pipe,
                                    create_string_buffer("OK"),
