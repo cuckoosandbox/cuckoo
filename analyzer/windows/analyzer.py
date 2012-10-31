@@ -171,10 +171,10 @@ class PipeHandler(Thread):
                 add_file(file_path)
 
         KERNEL32.WriteFile(self.h_pipe,
-                          create_string_buffer("OK"),
-                          2,
-                          byref(bytes_read),
-                          None)
+                           create_string_buffer("OK"),
+                           2,
+                           byref(bytes_read),
+                           None)
 
         KERNEL32.CloseHandle(self.h_pipe)
         return True
