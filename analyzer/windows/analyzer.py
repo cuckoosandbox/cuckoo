@@ -159,12 +159,6 @@ class PipeHandler(Thread):
                     else:
                         log.warning("Received request to inject myself, skip")
 
-                KERNEL32.WriteFile(self.h_pipe,
-                                   create_string_buffer("OK"),
-                                   2,
-                                   byref(bytes_read),
-                                   None)
-
                 # Once we're done operating on the processes list, we release
                 # the lock.
                 PROCESS_LOCK.release()
@@ -175,6 +169,9 @@ class PipeHandler(Thread):
                 file_path = command[5:]
                 # We add the file to the list.
                 add_file(file_path)
+
+        KERNEL32.WriteFile(self.h_pipe, create_string_buffer("OK"), 2,
+            byref(bytes_read), None)
 
         KERNEL32.CloseHandle(self.h_pipe)
         return True
