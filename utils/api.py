@@ -106,18 +106,7 @@ def tasks_view(task_id):
 @app.get("/files/view/md5/<md5>", method="GET")
 @app.get("/files/view/id/<sample_id>", method="GET")
 def files_view(md5=None, sample_id=None):
-    response = {"error" : False}
-
-    db = Database()
-    if md5:
-        sample = db.find_sample_by_md5(md5)[0].to_dict()
-    elif sample_id:
-        sample = db.view_sample(sample_id).to_dict()
-
-    if sample:
-        response["sample"] = sample
-
-    return jsonize(response)
+    return
 
 @app.get("/files/get/<md5>", method="GET")
 def files_get(md5):
