@@ -110,9 +110,9 @@ def files_view(md5=None, sample_id=None):
 
     db = Database()
     if md5:
-        sample = db.find_sample_by_md5(md5).to_dict()
+        sample = db.find_sample_by_md5(md5)[0].to_dict()
     elif sample_id:
-        sample = db.find_sample_by_id(sample_id).to_dict()
+        sample = db.view_sample(sample_id).to_dict()
 
     if sample:
         response["sample"] = sample
