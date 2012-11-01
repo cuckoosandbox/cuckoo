@@ -34,7 +34,12 @@ def main():
         return False
 
     db = Database()
-    target = args.target
+
+    # Try to get input as utf-8.
+    try:
+        target = args.target.decode("utf-8")
+    except UnicodeEncodeError:
+        target = args.target
 
     if args.url:
         task_id = db.add_url(target,
