@@ -214,6 +214,12 @@ class Process:
         load_library = KERNEL32.GetProcAddress(kernel32_handle,
                                                "LoadLibraryA")
 
+        self.event_handle = KERNEL32.CreateEventA(None, False, False,
+            'CuckooEvent%d' % self.pid)
+        if not self.event_handle:
+            log.warning('Unable to create notify event..')
+            return False
+
         if apc or self.suspended:
             log.info("Using QueueUserAPC injection")
             if self.h_thread == 0:
@@ -230,22 +236,34 @@ class Process:
         else:
             log.info("Using CreateRemoteThread injection")
             new_thread_id = c_ulong(0)
-            if not KERNEL32.CreateRemoteThread(self.h_process,
-                                               None,
-                                               0,
-                                               load_library,
-                                               arg,
-                                               0,
-                                               byref(new_thread_id)):
-                log.error("CreateRemoteThread failed when injecting process "
-                          "with pid %d (Error: %s)"
-                          % (self.pid,
-                             get_error_string(KERNEL32.GetLastError())))
+            thread_handle = KERNEL32.CreateRemoteThread(self.h_process,
+                                                        None,
+                                                        0,
+                                                        load_library,
+                                                        arg,
+                                                        0,
+                                                        byref(new_thread_id))
+            if not thread_handle:
+                log.error("CreateRemoteThread failed when injecting " +
+                    "process with pid %d (Error: %s)" % (self.pid,
+                    get_error_string(KERNEL32.GetLastError())))
+                KERNEL32.CloseHandle(self.event_handle)
+                self.event_handle = None
                 return False
+            else:
+                KERNEL32.CloseHandle(thread_handle)
 
         log.info("Successfully injected process with pid %d" % self.pid)
 
         return True
+
+    def wait(self):
+        if self.event_handle:
+            KERNEL32.WaitForSingleObject(self.event_handle, INFINITE)
+            KERNEL32.CloseHandle(self.event_handle)
+            self.event_handle = None
+            return True
+        return False
 
     def dump_memory(self):
         """Dump process memory.
