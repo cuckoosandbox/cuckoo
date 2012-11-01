@@ -458,11 +458,11 @@ class Database:
         samples = session.query(Sample).filter(Sample.md5 == md5)
         return sample
 
-    def find_sample_by_id(self, id):
+    def find_sample_by_id(self, sample_id):
         """Search samples by ID.
         @param id: id
         @return: matching object
         """
         session = self.Session()
-        sample = session.query(Sample).get(id)
+        sample = session.query(Sample).get(sample_id)
         return sample
