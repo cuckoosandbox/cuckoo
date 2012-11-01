@@ -95,7 +95,7 @@ class Process:
         NtQueryInformationProcess = windll.ntdll.NtQueryInformationProcess
         # Set return value to signed 32bit integer
         NtQueryInformationProcess.restype = c_int
-        ret = NtQueryInformationProcess(self.pid),
+        ret = NtQueryInformationProcess(self.pid,
                                         0,
                                         byref(pbi),
                                         sizeof(pbi),
