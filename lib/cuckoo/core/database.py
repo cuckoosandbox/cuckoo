@@ -489,5 +489,5 @@ class Database:
         @return: matches list
         """
         session = self.Session()
-        sample = session.query(Sample).filter(Sample.md5 == md5).limit(1)
+        sample = session.query(Sample).filter(Sample.md5 == md5).first()
         return sample
