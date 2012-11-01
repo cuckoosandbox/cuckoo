@@ -460,7 +460,7 @@ class Database:
 
     def find_sample_by_id(self, sample_id):
         """Search samples by ID.
-        @param id: id
+        @param sample_id: id
         @return: matching object
         """
         session = self.Session()
