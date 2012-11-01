@@ -107,10 +107,14 @@ def check_version():
     try:
         request = urllib2.Request(url, data)
         response = urllib2.urlopen(request)
-    except (URLError, HTTPError):
+    except (urllib2.URLError, urllib2.HTTPError):
         return
 
-    response_data = json.loads(response.read())
+    try:
+        response_data = json.loads(response.read())
+    except ValueError:
+        return
+
     if not response_data["error"]:
         if response_data["response"] == "NEW_VERSION":
             print(red(" Outdated! ") + "Cuckoo Sandbox version %s is "
