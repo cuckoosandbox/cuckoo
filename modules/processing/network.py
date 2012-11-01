@@ -39,6 +39,10 @@ class Pcap:
         self.http_requests = []
         # List containing all DNS requests.
         self.dns_requests = []
+        # List containing all SMTP requests.
+        self.smtp_requests = []
+        # Reconstruncted SMTP flow.
+        self.smtp_flow = {}
         # List used to track already added DNS request processing.
         # It's used to avoid processing and resolving the same domains
         # multiple times.
@@ -155,6 +159,23 @@ class Pcap:
             ip = ""
         return ip
 
+    def _flow_smtp(self, conn, data):
+        """Reconstruct a SMTP flow.
+        @param conn: connection dict
+        @param data: raw data
+        """
+        if conn["dst"] in self.smtp_flow:
+            self.smtp_flow[conn["dst"]] += data
+        else:
+            self.smtp_flow[conn["dst"]] = data
+
+    def _process_smtp(self):
+        """Process SMTP flow."""
+        for conn, data in self.smtp_flow.iteritems():
+            # Detect new SMTP flow.
+            if data.startswith("EHLO") or data.startswith("HELO"):
+                self.smtp_requests.append({"dst": conn, "raw": data})
+
     def _tcp_dissect(self, conn, data):
         """Runs all TCP dissectors.
         @param conn: connection
@@ -162,6 +183,9 @@ class Pcap:
         """
         if self._check_http(data):
             self._add_http(data, conn["dport"])
+        # SMTP.
+        if conn["dport"] == 25:
+            self._flow_smtp(conn, data)
 
     def _udp_dissect(self, conn, data):
         """Runs all UDP dissectors.
@@ -245,11 +269,16 @@ class Pcap:
 
         file.close()
 
+        # Post processors for reconstructed flows.
+        self._process_smtp()
+
+        # Build results dict.
         self.results["hosts"] = self.unique_hosts
         self.results["tcp"] = self.tcp_connections
         self.results["udp"] = self.udp_connections
         self.results["http"] = self.http_requests
         self.results["dns"] = self.dns_requests
+        self.results["smtp"] = self.smtp_requests
 
         return self.results
 
