@@ -103,6 +103,24 @@ class Guest(Base):
     def __repr__(self):
         return "<Guest('%s','%s')>" % (self.id, self.name)
 
+    def to_dict(self):
+        """Converts object to dict.
+        @return: dict
+        """
+        d = {}
+        for column in self.__table__.columns:
+            value = getattr(self, column.name)
+            if isinstance(value, datetime):
+                d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                d[column.name] = value
+
+    def to_json(self):
+        """Converts object to JSON.
+        @return: JSON data
+        """
+        return json.dumps(self.to_dict())
+
     def __init__(self, name, label, manager):
         self.name = name
         self.label = label
@@ -131,6 +149,22 @@ class Sample(Base):
 
     def __repr__(self):
         return "<Sample('%s','%s')>" % (self.id, self.md5)
+
+    def to_dict(self):
+        """Converts object to dict.
+        @return: dict
+        """
+        d = {}
+        for column in self.__table__.columns:
+            value = getattr(self, column.name)
+            d[column.name] = value
+        return d
+
+    def to_json(self):
+        """Converts object to JSON.
+        @return: JSON data
+        """
+        return json.dumps(self.to_dict())
 
     def __init__(self,
                  md5,
