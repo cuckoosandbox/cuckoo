@@ -4,6 +4,7 @@
 
 import os
 import sys
+import struct
 import random
 import shutil
 import pkgutil
@@ -31,20 +32,6 @@ FILES_LIST = []
 PROCESS_LIST = []
 PROCESS_LOCK = Lock()
 
-def add_file(file_path):
-    """Add a file to file list."""
-    if file_path.startswith("\\\\.\\"):
-        return
-
-    if file_path.startswith("\\??\\"):
-        file_path = file_path[4:]
-
-    if os.path.exists(file_path):
-        if file_path not in FILES_LIST:
-            log.info("Added new file to list with path: %s"
-                     % unicode(file_path).encode("utf-8", "replace"))
-            FILES_LIST.append(file_path)
-
 def add_pid(pid):
     """Add a process to process list."""
     if type(pid) == long or type(pid) == int or type(pid) == str:
@@ -59,32 +46,50 @@ def add_pids(pids):
     else:
         add_pid(pids)
 
+def add_file(file_path):
+    """Add a file to file list."""
+    if os.path.exists(file_path):
+        if file_path not in FILES_LIST:
+            log.info("Added new file to list with path: %s"
+                     % unicode(file_path).encode("utf-8", "replace"))
+            FILES_LIST.append(file_path)
+
+def dump_file(file_path):
+    """Create a copy of the give file path."""
+    if file_path.startswith("\\\\.\\"):
+        return
+
+    if file_path.startswith("\\??\\"):
+        file_path = file_path[4:]
+
+    file_name = os.path.basename(file_path)
+
+    while True:
+        dir_path = os.path.join(PATHS["files"],
+                                str(random.randint(100000000, 9999999999)))
+        if os.path.exists(dir_path):
+            continue
+
+        try:
+            os.mkdir(dir_path)
+            dump_path = os.path.join(dir_path, "%s.bin" % file_name)
+        except OSError as e:
+            dump_path = os.path.join(PATHS["files"], "%s.bin" % file_name)
+
+        break
+
+    try:
+        shutil.copy(file_path, dump_path)
+        log.info("Dropped file \"%s\" dumped successfully to path \"%s\""
+                  % (file_path, dump_path))
+    except (IOError, shutil.Error) as e:
+        log.error("Unable to dump dropped file at path \"%s\": %s"
+                  % (file_path, e))
+
 def dump_files():
     """Dump all the dropped files."""
     for file_path in FILES_LIST:
-        file_name = os.path.basename(file_path)
-
-        while True:
-            dir_path = os.path.join(PATHS["files"],
-                                    str(random.randint(100000000, 9999999999)))
-            if os.path.exists(dir_path):
-                continue
-
-            try:
-                os.mkdir(dir_path)
-                dump_path = os.path.join(dir_path, "%s.bin" % file_name)
-            except OSError as e:
-                dump_path = os.path.join(PATHS["files"], "%s.bin" % file_name)
-
-            break
-
-        try:
-            shutil.copy(file_path, dump_path)
-            log.info("Dropped file \"%s\" dumped successfully to path \"%s\""
-                     % (file_path, dump_path))
-        except (IOError, shutil.Error) as e:
-            log.error("Unable to dump dropped file at path \"%s\": %s"
-                      % (file_path, e))
+        dump_file(file_path)
 
 class PipeHandler(Thread):
     """Pipe Handler.
@@ -103,6 +108,7 @@ class PipeHandler(Thread):
         @return: operation status.
         """
         data = ""
+        response = "OK"
 
         # Read the data submitted to the Pipe Server.
         while True:
@@ -129,9 +135,15 @@ class PipeHandler(Thread):
             command = data.strip()
 
             # Parse the prefix for the received notification.
+            # In case of GETPIDS we're gonna return the current process ID
+            # and the process ID of our parent process (agent.py).
+            if command == "GETPIDS":
+                pid = os.getpid()
+                ppid = os.getppid()
+                response = struct.pack("II", pid, ppid)
             # In case of PID, the client is trying to notify the creation of
             # a new process to be injected and monitored.
-            if command.startswith("PID:"):
+            elif command.startswith("PID:"):
                 # We acquire the process lock in order to prevent the analyzer
                 # to terminate the analysis while we are operating on the new
                 # process.
@@ -162,21 +174,30 @@ class PipeHandler(Thread):
                 # Once we're done operating on the processes list, we release
                 # the lock.
                 PROCESS_LOCK.release()
-            # In case of FILE, the client is trying to notify the creation of
-            # a new file.
-            elif command.startswith("FILE:"):
+            # In case of FILE_NEW, the client is trying to notify the creation
+            # of a new file.
+            elif command.startswith("FILE_NEW:"):
                 # We extract the file path.
-                file_path = command[5:]
+                file_path = command[9:]
                 # We add the file to the list.
                 add_file(file_path)
+            # In case of FILE_DEL, the client is trying to notify an ongoing
+            # deletion of an existing file, therefore we need to dump it
+            # straight away.
+            elif command.startswith("FILE_DEL:"):
+                # Extract the file path.
+                file_path = command[9:]
+                # Dump the file straight away.
+                dump_file(file_path)
 
         KERNEL32.WriteFile(self.h_pipe,
-                           create_string_buffer("OK"),
-                           2,
+                           create_string_buffer(response),
+                           len(response),
                            byref(bytes_read),
                            None)
 
         KERNEL32.CloseHandle(self.h_pipe)
+
         return True
 
 class PipeServer(Thread):
