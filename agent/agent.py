@@ -104,7 +104,7 @@ class Agent:
         return True
 
     def add_config(self, options):
-        """Creates analysis.cond file from current analysis options.
+        """Creates analysis.conf file from current analysis options.
         @param options: current configuration options, dict format.
         @return: operation status.
         """
