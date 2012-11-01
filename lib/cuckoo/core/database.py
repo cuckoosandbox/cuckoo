@@ -456,7 +456,7 @@ class Database:
         """
         session = self.Session()
         samples = session.query(Sample).filter(Sample.md5 == md5)
-        return sample
+        return samples
 
     def find_sample_by_id(self, sample_id):
         """Search samples by ID.
