@@ -107,7 +107,7 @@ def check_version():
     try:
         request = urllib2.Request(url, data)
         response = urllib2.urlopen(request)
-    except (URLError, HTTPError):
+    except (urllib2.URLError, urllib2.HTTPError):
         return
 
     response_data = json.loads(response.read())
