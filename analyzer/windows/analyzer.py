@@ -14,7 +14,7 @@ import ConfigParser
 from ctypes import *
 from threading import Lock, Thread, Timer
 
-from lib.api.process import Process
+from lib.api.process import Process, getppid
 from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.abstracts import Package, Auxiliary
 from lib.common.defines import *
@@ -139,7 +139,7 @@ class PipeHandler(Thread):
             # and the process ID of our parent process (agent.py).
             if command == "GETPIDS":
                 pid = os.getpid()
-                ppid = os.getppid()
+                ppid = getppid()
                 response = struct.pack("II", pid, ppid)
             # In case of PID, the client is trying to notify the creation of
             # a new process to be injected and monitored.
