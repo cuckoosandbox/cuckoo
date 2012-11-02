@@ -7,9 +7,17 @@ import os
 import sys
 import logging
 import argparse
-from jinja2.loaders import FileSystemLoader
-from jinja2.environment import Environment
-from bottle import route, run, static_file, redirect, request, HTTPError
+try:
+    from jinja2.loaders import FileSystemLoader
+    from jinja2.environment import Environment
+except ImportError:
+    print "ERROR: Jinja2 library is missing"
+    sys.exit(1)
+try:
+    from bottle import route, run, static_file, redirect, request, HTTPError
+except ImportError:
+    print "ERROR: Bootle library is missing"
+    sys.exit(1)
 
 logging.basicConfig()
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
