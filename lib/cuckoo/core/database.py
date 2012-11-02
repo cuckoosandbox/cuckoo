@@ -186,6 +186,45 @@ class Sample(Base):
         if ssdeep:
             self.ssdeep = ssdeep
 
+class Machine(Base):
+    """Configured virtual machines to be used as guests."""
+    __tablename__ = "machines"
+
+    id = Column(Integer(), primary_key=True)
+    name = Column(String(255), nullable=False)
+    label = Column(String(255), nullable=False)
+    ip = Column(String(255), nullable=False)
+    platform = Column(String(255), nullable=False)
+
+    def __repr__(self):
+        return "<Machine('%s','%s')>" % (self.id, self.name)
+
+    def to_dict(self):
+        """Converts object to dict.
+        @return: dict
+        """
+        d = {}
+        for column in self.__table__.columns:
+            value = getattr(self, column.name)
+            d[column.name] = value
+        return d
+
+    def to_json(self):
+        """Converts object to JSON.
+        @return: JSON data
+        """
+        return json.dumps(self.to_dict())
+
+    def __init__(self,
+                 name,
+                 label,
+                 ip,
+                 platform):
+        self.name = name
+        self.label = label
+        self.ip = ip
+        self.platform = platform
+
 class Database:
     """Analysis queue database.
 
@@ -230,9 +269,22 @@ class Database:
         # Get db session.
         self.Session = sessionmaker(bind=self.engine)
 
+        # Machine table is cleaned to be filled from configuration file at each start.
+        self._clean_machines()
+
     def __del__(self):
         """Disconnects pool."""
         self.engine.dispose()
+
+    def _clean_machines(self):
+        """Clean old stored machines."""
+        session = self.Session()
+        session.query(Machine).delete()
+        try:
+            session.commit()
+        except:
+            session.rollback()
+
 
     def _set_status(self, task_id, status):
         """Set task status.
@@ -249,6 +301,28 @@ class Database:
             return False
 
         return True
+
+    def add_machine(self,
+                    name,
+                    label,
+                    ip,
+                    platform):
+        """Add a guest machine.
+        @param name: machine id
+        @param labal: machine label
+        @param ip: machine IP address
+        @param platform: machine supported platform
+        """
+        session = self.Session()
+        try:
+            machine = Machine(name=name,
+                              label=label,
+                              ip=ip,
+                              platform=platform)
+            session.add(machine)
+            session.commit()
+        except IntegrityError:
+            session.rollback()
 
     def fetch(self):
         """Fetch a task.

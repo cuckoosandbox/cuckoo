@@ -10,6 +10,7 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.objects import Dictionary
 from lib.cuckoo.common.utils import create_folder
+from lib.cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +37,12 @@ class MachineManager(object):
 
         # Run initialization checks.
         self._initialize_check()
+
+        # Database pointer.
+        self.db = Database()
+
+        # Store VM in db.
+        self._initialize_db()
 
     def _initialize(self, module_name):
         """Read configuration.
@@ -75,6 +82,14 @@ class MachineManager(object):
                         "detected or it's not in proper state" % machine.label)
         except NotImplementedError:
             pass
+
+    def _initialize_db(self):
+        """Stores guest configuration to database."""
+        for machine in self.machines:
+            self.db.add_machine(name=machine.id,
+                                label=machine.label,
+                                ip=machine.ip,
+                                platform=machine.platform)
 
     def availables(self):
         """How many machines are free.
