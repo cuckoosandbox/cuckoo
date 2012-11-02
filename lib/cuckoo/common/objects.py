@@ -55,7 +55,7 @@ class File:
         else:
             file_name = os.path.basename(self.file_path)
 
-        return convert_to_printable(file_name)
+        return file_name
 
     def get_data(self):
         """Read file contents.

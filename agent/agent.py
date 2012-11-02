@@ -120,14 +120,22 @@ class Agent:
         config = ConfigParser.RawConfigParser()
         config.add_section("analysis")
 
-        for key, value in options.items():
-            config.set("analysis", key, value)
-
-        config_path = os.path.join(root, "analysis.conf")
         try:
+            for key, value in options.items():
+                # Options can be UTF encoded.
+                if isinstance(value, basestring):
+                    try:
+                        value = value.encode("utf-8")
+                    except UnicodeEncodeError:
+                        pass
+                print value
+                config.set("analysis", key, value)
+
+            config_path = os.path.join(root, "analysis.conf")
+        
             with open(config_path, "wb") as config_file:
                 config.write(config_file)
-        except OSError as e:
+        except Exception as e:
             ERROR_MESSAGE = str(e)
             return False
 
