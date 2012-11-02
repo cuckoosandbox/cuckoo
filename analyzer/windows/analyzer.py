@@ -178,7 +178,7 @@ class PipeHandler(Thread):
             # of a new file.
             elif command.startswith("FILE_NEW:"):
                 # We extract the file path.
-                file_path = command[9:]
+                file_path = command[9:].decode("utf-8")
                 # We add the file to the list.
                 add_file(file_path)
             # In case of FILE_DEL, the client is trying to notify an ongoing
@@ -186,7 +186,7 @@ class PipeHandler(Thread):
             # straight away.
             elif command.startswith("FILE_DEL:"):
                 # Extract the file path.
-                file_path = command[9:]
+                file_path = command[9:].decode("utf-8")
                 # Dump the file straight away.
                 dump_file(file_path)
 
