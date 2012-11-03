@@ -16,7 +16,7 @@ except ImportError:
 try:
     from bottle import route, run, static_file, redirect, request, HTTPError
 except ImportError:
-    print "ERROR: Bootle library is missing"
+    print "ERROR: Bottle library is missing"
     sys.exit(1)
 
 logging.basicConfig()
