@@ -159,8 +159,8 @@ class Pcap:
             ip = ""
         return ip
 
-    def _flow_smtp(self, conn, data):
-        """Reconstruct a SMTP flow.
+    def _reassemble_smtp(self, conn, data):
+        """Reassemble a SMTP flow.
         @param conn: connection dict
         @param data: raw data
         """
@@ -185,7 +185,7 @@ class Pcap:
             self._add_http(data, conn["dport"])
         # SMTP.
         if conn["dport"] == 25:
-            self._flow_smtp(conn, data)
+            self._reassemble_smtp(conn, data)
 
     def _udp_dissect(self, conn, data):
         """Runs all UDP dissectors.
