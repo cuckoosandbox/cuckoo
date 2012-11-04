@@ -196,7 +196,7 @@ class Machine(Base):
     ip = Column(String(255), nullable=False)
     platform = Column(String(255), nullable=False)
     locked = Column(Boolean(), nullable=False, default=False)
-    locked_on = Column(DateTime(timezone=False), nullable=True)
+    locked_changed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(String(255), nullable=True)
     status_changed_on = Column(DateTime(timezone=False), nullable=True)
 
@@ -583,7 +583,7 @@ class Database:
         machine = session.query(Machine).filter(Machine.locked == False).first()
         if machine:
             machine.locked = True
-            machine.locked_on = datetime.now()
+            machine.locked_changed_on = datetime.now()
             try:
                 session.commit()
             except:
@@ -600,6 +600,7 @@ class Database:
         machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
         if machine:
             machine.locked = True
+            machine.locked_changed_on = datetime.now()
             try:
                 session.commit()
             except:
@@ -616,6 +617,7 @@ class Database:
         machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
         if machine:
             machine.locked = True
+            machine.locked_changed_on = datetime.now()
             try:
                 session.commit()
             except:
@@ -632,6 +634,7 @@ class Database:
         machine = session.query(Machine).filter(Machine.label == label).first()
         if machine:
             machine.locked = False
+            machine.locked_changed_on = datetime.now()
             try:
                 session.commit()
             except:
