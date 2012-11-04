@@ -328,9 +328,14 @@ class Scheduler:
         MachineManager()
         # Select the first subclass of the parent MachineManager. This is
         # the trick we use for implementing our plugins and identify them.
+        # TODO: this need to be refactored.
         module = MachineManager.__subclasses__()[0]
+        if module.__name__.lower() != mmanager_name.lower():
+            module = module.__subclasses__()[0]
+
         # Initialize the machine manager.
         mmanager = module()
+
         # Find its configuration file.
         conf = os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % mmanager_name)
 

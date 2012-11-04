@@ -12,6 +12,11 @@ from lib.cuckoo.common.objects import Dictionary
 from lib.cuckoo.common.utils import create_folder
 from lib.cuckoo.core.database import Database
 
+try:
+    import libvirt
+except ImportError:
+    raise CuckooDependencyError("Unable to import libvirt")
+
 log = logging.getLogger(__name__)
 
 class MachineManager(object):
@@ -158,6 +163,165 @@ class MachineManager(object):
     def _list(self):
         """Lists virtual machines configured.
         @raise NotImplementedError: this method is abstract.
+        """
+        raise NotImplementedError
+
+class LibVirtMachineManager(MachineManager):
+    """Libvirt based machine manager.
+
+    If you want to write a custom module for a virtualization software supported
+    by libvirt you have just to inherit this machine manager and change the 
+    connection string.
+    """
+
+    def initialize(self, module):
+        """Initialize machine manager module. Ovverride defualt to set proper
+        connection string.
+        @param module:  machine manager module
+        """
+        self.set_dsn()
+        super(LibVirtMachineManager, self).initialize(module)
+
+    def _initialize_check(self):
+        """Runs all checks when a machine manager is initialized.
+        @raise CuckooMachineError: if libvirt version is not supported.
+        """
+        # Version checks.
+        if not self._version_check():
+            raise CuckooMachineError("Libvirt version is not supported, please get an updated version")
+        # Preload VMs
+        self.vms = self._fetch_machines()
+        # Base checks.
+        super(LibVirtMachineManager, self)._initialize_check()
+
+    def start(self, label):
+        """Starts a virtual machine.
+        @param label: virtual machine name.
+        @raise CuckooMachineError: if unable to start virtual machine.
+        """
+        log.debug("Staring vm %s" % label)
+        # Get current snapshot.
+        conn = self._connect()
+        print conn
+        print self.vms
+        try:
+            snap = self.vms[label].hasCurrentSnapshot(flags=0)
+        except libvirt.libvirtError:
+            self._disconnect(conn)
+            raise CuckooMachineError("Unable to get current snapshot for virtual machine %s" % label)
+        print snap
+        print 'ehia'
+        # Revert to latest snapshot.
+        if snap:
+            try:
+                current = self.vms[label].snapshotCurrent(flags=0)
+                print current
+                self.vms[label].revertToSnapshot(current, flags=0)
+                print 'reverted'
+            except libvirt.libvirtError:
+                raise CuckooMachineError("Unable to restore snapshot on virtual machine %s" % label)
+            finally:
+                self._disconnect(conn)
+            print 'bbbb'
+        else:
+            self._disconnect(conn)
+            raise CuckooMachineError("No snapshot found for virtual machine %s" % label)
+        print 'aaa'
+
+    def stop(self, label):
+        """Stops a virtual machine. Kill them all.
+        @param label: virtual machine name.
+        @raise CuckooMachineError: if unable to stop virtual machine.
+        """
+        log.debug("Stopping vm %s" % label)
+        # Force virtual machine shutdown.
+        conn = self._connect()
+        try:
+            if not self.vms[label].isActive():
+                log.debug("Trying to stop an already stopped vm %s. Skip" % label)
+            else:
+                self.vms[label].destroy() # Machete's way!
+        except libvirt.libvirtError as e:
+            raise CuckooMachineError("Error stopping virtual machine %s: %s" % (label, e))
+        finally:
+            self._disconnect(conn)
+
+    def shutdown(self):
+        """Override shutdown to free libvirt handlers, anyway they print errors."""
+        super(LibVirtMachineManager, self).shutdown()
+        # Free handlers.
+        self.vms = None
+
+    def _connect(self):
+        """Connects to libvirt subsystem.
+        @raise CuckooMachineError: if cannot connect to libvirt.
+        """
+        if not self.dsn:
+            raise CuckooMachineError("You must provide a proper connection string")
+        print self.dsn
+        try:
+            return libvirt.open(self.dsn)
+        except libvirt.libvirtError:
+            raise CuckooMachineError("Cannot connect to libvirt")
+
+    def _disconnect(self, conn):
+        """Disconnects to libvirt subsystem.
+        @raise CuckooMachineError: if cannot disconnect from libvirt.
+        """
+        try:
+            conn.close()
+        except libvirt.libvirtError:
+            raise CuckooMachineError("Cannot disconnect from libvirt")
+
+    def _fetch_machines(self):
+        """Fetch machines handlers.
+        @return: dict with machine label as key and handle as value.
+        """
+        vms = {}
+        for vm in self.machines():
+            vms[vm.label] = self._lookup(vm.label)
+        return vms
+
+    def _lookup(self, label):
+        """Search for a virtual machine.
+        @param conn: libvirt connection handle.
+        @param label: virtual machine name.
+        @raise CuckooMachineError: if virtual machine is not found.
+        """
+        conn = self._connect()
+        try:
+            vm = conn.lookupByName(label)
+        except libvirt.libvirtError:
+                raise CuckooMachineError("Cannot found machine %s" % label)
+        finally:
+            self._disconnect(conn)
+        return vm
+
+    def _list(self):
+        """List available virtual machines.
+        @raise CuckooMachineError: if unable to list virtual machines.
+        """
+        conn = self._connect()
+        try:
+            names = conn.listDefinedDomains()
+        except libvirt.libvirtError:
+            raise CuckooMachineError("Cannot list domains")
+        finally:
+            self._disconnect(conn)
+        return names
+
+    def _version_check(self):
+        """Check if libvirt release supports snapshots.
+        @return: True or false.
+        """
+        if libvirt.getVersion() >= 8000:
+            return True
+        else:
+            return False
+
+    def set_dsn(self):
+        """Set libvirt connection string.
+        @raise NotImplementedError: abstract interface
         """
         raise NotImplementedError
 
