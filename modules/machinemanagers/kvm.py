@@ -65,7 +65,7 @@ class KVM(MachineManager):
         # Force virtual machine shutdown.
         conn = self._connect()
         try:
-            if self.vms[label].isActive():
+            if not self.vms[label].isActive():
                 log.debug("Trying to stop an already stopped vm %s. Skip" % label)
             else:
                 self.vms[label].destroy() # Machete's way!
