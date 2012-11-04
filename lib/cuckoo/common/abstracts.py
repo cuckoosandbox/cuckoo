@@ -134,6 +134,13 @@ class MachineManager(object):
                     log.error("Unable to shutdown machine %s, please check "
                               "manually. Error: %s" % (machine.label, e))
 
+    def set_status(self, label, status):
+        """Set status for a virtual machine.
+        @param label: virtual machine label
+        @param status: new virtual machine status
+        """
+        self.db.set_machine_status(label, status)
+
     def start(self, label=None):
         """Start a machine.
         @param label: machine name.

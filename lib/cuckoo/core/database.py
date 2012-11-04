@@ -196,6 +196,8 @@ class Machine(Base):
     ip = Column(String(255), nullable=False)
     platform = Column(String(255), nullable=False)
     locked = Column(Boolean(), nullable=False, default=False)
+    status = Column(String(255), nullable=True)
+    status_changed_on = Column(DateTime(timezone=False), nullable=True)
 
     def __repr__(self):
         return "<Machine('%s','%s')>" % (self.id, self.name)
@@ -650,3 +652,19 @@ class Database:
         session = self.Session()
         machines_count = session.query(Machine).filter(Machine.locked == False).count()
         return machines_count
+
+    def set_machine_status(self, label, status):
+        """Set status for a virtual machine.
+        @param label: virtual machine label
+        @param status: new virtual machine status
+        """
+        session = self.Session()
+        machine = session.query(Machine).filter(Machine.label == label).first()
+        if machine:
+            machine.status = status
+            machine.status_changed_on = datetime.now()
+            try:
+                session.commit()
+            except:
+                session.rollback()
+

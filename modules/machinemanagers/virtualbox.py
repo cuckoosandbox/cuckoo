@@ -133,6 +133,7 @@ class VirtualBox(MachineManager):
         @return: status string.
         """
         log.debug("Getting status for %s"% label)
+        status = None
         try:
             proc = subprocess.Popen([self.options.virtualbox.path,
                                      "showvminfo",
@@ -148,19 +149,24 @@ class VirtualBox(MachineManager):
                 # So we just log to debug this.
                 log.debug("VBoxManage returns error checking status for machine %s: %s"
                                        % (label, err))
-                return self.ERROR
+                status = self.ERROR
         except OSError as e:
             log.warning("VBoxManage failed to check status for machine %s: %s"
                                      % (label, e))
-            return self.ERROR
-
-        for line in output.split("\n"):
-            state = re.match(r"VMState=\"(\w+)\"", line, re.M|re.I)
-            if state:
-                status = state.group(1)
-                log.debug("Machine %s status %s" % (label, status))
-                return status.lower()
-        raise CuckooMachineError("Unable to get status for %s" % label)
+            status = self.ERROR
+        if not status:
+            for line in output.split("\n"):
+                state = re.match(r"VMState=\"(\w+)\"", line, re.M|re.I)
+                if state:
+                    status = state.group(1)
+                    log.debug("Machine %s status %s" % (label, status))
+                    status = status.lower()
+        # Report back status.
+        if status:
+            self.set_status(label, status)
+            return status
+        else:
+            raise CuckooMachineError("Unable to get status for %s" % label)
 
     def _wait_status(self, label, state):
         """Waits for a vm status.
