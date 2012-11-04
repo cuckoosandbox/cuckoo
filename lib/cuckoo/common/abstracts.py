@@ -202,31 +202,25 @@ class LibVirtMachineManager(MachineManager):
         log.debug("Staring vm %s" % label)
         # Get current snapshot.
         conn = self._connect()
-        print conn
-        print self.vms
+
         try:
             snap = self.vms[label].hasCurrentSnapshot(flags=0)
         except libvirt.libvirtError:
             self._disconnect(conn)
             raise CuckooMachineError("Unable to get current snapshot for virtual machine %s" % label)
-        print snap
-        print 'ehia'
+
         # Revert to latest snapshot.
         if snap:
             try:
                 current = self.vms[label].snapshotCurrent(flags=0)
-                print current
                 self.vms[label].revertToSnapshot(current, flags=0)
-                print 'reverted'
             except libvirt.libvirtError:
                 raise CuckooMachineError("Unable to restore snapshot on virtual machine %s" % label)
             finally:
                 self._disconnect(conn)
-            print 'bbbb'
         else:
             self._disconnect(conn)
             raise CuckooMachineError("No snapshot found for virtual machine %s" % label)
-        print 'aaa'
 
     def stop(self, label):
         """Stops a virtual machine. Kill them all.
