@@ -20,7 +20,10 @@ class MachineManager(object):
     def __init__(self):
         self.module_name = ""
         self.options = None
-        self.machines = []
+        # Database pointer.
+        self.db = Database()
+        # Machine table is cleaned to be filled from configuration file at each start.
+        self.db.clean_machines()
 
     def set_options(self, options):
         """Set machine manager options.
@@ -38,12 +41,6 @@ class MachineManager(object):
         # Run initialization checks.
         self._initialize_check()
 
-        # Database pointer.
-        self.db = Database()
-
-        # Store VM in db.
-        self._initialize_db()
-
     def _initialize(self, module_name):
         """Read configuration.
         @param module_name: module name.
@@ -52,6 +49,7 @@ class MachineManager(object):
         mmanager_opts = self.options.get(module_name)
 
         for machine_id in mmanager_opts["machines"].strip().split(","):
+            # Parse from configuration file.
             try:
                 machine_opts = self.options.get(machine_id.strip())
                 machine = Dictionary()
@@ -59,8 +57,11 @@ class MachineManager(object):
                 machine.label = machine_opts["label"].strip()
                 machine.platform = machine_opts["platform"].strip()
                 machine.ip = machine_opts["ip"].strip()
-                machine.locked = False
-                self.machines.append(machine)
+                # Insert in db.
+                self.db.add_machine(name=machine.id,
+                                    label=machine.label,
+                                    ip=machine.ip,
+                                    platform=machine.platform)
             except (AttributeError, CuckooOperationalError):
                 log.warning("Configuration details about machine %s are "
                             "missing. Continue" % machine_id)
@@ -76,31 +77,24 @@ class MachineManager(object):
         """
         try:
             configured_vm = self._list()
-            for machine in self.machines:
+            for machine in self.machines():
                 if machine.label not in configured_vm:
                     raise CuckooMachineError("Configured machine %s was not "
                         "detected or it's not in proper state" % machine.label)
         except NotImplementedError:
             pass
 
-    def _initialize_db(self):
-        """Stores guest configuration to database."""
-        for machine in self.machines:
-            self.db.add_machine(name=machine.id,
-                                label=machine.label,
-                                ip=machine.ip,
-                                platform=machine.platform)
+    def machines(self):
+        """List virtual machines.
+        @return: virtual machines list
+        """
+        return self.db.list_machines()
 
     def availables(self):
         """How many machines are free.
         @return: free machines count.
         """
-        count = 0
-        for machine in self.machines:
-            if not machine.locked:
-                count += 1
-
-        return count
+        return self.db.count_machines_available()
 
     def acquire(self, machine_id=None, platform=None):
         """Acquire a machine to start analysis.
@@ -109,44 +103,30 @@ class MachineManager(object):
         @return: machine or None.
         """
         if machine_id:
-            for machine in self.machines:
-                if machine.id == machine_id and not machine.locked:
-                    machine.locked = True
-                    return machine
+            return self.db.lock_machine_by_name(machine_id)
         elif platform:
-            for machine in self.machines:
-                if machine.platform == platform and not machine.locked:
-                    machine.locked = True
-                    return machine
+            return self.db.lock_machine_by_platform(platform)
         else:
-            for machine in self.machines:
-                if not machine.locked:
-                    machine.locked = True
-                    return machine
-
-        return None
+            return self.db.lock_machine()
 
     def release(self, label=None):
         """Release a machine.
         @param label: machine name.
         """
-        if label:
-            for machine in self.machines:
-                if machine.label == label:
-                    machine.locked = False
+        self.db.unlock_machine(label)
 
     def running(self):
         """Returns running virtual machines.
         @return: running virtual machines list.
         """
-        return [m for m in self.machines if m.locked]
+        return self.db.list_machines_locked()
 
     def shutdown(self):
         """Shutdown the machine manager. Kills all alive machines.
         @raise CuckooMachineError: if unable to stop machine.
         """
-        if len(self.running()) > 0:
-            log.info("Still %s guests alive. Shutting down" % len(self.running()))
+        if self.running().count() > 0:
+            log.info("Still %s guests alive. Shutting down" % self.running().count())
             for machine in self.running():
                 try:
                     self.stop(machine.label)

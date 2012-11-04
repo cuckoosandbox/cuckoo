@@ -127,7 +127,7 @@ class AnalysisManager(Thread):
                 time.sleep(1)
             else:
                 log.info("Task #%d: acquired machine %s (label=%s)"
-                         % (self.task.id, machine.id, machine.label))
+                         % (self.task.id, machine.name, machine.label))
                 break
 
         return machine
@@ -216,7 +216,7 @@ class AnalysisManager(Thread):
         try:
             # Mark the selected analysis machine in the database as started.
             guest_log = Database().guest_start(self.task.id,
-                                               machine.id,
+                                               machine.name,
                                                machine.label,
                                                mmanager.__class__.__name__)
             # Start the machine.
@@ -232,7 +232,7 @@ class AnalysisManager(Thread):
         else:
             try:
                 # Initialize the guest manager.
-                guest = GuestManager(machine.id, machine.ip, machine.platform)
+                guest = GuestManager(machine.name, machine.ip, machine.platform)
                 # Start the analysis.
                 guest.start_analysis(options)
             except CuckooGuestError as e:
@@ -348,10 +348,10 @@ class Scheduler:
         # At this point all the available machines should have been identified
         # and added to the list. If none were found, Cuckoo needs to abort the
         # execution.
-        if len(mmanager.machines) == 0:
+        if mmanager.machines().count() == 0:
             raise CuckooCriticalError("No machines available")
         else:
-            log.info("Loaded %s machine/s" % len(mmanager.machines))
+            log.info("Loaded %s machine/s" % mmanager.machines().count())
 
     def stop(self):
         """Stop scheduler."""

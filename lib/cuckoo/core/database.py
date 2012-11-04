@@ -195,6 +195,7 @@ class Machine(Base):
     label = Column(String(255), nullable=False)
     ip = Column(String(255), nullable=False)
     platform = Column(String(255), nullable=False)
+    locked = Column(Boolean(), nullable=False, default=False)
 
     def __repr__(self):
         return "<Machine('%s','%s')>" % (self.id, self.name)
@@ -269,14 +270,11 @@ class Database:
         # Get db session.
         self.Session = sessionmaker(bind=self.engine)
 
-        # Machine table is cleaned to be filled from configuration file at each start.
-        self._clean_machines()
-
     def __del__(self):
         """Disconnects pool."""
         self.engine.dispose()
 
-    def _clean_machines(self):
+    def clean_machines(self):
         """Clean old stored machines."""
         session = self.Session()
         session.query(Machine).delete()
@@ -565,3 +563,90 @@ class Database:
         session = self.Session()
         sample = session.query(Sample).filter(Sample.md5 == md5).first()
         return sample
+
+    def list_machines(self):
+        """Lists virtual machines.
+        @return: list of virtual machines
+        """
+        session = self.Session()
+        machines = session.query(Machine)
+        return machines
+
+    def lock_machine(self):
+        """Places a lock on a free virtual machine.
+        @return: locked machine
+        """
+        session = self.Session()
+        machine = session.query(Machine).filter(Machine.locked == False).first()
+        if machine:
+            machine.locked = True
+            try:
+                session.commit()
+            except:
+                session.rollback()
+                return None
+        return machine
+
+    def lock_machine_by_name(self, name):
+        """Places a lock on a free virtual machine searching it by name.
+        @param name: virtual machine name
+        @return: locked machine
+        """
+        session = self.Session()
+        machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
+        if machine:
+            machine.locked = True
+            try:
+                session.commit()
+            except:
+                session.rollback()
+                return None
+        return machine
+
+    def lock_machine_by_platform(self, platform):
+        """Places a lock on a free virtual machine searching it by platform.
+        @param platform: virtual machine platform
+        @return: locked machine
+        """
+        session = self.Session()
+        machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
+        if machine:
+            machine.locked = True
+            try:
+                session.commit()
+            except:
+                session.rollback()
+                return None
+        return machine
+
+    def unlock_machine(self, label):
+        """Remove lock form a virtual machine.
+        @param label: virtual machine label
+        @return: unlocked machine
+        """
+        session = self.Session()
+        machine = session.query(Machine).filter(Machine.label == label).first()
+        if machine:
+            machine.locked = False
+            try:
+                session.commit()
+            except:
+                session.rollback()
+                return None
+        return machine
+
+    def list_machines_locked(self):
+        """List locked (working) virtual machines.
+        @return: working virtual machines list
+        """
+        session = self.Session()
+        machines = session.query(Machine).filter(Machine.locked == True)
+        return machines
+
+    def count_machines_available(self):
+        """How many virtual machines are ready for analysis.
+        @return: free virtual machines count
+        """
+        session = self.Session()
+        machines_count = session.query(Machine).filter(Machine.locked == False).count()
+        return machines_count
