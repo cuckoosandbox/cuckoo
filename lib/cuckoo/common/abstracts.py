@@ -248,11 +248,12 @@ class LibVirtMachineManager(MachineManager):
 
     def _connect(self):
         """Connects to libvirt subsystem.
-        @raise CuckooMachineError: if cannot connect to libvirt.
+        @raise CuckooMachineError: if cannot connect to libvirt or missing connection string.
         """
+        # Check if a connection string is available.
         if not self.dsn:
             raise CuckooMachineError("You must provide a proper connection string")
-        print self.dsn
+
         try:
             return libvirt.open(self.dsn)
         except libvirt.libvirtError:
