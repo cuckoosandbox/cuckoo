@@ -23,6 +23,7 @@ from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.sniffer import Sniffer
 from lib.cuckoo.core.processor import Processor
 from lib.cuckoo.core.reporter import Reporter
+from lib.cuckoo.core.plugins import import_plugin, list_plugins
 
 log = logging.getLogger(__name__)
 
@@ -315,26 +316,14 @@ class Scheduler:
         mmanager_name = self.cfg.cuckoo.machine_manager
 
         log.info("Using \"%s\" machine manager" % mmanager_name)
-        name = "modules.machinemanagers.%s" % mmanager_name
 
-        # Import the machine manager specified in the configuration file.
-        try:
-            __import__(name, globals(), locals(), ["dummy"], -1)
-        except ImportError as e:
-            raise CuckooCriticalError("Unable to import machine manager "
-                                      "plugin: %s" % e)
-
-        # Initialize the parent class.
-        MachineManager()
-        # Select the first subclass of the parent MachineManager. This is
-        # the trick we use for implementing our plugins and identify them.
-        # TODO: this need to be refactored.
-        module = MachineManager.__subclasses__()[0]
-        if module.__name__.lower() != mmanager_name.lower():
-            module = module.__subclasses__()[0]
-
+        # Import machine manager.
+        import_plugin("modules.machinemanagers.%s" % mmanager_name)
+        # Get registered class name. Only one machine manager is imported,
+        # therefore there should be only one class in the list.
+        plugin = list_plugins("machinemanagers")[0]
         # Initialize the machine manager.
-        mmanager = module()
+        mmanager = plugin()
 
         # Find its configuration file.
         conf = os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % mmanager_name)

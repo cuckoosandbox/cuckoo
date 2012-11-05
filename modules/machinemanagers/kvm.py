@@ -6,9 +6,7 @@ import logging
 
 from lib.cuckoo.common.abstracts import LibVirtMachineManager
 from lib.cuckoo.common.exceptions import CuckooDependencyError, CuckooMachineError
-
-log = logging.getLogger(__name__)
-
+from lib.cuckoo.core.plugins import register_plugin
 
 class KVM(LibVirtMachineManager):
     """Virtualization layer for KVM based on python-libvirt."""
@@ -16,3 +14,5 @@ class KVM(LibVirtMachineManager):
     def set_dsn(self):
         """Set libvirt connection string."""
         self.dsn = "qemu:///system"
+
+register_plugin("machinemanagers", KVM)

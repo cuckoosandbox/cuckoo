@@ -11,9 +11,9 @@ import os.path
 
 from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.exceptions import CuckooMachineError
+from lib.cuckoo.core.plugins import register_plugin
 
 log = logging.getLogger(__name__)
-
 
 class VirtualBox(MachineManager):
     """Virtualization layer for VirtualBox."""
@@ -186,3 +186,5 @@ class VirtualBox(MachineManager):
             time.sleep(1)
             waitme += 1
             current = self._status(label)
+
+register_plugin("machinemanagers", VirtualBox)
