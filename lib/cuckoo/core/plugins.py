@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import imp
+import pkgutil
 from collections import defaultdict
 
 from lib.cuckoo.common.exceptions import CuckooCriticalError
