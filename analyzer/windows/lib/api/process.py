@@ -84,22 +84,19 @@ class Process:
 
     def get_parent_pid(self):
         """Get the Parent Process ID."""
-        if self.pid == 0:
-            return None
-
         NT_SUCCESS = lambda val: val >= 0
 
         pbi = (c_int * 6)()
         size = c_int()
 
-        NtQueryInformationProcess = windll.ntdll.NtQueryInformationProcess
         # Set return value to signed 32bit integer
-        NtQueryInformationProcess.restype = c_int
-        ret = NtQueryInformationProcess(self.pid,
-                                        0,
-                                        byref(pbi),
-                                        sizeof(pbi),
-                                        byref(size))
+        NTDLL.NtQueryInformationProcess.restype = c_int
+
+        ret = NTDLL.NtQueryInformationProcess(KERNEL32.GetCurrentProcess(),
+                                              0,
+                                              byref(pbi),
+                                              sizeof(pbi),
+                                              byref(size))
 
         if NT_SUCCESS(ret) and size.value == sizeof(pbi):
             return pbi[5]
