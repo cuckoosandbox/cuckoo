@@ -8,13 +8,14 @@ import pkgutil
 import logging
 import copy
 
+import modules.reporting
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
-import modules.reporting as reporting
+from lib.cuckoo.core.plugins import import_plugin, list_plugins
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ class Reporter:
         self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT,
                                            "conf",
                                            "reporting.conf"))
-        self._populate(reporting)
+        self._populate(modules.reporting)
 
     def _populate(self, package):
         """Load modules.
@@ -58,11 +59,7 @@ class Reporter:
                 continue
 
             # Import the reporting module.
-            try:
-                __import__(name, globals(), locals(), ["dummy"], -1)
-            except CuckooDependencyError as e:
-                log.warning("Unable to import reporting module \"%s\": %s"
-                            % (name, e))
+            import_plugin(name)
 
     def _run_report(self, module, results):
         """Run a single reporting module.
@@ -107,13 +104,11 @@ class Reporter:
         @param results: analysis results.
         @raise CuckooReportError: if a report module fails.
         """
-        Report()
-
         # In every reporting module you can specify a numeric value that
         # represents at which position that module should be executed among
         # all the available ones. It can be used in the case where a
         # module requires another one to be already executed beforehand.
-        modules_list = Report.__subclasses__()
+        modules_list = list_plugins(group="reporting")
         modules_list.sort(key=lambda module: module.order)
 
         # Run every loaded reporting module.

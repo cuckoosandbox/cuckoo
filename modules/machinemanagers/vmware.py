@@ -10,7 +10,6 @@ import time
 
 from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.exceptions import CuckooMachineError
-from lib.cuckoo.core.plugins import register_plugin
 
 log = logging.getLogger(__name__)
 
@@ -167,5 +166,3 @@ class VMware(MachineManager):
         label = opts[0].strip()
         snapshot = opts[1].strip()
         return label, snapshot
-
-register_plugin("machinemanagers", VMware)

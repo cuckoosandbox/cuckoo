@@ -2,20 +2,26 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import imp
 import pkgutil
+import inspect
 from collections import defaultdict
 
 from lib.cuckoo.common.exceptions import CuckooCriticalError
+from lib.cuckoo.common.abstracts import MachineManager
+from lib.cuckoo.common.abstracts import Processing
+from lib.cuckoo.common.abstracts import Signature
+from lib.cuckoo.common.abstracts import Report
 
 _modules = defaultdict(dict)
 
 def import_plugin(name):
     try:
-        __import__(name, globals(), locals(), ["dummy"], -1)
+        module = __import__(name, globals(), locals(), ["dummy"], -1)
     except ImportError as e:
         raise CuckooCriticalError("Unable to import plugin \"%s\": %s"
                                   % (name, e))
+    else:
+        load_plugins(module)
 
 def import_package(package):
     prefix = package.__name__ + "."
@@ -23,7 +29,19 @@ def import_package(package):
         if ispkg:
             continue
 
-        __import__(name, globals(), locals(), ["dummy"], -1)
+        import_plugin(name)
+
+def load_plugins(module):
+    for name, value in inspect.getmembers(module):
+        if inspect.isclass(value):
+            if issubclass(value, MachineManager) and value is not MachineManager:
+                register_plugin("machinemanagers", value)
+            elif issubclass(value, Processing) and value is not Processing:
+                register_plugin("processing", value)
+            elif issubclass(value, Signature) and value is not Signature:
+                register_plugin("signatures", value)
+            elif issubclass(value, Report) and value is not Report:
+                register_plugin("reporting", value)
 
 def register_plugin(group, name):
     global _modules
