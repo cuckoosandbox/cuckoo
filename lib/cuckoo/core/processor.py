@@ -4,15 +4,15 @@
 
 import copy
 import logging
-import pkgutil
 from distutils.version import StrictVersion
 
+import modules.processing
+import modules.signatures
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_VERSION
 from lib.cuckoo.common.abstracts import Processing, Signature
 from lib.cuckoo.common.exceptions import CuckooProcessingError
-import modules.processing as processing
-import modules.signatures as signatures
+from lib.cuckoo.core.plugins import import_package
 
 log = logging.getLogger(__name__)
 
@@ -27,20 +27,8 @@ class Processor:
     def __init__(self, analysis_path):
         """@param analysis_path: analysis folder path."""
         self.analysis_path = analysis_path
-        self._populate(processing)
-        self._populate(signatures)
-
-    def _populate(self, package):
-        """Load modules.
-        @param package: package to import.
-        """
-        # For the specified package import all the modules.
-        prefix = package.__name__ + "."
-        for loader, name, ispkg in pkgutil.iter_modules(package.__path__, prefix):
-            if ispkg:
-                continue
-
-            __import__(name, globals(), locals(), ["dummy"], -1)
+        import_package(modules.processing)
+        import_package(modules.signatures)
 
     def _run_processing(self, module):
         """Run a processing module.
