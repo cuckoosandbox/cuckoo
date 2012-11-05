@@ -28,7 +28,7 @@ class MachineManager(object):
 
     def set_options(self, options):
         """Set machine manager options.
-        @param options: machine manager options dict.[9:47:32 AM] Alessandro Tanasi (jekil): il fatto che se tipo vuoi fare  il modulo per esxi o xen lo fai in 3 righe come e` ora kvm.py?
+        @param options: machine manager options dict.
         """
         self.options = options
 
