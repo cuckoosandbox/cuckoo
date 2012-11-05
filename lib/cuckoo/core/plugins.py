@@ -14,7 +14,8 @@ def import_plugin(name):
     try:
         __import__(name, globals(), locals(), ["dummy"], -1)
     except ImportError as e:
-        raise CuckooCriticalError("Unable to import plugin: %s" % e)
+        raise CuckooCriticalError("Unable to import plugin \"%s\": %s"
+                                  % (name, e))
 
 def import_package(package):
     prefix = package.__name__ + "."
