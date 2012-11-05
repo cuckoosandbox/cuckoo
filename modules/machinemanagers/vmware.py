@@ -26,7 +26,7 @@ class VMware(MachineManager):
         if not os.path.exists(self.options.vmware.path):
             raise CuckooMachineError("VMware vmrun not found in specified path %s" % self.options.vmware.path)
         # Consistency checks.
-        for machine in self.machines:
+        for machine in self.machines():
             host, snapshot = self._parse_label(machine.label)
             self._check_vmx(host)
             self._check_snapshot(host, snapshot)
