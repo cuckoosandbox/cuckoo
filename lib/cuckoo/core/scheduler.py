@@ -134,17 +134,19 @@ class AnalysisManager(Thread):
             sniffer = False
 
         try:
-            # Start machine
-            mmanager.start(vm.label)
-            # Initialize guest manager
-            guest = GuestManager(vm.id, vm.ip, vm.platform)
-            # Launch analysis
-            guest.start_analysis(options)
-            # Wait for analysis to complete
-            success = guest.wait_for_completion()
-            # Stop sniffer
-            if sniffer:
-                sniffer.stop()
+            try:
+                # Start machine
+                mmanager.start(vm.label)
+                # Initialize guest manager
+                guest = GuestManager(vm.id, vm.ip, vm.platform)
+                # Launch analysis
+                guest.start_analysis(options)
+                # Wait for analysis to complete
+                success = guest.wait_for_completion()
+            finally:
+                # Stop the sniffer even if an exception is raised (e.g. CuckooGuestError for timeout)
+                if sniffer:
+                    sniffer.stop()
 
             # Save results
             guest.save_results(self.analysis.results_folder)
