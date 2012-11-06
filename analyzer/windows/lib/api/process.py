@@ -44,6 +44,13 @@ class Process:
         self.h_thread = h_thread
         self.suspended = False
 
+    def __del__(self):
+        """Close open handles."""
+        if self.h_process and self.h_process != KERNEL32.GetCurrentProcess():
+            KERNEL32.CloseHandle(self.h_process)
+        if self.h_thread:
+            KERNEL32.CloseHandle(self.h_thread)
+
     def get_system_info(self):
         """Get system information."""
         self.system_info = SYSTEM_INFO()
@@ -56,9 +63,12 @@ class Process:
         if self.pid == 0:
             return False
 
-        self.h_process = KERNEL32.OpenProcess(PROCESS_ALL_ACCESS,
-                                              False,
-                                              int(self.pid))
+        if self.pid == os.getpid():
+            self.h_process = KERNEL32.GetCurrentProcess()
+        else:
+            self.h_process = KERNEL32.OpenProcess(PROCESS_ALL_ACCESS,
+                                                  False,
+                                                  int(self.pid))
         return True
 
     def exit_code(self):
@@ -84,15 +94,18 @@ class Process:
 
     def get_parent_pid(self):
         """Get the Parent Process ID."""
+        if not self.h_process:
+            self.open()
+
         NT_SUCCESS = lambda val: val >= 0
 
         pbi = (c_int * 6)()
         size = c_int()
 
-        # Set return value to signed 32bit integer
+        # Set return value to signed 32bit integer.
         NTDLL.NtQueryInformationProcess.restype = c_int
 
-        ret = NTDLL.NtQueryInformationProcess(KERNEL32.GetCurrentProcess(),
+        ret = NTDLL.NtQueryInformationProcess(self.h_process,
                                               0,
                                               byref(pbi),
                                               sizeof(pbi),
