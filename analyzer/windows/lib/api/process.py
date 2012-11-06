@@ -46,7 +46,7 @@ class Process:
 
     def __del__(self):
         """Close open handles."""
-        if self.h_process:
+        if self.h_process and self.h_process != KERNEL32.GetCurrentProcess():
             KERNEL32.CloseHandle(self.h_process)
         if self.h_thread:
             KERNEL32.CloseHandle(self.h_thread)
