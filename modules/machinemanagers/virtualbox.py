@@ -14,7 +14,6 @@ from lib.cuckoo.common.exceptions import CuckooMachineError
 
 log = logging.getLogger(__name__)
 
-
 class VirtualBox(MachineManager):
     """Virtualization layer for VirtualBox."""
 

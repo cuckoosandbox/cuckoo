@@ -4,15 +4,14 @@
 
 import copy
 import logging
-import pkgutil
 from distutils.version import StrictVersion
 
+import modules.processing
+import modules.signatures
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_VERSION
-from lib.cuckoo.common.abstracts import Processing, Signature
 from lib.cuckoo.common.exceptions import CuckooProcessingError
-import modules.processing as processing
-import modules.signatures as signatures
+from lib.cuckoo.core.plugins import import_package, list_plugins
 
 log = logging.getLogger(__name__)
 
@@ -27,20 +26,8 @@ class Processor:
     def __init__(self, analysis_path):
         """@param analysis_path: analysis folder path."""
         self.analysis_path = analysis_path
-        self._populate(processing)
-        self._populate(signatures)
-
-    def _populate(self, package):
-        """Load modules.
-        @param package: package to import.
-        """
-        # For the specified package import all the modules.
-        prefix = package.__name__ + "."
-        for loader, name, ispkg in pkgutil.iter_modules(package.__path__, prefix):
-            if ispkg:
-                continue
-
-            __import__(name, globals(), locals(), ["dummy"], -1)
+        import_package(modules.processing)
+        import_package(modules.signatures)
 
     def _run_processing(self, module):
         """Run a processing module.
@@ -172,13 +159,10 @@ class Processor:
         # We friendly call this "fat dict".
         results = {}
 
-        # Initialize the processing parent class.
-        Processing()
-
         # Order modules using the user-defined sequence number.
         # If none is specified for the modules, they are selected in
         # alphabetical order.
-        modules_list = Processing.__subclasses__()
+        modules_list = list_plugins(group="processing")
         modules_list.sort(key=lambda module: module.order)
 
         # Run every loaded processing module.
@@ -189,14 +173,11 @@ class Processor:
             if result:
                 results.update(result)
 
-        # Initialize the signature parent class.
-        Signature()
-
         # This will contain all the matched signatures.
         sigs = []
 
         # Run every loaded signature.
-        for signature in Signature.__subclasses__():
+        for signature in list_plugins(group="signatures"):
             match = self._run_signature(signature, results)
             # If the signature is matched, add it to the list.
             if match:

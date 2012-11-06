@@ -13,7 +13,6 @@ from lib.cuckoo.common.exceptions import CuckooMachineError
 
 log = logging.getLogger(__name__)
 
-
 class VMware(MachineManager):
     """Virtualization layer for VMware Workstation using vmrun utility."""
 

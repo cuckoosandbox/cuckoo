@@ -10,7 +10,6 @@ import shutil
 import pkgutil
 import logging
 import xmlrpclib
-import ConfigParser
 from ctypes import *
 from threading import Lock, Thread, Timer
 

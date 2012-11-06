@@ -4,6 +4,7 @@
 
 from ctypes import *
 
+NTDLL    = windll.ntdll
 KERNEL32 = windll.kernel32
 ADVAPI32 = windll.advapi32
 USER32   = windll.user32

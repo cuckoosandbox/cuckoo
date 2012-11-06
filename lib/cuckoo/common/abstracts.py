@@ -8,14 +8,10 @@ import logging
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooReportError
+from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.objects import Dictionary
 from lib.cuckoo.common.utils import create_folder
 from lib.cuckoo.core.database import Database
-
-try:
-    import libvirt
-except ImportError:
-    raise CuckooDependencyError("Unable to import libvirt")
 
 log = logging.getLogger(__name__)
 
@@ -173,6 +169,12 @@ class LibVirtMachineManager(MachineManager):
     by libvirt you have just to inherit this machine manager and change the 
     connection string.
     """
+
+    def __init__(self):
+        try:
+            import libvirt
+        except ImportError:
+            raise CuckooDependencyError("Unable to import libvirt")
 
     def initialize(self, module):
         """Initialize machine manager module. Ovverride defualt to set proper

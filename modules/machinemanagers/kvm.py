@@ -5,10 +5,6 @@
 import logging
 
 from lib.cuckoo.common.abstracts import LibVirtMachineManager
-from lib.cuckoo.common.exceptions import CuckooDependencyError, CuckooMachineError
-
-log = logging.getLogger(__name__)
-
 
 class KVM(LibVirtMachineManager):
     """Virtualization layer for KVM based on python-libvirt."""
