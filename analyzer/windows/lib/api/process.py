@@ -140,21 +140,16 @@ class Process:
             self.suspended = True
             creation_flags += CREATE_SUSPENDED
 
-        if type(path) == unicode:
-            create_process = KERNEL32.CreateProcessW
-        else:
-            create_process = KERNEL32.CreateProcessA
-
-        created = create_process(path,
-                                 arguments,
-                                 None,
-                                 None,
-                                 None,
-                                 creation_flags,
-                                 None,
-                                 None,
-                                 byref(startup_info),
-                                 byref(process_info))
+        created = KERNEL32.CreateProcessA(path,
+                                          arguments,
+                                          None,
+                                          None,
+                                          None,
+                                          creation_flags,
+                                          None,
+                                          None,
+                                          byref(startup_info),
+                                          byref(process_info))
 
         if created:
             self.pid = process_info.dwProcessId
