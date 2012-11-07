@@ -133,6 +133,8 @@ class PipeHandler(Thread):
         if data:
             command = data.strip()
 
+            wait = False
+
             # Parse the prefix for the received notification.
             # In case of GETPIDS we're gonna return the current process ID
             # and the process ID of our parent process (agent.py).
@@ -167,6 +169,10 @@ class PipeHandler(Thread):
                             # Hope it enjoys it.
                             proc = Process(pid=pid)
                             proc.inject()
+
+                            # we have to wait because we use the
+                            # CreateRemoteThread injection method
+                            wait = True
                     else:
                         log.warning("Received request to inject myself, skip")
 
@@ -207,6 +213,12 @@ class PipeHandler(Thread):
                 file_path = command[9:].decode("utf-8")
                 # Dump the file straight away.
                 dump_file(file_path)
+
+        # we wait until cuckoomon reports back, so we know for sure that
+        # cuckoomon has finished initializing etc
+        if wait:
+            proc.wait()
+            log.info("Successfully injected process with pid %d" % proc.pid)
 
         KERNEL32.WriteFile(self.h_pipe,
                            create_string_buffer(response),
