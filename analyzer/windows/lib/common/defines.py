@@ -20,7 +20,7 @@ PVOID     = c_void_p
 LPVOID    = c_void_p
 UINT_PTR  = c_ulong
 SIZE_T    = c_ulong
-HMODULE   = c_ulong
+HMODULE   = c_void_p
 NULL      = c_int(0)
 
 DEBUG_PROCESS             = 0x00000001
@@ -29,6 +29,7 @@ CREATE_SUSPENDED          = 0x00000004
 DBG_CONTINUE              = 0x00010002
 INFINITE                  = 0xFFFFFFFF
 PROCESS_ALL_ACCESS        = 0x001F0FFF
+THREAD_ALL_ACCESS         = 0x001f03ff
 TOKEN_ALL_ACCESS          = 0x000F01FF
 SE_PRIVILEGE_ENABLED      = 0x00000002
 STILL_ACTIVE              = 0x00000103

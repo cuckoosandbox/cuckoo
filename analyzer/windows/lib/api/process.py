@@ -57,19 +57,25 @@ class Process:
         KERNEL32.GetSystemInfo(byref(self.system_info))
 
     def open(self):
-        """Open a process.
+        """Open a process and/or thread.
         @return: operation status.
         """
-        if self.pid == 0:
-            return False
+        ret = bool(self.pid or self.thread_id)
+        if self.pid and not self.h_process:
+            if self.pid == os.getpid():
+                self.h_process = KERNEL32.GetCurrentProcess()
+            else:
+                self.h_process = KERNEL32.OpenProcess(PROCESS_ALL_ACCESS,
+                                                      False,
+                                                      self.pid)
+            ret = True
 
-        if self.pid == os.getpid():
-            self.h_process = KERNEL32.GetCurrentProcess()
-        else:
-            self.h_process = KERNEL32.OpenProcess(PROCESS_ALL_ACCESS,
-                                                  False,
-                                                  int(self.pid))
-        return True
+        if self.thread_id and not self.h_thread:
+            self.h_thread = KERNEL32.OpenThread(THREAD_ALL_ACCESS,
+                                                False,
+                                                self.thread_id)
+            ret = True
+        return ret
 
     def exit_code(self):
         """Get process exit code.
@@ -87,10 +93,7 @@ class Process:
         """Process is alive?
         @return: process status.
         """
-        if self.exit_code() == STILL_ACTIVE:
-            return True
-        else:
-            return False
+        return self.exit_code() == STILL_ACTIVE
 
     def get_parent_pid(self):
         """Get the Parent Process ID."""
@@ -153,6 +156,8 @@ class Process:
 
         if created:
             self.pid = process_info.dwProcessId
+            self.h_process = process_info.hProcess
+            self.thread_id = process_info.dwThreadId
             self.h_thread = process_info.hThread
             log.info("Successfully executed process from path \"%s\" with "
                      "arguments \"%s\" with pid %d" % (path, args, self.pid))
@@ -250,12 +255,12 @@ class Process:
 
         if apc or self.suspended:
             log.info("Using QueueUserAPC injection")
-            if self.h_thread == 0:
+            if not self.h_thread:
                 log.info("No valid thread handle specified for injecting "
                          "process with pid %d, injection aborted" % self.pid)
                 return False
-            
-            if KERNEL32.QueueUserAPC(load_library, self.h_thread, arg) == 0:
+
+            if not KERNEL32.QueueUserAPC(load_library, self.h_thread, arg):
                 log.error("QueueUserAPC failed when injecting process "
                           "with pid %d (Error: %s)"
                           % (self.pid,

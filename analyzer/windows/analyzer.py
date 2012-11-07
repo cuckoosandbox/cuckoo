@@ -173,6 +173,25 @@ class PipeHandler(Thread):
                 # Once we're done operating on the processes list, we release
                 # the lock.
                 PROCESS_LOCK.release()
+            elif command.startswith('PIDTID:'):
+                PROCESS_LOCK.acquire()
+
+                pidtid = command[7:]
+                if len(pidtid.split(',')) == 2:
+                    process_id, thread_id = pidtid.split(',')
+                    if process_id.isdigit() and thread_id.isdigit():
+                        if process_id != os.getpid():
+                            proc = Process(pid=int(process_id),
+                                           thread_id=int(thread_id))
+                            proc.open()
+                            # we can use apc because we have the process id
+                            # *and* the thread id
+                            proc.inject(apc=True)
+                        else:
+                            log.warning("Received request to inject myself, "
+                                        "skip")
+
+                PROCESS_LOCK.release()
             # In case of FILE_NEW, the client is trying to notify the creation
             # of a new file.
             elif command.startswith("FILE_NEW:"):
