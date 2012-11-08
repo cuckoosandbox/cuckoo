@@ -144,31 +144,51 @@ class PipeHandler(Thread):
                 response = struct.pack("II", pid, ppid)
             # In case of PID, the client is trying to notify the creation of
             # a new process to be injected and monitored.
-            elif command.startswith("PID:"):
+            elif command.startswith("PROCESS:"):
                 # We acquire the process lock in order to prevent the analyzer
                 # to terminate the analysis while we are operating on the new
                 # process.
                 PROCESS_LOCK.acquire()
 
                 # We parse the process ID.
-                pid = command[4:]
+                data = command[8:]
 
-                # If the process ID is valid we proceed with the injection.
-                if pid.isdigit():
-                    pid = int(pid)
+                process_id = thread_id = None
+                if not ',' in data:
+                    if data.isdigit():
+                        process_id = int(data)
+                elif len(data.split(',')) == 2:
+                    process_id, thread_id = data.split(',')
+                    if process_id.isdigit():
+                        process_id = int(process_id)
+                    else:
+                        process_id = None
 
-                    if pid != os.getpid():
+                    if thread_id.isdigit():
+                        thread_id = int(thread_id)
+                    else:
+                        thread_id = None
+
+                if process_id:
+                    if process_id != os.getpid():
                         # We inject the process only if it's not being monitored
                         # already, otherwise we would generated polluted logs.
-                        if pid not in PROCESS_LIST:
+                        if process_id not in PROCESS_LIST:
                             # Add the new process ID to the list of monitored
                             # processes.
-                            add_pids(pid)
+                            add_pids(process_id)
 
                             # Open the process and inject the DLL.
                             # Hope it enjoys it.
-                            proc = Process(pid=pid)
-                            proc.inject()
+                            proc = Process(pid=process_id,
+                                           thread_id=thread_id)
+
+                            # if we have both pid and tid, then we can use
+                            # apc to inject
+                            if process_id and thread_id:
+                                proc.inject(apc=True)
+                            else:
+                                proc.inject()
 
                             # we have to wait because we use the
                             # CreateRemoteThread injection method
@@ -178,25 +198,6 @@ class PipeHandler(Thread):
 
                 # Once we're done operating on the processes list, we release
                 # the lock.
-                PROCESS_LOCK.release()
-            elif command.startswith('PIDTID:'):
-                PROCESS_LOCK.acquire()
-
-                pidtid = command[7:]
-                if len(pidtid.split(',')) == 2:
-                    process_id, thread_id = pidtid.split(',')
-                    if process_id.isdigit() and thread_id.isdigit():
-                        if process_id != os.getpid():
-                            proc = Process(pid=int(process_id),
-                                           thread_id=int(thread_id))
-                            proc.open()
-                            # we can use apc because we have the process id
-                            # *and* the thread id
-                            proc.inject(apc=True)
-                        else:
-                            log.warning("Received request to inject myself, "
-                                        "skip")
-
                 PROCESS_LOCK.release()
             # In case of FILE_NEW, the client is trying to notify the creation
             # of a new file.
