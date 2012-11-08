@@ -43,6 +43,7 @@ class Process:
         self.thread_id = thread_id
         self.h_thread = h_thread
         self.suspended = False
+        self.event_handle = None
 
     def __del__(self):
         """Close open handles."""
@@ -252,8 +253,6 @@ class Process:
         kernel32_handle = KERNEL32.GetModuleHandleA("kernel32.dll")
         load_library = KERNEL32.GetProcAddress(kernel32_handle,
                                                "LoadLibraryA")
-
-        self.event_handle = None
 
         if apc or self.suspended:
             log.info("Using QueueUserAPC injection")
