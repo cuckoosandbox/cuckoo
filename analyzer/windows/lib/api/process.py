@@ -225,8 +225,6 @@ class Process:
                         "with pid %d, injection aborted" % self.pid)
             return False
 
-        KERNEL32.Sleep(2000)
-
         arg = KERNEL32.VirtualAllocEx(self.h_process,
                                       None,
                                       len(dll) + 1,
