@@ -575,46 +575,23 @@ class Database:
         machines = session.query(Machine)
         return machines
 
-    def lock_machine(self):
+    def lock_machine(self, name=None, platform=None):
         """Places a lock on a free virtual machine.
+        @param name: optional virtual machine name
+        @param platform: optional virtual machine platform
         @return: locked machine
         """
         session = self.Session()
-        machine = session.query(Machine).filter(Machine.locked == False).first()
-        if machine:
-            machine.locked = True
-            machine.locked_changed_on = datetime.now()
-            try:
-                session.commit()
-            except:
-                session.rollback()
-                return None
-        return machine
+        if name and platform:
+            # Wrong usage.
+            return None
+        elif name:
+            machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
+        elif platform:
+            machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
+        elif:
+            machine = session.query(Machine).filter(Machine.locked == False).first()
 
-    def lock_machine_by_name(self, name):
-        """Places a lock on a free virtual machine searching it by name.
-        @param name: virtual machine name
-        @return: locked machine
-        """
-        session = self.Session()
-        machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
-        if machine:
-            machine.locked = True
-            machine.locked_changed_on = datetime.now()
-            try:
-                session.commit()
-            except:
-                session.rollback()
-                return None
-        return machine
-
-    def lock_machine_by_platform(self, platform):
-        """Places a lock on a free virtual machine searching it by platform.
-        @param platform: virtual machine platform
-        @return: locked machine
-        """
-        session = self.Session()
-        machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
         if machine:
             machine.locked = True
             machine.locked_changed_on = datetime.now()

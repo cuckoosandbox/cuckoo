@@ -104,9 +104,9 @@ class MachineManager(object):
         @return: machine or None.
         """
         if machine_id:
-            return self.db.lock_machine_by_name(machine_id)
+            return self.db.lock_machine(name = machine_id)
         elif platform:
-            return self.db.lock_machine_by_platform(platform)
+            return self.db.lock_machine(platform = platform)
         else:
             return self.db.lock_machine()
 
