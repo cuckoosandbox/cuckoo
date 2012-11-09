@@ -597,7 +597,7 @@ class Database:
             machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
         elif platform:
             machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
-        elif:
+        else:
             machine = session.query(Machine).filter(Machine.locked == False).first()
 
         if machine:
