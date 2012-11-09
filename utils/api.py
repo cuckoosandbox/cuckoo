@@ -8,7 +8,7 @@ import sys
 import json
 import argparse
 
-from bottle import Bottle, run, request, server_names, ServerAdapter
+from bottle import Bottle, route, run, request, server_names, ServerAdapter
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
@@ -17,7 +17,9 @@ from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.core.database import Database
 
 errors = {
-    "file_not_found" : "The specified file does not exist"
+    "task_not_found" : "The specified task does not exist",
+    "file_not_found" : "The specified file does not exist",
+    "machine_not_found" : "The specified machine does not exist"
 }
 
 def jsonize(data):
@@ -26,9 +28,7 @@ def jsonize(data):
 def report_error(error_code):
     return jsonize({"error" : True, "error_code" : error_code, "error_message" : errors[error_code]})
 
-app = Bottle()
-
-@app.post("/tasks/create/file", method="POST")
+@route("/tasks/create/file", method="POST")
 def tasks_create_file():
     response = {"error" : False}
 
@@ -55,7 +55,7 @@ def tasks_create_file():
     response["task_id"] = task_id
     return jsonize(response)
 
-@app.post("/tasks/create/url", method="POST")
+@route("/tasks/create/url", method="POST")
 def tasks_create_url():
     response = {"error" : False}
 
@@ -81,8 +81,8 @@ def tasks_create_url():
     response["task_id"] = task_id
     return jsonize(response)
 
-@app.get("/tasks/list", method="GET")
-@app.get("/tasks/list/<limit>", method="GET")
+@route("/tasks/list", method="GET")
+@route("/tasks/list/<limit>", method="GET")
 def tasks_list(limit=None):
     response = {"error" : False}
 
@@ -90,36 +90,53 @@ def tasks_list(limit=None):
 
     response["tasks"] = []
     for row in db.list_tasks(limit).all():
-        response["tasks"].append(row.to_dict())
+        task = row.to_dict()
+        guest = row.guest
+        task["guest"] = {}
+        if guest:
+            task["guest"] = guest.to_dict()
+        response["tasks"].append(task)
 
     return jsonize(response)
 
-@app.get("/tasks/view/<task_id>", method="GET")
+@route("/tasks/view/<task_id>", method="GET")
 def tasks_view(task_id):
     response = {"error" : False}
 
     db = Database()
-    response["task"] = db.view_task(task_id).to_dict()
+
+    task = db.view_task(task_id)
+    if task:
+        entry = task.to_dict()
+        guest = task.guest
+        entry["guest"] = {}
+        if guest:
+            entry["guest"] = guest.to_dict()
+        response["task"] = entry
+    else:
+        return report_error("task_not_found")
 
     return jsonize(response)
 
-@app.get("/files/view/md5/<md5>", method="GET")
-@app.get("/files/view/id/<sample_id>", method="GET")
+@route("/files/view/md5/<md5>", method="GET")
+@route("/files/view/id/<sample_id>", method="GET")
 def files_view(md5=None, sample_id=None):
     response = {"error" : False}
 
     db = Database()
     if md5:
-        sample = db.find_sample_by_md5(md5)[0].to_dict()
+        sample = db.find_sample_by_md5(md5)[0]
     elif sample_id:
-        sample = db.view_sample(sample_id).to_dict()
+        sample = db.view_sample(sample_id)
 
     if sample:
-        response["sample"] = sample
+        response["sample"] = sample.to_dict()
+    else:
+        return report_error("file_not_found")
 
     return jsonize(response)
 
-@app.get("/files/get/<md5>", method="GET")
+@route("/files/get/<md5>", method="GET")
 def files_get(md5):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", md5)
     if os.path.exists(file_path):
@@ -127,10 +144,37 @@ def files_get(md5):
     else:
         return report_error("file_not_found")
 
+@route("/machines/list", method="GET")
+def machines_list():
+    response = {"error" : False}
+
+    db = Database()
+    machines = db.list_machines()
+
+    response["machines"] = []
+    for row in machines:
+        response["machines"].append(row.to_dict())
+
+    return jsonize(response)
+
+@route("/machines/view/<name>", method="GET")
+def machines_view(name=None):
+    response = {"error" : False}
+
+    db = Database()
+
+    machine = db.view_machine(name=name)
+    if machine:
+        response["machine"] = machine.to_dict()
+    else:
+        return report_error("machine_not_found")
+
+    return jsonize(response)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-H", "--host", help="Host to bind the API server on", default="0.0.0.0", action="store", required=False)
     parser.add_argument("-p", "--port", help="Port to bind the API server on", default=8090, action="store", required=False)
     args = parser.parse_args()
 
-    run(app, host=args.host, port=args.port)
+    run(host=args.host, port=args.port)

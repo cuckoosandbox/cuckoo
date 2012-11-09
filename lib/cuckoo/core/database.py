@@ -114,6 +114,7 @@ class Guest(Base):
                 d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
             else:
                 d[column.name] = value
+        return d
 
     def to_json(self):
         """Converts object to JSON.
