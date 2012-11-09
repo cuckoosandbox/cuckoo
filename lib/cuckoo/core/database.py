@@ -575,12 +575,13 @@ class Database:
         machines = session.query(Machine)
         return machines
 
-    def view_machine(self, vm_id):
+    def view_machine(self, name):
         """Show virtual machine.
+        @params name: virtual machine name
         @return: virtual machine's details
         """
         session = self.Session()
-        machine = session.query(Machine).get(vm_id)
+        machine = session.query(Machine).filter(Machine.name == name).first()
         return machine
 
     def lock_machine(self, name=None, platform=None):
