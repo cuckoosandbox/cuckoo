@@ -8,6 +8,7 @@ import json
 import urllib
 import urllib2
 import logging
+import logging.handlers
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooStartupError
@@ -87,7 +88,7 @@ def init_logging():
     sh = logging.StreamHandler()
     sh.setFormatter(formatter)
     log.addHandler(sh)
-    fh = logging.FileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log"))
+    fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log"))
     fh.setFormatter(formatter)
     log.addHandler(fh)
     log.setLevel(logging.INFO)
