@@ -74,8 +74,8 @@ def create_structure():
     """Creates Cuckoo directories."""
     folders = ["log",
                "storage",
-               "storage/analyses",
-               "storage/binaries"]
+               os.path.join("storage", "analyses"),
+               os.path.join("storage", "binaries")]
 
     try:
         create_folders(root=CUCKOO_ROOT,folders=folders)
