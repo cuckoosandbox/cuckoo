@@ -149,7 +149,7 @@ class Sample(Base):
                             unique=True), )
 
     def __repr__(self):
-        return "<Sample('%s','%s')>" % (self.id, self.md5)
+        return "<Sample('%s','%s')>" % (self.id, self.sha256)
 
     def to_dict(self):
         """Converts object to dict.

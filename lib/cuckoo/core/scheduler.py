@@ -80,8 +80,8 @@ class AnalysisManager(Thread):
                       "analysis aborted" % self.task.target)
             return False
 
-        md5 = File(self.task.target).get_md5()
-        self.binary = os.path.join(CUCKOO_ROOT, "storage", "binaries", md5)
+        sha256 = File(self.task.target).get_sha256()
+        self.binary = os.path.join(CUCKOO_ROOT, "storage", "binaries", sha256)
 
         if os.path.exists(self.binary):
             log.info("File already exists at \"%s\"" % self.binary)
