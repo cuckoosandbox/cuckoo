@@ -127,13 +127,16 @@ def tasks_view(task_id):
     return jsonize(response)
 
 @route("/files/view/md5/<md5>", method="GET")
+@route("/files/view/sha256/<sha256>", method="GET")
 @route("/files/view/id/<sample_id>", method="GET")
 def files_view(md5=None, sample_id=None):
     response = {"error" : False}
 
     db = Database()
     if md5:
-        sample = db.find_sample_by_md5(md5)[0]
+        sample = db.find_sample(md5=md5)[0]
+    elif sha256:
+        sample = db.find_sample(sha256=sha256)[0]
     elif sample_id:
         sample = db.view_sample(sample_id)
 

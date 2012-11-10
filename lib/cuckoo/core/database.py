@@ -644,13 +644,18 @@ class Database:
         sample = session.query(Sample).get(sample_id)
         return sample
 
-    def find_sample_by_md5(self, md5):
+    def find_sample(self, md5=None, sha256=None):
         """Search samples by MD5.
         @param md5: md5 string
         @return: matches list
         """
         session = self.Session()
-        sample = session.query(Sample).filter(Sample.md5 == md5).first()
+
+        if md5:
+            sample = session.query(Sample).filter(Sample.md5 == md5).first()
+        elif sha256:
+            sample = sesison.query(Sample).fitler(Sample.sha256 == sha256).first()
+
         return sample
 
     def view_machine(self, name):
