@@ -263,6 +263,24 @@ class AnalysisManager(Thread):
                     log.error("Unable to delete original file at path \"%s\": "
                               "%s" % (self.task.target, e))
 
+            # Take a memory dump of the machine before shutting it off.
+            do_memory_dump = False
+            if self.cfg.cuckoo.memory_dump:
+                do_memory_dump = True
+            else:
+                if self.task.memory:
+                    do_memory_dump = True
+
+            if do_memory_dump:
+                try:
+                    mmanager.dump_memory(machine.label,
+                                         os.path.join(self.storage, "memory.dmp"))
+                except NotImplementedError:
+                    log.error("The memory dump functionality is not available "
+                              "current machine manager")
+                except CuckooMachineError as e:
+                    log.error(e)
+
             try:
                 # Stop the analysis machine.
                 mmanager.stop(machine.label)

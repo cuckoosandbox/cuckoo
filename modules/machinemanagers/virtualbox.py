@@ -185,3 +185,22 @@ class VirtualBox(MachineManager):
             time.sleep(1)
             waitme += 1
             current = self._status(label)
+
+    def dump_memory(self, label, path):
+        """Takes a memory dump.
+        @param path: path to where to store the memory dump.
+        """
+        try:
+            subprocess.call([self.options.virtualbox.path,
+                             "debugvm",
+                             label,
+                             "dumpguestcore",
+                             "--filename",
+                             path],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+            log.info("Successfully generated memory dump for virtual machine with label %s to path %s"
+                     % (label, path))
+        except OSError as e:
+            raise CuckooMachineError("VBoxManage failed to take a memory dump of the machine with label %s: %s"
+                                     % (label, e))

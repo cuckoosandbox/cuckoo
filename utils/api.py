@@ -40,6 +40,9 @@ def tasks_create_file():
     machine = request.forms.get("machine")
     platform = request.forms.get("platform")
     custom = request.forms.get("custom")
+    memory = request.forms.get("memory", False)
+    if memory:
+        memory = True
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
     db = Database()
@@ -50,7 +53,8 @@ def tasks_create_file():
                           options=options,
                           machine=machine,
                           platform=platform,
-                          custom=custom)
+                          custom=custom,
+                          memory=memory)
 
     response["task_id"] = task_id
     return jsonize(response)
@@ -67,6 +71,9 @@ def tasks_create_url():
     machine = request.forms.get("machine")
     platform = request.forms.get("platform")
     custom = request.forms.get("custom")
+    memory = request.forms.get("memory", False)
+    if memory:
+        memory = True
 
     db = Database()
     task_id = db.add_url(url=url,
@@ -76,7 +83,8 @@ def tasks_create_url():
                          priority=priority,
                          machine=machine,
                          platform=platform,
-                         custom=custom)
+                         custom=custom,
+                         memory=memory)
 
     response["task_id"] = task_id
     return jsonize(response)
