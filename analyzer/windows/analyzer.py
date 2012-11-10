@@ -63,12 +63,12 @@ def dump_file(file_path):
         file_path = "\\\\?\\" + file_path[4:]
 
     # ensure that the file name is on a harddisk, such as C:\\ and D:\\
-    # because we don"t need stuff such as \\?\PIPE, \\?\IDE, \\?\STORAGE, etc.
+    # because we don't need stuff such as \\?\PIPE, \\?\IDE, \\?\STORAGE, etc.
     if file_path[:4] == "\\\\?\\" and file_path[5] != ":":
         log.warning("Not going to drop %s (not on a harddisk)" % file_path)
         return
 
-    # we don"t need \Device\ stuff
+    # we don't need \Device\ stuff
     if file_path[:8] == "\\Device\\" or file_path[:12] == "\\\\?\\Device\\":
         log.warning("Not going to drop %s (not a file)" % file_path)
         return
