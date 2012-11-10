@@ -277,7 +277,7 @@ class AnalysisManager(Thread):
                                          os.path.join(self.storage, "memory.dmp"))
                 except NotImplementedError:
                     log.error("The memory dump functionality is not available "
-                              "current machine manager")
+                              "for current machine manager")
                 except CuckooMachineError as e:
                     log.error(e)
 
