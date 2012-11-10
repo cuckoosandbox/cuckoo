@@ -120,7 +120,7 @@ class MachineManager(object):
         """Returns running virtual machines.
         @return: running virtual machines list.
         """
-        return self.db.list_machines_locked()
+        return self.db.list_machines(locked=True)
 
     def shutdown(self):
         """Shutdown the machine manager. Kills all alive machines.
@@ -159,6 +159,12 @@ class MachineManager(object):
     def _list(self):
         """Lists virtual machines configured.
         @raise NotImplementedError: this method is abstract.
+        """
+        raise NotImplementedError
+
+    def dump_memory(self, path):
+        """Takes a memory dump of a machine.
+        @param path: path to where to store the memory dump.
         """
         raise NotImplementedError
 
@@ -344,6 +350,7 @@ class Processing(object):
         self.logs_path = os.path.join(self.analysis_path, "logs")
         self.shots_path = os.path.join(self.analysis_path, "shots")
         self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
+        self.memory_path = os.path.join(self.analysis_path, "memory.dmp")
 
     def run(self):
         """Start processing.

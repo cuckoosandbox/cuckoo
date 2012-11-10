@@ -43,6 +43,7 @@ class Task(Base):
     package = Column(String(255), nullable=True)
     options = Column(String(255), nullable=True)
     platform = Column(String(255), nullable=True)
+    memory = Column(Boolean, nullable=False, default=False)
     added_on = Column(DateTime(timezone=False),
                       default=datetime.now(),
                       nullable=False)
@@ -411,179 +412,16 @@ class Database:
         except:
             session.rollback()
 
-    # The following functions are mostly used by external utils.
-
-    def add(self,
-            obj,
-            timeout=0,
-            package=None,
-            options=None,
-            priority=1,
-            custom=None,
-            machine=None,
-            platform=None):
-        """Add a task to database.
-        @param file_path: sample path.
-        @param timeout: selected timeout.
-        @param options: analysis options.
-        @param priority: analysis priority.
-        @param custom: custom options.
-        @param machine: selected machine.
-        @param platform: platform
-        @return: cursor or None.
-        """
-        session = self.Session()
-
-        if isinstance(obj, File):
-            try:
-                sample = Sample(md5=obj.get_md5(),
-                                crc32=obj.get_crc32(),
-                                sha1=obj.get_sha1(),
-                                sha256=obj.get_sha256(),
-                                sha512=obj.get_sha512(),
-                                file_size=obj.get_size(),
-                                file_type=obj.get_type(),
-                                ssdeep=obj.get_ssdeep())
-                session.add(sample)
-                session.commit()
-            except IntegrityError:
-                session.rollback()
-                sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
-
-            task = Task(obj.file_path)
-            task.sample_id = sample.id
-        elif isinstance(obj, URL):
-            task = Task(obj.url)
-
-        task.category = obj.__class__.__name__.lower()
-        task.timeout = timeout
-        task.package = package
-        task.options = options
-        task.priority = priority
-        task.custom = custom
-        task.machine = machine
-        task.platform = platform
-        session.add(task)
-
-        try:
-            session.commit()
-        except:
-            session.rollback()
-            return None
-
-        return task.id
-
-    def add_path(self,
-                 file_path,
-                 timeout=0,
-                 package=None,
-                 options=None,
-                 priority=1,
-                 custom=None,
-                 machine=None,
-                 platform=None):
-        """Add a task to database from file path.
-        @param file_path: sample path.
-        @param timeout: selected timeout.
-        @param options: analysis options.
-        @param priority: analysis priority.
-        @param custom: custom options.
-        @param machine: selected machine.
-        @param platform: platform
-        @return: cursor or None.
-        """
-        if not file_path or not os.path.exists(file_path):
-            return None
-
-        return self.add(File(file_path),
-                        timeout,
-                        package,
-                        options,
-                        priority,
-                        custom,
-                        machine,
-                        platform)
-
-    def add_url(self,
-                url,
-                timeout=0,
-                package=None,
-                options=None,
-                priority=1,
-                custom=None,
-                machine=None,
-                platform=None):
-        """Add a task to database from url.
-        @param url: url.
-        @param timeout: selected timeout.
-        @param options: analysis options.
-        @param priority: analysis priority.
-        @param custom: custom options.
-        @param machine: selected machine.
-        @param platform: platform
-        @return: cursor or None.
-        """
-        return self.add(URL(url),
-                        timeout,
-                        package,
-                        options,
-                        priority,
-                        custom,
-                        machine,
-                        platform)
-
-    def list_tasks(self, limit=None):
-        """Retrieve list of task.
-        @param limit: specify a limit of entries.
-        @return: list of tasks.
-        """
-        session = self.Session()
-        tasks = session.query(Task).order_by("added_on desc").limit(limit)
-        return tasks
-
-    def view_task(self, task_id):
-        """Retrieve information on a task.
-        @param task_id: ID of the task to query.
-        @return: details on the task.
-        """
-        session = self.Session()
-        task = session.query(Task).get(task_id)
-        return task
-
-    def view_sample(self, sample_id):
-        """Retrieve information on a sample.
-        @param sample_id: ID of the sample to query.
-        @return: details on the sample.
-        """
-        session = self.Session()
-        sample = session.query(Sample).get(sample_id)
-        return sample
-
-    def find_sample_by_md5(self, md5):
-        """Search samples by MD5.
-        @param md5: md5 string
-        @return: matches list
-        """
-        session = self.Session()
-        sample = session.query(Sample).filter(Sample.md5 == md5).first()
-        return sample
-
-    def list_machines(self):
+    def list_machines(self, locked=False):
         """Lists virtual machines.
         @return: list of virtual machines
         """
         session = self.Session()
-        machines = session.query(Machine)
+        if locked:
+            machines = session.query(Machine).filter(Machine.locked == True)
+        else:
+            machines = session.query(Machine)
         return machines
-
-    def view_machine(self, name):
-        """Show virtual machine.
-        @params name: virtual machine name
-        @return: virtual machine's details
-        """
-        session = self.Session()
-        machine = session.query(Machine).filter(Machine.name == name).first()
-        return machine
 
     def lock_machine(self, name=None, platform=None):
         """Places a lock on a free virtual machine.
@@ -629,14 +467,6 @@ class Database:
                 return None
         return machine
 
-    def list_machines_locked(self):
-        """List locked (working) virtual machines.
-        @return: working virtual machines list
-        """
-        session = self.Session()
-        machines = session.query(Machine).filter(Machine.locked == True)
-        return machines
-
     def count_machines_available(self):
         """How many virtual machines are ready for analysis.
         @return: free virtual machines count
@@ -660,3 +490,179 @@ class Database:
             except:
                 session.rollback()
 
+    # The following functions are mostly used by external utils.
+
+    def add(self,
+            obj,
+            timeout=0,
+            package=None,
+            options=None,
+            priority=1,
+            custom=None,
+            machine=None,
+            platform=None,
+            memory=False):
+        """Add a task to database.
+        @param file_path: sample path.
+        @param timeout: selected timeout.
+        @param options: analysis options.
+        @param priority: analysis priority.
+        @param custom: custom options.
+        @param machine: selected machine.
+        @param platform: platform
+        @return: cursor or None.
+        """
+        session = self.Session()
+
+        if isinstance(obj, File):
+            try:
+                sample = Sample(md5=obj.get_md5(),
+                                crc32=obj.get_crc32(),
+                                sha1=obj.get_sha1(),
+                                sha256=obj.get_sha256(),
+                                sha512=obj.get_sha512(),
+                                file_size=obj.get_size(),
+                                file_type=obj.get_type(),
+                                ssdeep=obj.get_ssdeep())
+                session.add(sample)
+                session.commit()
+            except IntegrityError:
+                session.rollback()
+                sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
+
+            task = Task(obj.file_path)
+            task.sample_id = sample.id
+        elif isinstance(obj, URL):
+            task = Task(obj.url)
+
+        task.category = obj.__class__.__name__.lower()
+        task.timeout = timeout
+        task.package = package
+        task.options = options
+        task.priority = priority
+        task.custom = custom
+        task.machine = machine
+        task.platform = platform
+        task.memory = memory
+        session.add(task)
+
+        try:
+            session.commit()
+        except:
+            session.rollback()
+            return None
+
+        return task.id
+
+    def add_path(self,
+                 file_path,
+                 timeout=0,
+                 package=None,
+                 options=None,
+                 priority=1,
+                 custom=None,
+                 machine=None,
+                 platform=None,
+                 memory=False):
+        """Add a task to database from file path.
+        @param file_path: sample path.
+        @param timeout: selected timeout.
+        @param options: analysis options.
+        @param priority: analysis priority.
+        @param custom: custom options.
+        @param machine: selected machine.
+        @param platform: platform
+        @return: cursor or None.
+        """
+        if not file_path or not os.path.exists(file_path):
+            return None
+
+        return self.add(File(file_path),
+                        timeout,
+                        package,
+                        options,
+                        priority,
+                        custom,
+                        machine,
+                        platform,
+                        memory)
+
+    def add_url(self,
+                url,
+                timeout=0,
+                package=None,
+                options=None,
+                priority=1,
+                custom=None,
+                machine=None,
+                platform=None,
+                memory=False):
+        """Add a task to database from url.
+        @param url: url.
+        @param timeout: selected timeout.
+        @param options: analysis options.
+        @param priority: analysis priority.
+        @param custom: custom options.
+        @param machine: selected machine.
+        @param platform: platform
+        @return: cursor or None.
+        """
+        return self.add(URL(url),
+                        timeout,
+                        package,
+                        options,
+                        priority,
+                        custom,
+                        machine,
+                        platform,
+                        memory)
+
+    def list_tasks(self, limit=None):
+        """Retrieve list of task.
+        @param limit: specify a limit of entries.
+        @return: list of tasks.
+        """
+        session = self.Session()
+        tasks = session.query(Task).order_by("added_on desc").limit(limit)
+        return tasks
+
+    def view_task(self, task_id):
+        """Retrieve information on a task.
+        @param task_id: ID of the task to query.
+        @return: details on the task.
+        """
+        session = self.Session()
+        task = session.query(Task).get(task_id)
+        return task
+
+    def view_sample(self, sample_id):
+        """Retrieve information on a sample.
+        @param sample_id: ID of the sample to query.
+        @return: details on the sample.
+        """
+        session = self.Session()
+        sample = session.query(Sample).get(sample_id)
+        return sample
+
+    def find_sample(self, md5=None, sha256=None):
+        """Search samples by MD5.
+        @param md5: md5 string
+        @return: matches list
+        """
+        session = self.Session()
+
+        if md5:
+            sample = session.query(Sample).filter(Sample.md5 == md5).first()
+        elif sha256:
+            sample = sesison.query(Sample).fitler(Sample.sha256 == sha256).first()
+
+        return sample
+
+    def view_machine(self, name):
+        """Show virtual machine.
+        @params name: virtual machine name
+        @return: virtual machine's details
+        """
+        session = self.Session()
+        machine = session.query(Machine).filter(Machine.name == name).first()
+        return machine

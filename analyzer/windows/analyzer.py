@@ -59,18 +59,18 @@ def dump_file(file_path):
 
     # for some reason we get filepaths with "\\??\\", whereas this should
     # actually be "\\\\?\\"..
-    if file_path[:4] == '\\??\\':
-        file_path = '\\\\?\\' + file_path[4:]
+    if file_path[:4] == "\\??\\":
+        file_path = "\\\\?\\" + file_path[4:]
 
     # ensure that the file name is on a harddisk, such as C:\\ and D:\\
     # because we don't need stuff such as \\?\PIPE, \\?\IDE, \\?\STORAGE, etc.
-    if file_path[:4] == '\\\\?\\' and file_path[5] != ':':
-        log.warning('Not going to drop %s (not on a harddisk)' % file_path)
+    if file_path[:4] == "\\\\?\\" and file_path[5] != ":":
+        log.warning("Not going to drop %s (not on a harddisk)" % file_path)
         return
 
     # we don't need \Device\ stuff
-    if file_path[:8] == '\\Device\\' or file_path[:12] == '\\\\?\\Device\\':
-        log.warning('Not going to drop %s (not a file)' % file_path)
+    if file_path[:8] == "\\Device\\" or file_path[:12] == "\\\\?\\Device\\":
+        log.warning("Not going to drop %s (not a file)" % file_path)
         return
 
     # 32k is the maximum length of the filename when using unicode names with
@@ -172,11 +172,11 @@ class PipeHandler(Thread):
                 data = command[8:]
 
                 process_id = thread_id = None
-                if not ',' in data:
+                if not "," in data:
                     if data.isdigit():
                         process_id = int(data)
-                elif len(data.split(',')) == 2:
-                    process_id, thread_id = data.split(',')
+                elif len(data.split(",")) == 2:
+                    process_id, thread_id = data.split(",")
                     if process_id.isdigit():
                         process_id = int(process_id)
                     else:

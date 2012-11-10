@@ -26,6 +26,7 @@ def main():
     parser.add_argument("--priority", type=int, action="store", default=1, help="Specify a priority for the analysis represented by an integer", required=False)
     parser.add_argument("--machine", type=str, action="store", default="", help="Specify the identifier of a machine you want to use", required=False)
     parser.add_argument("--platform", type=str, action="store", default="", help="Specify the operating system platform you want to use (windows/darwin/linux)", required=False)
+    parser.add_argument("--memory", action="store_true", default=False, help="Enable to take a memory dump of the analysis machine", required=False)
 
     try:
         args = parser.parse_args()
@@ -49,7 +50,8 @@ def main():
                              priority=args.priority,
                              machine=args.machine,
                              platform=args.platform,
-                             custom=args.custom)
+                             custom=args.custom,
+                             memory=args.memory)
 
         print(bold(green("Success")) + ": URL \"%s\" added as task with ID %d" % (target, task_id))
     else:
@@ -79,7 +81,8 @@ def main():
                                   priority=args.priority,
                                   machine=args.machine,
                                   platform=args.platform,
-                                  custom=args.custom)
+                                  custom=args.custom,
+                                  memory=args.memory)
 
             if task_id:
                 print(bold(green("Success")) + ": File \"%s\" added as task with ID %d" % (file_path, task_id))
