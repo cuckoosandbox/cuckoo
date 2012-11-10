@@ -10,7 +10,7 @@ import xmlrpclib
 import subprocess
 import ConfigParser
 from StringIO import StringIO
-from zipfile import ZipFile, BadZipfile, ZIP_DEFLATED
+from zipfile import ZipFile, BadZipfile, ZIP_STORED
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 
 BIND_IP = "0.0.0.0"
@@ -215,7 +215,7 @@ class Agent:
             return False
 
         zip_data = StringIO()
-        zip_file = ZipFile(zip_data, "w", ZIP_DEFLATED)
+        zip_file = ZipFile(zip_data, "w", ZIP_STORED)
 
         root_len = len(os.path.abspath(root))
         
@@ -226,7 +226,7 @@ class Agent:
                 archive_name = os.path.join(archive_root, name)
 
                 try:
-                    zip_file.write(path, archive_name, ZIP_DEFLATED)
+                    zip_file.write(path, archive_name)
                 except IOError as e:
                     continue
         

@@ -9,7 +9,7 @@ import logging
 import xmlrpclib
 from threading import Timer, Event
 from StringIO import StringIO
-from zipfile import ZipFile, BadZipfile, ZIP_DEFLATED
+from zipfile import ZipFile, BadZipfile, ZIP_STORED
 
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooGuestError
@@ -84,7 +84,7 @@ class GuestManager:
         @return: operation status.
         """
         zip_data = StringIO()
-        zip_file = ZipFile(zip_data, "w", ZIP_DEFLATED)
+        zip_file = ZipFile(zip_data, "w", ZIP_STORED)
 
         # Select the proper analyzer's folder according to the operating
         # system associated with the current machine.
@@ -102,7 +102,7 @@ class GuestManager:
             for name in files:
                 path = os.path.join(root, name)
                 archive_name = os.path.join(archive_root, name)
-                zip_file.write(path, archive_name, ZIP_DEFLATED)
+                zip_file.write(path, archive_name)
 
         zip_file.close()
         data = xmlrpclib.Binary(zip_data.getvalue())
