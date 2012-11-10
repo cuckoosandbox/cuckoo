@@ -3,7 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-from zipfile import ZipFile, BadZipfile, ZIP_DEFLATED
+from zipfile import ZipFile, BadZipfile
 
 from lib.common.abstracts import Package
 from lib.common.exceptions import CuckooPackageError
