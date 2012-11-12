@@ -10,12 +10,9 @@ class Dll(Package):
     """DLL analysis package."""
 
     def start(self, path):
-        rundll32 = "C:\\WINDOWS\\system32\\rundll32.exe"
-
         free = self.options.get("free", False)
         function = self.options.get("function", None)
         suspended = True
-
         if free:
             suspended = False
 
@@ -25,8 +22,7 @@ class Dll(Package):
             args = "%s,DllMain" % path
 
         p = Process()
-
-        if not p.execute(path=rundll32, args=args, suspended=suspended):
+        if not p.execute(path="rundll32", args=args, suspended=suspended):
             raise CuckooPackageError("Unable to execute rundll32, analysis aborted")
 
         if not free and suspended:

@@ -10,10 +10,7 @@ class Shellcode(Package):
 
     def start(self, path):
         p = Process()
-
-        execsc = "bin/execsc.exe"
-
-        p.execute(path=execsc, args=path, suspended=True)
+        p.execute(path="bin/execsc.exe", args=path, suspended=True)
         p.inject()
         p.resume()
 

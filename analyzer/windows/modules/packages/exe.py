@@ -10,14 +10,13 @@ class Exe(Package):
     """EXE analysis package."""
 
     def start(self, path):
-        p = Process()
-
         free = self.options.get("free", False)
         args = self.options.get("arguments", None)
         suspended = True
         if free:
             suspended = False
 
+        p = Process()
         if not p.execute(path=path, args=args, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial process, analysis aborted")
 
