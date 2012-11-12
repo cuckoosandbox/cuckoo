@@ -187,8 +187,12 @@ class Summary:
                 if call["category"] == "filesystem":
                     for argument in call["arguments"]:
                         if argument["name"] == "FileName":
-                            if argument["value"] not in files:
-                                files.append(argument["value"])
+                            value = argument["name"].strip()
+                            if not value:
+                                continue
+
+                            if value not in files:
+                                files.append(value)
 
         return files
 
@@ -272,8 +276,12 @@ class Summary:
                 if call["category"] == "synchronization":
                     for argument in call["arguments"]:
                         if argument["name"] == "MutexName":
-                            if argument["value"] not in mutexes:
-                                mutexes.append(argument["value"])
+                            value = argument["name"].strip()
+                            if not value:
+                                continue
+
+                            if value not in mutexes:
+                                mutexes.append(value)
 
         return mutexes
 
