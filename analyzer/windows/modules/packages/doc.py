@@ -2,20 +2,50 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os
+
 from lib.common.abstracts import Package
 from lib.api.process import Process
+from lib.common.exceptions import CuckooPackageError
 
 class DOC(Package):
     """Word analysis package."""
 
-    def start(self, path):
-        arg = "\"%s\"" % path
-        p = Process()
-        p.execute(path="C:\\Program Files\\Microsoft Office\\Office12\\WINWORD.EXE", args=arg, suspended=True)
-        p.inject()
-        p.resume()
+    def get_path(self):
+        paths = [
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "WINWORD.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office11", "WINWORD.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office12", "WINWORD.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office14", "WINWORD.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office15", "WINWORD.EXE")
+        ]
 
-        return p.pid
+        for path in paths:
+            if os.path.exists(path):
+                return path
+
+        return None
+
+    def start(self, path):
+        word = self.get_path()
+        if not word:
+            raise CuckooPackageError("Unable to find any Microsoft Office Word executable available")
+
+        free = self.options.get("free", False)
+        suspended = True
+        if free:
+            suspended = False
+
+        p = Process()
+        if not p.execute(path=word, args="\"%s\"" % path, suspended=suspended):
+            raise CuckooPackageError("Unable to execute initial Microsoft Office Word process, analysis aborted")
+
+        if not free and suspended:
+            p.inject()
+            p.resume()
+            return p.pid
+        else:
+            return None
 
     def check(self):
         return True

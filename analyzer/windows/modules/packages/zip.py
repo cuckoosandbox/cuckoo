@@ -26,17 +26,23 @@ class Zip(Package):
                 except RuntimeError as e:
                     raise CuckooPackageError("Unable to extract Zip file, unknown password?")
 
-        if "file" in self.options:
-            file_path = os.path.join(root, self.options["file"])
-        else:
-            file_path = os.path.join(root, "sample.exe")
+        file_path = os.path.join(root, self.options.get("file", "sample.exe"))
+        free = self.options.get("free", False)
+        args = self.options.get("arguments", None)
+        suspended = True
+        if free:
+            suspended = False
 
         p = Process()
-        p.execute(path=file_path, suspended=True)
-        p.inject()
-        p.resume()
+        if not p.execute(path=file_path, args=args, suspended=suspended):
+            raise CuckooPackageError("Unable to execute initial process, analysis aborted")
 
-        return p.pid
+        if not free and suspended:
+            p.inject()
+            p.resume()
+            return p.pid
+        else:
+            return None
 
     def check(self):
         return True

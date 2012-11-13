@@ -8,14 +8,41 @@ from lib.api.process import Process
 class XLS(Package):
     """Excel analysis package."""
 
-    def start(self, path):
-        arg = "\"%s\"" % path
-        p = Process()
-        p.execute(path="C:\\Program Files\\Microsoft Office\\Office12\\EXCEL.EXE", args=arg, suspended=True)
-        p.inject()
-        p.resume()
+    def get_path(self):
+        paths = [
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "EXCEL.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office11", "EXCEL.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office12", "EXCEL.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office14", "EXCEL.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office15", "EXCEL.EXE")
+        ]
 
-        return p.pid
+        for path in paths:
+            if os.path.exists(path):
+                return path
+
+        return None
+
+    def start(self, path):
+        excel = self.get_path()
+        if not excel:
+            raise CuckooPackageError("Unable to find any Microsoft Office Excel executable available")
+
+        free = self.options.get("free", False)
+        suspended = True
+        if free:
+            suspended = False
+
+        p = Process()
+        if not p.execute(path=excel, args="\"%s\"" % path, suspended=suspended):
+            raise CuckooPackageError("Unable to execute initial Microsoft Office Excel process, analysis aborted")
+
+        if not free and suspended:
+            p.inject()
+            p.resume()
+            return p.pid
+        else:
+            return None
 
     def check(self):
         return True

@@ -25,6 +25,7 @@ class AnalysisInfo(Processing):
             "started" : datetime.fromtimestamp(started).strftime("%Y-%m-%d %H:%M:%S"),
             "ended" : datetime.fromtimestamp(ended).strftime("%Y-%m-%d %H:%M:%S"),
             "duration" : "%d seconds" % (ended - started),
+            "id" : int(self.cfg.analysis.id),
             "category" : self.cfg.analysis.category
         }
 

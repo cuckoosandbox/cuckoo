@@ -139,6 +139,7 @@ class AnalysisManager(Thread):
         """
         options = {}
 
+        options["id"] = self.task.id
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
