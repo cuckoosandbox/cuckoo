@@ -41,3 +41,7 @@ class CuckooReportError(CuckooOperationalError):
 class CuckooGuestError(CuckooOperationalError):
     """Cuckoo guest agent error."""
     pass
+
+class CuckooResultError(CuckooOperationalError):
+    """Cuckoo result server error."""
+    pass

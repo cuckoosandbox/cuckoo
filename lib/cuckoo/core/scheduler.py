@@ -20,6 +20,7 @@ from lib.cuckoo.common.utils import  create_folders, create_folder
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.guest import GuestManager
+from lib.cuckoo.core.resultserver import Resultserver
 from lib.cuckoo.core.sniffer import Sniffer
 from lib.cuckoo.core.processor import Processor
 from lib.cuckoo.core.reporter import Reporter
@@ -208,6 +209,9 @@ class AnalysisManager(Thread):
         # Acquire analysis machine.
         machine = self.acquire_machine()
 
+        # At this point we can tell the Resultserver about it
+        Resultserver().add_task(self.task, machine)
+
         # If enabled in the configuration, start the tcpdump instance.
         if self.cfg.cuckoo.use_sniffer:
             sniffer = Sniffer(self.cfg.cuckoo.tcpdump)
@@ -294,6 +298,9 @@ class AnalysisManager(Thread):
                           "You might need to restore it manually"
                           % (machine.label, e))
 
+            # after all this, we can make the Resultserver forget about it
+            Resultserver().del_task(self.task, machine)
+
         # If the analysis succeeded and the results were correctly stored, we
         # process the results and generate the reports.
         if succeeded and stored:
@@ -365,6 +372,7 @@ class Scheduler:
             raise CuckooCriticalError("No machines available")
         else:
             log.info("Loaded %s machine/s" % mmanager.machines().count())
+
 
     def stop(self):
         """Stop scheduler."""
