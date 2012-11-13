@@ -187,7 +187,7 @@ class Summary:
                 if call["category"] == "filesystem":
                     for argument in call["arguments"]:
                         if argument["name"] == "FileName":
-                            value = argument["name"].strip()
+                            value = argument["value"].strip()
                             if not value:
                                 continue
 
@@ -276,7 +276,7 @@ class Summary:
                 if call["category"] == "synchronization":
                     for argument in call["arguments"]:
                         if argument["name"] == "MutexName":
-                            value = argument["name"].strip()
+                            value = argument["value"].strip()
                             if not value:
                                 continue
 
