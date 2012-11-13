@@ -33,13 +33,13 @@ def tasks_create_file():
     response = {"error" : False}
 
     data = request.files.file
-    package = request.forms.get("package")
-    timeout = request.forms.get("timeout")
+    package = request.forms.get("package", "")
+    timeout = request.forms.get("timeout", "")
     priority = request.forms.get("priority", 1)
-    options = request.forms.get("options")
-    machine = request.forms.get("machine")
-    platform = request.forms.get("platform")
-    custom = request.forms.get("custom")
+    options = request.forms.get("options", "")
+    machine = request.forms.get("machine", "")
+    platform = request.forms.get("platform", "")
+    custom = request.forms.get("custom", "")
     memory = request.forms.get("memory", False)
     if memory:
         memory = True
@@ -64,13 +64,13 @@ def tasks_create_url():
     response = {"error" : False}
 
     url = request.forms.get("url")
-    package = request.forms.get("package")
-    timeout = request.forms.get("timeout")
+    package = request.forms.get("package", "")
+    timeout = request.forms.get("timeout", "")
     priority = request.forms.get("priority", 1)
-    options = request.forms.get("options")
-    machine = request.forms.get("machine")
-    platform = request.forms.get("platform")
-    custom = request.forms.get("custom")
+    options = request.forms.get("options", "")
+    machine = request.forms.get("machine", "")
+    platform = request.forms.get("platform", "")
+    custom = request.forms.get("custom", "")
     memory = request.forms.get("memory", False)
     if memory:
         memory = True
