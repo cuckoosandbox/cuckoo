@@ -399,7 +399,7 @@ class Analyzer:
             # If the analysis target is a file, we choose the package according
             # to the file format.
             if self.config.category == "file":
-                package = choose_package(self.config.file_type)
+                package = choose_package(self.config.file_type, self.config.file_name)
             # If it's an URL, we'll just use the default Internet Explorer
             # package.
             else:
