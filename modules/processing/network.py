@@ -288,7 +288,7 @@ class Pcap:
         try:
             file = open(self.filepath, "rb")
         except (IOError, OSError):
-            log.error("Unable to open %s" % self.filepathwhitesnow)
+            log.error("Unable to open %s" % self.filepath)
             return None
 
         try:
