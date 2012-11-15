@@ -178,9 +178,11 @@ class LibVirtMachineManager(MachineManager):
 
     def __init__(self):
         try:
+            global libvirt
             import libvirt
         except ImportError:
             raise CuckooDependencyError("Unable to import libvirt")
+        super(LibVirtMachineManager, self).__init__()
 
     def initialize(self, module):
         """Initialize machine manager module. Ovverride defualt to set proper
