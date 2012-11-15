@@ -21,18 +21,18 @@
             </div>
         {% endif %}
 
-        {% if results.network.dns %}
+        {% if results.network.domains %}
         <div>
             <h4><a href="javascript:showHide('dns');">DNS Requests</a></h4>
             <div id="dns" style="display: none;">
                 <table class="table table-striped table-bordered">
                     <tr>
-                        <th>Hostname</th>
+                        <th>Domain</th>
                         <th>IP Address</th>
                     </tr>
-                    {% for dns in results.network.dns %}
+                    {% for dns in results.network.domains %}
                     <tr>
-                        <td><span class="mono">{{dns.hostname}}</span></td>
+                        <td><span class="mono">{{dns.domain}}</span></td>
                         <td><span class="mono">{{dns.ip}}</span></td>
                     </tr>
                     {% endfor %}
