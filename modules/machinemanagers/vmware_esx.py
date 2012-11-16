@@ -90,7 +90,7 @@ class VMware_ESX(MachineManager):
         try:
             machine = self.server.get_vm_by_name(host)
             #The revert process may start the VM after completion so let's check what our status is and decide what to do.
-            status == machine.get_status()
+            status = machine.get_status()
             
             if status == "POWERING ON":
                 return True
