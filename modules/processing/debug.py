@@ -17,7 +17,7 @@ class Debug(Processing):
         @return: debug information dict.
         """
         self.key = "debug"
-        debug = {}
+        debug = {"log" : "", "errors" : []}
 
         if os.path.exists(self.log_path):
             try:
@@ -26,7 +26,5 @@ class Debug(Processing):
                 raise CuckooProcessingError("Error decoding %s: %s" % (self.log_path, e))
             except (IOError, OSError):
                 raise CuckooProcessingError("Error opening %s: %s" % (self.log_path, e))
-        else:
-            debug["log"] = ""
 
         return debug

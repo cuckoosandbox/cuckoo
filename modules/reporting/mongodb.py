@@ -11,14 +11,13 @@ from lib.cuckoo.common.objects import File
 
 try:
     from pymongo.connection import Connection
-    from pymongo.errors import ConnectionFailure
+    from pymongo.errors import ConnectionFailure, InvalidDocument
     from gridfs import GridFS
     from gridfs.errors import FileExists
 except ImportError:
     raise CuckooDependencyError("Unable to import pymongo")
 
-
-class MongoDb(Report):
+class MongoDB(Report):
     """Stores report in MongoDB."""
 
     def run(self, results):
@@ -87,7 +86,22 @@ class MongoDb(Report):
                 results["shots"].append(shot_id)
 
         # Save all remaining results.
-        self._db.analysis.save(results)
+        try:
+            self._db.analysis.save(results)
+        except InvalidDocument:
+            # The document is too big, we need to shrink it and re-save it.
+            results["behavior"]["processes"] = ""
+
+            # Let's add an error message to the debug block.
+            error = ("The analysis results were too big to be stored, " +
+                     "the detailed behavioral analysis has been stripped out.")
+            results["debug"]["errors"].append(error)
+
+            # Try again to store, if it fails, just abort.
+            try:
+                self._db.analysis.save(results)
+            except Exception as e:
+                raise CuckooReportError("Failed to store the document into MongoDB: %s" % e)
 
     def _connect(self):
         """Connects to Mongo database, loads options and set connectors.
