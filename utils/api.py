@@ -19,7 +19,8 @@ from lib.cuckoo.core.database import Database
 errors = {
     "task_not_found" : "The specified task does not exist",
     "file_not_found" : "The specified file does not exist",
-    "machine_not_found" : "The specified machine does not exist"
+    "machine_not_found" : "The specified machine does not exist",
+    "report_not_found" : "The specified report does not exist"
 }
 
 def jsonize(data):
@@ -125,6 +126,33 @@ def tasks_view(task_id):
         return report_error("task_not_found")
 
     return jsonize(response)
+
+@route("/tasks/report/<task_id>", method="GET")
+@route("/tasks/report/<task_id>/<report_format>", method="GET")
+def tasks_report(task_id, report_format="json"):
+    response = {"error" : False}
+
+    if report_format.lower() == "json":
+        report_path = os.path.join(CUCKOO_ROOT,
+                                   "storage",
+                                   "analyses",
+                                   task_id,
+                                   "reports",
+                                   "report.json")
+    elif report_format.lower() == "html":
+        report_path = os.path.join(CUCKOO_ROOT,
+                                   "storage",
+                                   "analyses",
+                                   task_id,
+                                   "reports",
+                                   "report.html")
+    else:
+        return report_error("report_not_found")
+
+    if os.path.exists(report_path):
+        return open(report_path, "rb").read()
+    else:
+        return report_error("report_not_found")
 
 @route("/files/view/md5/<md5>", method="GET")
 @route("/files/view/sha256/<sha256>", method="GET")
