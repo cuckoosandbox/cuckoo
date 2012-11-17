@@ -128,7 +128,6 @@ class Agent:
                         value = value.encode("utf-8")
                     except UnicodeEncodeError:
                         pass
-                print value
                 config.set("analysis", key, value)
 
             config_path = os.path.join(root, "analysis.conf")
