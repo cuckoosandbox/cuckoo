@@ -66,7 +66,7 @@ class Pcap:
         @param name: hostname.
         @return: IP address or blank
         """
-        if Config().cuckoo.resolve_dns:
+        if Config().processing.resolve_dns:
             try:
                 socket.setdefaulttimeout(10)
                 ip = socket.gethostbyname(name)

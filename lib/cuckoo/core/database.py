@@ -283,7 +283,7 @@ class Database:
         if dsn:
             self.engine = create_engine(dsn, poolclass=NullPool)
         elif cfg.cuckoo.database:
-            self.engine = create_engine(cfg.cuckoo.database, poolclass=NullPool)
+            self.engine = create_engine(cfg.database.connection, poolclass=NullPool)
         else:
             db_file = os.path.join(CUCKOO_ROOT, "db", "cuckoo.db")
             if not os.path.exists(db_file):
@@ -299,8 +299,8 @@ class Database:
         # Disable SQL logging. Turn it on for debugging.
         self.engine.echo = False
         # Connection timeout.
-        if cfg.cuckoo.database_timeout:
-            self.engine.pool_timeout = cfg.cuckoo.database_timeout
+        if cfg.database.timeout:
+            self.engine.pool_timeout = cfg.database.timeout
         else:
             self.engine.pool_timeout = 60
         # Create schema.

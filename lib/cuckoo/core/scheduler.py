@@ -150,7 +150,7 @@ class AnalysisManager(Thread):
         options["started"] = time.time()
 
         if not self.task.timeout or self.task.timeout == 0:
-            options["timeout"] = self.cfg.cuckoo.analysis_timeout
+            options["timeout"] = self.cfg.timeouts.default
         else:
             options["timeout"] = self.task.timeout
 
@@ -166,7 +166,7 @@ class AnalysisManager(Thread):
             logs_path = os.path.join(self.storage, "logs")
             for csv in os.listdir(logs_path):
                 csv = os.path.join(logs_path, csv)
-                if os.stat(csv).st_size > self.cfg.cuckoo.analysis_size_limit:
+                if os.stat(csv).st_size > self.cfg.processing.analysis_size_limit:
                     log.error("Analysis file %s is too big to be processed, "
                               "analysis aborted. Process it manually with the "
                               "provided utilities" % csv)
@@ -209,9 +209,9 @@ class AnalysisManager(Thread):
         machine = self.acquire_machine()
 
         # If enabled in the configuration, start the tcpdump instance.
-        if self.cfg.cuckoo.use_sniffer:
-            sniffer = Sniffer(self.cfg.cuckoo.tcpdump)
-            sniffer.start(interface=self.cfg.cuckoo.interface,
+        if self.cfg.sniffer.enabled:
+            sniffer = Sniffer(self.cfg.sniffer.tcpdump)
+            sniffer.start(interface=self.cfg.sniffer.interface,
                           host=machine.ip,
                           file_path=os.path.join(self.storage, "dump.pcap"))
 
