@@ -117,10 +117,14 @@ def tasks_view(task_id):
     task = db.view_task(task_id)
     if task:
         entry = task.to_dict()
-        guest = task.guest
         entry["guest"] = {}
-        if guest:
-            entry["guest"] = guest.to_dict()
+        if task.guest:
+            entry["guest"] = task.guest.to_dict()
+
+        entry["errors"] = []
+        for error in task.errors:
+            entry["errors"].append(error.message)
+
         response["task"] = entry
     else:
         return report_error("task_not_found")

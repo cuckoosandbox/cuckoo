@@ -242,6 +242,7 @@ class Task(Base):
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     sample = relationship("Sample", backref="tasks")
     guest = relationship("Guest", uselist=False, backref="tasks")
+    errors = relationship("Error", backref="tasks")
 
     def to_dict(self):
         """Converts object to dict.
