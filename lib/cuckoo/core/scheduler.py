@@ -224,6 +224,7 @@ class AnalysisManager(Thread):
             # Start the machine.
             mmanager.start(machine.label)
         except CuckooMachineError as e:
+            Database().add_error(str(e), self.task.id)
             log.error(e)
 
             # Stop the sniffer.
@@ -238,6 +239,7 @@ class AnalysisManager(Thread):
                 # Start the analysis.
                 guest.start_analysis(options)
             except CuckooGuestError as e:
+                Database().add_error(str(e), self.task.id)
                 log.error(e)
 
                 # Stop the sniffer.
@@ -247,9 +249,22 @@ class AnalysisManager(Thread):
                 return False
             else:
                 # Wait for analysis completion.
-                succeeded = guest.wait_for_completion()
+                try:
+                    guest.wait_for_completion()
+                    succeeded = True
+                except CuckooGuestError as e:
+                    Database().add_error(str(e), self.task.id)
+                    log.error(e)
+                    succeeded = False
+
                 # Retrieve the analysis results and store them.
-                stored = guest.save_results(self.storage)
+                try:
+                    guest.save_results(self.storage)
+                    stored = True
+                except CuckooGuestError as e:
+                    Database().add_error(str(e), self.task.id)
+                    log.error(e)
+                    stored = False
         finally:
             # Stop the sniffer.
             if sniffer:
@@ -290,13 +305,14 @@ class AnalysisManager(Thread):
                 # Release the analysis machine.
                 mmanager.release(machine.label)
             except CuckooMachineError as e:
+                Database().add_error(str(e), self.task.id)
                 log.error("Unable to release machine %s, reason %s. "
                           "You might need to restore it manually"
                           % (machine.label, e))
 
-        # If the analysis succeeded and the results were correctly stored, we
-        # process the results and generate the reports.
-        if succeeded and stored:
+        # If the results were correctly stored, we process the results and
+        # generate the reports.
+        if stored:
             self.process_results()
 
         return succeeded

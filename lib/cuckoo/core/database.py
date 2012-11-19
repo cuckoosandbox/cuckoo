@@ -29,35 +29,22 @@ except ImportError:
     raise CuckooDependencyError("SQLAlchemy library not found, "
                                 "verify your setup")
 
-class Task(Base):
-    """Analysis task queue."""
-    __tablename__ = "tasks"
+class Machine(Base):
+    """Configured virtual machines to be used as guests."""
+    __tablename__ = "machines"
 
     id = Column(Integer(), primary_key=True)
-    target = Column(Text(), nullable=False)
-    category = Column(String(255), nullable=False)
-    timeout = Column(Integer(), server_default="0", nullable=False)
-    priority = Column(Integer(), server_default="1", nullable=False)
-    custom = Column(String(255), nullable=True)
-    machine = Column(String(255), nullable=True)
-    package = Column(String(255), nullable=True)
-    options = Column(String(255), nullable=True)
-    platform = Column(String(255), nullable=True)
-    memory = Column(Boolean, nullable=False, default=False)
-    added_on = Column(DateTime(timezone=False),
-                      default=datetime.now(),
-                      nullable=False)
-    completed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(Enum("pending",
-                         "processing",
-                         "failure",
-                         "success",
-                         name="status_type"),
-                         server_default="pending",
-                         nullable=False)
-    sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
-    sample = relationship("Sample", backref="tasks")
-    guest = relationship("Guest", uselist=False, backref="tasks")
+    name = Column(String(255), nullable=False)
+    label = Column(String(255), nullable=False)
+    ip = Column(String(255), nullable=False)
+    platform = Column(String(255), nullable=False)
+    locked = Column(Boolean(), nullable=False, default=False)
+    locked_changed_on = Column(DateTime(timezone=False), nullable=True)
+    status = Column(String(255), nullable=True)
+    status_changed_on = Column(DateTime(timezone=False), nullable=True)
+
+    def __repr__(self):
+        return "<Machine('%s','%s')>" % (self.id, self.name)
 
     def to_dict(self):
         """Converts object to dict.
@@ -78,11 +65,15 @@ class Task(Base):
         """
         return json.dumps(self.to_dict())
 
-    def __init__(self, target=None):
-        self.target = target
-
-    def __repr__(self):
-        return "<Task('%s','%s')>" % (self.id, self.target)
+    def __init__(self,
+                 name,
+                 label,
+                 ip,
+                 platform):
+        self.name = name
+        self.label = label
+        self.ip = ip
+        self.platform = platform
 
 class Guest(Base):
     """Tracks guest run."""
@@ -188,22 +179,69 @@ class Sample(Base):
         if ssdeep:
             self.ssdeep = ssdeep
 
-class Machine(Base):
-    """Configured virtual machines to be used as guests."""
-    __tablename__ = "machines"
+class Error(Base):
+    """Analysis errors."""
+    __tablename__ = "errors"
 
     id = Column(Integer(), primary_key=True)
-    name = Column(String(255), nullable=False)
-    label = Column(String(255), nullable=False)
-    ip = Column(String(255), nullable=False)
-    platform = Column(String(255), nullable=False)
-    locked = Column(Boolean(), nullable=False, default=False)
-    locked_changed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(String(255), nullable=True)
-    status_changed_on = Column(DateTime(timezone=False), nullable=True)
+    message = Column(String(255), nullable=False)
+    task_id = Column(Integer,
+                     ForeignKey('tasks.id'),
+                     nullable=False,
+                     unique=True)
+
+    def to_dict(self):
+        """Converts object to dict.
+        @return: dict
+        """
+        d = {}
+        for column in self.__table__.columns:
+            value = getattr(self, column.name)
+            d[column.name] = value
+        return d
+
+    def to_json(self):
+        """Converts object to JSON.
+        @return: JSON data
+        """
+        return json.dumps(self.to_dict())
+
+    def __init__(self, message, task_id):
+        self.message = message
+        self.task_id = task_id
 
     def __repr__(self):
-        return "<Machine('%s','%s')>" % (self.id, self.name)
+        return "<Error('%s','%s','%s')>" % (self.id, self.message, self.task_id)
+
+class Task(Base):
+    """Analysis task queue."""
+    __tablename__ = "tasks"
+
+    id = Column(Integer(), primary_key=True)
+    target = Column(Text(), nullable=False)
+    category = Column(String(255), nullable=False)
+    timeout = Column(Integer(), server_default="0", nullable=False)
+    priority = Column(Integer(), server_default="1", nullable=False)
+    custom = Column(String(255), nullable=True)
+    machine = Column(String(255), nullable=True)
+    package = Column(String(255), nullable=True)
+    options = Column(String(255), nullable=True)
+    platform = Column(String(255), nullable=True)
+    memory = Column(Boolean, nullable=False, default=False)
+    added_on = Column(DateTime(timezone=False),
+                      default=datetime.now(),
+                      nullable=False)
+    completed_on = Column(DateTime(timezone=False), nullable=True)
+    status = Column(Enum("pending",
+                         "processing",
+                         "failure",
+                         "success",
+                         name="status_type"),
+                         server_default="pending",
+                         nullable=False)
+    sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
+    sample = relationship("Sample", backref="tasks")
+    guest = relationship("Guest", uselist=False, backref="tasks")
 
     def to_dict(self):
         """Converts object to dict.
@@ -224,15 +262,11 @@ class Machine(Base):
         """
         return json.dumps(self.to_dict())
 
-    def __init__(self,
-                 name,
-                 label,
-                 ip,
-                 platform):
-        self.name = name
-        self.label = label
-        self.ip = ip
-        self.platform = platform
+    def __init__(self, target=None):
+        self.target = target
+
+    def __repr__(self):
+        return "<Task('%s','%s')>" % (self.id, self.target)
 
 class Database:
     """Analysis queue database.
@@ -493,6 +527,19 @@ class Database:
             except:
                 session.rollback()
 
+    def add_error(self, message, task_id):
+        """Add an error related to a task.
+        @param message: error message
+        @param task_id: ID of the related task
+        """
+        session = self.Session()
+        try:
+            error = Error(message=message, task_id=task_id)
+            session.add(error)
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+
     # The following functions are mostly used by external utils.
 
     def add(self,
@@ -669,3 +716,12 @@ class Database:
         session = self.Session()
         machine = session.query(Machine).filter(Machine.name == name).first()
         return machine
+
+    def view_errors(self, task_id):
+        """Get all errors related to a task.
+        @param task_id: ID of task associated to the errors
+        @return: list of errors.
+        """
+        session = self.Session()
+        errors = session.query(Error).filter(Error.task_id == task_id)
+        return errors

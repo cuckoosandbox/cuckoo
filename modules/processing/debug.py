@@ -7,7 +7,7 @@ import codecs
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.exceptions import CuckooProcessingError
-
+from lib.cuckoo.core.database import Database
 
 class Debug(Processing):
     """Analysis debug information."""
@@ -26,5 +26,8 @@ class Debug(Processing):
                 raise CuckooProcessingError("Error decoding %s: %s" % (self.log_path, e))
             except (IOError, OSError):
                 raise CuckooProcessingError("Error opening %s: %s" % (self.log_path, e))
+
+        for error in Database().view_errors(int(self.cfg.analysis.id)):
+            debug["errors"].append(error.message)
 
         return debug

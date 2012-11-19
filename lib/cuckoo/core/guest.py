@@ -151,7 +151,8 @@ class GuestManager:
                 self.server.add_malware(data, options["file_name"])
 
             # Launch the analyzer.
-            self.server.execute()
+            pid = self.server.execute()
+            log.debug("%s: analyzer started with PID %d" % (self.id, pid))
         # If something goes wrong when establishing the connection, raise an
         # exception and abort the analysis.
         except (socket.timeout, socket.error):
@@ -163,6 +164,8 @@ class GuestManager:
         """Wait for analysis completion.
         @return: operation status.
         """
+        log.debug("%s: waiting for completion" % self.id)
+
         # Same procedure as in self.wait(). Just look at the comments there.
         abort = Event()
         abort.clear()
@@ -173,31 +176,31 @@ class GuestManager:
         timer.start()
 
         while True:
+            time.sleep(1)
+
             # If the analysis hits the critical timeout, just return straight
             # straight away and try to recover the analysis results from the
             # guest.
             if abort.is_set():
-                log.error("%s: the analysis hit the critical timeout, "
-                          "terminating" % self.id)
-                return False
+                raise CuckooGuestError("The analysis hit the critical timeout,"
+                                       " terminating")
 
             try:
                 status = self.server.get_status()
-                if status == CUCKOO_GUEST_COMPLETED:
-                    log.info("%s: analysis completed successfully" % self.id)
-                    break
-                elif status == CUCKOO_GUEST_FAILED:
-                    log.error("%s: analysis failed: %s"
-                              % (self.id, self.server.get_error()))
-                    return False
-                else:
-                    log.debug("%s: analysis not completed yet" % self.id)
-            except:
-                pass
+            except Exception as e:
+                log.debug("%s: error retrieving status: %s" % (self.id, e))
+                continue
 
-            time.sleep(1)
-
-        return True
+            # React according to the returned status.
+            if status == CUCKOO_GUEST_COMPLETED:
+                log.info("%s: analysis completed successfully" % self.id)
+                break
+            elif status == CUCKOO_GUEST_FAILED:
+                raise CuckooGuestError("Analysis failed: %s"
+                                        % self.server.get_error())
+            else:
+                log.debug("%s: analysis not completed yet (status=%s)"
+                          % (self.id, status))
 
     def save_results(self, folder):
         """Save analysis results.
@@ -208,9 +211,8 @@ class GuestManager:
         try:
             data = self.server.get_results()
         except Exception as e:
-            log.error("%s: failed to retrieve analysis results: %s"
-                      % (self.id, e))
-            return False
+            raise CuckooGuestError("Failed to retrieve analysis results: %s"
+                                   % e)
 
         # Write the retrieved binary data to a in-memory zip archive.
         zip_data = StringIO()
@@ -221,13 +223,11 @@ class GuestManager:
             try:
                 os.mkdir(folder)
             except (IOError, OSError) as e:
-                log.exception("Failed to create the results folder")
-                return False
+                raise CuckooGuestError("Failed to store analysis results: %s"
+                                       % e)
 
         # Extract the generate zip archive to the specified folder, which is
         # going to be somewhere like storage/analysis/<task id>/.
         log.debug("Extracting results to %s" % folder)
         archive.extractall(folder)
         archive.close()
-
-        return True
