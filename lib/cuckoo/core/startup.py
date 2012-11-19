@@ -17,6 +17,7 @@ from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.colors import *
+from lib.cuckoo.core.database import Database
 
 try:
     import graypy
@@ -89,6 +90,12 @@ def create_structure():
     except CuckooOperationalError as e:
         raise CuckooStartupError(e)
 
+class DatabaseHandler(logging.Handler):
+    def emit(self, record):
+        if hasattr(record, "task_id"):
+            db = Database()
+            db.add_error(record.msg, int(record.task_id))
+
 def init_logging():
     """Initializes logging."""
     cfg = Config()
@@ -102,6 +109,10 @@ def init_logging():
     fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log"))
     fh.setFormatter(formatter)
     log.addHandler(fh)
+
+    dh = DatabaseHandler()
+    dh.setLevel(logging.ERROR)
+    log.addHandler(dh)
 
     if cfg.graylog.enabled:
         if HAVE_GRAYPY:

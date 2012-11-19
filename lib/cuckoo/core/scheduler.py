@@ -224,8 +224,7 @@ class AnalysisManager(Thread):
             # Start the machine.
             mmanager.start(machine.label)
         except CuckooMachineError as e:
-            Database().add_error(str(e), self.task.id)
-            log.error(e)
+            log.error(str(e), extra={"task_id" : self.task.id})
 
             # Stop the sniffer.
             if sniffer:
@@ -239,8 +238,7 @@ class AnalysisManager(Thread):
                 # Start the analysis.
                 guest.start_analysis(options)
             except CuckooGuestError as e:
-                Database().add_error(str(e), self.task.id)
-                log.error(e)
+                log.error(str(e), extra={"task_id" : self.task.id})
 
                 # Stop the sniffer.
                 if sniffer:
@@ -253,8 +251,7 @@ class AnalysisManager(Thread):
                     guest.wait_for_completion()
                     succeeded = True
                 except CuckooGuestError as e:
-                    Database().add_error(str(e), self.task.id)
-                    log.error(e)
+                    log.error(str(e), extra={"task_id" : self.task.id})
                     succeeded = False
 
                 # Retrieve the analysis results and store them.
@@ -262,8 +259,7 @@ class AnalysisManager(Thread):
                     guest.save_results(self.storage)
                     stored = True
                 except CuckooGuestError as e:
-                    Database().add_error(str(e), self.task.id)
-                    log.error(e)
+                    log.error(str(e), extra={"task_id" : self.task.id})
                     stored = False
         finally:
             # Stop the sniffer.
@@ -305,7 +301,6 @@ class AnalysisManager(Thread):
                 # Release the analysis machine.
                 mmanager.release(machine.label)
             except CuckooMachineError as e:
-                Database().add_error(str(e), self.task.id)
                 log.error("Unable to release machine %s, reason %s. "
                           "You might need to restore it manually"
                           % (machine.label, e))
