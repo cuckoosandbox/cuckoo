@@ -13,9 +13,16 @@ import logging.handlers
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooStartupError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
+from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.colors import *
+
+try:
+    import graypy
+    HAVE_GRAYPY = True
+except ImportError:
+    HAVE_GRAYPY = False
 
 log = logging.getLogger()
 
@@ -84,13 +91,36 @@ def create_structure():
 
 def init_logging():
     """Initializes logging."""
+    cfg = Config()
+
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+
     sh = logging.StreamHandler()
     sh.setFormatter(formatter)
     log.addHandler(sh)
+
     fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log"))
     fh.setFormatter(formatter)
     log.addHandler(fh)
+
+    if cfg.graylog.enabled:
+        if HAVE_GRAYPY:
+            gray = graypy.GELFHandler(cfg.graylog.host, cfg.graylog.port)
+            if cfg.graylog.level == "debug":
+                gray.setLevel(logging.DEBUG)
+            elif cfg.graylog.level == "info":
+                gray.setLevel(logging.INFO)
+            elif cfg.graylog.level == "error":
+                gray.setLevel(logging.ERROR)
+            elif cfg.graylog.level == "critical":
+                gray.setLevel(logging.CRITICAL)
+            else:
+                gray.setLevel(logging.ERROR)
+
+            log.addHandler(gray)
+        else:
+            raise CuckooDependencyError("Graypy is not installed")
+
     log.setLevel(logging.INFO)
 
 def check_version():
