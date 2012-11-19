@@ -212,7 +212,10 @@ class Machine(Base):
         d = {}
         for column in self.__table__.columns:
             value = getattr(self, column.name)
-            d[column.name] = value
+            if isinstance(value, datetime):
+                d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                d[column.name] = value
         return d
 
     def to_json(self):
