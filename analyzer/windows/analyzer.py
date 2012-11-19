@@ -57,18 +57,18 @@ def dump_file(file_path):
     if file_path.startswith("\\\\.\\"):
         return
 
-    # for some reason we get filepaths with "\\??\\", whereas this should
+    # For some reason we get filepaths with "\\??\\", whereas this should
     # actually be "\\\\?\\"..
     if file_path[:4] == "\\??\\":
         file_path = "\\\\?\\" + file_path[4:]
 
-    # ensure that the file name is on a harddisk, such as C:\\ and D:\\
+    # Ensure that the file name is on a harddisk, such as C:\\ and D:\\
     # because we don't need stuff such as \\?\PIPE, \\?\IDE, \\?\STORAGE, etc.
     if file_path[:4] == "\\\\?\\" and file_path[5] != ":":
         log.warning("Not going to drop %s (not on a harddisk)" % file_path)
         return
 
-    # we don't need \Device\ stuff
+    # We don't need \Device\ stuff.
     if file_path[:8] == "\\Device\\" or file_path[:12] == "\\\\?\\Device\\":
         log.warning("Not going to drop %s (not a file)" % file_path)
         return
@@ -79,7 +79,8 @@ def dump_file(file_path):
     name = c_wchar_p()
     KERNEL32.GetFullPathNameW(file_path, 32 * 1024, path, byref(name))
     file_path = path.value
-    file_name = name.value
+    # Should be able to extract Alternate Data Streams names too.
+    file_name = name.value[name.value.find(":")+1:]
 
     while True:
         dir_path = os.path.join(PATHS["files"],
