@@ -207,9 +207,9 @@ class GuestManager:
         # Download results from the guest.
         try:
             data = self.server.get_results()
-        except socket.timeout:
-            log.error("%s: guest communication timeout: unable to get results, "
-                      "check networking or try to increase timeout" % self.id)
+        except Exception as e:
+            log.error("%s: failed to retrieve analysis results: %s"
+                      % (self.id, e))
             return False
 
         # Write the retrieved binary data to a in-memory zip archive.
