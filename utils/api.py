@@ -100,10 +100,14 @@ def tasks_list(limit=None):
     response["tasks"] = []
     for row in db.list_tasks(limit).all():
         task = row.to_dict()
-        guest = row.guest
         task["guest"] = {}
-        if guest:
-            task["guest"] = guest.to_dict()
+        if row.guest:
+            task["guest"] = row.guest.to_dict()
+
+        task["errors"] = []
+        for error in row.errors:
+            task["errors"].append(error.message)
+
         response["tasks"].append(task)
 
     return jsonize(response)
