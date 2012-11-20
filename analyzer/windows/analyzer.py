@@ -74,13 +74,19 @@ def dump_file(file_path):
         return
 
     # 32k is the maximum length of the filename when using unicode names with
-    # the "\\\\?\\" prefix
+    # the "\\\\?\\" prefix.
     path = create_unicode_buffer(32 * 1024)
     name = c_wchar_p()
     KERNEL32.GetFullPathNameW(file_path, 32 * 1024, path, byref(name))
     file_path = path.value
-    # Should be able to extract Alternate Data Streams names too.
-    file_name = name.value[name.value.find(":")+1:]
+    
+    # Check if the path has a valid file name, otherwise it's a directory
+    # and we should abort the dump.
+    if name.value:
+        # Should be able to extract Alternate Data Streams names too.
+        file_name = name.value[name.value.find(":")+1:]
+    else:
+        return
 
     while True:
         dir_path = os.path.join(PATHS["files"],
