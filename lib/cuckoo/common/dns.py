@@ -110,3 +110,13 @@ def resolve_gevent(name):
             result.value = ""
 
     return result.value
+
+# choose resolver
+def resolve(name):
+    if HAVE_CARES: return resolve_cares(name)
+    elif HAVE_GEVENT: return resolve_gevent(name)
+    else: return resolve_thread(name)
+
+# another alias
+resolve_best = resolve
+
