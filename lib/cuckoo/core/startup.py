@@ -117,17 +117,13 @@ def init_logging():
     if cfg.graylog.enabled:
         if HAVE_GRAYPY:
             gray = graypy.GELFHandler(cfg.graylog.host, cfg.graylog.port)
-            if cfg.graylog.level == "debug":
-                gray.setLevel(logging.DEBUG)
-            elif cfg.graylog.level == "info":
-                gray.setLevel(logging.INFO)
-            elif cfg.graylog.level == "error":
-                gray.setLevel(logging.ERROR)
-            elif cfg.graylog.level == "critical":
-                gray.setLevel(logging.CRITICAL)
-            else:
-                gray.setLevel(logging.ERROR)
 
+            try:
+                level = logging.getLevelName(cfg.graylog.level.upper())
+            except ValueError:
+                level = logging.ERROR
+
+            gray.setLevel(level)
             log.addHandler(gray)
         else:
             raise CuckooDependencyError("Graypy is not installed")
