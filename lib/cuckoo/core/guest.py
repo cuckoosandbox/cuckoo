@@ -14,6 +14,7 @@ from zipfile import ZipFile, BadZipfile, ZIP_STORED
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooGuestError
 from lib.cuckoo.common.constants import *
+from lib.cuckoo.common.utils import TimeoutServer
 
 log = logging.getLogger(__name__)
 
@@ -229,24 +230,3 @@ class GuestManager:
         log.debug("Extracting results to %s" % folder)
         archive.extractall(folder)
         archive.close()
-
-
-# xmlrpc + timeout - still a bit ugly - but at least gets rid of setdefaulttimeout
-# inspired by 
-# http://stackoverflow.com/questions/372365/set-timeout-for-xmlrpclib-serverproxy
-# (although their stuff was messy, this is cleaner)
-class TimeoutServer(xmlrpclib.ServerProxy):
-    def __init__(self, *args, **kwargs):
-        timeout = kwargs.pop('timeout', None)
-        xmlrpclib.ServerProxy.__init__(self, *args, **kwargs, 
-                                       transport=TimeoutTransport(timeout=timeout))
-
-class TimeoutTransport(xmlrpclib.Transport):
-    def __init__(self, *args, **kwargs):
-        self.timeout = kwargs.pop('timeout', None)
-        xmlrpclib.Transport.__init__(self, *args, **kwargs)
-
-    def make_connection(self, *args, **kwargs):
-        conn = xmlrpclib.Transport.make_connection(self, *args, **kwargs)
-        if self.timeout != None: conn.timeout = self.timeout
-        return conn

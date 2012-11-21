@@ -6,6 +6,7 @@ import os
 import ntpath
 import string
 import tempfile
+import xmlrpclib
 from datetime import datetime
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -89,3 +90,22 @@ def store_temp_file(filedata, filename):
 
     return tmp_file_path
 
+# xmlrpc + timeout - still a bit ugly - but at least gets rid of setdefaulttimeout
+# inspired by 
+# http://stackoverflow.com/questions/372365/set-timeout-for-xmlrpclib-serverproxy
+# (although their stuff was messy, this is cleaner)
+class TimeoutServer(xmlrpclib.ServerProxy):
+    def __init__(self, *args, **kwargs):
+        timeout = kwargs.pop('timeout', None)
+        kwargs['transport'] = TimeoutTransport(timeout=timeout)
+        xmlrpclib.ServerProxy.__init__(self, *args, **kwargs)
+
+class TimeoutTransport(xmlrpclib.Transport):
+    def __init__(self, *args, **kwargs):
+        self.timeout = kwargs.pop('timeout', None)
+        xmlrpclib.Transport.__init__(self, *args, **kwargs)
+
+    def make_connection(self, *args, **kwargs):
+        conn = xmlrpclib.Transport.make_connection(self, *args, **kwargs)
+        if self.timeout != None: conn.timeout = self.timeout
+        return conn
