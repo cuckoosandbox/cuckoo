@@ -100,18 +100,23 @@ class Resultholder: pass
 
 # gevent based resolver with timeout
 def resolve_gevent(name):
-    result = Resultholder()
-    result.value = DNS_TIMEOUT_VALUE
+    result = resolve_gevent_real(name)
+    # if it failed, do this a second time because of strange libevent behavior
+    # basically sometimes the Timeout fires immediately instead of after DNS_TIMEOUT
+    if result == DNS_TIMEOUT_VALUE:
+        result = resolve_gevent_real(name)
+    return result
 
+def resolve_gevent_real(name):
+    result = DNS_TIMEOUT_VALUE
     with gevent.Timeout(DNS_TIMEOUT, False):
-        try:
-            result.value = gevent.socket.gethostbyname(name)
-        except socket.gaierror:
-            result.value = ""
+        try: result = gevent.socket.gethostbyname(name)
+        except socket.gaierror: pass
+    
+    return result
 
-    return result.value
 
-# choose resolver
+# choose resolver automatically
 def resolve(name):
     if HAVE_CARES: return resolve_cares(name)
     elif HAVE_GEVENT: return resolve_gevent(name)
@@ -119,4 +124,3 @@ def resolve(name):
 
 # another alias
 resolve_best = resolve
-
