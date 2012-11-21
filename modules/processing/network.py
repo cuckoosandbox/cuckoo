@@ -12,6 +12,7 @@ from urlparse import urlunparse
 from lib.cuckoo.common.utils import convert_to_printable
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.dns import resolve
 
 try:
     import dpkt
@@ -67,11 +68,7 @@ class Pcap:
         @return: IP address or blank
         """
         if Config().processing.resolve_dns:
-            try:
-                socket.setdefaulttimeout(10)
-                ip = socket.gethostbyname(name)
-            except socket.gaierror:
-                ip = ""
+            ip = resolve(name)
         else:
             ip = ""
         return ip
