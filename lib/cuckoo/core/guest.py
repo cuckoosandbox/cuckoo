@@ -56,6 +56,7 @@ class GuestManager:
         # Initialize the timer.
         timer = Timer(self.timeout, die)
         timer.start()
+        self.server._set_timeout(self.timeout)
 
         while True:
             # Check if the timer was hit and the abort event was set.
@@ -76,6 +77,7 @@ class GuestManager:
             log.debug("%s: not ready yet" % self.id)
             time.sleep(1)
 
+        self.server._set_timeout(None)
         return True
 
     def upload_analyzer(self):
@@ -173,6 +175,7 @@ class GuestManager:
 
         timer = Timer(self.timeout, die)
         timer.start()
+        self.server._set_timeout(self.timeout)
 
         while True:
             time.sleep(1)
@@ -200,6 +203,8 @@ class GuestManager:
             else:
                 log.debug("%s: analysis not completed yet (status=%s)"
                           % (self.id, status))
+
+        self.server._set_timeout(None)
 
     def save_results(self, folder):
         """Save analysis results.

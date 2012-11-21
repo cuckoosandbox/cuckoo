@@ -100,6 +100,13 @@ class TimeoutServer(xmlrpclib.ServerProxy):
         kwargs['transport'] = TimeoutTransport(timeout=timeout)
         xmlrpclib.ServerProxy.__init__(self, *args, **kwargs)
 
+    def _set_timeout(self, timeout):
+        t = self._ServerProxy__transport
+        t.timeout = timeout
+        # if we still have a socket we need to update that as well
+        if t._connection[1] and t._connection[1].sock:
+            t._connection[1].sock.settimeout(timeout)
+
 class TimeoutTransport(xmlrpclib.Transport):
     def __init__(self, *args, **kwargs):
         self.timeout = kwargs.pop('timeout', None)
