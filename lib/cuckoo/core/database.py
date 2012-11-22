@@ -19,7 +19,7 @@ try:
     from sqlalchemy import create_engine, Column
     from sqlalchemy import Integer, String, Boolean, DateTime, Enum
     from sqlalchemy import ForeignKey, Text, Index
-    from sqlalchemy.orm import sessionmaker, relationship
+    from sqlalchemy.orm import sessionmaker, relationship, scoped_session
     from sqlalchemy.sql import func
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -283,7 +283,7 @@ class Database(object):
 
         if dsn:
             self.engine = create_engine(dsn, poolclass=NullPool)
-        elif cfg.cuckoo.database:
+        elif cfg.database.connection:
             self.engine = create_engine(cfg.database.connection, poolclass=NullPool)
         else:
             db_file = os.path.join(CUCKOO_ROOT, "db", "cuckoo.db")
@@ -312,7 +312,7 @@ class Database(object):
                                       "database: %s" % e)
 
         # Get db session.
-        self.Session = sessionmaker(bind=self.engine)
+        self.Session = scoped_session(sessionmaker(bind=self.engine))
 
     def __del__(self):
         """Disconnects pool."""
