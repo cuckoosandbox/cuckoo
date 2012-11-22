@@ -13,7 +13,7 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.objects import File, URL
-from lib.cuckoo.common.utils import create_folder
+from lib.cuckoo.common.utils import create_folder, Singleton
 
 try:
     from sqlalchemy import create_engine, Column
@@ -269,20 +269,16 @@ class Task(Base):
     def __repr__(self):
         return "<Task('%s','%s')>" % (self.id, self.target)
 
-class Database:
+class Database(object):
     """Analysis queue database.
 
     This class handles the creation of the database user for internal queue
     management. It also provides some functions for interacting with it.
     """
-    __instance= None
-
-    def __new__(cls, *args, **kwargs):
-        if cls != type(cls.__instance):
-          cls.__instance = object.__new__(cls, *args, **kwargs)
-        return cls.__instance
+    __metaclass__ = Singleton
 
     def __init__(self, dsn=None):
+        print 'init called', self
         """@param dsn: database connection string."""
         cfg = Config()
 

@@ -116,3 +116,11 @@ class TimeoutTransport(xmlrpclib.Transport):
         conn = xmlrpclib.Transport.make_connection(self, *args, **kwargs)
         if self.timeout != None: conn.timeout = self.timeout
         return conn
+
+# http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
