@@ -40,6 +40,7 @@ def with_timeout(func, args=(), kwargs={}):
     timeout_duration is exceeded.
     """
     class ResultThread(threading.Thread):
+        daemon = True
         def __init__(self):
             threading.Thread.__init__(self)
             self.result, self.error = None, None
