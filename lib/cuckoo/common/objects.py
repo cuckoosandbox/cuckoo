@@ -139,6 +139,11 @@ class File:
                     file_type = file_process.stdout.read().strip()
                 except:
                     return None
+        finally:
+            try:
+                ms.close()
+            except:
+                pass
 
         return file_type
 
