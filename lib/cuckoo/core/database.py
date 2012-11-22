@@ -278,7 +278,6 @@ class Database(object):
     __metaclass__ = Singleton
 
     def __init__(self, dsn=None):
-        print 'init called', self
         """@param dsn: database connection string."""
         cfg = Config()
 
@@ -327,7 +326,6 @@ class Database(object):
             session.commit()
         except:
             session.rollback()
-
 
     def _set_status(self, task_id, status):
         """Set task status.
