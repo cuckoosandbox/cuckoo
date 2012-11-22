@@ -3,10 +3,9 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import inspect
-import pkgutil
-import logging
 import copy
+import inspect
+import logging
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
@@ -32,9 +31,6 @@ class Reporter:
         """
         self.analysis_path = analysis_path
         self.custom = custom
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT,
-                                           "conf",
-                                           "reporting.conf"))
 
     def _run_report(self, module, results):
         """Run a single reporting module.
@@ -52,12 +48,6 @@ class Reporter:
         module_name = inspect.getmodule(current).__name__
         if "." in module_name:
             module_name = module_name.rsplit(".", 1)[1]
-
-        try:
-            options = self.cfg.get(module_name)
-        except AttributeError:
-            raise CuckooReportError("Reporting module %s not found in "
-                                    "configuration file" % module_name)
 
         # If the reporting module is disabled in the config, skip it.
         if not options.enabled:

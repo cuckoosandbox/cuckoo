@@ -7,6 +7,7 @@ import sys
 import json
 import urllib
 import urllib2
+import pkgutil
 import logging
 import logging.handlers
 
@@ -170,10 +171,31 @@ def init_modules():
     """Initializes plugins."""
     log.debug("Importing modules...")
 
-    # Import all generic modules.
+    # Import all processing modules.
     import_package(modules.processing)
+    # Import all signatures.
     import_package(modules.signatures)
-    import_package(modules.reporting)
+
+    # Import only enabled reporting modules.
+    report_cfg = Config(cfg=os.path.join(CUCKOO_ROOT,
+                                         "conf",
+                                         "reporting.conf"))
+
+    prefix = modules.reporting.__name__ + "."
+    for loader, name, ispkg in pkgutil.iter_modules(modules.reporting.__path__):
+        if ispkg:
+            continue
+
+        try:
+            options = report_cfg.get(name)
+        except AttributeError:
+            log.debug("Reporting module %s not found in "
+                      "configuration file" % module_name)
+
+        if not options.enabled:
+            continue
+
+        import_plugin("%s.%s" % (modules.reporting.__name__, name))
 
     # Import machine manager.
     import_plugin("modules.machinemanagers.%s"
