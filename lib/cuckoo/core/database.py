@@ -275,6 +275,12 @@ class Database:
     This class handles the creation of the database user for internal queue
     management. It also provides some functions for interacting with it.
     """
+    __instance= None
+
+    def __new__(cls, *args, **kwargs):
+        if cls != type(cls.__instance):
+          cls.__instance = object.__new__(cls, *args, **kwargs)
+        return cls.__instance
 
     def __init__(self, dsn=None):
         """@param dsn: database connection string."""
