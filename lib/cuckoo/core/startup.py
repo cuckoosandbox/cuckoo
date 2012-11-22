@@ -10,6 +10,10 @@ import urllib2
 import logging
 import logging.handlers
 
+import modules.processing
+import modules.signatures
+import modules.reporting
+
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooStartupError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -17,6 +21,7 @@ from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.colors import *
+from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
 from lib.cuckoo.core.database import Database
 
 try:
@@ -90,6 +95,36 @@ def create_structure():
     except CuckooOperationalError as e:
         raise CuckooStartupError(e)
 
+def check_version():
+    """Checks version of Cuckoo."""
+    cfg = Config()
+
+    if not cfg.cuckoo.version_check:
+        return
+
+    print(" Checking for updates...")
+
+    url = "http://api.cuckoosandbox.org/checkversion.php"
+    data = urllib.urlencode({"version" : CUCKOO_VERSION})
+
+    try:
+        request = urllib2.Request(url, data)
+        response = urllib2.urlopen(request)
+    except (urllib2.URLError, urllib2.HTTPError):
+        return
+
+    try:
+        response_data = json.loads(response.read())
+    except ValueError:
+        return
+
+    if not response_data["error"]:
+        if response_data["response"] == "NEW_VERSION":
+            print(red(" Outdated! ") + "Cuckoo Sandbox version %s is "
+                  "available now.\n" % response_data["current"])
+        else:
+            print(green(" Good! ") + "You have the latest version available.\n")
+
 class DatabaseHandler(logging.Handler):
     def emit(self, record):
         if hasattr(record, "task_id"):
@@ -130,32 +165,25 @@ def init_logging():
 
     log.setLevel(logging.INFO)
 
-def check_version():
-    """Checks version of Cuckoo."""
-    cfg = Config()
 
-    if not cfg.cuckoo.version_check:
-        return
+def init_modules():
+    """Initializes plugins."""
+    log.debug("Importing modules...")
 
-    print(" Checking for updates...")
+    # Import all generic modules.
+    import_package(modules.processing)
+    import_package(modules.signatures)
+    import_package(modules.reporting)
 
-    url = "http://api.cuckoosandbox.org/checkversion.php"
-    data = urllib.urlencode({"version" : CUCKOO_VERSION})
+    # Import machine manager.
+    import_plugin("modules.machinemanagers.%s"
+                  % Config().cuckoo.machine_manager)
 
-    try:
-        request = urllib2.Request(url, data)
-        response = urllib2.urlopen(request)
-    except (urllib2.URLError, urllib2.HTTPError):
-        return
+    for category, mods in list_plugins().items():
+        log.debug("Imported \"%s\" modules:" % category)
 
-    try:
-        response_data = json.loads(response.read())
-    except ValueError:
-        return
-
-    if not response_data["error"]:
-        if response_data["response"] == "NEW_VERSION":
-            print(red(" Outdated! ") + "Cuckoo Sandbox version %s is "
-                  "available now.\n" % response_data["current"])
-        else:
-            print(green(" Good! ") + "You have the latest version available.\n")
+        for mod in mods:
+            if mod == mods[-1]:
+                log.debug("\t `-- %s" % mod.__name__)
+            else:
+                log.debug("\t |-- %s" % mod.__name__)

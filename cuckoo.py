@@ -21,7 +21,6 @@ def main():
     check_configs()
     check_version()
     create_structure()
-    init_logging()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
@@ -39,10 +38,14 @@ def main():
         except KeyboardInterrupt:
             return
 
+    init_logging()
+
     if args.quiet:
         log.setLevel(logging.WARN)
     elif args.debug:
         log.setLevel(logging.DEBUG)
+
+    init_modules()
 
     from lib.cuckoo.core.scheduler import Scheduler
 

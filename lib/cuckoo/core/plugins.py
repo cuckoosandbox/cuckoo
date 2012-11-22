@@ -4,6 +4,7 @@
 
 import pkgutil
 import inspect
+import logging
 from collections import defaultdict
 
 from lib.cuckoo.common.exceptions import CuckooCriticalError
@@ -11,6 +12,8 @@ from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.abstracts import Signature
 from lib.cuckoo.common.abstracts import Report
+
+log = logging.getLogger(__name__)
 
 _modules = defaultdict(dict)
 

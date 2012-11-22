@@ -347,8 +347,6 @@ class Scheduler:
 
         log.info("Using \"%s\" machine manager" % mmanager_name)
 
-        # Import machine manager.
-        import_plugin("modules.machinemanagers.%s" % mmanager_name)
         # Get registered class name. Only one machine manager is imported,
         # therefore there should be only one class in the list.
         plugin = list_plugins("machinemanagers")[0]

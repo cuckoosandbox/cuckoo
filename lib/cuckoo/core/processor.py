@@ -6,12 +6,10 @@ import copy
 import logging
 from distutils.version import StrictVersion
 
-import modules.processing
-import modules.signatures
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooProcessingError
-from lib.cuckoo.core.plugins import import_package, list_plugins
+from lib.cuckoo.core.plugins import list_plugins
 
 log = logging.getLogger(__name__)
 
@@ -26,8 +24,6 @@ class Processor:
     def __init__(self, analysis_path):
         """@param analysis_path: analysis folder path."""
         self.analysis_path = analysis_path
-        import_package(modules.processing)
-        import_package(modules.signatures)
 
     def _run_processing(self, module):
         """Run a processing module.
@@ -59,7 +55,7 @@ class Processor:
             return {current.key : data}
         except NotImplementedError:
             log.debug("The processing module \"%s\" is not correctly "
-                      "implemented" % current.__classs__.__name__)
+                      "implemented" % current.__class__.__name__)
         except CuckooProcessingError as e:
             log.warning("The processing module \"%s\" returned the following "
                         "error: %s" % (current.__class__.__name__, e))
