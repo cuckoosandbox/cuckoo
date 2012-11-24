@@ -32,20 +32,16 @@ class YaraSignatures(Processing):
                 for match in rules.match(self.file_path):
                     strings = []
                     for s in match.strings:
-                        # Extreme spaghetti antani code. How it happened after hours of curses:
-                        # <nex> screw it, that's how i'll do it <url to code>
-                        # <jekil> ok, i'll pretend i didn't see it and you go on
-                        # <nex> ...
-                        # <nex> we have no other choice
-                        # <jekil> yes, i know
-                        # <jekil> it's like keeping your eyes shut when banging an ugly one
-                        # <jekil> and you have to
+                        # Beware, spaghetti code ahead.
                         try:
-                            strings.append(s[2].encode("utf-8"))
+                            new = s[2].encode("utf-8")
                         except UnicodeDecodeError:
                             s = s[2].lstrip("uU").encode("hex").upper()
                             s = " ".join(s[i:i+2] for i in range(0, len(s), 2))
-                            strings.append("{ %s }" % s)
+                            new = "{ %s }" % s
+
+                        if new not in strings:
+                            strings.append(new)
 
                     matches.append({"name" : match.rule, "meta" : match.meta, "strings" : strings})
             except yara.Error as e:
