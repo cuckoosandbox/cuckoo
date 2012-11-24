@@ -5,7 +5,6 @@
 import re
 
 from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.exceptions import CuckooProcessingError
 
 class Strings(Processing):
     """Extract strings from analyzed file."""
