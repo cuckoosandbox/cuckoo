@@ -5,6 +5,7 @@
 import os
 import logging
 
+from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooReportError
@@ -78,12 +79,13 @@ class MachineManager(object):
         """
         try:
             configured_vm = self._list()
-            for machine in self.machines():
-                if machine.label not in configured_vm:
-                    raise CuckooMachineError("Configured machine %s was not "
-                        "detected or it's not in proper state" % machine.label)
         except NotImplementedError:
-            pass
+            return
+
+        for machine in self.machines():
+            if machine.label not in configured_vm:
+                raise CuckooCriticalError("Configured machine %s was not "
+                    "detected or it's not in proper state" % machine.label)
 
     def machines(self):
         """List virtual machines.

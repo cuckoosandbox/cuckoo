@@ -10,6 +10,7 @@ import subprocess
 import os.path
 
 from lib.cuckoo.common.abstracts import MachineManager
+from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
 
 log = logging.getLogger(__name__)
@@ -30,11 +31,12 @@ class VirtualBox(MachineManager):
         """
         # VirtualBox specific checks.
         if not self.options.virtualbox.path:
-            raise CuckooMachineError("VirtualBox VBoxManage path missing, please add it to configuration")
+            raise CuckooCriticalError("VirtualBox VBoxManage path missing, please add it to the config file")
         if not os.path.exists(self.options.virtualbox.path):
-            raise CuckooMachineError("VirtualBox VBoxManage not found in specified path %s" % self.options.virtualbox.path)
+            raise CuckooCriticalError("VirtualBox VBoxManage not found at specified path \"%s\"" % self.options.virtualbox.path)
         if not self.options.virtualbox.timeout:
-            raise CuckooMachineError("VirtualBox timeout setting not found, please add it to configuration")
+            raise CuckooCriticalError("VirtualBox timeout setting not found, please add it to the config file")
+
         # Base checks.
         super(VirtualBox, self)._initialize_check()
 
