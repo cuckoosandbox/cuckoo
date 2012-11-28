@@ -160,26 +160,32 @@ class Pcap:
  
         if dns.rcode == dpkt.dns.DNS_RCODE_NOERR:
             # DNS question.
-            query["request"] = dns.qd[0].name
-            if dns.qd[0].type == dpkt.dns.DNS_A:
+            try:
+                q_name = dns.qd[0].name
+                q_type = dns.qd[0].type
+            except IndexError:
+                return False
+
+            query["request"] = q_name
+            if q_type == dpkt.dns.DNS_A:
                 query["type"] = "A"
-            if dns.qd[0].type == dpkt.dns.DNS_AAAA:    
+            if q_type == dpkt.dns.DNS_AAAA:    
                 query["type"] = "AAAA"
-            elif dns.qd[0].type == dpkt.dns.DNS_CNAME:
+            elif q_type == dpkt.dns.DNS_CNAME:
                 query["type"] = "CNAME"
-            elif dns.qd[0].type == dpkt.dns.DNS_MX:
+            elif q_type == dpkt.dns.DNS_MX:
                 query["type"] = "MX"
-            elif dns.qd[0].type == dpkt.dns.DNS_PTR:
+            elif q_type == dpkt.dns.DNS_PTR:
                 query["type"] = "PTR"
-            elif dns.qd[0].type == dpkt.dns.DNS_NS:
+            elif q_type == dpkt.dns.DNS_NS:
                 query["type"] = "NS"
-            elif dns.qd[0].type == dpkt.dns.DNS_SOA:
+            elif q_type == dpkt.dns.DNS_SOA:
                 query["type"] = "SOA"
-            elif dns.qd[0].type == dpkt.dns.DNS_HINFO:
+            elif q_type == dpkt.dns.DNS_HINFO:
                 query["type"] = "HINFO"     
-            elif dns.qd[0].type == dpkt.dns.DNS_TXT:
+            elif q_type == dpkt.dns.DNS_TXT:
                 query["type"] = "TXT"
-            elif dns.qd[0].type == dpkt.dns.DNS_SRV:
+            elif q_type == dpkt.dns.DNS_SRV:
                 query["type"] = "SRV"
 
             # DNS answer.
@@ -219,6 +225,7 @@ class Pcap:
                 elif answer.type == dpkt.dns.DNS_TXT:
                     ans["type"] = "TXT"
                     ans["data"] = " ".join(answer.text)
+
                 # TODO: add srv handling
                 query["answers"].append(ans)
 
