@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import hashlib
 
 import lib.maec.maec11 as maec
 from lib.cuckoo.common.abstracts import Report
@@ -31,7 +32,13 @@ class Report(Report):
 
     def addBundle(self):
         """Generates MAEC bundle structure."""
-        self.idMap['prefix'] = "maec:%s" % self.results['file']['md5']
+        if self.results["target"]["category"] == "file":
+            self.idMap['prefix'] = "maec:%s" % self.results["target"]['file']['md5']
+        elif self.results["target"]["category"] == "url":
+            self.idMap['urlmd5'] = hashlib.md5(self.results["target"]["url"]).hexdigest()
+            self.idMap['prefix'] = "maec:%s" % self.idMap['urlmd5']
+        else:
+            raise CuckooReportError("Unknown target type")
 
         # Generate bundle
         self.m = maec.BundleType(
@@ -212,7 +219,7 @@ class Report(Report):
                                             )
                          )
         # Add static analysis if file obj is analysis subject.
-        if file['md5'] == self.results['file']['md5'] and len(self.results['static']) > 0:
+        if self.results["target"]["category"] == "file" and file['md5'] == self.results["target"]['file']['md5'] and len(self.results['static']) > 0:
             pe = maec.PE_Binary_AttributesType(dll_count = self.results['static']['imported_dll_count'])
             # PE exports
             if len(self.results['static']['pe_exports']) > 0:
@@ -316,8 +323,8 @@ class Report(Report):
                                                  ))
         return obj
 
-    def createSubject(self, file):
-        """Create a subject entity.
+    def createSubjectFile(self, file):
+        """Create a file subject entity.
         @param file: file as in cuckoo dict.
         @return: subject object.
         """
@@ -329,6 +336,21 @@ class Report(Report):
                                      )
         self.idMap['subject'] = self.idMap[file['name']]
         return subject
+
+    def createSubjectUrl(self, url):
+        """Create a URL subject entity.
+        @param url: URL path.
+        @return: subject object.
+        """
+        subject = maec.SubjectType()
+        subject.set_Object_Reference(maec.ObjectReferenceType(
+                                                              type_ = 'URI',
+                                                              object_id = self.idMap['urlmd5']
+                                                              )
+                                     )
+        self.idMap['subject'] = self.idMap['urlmd5']
+        return subject
+
 
     def createTools(self):
         """Creates a tools element.
@@ -356,13 +378,18 @@ class Report(Report):
         # Add tool
         analysis.set_Tools_Used(self.createTools())
         # Add subject
-        analysis.add_Subject(self.createSubject(self.results['file']))
+        if self.results["target"]["category"] == "file":
+            analysis.add_Subject(self.createSubjectFile(self.results["target"]['file']))
+        elif self.results["target"]["category"] == "url":
+            analysis.add_Subject(self.createSubjectUrl(self.results["target"]['url']))
+        
         self.analyses.add_Analysis(analysis)
 
     def addPools(self):
         """Adds Pools section."""
         objs = self.results['dropped']
-        objs.append(self.results['file'])
+        if self.results["target"]["category"] == "file":
+            objs.append(self.results["target"]['file'])
         pool = maec.Object_PoolType()
         for file in objs:
             pool.add_Object(self.createFileObj(file))

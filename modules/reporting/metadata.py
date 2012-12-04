@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import hashlib
 
 import lib.maec.maec11 as maec
 from lib.cuckoo.common.abstracts import Report
@@ -29,9 +30,16 @@ class Metadata(Report):
 
     def addMetadata(self):
         """Generates header for MAEC xml and root components."""
+        if self.results["target"]["category"] == "file":
+            id = "cuckoo:%s" % self.results["target"]['file']['md5']
+        elif self.results["target"]["category"] == "url":
+            id = "cuckoo:%s" % hashlib.md5(self.results["target"]["url"]).hexdigest()
+        else:
+            raise CuckooReportError("Unknown target type")
+
         self.m = maec.malwareMetaData(
             version = "1.1",
-            id = "cuckoo:%s" % self.results['file']['md5'],
+            id = id,
             author = "Cuckoo Sandbox %s" % self.results["info"]["version"],
             comment = "Report created with Cuckoo Sandbox %s automated and open source malware sandbox: http://www.cuckoosandbox.org" % self.results["info"]["version"],
             timestamp = datetime_to_iso(self.results["info"]["started"])
@@ -50,7 +58,16 @@ class Metadata(Report):
         """Adds objects elements."""
         # File objects
         # Subject
-        self.objects.add_file(self.createFileObject(self.results['file']))
+        if self.results["target"]["category"] == "file":
+            self.objects.add_file(self.createFileObject(self.results["target"]['file']))
+        elif self.results["target"]["category"] == "url":
+            self.objects.add_uri(maec.uriObject(
+                                                id = hashlib.md5(self.results["target"]["url"]).hexdigest(),
+                                                uriString = self.results["target"]["url"])
+                                 )
+        else:
+            raise CuckooReportError("Unknown target type")
+
         # Dropped files
         if 'dropped' in self.results and isinstance(self.results['dropped'], list):
             for f in self.results['dropped']:
@@ -113,11 +130,16 @@ class Metadata(Report):
 
     def addRelations(self):
         """Adds relationships."""
+        if self.results["target"]["category"] == "file":
+            src = "file[@id='%s']" % self.results["target"]['file']['md5']
+        elif self.results["target"]["category"] == "url":
+            src = "url[@id='%s']" % hashlib.md5(self.results["target"]["url"]).hexdigest()
+        
         # Dropped files
         for file in self.results['dropped']:
             self.relationships.add_relationship(self.createRelation(
                                                                     action = 'installed',
-                                                                    src = "file[@id='%s']" % self.results['file']['md5'],
+                                                                    src = src,
                                                                     dst = "file[@id='%s']" % file['md5']
                                                                     )
                                                 )
@@ -151,7 +173,7 @@ class Metadata(Report):
                 for req in self.results['network']['http']:
                     self.relationships.add_relationship(self.createRelation(
                                                                             action = 'contactedBy',
-                                                                            src = "file[@id='%s']" % self.results['file']['md5'],
+                                                                            src = src,
                                                                             dst = "uri[@id='%s']" % req['uri']
                                                                             )
                                                         )
