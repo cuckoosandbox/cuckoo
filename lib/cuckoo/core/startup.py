@@ -31,7 +31,7 @@ try:
 except ImportError:
     HAVE_GRAYPY = False
 
-log = logging.getLogger(__name__)
+log = logging.getLogger()
 
 def check_python_version():
     """Checks if Python version is supported by Cuckoo.
