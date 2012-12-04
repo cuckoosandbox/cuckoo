@@ -57,24 +57,17 @@ def dump_file(file_path):
     if file_path.startswith("\\\\.\\"):
         return
 
-    # For some reason we get filepaths with "\\??\\", whereas this should
-    # actually be "\\\\?\\"..
-    if file_path[:4] == "\\??\\":
-        file_path = "\\\\?\\" + file_path[4:]
+    # Strip bogus path prefixes.
+    if file_path[:4] == "\\??\\" or file_path[:4] == "\\\\?\\":
+        file_path = file_path[4:]
 
     # Ensure that the file name is on a harddisk, such as C:\\ and D:\\
     # because we don't need stuff such as \\?\PIPE, \\?\IDE, \\?\STORAGE, etc.
-    if file_path[:4] == "\\\\?\\" and file_path[5] != ":":
-        log.warning("Not going to drop %s (not on a harddisk)" % file_path)
+    if file_path[1] != ":":
+        log.warning("Not going to drop %s (not on harddisk)" % file_path)
         return
 
-    # We don't need \Device\ stuff.
-    if file_path[:8] == "\\Device\\" or file_path[:12] == "\\\\?\\Device\\":
-        log.warning("Not going to drop %s (not a file)" % file_path)
-        return
-
-    # 32k is the maximum length of the filename when using unicode names with
-    # the "\\\\?\\" prefix.
+    # 32k is the maximum length of the filename when using unicode names.
     path = create_unicode_buffer(32 * 1024)
     name = c_wchar_p()
     KERNEL32.GetFullPathNameW(file_path, 32 * 1024, path, byref(name))
@@ -101,6 +94,10 @@ def dump_file(file_path):
             dump_path = os.path.join(PATHS["files"], "%s.bin" % file_name)
 
         break
+
+    if not os.path.exists(file_path):
+        log.warning("File at path \"%s\" does not exist, skip" % file_path)
+        return
 
     try:
         shutil.copy(file_path, dump_path)
