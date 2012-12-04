@@ -512,6 +512,12 @@ class Analyzer:
                      "the full timeout")
             pid_check = False
 
+        # Check in the options if the user toggled the timeout enforce. If so,
+        # we need to override pid_check and disable process monitor.
+        if self.config.enforce_timeout:
+            log.info("Enabled timeout enforce, running for the full timeout")
+            pid_check = False
+
         self.do_run = True
 
         while self.do_run:

@@ -147,6 +147,7 @@ class AnalysisManager(Thread):
         options["platform"] = self.task.platform
         options["options"] = self.task.options
         options["custom"] = self.task.custom
+        options["enforce_timeout"] = self.task.enforce_timeout
         options["started"] = time.time()
 
         if not self.task.timeout or self.task.timeout == 0:

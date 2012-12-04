@@ -44,6 +44,9 @@ def tasks_create_file():
     memory = request.forms.get("memory", False)
     if memory:
         memory = True
+    enforce_timeout = request.forms.get("enforce_timeout", False)
+    if enforce_timeout:
+        enforce_timeout = True
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
     db = Database()
@@ -55,7 +58,8 @@ def tasks_create_file():
                           machine=machine,
                           platform=platform,
                           custom=custom,
-                          memory=memory)
+                          memory=memory,
+                          enforce_timeout=enforce_timeout)
 
     response["task_id"] = task_id
     return jsonize(response)
@@ -75,6 +79,9 @@ def tasks_create_url():
     memory = request.forms.get("memory", False)
     if memory:
         memory = True
+    enforce_timeout = request.forms.get("enforce_timeout", False)
+    if enforce_timeout:
+        enforce_timeout = True
 
     db = Database()
     task_id = db.add_url(url=url,
@@ -85,7 +92,8 @@ def tasks_create_url():
                          machine=machine,
                          platform=platform,
                          custom=custom,
-                         memory=memory)
+                         memory=memory,
+                         enforce_timeout=enforce_timeout)
 
     response["task_id"] = task_id
     return jsonize(response)

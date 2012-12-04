@@ -228,6 +228,7 @@ class Task(Base):
     options = Column(String(255), nullable=True)
     platform = Column(String(255), nullable=True)
     memory = Column(Boolean, nullable=False, default=False)
+    enforce_timeout = Column(Boolean, nullable=False, default=False)
     added_on = Column(DateTime(timezone=False),
                       default=datetime.now(),
                       nullable=False)
@@ -552,7 +553,8 @@ class Database(object):
             custom=None,
             machine=None,
             platform=None,
-            memory=False):
+            memory=False,
+            enforce_timeout=False):
         """Add a task to database.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -560,7 +562,9 @@ class Database(object):
         @param priority: analysis priority.
         @param custom: custom options.
         @param machine: selected machine.
-        @param platform: platform
+        @param platform: platform.
+        @param memory: toggle full memory dump.
+        @param enforce_timeout: toggle full timeout execution.
         @return: cursor or None.
         """
         session = self.Session()
@@ -595,6 +599,7 @@ class Database(object):
         task.machine = machine
         task.platform = platform
         task.memory = memory
+        task.enforce_timeout = enforce_timeout
         session.add(task)
 
         try:
@@ -614,7 +619,8 @@ class Database(object):
                  custom=None,
                  machine=None,
                  platform=None,
-                 memory=False):
+                 memory=False,
+                 enforce_timeout=False):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -622,7 +628,9 @@ class Database(object):
         @param priority: analysis priority.
         @param custom: custom options.
         @param machine: selected machine.
-        @param platform: platform
+        @param platform: platform.
+        @param memory: toggle full memory dump.
+        @param enforce_timeout: toggle full timeout execution.
         @return: cursor or None.
         """
         if not file_path or not os.path.exists(file_path):
@@ -636,7 +644,8 @@ class Database(object):
                         custom,
                         machine,
                         platform,
-                        memory)
+                        memory,
+                        enforce_timeout)
 
     def add_url(self,
                 url,
@@ -647,7 +656,8 @@ class Database(object):
                 custom=None,
                 machine=None,
                 platform=None,
-                memory=False):
+                memory=False,
+                enforce_timeout=False):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
@@ -655,7 +665,9 @@ class Database(object):
         @param priority: analysis priority.
         @param custom: custom options.
         @param machine: selected machine.
-        @param platform: platform
+        @param platform: platform.
+        @param memory: toggle full memory dump.
+        @param enforce_timeout: toggle full timeout execution.
         @return: cursor or None.
         """
         return self.add(URL(url),
@@ -666,7 +678,8 @@ class Database(object):
                         custom,
                         machine,
                         platform,
-                        memory)
+                        memory,
+                        enforce_timeout)
 
     def list_tasks(self, limit=None):
         """Retrieve list of task.
