@@ -140,20 +140,21 @@ def tasks_view(task_id):
 def tasks_report(task_id, report_format="json"):
     response = {"error" : False}
 
-    if report_format.lower() == "json":
+    formats = {
+        "json" : "report.json",
+        "html" : "report.html",
+        "maec" : "report.maec.xml",
+        "metadata" : "report.metadata.xml",
+        "pickle" : "report.pickle"
+    }
+
+    if report_format.lower() in formats:
         report_path = os.path.join(CUCKOO_ROOT,
                                    "storage",
                                    "analyses",
                                    task_id,
                                    "reports",
-                                   "report.json")
-    elif report_format.lower() == "html":
-        report_path = os.path.join(CUCKOO_ROOT,
-                                   "storage",
-                                   "analyses",
-                                   task_id,
-                                   "reports",
-                                   "report.html")
+                                   formats[report_format.lower()])
     else:
         return report_error("report_not_found")
 
