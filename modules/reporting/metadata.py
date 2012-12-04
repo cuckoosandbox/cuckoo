@@ -1,6 +1,6 @@
 # Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
-# See the file 'docs/LICENSE' for copying permission.
+# See the file "docs/LICENSE" for copying permission.
 
 import os
 import hashlib
@@ -31,7 +31,7 @@ class Metadata(Report):
     def addMetadata(self):
         """Generates header for MAEC xml and root components."""
         if self.results["target"]["category"] == "file":
-            id = "cuckoo:%s" % self.results["target"]['file']['md5']
+            id = "cuckoo:%s" % self.results["target"]["file"]["md5"]
         elif self.results["target"]["category"] == "url":
             id = "cuckoo:%s" % hashlib.md5(self.results["target"]["url"]).hexdigest()
         else:
@@ -59,7 +59,7 @@ class Metadata(Report):
         # File objects
         # Subject
         if self.results["target"]["category"] == "file":
-            self.objects.add_file(self.createFileObject(self.results["target"]['file']))
+            self.objects.add_file(self.createFileObject(self.results["target"]["file"]))
         elif self.results["target"]["category"] == "url":
             self.objects.add_uri(maec.uriObject(
                                                 id = hashlib.md5(self.results["target"]["url"]).hexdigest(),
@@ -69,21 +69,21 @@ class Metadata(Report):
             raise CuckooReportError("Unknown target type")
 
         # Dropped files
-        if 'dropped' in self.results and isinstance(self.results['dropped'], list):
-            for f in self.results['dropped']:
+        if "dropped" in self.results and isinstance(self.results["dropped"], list):
+            for f in self.results["dropped"]:
                 found = False
                 for exist in self.objects.get_file():
-                    if exist.get_md5() == f['md5']:
+                    if exist.get_md5() == f["md5"]:
                         found = True
                 if not found:        
                     self.objects.add_file(self.createFileObject(f))
         # URI objects
-        if 'network' in self.results and isinstance(self.results['network'], dict):
-            if 'http' in self.results['network'] and isinstance(self.results['network']['http'], list): 
-                for req in self.results['network']['http']:
+        if "network" in self.results and isinstance(self.results["network"], dict):
+            if "http" in self.results["network"] and isinstance(self.results["network"]["http"], list): 
+                for req in self.results["network"]["http"]:
                     found = False
                     for exist in self.objects.get_uri():
-                        if exist.get_id() == req['uri']:
+                        if exist.get_id() == req["uri"]:
                             found = True
                     if not found:
                         self.objects.add_uri(self.createUriObject(req))
@@ -94,25 +94,25 @@ class Metadata(Report):
         @return: file object.
         """
         file = maec.fileObject(
-                               id = f['md5'], 
-                               fileType = [f['type']], 
-                               size = f['size'], 
-                               crc32 = f['crc32'],
-                               md5 = f['md5'], 
-                               sha1 = f['sha1'], 
-                               sha512 = f['sha512']
+                               id = f["md5"], 
+                               fileType = [f["type"]], 
+                               size = f["size"], 
+                               crc32 = f["crc32"],
+                               md5 = f["md5"], 
+                               sha1 = f["sha1"], 
+                               sha512 = f["sha512"]
                                )
-        file.add_extraHash(maec.extraHashType('ssdeep', f['ssdeep']))
+        file.add_extraHash(maec.extraHashType("ssdeep", f["ssdeep"]))
         # Add related filename
         prop = maec.objectProperty()
         prop.add_property(maec.property(
-                                        type_= 'filename',
-                                        valueOf_ = f['name']
+                                        type_= "filename",
+                                        valueOf_ = f["name"]
                                         )
                           )
         prop.set_references(
                             maec.reference(
-                                           valueOf_ = "file[@id='%s']" % f['md5']
+                                           valueOf_ = "file[@id='%s']" % f["md5"]
                                            )
                             ) 
         self.properties.add_objectProperty(prop)
@@ -131,27 +131,27 @@ class Metadata(Report):
     def addRelations(self):
         """Adds relationships."""
         if self.results["target"]["category"] == "file":
-            src = "file[@id='%s']" % self.results["target"]['file']['md5']
+            src = "file[@id='%s']" % self.results["target"]["file"]["md5"]
         elif self.results["target"]["category"] == "url":
             src = "url[@id='%s']" % hashlib.md5(self.results["target"]["url"]).hexdigest()
         
         # Dropped files
-        for file in self.results['dropped']:
+        for file in self.results["dropped"]:
             self.relationships.add_relationship(self.createRelation(
-                                                                    action = 'installed',
+                                                                    action = "installed",
                                                                     src = src,
-                                                                    dst = "file[@id='%s']" % file['md5']
+                                                                    dst = "file[@id='%s']" % file["md5"]
                                                                     )
                                                 )
         # Network
-        if 'network' in self.results and isinstance(self.results['network'], dict):
+        if "network" in self.results and isinstance(self.results["network"], dict):
             # DNS requests
             for req in self.objects.get_uri():
                 # Get IP
-                if 'dns' in self.results['network'] and isinstance(self.results['network']['dns'], list):
-                    for res in self.results['network']['dns']: 
-                        if res['hostname'] == req.get_hostname():
-                            ip = res['ip']
+                if "dns" in self.results["network"] and isinstance(self.results["network"]["dns"], list):
+                    for res in self.results["network"]["dns"]: 
+                        if res["hostname"] == req.get_hostname():
+                            ip = res["ip"]
                             # Check if obj exist
                             found = None
                             for obj in self.objects.get_ip():
@@ -163,18 +163,18 @@ class Metadata(Report):
                                 self.objects.add_ip(found)
                             # Create relation
                             self.relationships.add_relationship(self.createRelation(
-                                                                                    action = 'isServerOfService', 
+                                                                                    action = "isServerOfService", 
                                                                                     src = "ip[@id='%s']" % found.id, 
                                                                                     dst = "uri[@id='%s']" % req.id
                                                                                     )
                                                                 )
             # HTTP requests
-            if 'http' in self.results['network'] and isinstance(self.results['network']['http'], list):
-                for req in self.results['network']['http']:
+            if "http" in self.results["network"] and isinstance(self.results["network"]["http"], list):
+                for req in self.results["network"]["http"]:
                     self.relationships.add_relationship(self.createRelation(
-                                                                            action = 'contactedBy',
+                                                                            action = "contactedBy",
                                                                             src = src,
-                                                                            dst = "uri[@id='%s']" % req['uri']
+                                                                            dst = "uri[@id='%s']" % req["uri"]
                                                                             )
                                                         )
 
@@ -204,11 +204,11 @@ class Metadata(Report):
         return maec.IPObject(
                              id = "%s-%s" % (ip, ip),
                              startAddress = maec.IPAddress(
-                                                           type_ = 'ipv4',
+                                                           type_ = "ipv4",
                                                            valueOf_ = ip
                                                            ),
                              endAddress = maec.IPAddress(
-                                                           type_ = 'ipv4',
+                                                           type_ = "ipv4",
                                                            valueOf_ = ip
                                                            )
                              )
@@ -219,36 +219,36 @@ class Metadata(Report):
         @return: created URI object
         """
         uri = maec.uriObject(
-                             id = req['uri'],
-                             uriString = req['uri'],
-                             protocol = 'http',
-                             hostname = req['host'],
-                             port = req['port'],
-                             path = req['path'],
-                             ipProtocol = 'tcp'
+                             id = req["uri"],
+                             uriString = req["uri"],
+                             protocol = "http",
+                             hostname = req["host"],
+                             port = req["port"],
+                             path = req["path"],
+                             ipProtocol = "tcp"
                              )
         # Add details
         prop = maec.objectProperty()
         prop.add_property(maec.property(
-                                        type_= 'httpMethod',
-                                        valueOf_ = req['method']
+                                        type_= "httpMethod",
+                                        valueOf_ = req["method"]
                                         )
                           )
-        if req['method'] == 'POST':
+        if req["method"] == "POST":
             prop.add_property(maec.property(
-                                        type_= 'postData',
-                                        valueOf_ = "<![CDATA[%s]]>" % req['body']
+                                        type_= "postData",
+                                        valueOf_ = "<![CDATA[%s]]>" % req["body"]
                                         )
                           )
-        if 'user-agent' in req:
+        if "user-agent" in req:
             prop.add_property(maec.property(
-                                        type_= 'userAgent',
-                                        valueOf_ = req['user-agent']
+                                        type_= "userAgent",
+                                        valueOf_ = req["user-agent"]
                                         )
                           )
         prop.set_references(
                             maec.reference(
-                                           valueOf_ = "uri[@id='%s']" % req['uri']
+                                           valueOf_ = "uri[@id='%s']" % req["uri"]
                                            )
                             )
         self.properties.add_objectProperty(prop)
@@ -258,12 +258,12 @@ class Metadata(Report):
         """Writes report to disk."""
         try:
             report = open(os.path.join(self.reports_path, "report.metadata.xml"), "w")
-            report.write('<?xml version="1.0" ?>\n')
-            report.write('<!--\n')
-            report.write('Cuckoo Sandbox malware analysis report\n')
-            report.write('http://www.cuckoosandbox.org\n')
-            report.write('-->\n')
-            self.m.export(report, 0, namespace_ = '', namespacedef_ = 'xmlns="http://xml/metadataSharing.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xml/metadataSharing.xsd"')
+            report.write("<?xml version='1.0' ?>\n")
+            report.write("<!--\n")
+            report.write("Cuckoo Sandbox malware analysis report\n")
+            report.write("http://www.cuckoosandbox.org\n")
+            report.write("-->\n")
+            self.m.export(report, 0, namespace_ = "", namespacedef_ = "xmlns='http://xml/metadataSharing.xsd' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://xml/metadataSharing.xsd'")
             report.close()
         except (TypeError, IOError) as e:
             raise CuckooReportError("Failed to generate MAEC Metadata report: %s" % e)
