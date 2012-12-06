@@ -16,9 +16,9 @@ def choose_package(file_type, file_name):
         return "exe"
     elif "PDF" in file_type:
         return "pdf"
-    elif "Rich Text Format" in file_type or "Microsoft Word" in file_type or file_name.endswith(".docx"):
+    elif "Rich Text Format" in file_type or "Microsoft Office Word" in file_type or file_name.endswith(".docx"):
         return "doc"
-    elif "Microsoft Excel" in file_type or file_name.endswith(".xlsx"):
+    elif "Microsoft Office Excel" in file_type or file_name.endswith(".xlsx"):
         return "xls"
     else:
         return None
