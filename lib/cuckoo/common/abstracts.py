@@ -258,6 +258,20 @@ class LibVirtMachineManager(MachineManager):
         # Free handlers.
         self.vms = None
 
+    def dump_memory(self, label, path):
+        """Takes a memory dump.
+        @param path: path to where to store the memory dump.
+        """
+        log.debug("Dumping memomory for vm %s" % label)
+
+        conn = self._connect()
+        try:
+            self.vms[label].coreDump(path, flags=libvirt.VIR_DUMP_MEMORY_ONLY)
+        except libvirt.libvirtError as e:
+            raise CuckooMachineError("Error dumping memory virtual machine %s: %s" % (label, e))
+        finally:
+            self._disconnect(conn)
+
     def _connect(self):
         """Connects to libvirt subsystem.
         @raise CuckooMachineError: if cannot connect to libvirt or missing connection string.
