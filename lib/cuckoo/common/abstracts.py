@@ -262,7 +262,7 @@ class LibVirtMachineManager(MachineManager):
         """Takes a memory dump.
         @param path: path to where to store the memory dump.
         """
-        log.debug("Dumping memomory for vm %s" % label)
+        log.debug("Dumping memory for vm %s" % label)
 
         conn = self._connect()
         try:
