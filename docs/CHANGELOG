@@ -1,5 +1,41 @@
                                   CHANGELOG
 
+Cuckoo Sandbox 0.5 (TBA)
+========================
+
+* Added native support for URL analysis
+* Added full memory dump of the virtual machine
+* Added base class for libvirt machine managers
+* Added auxiliary modules for Windows analyzer
+* Added Zip analysis package
+* Added option to enforce full timeout execution
+* Added support for Graylog2 logging
+* Transitioned internal database to SQLAlchemy
+* Added logging of analysis errors into the database
+* Added logging of guest executions into the database
+* Added logging of active analysis machines into the database
+* Added logging of details of submitted samples into the database
+* Added functionality for automatic version lookup to get notified of available updates
+* Added possibility to order processing and reporting modules
+* Added extraction of strings from analyzed binaries
+* Added Yara signature with indicators of possible virtualization-aware samples
+* Added dissection of intercepted SMTP traffic
+* Added a REST API server to interact with Cuckoo
+* Added user interaction emulation (clicking dialogs buttons and mouse movements)
+* Added support for Windows 7 execution
+* Unified utility for results processing and reports generation
+* Improved analysis process logic
+* Improved automatic analysis package selection
+* Improved process injection and process following
+* Improved management of analysis machines parallel execution
+* Improved internal management of plugins and modules
+* Improved dissection of intercepted DNS traffic
+* Fixed bugs in connection with the agent
+* Fixed some issues in dumping dropped files
+* Fixed bug in termination of tcpdump processes
+* Fixed bugs in MongoDB reporting module
+* Fixed issues with internal DNS resolution
+
 Cuckoo Sandbox 0.4.2 (2012-09-08)
 =================================
 
