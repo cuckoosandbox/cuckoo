@@ -183,7 +183,6 @@ def init_logging():
 
     log.setLevel(logging.INFO)
 
-
 def init_modules():
     """Initializes plugins."""
     log.debug("Importing modules...")
