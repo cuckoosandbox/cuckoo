@@ -4,6 +4,7 @@
 
 import os
 import sys
+import copy
 import json
 import urllib
 import urllib2
@@ -132,19 +133,35 @@ class DatabaseHandler(logging.Handler):
             db = Database()
             db.add_error(record.msg, int(record.task_id))
 
+class ConsoleHandler(logging.StreamHandler):
+    def emit(self, record):
+        colored = copy.copy(record)
+
+        if record.levelname == "WARNING":
+            colored.msg = yellow(record.msg)
+        elif record.levelname == "ERROR" or record.levelname == "CRITICAL":
+            colored.msg = red(record.msg)
+        else:
+            if "analysis procedure completed" in record.msg:
+                colored.msg = cyan(record.msg)
+            else:
+                colored.msg = record.msg
+
+        logging.StreamHandler.emit(self, colored)
+
 def init_logging():
     """Initializes logging."""
     cfg = Config()
 
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 
-    sh = logging.StreamHandler()
-    sh.setFormatter(formatter)
-    log.addHandler(sh)
-
     fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log"))
     fh.setFormatter(formatter)
     log.addHandler(fh)
+
+    ch = ConsoleHandler()
+    ch.setFormatter(formatter)
+    log.addHandler(ch)
 
     dh = DatabaseHandler()
     dh.setLevel(logging.ERROR)
