@@ -177,6 +177,11 @@ class LibVirtMachineManager(MachineManager):
     by libvirt you have just to inherit this machine manager and change the 
     connection string.
     """
+    
+    # VM states.
+    RUNNING = "running"
+    POWEROFF = "poweroff"
+    ERROR = "machete"
 
     def __init__(self):
         try:
@@ -212,6 +217,10 @@ class LibVirtMachineManager(MachineManager):
         @raise CuckooMachineError: if unable to start virtual machine.
         """
         log.debug("Staring vm %s" % label)
+        
+        if self._status(label) == self.RUNNING:
+            raise CuckooMachineError("Trying to start an already started vm %s" % label)
+
         # Get current snapshot.
         conn = self._connect()
 
@@ -233,6 +242,8 @@ class LibVirtMachineManager(MachineManager):
         else:
             self._disconnect(conn)
             raise CuckooMachineError("No snapshot found for virtual machine %s" % label)
+        # Store state.
+        self._status(label)
 
     def stop(self, label):
         """Stops a virtual machine. Kill them all.
@@ -240,6 +251,10 @@ class LibVirtMachineManager(MachineManager):
         @raise CuckooMachineError: if unable to stop virtual machine.
         """
         log.debug("Stopping vm %s" % label)
+
+        if self._status(label) == self.POWEROFF:
+            raise CuckooMachineError("Trying to stop an already stopped vm %s" % label)
+
         # Force virtual machine shutdown.
         conn = self._connect()
         try:
@@ -251,6 +266,8 @@ class LibVirtMachineManager(MachineManager):
             raise CuckooMachineError("Error stopping virtual machine %s: %s" % (label, e))
         finally:
             self._disconnect(conn)
+        # Store state.
+        self._status(label)
 
     def shutdown(self):
         """Override shutdown to free libvirt handlers, anyway they print errors."""
@@ -271,6 +288,47 @@ class LibVirtMachineManager(MachineManager):
             raise CuckooMachineError("Error dumping memory virtual machine %s: %s" % (label, e))
         finally:
             self._disconnect(conn)
+
+    def _status(self, label):
+        """Gets current status of a vm.
+        @param label: virtual machine name.
+        @return: status string.
+        """
+        log.debug("Getting status for %s"% label)
+        
+        # Stetes mapping of python-libvirt.
+        # virDomainState
+        # VIR_DOMAIN_NOSTATE = 0
+        # VIR_DOMAIN_RUNNING = 1
+        # VIR_DOMAIN_BLOCKED = 2
+        # VIR_DOMAIN_PAUSED = 3
+        # VIR_DOMAIN_SHUTDOWN = 4
+        # VIR_DOMAIN_SHUTOFF = 5
+        # VIR_DOMAIN_CRASHED = 6
+        # VIR_DOMAIN_PMSUSPENDED = 7
+
+        conn = self._connect()
+        try:
+            state = self.vms[label].state(flags=0)
+        except libvirt.libvirtError as e:
+            raise CuckooMachineError("Error getting status for virtual machine %s: %s" % (label, e))
+        finally:
+            self._disconnect(conn)
+
+        if state:
+            if state[0] == 1 or state[0] == 3:
+                status = self.RUNNING
+            elif state[0] == 4 or state[0] == 5:
+                status = self.POWEROFF
+            else:
+                status = self.ERROR
+
+        # Report back status.
+        if status:
+            self.set_status(label, status)
+            return status
+        else:
+            raise CuckooMachineError("Unable to get status for %s" % label)
 
     def _connect(self):
         """Connects to libvirt subsystem.
