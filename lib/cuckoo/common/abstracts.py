@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import re
 import logging
 
 from lib.cuckoo.common.exceptions import CuckooCriticalError
@@ -435,24 +436,112 @@ class Processing(object):
         raise NotImplementedError
 
 class Signature(object):
-    """Base abstract class for signature."""
+    """Base class for Cuckoo signatures."""
 
     name = ""
     description = ""
     severity = 1
     categories = []
+    families = []
     authors = []
     references = []
     alert = False
     enabled = True
     minimum = None
     maximum = None
-    families = []
 
-    def __init__(self):
+    def __init__(self, results=None):
         self.data = []
+        self.results = results
 
-    def run(self, results=None):
+    def _check_value(self, pattern, subject, regex=False):
+        """Checks a pattern against a given subject.
+        @param pattern: string or expression to check for.
+        @param subject: target of the check.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        if regex:
+            exp = re.compile(pattern, re.IGNORECASE)
+            if type(subject) == list:
+                for item in subject:
+                    if exp.match(item):
+                        return True
+            else:
+                if exp.match(subject):
+                    return True
+        else:
+            if type(subject) == list:
+                for item in subject:
+                    if item == pattern:
+                        return True
+            else:
+                if subject == pattern:
+                    return True
+
+        return False
+
+    def opens_file(self, pattern, regex=False):
+        """Checks for a file being opened.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        return self._check_value(pattern=pattern,
+                                 subject=self.results["behavior"]["summary"]["files"],
+                                 regex=regex)
+
+    def opens_key(self, pattern, regex=False):
+        """Checks for a registry key being opened.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        return self._check_value(pattern=pattern,
+                                 subject=self.results["behavior"]["summary"]["keys"],
+                                 regex=regex)
+
+    def opens_mutex(self, pattern, regex=False):
+        """Checks for a mutex being opened.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        return self._check_value(pattern=pattern,
+                                 subject=self.results["behavior"]["summary"]["mutexes"],
+                                 regex=regex)
+
+    def contacts_ip(self, pattern, regex=False):
+        """Checks for an IP address being contacted.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        return self._check_value(pattern=pattern,
+                                 subject=self.results["network"]["hosts"],
+                                 regex=regex)
+
+    def contacts_domain(self, pattern, regex=False):
+        """Checks for a domain being contacted.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        for item in self.results["network"]["domains"]:
+            if self._check_value(pattern=pattern,
+                                 subject=item["domain"],
+                                 regex=regex):
+                return True
+
+        return False
+
+    def run(self):
         """Start signature processing.
         @param results: analysis results.
         @raise NotImplementedError: this method is abstract.

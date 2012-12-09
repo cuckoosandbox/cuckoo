@@ -72,7 +72,7 @@ class Processor:
         @return: matched signature.
         """
         # Initialize the current signature.
-        current = signature()
+        current = signature(copy.deepcopy(results))
 
         log.debug("Running signature \"%s\"" % current.name)
 
@@ -122,7 +122,7 @@ class Processor:
         try:
             # Run the signature and if it gets matched, extract key information
             # from it and append it to the results container.
-            if current.run(copy.deepcopy(results)):
+            if current.run():
                 matched = {"name" : current.name,
                            "description" : current.description,
                            "severity" : current.severity,
