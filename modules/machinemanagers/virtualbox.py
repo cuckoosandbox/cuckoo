@@ -34,8 +34,6 @@ class VirtualBox(MachineManager):
             raise CuckooCriticalError("VirtualBox VBoxManage path missing, please add it to the config file")
         if not os.path.exists(self.options.virtualbox.path):
             raise CuckooCriticalError("VirtualBox VBoxManage not found at specified path \"%s\"" % self.options.virtualbox.path)
-        if not self.options.virtualbox.timeout:
-            raise CuckooCriticalError("VirtualBox timeout setting not found, please add it to the config file")
 
         # Base checks.
         super(VirtualBox, self)._initialize_check()
@@ -90,14 +88,14 @@ class VirtualBox(MachineManager):
             # to add a timeout and kill it after that.
             stop_me = 0
             while proc.poll() is None:
-                if stop_me < self.options.virtualbox.timeout:
+                if stop_me < int(self.options.cuckoo.timeouts.vm_state):
                     time.sleep(1)
                     stop_me += 1
                 else:
                     log.debug("Stopping vm %s timeouted. Killing" % label)
                     proc.terminate()
 
-            if proc.returncode != 0 and stop_me < self.options.virtualbox.timeout:
+            if proc.returncode != 0 and stop_me < int(self.options.cuckoo.timeouts.vm_state):
                 log.debug("VBoxManage exited with error powering off the machine")
         except OSError as e:
             raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e)
@@ -168,25 +166,6 @@ class VirtualBox(MachineManager):
             return status
         else:
             raise CuckooMachineError("Unable to get status for %s" % label)
-
-    def _wait_status(self, label, state):
-        """Waits for a vm status.
-        @param label: virtual machine name.
-        @param state: virtual machine status, accepts more than one states in a list.
-        @raise CuckooMachineError: if default waiting timeout expire.
-        """
-        # This block was originally suggested by Loic Jaquemet.
-        waitme = 0
-        current = self._status(label)
-        if isinstance(state, str):
-            state = [state]
-        while current not in state:
-            log.debug("Waiting %i cuckooseconds for vm %s to switch to status %s" % (waitme, label, state))
-            if waitme > int(self.options.virtualbox.timeout):
-                raise CuckooMachineError("Waiting too much for vm %s status change. Please check manually" % label)
-            time.sleep(1)
-            waitme += 1
-            current = self._status(label)
 
     def dump_memory(self, label, path):
         """Takes a memory dump.

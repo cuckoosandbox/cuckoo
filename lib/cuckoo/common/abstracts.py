@@ -88,6 +88,11 @@ class MachineManager(object):
                 raise CuckooCriticalError("Configured machine %s was not "
                     "detected or it's not in proper state" % machine.label)
 
+        # Options check.
+        if not self.options.cuckoo.timeouts.vm_state:
+            raise CuckooCriticalError("Virtual machine state change timeout setting not found, please add it to the config file")
+
+
     def machines(self):
         """List virtual machines.
         @return: virtual machines list
@@ -171,6 +176,29 @@ class MachineManager(object):
         """
         raise NotImplementedError
 
+    def _wait_status(self, label, state):
+        """Waits for a vm status.
+        @param label: virtual machine name.
+        @param state: virtual machine status, accepts more than one states in a list.
+        @raise CuckooMachineError: if default waiting timeout expire.
+        """
+        # This block was originally suggested by Loic Jaquemet.
+        waitme = 0
+        try:
+            current = self._status(label)
+        except NameError:
+            return
+
+        if isinstance(state, str):
+            state = [state]
+        while current not in state:
+            log.debug("Waiting %i cuckooseconds for vm %s to switch to status %s" % (waitme, label, state))
+            if waitme > int(self.options.cuckoo.timeouts.vm_state):
+                raise CuckooMachineError("Waiting too much for vm %s status change. Please check manually" % label)
+            time.sleep(1)
+            waitme += 1
+            current = self._status(label)
+
 class LibVirtMachineManager(MachineManager):
     """Libvirt based machine manager.
 
@@ -243,8 +271,8 @@ class LibVirtMachineManager(MachineManager):
         else:
             self._disconnect(conn)
             raise CuckooMachineError("No snapshot found for virtual machine %s" % label)
-        # Store state.
-        self._status(label)
+        # Check state.
+        self._wait_status(label, self.RUNNING)
 
     def stop(self, label):
         """Stops a virtual machine. Kill them all.
@@ -267,8 +295,8 @@ class LibVirtMachineManager(MachineManager):
             raise CuckooMachineError("Error stopping virtual machine %s: %s" % (label, e))
         finally:
             self._disconnect(conn)
-        # Store state.
-        self._status(label)
+        # Check state.
+        self._wait_status(label, self.POWEROFF)
 
     def shutdown(self):
         """Override shutdown to free libvirt handlers, anyway they print errors."""
