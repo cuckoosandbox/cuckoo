@@ -5,6 +5,7 @@
 import os
 import re
 import logging
+import time
 
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
@@ -13,6 +14,8 @@ from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.objects import Dictionary
 from lib.cuckoo.common.utils import create_folder
+from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
@@ -23,6 +26,7 @@ class MachineManager(object):
     def __init__(self):
         self.module_name = ""
         self.options = None
+        self.options_globals = Config(os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"))
         # Database pointer.
         self.db = Database()
         # Machine table is cleaned to be filled from configuration file at each start.
@@ -89,7 +93,7 @@ class MachineManager(object):
                     "detected or it's not in proper state" % machine.label)
 
         # Options check.
-        if not self.options.cuckoo.timeouts.vm_state:
+        if not self.options_globals.timeouts.vm_state:
             raise CuckooCriticalError("Virtual machine state change timeout setting not found, please add it to the config file")
 
 
@@ -193,7 +197,7 @@ class MachineManager(object):
             state = [state]
         while current not in state:
             log.debug("Waiting %i cuckooseconds for vm %s to switch to status %s" % (waitme, label, state))
-            if waitme > int(self.options.cuckoo.timeouts.vm_state):
+            if waitme > int(self.options_globals.timeouts.vm_state):
                 raise CuckooMachineError("Waiting too much for vm %s status change. Please check manually" % label)
             time.sleep(1)
             waitme += 1

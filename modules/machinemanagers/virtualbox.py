@@ -88,14 +88,14 @@ class VirtualBox(MachineManager):
             # to add a timeout and kill it after that.
             stop_me = 0
             while proc.poll() is None:
-                if stop_me < int(self.options.cuckoo.timeouts.vm_state):
+                if stop_me < int(self.options_globals.timeouts.vm_state):
                     time.sleep(1)
                     stop_me += 1
                 else:
                     log.debug("Stopping vm %s timeouted. Killing" % label)
                     proc.terminate()
 
-            if proc.returncode != 0 and stop_me < int(self.options.cuckoo.timeouts.vm_state):
+            if proc.returncode != 0 and stop_me < int(self.options_globals.timeouts.vm_state):
                 log.debug("VBoxManage exited with error powering off the machine")
         except OSError as e:
             raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e)
