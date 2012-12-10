@@ -219,74 +219,75 @@ class Report(Report):
                                             )
                          )
         # Add static analysis if file obj is analysis subject.
-        if self.results["target"]["category"] == "file" and file["md5"] == self.results["target"]["file"]["md5"] and len(self.results["static"]) > 0:
-            pe = maec.PE_Binary_AttributesType(dll_count = self.results["static"]["imported_dll_count"])
-            # PE exports
-            if len(self.results["static"]["pe_exports"]) > 0:
-                exports = maec.ExportsType()
-                pe.set_Exports(exports)
-                for x in self.results["static"]["pe_exports"]:
-                    exp = maec.PEExportType(
-                                            Function_Name = x["name"],
-                                            Ordinal = x["ordinal"],
-                                            Entry_Point = x["address"]
-                                            )
-                    exports.add_Export(exp)
-            # PE Imports
-            if len(self.results["static"]["pe_imports"]) > 0:
-                imports = maec.ImportsType()
-                pe.set_Imports(imports)
-                for x in self.results["static"]["pe_imports"]:
-                    imp = maec.PEImportType(
-                                            File_Name = x["dll"]
-                                            )
-                    # Imported functions
-                    funcs = maec.Imported_FunctionsType()
-                    imp.set_Imported_Functions(funcs)
-                    for i in x["imports"]:
-                        f = maec.Imported_FunctionType(
-                                                       Function_Name = i["name"],
-                                                       Virtual_Address = i["address"]
-                                                       )
-                        funcs.add_Imported_Function(f)                      
-                    imports.add_Import(imp)
-            # Resources
-            if len(self.results["static"]["pe_resources"]) > 0:
-                resources = maec.ResourcesType()
-                pe.set_Resources(resources)
-                for r in self.results["static"]["pe_resources"]:
-                    res = maec.PEResourceType(
-                                            Name = r["name"]
-                                            )
-                    resources.add_Resource(res)
-            # Sections
-            if len(self.results["static"]["pe_sections"]) > 0:
-                sections = maec.SectionsType()
-                pe.set_Sections(sections)
-                for s in self.results["static"]["pe_sections"]:
-                    sec = maec.PESectionType(
-                                            Virtual_Size = int(s["virtual_size"], 16),
-                                            Virtual_Address = s["virtual_address"],
-                                            Entropy = s["entropy"],
-                                            Section_Name = s["name"]
-                                            )
-                    sections.add_Section(sec)
-            # Version info
-            if len(self.results["static"]["pe_versioninfo"]) > 0:
-                version = maec.Version_BlockType()
-                pe.set_Version_Block(version)
-                for k in self.results["static"]["pe_versioninfo"]:
-                    if k["name"] == "ProductVersion":
-                        version.set_Product_Version_Text(k["value"])
-                    if k["name"] == "ProductName":
-                        version.set_Product_Name(k["value"])
-                    if k["name"] == "FileVersion":
-                        version.set_File_Version_Text(k["value"])
-                    if k["name"] == "CompanyName":
-                        version.set_Company_Name(k["value"])
-                    if k["name"] == "OriginalFilename":
-                        version.set_Original_File_Name(k["value"])
-            fs.set_File_Type_Attributes(maec.File_Type_AttributesType(pe))
+        if self.results["target"]["category"] == "file" and file["md5"] == self.results["target"]["file"]["md5"] and self.results["static"]:
+            if len(self.results["static"]) > 0:
+                pe = maec.PE_Binary_AttributesType(dll_count = self.results["static"]["imported_dll_count"])
+                # PE exports
+                if len(self.results["static"]["pe_exports"]) > 0:
+                    exports = maec.ExportsType()
+                    pe.set_Exports(exports)
+                    for x in self.results["static"]["pe_exports"]:
+                        exp = maec.PEExportType(
+                                                Function_Name = x["name"],
+                                                Ordinal = x["ordinal"],
+                                                Entry_Point = x["address"]
+                                                )
+                        exports.add_Export(exp)
+                # PE Imports
+                if len(self.results["static"]["pe_imports"]) > 0:
+                    imports = maec.ImportsType()
+                    pe.set_Imports(imports)
+                    for x in self.results["static"]["pe_imports"]:
+                        imp = maec.PEImportType(
+                                                File_Name = x["dll"]
+                                                )
+                        # Imported functions
+                        funcs = maec.Imported_FunctionsType()
+                        imp.set_Imported_Functions(funcs)
+                        for i in x["imports"]:
+                            f = maec.Imported_FunctionType(
+                                                           Function_Name = i["name"],
+                                                           Virtual_Address = i["address"]
+                                                           )
+                            funcs.add_Imported_Function(f)                      
+                        imports.add_Import(imp)
+                # Resources
+                if len(self.results["static"]["pe_resources"]) > 0:
+                    resources = maec.ResourcesType()
+                    pe.set_Resources(resources)
+                    for r in self.results["static"]["pe_resources"]:
+                        res = maec.PEResourceType(
+                                                Name = r["name"]
+                                                )
+                        resources.add_Resource(res)
+                # Sections
+                if len(self.results["static"]["pe_sections"]) > 0:
+                    sections = maec.SectionsType()
+                    pe.set_Sections(sections)
+                    for s in self.results["static"]["pe_sections"]:
+                        sec = maec.PESectionType(
+                                                Virtual_Size = int(s["virtual_size"], 16),
+                                                Virtual_Address = s["virtual_address"],
+                                                Entropy = s["entropy"],
+                                                Section_Name = s["name"]
+                                                )
+                        sections.add_Section(sec)
+                # Version info
+                if len(self.results["static"]["pe_versioninfo"]) > 0:
+                    version = maec.Version_BlockType()
+                    pe.set_Version_Block(version)
+                    for k in self.results["static"]["pe_versioninfo"]:
+                        if k["name"] == "ProductVersion":
+                            version.set_Product_Version_Text(k["value"])
+                        if k["name"] == "ProductName":
+                            version.set_Product_Name(k["value"])
+                        if k["name"] == "FileVersion":
+                            version.set_File_Version_Text(k["value"])
+                        if k["name"] == "CompanyName":
+                            version.set_Company_Name(k["value"])
+                        if k["name"] == "OriginalFilename":
+                            version.set_Original_File_Name(k["value"])
+                fs.set_File_Type_Attributes(maec.File_Type_AttributesType(pe))
         h = maec.HashesType()
         h.add_Hash(maec.HashType(
                                  type_ = "MD5",
