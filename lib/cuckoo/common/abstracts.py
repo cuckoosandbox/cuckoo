@@ -510,7 +510,7 @@ class Signature(object):
 
         return False
 
-    def opens_file(self, pattern, regex=False):
+    def check_file(self, pattern, regex=False):
         """Checks for a file being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
@@ -521,7 +521,7 @@ class Signature(object):
                                  subject=self.results["behavior"]["summary"]["files"],
                                  regex=regex)
 
-    def opens_key(self, pattern, regex=False):
+    def check_key(self, pattern, regex=False):
         """Checks for a registry key being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
@@ -532,7 +532,7 @@ class Signature(object):
                                  subject=self.results["behavior"]["summary"]["keys"],
                                  regex=regex)
 
-    def opens_mutex(self, pattern, regex=False):
+    def check_mutex(self, pattern, regex=False):
         """Checks for a mutex being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
@@ -543,7 +543,83 @@ class Signature(object):
                                  subject=self.results["behavior"]["summary"]["mutexes"],
                                  regex=regex)
 
-    def contacts_ip(self, pattern, regex=False):
+    def check_api(self, pattern, process=None, regex=False):
+        """Checks for an API being called.
+        @param pattern: string or expression to check for.
+        @param process: optional filter for a specific process name.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        # Loop through processes.
+        for item in self.results["behavior"]["processes"]:
+            # Check if there's a process name filter.
+            if process:
+                if item["process_name"] != process:
+                    continue
+
+            # Loop through API calls.
+            for call in item["calls"]:
+                # Check if the name matches.
+                if self._check_value(pattern=pattern,
+                                     subject=call["api"],
+                                     regex=regex):
+                    return True
+
+        return False
+
+    def check_argument(self,
+                       pattern,
+                       name=None,
+                       api=None,
+                       category=None,
+                       process=None,
+                       regex=False):
+        """Checks for a specific argument of an invoked API.
+        @param pattern: string or expression to check for.
+        @param name: optional filter for the argument name.
+        @param api: optional filter for the API function name.
+        @param category: optional filter for a category name.
+        @param process: optional filter for a specific process name.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        # Loop through processes.
+        for item in self.results["behavior"]["processes"]:
+            # Check if there's a process name filter.
+            if process:
+                if item["process_name"] != process:
+                    continue
+
+            # Loop through API calls.
+            for call in item["calls"]:
+                # Check if there's an API name filter.
+                if api:
+                    if call["api"] != api:
+                        continue
+
+                # Check if there's a category filter.
+                if category:
+                    if call["category"] != category:
+                        continue
+
+                # Loop through arguments.
+                for argument in call["arguments"]:
+                    # Check if there's an argument name filter.
+                    if name:
+                        if argument["name"] != name:
+                            continue
+
+                    # Check if the argument value matches.
+                    if self._check_value(pattern=pattern,
+                                         subject=argument["value"],
+                                         regex=regex):
+                        return True
+
+        return False
+
+    def check_ip(self, pattern, regex=False):
         """Checks for an IP address being contacted.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
@@ -554,7 +630,7 @@ class Signature(object):
                                  subject=self.results["network"]["hosts"],
                                  regex=regex)
 
-    def contacts_domain(self, pattern, regex=False):
+    def check_domain(self, pattern, regex=False):
         """Checks for a domain being contacted.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
@@ -564,6 +640,21 @@ class Signature(object):
         for item in self.results["network"]["domains"]:
             if self._check_value(pattern=pattern,
                                  subject=item["domain"],
+                                 regex=regex):
+                return True
+
+        return False
+
+    def check_url(self, pattern, regex=False):
+        """Checks for a URL being contacted.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        for item in self.results["network"]["http"]:
+            if self._check_value(pattern=pattern,
+                                 subject=item["uri"],
                                  regex=regex):
                 return True
 

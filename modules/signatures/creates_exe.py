@@ -13,5 +13,5 @@ class CreatesExe(Signature):
     minimum = "0.5"
 
     def run(self):
-        return self.opens_file(pattern=".*\\.exe$",
+        return self.check_file(pattern=".*\\.exe$",
                                regex=True)
