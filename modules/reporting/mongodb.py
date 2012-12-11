@@ -38,7 +38,7 @@ class MongoDB(Report):
             try:
                 pcap_id = self._fs.put(pcap.get_data(), filename=pcap.get_name())
             except FileExists:
-                pcap_id = self._db.fs.files.find({"md5": pcap.get_md5()})[0][u"_id"]
+                pcap_id = self._db.fs.files.find_one({"md5": pcap.get_md5()})[u"_id"]
             # Preventive key check.
             if "network" in results:
                 results["network"]["pcap_id"] = pcap_id
@@ -64,7 +64,7 @@ class MongoDB(Report):
                                 try:
                                     drop_id = self._fs.put(drop, filename=dropped["name"])
                                 except FileExists:
-                                    drop_id = self._db.fs.files.find({"md5": dropped["md5"]})[0][u"_id"]
+                                    drop_id = self._db.fs.files.find_one({"md5": dropped["md5"]})[u"_id"]
                                 dropped["dropped_id"] = drop_id
 
         # Add screenshots.
@@ -82,7 +82,7 @@ class MongoDB(Report):
                 try:
                     shot_id = self._fs.put(shot.get_data(), filename=shot.get_name())
                 except FileExists:
-                    shot_id = self._db.fs.files.find({"md5": shot.get_md5()})[0][u"_id"]
+                    shot_id = self._db.fs.files.find_one({"md5": shot.get_md5()})[u"_id"]
                 results["shots"].append(shot_id)
 
         # Save all remaining results.
