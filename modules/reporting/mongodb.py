@@ -72,7 +72,7 @@ class MongoDB(Report):
         shots_path = os.path.join(self.analysis_path, "shots")
         if os.path.exists(shots_path):
             shots = [f for f in os.listdir(shots_path) if f.endswith(".jpg")]
-            for shot_file in shots:
+            for shot_file in sorted(shots):
                 shot_path = os.path.join(self.analysis_path, "shots", shot_file)
                 try:
                     shot = File(shot_path)
