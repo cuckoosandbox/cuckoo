@@ -72,6 +72,6 @@ class Human(Auxiliary, Thread):
 
     def run(self):
         while self.do_run:
-            #move_mouse()
+            move_mouse()
             USER32.EnumWindows(EnumWindowsProc(foreach_window), 0)
             KERNEL32.Sleep(1000)
