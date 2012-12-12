@@ -128,6 +128,8 @@ class Process:
         @return: operation status.
         """
         if not os.access(path, os.X_OK):
+            log.error("Unable to access file at path \"%s\", execution aborted"
+                      % path)
             return False
 
         startup_info = STARTUPINFO()
