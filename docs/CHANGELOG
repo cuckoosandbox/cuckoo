@@ -7,6 +7,7 @@ Cuckoo Sandbox 0.5 (TBA)
 * Added full memory dump of the virtual machine
 * Added base class for libvirt machine managers
 * Added auxiliary modules for Windows analyzer
+* Added Jar analysis package
 * Added Zip analysis package
 * Added option to enforce full timeout execution
 * Added support for Graylog2 logging
