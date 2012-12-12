@@ -13,6 +13,18 @@ from lib.common.exceptions import CuckooPackageError
 class Applet(Package):
     """Java Applet analysis package."""
 
+    def get_path(self):
+        paths = [
+            os.path.join(os.getenv("ProgramFiles"), "Mozilla Firefox", "firefox.exe"),
+            os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
+        ]
+
+        for path in paths:
+            if os.path.exists(path):
+                return path
+
+        return None
+
     def make_html(self, path, class_name):
         html = "<html>"
         html += "<body>"
@@ -30,7 +42,9 @@ class Applet(Package):
         return file_path
 
     def start(self, path):
-        iexplore = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
+        browser = self.get_path()
+        if not browser:
+            raise CuckooPackageError("Unable to find any browser executable available")
 
         free = self.options.get("free", False)
         class_name = self.options.get("class", None)
@@ -41,7 +55,7 @@ class Applet(Package):
         html_path = self.make_html(path, class_name)
 
         p = Process()
-        if not p.execute(path=iexplore, args="\"%s\"" % html_path, suspended=suspended):
+        if not p.execute(path=browser, args="\"%s\"" % html_path, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Internet Exploer process, analysis aborted")
 
         if not free and suspended:
