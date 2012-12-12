@@ -28,12 +28,17 @@ class Jar(Package):
             raise CuckooPackageError("Unable to find any Java executable available")
 
         free = self.options.get("free", False)
+        class_name = self.options.get("class", None)
         suspended = True
         if free:
             suspended = False
 
+        args = "-jar \"%s\"" % path
+        if class_name:
+            args += " %s" % class_name
+
         p = Process()
-        if not p.execute(path=java, args="-jar \"%s\"" % path, suspended=suspended):
+        if not p.execute(path=java, args=args, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Java process, analysis aborted")
 
         if not free and suspended:
