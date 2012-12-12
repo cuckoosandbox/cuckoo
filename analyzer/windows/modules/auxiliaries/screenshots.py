@@ -7,7 +7,7 @@ import time
 import logging
 from threading import Thread
 
-from lib.common.paths import PATHS
+from lib.common.constants import PATHS
 from lib.common.abstracts import Auxiliary
 from lib.api.screenshot import Screenshot
 
