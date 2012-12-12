@@ -221,7 +221,7 @@ class PipeHandler(Thread):
                             # Create a temporary configuration for the injected
                             # process.
                             fh = open(os.path.join(os.getenv("TEMP"), "%s.ini" % process_id), "w")
-                            fh.write("pipe=%s\nlogdir=%s\n" % (PIPE, PATHS["root"])
+                            fh.write("pipe=%s\nresults=%s\nanalyzer=%s\n" % (PIPE, PATHS["root"], os.getcwd())
                             fh.close()
                     else:
                         log.warning("Received request to inject myself, skip")
