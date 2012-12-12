@@ -242,6 +242,11 @@ if __name__ == "__main__":
 
         print("[+] Starting agent on %s:%s ..." % (BIND_IP, BIND_PORT))
 
+        # Disable DNS lookup, by Scott D.
+        def FakeGetFQDN(name=""):
+            return name
+        socket.getfqdn = FakeGetFQDN
+
         server = SimpleXMLRPCServer((BIND_IP, BIND_PORT), allow_none=True)
         server.register_instance(Agent())
         server.serve_forever()
