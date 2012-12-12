@@ -28,14 +28,15 @@ class Jar(Package):
             raise CuckooPackageError("Unable to find any Java executable available")
 
         free = self.options.get("free", False)
-        class_name = self.options.get("class", None)
+        class_path = self.options.get("class", None)
         suspended = True
         if free:
             suspended = False
 
-        args = "-jar \"%s\"" % path
-        if class_name:
-            args += " %s" % class_name
+        if class_path:
+            args = "-cp \"%s\" %s" % (path, class_path)
+        else:
+            args = "-jar \"%s\"" % path
 
         p = Process()
         if not p.execute(path=java, args=args, suspended=suspended):
