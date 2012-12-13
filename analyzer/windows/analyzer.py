@@ -107,6 +107,17 @@ def dump_file(file_path):
         log.error("Unable to dump dropped file at path \"%s\": %s"
                   % (file_path, e))
 
+def del_file(fname):
+    dump_file(fname)
+
+    # filenames are case-insenstive in windows
+    fnames = [x.lower() for x in FILES_LIST]
+
+    # if this filename exists in the FILES_LIST, then delete it, because it
+    # doesn't exist anymore anyway
+    if fname.lower() in fnames:
+        FILES_LIST.pop(fnames.index(fname.lower()))
+
 def dump_files():
     """Dump all the dropped files."""
     for file_path in FILES_LIST:
@@ -235,7 +246,7 @@ class PipeHandler(Thread):
                 # Extract the file path.
                 file_path = command[9:].decode("utf-8")
                 # Dump the file straight away.
-                dump_file(file_path)
+                del_file(file_path)
 
         # we wait until cuckoomon reports back, so we know for sure that
         # cuckoomon has finished initializing etc
