@@ -61,7 +61,7 @@ def check_dependencies():
     """
     check_python_version()
 
-    dependencies = ["sqlalchemy", "pefile"]
+    dependencies = ["sqlalchemy"]
 
     for dependency in dependencies:
         try:
