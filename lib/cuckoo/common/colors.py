@@ -13,7 +13,7 @@ def color(text, color_code):
     if sys.platform == "win32":
         return text
 
-    return chr(0x1b) + "[" + str(color_code) + "m" + text + chr(0x1b) + "[0m"
+    return chr(0x1b) + "[" + str(color_code) + "m" + str(text) + chr(0x1b) + "[0m"
 
 def black(text):
     return color(text, 30)
