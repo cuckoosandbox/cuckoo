@@ -165,7 +165,7 @@ class Process:
             return True
         else:
             log.error("Failed to execute process from path \"%s\" with "
-                      "arguments \"%s\" (Error: %s)" 
+                      "arguments \"%s\" (Error: %s)"
                       % (path, args, get_error_string(KERNEL32.GetLastError())))
             return False
 
@@ -287,8 +287,8 @@ class Process:
                                                         byref(new_thread_id))
             if not thread_handle:
                 log.error("CreateRemoteThread failed when injecting " +
-                    "process with pid %d (Error: %s)" % (self.pid,
-                    get_error_string(KERNEL32.GetLastError())))
+                        "process with pid %d (Error: %s)" % (self.pid,
+                        get_error_string(KERNEL32.GetLastError())))
                 KERNEL32.CloseHandle(self.event_handle)
                 self.event_handle = None
                 return False

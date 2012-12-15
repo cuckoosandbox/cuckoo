@@ -14,7 +14,7 @@ WORD      = c_ushort
 DWORD     = c_ulong
 LONG      = c_ulong
 LPBYTE    = POINTER(c_ubyte)
-LPTSTR    = POINTER(c_char) 
+LPTSTR    = POINTER(c_char)
 HANDLE    = c_void_p
 PVOID     = c_void_p
 LPVOID    = c_void_p
@@ -75,9 +75,9 @@ BM_CLICK                  = 0x000000F5
 
 class STARTUPINFO(Structure):
     _fields_ = [
-        ("cb",            DWORD),        
-        ("lpReserved",    LPTSTR), 
-        ("lpDesktop",     LPTSTR),  
+        ("cb",            DWORD),
+        ("lpReserved",    LPTSTR),
+        ("lpDesktop",     LPTSTR),
         ("lpTitle",       LPTSTR),
         ("dwX",           DWORD),
         ("dwY",           DWORD),
@@ -114,7 +114,7 @@ class LUID_AND_ATTRIBUTES(Structure):
         ('Luid', LUID),
         ('Attributes', DWORD),
         ]
-    
+
 class TOKEN_PRIVILEGES(Structure):
     _fields_ = [
         ('PrivilegeCount', DWORD),
