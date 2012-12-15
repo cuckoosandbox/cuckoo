@@ -46,8 +46,7 @@ def add_pids(pids):
     else:
         add_pid(pids)
 
-def add_file(file_path):om the injected processes for
-    new processes being spawned and for files 
+def add_file(file_path):
     """Add a file to file list."""
     if file_path not in FILES_LIST:
         log.info("Added new file to list with path: %s"
@@ -218,10 +217,13 @@ class PipeHandler(Thread):
                             # CreateRemoteThread injection method
                             wait = True
 
-                            # Create a temporary configuration for the injected
-                            # process.
-                            fh = open(os.path.join(os.getenv("TEMP"), "%s.ini" % process_id), "w")
-                            fh.write("pipe=%s\nresults=%s\nanalyzer=%s\n" % (PIPE, PATHS["root"], os.getcwd())
+                            # Create a temporary configuration for the
+                            # injected process.
+                            path = os.path.join(os.getenv("TEMP"),
+                                                "%s.ini" % process_id)
+                            fh = open(path, "w")
+                            fh.write("pipe=%s\nresults=%s\nanalyzer=%s\n" %
+                                     (PIPE, PATHS["root"], os.getcwd())
                             fh.close()
                     else:
                         log.warning("Received request to inject myself, skip")
