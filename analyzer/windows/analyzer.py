@@ -655,6 +655,4 @@ if __name__ == "__main__":
     finally:
         # Establish connection with the agent XMLRPC server.
         server = xmlrpclib.Server("http://127.0.0.1:8000")
-        server.complete(success=success,
-                        error=error,
-                        results=PATHS["root"])
+        server.complete(success, error)
