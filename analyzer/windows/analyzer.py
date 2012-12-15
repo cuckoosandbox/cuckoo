@@ -46,20 +46,8 @@ def add_pids(pids):
     else:
         add_pid(pids)
 
-def resolve_file_path(file_path, cur_dir):
-    if file_path[:4] == '\\\\.\\' or file_path[:8] == '\\Devices\\':
-        return file_path
-
-    # for some reason we get filepaths with "\\??\\", whereas this should
-    # actually be "\\\\?\\"..
-    if file_path[:4] == '\\??\\':
-        file_path = '\\\\?\\' + file_path[4:]
-
-    log.info('%s %s -> %s' % (cur_dir, file_path, os.path.join(cur_dir,
-        file_path)))
-    return os.path.join(cur_dir, file_path)
-
-def add_file(file_path):
+def add_file(file_path):om the injected processes for
+    new processes being spawned and for files 
     """Add a file to file list."""
     if file_path not in FILES_LIST:
         log.info("Added new file to list with path: %s"
@@ -81,11 +69,12 @@ def dump_file(file_path):
         log.warning("Not going to drop %s (not on harddisk)" % file_path)
         return
 
+    # 32k is the maximum length of the filename when using unicode names.
     path = create_unicode_buffer(32 * 1024)
     name = c_wchar_p()
     KERNEL32.GetFullPathNameW(file_path, 32 * 1024, path, byref(name))
     file_path = path.value
-
+    
     # Check if the path has a valid file name, otherwise it's a directory
     # and we should abort the dump.
     if name.value:
@@ -105,8 +94,6 @@ def dump_file(file_path):
             dump_path = os.path.join(dir_path, "%s.bin" % file_name)
         except OSError as e:
             dump_path = os.path.join(PATHS["files"], "%s.bin" % file_name)
-        except Exception as e:
-            log.info('exception during dumping1 -> %s %s' % (str(e), repr(e)))
 
         break
 
@@ -164,15 +151,10 @@ class PipeHandler(Thread):
             #elif not success or bytes_read.value == 0:
             #    if KERNEL32.GetLastError() == ERROR_BROKEN_PIPE:
             #        pass
-
+            
             break
 
         if data:
-            if data.startswith('INFO:'):
-                log.info(repr(data[5:].decode('utf8')))
-
-            log.info('data: %s' % repr(data))
-
             command = data.strip()
 
             wait = False
@@ -236,13 +218,10 @@ class PipeHandler(Thread):
                             # CreateRemoteThread injection method
                             wait = True
 
-                            # Create a temporary configuration for the
-                            # injected process.
-                            path = os.path.join(os.getenv("TEMP"),
-                                                "%s.ini" % process_id)
-                            fh = open(path, "w")
-                            fh.write("pipe=%s\nresults=%s\nanalyzer=%s\n" %
-                                     (PIPE, PATHS["root"], os.getcwd()))
+                            # Create a temporary configuration for the injected
+                            # process.
+                            fh = open(os.path.join(os.getenv("TEMP"), "%s.ini" % process_id), "w")
+                            fh.write("pipe=%s\nresults=%s\nanalyzer=%s\n" % (PIPE, PATHS["root"], os.getcwd())
                             fh.close()
                     else:
                         log.warning("Received request to inject myself, skip")
@@ -253,27 +232,22 @@ class PipeHandler(Thread):
             # In case of FILE_NEW, the client is trying to notify the creation
             # of a new file.
             elif command.startswith("FILE_NEW:"):
-                log.info('file-new: %s' % repr(command[9:]))
                 # We extract the file path.
-                file_path = command[9:].decode('utf8')
-                #file_path, cur_dir = command[9:].decode("utf-8").split('::')
+                file_path = command[9:].decode("utf-8")
                 # We add the file to the list.
-                #add_file(resolve_file_path(file_path, cur_dir))
                 add_file(file_path)
             # In case of FILE_DEL, the client is trying to notify an ongoing
             # deletion of an existing file, therefore we need to dump it
             # straight away.
             elif command.startswith("FILE_DEL:"):
-                log.info('file-del: %s' % repr(command[9:]))
                 # Extract the file path.
                 file_path = command[9:].decode("utf-8")
-
                 # Dump the file straight away.
                 dump_file(file_path)
 
         # we wait until cuckoomon reports back, so we know for sure that
         # cuckoomon has finished initializing etc
-        if wait and 0:
+        if wait:
             proc.wait()
             log.info("Successfully injected process with pid %d" % proc.pid)
 
@@ -372,7 +346,7 @@ class Analyzer:
         # We update the target according to its category. If it's a file, then
         # we store the path.
         if self.config.category == "file":
-            self.target = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep,
+            self.target = os.path.join(os.environ["TEMP"] + os.sep,
                                        self.config.file_name)
         # If it's a URL, well.. we store the URL.
         else:

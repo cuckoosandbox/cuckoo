@@ -85,7 +85,7 @@ class Reporter:
         # all the available ones. It can be used in the case where a
         # module requires another one to be already executed beforehand.
         modules_list = list_plugins(group="reporting")
-        #modules_list.sort(key=lambda module: module.order)
+        modules_list.sort(key=lambda module: module.order)
 
         # Run every loaded reporting module.
         for module in modules_list:
