@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import string
 import random
 import logging
 from time import time
@@ -13,6 +12,7 @@ from shutil import copy
 from lib.common.defines import *
 from lib.common.paths import PATHS
 from lib.common.errors import get_error_string
+from lib.common.rand import random_string
 
 log = logging.getLogger(__name__)
 
@@ -20,8 +20,8 @@ def randomize_dll(dll_path):
     """Randomize DLL name.
     @return: new DLL path.
     """
-    new_dll_name = "".join(random.choice(string.ascii_letters) for x in range(6))
-    new_dll_path = os.path.join("dll", "%s.dll" % new_dll_name)
+    new_dll_name = random_string(6)
+    new_dll_path = os.path.join(os.getcwd(), "dll", "%s.dll" % new_dll_name)
 
     try:
         copy(dll_path, new_dll_path)
