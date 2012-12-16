@@ -44,7 +44,7 @@ class Agent:
             container = "".join(random.choice(string.ascii_lowercase) for x in range(random.randint(5, 10)))
 
             if self.system == "windows":
-                ANALYZER_FOLDER = os.path.join(os.environ["SYSTEMDRIVE"], container)
+                ANALYZER_FOLDER = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, container)
             elif self.system == "linux" or self.system == "darwin":
                 ANALYZER_FOLDER = os.path.join(os.environ["HOME"], container)
             else:
