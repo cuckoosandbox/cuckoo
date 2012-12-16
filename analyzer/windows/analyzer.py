@@ -54,20 +54,7 @@ def add_file(file_path):
 
 def dump_file(file_path):
     """Create a copy of the give file path."""
-    if file_path.startswith("\\\\.\\"):
-        return
-
-    # Strip bogus path prefixes.
-    if file_path[:4] == "\\??\\" or file_path[:4] == "\\\\?\\":
-        file_path = file_path[4:]
-
-    # Ensure that the file name is on a harddisk, such as C:\\ and D:\\
-    # because we don't need stuff such as \\?\PIPE, \\?\IDE, \\?\STORAGE, etc.
-    if file_path[1] != ":":
-        log.warning("Not going to drop %s (not on harddisk)" % file_path)
-        return
-
-    # 32k is the maximum length of the filename when using unicode names.
+    # 32k is the maximum length for a filename
     path = create_unicode_buffer(32 * 1024)
     name = c_wchar_p()
     KERNEL32.GetFullPathNameW(file_path, 32 * 1024, path, byref(name))
