@@ -12,20 +12,6 @@ from lib.cuckoo.common.utils import convert_to_printable
 
 log = logging.getLogger(__name__)
 
-class LineIteration:
-    def __init__(self, csv):
-        self.csv = csv
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        line = self.csv.readline()
-        if line:
-            return line
-        else:
-            raise StopIteration
-
 class ParseProcessLog:
     """Parses process log file."""
     
@@ -119,7 +105,7 @@ class ParseProcessLog:
                       % self._log_path)
             return False
 
-        reader = csv.reader(LineIteration(open(self._log_path, "rb")))
+        reader = csv.reader(open(self._log_path, "rb"))
 
         try:
             for row in reader:
