@@ -222,8 +222,8 @@ class PipeHandler(Thread):
                             path = os.path.join(os.getenv("TEMP"),
                                                 "%s.ini" % process_id)
                             fh = open(path, "w")
-                            fh.write("pipe=%s\nresults=%s\nanalyzer=%s\n" %
-                                     (PIPE, PATHS["root"], os.getcwd())
+                            fh.write("pipe=%s\nresults=%s\nanalyzer=%s\n"
+                                     % (PIPE, PATHS["root"], os.getcwd()))
                             fh.close()
                     else:
                         log.warning("Received request to inject myself, skip")
@@ -631,4 +631,4 @@ if __name__ == "__main__":
     finally:
         # Establish connection with the agent XMLRPC server.
         server = xmlrpclib.Server("http://127.0.0.1:8000")
-        server.complete(success, error)
+        server.complete(success, error, PATHS["root"])
