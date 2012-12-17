@@ -363,7 +363,7 @@ class Database(object):
                               platform=platform)
             session.add(machine)
             session.commit()
-        except IntegrityError:
+        except:
             session.rollback()
 
     def fetch(self):
@@ -371,7 +371,10 @@ class Database(object):
         @return: task dict or None.
         """
         session = self.Session()
-        row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
+        try:
+            row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
+        except:
+            return None
         return row
 
     def process(self, task_id):
@@ -391,7 +394,7 @@ class Database(object):
             if row:
                row.status = "processing"
             session.commit()
-        except SQLAlchemyError:
+        except:
             session.rollback()
             return None
         return row
@@ -456,10 +459,13 @@ class Database(object):
         @return: list of virtual machines
         """
         session = self.Session()
-        if locked:
-            machines = session.query(Machine).filter(Machine.locked == True)
-        else:
-            machines = session.query(Machine)
+        try:
+            if locked:
+                machines = session.query(Machine).filter(Machine.locked == True)
+            else:
+                machines = session.query(Machine)
+        except:
+            return None
         return machines
 
     def lock_machine(self, name=None, platform=None):
@@ -511,7 +517,10 @@ class Database(object):
         @return: free virtual machines count
         """
         session = self.Session()
-        machines_count = session.query(Machine).filter(Machine.locked == False).count()
+        try:
+            machines_count = session.query(Machine).filter(Machine.locked == False).count()
+        except:
+            return 0
         return machines_count
 
     def set_machine_status(self, label, status):
@@ -539,7 +548,7 @@ class Database(object):
             error = Error(message=message, task_id=task_id)
             session.add(error)
             session.commit()
-        except IntegrityError:
+        except:
             session.rollback()
 
     # The following functions are mostly used by external utils.
@@ -687,7 +696,10 @@ class Database(object):
         @return: list of tasks.
         """
         session = self.Session()
-        tasks = session.query(Task).order_by("added_on desc").limit(limit)
+        try:
+            tasks = session.query(Task).order_by("added_on desc").limit(limit)
+        except:
+            return None
         return tasks
 
     def view_task(self, task_id):
@@ -696,7 +708,10 @@ class Database(object):
         @return: details on the task.
         """
         session = self.Session()
-        task = session.query(Task).get(task_id)
+        try:
+            task = session.query(Task).get(task_id)
+        except:
+            return None
         return task
 
     def view_sample(self, sample_id):
@@ -705,7 +720,10 @@ class Database(object):
         @return: details on the sample.
         """
         session = self.Session()
-        sample = session.query(Sample).get(sample_id)
+        try:
+            sample = session.query(Sample).get(sample_id)
+        except:
+            return None
         return sample
 
     def find_sample(self, md5=None, sha256=None):
@@ -714,12 +732,13 @@ class Database(object):
         @return: matches list
         """
         session = self.Session()
-
-        if md5:
-            sample = session.query(Sample).filter(Sample.md5 == md5).first()
-        elif sha256:
-            sample = sesison.query(Sample).fitler(Sample.sha256 == sha256).first()
-
+        try:
+            if md5:
+                sample = session.query(Sample).filter(Sample.md5 == md5).first()
+            elif sha256:
+                sample = sesison.query(Sample).fitler(Sample.sha256 == sha256).first()
+        except:
+            return None
         return sample
 
     def view_machine(self, name):
@@ -728,7 +747,10 @@ class Database(object):
         @return: virtual machine's details
         """
         session = self.Session()
-        machine = session.query(Machine).filter(Machine.name == name).first()
+        try:
+            machine = session.query(Machine).filter(Machine.name == name).first()
+        except:
+            return None
         return machine
 
     def view_errors(self, task_id):
@@ -737,5 +759,8 @@ class Database(object):
         @return: list of errors.
         """
         session = self.Session()
-        errors = session.query(Error).filter(Error.task_id == task_id)
+        try:
+            errors = session.query(Error).filter(Error.task_id == task_id)
+        except:
+            return None
         return errors
