@@ -8,7 +8,7 @@ import sys
 import json
 import argparse
 
-from bottle import Bottle, route, run, request, server_names, ServerAdapter
+from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
@@ -28,6 +28,17 @@ def jsonize(data):
 
 def report_error(error_code):
     return jsonize({"error" : True, "error_code" : error_code, "error_message" : errors[error_code]})
+
+@hook("after_request")
+def custom_headers():
+    """Set some custom headers across all HTTP responses."""
+    response.headers["Server"] = "Machete Server"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Expires"] = "0"
 
 @route("/tasks/create/file", method="POST")
 def tasks_create_file():
