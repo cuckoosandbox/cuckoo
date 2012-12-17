@@ -37,10 +37,7 @@ class MongoDB(Report):
         pcap_file = os.path.join(self.analysis_path, "dump.pcap")
         if os.path.exists(pcap_file) and os.path.getsize(pcap_file) != 0:
             pcap = File(pcap_file)
-            try:
-                pcap_id = self._fs.put(pcap.get_data(), filename=pcap.get_name())
-            except FileExists:
-                pcap_id = self._db.fs.files.find_one({"md5": pcap.get_md5()})[u"_id"]
+            pcap_id = self.store_file(pcap)
             # Preventive key check.
             if "network" in results:
                 results["network"]["pcap_id"] = pcap_id
@@ -63,10 +60,7 @@ class MongoDB(Report):
                                     drop = open(file_path, 'r')
                                 except IOError as e:
                                     raise CuckooReportError("Failed to read file %s: %s" % (file_path, e))
-                                try:
-                                    drop_id = self._fs.put(drop, filename=dropped["name"])
-                                except FileExists:
-                                    drop_id = self._db.fs.files.find_one({"md5": dropped["md5"]})[u"_id"]
+                                drop_id = self.store_file(drop, filename=dropped['name'])
                                 dropped["dropped_id"] = drop_id
 
         # Add screenshots.
@@ -81,10 +75,7 @@ class MongoDB(Report):
                 except IOError as e:
                     raise CuckooReportError("Failed to read screenshot %s: %s" % (shot_path, e))
 
-                try:
-                    shot_id = self._fs.put(shot.get_data(), filename=shot.get_name())
-                except FileExists:
-                    shot_id = self._db.fs.files.find_one({"md5": shot.get_md5()})[u"_id"]
+                shot_id = self.store_file(shot)
                 results["shots"].append(shot_id)
 
         # Save all remaining results.
@@ -104,6 +95,16 @@ class MongoDB(Report):
                 self._db.analysis.save(results)
             except Exception as e:
                 raise CuckooReportError("Failed to store the document into MongoDB: %s" % e)
+
+    def store_file(self, fileobj, filename=None):
+        if filename == None: filename = fileobj.get_name()
+
+        existing = self._db.fs.files.find_one({"md5": fileobj.get_md5()})
+        if not existing:
+            fileid = self._fs.put(fileobj.get_data(), filename=filename)
+            return fileid
+
+        return existing['_id']
 
     def _connect(self):
         """Connects to Mongo database, loads options and set connectors.
