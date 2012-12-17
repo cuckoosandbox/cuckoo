@@ -35,8 +35,8 @@ class MongoDB(Report):
 
         # Add pcap file, check for dups and in case add only reference.
         pcap_file = os.path.join(self.analysis_path, "dump.pcap")
-        if os.path.exists(pcap_file) and os.path.getsize(pcap_file) != 0:
-            pcap = File(pcap_file)
+        pcap = File(pcap_file)
+        if pcap.valid():
             pcap_id = self.store_file(pcap)
             # Preventive key check.
             if "network" in results:
@@ -45,19 +45,26 @@ class MongoDB(Report):
                 results["network"] = {"pcap_id": pcap_id}
 
         # Add dropped files, check for dups and in case add only reference.
-        # TODO: refactor the following!! It's temporary.
-        if "dropped" in results:
-            for dir_name, dir_names, file_names in os.walk(os.path.join(self.analysis_path, "files")):
-                for file_name in file_names:
-                    file_path = os.path.join(dir_name, file_name)
-                    md5 = hashlib.md5(open(file_path, "rb").read()).hexdigest()
+        dropped_files = {}
+        for dir_name, dir_names, file_names in os.walk(os.path.join(self.analysis_path, "files")):
+            for file_name in file_names:
+                file_path = os.path.join(dir_name, file_name)
+                drop = File(file_path)
+                dropped_files[drop.get_md5()] = drop
 
-                    for dropped in results["dropped"]:
-                        if "md5" in dropped and dropped["md5"] == md5:
-                            if os.path.exists(file_path) and os.path.getsize(file_path) != 0:
-                                drop = File(file_path)
-                                drop_id = self.store_file(drop, filename=dropped['name'])
-                                dropped["dropped_id"] = drop_id
+        result_files = dict((dropped.get('md5', None), dropped) for dropped in results['dropped'])
+
+        # hopefully the md5s in dropped_files and result_files should be the same
+        if set(dropped_files.keys()) - set(result_files.keys()):
+            log.warning("Dropped files in result dict are different from those in storage.")
+
+        # store files in gridfs
+        for md5, fileobj in dropped_files.items():
+            # only store in db if we have a filename for it in results (should be all)
+            resultsdrop = result_files.get(md5, None)
+            if resultsdrop and fileobj.valid():
+                drop_id = self.store_file(fileobj, filename=resultsdrop['name'])
+                resultsdrop['dropped_id'] = drop_id
 
         # Add screenshots.
         results["shots"] = []
@@ -66,13 +73,10 @@ class MongoDB(Report):
             shots = [f for f in os.listdir(shots_path) if f.endswith(".jpg")]
             for shot_file in sorted(shots):
                 shot_path = os.path.join(self.analysis_path, "shots", shot_file)
-                try:
-                    shot = File(shot_path)
-                except IOError as e:
-                    raise CuckooReportError("Failed to read screenshot %s: %s" % (shot_path, e))
-
-                shot_id = self.store_file(shot)
-                results["shots"].append(shot_id)
+                shot = File(shot_path)
+                if shot.valid():
+                    shot_id = self.store_file(shot)
+                    results["shots"].append(shot_id)
 
         # Save all remaining results.
         try:
