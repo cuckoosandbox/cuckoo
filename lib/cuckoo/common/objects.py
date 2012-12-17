@@ -6,6 +6,7 @@ import os
 import sys
 import hashlib
 import binascii
+import logging
 import itertools
 import collections
 from datetime import datetime
@@ -22,6 +23,8 @@ except ImportError:
     HAVE_SSDEEP = False
 
 from lib.cuckoo.common.utils import convert_to_printable
+
+log = logging.getLogger(__name__)
 
 FILE_CHUNK_SIZE = 16 * 1024
 
@@ -68,6 +71,11 @@ class File:
 
         return file_name
 
+    def valid(self):
+        return os.path.exists(self.file_path) and \
+            os.path.isfile(self.file_path) and \
+            os.path.getsize(self.file_path) != 0
+
     def get_data(self):
         """Read file contents.
         @return: data.
@@ -107,6 +115,7 @@ class File:
 
     @property
     def file_data(self):
+        log.warning("Usage of File.file_data is deprecated, use chunks of files only.")
         if not self._file_data: self._file_data = open(self.file_path, "rb").read()
         return self._file_data
 
@@ -224,7 +233,9 @@ class LocalDict(collections.MutableMapping, dict):
     def __getitem__(self, attr):
         if attr in self.local:
             return self.local[attr]
-        return self.orig[attr]
+        r = self.orig[attr]
+        if type(r) == dict: return LocalDict(r)
+        return r
 
     def __setitem__(self, attr, value):
         self.local[attr] = value
