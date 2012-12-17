@@ -76,7 +76,7 @@ class MongoDB(Report):
 
         # Save all remaining results.
         try:
-            self._db.analysis.save(results)
+            self._db.analysis.save(dict(results), manipulate=False)
         except InvalidDocument:
             # The document is too big, we need to shrink it and re-save it.
             results["behavior"]["processes"] = ""

@@ -6,6 +6,8 @@ import os
 import sys
 import hashlib
 import binascii
+import itertools
+import collections
 from datetime import datetime
 
 try:
@@ -163,3 +165,31 @@ class File:
         infos["type"] = self.get_type()
 
         return infos
+
+
+class LocalDict(collections.MutableMapping, dict):
+    """Dictionary with local-only mutable slots.
+    Useful for reporting / signatures which try to change
+    our precious result data structure.
+    """
+
+    def __init__(self, origdict):
+        self.orig = origdict
+        self.local = dict()
+
+    def __getitem__(self, attr):
+        if attr in self.local:
+            return self.local[attr]
+        return self.orig[attr]
+
+    def __setitem__(self, attr, value):
+        self.local[attr] = value
+
+    def __delitem__(self, attr):
+        return self.local[attr]
+
+    def __iter__(self):
+        return itertools.chain(iter(self.orig), iter(self.local))
+
+    def __len__(self):
+        return len(self.orig) + len(self.local)
