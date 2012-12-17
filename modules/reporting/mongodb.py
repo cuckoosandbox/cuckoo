@@ -97,8 +97,12 @@ class MongoDB(Report):
 
         existing = self._db.fs.files.find_one({"md5": fileobj.get_md5()})
         if not existing:
-            fileid = self._fs.put(fileobj.get_data(), filename=filename)
-            return fileid
+            gfsfile = self._fs.new_file(filename=filename)
+            for chunk in fileobj.get_chunks():
+                gfsfile.write(chunk)
+            gfsfile.close()
+
+            return gfsfile._id
 
         return existing['_id']
 
