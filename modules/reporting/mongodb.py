@@ -28,8 +28,10 @@ class MongoDB(Report):
         self._connect()
 
         # Set an unique index on stored files, to avoid duplicates.
-        if not self._db.fs.files.ensure_index("md5", unique=True):
-            self._db.fs.files.create_index("md5", unique=True, name="md5_unique")
+        # From pymongo docs:
+        #  Returns the name of the created index if an index is actually created. 
+        #  Returns None if the index already exists.
+        self._db.fs.files.ensure_index("md5", unique=True, name="md5_unique")
 
         # Add pcap file, check for dups and in case add only reference.
         pcap_file = os.path.join(self.analysis_path, "dump.pcap")
