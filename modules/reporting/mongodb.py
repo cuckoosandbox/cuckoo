@@ -54,12 +54,8 @@ class MongoDB(Report):
 
                     for dropped in results["dropped"]:
                         if "md5" in dropped and dropped["md5"] == md5:
-                            drop_file = os.path.join(file_path)
                             if os.path.exists(file_path) and os.path.getsize(file_path) != 0:
-                                try:
-                                    drop = open(file_path, 'r')
-                                except IOError as e:
-                                    raise CuckooReportError("Failed to read file %s: %s" % (file_path, e))
+                                drop = File(file_path)
                                 drop_id = self.store_file(drop, filename=dropped['name'])
                                 dropped["dropped_id"] = drop_id
 
