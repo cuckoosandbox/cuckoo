@@ -8,7 +8,11 @@ import sys
 import json
 import argparse
 
-from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response
+try:
+    from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response
+except ImportError:
+    print "ERROR: Bottle library is missing"
+    sys.exit(1)
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
