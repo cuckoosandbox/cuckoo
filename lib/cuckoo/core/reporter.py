@@ -72,8 +72,11 @@ class Reporter:
         except NotImplementedError:
             return
         except CuckooReportError as e:
-            log.warning("Failed to execute reporting module \"%s\": %s"
-                        % (current.__class__.__name__, e))
+            log.warning("The reporting module \"%s\" returned the following "
+                        "error: %s" % (current.__class__.__name__, e))
+        except Exception as e:
+            log.exception("Failed to run the reporting module \"%s\":"
+                          % (current.__class__.__name__))
 
     def run(self, results):
         """Generates all reports.
