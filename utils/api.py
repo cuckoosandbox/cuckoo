@@ -16,18 +16,28 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.core.database import Database
 
+# Errors mapping.
 errors = {
     "task_not_found" : "The specified task does not exist",
     "file_not_found" : "The specified file does not exist",
     "machine_not_found" : "The specified machine does not exist",
     "report_not_found" : "The specified report does not exist"
 }
+# Global DB pointer.
+db = Database()
 
 def jsonize(data):
+    """Converts data dict to JSON.
+    @param data: data dict
+    @return: JSON formatted data
+    """ 
     response.content_type = "application/json; charset=UTF-8"
     return json.dumps(data, sort_keys=False, indent=4)
 
 def report_error(error_code):
+    """Reports an error in JSON format.
+    @return: JSON error
+    """
     return jsonize({"error" : True, "error_code" : error_code, "error_message" : errors[error_code]})
 
 @hook("after_request")
@@ -61,7 +71,6 @@ def tasks_create_file():
         enforce_timeout = True
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
-    db = Database()
     task_id = db.add_path(file_path=temp_file_path,
                           package=package,
                           timeout=timeout,
@@ -95,7 +104,6 @@ def tasks_create_url():
     if enforce_timeout:
         enforce_timeout = True
 
-    db = Database()
     task_id = db.add_url(url=url,
                          package=package,
                          timeout=timeout,
@@ -115,8 +123,6 @@ def tasks_create_url():
 def tasks_list(limit=None):
     response = {"error" : False}
 
-    db = Database()
-
     response["tasks"] = []
     for row in db.list_tasks(limit).all():
         task = row.to_dict()
@@ -135,8 +141,6 @@ def tasks_list(limit=None):
 @route("/tasks/view/<task_id>", method="GET")
 def tasks_view(task_id):
     response = {"error" : False}
-
-    db = Database()
 
     task = db.view_task(task_id)
     if task:
@@ -189,7 +193,6 @@ def tasks_report(task_id, report_format="json"):
 def files_view(md5=None, sample_id=None):
     response = {"error" : False}
 
-    db = Database()
     if md5:
         sample = db.find_sample(md5=md5)[0]
     elif sha256:
@@ -217,7 +220,6 @@ def files_get(sha256):
 def machines_list():
     response = {"error" : False}
 
-    db = Database()
     machines = db.list_machines()
 
     response["machines"] = []
@@ -229,8 +231,6 @@ def machines_list():
 @route("/machines/view/<name>", method="GET")
 def machines_view(name=None):
     response = {"error" : False}
-
-    db = Database()
 
     machine = db.view_machine(name=name)
     if machine:
