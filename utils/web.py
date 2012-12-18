@@ -14,7 +14,7 @@ except ImportError:
     print "ERROR: Jinja2 library is missing"
     sys.exit(1)
 try:
-    from bottle import route, run, static_file, redirect, request, HTTPError
+    from bottle import route, run, static_file, redirect, request, HTTPError, hook, response
 except ImportError:
     print "ERROR: Bottle library is missing"
     sys.exit(1)
@@ -28,6 +28,17 @@ from lib.cuckoo.common.utils import store_temp_file
 
 env = Environment()
 env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT, "data", "html"))
+
+@hook("after_request")
+def custom_headers():
+    """Set some custom headers across all HTTP responses."""
+    response.headers["Server"] = "Machete Server"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Expires"] = "0"
 
 @route("/")
 def index():
