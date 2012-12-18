@@ -102,8 +102,12 @@ class Pcap:
         @param tcpdata: TCP data flow.
         """
         try:
-            dpkt.http.Request(tcpdata)
+            r = dpkt.http.Request()
+            r.method, r.version, r.uri = None, None, None
+            r.unpack(tcpdata)
         except dpkt.dpkt.UnpackError:
+            if r.method != None or r.version != None or r.uri != None:
+                return True
             return False
 
         return True
@@ -113,7 +117,11 @@ class Pcap:
         @param tcpdata: TCP data flow.
         @param dport: destination port.
         """
-        http = dpkt.http.Request(tcpdata)
+        try:
+            http = dpkt.http.Request()
+            http.unpack(tcpdata)
+        except dpkt.dpkt.UnpackError:
+            pass
 
         try:
             entry = {}
