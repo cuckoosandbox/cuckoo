@@ -52,7 +52,7 @@ class MongoDB(Report):
                 drop = File(file_path)
                 dropped_files[drop.get_md5()] = drop
 
-        result_files = dict((dropped.get('md5', None), dropped) for dropped in results['dropped'])
+        result_files = dict((dropped.get("md5", None), dropped) for dropped in results["dropped"])
 
         # hopefully the md5s in dropped_files and result_files should be the same
         if set(dropped_files.keys()) - set(result_files.keys()):
@@ -63,8 +63,8 @@ class MongoDB(Report):
             # only store in db if we have a filename for it in results (should be all)
             resultsdrop = result_files.get(md5, None)
             if resultsdrop and fileobj.valid():
-                drop_id = self.store_file(fileobj, filename=resultsdrop['name'])
-                resultsdrop['dropped_id'] = drop_id
+                drop_id = self.store_file(fileobj, filename=resultsdrop["name"])
+                resultsdrop["dropped_id"] = drop_id
 
         # Add screenshots.
         results["shots"] = []
@@ -108,7 +108,7 @@ class MongoDB(Report):
 
             return gfsfile._id
 
-        return existing['_id']
+        return existing["_id"]
 
     def _connect(self):
         """Connects to Mongo database, loads options and set connectors.
