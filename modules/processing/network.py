@@ -13,6 +13,7 @@ from lib.cuckoo.common.utils import convert_to_printable
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.dns import resolve
+from lib.cuckoo.common.irc import ircMessage
 
 try:
     import dpkt
@@ -45,6 +46,8 @@ class Pcap:
         self.smtp_requests = []
         # Reconstruncted SMTP flow.
         self.smtp_flow = {}
+        # List containing all IRC requests.
+        self.irc_requests = []
         # Dictionary containing all the results of this processing.
         self.results = {}
 
@@ -261,6 +264,9 @@ class Pcap:
         # SMTP.
         if conn["dport"] == 25:
             self._reassemble_smtp(conn, data)
+        # IRC.
+        if self._check_irc(data):
+            self._add_irc(data)
 
     def _udp_dissect(self, conn, data):
         """Runs all UDP dissectors.
@@ -270,6 +276,36 @@ class Pcap:
         if conn["dport"] == 53:
             if self._check_dns(data):
                 self._add_dns(data)
+
+    def _check_irc(self, tcpdata):
+        """
+        Checks for IRC traffic.
+        @param tcpdata: tcp data flow
+        """
+        try:
+            req = ircMessage()
+        except Exception, why:
+            return False
+
+        return req.isthereIRC(tcpdata)
+
+    def _add_irc(self, tcpdata):
+        """
+        Adds an IRC communication.
+        @param tcpdata: TCP data in flow
+        @param dport: destination port
+        """
+
+        try:
+            reqc = ircMessage()
+            reqs = ircMessage()
+            filters_sc = ['266']
+            filters_cc = []
+            self.irc_requests = self.irc_requests + reqc.getClientMessages(tcpdata) + reqs.getServerMessagesFilter(tcpdata,filters_sc)
+        except Exception, why:
+            return False
+
+        return True
 
     def run(self):
         """Process PCAP.
@@ -355,6 +391,7 @@ class Pcap:
         self.results["http"] = self.http_requests
         self.results["dns"] = self.dns_requests
         self.results["smtp"] = self.smtp_requests
+        self.results["irc"] = self.irc_requests
 
         return self.results
 
