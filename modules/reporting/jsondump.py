@@ -21,5 +21,5 @@ class JsonDump(Report):
             report = codecs.open(os.path.join(self.reports_path, "report.json"), "w", "utf-8")
             json.dump(results, report, sort_keys=False, indent=4)
             report.close()
-        except (TypeError, IOError) as e:
+        except (UnicodeError, TypeError, IOError) as e:
             raise CuckooReportError("Failed to generate JSON report: %s" % e)
