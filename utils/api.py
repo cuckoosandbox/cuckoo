@@ -204,9 +204,9 @@ def files_view(md5=None, sample_id=None):
 
     return jsonize(response)
 
-@route("/files/get/<md5>", method="GET")
-def files_get(md5):
-    file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", md5)
+@route("/files/get/<sha256>", method="GET")
+def files_get(sha256):
+    file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", sha256)
     if os.path.exists(file_path):
         response.content_type = "application/octet-stream; charset=UTF-8"
         return open(file_path, "rb").read()
