@@ -24,6 +24,7 @@ errors = {
 }
 
 def jsonize(data):
+    response.content_type = "application/json; charset=UTF-8"
     return json.dumps(data, sort_keys=False, indent=4)
 
 def report_error(error_code):
@@ -207,6 +208,7 @@ def files_view(md5=None, sample_id=None):
 def files_get(md5):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", md5)
     if os.path.exists(file_path):
+        response.content_type = "application/octet-stream; charset=UTF-8"
         return open(file_path, "rb").read()
     else:
         return report_error("file_not_found")
