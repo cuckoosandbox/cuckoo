@@ -1,6 +1,5 @@
-=================
 Analysis Packages
-=================
+*****************
 
 The **analysis packages** are a core component of Cuckoo Sandbox.
 
