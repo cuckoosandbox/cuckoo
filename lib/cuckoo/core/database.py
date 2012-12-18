@@ -296,7 +296,7 @@ class Database(object):
                     except CuckooOperationalError as e:
                         raise CuckooDatabaseError("Unable to create database "
                                                   "directory: %s" % e)
-            self.engine = create_engine("sqlite:///%s" % db_file)
+            self.engine = create_engine("sqlite:///%s" % db_file, poolclass=NullPool)
 
         # Disable SQL logging. Turn it on for debugging.
         self.engine.echo = False
