@@ -9,6 +9,5 @@ from lib.cuckoo.common.abstracts import LibVirtMachineManager
 class KVM(LibVirtMachineManager):
     """Virtualization layer for KVM based on python-libvirt."""
 
-    def set_dsn(self):
-        """Set libvirt connection string."""
-        self.dsn = "qemu:///system"
+    # Set KVM connection string.
+    dsn = "qemu:///system"

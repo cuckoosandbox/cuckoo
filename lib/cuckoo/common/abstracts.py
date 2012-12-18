@@ -431,12 +431,6 @@ class LibVirtMachineManager(MachineManager):
         else:
             return False
 
-    def set_dsn(self):
-        """Set libvirt connection string.
-        @raise NotImplementedError: abstract interface
-        """
-        raise NotImplementedError
-
 class Processing(object):
     """Base abstract class for processing module."""
     order = 1
