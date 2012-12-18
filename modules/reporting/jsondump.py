@@ -19,7 +19,7 @@ class JsonDump(Report):
         """
         try:
             report = codecs.open(os.path.join(self.reports_path, "report.json"), "w", "utf-8")
-            report.write(json.dumps(results, sort_keys=False, indent=4))
+            json.dump(results, report, sort_keys=False, indent=4)
             report.close()
         except (TypeError, IOError) as e:
             raise CuckooReportError("Failed to generate JSON report: %s" % e)
