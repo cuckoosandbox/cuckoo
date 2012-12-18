@@ -20,7 +20,7 @@ class Strings(Processing):
         if self.cfg.analysis.category == "file":
             try:
                 data = open(self.file_path, "r").read()
-            except IOError as e:
+            except (IOError, OSError) as e:
                 raise CuckooProcessingError("Error opening file %s" % e)
             strings = re.findall("[\x1f-\x7e]{6,}", data)
 
