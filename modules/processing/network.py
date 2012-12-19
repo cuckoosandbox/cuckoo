@@ -169,7 +169,9 @@ class Pcap:
         # DNS query parsing.
         query = {}
  
-        if dns.rcode == dpkt.dns.DNS_RCODE_NOERR:
+        if dns.rcode == dpkt.dns.DNS_RCODE_NOERR or \
+           dns.qr == dpkt.dns.DNS_R or \
+           dns.opcode == dpkt.dns.DNS_QUERY or True:
             # DNS question.
             try:
                 q_name = dns.qd[0].name
@@ -205,10 +207,10 @@ class Pcap:
                 ans = {}
                 if answer.type == dpkt.dns.DNS_A:
                     ans["type"] = "A"
-                    ans["data"] = inet_ntoa(answer.ip)
+                    ans["data"] = socket.inet_ntoa(answer.rdata)
                 elif answer.type == dpkt.dns.DNS_AAAA:
                     ans["type"] = "AAAA"
-                    ans["data"] = inet_ntop(AF_INET6, answer.ip6)
+                    ans["data"] = socket.inet_ntop(socket.AF_INET6, answer.rdata)
                 elif answer.type == dpkt.dns.DNS_CNAME:
                     ans["type"] = "CNAME"
                     ans["data"] = answer.cname
@@ -281,7 +283,7 @@ class Pcap:
         @param conn: connection.
         @param data: payload data.
         """
-        if conn["dport"] == 53:
+        if conn["dport"] == 53 or conn["sport"] == 53:
             if self._check_dns(data):
                 self._add_dns(data)
 
