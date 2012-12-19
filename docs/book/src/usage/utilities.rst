@@ -36,7 +36,7 @@ Cuckoo's web interface. This tool is already described in :doc:`submit`.
 Processing Utility
 ==================
 
-Run the results processing angine and optionally thereporting engine (run 
+Run the results processing engine and optionally the reporting engine (run 
 all reports) on an already available analysis folder, in order to not re-run
 the analysis if you want to re-generate the reports for it.
 This is used mainly in debugging and developing Cuckoo.
