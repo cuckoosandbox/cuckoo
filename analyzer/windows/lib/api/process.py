@@ -326,11 +326,12 @@ class Process:
         max_addr = self.system_info.lpMaximumApplicationAddress
         mem = min_addr
 
-        root = os.path.join(PATHS["memory"], str(self.pid))
-        root = os.path.join(root, str(int(time())))
+        root = os.path.join(PATHS["memory"], str(int(time())))
 
         if not os.path.exists(root):
             os.makedirs(root)
+
+        dump = open(os.path.join(root, "%s.dmp" % str(self.pid)), "wb")
 
         while(mem < max_addr):
             mbi = MEMORY_BASIC_INFORMATION()
@@ -350,13 +351,12 @@ class Process:
                                               buf,
                                               mbi.RegionSize,
                                               byref(count)):
-                    path = os.path.join(root, "0x%.8x.dmp" % mem)
-                    chunk = open(path, "wb")
-                    chunk.write(buf.raw)
-                    chunk.close()
+                    dump.write(buf.raw)
                 mem += mbi.RegionSize
             else:
                 mem += page_size
+
+        dump.close()
 
         log.info("Memory dump of process with pid %d completed" % self.pid)
 
