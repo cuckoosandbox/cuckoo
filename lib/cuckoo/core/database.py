@@ -325,7 +325,7 @@ class Database(object):
         session.query(Machine).delete()
         try:
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
 
     def _set_status(self, task_id, status):
@@ -338,7 +338,7 @@ class Database(object):
         session.query(Task).get(task_id).status = status
         try:
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return False
 
@@ -363,7 +363,7 @@ class Database(object):
                               platform=platform)
             session.add(machine)
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
 
     def fetch(self):
@@ -373,7 +373,7 @@ class Database(object):
         session = self.Session()
         try:
             row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
-        except:
+        except SQLAlchemyError:
             return None
         return row
 
@@ -394,7 +394,7 @@ class Database(object):
             if row:
                row.status = "processing"
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return None
         return row
@@ -417,7 +417,7 @@ class Database(object):
 
         try:
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return False
 
@@ -437,7 +437,7 @@ class Database(object):
         session.query(Task).get(task_id).guest = guest
         try:
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return None
 
@@ -451,7 +451,7 @@ class Database(object):
         session.query(Guest).get(guest_id).shutdown_on = datetime.now()
         try:
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
 
     def list_machines(self, locked=False):
@@ -464,7 +464,7 @@ class Database(object):
                 machines = session.query(Machine).filter(Machine.locked == True)
             else:
                 machines = session.query(Machine)
-        except:
+        except SQLAlchemyError:
             return None
         return machines
 
@@ -490,7 +490,7 @@ class Database(object):
             machine.locked_changed_on = datetime.now()
             try:
                 session.commit()
-            except:
+            except SQLAlchemyError:
                 session.rollback()
                 return None
         return machine
@@ -507,7 +507,7 @@ class Database(object):
             machine.locked_changed_on = datetime.now()
             try:
                 session.commit()
-            except:
+            except SQLAlchemyError:
                 session.rollback()
                 return None
         return machine
@@ -519,7 +519,7 @@ class Database(object):
         session = self.Session()
         try:
             machines_count = session.query(Machine).filter(Machine.locked == False).count()
-        except:
+        except SQLAlchemyError:
             return 0
         return machines_count
 
@@ -535,7 +535,7 @@ class Database(object):
             machine.status_changed_on = datetime.now()
             try:
                 session.commit()
-            except:
+            except SQLAlchemyError:
                 session.rollback()
 
     def add_error(self, message, task_id):
@@ -548,7 +548,7 @@ class Database(object):
             error = Error(message=message, task_id=task_id)
             session.add(error)
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
 
     # The following functions are mostly used by external utils.
@@ -590,7 +590,7 @@ class Database(object):
                                 ssdeep=obj.get_ssdeep())
                 session.add(sample)
                 session.commit()
-            except IntegrityError:
+            except (SQLAlchemyError, IntegrityError):
                 session.rollback()
                 sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
 
@@ -698,7 +698,7 @@ class Database(object):
         session = self.Session()
         try:
             tasks = session.query(Task).order_by("added_on desc").limit(limit)
-        except:
+        except SQLAlchemyError:
             return None
         return tasks
 
@@ -710,7 +710,7 @@ class Database(object):
         session = self.Session()
         try:
             task = session.query(Task).get(task_id)
-        except:
+        except SQLAlchemyError:
             return None
         return task
 
@@ -722,7 +722,7 @@ class Database(object):
         session = self.Session()
         try:
             sample = session.query(Sample).get(sample_id)
-        except:
+        except SQLAlchemyError:
             return None
         return sample
 
@@ -737,7 +737,7 @@ class Database(object):
                 sample = session.query(Sample).filter(Sample.md5 == md5).first()
             elif sha256:
                 sample = sesison.query(Sample).fitler(Sample.sha256 == sha256).first()
-        except:
+        except SQLAlchemyError:
             return None
         return sample
 
@@ -749,7 +749,7 @@ class Database(object):
         session = self.Session()
         try:
             machine = session.query(Machine).filter(Machine.name == name).first()
-        except:
+        except SQLAlchemyError:
             return None
         return machine
 
@@ -761,6 +761,6 @@ class Database(object):
         session = self.Session()
         try:
             errors = session.query(Error).filter(Error.task_id == task_id)
-        except:
+        except SQLAlchemyError:
             return None
         return errors
