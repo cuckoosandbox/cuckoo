@@ -322,8 +322,8 @@ class Database(object):
     def clean_machines(self):
         """Clean old stored machines."""
         session = self.Session()
-        session.query(Machine).delete()
         try:
+            session.query(Machine).delete()
             session.commit()
         except SQLAlchemyError:
             session.rollback()
@@ -335,8 +335,8 @@ class Database(object):
         @return: operation status
         """
         session = self.Session()
-        session.query(Task).get(task_id).status = status
         try:
+            session.query(Task).get(task_id).status = status
             session.commit()
         except SQLAlchemyError:
             session.rollback()
@@ -356,12 +356,12 @@ class Database(object):
         @param platform: machine supported platform
         """
         session = self.Session()
+        machine = Machine(name=name,
+                          label=label,
+                          ip=ip,
+                          platform=platform)
+        session.add(machine)
         try:
-            machine = Machine(name=name,
-                              label=label,
-                              ip=ip,
-                              platform=platform)
-            session.add(machine)
             session.commit()
         except SQLAlchemyError:
             session.rollback()
@@ -406,7 +406,10 @@ class Database(object):
         @return: operation status.
         """
         session = self.Session()
-        task = session.query(Task).get(task_id)
+        try:
+            task = session.query(Task).get(task_id)
+        except SQLAlchemyError:
+            return False
 
         if success:
             task.status = "success"
@@ -434,8 +437,8 @@ class Database(object):
         session = self.Session()
         guest = Guest(name, label, manager)
         guest.started_on = datetime.now()
-        session.query(Task).get(task_id).guest = guest
         try:
+            session.query(Task).get(task_id).guest = guest
             session.commit()
         except SQLAlchemyError:
             session.rollback()
@@ -448,8 +451,8 @@ class Database(object):
         @param guest_id: guest log entry id
         """
         session = self.Session()
-        session.query(Guest).get(guest_id).shutdown_on = datetime.now()
         try:
+            session.query(Guest).get(guest_id).shutdown_on = datetime.now()
             session.commit()
         except SQLAlchemyError:
             session.rollback()
@@ -475,15 +478,18 @@ class Database(object):
         @return: locked machine
         """
         session = self.Session()
-        if name and platform:
-            # Wrong usage.
-            return None
-        elif name:
-            machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
-        elif platform:
-            machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
-        else:
-            machine = session.query(Machine).filter(Machine.locked == False).first()
+        try:
+            if name and platform:
+                # Wrong usage.
+                return None
+            elif name:
+                machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
+            elif platform:
+                machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
+            else:
+                machine = session.query(Machine).filter(Machine.locked == False).first()
+        except SQLAlchemyError:
+                return None
 
         if machine:
             machine.locked = True
@@ -501,7 +507,11 @@ class Database(object):
         @return: unlocked machine
         """
         session = self.Session()
-        machine = session.query(Machine).filter(Machine.label == label).first()
+        try:
+            machine = session.query(Machine).filter(Machine.label == label).first()
+        except SQLAlchemyError:
+            return None
+
         if machine:
             machine.locked = False
             machine.locked_changed_on = datetime.now()
@@ -529,7 +539,11 @@ class Database(object):
         @param status: new virtual machine status
         """
         session = self.Session()
-        machine = session.query(Machine).filter(Machine.label == label).first()
+        try:
+            machine = session.query(Machine).filter(Machine.label == label).first()
+        except SQLAlchemyError:
+               return
+
         if machine:
             machine.status = status
             machine.status_changed_on = datetime.now()
@@ -544,9 +558,9 @@ class Database(object):
         @param task_id: ID of the related task
         """
         session = self.Session()
+        error = Error(message=message, task_id=task_id)
+        session.add(error)
         try:
-            error = Error(message=message, task_id=task_id)
-            session.add(error)
             session.commit()
         except SQLAlchemyError:
             session.rollback()
@@ -579,20 +593,25 @@ class Database(object):
         session = self.Session()
 
         if isinstance(obj, File):
+            sample = Sample(md5=obj.get_md5(),
+                            crc32=obj.get_crc32(),
+                            sha1=obj.get_sha1(),
+                            sha256=obj.get_sha256(),
+                            sha512=obj.get_sha512(),
+                            file_size=obj.get_size(),
+                            file_type=obj.get_type(),
+                            ssdeep=obj.get_ssdeep())
+            session.add(sample)
             try:
-                sample = Sample(md5=obj.get_md5(),
-                                crc32=obj.get_crc32(),
-                                sha1=obj.get_sha1(),
-                                sha256=obj.get_sha256(),
-                                sha512=obj.get_sha512(),
-                                file_size=obj.get_size(),
-                                file_type=obj.get_type(),
-                                ssdeep=obj.get_ssdeep())
-                session.add(sample)
                 session.commit()
-            except (SQLAlchemyError, IntegrityError):
+            except IntegrityError:
                 session.rollback()
-                sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
+                try:
+                    sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
+                except SQLAlchemyError:
+                    return None
+            except SQLAlchemyError:
+                return None
 
             task = Task(obj.file_path)
             task.sample_id = sample.id
@@ -613,7 +632,7 @@ class Database(object):
 
         try:
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return None
 
