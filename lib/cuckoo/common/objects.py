@@ -7,8 +7,6 @@ import sys
 import hashlib
 import binascii
 import logging
-import itertools
-import collections
 from datetime import datetime
 
 try:
@@ -220,31 +218,17 @@ class File:
         return infos
 
 
-class LocalDict(collections.MutableMapping, dict):
+class LocalDict(dict):
     """Dictionary with local-only mutable slots.
     Useful for reporting / signatures which try to change
     our precious result data structure.
     """
 
-    def __init__(self, origdict):
-        self.orig = origdict
-        self.local = dict()
-
     def __getitem__(self, attr):
-        if attr in self.local:
-            return self.local[attr]
-        r = self.orig[attr]
-        if type(r) == dict: return LocalDict(r)
+        r = dict.__getitem__(self, attr)
+        if isinstance(r, dict):
+            n = LocalDict(r)
+            self[attr] = n
+            return n
         return r
 
-    def __setitem__(self, attr, value):
-        self.local[attr] = value
-
-    def __delitem__(self, attr):
-        return self.local[attr]
-
-    def __iter__(self):
-        return itertools.chain(iter(self.orig), iter(self.local))
-
-    def __len__(self):
-        return len(self.orig) + len(self.local)
