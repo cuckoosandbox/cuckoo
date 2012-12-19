@@ -20,6 +20,9 @@ To clean your setup, run::
 
     $ ./utils/clean.sh
 
+If you are using a custom database (MySQL, PostgreSQL or SQLite in custom
+location) clean.sh doesn't clean it, you have to take care of that.
+
 Submission Utility
 ==================
 
@@ -33,9 +36,9 @@ Cuckoo's web interface. This tool is already described in :doc:`submit`.
 Processing Utility
 ==================
 
-Run the reporting engine (run all reports) on an already available analysis
-folder, in order to not re-run the analysis if you want to re-generate the
-reports for it.
+Run the results processing angine and optionally thereporting engine (run 
+all reports) on an already available analysis folder, in order to not re-run
+the analysis if you want to re-generate the reports for it.
 This is used mainly in debugging and developing Cuckoo.
 For example if you want run again the report engine for analysis number 1::
 
