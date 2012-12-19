@@ -29,6 +29,7 @@ Cuckoo Sandbox 0.5 (TBA)
 * Added more functions to be hooked and logged
 * Added simple functionality to omit injection into Cuckoo processes
 * Added support for dumping files with relative paths
+* Added shared VirusTotal API key
 * Introduced fairly smart way of skipping Sleep calls
 * Unified utility for results processing and reports generation
 * Improved analysis process logic
