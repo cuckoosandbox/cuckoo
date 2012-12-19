@@ -170,7 +170,7 @@ def tasks_report(task_id, report_format="json"):
                                    "reports",
                                    formats[report_format.lower()])
     else:
-        return HTTPError(404, "Report not found")
+        return HTTPError(400, "Invalid report format")
 
     if os.path.exists(report_path):
         return open(report_path, "rb").read()
@@ -189,6 +189,8 @@ def files_view(md5=None, sha256=None, sample_id=None):
         sample = db.find_sample(sha256=sha256)[0]
     elif sample_id:
         sample = db.view_sample(sample_id)
+    else:
+        return HTTPError(400, "Invalid lookup term")
 
     if sample:
         response["sample"] = sample.to_dict()
