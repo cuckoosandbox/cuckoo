@@ -229,7 +229,6 @@ class LibVirtMachineManager(MachineManager):
         connection string.
         @param module:  machine manager module
         """
-        self.set_dsn()
         super(LibVirtMachineManager, self).initialize(module)
 
     def _initialize_check(self):
