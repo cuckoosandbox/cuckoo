@@ -9,10 +9,9 @@ import json
 import argparse
 
 try:
-    from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response
+    from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response, HTTPError
 except ImportError:
-    print "ERROR: Bottle library is missing"
-    sys.exit(1)
+    sys.exit("ERROR: Bottle.py library is missing")
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
@@ -20,13 +19,6 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.core.database import Database
 
-# Errors mapping.
-errors = {
-    "task_not_found" : "The specified task does not exist",
-    "file_not_found" : "The specified file does not exist",
-    "machine_not_found" : "The specified machine does not exist",
-    "report_not_found" : "The specified report does not exist"
-}
 # Global DB pointer.
 db = Database()
 
@@ -37,12 +29,6 @@ def jsonize(data):
     """ 
     response.content_type = "application/json; charset=UTF-8"
     return json.dumps(data, sort_keys=False, indent=4)
-
-def report_error(error_code):
-    """Reports an error in JSON format.
-    @return: JSON error
-    """
-    return jsonize({"error" : True, "error_code" : error_code, "error_message" : errors[error_code]})
 
 @hook("after_request")
 def custom_headers():
@@ -57,7 +43,7 @@ def custom_headers():
 
 @route("/tasks/create/file", method="POST")
 def tasks_create_file():
-    response = {"error" : False}
+    response = {}
 
     data = request.files.file
     package = request.forms.get("package", "")
@@ -91,7 +77,7 @@ def tasks_create_file():
 
 @route("/tasks/create/url", method="POST")
 def tasks_create_url():
-    response = {"error" : False}
+    response = {}
 
     url = request.forms.get("url")
     package = request.forms.get("package", "")
@@ -125,7 +111,7 @@ def tasks_create_url():
 @route("/tasks/list", method="GET")
 @route("/tasks/list/<limit>", method="GET")
 def tasks_list(limit=None):
-    response = {"error" : False}
+    response = {}
 
     response["tasks"] = []
     for row in db.list_tasks(limit).all():
@@ -144,7 +130,7 @@ def tasks_list(limit=None):
 
 @route("/tasks/view/<task_id>", method="GET")
 def tasks_view(task_id):
-    response = {"error" : False}
+    response = {}
 
     task = db.view_task(task_id)
     if task:
@@ -159,14 +145,14 @@ def tasks_view(task_id):
 
         response["task"] = entry
     else:
-        return report_error("task_not_found")
+        return HTTPError(404, "Task not found")
 
     return jsonize(response)
 
 @route("/tasks/report/<task_id>", method="GET")
 @route("/tasks/report/<task_id>/<report_format>", method="GET")
 def tasks_report(task_id, report_format="json"):
-    response = {"error" : False}
+    response = {}
 
     formats = {
         "json" : "report.json",
@@ -184,18 +170,18 @@ def tasks_report(task_id, report_format="json"):
                                    "reports",
                                    formats[report_format.lower()])
     else:
-        return report_error("report_not_found")
+        return HTTPError(404, "Report not found")
 
     if os.path.exists(report_path):
         return open(report_path, "rb").read()
     else:
-        return report_error("report_not_found")
+        return HTTPError(404, "Report not found")
 
 @route("/files/view/md5/<md5>", method="GET")
 @route("/files/view/sha256/<sha256>", method="GET")
 @route("/files/view/id/<sample_id>", method="GET")
 def files_view(md5=None, sha256=None, sample_id=None):
-    response = {"error" : False}
+    response = {}
 
     if md5:
         sample = db.find_sample(md5=md5)[0]
@@ -207,7 +193,7 @@ def files_view(md5=None, sha256=None, sample_id=None):
     if sample:
         response["sample"] = sample.to_dict()
     else:
-        return report_error("file_not_found")
+        return HTTPError(404, "File not found")
 
     return jsonize(response)
 
@@ -218,11 +204,11 @@ def files_get(sha256):
         response.content_type = "application/octet-stream; charset=UTF-8"
         return open(file_path, "rb").read()
     else:
-        return report_error("file_not_found")
+        return HTTPError(404, "File not found")
 
 @route("/machines/list", method="GET")
 def machines_list():
-    response = {"error" : False}
+    response = {}
 
     machines = db.list_machines()
 
@@ -234,13 +220,13 @@ def machines_list():
 
 @route("/machines/view/<name>", method="GET")
 def machines_view(name=None):
-    response = {"error" : False}
+    response = {}
 
     machine = db.view_machine(name=name)
     if machine:
         response["machine"] = machine.to_dict()
     else:
-        return report_error("machine_not_found")
+        return HTTPError(404, "Machine not found")
 
     return jsonize(response)
 
