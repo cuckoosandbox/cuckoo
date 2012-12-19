@@ -120,7 +120,7 @@ class Process:
 
         return None
 
-    def execute(self, path=None, args=None, suspended=False):
+    def execute(self, path, args=None, suspended=False):
         """Execute sample process.
         @param path: sample path.
         @param args: process args.
