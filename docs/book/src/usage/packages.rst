@@ -1,37 +1,73 @@
+=================
 Analysis Packages
-*****************
+=================
 
 The **analysis packages** are a core component of Cuckoo Sandbox.
-
 They consist in structured Python classes which, executed in the guest machines,
 describe how Cuckoo's analyzer component should conduct the analysis.
 
 Cuckoo provides some default analysis packages that you can use, but you are
 able to create your own or eventually modify the existing ones.
-You can find them located at *analyzer/windows/packages/*.
+You can find them located at *analyzer/windows/modules/packages/*.
 
-Following is the list of existing packages:
+As described in :doc:`../usage/submit`, you can specify some options to the
+analysis packages in the form of ``key1=value1,key2=value2``. The existing analysis
+packages already include some default options that can be enabled.
+
+Following is the list of existing packages in alphabetical order:
+
+    * ``applet``: used to analyze **Java applets**.
+
+                  **Options**:
+                     * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+                     * ``class``: specify the name of the class to be executed. This option is mandatory for a correct execution.
+
+    * ``bin``: used to analyze generic binary data, such as **shellcodes**.
+
+    * ``dll``: used to run and analyze **Dinamically Linked Libraries**.
+
+               **Options**:
+                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+                   * ``function``: specify the function to be executed. If none is specified, Cuckoo will try to run ``DllMain``.
+
+    * ``doc``: used to run and analyze **Microsoft Word documents**.
+
+               **Options**:
+                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
 
     * ``exe``: default analysis package used to analyze generic **Windows executables**.
-               You can specify an "arguments" option if you want to pass arguments
-               to the process creation (see :doc:`../usage/submit`).
-    * ``dll``: used to run and analyze **Dinamically Linked Libraries**.
-               You can specify a "function" option that will instruct Cuckoo to
-               execute the specified exported function. If this option is not set,
-               Cuckoo will try to execute the regular ``DllMain`` function.
-               You can also specify a "free" option that will instruct Cuckoo not
-               to inject and hook the ``rundll32`` process and let the library run
-               (not behavior results will be produced).
+
+               **Options**:
+                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+                   * ``arguments``: specify any command line argument to pass to the initial process of the submitted malware.
+
+    * ``ie``: used to analyze **Internet Explorer**'s behavior when opening the given URL.
+
+               **Options**:
+                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+
+    * ``jar``: used to analyze **Java JAR** containers.
+
+                  **Options**:
+                     * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+                     * ``class``: specify the path of the class to be executed. If none is specified, Cuckoo will try to execute the main function specified in the Jar's MANIFEST file.
+
     * ``pdf``: used to run and analyze **PDF documents**.
-               The path to Acrobat Reader is hardcoded in the package, so make sure
-               to verify that it's matches the correct one in your guest environment.
-    * ``doc``: used to run and analyze **Microsoft Word documents**.
-               Same as the ``pdf`` package, verify Office Word path.
+
+               **Options**:
+                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+
     * ``xls``: used to run and analyze **Microsoft Excel documents**.
-               Verify Office Excel path.
-    * ``ie``: used to analyze **Internet Explorer**'s behavior when opening the
-              given file (e.g. browser exploits).
-    * ``bin``: used to analyze generic binary data, such as **shellcodes**.
+
+               **Options**:
+                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+
+    * ``zip``: used to run and analyze **Zip archives**. The archive must be either password-less or the password must be "*infected*".
+
+               **Options**:
+                   * ``file``: specify the name of the file contained in the archive to execute. If none is specified, Cuckoo will try to execute *sample.exe*.
+                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+                   * ``arguments``: specify any command line argument to pass to the initial process of the submitted malware.
 
 You can find more details on how to start creating new analysis packages in the
 :doc:`../customization/packages` customization chapter.
@@ -39,9 +75,13 @@ You can find more details on how to start creating new analysis packages in the
 As you already know, you can select which analysis package to use by specifying
 its name at submission time (see :doc:`submit`) like following::
 
-    $ python submit.py --package <package name> /path/to/malware
+    $ ./utils/submit.py --package <package name> /path/to/malware
 
 If none is specified, Cuckoo will try to detect the file type and select
 the correct analysis package accordingly. If the file type is not supported by
 default the analysis will be aborted, therefore you are always invited to
 specify the package name whenever it's possible.
+
+For example, to launch a malware and specify some options you can do::
+
+    $ ./utils/submit.py --package dll --options function=FunctionName /path/to/malware.dll

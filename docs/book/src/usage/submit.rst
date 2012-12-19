@@ -1,5 +1,6 @@
+==================
 Submit an Analysis
-******************
+==================
 
     * :ref:`submitpy`
     * :ref:`apipy`
