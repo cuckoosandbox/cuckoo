@@ -22,22 +22,28 @@ Windows executables (located at *analyzer/windows/packages/exe.py*):
 
         from lib.common.abstracts import Package
         from lib.api.process import Process
+        from lib.common.exceptions import CuckooPackageError
 
         class Exe(Package):
             """EXE analysis package."""
 
             def start(self, path):
+                free = self.options.get("free", False)
+                args = self.options.get("arguments", None)
+                suspended = True
+                if free:
+                    suspended = False
+
                 p = Process()
+                if not p.execute(path=path, args=args, suspended=suspended):
+                    raise CuckooPackageError("Unable to execute initial process, analysis aborted")
 
-                if "arguments" in self.options:
-                    p.execute(path=path, args=self.options["arguments"], suspended=True)
+                if not free and suspended:
+                    p.inject()
+                    p.resume()
+                    return p.pid
                 else:
-                    p.execute(path=path, suspended=True)
-
-                p.inject()
-                p.resume()
-
-                return p.pid
+                    return None
 
             def check(self):
                 return True
@@ -45,23 +51,22 @@ Windows executables (located at *analyzer/windows/packages/exe.py*):
             def finish(self):
                 return True
 
-Let's walk through the code.
-
-At line **1** we import the parent class ``Package``, all analysis packages must
-inherit this abstract class otherwise Cuckoo won't be able to load them.
-At line **2** we import the class ``Process``, which is an API module provided
-by Cuckoo's Windows analyzer for accessing several process-related features.
-
-At line **4** we define our class.
-
-At line **7** we define the ``start()`` function, at line **20** the ``check()``
-function and at line **23** the ``finish()`` function.
-These three functions are required as they are used for customizing the package's
-operations at three different stages of the analysis.
-
-In this case we just create a ``Process`` instance, check if the user specified any
-arguments as option and launch the malware located at ``path``, which then gets
-injected and resumed.
+Let's walk through the code:
+    * Line **1**: import the base ``Package`` class, it's needed to define our analysis package class.
+    * Line **2**: import the ``Process`` API class, which is used to create and manipulate Windows processes.
+    * Line **3**: import the ``CuckooPackageError`` exception, which is used to notify issues with the execution of the package to the analyzer.
+    * Line **5**: define the main class, inheriting ``Package``.
+    * Line **8**: define the ``start()`` function, which takes as argument the path to the file to execute.
+    * Line **9**: acquire the ``free`` option, which is used to define whether the process should be monitored or not.
+    * Line **10**: acquire the ``arguments`` option, which is passed to the creation of the initial process.
+    * Line **15**: initialize a ``Process`` instance.
+    * Line **16** and **17**: try to execute the malware, if it fails it aborts the execution and notify the analyzer.
+    * Line **19**: check if the process should be monitored.
+    * Line **20**: inject the process with our DLL.
+    * Line **21**: resume the process from the suspended state.
+    * Line **22**: return the PID of the newly created process to the analyzer.
+    * Line **26**: define the ``check()`` function.
+    * Line **29**: define the ``finish()`` function.
 
 ``start()``
 -----------
@@ -79,6 +84,8 @@ You can use this function to perform any kind of recurrent operation.
 For example if in your analysis you are looking for just one specific indicator to
 be created (e.g. a file) you could place your condition in this function and if
 it returns ``False``, the analysis will terminate straight away.
+
+Think of it as "should the analysis continue or not?".
 
 For example::
 
@@ -151,109 +158,149 @@ specify multiple arguments:
 
 This class implements several methods that you can use in your own scripts.
 
-``open()``
-----------
+Methods
+-------
 
-This method allows you to open an handle to a running process::
+.. function:: open()
 
-    p = Process(pid=1234)
-    p.open()
-    handle = p.h_process
+    Opens an handle to a running process. Returns *True* or *False* in case of success or failure of the operation.
 
-**Return**: True/False in case of success or failure of the operation.
+    :rtype: boolean
 
-``exit_code()``
----------------
+    Example Usage:
 
-This method allows you to acquire the exit code of a given process::
+    .. code-block:: python
+        :linenos:
 
-    p = Process(pid=1234)
-    code = p.exit_code()
+        p = Process(pid=1234)
+        p.open()
+        handle = p.h_process
 
-If it wasn't already done before, ``exit_code()`` will perform a call
-to ``open()`` in order to acquire an handle to the given process.
+.. function:: exit_code()
 
-**Return**: process exit code (ulong).
+    Returns the exit code of the opened process. If it wasn't already done before, ``exit_code()`` will perform a call to ``open()`` to acquire an handle to the process.
 
-``is_alive()``
---------------
+    :rtype: ulong
 
-This method simply calls ``exit_code()`` and verify if the returned code
-is ``STILL_ACTIVE``, meaning that the given process is still running::
+    Example Usage:
 
-    p = Process(pid=1234)
-    if p.is_alive():
-        print("Still running!")
+    .. code-block:: python
+        :linenos:
 
-``execute()``
--------------
+        p = Process(pid=1234)
+        code = p.exit_code()
 
-This method simply allows you to execute a process. It accepts the following
-arguments:
+.. function:: is_alive()
 
-    * ``path``: path to the file to execute.
-    * ``args``: arguments to pass at process creation.
-    * ``suspended``: (True/False) boolean saying if the process should be created in suspended mode or not (default is False)
+    Calls ``exit_code()`` and verify if the returned code is ``STILL_ACTIVE``, meaning that the given process is still running. Returns *True* or *False*.
 
-Example::
+    :rtype: boolean
 
-    p = Process()
-    p.execute(path="C:\\WINDOWS\\system32\\calc.exe", args="Something", suspended=True)
+    Example Usage:
 
-**Return**: True/False in case of success or failure of the operation.
+    .. code-block:: python
+        :linenos:
 
-``resume()``
-------------
+        p = Process(pid=1234)
+        if p.is_alive():
+            print("Still running!")
 
-This method resumes a process from a suspended state.
+.. function:: get_parent_pid()
 
-Example::
+    Returns the PID of the parent process of the opened process. If it wasn't already done before, ``get_parent_pid()`` will perform a call to ``open()`` to acquire an handle to the process.
 
-    p = Process()
-    p.execute(path="C:\\WINDOWS\\system32\\calc.exe", args="Something", suspended=True)
-    p.resume()
+    :rtype: int
 
-``terminate()``
----------------
+    Example Usage:
 
-This method allows you to terminate any given process::
+    .. code-block:: python
+        :linenos:
 
-    p = Process(pid=1234)
-    if p.terminate():
-        print("Process terminated!")
-    else:
-        print("Could not terminate the process!")
+        p = Process(pid=1234)
+        ppid = p.get_parent_pid()
 
-**Return**: True/False in case of success or failure of the operation.
+.. function:: execute(path [, args=None[, suspended=False]])
 
-``inject()``
-------------
+    Executes the file at the specified path. Returns *True* or *False* in case of success or failure of the operation.
 
-This method allows you to inject a DLL file into a given process.
-You can specify the following arguments:
+    :param path: path to the file to execute
+    :type path: string
+    :param args: arguments to pass to the process command line
+    :type args: string
+    :param suspended: enable or disable suspended mode flag at process creation
+    :type suspended: boolean
+    :rtype: boolean
 
-    * ``dll``: path to the DLL to inject, if none is specified it will use Cuckoo's default DLL.
-    * ``apc``: True/False in case you want to use *QueueUserAPC* injection or not. Default is False, which will result in a *CreateRemoteThread* injection. If you try to inject a process that you created in suspended more, *QueueUserAPC* injection will be automatically selected.
+    Example Usage:
 
-Example::
+    .. code-block:: python
+        :linenos:
 
-    p = Process()
-    p.execute(path="C:\\WINDOWS\\system32\\calc.exe", args="Something", suspended=True)
-    p.inject()
-    p.resume()
+        p = Process()
+        p.execute(path="C:\\WINDOWS\\system32\\calc.exe", args="Something", suspended=True)
 
-**Return**: True/False in case of success or failure of the operation.
+.. function:: resume()
 
-``dump_memory()``
------------------
+    Resumes the opened process from a suspended state. Returns *True* or *False* in case of success or failure of the operation.
 
-This method allows you to take a snapshot of the given process' memory space.
-When invoked, it will create a result folder called *memory/<pid>/<timestamp>/* containing
-all the dumps sorted as *<memory region address>.dmp* (e.g. *0x12345678.dmp*).
+    :rtype: boolean
 
-Example::
+    Example Usage:
 
-    p = Process(pid=1234)
-    p.dump_memory()
+    .. code-block:: python
+        :linenos:
 
-**Return**: True/False in case of success or failure of the operation.
+        p = Process()
+        p.execute(path="C:\\WINDOWS\\system32\\calc.exe", args="Something", suspended=True)
+        p.resume()
+
+.. function:: terminate()
+
+    Terminates the opened process. Returns *True* or *False* in case of success or failure of the operaton.
+
+    :rtype: boolean
+
+    Example Usage:
+
+    .. code-block:: python
+        :linenos:
+
+        p = Process(pid=1234)
+        if p.terminate():
+            print("Process terminated!")
+        else:
+            print("Could not terminate the process!")
+
+.. function:: inject([dll[, apc=False]])
+
+    Injects a DLL (by default "dll/cuckoomon.dll") into the opened process. Returns *True* or *False* in case of success or failure of the operation.
+
+    :param dll: path to the DLL to inject into the process
+    :type dll: string
+    :param apc: enable to use ``QueueUserAPC()`` injection istead of ``CreateRemoteThread()``, beware that if the process is in suspended mode, Cuckoo will always use ``QueueUserAPC()``
+    :type apc: boolean
+    :rtype: boolean
+
+    Example Usage:
+
+    .. code-block:: python
+        :linenos:
+
+        p = Process()
+        p.execute(path="C:\\WINDOWS\\system32\\calc.exe", args="Something", suspended=True)
+        p.inject()
+        p.resume()
+
+.. function:: dump_memory()
+
+    Takes a snapshot of the given process' memory space. Returns *True* or *False* in case of success or failure of the operation.
+
+    :rtype: boolean
+
+    Example Usage:
+
+    .. code-block:: python
+        :linenos:
+
+        p = Process(pid=1234)
+        p.dump_memory()
