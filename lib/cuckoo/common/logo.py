@@ -144,3 +144,4 @@ def logo():
     print(" www.cuckoosandbox.org")
     print(" Copyright (c) 2010-2012")
     print
+    sys.stdout.flush()

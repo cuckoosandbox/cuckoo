@@ -54,7 +54,7 @@ If want to use KVM it's packaged too and you can install it with the following c
 
 .. _Magic: http://www.darwinsys.com/file/
 .. _Dpkt: http://code.google.com/p/dpkt/
-.. _Mako: http://www.makotemplates.org
+.. _Jinja2: http://jinja.pocoo.org/docs/
 .. _Pydeep: https://github.com/kbandla/pydeep
 .. _Pymongo: http://pypi.python.org/pypi/pymongo/
 .. _Yara: http://code.google.com/p/yara-project/
