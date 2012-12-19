@@ -55,22 +55,6 @@ def check_working_directory():
         raise CuckooStartupError("You are not running Cuckoo from it's "
                                  "root directory")
 
-def check_dependencies():
-    """Checks if dependencies are installed.
-    @raise CuckooStartupError: if dependencies aren't met.
-    """
-    check_python_version()
-
-    dependencies = ["sqlalchemy"]
-
-    for dependency in dependencies:
-        try:
-            __import__(dependency)
-        except ImportError as e:
-            raise CuckooStartupError("Unable to import \"%s\"" % dependency)
-
-    return True
-
 def check_configs():
     """Checks if config files exist.
     @raise CuckooStartupError: if config files do not exist.
