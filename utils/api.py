@@ -194,7 +194,7 @@ def tasks_report(task_id, report_format="json"):
 @route("/files/view/md5/<md5>", method="GET")
 @route("/files/view/sha256/<sha256>", method="GET")
 @route("/files/view/id/<sample_id>", method="GET")
-def files_view(md5=None, sample_id=None):
+def files_view(md5=None, sha256=None, sample_id=None):
     response = {"error" : False}
 
     if md5:
