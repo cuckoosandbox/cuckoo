@@ -10,10 +10,10 @@ import argparse
 try:
     from lib.cuckoo.common.logo import logo
     from lib.cuckoo.common.constants import CUCKOO_VERSION
-    from lib.cuckoo.common.exceptions import CuckooCriticalError
+    from lib.cuckoo.common.exceptions import CuckooCriticalError, CuckooDependencyError
     from lib.cuckoo.core.startup import *
     from lib.cuckoo.core.scheduler import Scheduler
-except ImportError as e:
+except (CuckooDependencyError, ImportError) as e:
     sys.exit("ERROR: Missing dependency: %s" % e)
 
 log = logging.getLogger()
