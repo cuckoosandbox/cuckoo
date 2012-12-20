@@ -38,8 +38,9 @@ class MongoDB(Report):
         pcap = File(pcap_file)
         if pcap.valid():
             pcap_id = self.store_file(pcap)
+
             # Preventive key check.
-            if "network" in results:
+            if "network" in results and isinstance(results["network"], dict):
                 results["network"]["pcap_id"] = pcap_id
             else:
                 results["network"] = {"pcap_id": pcap_id}
