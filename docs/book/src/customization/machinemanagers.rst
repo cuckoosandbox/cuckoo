@@ -90,25 +90,25 @@ You can find it's original code in the ``MachineManager`` abstract inside
 LibVirt
 =======
 
-Starting with Cuckoo 0.5 developing new machine managers based on LibVir is easier than
-ever.
+Starting with Cuckoo 0.5 developing new machine managers based on LibVirt is easy.
 Inside *lib/cuckoo/common/abstracts.py* you can find ``LibVirtMachineManager`` that
-covers all functionalitis for a LibVirt machine manager.
-It's pretty easy, just inherit this base class and specify your connection string, as in
+already provides all the functionalities for a LibVirt machine manager.
+Just inherit this base class and specify your connection string, as in
 the example below:
 
-	.. code-block:: python
+    .. code-block:: python
         :linenos:
-        
+
         from lib.cuckoo.common.abstracts import LibVirtMachineManager
 
 		class MyMachineManager(LibVirtMachineManager):
 		    # Set connection string.
 		    dsn = "my:///connection"
 
+
 This works for all the virtualization technologies supported by LibVirt. Just remember to 
 check if your LibVirt package (if you are using one, for example from your Linux
-distribution) is compiled with the support for the technology you needs.
+distribution) is compiled with the support for the technology you need.
 
 You can check it with the following command::
 
@@ -122,7 +122,5 @@ You can check it with the following command::
 	 Storage: Dir Disk Filesystem SCSI Multipath iSCSI LVM
 	 Miscellaneous: Nodedev AppArmor Secrets Debug Readline Modular
 
-What you need is the line ``Hypervisors``, if you don't found your virtualization
-technology here, you have to recompile LibVirt from scratch.
-
-	
+If you don't find your virtualization technology in the list of ``Hypervisors``, you will
+need to recompile LibVirt with the specific support for the missing one.
