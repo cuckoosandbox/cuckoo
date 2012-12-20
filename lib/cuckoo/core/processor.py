@@ -53,9 +53,6 @@ class Processor:
             # If succeeded, return they module's key name and the data to be
             # appended to it.
             return {current.key : data}
-        except NotImplementedError:
-            log.debug("The processing module \"%s\" is not correctly "
-                      "implemented" % current.__class__.__name__)
         except CuckooProcessingError as e:
             log.warning("The processing module \"%s\" returned the following "
                         "error: %s" % (current.__class__.__name__, e))
@@ -135,9 +132,6 @@ class Processor:
 
                 # Return information on the matched signature.
                 return matched
-        except NotImplementedError:
-            log.debug("The signature \"%s\" is not correctly implemented"
-                      % current.name)
         except Exception as e:
             log.exception("Failed to run signature \"%s\":" % (current.name))
 
