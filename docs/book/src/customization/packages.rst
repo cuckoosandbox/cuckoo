@@ -161,9 +161,9 @@ This class implements several methods that you can use in your own scripts.
 Methods
 -------
 
-.. function:: open()
+.. function:: Process.open()
 
-    Opens an handle to a running process. Returns *True* or *False* in case of success or failure of the operation.
+    Opens an handle to a running process. Returns ``True`` or ``False`` in case of success or failure of the operation.
 
     :rtype: boolean
 
@@ -176,7 +176,7 @@ Methods
         p.open()
         handle = p.h_process
 
-.. function:: exit_code()
+.. function:: Process.exit_code()
 
     Returns the exit code of the opened process. If it wasn't already done before, ``exit_code()`` will perform a call to ``open()`` to acquire an handle to the process.
 
@@ -190,9 +190,9 @@ Methods
         p = Process(pid=1234)
         code = p.exit_code()
 
-.. function:: is_alive()
+.. function:: Process.is_alive()
 
-    Calls ``exit_code()`` and verify if the returned code is ``STILL_ACTIVE``, meaning that the given process is still running. Returns *True* or *False*.
+    Calls ``exit_code()`` and verify if the returned code is ``STILL_ACTIVE``, meaning that the given process is still running. Returns ``True`` or ``False``.
 
     :rtype: boolean
 
@@ -205,7 +205,7 @@ Methods
         if p.is_alive():
             print("Still running!")
 
-.. function:: get_parent_pid()
+.. function:: Process.get_parent_pid()
 
     Returns the PID of the parent process of the opened process. If it wasn't already done before, ``get_parent_pid()`` will perform a call to ``open()`` to acquire an handle to the process.
 
@@ -219,9 +219,9 @@ Methods
         p = Process(pid=1234)
         ppid = p.get_parent_pid()
 
-.. function:: execute(path [, args=None[, suspended=False]])
+.. function:: Process.execute(path [, args=None[, suspended=False]])
 
-    Executes the file at the specified path. Returns *True* or *False* in case of success or failure of the operation.
+    Executes the file at the specified path. Returns ``True`` or ``False`` in case of success or failure of the operation.
 
     :param path: path to the file to execute
     :type path: string
@@ -239,9 +239,9 @@ Methods
         p = Process()
         p.execute(path="C:\\WINDOWS\\system32\\calc.exe", args="Something", suspended=True)
 
-.. function:: resume()
+.. function:: Process.resume()
 
-    Resumes the opened process from a suspended state. Returns *True* or *False* in case of success or failure of the operation.
+    Resumes the opened process from a suspended state. Returns ``True`` or ``False`` in case of success or failure of the operation.
 
     :rtype: boolean
 
@@ -254,9 +254,9 @@ Methods
         p.execute(path="C:\\WINDOWS\\system32\\calc.exe", args="Something", suspended=True)
         p.resume()
 
-.. function:: terminate()
+.. function:: Process.terminate()
 
-    Terminates the opened process. Returns *True* or *False* in case of success or failure of the operaton.
+    Terminates the opened process. Returns ``True`` or ``False`` in case of success or failure of the operaton.
 
     :rtype: boolean
 
@@ -271,9 +271,9 @@ Methods
         else:
             print("Could not terminate the process!")
 
-.. function:: inject([dll[, apc=False]])
+.. function:: Process.inject([dll[, apc=False]])
 
-    Injects a DLL (by default "dll/cuckoomon.dll") into the opened process. Returns *True* or *False* in case of success or failure of the operation.
+    Injects a DLL (by default "dll/cuckoomon.dll") into the opened process. Returns ``True`` or ``False`` in case of success or failure of the operation.
 
     :param dll: path to the DLL to inject into the process
     :type dll: string
@@ -291,9 +291,9 @@ Methods
         p.inject()
         p.resume()
 
-.. function:: dump_memory()
+.. function:: Process.dump_memory()
 
-    Takes a snapshot of the given process' memory space. Returns *True* or *False* in case of success or failure of the operation.
+    Takes a snapshot of the given process' memory space. Returns ``True`` or ``False`` in case of success or failure of the operation.
 
     :rtype: boolean
 
