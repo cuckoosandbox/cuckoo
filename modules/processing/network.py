@@ -346,6 +346,9 @@ class Pcap:
         except dpkt.dpkt.NeedData:
             log.error("Unable to read PCAP file at path \"%s\"." % self.filepath)
             return None
+        except ValueError:
+            log.error("Unable to read PCAP file at path \"%s\". File is corrupted or wrong format." % self.filepath)
+            return None
 
         for ts, buf in pcap:
             try:
