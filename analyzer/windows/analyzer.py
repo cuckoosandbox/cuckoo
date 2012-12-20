@@ -9,6 +9,7 @@ import random
 import shutil
 import pkgutil
 import logging
+import hashlib
 import xmlrpclib
 from ctypes import *
 from threading import Lock, Thread, Timer
@@ -28,6 +29,7 @@ log = logging.getLogger()
 
 BUFSIZE = 512
 FILES_LIST = []
+DUMPED_LIST = []
 PROCESS_LIST = []
 PROCESS_LOCK = Lock()
 
@@ -54,6 +56,15 @@ def add_file(file_path):
 
 def dump_file(file_path):
     """Create a copy of the give file path."""
+    if os.path.exists(file_path):
+        sha256 = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
+        if sha256 in DUMPED_LIST:
+            # The file was already dumped, just skip.
+            return
+    else:
+        log.warning("File at path \"%s\" does not exist, skip" % file_path)
+        return
+
     # 32k is the maximum length for a filename
     path = create_unicode_buffer(32 * 1024)
     name = c_wchar_p()
@@ -82,12 +93,9 @@ def dump_file(file_path):
 
         break
 
-    if not os.path.exists(file_path):
-        log.warning("File at path \"%s\" does not exist, skip" % file_path)
-        return
-
     try:
         shutil.copy(file_path, dump_path)
+        DUMPED_LIST.append(sha256)
         log.info("Dropped file \"%s\" dumped successfully to path \"%s\""
                   % (file_path, dump_path))
     except (IOError, shutil.Error) as e:
@@ -97,11 +105,11 @@ def dump_file(file_path):
 def del_file(fname):
     dump_file(fname)
 
-    # filenames are case-insenstive in windows
+    # Filenames are case-insenstive in windows.
     fnames = [x.lower() for x in FILES_LIST]
 
-    # if this filename exists in the FILES_LIST, then delete it, because it
-    # doesn't exist anymore anyway
+    # If this filename exists in the FILES_LIST, then delete it, because it
+    # doesn't exist anymore anyway.
     if fname.lower() in fnames:
         FILES_LIST.pop(fnames.index(fname.lower()))
 
