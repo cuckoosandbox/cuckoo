@@ -1,7 +1,7 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 0.5 (TBA)
-========================
+Cuckoo Sandbox 0.5 (2012-12-20)
+===============================
 
 * Added native support for URL analysis
 * Added full memory dump of the virtual machine
