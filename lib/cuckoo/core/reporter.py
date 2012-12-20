@@ -69,8 +69,6 @@ class Reporter:
             current.run(LocalDict(results))
             log.debug("Executed reporting module \"%s\""
                       % current.__class__.__name__)
-        except NotImplementedError:
-            return
         except CuckooReportError as e:
             log.warning("The reporting module \"%s\" returned the following "
                         "error: %s" % (current.__class__.__name__, e))
