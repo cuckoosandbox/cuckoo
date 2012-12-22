@@ -56,13 +56,17 @@ def add_file(file_path):
 
 def dump_file(file_path):
     """Create a copy of the give file path."""
-    if os.path.exists(file_path):
-        sha256 = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
-        if sha256 in DUMPED_LIST:
-            # The file was already dumped, just skip.
+    try:
+        if os.path.exists(file_path):
+            sha256 = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
+            if sha256 in DUMPED_LIST:
+                # The file was already dumped, just skip.
+                return
+        else:
+            log.warning("File at path \"%s\" does not exist, skip" % file_path)
             return
-    else:
-        log.warning("File at path \"%s\" does not exist, skip" % file_path)
+    except IOError as e:
+        log.warning("Unable to access file at path \"%s\": %s" % (file_path, e))
         return
 
     # 32k is the maximum length for a filename
