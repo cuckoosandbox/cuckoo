@@ -90,18 +90,20 @@ def check_version():
 
     print(" Checking for updates...")
 
-    url = "http://api.cuckoosandbox.org/checkversion.php"
+    url = "http://api.cuckoosandbox.oarg/checkversion.php"
     data = urllib.urlencode({"version" : CUCKOO_VERSION})
 
     try:
         request = urllib2.Request(url, data)
         response = urllib2.urlopen(request)
     except (urllib2.URLError, urllib2.HTTPError):
+        print(red(" Failed! ") + "Unable to establish connection.\n")
         return
 
     try:
         response_data = json.loads(response.read())
     except ValueError:
+        print(red(" Failed! ") + "Invalid response.\n")
         return
 
     if not response_data["error"]:
