@@ -90,7 +90,7 @@ def check_version():
 
     print(" Checking for updates...")
 
-    url = "http://api.cuckoosandbox.oarg/checkversion.php"
+    url = "http://api.cuckoosandbox.org/checkversion.php"
     data = urllib.urlencode({"version" : CUCKOO_VERSION})
 
     try:
