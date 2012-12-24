@@ -84,7 +84,7 @@ class MongoDB(Report):
             self._db.analysis.save(results, manipulate=False)
         except InvalidDocument:
             # The document is too big, we need to shrink it and re-save it.
-            results["behavior"]["processes"] = ""
+            results["behavior"]["processes"] = None
 
             # Let's add an error message to the debug block.
             error = ("The analysis results were too big to be stored, " +
@@ -115,14 +115,8 @@ class MongoDB(Report):
         """Connects to Mongo database, loads options and set connectors.
         @raise CuckooReportError: if unable to connect.
         """
-        if "host" in self.options:
-            host = self.options["host"]
-        else:
-            host = "127.0.0.1"
-        if "port" in self.options:
-            port = self.options["port"]
-        else:
-            port = 27017
+        host = self.options.get("host", "127.0.0.1")
+        port = self.options.get("port", 27017)
 
         try:
             self._conn = Connection(host, port)
