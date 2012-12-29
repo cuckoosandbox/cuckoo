@@ -20,11 +20,17 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("path", type=str, help="Path to the folder containing the analysis results to process")
     parser.add_argument("-r", "--report", help="Re-generate report", action="store_true", required=False)
+    parser.add_argument("-f", "--failed", help="Mark the analysis as failed", action="store_true", required=False)
     args = parser.parse_args()
 
     init_modules()
 
-    results = Processor(args.path).run()
+    if args.failed:
+        results = {"success" : False}
+    else:
+        results = Processor(args.path).run()
+        results["success"] = True
+
     if args.report:
         Reporter(args.path).run(results)
 

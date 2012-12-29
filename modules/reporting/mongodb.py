@@ -25,6 +25,9 @@ class MongoDB(Report):
         @param results: Cuckoo results dict.
         @raise CuckooReportError: if fails to connect or write to MongoDB.
         """
+        if not results["success"]:
+            return
+
         self._connect()
 
         # Set an unique index on stored files, to avoid duplicates.

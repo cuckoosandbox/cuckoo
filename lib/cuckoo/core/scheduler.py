@@ -305,7 +305,6 @@ class AnalysisManager(Thread):
         else:
             results = {
                 "id": self.task.id,
-                "custom" : self.task.custom,
                 "success" : succeeded,
                 "errors": []
             }
