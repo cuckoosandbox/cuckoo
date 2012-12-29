@@ -53,7 +53,7 @@ class ReportHTML(Report):
         else:
             results["screenshots"] = []
 
-        env = Environment()
+        env = Environment(autoescape=True)
         env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT, "data", "html"))
 
         try:
