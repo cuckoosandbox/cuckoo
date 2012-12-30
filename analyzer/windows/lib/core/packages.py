@@ -20,5 +20,7 @@ def choose_package(file_type, file_name):
         return "doc"
     elif "Microsoft Office Excel" in file_type or file_name.endswith(".xlsx"):
         return "xls"
+    elif "HTML" in file_type:
+        return "html"
     else:
         return None
