@@ -12,7 +12,6 @@ try:
     from pymongo.connection import Connection
     from pymongo.errors import ConnectionFailure, InvalidDocument
     from gridfs import GridFS
-    from gridfs.errors import FileExists
 except ImportError:
     raise CuckooDependencyError("Unable to import pymongo")
 
