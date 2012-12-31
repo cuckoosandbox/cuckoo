@@ -19,6 +19,9 @@ class Metadata(Report):
         @param results: Cuckoo results dict.
         @raise CuckooReportError: if fails to write report.
         """
+        if not results["success"]:
+            return
+
         # Save results.
         self.results = results
         # Reporting steps.
@@ -148,9 +151,9 @@ class Metadata(Report):
             # DNS requests
             for req in self.objects.get_uri():
                 # Get IP
-                if "dns" in self.results["network"] and isinstance(self.results["network"]["dns"], list):
-                    for res in self.results["network"]["dns"]: 
-                        if res["hostname"] == req.get_hostname():
+                if "domains" in self.results["network"] and isinstance(self.results["network"]["domains"], list):
+                    for res in self.results["network"]["domains"]: 
+                        if res["domain"] == req.get_hostname():
                             ip = res["ip"]
                             # Check if obj exist
                             found = None

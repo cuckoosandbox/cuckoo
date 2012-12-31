@@ -1,13 +1,14 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 0.5 (TBA)
-========================
+Cuckoo Sandbox 0.5 (2012-12-20)
+===============================
 
 * Added native support for URL analysis
 * Added full memory dump of the virtual machine
 * Added base class for libvirt machine managers
 * Added auxiliary modules for Windows analyzer
 * Added Jar analysis package
+* Added Java Applet analysis package
 * Added Zip analysis package
 * Added option to enforce full timeout execution
 * Added support for Graylog2 logging
@@ -24,10 +25,19 @@ Cuckoo Sandbox 0.5 (TBA)
 * Added a REST API server to interact with Cuckoo
 * Added user interaction emulation (clicking dialogs buttons and mouse movements)
 * Added support for Windows 7 execution
+* Added support for dumping queried and modified registry data
+* Added more functions to be hooked and logged
+* Added simple functionality to omit injection into Cuckoo processes
+* Added support for dumping files with relative paths
+* Added shared VirusTotal API key
+* Introduced fairly smart way of skipping Sleep calls
 * Unified utility for results processing and reports generation
 * Improved analysis process logic
 * Improved automatic analysis package selection
 * Improved process injection and process following
+* Improved dumping of modified files
+* Improved logging to reduce the amount of useless entries
+* Improved unicode support
 * Improved management of analysis machines parallel execution
 * Improved internal management of plugins and modules
 * Improved dissection of intercepted DNS traffic
@@ -42,8 +52,7 @@ Cuckoo Sandbox 0.4.2 (2012-09-08)
 
 * Added support for VMWare Workstation
 * Added VirtualBox status change monitor and option "timeout" to virtualbox.conf
-* Added log file processing size limit and option "analysis_size_limit" to
-  cuckoo.conf
+* Added log file processing size limit and option "analysis_size_limit" to cuckoo.conf
 * Added directory submission to submit.py utility
 * Added community.py utility to sync custom modules from the community repository
 * Fixed missing critical_timeout implementation
@@ -131,30 +140,30 @@ Cuckoo Sandbox 0.3.1 (2011-12-28)
 Cuckoo Sandbox 0.3 (2011-12-27)
 ===============================
 
- * Introduced minimal web server with web interface to browse through the analysis reports.
- * Added a reporting engine, configurable via reporting.conf, which supports reporting modules.
- * Added HTML report.
- * Added TXT report.
- * Added JSON data export.
- * Introduced support to URL submission.
- * Added possibility to specify on which virtual machine run the analysis.
- * Added database interaction functions to search analysis by MD5.
- * Introduced DLL analysis package.
- * Introduced assembly instructions trace analysis package.
- * Added MD5 filtering of dropped files.
- * Added libmagic bindings to identify file types.
- * Added pydoc comments to all sources.
- * Added CRC32 hash.
- * Added ssdeep hash.
- * Added process tree generation class.
- * Added UDP connections extraction.
- * Distorm3 built-in into cmonitor
- * Fixed cmonitor.
- * Fixed chook.
- * Migrated Cuckoo to Python's logging library.
- * Improved Cuckoo User Guide.
- * Added changelog file.
- * Some minor fixes.
+* Introduced minimal web server with web interface to browse through the analysis reports.
+* Added a reporting engine, configurable via reporting.conf, which supports reporting modules.
+* Added HTML report.
+* Added TXT report.
+* Added JSON data export.
+* Introduced support to URL submission.
+* Added possibility to specify on which virtual machine run the analysis.
+* Added database interaction functions to search analysis by MD5.
+* Introduced DLL analysis package.
+* Introduced assembly instructions trace analysis package.
+* Added MD5 filtering of dropped files.
+* Added libmagic bindings to identify file types.
+* Added pydoc comments to all sources.
+* Added CRC32 hash.
+* Added ssdeep hash.
+* Added process tree generation class.
+* Added UDP connections extraction.
+* Distorm3 built-in into cmonitor
+* Fixed cmonitor.
+* Fixed chook.
+* Migrated Cuckoo to Python's logging library.
+* Improved Cuckoo User Guide.
+* Added changelog file.
+* Some minor fixes.
 
 Cuckoo Sandbox 0.2 (2011-11-02)
 ===============================

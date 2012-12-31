@@ -60,6 +60,28 @@
             </div>
         </div>
         {% endif %}
+
+        {% if results.network.irc %}
+        <div>
+            <h4><a href="javascript:showHide('irc');">IRC Requests</a></h4>
+            <div id="irc" style="display: none;">
+                <table class="table table-striped table-bordered">
+                    <tr>
+                        <th>Command</th>
+                        <th>Params</th>
+                        <th>Type</th>
+                    </tr>
+                    {% for irc in results.network.irc %}
+                    <tr>
+                        <td><span class="mono">{{irc.command}}</span></td>
+                        <td><span class="mono"><pre>{{irc.params}}</pre></span></td>
+                        <td><span class="mono"><pre>{{irc.type}}</pre></span></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        {% endif %}
     {% else %}
         Nothing to display.
     {% endif %}

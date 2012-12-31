@@ -2,11 +2,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import copy
 import logging
 from distutils.version import StrictVersion
 
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.objects import LocalDict
 from lib.cuckoo.common.constants import CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooProcessingError
 from lib.cuckoo.core.plugins import list_plugins
@@ -53,9 +53,6 @@ class Processor:
             # If succeeded, return they module's key name and the data to be
             # appended to it.
             return {current.key : data}
-        except NotImplementedError:
-            log.debug("The processing module \"%s\" is not correctly "
-                      "implemented" % current.__class__.__name__)
         except CuckooProcessingError as e:
             log.warning("The processing module \"%s\" returned the following "
                         "error: %s" % (current.__class__.__name__, e))
@@ -72,7 +69,7 @@ class Processor:
         @return: matched signature.
         """
         # Initialize the current signature.
-        current = signature(copy.deepcopy(results))
+        current = signature(LocalDict(results))
 
         log.debug("Running signature \"%s\"" % current.name)
 
@@ -135,9 +132,6 @@ class Processor:
 
                 # Return information on the matched signature.
                 return matched
-        except NotImplementedError:
-            log.debug("The signature \"%s\" is not correctly implemented"
-                      % current.name)
         except Exception as e:
             log.exception("Failed to run signature \"%s\":" % (current.name))
 

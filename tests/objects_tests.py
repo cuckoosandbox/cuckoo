@@ -15,9 +15,9 @@ class TestDictionary:
 
     def test_usage(self):
         self.d.a = "foo"
-        assert_equals("foo", self.d.a)
+        assert_equal("foo", self.d.a)
         self.d.a = "bar"
-        assert_equals("bar", self.d.a)
+        assert_equal("bar", self.d.a)
 
     @raises(AttributeError)
     def test_exception(self):

@@ -58,7 +58,10 @@ def move_mouse():
     x = random.randint(0, RESOLUTION["x"])
     y = random.randint(0, RESOLUTION["y"])
 
-    USER32.SetCursorPos(x, y)
+    USER32.mouse_event(1, x, y, 0, None)
+
+def click_mouse():
+    USER32.mouse_event(4, 0, 0, 0, None)
 
 class Human(Auxiliary, Thread):
     """Human after all"""
@@ -73,5 +76,6 @@ class Human(Auxiliary, Thread):
     def run(self):
         while self.do_run:
             move_mouse()
+            click_mouse()
             USER32.EnumWindows(EnumWindowsProc(foreach_window), 0)
             KERNEL32.Sleep(1000)

@@ -12,10 +12,9 @@ import tempfile
 from zipfile import ZipFile
 from StringIO import StringIO
 
-ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..")
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-sys.path.append(ROOT)
-
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 import lib.cuckoo.common.colors as colors
 
 URL = "https://github.com/cuckoobox/community/zipball/master"
@@ -40,7 +39,12 @@ def download_archive():
 def install(enabled, force, rewrite):
     (temp, source) = download_archive()
 
-    folders = {"signatures" : os.path.join("modules", "signatures")}
+    folders = {
+        "signatures" : os.path.join("modules", "signatures"),
+        "processing" : os.path.join("modules", "processing"),
+        "reporting" : os.path.join("modules", "reporting"),
+        "machinemanagers" : os.path.join("modules", "machinemanagers")
+    }
 
     for category in enabled:
         folder = folders[category]
@@ -50,7 +54,10 @@ def install(enabled, force, rewrite):
         origin = os.path.join(source, folder)
 
         for file_name in os.listdir(origin):
-            destination = os.path.join(ROOT, folder, file_name)
+            if file_name == ".gitignore":
+                continue
+
+            destination = os.path.join(CUCKOO_ROOT, folder, file_name)
 
             if not rewrite:
                 if os.path.exists(destination):
@@ -82,9 +89,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--all", help="Download everything", action="store_true", required=False)
     parser.add_argument("-s", "--signatures", help="Download Cuckoo signatures", action="store_true", required=False)
-    #parser.add_argument("-p", "--processing", help="Download processing modules", action="store_true", required=False)
-    #parser.add_argument("-m", "--machinemanagers", help="Download machine managers", action="store_true", required=False)
-    #parser.add_argument("-r", "--reporting", help="Download reporting modules", action="store_true", required=False)
+    parser.add_argument("-p", "--processing", help="Download processing modules", action="store_true", required=False)
+    parser.add_argument("-m", "--machinemanagers", help="Download machine managers", action="store_true", required=False)
+    parser.add_argument("-r", "--reporting", help="Download reporting modules", action="store_true", required=False)
     parser.add_argument("-f", "--force", help="Install files without confirmation", action="store_true", required=False)
     parser.add_argument("-w", "--rewrite", help="Rewrite existing files", action="store_true", required=False)
     args = parser.parse_args()
@@ -94,10 +101,19 @@ def main():
     rewrite = False
 
     if args.all:
+        enabled.append("processing")
         enabled.append("signatures")
+        enabled.append("reporting")
+        enabled.append("machinemanagers")
     else:
         if args.signatures:
             enabled.append("signatures")
+        if args.processing:
+            enabled.append("processing")
+        if args.reporting:
+            enabled.append("reporting")
+        if args.machinemanagers:
+            enabled.append("machinemanagers")
 
     if not enabled:
         print(colors.red("You need to enable some category!\n"))

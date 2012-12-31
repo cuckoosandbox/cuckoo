@@ -33,7 +33,7 @@ enabled = on
     def test_run_report_alter_results(self):
         """@note: Regression test."""
         results = {"foo": "bar"}
-        self.r._run_report(ReportMock, results)
+        self.r._run_report(ReportAlterMock, results)
         assert_equals(results, {"foo": "bar"})
 
     def tearDown(self):
@@ -48,5 +48,5 @@ class ReportMock(Report):
 class ReportAlterMock(Report):
     """Corrupts results dict."""
     def run(self, data):
-        data = None
+        data['foo'] = 'notbar'
         return

@@ -34,7 +34,7 @@ time to think on what you want to achieve with it and how.
 Some questions you should ask yourself:
 
     * What kind of files do I want to analyze?
-    * Which volumes of analysis do I want to be able to handle?
+    * Which volumes of analyses do I want to be able to handle?
     * Which platform do I want to use to run my analysis on?
     * What kind of information I want about the file?
 

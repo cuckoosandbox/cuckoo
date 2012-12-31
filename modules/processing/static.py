@@ -8,11 +8,15 @@ import sys
 try:
     import magic
     HAVE_MAGIC = True
-except:
+except ImportError:
     HAVE_MAGIC = False
 
-import pefile
-import peutils
+try:
+    import pefile
+    import peutils
+    HAVE_PEFILE = True
+except ImportError:
+    HAVE_PEFILE = False
 
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -240,9 +244,10 @@ class Static(Processing):
         self.key = "static"
         static = {}
 
-        if self.cfg.analysis.category == "file":
-            if self.cfg.analysis.file_type:
-                if "PE32" in self.cfg.analysis.file_type:
-                    static = PortableExecutable(self.file_path).run()
+        if HAVE_PEFILE:
+            if self.cfg.analysis.category == "file":
+                if self.cfg.analysis.file_type:
+                    if "PE32" in self.cfg.analysis.file_type:
+                        static = PortableExecutable(self.file_path).run()
 
         return static

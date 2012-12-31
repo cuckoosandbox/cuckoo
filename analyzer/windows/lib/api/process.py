@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import string
 import random
 import logging
 from time import time
@@ -13,6 +12,7 @@ from shutil import copy
 from lib.common.defines import *
 from lib.common.constants import PATHS
 from lib.common.errors import get_error_string
+from lib.common.rand import random_string
 
 log = logging.getLogger(__name__)
 
@@ -20,8 +20,8 @@ def randomize_dll(dll_path):
     """Randomize DLL name.
     @return: new DLL path.
     """
-    new_dll_name = "".join(random.choice(string.ascii_letters) for x in range(6))
-    new_dll_path = os.path.join("dll", "%s.dll" % new_dll_name)
+    new_dll_name = random_string(6)
+    new_dll_path = os.path.join(os.getcwd(), "dll", "%s.dll" % new_dll_name)
 
     try:
         copy(dll_path, new_dll_path)
@@ -120,7 +120,7 @@ class Process:
 
         return None
 
-    def execute(self, path=None, args=None, suspended=False):
+    def execute(self, path, args=None, suspended=False):
         """Execute sample process.
         @param path: sample path.
         @param args: process args.
@@ -128,6 +128,8 @@ class Process:
         @return: operation status.
         """
         if not os.access(path, os.X_OK):
+            log.error("Unable to access file at path \"%s\", execution aborted"
+                      % path)
             return False
 
         startup_info = STARTUPINFO()
@@ -324,11 +326,12 @@ class Process:
         max_addr = self.system_info.lpMaximumApplicationAddress
         mem = min_addr
 
-        root = os.path.join(PATHS["memory"], str(self.pid))
-        root = os.path.join(root, str(int(time())))
+        root = os.path.join(PATHS["memory"], str(int(time())))
 
         if not os.path.exists(root):
             os.makedirs(root)
+
+        dump = open(os.path.join(root, "%s.dmp" % str(self.pid)), "wb")
 
         while(mem < max_addr):
             mbi = MEMORY_BASIC_INFORMATION()
@@ -348,13 +351,12 @@ class Process:
                                               buf,
                                               mbi.RegionSize,
                                               byref(count)):
-                    path = os.path.join(root, "0x%.8x.dmp" % mem)
-                    chunk = open(path, "wb")
-                    chunk.write(buf.raw)
-                    chunk.close()
+                    dump.write(buf.raw)
                 mem += mbi.RegionSize
             else:
                 mem += page_size
+
+        dump.close()
 
         log.info("Memory dump of process with pid %d completed" % self.pid)
 

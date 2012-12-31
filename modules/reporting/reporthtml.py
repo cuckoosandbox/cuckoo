@@ -25,6 +25,9 @@ class ReportHTML(Report):
         @param results: Cuckoo results dict.
         @raise CuckooReportError: if fails to write report.
         """
+        if not results["success"]:
+            return
+
         if not HAVE_JINJA2:
             raise CuckooReportError("Failed to generate HTML report: Jinja2 Python library is not installed")
 
@@ -53,7 +56,7 @@ class ReportHTML(Report):
         else:
             results["screenshots"] = []
 
-        env = Environment()
+        env = Environment(autoescape=True)
         env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT, "data", "html"))
 
         try:

@@ -8,7 +8,10 @@ import sys
 import json
 import argparse
 
-from bottle import Bottle, route, run, request, server_names, ServerAdapter
+try:
+    from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response, HTTPError
+except ImportError:
+    sys.exit("ERROR: Bottle.py library is missing")
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
@@ -16,22 +19,31 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.core.database import Database
 
-errors = {
-    "task_not_found" : "The specified task does not exist",
-    "file_not_found" : "The specified file does not exist",
-    "machine_not_found" : "The specified machine does not exist",
-    "report_not_found" : "The specified report does not exist"
-}
+# Global DB pointer.
+db = Database()
 
 def jsonize(data):
+    """Converts data dict to JSON.
+    @param data: data dict
+    @return: JSON formatted data
+    """ 
+    response.content_type = "application/json; charset=UTF-8"
     return json.dumps(data, sort_keys=False, indent=4)
 
-def report_error(error_code):
-    return jsonize({"error" : True, "error_code" : error_code, "error_message" : errors[error_code]})
+@hook("after_request")
+def custom_headers():
+    """Set some custom headers across all HTTP responses."""
+    response.headers["Server"] = "Machete Server"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Expires"] = "0"
 
 @route("/tasks/create/file", method="POST")
 def tasks_create_file():
-    response = {"error" : False}
+    response = {}
 
     data = request.files.file
     package = request.forms.get("package", "")
@@ -49,7 +61,6 @@ def tasks_create_file():
         enforce_timeout = True
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
-    db = Database()
     task_id = db.add_path(file_path=temp_file_path,
                           package=package,
                           timeout=timeout,
@@ -66,7 +77,7 @@ def tasks_create_file():
 
 @route("/tasks/create/url", method="POST")
 def tasks_create_url():
-    response = {"error" : False}
+    response = {}
 
     url = request.forms.get("url")
     package = request.forms.get("package", "")
@@ -83,7 +94,6 @@ def tasks_create_url():
     if enforce_timeout:
         enforce_timeout = True
 
-    db = Database()
     task_id = db.add_url(url=url,
                          package=package,
                          timeout=timeout,
@@ -101,9 +111,7 @@ def tasks_create_url():
 @route("/tasks/list", method="GET")
 @route("/tasks/list/<limit>", method="GET")
 def tasks_list(limit=None):
-    response = {"error" : False}
-
-    db = Database()
+    response = {}
 
     response["tasks"] = []
     for row in db.list_tasks(limit).all():
@@ -122,9 +130,7 @@ def tasks_list(limit=None):
 
 @route("/tasks/view/<task_id>", method="GET")
 def tasks_view(task_id):
-    response = {"error" : False}
-
-    db = Database()
+    response = {}
 
     task = db.view_task(task_id)
     if task:
@@ -139,14 +145,14 @@ def tasks_view(task_id):
 
         response["task"] = entry
     else:
-        return report_error("task_not_found")
+        return HTTPError(404, "Task not found")
 
     return jsonize(response)
 
 @route("/tasks/report/<task_id>", method="GET")
 @route("/tasks/report/<task_id>/<report_format>", method="GET")
 def tasks_report(task_id, report_format="json"):
-    response = {"error" : False}
+    response = {}
 
     formats = {
         "json" : "report.json",
@@ -164,47 +170,48 @@ def tasks_report(task_id, report_format="json"):
                                    "reports",
                                    formats[report_format.lower()])
     else:
-        return report_error("report_not_found")
+        return HTTPError(400, "Invalid report format")
 
     if os.path.exists(report_path):
         return open(report_path, "rb").read()
     else:
-        return report_error("report_not_found")
+        return HTTPError(404, "Report not found")
 
 @route("/files/view/md5/<md5>", method="GET")
 @route("/files/view/sha256/<sha256>", method="GET")
 @route("/files/view/id/<sample_id>", method="GET")
-def files_view(md5=None, sample_id=None):
-    response = {"error" : False}
+def files_view(md5=None, sha256=None, sample_id=None):
+    response = {}
 
-    db = Database()
     if md5:
         sample = db.find_sample(md5=md5)[0]
     elif sha256:
         sample = db.find_sample(sha256=sha256)[0]
     elif sample_id:
         sample = db.view_sample(sample_id)
+    else:
+        return HTTPError(400, "Invalid lookup term")
 
     if sample:
         response["sample"] = sample.to_dict()
     else:
-        return report_error("file_not_found")
+        return HTTPError(404, "File not found")
 
     return jsonize(response)
 
-@route("/files/get/<md5>", method="GET")
-def files_get(md5):
-    file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", md5)
+@route("/files/get/<sha256>", method="GET")
+def files_get(sha256):
+    file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", sha256)
     if os.path.exists(file_path):
+        response.content_type = "application/octet-stream; charset=UTF-8"
         return open(file_path, "rb").read()
     else:
-        return report_error("file_not_found")
+        return HTTPError(404, "File not found")
 
 @route("/machines/list", method="GET")
 def machines_list():
-    response = {"error" : False}
+    response = {}
 
-    db = Database()
     machines = db.list_machines()
 
     response["machines"] = []
@@ -215,21 +222,19 @@ def machines_list():
 
 @route("/machines/view/<name>", method="GET")
 def machines_view(name=None):
-    response = {"error" : False}
-
-    db = Database()
+    response = {}
 
     machine = db.view_machine(name=name)
     if machine:
         response["machine"] = machine.to_dict()
     else:
-        return report_error("machine_not_found")
+        return HTTPError(404, "Machine not found")
 
     return jsonize(response)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-H", "--host", help="Host to bind the API server on", default="0.0.0.0", action="store", required=False)
+    parser.add_argument("-H", "--host", help="Host to bind the API server on", default="localhost", action="store", required=False)
     parser.add_argument("-p", "--port", help="Port to bind the API server on", default=8090, action="store", required=False)
     args = parser.parse_args()
 
