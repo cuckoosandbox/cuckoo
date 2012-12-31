@@ -31,6 +31,7 @@ def randomize_dll(dll_path):
 
 class Process:
     """Windows process."""
+    first_process = True
 
     def __init__(self, pid=0, h_process=0, thread_id=0, h_thread=0):
         """@param pid: PID.
@@ -302,6 +303,8 @@ class Process:
             config.write("pipe=%s\n" % PIPE)
             config.write("results=%s\n" % PATHS["root"])
             config.write("analyzer=%s\n" % os.getcwd())
+            config.write("first-process=%d\n" % Process.first_process)
+            Process.first_process = False
 
         return True
 
