@@ -19,4 +19,4 @@ PATHS = {"root"   : ROOT,
          "memory" : os.path.join(ROOT, "memory"),
          "drop"   : os.path.join(ROOT, "drop")}
 
-PIPE = _rand_string(6, 10)
+PIPE = '\\\\.\\PIPE\\' + _rand_string(6, 10)
