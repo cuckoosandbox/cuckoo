@@ -10,7 +10,7 @@ from ctypes import *
 from shutil import copy
 
 from lib.common.defines import *
-from lib.common.constants import PATHS
+from lib.common.constants import PIPE, PATHS
 from lib.common.errors import get_error_string
 from lib.common.rand import random_string
 
@@ -296,6 +296,13 @@ class Process:
                 return False
             else:
                 KERNEL32.CloseHandle(thread_handle)
+
+        config_path = os.path.join(os.getenv("TEMP"), "%s.ini" % self.pid)
+        with open(config_path, "w") as config:
+            config.write("pipe=%s\n" % PIPE)
+            config.write("results=%s\n" % PATHS["root"])
+            config.write("analyzer=%s\n" % os.getcwd())
+            config.close()
 
         return True
 

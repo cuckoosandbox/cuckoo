@@ -222,19 +222,6 @@ class PipeHandler(Thread):
                                 proc.inject(apc=True)
                             else:
                                 proc.inject()
-
-                            # We have to wait because we use the
-                            # CreateRemoteThread injection method
-                            wait = True
-
-                            # Create a temporary configuration for the
-                            # injected process.
-                            path = os.path.join(os.getenv("TEMP"),
-                                                "%s.ini" % process_id)
-                            fh = open(path, "w")
-                            fh.write("pipe=%s\nresults=%s\nanalyzer=%s\n"
-                                     % (PIPE, PATHS["root"], os.getcwd()))
-                            fh.close()
                     else:
                         log.warning("Received request to inject myself, skip")
 
@@ -257,11 +244,11 @@ class PipeHandler(Thread):
                 # Dump the file straight away.
                 del_file(file_path)
 
-        # we wait until cuckoomon reports back, so we know for sure that
+        # We wait until cuckoomon reports back, so we know for sure that
         # cuckoomon has finished initializing etc
-        if wait:
-            proc.wait()
-            log.info("Successfully injected process with pid %d" % proc.pid)
+        proc.wait()
+        
+        log.info("Successfully injected process with pid %d" % proc.pid)
 
         KERNEL32.WriteFile(self.h_pipe,
                            create_string_buffer(response),
