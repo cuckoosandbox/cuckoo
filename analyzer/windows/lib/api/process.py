@@ -302,7 +302,6 @@ class Process:
             config.write("pipe=%s\n" % PIPE)
             config.write("results=%s\n" % PATHS["root"])
             config.write("analyzer=%s\n" % os.getcwd())
-            config.close()
 
         return True
 
