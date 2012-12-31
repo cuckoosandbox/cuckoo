@@ -10,7 +10,7 @@ from ctypes import *
 from shutil import copy
 
 from lib.common.defines import *
-from lib.common.paths import PATHS
+from lib.common.constants import PATHS
 from lib.common.errors import get_error_string
 from lib.common.rand import random_string
 
