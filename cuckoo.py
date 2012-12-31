@@ -7,16 +7,19 @@ import sys
 import logging
 import argparse
 
-from lib.cuckoo.common.logo import logo
-from lib.cuckoo.common.constants import CUCKOO_VERSION
-from lib.cuckoo.common.exceptions import CuckooCriticalError
-from lib.cuckoo.core.startup import *
+try:
+    from lib.cuckoo.common.logo import logo
+    from lib.cuckoo.common.constants import CUCKOO_VERSION
+    from lib.cuckoo.common.exceptions import CuckooCriticalError, CuckooDependencyError
+    from lib.cuckoo.core.startup import *
+    from lib.cuckoo.core.scheduler import Scheduler
+except (CuckooDependencyError, ImportError) as e:
+    sys.exit("ERROR: Missing dependency: %s" % e)
 
 log = logging.getLogger()
 
 def main():
     logo()
-    check_dependencies()
     check_working_directory()
     check_configs()
     check_version()
@@ -47,8 +50,6 @@ def main():
 
     init_modules()
 
-    from lib.cuckoo.core.scheduler import Scheduler
-
     try:
         sched = Scheduler()
         sched.start()
@@ -64,4 +65,5 @@ if __name__ == "__main__":
             log.critical(message)
         else:
             sys.stderr.write("%s\n" % message)
+
         sys.exit(1)

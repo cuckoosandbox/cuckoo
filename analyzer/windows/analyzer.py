@@ -10,6 +10,7 @@ import random
 import shutil
 import pkgutil
 import logging
+import hashlib
 import xmlrpclib
 from ctypes import *
 from threading import Lock, Thread, Timer
@@ -29,6 +30,7 @@ log = logging.getLogger()
 
 BUFSIZE = 512
 FILES_LIST = []
+DUMPED_LIST = []
 PROCESS_LIST = []
 PROCESS_LOCK = Lock()
 
@@ -55,20 +57,20 @@ def add_file(file_path):
 
 def dump_file(file_path):
     """Create a copy of the give file path."""
-    if file_path.startswith("\\\\.\\"):
+    try:
+        if os.path.exists(file_path):
+            sha256 = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
+            if sha256 in DUMPED_LIST:
+                # The file was already dumped, just skip.
+                return
+        else:
+            log.warning("File at path \"%s\" does not exist, skip" % file_path)
+            return
+    except IOError as e:
+        log.warning("Unable to access file at path \"%s\": %s" % (file_path, e))
         return
 
-    # Strip bogus path prefixes.
-    if file_path[:4] == "\\??\\" or file_path[:4] == "\\\\?\\":
-        file_path = file_path[4:]
-
-    # Ensure that the file name is on a harddisk, such as C:\\ and D:\\
-    # because we don't need stuff such as \\?\PIPE, \\?\IDE, \\?\STORAGE, etc.
-    if file_path[1] != ":":
-        log.warning("Not going to drop %s (not on harddisk)" % file_path)
-        return
-
-    # 32k is the maximum length of the filename when using unicode names.
+    # 32k is the maximum length for a filename
     path = create_unicode_buffer(32 * 1024)
     name = c_wchar_p()
     KERNEL32.GetFullPathNameW(file_path, 32 * 1024, path, byref(name))
@@ -96,17 +98,25 @@ def dump_file(file_path):
 
         break
 
-    if not os.path.exists(file_path):
-        log.warning("File at path \"%s\" does not exist, skip" % file_path)
-        return
-
     try:
         shutil.copy(file_path, dump_path)
+        DUMPED_LIST.append(sha256)
         log.info("Dropped file \"%s\" dumped successfully to path \"%s\""
                   % (file_path, dump_path))
     except (IOError, shutil.Error) as e:
         log.error("Unable to dump dropped file at path \"%s\": %s"
                   % (file_path, e))
+
+def del_file(fname):
+    dump_file(fname)
+
+    # Filenames are case-insenstive in windows.
+    fnames = [x.lower() for x in FILES_LIST]
+
+    # If this filename exists in the FILES_LIST, then delete it, because it
+    # doesn't exist anymore anyway.
+    if fname.lower() in fnames:
+        FILES_LIST.pop(fnames.index(fname.lower()))
 
 def dump_files():
     """Dump all the dropped files."""
@@ -245,7 +255,7 @@ class PipeHandler(Thread):
                 # Extract the file path.
                 file_path = command[9:].decode("utf-8")
                 # Dump the file straight away.
-                dump_file(file_path)
+                del_file(file_path)
 
         # we wait until cuckoomon reports back, so we know for sure that
         # cuckoomon has finished initializing etc

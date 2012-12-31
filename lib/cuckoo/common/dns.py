@@ -12,11 +12,11 @@ try:
 except:
     HAVE_CARES = False
 
-try:
-    import gevent, gevent.socket
-    HAVE_GEVENT = True
-except:
-    HAVE_GEVENT = False
+#try:
+#    import gevent, gevent.socket
+#    HAVE_GEVENT = True
+#except:
+HAVE_GEVENT = False
 
 
 # these are used by all resolvers

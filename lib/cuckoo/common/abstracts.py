@@ -229,7 +229,6 @@ class LibVirtMachineManager(MachineManager):
         connection string.
         @param module:  machine manager module
         """
-        self.set_dsn()
         super(LibVirtMachineManager, self).initialize(module)
 
     def _initialize_check(self):
@@ -431,12 +430,6 @@ class LibVirtMachineManager(MachineManager):
         else:
             return False
 
-    def set_dsn(self):
-        """Set libvirt connection string.
-        @raise NotImplementedError: abstract interface
-        """
-        raise NotImplementedError
-
 class Processing(object):
     """Base abstract class for processing module."""
     order = 1
@@ -499,20 +492,20 @@ class Signature(object):
             if type(subject) == list:
                 for item in subject:
                     if exp.match(item):
-                        return True
+                        return item
             else:
                 if exp.match(subject):
-                    return True
+                    return subject
         else:
             if type(subject) == list:
                 for item in subject:
                     if item == pattern:
-                        return True
+                        return item
             else:
                 if subject == pattern:
-                    return True
+                    return subject
 
-        return False
+        return None
 
     def check_file(self, pattern, regex=False):
         """Checks for a file being opened.
@@ -568,9 +561,9 @@ class Signature(object):
                 if self._check_value(pattern=pattern,
                                      subject=call["api"],
                                      regex=regex):
-                    return True
+                    return call["api"]
 
-        return False
+        return None
 
     def check_argument(self,
                        pattern,
@@ -619,9 +612,9 @@ class Signature(object):
                     if self._check_value(pattern=pattern,
                                          subject=argument["value"],
                                          regex=regex):
-                        return True
+                        return argument["value"]
 
-        return False
+        return None
 
     def check_ip(self, pattern, regex=False):
         """Checks for an IP address being contacted.
@@ -645,9 +638,9 @@ class Signature(object):
             if self._check_value(pattern=pattern,
                                  subject=item["domain"],
                                  regex=regex):
-                return True
+                return item
 
-        return False
+        return None
 
     def check_url(self, pattern, regex=False):
         """Checks for a URL being contacted.
@@ -660,9 +653,9 @@ class Signature(object):
             if self._check_value(pattern=pattern,
                                  subject=item["uri"],
                                  regex=regex):
-                return True
+                return item
 
-        return False
+        return None
 
     def run(self):
         """Start signature processing.

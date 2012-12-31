@@ -296,7 +296,7 @@ class Database(object):
                     except CuckooOperationalError as e:
                         raise CuckooDatabaseError("Unable to create database "
                                                   "directory: %s" % e)
-            self.engine = create_engine("sqlite:///%s" % db_file)
+            self.engine = create_engine("sqlite:///%s" % db_file, poolclass=NullPool)
 
         # Disable SQL logging. Turn it on for debugging.
         self.engine.echo = False
@@ -322,10 +322,10 @@ class Database(object):
     def clean_machines(self):
         """Clean old stored machines."""
         session = self.Session()
-        session.query(Machine).delete()
         try:
+            session.query(Machine).delete()
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
 
     def _set_status(self, task_id, status):
@@ -335,10 +335,10 @@ class Database(object):
         @return: operation status
         """
         session = self.Session()
-        session.query(Task).get(task_id).status = status
         try:
+            session.query(Task).get(task_id).status = status
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return False
 
@@ -356,14 +356,14 @@ class Database(object):
         @param platform: machine supported platform
         """
         session = self.Session()
+        machine = Machine(name=name,
+                          label=label,
+                          ip=ip,
+                          platform=platform)
+        session.add(machine)
         try:
-            machine = Machine(name=name,
-                              label=label,
-                              ip=ip,
-                              platform=platform)
-            session.add(machine)
             session.commit()
-        except IntegrityError:
+        except SQLAlchemyError:
             session.rollback()
 
     def fetch(self):
@@ -371,7 +371,10 @@ class Database(object):
         @return: task dict or None.
         """
         session = self.Session()
-        row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
+        try:
+            row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
+        except SQLAlchemyError:
+            return None
         return row
 
     def process(self, task_id):
@@ -403,7 +406,10 @@ class Database(object):
         @return: operation status.
         """
         session = self.Session()
-        task = session.query(Task).get(task_id)
+        try:
+            task = session.query(Task).get(task_id)
+        except SQLAlchemyError:
+            return False
 
         if success:
             task.status = "success"
@@ -414,7 +420,7 @@ class Database(object):
 
         try:
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return False
 
@@ -431,10 +437,10 @@ class Database(object):
         session = self.Session()
         guest = Guest(name, label, manager)
         guest.started_on = datetime.now()
-        session.query(Task).get(task_id).guest = guest
         try:
+            session.query(Task).get(task_id).guest = guest
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return None
 
@@ -445,10 +451,10 @@ class Database(object):
         @param guest_id: guest log entry id
         """
         session = self.Session()
-        session.query(Guest).get(guest_id).shutdown_on = datetime.now()
         try:
+            session.query(Guest).get(guest_id).shutdown_on = datetime.now()
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
 
     def list_machines(self, locked=False):
@@ -456,10 +462,13 @@ class Database(object):
         @return: list of virtual machines
         """
         session = self.Session()
-        if locked:
-            machines = session.query(Machine).filter(Machine.locked == True)
-        else:
-            machines = session.query(Machine)
+        try:
+            if locked:
+                machines = session.query(Machine).filter(Machine.locked == True)
+            else:
+                machines = session.query(Machine)
+        except SQLAlchemyError:
+            return None
         return machines
 
     def lock_machine(self, name=None, platform=None):
@@ -469,22 +478,25 @@ class Database(object):
         @return: locked machine
         """
         session = self.Session()
-        if name and platform:
-            # Wrong usage.
-            return None
-        elif name:
-            machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
-        elif platform:
-            machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
-        else:
-            machine = session.query(Machine).filter(Machine.locked == False).first()
+        try:
+            if name and platform:
+                # Wrong usage.
+                return None
+            elif name:
+                machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
+            elif platform:
+                machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
+            else:
+                machine = session.query(Machine).filter(Machine.locked == False).first()
+        except SQLAlchemyError:
+                return None
 
         if machine:
             machine.locked = True
             machine.locked_changed_on = datetime.now()
             try:
                 session.commit()
-            except:
+            except SQLAlchemyError:
                 session.rollback()
                 return None
         return machine
@@ -495,13 +507,17 @@ class Database(object):
         @return: unlocked machine
         """
         session = self.Session()
-        machine = session.query(Machine).filter(Machine.label == label).first()
+        try:
+            machine = session.query(Machine).filter(Machine.label == label).first()
+        except SQLAlchemyError:
+            return None
+
         if machine:
             machine.locked = False
             machine.locked_changed_on = datetime.now()
             try:
                 session.commit()
-            except:
+            except SQLAlchemyError:
                 session.rollback()
                 return None
         return machine
@@ -511,7 +527,10 @@ class Database(object):
         @return: free virtual machines count
         """
         session = self.Session()
-        machines_count = session.query(Machine).filter(Machine.locked == False).count()
+        try:
+            machines_count = session.query(Machine).filter(Machine.locked == False).count()
+        except SQLAlchemyError:
+            return 0
         return machines_count
 
     def set_machine_status(self, label, status):
@@ -520,13 +539,17 @@ class Database(object):
         @param status: new virtual machine status
         """
         session = self.Session()
-        machine = session.query(Machine).filter(Machine.label == label).first()
+        try:
+            machine = session.query(Machine).filter(Machine.label == label).first()
+        except SQLAlchemyError:
+               return
+
         if machine:
             machine.status = status
             machine.status_changed_on = datetime.now()
             try:
                 session.commit()
-            except:
+            except SQLAlchemyError:
                 session.rollback()
 
     def add_error(self, message, task_id):
@@ -535,11 +558,11 @@ class Database(object):
         @param task_id: ID of the related task
         """
         session = self.Session()
+        error = Error(message=message, task_id=task_id)
+        session.add(error)
         try:
-            error = Error(message=message, task_id=task_id)
-            session.add(error)
             session.commit()
-        except IntegrityError:
+        except SQLAlchemyError:
             session.rollback()
 
     # The following functions are mostly used by external utils.
@@ -570,20 +593,25 @@ class Database(object):
         session = self.Session()
 
         if isinstance(obj, File):
+            sample = Sample(md5=obj.get_md5(),
+                            crc32=obj.get_crc32(),
+                            sha1=obj.get_sha1(),
+                            sha256=obj.get_sha256(),
+                            sha512=obj.get_sha512(),
+                            file_size=obj.get_size(),
+                            file_type=obj.get_type(),
+                            ssdeep=obj.get_ssdeep())
+            session.add(sample)
             try:
-                sample = Sample(md5=obj.get_md5(),
-                                crc32=obj.get_crc32(),
-                                sha1=obj.get_sha1(),
-                                sha256=obj.get_sha256(),
-                                sha512=obj.get_sha512(),
-                                file_size=obj.get_size(),
-                                file_type=obj.get_type(),
-                                ssdeep=obj.get_ssdeep())
-                session.add(sample)
                 session.commit()
             except IntegrityError:
                 session.rollback()
-                sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
+                try:
+                    sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
+                except SQLAlchemyError:
+                    return None
+            except SQLAlchemyError:
+                return None
 
             task = Task(obj.file_path)
             task.sample_id = sample.id
@@ -604,7 +632,7 @@ class Database(object):
 
         try:
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return None
 
@@ -687,7 +715,10 @@ class Database(object):
         @return: list of tasks.
         """
         session = self.Session()
-        tasks = session.query(Task).order_by("added_on desc").limit(limit)
+        try:
+            tasks = session.query(Task).order_by("added_on desc").limit(limit)
+        except SQLAlchemyError:
+            return None
         return tasks
 
     def view_task(self, task_id):
@@ -696,7 +727,10 @@ class Database(object):
         @return: details on the task.
         """
         session = self.Session()
-        task = session.query(Task).get(task_id)
+        try:
+            task = session.query(Task).get(task_id)
+        except SQLAlchemyError:
+            return None
         return task
 
     def view_sample(self, sample_id):
@@ -705,7 +739,10 @@ class Database(object):
         @return: details on the sample.
         """
         session = self.Session()
-        sample = session.query(Sample).get(sample_id)
+        try:
+            sample = session.query(Sample).get(sample_id)
+        except SQLAlchemyError:
+            return None
         return sample
 
     def find_sample(self, md5=None, sha256=None):
@@ -714,12 +751,13 @@ class Database(object):
         @return: matches list
         """
         session = self.Session()
-
-        if md5:
-            sample = session.query(Sample).filter(Sample.md5 == md5).first()
-        elif sha256:
-            sample = sesison.query(Sample).fitler(Sample.sha256 == sha256).first()
-
+        try:
+            if md5:
+                sample = session.query(Sample).filter(Sample.md5 == md5).first()
+            elif sha256:
+                sample = sesison.query(Sample).fitler(Sample.sha256 == sha256).first()
+        except SQLAlchemyError:
+            return None
         return sample
 
     def view_machine(self, name):
@@ -728,7 +766,10 @@ class Database(object):
         @return: virtual machine's details
         """
         session = self.Session()
-        machine = session.query(Machine).filter(Machine.name == name).first()
+        try:
+            machine = session.query(Machine).filter(Machine.name == name).first()
+        except SQLAlchemyError:
+            return None
         return machine
 
     def view_errors(self, task_id):
@@ -737,5 +778,8 @@ class Database(object):
         @return: list of errors.
         """
         session = self.Session()
-        errors = session.query(Error).filter(Error.task_id == task_id)
+        try:
+            errors = session.query(Error).filter(Error.task_id == task_id)
+        except SQLAlchemyError:
+            return None
         return errors

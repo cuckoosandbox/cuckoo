@@ -104,7 +104,7 @@ class TimeoutServer(xmlrpclib.ServerProxy):
         t = self._ServerProxy__transport
         t.timeout = timeout
         # if we still have a socket we need to update that as well
-        if t._connection[1] and t._connection[1].sock:
+        if hasattr(t, '_connection') and t._connection[1] and t._connection[1].sock:
             t._connection[1].sock.settimeout(timeout)
 
 class TimeoutTransport(xmlrpclib.Transport):

@@ -24,7 +24,7 @@ class Debug(Processing):
                 debug["log"] = codecs.open(self.log_path, "rb", "utf-8").read()
             except ValueError as e:
                 raise CuckooProcessingError("Error decoding %s: %s" % (self.log_path, e))
-            except (IOError, OSError):
+            except (IOError, OSError) as e:
                 raise CuckooProcessingError("Error opening %s: %s" % (self.log_path, e))
 
         for error in Database().view_errors(int(self.cfg.analysis.id)):

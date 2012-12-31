@@ -9,46 +9,58 @@ Installing Python libraries
 ===========================
 
 Cuckoo host components are completely written in Python, therefore make sure to
-have an appropriate version installed. For current release Python at least 2.7
-is preferred.
+have an appropriate version installed. For current release **Python 2.7** is preferred.
 
 Install Python on Ubuntu::
 
     $ sudo apt-get install python
 
-In order to properly execute, Cuckoo really just needs the default installation
-of Python.
+In order to properly function, Cuckoo requires SQLAlchemy to be installed.
 
-However several additional features and modules require some Python libraries
-you will need to install in order to make them run successfully.
-We suggest you to install all of them so that you can take advantage of the
-project at its full potential.
+Install with ``apt-get``::
 
-    * `Magic`_ (Highly Recommended): for identifying files' formats (otherwise use "file" command line utility)
+    $ sudo apt-get install python-sqlalchemy
+
+Install with ``pip``::
+
+    $ sudo pip install sqlalchemy
+
+There are other optional dependencies that are mostly used by modules and utilities.
+The following libraries are not strictly required, but their installation is recommended:
+
     * `Dpkt`_ (Highly Recommended): for extracting relevant information from PCAP files.
-    * `Mako`_ (Highly Recommended): for rendering the HTML reports and the web interface.
+    * `Jinja2`_ (Highly Recommended): for rendering the HTML reports and the web interface.
+    * `Magic`_ (Optional): for identifying files' formats (otherwise use "file" command line utility)
     * `Pydeep`_ (Optional): for calculating ssdeep fuzzy hash of files.
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
-    * `Yara`_ and Yara Python (Optional): for matching Yara signatures.
-    * `Libvirt`_ (Optional): for using the KVM module.
+    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use the svn version).
+    * `Libvirt`_ (Optional): for using the KVM machine manager.
+    * `Bottlepy`_ (Optional): for using the ``web.py`` and ``api.py`` utilities.
+    * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
 
-Some of them are packaged in GNU/Linux Ubuntu and you can install them with the following command::
+Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
 
-    $ sudo apt-get install python-magic python-dpkt python-mako python-pymongo
+    $ sudo apt-get install python-dpkt python-jinja2 python-magic python-pymongo python-libvirt python-bottle python-pefile
+
+Except for *python-magic* and *python-libvirt*, the others can be installed through ``pip`` too::
+
+    $ sudo pip install dpkt jinja2 pymongo bottle pefile
+
+*Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 
 If want to use KVM it's packaged too and you can install it with the following command::
 
     $ sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
 
-For the rest refer to their websites.
-
 .. _Magic: http://www.darwinsys.com/file/
 .. _Dpkt: http://code.google.com/p/dpkt/
-.. _Mako: http://www.makotemplates.org
+.. _Jinja2: http://jinja.pocoo.org/docs/
 .. _Pydeep: https://github.com/kbandla/pydeep
 .. _Pymongo: http://pypi.python.org/pypi/pymongo/
 .. _Yara: http://code.google.com/p/yara-project/
 .. _Libvirt: http://www.libvirt.org
+.. _Bottlepy: http://www.bottlepy.org
+.. _Pefile: http://code.google.com/p/pefile/
 
 Virtualization Software
 =======================

@@ -56,30 +56,6 @@ ip = 192.168.122.27
     def test_not_implemented_list(self):
         self.m._list()
 
-    def test_initialize_machines_type(self):
-        assert isinstance(self.m.machines, list)
-
-    def test_initialize_machines_items(self):
-        assert_equals(1, len(self.m.machines))
-
-    def test_initialize_machines_equals(self):
-        right = {'ip': '192.168.122.27',
-                 'platform': 'windows',
-                 'locked': False,
-                 'id':'cxp',
-                 'label': 'cxp-k'}
-        match = True
-        for keys in self.m.machines[0]:
-            if self.m.machines[0][keys] != right[keys]:
-                match = False
-        assert match
-
-    def test_initialize_missing_machine(self):
-        self.m = abstracts.MachineManager()
-        self._load_conf(self.CONF_EXAMPLE_MISSING_VM)
-        self.m._initialize("kvm")
-        assert_equals(1, len(self.m.machines))
-
     def test_availables(self):
         assert isinstance(self.m.availables(), int)
         assert_equals(1, self.m.availables())
@@ -95,14 +71,6 @@ ip = 192.168.122.27
         assert_equals(0, self.m.availables())
         self.m.release(machine.label)
         assert_equals(1, self.m.availables())
-
-    def test_running(self):
-        assert_equals(0, len(self.m.running()))
-        machine = self.m.acquire()
-        assert_equals(1, len(self.m.running()))
-        assert_equals(machine, self.m.running()[0])
-        self.m.release(machine.label)
-        assert_equals(0, len(self.m.running()))
 
     def tearDown(self):
         os.remove(self.file)
