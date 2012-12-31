@@ -404,6 +404,10 @@ class Analyzer:
         """
         self.prepare()
 
+        log.info("Starting analyzer from: %s" % os.getcwd())
+        log.info("Storing results at: %s" % PATHS["root"])
+        log.info("Pipe server name: %s" % PIPE)
+
         # If no analysis package was specified at submission, we try to select
         # one automatically.
         if not self.config.package:
