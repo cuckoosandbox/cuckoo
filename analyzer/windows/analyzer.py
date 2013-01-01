@@ -416,6 +416,7 @@ class Analyzer:
 
     def stop(self):
         """Stop analysis process."""
+        log.info("Analysis timeout hit, terminating analysis")
         self.do_run = False
 
     def run(self):
@@ -510,11 +511,6 @@ class Analyzer:
             finally:
                 aux_enabled.append(aux)
 
-        # Set the analysis timeout timer. When the timeout gets hit, we force
-        # the termination of the analysis.
-        timer = Timer(self.config.timeout, self.stop)
-        timer.start()
-
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
         try:
@@ -548,14 +544,16 @@ class Analyzer:
             log.info("Enabled timeout enforce, running for the full timeout")
             pid_check = False
 
-        self.do_run = True
+        # Set the analysis timeout timer. When the timeout gets hit, we force
+        # the termination of the analysis.
+        timer = Timer(int(self.config.timeout), self.stop)
+        timer.start()
 
         while self.do_run:
             # If the process lock is locked, it means that something is
             # operating on the list of monitored processes. Therefore we cannot
             # proceed with the checks until the lock is released.
             if PROCESS_LOCK.locked():
-                log.debug("Process lock locked")
                 KERNEL32.Sleep(1000)
                 continue
 
@@ -576,8 +574,6 @@ class Analyzer:
                         # Therefore we cancel the timer.
                         timer.cancel()
                         break
-                    else:
-                        log.debug("Still active processes: %s" % PROCESS_LIST)
 
                     # Update the list of monitored processes available to the
                     # analysis package. It could be used for internal operations
