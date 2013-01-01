@@ -222,6 +222,12 @@ class PipeHandler(Thread):
                                 proc.inject(apc=True)
                             else:
                                 proc.inject()
+
+                            # We wait until cuckoomon reports back.
+                            proc.wait()
+                            
+                            log.info("Successfully injected process with pid %d"
+                                     % proc.pid)
                     else:
                         log.warning("Received request to inject myself, skip")
 
@@ -243,12 +249,6 @@ class PipeHandler(Thread):
                 file_path = command[9:].decode("utf-8")
                 # Dump the file straight away.
                 del_file(file_path)
-
-        # We wait until cuckoomon reports back, so we know for sure that
-        # cuckoomon has finished initializing etc
-        proc.wait()
-        
-        log.info("Successfully injected process with pid %d" % proc.pid)
 
         KERNEL32.WriteFile(self.h_pipe,
                            create_string_buffer(response),
@@ -560,7 +560,6 @@ class Analyzer:
                     # analysis package. It could be used for internal operations
                     # within the module.
                     pack.set_pids(PROCESS_LIST)
-
                 try:
                     # The analysis packages are provided with a function that
                     # is executed at every loop's iteration. If such function
