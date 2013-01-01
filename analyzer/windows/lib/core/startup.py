@@ -5,7 +5,7 @@
 import os
 import logging
 
-from lib.common.paths import PATHS
+from lib.common.constants import PATHS
 
 log = logging.getLogger()
 

@@ -10,7 +10,7 @@ from ctypes import *
 from shutil import copy
 
 from lib.common.defines import *
-from lib.common.paths import PATHS
+from lib.common.constants import PIPE, PATHS
 from lib.common.errors import get_error_string
 from lib.common.rand import random_string
 
@@ -31,6 +31,7 @@ def randomize_dll(dll_path):
 
 class Process:
     """Windows process."""
+    first_process = True
 
     def __init__(self, pid=0, h_process=0, thread_id=0, h_thread=0):
         """@param pid: PID.
@@ -297,11 +298,19 @@ class Process:
             else:
                 KERNEL32.CloseHandle(thread_handle)
 
+        config_path = os.path.join(os.getenv("TEMP"), "%s.ini" % self.pid)
+        with open(config_path, "w") as config:
+            config.write("pipe=%s\n" % PIPE)
+            config.write("results=%s\n" % PATHS["root"])
+            config.write("analyzer=%s\n" % os.getcwd())
+            config.write("first-process=%d\n" % Process.first_process)
+            Process.first_process = False
+
         return True
 
     def wait(self):
         if self.event_handle:
-            KERNEL32.WaitForSingleObject(self.event_handle, INFINITE)
+            KERNEL32.WaitForSingleObject(self.event_handle, 10000)
             KERNEL32.CloseHandle(self.event_handle)
             self.event_handle = None
         return True
