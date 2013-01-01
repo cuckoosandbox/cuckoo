@@ -179,8 +179,6 @@ class PipeHandler(Thread):
         if data:
             command = data.strip()
 
-            wait = False
-
             # Parse the prefix for the received notification.
             # In case of GETPIDS we're gonna return the current process ID
             # and the process ID of our parent process (agent.py).
@@ -233,11 +231,14 @@ class PipeHandler(Thread):
                             # apc to inject
                             if process_id and thread_id:
                                 proc.inject(apc=True)
+                                wait = False
                             else:
                                 proc.inject()
+                                wait = True
 
                             # We wait until cuckoomon reports back.
-                            proc.wait()
+                            if wait:
+                                proc.wait()
                             
                             log.info("Successfully injected process with pid %d"
                                      % proc.pid)
