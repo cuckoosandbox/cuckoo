@@ -260,7 +260,8 @@ class PipeHandler(Thread):
                 # syntax = FILE_MOVE:old_file_path::new_file_path
                 if "::" in commands[10:]:
                     old_fname, new_fname = command[10:].split("::", 1)
-                    move_file(old_fname, new_fname)
+                    move_file(old_fname.decode("utf-8"),
+                              new_fname.decode("utf-8"))
 
         # We wait until cuckoomon reports back, so we know for sure that
         # cuckoomon has finished initializing etc
