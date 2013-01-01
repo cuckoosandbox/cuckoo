@@ -478,11 +478,6 @@ class Analyzer:
         # Initialize the analysis package.
         pack = package_class(self.get_options())
 
-        # Set the analysis timeout timer. When the timeout gets hit, we force
-        # the termination of the analysis.
-        timer = Timer(self.config.timeout, self.stop)
-        timer.start()
-
         # Initialize Auxiliary modules
         Auxiliary()
         prefix = auxiliaries.__name__ + "."
@@ -514,6 +509,11 @@ class Analyzer:
                 continue
             finally:
                 aux_enabled.append(aux)
+
+        # Set the analysis timeout timer. When the timeout gets hit, we force
+        # the termination of the analysis.
+        timer = Timer(self.config.timeout, self.stop)
+        timer.start()
 
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
@@ -555,6 +555,7 @@ class Analyzer:
             # operating on the list of monitored processes. Therefore we cannot
             # proceed with the checks until the lock is released.
             if PROCESS_LOCK.locked():
+                log.debug("Process lock locked")
                 KERNEL32.Sleep(1000)
                 continue
 
@@ -575,11 +576,14 @@ class Analyzer:
                         # Therefore we cancel the timer.
                         timer.cancel()
                         break
+                    else:
+                        log.debug("Still active processes: %s" % PROCESS_LIST)
 
                     # Update the list of monitored processes available to the
                     # analysis package. It could be used for internal operations
                     # within the module.
                     pack.set_pids(PROCESS_LIST)
+
                 try:
                     # The analysis packages are provided with a function that
                     # is executed at every loop's iteration. If such function

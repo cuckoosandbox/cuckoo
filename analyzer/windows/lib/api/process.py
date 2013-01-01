@@ -310,7 +310,7 @@ class Process:
 
     def wait(self):
         if self.event_handle:
-            KERNEL32.WaitForSingleObject(self.event_handle, INFINITE)
+            KERNEL32.WaitForSingleObject(self.event_handle, 10000)
             KERNEL32.CloseHandle(self.event_handle)
             self.event_handle = None
         return True
