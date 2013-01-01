@@ -118,6 +118,19 @@ def del_file(fname):
     if fname.lower() in fnames:
         FILES_LIST.pop(fnames.index(fname.lower()))
 
+def move_file(old_fname, new_fname):
+    # Filenames are case-insenstive in windows.
+    fnames = [x.lower() for x in FILES_LIST]
+
+    # Check whether the old filename is in the FILES_LIST
+    if old_fname.lower() in fnames:
+
+        # Get the index of the old filename
+        idx = fnames.index(old_fname.lower())
+
+        # Replace the old filename by the new filename
+        FILES_LIST[idx] = new_fname
+
 def dump_files():
     """Dump all the dropped files."""
     for file_path in FILES_LIST:
@@ -243,6 +256,11 @@ class PipeHandler(Thread):
                 file_path = command[9:].decode("utf-8")
                 # Dump the file straight away.
                 del_file(file_path)
+            elif command.startswith("FILE_MOVE:"):
+                # syntax = FILE_MOVE:old_file_path::new_file_path
+                if "::" in commands[10:]:
+                    old_fname, new_fname = command[10:].split("::", 1)
+                    move_file(old_fname, new_fname)
 
         # We wait until cuckoomon reports back, so we know for sure that
         # cuckoomon has finished initializing etc
