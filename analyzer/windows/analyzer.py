@@ -13,7 +13,7 @@ import logging
 import hashlib
 import xmlrpclib
 from ctypes import *
-from threading import Lock, Thread, Timer
+from threading import Lock, Thread
 
 from lib.api.process import Process
 from lib.common.exceptions import CuckooError, CuckooPackageError
@@ -336,7 +336,6 @@ class Analyzer:
     """
 
     def __init__(self):
-        self.do_run = True
         self.pipe = None
         self.config = None
         self.target = None
@@ -413,11 +412,6 @@ class Analyzer:
         shutil.copy("analysis.conf", PATHS["root"])
         # Hell yeah.
         log.info("Analysis completed")
-
-    def stop(self):
-        """Stop analysis process."""
-        log.info("Analysis timeout hit, terminating analysis")
-        self.do_run = False
 
     def run(self):
         """Run analysis.
@@ -544,12 +538,14 @@ class Analyzer:
             log.info("Enabled timeout enforce, running for the full timeout")
             pid_check = False
 
-        # Set the analysis timeout timer. When the timeout gets hit, we force
-        # the termination of the analysis.
-        timer = Timer(int(self.config.timeout), self.stop)
-        timer.start()
+        time_counter = 0
 
-        while self.do_run:
+        while True:
+            time_counter += 1
+            if time_counter == int(self.config.timeout):
+                log.info("Analysis timeout hit, terminating analysis")
+                break
+
             # If the process lock is locked, it means that something is
             # operating on the list of monitored processes. Therefore we cannot
             # proceed with the checks until the lock is released.
@@ -571,8 +567,6 @@ class Analyzer:
                     if len(PROCESS_LIST) == 0:
                         log.info("Process list is empty, terminating "
                                  "analysis...")
-                        # Therefore we cancel the timer.
-                        timer.cancel()
                         break
 
                     # Update the list of monitored processes available to the
@@ -588,8 +582,6 @@ class Analyzer:
                     if not pack.check():
                         log.info("The analysis package requested the "
                                  "termination of the analysis...")
-                        # We cancel the timer.
-                        timer.cancel()
                         break
                 # If the check() function of the package raised some exception
                 # we don't care, we can still proceed with the analysis but we
