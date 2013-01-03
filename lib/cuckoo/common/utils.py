@@ -85,7 +85,16 @@ def store_temp_file(filedata, filename):
     tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=targetpath)
     tmp_file_path = os.path.join(tmp_dir, filename)
     tmp_file = open(tmp_file_path, "wb")
-    tmp_file.write(filedata)
+    
+    # if filedata is file object, do chunked copy
+    if hasattr(filedata, 'read'):
+        chunk = filedata.read(1024)
+        while chunk:
+            tmp_file.write(chunk)
+            chunk = filedata.read(1024)
+    else:
+        tmp_file.write(filedata)
+
     tmp_file.close()
 
     return tmp_file_path
