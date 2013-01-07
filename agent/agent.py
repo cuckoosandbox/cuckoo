@@ -4,6 +4,7 @@
 
 import os
 import sys
+import time
 import socket
 import string
 import random
@@ -41,6 +42,7 @@ class Agent:
         global ANALYZER_FOLDER
 
         if not ANALYZER_FOLDER:
+            random.seed(time.time())
             container = "".join(random.choice(string.ascii_lowercase) for x in range(random.randint(5, 10)))
 
             if self.system == "windows":
@@ -105,9 +107,6 @@ class Agent:
         @return: operation status.
         """
         global ERROR_MESSAGE
-
-        if not self._initialize():
-            return False
 
         if type(options) != dict:
             return False
