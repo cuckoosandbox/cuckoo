@@ -4,9 +4,7 @@
 
 import os
 import time
-import string
 import socket
-import random
 import logging
 import xmlrpclib
 from threading import Timer, Event
@@ -114,14 +112,10 @@ class GuestManager:
         log.debug("Uploading analyzer to guest (id=%s, ip=%s)"
                   % (self.id, self.ip))
 
-        # Generate a random folder name and pass it over. And may he be damned,
-        # whoever implemented Python's randomization.
-        folder = "".join(random.choice(string.ascii_lowercase) for x in range(random.randint(5, 10)))
-
         # Send the zip containing the analyzer to the agent running inside
         # the guest.
         try:
-            self.server.add_analyzer(data, folder)
+            self.server.add_analyzer(data)
         except socket.timeout:
             raise CuckooGuestError("%s: guest communication timeout: unable "
                                    "to upload agent, check networking or try "

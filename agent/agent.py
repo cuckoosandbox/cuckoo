@@ -36,11 +36,13 @@ class Agent:
         self.analyzer_path = ""
         self.analyzer_pid = 0
 
-    def _initialize(self, container):
+    def _initialize(self):
         global ERROR_MESSAGE
         global ANALYZER_FOLDER
 
         if not ANALYZER_FOLDER:
+            container = "".join(random.choice(string.ascii_lowercase) for x in range(random.randint(5, 10)))
+
             if self.system == "windows":
                 ANALYZER_FOLDER = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, container)
             elif self.system == "linux" or self.system == "darwin":
@@ -104,6 +106,9 @@ class Agent:
         """
         global ERROR_MESSAGE
 
+        if not self._initialize():
+            return False
+
         if type(options) != dict:
             return False
 
@@ -131,14 +136,14 @@ class Agent:
 
         return True
 
-    def add_analyzer(self, data, folder):
+    def add_analyzer(self, data):
         """Add analyzer.
         @param data: analyzer data.
         @return: operation status.
         """
         data = data.data
 
-        if not self._initialize(container=folder):
+        if not self._initialize():
             return False
 
         try:
