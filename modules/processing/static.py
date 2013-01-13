@@ -245,9 +245,8 @@ class Static(Processing):
         static = {}
 
         if HAVE_PEFILE:
-            if self.cfg.analysis.category == "file":
-                if self.cfg.analysis.file_type:
-                    if "PE32" in self.cfg.analysis.file_type:
-                        static = PortableExecutable(self.file_path).run()
+            if self.task["category"] == "file":
+                if "PE32" in File(self.task["target"]).get_type():
+                    static = PortableExecutable(self.file_path).run()
 
         return static

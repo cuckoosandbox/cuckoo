@@ -300,7 +300,7 @@ class AnalysisManager(Thread):
                 log.warning("Error accessing analysis logs (task=%d): %s"
                             % (self.task.id, e))
 
-            results = Processor(self.storage).run()
+            results = Processor(self.task.id).run()
             results["success"] = succeeded
         else:
             results = {
@@ -312,7 +312,7 @@ class AnalysisManager(Thread):
             for error in Database().view_errors(int(self.task.id)):
                 results["errors"].append(error.message)
 
-        Reporter(self.storage).run(results)
+        Reporter(self.task.id).run(results)
 
         log.info("Task #%d: reports generation completed (path=%s)"
                  % (self.task.id, self.storage))

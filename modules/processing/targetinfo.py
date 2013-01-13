@@ -14,12 +14,11 @@ class TargetInfo(Processing):
         """
         self.key = "target"
 
-        target_info = {"category" : self.cfg.analysis.category}
+        target_info = {"category" : self.task["category"]}
 
-        if self.cfg.analysis.category == "file":
+        if self.task["category"] == "file":
             target_info["file"] = File(self.file_path).get_all()
-            target_info["file"]["name"] = self.cfg.analysis.file_name
-        elif self.cfg.analysis.category == "url":
-            target_info["url"] = self.cfg.analysis.target
+        elif self.task["category"] == "url":
+            target_info["url"] = self.task.target
 
         return target_info

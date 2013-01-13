@@ -436,8 +436,15 @@ class Processing(object):
     enabled = True
 
     def __init__(self):
+        self.task = None
         self.analysis_path = ""
         self.logs_path = ""
+
+    def set_task(self, task):
+        """Set task dictionary.
+        @param task: task dictionary.
+        """
+        self.task = task
 
     def set_path(self, analysis_path):
         """Set paths.
@@ -672,6 +679,7 @@ class Report(object):
     def __init__(self):
         self.analysis_path = ""
         self.reports_path = ""
+        self.task = None
         self.options = None
 
     def set_path(self, analysis_path):
@@ -692,6 +700,12 @@ class Report(object):
         @param options: report options dict.
         """
         self.options = options
+
+    def set_task(self, task):
+        """Add task information.
+        @param task: task dictionary.
+        """
+        self.task = task
 
     def run(self):
         """Start report processing.

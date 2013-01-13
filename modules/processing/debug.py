@@ -27,7 +27,7 @@ class Debug(Processing):
             except (IOError, OSError) as e:
                 raise CuckooProcessingError("Error opening %s: %s" % (self.log_path, e))
 
-        for error in Database().view_errors(int(self.cfg.analysis.id)):
+        for error in Database().view_errors(int(self.task["id"])):
             debug["errors"].append(error.message)
 
         return debug

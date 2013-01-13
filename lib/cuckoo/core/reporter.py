@@ -8,6 +8,7 @@ import logging
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.objects import LocalDict
 from lib.cuckoo.common.exceptions import CuckooDependencyError
@@ -25,12 +26,14 @@ class Reporter:
     Engine and pass it over to the reporting modules before executing them.
     """
 
-    def __init__(self, analysis_path, custom=""):
+    def __init__(self, task_id):
         """@param analysis_path: analysis folder path.
-        @param custom: custom options.
         """
-        self.analysis_path = analysis_path
-        self.custom = custom
+        self.task = Database().view_task(task_id).to_dict()
+        self.analysis_path = os.path.join(CUCKOO_ROOT,
+                                          "storage",
+                                          "analyses",
+                                          str(task_id))
         self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT,
                                            "conf",
                                            "reporting.conf"))
@@ -61,6 +64,7 @@ class Reporter:
         # Give it the content of the relevant section from the reporting.conf
         # configuration file.
         current.set_options(options)
+        current.set_task(self.task)
 
         try:
             # Run report, for each report a brand new copy of results is

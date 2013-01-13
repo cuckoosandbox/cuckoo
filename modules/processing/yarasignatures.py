@@ -26,7 +26,7 @@ class YaraSignatures(Processing):
         self.key = "yara"
         matches = []
 
-        if self.cfg.analysis.category == "file":
+        if self.task["category"] == "file":
             if HAVE_YARA:
                 try:
                     rules = yara.compile(filepath=os.path.join(CUCKOO_ROOT,
