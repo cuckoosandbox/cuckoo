@@ -18,8 +18,8 @@ class TargetInfo(Processing):
 
         if self.task["category"] == "file":
             target_info["file"] = File(self.file_path).get_all()
-            target_info["file"]["name"] = File(self.task.target).get_name()
+            target_info["file"]["name"] = File(self.task["target"]).get_name()
         elif self.task["category"] == "url":
-            target_info["url"] = self.task.target
+            target_info["url"] = self.task["target"]
 
         return target_info
