@@ -63,7 +63,7 @@ class File:
         @return: file name.
         """
         if self.strip_name:
-            file_name = os.path.basename(self.file_path.rstrip(".bin"))
+            file_name = os.path.basename(self.file_path)[:-4]
         else:
             file_name = os.path.basename(self.file_path)
 
