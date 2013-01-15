@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,7 +7,7 @@ import time
 import logging
 from threading import Thread
 
-from lib.common.paths import PATHS
+from lib.common.constants import PATHS
 from lib.common.abstracts import Auxiliary
 from lib.api.screenshot import Screenshot
 
@@ -37,11 +37,15 @@ class Screenshots(Auxiliary, Thread):
         img_last = None
 
         while self.do_run:
-            img_current = Screenshot().take()
+            time.sleep(SHOT_DELAY)
+
+            try:
+                img_current = Screenshot().take()
+            except IOError:
+                continue
 
             if img_last:
                 if Screenshot().equal(img_last, img_current):
-                    time.sleep(SHOT_DELAY)
                     continue
 
             img_counter += 1
@@ -49,6 +53,5 @@ class Screenshots(Auxiliary, Thread):
             img_current.save(save_at)
 
             img_last = img_current
-            time.sleep(SHOT_DELAY)
 
         return True

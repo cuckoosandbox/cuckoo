@@ -15,6 +15,7 @@ It can retrieve the following type of results:
     * Memory dumps of the malware processes.
     * Network traffic trace in PCAP format.
     * Screenshots of Windows desktop taken during the execution of the malware.
+    * Full memory dumps of the machines.
 
 Some History
 ============
@@ -47,6 +48,14 @@ can submit files to be analysed and get results back.
 
 In March 2012 Cuckoo Sandbox wins the first round of the `Magnificent7`_ program
 organized by `Rapid7`_.
+
+During the Summer of 2012 *Jurriaan "skier" Bremer* joined the development team,
+refactoring the Windows analysis component sensibly improving the analysis'
+quality.
+
+On 24th July 2012, Cuckoo Sandbox 0.4 is released.
+
+On 20th December 2012, Cuckoo Sandbox 0.5 "To The End Of The World" is released.
 
 .. _`Google Summer of Code`: http://www.google-melange.com
 .. _`The Honeynet Project`: http://www.honeynet.org

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -13,7 +13,7 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.objects import File, URL
-from lib.cuckoo.common.utils import create_folder
+from lib.cuckoo.common.utils import create_folder, Singleton
 
 try:
     from sqlalchemy import create_engine, Column
@@ -29,35 +29,22 @@ except ImportError:
     raise CuckooDependencyError("SQLAlchemy library not found, "
                                 "verify your setup")
 
-class Task(Base):
-    """Analysis task queue."""
-    __tablename__ = "tasks"
+class Machine(Base):
+    """Configured virtual machines to be used as guests."""
+    __tablename__ = "machines"
 
     id = Column(Integer(), primary_key=True)
-    target = Column(Text(), nullable=False)
-    category = Column(String(255), nullable=False)
-    timeout = Column(Integer(), server_default="0", nullable=False)
-    priority = Column(Integer(), server_default="1", nullable=False)
-    custom = Column(String(255), nullable=True)
-    machine = Column(String(255), nullable=True)
-    package = Column(String(255), nullable=True)
-    options = Column(String(255), nullable=True)
-    platform = Column(String(255), nullable=True)
-    memory = Column(Boolean, nullable=False, default=False)
-    added_on = Column(DateTime(timezone=False),
-                      default=datetime.now(),
-                      nullable=False)
-    completed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(Enum("pending",
-                         "processing",
-                         "failure",
-                         "success",
-                         name="status_type"),
-                         server_default="pending",
-                         nullable=False)
-    sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
-    sample = relationship("Sample", backref="tasks")
-    guest = relationship("Guest", uselist=False, backref="tasks")
+    name = Column(String(255), nullable=False)
+    label = Column(String(255), nullable=False)
+    ip = Column(String(255), nullable=False)
+    platform = Column(String(255), nullable=False)
+    locked = Column(Boolean(), nullable=False, default=False)
+    locked_changed_on = Column(DateTime(timezone=False), nullable=True)
+    status = Column(String(255), nullable=True)
+    status_changed_on = Column(DateTime(timezone=False), nullable=True)
+
+    def __repr__(self):
+        return "<Machine('%s','%s')>" % (self.id, self.name)
 
     def to_dict(self):
         """Converts object to dict.
@@ -78,11 +65,15 @@ class Task(Base):
         """
         return json.dumps(self.to_dict())
 
-    def __init__(self, target=None):
-        self.target = target
-
-    def __repr__(self):
-        return "<Task('%s','%s')>" % (self.id, self.target)
+    def __init__(self,
+                 name,
+                 label,
+                 ip,
+                 platform):
+        self.name = name
+        self.label = label
+        self.ip = ip
+        self.platform = platform
 
 class Guest(Base):
     """Tracks guest run."""
@@ -188,22 +179,16 @@ class Sample(Base):
         if ssdeep:
             self.ssdeep = ssdeep
 
-class Machine(Base):
-    """Configured virtual machines to be used as guests."""
-    __tablename__ = "machines"
+class Error(Base):
+    """Analysis errors."""
+    __tablename__ = "errors"
 
     id = Column(Integer(), primary_key=True)
-    name = Column(String(255), nullable=False)
-    label = Column(String(255), nullable=False)
-    ip = Column(String(255), nullable=False)
-    platform = Column(String(255), nullable=False)
-    locked = Column(Boolean(), nullable=False, default=False)
-    locked_changed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(String(255), nullable=True)
-    status_changed_on = Column(DateTime(timezone=False), nullable=True)
-
-    def __repr__(self):
-        return "<Machine('%s','%s')>" % (self.id, self.name)
+    message = Column(String(255), nullable=False)
+    task_id = Column(Integer,
+                     ForeignKey('tasks.id'),
+                     nullable=False,
+                     unique=True)
 
     def to_dict(self):
         """Converts object to dict.
@@ -221,22 +206,77 @@ class Machine(Base):
         """
         return json.dumps(self.to_dict())
 
-    def __init__(self,
-                 name,
-                 label,
-                 ip,
-                 platform):
-        self.name = name
-        self.label = label
-        self.ip = ip
-        self.platform = platform
+    def __init__(self, message, task_id):
+        self.message = message
+        self.task_id = task_id
 
-class Database:
+    def __repr__(self):
+        return "<Error('%s','%s','%s')>" % (self.id, self.message, self.task_id)
+
+class Task(Base):
+    """Analysis task queue."""
+    __tablename__ = "tasks"
+
+    id = Column(Integer(), primary_key=True)
+    target = Column(Text(), nullable=False)
+    category = Column(String(255), nullable=False)
+    timeout = Column(Integer(), server_default="0", nullable=False)
+    priority = Column(Integer(), server_default="1", nullable=False)
+    custom = Column(String(255), nullable=True)
+    machine = Column(String(255), nullable=True)
+    package = Column(String(255), nullable=True)
+    options = Column(String(255), nullable=True)
+    platform = Column(String(255), nullable=True)
+    memory = Column(Boolean, nullable=False, default=False)
+    enforce_timeout = Column(Boolean, nullable=False, default=False)
+    added_on = Column(DateTime(timezone=False),
+                      default=datetime.now(),
+                      nullable=False)
+    completed_on = Column(DateTime(timezone=False), nullable=True)
+    status = Column(Enum("pending",
+                         "processing",
+                         "failure",
+                         "success",
+                         name="status_type"),
+                         server_default="pending",
+                         nullable=False)
+    sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
+    sample = relationship("Sample", backref="tasks")
+    guest = relationship("Guest", uselist=False, backref="tasks")
+    errors = relationship("Error", backref="tasks")
+
+    def to_dict(self):
+        """Converts object to dict.
+        @return: dict
+        """
+        d = {}
+        for column in self.__table__.columns:
+            value = getattr(self, column.name)
+            if isinstance(value, datetime):
+                d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                d[column.name] = value
+        return d
+
+    def to_json(self):
+        """Converts object to JSON.
+        @return: JSON data
+        """
+        return json.dumps(self.to_dict())
+
+    def __init__(self, target=None):
+        self.target = target
+
+    def __repr__(self):
+        return "<Task('%s','%s')>" % (self.id, self.target)
+
+class Database(object):
     """Analysis queue database.
 
     This class handles the creation of the database user for internal queue
     management. It also provides some functions for interacting with it.
     """
+    __metaclass__ = Singleton
 
     def __init__(self, dsn=None):
         """@param dsn: database connection string."""
@@ -244,8 +284,8 @@ class Database:
 
         if dsn:
             self.engine = create_engine(dsn, poolclass=NullPool)
-        elif cfg.cuckoo.database:
-            self.engine = create_engine(cfg.cuckoo.database, poolclass=NullPool)
+        elif cfg.database.connection:
+            self.engine = create_engine(cfg.database.connection, poolclass=NullPool)
         else:
             db_file = os.path.join(CUCKOO_ROOT, "db", "cuckoo.db")
             if not os.path.exists(db_file):
@@ -256,13 +296,13 @@ class Database:
                     except CuckooOperationalError as e:
                         raise CuckooDatabaseError("Unable to create database "
                                                   "directory: %s" % e)
-            self.engine = create_engine("sqlite:///%s" % db_file)
+            self.engine = create_engine("sqlite:///%s" % db_file, poolclass=NullPool)
 
         # Disable SQL logging. Turn it on for debugging.
         self.engine.echo = False
         # Connection timeout.
-        if cfg.cuckoo.database_timeout:
-            self.engine.pool_timeout = cfg.cuckoo.database_timeout
+        if cfg.database.timeout:
+            self.engine.pool_timeout = cfg.database.timeout
         else:
             self.engine.pool_timeout = 60
         # Create schema.
@@ -282,12 +322,11 @@ class Database:
     def clean_machines(self):
         """Clean old stored machines."""
         session = self.Session()
-        session.query(Machine).delete()
         try:
+            session.query(Machine).delete()
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
-
 
     def _set_status(self, task_id, status):
         """Set task status.
@@ -296,10 +335,10 @@ class Database:
         @return: operation status
         """
         session = self.Session()
-        session.query(Task).get(task_id).status = status
         try:
+            session.query(Task).get(task_id).status = status
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return False
 
@@ -317,14 +356,14 @@ class Database:
         @param platform: machine supported platform
         """
         session = self.Session()
+        machine = Machine(name=name,
+                          label=label,
+                          ip=ip,
+                          platform=platform)
+        session.add(machine)
         try:
-            machine = Machine(name=name,
-                              label=label,
-                              ip=ip,
-                              platform=platform)
-            session.add(machine)
             session.commit()
-        except IntegrityError:
+        except SQLAlchemyError:
             session.rollback()
 
     def fetch(self):
@@ -332,7 +371,10 @@ class Database:
         @return: task dict or None.
         """
         session = self.Session()
-        row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
+        try:
+            row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
+        except SQLAlchemyError:
+            return None
         return row
 
     def process(self, task_id):
@@ -364,7 +406,10 @@ class Database:
         @return: operation status.
         """
         session = self.Session()
-        task = session.query(Task).get(task_id)
+        try:
+            task = session.query(Task).get(task_id)
+        except SQLAlchemyError:
+            return False
 
         if success:
             task.status = "success"
@@ -375,7 +420,7 @@ class Database:
 
         try:
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return False
 
@@ -392,10 +437,10 @@ class Database:
         session = self.Session()
         guest = Guest(name, label, manager)
         guest.started_on = datetime.now()
-        session.query(Task).get(task_id).guest = guest
         try:
+            session.query(Task).get(task_id).guest = guest
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return None
 
@@ -406,10 +451,10 @@ class Database:
         @param guest_id: guest log entry id
         """
         session = self.Session()
-        session.query(Guest).get(guest_id).shutdown_on = datetime.now()
         try:
+            session.query(Guest).get(guest_id).shutdown_on = datetime.now()
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
 
     def list_machines(self, locked=False):
@@ -417,10 +462,13 @@ class Database:
         @return: list of virtual machines
         """
         session = self.Session()
-        if locked:
-            machines = session.query(Machine).filter(Machine.locked == True)
-        else:
-            machines = session.query(Machine)
+        try:
+            if locked:
+                machines = session.query(Machine).filter(Machine.locked == True)
+            else:
+                machines = session.query(Machine)
+        except SQLAlchemyError:
+            return None
         return machines
 
     def lock_machine(self, name=None, platform=None):
@@ -430,22 +478,25 @@ class Database:
         @return: locked machine
         """
         session = self.Session()
-        if name and platform:
-            # Wrong usage.
-            return None
-        elif name:
-            machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
-        elif platform:
-            machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
-        else:
-            machine = session.query(Machine).filter(Machine.locked == False).first()
+        try:
+            if name and platform:
+                # Wrong usage.
+                return None
+            elif name:
+                machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
+            elif platform:
+                machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
+            else:
+                machine = session.query(Machine).filter(Machine.locked == False).first()
+        except SQLAlchemyError:
+                return None
 
         if machine:
             machine.locked = True
             machine.locked_changed_on = datetime.now()
             try:
                 session.commit()
-            except:
+            except SQLAlchemyError:
                 session.rollback()
                 return None
         return machine
@@ -456,13 +507,17 @@ class Database:
         @return: unlocked machine
         """
         session = self.Session()
-        machine = session.query(Machine).filter(Machine.label == label).first()
+        try:
+            machine = session.query(Machine).filter(Machine.label == label).first()
+        except SQLAlchemyError:
+            return None
+
         if machine:
             machine.locked = False
             machine.locked_changed_on = datetime.now()
             try:
                 session.commit()
-            except:
+            except SQLAlchemyError:
                 session.rollback()
                 return None
         return machine
@@ -472,7 +527,10 @@ class Database:
         @return: free virtual machines count
         """
         session = self.Session()
-        machines_count = session.query(Machine).filter(Machine.locked == False).count()
+        try:
+            machines_count = session.query(Machine).filter(Machine.locked == False).count()
+        except SQLAlchemyError:
+            return 0
         return machines_count
 
     def set_machine_status(self, label, status):
@@ -481,27 +539,45 @@ class Database:
         @param status: new virtual machine status
         """
         session = self.Session()
-        machine = session.query(Machine).filter(Machine.label == label).first()
+        try:
+            machine = session.query(Machine).filter(Machine.label == label).first()
+        except SQLAlchemyError:
+               return
+
         if machine:
             machine.status = status
             machine.status_changed_on = datetime.now()
             try:
                 session.commit()
-            except:
+            except SQLAlchemyError:
                 session.rollback()
+
+    def add_error(self, message, task_id):
+        """Add an error related to a task.
+        @param message: error message
+        @param task_id: ID of the related task
+        """
+        session = self.Session()
+        error = Error(message=message, task_id=task_id)
+        session.add(error)
+        try:
+            session.commit()
+        except SQLAlchemyError:
+            session.rollback()
 
     # The following functions are mostly used by external utils.
 
     def add(self,
             obj,
             timeout=0,
-            package=None,
-            options=None,
+            package="",
+            options="",
             priority=1,
-            custom=None,
-            machine=None,
-            platform=None,
-            memory=False):
+            custom="",
+            machine="",
+            platform="",
+            memory=False,
+            enforce_timeout=False):
         """Add a task to database.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -509,26 +585,33 @@ class Database:
         @param priority: analysis priority.
         @param custom: custom options.
         @param machine: selected machine.
-        @param platform: platform
+        @param platform: platform.
+        @param memory: toggle full memory dump.
+        @param enforce_timeout: toggle full timeout execution.
         @return: cursor or None.
         """
         session = self.Session()
 
         if isinstance(obj, File):
+            sample = Sample(md5=obj.get_md5(),
+                            crc32=obj.get_crc32(),
+                            sha1=obj.get_sha1(),
+                            sha256=obj.get_sha256(),
+                            sha512=obj.get_sha512(),
+                            file_size=obj.get_size(),
+                            file_type=obj.get_type(),
+                            ssdeep=obj.get_ssdeep())
+            session.add(sample)
             try:
-                sample = Sample(md5=obj.get_md5(),
-                                crc32=obj.get_crc32(),
-                                sha1=obj.get_sha1(),
-                                sha256=obj.get_sha256(),
-                                sha512=obj.get_sha512(),
-                                file_size=obj.get_size(),
-                                file_type=obj.get_type(),
-                                ssdeep=obj.get_ssdeep())
-                session.add(sample)
                 session.commit()
             except IntegrityError:
                 session.rollback()
-                sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
+                try:
+                    sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
+                except SQLAlchemyError:
+                    return None
+            except SQLAlchemyError:
+                return None
 
             task = Task(obj.file_path)
             task.sample_id = sample.id
@@ -544,11 +627,12 @@ class Database:
         task.machine = machine
         task.platform = platform
         task.memory = memory
+        task.enforce_timeout = enforce_timeout
         session.add(task)
 
         try:
             session.commit()
-        except:
+        except SQLAlchemyError:
             session.rollback()
             return None
 
@@ -557,13 +641,14 @@ class Database:
     def add_path(self,
                  file_path,
                  timeout=0,
-                 package=None,
-                 options=None,
+                 package="",
+                 options="",
                  priority=1,
-                 custom=None,
-                 machine=None,
-                 platform=None,
-                 memory=False):
+                 custom="",
+                 machine="",
+                 platform="",
+                 memory=False,
+                 enforce_timeout=False):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -571,7 +656,9 @@ class Database:
         @param priority: analysis priority.
         @param custom: custom options.
         @param machine: selected machine.
-        @param platform: platform
+        @param platform: platform.
+        @param memory: toggle full memory dump.
+        @param enforce_timeout: toggle full timeout execution.
         @return: cursor or None.
         """
         if not file_path or not os.path.exists(file_path):
@@ -585,18 +672,20 @@ class Database:
                         custom,
                         machine,
                         platform,
-                        memory)
+                        memory,
+                        enforce_timeout)
 
     def add_url(self,
                 url,
                 timeout=0,
-                package=None,
-                options=None,
+                package="",
+                options="",
                 priority=1,
-                custom=None,
-                machine=None,
-                platform=None,
-                memory=False):
+                custom="",
+                machine="",
+                platform="",
+                memory=False,
+                enforce_timeout=False):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
@@ -604,7 +693,9 @@ class Database:
         @param priority: analysis priority.
         @param custom: custom options.
         @param machine: selected machine.
-        @param platform: platform
+        @param platform: platform.
+        @param memory: toggle full memory dump.
+        @param enforce_timeout: toggle full timeout execution.
         @return: cursor or None.
         """
         return self.add(URL(url),
@@ -615,7 +706,8 @@ class Database:
                         custom,
                         machine,
                         platform,
-                        memory)
+                        memory,
+                        enforce_timeout)
 
     def list_tasks(self, limit=None):
         """Retrieve list of task.
@@ -623,7 +715,10 @@ class Database:
         @return: list of tasks.
         """
         session = self.Session()
-        tasks = session.query(Task).order_by("added_on desc").limit(limit)
+        try:
+            tasks = session.query(Task).order_by("added_on desc").limit(limit)
+        except SQLAlchemyError:
+            return None
         return tasks
 
     def view_task(self, task_id):
@@ -632,7 +727,10 @@ class Database:
         @return: details on the task.
         """
         session = self.Session()
-        task = session.query(Task).get(task_id)
+        try:
+            task = session.query(Task).get(task_id)
+        except SQLAlchemyError:
+            return None
         return task
 
     def view_sample(self, sample_id):
@@ -641,7 +739,10 @@ class Database:
         @return: details on the sample.
         """
         session = self.Session()
-        sample = session.query(Sample).get(sample_id)
+        try:
+            sample = session.query(Sample).get(sample_id)
+        except SQLAlchemyError:
+            return None
         return sample
 
     def find_sample(self, md5=None, sha256=None):
@@ -650,12 +751,13 @@ class Database:
         @return: matches list
         """
         session = self.Session()
-
-        if md5:
-            sample = session.query(Sample).filter(Sample.md5 == md5).first()
-        elif sha256:
-            sample = sesison.query(Sample).fitler(Sample.sha256 == sha256).first()
-
+        try:
+            if md5:
+                sample = session.query(Sample).filter(Sample.md5 == md5).first()
+            elif sha256:
+                sample = sesison.query(Sample).fitler(Sample.sha256 == sha256).first()
+        except SQLAlchemyError:
+            return None
         return sample
 
     def view_machine(self, name):
@@ -664,5 +766,20 @@ class Database:
         @return: virtual machine's details
         """
         session = self.Session()
-        machine = session.query(Machine).filter(Machine.name == name).first()
+        try:
+            machine = session.query(Machine).filter(Machine.name == name).first()
+        except SQLAlchemyError:
+            return None
         return machine
+
+    def view_errors(self, task_id):
+        """Get all errors related to a task.
+        @param task_id: ID of task associated to the errors
+        @return: list of errors.
+        """
+        session = self.Session()
+        try:
+            errors = session.query(Error).filter(Error.task_id == task_id)
+        except SQLAlchemyError:
+            return None
+        return errors

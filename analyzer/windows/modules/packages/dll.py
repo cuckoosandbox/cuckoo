@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -22,7 +22,7 @@ class Dll(Package):
             args = "%s,DllMain" % path
 
         p = Process()
-        if not p.execute(path="rundll32", args=args, suspended=suspended):
+        if not p.execute(path="C:\\WINDOWS\\system32\\rundll32.exe", args=args, suspended=suspended):
             raise CuckooPackageError("Unable to execute rundll32, analysis aborted")
 
         if not free and suspended:

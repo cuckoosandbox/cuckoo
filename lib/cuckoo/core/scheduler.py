@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -148,10 +148,11 @@ class AnalysisManager(Thread):
         options["platform"] = self.task.platform
         options["options"] = self.task.options
         options["custom"] = self.task.custom
+        options["enforce_timeout"] = self.task.enforce_timeout
         options["started"] = time.time()
 
         if not self.task.timeout or self.task.timeout == 0:
-            options["timeout"] = self.cfg.cuckoo.analysis_timeout
+            options["timeout"] = self.cfg.timeouts.default
         else:
             options["timeout"] = self.task.timeout
 
@@ -161,34 +162,10 @@ class AnalysisManager(Thread):
 
         return options
 
-    def process_results(self):
-        """Process the analysis results and generate the enabled reports."""
-        try:
-            logs_path = os.path.join(self.storage, "logs")
-            for csv in os.listdir(logs_path):
-                csv = os.path.join(logs_path, csv)
-                if os.stat(csv).st_size > self.cfg.cuckoo.analysis_size_limit:
-                    log.error("Analysis file %s is too big to be processed, "
-                              "analysis aborted. Process it manually with the "
-                              "provided utilities" % csv)
-                    return False
-        except OSError as e:
-            log.warning("Error accessing analysis logs (task=%d): %s"
-                        % (self.task.id, e))
-
-        results = Processor(self.storage).run()
-        Reporter(self.storage).run(results)
-
-        log.info("Task #%d: reports generation completed (path=%s)"
-                 % (self.task.id, self.storage))
-
-        return True
-
     def launch_analysis(self):
         """Start analysis."""
         sniffer = None
         succeeded = False
-        stored = False
 
         log.info("Starting analysis of %s \"%s\" (task=%d)"
                  % (self.task.category.upper(),
@@ -213,9 +190,9 @@ class AnalysisManager(Thread):
         Resultserver().add_task(self.task, machine)
 
         # If enabled in the configuration, start the tcpdump instance.
-        if self.cfg.cuckoo.use_sniffer:
-            sniffer = Sniffer(self.cfg.cuckoo.tcpdump)
-            sniffer.start(interface=self.cfg.cuckoo.interface,
+        if self.cfg.sniffer.enabled:
+            sniffer = Sniffer(self.cfg.sniffer.tcpdump)
+            sniffer.start(interface=self.cfg.sniffer.interface,
                           host=machine.ip,
                           file_path=os.path.join(self.storage, "dump.pcap"))
 
@@ -228,7 +205,7 @@ class AnalysisManager(Thread):
             # Start the machine.
             mmanager.start(machine.label)
         except CuckooMachineError as e:
-            log.error(e)
+            log.error(str(e), extra={"task_id" : self.task.id})
 
             # Stop the sniffer.
             if sniffer:
@@ -242,7 +219,7 @@ class AnalysisManager(Thread):
                 # Start the analysis.
                 guest.start_analysis(options)
             except CuckooGuestError as e:
-                log.error(e)
+                log.error(str(e), extra={"task_id" : self.task.id})
 
                 # Stop the sniffer.
                 if sniffer:
@@ -251,9 +228,20 @@ class AnalysisManager(Thread):
                 return False
             else:
                 # Wait for analysis completion.
-                succeeded = guest.wait_for_completion()
+                try:
+                    guest.wait_for_completion()
+                    succeeded = True
+                except CuckooGuestError as e:
+                    log.error(str(e), extra={"task_id" : self.task.id})
+                    succeeded = False
+
                 # Retrieve the analysis results and store them.
-                stored = guest.save_results(self.storage)
+                try:
+                    guest.save_results(self.storage)
+                    succeeded = True
+                except CuckooGuestError as e:
+                    log.error(str(e), extra={"task_id" : self.task.id})
+                    succeeded = False
         finally:
             # Stop the sniffer.
             if sniffer:
@@ -308,9 +296,47 @@ class AnalysisManager(Thread):
 
         return succeeded
 
+    def process_results(self, succeeded=True):
+        """Process the analysis results and generate the enabled reports."""
+        if succeeded:
+            try:
+                logs_path = os.path.join(self.storage, "logs")
+                for csv in os.listdir(logs_path):
+                    csv = os.path.join(logs_path, csv)
+                    if os.stat(csv).st_size > self.cfg.processing.analysis_size_limit:
+                        log.error("Analysis file %s is too big to be processed, "
+                                  "analysis aborted. Process it manually with the "
+                                  "provided utilities" % csv)
+                        return False
+            except OSError as e:
+                log.warning("Error accessing analysis logs (task=%d): %s"
+                            % (self.task.id, e))
+
+            results = Processor(self.task.id).run()
+            results["success"] = succeeded
+        else:
+            results = {
+                "id": self.task.id,
+                "success" : succeeded,
+                "errors": []
+            }
+
+            for error in Database().view_errors(int(self.task.id)):
+                results["errors"].append(error.message)
+
+        Reporter(self.task.id).run(results)
+
+        log.info("Task #%d: reports generation completed (path=%s)"
+                 % (self.task.id, self.storage))
+
+        return True
+
     def run(self):
         """Run manager thread."""
         success = self.launch_analysis()
+
+        # Launch post-processing routine, even if analysis failed.
+        self.process_results(succeeded=success)
 
         log.debug("Releasing database task #%d with status %s"
                   % (self.task.id, success))
@@ -343,8 +369,6 @@ class Scheduler:
 
         log.info("Using \"%s\" machine manager" % mmanager_name)
 
-        # Import machine manager.
-        import_plugin("modules.machinemanagers.%s" % mmanager_name)
         # Get registered class name. Only one machine manager is imported,
         # therefore there should be only one class in the list.
         plugin = list_plugins("machinemanagers")[0]

@@ -1,21 +1,20 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
 import inspect
-import pkgutil
 import logging
-import copy
 
-import modules.reporting
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.abstracts import Report
+from lib.cuckoo.common.objects import LocalDict
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.core.plugins import import_plugin, list_plugins
+from lib.cuckoo.core.plugins import list_plugins
 
 log = logging.getLogger(__name__)
 
@@ -27,39 +26,17 @@ class Reporter:
     Engine and pass it over to the reporting modules before executing them.
     """
 
-    def __init__(self, analysis_path, custom=""):
+    def __init__(self, task_id):
         """@param analysis_path: analysis folder path.
-        @param custom: custom options.
         """
-        self.analysis_path = analysis_path
-        self.custom = custom
+        self.task = Database().view_task(task_id).to_dict()
+        self.analysis_path = os.path.join(CUCKOO_ROOT,
+                                          "storage",
+                                          "analyses",
+                                          str(task_id))
         self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT,
                                            "conf",
                                            "reporting.conf"))
-        self._populate(modules.reporting)
-
-    def _populate(self, package):
-        """Load modules.
-        @param package: package.
-        """
-        prefix = package.__name__ + "."
-        for loader, name, ispkg in pkgutil.iter_modules(package.__path__, prefix):
-            if ispkg:
-                continue
-
-            # Check if the reporting module was enabled in the reporting
-            # configuration file.
-            try:
-                section = getattr(self.cfg, name.rsplit(".", 1)[1])
-            except AttributeError:
-                continue
-
-            # If the reporting module is disabled in the config, skip it.
-            if not section.enabled:
-                continue
-
-            # Import the reporting module.
-            import_plugin(name)
 
     def _run_report(self, module, results):
         """Run a single reporting module.
@@ -78,26 +55,30 @@ class Reporter:
         if "." in module_name:
             module_name = module_name.rsplit(".", 1)[1]
 
+        options = self.cfg.get(module_name)
+
+        # If the reporting module is disabled in the config, skip it.
+        if not options.enabled:
+            return
+
         # Give it the content of the relevant section from the reporting.conf
         # configuration file.
-        try:
-            current.set_options(self.cfg.get(module_name))
-        except CuckooOperationalError:
-            raise CuckooReportError("Reporting module %s not found in "
-                                    "configuration file" % module_name)
+        current.set_options(options)
+        current.set_task(self.task)
 
         try:
             # Run report, for each report a brand new copy of results is
             # created, to prevent a reporting module to edit global
             # result set and affect other reporting modules.
-            current.run(copy.deepcopy(results))
+            current.run(LocalDict(results))
             log.debug("Executed reporting module \"%s\""
                       % current.__class__.__name__)
-        except NotImplementedError:
-            return
         except CuckooReportError as e:
-            log.warning("Failed to execute reporting module \"%s\": %s"
-                        % (current.__class__.__name__, e))
+            log.warning("The reporting module \"%s\" returned the following "
+                        "error: %s" % (current.__class__.__name__, e))
+        except Exception as e:
+            log.exception("Failed to run the reporting module \"%s\":"
+                          % (current.__class__.__name__))
 
     def run(self, results):
         """Generates all reports.

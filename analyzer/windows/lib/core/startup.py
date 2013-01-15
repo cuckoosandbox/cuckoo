@@ -1,11 +1,11 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
 import logging
 
-from lib.common.paths import PATHS
+from lib.common.constants import PATHS
 
 log = logging.getLogger()
 

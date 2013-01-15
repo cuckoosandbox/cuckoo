@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -6,6 +6,7 @@ import os
 import ntpath
 import string
 import tempfile
+import xmlrpclib
 from datetime import datetime
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -84,8 +85,51 @@ def store_temp_file(filedata, filename):
     tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=targetpath)
     tmp_file_path = os.path.join(tmp_dir, filename)
     tmp_file = open(tmp_file_path, "wb")
-    tmp_file.write(filedata)
+    
+    # if filedata is file object, do chunked copy
+    if hasattr(filedata, 'read'):
+        chunk = filedata.read(1024)
+        while chunk:
+            tmp_file.write(chunk)
+            chunk = filedata.read(1024)
+    else:
+        tmp_file.write(filedata)
+
     tmp_file.close()
 
     return tmp_file_path
 
+# xmlrpc + timeout - still a bit ugly - but at least gets rid of setdefaulttimeout
+# inspired by 
+# http://stackoverflow.com/questions/372365/set-timeout-for-xmlrpclib-serverproxy
+# (although their stuff was messy, this is cleaner)
+class TimeoutServer(xmlrpclib.ServerProxy):
+    def __init__(self, *args, **kwargs):
+        timeout = kwargs.pop('timeout', None)
+        kwargs['transport'] = TimeoutTransport(timeout=timeout)
+        xmlrpclib.ServerProxy.__init__(self, *args, **kwargs)
+
+    def _set_timeout(self, timeout):
+        t = self._ServerProxy__transport
+        t.timeout = timeout
+        # if we still have a socket we need to update that as well
+        if hasattr(t, '_connection') and t._connection[1] and t._connection[1].sock:
+            t._connection[1].sock.settimeout(timeout)
+
+class TimeoutTransport(xmlrpclib.Transport):
+    def __init__(self, *args, **kwargs):
+        self.timeout = kwargs.pop('timeout', None)
+        xmlrpclib.Transport.__init__(self, *args, **kwargs)
+
+    def make_connection(self, *args, **kwargs):
+        conn = xmlrpclib.Transport.make_connection(self, *args, **kwargs)
+        if self.timeout != None: conn.timeout = self.timeout
+        return conn
+
+# http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]

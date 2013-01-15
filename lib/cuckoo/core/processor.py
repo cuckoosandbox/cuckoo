@@ -1,17 +1,16 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import copy
+import os
 import logging
 from distutils.version import StrictVersion
 
-import modules.processing
-import modules.signatures
-from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import CUCKOO_VERSION
+from lib.cuckoo.common.objects import LocalDict
+from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooProcessingError
-from lib.cuckoo.core.plugins import import_package, list_plugins
+from lib.cuckoo.core.database import Database
+from lib.cuckoo.core.plugins import list_plugins
 
 log = logging.getLogger(__name__)
 
@@ -23,11 +22,13 @@ class Processor:
     is then passed over the reporting engine.
     """
 
-    def __init__(self, analysis_path):
-        """@param analysis_path: analysis folder path."""
-        self.analysis_path = analysis_path
-        import_package(modules.processing)
-        import_package(modules.signatures)
+    def __init__(self, task_id):
+        """@param task_id: ID of the analyses to process."""
+        self.task = Database().view_task(task_id).to_dict()
+        self.analysis_path = os.path.join(CUCKOO_ROOT,
+                                          "storage",
+                                          "analyses",
+                                          str(task_id))
 
     def _run_processing(self, module):
         """Run a processing module.
@@ -39,8 +40,8 @@ class Processor:
         current = module()
         # Provide it the path to the analysis results.
         current.set_path(self.analysis_path)
-        # Load the analysis.conf configuration file.
-        current.cfg = Config(current.conf_path)
+        # Set analysis task dictionary.
+        current.set_task(self.task)
 
         # If current processing module is disabled, skip it.
         if not current.enabled:
@@ -57,9 +58,6 @@ class Processor:
             # If succeeded, return they module's key name and the data to be
             # appended to it.
             return {current.key : data}
-        except NotImplementedError:
-            log.debug("The processing module \"%s\" is not correctly "
-                      "implemented" % current.__classs__.__name__)
         except CuckooProcessingError as e:
             log.warning("The processing module \"%s\" returned the following "
                         "error: %s" % (current.__class__.__name__, e))
@@ -76,7 +74,7 @@ class Processor:
         @return: matched signature.
         """
         # Initialize the current signature.
-        current = signature()
+        current = signature(LocalDict(results))
 
         log.debug("Running signature \"%s\"" % current.name)
 
@@ -126,7 +124,7 @@ class Processor:
         try:
             # Run the signature and if it gets matched, extract key information
             # from it and append it to the results container.
-            if current.run(copy.deepcopy(results)):
+            if current.run():
                 matched = {"name" : current.name,
                            "description" : current.description,
                            "severity" : current.severity,
@@ -139,9 +137,6 @@ class Processor:
 
                 # Return information on the matched signature.
                 return matched
-        except NotImplementedError:
-            log.debug("The signature \"%s\" is not correctly implemented"
-                      % current.name)
         except Exception as e:
             log.exception("Failed to run signature \"%s\":" % (current.name))
 

@@ -26,18 +26,17 @@ to download and install the proper packages according to your Python version.
 .. _`official website`: http://www.python.org/getit/
 .. _`Python Image Library`: http://www.pythonware.com/products/pil/
 
-Additional Softwares
-====================
+Additional Software
+===================
 
 At this point you should have installed everything needed by Cuckoo to run
 properly.
 
 Depending on what kind of files you want to analyze and what kind of sandboxed
 Windows environment you want to run the malwares in, you might want to install
-additional softwares such as browsers, PDF readers, office suites etc.
-Please remeber to disable the "auto update" or "check for updates" feature of 
+additional software such as browsers, PDF readers, office suites etc.
+Remeber to disable the "auto update" or "check for updates" feature of 
 any additional software.
 
 This is completely up to you and to how you, you might get some hints by reading
 the :doc:`../../introduction/sandboxing` chapter.
-

@@ -1,13 +1,13 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
 import tempfile
+import copy
 from nose.tools import assert_equal, raises, assert_not_equal
 
-from lib.cuckoo.common.objects import Dictionary
-from lib.cuckoo.common.objects import File
+from lib.cuckoo.common.objects import Dictionary, File, LocalDict
 
 class TestDictionary:
     def setUp(self):
@@ -15,13 +15,41 @@ class TestDictionary:
 
     def test_usage(self):
         self.d.a = "foo"
-        assert_equals("foo", self.d.a)
+        assert_equal("foo", self.d.a)
         self.d.a = "bar"
-        assert_equals("bar", self.d.a)
+        assert_equal("bar", self.d.a)
 
     @raises(AttributeError)
     def test_exception(self):
         self.d.b.a
+
+class TestLocalDict:
+    def setUp(self):
+        self.orig = {}
+        self.orig["foo"] = "bar"
+        self.orig["nested"] = {"foo": "bar"}
+        self.orig["dropped"] = []
+        self.orig["dropped"].append({"foo": "bar"})
+        self.backup = copy.deepcopy(self.orig)
+        self.copy = LocalDict(self.orig)
+
+    def test_value(self):
+        self.copy["test1"] = "foo"
+        self.copy["test2"] = 1
+        self.copy["test3"] = True
+        assert_equal(self.orig, self.backup)
+
+    def test_list(self):
+        self.copy["test4"] = []
+        self.copy["test4"].append("foo")
+        self.copy["dropped"].append({"foo2": "bar"})
+        assert_equal(self.orig, self.backup)
+
+    def test_dict(self):
+        self.copy["test1"] = {}
+        self.copy["test1"]["foo"] = "bar"
+        self.copy["nested"]["foo2"] = "bar"
+        assert_equal(self.orig, self.backup)
 
 class TestFile:
     def setUp(self):

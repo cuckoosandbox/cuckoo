@@ -16,34 +16,67 @@ cuckoo.conf
 The first file to edit is *conf/cuckoo.conf*, whose content is::
 
     [cuckoo]
-    # Set the default analysis timeout expressed in seconds. This value will be
-    # used to define after how many seconds the analysis will terminate unless
-    # otherwise specified at submission.
-    analysis_timeout = 120
-
-    # Set the critical timeout expressed in seconds. After this timeout is hit
-    # Cuckoo will consider the analysis failed and it will shutdown the machine
-    # no matter what. When this happens the analysis results will most likely
-    # be lost. Make sure to have a critical_timeout greater than the
-    # analysis_timeout.
-    critical_timeout = 600
+    # Enable or disable startup version check. When enabled, Cuckoo will connect
+    # to a remote location to verify whether the running version is the latest
+    # one available.
+    version_check = on
 
     # If turned on, Cuckoo will delete the original file and will just store a
     # copy in the local binaries repository.
     delete_original = off
-
-    # Set the maximum size of analysis's generated files to process.
-    # This is used to avoid the processing of big files which can bring memory leak.
-    # The value is expressed in bytes, by default 100Mb.
-    analysis_size_limit = 104857600
 
     # Specify the name of the machine manager module to use, this module will
     # define the interaction between Cuckoo and your virtualization software
     # of choice.
     machine_manager = virtualbox
 
+    # Enable creation of memory dump of the analysis machine before shutting
+    # down. Even if turned off, this functionality can also be enabled at
+    # submission. Currently available for: VirtualBox and libvirt modules (KVM).
+    memory_dump = off
+
+    [processing]
+    # Set the maximum size of analysis's generated files to process.
+    # This is used to avoid the processing of big files which can bring memory leak.
+    # The value is expressed in bytes, by default 100Mb.
+    analysis_size_limit = 104857600
+
+    # Enable or disable DNS lookups.
+    resolve_dns = on
+
+    [database]
+    # Specify the database connection string.
+    # Examples, see documentation for more:
+    # sqlite:///foo.db
+    # postgresql://foo:bar@localhost:5432/mydatabase
+    # mysql://foo:bar@localhost/mydatabase
+    # If empty, default is a SQLite in  db/cuckoo.db.
+    connection =
+
+    # Database connection timeout in seconds.
+    # If empty, default is set to 60 seconds.
+    timeout =
+
+    [timeouts]
+    # Set the default analysis timeout expressed in seconds. This value will be
+    # used to define after how many seconds the analysis will terminate unless
+    # otherwise specified at submission.
+    default = 120
+
+    # Set the critical timeout expressed in seconds. After this timeout is hit
+    # Cuckoo will consider the analysis failed and it will shutdown the machine
+    # no matter what. When this happens the analysis results will most likely
+    # be lost. Make sure to have a critical timeout greater than the
+    # default timeout.
+    critical = 600
+
+    # Maximum time to wait for virtual machine status change. For example when
+    # shutting down a vm. Default is 300 seconds.
+    vm_state = 300
+
+    [sniffer]
     # Enable or disable the use of an external sniffer (tcpdump) [yes/no].
-    use_sniffer = yes
+    enabled = yes
 
     # Specify the path to your local installation of tcpdump. Make sure this
     # path is correct.
@@ -53,6 +86,18 @@ The first file to edit is *conf/cuckoo.conf*, whose content is::
     # traffic. Make sure the interface is active.
     interface = vboxnet0
 
+    [graylog]
+    # Enable or disable remote logging to a Graylog2 server.
+    enabled = no
+
+    # Graylog2 server host.
+    host = localhost
+
+    # Graylog2 server port.
+    port = 12201
+
+    # Default logging level for Graylog2. [debug/info/error/critical].
+    level = error
 
 The configuration file is self-explainatory.
 
@@ -82,10 +127,6 @@ Following is the default *conf/virtualbox.conf* file::
 
     # Path to the local installation of the VBoxManage utility.
     path = /usr/bin/VBoxManage
-
-    # Maximum time to wait for virtual machine status change. For example when
-    # shutting down a vm. Default is 300 seconds.
-    timeout = 300
 
     # Specify a comma-separated list of available machines to be used. For each
     # specified ID you have to define a dedicated section containing the details
@@ -133,13 +174,13 @@ It contains the following sections::
     enabled = on
 
     [pickled]
-    enabled = on
+    enabled = off
 
     [metadata]
-    enabled = on
+    enabled = off
 
     [maec11]
-    enabled = on
+    enabled = off
 
     [mongodb]
     enabled = off

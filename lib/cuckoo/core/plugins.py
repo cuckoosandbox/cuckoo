@@ -1,9 +1,10 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import pkgutil
 import inspect
+import logging
 from collections import defaultdict
 
 from lib.cuckoo.common.exceptions import CuckooCriticalError
@@ -11,6 +12,8 @@ from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.abstracts import Signature
 from lib.cuckoo.common.abstracts import Report
+
+log = logging.getLogger(__name__)
 
 _modules = defaultdict(dict)
 
@@ -45,12 +48,8 @@ def load_plugins(module):
 
 def register_plugin(group, name):
     global _modules
-
-    if not group in _modules:
-        _modules[group] = [name]
-    else:
-        if not name in _modules[group]:
-            _modules[group].append(name)
+    group = _modules.setdefault(group, [])
+    group.append(name)
 
 def list_plugins(group=None):
     if group:

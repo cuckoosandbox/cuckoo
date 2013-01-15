@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,7 +7,7 @@ import codecs
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.exceptions import CuckooProcessingError
-
+from lib.cuckoo.core.database import Database
 
 class Debug(Processing):
     """Analysis debug information."""
@@ -17,16 +17,17 @@ class Debug(Processing):
         @return: debug information dict.
         """
         self.key = "debug"
-        debug = {}
+        debug = {"log" : "", "errors" : []}
 
         if os.path.exists(self.log_path):
             try:
                 debug["log"] = codecs.open(self.log_path, "rb", "utf-8").read()
             except ValueError as e:
                 raise CuckooProcessingError("Error decoding %s: %s" % (self.log_path, e))
-            except (IOError, OSError):
+            except (IOError, OSError) as e:
                 raise CuckooProcessingError("Error opening %s: %s" % (self.log_path, e))
-        else:
-            debug["log"] = ""
+
+        for error in Database().view_errors(int(self.task["id"])):
+            debug["errors"].append(error.message)
 
         return debug

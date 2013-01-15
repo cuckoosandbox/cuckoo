@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -16,9 +16,11 @@ def choose_package(file_type, file_name):
         return "exe"
     elif "PDF" in file_type:
         return "pdf"
-    elif "Rich Text Format" in file_type or "Microsoft Word" in file_type or file_name.endswith(".docx"):
+    elif "Rich Text Format" in file_type or "Microsoft Office Word" in file_type or file_name.endswith(".docx"):
         return "doc"
-    elif "Microsoft Excel" in file_type or file_name.endswith(".xlsx"):
+    elif "Microsoft Office Excel" in file_type or file_name.endswith(".xlsx"):
         return "xls"
+    elif "HTML" in file_type:
+        return "html"
     else:
         return None

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -27,6 +27,7 @@ def main():
     parser.add_argument("--machine", type=str, action="store", default="", help="Specify the identifier of a machine you want to use", required=False)
     parser.add_argument("--platform", type=str, action="store", default="", help="Specify the operating system platform you want to use (windows/darwin/linux)", required=False)
     parser.add_argument("--memory", action="store_true", default=False, help="Enable to take a memory dump of the analysis machine", required=False)
+    parser.add_argument("--enforce-timeout", action="store_true", default=False, help="Enable to force the analysis to run for the full timeout period", required=False)
 
     try:
         args = parser.parse_args()
@@ -51,7 +52,8 @@ def main():
                              machine=args.machine,
                              platform=args.platform,
                              custom=args.custom,
-                             memory=args.memory)
+                             memory=args.memory,
+                             enforce_timeout=args.enforce_timeout)
 
         print(bold(green("Success")) + ": URL \"%s\" added as task with ID %d" % (target, task_id))
     else:
@@ -82,7 +84,8 @@ def main():
                                   machine=args.machine,
                                   platform=args.platform,
                                   custom=args.custom,
-                                  memory=args.memory)
+                                  memory=args.memory,
+                                  enforce_timeout=args.enforce_timeout)
 
             if task_id:
                 print(bold(green("Success")) + ": File \"%s\" added as task with ID %d" % (file_path, task_id))

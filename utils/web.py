@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -14,7 +14,7 @@ except ImportError:
     print "ERROR: Jinja2 library is missing"
     sys.exit(1)
 try:
-    from bottle import route, run, static_file, redirect, request, HTTPError
+    from bottle import route, run, static_file, redirect, request, HTTPError, hook, response
 except ImportError:
     print "ERROR: Bottle library is missing"
     sys.exit(1)
@@ -26,8 +26,22 @@ from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file
 
+# Templating engine.
 env = Environment()
 env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT, "data", "html"))
+# Global db pointer.
+db = Database()
+
+@hook("after_request")
+def custom_headers():
+    """Set some custom headers across all HTTP responses."""
+    response.headers["Server"] = "Machete Server"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Expires"] = "0"
 
 @route("/")
 def index():
@@ -37,7 +51,6 @@ def index():
 
 @route("/browse")
 def browse():
-    db = Database()
     rows = db.list_tasks()
 
     tasks = []
@@ -97,7 +110,6 @@ def submit():
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
 
-    db = Database()
     task_id= db.add_path(file_path=temp_file_path,
                          timeout=timeout,
                          priority=priority,

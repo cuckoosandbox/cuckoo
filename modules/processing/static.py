@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,11 +8,15 @@ import sys
 try:
     import magic
     HAVE_MAGIC = True
-except:
+except ImportError:
     HAVE_MAGIC = False
 
-import pefile
-import peutils
+try:
+    import pefile
+    import peutils
+    HAVE_PEFILE = True
+except ImportError:
+    HAVE_PEFILE = False
 
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -240,9 +244,9 @@ class Static(Processing):
         self.key = "static"
         static = {}
 
-        if self.cfg.analysis.category == "file":
-            if self.cfg.analysis.file_type:
-                if "PE32" in self.cfg.analysis.file_type:
+        if HAVE_PEFILE:
+            if self.task["category"] == "file":
+                if "PE32" in File(self.task["target"]).get_type():
                     static = PortableExecutable(self.file_path).run()
 
         return static

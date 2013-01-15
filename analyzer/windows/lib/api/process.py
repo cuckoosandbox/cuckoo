@@ -1,9 +1,8 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import string
 import random
 import logging
 from time import time
@@ -11,8 +10,9 @@ from ctypes import *
 from shutil import copy
 
 from lib.common.defines import *
-from lib.common.paths import PATHS
+from lib.common.constants import PIPE, PATHS
 from lib.common.errors import get_error_string
+from lib.common.rand import random_string
 
 log = logging.getLogger(__name__)
 
@@ -20,8 +20,8 @@ def randomize_dll(dll_path):
     """Randomize DLL name.
     @return: new DLL path.
     """
-    new_dll_name = "".join(random.choice(string.ascii_letters) for x in range(6))
-    new_dll_path = os.path.join("dll", "%s.dll" % new_dll_name)
+    new_dll_name = random_string(6)
+    new_dll_path = os.path.join(os.getcwd(), "dll", "%s.dll" % new_dll_name)
 
     try:
         copy(dll_path, new_dll_path)
@@ -31,6 +31,7 @@ def randomize_dll(dll_path):
 
 class Process:
     """Windows process."""
+    first_process = True
 
     def __init__(self, pid=0, h_process=0, thread_id=0, h_thread=0):
         """@param pid: PID.
@@ -120,7 +121,7 @@ class Process:
 
         return None
 
-    def execute(self, path=None, args=None, suspended=False):
+    def execute(self, path, args=None, suspended=False):
         """Execute sample process.
         @param path: sample path.
         @param args: process args.
@@ -128,6 +129,8 @@ class Process:
         @return: operation status.
         """
         if not os.access(path, os.X_OK):
+            log.error("Unable to access file at path \"%s\", execution aborted"
+                      % path)
             return False
 
         startup_info = STARTUPINFO()
@@ -295,11 +298,19 @@ class Process:
             else:
                 KERNEL32.CloseHandle(thread_handle)
 
+        config_path = os.path.join(os.getenv("TEMP"), "%s.ini" % self.pid)
+        with open(config_path, "w") as config:
+            config.write("pipe=%s\n" % PIPE)
+            config.write("results=%s\n" % PATHS["root"])
+            config.write("analyzer=%s\n" % os.getcwd())
+            config.write("first-process=%d\n" % Process.first_process)
+            Process.first_process = False
+
         return True
 
     def wait(self):
         if self.event_handle:
-            KERNEL32.WaitForSingleObject(self.event_handle, INFINITE)
+            KERNEL32.WaitForSingleObject(self.event_handle, 10000)
             KERNEL32.CloseHandle(self.event_handle)
             self.event_handle = None
         return True
@@ -324,11 +335,12 @@ class Process:
         max_addr = self.system_info.lpMaximumApplicationAddress
         mem = min_addr
 
-        root = os.path.join(PATHS["memory"], str(self.pid))
-        root = os.path.join(root, str(int(time())))
+        root = os.path.join(PATHS["memory"], str(int(time())))
 
         if not os.path.exists(root):
             os.makedirs(root)
+
+        dump = open(os.path.join(root, "%s.dmp" % str(self.pid)), "wb")
 
         while(mem < max_addr):
             mbi = MEMORY_BASIC_INFORMATION()
@@ -348,13 +360,12 @@ class Process:
                                               buf,
                                               mbi.RegionSize,
                                               byref(count)):
-                    path = os.path.join(root, "0x%.8x.dmp" % mem)
-                    chunk = open(path, "wb")
-                    chunk.write(buf.raw)
-                    chunk.close()
+                    dump.write(buf.raw)
                 mem += mbi.RegionSize
             else:
                 mem += page_size
+
+        dump.close()
 
         log.info("Memory dump of process with pid %d completed" % self.pid)
 
