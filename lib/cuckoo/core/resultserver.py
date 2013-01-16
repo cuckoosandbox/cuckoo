@@ -59,7 +59,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         try:
             while True:
-                timediff, apiindex = struct.unpack('IB', recvall(sock, 5))
+                timediff, apiindex = struct.unpack('IH', recvall(sock, 6))
                 if apiindex == 0:
                     # new process message
                     filepath = getshortstring(sock)
@@ -105,3 +105,10 @@ def recvall(sock, length):
         buf += tmp
 
     return buf
+
+def getintstring(sock):
+    length = struct.unpack('I', recvall(sock, 4))
+    return recvall(sock, length)
+def getshortstring(sock):
+    length = struct.unpack('H', recvall(sock, 4))
+    return recvall(sock, length)
