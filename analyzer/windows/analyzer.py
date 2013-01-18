@@ -154,6 +154,7 @@ class PipeHandler(Thread):
         """
         data = ""
         response = "OK"
+        wait = False
 
         # Read the data submitted to the Pipe Server.
         while True:
@@ -231,15 +232,13 @@ class PipeHandler(Thread):
                             # apc to inject
                             if process_id and thread_id:
                                 proc.inject(apc=True)
-                                wait = False
                             else:
+                                # we inject using CreateRemoteThread, this
+                                # needs the waiting in order to make sure no
+                                # race conditions occur
                                 proc.inject()
                                 wait = True
 
-                            # We wait until cuckoomon reports back.
-                            if wait:
-                                proc.wait()
-                            
                             log.info("Successfully injected process with pid %d"
                                      % proc.pid)
                     else:
@@ -277,6 +276,10 @@ class PipeHandler(Thread):
                            None)
 
         KERNEL32.CloseHandle(self.h_pipe)
+
+        # We wait until cuckoomon reports back.
+        if wait:
+            proc.wait()
 
         return True
 
