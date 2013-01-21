@@ -11,6 +11,7 @@ from threading import Timer, Event, Thread
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooResultError
 from lib.cuckoo.common.constants import *
+from data.apicalls.logtbl import table as LOGTBL
 
 log = logging.getLogger(__name__)
 
@@ -51,6 +52,26 @@ class Resulthandler(SocketServer.BaseRequestHandler):
     This handler speaks our analysis log network protocol.
     """
 
+    formatmap = {
+        's': self.read_string,
+        'S': self.read_string,
+        'u': self.read_string,
+        'U': self.read_string,
+        'b': self.read_buffer,
+        'B': self.read_buffer,
+        'i': self.read_int32,
+        'l': self.read_int32,
+        'L': self.read_int32,
+        'p': self.read_ptr,
+        'P': self.read_ptr,
+        'o': self.read_string,
+        'O': self.read_string,
+        'a': None,
+        'A': None,
+        'r': self.read_registry,
+        'R': self.read_registry,
+    }
+
     def handle(self):
         ip, port = self.client_address
         sock = self.request
@@ -75,17 +96,22 @@ class Resulthandler(SocketServer.BaseRequestHandler):
                     # actual API call
                     tid, status = struct.unpack('IB', recvall(sock, 5))
                     returnval = getintstring(sock)
-                    argc = struct.unpack('B', recvall(sock, 1))
-                    arguments = []
 
-                    for i in range(argc):
-                        arg = {}
-                        arg['truncated'] = struct.unpack('B', recvall(sock, 1))
-                        argdata = getintstring(sock)
-                        arg['name'], arg['value'] = argdata.split('=', 1)
+                    apiname, parseinfo = LOGTBL[apiiindex]
+                    formatspecifiers, argnames = parseinfo[0], parseinfo[1:]
+                    arguments = []
+                    for pos in range(len(formatspecifiers)):
+                        fs = formatspecifiers[pos]
+                        argname = argnames[pos]
+                        fn = self.formatmap.get(fs, None)
+                        if fn:
+                            r = fn()
+                            arguments.append('{0}={1}'.format(argname, r))
+                        else:
+                            log.warning('No handler for format specifier {0} on apitype {1}'.format(fs,apiname))
 
                     print '  TID={0} -> {1}({2}) = {3} ({4})'.format(tid, 
-                        apiindex, ', '.join('{0}={1}'.format(x['name'], x['value']) for x in arguments),
+                        apiname, ', '.join(arguments),
                         returnval, status )
 
         except disconnect:
@@ -95,6 +121,48 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         filestorage.close()
         log.info('connection closed: {0}:{1}'.format(ip, port))
+
+    def log_process(self, *args):
+        print 'NETLOGDBG new process', args
+    def log_thread(self, *args):
+        print 'NETLOGDBG new thread', args
+    def log_call(self, tid, *args):
+        print 'NETLOGDBG call from ', tid, 'args:', args
+
+    def read_int32(self):
+        """Reads a 32bit integer from the socket."""
+        return struct.unpack('I', recvall(self.request, 4))[0]
+
+    def read_ptr(self):
+        """Read a pointer from the socket."""
+        length, value = read_int32(buf, offset)
+        return '0x%08x' % value
+
+    def read_string(self):
+        """Reads an utf8 string from the socket."""
+        length, maxlength = struct.unpack('II', recvall(self.request, 8))
+        return maxlength, recvall(self.request, length)
+
+    def read_buffer(self):
+        """Reads a memory socket from the socket."""
+        length, maxlength = struct.unpack('II', recvall(self.request, 8))
+        # only return the maxlength, as we don't log the actual buffer right now
+        return maxlength
+
+    def read_registry(self):
+        """Read logged registry data from the socket."""
+        typ = struct.unpack('H', recvall(self.request, 2))[0]
+        # do something depending on type
+        return typ
+
+    def read_list(self, fn):
+        """Reads a list of _fn_ from the socket."""
+        count = struct.unpack('H', recvall(self.request, 2))[0]
+        ret, length = [], 0
+        for x in xrange(count):
+            item = fn()
+            ret.append(item)
+        return ret
 
 
 def recvall(sock, length):
