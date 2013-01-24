@@ -11,13 +11,14 @@ from threading import Timer, Event, Thread
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooResultError
 from lib.cuckoo.common.constants import *
-from data.apicalls.logtbl import table as LOGTBL
+from lib.cuckoo.common.logtbl import table as LOGTBL
 
 log = logging.getLogger(__name__)
 
 BUFSIZ = 1024 * 16
 
-class disconnect(Exception):
+
+class Disconnect(Exception):
     pass
 
 
@@ -36,7 +37,8 @@ class Resultserver(SocketServer.ThreadingTCPServer):
         return cls.__instance
 
     def __init__(self, *args, **kwargs):
-        SocketServer.ThreadingTCPServer.__init__(self, *args, **kwargs)
+        self.cfg = Config()
+        SocketServer.ThreadingTCPServer.__init__(self, (cfg.processing.ip, cfg.processing.port), Resulthandler, *args, **kwargs)
         self.analysistasks = {}
 
     def add_task(self, task, machine):
@@ -114,7 +116,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
                         apiname, ', '.join(arguments),
                         returnval, status )
 
-        except disconnect:
+        except Disconnect:
             pass
         except socket.error, e:
             log.warn('socket.error: {0}'.format(e))
@@ -169,7 +171,7 @@ def recvall(sock, length):
     buf = ''
     while len(buf) < length:
         tmp = sock.recv(length-len(buf))
-        if not tmp: raise disconnect()
+        if not tmp: raise Disconnect()
         buf += tmp
 
     return buf
