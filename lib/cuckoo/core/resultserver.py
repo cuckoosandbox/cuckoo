@@ -61,7 +61,6 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
     def __init__(self, *args, **kwargs):
         SocketServer.BaseRequestHandler.__init__(self, *args, **kwargs)
-        print 'resulthandler, self'
         self.formatmap = {
             's': self.read_string,
             'S': self.read_string,
