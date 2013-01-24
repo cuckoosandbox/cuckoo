@@ -289,11 +289,6 @@ class AnalysisManager(Thread):
             # after all this, we can make the Resultserver forget about it
             Resultserver().del_task(self.task, machine)
 
-        # If the analysis succeeded and the results were correctly stored, we
-        # process the results and generate the reports.
-        if succeeded and stored:
-            self.process_results()
-
         return succeeded
 
     def process_results(self, succeeded=True):
