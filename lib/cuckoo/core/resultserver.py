@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import struct
 import socket
 import logging
 import shelve
@@ -12,6 +13,7 @@ from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooResultError
 from lib.cuckoo.common.constants import *
 from lib.cuckoo.common.logtbl import table as LOGTBL
+from lib.cuckoo.common.utils import Singleton
 
 log = logging.getLogger(__name__)
 
@@ -22,30 +24,33 @@ class Disconnect(Exception):
     pass
 
 
-class Resultserver(SocketServer.ThreadingTCPServer):
+class Resultserver(SocketServer.ThreadingTCPServer, object):
     """Result server. Singleton!
 
     This class handles results coming back from the analysis VMs.
     """
 
-    allow_reuse_address = True
-    __instance= None
+    __metaclass__ = Singleton
 
-    def __new__(cls, *args, **kwargs):
-        if cls != type(cls.__instance):
-          cls.__instance = object.__new__(cls, *args, **kwargs)
-        return cls.__instance
+    allow_reuse_address = True
 
     def __init__(self, *args, **kwargs):
         self.cfg = Config()
-        SocketServer.ThreadingTCPServer.__init__(self, (cfg.processing.ip, cfg.processing.port), Resulthandler, *args, **kwargs)
         self.analysistasks = {}
+
+        SocketServer.ThreadingTCPServer.__init__(self, (self.cfg.processing.ip, self.cfg.processing.port), Resulthandler, *args, **kwargs)
+
+        self.servethread = Thread(target=self.serve_forever)
+        self.servethread.setDaemon(True)
+        self.servethread.start()
+        print 'resultserver created, started thread: ', self.servethread
 
     def add_task(self, task, machine):
         self.analysistasks[machine.ip] = (task, machine)
 
     def del_task(self, task, machine):
-        del self.analysistasks[machine.ip]
+        x = self.analysistasks.pop(machine.ip, None)
+        if not x: log.warning("Resultserver did not have {0} in its task info.".format(machine.ip))
 
 
 class Resulthandler(SocketServer.BaseRequestHandler):
@@ -54,25 +59,28 @@ class Resulthandler(SocketServer.BaseRequestHandler):
     This handler speaks our analysis log network protocol.
     """
 
-    formatmap = {
-        's': self.read_string,
-        'S': self.read_string,
-        'u': self.read_string,
-        'U': self.read_string,
-        'b': self.read_buffer,
-        'B': self.read_buffer,
-        'i': self.read_int32,
-        'l': self.read_int32,
-        'L': self.read_int32,
-        'p': self.read_ptr,
-        'P': self.read_ptr,
-        'o': self.read_string,
-        'O': self.read_string,
-        'a': None,
-        'A': None,
-        'r': self.read_registry,
-        'R': self.read_registry,
-    }
+    def __init__(self, *args, **kwargs):
+        SocketServer.BaseRequestHandler.__init__(self, *args, **kwargs)
+        print 'resulthandler, self'
+        self.formatmap = {
+            's': self.read_string,
+            'S': self.read_string,
+            'u': self.read_string,
+            'U': self.read_string,
+            'b': self.read_buffer,
+            'B': self.read_buffer,
+            'i': self.read_int32,
+            'l': self.read_int32,
+            'L': self.read_int32,
+            'p': self.read_ptr,
+            'P': self.read_ptr,
+            'o': self.read_string,
+            'O': self.read_string,
+            'a': None,
+            'A': None,
+            'r': self.read_registry,
+            'R': self.read_registry,
+        }
 
     def handle(self):
         ip, port = self.client_address
@@ -99,7 +107,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
                     tid, status = struct.unpack('IB', recvall(sock, 5))
                     returnval = getintstring(sock)
 
-                    apiname, parseinfo = LOGTBL[apiiindex]
+                    apiname, modulename, parseinfo = LOGTBL[apiiindex]
                     formatspecifiers, argnames = parseinfo[0], parseinfo[1:]
                     arguments = []
                     for pos in range(len(formatspecifiers)):
