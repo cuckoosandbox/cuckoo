@@ -256,7 +256,10 @@ class Process:
                                                "LoadLibraryA")
 
         config_path = os.path.join(os.getenv("TEMP"), "%s.ini" % self.pid)
+        log.info("config_path = " + config_path)
         with open(config_path, "w") as config:
+            config.write("host-ip=192.168.56.1\n")
+            config.write("host-port=2042\n")
             config.write("pipe=%s\n" % PIPE)
             config.write("results=%s\n" % PATHS["root"])
             config.write("analyzer=%s\n" % os.getcwd())
