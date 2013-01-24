@@ -90,6 +90,12 @@ class Reporter:
         # all the available ones. It can be used in the case where a
         # module requires another one to be already executed beforehand.
         modules_list = list_plugins(group="reporting")
+
+        # Return if no reporting modules are loaded.
+        if not modules_list:
+            log.debug("No reporting modules loaded")
+            return
+
         modules_list.sort(key=lambda module: module.order)
 
         # Run every loaded reporting module.

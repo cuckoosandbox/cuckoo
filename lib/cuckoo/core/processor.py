@@ -158,6 +158,12 @@ class Processor:
         # If none is specified for the modules, they are selected in
         # alphabetical order.
         modules_list = list_plugins(group="processing")
+
+        # If no modules are loaded, return an empty dictionary.
+        if not modules_list:
+            log.debug("No processing modules loaded")
+            return results
+
         modules_list.sort(key=lambda module: module.order)
 
         # Run every loaded processing module.

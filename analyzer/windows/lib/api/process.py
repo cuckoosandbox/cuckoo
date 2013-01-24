@@ -255,6 +255,14 @@ class Process:
         load_library = KERNEL32.GetProcAddress(kernel32_handle,
                                                "LoadLibraryA")
 
+        config_path = os.path.join(os.getenv("TEMP"), "%s.ini" % self.pid)
+        with open(config_path, "w") as config:
+            config.write("pipe=%s\n" % PIPE)
+            config.write("results=%s\n" % PATHS["root"])
+            config.write("analyzer=%s\n" % os.getcwd())
+            config.write("first-process=%d\n" % Process.first_process)
+            Process.first_process = False
+
         if apc or self.suspended:
             log.info("Using QueueUserAPC injection")
             if not self.h_thread:
