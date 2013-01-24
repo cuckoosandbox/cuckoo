@@ -60,7 +60,6 @@ class Resulthandler(SocketServer.BaseRequestHandler):
     """
 
     def __init__(self, *args, **kwargs):
-        SocketServer.BaseRequestHandler.__init__(self, *args, **kwargs)
         self.formatmap = {
             's': self.read_string,
             'S': self.read_string,
@@ -80,6 +79,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             'r': self.read_registry,
             'R': self.read_registry,
         }
+        SocketServer.BaseRequestHandler.__init__(self, *args, **kwargs)
 
     def handle(self):
         ip, port = self.client_address
@@ -89,24 +89,24 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         try:
             while True:
-                timediff, apiindex = struct.unpack('IH', recvall(sock, 6))
+                apiindex, status = struct.unpack('BB', recvall(sock, 2))
+                returnval, tid, timediff = struct.unpack('III', recvall(sock, 12))
+                print 'DBG', apiindex, status, returnval, tid, timediff
+
                 if apiindex == 0:
                     # new process message
-                    filepath = getshortstring(sock)
-                    pid, parentid = struct.unpack('II', recvall(sock, 8))
-                    log.info('MSG_PROCESS> PID:{0} PARENT:{1} FILEPATH:{2}'.format(pid, parentid, filepath))
+                    pid = self.read_int32()
+                    maxlen, modulepath = self.read_string()
+                    log.info('MSG_PROCESS> PID:{0} maxlen:{1} module:{2}'.format(pid, maxlen, modulepath))
 
                 elif apiindex == 1:
                     # new thread message
-                    tid, pid = struct.unpack('II', recvall(sock, 8))
+                    pid = self.read_int32()
                     log.info('MSG_THREAD> TID:{0} PID:{1}'.format(tid, pid))
 
                 else:
                     # actual API call
-                    tid, status = struct.unpack('IB', recvall(sock, 5))
-                    returnval = getintstring(sock)
-
-                    apiname, modulename, parseinfo = LOGTBL[apiiindex]
+                    apiname, modulename, parseinfo = LOGTBL[apiindex]
                     formatspecifiers, argnames = parseinfo[0], parseinfo[1:]
                     arguments = []
                     for pos in range(len(formatspecifiers)):
@@ -144,7 +144,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
     def read_ptr(self):
         """Read a pointer from the socket."""
-        length, value = read_int32(buf, offset)
+        value = self.read_int32()
         return '0x%08x' % value
 
     def read_string(self):
