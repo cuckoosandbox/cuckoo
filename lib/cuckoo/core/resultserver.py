@@ -2,18 +2,21 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os
+import ntpath
 import struct
 import socket
 import logging
-import shelve
+import time
+import datetime
 import SocketServer
 from threading import Timer, Event, Thread
 
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.exceptions import CuckooResultError
+from lib.cuckoo.common.exceptions import CuckooResultError, CuckooOperationalError
 from lib.cuckoo.common.constants import *
 from lib.cuckoo.common.logtbl import table as LOGTBL
-from lib.cuckoo.common.utils import Singleton
+from lib.cuckoo.common.utils import create_folder, Singleton
 
 log = logging.getLogger(__name__)
 
@@ -43,7 +46,6 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         self.servethread = Thread(target=self.serve_forever)
         self.servethread.setDaemon(True)
         self.servethread.start()
-        print 'resultserver created, started thread: ', self.servethread
 
     def add_task(self, task, machine):
         self.analysistasks[machine.ip] = (task, machine)
@@ -51,6 +53,17 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
     def del_task(self, task, machine):
         x = self.analysistasks.pop(machine.ip, None)
         if not x: log.warning("Resultserver did not have {0} in its task info.".format(machine.ip))
+
+    def build_storage_path(self, ip):
+        """Initialize analysis storage folder."""
+        x = self.analysistasks.pop(ip, None)
+        if not x:
+            log.critical("Resultserver unable to build storage path for connection from {0}.".format(ip))
+            return False
+
+        task, machine = x
+        storagepath = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task.id))
+        return storagepath
 
 
 class Resulthandler(SocketServer.BaseRequestHandler):
@@ -85,24 +98,32 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         ip, port = self.client_address
         sock = self.request
         log.info('new connection from: {0}:{1}'.format(ip, port))
-        filestorage = shelve.open('./{0}.data'.format(port))
+        storagepath = self.server.build_storage_path(ip)
+        logspath = self.create_logs_folder(storagepath)
+        if not logspath: return
+
+        # this will hold the fd to the csv file for this PID
+        fd, pid, ppid, procname = (None, None, None, None)
+        connect_time = datetime.datetime.now()
 
         try:
             while True:
                 apiindex, status = struct.unpack('BB', recvall(sock, 2))
                 returnval, tid, timediff = struct.unpack('III', recvall(sock, 12))
-                print 'DBG', apiindex, status, returnval, tid, timediff
 
                 if apiindex == 0:
                     # new process message
                     pid = self.read_int32()
-                    maxlen, modulepath = self.read_string()
-                    log.info('MSG_PROCESS> PID:{0} maxlen:{1} module:{2}'.format(pid, maxlen, modulepath))
+                    ppid = self.read_int32()
+                    modulepath = self.read_string()
+                    procname = ntpath.basename(modulepath)
+                    log.debug('MSG_PROCESS> PID:{0} PPID:{1} module:{2}'.format(pid, ppid, modulepath))
+                    fd = open(os.path.join(logspath, str(pid) + '.csv'), 'w')
 
                 elif apiindex == 1:
                     # new thread message
                     pid = self.read_int32()
-                    log.info('MSG_THREAD> TID:{0} PID:{1}'.format(tid, pid))
+                    log.debug('MSG_THREAD> TID:{0} PID:{1}'.format(tid, pid))
 
                 else:
                     # actual API call
@@ -115,20 +136,24 @@ class Resulthandler(SocketServer.BaseRequestHandler):
                         fn = self.formatmap.get(fs, None)
                         if fn:
                             r = fn()
-                            arguments.append('{0}={1}'.format(argname, r))
+                            arguments.append('{0}->{1}'.format(argname, r))
                         else:
                             log.warning('No handler for format specifier {0} on apitype {1}'.format(fs,apiname))
 
-                    print '  TID={0} -> {1}({2}) = {3} ({4})'.format(tid, 
-                        apiname, ', '.join(arguments),
-                        returnval, status )
+                    current_time = connect_time + datetime.timedelta(0,0, timediff*1000)
+                    timestring = logtime(current_time)
+                    log.debug('MSG_CALL> TID:{0} APINAME:{1}'.format(tid, apiname))
+
+                    print >>fd, ','.join('"{0}"'.format(i) for i in [timestring, pid,
+                        procname, tid, ppid, modulename, apiname, status, returnval,
+                        ] + arguments)
 
         except Disconnect:
             pass
         except socket.error, e:
             log.warn('socket.error: {0}'.format(e))
 
-        filestorage.close()
+        if fd: fd.close()
         log.info('connection closed: {0}:{1}'.format(ip, port))
 
     def log_process(self, *args):
@@ -150,7 +175,9 @@ class Resulthandler(SocketServer.BaseRequestHandler):
     def read_string(self):
         """Reads an utf8 string from the socket."""
         length, maxlength = struct.unpack('II', recvall(self.request, 8))
-        return maxlength, recvall(self.request, length)
+        s = recvall(self.request, length)
+        if maxlength > length: s += '... (truncated)'
+        return s
 
     def read_buffer(self):
         """Reads a memory socket from the socket."""
@@ -173,6 +200,15 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             ret.append(item)
         return ret
 
+    def create_logs_folder(self, storagepath):
+        logspath = os.path.join(storagepath, "logs")
+        try:
+            create_folder(folder=logspath)
+        except CuckooOperationalError:
+            log.error("Unable to create logs folder %s" % logspath)
+            return False
+        return logspath
+
 
 def recvall(sock, length):
     buf = ''
@@ -183,9 +219,7 @@ def recvall(sock, length):
 
     return buf
 
-def getintstring(sock):
-    length = struct.unpack('I', recvall(sock, 4))
-    return recvall(sock, length)
-def getshortstring(sock):
-    length = struct.unpack('H', recvall(sock, 4))
-    return recvall(sock, length)
+def logtime(dt):
+    t = time.strftime("%Y-%m-%d %H:%M:%S", dt.timetuple())
+    s = "%s,%03d" % (t, dt.microsecond/1000)
+    return s
