@@ -5,6 +5,7 @@
 import os
 import ntpath
 import string
+import time
 import tempfile
 import xmlrpclib
 from datetime import datetime
@@ -133,3 +134,15 @@ class Singleton(type):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+# formats time like a logger does, for the csv output (e.g. "2013-01-25 13:21:44,590")
+def logtime(dt):
+    """formats time like a logger does, for the csv output 
+       (e.g. "2013-01-25 13:21:44,590")
+
+    @param dt: datetime object
+    @return: time string
+    """
+    t = time.strftime("%Y-%m-%d %H:%M:%S", dt.timetuple())
+    s = "%s,%03d" % (t, dt.microsecond/1000)
+    return s
