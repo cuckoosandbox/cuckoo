@@ -3,8 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import ntpath
-import struct
 import socket
 import logging
 import time
@@ -15,17 +13,13 @@ from threading import Timer, Event, Thread
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooResultError, CuckooOperationalError
 from lib.cuckoo.common.constants import *
-from lib.cuckoo.common.logtbl import table as LOGTBL
-from lib.cuckoo.common.utils import create_folder, Singleton
+from lib.cuckoo.common.utils import create_folder, Singleton, logtime
+from lib.cuckoo.common.netlog import NetlogParser
 
 log = logging.getLogger(__name__)
 
-BUFSIZ = 1024 * 16
-
-
 class Disconnect(Exception):
     pass
-
 
 class Resultserver(SocketServer.ThreadingTCPServer, object):
     """Result server. Singleton!
@@ -73,136 +67,72 @@ class Resulthandler(SocketServer.BaseRequestHandler):
     """
 
     def __init__(self, *args, **kwargs):
-        self.formatmap = {
-            's': self.read_string,
-            'S': self.read_string,
-            'u': self.read_string,
-            'U': self.read_string,
-            'b': self.read_buffer,
-            'B': self.read_buffer,
-            'i': self.read_int32,
-            'l': self.read_int32,
-            'L': self.read_int32,
-            'p': self.read_ptr,
-            'P': self.read_ptr,
-            'o': self.read_string,
-            'O': self.read_string,
-            'a': None,
-            'A': None,
-            'r': self.read_registry,
-            'R': self.read_registry,
-        }
+        self.rawlogfd = None
+        self.startbuf = ''
         SocketServer.BaseRequestHandler.__init__(self, *args, **kwargs)
+
+    def read(self, length):
+        buf = ''
+        while len(buf) < length:
+            tmp = self.request.recv(length-len(buf))
+            if not tmp: raise Disconnect()
+            buf += tmp
+
+        if self.rawlogfd: self.rawlogfd.write(buf)
+        else: self.startbuf += buf
+        return buf
 
     def handle(self):
         ip, port = self.client_address
-        sock = self.request
+        self.connect_time = datetime.datetime.now()        
         log.info('new connection from: {0}:{1}'.format(ip, port))
-        storagepath = self.server.build_storage_path(ip)
-        if not storagepath: return
-        logspath = self.create_logs_folder(storagepath)
-        if not logspath: return
 
-        # this will hold the fd to the csv file for this PID
-        fd, pid, ppid, procname = (None, None, None, None)
-        connect_time = datetime.datetime.now()
+        self.storagepath = self.server.build_storage_path(ip)
+        if not self.storagepath: return
+        self.logspath = self.create_logs_folder()
+        if not self.logspath: return
 
+        # netlog protocol parser
+        nlp = NetlogParser(self)
         try:
             while True:
-                apiindex, status = struct.unpack('BB', recvall(sock, 2))
-                returnval, tid, timediff = struct.unpack('III', recvall(sock, 12))
-
-                if apiindex == 0:
-                    # new process message
-                    pid = self.read_int32()
-                    ppid = self.read_int32()
-                    modulepath = self.read_string()
-                    procname = ntpath.basename(modulepath)
-                    log.debug('MSG_PROCESS> PID:{0} PPID:{1} module:{2}'.format(pid, ppid, modulepath))
-                    fd = open(os.path.join(logspath, str(pid) + '.csv'), 'w')
-
-                elif apiindex == 1:
-                    # new thread message
-                    pid = self.read_int32()
-                    log.debug('MSG_THREAD> TID:{0} PID:{1}'.format(tid, pid))
-
-                else:
-                    # actual API call
-                    apiname, modulename, parseinfo = LOGTBL[apiindex]
-                    formatspecifiers, argnames = parseinfo[0], parseinfo[1:]
-                    arguments = []
-                    for pos in range(len(formatspecifiers)):
-                        fs = formatspecifiers[pos]
-                        argname = argnames[pos]
-                        fn = self.formatmap.get(fs, None)
-                        if fn:
-                            r = fn()
-                            arguments.append('{0}->{1}'.format(argname, r))
-                        else:
-                            log.warning('No handler for format specifier {0} on apitype {1}'.format(fs,apiname))
-
-                    current_time = connect_time + datetime.timedelta(0,0, timediff*1000)
-                    timestring = logtime(current_time)
-                    log.debug('MSG_CALL> TID:{0} APINAME:{1}'.format(tid, apiname))
-
-                    print >>fd, ','.join('"{0}"'.format(i) for i in [timestring, pid,
-                        procname, tid, ppid, modulename, apiname, status, returnval,
-                        ] + arguments)
-
+                r = nlp.read_next_message()
+                if not r: break
         except Disconnect:
             pass
         except socket.error, e:
             log.warn('socket.error: {0}'.format(e))
 
-        if fd: fd.close()
+        if self.logfd: self.logfd.close()
+        if self.rawlogfd: self.rawlogfd.close()
         log.info('connection closed: {0}:{1}'.format(ip, port))
 
-    def log_process(self, *args):
-        print 'NETLOGDBG new process', args
-    def log_thread(self, *args):
-        print 'NETLOGDBG new thread', args
-    def log_call(self, tid, *args):
-        print 'NETLOGDBG call from ', tid, 'args:', args
+    def log_process(self, context, pid, ppid, modulepath, procname):
+        log.debug('log_process> pid:{0} ppid:{1} module:{2} file:{3}'.format(pid, ppid, modulepath, procname))
+        self.logfd = open(os.path.join(self.logspath, str(pid) + '.csv'), 'w')
+        self.rawlogfd = open(os.path.join(self.logspath, str(pid) + '.raw'), 'w')
+        self.rawlogfd.write(self.startbuf)
+        self.pid, self.ppid, self.procname = pid, ppid, procname
 
-    def read_int32(self):
-        """Reads a 32bit integer from the socket."""
-        return struct.unpack('I', recvall(self.request, 4))[0]
+    def log_thread(self, context, pid):
+        log.debug('log_thread> tid:{0} pid:{1}'.format(context[3], pid))
 
-    def read_ptr(self):
-        """Read a pointer from the socket."""
-        value = self.read_int32()
-        return '0x%08x' % value
+    def log_call(self, context, apiname, modulename, arguments):
+        apiindex, status, returnval, tid, timediff = context
 
-    def read_string(self):
-        """Reads an utf8 string from the socket."""
-        length, maxlength = struct.unpack('II', recvall(self.request, 8))
-        s = recvall(self.request, length)
-        if maxlength > length: s += '... (truncated)'
-        return s
+        log.debug('log_call> tid:{0} apiname:{1}'.format(tid, apiname))
 
-    def read_buffer(self):
-        """Reads a memory socket from the socket."""
-        length, maxlength = struct.unpack('II', recvall(self.request, 8))
-        # only return the maxlength, as we don't log the actual buffer right now
-        return maxlength
+        current_time = self.connect_time + datetime.timedelta(0,0, timediff*1000)
+        timestring = logtime(current_time)
 
-    def read_registry(self):
-        """Read logged registry data from the socket."""
-        typ = struct.unpack('H', recvall(self.request, 2))[0]
-        # do something depending on type
-        return typ
+        argumentstrings = ['{0}->{1}'.format(argname, r) for argname, r in arguments]
 
-    def read_list(self, fn):
-        """Reads a list of _fn_ from the socket."""
-        count = struct.unpack('H', recvall(self.request, 2))[0]
-        ret, length = [], 0
-        for x in xrange(count):
-            item = fn()
-            ret.append(item)
-        return ret
+        print >>self.logfd, ','.join('"{0}"'.format(i) for i in [timestring, self.pid,
+            self.procname, tid, self.ppid, modulename, apiname, status, returnval,
+            ] + argumentstrings)
 
-    def create_logs_folder(self, storagepath):
-        logspath = os.path.join(storagepath, "logs")
+    def create_logs_folder(self):
+        logspath = os.path.join(self.storagepath, "logs")
         try:
             create_folder(folder=logspath)
         except CuckooOperationalError:
@@ -210,17 +140,3 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             return False
         return logspath
 
-
-def recvall(sock, length):
-    buf = ''
-    while len(buf) < length:
-        tmp = sock.recv(length-len(buf))
-        if not tmp: raise Disconnect()
-        buf += tmp
-
-    return buf
-
-def logtime(dt):
-    t = time.strftime("%Y-%m-%d %H:%M:%S", dt.timetuple())
-    s = "%s,%03d" % (t, dt.microsecond/1000)
-    return s
