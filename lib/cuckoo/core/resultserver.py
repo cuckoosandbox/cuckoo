@@ -56,7 +56,7 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
 
     def build_storage_path(self, ip):
         """Initialize analysis storage folder."""
-        x = self.analysistasks.pop(ip, None)
+        x = self.analysistasks.get(ip, None)
         if not x:
             log.critical("Resultserver unable to build storage path for connection from {0}.".format(ip))
             return False
@@ -99,6 +99,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         sock = self.request
         log.info('new connection from: {0}:{1}'.format(ip, port))
         storagepath = self.server.build_storage_path(ip)
+        if not storagepath: return
         logspath = self.create_logs_folder(storagepath)
         if not logspath: return
 
