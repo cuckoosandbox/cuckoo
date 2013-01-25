@@ -257,14 +257,7 @@ class AnalysisManager(Thread):
                               "%s" % (self.task.target, e))
 
             # Take a memory dump of the machine before shutting it off.
-            do_memory_dump = False
-            if self.cfg.cuckoo.memory_dump:
-                do_memory_dump = True
-            else:
-                if self.task.memory:
-                    do_memory_dump = True
-
-            if do_memory_dump:
+            if self.cfg.cuckoo.memory_dump or self.task.memory:
                 try:
                     mmanager.dump_memory(machine.label,
                                          os.path.join(self.storage, "memory.dmp"))
