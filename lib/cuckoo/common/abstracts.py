@@ -689,6 +689,8 @@ class Report(object):
         self.analysis_path = analysis_path
         self.conf_path = os.path.join(self.analysis_path, "analysis.conf")
         self.reports_path = os.path.join(self.analysis_path, "reports")
+        self.shots_path = os.path.join(self.analysis_path, "shots")
+        self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
 
         try:
             create_folder(folder=self.reports_path)
