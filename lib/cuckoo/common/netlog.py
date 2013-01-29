@@ -2,11 +2,37 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import struct
 import datetime
+import string
 
 from lib.cuckoo.common.logtbl import table as LOGTBL
 from lib.cuckoo.common.utils import get_filename_from_path, time_from_cuckoomon
+
+log = logging.getLogger(__name__)
+
+REG_NONE                = 0
+REG_SZ                  = 1
+REG_EXPAND_SZ           = 2
+REG_BINARY              = 3
+REG_DWORD_LITTLE_ENDIAN = 4
+REG_DWORD               = 4
+REG_DWORD_BIG_ENDIAN    = 5
+
+# should probably prettify this
+def expand_format(fs):
+    out = ''
+    i = 0
+    while i<len(fs):
+        x = fs[i]
+        if x in string.digits:
+            out += fs[i+1] * int(x)
+            i += 1
+        else:
+            out += x
+        i += 1
+    return out
 
 class NetlogParser(object):
     def __init__(self, handler):
@@ -59,7 +85,7 @@ class NetlogParser(object):
         else:
             # actual API call
             apiname, modulename, parseinfo = LOGTBL[apiindex]
-            formatspecifiers, argnames = parseinfo[0], parseinfo[1:]
+            formatspecifiers, argnames = expand_format(parseinfo[0]), parseinfo[1:]
             arguments = []
             for pos in range(len(formatspecifiers)):
                 fs = formatspecifiers[pos]
@@ -99,9 +125,15 @@ class NetlogParser(object):
 
     def read_registry(self):
         """Read logged registry data from the socket."""
-        typ = struct.unpack('H', self.handler.read(2))[0]
+        typ = struct.unpack('I', self.handler.read(4))[0]
         # do something depending on type
-        return typ
+        if typ == REG_DWORD_BIG_ENDIAN or typ == REG_DWORD_LITTLE_ENDIAN:
+            value = self.read_int32()
+        elif typ == REG_SZ or typ == REG_EXPAND_SZ:
+            value = self.read_string()
+        else:
+            value = 'Cuckoo_unknown_reg_type'
+        return value
 
     def read_list(self, fn):
         """Reads a list of _fn_ from the socket."""
