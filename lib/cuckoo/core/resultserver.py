@@ -30,6 +30,7 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
     __metaclass__ = Singleton
 
     allow_reuse_address = True
+    daemon_threads = True
 
     def __init__(self, *args, **kwargs):
         self.cfg = Config()
