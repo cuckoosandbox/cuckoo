@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import struct
+import datetime
 
 from lib.cuckoo.common.logtbl import table as LOGTBL
 from lib.cuckoo.common.utils import get_filename_from_path, time_from_cuckoomon
@@ -38,12 +39,17 @@ class NetlogParser(object):
 
         if apiindex == 0:
             # new process message
-            timestring = time_from_cuckoomon(self.read_string())
+            timelow = self.read_int32()
+            timehigh = self.read_int32()
+            # FILETIME is 100-nanoseconds from 1601 :/
+            vmtimeunix = (timelow + (timehigh << 32)) / 10000000.0 - 11644473600
+            vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
+
             pid = self.read_int32()
             ppid = self.read_int32()
             modulepath = self.read_string()
             procname = get_filename_from_path(modulepath)
-            self.handler.log_process(context, timestring, pid, ppid, modulepath, procname)
+            self.handler.log_process(context, vmtime, pid, ppid, modulepath, procname)
 
         elif apiindex == 1:
             # new thread message
