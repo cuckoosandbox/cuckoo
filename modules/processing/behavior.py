@@ -53,6 +53,12 @@ class ParseProcessLog(list):
     def __getitem__(self, key):
         return getattr(self, key)
 
+    def __repr__(self):
+        return 'ParseProcessLog {0}'.format(self._log_path)
+
+    def __nonzero__(self):
+        return True
+
     def next(self):
         while not self.lastcall:
             r = None
