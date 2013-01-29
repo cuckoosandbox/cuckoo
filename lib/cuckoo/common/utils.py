@@ -135,7 +135,6 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-# formats time like a logger does, for the csv output (e.g. "2013-01-25 13:21:44,590")
 def logtime(dt):
     """formats time like a logger does, for the csv output 
        (e.g. "2013-01-25 13:21:44,590")
@@ -146,3 +145,11 @@ def logtime(dt):
     t = time.strftime("%Y-%m-%d %H:%M:%S", dt.timetuple())
     s = "%s,%03d" % (t, dt.microsecond/1000)
     return s
+
+def time_from_cuckoomon(s):
+    """parse time string received from cuckoomon via netlog
+
+    @param s: time string
+    @return: datetime object
+    """
+    return datetime.strptime(s, '%Y-%m-%d %H:%M:%S,%f')

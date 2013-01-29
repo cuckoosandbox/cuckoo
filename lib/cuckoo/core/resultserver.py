@@ -107,8 +107,8 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         if self.rawlogfd: self.rawlogfd.close()
         log.info('connection closed: {0}:{1}'.format(ip, port))
 
-    def log_process(self, context, pid, ppid, modulepath, procname):
-        log.debug('log_process> pid:{0} ppid:{1} module:{2} file:{3}'.format(pid, ppid, modulepath, procname))
+    def log_process(self, context, timestring, pid, ppid, modulepath, procname):
+        log.debug('log_process> time:{4} pid:{0} ppid:{1} module:{2} file:{3}'.format(pid, ppid, modulepath, procname, timestring))
         self.logfd = open(os.path.join(self.logspath, str(pid) + '.csv'), 'w')
         self.rawlogfd = open(os.path.join(self.logspath, str(pid) + '.raw'), 'w')
         self.rawlogfd.write(self.startbuf)

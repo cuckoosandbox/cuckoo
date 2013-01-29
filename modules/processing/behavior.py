@@ -66,9 +66,9 @@ class ParseProcessLog(list):
         tmp, self.lastcall = self.lastcall, None
         return tmp
 
-    def log_process(self, context, pid, ppid, modulepath, procname):
+    def log_process(self, context, timestring, pid, ppid, modulepath, procname):
         self.process_id, self.parent_id, self.process_name = pid, ppid, procname
-        self.first_seen = datetime.datetime.fromtimestamp(os.stat(self._log_path).st_ctime)
+        self.first_seen = timestring
 
     def log_thread(self, context, pid):
         pass

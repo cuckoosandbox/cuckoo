@@ -5,7 +5,7 @@
 import struct
 
 from lib.cuckoo.common.logtbl import table as LOGTBL
-from lib.cuckoo.common.utils import get_filename_from_path
+from lib.cuckoo.common.utils import get_filename_from_path, time_from_cuckoomon
 
 class NetlogParser(object):
     def __init__(self, handler):
@@ -38,11 +38,12 @@ class NetlogParser(object):
 
         if apiindex == 0:
             # new process message
+            timestring = time_from_cuckoomon(self.read_string())
             pid = self.read_int32()
             ppid = self.read_int32()
             modulepath = self.read_string()
             procname = get_filename_from_path(modulepath)
-            self.handler.log_process(context, pid, ppid, modulepath, procname)
+            self.handler.log_process(context, timestring, pid, ppid, modulepath, procname)
 
         elif apiindex == 1:
             # new thread message
