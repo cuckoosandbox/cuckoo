@@ -174,7 +174,7 @@ Following is the default *conf/kvm.conf* file::
     # /etc/libvirt/<hypervisor>/networks/
     ip = 192.168.122.105
 
-    .. note::
+.. note::
 
         You may want to add a static ip address for your virtual machine.
         <network>
@@ -182,7 +182,7 @@ Following is the default *conf/kvm.conf* file::
           <ip address="192.168.122.1" netmask="255.255.255.0">
             <dhcp>
               <range start="192.168.122.2" end="192.168.122.254" />
-              <host mac="01:23:45:67:89:ab" name="foo.example.com" ip="192.168.122.105">
+              <host mac="01:23:45:67:89:ab" ip="192.168.122.105" />
             </dhcp>
           </ip>
         </network>
