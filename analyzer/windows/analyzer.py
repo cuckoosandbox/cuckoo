@@ -416,8 +416,6 @@ class Analyzer:
             self.pipes[x].stop()
         # Dump all the notified files.
         dump_files()
-        # Copy the analysis.conf.
-        shutil.copy("analysis.conf", PATHS["root"])
         # Hell yeah.
         log.info("Analysis completed")
 

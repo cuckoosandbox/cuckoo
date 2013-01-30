@@ -284,34 +284,22 @@ class AnalysisManager(Thread):
 
         return succeeded
 
-    def process_results(self, succeeded=True):
+    def process_results(self):
         """Process the analysis results and generate the enabled reports."""
-        if succeeded:
-            try:
-                logs_path = os.path.join(self.storage, "logs")
-                for csv in os.listdir(logs_path):
-                    csv = os.path.join(logs_path, csv)
-                    if os.stat(csv).st_size > self.cfg.processing.analysis_size_limit:
-                        log.error("Analysis file %s is too big to be processed, "
-                                  "analysis aborted. Process it manually with the "
-                                  "provided utilities" % csv)
-                        return False
-            except OSError as e:
-                log.warning("Error accessing analysis logs (task=%d): %s"
-                            % (self.task.id, e))
+        try:
+            logs_path = os.path.join(self.storage, "logs")
+            for csv in os.listdir(logs_path):
+                csv = os.path.join(logs_path, csv)
+                if os.stat(csv).st_size > self.cfg.processing.analysis_size_limit:
+                    log.error("Analysis file %s is too big to be processed, "
+                              "analysis aborted. Process it manually with the "
+                              "provided utilities" % csv)
+                    return False
+        except OSError as e:
+            log.warning("Error accessing analysis logs (task=%d): %s"
+                        % (self.task.id, e))
 
-            results = Processor(self.task.id).run()
-            results["success"] = succeeded
-        else:
-            results = {
-                "id": self.task.id,
-                "success" : succeeded,
-                "errors": []
-            }
-
-            for error in Database().view_errors(int(self.task.id)):
-                results["errors"].append(error.message)
-
+        results = Processor(self.task.id).run()
         Reporter(self.task.id).run(results)
 
         log.info("Task #%d: reports generation completed (path=%s)"
@@ -323,11 +311,11 @@ class AnalysisManager(Thread):
         """Run manager thread."""
         success = self.launch_analysis()
 
-        # Launch post-processing routine, even if analysis failed.
-        self.process_results(succeeded=success)
+        self.process_results()
 
         log.debug("Releasing database task #%d with status %s"
                   % (self.task.id, success))
+
         Database().complete(self.task.id, success)
 
         log.info("Task #%d: analysis procedure completed"

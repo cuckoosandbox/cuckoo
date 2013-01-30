@@ -222,7 +222,11 @@ class GuestManager:
         zip_data = StringIO()
         zip_data.write(data)
 
-        archive = ZipFile(zip_data, "r")
+        try:
+            archive = ZipFile(zip_data, "r")
+        except BadZipFile as e:
+            raise CuckooGuestError("Analysis results archive is invalid")
+
         if not os.path.exists(folder):
             try:
                 os.mkdir(folder)
