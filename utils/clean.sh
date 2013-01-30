@@ -6,7 +6,7 @@
 # PWD equals top level folder "cuckoo"
 PWD=${PWD/cuckoo*/cuckoo\/}
 
-if [[ $PWD = */cuckoo/ ]]; then
+if [[ $PWD = */cuckoo*/ ]]; then
     rm -rf $PWD/db/ $PWD/log/ $PWD/storage/
     find $PWD/ -name '*.pyc' -exec rm {} \;
 fi
