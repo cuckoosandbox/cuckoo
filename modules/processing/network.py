@@ -418,6 +418,7 @@ class NetworkAnalysis(Processing):
         results = Pcap(self.pcap_path).run()
 
         # Save PCAP file hash.
-        results["pcap_sha256"] = File(self.pcap_path).get_sha256()
+        if os.path.exists(self.pcap_path):
+            results["pcap_sha256"] = File(self.pcap_path).get_sha256()
 
         return results
