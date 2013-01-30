@@ -169,6 +169,7 @@ class Processes:
 
             # Invoke parsing of current log file.
             current_log = ParseProcessLog(file_path)
+            if current_log.process_id == None: continue
 
             # If the current log actually contains any data, add its data to
             # the global results list.
