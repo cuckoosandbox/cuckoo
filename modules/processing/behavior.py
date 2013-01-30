@@ -42,6 +42,7 @@ class ParseProcessLog(list):
         self.fd.seek(0)
 
     def read(self, length):
+        if length == 0: return b''
         buf = self.fd.read(length)
         if not buf: raise EOFError()
         return buf
