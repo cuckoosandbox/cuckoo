@@ -4,6 +4,7 @@
 
 import os
 import socket
+import select
 import logging
 import time
 import datetime
@@ -35,6 +36,7 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
     def __init__(self, *args, **kwargs):
         self.cfg = Config()
         self.analysistasks = {}
+        self.analysishandlers = {}
 
         SocketServer.ThreadingTCPServer.__init__(self, (self.cfg.processing.ip, self.cfg.processing.port), Resulthandler, *args, **kwargs)
 
@@ -43,20 +45,39 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         self.servethread.start()
 
     def add_task(self, task, machine):
+        """Register a task/machine with the Resultserver."""
         self.analysistasks[machine.ip] = (task, machine)
+        self.analysishandlers[task.id] = []
 
     def del_task(self, task, machine):
+        """Delete Resultserver state and wait for pending RequestHandlers."""
         x = self.analysistasks.pop(machine.ip, None)
         if not x: log.warning("Resultserver did not have {0} in its task info.".format(machine.ip))
+        handlers = self.analysishandlers.pop(task.id, None)
+        for h in handlers:
+            h.end_request.set()
+            h.done_event.wait()
+
+    def register_handler(self, handler):
+        """Register a RequestHandler so that we can later wait for it."""
+        task, machine = self.get_ctx_for_ip(handler.client_address[0])
+        if not task or not machine: return False
+        self.analysishandlers[task.id].append(handler)
+
+    def get_ctx_for_ip(self, ip):
+        """Return state for this ip's task."""
+        x = self.analysistasks.get(ip, None)
+        if not x:
+            log.critical("Resultserver unable to map ip to context: {0}.".format(ip))
+            return None, None
+
+        return x
 
     def build_storage_path(self, ip):
         """Initialize analysis storage folder."""
-        x = self.analysistasks.get(ip, None)
-        if not x:
-            log.critical("Resultserver unable to build storage path for connection from {0}.".format(ip))
-            return False
+        task, machine = self.get_ctx_for_ip(ip)
+        if not task or not machine: return False
 
-        task, machine = x
         storagepath = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task.id))
         return storagepath
 
@@ -67,14 +88,26 @@ class Resulthandler(SocketServer.BaseRequestHandler):
     This handler speaks our analysis log network protocol.
     """
 
-    def __init__(self, *args, **kwargs):
+    def setup(self):
         self.rawlogfd = None
         self.startbuf = ''
-        SocketServer.BaseRequestHandler.__init__(self, *args, **kwargs)
+        self.end_request = Event()
+        self.done_event = Event()
+        self.server.register_handler(self)
+
+    def finish(self):
+        self.done_event.set()
+
+    def wait_sock_or_end(self):
+        while True:
+            if self.end_request.isSet(): return False
+            rs,ws,xs = select.select([self.request],[],[],1)
+            if rs: return True
 
     def read(self, length):
         buf = ''
         while len(buf) < length:
+            if not self.wait_sock_or_end(): raise Disconnect()
             tmp = self.request.recv(length-len(buf))
             if not tmp: raise Disconnect()
             buf += tmp
