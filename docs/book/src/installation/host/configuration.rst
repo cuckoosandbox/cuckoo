@@ -151,6 +151,42 @@ You can use this same configuration structure for any other machine manager modu
 
 The comments for the options are self-explainatory.
 
+Following is the default *conf/kvm.conf* file::
+
+    [kvm]
+    # Specify a comma-separated list of available machines to be used. For each
+    # specified ID you have to define a dedicated section containing the details
+    # on the respective machine. (E.g. cuckoo1,cuckoo2,cuckoo3)
+    machines = cuckoo1
+    
+    [cuckoo1]
+    # Specify the label name of the current machine as specified in your
+    # libvirt configuration.
+    label = cuckoo1
+    
+    # Specify the operating system platform used by current machine
+    # [windows/darwin/linux].
+    platform = windows
+    
+    # Specify the IP address of the current machine. Make sure that the IP address
+    # is valid and that the host machine is able to reach it. If not, the analysis
+    # will fail.You may want to configure your network settings in
+    # /etc/libvirt/<hypervisor>/networks/
+    ip = 192.168.122.105
+
+.. note::
+
+        You may want to add a static ip address for your virtual machine.
+        <network>
+          …
+          <ip address="192.168.122.1" netmask="255.255.255.0">
+            <dhcp>
+              <range start="192.168.122.2" end="192.168.122.254" />
+              <host mac="01:23:45:67:89:ab" ip="192.168.122.105" />
+            </dhcp>
+          </ip>
+        </network>
+
 .. _reporting_conf:
 
 reporting.conf
