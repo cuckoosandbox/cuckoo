@@ -48,7 +48,7 @@ class ParseProcessLog(list):
         return buf
 
     def __iter__(self):
-        log.debug('iter called by this guy: {0}'.format(inspect.stack()[1]))
+        #log.debug('iter called by this guy: {0}'.format(inspect.stack()[1]))
         return self
 
     def __getitem__(self, key):
@@ -134,7 +134,6 @@ class ParseProcessLog(list):
         call["repeated"] = 0
 
         return call
-
 
 class Processes:
     """Processes analyzer."""
