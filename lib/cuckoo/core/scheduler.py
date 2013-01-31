@@ -20,6 +20,7 @@ from lib.cuckoo.common.utils import  create_folders, create_folder
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.guest import GuestManager
+from lib.cuckoo.core.resultserver import Resultserver
 from lib.cuckoo.core.sniffer import Sniffer
 from lib.cuckoo.core.processor import Processor
 from lib.cuckoo.core.reporter import Reporter
@@ -143,12 +144,8 @@ class AnalysisManager(Thread):
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
-        options["machine"] = self.task.machine
-        options["platform"] = self.task.platform
         options["options"] = self.task.options
-        options["custom"] = self.task.custom
         options["enforce_timeout"] = self.task.enforce_timeout
-        options["started"] = time.time()
 
         if not self.task.timeout or self.task.timeout == 0:
             options["timeout"] = self.cfg.timeouts.default
@@ -184,6 +181,9 @@ class AnalysisManager(Thread):
 
         # Acquire analysis machine.
         machine = self.acquire_machine()
+
+        # At this point we can tell the Resultserver about it
+        Resultserver().add_task(self.task, machine)
 
         # If enabled in the configuration, start the tcpdump instance.
         if self.cfg.sniffer.enabled:
@@ -253,14 +253,7 @@ class AnalysisManager(Thread):
                               "%s" % (self.task.target, e))
 
             # Take a memory dump of the machine before shutting it off.
-            do_memory_dump = False
-            if self.cfg.cuckoo.memory_dump:
-                do_memory_dump = True
-            else:
-                if self.task.memory:
-                    do_memory_dump = True
-
-            if do_memory_dump:
+            if self.cfg.cuckoo.memory_dump or self.task.memory:
                 try:
                     mmanager.dump_memory(machine.label,
                                          os.path.join(self.storage, "memory.dmp"))
@@ -273,8 +266,14 @@ class AnalysisManager(Thread):
             try:
                 # Stop the analysis machine.
                 mmanager.stop(machine.label)
-                # Market the machine in the database as stopped.
-                Database().guest_stop(guest_log)
+            except CuckooMachineError as e:
+                log.warning("Unable to stop machine %s: %s"
+                            % (machine.label, e))
+
+            # Market the machine in the database as stopped.
+            Database().guest_stop(guest_log)
+
+            try:
                 # Release the analysis machine.
                 mmanager.release(machine.label)
             except CuckooMachineError as e:
@@ -282,36 +281,27 @@ class AnalysisManager(Thread):
                           "You might need to restore it manually"
                           % (machine.label, e))
 
+            # after all this, we can make the Resultserver forget about it
+            Resultserver().del_task(self.task, machine)
+
         return succeeded
 
-    def process_results(self, succeeded=True):
+    def process_results(self):
         """Process the analysis results and generate the enabled reports."""
-        if succeeded:
-            try:
-                logs_path = os.path.join(self.storage, "logs")
-                for csv in os.listdir(logs_path):
-                    csv = os.path.join(logs_path, csv)
-                    if os.stat(csv).st_size > self.cfg.processing.analysis_size_limit:
-                        log.error("Analysis file %s is too big to be processed, "
-                                  "analysis aborted. Process it manually with the "
-                                  "provided utilities" % csv)
-                        return False
-            except OSError as e:
-                log.warning("Error accessing analysis logs (task=%d): %s"
-                            % (self.task.id, e))
+        try:
+            logs_path = os.path.join(self.storage, "logs")
+            for csv in os.listdir(logs_path):
+                csv = os.path.join(logs_path, csv)
+                if os.stat(csv).st_size > self.cfg.processing.analysis_size_limit:
+                    log.error("Analysis file %s is too big to be processed, "
+                              "analysis aborted. Process it manually with the "
+                              "provided utilities" % csv)
+                    return False
+        except OSError as e:
+            log.warning("Error accessing analysis logs (task=%d): %s"
+                        % (self.task.id, e))
 
-            results = Processor(self.task.id).run()
-            results["success"] = succeeded
-        else:
-            results = {
-                "id": self.task.id,
-                "success" : succeeded,
-                "errors": []
-            }
-
-            for error in Database().view_errors(int(self.task.id)):
-                results["errors"].append(error.message)
-
+        results = Processor(self.task.id).run()
         Reporter(self.task.id).run(results)
 
         log.info("Task #%d: reports generation completed (path=%s)"
@@ -322,13 +312,12 @@ class AnalysisManager(Thread):
     def run(self):
         """Run manager thread."""
         success = self.launch_analysis()
+        Database().complete(self.task.id, success)
 
-        # Launch post-processing routine, even if analysis failed.
-        self.process_results(succeeded=success)
+        self.process_results()
 
         log.debug("Releasing database task #%d with status %s"
                   % (self.task.id, success))
-        Database().complete(self.task.id, success)
 
         log.info("Task #%d: analysis procedure completed"
                  % self.task.id)
@@ -384,6 +373,7 @@ class Scheduler:
             raise CuckooCriticalError("No machines available")
         else:
             log.info("Loaded %s machine/s" % mmanager.machines().count())
+
 
     def stop(self):
         """Stop scheduler."""
