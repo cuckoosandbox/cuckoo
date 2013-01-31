@@ -144,12 +144,8 @@ class AnalysisManager(Thread):
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
-        options["machine"] = self.task.machine
-        options["platform"] = self.task.platform
         options["options"] = self.task.options
-        options["custom"] = self.task.custom
         options["enforce_timeout"] = self.task.enforce_timeout
-        options["started"] = time.time()
 
         if not self.task.timeout or self.task.timeout == 0:
             options["timeout"] = self.cfg.timeouts.default
@@ -270,8 +266,14 @@ class AnalysisManager(Thread):
             try:
                 # Stop the analysis machine.
                 mmanager.stop(machine.label)
-                # Market the machine in the database as stopped.
-                Database().guest_stop(guest_log)
+            except CuckooMachineError as e:
+                log.warning("Unable to stop machine %s: %s"
+                            % (machine.label, e))
+
+            # Market the machine in the database as stopped.
+            Database().guest_stop(guest_log)
+
+            try:
                 # Release the analysis machine.
                 mmanager.release(machine.label)
             except CuckooMachineError as e:
@@ -310,13 +312,12 @@ class AnalysisManager(Thread):
     def run(self):
         """Run manager thread."""
         success = self.launch_analysis()
+        Database().complete(self.task.id, success)
 
         self.process_results()
 
         log.debug("Releasing database task #%d with status %s"
                   % (self.task.id, success))
-
-        Database().complete(self.task.id, success)
 
         log.info("Task #%d: analysis procedure completed"
                  % self.task.id)
