@@ -232,6 +232,7 @@ class Task(Base):
     added_on = Column(DateTime(timezone=False),
                       default=datetime.now(),
                       nullable=False)
+    started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(Enum("pending",
                          "processing",
@@ -393,6 +394,7 @@ class Database(object):
             row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
             if row:
                row.status = "processing"
+               row.started_on = datetime.now()
             session.commit()
         except SQLAlchemyError:
             session.rollback()

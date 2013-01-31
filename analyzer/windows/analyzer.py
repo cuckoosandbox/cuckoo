@@ -34,6 +34,9 @@ DUMPED_LIST = []
 PROCESS_LIST = []
 PROCESS_LOCK = Lock()
 
+PID = os.getpid()
+PPID = Process(pid=PID).get_parent_pid()
+
 def add_pid(pid):
     """Add a process to process list."""
     if type(pid) == long or type(pid) == int or type(pid) == str:
@@ -184,9 +187,7 @@ class PipeHandler(Thread):
             # In case of GETPIDS we're gonna return the current process ID
             # and the process ID of our parent process (agent.py).
             if command == "GETPIDS":
-                pid = os.getpid()
-                ppid = Process(pid=pid).get_parent_pid()
-                response = struct.pack("II", pid, ppid)
+                response = struct.pack("II", PID, PPID)
             # In case of PID, the client is trying to notify the creation of
             # a new process to be injected and monitored.
             elif command.startswith("PROCESS:"):
@@ -215,7 +216,7 @@ class PipeHandler(Thread):
                         thread_id = None
 
                 if process_id:
-                    if process_id != os.getpid():
+                    if process_id not in (PID, PPID):
                         # We inject the process only if it's not being monitored
                         # already, otherwise we would generated polluted logs.
                         if process_id not in PROCESS_LIST:
@@ -242,7 +243,7 @@ class PipeHandler(Thread):
                             log.info("Successfully injected process with pid %d"
                                      % proc.pid)
                     else:
-                        log.warning("Received request to inject myself, skip")
+                        log.warning("Received request to inject Cuckoo processes, skip")
 
                 # Once we're done operating on the processes list, we release
                 # the lock.
@@ -415,8 +416,6 @@ class Analyzer:
             self.pipes[x].stop()
         # Dump all the notified files.
         dump_files()
-        # Copy the analysis.conf.
-        shutil.copy("analysis.conf", PATHS["root"])
         # Hell yeah.
         log.info("Analysis completed")
 

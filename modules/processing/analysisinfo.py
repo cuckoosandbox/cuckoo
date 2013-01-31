@@ -5,9 +5,9 @@
 import time
 from datetime import datetime
 
-from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_VERSION
 from lib.cuckoo.common.abstracts import Processing
+from lib.cuckoo.core.database import Database
 
 class AnalysisInfo(Processing):
     """General information about analysis session."""
@@ -18,16 +18,15 @@ class AnalysisInfo(Processing):
         """
         self.key = "info"
 
-        cfg = Config(self.conf_path)
-
-        started = float(cfg.analysis.started)
-        ended = time.time()
+        started = datetime.fromtimestamp(time.mktime(time.strptime(self.task["started_on"], "%Y-%m-%d %H:%M:%S")))
+        ended = datetime.fromtimestamp(time.mktime(time.strptime(self.task["completed_on"], "%Y-%m-%d %H:%M:%S")))
+        duration =  ended - started
 
         info = {
             "version" : CUCKOO_VERSION,
-            "started" : datetime.fromtimestamp(started).strftime("%Y-%m-%d %H:%M:%S"),
-            "ended" : datetime.fromtimestamp(ended).strftime("%Y-%m-%d %H:%M:%S"),
-            "duration" : "%d seconds" % (ended - started),
+            "started" : self.task["started_on"],
+            "ended" : self.task["completed_on"],
+            "duration" : duration.seconds,
             "id" : int(self.task["id"]),
             "category" : self.task["category"]
         }

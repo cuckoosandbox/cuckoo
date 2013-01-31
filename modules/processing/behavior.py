@@ -6,23 +6,88 @@ import os
 import sys
 import csv
 import logging
+import datetime
+import inspect
 
 from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.utils import convert_to_printable
+from lib.cuckoo.common.utils import convert_to_printable, logtime
+from lib.cuckoo.common.netlog import NetlogParser
+
 
 log = logging.getLogger(__name__)
 
-class ParseProcessLog:
+class ParseProcessLog(list):
     """Parses process log file."""
     
     def __init__(self, log_path):
         """@param log_path: log file path."""
         self._log_path = log_path
+        self.fd = None
+        self.parser = None
+
         self.process_id = None
         self.process_name = None
         self.parent_id = None
-        self.process_first_seen = None
-        self.calls = []
+        self.first_seen = None
+        self.calls = self
+        self.lastcall = None
+
+        if os.path.exists(log_path) and os.stat(log_path).st_size > 0:
+            self.parse_first_and_reset()
+
+    def parse_first_and_reset(self):
+        self.fd = open(self._log_path, "rb")
+        self.parser = NetlogParser(self)
+        self.parser.read_next_message()
+        self.fd.seek(0)
+
+    def read(self, length):
+        if length == 0: return b''
+        buf = self.fd.read(length)
+        if not buf or len(buf) != length: raise EOFError()
+        return buf
+
+    def __iter__(self):
+        log.debug('iter called by this guy: {0}'.format(inspect.stack()[1]))
+        return self
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __repr__(self):
+        return 'ParseProcessLog {0}'.format(self._log_path)
+
+    def __nonzero__(self):
+        return True
+
+    def next(self):
+        while not self.lastcall:
+            r = None
+            try: r = self.parser.read_next_message()
+            except EOFError:
+                self.fd.seek(0)
+                raise StopIteration()
+
+            if not r: raise StopIteration()
+
+        tmp, self.lastcall = self.lastcall, None
+        return tmp
+
+    def log_process(self, context, timestring, pid, ppid, modulepath, procname):
+        self.process_id, self.parent_id, self.process_name = pid, ppid, procname
+        self.first_seen = timestring
+
+    def log_thread(self, context, pid):
+        pass
+
+    def log_call(self, context, apiname, modulename, arguments):
+        apiindex, status, returnval, tid, timediff = context
+
+        current_time = self.first_seen + datetime.timedelta(0,0, timediff*1000)
+        timestring = logtime(current_time)
+
+        self.lastcall = self._parse([timestring, tid, modulename, apiname, 
+            status, returnval] + arguments)
 
     def _parse(self, row):
         """Parse log row.
@@ -34,87 +99,42 @@ class ParseProcessLog:
 
         try:
             timestamp = row[0]    # Timestamp of current API call invocation.
-            process_id = row[1]   # ID of the process that performed the call.
-            process_name = row[2] # Name of the process.
-            thread_id = row[3]    # Thread ID.
-            parent_id = row[4]    # PID of the parent process.
-            category = row[5]     # Win32 function category.
-            api_name = row[6]     # Name of the Windows API.
-            status_value = row[7] # Success or Failure?
-            return_value = row[8] # Value returned by the function.
+            thread_id = row[1]    # Thread ID.
+            category = row[2]     # Win32 function category.
+            api_name = row[3]     # Name of the Windows API.
+            status_value = row[4] # Success or Failure?
+            return_value = row[5] # Value returned by the function.
         except IndexError as e:
             log.debug("Unable to parse process log row: %s" % e)
             return False
 
-        if not self.process_id:
-            self.process_id = process_id
-
-        if not self.process_name:
-            self.process_name = process_name
-
-        if not self.parent_id:
-            self.parent_id = parent_id
-
-        if not self.process_first_seen:
-            self.process_first_seen = timestamp
-
         # Now walk through the remaining columns, which will contain API
         # arguments.
-        for index in range(9, len(row)):
+        for index in range(6, len(row)):
             argument = {}
 
             # Split the argument name with its value based on the separator.
             try:                
-                (arg_name, arg_value) = row[index].split("->", 1)
+                (arg_name, arg_value) = row[index]
             except ValueError as e:
                 log.debug("Unable to parse analysis row argument (row=%s): %s" % (row[index], e))
                 continue
 
             argument["name"] = arg_name
-            argument["value"] = convert_to_printable(arg_value).lstrip("\\??\\")
+            argument["value"] = convert_to_printable(str(arg_value)).lstrip("\\??\\")
             arguments.append(argument)
 
         call["timestamp"] = timestamp
-        call["thread_id"] = thread_id
+        call["thread_id"] = str(thread_id)
         call["category"] = category
         call["api"] = api_name
-        call["status"] = status_value
-        call["return"] = convert_to_printable(return_value)
+        call["status"] = str(status_value)
+        call["return"] = convert_to_printable(str(return_value))
         call["arguments"] = arguments
         call["repeated"] = 0
 
-        # Check if the current API call is a repetition of the previous one.
-        if len(self.calls) > 0:
-            if self.calls[-1]["api"] == call["api"] and \
-               self.calls[-1]["status"] == call["status"] and \
-               self.calls[-1]["arguments"] == call["arguments"] and \
-               self.calls[-1]["return"] == call["return"]:
-                self.calls[-1]["repeated"] += 1
-                return True
+        return call
 
-        self.calls.append(call)
-
-        return True
-
-    def extract(self):
-        """Get data from CSV file.
-        @return: boolean with status of parsing process.
-        """
-        if not os.path.exists(self._log_path):
-            log.error("Analysis logs folder does not exist at path \"%s\"."
-                      % self._log_path)
-            return False
-
-        reader = csv.reader(open(self._log_path, "rb"))
-
-        try:
-            for row in reader:
-                self._parse(row)
-        except csv.Error as e:
-            log.warning("Something went wrong while parsing analysis log: %s"
-                        % e)
-
-        return True
 
 class Processes:
     """Processes analyzer."""
@@ -144,24 +164,22 @@ class Processes:
             if os.path.isdir(file_path):
                 continue
             
-            if not file_path.endswith(".csv"):
+            if not file_path.endswith(".raw"):
                 continue
 
             # Invoke parsing of current log file.
             current_log = ParseProcessLog(file_path)
-            current_log.extract()
+            if current_log.process_id == None: continue
 
             # If the current log actually contains any data, add its data to
             # the global results list.
-            if len(current_log.calls) > 0:
-                process = {}
-                process["process_id"]   = current_log.process_id
-                process["process_name"] = current_log.process_name
-                process["parent_id"]    = current_log.parent_id
-                process["first_seen"]   = current_log.process_first_seen
-                process["calls"]        = current_log.calls
-
-                results.append(process)
+            results.append({
+                "process_id": current_log.process_id,
+                "process_name": current_log.process_name,
+                "parent_id": current_log.parent_id,
+                "first_seen": logtime(current_log.first_seen),
+                "calls": current_log
+            })
 
         # Sort the items in the results list chronologically. In this way we
         # can have a sequential order of spawned processes.
