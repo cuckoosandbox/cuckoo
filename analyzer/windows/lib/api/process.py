@@ -13,6 +13,7 @@ from lib.common.defines import *
 from lib.common.constants import PIPE, PATHS
 from lib.common.errors import get_error_string
 from lib.common.rand import random_string
+from lib.core.config import Config
 
 log = logging.getLogger(__name__)
 
@@ -257,12 +258,15 @@ class Process:
 
         config_path = os.path.join(os.getenv("TEMP"), "%s.ini" % self.pid)
         with open(config_path, "w") as config:
-            config.write("host-ip=192.168.56.1\n")
-            config.write("host-port=2042\n")
-            config.write("pipe=%s\n" % PIPE)
-            config.write("results=%s\n" % PATHS["root"])
-            config.write("analyzer=%s\n" % os.getcwd())
-            config.write("first-process=%d\n" % Process.first_process)
+            cfg = Config("analysis.conf")
+
+            config.write("host-ip={0}\n".format(cfg.ip))
+            config.write("host-port={0}\n".format(cfg.port))
+            config.write("pipe={0}\n".format(PIPE))
+            config.write("results={0}\n".format(PATHS["root"]))
+            config.write("analyzer={0}\n".format(os.getcwd()))
+            config.write("first-process={0}\n".format(Process.first_process))
+
             Process.first_process = False
 
         if apc or self.suspended:

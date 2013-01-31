@@ -141,6 +141,8 @@ class AnalysisManager(Thread):
         options = {}
 
         options["id"] = self.task.id
+        options["ip"] = self.cfg.resultserver.ip
+        options["port"] = self.cfg.resultserver.port
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package

@@ -38,7 +38,7 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         self.analysistasks = {}
         self.analysishandlers = {}
 
-        SocketServer.ThreadingTCPServer.__init__(self, (self.cfg.processing.ip, self.cfg.processing.port), Resulthandler, *args, **kwargs)
+        SocketServer.ThreadingTCPServer.__init__(self, (self.cfg.resultserver.ip, self.cfg.resultserver.port), Resulthandler, *args, **kwargs)
 
         self.servethread = Thread(target=self.serve_forever)
         self.servethread.setDaemon(True)
