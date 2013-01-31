@@ -194,31 +194,13 @@ class Summary:
         """@param oroc_results: enumerated processes results."""
         self.proc_results = proc_results
 
-    def _gen_files(self):
-        """Gets files calls.
-        @return: information list.
-        """
-        files = []
-
-        for entry in self.proc_results:
-            for call in entry["calls"]:
-                if call["category"] == "filesystem":
-                    for argument in call["arguments"]:
-                        if argument["name"] == "FileName":
-                            value = argument["value"].strip()
-                            if not value:
-                                continue
-
-                            if value not in files:
-                                files.append(value)
-
-        return files
-
-    def _gen_keys(self):
-        """Get registry calls.
-        @return: keys information list.
+    def _gen_keys_mutexes_files(self):
+        """Get registry keys, mutexes and files.
+        @return: Summary of keys, mutexes and files.
         """
         keys = []
+        mutexes = []
+        files = []
 
         def _check_registry(handles, registry, subkey, handle):
             for known_handle in handles:
@@ -281,17 +263,17 @@ class Summary:
                             handle = int(argument["value"], 16)
                     _remove_handle(handles, handle)
 
-        return keys
+                elif call["category"] == "filesystem":
+                    for argument in call["arguments"]:
+                        if argument["name"] == "FileName":
+                            value = argument["value"].strip()
+                            if not value:
+                                continue
 
-    def _gen_mutexes(self):
-        """Get mutexes information.
-        @return: Mutexes information list.
-        """
-        mutexes = []
+                            if value not in files:
+                                files.append(value)
 
-        for entry in self.proc_results:
-            for call in entry["calls"]:
-                if call["category"] == "synchronization":
+                elif call["category"] == "synchronization":
                     for argument in call["arguments"]:
                         if argument["name"] == "MutexName":
                             value = argument["value"].strip()
@@ -301,17 +283,13 @@ class Summary:
                             if value not in mutexes:
                                 mutexes.append(value)
 
-        return mutexes
+        return {"files": files, "keys": keys, "mutexes": mutexes}
 
     def run(self):
         """Run analysis.
         @return: information dict.
         """
-        summary = {}
-        summary["files"] = self._gen_files()
-        summary["keys"] = self._gen_keys()
-        summary["mutexes"] = self._gen_mutexes()
-
+        summary = self._gen_keys_mutexes_files()
         return summary
 
 class ProcessTree:
