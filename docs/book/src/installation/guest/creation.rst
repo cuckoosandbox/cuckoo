@@ -20,5 +20,11 @@ guide, so please refer to the official documentation.
         3, but Cuckoo Sandbox also proved to work with Windows 7 with User
         Access Control disabled.
 
+    .. note::
+
+        KVM Users - Be sure to choose a hard drive image format that supports snapshots.
+        See :doc:`../../Installation/Preparing the Guest/Saving the Virtual Machine/KVM`
+        for more information.
+
 When creating the virtual machine, Cuckoo doesn't require any specific
 configuration. You can choose the options that best fit your needs.
