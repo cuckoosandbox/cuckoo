@@ -194,7 +194,7 @@ class Summary:
         """@param oroc_results: enumerated processes results."""
         self.proc_results = proc_results
 
-    def _gen_keys_mutexes_files(self):
+    def run(self):
         """Get registry keys, mutexes and files.
         @return: Summary of keys, mutexes and files.
         """
@@ -284,13 +284,6 @@ class Summary:
                                 mutexes.append(value)
 
         return {"files": files, "keys": keys, "mutexes": mutexes}
-
-    def run(self):
-        """Run analysis.
-        @return: information dict.
-        """
-        summary = self._gen_keys_mutexes_files()
-        return summary
 
 class ProcessTree:
     """Creates process tree."""
