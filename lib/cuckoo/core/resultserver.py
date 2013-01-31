@@ -141,14 +141,14 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         log.debug("Connection closed: {0}:{1}".format(ip, port))
 
     def log_process(self, context, timestring, pid, ppid, modulepath, procname):
-        log.debug("New process (pid={0} ppid={1} name={2} path={3})".format(pid, ppid, procname, modulepath))
+        log.debug("New process (pid={0}, ppid={1}, name={2}, path={3})".format(pid, ppid, procname, modulepath))
         self.logfd = open(os.path.join(self.logspath, str(pid) + '.csv'), 'w')
         self.rawlogfd = open(os.path.join(self.logspath, str(pid) + '.raw'), 'w')
         self.rawlogfd.write(self.startbuf)
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
     def log_thread(self, context, pid):
-        log.debug("New thread (tid={0} pid={1})".format(context[3], pid))
+        log.debug("New thread (tid={0}, pid={1})".format(context[3], pid))
 
     def log_call(self, context, apiname, modulename, arguments):
         apiindex, status, returnval, tid, timediff = context
