@@ -8,6 +8,7 @@ import logging
 import subprocess
 
 from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT
+from lib.cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
 
@@ -46,10 +47,10 @@ class Sniffer:
 
         pargs = [self.tcpdump, '-U', '-q', '-i', interface, '-n', '-s', '1515']
         pargs.extend(['-w', file_path])
-        pargs.extend(['not', 'port', str(CUCKOO_GUEST_PORT)])
-
-        if host:
-            pargs.extend(['and', 'host', host])
+        pargs.extend(['host', host])
+        # TODO: Need to improve filters.
+        pargs.extend(['and', 'not', 'port', str(CUCKOO_GUEST_PORT)])
+        pargs.extend(['and', 'not', 'port', str(Config().resultserver.port]))
 
         try:
             self.proc = subprocess.Popen(pargs,
