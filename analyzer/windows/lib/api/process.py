@@ -155,7 +155,7 @@ class Process:
                                           None,
                                           creation_flags,
                                           None,
-                                          None,
+                                          os.getenv("TEMP"),
                                           byref(startup_info),
                                           byref(process_info))
 
