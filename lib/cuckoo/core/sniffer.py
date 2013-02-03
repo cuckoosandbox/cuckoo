@@ -48,9 +48,10 @@ class Sniffer:
         pargs = [self.tcpdump, '-U', '-q', '-i', interface, '-n', '-s', '1515']
         pargs.extend(['-w', file_path])
         pargs.extend(['host', host])
-        # TODO: Need to improve filters.
-        pargs.extend(['and', 'not', 'port', str(CUCKOO_GUEST_PORT)])
-        pargs.extend(['and', 'not', 'port', str(Config().resultserver.port]))
+        # Do not capture XMLRPC agent traffic.
+        pargs.extend(['and', 'not', '(', 'host', host, 'and', 'port', str(CUCKOO_GUEST_PORT), ')'])
+        # Do not capture ResultServer traffic.
+        pargs.extend(['and', 'not', '(', 'host', str(Config().resultserver.ip), 'and', 'port', str(Config().resultserver.port), ')'])
 
         try:
             self.proc = subprocess.Popen(pargs,
