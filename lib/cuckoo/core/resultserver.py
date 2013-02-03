@@ -12,7 +12,7 @@ import SocketServer
 from threading import Timer, Event, Thread
 
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.exceptions import CuckooResultError, CuckooOperationalError
+from lib.cuckoo.common.exceptions import CuckooResultError, CuckooOperationalError, CuckooCriticalError
 from lib.cuckoo.common.constants import *
 from lib.cuckoo.common.utils import create_folder, Singleton, logtime
 from lib.cuckoo.common.netlog import NetlogParser
@@ -38,7 +38,14 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         self.analysistasks = {}
         self.analysishandlers = {}
 
-        SocketServer.ThreadingTCPServer.__init__(self, (self.cfg.resultserver.ip, self.cfg.resultserver.port), Resulthandler, *args, **kwargs)
+        try:
+            SocketServer.ThreadingTCPServer.__init__(self,
+                                                     (self.cfg.resultserver.ip, self.cfg.resultserver.port),
+                                                     Resulthandler,
+                                                     *args,
+                                                     **kwargs)
+        except Exception as e:
+            raise CuckooCriticalError("Unable to bind result server: {0}".format(e))
 
         self.servethread = Thread(target=self.serve_forever)
         self.servethread.setDaemon(True)
