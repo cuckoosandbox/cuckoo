@@ -45,7 +45,7 @@ class Sniffer:
             log.error("Network interface not defined, network capture aborted")
             return False
 
-        pargs = [self.tcpdump, '-U', '-q', '-i', interface, '-n', '-s', '1515']
+        pargs = [self.tcpdump, '-U', '-q', '-i', interface, '-n']
         pargs.extend(['-w', file_path])
         pargs.extend(['host', host])
         # Do not capture XMLRPC agent traffic.
