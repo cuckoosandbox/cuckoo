@@ -19,9 +19,6 @@ class Report(Report):
         @param results: Cuckoo results dict.
         @raise CuckooReportError: if fails to write report.
         """
-        if not results["success"]:
-            return
-
         self.idMap = {}
         # Save results
         self.results = results

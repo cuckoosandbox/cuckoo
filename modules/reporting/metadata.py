@@ -19,9 +19,6 @@ class Metadata(Report):
         @param results: Cuckoo results dict.
         @raise CuckooReportError: if fails to write report.
         """
-        if not results["success"]:
-            return
-
         # Save results.
         self.results = results
         # Reporting steps.
