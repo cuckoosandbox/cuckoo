@@ -10,7 +10,6 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.abstracts import Report
-from lib.cuckoo.common.objects import LocalDict
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -70,7 +69,7 @@ class Reporter:
             # Run report, for each report a brand new copy of results is
             # created, to prevent a reporting module to edit global
             # result set and affect other reporting modules.
-            current.run(LocalDict(results))
+            current.run(results)
             log.debug("Executed reporting module \"%s\""
                       % current.__class__.__name__)
         except CuckooReportError as e:

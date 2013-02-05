@@ -6,7 +6,6 @@ import os
 import logging
 from distutils.version import StrictVersion
 
-from lib.cuckoo.common.objects import LocalDict
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooProcessingError
 from lib.cuckoo.core.database import Database
@@ -74,7 +73,7 @@ class Processor:
         @return: matched signature.
         """
         # Initialize the current signature.
-        current = signature(LocalDict(results))
+        current = signature(results)
 
         log.debug("Running signature \"%s\"" % current.name)
 
