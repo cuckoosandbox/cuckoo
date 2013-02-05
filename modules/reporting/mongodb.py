@@ -78,10 +78,9 @@ class MongoDB(Report):
             pcap_id = self.store_file(pcap)
 
             # Preventive key check.
-            if "network" in report and isinstance(report["network"], dict):
-                report["network"]["pcap_id"] = pcap_id
-            else:
-                report["network"] = {"pcap_id": pcap_id}
+            report["network"] = {"pcap_id": pcap_id}
+            if "network" in results and isinstance(results["network"], dict):
+                report["network"].update(results["network"])
 
         # Add dropped files, check for dups and in case add only reference.
         dropped_files = {}
@@ -117,7 +116,10 @@ class MongoDB(Report):
                     shot_id = self.store_file(shot)
                     report["shots"].append(shot_id)
 
+        newprocesses = []
         for process in report["behavior"]["processes"]:
+            newproc = dict(process)
+
             chunk = []
             chunks_ids = []
             # Loop on each process call.
@@ -141,7 +143,11 @@ class MongoDB(Report):
                 chunks_ids.append(chunk_id)
 
             # Add list of chunks.
-            process["calls"] = chunks_ids
+            newproc["calls"] = chunks_ids
+            newprocesses.append(newproc)
+
+        report["behavior"] = dict(report["behavior"])
+        report["behavior"]["processes"] = newprocesses
 
         # Store the report and retrieve its object id.
         self.db.analysis.insert(report)
