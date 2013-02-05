@@ -232,7 +232,9 @@ class LocalDict(dict):
     """
     def __getitem__(self, attr):
         r = dict.__getitem__(self, attr)
-        return wrap(r)
+        w = wrap(r)
+        self[attr] = w
+        return w
 
 class LocalList(list):
     def __getitem__(self, x):
