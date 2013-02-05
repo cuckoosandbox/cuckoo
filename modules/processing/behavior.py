@@ -48,7 +48,7 @@ class ParseProcessLog(list):
         return buf
 
     def __iter__(self):
-        log.debug('iter called by this guy: {0}'.format(inspect.stack()[1]))
+        #log.debug('iter called by this guy: {0}'.format(inspect.stack()[1]))
         return self
 
     def __getitem__(self, key):
@@ -135,7 +135,6 @@ class ParseProcessLog(list):
 
         return call
 
-
 class Processes:
     """Processes analyzer."""
 
@@ -194,7 +193,7 @@ class Summary:
         """@param oroc_results: enumerated processes results."""
         self.proc_results = proc_results
 
-    def _gen_keys_mutexes_files(self):
+    def run(self):
         """Get registry keys, mutexes and files.
         @return: Summary of keys, mutexes and files.
         """
@@ -284,13 +283,6 @@ class Summary:
                                 mutexes.append(value)
 
         return {"files": files, "keys": keys, "mutexes": mutexes}
-
-    def run(self):
-        """Run analysis.
-        @return: information dict.
-        """
-        summary = self._gen_keys_mutexes_files()
-        return summary
 
 class ProcessTree:
     """Creates process tree."""

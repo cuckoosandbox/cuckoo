@@ -12,7 +12,7 @@ import SocketServer
 from threading import Timer, Event, Thread
 
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.exceptions import CuckooResultError, CuckooOperationalError
+from lib.cuckoo.common.exceptions import CuckooResultError, CuckooOperationalError, CuckooCriticalError
 from lib.cuckoo.common.constants import *
 from lib.cuckoo.common.utils import create_folder, Singleton, logtime
 from lib.cuckoo.common.netlog import NetlogParser
@@ -38,7 +38,14 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         self.analysistasks = {}
         self.analysishandlers = {}
 
-        SocketServer.ThreadingTCPServer.__init__(self, (self.cfg.resultserver.ip, self.cfg.resultserver.port), Resulthandler, *args, **kwargs)
+        try:
+            SocketServer.ThreadingTCPServer.__init__(self,
+                                                     (self.cfg.resultserver.ip, self.cfg.resultserver.port),
+                                                     Resulthandler,
+                                                     *args,
+                                                     **kwargs)
+        except Exception as e:
+            raise CuckooCriticalError("Unable to bind result server: {0}".format(e))
 
         self.servethread = Thread(target=self.serve_forever)
         self.servethread.setDaemon(True)
@@ -81,7 +88,6 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         storagepath = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task.id))
         return storagepath
 
-
 class Resulthandler(SocketServer.BaseRequestHandler):
     """Result handler.
 
@@ -119,7 +125,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
     def handle(self):
         ip, port = self.client_address
         self.connect_time = datetime.datetime.now()        
-        log.info('new connection from: {0}:{1}'.format(ip, port))
+        log.debug("New connection from: {0}:{1}".format(ip, port))
 
         self.storagepath = self.server.build_storage_path(ip)
         if not self.storagepath: return
@@ -135,26 +141,26 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         except Disconnect:
             pass
         except socket.error, e:
-            log.warn('socket.error: {0}'.format(e))
+            log.debug("socket.error: {0}".format(e))
 
         if self.logfd: self.logfd.close()
         if self.rawlogfd: self.rawlogfd.close()
-        log.info('connection closed: {0}:{1}'.format(ip, port))
+        log.debug("Connection closed: {0}:{1}".format(ip, port))
 
     def log_process(self, context, timestring, pid, ppid, modulepath, procname):
-        log.debug('log_process> time:{4} pid:{0} ppid:{1} module:{2} file:{3}'.format(pid, ppid, modulepath, procname, timestring))
+        log.debug("New process (pid={0}, ppid={1}, name={2}, path={3})".format(pid, ppid, procname, modulepath))
         self.logfd = open(os.path.join(self.logspath, str(pid) + '.csv'), 'w')
         self.rawlogfd = open(os.path.join(self.logspath, str(pid) + '.raw'), 'w')
         self.rawlogfd.write(self.startbuf)
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
     def log_thread(self, context, pid):
-        log.debug('log_thread> tid:{0} pid:{1}'.format(context[3], pid))
+        log.debug("New thread (tid={0}, pid={1})".format(context[3], pid))
 
     def log_call(self, context, apiname, modulename, arguments):
         apiindex, status, returnval, tid, timediff = context
 
-        log.debug('log_call> tid:{0} apiname:{1}'.format(tid, apiname))
+        #log.debug('log_call> tid:{0} apiname:{1}'.format(tid, apiname))
 
         current_time = self.connect_time + datetime.timedelta(0,0, timediff*1000)
         timestring = logtime(current_time)
@@ -167,10 +173,11 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
     def create_logs_folder(self):
         logspath = os.path.join(self.storagepath, "logs")
+
         try:
             create_folder(folder=logspath)
         except CuckooOperationalError:
             log.error("Unable to create logs folder %s" % logspath)
             return False
-        return logspath
 
+        return logspath
