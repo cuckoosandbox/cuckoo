@@ -218,17 +218,25 @@ class File:
         return infos
 
 
+def wrap(x):
+    if isinstance(x, dict):
+        return LocalDict(x)
+    elif isinstance(x, list):
+        return LocalList(x)
+    return x
+
 class LocalDict(dict):
     """Dictionary with local-only mutable slots.
     Useful for reporting / signatures which try to change
     our precious result data structure.
     """
-
     def __getitem__(self, attr):
         r = dict.__getitem__(self, attr)
-        if isinstance(r, dict):
-            n = LocalDict(r)
-            self[attr] = n
-            return n
-        return r
+        return wrap(r)
 
+class LocalList(list):
+    def __getitem__(self, x):
+        r = list.__getitem__(self, x)
+        return wrap(r)
+    def __iter__(self):
+        return (wrap(x) for x in list.__iter__(self))
