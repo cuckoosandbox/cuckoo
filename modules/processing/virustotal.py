@@ -30,7 +30,7 @@ class VirusTotal(Processing):
 
         if self.task["category"] == "file":
             if not os.path.exists(self.file_path):
-                raise CuckooProcessingError("File %s not found, skip" % self.file_path)
+                raise CuckooProcessingError("File {0} not found, skip".format(self.file_path))
 
             resource = File(self.file_path).get_md5()
             url = VIRUSTOTAL_FILE_URL
@@ -43,10 +43,15 @@ class VirusTotal(Processing):
         try:
             request = urllib2.Request(url, data)
             response = urllib2.urlopen(request)
-            virustotal = json.loads(response.read())
+            response_data = response.read()
         except urllib2.URLError as e:
-            raise CuckooProcessingError("Unable to establish connection to VirusTotal: %s" % e)
+            raise CuckooProcessingError("Unable to establish connection to VirusTotal: {0}".format(e))
         except urllib2.HTTPError as e:
-            raise CuckooProcessingError("Unable to perform HTTP request to VirusTotal (http code=%s)" % e.code)
+            raise CuckooProcessingError("Unable to perform HTTP request to VirusTotal (http code={0})".format(e.code))
+
+        try:
+            virustotal = json.loads(response_data)
+        except ValueError as e:
+            raise CuckooProcessingError("Unable to convert response to JSON: {0}".format(e))
 
         return virustotal
