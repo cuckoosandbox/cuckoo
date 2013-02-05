@@ -206,6 +206,7 @@ class File:
         """
         infos = {}
         infos["name"] = self.get_name()
+        infos["path"] = self.file_path
         infos["size"] = self.get_size()
         infos["crc32"] = self.get_crc32()
         infos["md5"] = self.get_md5()
@@ -216,4 +217,3 @@ class File:
         infos["type"] = self.get_type()
 
         return infos
-

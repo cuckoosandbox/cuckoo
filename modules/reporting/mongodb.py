@@ -62,8 +62,10 @@ class MongoDB(Report):
         """
         self.connect()
 
-        report = {}
-        report.update(results)
+        # Create a copy of the dictionary. This is done in order to not modify
+        # the original dictionary and possibly compromise the following
+        # reporting modules.
+        report = dict(results)
 
         # Set an unique index on stored files, to avoid duplicates.
         # From pymongo docs:
@@ -71,54 +73,50 @@ class MongoDB(Report):
         #  Returns None if the index already exists.
         self.db.fs.files.ensure_index("md5", unique=True, name="md5_unique")
 
-        # Add pcap file, check for dups and in case add only reference.
+        # Store the PCAP file in GridFS and reference it back in the report.
         pcap_path = os.path.join(self.analysis_path, "dump.pcap")
         pcap = File(pcap_path)
         if pcap.valid():
             pcap_id = self.store_file(pcap)
-
-            # Preventive key check.
             report["network"] = {"pcap_id": pcap_id}
-            if "network" in results and isinstance(results["network"], dict):
-                report["network"].update(results["network"])
+            report["network"].update(results["network"])
 
-        # Add dropped files, check for dups and in case add only reference.
-        dropped_files = {}
-        for dir_name, dir_names, file_names in os.walk(os.path.join(self.analysis_path, "files")):
-            for file_name in file_names:
-                file_path = os.path.join(dir_name, file_name)
-                drop = File(file_path)
-                dropped_files[drop.get_md5()] = drop
+        # Walk through the dropped files, store them in GridFS and update the
+        # report with the ObjectIds.
+        new_dropped = []
+        for dropped in report["dropped"]:
+            new_drop = dict(dropped)
+            drop = File(dropped["path"])
+            if drop.valid():
+                dropped_id = self.store_file(drop, filename=dropped["name"])
+                new_drop["object_id"] = dropped_id
 
-        result_files = dict((dropped.get("md5", None), dropped) for dropped in report["dropped"])
+            new_dropped.append(new_drop)
 
-        # hopefully the md5s in dropped_files and result_files should be the same
-        if set(dropped_files.keys()) - set(result_files.keys()):
-            log.warning("Dropped files in result dict are different from those in storage.")
-
-        # store files in gridfs
-        for md5, file_obj in dropped_files.items():
-            # only store in db if we have a filename for it in results (should be all)
-            resultsdrop = result_files.get(md5, None)
-            if resultsdrop and file_obj.valid():
-                drop_id = self.store_file(file_obj, filename=resultsdrop["name"])
-                resultsdrop["dropped_id"] = drop_id
+        report["dropped"] = new_dropped
 
         # Add screenshots.
         report["shots"] = []
         shots_path = os.path.join(self.analysis_path, "shots")
         if os.path.exists(shots_path):
-            shots = [f for f in os.listdir(shots_path) if f.endswith(".jpg")]
+            # Walk through the files and select the JPGs.
+            shots = [shot for shot in os.listdir(shots_path) if shot.endswith(".jpg")]
             for shot_file in sorted(shots):
                 shot_path = os.path.join(self.analysis_path, "shots", shot_file)
                 shot = File(shot_path)
+                # If the screenshot path is a valid file, store it and
+                # reference it back in the report.
                 if shot.valid():
                     shot_id = self.store_file(shot)
                     report["shots"].append(shot_id)
 
-        newprocesses = []
+        # Store chunks of API calls in a different collection and reference
+        # those chunks back in the report. In this way we should defeat the
+        # issue with the oversized reports exceeding MongoDB's boundaries.
+        # Also allows paging of the reports.
+        new_processes = []
         for process in report["behavior"]["processes"]:
-            newproc = dict(process)
+            new_process = dict(process)
 
             chunk = []
             chunks_ids = []
@@ -143,11 +141,12 @@ class MongoDB(Report):
                 chunks_ids.append(chunk_id)
 
             # Add list of chunks.
-            newproc["calls"] = chunks_ids
-            newprocesses.append(newproc)
+            new_process["calls"] = chunks_ids
+            new_processes.append(new_process)
 
+        # Store the results in the report.
         report["behavior"] = dict(report["behavior"])
-        report["behavior"]["processes"] = newprocesses
+        report["behavior"]["processes"] = new_processes
 
         # Store the report and retrieve its object id.
         self.db.analysis.insert(report)
