@@ -237,6 +237,8 @@ class LocalDict(dict):
 class LocalList(list):
     def __getitem__(self, x):
         r = list.__getitem__(self, x)
-        return wrap(r)
+        w = wrap(r)
+        self[attr] = w
+        return w
     def __iter__(self):
         return (wrap(x) for x in list.__iter__(self))
