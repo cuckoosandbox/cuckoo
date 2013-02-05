@@ -496,7 +496,7 @@ class Signature(object):
         """
         if regex:
             exp = re.compile(pattern, re.IGNORECASE)
-            if type(subject) == list:
+            if isinstance(subject, list):
                 for item in subject:
                     if exp.match(item):
                         return item
@@ -504,7 +504,7 @@ class Signature(object):
                 if exp.match(subject):
                     return subject
         else:
-            if type(subject) == list:
+            if isinstance(subject, list):
                 for item in subject:
                     if item == pattern:
                         return item
