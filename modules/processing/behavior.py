@@ -13,7 +13,6 @@ from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.utils import convert_to_printable, logtime
 from lib.cuckoo.common.netlog import NetlogParser
 
-
 log = logging.getLogger(__name__)
 
 class ParseProcessLog(list):
@@ -128,8 +127,13 @@ class ParseProcessLog(list):
         call["thread_id"] = str(thread_id)
         call["category"] = category
         call["api"] = api_name
-        call["status"] = str(status_value)
-        call["return"] = convert_to_printable(str(return_value))
+        call["status"] = bool(int(status_value))
+
+        if isinstance(return_value, int):
+            call["return"] = "0x%.08x" % return_value
+        else:
+            call["return"] = convert_to_printable(str(return_value))
+
         call["arguments"] = arguments
         call["repeated"] = 0
 
