@@ -85,8 +85,12 @@ class ParseProcessLog(list):
         current_time = self.first_seen + datetime.timedelta(0,0, timediff*1000)
         timestring = logtime(current_time)
 
-        self.lastcall = self._parse([timestring, tid, modulename, apiname, 
-            status, returnval] + arguments)
+        self.lastcall = self._parse([timestring,
+                                     tid,
+                                     modulename,
+                                     apiname, 
+                                     status,
+                                     returnval] + arguments)
 
     def _parse(self, row):
         """Parse log row.
@@ -104,8 +108,8 @@ class ParseProcessLog(list):
             status_value = row[4] # Success or Failure?
             return_value = row[5] # Value returned by the function.
         except IndexError as e:
-            log.debug("Unable to parse process log row: %s" % e)
-            return False
+            log.debug("Unable to parse process log row: %s", e)
+            return None
 
         # Now walk through the remaining columns, which will contain API
         # arguments.
@@ -116,7 +120,7 @@ class ParseProcessLog(list):
             try:                
                 (arg_name, arg_value) = row[index]
             except ValueError as e:
-                log.debug("Unable to parse analysis row argument (row=%s): %s" % (row[index], e))
+                log.debug("Unable to parse analysis row argument (row=%s): %s", row[index], e)
                 continue
 
             argument["name"] = arg_name
@@ -153,8 +157,8 @@ class Processes:
         results = []
 
         if not os.path.exists(self._logs_path):
-            log.error("Analysis results folder does not exist at path \"%s\"."
-                      % self._logs_path)
+            log.error("Analysis results folder does not exist at path \"%s\".",
+                      self._logs_path)
             return results
 
         if len(os.listdir(self._logs_path)) == 0:
