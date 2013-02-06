@@ -12,7 +12,7 @@ import SocketServer
 from threading import Timer, Event, Thread
 
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.exceptions import CuckooResultError, CuckooOperationalError, CuckooCriticalError
+from lib.cuckoo.common.exceptions import CuckooResultError, CuckooOperationalError
 from lib.cuckoo.common.constants import *
 from lib.cuckoo.common.utils import create_folder, Singleton, logtime
 from lib.cuckoo.common.netlog import NetlogParser
@@ -25,7 +25,7 @@ class Disconnect(Exception):
 class Resultserver(SocketServer.ThreadingTCPServer, object):
     """Result server. Singleton!
 
-    This class handles results coming back from the analysis VMs.
+    This class handles results coming back from the analysis machines.
     """
 
     __metaclass__ = Singleton
@@ -45,11 +45,12 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
                                                      *args,
                                                      **kwargs)
         except Exception as e:
-            raise CuckooCriticalError("Unable to bind result server: {0}".format(e))
-
-        self.servethread = Thread(target=self.serve_forever)
-        self.servethread.setDaemon(True)
-        self.servethread.start()
+            log.error("Unable to bind result server on %s:%s: %s",
+                      self.cfg.resultserver.ip, self.cfg.resultserver.port, e)
+        else:
+            self.servethread = Thread(target=self.serve_forever)
+            self.servethread.setDaemon(True)
+            self.servethread.start()
 
     def add_task(self, task, machine):
         """Register a task/machine with the Resultserver."""
