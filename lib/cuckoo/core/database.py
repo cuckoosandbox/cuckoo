@@ -628,6 +628,7 @@ class Database(object):
         task.platform = platform
         task.memory = memory
         task.enforce_timeout = enforce_timeout
+        task.added_on = datetime.now()
         session.add(task)
 
         try:
