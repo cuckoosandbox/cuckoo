@@ -55,13 +55,13 @@ def main():
                              memory=args.memory,
                              enforce_timeout=args.enforce_timeout)
 
-        print(bold(green("Success")) + ": URL \"%s\" added as task with ID %d" % (target, task_id))
+        print(bold(green("Success")) + ": URL \"{0}\" added as task with ID {1}".format(target, task_id))
     else:
         # Get absolute path to deal with relative.
         path = os.path.abspath(target)
 
         if not os.path.exists(path):
-            print(bold(red("Error")) + ": the specified file/folder does not exist at path \"%s\"" % path)
+            print(bold(red("Error")) + ": the specified file/folder does not exist at path \"{0}\"".format(path))
             return False
 
         files = []
@@ -88,7 +88,7 @@ def main():
                                   enforce_timeout=args.enforce_timeout)
 
             if task_id:
-                print(bold(green("Success")) + ": File \"%s\" added as task with ID %d" % (file_path, task_id))
+                print(bold(green("Success")) + ": File \"{0}\" added as task with ID {1}".format(file_path, task_id))
             else:
                 print(bold(red("Error")) + ": adding task to database")
 

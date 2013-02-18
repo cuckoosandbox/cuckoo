@@ -49,7 +49,7 @@ def install(enabled, force, rewrite):
     for category in enabled:
         folder = folders[category]
 
-        print("\nInstalling %s" % colors.cyan(category.upper()))
+        print("\nInstalling {0}".format(colors.cyan(category.upper()))
 
         origin = os.path.join(source, folder)
 
@@ -61,14 +61,14 @@ def install(enabled, force, rewrite):
 
             if not rewrite:
                 if os.path.exists(destination):
-                    print("File \"%s\" already exists, %s" % (file_name, colors.yellow("skipped")))
+                    print("File \"{0}\" already exists, {1}".format(file_name, colors.yellow("skipped")))
                     continue
 
             install = False
 
             if not force:
                 while 1:
-                    choice = raw_input("Do you want to install file \"%s\"? [yes/no] " % file_name)
+                    choice = raw_input("Do you want to install file \"{0}\"? [yes/no] ".format(file_name))
                     if choice.lower() == "yes":
                         install = True
                         break
@@ -81,7 +81,7 @@ def install(enabled, force, rewrite):
 
             if install:
                 shutil.copy(os.path.join(origin, file_name), destination)
-                print("File \"%s\" %s" % (file_name, colors.green("installed")))
+                print("File \"{0}\" {1}".format(file_name, colors.green("installed")))
 
     shutil.rmtree(temp)
 

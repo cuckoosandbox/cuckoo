@@ -11,12 +11,12 @@ try:
     from jinja2.loaders import FileSystemLoader
     from jinja2.environment import Environment
 except ImportError:
-    print "ERROR: Jinja2 library is missing"
+    sys.stderr.write("ERROR: Jinja2 library is missing")
     sys.exit(1)
 try:
     from bottle import route, run, static_file, redirect, request, HTTPError, hook, response
 except ImportError:
-    print "ERROR: Bottle library is missing"
+    sys.stderr.write("ERROR: Bottle library is missing")
     sys.exit(1)
 
 logging.basicConfig()
