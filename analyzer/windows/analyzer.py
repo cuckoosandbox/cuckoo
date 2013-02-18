@@ -432,8 +432,7 @@ class Analyzer:
         # If no analysis package was specified at submission, we try to select
         # one automatically.
         if not self.config.package:
-            log.info("No analysis package specified, trying to detect "
-                     "it automagically")
+            log.info("No analysis package specified, trying to detect it automagically")
             # If the analysis target is a file, we choose the package according
             # to the file format.
             if self.config.category == "file":
@@ -446,11 +445,10 @@ class Analyzer:
             # If we weren't able to automatically determine the proper package,
             # we need to abort the analysis.
             if not package:
-                raise CuckooError("No valid package available for file type: %s"
-                                  % self.config.file_type)
-            else:
-                log.info("Automatically selected analysis package \"%s\""
-                         % package)
+                log.warning("File type (%s) not recognized, using default exe package", self.config.file_type)
+                package = "exe"
+
+            log.info("Automatically selected analysis package \"%s\"", package)
         # Otherwise just select the specified package.
         else:
             package = self.config.package
