@@ -78,6 +78,9 @@ def store_temp_file(filedata, filename):
     """
     filename = get_filename_from_path(filename)
 
+    # reduce length (100 is arbitrary)
+    filename = filename[:100]
+
     tmppath = tempfile.gettempdir()
     targetpath = os.path.join(tmppath, "cuckoo-tmp")
     if not os.path.exists(targetpath):
