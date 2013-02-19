@@ -224,7 +224,7 @@ class GuestManager:
 
         try:
             archive = ZipFile(zip_data, "r")
-        except BadZipFile as e:
+        except BadZipfile as e:
             raise CuckooGuestError("Analysis results archive is invalid")
 
         if not os.path.exists(folder):
