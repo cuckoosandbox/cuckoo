@@ -52,8 +52,8 @@ class NetlogParser(object):
             'P': self.read_ptr,
             'o': self.read_string,
             'O': self.read_string,
-            'a': None,
-            'A': None,
+            'a': self.read_argv,
+            'A': self.read_argv,
             'r': self.read_registry,
             'R': self.read_registry,
         }
@@ -121,7 +121,9 @@ class NetlogParser(object):
         """Reads a memory socket from the socket."""
         length, maxlength = struct.unpack('II', self.handler.read(8))
         # only return the maxlength, as we don't log the actual buffer right now
-        return maxlength
+        buf = self.handler.read(length)
+        if maxlength > length: buf += ' ... (truncated)'
+        return buf
 
     def read_registry(self):
         """Read logged registry data from the socket."""
@@ -137,9 +139,12 @@ class NetlogParser(object):
 
     def read_list(self, fn):
         """Reads a list of _fn_ from the socket."""
-        count = struct.unpack('H', self.handler.read(2))[0]
-        ret, length = [], 0
+        count = struct.unpack('I', self.handler.read(4))[0]
+        ret = []
         for x in xrange(count):
             item = fn()
             ret.append(item)
         return ret
+
+    def read_argv(self):
+        return self.read_list(self.read_string)
