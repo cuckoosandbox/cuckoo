@@ -134,7 +134,7 @@ class NetlogParser(object):
         elif typ == REG_SZ or typ == REG_EXPAND_SZ:
             value = self.read_string()
         else:
-            value = 'Cuckoo_unknown_reg_type'
+            value = '(unable to dump buffer content)'
         return value
 
     def read_list(self, fn):
