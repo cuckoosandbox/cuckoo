@@ -1,10 +1,13 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
 import sys
+import time
 import socket
+import string
+import random
 import platform
 import xmlrpclib
 import subprocess
@@ -20,10 +23,11 @@ STATUS_INIT = 0x0001
 STATUS_RUNNING = 0x0002
 STATUS_COMPLETED = 0x0003
 STATUS_FAILED = 0x0004
-
 CURRENT_STATUS = STATUS_INIT
 
 ERROR_MESSAGE = ""
+ANALYZER_FOLDER = ""
+RESULTS_FOLDER = ""
 
 class Agent:
     """Cuckoo agent, it runs inside guest."""
@@ -33,35 +37,29 @@ class Agent:
         self.analyzer_path = ""
         self.analyzer_pid = 0
 
-    def _get_root(self, root="", container="cuckoo", create=True):
-        """Get Cuckoo path.
-        @param root: force root folder, don't detect it.
-        @param container: folder which will contain Cuckoo, not used root parameter is used.
-        @param create: create folder.
-        """
+    def _initialize(self):
         global ERROR_MESSAGE
+        global ANALYZER_FOLDER
 
-        if not root:
+        if not ANALYZER_FOLDER:
+            random.seed(time.time())
+            container = "".join(random.choice(string.ascii_lowercase) for x in range(random.randint(5, 10)))
+
             if self.system == "windows":
-                root = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, container)
+                ANALYZER_FOLDER = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, container)
             elif self.system == "linux" or self.system == "darwin":
-                root = os.path.join(os.environ["HOME"], container)
+                ANALYZER_FOLDER = os.path.join(os.environ["HOME"], container)
             else:
                 ERROR_MESSAGE = "Unable to identify operating system"
                 return False
 
-        if create and not os.path.exists(root):
             try:
-                os.makedirs(root)
+                os.makedirs(ANALYZER_FOLDER)
             except OSError as e:
                 ERROR_MESSAGE = e
                 return False
-        else:
-            if not os.path.exists(root):
-                ERROR_MESSAGE = "Directory not found: %s" % root
-                return False
 
-        return root
+        return True
 
     def get_status(self):
         """Get current status.
@@ -109,10 +107,6 @@ class Agent:
         @return: operation status.
         """
         global ERROR_MESSAGE
-        root = self._get_root()
-
-        if not root:
-            return False
 
         if type(options) != dict:
             return False
@@ -128,9 +122,10 @@ class Agent:
                         value = value.encode("utf-8")
                     except UnicodeEncodeError:
                         pass
+
                 config.set("analysis", key, value)
 
-            config_path = os.path.join(root, "analysis.conf")
+            config_path = os.path.join(ANALYZER_FOLDER, "analysis.conf")
         
             with open(config_path, "wb") as config_file:
                 config.write(config_file)
@@ -146,9 +141,8 @@ class Agent:
         @return: operation status.
         """
         data = data.data
-        root = self._get_root(container="analyzer")
 
-        if not root:
+        if not self._initialize():
             return False
 
         try:
@@ -156,11 +150,11 @@ class Agent:
             zip_data.write(data)
 
             with ZipFile(zip_data, "r") as archive:
-                archive.extractall(root)
+                archive.extractall(ANALYZER_FOLDER)
         finally:
             zip_data.close()
 
-        self.analyzer_path = os.path.join(root, "analyzer.py")
+        self.analyzer_path = os.path.join(ANALYZER_FOLDER, "analyzer.py")
 
         return True
 
@@ -186,13 +180,14 @@ class Agent:
 
         return self.analyzer_pid
 
-    def complete(self, success=True, error=""):
+    def complete(self, success=True, error="", results=""):
         """Complete analysis.
         @param success: success status.
         @param error: error status.
         """ 
         global ERROR_MESSAGE
         global CURRENT_STATUS
+        global RESULTS_FOLDER
 
         if success:
             CURRENT_STATUS = STATUS_COMPLETED
@@ -202,13 +197,15 @@ class Agent:
 
             CURRENT_STATUS = STATUS_FAILED
 
+        RESULTS_FOLDER = results
+
         return True
 
     def get_results(self):
         """Get analysis results.
         @return: data.
         """
-        root = self._get_root(container="cuckoo", create=False)
+        root = RESULTS_FOLDER
 
         if not os.path.exists(root):
             return False

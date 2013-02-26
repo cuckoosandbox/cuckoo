@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -232,6 +232,7 @@ class Task(Base):
     added_on = Column(DateTime(timezone=False),
                       default=datetime.now(),
                       nullable=False)
+    started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(Enum("pending",
                          "processing",
@@ -393,6 +394,7 @@ class Database(object):
             row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
             if row:
                row.status = "processing"
+               row.started_on = datetime.now()
             session.commit()
         except SQLAlchemyError:
             session.rollback()
@@ -570,12 +572,12 @@ class Database(object):
     def add(self,
             obj,
             timeout=0,
-            package=None,
-            options=None,
+            package="",
+            options="",
             priority=1,
-            custom=None,
-            machine=None,
-            platform=None,
+            custom="",
+            machine="",
+            platform="",
             memory=False,
             enforce_timeout=False):
         """Add a task to database.
@@ -641,12 +643,12 @@ class Database(object):
     def add_path(self,
                  file_path,
                  timeout=0,
-                 package=None,
-                 options=None,
+                 package="",
+                 options="",
                  priority=1,
-                 custom=None,
-                 machine=None,
-                 platform=None,
+                 custom="",
+                 machine="",
+                 platform="",
                  memory=False,
                  enforce_timeout=False):
         """Add a task to database from file path.
@@ -678,12 +680,12 @@ class Database(object):
     def add_url(self,
                 url,
                 timeout=0,
-                package=None,
-                options=None,
+                package="",
+                options="",
                 priority=1,
-                custom=None,
-                machine=None,
-                platform=None,
+                custom="",
+                machine="",
+                platform="",
                 memory=False,
                 enforce_timeout=False):
         """Add a task to database from url.

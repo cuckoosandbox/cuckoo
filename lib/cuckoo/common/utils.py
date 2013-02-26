@@ -1,10 +1,11 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
 import ntpath
 import string
+import time
 import tempfile
 import xmlrpclib
 from datetime import datetime
@@ -77,6 +78,9 @@ def store_temp_file(filedata, filename):
     """
     filename = get_filename_from_path(filename)
 
+    # reduce length (100 is arbitrary)
+    filename = filename[:100]
+
     tmppath = tempfile.gettempdir()
     targetpath = os.path.join(tmppath, "cuckoo-tmp")
     if not os.path.exists(targetpath):
@@ -85,7 +89,16 @@ def store_temp_file(filedata, filename):
     tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=targetpath)
     tmp_file_path = os.path.join(tmp_dir, filename)
     tmp_file = open(tmp_file_path, "wb")
-    tmp_file.write(filedata)
+    
+    # if filedata is file object, do chunked copy
+    if hasattr(filedata, 'read'):
+        chunk = filedata.read(1024)
+        while chunk:
+            tmp_file.write(chunk)
+            chunk = filedata.read(1024)
+    else:
+        tmp_file.write(filedata)
+
     tmp_file.close()
 
     return tmp_file_path
@@ -104,7 +117,7 @@ class TimeoutServer(xmlrpclib.ServerProxy):
         t = self._ServerProxy__transport
         t.timeout = timeout
         # if we still have a socket we need to update that as well
-        if t._connection[1] and t._connection[1].sock:
+        if hasattr(t, '_connection') and t._connection[1] and t._connection[1].sock:
             t._connection[1].sock.settimeout(timeout)
 
 class TimeoutTransport(xmlrpclib.Transport):
@@ -124,3 +137,22 @@ class Singleton(type):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+def logtime(dt):
+    """formats time like a logger does, for the csv output 
+       (e.g. "2013-01-25 13:21:44,590")
+
+    @param dt: datetime object
+    @return: time string
+    """
+    t = time.strftime("%Y-%m-%d %H:%M:%S", dt.timetuple())
+    s = "%s,%03d" % (t, dt.microsecond/1000)
+    return s
+
+def time_from_cuckoomon(s):
+    """parse time string received from cuckoomon via netlog
+
+    @param s: time string
+    @return: datetime object
+    """
+    return datetime.strptime(s, '%Y-%m-%d %H:%M:%S,%f')

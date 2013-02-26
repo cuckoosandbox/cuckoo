@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -20,5 +20,7 @@ def choose_package(file_type, file_name):
         return "doc"
     elif "Microsoft Office Excel" in file_type or file_name.endswith(".xlsx"):
         return "xls"
+    elif "HTML" in file_type:
+        return "html"
     else:
         return None

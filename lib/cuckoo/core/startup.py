@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -97,11 +97,13 @@ def check_version():
         request = urllib2.Request(url, data)
         response = urllib2.urlopen(request)
     except (urllib2.URLError, urllib2.HTTPError):
+        print(red(" Failed! ") + "Unable to establish connection.\n")
         return
 
     try:
         response_data = json.loads(response.read())
     except ValueError:
+        print(red(" Failed! ") + "Invalid response.\n")
         return
 
     if not response_data["error"]:

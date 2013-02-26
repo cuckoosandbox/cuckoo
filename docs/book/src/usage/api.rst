@@ -193,7 +193,7 @@ Following is a list of currently available resources and a brief description. Fo
 /tasks/view
 -----------
 
-    **GET /tasks/list/** *(int: id)*
+    **GET /tasks/view/** *(int: id)*
 
         Returns details on the task associated with the specified ID.
 

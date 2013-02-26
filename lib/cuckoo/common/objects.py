@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -63,7 +63,7 @@ class File:
         @return: file name.
         """
         if self.strip_name:
-            file_name = os.path.basename(self.file_path.rstrip(".bin"))
+            file_name = os.path.basename(self.file_path)[:-4]
         else:
             file_name = os.path.basename(self.file_path)
 
@@ -206,6 +206,7 @@ class File:
         """
         infos = {}
         infos["name"] = self.get_name()
+        infos["path"] = self.file_path
         infos["size"] = self.get_size()
         infos["crc32"] = self.get_crc32()
         infos["md5"] = self.get_md5()
@@ -216,19 +217,3 @@ class File:
         infos["type"] = self.get_type()
 
         return infos
-
-
-class LocalDict(dict):
-    """Dictionary with local-only mutable slots.
-    Useful for reporting / signatures which try to change
-    our precious result data structure.
-    """
-
-    def __getitem__(self, attr):
-        r = dict.__getitem__(self, attr)
-        if isinstance(r, dict):
-            n = LocalDict(r)
-            self[attr] = n
-            return n
-        return r
-

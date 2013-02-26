@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -53,7 +53,7 @@ class ReportHTML(Report):
         else:
             results["screenshots"] = []
 
-        env = Environment()
+        env = Environment(autoescape=True)
         env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT, "data", "html"))
 
         try:

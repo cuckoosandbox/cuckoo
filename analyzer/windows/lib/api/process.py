@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,9 +10,10 @@ from ctypes import *
 from shutil import copy
 
 from lib.common.defines import *
-from lib.common.paths import PATHS
+from lib.common.constants import PIPE, PATHS
 from lib.common.errors import get_error_string
 from lib.common.rand import random_string
+from lib.core.config import Config
 
 log = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ def randomize_dll(dll_path):
 
 class Process:
     """Windows process."""
+    first_process = True
 
     def __init__(self, pid=0, h_process=0, thread_id=0, h_thread=0):
         """@param pid: PID.
@@ -153,7 +155,7 @@ class Process:
                                           None,
                                           creation_flags,
                                           None,
-                                          None,
+                                          os.getenv("TEMP"),
                                           byref(startup_info),
                                           byref(process_info))
 
@@ -254,6 +256,19 @@ class Process:
         load_library = KERNEL32.GetProcAddress(kernel32_handle,
                                                "LoadLibraryA")
 
+        config_path = os.path.join(os.getenv("TEMP"), "%s.ini" % self.pid)
+        with open(config_path, "w") as config:
+            cfg = Config("analysis.conf")
+
+            config.write("host-ip={0}\n".format(cfg.ip))
+            config.write("host-port={0}\n".format(cfg.port))
+            config.write("pipe={0}\n".format(PIPE))
+            config.write("results={0}\n".format(PATHS["root"]))
+            config.write("analyzer={0}\n".format(os.getcwd()))
+            config.write("first-process={0}\n".format(Process.first_process))
+
+            Process.first_process = False
+
         if apc or self.suspended:
             log.info("Using QueueUserAPC injection")
             if not self.h_thread:
@@ -301,7 +316,7 @@ class Process:
 
     def wait(self):
         if self.event_handle:
-            KERNEL32.WaitForSingleObject(self.event_handle, INFINITE)
+            KERNEL32.WaitForSingleObject(self.event_handle, 10000)
             KERNEL32.CloseHandle(self.event_handle)
             self.event_handle = None
         return True

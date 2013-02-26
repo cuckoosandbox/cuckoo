@@ -1,9 +1,8 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import hashlib
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooDependencyError, CuckooReportError
@@ -13,122 +12,141 @@ try:
     from pymongo.connection import Connection
     from pymongo.errors import ConnectionFailure, InvalidDocument
     from gridfs import GridFS
-    from gridfs.errors import FileExists
 except ImportError:
     raise CuckooDependencyError("Unable to import pymongo")
 
 class MongoDB(Report):
     """Stores report in MongoDB."""
 
+    def connect(self):
+        """Connects to Mongo database, loads options and set connectors.
+        @raise CuckooReportError: if unable to connect.
+        """
+        host = self.options.get("host", "127.0.0.1")
+        port = self.options.get("port", 27017)
+
+        try:
+            self.conn = Connection(host, port)
+            self.db = self.conn.cuckoo
+            self.fs = GridFS(self.db)
+        except TypeError:
+            raise CuckooReportError("Mongo connection port must be integer")
+        except ConnectionFailure:
+            raise CuckooReportError("Cannot connect to MongoDB")
+
+    def store_file(self, file_obj, filename=""):
+        """Store a file in GridFS.
+        @param file_obj: object to the file to store
+        @param filename: name of the file to store
+        @return: object id of the stored file
+        """
+        if not filename:
+            filename = file_obj.get_name()
+
+        existing = self.db.fs.files.find_one({"md5": file_obj.get_md5()})
+
+        if existing:
+            return existing["_id"]
+        else:
+            new = self.fs.new_file(filename=filename)
+            for chunk in file_obj.get_chunks():
+                new.write(chunk)
+            new.close()
+
+            return new._id
+
     def run(self, results):
         """Writes report.
-        @param results: Cuckoo results dict.
+        @param results: analysis results dictionary.
         @raise CuckooReportError: if fails to connect or write to MongoDB.
         """
-        self._connect()
+        self.connect()
+
+        # Create a copy of the dictionary. This is done in order to not modify
+        # the original dictionary and possibly compromise the following
+        # reporting modules.
+        report = dict(results)
 
         # Set an unique index on stored files, to avoid duplicates.
         # From pymongo docs:
         #  Returns the name of the created index if an index is actually created. 
         #  Returns None if the index already exists.
-        self._db.fs.files.ensure_index("md5", unique=True, name="md5_unique")
+        self.db.fs.files.ensure_index("md5", unique=True, name="md5_unique")
 
-        # Add pcap file, check for dups and in case add only reference.
-        pcap_file = os.path.join(self.analysis_path, "dump.pcap")
-        pcap = File(pcap_file)
+        # Store the PCAP file in GridFS and reference it back in the report.
+        pcap_path = os.path.join(self.analysis_path, "dump.pcap")
+        pcap = File(pcap_path)
         if pcap.valid():
             pcap_id = self.store_file(pcap)
+            report["network"] = {"pcap_id": pcap_id}
+            report["network"].update(results["network"])
 
-            # Preventive key check.
-            if "network" in results and isinstance(results["network"], dict):
-                results["network"]["pcap_id"] = pcap_id
-            else:
-                results["network"] = {"pcap_id": pcap_id}
+        # Walk through the dropped files, store them in GridFS and update the
+        # report with the ObjectIds.
+        new_dropped = []
+        for dropped in report["dropped"]:
+            new_drop = dict(dropped)
+            drop = File(dropped["path"])
+            if drop.valid():
+                dropped_id = self.store_file(drop, filename=dropped["name"])
+                new_drop["object_id"] = dropped_id
 
-        # Add dropped files, check for dups and in case add only reference.
-        dropped_files = {}
-        for dir_name, dir_names, file_names in os.walk(os.path.join(self.analysis_path, "files")):
-            for file_name in file_names:
-                file_path = os.path.join(dir_name, file_name)
-                drop = File(file_path)
-                dropped_files[drop.get_md5()] = drop
+            new_dropped.append(new_drop)
 
-        result_files = dict((dropped.get("md5", None), dropped) for dropped in results["dropped"])
-
-        # hopefully the md5s in dropped_files and result_files should be the same
-        if set(dropped_files.keys()) - set(result_files.keys()):
-            log.warning("Dropped files in result dict are different from those in storage.")
-
-        # store files in gridfs
-        for md5, fileobj in dropped_files.items():
-            # only store in db if we have a filename for it in results (should be all)
-            resultsdrop = result_files.get(md5, None)
-            if resultsdrop and fileobj.valid():
-                drop_id = self.store_file(fileobj, filename=resultsdrop["name"])
-                resultsdrop["dropped_id"] = drop_id
+        report["dropped"] = new_dropped
 
         # Add screenshots.
-        results["shots"] = []
+        report["shots"] = []
         shots_path = os.path.join(self.analysis_path, "shots")
         if os.path.exists(shots_path):
-            shots = [f for f in os.listdir(shots_path) if f.endswith(".jpg")]
+            # Walk through the files and select the JPGs.
+            shots = [shot for shot in os.listdir(shots_path) if shot.endswith(".jpg")]
             for shot_file in sorted(shots):
                 shot_path = os.path.join(self.analysis_path, "shots", shot_file)
                 shot = File(shot_path)
+                # If the screenshot path is a valid file, store it and
+                # reference it back in the report.
                 if shot.valid():
                     shot_id = self.store_file(shot)
-                    results["shots"].append(shot_id)
+                    report["shots"].append(shot_id)
 
-        # Save all remaining results.
-        try:
-            self._db.analysis.save(results, manipulate=False)
-        except InvalidDocument:
-            # The document is too big, we need to shrink it and re-save it.
-            results["behavior"]["processes"] = ""
+        # Store chunks of API calls in a different collection and reference
+        # those chunks back in the report. In this way we should defeat the
+        # issue with the oversized reports exceeding MongoDB's boundaries.
+        # Also allows paging of the reports.
+        new_processes = []
+        for process in report["behavior"]["processes"]:
+            new_process = dict(process)
 
-            # Let's add an error message to the debug block.
-            error = ("The analysis results were too big to be stored, " +
-                     "the detailed behavioral analysis has been stripped out.")
-            results["debug"]["errors"].append(error)
+            chunk = []
+            chunks_ids = []
+            # Loop on each process call.
+            for index, call in enumerate(process["calls"]):
+                # If the chunk size is 100 or if the loop is completed then
+                # store the chunk in MongoDB.
+                if len(chunk) == 100:
+                    chunk_id = self.db.calls.insert({"pid" : process["process_id"],
+                                                     "calls" : chunk})
+                    chunks_ids.append(chunk_id)
+                    # Reset the chunk.
+                    chunk = []
 
-            # Try again to store, if it fails, just abort.
-            try:
-                self._db.analysis.save(results)
-            except Exception as e:
-                raise CuckooReportError("Failed to store the document into MongoDB: %s" % e)
+                # Append call to the chunk.
+                chunk.append(call)
 
-    def store_file(self, fileobj, filename=None):
-        if filename == None: filename = fileobj.get_name()
+            # Store leftovers.
+            if chunk:
+                chunk_id = self.db.calls.insert({"pid" : process["process_id"],
+                                                 "calls" : chunk})
+                chunks_ids.append(chunk_id)
 
-        existing = self._db.fs.files.find_one({"md5": fileobj.get_md5()})
-        if not existing:
-            gfsfile = self._fs.new_file(filename=filename)
-            for chunk in fileobj.get_chunks():
-                gfsfile.write(chunk)
-            gfsfile.close()
+            # Add list of chunks.
+            new_process["calls"] = chunks_ids
+            new_processes.append(new_process)
 
-            return gfsfile._id
+        # Store the results in the report.
+        report["behavior"] = dict(report["behavior"])
+        report["behavior"]["processes"] = new_processes
 
-        return existing["_id"]
-
-    def _connect(self):
-        """Connects to Mongo database, loads options and set connectors.
-        @raise CuckooReportError: if unable to connect.
-        """
-        if "host" in self.options:
-            host = self.options["host"]
-        else:
-            host = "127.0.0.1"
-        if "port" in self.options:
-            port = self.options["port"]
-        else:
-            port = 27017
-
-        try:
-            self._conn = Connection(host, port)
-            self._db = self._conn.cuckoo
-            self._fs = GridFS(self._db)
-        except TypeError:
-            raise CuckooReportError("Mongo connection port must be integer")
-        except ConnectionFailure:
-            raise CuckooReportError("Cannot connect to MongoDB")
+        # Store the report and retrieve its object id.
+        self.db.analysis.insert(report)

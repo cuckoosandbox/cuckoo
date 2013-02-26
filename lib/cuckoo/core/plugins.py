@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -48,12 +48,8 @@ def load_plugins(module):
 
 def register_plugin(group, name):
     global _modules
-
-    if not group in _modules:
-        _modules[group] = [name]
-    else:
-        if not name in _modules[group]:
-            _modules[group].append(name)
+    group = _modules.setdefault(group, [])
+    group.append(name)
 
 def list_plugins(group=None):
     if group:

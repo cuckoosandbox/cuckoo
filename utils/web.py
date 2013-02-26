@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -11,12 +11,12 @@ try:
     from jinja2.loaders import FileSystemLoader
     from jinja2.environment import Environment
 except ImportError:
-    print "ERROR: Jinja2 library is missing"
+    sys.stderr.write("ERROR: Jinja2 library is missing")
     sys.exit(1)
 try:
     from bottle import route, run, static_file, redirect, request, HTTPError, hook, response
 except ImportError:
-    print "ERROR: Bottle library is missing"
+    sys.stderr.write("ERROR: Bottle library is missing")
     sys.exit(1)
 
 logging.basicConfig()

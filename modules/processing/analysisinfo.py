@@ -1,12 +1,17 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import time
+import logging
 from datetime import datetime
 
 from lib.cuckoo.common.constants import CUCKOO_VERSION
 from lib.cuckoo.common.abstracts import Processing
+from lib.cuckoo.core.database import Database
+
+log = logging.getLogger(__name__)
+
 
 class AnalysisInfo(Processing):
     """General information about analysis session."""
@@ -17,16 +22,23 @@ class AnalysisInfo(Processing):
         """
         self.key = "info"
 
-        started = float(self.cfg.analysis.started)
-        ended = time.time()
+        try:
+            started = datetime.fromtimestamp(time.mktime(time.strptime(self.task["started_on"], "%Y-%m-%d %H:%M:%S")))
+            ended = datetime.fromtimestamp(time.mktime(time.strptime(self.task["completed_on"], "%Y-%m-%d %H:%M:%S")))
+        except:
+            log.critical("Failed to get start/end time from Task.")
+            # just set it to default timeout
+            duration = -1
+        else:
+            duration = (ended - started).seconds
 
         info = {
             "version" : CUCKOO_VERSION,
-            "started" : datetime.fromtimestamp(started).strftime("%Y-%m-%d %H:%M:%S"),
-            "ended" : datetime.fromtimestamp(ended).strftime("%Y-%m-%d %H:%M:%S"),
-            "duration" : "%d seconds" % (ended - started),
-            "id" : int(self.cfg.analysis.id),
-            "category" : self.cfg.analysis.category
+            "started" : self.task["started_on"],
+            "ended" : self.task.get("completed_on", "none"),
+            "duration" : duration,
+            "id" : int(self.task["id"]),
+            "category" : self.task["category"]
         }
 
         return info

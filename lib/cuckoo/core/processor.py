@@ -1,14 +1,14 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os
 import logging
 from distutils.version import StrictVersion
 
-from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.objects import LocalDict
-from lib.cuckoo.common.constants import CUCKOO_VERSION
+from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooProcessingError
+from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.plugins import list_plugins
 
 log = logging.getLogger(__name__)
@@ -21,9 +21,13 @@ class Processor:
     is then passed over the reporting engine.
     """
 
-    def __init__(self, analysis_path):
-        """@param analysis_path: analysis folder path."""
-        self.analysis_path = analysis_path
+    def __init__(self, task_id):
+        """@param task_id: ID of the analyses to process."""
+        self.task = Database().view_task(task_id).to_dict()
+        self.analysis_path = os.path.join(CUCKOO_ROOT,
+                                          "storage",
+                                          "analyses",
+                                          str(task_id))
 
     def _run_processing(self, module):
         """Run a processing module.
@@ -35,8 +39,8 @@ class Processor:
         current = module()
         # Provide it the path to the analysis results.
         current.set_path(self.analysis_path)
-        # Load the analysis.conf configuration file.
-        current.cfg = Config(current.conf_path)
+        # Set analysis task dictionary.
+        current.set_task(self.task)
 
         # If current processing module is disabled, skip it.
         if not current.enabled:
@@ -69,7 +73,7 @@ class Processor:
         @return: matched signature.
         """
         # Initialize the current signature.
-        current = signature(LocalDict(results))
+        current = signature(results)
 
         log.debug("Running signature \"%s\"" % current.name)
 
@@ -153,6 +157,12 @@ class Processor:
         # If none is specified for the modules, they are selected in
         # alphabetical order.
         modules_list = list_plugins(group="processing")
+
+        # If no modules are loaded, return an empty dictionary.
+        if not modules_list:
+            log.debug("No processing modules loaded")
+            return results
+
         modules_list.sort(key=lambda module: module.order)
 
         # Run every loaded processing module.

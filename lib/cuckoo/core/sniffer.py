@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,6 +8,7 @@ import logging
 import subprocess
 
 from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT
+from lib.cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
 
@@ -44,12 +45,13 @@ class Sniffer:
             log.error("Network interface not defined, network capture aborted")
             return False
 
-        pargs = [self.tcpdump, '-U', '-q', '-i', interface, '-n', '-s', '1515']
+        pargs = [self.tcpdump, '-U', '-q', '-i', interface, '-n']
         pargs.extend(['-w', file_path])
-        pargs.extend(['not', 'port', str(CUCKOO_GUEST_PORT)])
-
-        if host:
-            pargs.extend(['and', 'host', host])
+        pargs.extend(['host', host])
+        # Do not capture XMLRPC agent traffic.
+        pargs.extend(['and', 'not', '(', 'host', host, 'and', 'port', str(CUCKOO_GUEST_PORT), ')'])
+        # Do not capture ResultServer traffic.
+        pargs.extend(['and', 'not', '(', 'host', str(Config().resultserver.ip), 'and', 'port', str(Config().resultserver.port), ')'])
 
         try:
             self.proc = subprocess.Popen(pargs,

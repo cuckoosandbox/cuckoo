@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -56,7 +56,6 @@ class MachineManager(object):
         mmanager_opts = self.options.get(module_name)
 
         for machine_id in mmanager_opts["machines"].strip().split(","):
-            # Parse from configuration file.
             try:
                 machine_opts = self.options.get(machine_id.strip())
                 machine = Dictionary()
@@ -64,14 +63,13 @@ class MachineManager(object):
                 machine.label = machine_opts["label"].strip()
                 machine.platform = machine_opts["platform"].strip()
                 machine.ip = machine_opts["ip"].strip()
-                # Insert in db.
+
                 self.db.add_machine(name=machine.id,
                                     label=machine.label,
                                     ip=machine.ip,
                                     platform=machine.platform)
             except (AttributeError, CuckooOperationalError):
-                log.warning("Configuration details about machine %s are "
-                            "missing. Continue" % machine_id)
+                log.warning("Configuration details about machine %s are missing. Continue", machine_id)
                 continue
 
     def _initialize_check(self):
@@ -89,13 +87,10 @@ class MachineManager(object):
 
         for machine in self.machines():
             if machine.label not in configured_vm:
-                raise CuckooCriticalError("Configured machine %s was not "
-                    "detected or it's not in proper state" % machine.label)
+                raise CuckooCriticalError("Configured machine {0} was not detected or it's not in proper state".format(machine.label))
 
-        # Options check.
         if not self.options_globals.timeouts.vm_state:
             raise CuckooCriticalError("Virtual machine state change timeout setting not found, please add it to the config file")
-
 
     def machines(self):
         """List virtual machines.
@@ -139,13 +134,13 @@ class MachineManager(object):
         @raise CuckooMachineError: if unable to stop machine.
         """
         if self.running().count() > 0:
-            log.info("Still %s guests alive. Shutting down" % self.running().count())
+            log.info("Still %s guests alive. Shutting down...", self.running().count())
             for machine in self.running():
                 try:
                     self.stop(machine.label)
                 except CuckooMachineError as e:
-                    log.error("Unable to shutdown machine %s, please check "
-                              "manually. Error: %s" % (machine.label, e))
+                    log.warning("Unable to shutdown machine %s, please check "
+                                "manually. Error: %s", machine.label, e)
 
     def set_status(self, label, status):
         """Set status for a virtual machine.
@@ -196,9 +191,9 @@ class MachineManager(object):
         if isinstance(state, str):
             state = [state]
         while current not in state:
-            log.debug("Waiting %i cuckooseconds for vm %s to switch to status %s" % (waitme, label, state))
+            log.debug("Waiting %i cuckooseconds for machine %s to switch to status %s", waitme, label, state)
             if waitme > int(self.options_globals.timeouts.vm_state):
-                raise CuckooMachineError("Waiting too much for vm %s status change. Please check manually" % label)
+                raise CuckooMachineError("Timeout hit while for machine {0} to change status".format(label))
             time.sleep(1)
             waitme += 1
             current = self._status(label)
@@ -248,10 +243,10 @@ class LibVirtMachineManager(MachineManager):
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to start virtual machine.
         """
-        log.debug("Staring vm %s" % label)
+        log.debug("Staring machine %s", label)
         
         if self._status(label) == self.RUNNING:
-            raise CuckooMachineError("Trying to start an already started vm %s" % label)
+            raise CuckooMachineError("Trying to start an already started machine {0}".format(label))
 
         # Get current snapshot.
         conn = self._connect()
@@ -260,7 +255,7 @@ class LibVirtMachineManager(MachineManager):
             snap = self.vms[label].hasCurrentSnapshot(flags=0)
         except libvirt.libvirtError:
             self._disconnect(conn)
-            raise CuckooMachineError("Unable to get current snapshot for virtual machine %s" % label)
+            raise CuckooMachineError("Unable to get current snapshot for virtual machine {0}".format(label))
 
         # Revert to latest snapshot.
         if snap:
@@ -268,12 +263,12 @@ class LibVirtMachineManager(MachineManager):
                 current = self.vms[label].snapshotCurrent(flags=0)
                 self.vms[label].revertToSnapshot(current, flags=0)
             except libvirt.libvirtError:
-                raise CuckooMachineError("Unable to restore snapshot on virtual machine %s" % label)
+                raise CuckooMachineError("Unable to restore snapshot on virtual machine {0}".format(label))
             finally:
                 self._disconnect(conn)
         else:
             self._disconnect(conn)
-            raise CuckooMachineError("No snapshot found for virtual machine %s" % label)
+            raise CuckooMachineError("No snapshot found for virtual machine {0}".format(label))
         # Check state.
         self._wait_status(label, self.RUNNING)
 
@@ -282,20 +277,20 @@ class LibVirtMachineManager(MachineManager):
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to stop virtual machine.
         """
-        log.debug("Stopping vm %s" % label)
+        log.debug("Stopping machine %s", label)
 
         if self._status(label) == self.POWEROFF:
-            raise CuckooMachineError("Trying to stop an already stopped vm %s" % label)
+            raise CuckooMachineError("Trying to stop an already stopped machine {0}".format(label))
 
         # Force virtual machine shutdown.
         conn = self._connect()
         try:
             if not self.vms[label].isActive():
-                log.debug("Trying to stop an already stopped vm %s. Skip" % label)
+                log.debug("Trying to stop an already stopped machine %s. Skip", label)
             else:
                 self.vms[label].destroy() # Machete's way!
         except libvirt.libvirtError as e:
-            raise CuckooMachineError("Error stopping virtual machine %s: %s" % (label, e))
+            raise CuckooMachineError("Error stopping virtual machine {0}: {1}".format(label, e))
         finally:
             self._disconnect(conn)
         # Check state.
@@ -311,13 +306,13 @@ class LibVirtMachineManager(MachineManager):
         """Takes a memory dump.
         @param path: path to where to store the memory dump.
         """
-        log.debug("Dumping memory for vm %s" % label)
+        log.debug("Dumping memory for machine %s", label)
 
         conn = self._connect()
         try:
             self.vms[label].coreDump(path, flags=libvirt.VIR_DUMP_MEMORY_ONLY)
         except libvirt.libvirtError as e:
-            raise CuckooMachineError("Error dumping memory virtual machine %s: %s" % (label, e))
+            raise CuckooMachineError("Error dumping memory virtual machine {0}: {1}".format(label, e))
         finally:
             self._disconnect(conn)
 
@@ -326,7 +321,7 @@ class LibVirtMachineManager(MachineManager):
         @param label: virtual machine name.
         @return: status string.
         """
-        log.debug("Getting status for %s"% label)
+        log.debug("Getting status for %s", label)
         
         # Stetes mapping of python-libvirt.
         # virDomainState
@@ -343,7 +338,7 @@ class LibVirtMachineManager(MachineManager):
         try:
             state = self.vms[label].state(flags=0)
         except libvirt.libvirtError as e:
-            raise CuckooMachineError("Error getting status for virtual machine %s: %s" % (label, e))
+            raise CuckooMachineError("Error getting status for virtual machine {0}: {1}".format(label, e))
         finally:
             self._disconnect(conn)
 
@@ -360,7 +355,7 @@ class LibVirtMachineManager(MachineManager):
             self.set_status(label, status)
             return status
         else:
-            raise CuckooMachineError("Unable to get status for %s" % label)
+            raise CuckooMachineError("Unable to get status for {0}".format(label))
 
     def _connect(self):
         """Connects to libvirt subsystem.
@@ -403,7 +398,7 @@ class LibVirtMachineManager(MachineManager):
         try:
             vm = conn.lookupByName(label)
         except libvirt.libvirtError:
-                raise CuckooMachineError("Cannot found machine %s" % label)
+                raise CuckooMachineError("Cannot found machine {0}".format(label))
         finally:
             self._disconnect(conn)
         return vm
@@ -436,8 +431,15 @@ class Processing(object):
     enabled = True
 
     def __init__(self):
+        self.task = None
         self.analysis_path = ""
         self.logs_path = ""
+
+    def set_task(self, task):
+        """Set task dictionary.
+        @param task: task dictionary.
+        """
+        self.task = task
 
     def set_path(self, analysis_path):
         """Set paths.
@@ -445,13 +447,13 @@ class Processing(object):
         """
         self.analysis_path = analysis_path
         self.log_path = os.path.join(self.analysis_path, "analysis.log")
-        self.conf_path = os.path.join(self.analysis_path, "analysis.conf")
         self.file_path = os.path.realpath(os.path.join(self.analysis_path,
                                                        "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
         self.logs_path = os.path.join(self.analysis_path, "logs")
         self.shots_path = os.path.join(self.analysis_path, "shots")
         self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
+        self.pmemory_path = os.path.join(self.analysis_path, "memory")
         self.memory_path = os.path.join(self.analysis_path, "memory.dmp")
 
     def run(self):
@@ -489,23 +491,23 @@ class Signature(object):
         """
         if regex:
             exp = re.compile(pattern, re.IGNORECASE)
-            if type(subject) == list:
+            if isinstance(subject, list):
                 for item in subject:
                     if exp.match(item):
-                        return True
+                        return item
             else:
                 if exp.match(subject):
-                    return True
+                    return subject
         else:
-            if type(subject) == list:
+            if isinstance(subject, list):
                 for item in subject:
                     if item == pattern:
-                        return True
+                        return item
             else:
                 if subject == pattern:
-                    return True
+                    return subject
 
-        return False
+        return None
 
     def check_file(self, pattern, regex=False):
         """Checks for a file being opened.
@@ -561,9 +563,9 @@ class Signature(object):
                 if self._check_value(pattern=pattern,
                                      subject=call["api"],
                                      regex=regex):
-                    return True
+                    return call["api"]
 
-        return False
+        return None
 
     def check_argument(self,
                        pattern,
@@ -612,9 +614,9 @@ class Signature(object):
                     if self._check_value(pattern=pattern,
                                          subject=argument["value"],
                                          regex=regex):
-                        return True
+                        return argument["value"]
 
-        return False
+        return None
 
     def check_ip(self, pattern, regex=False):
         """Checks for an IP address being contacted.
@@ -638,9 +640,9 @@ class Signature(object):
             if self._check_value(pattern=pattern,
                                  subject=item["domain"],
                                  regex=regex):
-                return True
+                return item
 
-        return False
+        return None
 
     def check_url(self, pattern, regex=False):
         """Checks for a URL being contacted.
@@ -653,9 +655,9 @@ class Signature(object):
             if self._check_value(pattern=pattern,
                                  subject=item["uri"],
                                  regex=regex):
-                return True
+                return item
 
-        return False
+        return None
 
     def run(self):
         """Start signature processing.
@@ -671,6 +673,7 @@ class Report(object):
     def __init__(self):
         self.analysis_path = ""
         self.reports_path = ""
+        self.task = None
         self.options = None
 
     def set_path(self, analysis_path):
@@ -680,6 +683,8 @@ class Report(object):
         self.analysis_path = analysis_path
         self.conf_path = os.path.join(self.analysis_path, "analysis.conf")
         self.reports_path = os.path.join(self.analysis_path, "reports")
+        self.shots_path = os.path.join(self.analysis_path, "shots")
+        self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
 
         try:
             create_folder(folder=self.reports_path)
@@ -691,6 +696,12 @@ class Report(object):
         @param options: report options dict.
         """
         self.options = options
+
+    def set_task(self, task):
+        """Add task information.
+        @param task: task dictionary.
+        """
+        self.task = task
 
     def run(self):
         """Start report processing.

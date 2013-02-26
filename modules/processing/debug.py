@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -27,7 +27,7 @@ class Debug(Processing):
             except (IOError, OSError) as e:
                 raise CuckooProcessingError("Error opening %s: %s" % (self.log_path, e))
 
-        for error in Database().view_errors(int(self.cfg.analysis.id)):
+        for error in Database().view_errors(int(self.task["id"])):
             debug["errors"].append(error.message)
 
         return debug

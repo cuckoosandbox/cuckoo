@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -14,6 +14,7 @@ from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.dns import resolve
 from lib.cuckoo.common.irc import ircMessage
+from lib.cuckoo.common.objects import File
 
 try:
     import dpkt
@@ -415,5 +416,9 @@ class NetworkAnalysis(Processing):
         self.key = "network"
 
         results = Pcap(self.pcap_path).run()
+
+        # Save PCAP file hash.
+        if os.path.exists(self.pcap_path):
+            results["pcap_sha256"] = File(self.pcap_path).get_sha256()
 
         return results

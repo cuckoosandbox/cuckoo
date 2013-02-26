@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -20,6 +20,7 @@ from lib.cuckoo.common.utils import  create_folders, create_folder
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.guest import GuestManager
+from lib.cuckoo.core.resultserver import Resultserver
 from lib.cuckoo.core.sniffer import Sniffer
 from lib.cuckoo.core.processor import Processor
 from lib.cuckoo.core.reporter import Reporter
@@ -60,7 +61,7 @@ class AnalysisManager(Thread):
         # analysis or previous results will be overwritten and lost.
         if os.path.exists(self.storage):
             log.error("Analysis results folder already exists at path \"%s\","
-                      " analysis aborted" % self.storage)
+                      " analysis aborted", self.storage)
             return False
 
         # If we're not able to create the analysis storage folder, we have to
@@ -68,7 +69,7 @@ class AnalysisManager(Thread):
         try:
             create_folder(folder=self.storage)
         except CuckooOperationalError:
-            log.error("Unable to create analysis folder %s" % self.storage)
+            log.error("Unable to create analysis folder %s", self.storage)
             return False
 
         return True
@@ -77,14 +78,14 @@ class AnalysisManager(Thread):
         """Store a copy of the file being analyzed."""
         if not os.path.exists(self.task.target):
             log.error("The file to analyze does not exist at path \"%s\", "
-                      "analysis aborted" % self.task.target)
+                      "analysis aborted", self.task.target)
             return False
 
         sha256 = File(self.task.target).get_sha256()
         self.binary = os.path.join(CUCKOO_ROOT, "storage", "binaries", sha256)
 
         if os.path.exists(self.binary):
-            log.info("File already exists at \"%s\"" % self.binary)
+            log.info("File already exists at \"%s\"", self.binary)
         else:
             # TODO: do we really need to abort the analysis in case we are not
             # able to store a copy of the file?
@@ -92,7 +93,7 @@ class AnalysisManager(Thread):
                 shutil.copy(self.task.target, self.binary)
             except (IOError, shutil.Error) as e:
                 log.error("Unable to store file from \"%s\" to \"%s\", "
-                          "analysis aborted" % (self.task.target, self.binary))
+                          "analysis aborted", self.task.target, self.binary)
                 return False
 
         try:
@@ -103,8 +104,7 @@ class AnalysisManager(Thread):
             else:
                 shutil.copy(self.binary, new_binary_path)
         except (AttributeError, OSError) as e:
-            log.error("Unable to create symlink/copy from \"%s\" to \"%s\""
-                      % (self.binary, self.storage))
+            log.error("Unable to create symlink/copy from \"%s\" to \"%s\"", self.binary, self.storage)
 
         return True
 
@@ -124,11 +124,10 @@ class AnalysisManager(Thread):
             # If no machine is available at this moment, wait for one second
             # and try again.
             if not machine:
-                log.debug("Task #%d: no machine available yet" % self.task.id)
+                log.debug("Task #%d: no machine available yet", self.task.id)
                 time.sleep(1)
             else:
-                log.info("Task #%d: acquired machine %s (label=%s)"
-                         % (self.task.id, machine.name, machine.label))
+                log.info("Task #%d: acquired machine %s (label=%s)", self.task.id, machine.name, machine.label)
                 break
 
         return machine
@@ -140,15 +139,13 @@ class AnalysisManager(Thread):
         options = {}
 
         options["id"] = self.task.id
+        options["ip"] = self.cfg.resultserver.ip
+        options["port"] = self.cfg.resultserver.port
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
-        options["machine"] = self.task.machine
-        options["platform"] = self.task.platform
         options["options"] = self.task.options
-        options["custom"] = self.task.custom
         options["enforce_timeout"] = self.task.enforce_timeout
-        options["started"] = time.time()
 
         if not self.task.timeout or self.task.timeout == 0:
             options["timeout"] = self.cfg.timeouts.default
@@ -161,38 +158,12 @@ class AnalysisManager(Thread):
 
         return options
 
-    def process_results(self):
-        """Process the analysis results and generate the enabled reports."""
-        try:
-            logs_path = os.path.join(self.storage, "logs")
-            for csv in os.listdir(logs_path):
-                csv = os.path.join(logs_path, csv)
-                if os.stat(csv).st_size > self.cfg.processing.analysis_size_limit:
-                    log.error("Analysis file %s is too big to be processed, "
-                              "analysis aborted. Process it manually with the "
-                              "provided utilities" % csv)
-                    return False
-        except OSError as e:
-            log.warning("Error accessing analysis logs (task=%d): %s"
-                        % (self.task.id, e))
-
-        results = Processor(self.storage).run()
-        Reporter(self.storage).run(results)
-
-        log.info("Task #%d: reports generation completed (path=%s)"
-                 % (self.task.id, self.storage))
-
-        return True
-
     def launch_analysis(self):
         """Start analysis."""
         sniffer = None
         succeeded = False
-        stored = False
 
-        log.info("Starting analysis of %s \"%s\" (task=%d)"
-                 % (self.task.category.upper(),
-                    self.task.target, self.task.id))
+        log.info("Starting analysis of %s \"%s\" (task=%d)", self.task.category.upper(), self.task.target, self.task.id)
 
         # Initialize the the analysis folders.
         if not self.init_storage():
@@ -208,6 +179,9 @@ class AnalysisManager(Thread):
 
         # Acquire analysis machine.
         machine = self.acquire_machine()
+
+        # At this point we can tell the Resultserver about it
+        Resultserver().add_task(self.task, machine)
 
         # If enabled in the configuration, start the tcpdump instance.
         if self.cfg.sniffer.enabled:
@@ -258,10 +232,10 @@ class AnalysisManager(Thread):
                 # Retrieve the analysis results and store them.
                 try:
                     guest.save_results(self.storage)
-                    stored = True
+                    succeeded = True
                 except CuckooGuestError as e:
                     log.error(str(e), extra={"task_id" : self.task.id})
-                    stored = False
+                    succeeded = False
         finally:
             # Stop the sniffer.
             if sniffer:
@@ -274,17 +248,10 @@ class AnalysisManager(Thread):
                     os.remove(self.task.target)
                 except OSError as e:
                     log.error("Unable to delete original file at path \"%s\": "
-                              "%s" % (self.task.target, e))
+                              "%s", self.task.target, e)
 
             # Take a memory dump of the machine before shutting it off.
-            do_memory_dump = False
-            if self.cfg.cuckoo.memory_dump:
-                do_memory_dump = True
-            else:
-                if self.task.memory:
-                    do_memory_dump = True
-
-            if do_memory_dump:
+            if self.cfg.cuckoo.memory_dump or self.task.memory:
                 try:
                     mmanager.dump_memory(machine.label,
                                          os.path.join(self.storage, "memory.dmp"))
@@ -297,32 +264,54 @@ class AnalysisManager(Thread):
             try:
                 # Stop the analysis machine.
                 mmanager.stop(machine.label)
-                # Market the machine in the database as stopped.
-                Database().guest_stop(guest_log)
+            except CuckooMachineError as e:
+                log.warning("Unable to stop machine %s: %s", machine.label, e)
+
+            # Market the machine in the database as stopped.
+            Database().guest_stop(guest_log)
+
+            try:
                 # Release the analysis machine.
                 mmanager.release(machine.label)
             except CuckooMachineError as e:
                 log.error("Unable to release machine %s, reason %s. "
-                          "You might need to restore it manually"
-                          % (machine.label, e))
+                          "You might need to restore it manually", machine.label, e)
 
-        # If the results were correctly stored, we process the results and
-        # generate the reports.
-        if stored:
-            self.process_results()
+            # after all this, we can make the Resultserver forget about it
+            Resultserver().del_task(self.task, machine)
 
         return succeeded
+
+    def process_results(self):
+        """Process the analysis results and generate the enabled reports."""
+        try:
+            logs_path = os.path.join(self.storage, "logs")
+            for csv in os.listdir(logs_path):
+                csv = os.path.join(logs_path, csv)
+                if os.stat(csv).st_size > self.cfg.processing.analysis_size_limit:
+                    log.error("Analysis file %s is too big to be processed, "
+                              "analysis aborted. Process it manually with the "
+                              "provided utilities", csv)
+                    return False
+        except OSError as e:
+            log.warning("Error accessing analysis logs (task=%d): %s", self.task.id, e)
+
+        results = Processor(self.task.id).run()
+        Reporter(self.task.id).run(results)
+
+        log.info("Task #%d: reports generation completed (path=%s)", self.task.id, self.storage)
+
+        return True
 
     def run(self):
         """Run manager thread."""
         success = self.launch_analysis()
-
-        log.debug("Releasing database task #%d with status %s"
-                  % (self.task.id, success))
         Database().complete(self.task.id, success)
 
-        log.info("Task #%d: analysis procedure completed"
-                 % self.task.id)
+        self.process_results()
+
+        log.debug("Releasing database task #%d with status %s", self.task.id, success)
+        log.info("Task #%d: analysis procedure completed", self.task.id)
 
 class Scheduler:
     """Tasks Scheduler.
@@ -346,7 +335,7 @@ class Scheduler:
 
         mmanager_name = self.cfg.cuckoo.machine_manager
 
-        log.info("Using \"%s\" machine manager" % mmanager_name)
+        log.info("Using \"%s\" machine manager", mmanager_name)
 
         # Get registered class name. Only one machine manager is imported,
         # therefore there should be only one class in the list.
@@ -359,8 +348,8 @@ class Scheduler:
 
         if not os.path.exists(conf):
             raise CuckooCriticalError("The configuration file for machine "
-                                      "manager \"%s\" does not exist at path: "
-                                      "%s" % (mmanager_name, conf))
+                                      "manager \"{0}\" does not exist at path: "
+                                      "{1}".format(mmanager_name, conf))
 
         # Provide a dictionary with the configuration options to the
         # machine manager instance.
@@ -374,7 +363,8 @@ class Scheduler:
         if mmanager.machines().count() == 0:
             raise CuckooCriticalError("No machines available")
         else:
-            log.info("Loaded %s machine/s" % mmanager.machines().count())
+            log.info("Loaded %s machine/s", mmanager.machines().count())
+
 
     def stop(self):
         """Stop scheduler."""
@@ -401,7 +391,7 @@ class Scheduler:
             task = self.db.fetch_and_process()
 
             if task:
-                log.debug("Processing task #%s" % task.id)
+                log.debug("Processing task #%s", task.id)
 
                 # Initialize the analysis manager.
                 analysis = AnalysisManager(task)

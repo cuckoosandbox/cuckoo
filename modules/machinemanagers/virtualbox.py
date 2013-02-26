@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -99,7 +99,7 @@ class VirtualBox(MachineManager):
                 log.debug("VBoxManage exited with error powering off the machine")
         except OSError as e:
             raise CuckooMachineError("VBoxManage failed powering off the machine: %s" % e)
-        self._wait_status(label, [self.POWEROFF, self.ABORTED])
+        self._wait_status(label, [self.POWEROFF, self.ABORTED, self.SAVED])
 
     def _list(self):
         """Lists virtual machines installed.
