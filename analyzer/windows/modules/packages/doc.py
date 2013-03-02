@@ -17,7 +17,12 @@ class DOC(Package):
             os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office11", "WINWORD.EXE"),
             os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office12", "WINWORD.EXE"),
             os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office14", "WINWORD.EXE"),
-            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office15", "WINWORD.EXE")
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office15", "WINWORD.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "WORDVIEW.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office11", "WORDVIEW.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office12", "WORDVIEW.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office14", "WORDVIEW.EXE"),
+            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office15", "WORDVIEW.EXE")
         ]
 
         for path in paths:
