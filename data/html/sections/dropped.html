@@ -45,6 +45,16 @@
                             <th>Ssdeep</th>
                             <td><span class="mono">{{dropped_file.ssdeep}}</span></td>
                         </tr>
+                        <tr>
+                            <th>Yara</th>
+                            <td>
+                                <ul style="margin-top: 0;margin-bottom: 0;">
+                                    {% for sign in dropped_file.yara %}
+                                    <li>{{sign.name}} ({{sign.meta.description}})</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
                     </table>
                 </div>
             </div>

@@ -50,9 +50,11 @@
                     {% if results.static.peid_signatures|length == 0 %}
                         None matched
                     {% else %}
+                        <ul style="margin-top: 0;margin-bottom: 0;">
                         {% for sign in results.static.peid_signatures %}
-                            <div>&bull; {{sign}}</div>
+                            <li>{{sign}}</li>
                         {% endfor %}
+                        </ul>
                     {% endif %}
                 {% else %}
                     None matched
@@ -60,15 +62,13 @@
             </td>
         </tr>
         <tr>
-            <th>Yara Signatures</th>
+            <th>Yara</th>
             <td>
-                {% if results.yara %}
-                    <ul style="margin-bottom: 0">
-                        {% for sign in results.yara %}
-                            <li>{{sign.name}} ({{sign.meta.description}})</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
+                <ul style="margin-top: 0;margin-bottom: 0;">
+                    {% for sign in results.target.file.yara %}
+                    <li>{{sign.name}} ({{sign.meta.description}})</li>
+                    {% endfor %}
+                </ul>
             </td>
         </tr>
         <tr>
