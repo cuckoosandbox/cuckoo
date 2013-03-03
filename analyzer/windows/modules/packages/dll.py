@@ -11,15 +11,15 @@ class Dll(Package):
 
     def start(self, path):
         free = self.options.get("free", False)
-        function = self.options.get("function", None)
+        function = self.options.get("function", "DllMain")
+        arguments = self.options.get("arguments", None)
         suspended = True
         if free:
             suspended = False
 
-        if function:
-            args = "%s,%s" % (path, function)
-        else:
-            args = "%s,DllMain" % path
+        args = "{0},{1}".format(path, function)
+        if arguments:
+            args += " {0}".format(arguments)
 
         p = Process()
         if not p.execute(path="C:\\WINDOWS\\system32\\rundll32.exe", args=args, suspended=suspended):
