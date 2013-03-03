@@ -1,11 +1,10 @@
 <section id="behavior">
-    <div class="section-title">
-        <h3>Behavior Analysis <small>details on the malware execution</small></h3>
-    </div>
     {% if results.behavior.summary %}
-        <h4>Summary</h4>
-        <div class="well">
-            <h4>Files</h4>
+        <div class="section-title">
+            <h4>Behavior Summary</h4>
+        </div>
+        <div class="well well-small">
+            <b>Files</b>
             {% if results.behavior.summary.files %}
                 <ul>
                     {% for file in results.behavior.summary.files %}
@@ -16,8 +15,8 @@
                 Nothing to display.
             {% endif %}
         </div>
-        <div class="well">
-            <h4>Mutexes</h4>
+        <div class="well well-small">
+            <b>Mutexes</b>
             {% if results.behavior.summary.mutexes %}
                 <ul>
                     {% for mutex in results.behavior.summary.mutexes %}
@@ -28,8 +27,8 @@
                 Nothing to display.
             {% endif %}
         </div>
-        <div class="well">
-            <h4>Registry Keys</h4>
+        <div class="well well-small">
+            <b>Registry Keys</b>
             {% if results.behavior.summary["keys"] %}
                 <ul>
                     {% for key in results.behavior.summary["keys"] %}
@@ -42,7 +41,9 @@
         </div>
     {% endif %}
 
-    <h4>Processes</h4>
+    <div class="section-title">
+        <h4>Processes</h4>
+    </div>
     {% if results.behavior.processes %}
         {% for process in results.behavior.processes %}
         <div>

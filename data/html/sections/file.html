@@ -1,6 +1,6 @@
 <section id="file">
     <div class="section-title">
-        <h3>File Details <small>file indicators</small></h3>
+        <h4>File Details</h4>
     </div>
     <table class="table table-striped table-bordered">
         <colgroup>
@@ -44,7 +44,7 @@
             <td><span class="mono">{{results.target.file.ssdeep}}</span></td>
         </tr>
         <tr>
-            <th>PEiD Signatures</th>
+            <th>PEiD</th>
             <td>
                 {% if results.static.peid_signatures %}
                     {% if results.static.peid_signatures|length == 0 %}
@@ -72,7 +72,7 @@
             </td>
         </tr>
         <tr>
-            <th>Antivirus Results</th>
+            <th>VirusTotal</th>
             <td>
                 {% if results.virustotal %}
                     {% if results.virustotal.response_code == 1 %}
