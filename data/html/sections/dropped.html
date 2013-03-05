@@ -48,11 +48,15 @@
                         <tr>
                             <th>Yara</th>
                             <td>
-                                <ul style="margin-top: 0;margin-bottom: 0;">
-                                    {% for sign in dropped_file.yara %}
-                                    <li>{{sign.name}} ({{sign.meta.description}})</li>
-                                    {% endfor %}
-                                </ul>
+                                {% if results.target.file.yara|length == 0 %}
+                                    None matched
+                                {% else %}
+                                    <ul style="margin-top: 0;margin-bottom: 0;">
+                                        {% for sign in dropped_file.yara %}
+                                        <li>{{sign.name}} ({{sign.meta.description}})</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
                             </td>
                         </tr>
                     </table>
