@@ -1,6 +1,7 @@
 {% extends "base-report.html" %}
 {% block content %}
     {% include "sections/info.html" %}
+    {% include "sections/errors.html" %}
     {% if results.info.category == "file" %}
         {% include "sections/file.html" %}
     {% elif results.info.category == "url" %}
