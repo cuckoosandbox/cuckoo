@@ -49,7 +49,7 @@
         <div>
             <h4><a href="javascript:showHide('process_{{process.process_id}}');">{{process.process_name}}</a> <small>PID: {{process.process_id}}, Parent PID: {{process.parent_id}}</small></h4>
             <div id="process_{{process.process_id}}" style="display: none;">
-                <table class="table table-striped table-bordered table-condensed">
+                <table class="table table-striped table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
                     <tr>
                         <th>Timestamp</th>
                         <th>Thread</th>
@@ -64,7 +64,7 @@
                         <td>{{call.timestamp[11:]}}</td>
                         <td>{{call.thread_id}}</td>
                         <td><span class="mono">{{call.api}}</span></td>
-                        <td>
+                        <td style="word-wrap: break-word">
                         {% for argument in call.arguments %}
                             {{argument.name}} => <span class="mono">{{argument.value}}</span><br />
                         {% endfor %}
