@@ -49,7 +49,7 @@ def install(enabled, force, rewrite):
     for category in enabled:
         folder = folders[category]
 
-        print("\nInstalling {0}".format(colors.cyan(category.upper()))
+        print("\nInstalling {0}".format(colors.cyan(category.upper())))
 
         origin = os.path.join(source, folder)
 
