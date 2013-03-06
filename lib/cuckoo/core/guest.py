@@ -145,7 +145,11 @@ class GuestManager:
                     raise CuckooGuestError("Unable to read {0}, error: {1}".format(options["target"], e))
                 
                 data = xmlrpclib.Binary(file_data)
-                self.server.add_malware(data, options["file_name"])
+
+                try:
+                    self.server.add_malware(data, options["file_name"])
+                except MemoryError as e:
+                    raise CuckooGuestError("{0}: unable to upload malware to analysis machine, not enough memory".format(self.id))
 
             # Launch the analyzer.
             pid = self.server.execute()
