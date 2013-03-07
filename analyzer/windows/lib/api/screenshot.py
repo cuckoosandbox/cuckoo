@@ -28,7 +28,13 @@ class Screenshot:
         if not HAVE_PIL:
             return None
 
-        return ImageChops.difference(img1, img2).getbbox() is None
+        diff = ImageChops.difference(img1, img2)
+        h = diff.histogram()
+        sq = (value*((idx%256)**2) for idx, value in enumerate(h))
+        sum_of_squares = sum(sq)
+        rms = math.sqrt(sum_of_squares/float(img1.size[0] * img1.size[1]))
+
+        return rms < 40 # Might need to tweak the threshold
 
     def take(self):
         """Take a screenshot.
