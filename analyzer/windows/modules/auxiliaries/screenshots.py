@@ -13,6 +13,7 @@ from lib.api.screenshot import Screenshot
 
 log = logging.getLogger(__name__)
 SHOT_DELAY = 1
+SHOT_YES = 1
 
 class Screenshots(Auxiliary, Thread):
     """Take screenshots."""
@@ -29,6 +30,10 @@ class Screenshots(Auxiliary, Thread):
         """Run screenshotting.
         @return: operation status.
         """
+        if SHOT_YES != 1:
+            log.warning("SHOT_YES is not 1, screenshots are disabled intentionally")
+            return False
+
         if not Screenshot().have_pil():
             log.warning("Python Image Library is not installed, screenshots are disabled")
             return False
