@@ -84,7 +84,7 @@ class Guest(Base):
     label = Column(String(255), nullable=False)
     manager = Column(String(255), nullable=False)
     started_on = Column(DateTime(timezone=False),
-                        default=datetime.now(),
+                        default=datetime.now,
                         nullable=False)
     shutdown_on = Column(DateTime(timezone=False), nullable=True)
     task_id = Column(Integer,
@@ -230,7 +230,7 @@ class Task(Base):
     memory = Column(Boolean, nullable=False, default=False)
     enforce_timeout = Column(Boolean, nullable=False, default=False)
     added_on = Column(DateTime(timezone=False),
-                      default=datetime.now(),
+                      default=datetime.now,
                       nullable=False)
     started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
