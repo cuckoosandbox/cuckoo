@@ -395,6 +395,5 @@ class Scheduler:
 
                 # Initialize the analysis manager.
                 analysis = AnalysisManager(task)
-                analysis.daemon = True
                 # Start.
                 analysis.start()
