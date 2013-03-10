@@ -3,9 +3,10 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import time
+import shutil
 import ntpath
 import string
-import time
 import tempfile
 import xmlrpclib
 from datetime import datetime
@@ -37,6 +38,17 @@ def create_folder(root=".", folder=None):
         except OSError as e:
             raise CuckooOperationalError("Unable to create folder: %s"
                                          % folder_path)
+
+def delete_folder(folder):
+    """Delete a folder and all its subdirectories.
+    @param folder: path to delete.
+    @raise CuckooOperationalError: if fails to delete folder.
+    """
+    if os.path.exists(folder):
+        try:
+            shutil.rmtree(folder)
+        except OSError as e:
+            raise CuckooOperationalError("Unable to delete folder: {0}".format(folder))
 
 def convert_char(c):
     """Escapes characters.

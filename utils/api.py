@@ -16,7 +16,7 @@ except ImportError:
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.utils import store_temp_file
+from lib.cuckoo.common.utils import store_temp_file, delete_folder
 from lib.cuckoo.core.database import Database
 
 # Global DB pointer.
@@ -149,16 +149,20 @@ def tasks_view(task_id):
 
     return jsonize(response)
 
-@route("/tasks/del/<task_id>", method="GET")
-def tasks_del(task_id):
+@route("/tasks/delete/<task_id>", method="GET")
+def tasks_delete(task_id):
     response = {}
 
-    if db.view_task(task_id):
-        if db.del_task(task_id):
+    task = db.view_task(task_id)
+    if task:
+        if task.status == "processing":
+            return HTTPError(500, "The task is currently being processed, cannot delete")
+
+        if db.delete_task(task_id):
+            delete_folder(os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id))
             response["status"] = "OK"
         else:
-            response["task"] = {}
-            response["task"]["errors"] = ["Error deleting object."]
+            return HTTPError(500, "An error occurred while trying to delete the task")
     else:
         return HTTPError(404, "Task not found")
 

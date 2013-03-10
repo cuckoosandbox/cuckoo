@@ -734,7 +734,7 @@ class Database(object):
             return None
         return task
 
-    def del_task(self, task_id):
+    def delete_task(self, task_id):
         """Delete information on a task.
         @param task_id: ID of the task to query.
         @return: operation status.
