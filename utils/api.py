@@ -149,6 +149,21 @@ def tasks_view(task_id):
 
     return jsonize(response)
 
+@route("/tasks/del/<task_id>", method="GET")
+def tasks_del(task_id):
+    response = {}
+
+    if db.view_task(task_id):
+        if db.del_task(task_id):
+            response["status"] = "OK"
+        else:
+            response["task"] = {}
+            response["task"]["errors"] = ["Error deleting object."]
+    else:
+        return HTTPError(404, "Task not found")
+
+    return jsonize(response)
+
 @route("/tasks/report/<task_id>", method="GET")
 @route("/tasks/report/<task_id>/<report_format>", method="GET")
 def tasks_report(task_id, report_format="json"):

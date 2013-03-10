@@ -88,7 +88,9 @@ class Guest(Base):
                         nullable=False)
     shutdown_on = Column(DateTime(timezone=False), nullable=True)
     task_id = Column(Integer,
-                     ForeignKey('tasks.id'),
+                     ForeignKey('tasks.id',
+                                onupdate="CASCADE",
+                                ondelete="CASCADE"),
                      nullable=False,
                      unique=True)
 
@@ -186,7 +188,9 @@ class Error(Base):
     id = Column(Integer(), primary_key=True)
     message = Column(String(255), nullable=False)
     task_id = Column(Integer,
-                     ForeignKey('tasks.id'),
+                     ForeignKey('tasks.id',
+                                onupdate="CASCADE",
+                                ondelete="CASCADE"),
                      nullable=False,
                      unique=True)
 
@@ -243,8 +247,8 @@ class Task(Base):
                          nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     sample = relationship("Sample", backref="tasks")
-    guest = relationship("Guest", uselist=False, backref="tasks")
-    errors = relationship("Error", backref="tasks")
+    guest = relationship("Guest", uselist=False, backref="tasks", cascade="delete")
+    errors = relationship("Error", backref="tasks", cascade="delete")
 
     def to_dict(self):
         """Converts object to dict.
@@ -734,6 +738,22 @@ class Database(object):
         except SQLAlchemyError:
             return None
         return task
+
+    def del_task(self, task_id):
+        """Delete information on a task.
+        @param task_id: ID of the task to query.
+        @return: operation status.
+        """
+        session = self.Session()
+        try:
+            task = session.query(Task).get(task_id)
+            session.delete(task)
+            session.commit()
+        except SQLAlchemyError as e:
+            print e
+            session.rollback()
+            return False
+        return True
 
     def view_sample(self, sample_id):
         """Retrieve information on a sample.
