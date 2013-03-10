@@ -777,7 +777,7 @@ class Database(object):
             if md5:
                 sample = session.query(Sample).filter(Sample.md5 == md5).first()
             elif sha256:
-                sample = sesison.query(Sample).fitler(Sample.sha256 == sha256).first()
+                sample = session.query(Sample).filter(Sample.sha256 == sha256).first()
         except SQLAlchemyError:
             return None
         return sample
