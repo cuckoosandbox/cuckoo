@@ -88,9 +88,7 @@ class Guest(Base):
                         nullable=False)
     shutdown_on = Column(DateTime(timezone=False), nullable=True)
     task_id = Column(Integer,
-                     ForeignKey('tasks.id',
-                                onupdate="CASCADE",
-                                ondelete="CASCADE"),
+                     ForeignKey('tasks.id'),
                      nullable=False,
                      unique=True)
 
@@ -188,9 +186,7 @@ class Error(Base):
     id = Column(Integer(), primary_key=True)
     message = Column(String(255), nullable=False)
     task_id = Column(Integer,
-                     ForeignKey('tasks.id',
-                                onupdate="CASCADE",
-                                ondelete="CASCADE"),
+                     ForeignKey('tasks.id'),
                      nullable=False,
                      unique=True)
 
@@ -247,8 +243,8 @@ class Task(Base):
                          nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     sample = relationship("Sample", backref="tasks")
-    guest = relationship("Guest", uselist=False, backref="tasks", cascade="delete")
-    errors = relationship("Error", backref="tasks", cascade="delete")
+    guest = relationship("Guest", uselist=False, backref="tasks", cascade="save-update, delete")
+    errors = relationship("Error", backref="tasks", cascade="save-update, delete")
 
     def to_dict(self):
         """Converts object to dict.
@@ -442,7 +438,6 @@ class Database(object):
         """
         session = self.Session()
         guest = Guest(name, label, manager)
-        guest.started_on = datetime.now()
         try:
             session.query(Task).get(task_id).guest = guest
             session.commit()
