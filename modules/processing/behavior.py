@@ -77,20 +77,24 @@ class ParseProcessLog(list):
             r = None
             try: r = self.parser.read_next_message()
             except EOFError:
-                self.fd.seek(0)
-                raise StopIteration()
+                return False
 
-            if not r: raise StopIteration()
+            if not r: return False
+        return True
 
     def next(self):
-        self.wait_for_lastcall()
+        x = self.wait_for_lastcall()
+        if not x:
+            self.fd.seek(0)
+            raise StopIteration()
+
         nextcall, self.lastcall = self.lastcall, None
 
-        self.wait_for_lastcall()
+        x = self.wait_for_lastcall()
         while self.lastcall and self.compare_calls(nextcall, self.lastcall):
             nextcall['repeated'] += 1
             self.lastcall = None
-            self.wait_for_lastcall()
+            x = self.wait_for_lastcall()
 
         return nextcall
 
