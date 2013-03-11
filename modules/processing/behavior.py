@@ -59,7 +59,20 @@ class ParseProcessLog(list):
     def __nonzero__(self):
         return True
 
-    def next(self):
+    def compare_calls(self, a, b):
+        """Compare two calls for equality. Same implementation as before netlog.
+        @param a: call a
+        @param b: call b
+        @return: True if a == b else False
+        """
+        if a["api"] == b["api"] and \
+           a["status"] == b["status"] and \
+           a["arguments"] == b["arguments"] and \
+           a["return"] == b["return"]:
+            return True
+        return False
+
+    def wait_for_lastcall(self):
         while not self.lastcall:
             r = None
             try: r = self.parser.read_next_message()
@@ -69,8 +82,17 @@ class ParseProcessLog(list):
 
             if not r: raise StopIteration()
 
-        tmp, self.lastcall = self.lastcall, None
-        return tmp
+    def next(self):
+        self.wait_for_lastcall()
+        nextcall, self.lastcall = self.lastcall, None
+
+        self.wait_for_lastcall()
+        while self.lastcall and self.compare_calls(nextcall, self.lastcall):
+            nextcall['repeated'] += 1
+            self.lastcall = None
+            self.wait_for_lastcall()
+
+        return nextcall
 
     def log_process(self, context, timestring, pid, ppid, modulepath, procname):
         self.process_id, self.parent_id, self.process_name = pid, ppid, procname
