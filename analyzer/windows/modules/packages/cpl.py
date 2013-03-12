@@ -15,7 +15,7 @@ class Cpl(Package):
         if function:
             args = "shell32.dll,Control_RunDLL %s %s" % (path, function)
         else:
-            args = "shell32.dll,Control_RunDLL " % path
+            args = "shell32.dll,Control_RunDLL %s" % path
 
         p = Process()
         if not p.execute(path="C:\\WINDOWS\\system32\\rundll32.exe", args=args, suspended=suspended):
