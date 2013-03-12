@@ -1,4 +1,4 @@
-import shutil
+import os
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
@@ -15,8 +15,12 @@ class Cpl(Package):
             suspended = False
 
         # file need the .cpl extention to execute
-        cplpath = "%s.cpl" % path
-        shutil.copyfile(path, cplpath)
+        if path.endswith('.cpl'):
+                cplpath = path
+        else:
+                cplpath = "%s.cpl" % path
+                os.rename(path, cplpath)
+
 
         if function:
             args = "shell32.dll,Control_RunDLL %s,%s" % (cplpath, function)
