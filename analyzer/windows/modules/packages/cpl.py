@@ -19,9 +19,9 @@ class Cpl(Package):
         shutil.copyfile(path, cplpath)
 
         if function:
-            args = "shel32.dll.Control_RunDLL %s,%s" % (cplpath, function)
+            args = "shell32.dll.Control_RunDLL %s,%s" % (cplpath, function)
         else:
-            args = "shel32.dll.Control_RunDLL %s" % cplpath
+            args = "shell32.dll.Control_RunDLL %s" % cplpath
 
         p = Process()
         if not p.execute(path="C:\\WINDOWS\\system32\\rundll32.exe", args=args, suspended=suspended):
