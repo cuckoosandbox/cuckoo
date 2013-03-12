@@ -16,10 +16,10 @@ class Cpl(Package):
 
         # file need the .cpl extention to execute
         if path.endswith('.cpl'):
-                cplpath = path
+            cplpath = path
         else:
-                cplpath = "%s.cpl" % path
-                os.rename(path, cplpath)
+            cplpath = "%s.cpl" % path
+            os.rename(path, cplpath)
 
 
         if function:
