@@ -262,7 +262,7 @@ class LibVirtMachineManager(MachineManager):
         if snap:
             try:
                 current = self.vms[label].snapshotCurrent(flags=0)
-                self.vms[label].revertToSnapshot(current, flags=1)
+                self.vms[label].revertToSnapshot(current, flags=0)
             except libvirt.libvirtError:
                 raise CuckooMachineError("Unable to restore snapshot on virtual machine {0}".format(label))
             finally:
@@ -272,6 +272,9 @@ class LibVirtMachineManager(MachineManager):
             raise CuckooMachineError("No snapshot found for virtual machine {0}".format(label))
         # Check state.
         self._wait_status(label, [self.RUNNING, self.PAUSED])
+
+        # snapshots might be taken while VM is in paused state
+        # if so, resume again
         if self._status(label) == self.PAUSED:
             self.vms[label].resume()
             self._wait_status(label, self.RUNNING)
