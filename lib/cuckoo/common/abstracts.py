@@ -207,6 +207,7 @@ class LibVirtMachineManager(MachineManager):
     """
     
     # VM states.
+    PAUSED = "paused"
     RUNNING = "running"
     POWEROFF = "poweroff"
     ERROR = "machete"
@@ -270,7 +271,14 @@ class LibVirtMachineManager(MachineManager):
             self._disconnect(conn)
             raise CuckooMachineError("No snapshot found for virtual machine {0}".format(label))
         # Check state.
-        self._wait_status(label, self.RUNNING)
+        self._wait_status(label, [self.RUNNING, self.PAUSED])
+
+        # snapshots might be taken while VM is in paused state
+        # if so, resume again
+        if self._status(label) == self.PAUSED:
+            self.vms[label].resume()
+            self._wait_status(label, self.RUNNING)
+
 
     def stop(self, label):
         """Stops a virtual machine. Kill them all.
@@ -343,8 +351,10 @@ class LibVirtMachineManager(MachineManager):
             self._disconnect(conn)
 
         if state:
-            if state[0] == 1 or state[0] == 3:
+            if state[0] == 1:
                 status = self.RUNNING
+            elif state[0] == 3:
+                status = self.PAUSED
             elif state[0] == 4 or state[0] == 5:
                 status = self.POWEROFF
             else:
