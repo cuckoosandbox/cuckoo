@@ -198,7 +198,7 @@ class File:
                                                     stdout = subprocess.PIPE)
                     file_type = file_process.stdout.read().strip()
                 except:
-                    return None
+                    return ''
         finally:
             try:
                 ms.close()

@@ -241,15 +241,6 @@ class AnalysisManager(Thread):
             if sniffer:
                 sniffer.stop()
 
-            # If the target is a file and the user enabled the option,
-            # delete the original copy.
-            if self.task.category == "file" and self.cfg.cuckoo.delete_original:
-                try:
-                    os.remove(self.task.target)
-                except OSError as e:
-                    log.error("Unable to delete original file at path \"%s\": "
-                              "%s", self.task.target, e)
-
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:
                 try:
@@ -299,6 +290,15 @@ class AnalysisManager(Thread):
 
         results = Processor(self.task.id).run()
         Reporter(self.task.id).run(results)
+
+        # If the target is a file and the user enabled the option,
+        # delete the original copy.
+        if self.task.category == "file" and self.cfg.cuckoo.delete_original:
+            try:
+                os.remove(self.task.target)
+            except OSError as e:
+                log.error("Unable to delete original file at path \"%s\": "
+                          "%s", self.task.target, e)
 
         log.info("Task #%d: reports generation completed (path=%s)", self.task.id, self.storage)
 
