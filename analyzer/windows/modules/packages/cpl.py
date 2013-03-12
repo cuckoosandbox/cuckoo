@@ -13,13 +13,13 @@ class Cpl(Package):
             suspended = False
 
         if function:
-            args = "/c %s,%s" % (path, function)
+            args = "shel32.dll.Control_RunDLL %s,%s" % (path, function)
         else:
-            args = "/c %s" % path
+            args = "shel32.dll.Control_RunDLL %s" % path
 
         p = Process()
-        if not p.execute(path="C:\\WINDOWS\\system32\\cmd.exe", args=args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute cmd.exe, analysis aborted")
+        if not p.execute(path="C:\\WINDOWS\\system32\\rundll32.exe", args=args, suspended=suspended):
+            raise CuckooPackageError("Unable to execute rundll32, analysis aborted")
 
         if not free and suspended:
             p.inject()
