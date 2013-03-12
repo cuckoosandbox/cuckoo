@@ -14,7 +14,7 @@ class Cpl(Package):
         if free:
             suspended = False
 
-        ' file need the .cpl extention to execute
+        # file need the .cpl extention to execute
         cplpath = "%s.cpl" % path
         shutil.copyfile(path, cplpath)
 
