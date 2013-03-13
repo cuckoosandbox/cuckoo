@@ -2,6 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import math
+
 try:
     import Image
     import ImageGrab
@@ -37,7 +39,7 @@ class Screenshot:
         rms = math.sqrt(sum_of_squares/float(img1.size[0] * img1.size[1]))
 
         # Might need to tweak the threshold.
-        return rms < 40
+        return rms < 8
 
     def take(self):
         """Take a screenshot.

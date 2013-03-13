@@ -41,7 +41,8 @@ class Screenshots(Auxiliary, Thread):
 
             try:
                 img_current = Screenshot().take()
-            except IOError:
+            except IOError as e:
+                log.error("Cannot take screenshot: %s", e)
                 continue
 
             if img_last:
