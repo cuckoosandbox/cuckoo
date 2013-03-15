@@ -54,7 +54,12 @@ class Reporter:
         if "." in module_name:
             module_name = module_name.rsplit(".", 1)[1]
 
-        options = self.cfg.get(module_name)
+        try:
+            options = self.cfg.get(module_name)
+        except (AttributeError, CuckooOperationalError):
+            log.debug("Reporting module %s not found in "
+                      "configuration file" % module_name)
+            return
 
         # If the reporting module is disabled in the config, skip it.
         if not options.enabled:

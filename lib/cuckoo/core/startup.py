@@ -190,9 +190,9 @@ def init_modules():
 
         try:
             options = report_cfg.get(name)
-        except AttributeError:
+        except (AttributeError, CuckooOperationalError):
             log.debug("Reporting module %s not found in "
-                      "configuration file" % module_name)
+                      "configuration file" % name)
 
         if not options.enabled:
             continue
