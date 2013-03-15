@@ -150,3 +150,4 @@ class MongoDB(Report):
 
         # Store the report and retrieve its object id.
         self.db.analysis.insert(report)
+        self.conn.disconnect()
