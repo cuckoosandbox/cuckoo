@@ -97,6 +97,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
     def setup(self):
         self.rawlogfd = None
+        self.logfd = None
         self.startbuf = ''
         self.end_request = Event()
         self.done_event = Event()
