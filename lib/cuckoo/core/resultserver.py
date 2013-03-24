@@ -222,14 +222,22 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 class FileUpload(object):
     def __init__(self, handler):
         self.handler = handler
+        self.upload_max_size = self.handler.server.cfg.resultserver.upload_max_size
 
     def read_next_message(self):
         # read until newline for file path
         # e.g. shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
 
-        buf = self.handler.read_newline()
+        buf = self.handler.read_newline().strip()
         if '../' in buf or '\\' in buf:
             raise CuckooOperationalError("FileUpload failure, banned path.")
+
+        dir_part, filename = os.path.split(buf)
+
+        try: create_folder(self.storagepath, dir_part)
+        except CuckooOperationalError:
+            log.error("Unable to create folder %s" % folder)
+            return False
 
         file_path = os.path.join(self.handler.storagepath, buf.strip())
 
@@ -237,4 +245,9 @@ class FileUpload(object):
         chunk = self.handler.read_any()
         while chunk:
             fd.write(chunk)
+
+            if fd.tell() >= self.upload_max_size:
+                fd.write('... (truncated)')
+                break
+
             chunk = self.handler.read_any()
