@@ -96,6 +96,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
     """
 
     def setup(self):
+        self.logfd = None
         self.rawlogfd = None
         self.startbuf = ''
         self.end_request = Event()
@@ -150,7 +151,12 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
     def log_process(self, context, timestring, pid, ppid, modulepath, procname):
         log.debug("New process (pid={0}, ppid={1}, name={2}, path={3})".format(pid, ppid, procname, modulepath))
-        self.logfd = open(os.path.join(self.logspath, str(pid) + '.csv'), 'w')
+
+        # CSV format files are optional
+        if self.server.cfg.resultserver.store_csvs:
+            self.logfd = open(os.path.join(self.logspath, str(pid) + '.csv'), 'w')
+
+        # Netlog raw format is mandatory (postprocessing)
         self.rawlogfd = open(os.path.join(self.logspath, str(pid) + '.raw'), 'w')
         self.rawlogfd.write(self.startbuf)
         self.pid, self.ppid, self.procname = pid, ppid, procname
@@ -159,6 +165,9 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         log.debug("New thread (tid={0}, pid={1})".format(context[3], pid))
 
     def log_call(self, context, apiname, modulename, arguments):
+        if not self.rawlogfd:
+            raise CuckooOperationalError("Netlog failure, call before process.")
+
         apiindex, status, returnval, tid, timediff = context
 
         #log.debug('log_call> tid:{0} apiname:{1}'.format(tid, apiname))
@@ -168,9 +177,10 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         argumentstrings = ['{0}->{1}'.format(argname, r) for argname, r in arguments]
 
-        print >>self.logfd, ','.join('"{0}"'.format(i) for i in [timestring, self.pid,
-            self.procname, tid, self.ppid, modulename, apiname, status, returnval,
-            ] + argumentstrings)
+        if self.logfd:
+            print >>self.logfd, ','.join('"{0}"'.format(i) for i in [timestring, self.pid,
+                self.procname, tid, self.ppid, modulename, apiname, status, returnval,
+                ] + argumentstrings)
 
     def create_logs_folder(self):
         logspath = os.path.join(self.storagepath, "logs")
