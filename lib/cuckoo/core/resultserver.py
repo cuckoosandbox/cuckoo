@@ -19,8 +19,11 @@ from lib.cuckoo.common.netlog import NetlogParser
 
 log = logging.getLogger(__name__)
 
+BUFSIZE = 16 * 1024
+
 class Disconnect(Exception):
     pass
+
 
 class Resultserver(SocketServer.ThreadingTCPServer, object):
     """Result server. Singleton!
@@ -89,6 +92,7 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         storagepath = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task.id))
         return storagepath
 
+
 class Resulthandler(SocketServer.BaseRequestHandler):
     """Result handler.
 
@@ -124,6 +128,26 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         else: self.startbuf += buf
         return buf
 
+    def read_any(self):
+        return self.request.recv(BUFSIZE)
+
+    def read_newline(self):
+        buf = ''
+        while not "\n" in buf:
+            buf += self.read(1)
+        return buf
+
+    def negotiate_protocol(self):
+        # read until newline
+        buf = self.read_newline()
+
+        if "NETLOG" in buf:
+            self.protocol = NetlogParser(self)
+        elif "FILE" in buf:
+            self.protocol = FileUpload(self)
+        else:
+            raise CuckooOperationalError("Netlog failure, unknown protocol requested.")
+
     def handle(self):
         ip, port = self.client_address
         self.connect_time = datetime.datetime.now()        
@@ -131,14 +155,16 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         self.storagepath = self.server.build_storage_path(ip)
         if not self.storagepath: return
-        self.logspath = self.create_logs_folder()
-        if not self.logspath: return
 
-        # netlog protocol parser
-        nlp = NetlogParser(self)
+        # create all missing folders for this analysis
+        self.create_folders()
+
+        # initialize the protocol handler class for this connection
+        self.negotiate_protocol()
+
         try:
             while True:
-                r = nlp.read_next_message()
+                r = self.protocol.read_next_message()
                 if not r: break
         except Disconnect:
             pass
@@ -154,10 +180,10 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         # CSV format files are optional
         if self.server.cfg.resultserver.store_csvs:
-            self.logfd = open(os.path.join(self.logspath, str(pid) + '.csv'), 'w')
+            self.logfd = open(os.path.join(self.storagepath, "logs", str(pid) + '.csv'), 'w')
 
         # Netlog raw format is mandatory (postprocessing)
-        self.rawlogfd = open(os.path.join(self.logspath, str(pid) + '.raw'), 'w')
+        self.rawlogfd = open(os.path.join(self.storagepath, "logs", str(pid) + '.raw'), 'w')
         self.rawlogfd.write(self.startbuf)
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
@@ -182,13 +208,33 @@ class Resulthandler(SocketServer.BaseRequestHandler):
                 self.procname, tid, self.ppid, modulename, apiname, status, returnval,
                 ] + argumentstrings)
 
-    def create_logs_folder(self):
-        logspath = os.path.join(self.storagepath, "logs")
+    def create_folders(self):
+        folders = ["shots", "files", "logs"]
 
-        try:
-            create_folder(folder=logspath)
-        except CuckooOperationalError:
-            log.error("Unable to create logs folder %s" % logspath)
-            return False
+        for folder in folders:
+            try:
+                create_folder(self.storagepath, folder=folder)
+            except CuckooOperationalError:
+                log.error("Unable to create folder %s" % folder)
+                return False
 
-        return logspath
+
+class FileUpload(object):
+    def __init__(self, handler):
+        self.handler = handler
+
+    def read_next_message(self):
+        # read until newline for file path
+        # e.g. shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
+
+        buf = self.handler.read_newline()
+        if '../' in buf or '\\' in buf:
+            raise CuckooOperationalError("FileUpload failure, banned path.")
+
+        file_path = os.path.join(self.handler.storagepath, buf.strip())
+
+        fd = open(file_path, "wb")
+        chunk = self.handler.read_any()
+        while chunk:
+            fd.write(chunk)
+            chunk = self.handler.read_any()
