@@ -22,7 +22,7 @@ class Zip(Package):
                 raise CuckooPackageError("Invalid Zip file")
             except RuntimeError:
                 try:
-                    archive.extractall(path=root, pwd="infected")
+                    archive.extractall(path=root, pwd=self.options.get("password", "infected"))
                 except RuntimeError as e:
                     raise CuckooPackageError("Unable to extract Zip file, unknown password?")
 
