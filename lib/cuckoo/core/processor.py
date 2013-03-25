@@ -129,7 +129,8 @@ class Processor:
                            "severity" : current.severity,
                            "references" : current.references,
                            "data" : current.data,
-                           "alert" : current.alert}
+                           "alert" : current.alert,
+                           "families": current.families}
 
                 log.debug("Analysis at \"%s\" matched signature \"%s\""
                           % (self.analysis_path, current.name))
