@@ -13,6 +13,7 @@ from lib.common.defines import *
 from lib.common.constants import PIPE, PATHS
 from lib.common.errors import get_error_string
 from lib.common.rand import random_string
+from lib.common.results import NetlogFile
 from lib.core.config import Config
 
 log = logging.getLogger(__name__)
@@ -346,8 +347,9 @@ class Process:
         if not os.path.exists(root):
             os.makedirs(root)
 
-        dump = open(os.path.join(root, "%s.dmp" % str(self.pid)), "wb")
-
+        # now upload to host from the StringIO
+        nf = NetlogFile("memory/%s.dmp" % str(self.pid))
+        
         while(mem < max_addr):
             mbi = MEMORY_BASIC_INFORMATION()
             count = c_ulong(0)
@@ -366,12 +368,12 @@ class Process:
                                               buf,
                                               mbi.RegionSize,
                                               byref(count)):
-                    dump.write(buf.raw)
+                    nf.sock.sendall(buf.raw)
                 mem += mbi.RegionSize
             else:
                 mem += page_size
 
-        dump.close()
+        nf.close()
 
         log.info("Memory dump of process with pid %d completed" % self.pid)
 
