@@ -9,6 +9,7 @@ from threading import Thread
 
 from lib.common.constants import PATHS
 from lib.common.abstracts import Auxiliary
+from lib.common.results import upload_to_host
 from lib.api.screenshot import Screenshot
 
 log = logging.getLogger(__name__)
@@ -52,6 +53,7 @@ class Screenshots(Auxiliary, Thread):
             img_counter += 1
             save_at = os.path.join(PATHS["shots"], "%s.jpg" % str(img_counter).rjust(4, '0'))
             img_current.save(save_at)
+            upload_to_host(save_at, os.path.join("shots", "%s.jpg" % str(img_counter).rjust(4, '0')))
 
             img_last = img_current
 
