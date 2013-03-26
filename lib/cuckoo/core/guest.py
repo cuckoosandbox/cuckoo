@@ -202,35 +202,3 @@ class GuestManager:
                 log.debug("%s: analysis not completed yet (status=%s)", self.id, status)
 
         self.server._set_timeout(None)
-
-    def save_results(self, folder):
-        """Save analysis results.
-        @param folder: analysis folder path.
-        @return: operation status.
-        """
-        # Download results from the guest.
-        try:
-            data = self.server.get_results()
-        except Exception as e:
-            raise CuckooGuestError("Failed to retrieve analysis results: {0}".format(e))
-
-        # Write the retrieved binary data to a in-memory zip archive.
-        zip_data = StringIO()
-        zip_data.write(data)
-
-        try:
-            archive = ZipFile(zip_data, "r")
-        except BadZipfile as e:
-            raise CuckooGuestError("Analysis results archive is invalid")
-
-        if not os.path.exists(folder):
-            try:
-                os.mkdir(folder)
-            except (IOError, OSError) as e:
-                raise CuckooGuestError("Failed to store analysis results: {0}".format(e))
-
-        # Extract the generate zip archive to the specified folder, which is
-        # going to be somewhere like storage/analysis/<task id>/.
-        log.debug("Extracting results to %s", folder)
-        archive.extractall(folder)
-        archive.close()

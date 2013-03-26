@@ -201,36 +201,6 @@ class Agent:
 
         return True
 
-    def get_results(self):
-        """Get analysis results.
-        @return: data.
-        """
-        root = RESULTS_FOLDER
-
-        if not os.path.exists(root):
-            return False
-
-        zip_data = StringIO()
-        zip_file = ZipFile(zip_data, "w", ZIP_STORED)
-
-        root_len = len(os.path.abspath(root))
-        
-        for root, dirs, files in os.walk(root):
-            archive_root = os.path.abspath(root)[root_len:]
-            for name in files:
-                path = os.path.join(root, name)
-                archive_name = os.path.join(archive_root, name)
-
-                try:
-                    zip_file.write(path, archive_name)
-                except IOError as e:
-                    continue
-        
-        zip_file.close()
-        data = xmlrpclib.Binary(zip_data.getvalue())
-        zip_data.close()
-
-        return data
 
 if __name__ == "__main__":
     try:
