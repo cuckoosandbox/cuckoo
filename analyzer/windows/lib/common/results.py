@@ -24,9 +24,7 @@ def upload_to_host(file_path, dump_path):
         infd.close()
         nc.close()
     except Exception as e:
-        logging.error("Exception uploading file to host: {0}".format(e))
-        return None
-
+        log.error("Exception uploading file to host: %s", e)
 
 class NetlogConnection(object):
     def __init__(self):
@@ -39,10 +37,11 @@ class NetlogConnection(object):
         try:
             s.connect((self.hostip, self.hostport))
         except Exception as e:
-            print "Exception connecting logging handler: {0}".format(e)
-
-        self.sock = s
-        self.file = s.makefile()
+            # Inception.
+            log.error("Exception connecting logging handler: %s", e)
+        else:
+            self.sock = s
+            self.file = s.makefile()
 
     def close(self):
         try:
@@ -51,14 +50,12 @@ class NetlogConnection(object):
         except socket.error:
             pass
 
-
 class NetlogFile(NetlogConnection):
     def __init__(self, filepath):
         self.filepath = filepath
         NetlogConnection.__init__(self)
         self.connect()
         self.sock.sendall("FILE\n{0}\n".format(self.filepath))
-
 
 class NetlogHandler(logging.Handler, NetlogConnection):
     def __init__(self):
