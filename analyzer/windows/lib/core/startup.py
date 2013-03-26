@@ -6,6 +6,7 @@ import os
 import logging
 
 from lib.common.constants import PATHS
+from lib.common.results import NetlogHandler
 
 log = logging.getLogger()
 
@@ -26,8 +27,9 @@ def init_logging():
     sh = logging.StreamHandler()
     sh.setFormatter(formatter)
     log.addHandler(sh)
-    fh = logging.FileHandler(os.path.join(PATHS["root"], "analysis.log"),
-                             encoding="UTF-8")
-    fh.setFormatter(formatter)
-    log.addHandler(fh)
+    
+    nh = NetlogHandler()
+    nh.setFormatter(formatter)
+    log.addHandler(nh)
+
     log.setLevel(logging.DEBUG)
