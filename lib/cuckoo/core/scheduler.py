@@ -230,12 +230,12 @@ class AnalysisManager(Thread):
                     succeeded = False
 
                 # Retrieve the analysis results and store them.
-                try:
-                    guest.save_results(self.storage)
-                    succeeded = True
-                except CuckooGuestError as e:
-                    log.error(str(e), extra={"task_id" : self.task.id})
-                    succeeded = False
+                # try:
+                #     guest.save_results(self.storage)
+                #     succeeded = True
+                # except CuckooGuestError as e:
+                #     log.error(str(e), extra={"task_id" : self.task.id})
+                #     succeeded = False
         finally:
             # Stop the sniffer.
             if sniffer:
