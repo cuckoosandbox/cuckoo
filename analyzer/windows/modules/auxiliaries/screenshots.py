@@ -5,11 +5,12 @@
 import os
 import time
 import logging
+import StringIO
 from threading import Thread
 
 from lib.common.constants import PATHS
 from lib.common.abstracts import Auxiliary
-from lib.common.results import upload_to_host
+from lib.common.results import NetlogFile
 from lib.api.screenshot import Screenshot
 
 log = logging.getLogger(__name__)
@@ -51,9 +52,19 @@ class Screenshots(Auxiliary, Thread):
                     continue
 
             img_counter += 1
-            save_at = os.path.join(PATHS["shots"], "%s.jpg" % str(img_counter).rjust(4, '0'))
-            img_current.save(save_at)
-            upload_to_host(save_at, os.path.join("shots", "%s.jpg" % str(img_counter).rjust(4, '0')))
+
+            # workaround as PIL can't write to the socket file object :(
+            tmpio = StringIO.StringIO()
+            img_current.save(tmpio, format='JPEG')
+            tmpio.seek(0)
+
+            # now upload to host from the StringIO
+            nf = NetlogFile("shots/%s.jpg" % str(img_counter).rjust(4, '0'))
+            
+            for chunk in tmpio:
+                nf.sock.sendall(chunk)
+            
+            nf.close()
 
             img_last = img_current
 
