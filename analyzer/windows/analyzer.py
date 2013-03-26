@@ -250,7 +250,7 @@ class PipeHandler(Thread):
                 del_file(file_path)
             elif command.startswith("FILE_MOVE:"):
                 # syntax = FILE_MOVE:old_file_path::new_file_path
-                if "::" in commands[10:]:
+                if "::" in command[10:]:
                     old_fname, new_fname = command[10:].split("::", 1)
                     move_file(old_fname.decode("utf-8"),
                               new_fname.decode("utf-8"))

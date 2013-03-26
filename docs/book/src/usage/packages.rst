@@ -62,12 +62,13 @@ Following is the list of existing packages in alphabetical order:
                **Options**:
                    * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
 
-    * ``zip``: used to run and analyze **Zip archives**. The archive must be either password-less or the password must be "*infected*".
+    * ``zip``: used to run and analyze **Zip archives**.
 
                **Options**:
                    * ``file``: specify the name of the file contained in the archive to execute. If none is specified, Cuckoo will try to execute *sample.exe*.
                    * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
                    * ``arguments``: specify any command line argument to pass to the initial process of the submitted malware.
+                   * ``password``: specify the password of the archive. If none is specified, Cuckoo will try to extract the archive without password or use the password "*infected*".
 
 You can find more details on how to start creating new analysis packages in the
 :doc:`../customization/packages` customization chapter.

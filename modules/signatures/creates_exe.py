@@ -12,6 +12,18 @@ class CreatesExe(Signature):
     authors = ["Cuckoo Developers"]
     minimum = "0.5"
 
+    # This is a signature template. It should be used as a skeleton for
+    # creating custom signatures, therefore is disabled by default.
+    # It doesn't verify whether a .exe is actually being created, but
+    # it matches files being opened with any access type, including
+    # read and attributes lookup.
+    enabled = False
+
     def run(self):
-        return self.check_file(pattern=".*\\.exe$",
-                               regex=True)
+        match = self.check_file(pattern=".*\\.exe$",
+                                regex=True)
+        if match:
+            self.data.append({"file" : match})
+            return True
+
+        return False
