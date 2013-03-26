@@ -44,10 +44,6 @@ class Reporter:
         """
         # Initialize current reporting module.
         current = module()
-        # Give it the path to the analysis results folder.
-        current.set_path(self.analysis_path)
-        # Load the content of the analysis.conf file.
-        current.cfg = Config(current.conf_path)
 
         # Extract the module name.
         module_name = inspect.getmodule(current).__name__
@@ -56,7 +52,7 @@ class Reporter:
 
         try:
             options = self.cfg.get(module_name)
-        except (AttributeError, CuckooOperationalError):
+        except CuckooOperationalError:
             log.debug("Reporting module %s not found in "
                       "configuration file" % module_name)
             return
@@ -65,10 +61,14 @@ class Reporter:
         if not options.enabled:
             return
 
-        # Give it the content of the relevant section from the reporting.conf
-        # configuration file.
-        current.set_options(options)
+        # Give it the path to the analysis results folder.
+        current.set_path(self.analysis_path)
+        # Give it the analysis task object.
         current.set_task(self.task)
+        # Give it the the relevant reporting.conf section.
+        current.set_options(options)
+        # Load the content of the analysis.conf file.
+        current.cfg = Config(current.conf_path)
 
         try:
             # Run report, for each report a brand new copy of results is

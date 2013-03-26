@@ -4,10 +4,13 @@
 
 import os
 import logging
+import inspect
 from distutils.version import StrictVersion
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
+from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooProcessingError
+from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.plugins import list_plugins
 
@@ -28,6 +31,9 @@ class Processor:
                                           "storage",
                                           "analyses",
                                           str(task_id))
+        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT,
+                                           "conf",
+                                           "processing.conf"))
 
     def _run_processing(self, module):
         """Run a processing module.
@@ -37,32 +43,47 @@ class Processor:
         """
         # Initialize the specified processing module.
         current = module()
-        # Provide it the path to the analysis results.
-        current.set_path(self.analysis_path)
-        # Set analysis task dictionary.
-        current.set_task(self.task)
 
-        # If current processing module is disabled, skip it.
-        if not current.enabled:
+        # Extract the module name.
+        module_name = inspect.getmodule(current).__name__
+        if "." in module_name:
+            module_name = module_name.rsplit(".", 1)[1]
+
+        try:
+            options = self.cfg.get(module_name)
+        except CuckooOperationalError:
+            log.debug("Processing module %s not found in "
+                      "configuration file", module_name)
             return None
+
+        # If the processing module is disabled in the config, skip it.
+        if not options.enabled:
+            return None
+
+        # Give it path to the analysis results.
+        current.set_path(self.analysis_path)
+        # Give it the analysis task object.
+        current.set_task(self.task)
+        # Give it the options from the relevant processing.conf section.
+        current.set_options(options)
 
         try:
             # Run the processing module and retrieve the generated data to be
             # appended to the general results container.
             data = current.run()
 
-            log.debug("Executed processing module \"%s\" on analysis at \"%s\""
-                      % (current.__class__.__name__, self.analysis_path))
+            log.debug("Executed processing module \"%s\" on analysis at \"%s\"",
+                      current.__class__.__name__, self.analysis_path)
 
             # If succeeded, return they module's key name and the data to be
             # appended to it.
             return {current.key : data}
         except CuckooProcessingError as e:
             log.warning("The processing module \"%s\" returned the following "
-                        "error: %s" % (current.__class__.__name__, e))
+                        "error: %s", current.__class__.__name__, e)
         except Exception as e:
-            log.exception("Failed to run the processing module \"%s\":"
-                          % (current.__class__.__name__))
+            log.exception("Failed to run the processing module \"%s\":",
+                          current.__class__.__name__)
 
         return None
 
@@ -75,7 +96,7 @@ class Processor:
         # Initialize the current signature.
         current = signature(results)
 
-        log.debug("Running signature \"%s\"" % current.name)
+        log.debug("Running signature \"%s\"", current.name)
 
         # If the signature is disabled, skip it.
         if not current.enabled:
@@ -95,12 +116,10 @@ class Processor:
                 if StrictVersion(version) < StrictVersion(current.minimum.split("-")[0]):
                     log.debug("You are running an older incompatible version "
                               "of Cuckoo, the signature \"%s\" requires "
-                              "minimum version %s"
-                              % (current.name, current.minimum))
+                              "minimum version %s", current.name, current.minimum)
                     return None
             except ValueError:
-                log.debug("Wrong minor version number in signature %s"
-                          % current.name)
+                log.debug("Wrong minor version number in signature %s", current.name)
                 return None
 
         # If provided, check the maximum working Cuckoo version for this
@@ -112,12 +131,10 @@ class Processor:
                 if StrictVersion(version) > StrictVersion(current.maximum.split("-")[0]):
                     log.debug("You are running a newer incompatible version "
                               "of Cuckoo, the signature \"%s\" requires "
-                              "maximum version %s"
-                              % (current.name, current.maximum))
+                              "maximum version %s", current.name, current.maximum)
                     return None
             except ValueError:
-                log.debug("Wrong major version number in signature %s"
-                          % current.name)
+                log.debug("Wrong major version number in signature %s", current.name)
                 return None
 
         try:
@@ -132,13 +149,13 @@ class Processor:
                            "alert" : current.alert,
                            "families": current.families}
 
-                log.debug("Analysis at \"%s\" matched signature \"%s\""
-                          % (self.analysis_path, current.name))
+                log.debug("Analysis at \"%s\" matched signature \"%s\"",
+                          self.analysis_path, current.name)
 
                 # Return information on the matched signature.
                 return matched
         except Exception as e:
-            log.exception("Failed to run signature \"%s\":" % (current.name))
+            log.exception("Failed to run signature \"%s\":", current.name)
 
         return None
 
