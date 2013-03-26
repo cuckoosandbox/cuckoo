@@ -20,6 +20,7 @@ from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.abstracts import Package, Auxiliary
 from lib.common.defines import *
 from lib.common.constants import PATHS, PIPE
+from lib.common.results import upload_to_host
 from lib.core.config import Config
 from lib.core.startup import create_folders, init_logging
 from lib.core.privileges import grant_debug_privilege
@@ -87,28 +88,12 @@ def dump_file(file_path):
     else:
         return
 
-    while True:
-        dir_path = os.path.join(PATHS["files"],
-                                str(random.randint(100000000, 9999999999)))
-        if os.path.exists(dir_path):
-            continue
-
-        try:
-            os.mkdir(dir_path)
-            dump_path = os.path.join(dir_path, "%s.bin" % file_name)
-        except OSError as e:
-            dump_path = os.path.join(PATHS["files"], "%s.bin" % file_name)
-
-        break
-
+    upload_path = os.path.join("files", str(random.randint(100000000, 9999999999)), file_name)
     try:
-        shutil.copy(file_path, dump_path)
+        upload_to_host(file_path, upload_path)
         DUMPED_LIST.append(sha256)
-        log.info("Dropped file \"%s\" dumped successfully to path \"%s\""
-                  % (file_path, dump_path))
-    except (IOError, shutil.Error) as e:
-        log.error("Unable to dump dropped file at path \"%s\": %s"
-                  % (file_path, e))
+    except (IOError, socket.error) as e:
+        log.error("Unable to upload dropped file at path \"%s\": %s" % (file_path, e))
 
 def del_file(fname):
     dump_file(fname)
