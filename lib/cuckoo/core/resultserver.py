@@ -102,6 +102,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
     def setup(self):
         self.logfd = None
         self.rawlogfd = None
+        self.protocol = None
         self.startbuf = ''
         self.end_request = Event()
         self.done_event = Event()
@@ -124,12 +125,16 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             if not tmp: raise Disconnect()
             buf += tmp
 
-        if self.rawlogfd: self.rawlogfd.write(buf)
-        else: self.startbuf += buf
+        if isinstance(self.protocol, NetlogParser):
+            if self.rawlogfd: self.rawlogfd.write(buf)
+            else: self.startbuf += buf
         return buf
 
     def read_any(self):
-        return self.request.recv(BUFSIZE)
+        if not self.wait_sock_or_end(): raise Disconnect()
+        tmp = self.request.recv(BUFSIZE)
+        if not tmp: raise Disconnect()
+        return tmp
 
     def read_newline(self):
         buf = ''
@@ -145,6 +150,8 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             self.protocol = NetlogParser(self)
         elif "FILE" in buf:
             self.protocol = FileUpload(self)
+        elif "LOG" in buf:
+            self.protocol = LogHandler(self)
         else:
             raise CuckooOperationalError("Netlog failure, unknown protocol requested.")
 
@@ -170,6 +177,9 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             pass
         except socket.error, e:
             log.debug("socket.error: {0}".format(e))
+
+        try: self.protocol.close()
+        except: pass
 
         if self.logfd: self.logfd.close()
         if self.rawlogfd: self.rawlogfd.close()
@@ -223,23 +233,27 @@ class FileUpload(object):
     def __init__(self, handler):
         self.handler = handler
         self.upload_max_size = self.handler.server.cfg.resultserver.upload_max_size
+        self.storagepath = self.handler.storagepath
 
     def read_next_message(self):
         # read until newline for file path
         # e.g. shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
 
-        buf = self.handler.read_newline().strip()
-        if '../' in buf or '\\' in buf:
+        buf = self.handler.read_newline().strip().replace('\\', '/')
+        log.debug("File upload request for {0}".format(buf))
+
+        if '../' in buf:
             raise CuckooOperationalError("FileUpload failure, banned path.")
 
         dir_part, filename = os.path.split(buf)
 
-        try: create_folder(self.storagepath, dir_part)
-        except CuckooOperationalError:
-            log.error("Unable to create folder %s" % folder)
-            return False
+        if dir_part:
+            try: create_folder(self.storagepath, dir_part)
+            except CuckooOperationalError:
+                log.error("Unable to create folder %s" % folder)
+                return False
 
-        file_path = os.path.join(self.handler.storagepath, buf.strip())
+        file_path = os.path.join(self.storagepath, buf.strip())
 
         fd = open(file_path, "wb")
         chunk = self.handler.read_any()
@@ -251,3 +265,29 @@ class FileUpload(object):
                 break
 
             chunk = self.handler.read_any()
+
+        log.debug("Uploaded file length: {0}".format(fd.tell()))
+        fd.close()
+
+
+class LogHandler(object):
+    def __init__(self, handler):
+        self.handler = handler
+        self.logpath = os.path.join(handler.storagepath, "analysis.log")
+        self.fd = self._open()
+        log.debug("LogHandler for live analysis.log initialized.")
+
+    def read_next_message(self):
+        buf = self.handler.read_newline()
+        if not buf: return False
+        self.fd.write(buf)
+        self.fd.flush()
+        return True
+
+    def close(self):
+        self.fd.close()
+
+    def _open(self):
+        if os.path.exists(self.logpath):
+            return open(self.logpath, "a")
+        return open(self.logpath, "w")
