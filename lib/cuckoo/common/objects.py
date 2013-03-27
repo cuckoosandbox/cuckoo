@@ -52,10 +52,9 @@ class URL:
 class File:
     """Basic file object class with all useful utilities."""
 
-    def __init__(self, file_path, strip_name=False):
+    def __init__(self, file_path):
         """@param file_path: file path."""
         self.file_path = file_path
-        self.strip_name = strip_name
 
         # these will be populated when first accessed
         self._file_data = None
@@ -69,11 +68,7 @@ class File:
         """Get file name.
         @return: file name.
         """
-        if self.strip_name:
-            file_name = os.path.basename(self.file_path)[:-4]
-        else:
-            file_name = os.path.basename(self.file_path)
-
+        file_name = os.path.basename(self.file_path)
         return file_name
 
     def valid(self):
