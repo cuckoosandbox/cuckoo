@@ -48,7 +48,7 @@
                         <tr>
                             <th>Yara</th>
                             <td>
-                                {% if results.target.file.yara|length == 0 %}
+                                {% if dropped_file.yara|length == 0 %}
                                     None matched
                                 {% else %}
                                     <ul style="margin-top: 0;margin-bottom: 0;">
