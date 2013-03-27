@@ -35,7 +35,7 @@ class VirusTotal(Processing):
             resource = File(self.file_path).get_md5()
             url = VIRUSTOTAL_FILE_URL
         elif self.task["category"] == "url":
-            resource = self.task.target
+            resource = self.task["target"]
             url = VIRUSTOTAL_URL_URL
 
         data = urllib.urlencode({"resource" : resource, "apikey" : key})
@@ -53,5 +53,7 @@ class VirusTotal(Processing):
             virustotal = json.loads(response_data)
         except ValueError as e:
             raise CuckooProcessingError("Unable to convert response to JSON: {0}".format(e))
+
+        virustotal["scans"] = dict([(engine.replace(".", "_"), signature) for engine, signature in virustotal["scans"].items()])
 
         return virustotal
