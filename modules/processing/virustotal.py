@@ -13,7 +13,6 @@ from lib.cuckoo.common.exceptions import CuckooProcessingError
 
 VIRUSTOTAL_FILE_URL = "https://www.virustotal.com/vtapi/v2/file/report"
 VIRUSTOTAL_URL_URL = "https://www.virustotal.com/vtapi/v2/url/report"
-VIRUSTOTAL_KEY = "a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088"
 
 class VirusTotal(Processing):
     """Gets antivirus signatures from VirusTotal.com"""
@@ -25,7 +24,8 @@ class VirusTotal(Processing):
         self.key = "virustotal"
         virustotal = []
 
-        if not VIRUSTOTAL_KEY:
+        key = self.options.get("key", None)
+        if not key:
             raise CuckooProcessingError("VirusTotal API key not configured, skip")
 
         if self.task["category"] == "file":
@@ -35,10 +35,10 @@ class VirusTotal(Processing):
             resource = File(self.file_path).get_md5()
             url = VIRUSTOTAL_FILE_URL
         elif self.task["category"] == "url":
-            resource = self.task.target
+            resource = self.task["target"]
             url = VIRUSTOTAL_URL_URL
 
-        data = urllib.urlencode({"resource" : resource, "apikey" : VIRUSTOTAL_KEY})
+        data = urllib.urlencode({"resource" : resource, "apikey" : key})
 
         try:
             request = urllib2.Request(url, data)
@@ -53,5 +53,7 @@ class VirusTotal(Processing):
             virustotal = json.loads(response_data)
         except ValueError as e:
             raise CuckooProcessingError("Unable to convert response to JSON: {0}".format(e))
+
+        virustotal["scans"] = dict([(engine.replace(".", "_"), signature) for engine, signature in virustotal["scans"].items()])
 
         return virustotal

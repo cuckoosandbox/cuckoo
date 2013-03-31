@@ -41,7 +41,7 @@ PPID = Process(pid=PID).get_parent_pid()
 def add_pid(pid):
     """Add a process to process list."""
     if type(pid) == long or type(pid) == int or type(pid) == str:
-        log.info("Added new process to list with pid: %d" % pid)
+        log.info("Added new process to list with pid: %s", pid)
         PROCESS_LIST.append(pid)
 
 def add_pids(pids):
@@ -55,8 +55,7 @@ def add_pids(pids):
 def add_file(file_path):
     """Add a file to file list."""
     if file_path not in FILES_LIST:
-        log.info("Added new file to list with path: %s"
-                    % unicode(file_path).encode("utf-8", "replace"))
+        log.info("Added new file to list with path: %s", unicode(file_path).encode("utf-8", "replace"))
         FILES_LIST.append(file_path)
 
 def dump_file(file_path):
@@ -68,10 +67,10 @@ def dump_file(file_path):
                 # The file was already dumped, just skip.
                 return
         else:
-            log.warning("File at path \"%s\" does not exist, skip" % file_path)
+            log.warning("File at path \"%s\" does not exist, skip", file_path)
             return
     except IOError as e:
-        log.warning("Unable to access file at path \"%s\": %s" % (file_path, e))
+        log.warning("Unable to access file at path \"%s\": %s", file_path, e)
         return
 
     # 32k is the maximum length for a filename
@@ -93,7 +92,7 @@ def dump_file(file_path):
         upload_to_host(file_path, upload_path)
         DUMPED_LIST.append(sha256)
     except (IOError, socket.error) as e:
-        log.error("Unable to upload dropped file at path \"%s\": %s" % (file_path, e))
+        log.error("Unable to upload dropped file at path \"%s\": %s", file_path, e)
 
 def del_file(fname):
     dump_file(fname)
@@ -225,8 +224,7 @@ class PipeHandler(Thread):
                                 proc.inject()
                                 wait = True
 
-                            log.info("Successfully injected process with pid %d"
-                                     % proc.pid)
+                            log.info("Successfully injected process with pid %s", proc.pid)
                     else:
                         log.warning("Received request to inject Cuckoo processes, skip")
 
@@ -378,7 +376,7 @@ class Analyzer:
                 # Split the options by comma.
                 fields = self.config.options.strip().split(",")
             except ValueError as e:
-                log.warning("Failed parsing the options: %s" % e)
+                log.warning("Failed parsing the options: %s", e)
             else:
                 for field in fields:
                     # Split the name and the value of the option.
@@ -446,8 +444,7 @@ class Analyzer:
             __import__(package_name, globals(), locals(), ["dummy"], -1)
         # If it fails, we need to abort the analysis.
         except ImportError:
-            raise CuckooError("Unable to import package \"%s\", does not exist."
-                              % package_name)
+            raise CuckooError("Unable to import package \"{0}\", does not exist.".format(package_name))
 
         # Initialize the package parent abstract.
         Package()
@@ -456,8 +453,7 @@ class Analyzer:
         try:
             package_class = Package.__subclasses__()[0]
         except IndexError as e:
-            raise CuckooError("Unable to select package class (package=%s): %s"
-                              % (package_name, e))
+            raise CuckooError("Unable to select package class (package={0}): {1}".format(package_name, e))
 
         # Initialize the analysis package.
         pack = package_class(self.get_options())
@@ -473,8 +469,7 @@ class Analyzer:
             try:
                 __import__(name, globals(), locals(), ["dummy"], -1)
             except ImportError as e:
-                log.warning("Unable to import the auxiliary module \"%s\": %s"
-                            % (name, e))
+                log.warning("Unable to import the auxiliary module \"%s\": %s", name, e)
 
         # Walk through the available auxiliary modules.
         aux_enabled = []
@@ -484,12 +479,10 @@ class Analyzer:
                 aux = auxiliary()
                 aux.start()
             except (NotImplementedError, AttributeError):
-                log.warning("Auxiliary module %s was not implemented"
-                            % aux.__class__.__name__)
+                log.warning("Auxiliary module %s was not implemented", aux.__class__.__name__)
                 continue
             except Exception as e:
-                log.warning("Cannot execute auxiliary module %s: %s"
-                            % (aux.__class__.__name__, e))
+                log.warning("Cannot execute auxiliary module %s: %s", aux.__class__.__name__, e)
                 continue
             finally:
                 aux_enabled.append(aux)
@@ -499,14 +492,14 @@ class Analyzer:
         try:
             pids = pack.start(self.target)
         except NotImplementedError:
-            raise CuckooError("The package \"%s\" doesn't contain a run "
-                              "function." % package_name)
+            raise CuckooError("The package \"{0}\" doesn't contain a run "
+                              "function.".format(package_name))
         except CuckooPackageError as e:
-            raise CuckooError("The package \"%s\" start function raised an "
-                              "error: %s" % (package_name, e))
+            raise CuckooError("The package \"{0}\" start function raised an "
+                              "error: {1}".format(package_name, e))
         except Exception as e:
-            raise CuckooError("The package \"%s\" start function encountered "
-                              "an unhandled exception: %s" %(package_name, e))
+            raise CuckooError("The package \"{0}\" start function encountered "
+                              "an unhandled exception: {1}".format(package_name, e))
 
         # If the analysis package returned a list of process IDs, we add them
         # to the list of monitored processes and enable the process monitor.
@@ -517,8 +510,7 @@ class Analyzer:
         # where the package isn't enabling any behavioral analysis), we don't
         # enable the process monitor.
         else:
-            log.info("No process IDs returned by the package, running for "
-                     "the full timeout")
+            log.info("No process IDs returned by the package, running for the full timeout")
             pid_check = False
 
         # Check in the options if the user toggled the timeout enforce. If so,
@@ -548,14 +540,13 @@ class Analyzer:
                 if pid_check:
                     for pid in PROCESS_LIST:
                         if not Process(pid=pid).is_alive():
-                            log.info("Process with pid %d has terminated" % pid)
+                            log.info("Process with pid %s has terminated", pid)
                             PROCESS_LIST.remove(pid)
 
                     # If none of the monitored processes are still alive, we
                     # can terminate the analysis.
                     if len(PROCESS_LIST) == 0:
-                        log.info("Process list is empty, terminating "
-                                 "analysis...")
+                        log.info("Process list is empty, terminating analysis...")
                         break
 
                     # Update the list of monitored processes available to the
@@ -569,15 +560,14 @@ class Analyzer:
                     # returns False, it means that it requested the analysis
                     # to be terminate.
                     if not pack.check():
-                        log.info("The analysis package requested the "
-                                 "termination of the analysis...")
+                        log.info("The analysis package requested the termination of the analysis...")
                         break
                 # If the check() function of the package raised some exception
                 # we don't care, we can still proceed with the analysis but we
                 # throw a warning.
                 except Exception as e:
                     log.warning("The package \"%s\" check function raised "
-                                "an exception: %s" % (package_name, e))
+                                "an exception: %s", package_name, e)
             finally:
                 # Zzz.
                 KERNEL32.Sleep(1000)
@@ -588,15 +578,15 @@ class Analyzer:
             pack.finish()
         except Exception as e:
             log.warning("The package \"%s\" finish function raised an "
-                        "exception: %s" % (package_name, e))
+                        "exception: %s", package_name, e)
 
         # Terminate the Auxiliary modules.
         for aux in aux_enabled:
             try:
                 aux.stop()
             except Exception as e:
-                log.warning("Cannot terminate auxiliary module %s: %s"
-                            % (aux.__class__.__name__, e))
+                log.warning("Cannot terminate auxiliary module %s: %s",
+                            aux.__class__.__name__, e)
 
         # Let's invoke the completion procedure.
         self.complete()

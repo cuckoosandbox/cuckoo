@@ -431,12 +431,19 @@ class Processing(object):
     enabled = True
 
     def __init__(self):
-        self.task = None
         self.analysis_path = ""
         self.logs_path = ""
+        self.task = None
+        self.options = None
+
+    def set_options(self, options):
+        """Set report options.
+        @param options: report options dict.
+        """
+        self.options = options
 
     def set_task(self, task):
-        """Set task dictionary.
+        """Add task information.
         @param task: task dictionary.
         """
         self.task = task
