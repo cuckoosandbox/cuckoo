@@ -15,13 +15,13 @@ class ircMessage(object):
     """IRC Protocol Request."""
 
     # client commands
-    __methods_client = dict.fromkeys(( 'PASS','JOIN','USER','OPER','MODE','SERVICE','QUIT','SQUIT',
-        'PART','TOPIC','NAMES','LIST','INVITE',
-        'KICK','PRIVMSG','NOTICE','MOTD','LUSERS','VERSION','STATS','LINKS','TIME','CONNECT',
-        'TRACE','ADMIN','INFO','SERVLIST',
-        'SQUERY','WHO','WHOIS','WHOWAS','KILL','PING','PONG','ERROR','AWAY','REHASH','DIE','RESTART',
-        'SUMMON','USERS','WALLOPS',
-        'USERHOST','NICK','ISON'
+    __methods_client = dict.fromkeys(( "PASS","JOIN","USER","OPER","MODE","SERVICE","QUIT","SQUIT",
+        "PART","TOPIC","NAMES","LIST","INVITE",
+        "KICK","PRIVMSG","NOTICE","MOTD","LUSERS","VERSION","STATS","LINKS","TIME","CONNECT",
+        "TRACE","ADMIN","INFO","SERVLIST",
+        "SQUERY","WHO","WHOIS","WHOWAS","KILL","PING","PONG","ERROR","AWAY","REHASH","DIE","RESTART",
+        "SUMMON","USERS","WALLOPS",
+        "USERHOST","NICK","ISON"
     ))
    
     def __init__(self):
@@ -45,22 +45,22 @@ class ircMessage(object):
             return False
 
         for element in lines:
-            if re.match('^:',element) != None:
-                command = '([a-zA-Z]+|[0-9]{3})'
-                params = '(\x20.+)'
-                irc_server_msg = re.findall('(^:[\w+.{}!@|()]+\x20)'+command+params,element)
+            if re.match("^:",element) != None:
+                command = "([a-zA-Z]+|[0-9]{3})"
+                params = "(\x20.+)"
+                irc_server_msg = re.findall("(^:[\w+.{}!@|()]+\x20)"+command+params,element)
                 if irc_server_msg:
-                    self._sc['prefix'] = convert_to_printable(irc_server_msg[0][0].strip())
-                    self._sc['command'] = convert_to_printable(irc_server_msg[0][1].strip())
-                    self._sc['params'] = convert_to_printable(irc_server_msg[0][2].strip())
-                    self._sc['type'] = 'server'
+                    self._sc["prefix"] = convert_to_printable(irc_server_msg[0][0].strip())
+                    self._sc["command"] = convert_to_printable(irc_server_msg[0][1].strip())
+                    self._sc["params"] = convert_to_printable(irc_server_msg[0][2].strip())
+                    self._sc["type"] = "server"
                 self._messages.append(dict(self._sc))
             else:
-                irc_client_msg = re.findall('([a-zA-Z]+\x20)(.+[\x0a\0x0d])',element)
+                irc_client_msg = re.findall("([a-zA-Z]+\x20)(.+[\x0a\0x0d])",element)
                 if irc_client_msg and irc_client_msg[0][0].strip() in self.__methods_client:
-                    self._cc['command'] = convert_to_printable(irc_client_msg[0][0].strip())
-                    self._cc['params'] = convert_to_printable(irc_client_msg[0][1].strip())
-                    self._cc['type'] = 'client'
+                    self._cc["command"] = convert_to_printable(irc_client_msg[0][0].strip())
+                    self._cc["params"] = convert_to_printable(irc_client_msg[0][1].strip())
+                    self._cc["type"] = "client"
                 self._messages.append(dict(self._cc))
     
     def getClientMessages(self,buf):
@@ -77,7 +77,7 @@ class ircMessage(object):
 
         entry_cc = []
         for msg in self._messages:
-            if msg['type'] == 'client':
+            if msg["type"] == "client":
                 entry_cc.append(msg)     
 
         return entry_cc
@@ -96,7 +96,7 @@ class ircMessage(object):
         entry_cc = []
 
         for msg in self._messages:
-            if msg['type'] == 'client' and msg['command'] not in filters:
+            if msg["type"] == "client" and msg["command"] not in filters:
                 entry_cc.append(msg)
 
         return entry_cc
@@ -116,7 +116,7 @@ class ircMessage(object):
         entry_sc = []
 
         for msg in self._messages:
-            if msg['type'] == 'server':
+            if msg["type"] == "server":
                 entry_sc.append(msg)
 
         return entry_sc
@@ -134,7 +134,7 @@ class ircMessage(object):
 
         entry_sc = []
         for msg in self._messages:
-            if msg['type'] == 'server' and msg['command'] not in filters:
+            if msg["type"] == "server" and msg["command"] not in filters:
                 entry_sc.append(msg)
         
         return entry_sc

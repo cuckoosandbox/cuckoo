@@ -230,7 +230,7 @@ class PortableExecutable:
         results["pe_sections"] = self._get_sections()
         results["pe_resources"] = self._get_resources()
         results["pe_versioninfo"] = self._get_versioninfo()
-        results["imported_dll_count"] = len([x for x in results["pe_imports"] if "dll" in x and x['dll'] is not None ])
+        results["imported_dll_count"] = len([x for x in results["pe_imports"] if "dll" in x and x["dll"] is not None ])
 
         return results
 

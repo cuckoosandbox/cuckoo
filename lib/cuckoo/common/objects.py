@@ -107,7 +107,7 @@ class File:
             sha256.update(chunk)
             sha512.update(chunk)
 
-        self._crc32     = ''.join('%02X'% ((crc>>i)&0xff) for i in [24, 16, 8, 0])
+        self._crc32     = "".join("%02X" % ((crc>>i)&0xff) for i in [24, 16, 8, 0])
         self._md5       = md5.hexdigest()
         self._sha1      = sha1.hexdigest()
         self._sha256    = sha256.hexdigest()
@@ -187,13 +187,13 @@ class File:
             except:
                 try:
                     import subprocess
-                    file_process = subprocess.Popen(['file',
-                                                     '-b',
+                    file_process = subprocess.Popen(["file",
+                                                     "-b",
                                                      self.file_path],
                                                     stdout = subprocess.PIPE)
                     file_type = file_process.stdout.read().strip()
                 except:
-                    return ''
+                    return ""
         finally:
             try:
                 ms.close()

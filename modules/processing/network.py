@@ -310,7 +310,7 @@ class Pcap:
         try:
             reqc = ircMessage()
             reqs = ircMessage()
-            filters_sc = ['266']
+            filters_sc = ["266"]
             filters_cc = []
             self.irc_requests = self.irc_requests + reqc.getClientMessages(tcpdata) + reqs.getServerMessagesFilter(tcpdata,filters_sc)
         except Exception, why:

@@ -10,7 +10,7 @@ def _rand_string(a, b):
     return "".join(random.choice(string.ascii_lowercase)
                    for x in xrange(random.randint(a, b)))
 
-ROOT = os.path.join(os.getenv("SystemDrive"), '\\', _rand_string(6, 10))
+ROOT = os.path.join(os.getenv("SystemDrive"), "\\", _rand_string(6, 10))
 
 PATHS = {"root"   : ROOT,
          "logs"   : os.path.join(ROOT, "logs"),
@@ -19,4 +19,4 @@ PATHS = {"root"   : ROOT,
          "memory" : os.path.join(ROOT, "memory"),
          "drop"   : os.path.join(ROOT, "drop")}
 
-PIPE = '\\\\.\\PIPE\\' + _rand_string(6, 10)
+PIPE = "\\\\.\\PIPE\\" + _rand_string(6, 10)
