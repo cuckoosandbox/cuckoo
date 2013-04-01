@@ -52,10 +52,9 @@ class URL:
 class File:
     """Basic file object class with all useful utilities."""
 
-    def __init__(self, file_path, strip_name=False):
+    def __init__(self, file_path):
         """@param file_path: file path."""
         self.file_path = file_path
-        self.strip_name = strip_name
 
         # these will be populated when first accessed
         self._file_data = None
@@ -69,11 +68,7 @@ class File:
         """Get file name.
         @return: file name.
         """
-        if self.strip_name:
-            file_name = os.path.basename(self.file_path)[:-4]
-        else:
-            file_name = os.path.basename(self.file_path)
-
+        file_name = os.path.basename(self.file_path)
         return file_name
 
     def valid(self):
@@ -112,7 +107,7 @@ class File:
             sha256.update(chunk)
             sha512.update(chunk)
 
-        self._crc32     = ''.join('%02X'% ((crc>>i)&0xff) for i in [24, 16, 8, 0])
+        self._crc32     = "".join("%02X" % ((crc>>i)&0xff) for i in [24, 16, 8, 0])
         self._md5       = md5.hexdigest()
         self._sha1      = sha1.hexdigest()
         self._sha256    = sha256.hexdigest()
@@ -192,13 +187,13 @@ class File:
             except:
                 try:
                     import subprocess
-                    file_process = subprocess.Popen(['file',
-                                                     '-b',
+                    file_process = subprocess.Popen(["file",
+                                                     "-b",
                                                      self.file_path],
                                                     stdout = subprocess.PIPE)
                     file_type = file_process.stdout.read().strip()
                 except:
-                    return ''
+                    return ""
         finally:
             try:
                 ms.close()

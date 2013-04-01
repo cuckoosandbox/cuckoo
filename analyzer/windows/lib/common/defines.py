@@ -106,20 +106,20 @@ class PROCESS_INFORMATION(Structure):
 
 class LUID(Structure):
     _fields_ = [
-        ('LowPart', DWORD),
-        ('HighPart', LONG),
+        ("LowPart", DWORD),
+        ("HighPart", LONG),
         ]
 
 class LUID_AND_ATTRIBUTES(Structure):
     _fields_ = [
-        ('Luid', LUID),
-        ('Attributes', DWORD),
+        ("Luid", LUID),
+        ("Attributes", DWORD),
         ]
     
 class TOKEN_PRIVILEGES(Structure):
     _fields_ = [
-        ('PrivilegeCount', DWORD),
-        ('Privileges', LUID_AND_ATTRIBUTES),
+        ("PrivilegeCount", DWORD),
+        ("Privileges", LUID_AND_ATTRIBUTES),
         ]
 
 class MEMORY_BASIC_INFORMATION(Structure):

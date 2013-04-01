@@ -72,11 +72,12 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
     def register_handler(self, handler):
         """Register a RequestHandler so that we can later wait for it."""
         task, machine = self.get_ctx_for_ip(handler.client_address[0])
-        if not task or not machine: return False
+        if not task or not machine:
+            return False
         self.analysishandlers[task.id].append(handler)
 
     def get_ctx_for_ip(self, ip):
-        """Return state for this ip's task."""
+        """Return state for this IP's task."""
         x = self.analysistasks.get(ip, None)
         if not x:
             log.critical("Resultserver unable to map ip to context: {0}.".format(ip))
@@ -87,7 +88,8 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
     def build_storage_path(self, ip):
         """Initialize analysis storage folder."""
         task, machine = self.get_ctx_for_ip(ip)
-        if not task or not machine: return False
+        if not task or not machine:
+            return False
 
         storagepath = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task.id))
         return storagepath
@@ -103,7 +105,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         self.logfd = None
         self.rawlogfd = None
         self.protocol = None
-        self.startbuf = ''
+        self.startbuf = ""
         self.end_request = Event()
         self.done_event = Event()
         self.server.register_handler(self)
@@ -118,7 +120,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             if rs: return True
 
     def read(self, length):
-        buf = ''
+        buf = ""
         while len(buf) < length:
             if not self.wait_sock_or_end(): raise Disconnect()
             tmp = self.request.recv(length-len(buf))
@@ -137,7 +139,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         return tmp
 
     def read_newline(self):
-        buf = ''
+        buf = ""
         while not "\n" in buf:
             buf += self.read(1)
         return buf
@@ -190,10 +192,10 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         # CSV format files are optional
         if self.server.cfg.resultserver.store_csvs:
-            self.logfd = open(os.path.join(self.storagepath, "logs", str(pid) + '.csv'), 'w')
+            self.logfd = open(os.path.join(self.storagepath, "logs", str(pid) + ".csv"), "w")
 
         # Netlog raw format is mandatory (postprocessing)
-        self.rawlogfd = open(os.path.join(self.storagepath, "logs", str(pid) + '.raw'), 'w')
+        self.rawlogfd = open(os.path.join(self.storagepath, "logs", str(pid) + ".raw"), "w")
         self.rawlogfd.write(self.startbuf)
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
@@ -206,15 +208,15 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         apiindex, status, returnval, tid, timediff = context
 
-        #log.debug('log_call> tid:{0} apiname:{1}'.format(tid, apiname))
+        #log.debug("log_call> tid:{0} apiname:{1}".format(tid, apiname))
 
         current_time = self.connect_time + datetime.timedelta(0,0, timediff*1000)
         timestring = logtime(current_time)
 
-        argumentstrings = ['{0}->{1}'.format(argname, r) for argname, r in arguments]
+        argumentstrings = ["{0}->{1}".format(argname, r) for argname, r in arguments]
 
         if self.logfd:
-            print >>self.logfd, ','.join('"{0}"'.format(i) for i in [timestring, self.pid,
+            print >>self.logfd, ",".join("\"{0}\"".format(i) for i in [timestring, self.pid,
                 self.procname, tid, self.ppid, modulename, apiname, status, returnval,
                 ] + argumentstrings)
 
@@ -239,10 +241,10 @@ class FileUpload(object):
         # read until newline for file path
         # e.g. shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
 
-        buf = self.handler.read_newline().strip().replace('\\', '/')
+        buf = self.handler.read_newline().strip().replace("\\", "/")
         log.debug("File upload request for {0}".format(buf))
 
-        if '../' in buf:
+        if "../" in buf:
             raise CuckooOperationalError("FileUpload failure, banned path.")
 
         dir_part, filename = os.path.split(buf)
@@ -261,7 +263,7 @@ class FileUpload(object):
             fd.write(chunk)
 
             if fd.tell() >= self.upload_max_size:
-                fd.write('... (truncated)')
+                fd.write("... (truncated)")
                 break
 
             chunk = self.handler.read_any()

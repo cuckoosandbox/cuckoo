@@ -271,7 +271,8 @@ class AnalysisManager(Thread):
         try:
             logs_path = os.path.join(self.storage, "logs")
             for csv in os.listdir(logs_path):
-                if not '.raw' in csv: continue
+                if not csv.endswith(".raw"):
+                    continue
                 csv = os.path.join(logs_path, csv)
                 if os.stat(csv).st_size > self.cfg.processing.analysis_size_limit:
                     log.error("Analysis file %s is too big to be processed, "

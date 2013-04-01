@@ -88,7 +88,7 @@ class Guest(Base):
                         nullable=False)
     shutdown_on = Column(DateTime(timezone=False), nullable=True)
     task_id = Column(Integer,
-                     ForeignKey('tasks.id'),
+                     ForeignKey("tasks.id"),
                      nullable=False,
                      unique=True)
 
@@ -186,7 +186,7 @@ class Error(Base):
     id = Column(Integer(), primary_key=True)
     message = Column(String(255), nullable=False)
     task_id = Column(Integer,
-                     ForeignKey('tasks.id'),
+                     ForeignKey("tasks.id"),
                      nullable=False,
                      unique=True)
 
@@ -759,9 +759,7 @@ class Database(object):
         try:
             sample_id = session.query(Task).get(task_id).sample_id
             sample = session.query(Sample).get(sample_id)
-        except AttributeError:
-            return None
-        except SQLAlchemyError:
+        except (SQLAlchemyError, AttributeError):
             return None
         return sample
 

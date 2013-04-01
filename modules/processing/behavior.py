@@ -54,7 +54,7 @@ class ParseProcessLog(list):
         return getattr(self, key)
 
     def __repr__(self):
-        return 'ParseProcessLog {0}'.format(self._log_path)
+        return "ParseProcessLog {0}".format(self._log_path)
 
     def __nonzero__(self):
         return True
@@ -79,7 +79,8 @@ class ParseProcessLog(list):
             except EOFError:
                 return False
 
-            if not r: return False
+            if not r:
+                return False
         return True
 
     def next(self):
@@ -92,7 +93,7 @@ class ParseProcessLog(list):
 
         x = self.wait_for_lastcall()
         while self.lastcall and self.compare_calls(nextcall, self.lastcall):
-            nextcall['repeated'] += 1
+            nextcall["repeated"] += 1
             self.lastcall = None
             x = self.wait_for_lastcall()
 

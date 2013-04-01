@@ -245,7 +245,7 @@ class Process:
         bytes_written = c_int(0)
         if not KERNEL32.WriteProcessMemory(self.h_process,
                                            arg,
-                                           dll + '\x00',
+                                           dll + "\x00",
                                            len(dll) + 1,
                                            byref(bytes_written)):
             log.error("WriteProcessMemory failed when injecting process "
@@ -285,13 +285,13 @@ class Process:
                 return False
             log.info("Successfully injected process with pid %d" % self.pid)
         else:
-            event_name = 'CuckooEvent%d' % self.pid
+            event_name = "CuckooEvent%d" % self.pid
             self.event_handle = KERNEL32.CreateEventA(None,
                                                       False,
                                                       False,
                                                       event_name)
             if not self.event_handle:
-                log.warning('Unable to create notify event..')
+                log.warning("Unable to create notify event..")
                 return False
 
             log.info("Using CreateRemoteThread injection")
