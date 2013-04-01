@@ -79,7 +79,8 @@ class ParseProcessLog(list):
             except EOFError:
                 return False
 
-            if not r: return False
+            if not r:
+                return False
         return True
 
     def next(self):
