@@ -40,7 +40,7 @@ class ircMessage(object):
         try:
             f = cStringIO.StringIO(buf)
             lines = f.readlines()
-        except Exception, why:
+        except Exception:
             log.error("Failed reading tcp stream buffer")
             return False
 
