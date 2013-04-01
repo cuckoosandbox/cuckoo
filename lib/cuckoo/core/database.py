@@ -759,9 +759,7 @@ class Database(object):
         try:
             sample_id = session.query(Task).get(task_id).sample_id
             sample = session.query(Sample).get(sample_id)
-        except AttributeError:
-            return None
-        except SQLAlchemyError:
+        except (SQLAlchemyError, AttributeError):
             return None
         return sample
 
