@@ -15,9 +15,9 @@ def color(text, color_code):
     # cmd.exe -> "" (what would you expect..?)
     # cygwin -> "cygwin" (should support colors, but doesn't work somehow)
     # mintty -> "xterm" (supports colors)
-    if sys.platform == "win32" and os.getenv("TERM") != 'xterm':
+    if sys.platform == "win32" and os.getenv("TERM") != "xterm":
         return text
-    return '\x1b[%dm%s\x1b[0m' % (color_code, text)
+    return "\x1b[%dm%s\x1b[0m" % (color_code, text)
 
 def black(text):
     return color(text, 30)
