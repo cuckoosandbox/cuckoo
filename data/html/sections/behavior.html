@@ -44,12 +44,20 @@
     <div class="section-title">
         <h4>Processes</h4>
     </div>
+    <p>
+        <span class="badge registry" style="color: black;">registry</span>
+        <span class="badge filesystem" style="color: black;">filesystem</span>
+        <span class="badge process" style="color: black;">process</span>
+        <span class="badge services" style="color: black;">services</span>
+        <span class="badge network" style="color: black;">network</span>
+        <span class="badge synchronization" style="color: black;">synchronization</span>
+    </p>
     {% if results.behavior.processes %}
         {% for process in results.behavior.processes %}
         <div>
             <h4><a href="javascript:showHide('process_{{process.process_id}}');">{{process.process_name}}</a> <small>PID: {{process.process_id}}, Parent PID: {{process.parent_id}}</small></h4>
             <div id="process_{{process.process_id}}" style="display: none;">
-                <table class="table table-striped table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
                     <tr>
                         <th>Timestamp</th>
                         <th>Thread</th>
@@ -60,7 +68,7 @@
                         <th>Repeated</th>
                     </tr>
                     {% for call in process.calls %}
-                    <tr>
+                    <tr class="{{call.category}}">
                         <td>{{call.timestamp[11:]}}</td>
                         <td>{{call.thread_id}}</td>
                         <td><span class="mono">{{call.api}}</span></td>
