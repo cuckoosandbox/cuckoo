@@ -63,6 +63,10 @@ def move_mouse():
     USER32.mouse_event(1, x, y, 0, None)
 
 def click_mouse():
+    # mouse down
+    USER32.mouse_event(2, 0, 0, 0, None)
+    KERNEL32.Sleep(50)
+    # mouse up
     USER32.mouse_event(4, 0, 0, 0, None)
 
 class Human(Auxiliary, Thread):
