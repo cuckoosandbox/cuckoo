@@ -32,4 +32,9 @@ class HTML(Package):
         return True
 
     def finish(self):
+        if self.options.get("procmemdump", False):
+            for pid in self.pids:
+                p = Process(pid=pid)
+                p.dump_memory()
+
         return True

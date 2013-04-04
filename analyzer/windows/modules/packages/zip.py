@@ -14,10 +14,11 @@ class Zip(Package):
 
     def start(self, path):
         root = os.environ["TEMP"]
+        password = self.options.get("password", None)
 
         with ZipFile(path, "r") as archive:
             try:
-                archive.extractall(root)
+                archive.extractall(path=root, pwd=password)
             except BadZipfile as e:
                 raise CuckooPackageError("Invalid Zip file")
             except RuntimeError:
@@ -48,4 +49,9 @@ class Zip(Package):
         return True
 
     def finish(self):
+        if self.options.get("procmemdump", False):
+            for pid in self.pids:
+                p = Process(pid=pid)
+                p.dump_memory()
+
         return True
