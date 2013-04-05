@@ -190,4 +190,5 @@ table = [
     ("CreateThread", "threading", ("pplL", "StartRoutine", "Parameter", "CreationFlags", "ThreadId")),
     ("CreateRemoteThread", "threading", ("3plL", "ProcessHandle", "StartRoutine", "Parameter", "CreationFlags", "ThreadId")),
     ("RtlCreateUserThread", "threading", ("plppPl", "ProcessHandle", "CreateSuspended", "StartAddress", "StartParameter", "ThreadHandle", "ThreadIdentifier")),
+    ("ZwMapViewOfSection", "process", ("ppPp", "SectionHandle", "ProcessHandle", "BaseAddress", "SectionOffset")),
 ]
