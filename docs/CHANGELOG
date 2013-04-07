@@ -1,5 +1,30 @@
                                   CHANGELOG
 
+Cuckoo Sandbox 0.6 (TBD)
+========================
+
+* Added procmemdump option to all analysis packages
+* Added randomization of folders and pipes in the analysis machines
+* Added checks to block injection of Cuckoo's agent and analyzer
+* Added configuration file for processing modules
+* Added result server to collect logs, files, screenshots and all results in real-time
+* Added option for enabling/disabling generation of CSV logs
+* Added REST API function to delete analysis task
+* Added matching of Yara signatures against dropped files
+* Added default fail-over on "exe" package if can't automatically identify the correct one
+* Improved human auxiliary module
+* Improved Sleep() bypass
+* Improved dump of dropped files by tracking writing operations
+* Improved creation of screenshots by calculating a diff threshold
+* Fixed memory error issues
+* Fixed bugs in analysis procedure logic and in deletion of original files
+* Fixed bugs in MobngoDB reporting module
+* Fixed bugs in HTML reporting module
+* Fixed bugs in VirusTotal processing module
+* Fixed bug in handling GetLastError() result
+* Fixed bug in network traffic capture
+* Fixed bug in submission and creation of tasks in the database
+
 Cuckoo Sandbox 0.5 (2012-12-20)
 ===============================
 
