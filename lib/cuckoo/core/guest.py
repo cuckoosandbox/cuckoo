@@ -201,7 +201,7 @@ class GuestManager:
                 if not error:
                     error = "unknown error"
 
-                raise CuckooGuestError("Analysis failed: {0}".format())
+                raise CuckooGuestError("Analysis failed: {0}".format(error))
             else:
                 log.debug("%s: analysis not completed yet (status=%s)", self.id, status)
 
