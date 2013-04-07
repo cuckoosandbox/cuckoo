@@ -20,12 +20,5 @@ On Windows simply launching the script will also spawn a Python window, if
 you want to hide it you can rename the file from *agent.py* to **agent.pyw**
 which will prevent the window from spawning.
 
-To add the agent to run on startup on Windows:
-- copy it to your python installation directory
-- Press Start -> Run -> regedit.exe
-- Navigate to the key
-HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-- Right click and create a new "String Value" and name it "Agent"
-- Double click on your new entry and set the value as the location of the
-cuckoo agent "C:\Python27\agent.pyw"
-- If done correctly you should be able to see your entry in msconfig.exe
+If you want the script to be launched at Windows' boot, placing the file in
+the `Startup` folder will make it.

@@ -17,6 +17,13 @@ After an analysis is completed, Cuckoo will invoke all the processing
 modules available in the *modules/processing/* directory. Any additional
 module you decide to create, must be placed inside that directory.
 
+Every module should also have a dedicated section in the file *conf/processing.conf*: for
+example if you create a module *module/processing/foobar.py* you will have to append
+the following section to *conf/processing.conf*::
+
+    [foobar]
+    enabled = on
+
 Every module will then be initialized and executed and the data returned
 will be appended in a data structure that we'll call **global container**.
 
@@ -41,7 +48,6 @@ The currently available default processing modules are:
     * **Strings** *(modules/processing/static.py)* - extracts strings from the analyzer binary.
     * **TargetInfo** *(modules/processing/targetinfo.py)* - includes information on the analyzed file, such as hashes.
     * **VirusTotal** *(modules/processing/virustotal.py)* - lookup VirusTotal.com for AntiVirus signatures of the analyzed file. **Note**: the file is not uploaded on VirusTotal.com, if the file was not previously uploaded on the website no results will be retrieved.
-    * **YaraSignatures** *(modules/processing/yarasignatures.py)* - matches the Yara signatures available under *data/yara/* against the analyzed file.
 
 Getting started
 ===============
@@ -115,6 +121,7 @@ for the given analysis:
     * ``self.shots_path``: path to the folder containing the screenshots.
     * ``self.pcap_path``: path to the network pcap dump.
     * ``self.memory_path``: path to the full memory dump, if created.
+    * ``self.pmemory_path``: path to the process memory dumps, if created.
 
 With these attributes you should be able to easily access all the raw results stored by Cuckoo and
 perform your analytic operations on them.

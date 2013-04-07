@@ -44,6 +44,8 @@ Following is a list of currently available resources and a brief description. Fo
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_view`         | Returns the details on the task assigned to the specified ID.                                                    |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_delete`       | Removes the given task from the database and deletes the results.                                                |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_report`       | Returns the report generated out of the analysis of the task associated with the specified ID.                   |
 |                                   | You can optionally specify which report format to return, if none is specified the JSON report will be returned. |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
@@ -234,6 +236,27 @@ Following is a list of currently available resources and a brief description. Fo
         **Status codes**:
             * ``200`` - no error
             * ``404`` - task not found
+
+.. _tasks_delete:
+
+/tasks/delete
+-------------
+
+    **GET /tasks/delete/** *(int: id)*
+
+        Removes the given task from the database and deletes the results.
+
+        **Example request**::
+
+            curl http://localhost:8090/tasks/delete/1
+
+        **Parameters**:
+            * ``id`` *(required)* *(int)* - ID of the task to delete
+
+        **Status codes**:
+            * ``200`` - no error
+            * ``404`` - task not found
+            * ``500`` - unable to delete the task
 
 .. _tasks_report:
 

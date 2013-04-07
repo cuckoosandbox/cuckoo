@@ -18,57 +18,75 @@ Following is the list of existing packages in alphabetical order:
 
     * ``applet``: used to analyze **Java applets**.
 
-                  **Options**:
-                     * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
-                     * ``class``: specify the name of the class to be executed. This option is mandatory for a correct execution.
+        **Options**:
+            * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+            * ``class``: specify the name of the class to be executed. This option is mandatory for a correct execution.
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
 
     * ``bin``: used to analyze generic binary data, such as **shellcodes**.
 
+        **Options**:
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
+
     * ``dll``: used to run and analyze **Dinamically Linked Libraries**.
 
-               **Options**:
-                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
-                   * ``function``: specify the function to be executed. If none is specified, Cuckoo will try to run ``DllMain``.
+        **Options**:
+            * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+            * ``function``: specify the function to be executed. If none is specified, Cuckoo will try to run ``DllMain``.
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
 
     * ``doc``: used to run and analyze **Microsoft Word documents**.
 
-               **Options**:
-                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+        **Options**:
+            * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
 
     * ``exe``: default analysis package used to analyze generic **Windows executables**.
 
-               **Options**:
-                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
-                   * ``arguments``: specify any command line argument to pass to the initial process of the submitted malware.
+        **Options**:
+            * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+            * ``arguments``: specify any command line argument to pass to the initial process of the submitted malware.
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
+
+    * ``html``: used to analyze **Internet Explorer**'s behavior when opening the given HTML file.
+
+        **Options**:
+            * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
 
     * ``ie``: used to analyze **Internet Explorer**'s behavior when opening the given URL.
 
-               **Options**:
-                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+        **Options**:
+            * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
 
     * ``jar``: used to analyze **Java JAR** containers.
 
-                  **Options**:
-                     * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
-                     * ``class``: specify the path of the class to be executed. If none is specified, Cuckoo will try to execute the main function specified in the Jar's MANIFEST file.
+        **Options**:
+            * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+            * ``class``: specify the path of the class to be executed. If none is specified, Cuckoo will try to execute the main function specified in the Jar's MANIFEST file.
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
 
     * ``pdf``: used to run and analyze **PDF documents**.
 
-               **Options**:
-                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+        **Options**:
+            * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
 
     * ``xls``: used to run and analyze **Microsoft Excel documents**.
 
-               **Options**:
-                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+        **Options**:
+            * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
 
     * ``zip``: used to run and analyze **Zip archives**.
 
-               **Options**:
-                   * ``file``: specify the name of the file contained in the archive to execute. If none is specified, Cuckoo will try to execute *sample.exe*.
-                   * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
-                   * ``arguments``: specify any command line argument to pass to the initial process of the submitted malware.
-                   * ``password``: specify the password of the archive. If none is specified, Cuckoo will try to extract the archive without password or use the password "*infected*".
+        **Options**:
+            * ``file``: specify the name of the file contained in the archive to execute. If none is specified, Cuckoo will try to execute *sample.exe*.
+            * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+            * ``arguments``: specify any command line argument to pass to the initial process of the submitted malware.
+            * ``password``: specify the password of the archive. If none is specified, Cuckoo will try to extract the archive without password or use the password "*infected*".
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
 
 You can find more details on how to start creating new analysis packages in the
 :doc:`../customization/packages` customization chapter.

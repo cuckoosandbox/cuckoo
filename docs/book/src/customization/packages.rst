@@ -49,6 +49,11 @@ Windows executables (located at *analyzer/windows/packages/exe.py*):
                 return True
 
             def finish(self):
+                if self.options.get("procmemdump", False):
+                    for pid in self.pids:
+                        p = Process(pid=pid)
+                        p.dump_memory()
+
                 return True
 
 Let's walk through the code:
@@ -67,6 +72,10 @@ Let's walk through the code:
     * Line **22**: return the PID of the newly created process to the analyzer.
     * Line **26**: define the ``check()`` function.
     * Line **29**: define the ``finish()`` function.
+    * Line **30**: check if the ``procmemdump`` option was enabled.
+    * Line **31**: loop through the currently monitored processes.
+    * Line **32**: open a ``Process`` instance.
+    * Line **33**: take a dump of the process memory.
 
 ``start()``
 -----------
@@ -103,9 +112,8 @@ whenever *C:\config.bin* is created.
 
 This function is simply called by Cuckoo before terminating the analysis and powering
 off the machine.
-There's no predefined use for this function and it's not going to affect Cuckoo's
-execution whatsoever, so you could simply use it to perform any last operation on
-the system.
+By default, this function contains an optional feature to dump the process memory of
+all the monitored processes.
 
 Options
 =======

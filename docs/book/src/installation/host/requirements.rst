@@ -110,6 +110,10 @@ You can verify the results of last command with::
     $ getcap /usr/sbin/tcpdump 
     /usr/sbin/tcpdump = cap_net_admin,cap_net_raw+eip
 
+If you don't have `setcap` installed you can get it with::
+
+    $ sudo apt-get install libcap2-bin
+
 Or otherwise (**not recommended**) do::
 
     $ sudo chmod +s /usr/sbin/tcpdump

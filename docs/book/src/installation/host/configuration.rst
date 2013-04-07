@@ -2,10 +2,11 @@
 Configuration
 =============
 
-Cuckoo relies on three main configuration files:
+Cuckoo relies on four main configuration files:
 
     * :ref:`cuckoo_conf`: for configuring general behavior and analysis options.
     * :ref:`<machinemanager>_conf`: for defining the options for your virtualization software.
+    * :ref:`processing_conf`: for enabling and configuraing processing modules.
     * :ref:`reporting_conf`: for enabling or disabling report formats.
 
 .. _cuckoo_conf:
@@ -13,93 +14,17 @@ Cuckoo relies on three main configuration files:
 cuckoo.conf
 ===========
 
-The first file to edit is *conf/cuckoo.conf*, whose content is::
+The first file to edit is *conf/cuckoo.conf*, it contains the generic configuration
+options that you might want to verify before launching Cuckoo.
 
-    [cuckoo]
-    # Enable or disable startup version check. When enabled, Cuckoo will connect
-    # to a remote location to verify whether the running version is the latest
-    # one available.
-    version_check = on
+The file is largely commented and self-explainatory, but some of the options you might
+want to pay more attention to are:
 
-    # If turned on, Cuckoo will delete the original file and will just store a
-    # copy in the local binaries repository.
-    delete_original = off
+    * ``machine_manager`` in ``[cuckoo]``: this defines which Machine Manager module you want Cuckoo to use to interact with your analysis machines. The value must be the name of the module without extention.
+    * ``ip`` and ``port`` in ``[resultserver]``: defines the local IP address and port that Cuckoo is going to use to bind the result server on. Make sure this is aligned with the network configuration of your analysis machines, or they won't be able to return the collected results.
+    * ``connection`` in ``[database]``: defines how to connect to the internal database. You can use any DBMS supported by `SQLAlchemy`_.
 
-    # Specify the name of the machine manager module to use, this module will
-    # define the interaction between Cuckoo and your virtualization software
-    # of choice.
-    machine_manager = virtualbox
-
-    # Enable creation of memory dump of the analysis machine before shutting
-    # down. Even if turned off, this functionality can also be enabled at
-    # submission. Currently available for: VirtualBox and libvirt modules (KVM).
-    memory_dump = off
-
-    [processing]
-    # Set the maximum size of analysis's generated files to process.
-    # This is used to avoid the processing of big files which can bring memory leak.
-    # The value is expressed in bytes, by default 100Mb.
-    analysis_size_limit = 104857600
-
-    # Enable or disable DNS lookups.
-    resolve_dns = on
-
-    [database]
-    # Specify the database connection string.
-    # Examples, see documentation for more:
-    # sqlite:///foo.db
-    # postgresql://foo:bar@localhost:5432/mydatabase
-    # mysql://foo:bar@localhost/mydatabase
-    # If empty, default is a SQLite in  db/cuckoo.db.
-    connection =
-
-    # Database connection timeout in seconds.
-    # If empty, default is set to 60 seconds.
-    timeout =
-
-    [timeouts]
-    # Set the default analysis timeout expressed in seconds. This value will be
-    # used to define after how many seconds the analysis will terminate unless
-    # otherwise specified at submission.
-    default = 120
-
-    # Set the critical timeout expressed in seconds. After this timeout is hit
-    # Cuckoo will consider the analysis failed and it will shutdown the machine
-    # no matter what. When this happens the analysis results will most likely
-    # be lost. Make sure to have a critical timeout greater than the
-    # default timeout.
-    critical = 600
-
-    # Maximum time to wait for virtual machine status change. For example when
-    # shutting down a vm. Default is 300 seconds.
-    vm_state = 300
-
-    [sniffer]
-    # Enable or disable the use of an external sniffer (tcpdump) [yes/no].
-    enabled = yes
-
-    # Specify the path to your local installation of tcpdump. Make sure this
-    # path is correct.
-    tcpdump = /usr/sbin/tcpdump
-
-    # Specify the network interface name on which tcpdump should monitor the
-    # traffic. Make sure the interface is active.
-    interface = vboxnet0
-
-    [graylog]
-    # Enable or disable remote logging to a Graylog2 server.
-    enabled = no
-
-    # Graylog2 server host.
-    host = localhost
-
-    # Graylog2 server port.
-    port = 12201
-
-    # Default logging level for Graylog2. [debug/info/error/critical].
-    level = error
-
-The configuration file is self-explainatory.
+.. _`SQLAlchemy`: http://www.sqlalchemy.org/
 
 .. _<machinemanager>_conf:
 
@@ -174,11 +99,13 @@ Following is the default *conf/kvm.conf* file::
     # /etc/libvirt/<hypervisor>/networks/
     ip = 192.168.122.105
 
-    .. note::
 
-        You may want to add a static ip address for your virtual machine.
+.. note::
+
+    You may want to add a static IP address for your virtual machine::
+
         <network>
-          …
+          ...
           <ip address="192.168.122.1" netmask="255.255.255.0">
             <dhcp>
               <range start="192.168.122.2" end="192.168.122.254" />
@@ -186,6 +113,58 @@ Following is the default *conf/kvm.conf* file::
             </dhcp>
           </ip>
         </network>
+
+.. _processing_conf:
+
+processing.conf
+===============
+
+This file allows you to enable, disable and configure all processing modules.
+These modules are located under `modules/processing/` and define how to digest
+the raw data collected during the analysis.
+
+You will find a section for each processing module::
+
+    # Enable or disable the available processing modules [on/off].
+    # If you add a custom processing module to your Cuckoo setup, you have to add
+    # a dedicated entry in this file, or it won't be executed.
+    # You can also add additional options under the section of your module and
+    # they will be available in your Python class.
+
+    [analysisinfo]
+    enabled = yes
+
+    [behavior]
+    enabled = yes
+
+    [debug]
+    enabled = yes
+
+    [dropped]
+    enabled = yes
+
+    [network]
+    enabled = yes
+
+    [static]
+    enabled = yes
+
+    [strings]
+    enabled = yes
+
+    [targetinfo]
+    enabled = yes
+
+    [virustotal]
+    enabled = yes
+    # Add your VirusTotal API key here. The default API key, kindly provided
+    # by the VirusTotal team, should enable you with a sufficient throughput
+    # and while being shared with all our users, it shouldn't affect your use.
+    key = a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088
+
+You might want to configure the `VirusTotal`_ key if you have an account of your own.
+
+.. _`VirusTotal`: http://www.virustotal.com
 
 .. _reporting_conf:
 

@@ -4,6 +4,7 @@ FAQ
 
 Frequently Asked Questions:
 
+    * :ref:`analyze_urls`
     * :ref:`general_volatility`
     * :ref:`troubles_upgrade`
     * :ref:`troubles_problem`
@@ -11,6 +12,13 @@ Frequently Asked Questions:
 
 General Questions
 =================
+
+.. _analyze_urls:
+
+Can I analyze URLs with Cuckoo?
+-------------------------------
+
+Yes you can. Since version 0.5 URLs are natively supported by Cuckoo.
 
 .. _general_volatility:
 

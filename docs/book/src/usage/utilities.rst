@@ -42,11 +42,11 @@ the analysis if you want to re-generate the reports for it.
 This is used mainly in debugging and developing Cuckoo.
 For example if you want run again the report engine for analysis number 1::
 
-    $ ./utils/process.py storage/analyses/1/
+    $ ./utils/process.py 1
 
 If you want to re-generate the reports::
 
-    $ ./utils/process.py --report storage/analyses/1/
+    $ ./utils/process.py --report 1
 
 Community Download Utility
 ==========================
