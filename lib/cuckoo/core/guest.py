@@ -197,7 +197,11 @@ class GuestManager:
                 log.info("%s: analysis completed successfully", self.id)
                 break
             elif status == CUCKOO_GUEST_FAILED:
-                raise CuckooGuestError("Analysis failed: {0}".format(self.server.get_error()))
+                error = self.server.get_error()
+                if not error:
+                    error = "unknown error"
+
+                raise CuckooGuestError("Analysis failed: {0}".format())
             else:
                 log.debug("%s: analysis not completed yet (status=%s)", self.id, status)
 

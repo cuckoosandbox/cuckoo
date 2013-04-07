@@ -607,8 +607,9 @@ if __name__ == "__main__":
         error = "Keyboard Interrupt"
     # If the analysis process encountered a critical error, it will raise a
     # CuckooError exception, which will force the termination of the analysis
-    # weill notify the agent of the failure.
-    except CuckooError as e:
+    # weill notify the agent of the failure. Also catched unexpected
+    # exceptions.
+    except Exception as e:
         # Store the error.
         error = str(e)
 
@@ -616,7 +617,7 @@ if __name__ == "__main__":
         if len(log.handlers) > 0:
             log.critical(error)
         else:
-            sys.stderr.write("%s\n" % e)
+            sys.stderr.write("{0}\n".format(e))
     # Once the analysis is completed or terminated for any reason, we report
     # back to the agent, notifying that it can report back to the host.
     finally:
