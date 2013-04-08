@@ -301,10 +301,9 @@ class AnalysisManager(Thread):
     def run(self):
         """Run manager thread."""
         success = self.launch_analysis()
+        Database().complete(self.task.id, success)
 
         self.process_results()
-
-        Database().complete(self.task.id, success)
 
         log.debug("Released database task #%d with status %s", self.task.id, success)
         log.info("Task #%d: analysis procedure completed", self.task.id)

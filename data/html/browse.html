@@ -20,7 +20,7 @@
                     <td>{{row.id}}</td>
                     <td>{{row.category|upper}}</td>
                     <td>
-                        {% if row.status != "pending" and row.status != "processing" %}
+                        {% if row.processed %}
                             <a href="/view/{{row.id}}">
                         {% endif %}
                         <span class="mono">
@@ -30,7 +30,7 @@
                                 {{row.target}}
                             {% endif %}
                         </span>
-                        {% if row.status == "success" %}
+                        {% if row.processed %}
                             </a>
                         {% endif %}
                     </td>

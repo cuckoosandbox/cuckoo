@@ -60,8 +60,12 @@ def browse():
             "target" : row.target,
             "category" : row.category,
             "status" : row.status,
-            "added_on" : row.added_on
+            "added_on" : row.added_on,
+            "processed" : False
         }
+
+        if os.path.exists(os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]), "reports", "report.html")):
+            task["processed"] = True
 
         if row.category == "file":
             sample = db.view_sample(row.sample_id)
