@@ -109,7 +109,7 @@ table = [
     ("SetWindowsHookExA", "system", ("lppl", "HookIdentifier", "ProcedureAddress", "ModuleAddress", "ThreadId")),
     ("SetWindowsHookExW", "system", ("lppl", "HookIdentifier", "ProcedureAddress", "ModuleAddress", "ThreadId")),
     ("LdrLoadDll", "system", ("loP", "Flags", "FileName", "BaseAddress")),
-    ("LdrGetProcedureAddress", "system", ("pSl", "ModuleHandle", "FunctionName", "Ordinal")),
+    ("LdrGetProcedureAddress", "system", ("pSlP", "ModuleHandle", "FunctionName", "Ordinal", "FunctionAddress")),
     ("DeviceIoControl", "device", ("plbb", "DeviceHandle", "IoControlCode", "InBuffer", "OutBuffer")),
     ("WriteConsoleA", "system", ("pS", "ConsoleHandle", "Buffer")),
     ("WriteConsoleW", "system", ("pU", "ConsoleHandle", "Buffer")),
