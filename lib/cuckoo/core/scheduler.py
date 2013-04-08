@@ -7,6 +7,7 @@ import sys
 import time
 import shutil
 import logging
+import Queue
 from threading import Thread, Lock
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -40,12 +41,13 @@ class AnalysisManager(Thread):
     complete the analysis and store, process and report its results.
     """
 
-    def __init__(self, task):
+    def __init__(self, task, error_queue):
         """@param task: task object containing the details for the analysis."""
         Thread.__init__(self)
         Thread.daemon = True
 
         self.task = task
+        self.errors = error_queue
         self.cfg = Config()
         self.storage = ""
         self.binary = ""
@@ -181,7 +183,11 @@ class AnalysisManager(Thread):
         machine = self.acquire_machine()
 
         # At this point we can tell the Resultserver about it
-        Resultserver().add_task(self.task, machine)
+        try:
+            Resultserver().add_task(self.task, machine)
+        except Exception as e:
+            mmanager.release(machine.label)
+            self.errors.put(e)
 
         # If enabled in the configuration, start the tcpdump instance.
         if self.cfg.sniffer.enabled:
@@ -373,6 +379,9 @@ class Scheduler:
 
         log.info("Waiting for analysis tasks...")
 
+        # Message queue with threads to transmit exceptions (used as IPC).
+        errors = Queue.Queue()
+
         # This loop runs forever.
         while self.running:
             time.sleep(1)
@@ -389,6 +398,14 @@ class Scheduler:
                 log.debug("Processing task #%s", task.id)
 
                 # Initialize the analysis manager.
-                analysis = AnalysisManager(task)
+                analysis = AnalysisManager(task, errors)
                 # Start.
                 analysis.start()
+
+            # Deal with errors.
+            try:
+                exc = errors.get(block=False)
+            except Queue.Empty:
+                pass
+            else:
+                raise exc
