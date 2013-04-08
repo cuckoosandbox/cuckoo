@@ -405,7 +405,7 @@ class Report(Report):
             report.write("Cuckoo Sandbox MAEC 1.1 malware analysis report\n")
             report.write("http://www.cuckoosandbox.org\n")
             report.write("-->\n")
-            self.m.export(report, 0, namespace_ = "", name_ = "MAEC_Bundle", namespacedef_ = "xsi:schemaLocation='http://maec.mitre.org/XMLSchema/maec-core-1 file:MAEC_v1.1.xsd'")
+            self.m.export(report, 0, namespace_="", name_="MAEC_Bundle", namespacedef_="xmlns='http://maec.mitre.org/XMLSchema/maec-core-1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://maec.mitre.org/XMLSchema/maec-core-1 file:MAEC_v1.1.xsd'")
             report.close()
         except (TypeError, IOError) as e:
             raise CuckooReportError("Failed to generate MAEC 1.1 report: %s" % e)
