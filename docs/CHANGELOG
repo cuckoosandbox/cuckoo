@@ -24,6 +24,7 @@ Cuckoo Sandbox 0.6 (TBD)
 * Fixed bug in handling GetLastError() result
 * Fixed bug in network traffic capture
 * Fixed bug in submission and creation of tasks in the database
+* Removed hooks for NtClose, NtAllocateVirtualMemory and VirtualFreeEx because of stability issues
 
 Cuckoo Sandbox 0.5 (2012-12-20)
 ===============================
