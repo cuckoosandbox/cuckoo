@@ -81,6 +81,21 @@ class Process:
             ret = True
         return ret
 
+    def close(self):
+        """Close any open handles.
+        @return: operation status.
+        """
+        ret = bool(self.h_process or self.h_thread)
+        NT_SUCCESS = lambda val: val >= 0
+
+        if self.h_process:
+            ret = NT_SUCCESS( KERNEL32.CloseHandle(self.h_process) )
+
+        if self.h_thread:
+            ret = NT_SUCCESS( KERNEL32.CloseHandle(self.h_thread) )
+
+        return ret
+
     def exit_code(self):
         """Get process exit code.
         @return: exit code value.
@@ -92,6 +107,37 @@ class Process:
         KERNEL32.GetExitCodeProcess(self.h_process, byref(exit_code))
 
         return exit_code.value
+
+    def get_filepath(self):
+        """Get process image file path.
+        @return: decoded file path.
+        """
+        if not self.h_process:
+            self.open()
+
+        NT_SUCCESS = lambda val: val >= 0
+
+        pbi = create_string_buffer(200)
+        size = c_int()
+
+        # Set return value to signed 32bit integer.
+        NTDLL.NtQueryInformationProcess.restype = c_int
+
+        ret = NTDLL.NtQueryInformationProcess(self.h_process,
+                                              27,
+                                              byref(pbi),
+                                              sizeof(pbi),
+                                              byref(size))
+
+        if NT_SUCCESS(ret) and size.value > 8:
+            try:
+                fbuf = pbi.raw[8:]
+                fbuf = fbuf[:fbuf.find('\0\0')+1]
+                return fbuf.decode('utf16', errors="ignore")
+            except:
+                return ""
+
+        return ""
 
     def is_alive(self):
         """Process is alive?
