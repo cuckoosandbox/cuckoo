@@ -77,7 +77,7 @@
                             {{argument.name}} => <span class="mono">{{argument.value}}</span><br />
                         {% endfor %}
                         </td>
-                        <td>{{call.status}}</td>
+                        <td>{% if call.status %}SUCCESS{% else %}FAILURE{% endif %}</td>
                         <td>{{call.return}}</td>
                         <td>
                         {% if call.repeated and call.repeated > 0 %}
