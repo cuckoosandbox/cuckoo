@@ -12,6 +12,7 @@ Cuckoo Sandbox 0.6 (TBD)
 * Added REST API function to delete analysis task
 * Added matching of Yara signatures against dropped files
 * Added default fail-over on "exe" package if can't automatically identify the correct one
+* Added password option to zip package
 * Improved human auxiliary module
 * Improved Sleep() bypass
 * Improved dump of dropped files by tracking writing operations
