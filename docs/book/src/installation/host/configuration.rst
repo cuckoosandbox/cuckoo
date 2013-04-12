@@ -27,6 +27,11 @@ want to pay more attention to are:
 .. _`SQLAlchemy`: http://www.sqlalchemy.org/
 .. _`Database Urls`: http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
 
+.. warning:: Check your interface for resultserver IP! Some virtualization software (for example Virtualbox)
+    doesn't bring up the virtual networking interface until a virtual machine is started.
+    Cuckoo needs to have the interface where you bind the resultserver up before the start, so please
+    check your network setup.
+
 .. _<machinemanager>_conf:
 
 <machinemanager>.conf
