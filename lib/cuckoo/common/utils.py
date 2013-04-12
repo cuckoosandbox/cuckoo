@@ -58,11 +58,10 @@ def convert_char(c):
     if c in string.printable:
         return c
     else:
-        return r'\x%02x' % ord(c)
+        return r"\x%02x" % ord(c)
 
 def is_printable(s):
-    """ Test if a string is printable
-    """
+    """ Test if a string is printable."""
     for c in s:
         if not c in string.printable:
             return False
@@ -75,14 +74,14 @@ def convert_to_printable(s):
     """
     if is_printable(s):
         return s
-    return ''.join(convert_char(c) for c in s)
+    return "".join(convert_char(c) for c in s)
 
 def datetime_to_iso(timestamp):
     """Parse a datatime string and returns a datetime in iso format.
     @param timestamp: timestamp string
     @return: ISO datetime
     """  
-    return datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat()
+    return datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").isoformat()
 
 def get_filename_from_path(path):
     """Cross-platform filename extraction from path.
@@ -113,7 +112,7 @@ def store_temp_file(filedata, filename):
     tmp_file = open(tmp_file_path, "wb")
     
     # if filedata is file object, do chunked copy
-    if hasattr(filedata, 'read'):
+    if hasattr(filedata, "read"):
         chunk = filedata.read(1024)
         while chunk:
             tmp_file.write(chunk)
@@ -131,20 +130,20 @@ def store_temp_file(filedata, filename):
 # (although their stuff was messy, this is cleaner)
 class TimeoutServer(xmlrpclib.ServerProxy):
     def __init__(self, *args, **kwargs):
-        timeout = kwargs.pop('timeout', None)
-        kwargs['transport'] = TimeoutTransport(timeout=timeout)
+        timeout = kwargs.pop("timeout", None)
+        kwargs["transport"] = TimeoutTransport(timeout=timeout)
         xmlrpclib.ServerProxy.__init__(self, *args, **kwargs)
 
     def _set_timeout(self, timeout):
         t = self._ServerProxy__transport
         t.timeout = timeout
         # if we still have a socket we need to update that as well
-        if hasattr(t, '_connection') and t._connection[1] and t._connection[1].sock:
+        if hasattr(t, "_connection") and t._connection[1] and t._connection[1].sock:
             t._connection[1].sock.settimeout(timeout)
 
 class TimeoutTransport(xmlrpclib.Transport):
     def __init__(self, *args, **kwargs):
-        self.timeout = kwargs.pop('timeout', None)
+        self.timeout = kwargs.pop("timeout", None)
         xmlrpclib.Transport.__init__(self, *args, **kwargs)
 
     def make_connection(self, *args, **kwargs):
@@ -177,4 +176,4 @@ def time_from_cuckoomon(s):
     @param s: time string
     @return: datetime object
     """
-    return datetime.strptime(s, '%Y-%m-%d %H:%M:%S,%f')
+    return datetime.strptime(s, "%Y-%m-%d %H:%M:%S,%f")
