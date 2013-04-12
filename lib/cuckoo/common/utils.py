@@ -35,7 +35,7 @@ def create_folder(root=".", folder=None):
         try:
             folder_path = os.path.join(root, folder)
             os.makedirs(folder_path)
-        except OSError as e:
+        except OSError:
             raise CuckooOperationalError("Unable to create folder: %s"
                                          % folder_path)
 
@@ -47,7 +47,7 @@ def delete_folder(folder):
     if os.path.exists(folder):
         try:
             shutil.rmtree(folder)
-        except OSError as e:
+        except OSError:
             raise CuckooOperationalError("Unable to delete folder: {0}".format(folder))
 
 def convert_char(c):
@@ -160,9 +160,8 @@ class Singleton(type):
         return cls._instances[cls]
 
 def logtime(dt):
-    """formats time like a logger does, for the csv output 
+    """Formats time like a logger does, for the csv output
        (e.g. "2013-01-25 13:21:44,590")
-
     @param dt: datetime object
     @return: time string
     """
@@ -171,8 +170,7 @@ def logtime(dt):
     return s
 
 def time_from_cuckoomon(s):
-    """parse time string received from cuckoomon via netlog
-
+    """Parse time string received from cuckoomon via netlog
     @param s: time string
     @return: datetime object
     """
