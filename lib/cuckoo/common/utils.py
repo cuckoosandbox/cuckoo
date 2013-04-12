@@ -60,11 +60,21 @@ def convert_char(c):
     else:
         return r'\x%02x' % ord(c)
 
+def is_printable(s):
+    """ Test if a string is printable
+    """
+    for c in s:
+        if not c in string.printable:
+            return False
+    return True
+
 def convert_to_printable(s):
     """Convert char to printable.
     @param s: string.
     @return: sanitized string.
     """
+    if is_printable(s):
+        return s
     return ''.join(convert_char(c) for c in s)
 
 def datetime_to_iso(timestamp):
