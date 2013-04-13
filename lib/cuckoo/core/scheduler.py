@@ -361,10 +361,10 @@ class Scheduler:
         # At this point all the available machines should have been identified
         # and added to the list. If none were found, Cuckoo needs to abort the
         # execution.
-        if mmanager.machines().count() == 0:
+        if len(mmanager.machines()) == 0:
             raise CuckooCriticalError("No machines available")
         else:
-            log.info("Loaded %s machine/s", mmanager.machines().count())
+            log.info("Loaded %s machine/s", len(mmanager.machines()))
 
 
     def stop(self):
