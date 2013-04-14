@@ -38,6 +38,18 @@ PROCESS_LOCK = Lock()
 PID = os.getpid()
 PPID = Process(pid=PID).get_parent_pid()
 
+# this is still preparation status - needs finalizing
+def protected_filename(fname):
+    """Checks file name against some protected names."""
+    if not fname: return False
+
+    protected_names = []
+    for name in protected_names:
+        if name in fname:
+            return True
+
+    return False
+
 def add_pid(pid):
     """Add a process to process list."""
     if type(pid) == long or type(pid) == int or type(pid) == str:
@@ -142,6 +154,7 @@ class PipeHandler(Thread):
         data = ""
         response = "OK"
         wait = False
+        proc = None
 
         # Read the data submitted to the Pipe Server.
         while True:
@@ -204,27 +217,33 @@ class PipeHandler(Thread):
                         # We inject the process only if it's not being monitored
                         # already, otherwise we would generated polluted logs.
                         if process_id not in PROCESS_LIST:
-                            # Add the new process ID to the list of monitored
-                            # processes.
-                            add_pids(process_id)
-
                             # Open the process and inject the DLL.
                             # Hope it enjoys it.
                             proc = Process(pid=process_id,
                                            thread_id=thread_id)
 
-                            # If we have both pid and tid, then we can use
-                            # apc to inject
-                            if process_id and thread_id:
-                                proc.inject(apc=True)
-                            else:
-                                # we inject using CreateRemoteThread, this
-                                # needs the waiting in order to make sure no
-                                # race conditions occur
-                                proc.inject()
-                                wait = True
+                            filepath = proc.get_filepath()
+                            filename = os.path.basename(filepath)
 
-                            log.info("Successfully injected process with pid %s", proc.pid)
+                            log.info("Announced process name: %s", filename)
+
+                            if not protected_filename(filename):
+                                # Add the new process ID to the list of monitored
+                                # processes.
+                                add_pids(process_id)
+
+                                # If we have both pid and tid, then we can use
+                                # apc to inject
+                                if process_id and thread_id:
+                                    proc.inject(apc=True)
+                                else:
+                                    # we inject using CreateRemoteThread, this
+                                    # needs the waiting in order to make sure no
+                                    # race conditions occur
+                                    proc.inject()
+                                    wait = True
+
+                                log.info("Successfully injected process with pid %s", proc.pid)
                     else:
                         log.warning("Received request to inject Cuckoo processes, skip")
 
@@ -264,6 +283,9 @@ class PipeHandler(Thread):
         # We wait until cuckoomon reports back.
         if wait:
             proc.wait()
+
+        if proc:
+            proc.close()
 
         return True
 
