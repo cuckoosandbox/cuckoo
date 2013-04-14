@@ -133,8 +133,8 @@ class MachineManager(object):
         """Shutdown the machine manager. Kills all alive machines.
         @raise CuckooMachineError: if unable to stop machine.
         """
-        if self.running().count() > 0:
-            log.info("Still %s guests alive. Shutting down...", self.running().count())
+        if len(self.running()) > 0:
+            log.info("Still %s guests alive. Shutting down...", len(self.running()))
             for machine in self.running():
                 try:
                     self.stop(machine.label)

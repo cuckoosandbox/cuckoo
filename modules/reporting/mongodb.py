@@ -12,6 +12,7 @@ try:
     from pymongo.connection import Connection
     from pymongo.errors import ConnectionFailure, InvalidDocument
     from gridfs import GridFS
+    from gridfs.errors import FileExists
 except ImportError:
     raise CuckooDependencyError("Unable to import pymongo")
 
@@ -43,17 +44,20 @@ class MongoDB(Report):
         if not filename:
             filename = file_obj.get_name()
 
-        existing = self.db.fs.files.find_one({"md5": file_obj.get_md5()})
+        existing = self.db.fs.files.find_one({"sha256": file_obj.get_sha256()})
 
         if existing:
             return existing["_id"]
         else:
-            new = self.fs.new_file(filename=filename)
+            new = self.fs.new_file(filename=filename, sha256=file_obj.get_sha256())
             for chunk in file_obj.get_chunks():
                 new.write(chunk)
-            new.close()
-
-            return new._id
+            try:
+                new.close()
+            except FileExists:
+                return self.db.fs.files.find_one({"sha256": file_obj.get_sha256()})["_id"]
+            else:
+                return new._id
 
     def run(self, results):
         """Writes report.
@@ -71,7 +75,7 @@ class MongoDB(Report):
         # From pymongo docs:
         #  Returns the name of the created index if an index is actually created. 
         #  Returns None if the index already exists.
-        self.db.fs.files.ensure_index("md5", unique=True, name="md5_unique")
+        self.db.fs.files.ensure_index("sha256", unique=True, name="sha256_unique")
 
         # Store the PCAP file in GridFS and reference it back in the report.
         pcap_path = os.path.join(self.analysis_path, "dump.pcap")

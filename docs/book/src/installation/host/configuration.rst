@@ -22,9 +22,15 @@ want to pay more attention to are:
 
     * ``machine_manager`` in ``[cuckoo]``: this defines which Machine Manager module you want Cuckoo to use to interact with your analysis machines. The value must be the name of the module without extention.
     * ``ip`` and ``port`` in ``[resultserver]``: defines the local IP address and port that Cuckoo is going to use to bind the result server on. Make sure this is aligned with the network configuration of your analysis machines, or they won't be able to return the collected results.
-    * ``connection`` in ``[database]``: defines how to connect to the internal database. You can use any DBMS supported by `SQLAlchemy`_.
+    * ``connection`` in ``[database]``: defines how to connect to the internal database. You can use any DBMS supported by `SQLAlchemy`_ using a valid `Database Urls`_ syntax.
 
 .. _`SQLAlchemy`: http://www.sqlalchemy.org/
+.. _`Database Urls`: http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
+
+.. warning:: Check your interface for resultserver IP! Some virtualization software (for example Virtualbox)
+    doesn't bring up the virtual networking interface until a virtual machine is started.
+    Cuckoo needs to have the interface where you bind the resultserver up before the start, so please
+    check your network setup.
 
 .. _<machinemanager>_conf:
 

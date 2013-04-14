@@ -114,7 +114,8 @@ def tasks_list(limit=None):
     response = {}
 
     response["tasks"] = []
-    for row in db.list_tasks(limit).all():
+
+    for row in db.list_tasks(limit, details=True):
         task = row.to_dict()
         task["guest"] = {}
         if row.guest:
@@ -132,7 +133,7 @@ def tasks_list(limit=None):
 def tasks_view(task_id):
     response = {}
 
-    task = db.view_task(task_id)
+    task = db.view_task(task_id, details=True)
     if task:
         entry = task.to_dict()
         entry["guest"] = {}
