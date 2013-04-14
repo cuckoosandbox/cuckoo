@@ -23,6 +23,7 @@ class Exe(Package):
         if not free and suspended:
             p.inject()
             p.resume()
+            p.close()
             return p.pid
         else:
             return None
