@@ -1,7 +1,7 @@
                                   CHANGELOG
 
 Cuckoo Sandbox 0.6 (2012-04-15)
-========================
+===============================
 
 * Added procmemdump option to all analysis packages
 * Added randomization of folders and pipes in the analysis machines
