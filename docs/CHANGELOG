@@ -19,7 +19,7 @@ Cuckoo Sandbox 0.6 (TBD)
 * Improved creation of screenshots by calculating a diff threshold
 * Fixed memory error issues
 * Fixed bugs in analysis procedure logic and in deletion of original files
-* Fixed bugs in MobngoDB reporting module
+* Fixed bugs in MongoDB reporting module
 * Fixed bugs in HTML reporting module
 * Fixed bugs in VirusTotal processing module
 * Fixed bug in handling GetLastError() result
