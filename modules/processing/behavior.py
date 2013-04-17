@@ -12,6 +12,7 @@ import inspect
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.utils import convert_to_printable, logtime
 from lib.cuckoo.common.netlog import NetlogParser
+from lib.cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
 
@@ -176,6 +177,7 @@ class Processes:
     def __init__(self, logs_path):
         """@param  logs_path: logs path."""
         self._logs_path = logs_path
+        self.cfg = Config()
 
     def run(self):
         """Run analysis.
@@ -199,6 +201,11 @@ class Processes:
                 continue
             
             if not file_path.endswith(".raw"):
+                continue
+
+            # Skipping the current log file if it's too big.
+            if os.stat(file_path).st_size > self.cfg.processing.analysis_size_limit:
+                log.warning("Behavioral log {0} too big to be processed, skipped.".format(file_name))
                 continue
 
             # Invoke parsing of current log file.

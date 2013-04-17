@@ -1,7 +1,7 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 0.6 (TBD)
-========================
+Cuckoo Sandbox 0.6 (2012-04-15)
+===============================
 
 * Added procmemdump option to all analysis packages
 * Added randomization of folders and pipes in the analysis machines
@@ -19,13 +19,13 @@ Cuckoo Sandbox 0.6 (TBD)
 * Improved creation of screenshots by calculating a diff threshold
 * Fixed memory error issues
 * Fixed bugs in analysis procedure logic and in deletion of original files
-* Fixed bugs in MobngoDB reporting module
+* Fixed bugs in MongoDB reporting module
 * Fixed bugs in HTML reporting module
 * Fixed bugs in VirusTotal processing module
 * Fixed bug in handling GetLastError() result
 * Fixed bug in network traffic capture
 * Fixed bug in submission and creation of tasks in the database
-* Removed hooks for NtClose, NtAllocateVirtualMemory and VirtualFreeEx because of stability issues
+* Removed hooks for NtOpenProcess, NtClose, NtAllocateVirtualMemory and VirtualFreeEx because of stability issues
 
 Cuckoo Sandbox 0.5 (2012-12-20)
 ===============================

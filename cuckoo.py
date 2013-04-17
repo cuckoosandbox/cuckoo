@@ -13,6 +13,7 @@ try:
     from lib.cuckoo.common.exceptions import CuckooCriticalError, CuckooDependencyError
     from lib.cuckoo.core.startup import *
     from lib.cuckoo.core.scheduler import Scheduler
+    from lib.cuckoo.core.resultserver import Resultserver
 except (CuckooDependencyError, ImportError) as e:
     sys.exit("ERROR: Missing dependency: %s" % e)
 
@@ -49,6 +50,8 @@ def main():
         log.setLevel(logging.DEBUG)
 
     init_modules()
+
+    Resultserver()
 
     try:
         sched = Scheduler()
