@@ -86,8 +86,8 @@ class NetlogParser(object):
             # actual API call
             try:
                 apiname, modulename, parseinfo = LOGTBL[apiindex]
-            except IndexError::
-                log.debug("Netlog LOGTBL lookup error for API index {0} (pid {1} tid {2})".format(apiindex, self.pid, tid))
+            except IndexError:
+                log.debug("Netlog LOGTBL lookup error for API index {0} (pid={1}, tid={2})".format(apiindex, self.pid, tid))
                 return False
 
             formatspecifiers, argnames = expand_format(parseinfo[0]), parseinfo[1:]
