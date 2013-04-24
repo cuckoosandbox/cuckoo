@@ -35,7 +35,7 @@ The following libraries are not strictly required, but their installation is rec
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
     * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use the svn version).
     * `Libvirt`_ (Optional): for using the KVM machine manager.
-    * `Bottlepy`_ (Optional): for using the ``web.py`` and ``api.py`` utilities.
+    * `Bottlepy`_ (Optional): for using the ``web.py`` and ``api.py`` utilities (use release 0.10 or above).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
 
 Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
