@@ -194,9 +194,6 @@ It contains the following sections::
     [reporthtml]
     enabled = on
 
-    [pickled]
-    enabled = off
-
     [metadata]
     enabled = off
 
