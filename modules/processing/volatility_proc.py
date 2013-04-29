@@ -12,10 +12,6 @@ from lib.cuckoo.common.utils import convert_to_printable, logtime
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
 
-#sys.path.insert(0,"/home/thorsten/volatility/volatility 2.2/volatility-2.2")
-
-#print sys.path
-
 import volatility.conf as conf
 import volatility.registry as registry
 import volatility.commands as commands
@@ -28,27 +24,18 @@ import volatility.obj as obj
 
 log = logging.getLogger(__name__)
 
-#class MyConfObject(conf.ConfObject):
-#    def clean(self):
-#        print (self.optparser._get_all_options())
-#        self.optparser = conf.PyFlagOptionParser(add_help_option = False,
-#                                   version = False,
-#                                   )
-
-    #def add_option(self, option, short_option = None,
-    #               cache_invalidator = True,
-    #               **args):
-    #    conf.ConfObject.add_option(self, option, short_option = None,
-    #               cache_invalidator = True,
-    #               )
-
 
 class volapi():
-    def __init__(self, memdump, osprofile = 'WinXPSP3x86'):
+    """ Volatility api
+
+    Copyright information: The plugin connectors contain copied and modified
+        code from the respective volatility plugins.
+    """
+
+    def __init__(self, memdump, osprofile='WinXPSP3x86'):
         """
-        filename: the memdump file path
-        profile: The profile (Os type)
-        mask: Mask these process ids
+        @param memdump: the memdump file path
+        @param osprofile: the profile (OS type)
         """
         registry.PluginImporter()
         self.memdump = memdump
@@ -57,51 +44,45 @@ class volapi():
         self.__config()
 
     def __config(self):
-        #if self.config:
-        #    self.config.clean()
+        """ Creates a volatility configuration
+        """
         self.config = conf.ConfObject()
         self.config.optparser.set_conflict_handler("resolve")
         registry.register_global_options(self.config, commands.Command)
         the_file = "file://" + self.memdump
-        base_conf = {'profile': self.osprofile, 
-        'use_old_as': None, 
-        'kdbg': None, 
-        'help': False, 
-        'kpcr': None, 
-        'tz': None, 
-        'pid': None, 
-        'output_file': None, 
-        'physical_offset': None, 
-        'conf_file': None, 
-        'dtb': None, 
-        'output': None, 
-        'info': None, 
-        'location': the_file, 
-        'plugins': None, 
-        'debug': None, 
-        'cache_dtb': True, 
-        'filename': None, 
-        'cache_directory': None, 
+        base_conf = {'profile': self.osprofile,
+        'use_old_as': None,
+        'kdbg': None,
+        'help': False,
+        'kpcr': None,
+        'tz': None,
+        'pid': None,
+        'output_file': None,
+        'physical_offset': None,
+        'conf_file': None,
+        'dtb': None,
+        'output': None,
+        'info': None,
+        'location': the_file,
+        'plugins': None,
+        'debug': None,
+        'cache_dtb': True,
+        'filename': None,
+        'cache_directory': None,
         'verbose': None,
-        'write':False}
+        'write': False}
 
         # set the default config
-        for k,v in base_conf.items():
+        for k, v in base_conf.items():
             self.config.update(k, v)
         self.addr_space = utils.load_as(self.config)
-        self.plugins = registry.get_plugin_classes(commands.Command, lower = True)
+        self.plugins = registry.get_plugin_classes(
+                commands.Command, lower=True)
         return self.config
-    
-    def conns(self):
-        self.__config()
-        conns = [conn for conn in  network.determine_connections(self.addr_space)]
-        for i in conns:
-            offset = conn.obj_vm.vtop(conn.obj_offset)
-            local = "{0}:{1}".format(conn.LocalIpAddress, conn.LocalPort)
-            remote = "{0}:{1}".format(conn.RemoteIpAddress, conn.RemotePort)
-            #print ('w00t, now I know that %s ===> %s'%(local, remote))
 
     def pslist(self):
+        """ Volatility pslist plugin
+        """
         log.info('volatility pslist for: {0}'.format(self.memdump))
         self.__config()
         res = []
@@ -117,15 +98,19 @@ class volapi():
 
         return {"config": {}, "data": res}
 
-    def malfind(self, dump_dir = None):
+    def malfind(self, dump_dir=None):
+        """ Volatility malfind plugin
+
+        @param dump_dir: optional directory for dumps
+        """
         log.info('volatility malfind for: {0}'.format(self.memdump))
         self.__config()
         res = []
-        # self.config.opts["dump_dir"] = "/home/thorsten/volatility/volatility 2.2/volatility-2.2/dumpdir"
 
         command = self.plugins["malfind"](self.config)
         for task in command.calculate():
-            for vad, address_space in task.get_vads(vad_filter = task._injection_filter):
+            for vad, address_space in\
+                task.get_vads(vad_filter=task._injection_filter):
                 if command._is_vad_empty(vad, address_space):
                     continue
                 new = {"process_name": str(task.ImageFileName),
@@ -143,6 +128,8 @@ class volapi():
         return {"config": {}, "data": res}
 
     def apihooks(self):
+        """ Volatility apihooks plugin
+        """
         log.info('volatility apihooks for: {0}'.format(self.memdump))
         self.__config()
         res = []
@@ -163,6 +150,8 @@ class volapi():
         return {"config": {}, "data": res}
 
     def dlllist(self):
+        """ Volatility dlllist plugin
+        """
         log.info('volatility dlllist for: {0}'.format(self.memdump))
         self.__config()
         res = []
@@ -170,18 +159,21 @@ class volapi():
         for task in command.calculate():
             new = {"process_id": int(task.UniqueProcessId),
                    "process_name": str(task.ImageFileName),
-                   "commandline": str(task.Peb.ProcessParameters.CommandLine or ''),
+                   "commandline": str(
+                        task.Peb.ProcessParameters.CommandLine or ''),
                    "loaded_modules": []
                     }
             for m in task.get_load_modules():
                     new["loaded_modules"].append({"dll_base": str(m.DllBase),
-                                                 "dll_size": str(m.SizeOfImage), 
-                                                 "dll_full_name": str(m.FullDllName or '')
-                                                })
+                                     "dll_size": str(m.SizeOfImage),
+                                     "dll_full_name": str(m.FullDllName or '')
+                                     })
             res.append(new)
         return {"config": {}, "data": res}
 
     def handles(self):
+        """ Volatility handles plugin
+        """
         log.info('volatility handles for: {0}'.format(self.memdump))
         self.__config()
         res = []
@@ -198,6 +190,8 @@ class volapi():
         return {"config": {}, "data": res}
 
     def ldrmodules(self):
+        """ Volatility ldrmodules plugin
+        """
         log.info('volatility ldrmodules for: {0}'.format(self.memdump))
         self.__config()
         res = []
@@ -212,17 +206,20 @@ class volapi():
             inmemorder = dict((mod.DllBase.v(), mod)
                                 for mod in task.get_mem_modules())
 
-            # Build a similar dictionary for the mapped files 
+            # Build a similar dictionary for the mapped files
             mapped_files = {}
-            for vad, address_space in task.get_vads(vad_filter = task._mapped_file_filter):
+            for vad, address_space in\
+                task.get_vads(vad_filter=task._mapped_file_filter):
                 # Note this is a lot faster than acquiring the full
-                # vad region and then checking the first two bytes. 
-                if obj.Object("_IMAGE_DOS_HEADER", offset = vad.Start, vm = address_space).e_magic != 0x5A4D:
+                # vad region and then checking the first two bytes.
+                if obj.Object("_IMAGE_DOS_HEADER",
+                    offset=vad.Start,
+                    vm=address_space).e_magic != 0x5A4D:
                     continue
                 mapped_files[int(vad.Start)] = vad.FileObject.FileName
 
-            # For each base address with a mapped file, print info on 
-            # the other PEB lists to spot discrepancies. 
+            # For each base address with a mapped file, print info on
+            # the other PEB lists to spot discrepancies.
             for base in mapped_files.keys():
                 # Does the base address exist in the PEB DLL lists?
                 load_mod = inloadorder.get(base, None)
@@ -250,6 +247,8 @@ class volapi():
         return {"config": {}, "data": res}
 
     def mutantscan(self):
+        """ Volatility mutantscan plugin
+        """
         log.info('volatility mutantscan for: {0}'.format(self.memdump))
         self.__config()
         res = []
@@ -269,37 +268,42 @@ class volapi():
                "mutant_signal_state": str(mutant.Header.SignalState),
                "mutant_name": str(object_obj.NameInfo.Name or ''),
                "process_id": int(pid),
-               "thread_id": int(tid) 
+               "thread_id": int(tid)
                 }
 
             res.append(new)
         return {"config": {}, "data": res}
 
-
     def devicetree(self):
+        """ Volatility devicetree plugin
+        """
         log.info('volatility devicetree for: {0}'.format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["devicetree"](self.config)
 
-        for _object_obj, driver_obj, _ in command.calculate():           
+        for _object_obj, driver_obj, _ in command.calculate():
             new = {"driver_offset": "0x{0:08x}".format(driver_obj.obj_offset),
                    "driver_name": str(driver_obj.DriverName or ''),
                    "devices": []}
 
             for device in driver_obj.devices():
 
-                device_header = obj.Object("_OBJECT_HEADER", offset = device.obj_offset -
-                        device.obj_vm.profile.get_obj_offset("_OBJECT_HEADER", "Body"),
-                        vm = device.obj_vm,
-                        native_vm = device.obj_native_vm
+                device_header = obj.Object("_OBJECT_HEADER",
+                        offset=device.obj_offset - \
+                        device.obj_vm.profile.get_obj_offset(
+                            "_OBJECT_HEADER", "Body"),
+                        vm=device.obj_vm,
+                        native_vm=device.obj_native_vm
                         )
 
                 device_name = str(device_header.NameInfo.Name or '')
 
-                nd = { "device_offset": "0x{0:08x}".format(device.obj_offset),
+                nd = {"device_offset": "0x{0:08x}".format(device.obj_offset),
                                         "device_name": device_name,
-                                        "device_type": devicetree.DEVICE_CODES.get(device.DeviceType.v(), "UNKNOWN"),
+                                        "device_type":\
+                            devicetree.DEVICE_CODES.get(
+                            device.DeviceType.v(), "UNKNOWN"),
                                         "devices_attached": []
                                         }
 
@@ -312,22 +316,25 @@ class volapi():
                     name = (device_name + " - " +
                            str(att_device.DriverObject.DriverName or ''))
                     nd["devices_attached"].append({"level": level,
-                                                   "attached_device_offset": "0x{0:08x}".format(att_device.obj_offset),
-                                                   "attached_device_name": name,
-                                                   "attached_device_type": devicetree.DEVICE_CODES.get(att_device.DeviceType.v(), "UNKNOWN")})
+                                                 "attached_device_offset":\
+                            "0x{0:08x}".format(att_device.obj_offset),
+                                                 "attached_device_name": name,
+                                                 "attached_device_type":\
+                            devicetree.DEVICE_CODES.get(
+                            att_device.DeviceType.v(), "UNKNOWN")})
 
                     level += 1
 
             res.append(new)
         return {"config": {}, "data": res}
 
-
     def svcscan(self):
+        """ Volatility svcscan plugin - scans for services
+        """
         log.info('volatility svcscan for: {0}'.format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["svcscan"](self.config)
-
 
         for rec in command.calculate():
             new = {"service_offset": "{0:#x}".format(rec.obj_offset),
@@ -338,27 +345,31 @@ class volapi():
                "service_type": str(rec.Type),
                "service_binary_path": str(rec.Binary),
                "service_state": str(rec.State)
-                }       
+                }
 
             res.append(new)
         return {"config": {}, "data": res}
 
     def modscan(self):
+        """ Volatility modscan plugin
+        """
         log.info('volatility modscan for: {0}'.format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["modscan"](self.config)
 
         for ldr_entry in command.calculate():
-            new = {"kernel_module_offset": "{0:#x}".format(ldr_entry.obj_offset),
+            new = {"kernel_module_offset":\
+                    "{0:#x}".format(ldr_entry.obj_offset),
                "kernel_module_name": str(ldr_entry.BaseDllName or ''),
                "kernel_module_file": str(ldr_entry.FullDllName or ''),
                "kernel_module_base": "{0:#x}".format(ldr_entry.DllBase),
                "kernel_module_size": int(ldr_entry.SizeOfImage),
-                }       
+                }
 
             res.append(new)
         return {"config": {}, "data": res}
+
 
 class volmanager():
     """
@@ -373,7 +384,10 @@ class volmanager():
 
         self.memfile = memfile
         # Read config
-        self.voptions = Config(os.path.join(CUCKOO_ROOT, "conf", "volatility.conf"))
+        self.voptions = Config(os.path.join(
+                CUCKOO_ROOT,
+                "conf",
+                "volatility.conf"))
         for pid in self.voptions.mask.pid_generic.split(","):
             pid = int(pid.strip())
             self.mask_pid.append(pid)
@@ -384,7 +398,7 @@ class volmanager():
         if self.voptions.pslist.enabled:
             res["pslist"] = volapi(self.memfile).pslist()
         if self.voptions.malfind.enabled:
-            res["malfind"] = volapi(self.memfile).malfind(dump_dir = "/home/thorsten/volatility/volatility 2.2/volatility-2.2/dumpdir")
+            res["malfind"] = volapi(self.memfile).malfind()
         if self.voptions.apihooks.enabled:
             res["apihooks"] = volapi(self.memfile).apihooks()
         if self.voptions.dlllist.enabled:
@@ -412,13 +426,13 @@ class volmanager():
 
         for akey in old.keys():
             new[akey] = {"config": old[akey]["config"], "data": []}
-            conf = getattr(self.voptions,akey, None)
+            conf = getattr(self.voptions, akey, None)
             new[akey]["config"]["filter"] = conf.filter
             for item in old[akey]["data"]:
                 if conf.filter == False:
                     new[akey]["data"].append(item)
                 elif ("process_id" in item and
-                    item["process_id"] in self.mask_pid and 
+                    item["process_id"] in self.mask_pid and
                     not item["process_id"] in self.taint_pid):
                         pass
                 else:
