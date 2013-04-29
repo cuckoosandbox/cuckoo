@@ -1,5 +1,10 @@
                                   CHANGELOG
 
+Cuckoo Sandbox 0.7 (TBD)
+===============================
+
+* Removed pickle reporting module
+
 Cuckoo Sandbox 0.6 (2012-04-15)
 ===============================
 
