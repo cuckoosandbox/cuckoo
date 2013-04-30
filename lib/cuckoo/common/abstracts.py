@@ -63,11 +63,17 @@ class MachineManager(object):
                 machine.label = machine_opts["label"].strip()
                 machine.platform = machine_opts["platform"].strip()
                 machine.ip = machine_opts["ip"].strip()
+                
+                if machine_opts.has_key("interface"):
+                        machine.interface = machine_opts["interface"]
+                else:
+                        machine.interface = None
 
                 self.db.add_machine(name=machine.id,
                                     label=machine.label,
                                     ip=machine.ip,
-                                    platform=machine.platform)
+                                    platform=machine.platform,
+                                    interface=machine.interface)
             except (AttributeError, CuckooOperationalError):
                 log.warning("Configuration details about machine %s are missing. Continue", machine_id)
                 continue
