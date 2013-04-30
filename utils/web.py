@@ -52,7 +52,12 @@ def index():
 @route("/browse")
 def browse():
     rows = db.list_tasks()
-
+    samples = db.list_samples()
+    
+    sample_dict = {}
+    for sample in samples:
+        sample_dict[sample.id] = sample.md5
+        
     tasks = []
     for row in rows:
         task = {
@@ -68,8 +73,7 @@ def browse():
             task["processed"] = True
 
         if row.category == "file":
-            sample = db.view_sample(row.id)
-            task["md5"] = sample.md5
+            task["md5"] = sample_dict[row.id]
 
         tasks.append(task)
 
