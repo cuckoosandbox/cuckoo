@@ -73,7 +73,7 @@ def browse():
             task["processed"] = True
 
         if row.category == "file":
-            task["md5"] = sample_dict[sample.id]
+            task["md5"] = sample_dict[row.sample_id]
 
         tasks.append(task)
 
