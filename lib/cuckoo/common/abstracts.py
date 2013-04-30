@@ -249,7 +249,7 @@ class LibVirtMachineManager(MachineManager):
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to start virtual machine.
         """
-        log.debug("Staring machine %s", label)
+        log.debug("Starting machine %s", label)
         
         if self._status(label) == self.RUNNING:
             raise CuckooMachineError("Trying to start an already started machine {0}".format(label))
