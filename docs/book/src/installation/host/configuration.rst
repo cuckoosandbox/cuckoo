@@ -9,6 +9,11 @@ Cuckoo relies on four main configuration files:
     * :ref:`processing_conf`: for enabling and configuraing processing modules.
     * :ref:`reporting_conf`: for enabling or disabling report formats.
 
+Those configuration files can be found under the folder *conf/examples/*.
+Before you start editing them, you should copy all those files under *conf/*::
+
+    $ cp conf/examples/*.conf conf/
+
 .. _cuckoo_conf:
 
 cuckoo.conf
@@ -77,6 +82,11 @@ Following is the default *conf/virtualbox.conf* file::
     # IP address is valid and that the host machine is able to reach it. If not,
     # the analysis will fail.
     ip = 192.168.56.101
+    
+    # Specify the name of the network interface that should be used when dumping
+    # network traffic from this machine with tcpdump. This setting is optional
+    # and, if specified, overrides the default interface specified in cuckoo.conf
+    #interface = virbr0
 
 You can use this same configuration structure for any other machine manager module.
 
@@ -104,6 +114,11 @@ Following is the default *conf/kvm.conf* file::
     # the analysis will fail. You may want to configure your network settings in
     # /etc/libvirt/<hypervisor>/networks/
     ip = 192.168.122.105
+    
+    # Specify the name of the network interface that should be used when dumping
+    # network traffic from this machine with tcpdump. This setting is optional
+    # and, if specified, overrides the default interface specified in cuckoo.conf
+    #interface = virbr0
 
 
 .. note::
