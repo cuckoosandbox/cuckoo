@@ -69,11 +69,17 @@ class MachineManager(object):
                 else:
                         machine.interface = None
 
+                if machine_opts.has_key("snapshot"):
+                        machine.snapshot = machine_opts["snapshot"]
+                else:
+                        machine.snapshot = None
+
                 self.db.add_machine(name=machine.id,
                                     label=machine.label,
                                     ip=machine.ip,
                                     platform=machine.platform,
-                                    interface=machine.interface)
+                                    interface=machine.interface,
+                                    snapshot=machine.snapshot)
             except (AttributeError, CuckooOperationalError):
                 log.warning("Configuration details about machine %s are missing. Continue", machine_id)
                 continue
@@ -251,6 +257,8 @@ class LibVirtMachineManager(MachineManager):
         """
         log.debug("Starting machine %s", label)
         
+        vm_info = self.db.view_machine(label)
+        
         if self._status(label) == self.RUNNING:
             raise CuckooMachineError("Trying to start an already started machine {0}".format(label))
 
@@ -258,18 +266,28 @@ class LibVirtMachineManager(MachineManager):
         conn = self._connect()
 
         try:
-            snap = self.vms[label].hasCurrentSnapshot(flags=0)
+            snapshots = self.vms[label].snapshotListNames(flags=0)
+            has_current = self.vms[label].hasCurrentSnapshot(flags=0)
         except libvirt.libvirtError:
             self._disconnect(conn)
-            raise CuckooMachineError("Unable to get current snapshot for virtual machine {0}".format(label))
+            raise CuckooMachineError("Unable to get snapshot info for virtual machine {0}".format(label))
 
-        # Revert to latest snapshot.
-        if snap:
+        # Revert to desired snapshot.
+        if vm_info.snapshot and vm_info.snapshot in snapshots:
+            log.debug("Using snapshot {0} for virtual machine {1}".format(vm_info.snapshot, label))
+            try:
+                self.vms[label].revertToSnapshot(self.vms[label].snapshotLookupByName(vm_info.snapshot, flags=0), flags=0)
+            except libvirt.libvirtError:
+                raise CuckooMachineError("Unable to restore snapshot {0} on virtual machine {1}".format(vm_info.snapshot, label))
+            finally:
+                self._disconnect(conn)
+        elif has_current:
+            log.debug("Using current snapshot for virtual machine {0}".format(label))
             try:
                 current = self.vms[label].snapshotCurrent(flags=0)
                 self.vms[label].revertToSnapshot(current, flags=0)
             except libvirt.libvirtError:
-                raise CuckooMachineError("Unable to restore snapshot on virtual machine {0}".format(label))
+                raise CuckooMachineError("Unable to restore current snapshot on virtual machine {0}".format(label))
             finally:
                 self._disconnect(conn)
         else:

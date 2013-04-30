@@ -73,6 +73,10 @@ Following is the default *conf/virtualbox.conf* file::
     # Specify the label name of the current machine as specified in your
     # VirtualBox configuration.
     label = cuckoo1
+    
+    # Specify the snapshot name to use. Optional, if you do not specify a snapshot
+    # name, the VirtualBox MachineManager will use the current snapshot.
+    #snapshot = Snapshot1
 
     # Specify the operating system platform used by current machine
     # [windows/darwin/linux].
@@ -105,6 +109,10 @@ Following is the default *conf/kvm.conf* file::
     # libvirt configuration.
     label = cuckoo1
 
+    # Specify the snapshot name to use. Optional, if you do not specify a snapshot
+    # name, the KVM MachineManager will use the current snapshot.
+    #snapshot = Snapshot1
+    
     # Specify the operating system platform used by current machine
     # [windows/darwin/linux].
     platform = windows
