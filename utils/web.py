@@ -46,8 +46,12 @@ def custom_headers():
 @route("/")
 def index():
     context = {}
+    machines = db.list_machines()
+    mlist = []
+    for m in machines:
+        mlist.append(m.name)
     template = env.get_template("submit.html")
-    return template.render({"context" : context})
+    return template.render({"context" : context, "machines" : mlist})
 
 @route("/browse")
 def browse():
@@ -90,6 +94,8 @@ def submit():
     options  = request.forms.get("options", "")
     priority = request.forms.get("priority", 1)
     timeout  = request.forms.get("timeout", "")
+    machine  = request.forms.get("machine", "")
+    memory  = request.forms.get("memory", "")
     data = request.files.file
 
     try:
@@ -110,15 +116,27 @@ def submit():
                                 "priority" : priority,
                                 "options" : options,
                                 "package" : package,
-                                "context" : context})
+                                "context" : context,
+                                "machine" : machine,
+                                "memory" : memory})
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
 
+    if machine == None or machine == "":
     task_id= db.add_path(file_path=temp_file_path,
                          timeout=timeout,
                          priority=priority,
                          options=options,
-                         package=package)
+                         package=package,
+                         memory=memory)
+    else:
+    task_id= db.add_path(file_path=temp_file_path,
+                         timeout=timeout,
+                         priority=priority,
+                         options=options,
+                         package=package,
+                         machine=machine,
+                         memory=memory)
 
     template = env.get_template("success.html")
     return template.render({"taskid" : task_id,
