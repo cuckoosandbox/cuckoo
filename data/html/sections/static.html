@@ -114,6 +114,19 @@
             </div>
         </div>
         {% endif %}
+
+        {% if results.strings %}
+        <div>
+            <h4><a href="javascript:showHide('strings');">Strings</a></h4>
+            <div id="strings" style="display: none;">
+                {% for str in results.strings %}
+                    <div><span class="mono">{{str}}</span></div>
+                {% endfor %}
+            </div> 
+        </div>
+        {% endif %}
+
+
     {% else %}
         Nothing to display.
     {% endif %}
