@@ -1,13 +1,20 @@
         <table style="width: 100%; margin-bottom: 18px;">
             <tbody>
                 <tr>
-                    <td style="text-align: left;">
-                        Showing results {{ pagination.start }}-{{ pagination.end }} of {{ pagination.tot_results }}
+                    <td style="text-align: left; width: 20%;">
+                        Results {{ pagination.start }}-{{ pagination.end }} of {{ pagination.tot_results }}
                     </td>
-                    <td style="text-align: center;">
+                    <td style="text-align: left; width: 20%;">
+                        Results per page:
+                        <a href="/browse-page/{{ pagination.page_id }}/25">25</a>
+                        <a href="/browse-page/{{ pagination.page_id }}/50">50</a>
+                        <a href="/browse-page/{{ pagination.page_id }}/100">100</a>
+                        <a href="/browse-page/{{ pagination.page_id }}/200">200</a>
+                    </td>
+                    <td style="text-align: center; width: 20%;">
                     Page {{ pagination.page_id }} of {{ pagination.tot_pages }}
                     </td>
-                    <td style="text-align: right;">
+                    <td style="text-align: right; width: 40%;">
                     {% if pagination.page_id > 1 %}
                         <a href="/browse-page/1">&lt;&lt;</a>&nbsp;
                         <a href="/browse-page/{{ pagination.page_id - 1 }}">&lt;</a>
