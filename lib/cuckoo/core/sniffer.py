@@ -46,6 +46,7 @@ class Sniffer:
             return False
 
         pargs = [self.tcpdump, "-U", "-q", "-i", interface, "-n"]
+        pargs.extend(["-Z", "cuckoo"])
         pargs.extend(["-w", file_path])
         pargs.extend(["host", host])
         # Do not capture XMLRPC agent traffic.
