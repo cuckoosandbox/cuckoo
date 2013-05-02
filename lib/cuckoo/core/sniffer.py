@@ -4,7 +4,7 @@
 
 import os
 import stat
-import logging
+import getpassimport logging
 import subprocess
 
 from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT
@@ -46,7 +46,7 @@ class Sniffer:
             return False
 
         pargs = [self.tcpdump, "-U", "-q", "-i", interface, "-n"]
-        pargs.extend(["-Z", "cuckoo"])
+        pargs.extend(["-Z", getpass.getuser()])
         pargs.extend(["-w", file_path])
         pargs.extend(["host", host])
         # Do not capture XMLRPC agent traffic.
