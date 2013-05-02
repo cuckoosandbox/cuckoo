@@ -89,7 +89,7 @@ def submit():
     package  = request.forms.get("package", "")
     options  = request.forms.get("options", "")
     priority = request.forms.get("priority", 1)
-    timeout  = request.forms.get("timeout", "")
+    timeout  = request.forms.get("timeout",  0)
     data = request.files.file
 
     try:
