@@ -46,13 +46,14 @@ class Sniffer:
             log.error("Network interface not defined, network capture aborted")
             return False
 
+        pargs = [self.tcpdump, "-U", "-q", "-i", interface, "-n"]
+
+        # Trying to save pcap with the same user which cuckoo is running.
         try:
             user = getpass.getuser()
         except:
-            user = None
-
-        pargs = [self.tcpdump, "-U", "-q", "-i", interface, "-n"]
-        if user:
+            pass
+        else:
             pargs.extend(["-Z", user])
         pargs.extend(["-w", file_path])
         pargs.extend(["host", host])
