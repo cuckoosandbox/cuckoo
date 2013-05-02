@@ -623,7 +623,7 @@ class Database(object):
             memory=False,
             enforce_timeout=False):
         """Add a task to database.
-        @param file_path: sample path.
+        @param obj: object to add (File or URL).
         @param timeout: selected timeout.
         @param options: analysis options.
         @param priority: analysis priority.
@@ -635,6 +635,12 @@ class Database(object):
         @return: cursor or None.
         """
         session = self.Session()
+
+        # Convert empty strings and None values to a valid int
+        if not timeout:
+            timeout = 0
+        if not priority:
+            priority = 1
 
         if isinstance(obj, File):
             sample = Sample(md5=obj.get_md5(),
@@ -711,6 +717,12 @@ class Database(object):
         """
         if not file_path or not os.path.exists(file_path):
             return None
+        
+        # Convert empty strings and None values to a valid int
+        if not timeout:
+            timeout = 0
+        if not priority:
+            priority = 1
 
         return self.add(File(file_path),
                         timeout,
@@ -746,6 +758,13 @@ class Database(object):
         @param enforce_timeout: toggle full timeout execution.
         @return: cursor or None.
         """
+        
+        # Convert empty strings and None values to a valid int
+        if not timeout:
+            timeout = 0
+        if not priority:
+            priority = 1
+        
         return self.add(URL(url),
                         timeout,
                         package,
