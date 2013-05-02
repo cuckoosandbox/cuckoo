@@ -1,0 +1,49 @@
+{% extends "base-web.html" %}
+{% block content %}
+    <div class="tasks">
+
+        <div class="page-header">
+            <div class="alert alert-info" ><div style="text-align: left;">
+            </div>
+            <h4>Analysis Tasks <small>performed, processing and pending analyses</small></h4>
+        </div>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Start Timestamp</th>
+                    <th>Category</th>
+                    <th style="width: 20%;">MD5</th>
+                    <th>Status</th>
+                    <th>Filename</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in rows %}
+                <tr>
+                    <td>{{row.id}}</td>
+                    <td>{{row.added_on}}</td>
+                    <td>{{row.category|upper}}</td>
+                    <td>
+                        {% if row.status != "pending" and row.status != "processing" %}
+                            <a href="/view/{{row.id}}">
+                        {% endif %}
+                        <span class="mono">
+                            {% if row.category == "file" %}
+                                {{row.md5}}
+                            {% elif row.category == "url" %}
+                                {{row.target}}
+                            {% endif %}
+                        </span>
+                        {% if row.status == "success" %}
+                            </a>
+                        {% endif %}
+                    </td>
+                    <td>{{row.status}}</td>
+                    <td>{{row.target}}</td>
+                    <td>{{row.hash_index}}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
