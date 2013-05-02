@@ -46,12 +46,8 @@ def custom_headers():
 @route("/")
 def index():
     context = {}
-    machines = db.list_machines()
-    mlist = []
-    for m in machines:
-        mlist.append(m.name)
     template = env.get_template("submit.html")
-    return template.render({"context" : context, "machines" : mlist})
+    return template.render({"context" : context, "machines" : [m.name for m in db.list_machines()]})
 
 @route("/browse")
 def browse():
