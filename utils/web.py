@@ -32,6 +32,31 @@ env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT, "data", "html"))
 # Global db pointer.
 db = Database()
 
+
+def parse_tasks(rows):
+    """Parse tasks from DB and prepare them to be shown in the output table"""
+    tasks = []
+    for row in rows:
+        task = {
+            "id" : row.id,
+            "target" : row.target,
+            "category" : row.category,
+            "status" : row.status,
+            "added_on" : row.added_on,
+            "processed" : False
+        }
+
+        if os.path.exists(os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]), "reports", "report.html")):
+            task["processed"] = True
+
+        if row.category == "file":
+            sample = db.view_sample(row.id)
+            task["md5"] = sample.md5
+
+        tasks.append(task)
+    return tasks
+
+
 @hook("after_request")
 def custom_headers():
     """Set some custom headers across all HTTP responses."""
@@ -53,29 +78,40 @@ def index():
 def browse():
     rows = db.list_tasks()
 
-    tasks = []
-    for row in rows:
-        task = {
-            "id" : row.id,
-            "target" : row.target,
-            "category" : row.category,
-            "status" : row.status,
-            "added_on" : row.added_on,
-            "processed" : False
-        }
-
-        if os.path.exists(os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]), "reports", "report.html")):
-            task["processed"] = True
-
-        if row.category == "file":
-            sample = db.view_sample(row.id)
-            task["md5"] = sample.md5
-
-        tasks.append(task)
+    tasks = parse_tasks(rows)
 
     template = env.get_template("browse.html")
 
     return template.render({"rows" : tasks, "os" : os})
+
+@route("/browse-page")
+@route("/browse-page/")
+@route("/browse-page/<page_id:int>")
+@route("/browse-page/<page_id:int>/")
+@route("/browse-page/<page_id:int>/<limit:int>")
+def browse_page(page_id=1, limit=50):
+    if page_id <= 0:
+        page_id = 1
+    offset = (page_id - 1) * limit
+    rows = db.list_tasks(limit=limit, offset=offset)
+    
+    tasks = parse_tasks(rows)
+    tot_results = db.count_tasks()
+    tot_pages = (tot_results / limit) + ((tot_results % limit) and 1 or 0) # Add 1 to tot_pages
+                                                                           # if there's some remainder
+    
+    pagination = {
+        'start' = offset + 1,
+        'end' = offset + len(rows),
+        'limit' = limit,
+        'page_id' = page_id,
+        'tot_results' = tot_results,
+        'tot_pages' = tot_pages
+    }
+    
+    template = env.get_template("browse-page.html")
+    
+    return template.render({"rows": tasks, "os" : os, "pagination" : pagination})
 
 @route("/static/<filename:path>")
 def server_static(filename):
