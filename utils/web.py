@@ -90,23 +90,29 @@ def browse():
 @route("/browse-page/<page_id:int>/")
 @route("/browse-page/<page_id:int>/<limit:int>")
 def browse_page(page_id=1, limit=50):
-    if page_id <= 0:
+    if page_id < 1:
         page_id = 1
     offset = (page_id - 1) * limit
     rows = db.list_tasks(limit=limit, offset=offset)
     
     tasks = parse_tasks(rows)
+    
     tot_results = db.count_tasks()
     tot_pages = (tot_results / limit) + ((tot_results % limit) and 1 or 0) # Add 1 to tot_pages
                                                                            # if there's some remainder
+    if tot_results:
+        pagination_start = offset + 1
+    else:
+        pagination_start = 0
+    pagination_end = offset + len(rows)
     
     pagination = {
-        'start' = offset + 1,
-        'end' = offset + len(rows),
-        'limit' = limit,
-        'page_id' = page_id,
-        'tot_results' = tot_results,
-        'tot_pages' = tot_pages
+        'start' : pagination_start,
+        'end' : pagination_end,
+        'limit' : limit,
+        'page_id' : page_id,
+        'tot_results' : tot_results,
+        'tot_pages' : tot_pages
     }
     
     template = env.get_template("browse-page.html")
@@ -150,11 +156,11 @@ def submit():
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
 
-    task_id= db.add_path(file_path=temp_file_path,
-                         timeout=timeout,
-                         priority=priority,
-                         options=options,
-                         package=package)
+    task_id = db.add_path(file_path=temp_file_path,
+                          timeout=timeout,
+                          priority=priority,
+                          options=options,
+                          package=package)
 
     template = env.get_template("success.html")
     return template.render({"taskid" : task_id,
