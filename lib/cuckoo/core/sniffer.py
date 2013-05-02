@@ -4,7 +4,8 @@
 
 import os
 import stat
-import getpassimport logging
+import getpass
+import logging
 import subprocess
 
 from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT
@@ -45,8 +46,14 @@ class Sniffer:
             log.error("Network interface not defined, network capture aborted")
             return False
 
+        try:
+            user = getpass.getuser()
+        except:
+            user = None
+
         pargs = [self.tcpdump, "-U", "-q", "-i", interface, "-n"]
-        pargs.extend(["-Z", getpass.getuser()])
+        if user:
+            pargs.extend(["-Z", user])
         pargs.extend(["-w", file_path])
         pargs.extend(["host", host])
         # Do not capture XMLRPC agent traffic.
