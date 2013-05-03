@@ -464,7 +464,7 @@ class VolatilityAnalysis(Processing):
         self.key = "volatility"
         vol = {}
         if HAVE_VOLATILITY:
-            if self.memory_path:
+            if self.memory_path and os.path.exists(self.memory_path):
                 v = volmanager(self.memory_path)
                 vol = v.run()
         else:
