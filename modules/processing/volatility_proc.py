@@ -12,15 +12,19 @@ from lib.cuckoo.common.utils import convert_to_printable, logtime
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
 
-import volatility.conf as conf
-import volatility.registry as registry
-import volatility.commands as commands
-import volatility.win32.network as network
-import volatility.utils as utils
-import volatility.plugins.malware.malfind as malfind
-import volatility.plugins.malware.devicetree as devicetree
-import volatility.plugins.taskmods as taskmods
-import volatility.obj as obj
+try:
+    import volatility.conf as conf
+    import volatility.registry as registry
+    import volatility.commands as commands
+    import volatility.win32.network as network
+    import volatility.utils as utils
+    import volatility.plugins.malware.malfind as malfind
+    import volatility.plugins.malware.devicetree as devicetree
+    import volatility.plugins.taskmods as taskmods
+    import volatility.obj as obj
+    HAVE_VOLATILITY = True
+except ImportError:
+    HAVE_VOLATILITY = False
 
 log = logging.getLogger(__name__)
 
@@ -459,8 +463,11 @@ class VolatilityAnalysis(Processing):
         # Machine should be in self.tasks. Use that for specific masks
         self.key = "volatility"
         vol = {}
-        if self.memory_path:
-            v = volmanager(self.memory_path)
-            vol = v.run()
+        if HAVE_VOLATILITY:
+            if self.memory_path:
+                v = volmanager(self.memory_path)
+                vol = v.run()
+        else:
+            log.warn('Volatility not available')
 
         return vol
