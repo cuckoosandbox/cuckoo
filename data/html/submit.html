@@ -63,6 +63,34 @@
                     </div>
                 </div>
 
+                <div class="control-group {{'error' if context.get('error_machine','') else ''}}">
+                    <label class="control-label" for="select02">Machine</label>
+                    <div class="controls">
+                        <select id="select02" name="machine">
+                            <option value="">Any</option>
+                           {% for m in machines %}
+                                <option {{'selected' if machine == m else ''}} value="{{m}}">{{m}}</option>
+                           {% endfor %}
+                        </select>
+                        {% if context.error_machine %}
+                            <span class="help-inline">{{context.error_machine}}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="control-group {{'error' if context.get('error_memory','') else ''}}">
+                    <label class="control-label" for="input05">Capture Memory</label>
+                    <div class="controls">
+                        <select id="select03" name="memory">
+                            <option value="0">False</option>
+                            <option {{'selected' if memory == 'True' else ''}} value="1">True</option>
+                        </select>
+                        {% if context.error_timeout %}
+                            <span class="help-inline">{{context.error_timeout}}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Submit</button>
                     <button class="btn">Cancel</button>
