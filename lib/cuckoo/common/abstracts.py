@@ -63,11 +63,16 @@ class MachineManager(object):
                 machine.label = machine_opts["label"].strip()
                 machine.platform = machine_opts["platform"].strip()
                 machine.ip = machine_opts["ip"].strip()
+                if "interface" in machine_opts:
+                    machine.interface = machine_opts["interface"].strip()
+                else:
+                    machine.interface = None
 
                 self.db.add_machine(name=machine.id,
                                     label=machine.label,
                                     ip=machine.ip,
-                                    platform=machine.platform)
+                                    platform=machine.platform,
+                                    interface=machine.interface)
             except (AttributeError, CuckooOperationalError):
                 log.warning("Configuration details about machine %s are missing. Continue", machine_id)
                 continue
@@ -243,7 +248,7 @@ class LibVirtMachineManager(MachineManager):
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to start virtual machine.
         """
-        log.debug("Staring machine %s", label)
+        log.debug("Starting machine %s", label)
         
         if self._status(label) == self.RUNNING:
             raise CuckooMachineError("Trying to start an already started machine {0}".format(label))
