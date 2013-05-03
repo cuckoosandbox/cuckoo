@@ -1,0 +1,4 @@
+# Ignore all files in the current directory but not in subdir examples/
+/*
+!/examples/
+!.gitignore

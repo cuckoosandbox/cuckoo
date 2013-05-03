@@ -9,6 +9,13 @@ Cuckoo relies on four main configuration files:
     * :ref:`processing_conf`: for enabling and configuraing processing modules.
     * :ref:`reporting_conf`: for enabling or disabling report formats.
 
+Some example configuration files can be found under *conf/examples/*.
+Before starting to configure your system, you should copy the files to *conf/*, for example
+with the following command (replace <machinemanager> with the name you chose)::
+
+    $ cd conf/examples/
+    $ cp cuckoo.conf <machinemanager>.conf processing.conf reporting.conf ../
+
 .. _cuckoo_conf:
 
 cuckoo.conf
@@ -73,9 +80,9 @@ Following is the default *conf/virtualbox.conf* file::
     # [windows/darwin/linux].
     platform = windows
 
-    # Specify the IP address of the current machine. Make sure that the IP address
-    # is valid and that the host machine is able to reach it. If not, the analysis
-    # will fail.
+    # Specify the IP address of the current virtual machine. Make sure that the
+    # IP address is valid and that the host machine is able to reach it. If not,
+    # the analysis will fail.
     ip = 192.168.56.101
 
 You can use this same configuration structure for any other machine manager module.
@@ -89,19 +96,19 @@ Following is the default *conf/kvm.conf* file::
     # specified ID you have to define a dedicated section containing the details
     # on the respective machine. (E.g. cuckoo1,cuckoo2,cuckoo3)
     machines = cuckoo1
-    
+
     [cuckoo1]
     # Specify the label name of the current machine as specified in your
     # libvirt configuration.
     label = cuckoo1
-    
+
     # Specify the operating system platform used by current machine
     # [windows/darwin/linux].
     platform = windows
-    
-    # Specify the IP address of the current machine. Make sure that the IP address
-    # is valid and that the host machine is able to reach it. If not, the analysis
-    # will fail.You may want to configure your network settings in
+
+    # Specify the IP address of the current virtual machine. Make sure that the
+    # IP address is valid and that the host machine is able to reach it. If not,
+    # the analysis will fail. You may want to configure your network settings in
     # /etc/libvirt/<hypervisor>/networks/
     ip = 192.168.122.105
 
@@ -193,9 +200,6 @@ It contains the following sections::
 
     [reporthtml]
     enabled = on
-
-    [pickled]
-    enabled = off
 
     [metadata]
     enabled = off

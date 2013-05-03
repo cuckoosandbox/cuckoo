@@ -4,6 +4,7 @@
 
 import os
 import stat
+import getpass
 import logging
 import subprocess
 
@@ -46,6 +47,14 @@ class Sniffer:
             return False
 
         pargs = [self.tcpdump, "-U", "-q", "-i", interface, "-n"]
+
+        # Trying to save pcap with the same user which cuckoo is running.
+        try:
+            user = getpass.getuser()
+        except:
+            pass
+        else:
+            pargs.extend(["-Z", user])
         pargs.extend(["-w", file_path])
         pargs.extend(["host", host])
         # Do not capture XMLRPC agent traffic.

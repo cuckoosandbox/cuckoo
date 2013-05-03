@@ -4,7 +4,7 @@ REST API
 
 As mentioned in :doc:`submit`, Cuckoo provides a simple and lightweight REST
 API server implemented in `Bottle.py`_, therefore in order to make the service
-work you'll need it installed.
+work you'll need it installed, Bottle release must be 0.10 or above.
 
 On Debian/Ubuntu::
 

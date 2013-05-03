@@ -33,9 +33,9 @@ The following libraries are not strictly required, but their installation is rec
     * `Magic`_ (Optional): for identifying files' formats (otherwise use "file" command line utility)
     * `Pydeep`_ (Optional): for calculating ssdeep fuzzy hash of files.
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
-    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use the svn version).
+    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use release 1.7 or above or the svn version).
     * `Libvirt`_ (Optional): for using the KVM machine manager.
-    * `Bottlepy`_ (Optional): for using the ``web.py`` and ``api.py`` utilities.
+    * `Bottlepy`_ (Optional): for using the ``web.py`` and ``api.py`` utilities (use release 0.10 or above).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
 
 Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::

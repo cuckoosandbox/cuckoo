@@ -377,7 +377,7 @@ class Analyzer:
         # we store the path.
         if self.config.category == "file":
             self.target = os.path.join(os.environ["TEMP"] + os.sep,
-                                       self.config.file_name)
+                                       str(self.config.file_name))
         # If it's a URL, well.. we store the URL.
         else:
             self.target = self.config.target
@@ -450,8 +450,8 @@ class Analyzer:
             # If we weren't able to automatically determine the proper package,
             # we need to abort the analysis.
             if not package:
-                log.warning("File type (%s) not recognized, using default exe package", self.config.file_type)
-                package = "exe"
+                raise CuckooError("No valid package available for file type: %s"
+                                  % self.config.file_type)
 
             log.info("Automatically selected analysis package \"%s\"", package)
         # Otherwise just select the specified package.
