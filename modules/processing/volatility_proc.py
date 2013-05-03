@@ -469,5 +469,6 @@ class VolatilityAnalysis(Processing):
                 vol = v.run()
         else:
             log.warn('Volatility not available')
+            return None
 
         return vol
