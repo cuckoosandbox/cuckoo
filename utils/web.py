@@ -120,7 +120,11 @@ def submit():
                          options=options,
                          package=package)
 
-    template = env.get_template("success.html")
+    if task_id:
+        template = env.get_template("success.html")
+    else:
+        template = env.get_template("error.html")
+    
     return template.render({"taskid" : task_id,
                             "submitfile" : data.filename.decode("utf-8")})
 
