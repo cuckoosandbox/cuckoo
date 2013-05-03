@@ -64,7 +64,7 @@ class MachineManager(object):
                 machine.platform = machine_opts["platform"].strip()
                 machine.ip = machine_opts["ip"].strip()
                 if "interface" in machine_opts:
-                    machine.interface = machine_opts["interface"]
+                    machine.interface = machine_opts["interface"].strip()
                 else:
                     machine.interface = None
 
