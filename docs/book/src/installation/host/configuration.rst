@@ -9,6 +9,13 @@ Cuckoo relies on four main configuration files:
     * :ref:`processing_conf`: for enabling and configuraing processing modules.
     * :ref:`reporting_conf`: for enabling or disabling report formats.
 
+Some example configuration files can be found under *conf/examples/*.
+Before starting to configure your system, you should copy the files to *conf/*, for example
+with the following command (replace <machinemanager> with the name you chose)::
+
+    $ cd conf/examples/
+    $ cp cuckoo.conf <machinemanager>.conf processing.conf reporting.conf ../
+
 .. _cuckoo_conf:
 
 cuckoo.conf
