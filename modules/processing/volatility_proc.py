@@ -420,6 +420,7 @@ class volmanager():
         if self.voptions.modscan.enabled:
             res["modscan"] = volapi(self.memfile).modscan()
         self.find_taint(res)
+        self.cleanup()
         return self.mask_filter(res)
 
     def mask_filter(self, old):
@@ -450,6 +451,17 @@ class volmanager():
         if "malfind" in res:
             for item in res["malfind"]["data"]:
                 self.taint_pid.add(item["process_id"])
+
+    def cleanup(self):
+        """ Delete the memory dump (if configured to do so)
+        """
+
+        if self.voptions.basic.delete_memdump:
+            try:
+                os.remove(self.memfile)
+            except OSError as e:
+                log.error("Unable to delete memory dump file at path \"%s\" ",
+                    self.memfile)
 
 
 class VolatilityAnalysis(Processing):
