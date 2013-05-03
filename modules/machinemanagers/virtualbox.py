@@ -45,11 +45,21 @@ class VirtualBox(MachineManager):
         """
         log.debug("Starting vm %s" % label)
 
+        vm_info = self.db.view_machine(label)
+
         if self._status(label) == self.RUNNING:
             raise CuckooMachineError("Trying to start an already started vm %s" % label)
 
+        virtualbox_args = [self.options.virtualbox.path, "snapshot", label]
+        if vm_info.snapshot:
+            log.debug("Using snapshot {0} for virtual machine {1}".format(vm_info.snapshot, label))
+            virtualbox_args.extend(["restore", vm_info.snapshot])
+        else:
+            log.debug("Using current snapshot for virtual machine {0}".format(label))
+            virtualbox_args.extend(["restorecurrent"])
+        
         try:
-            if subprocess.call([self.options.virtualbox.path, "snapshot", label, "restorecurrent"],
+            if subprocess.call(virtualbox_args,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE):
                 raise CuckooMachineError("VBoxManage exited with error restoring the machine's snapshot")
