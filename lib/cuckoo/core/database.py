@@ -71,7 +71,7 @@ class Machine(Base):
                  label,
                  ip,
                  platform,
-                 interface = None):
+                 interface):
         self.name = name
         self.label = label
         self.ip = ip
@@ -357,13 +357,13 @@ class Database(object):
                     label,
                     ip,
                     platform,
-                    interface=None):
+                    interface):
         """Add a guest machine.
         @param name: machine id
         @param label: machine label
         @param ip: machine IP address
         @param platform: machine supported platform
-        @param interface: sniffing interface for this machine (default None)
+        @param interface: sniffing interface for this machine
         """
         session = self.Session()
         machine = Machine(name=name,

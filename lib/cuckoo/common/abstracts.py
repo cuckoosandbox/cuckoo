@@ -1,4 +1,3 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -63,10 +62,8 @@ class MachineManager(object):
                 machine.label = machine_opts["label"].strip()
                 machine.platform = machine_opts["platform"].strip()
                 machine.ip = machine_opts["ip"].strip()
-                if "interface" in machine_opts:
-                    machine.interface = machine_opts["interface"].strip()
-                else:
-                    machine.interface = None
+                # If configured, use specific network interface for this machine, else use the default value.
+                machine.interface = machine_opts.get("interface", self.options_globals.sniffer.interface)
 
                 self.db.add_machine(name=machine.id,
                                     label=machine.label,

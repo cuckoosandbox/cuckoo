@@ -193,13 +193,7 @@ class AnalysisManager(Thread):
         if self.cfg.sniffer.enabled:
             sniffer = Sniffer(self.cfg.sniffer.tcpdump)
             
-            # If configured, use specific network interface for this machine, else use the default value
-            if machine.interface:
-                interface = machine.interface
-            else:
-                interface = self.cfg.sniffer.interface
-            
-            sniffer.start(interface=interface,
+            sniffer.start(interface=machine.interface,
                           host=machine.ip,
                           file_path=os.path.join(self.storage, "dump.pcap"))
 
