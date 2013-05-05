@@ -175,10 +175,12 @@ class VMware(MachineManager):
         """
         vm_info = self.db.view_machine(label)
         
-        if not vm_info.snapshot:
-            host, snapshot = self._parse_label(label)
-        else:
-            host = label
+        if vm_info.snapshot:
+            # Make sure to exclude any snapshot name from older conf files if you also have the new option parameter
+            host = label.split(',')[0] 
             snapshot = vm_info.snapshot
+        else:
+            # Keep support for older conf files
+            host, snapshot = self._parse_label(label)
         
         return (host, snapshot)
