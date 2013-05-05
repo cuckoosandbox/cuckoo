@@ -39,6 +39,7 @@ class Machine(Base):
     ip = Column(String(255), nullable=False)
     platform = Column(String(255), nullable=False)
     interface = Column(String(255), nullable=True)
+    snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)
     locked_changed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(String(255), nullable=True)
@@ -71,12 +72,14 @@ class Machine(Base):
                  label,
                  ip,
                  platform,
-                 interface):
+                 interface,
+                 snapshot):
         self.name = name
         self.label = label
         self.ip = ip
         self.platform = platform
         self.interface = interface
+        self.snapshot = snapshot
 
 class Guest(Base):
     """Tracks guest run."""
@@ -357,20 +360,23 @@ class Database(object):
                     label,
                     ip,
                     platform,
-                    interface):
+                    interface,
+                    snapshot):
         """Add a guest machine.
         @param name: machine id
         @param label: machine label
         @param ip: machine IP address
         @param platform: machine supported platform
         @param interface: sniffing interface for this machine
+        @param snapshot: snapshot name to use instead of the current one, if configured
         """
         session = self.Session()
         machine = Machine(name=name,
                           label=label,
                           ip=ip,
                           platform=platform,
-                          interface=interface)
+                          interface=interface,
+                          snapshot=snapshot)
         session.add(machine)
         try:
             session.commit()
