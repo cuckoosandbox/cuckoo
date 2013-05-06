@@ -699,8 +699,7 @@ class Database(object):
         try:
             session.commit()
             id = task.id
-        except SQLAlchemyError as e:
-            print e
+        except SQLAlchemyError:
             session.rollback()
             return None
         finally:
