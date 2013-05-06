@@ -95,9 +95,11 @@ class volapi():
             new = {"process_name": str(process.ImageFileName),
                    "process_id": int(process.UniqueProcessId),
                    "parent_id": int(process.InheritedFromUniqueProcessId),
-                   "num threads": str(process.ActiveThreads),
+                   "num_threads": str(process.ActiveThreads),
                    "num_handles": str(process.ObjectTable.HandleCount),
-                   "session_id": str(process.SessionId)}
+                   "session_id": str(process.SessionId),
+                   "create_time": str(process.CreateTime or ''),
+                   "exit_time": str(process.ExitTime or ''),}
             res.append(new)
 
         return {"config": {}, "data": res}
@@ -170,7 +172,8 @@ class volapi():
             for m in task.get_load_modules():
                     new["loaded_modules"].append({"dll_base": str(m.DllBase),
                                      "dll_size": str(m.SizeOfImage),
-                                     "dll_full_name": str(m.FullDllName or '')
+                                     "dll_full_name": str(m.FullDllName or ''),
+                                     "dll_load_count": int(m.LoadCount),
                                      })
             res.append(new)
         return {"config": {}, "data": res}
@@ -220,7 +223,8 @@ class volapi():
                     offset=vad.Start,
                     vm=address_space).e_magic != 0x5A4D:
                     continue
-                mapped_files[int(vad.Start)] = vad.FileObject.FileName
+                mapped_files[int(vad.Start)] = str(
+                    vad.FileObject.FileName or '')
 
             # For each base address with a mapped file, print info on
             # the other PEB lists to spot discrepancies.
@@ -316,7 +320,13 @@ class volapi():
                 level = 0
 
                 for att_device in device.attached_devices():
+                    device_header = obj.Object("_OBJECT_HEADER", offset = att_device.obj_offset -
+                        att_device.obj_vm.profile.get_obj_offset("_OBJECT_HEADER", "Body"),
+                        vm = att_device.obj_vm,
+                        native_vm = att_device.obj_native_vm
+                        )
 
+                    device_name = str(device_header.NameInfo.Name or '')
                     name = (device_name + " - " +
                            str(att_device.DriverObject.DriverName or ''))
                     nd["devices_attached"].append({"level": level,

@@ -115,6 +115,8 @@
                         <th>Session ID</th>
                         <th>Number of threads</th>
                         <th>Number of handles</th>
+                        <th>Create time</th>
+                        <th>Exit time</th>
                     </tr>
                     {% for p in results.volatility.pslist.data %}
                     <tr> 
@@ -124,6 +126,8 @@
                         <td>{{p.session_id}}</td>
                         <td>{{p.num_threads}}</td>
                         <td>{{p.num_handles}}</td>
+                        <td>{{p.create_time}}</td>
+                        <td>{{p.exit_time}}</td>
                     </tr>
                     {% endfor %}
                 </table>
@@ -150,6 +154,7 @@
                         <th>Dll full name</th>
                         <th>Dll base</th>
                         <th>Dll size</th>
+                        <th>Load count</th>
                     </tr>
                     {% for d in results.volatility.dlllist.data %}
                         {% for m in d.loaded_modules %}
@@ -160,6 +165,7 @@
                                 <td>{{m.dll_full_name}}</td>
                                 <td>{{m.dll_base}}</td>
                                 <td>{{m.dll_size}}</td>
+                                <td>{{m.dll_load_count}}</td>
                             </tr>
                         {% endfor %}
                     {% endfor %}
