@@ -54,6 +54,7 @@ def tasks_create_file():
     platform = request.forms.get("platform", "")
     custom = request.forms.get("custom", "")
     memory = request.forms.get("memory", False)
+    clock = request.forms.get("clock", None)
     if memory:
         memory = True
     enforce_timeout = request.forms.get("enforce_timeout", False)
@@ -70,7 +71,8 @@ def tasks_create_file():
                           platform=platform,
                           custom=custom,
                           memory=memory,
-                          enforce_timeout=enforce_timeout)
+                          enforce_timeout=enforce_timeout,
+                          clock=clock)
 
     response["task_id"] = task_id
     return jsonize(response)
@@ -93,6 +95,7 @@ def tasks_create_url():
     enforce_timeout = request.forms.get("enforce_timeout", False)
     if enforce_timeout:
         enforce_timeout = True
+    clock = request.forms.get("clock", None)
 
     task_id = db.add_url(url=url,
                          package=package,
@@ -103,7 +106,8 @@ def tasks_create_url():
                          platform=platform,
                          custom=custom,
                          memory=memory,
-                         enforce_timeout=enforce_timeout)
+                         enforce_timeout=enforce_timeout,
+                         clock=clock)
 
     response["task_id"] = task_id
     return jsonize(response)

@@ -148,6 +148,7 @@ class AnalysisManager(Thread):
         options["package"] = self.task.package
         options["options"] = self.task.options
         options["enforce_timeout"] = self.task.enforce_timeout
+        options["clock"] = self.task.clock
 
         if not self.task.timeout or self.task.timeout == 0:
             options["timeout"] = self.cfg.timeouts.default

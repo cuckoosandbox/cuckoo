@@ -5,6 +5,7 @@
 import os
 import sys
 import json
+import logging
 from datetime import datetime
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -28,6 +29,8 @@ try:
 except ImportError:
     raise CuckooDependencyError("SQLAlchemy library not found, "
                                 "verify your setup")
+
+log = logging.getLogger(__name__)
 
 class Machine(Base):
     """Configured virtual machines to be used as guests."""
@@ -232,6 +235,9 @@ class Task(Base):
     platform = Column(String(255), nullable=True)
     memory = Column(Boolean, nullable=False, default=False)
     enforce_timeout = Column(Boolean, nullable=False, default=False)
+    clock = Column(DateTime(timezone=False),
+                   default=datetime.now,
+                   nullable=False)
     added_on = Column(DateTime(timezone=False),
                       default=datetime.now,
                       nullable=False)
@@ -627,7 +633,8 @@ class Database(object):
             machine="",
             platform="",
             memory=False,
-            enforce_timeout=False):
+            enforce_timeout=False,
+            clock=None):
         """Add a task to database.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -638,6 +645,7 @@ class Database(object):
         @param platform: platform.
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
+        @param clock: virtual machine clock time
         @return: cursor or None.
         """
         session = self.Session()
@@ -680,12 +688,19 @@ class Database(object):
         task.platform = platform
         task.memory = memory
         task.enforce_timeout = enforce_timeout
+        if clock:
+            try:
+                task.clock = datetime.strptime(clock, "%m-%d-%Y %H:%M:%S")
+            except ValueError:
+                log.warning("Cannot set date as requeste: wrong format! Setting date as now.")
+                task.clock = datetime.now()
         session.add(task)
 
         try:
             session.commit()
             id = task.id
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print e
             session.rollback()
             return None
         finally:
@@ -702,7 +717,8 @@ class Database(object):
                  machine="",
                  platform="",
                  memory=False,
-                 enforce_timeout=False):
+                 enforce_timeout=False,
+                 clock=None):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -713,6 +729,7 @@ class Database(object):
         @param platform: platform.
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
+        @param clock: virtual machine clock time
         @return: cursor or None.
         """
         if not file_path or not os.path.exists(file_path):
@@ -727,7 +744,8 @@ class Database(object):
                         machine,
                         platform,
                         memory,
-                        enforce_timeout)
+                        enforce_timeout,
+                        clock)
 
     def add_url(self,
                 url,
@@ -739,7 +757,8 @@ class Database(object):
                 machine="",
                 platform="",
                 memory=False,
-                enforce_timeout=False):
+                enforce_timeout=False,
+                clock=None):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
@@ -750,6 +769,7 @@ class Database(object):
         @param platform: platform.
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
+        @param clock: virtual machine clock time
         @return: cursor or None.
         """
         return self.add(URL(url),
@@ -761,7 +781,8 @@ class Database(object):
                         machine,
                         platform,
                         memory,
-                        enforce_timeout)
+                        enforce_timeout,
+                        clock)
 
     def list_tasks(self, limit=None, details=False):
         """Retrieve list of task.

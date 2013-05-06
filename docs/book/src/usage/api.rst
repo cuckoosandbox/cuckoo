@@ -87,6 +87,7 @@ Following is a list of currently available resources and a brief description. Fo
             * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
+            * ``clock`` *(optional)* - set virtual machine clock (format %m-%d-%Y %H:%M:%S)
 
         **Status codes**:
             * ``200`` - no error
@@ -120,6 +121,7 @@ Following is a list of currently available resources and a brief description. Fo
             * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
+            * ``clock`` *(optional)* - set virtual machine clock (format %m-%d-%Y %H:%M:%S)
 
         **Status codes**:
             * ``200`` - no error

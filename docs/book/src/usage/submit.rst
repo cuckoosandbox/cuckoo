@@ -40,6 +40,7 @@ command-line utility. It currently has the following options available::
       --memory             Enable to take a memory dump of the analysis machine
       --enforce-timeout    Enable to force the analysis to run for the full
                            timeout period
+      --clock CLOCK        Set virtual machine clock
 
 If you specify a directory as path, all the files contained in it will be
 submitted for analysis.
@@ -88,6 +89,10 @@ some options (in this case a command line argument for the malware)::
 *Example*: submit a local binary and force the analysis to be executed for the full timeout (disregarding the internal mechanism that Cuckoo uses to decide when to terminate the analysis)::
 
     $ ./utils/submit.py --enforce-timeout /path/to/binary
+
+*Example*: submit a local binary and set virutal machine clock. Format is %m-%d-%Y %H:%M:%S. If not specified current time is used. For example if we want run a sample the 24 january 2001 at 14:41:20::
+
+    $ ./utils/submit.py --clock "01-24-2001 14:41:20" /path/to/binary
 
 .. _apipy:
 
