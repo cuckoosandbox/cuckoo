@@ -799,6 +799,19 @@ class Database(object):
         finally:
             session.close()
         return tasks
+    
+    def list_samples(self):
+        """Retrieve list of samples.
+        @return: list of samples
+        """
+        session = self.Session()
+        try:
+            samples = session.query(Sample).all()
+        except SQLAlchemyError:
+            return None
+        finally:
+            session.close()
+        return samples
 
     def view_task(self, task_id, details=False):
         """Retrieve information on a task.
