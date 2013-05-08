@@ -256,6 +256,7 @@ class Task(Base):
                          "processing",
                          "failure",
                          "success",
+                         "processed",
                          name="status_type"),
                          server_default="pending",
                          nullable=False)
@@ -465,6 +466,32 @@ class Database(object):
 
         task.completed_on = datetime.now()
 
+        try:
+            session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+        return True
+
+    def processed(self, task_id, success=True):
+        """Mark a task as processed.
+        @param task_id: task id.
+        @param success: processed with status.
+        @return: operation status.
+        """
+        session = self.Session()
+        try:
+            task = session.query(Task).get(task_id)
+        except SQLAlchemyError:
+            session.close()
+            return False
+
+        if success:
+            task.status = "processed"        
+        
         try:
             session.commit()
         except SQLAlchemyError:
