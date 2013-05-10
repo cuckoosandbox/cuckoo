@@ -1,0 +1,78 @@
+        <table style="width: 100%; margin-bottom: 18px;">
+            <tbody>
+                <tr>
+                    <td style="text-align: left; width: 20%;">
+                        Results {{ pagination.start }}-{{ pagination.end }} of {{ pagination.tot_results }}
+                    </td>
+                    <td style="text-align: left; width: 20%;">
+                        Results per page:
+                        <a href="/browse-page/{{ pagination.page_id }}/25">25</a>
+                        <a href="/browse-page/{{ pagination.page_id }}/50">50</a>
+                        <a href="/browse-page/{{ pagination.page_id }}/100">100</a>
+                        <a href="/browse-page/{{ pagination.page_id }}/200">200</a>
+                    </td>
+                    <td style="text-align: center; width: 20%;">
+                    Page {{ pagination.page_id }} of {{ pagination.tot_pages }}
+                    </td>
+                    <td style="text-align: right; width: 40%;">
+                    {% if pagination.page_id > 1 %}
+                        <a href="/browse-page/1">&lt;&lt;</a>&nbsp;
+                        <a href="/browse-page/{{ pagination.page_id - 1 }}">&lt;</a>
+                    {% else %}
+                        &lt;&lt;&nbsp;
+                        &lt;
+                    {% endif %}
+                        &nbsp;
+                    {% if pagination.page_id > 5 %}
+                        <a href="/browse-page/{{ pagination.page_id - 5 }}">{{ pagination.page_id - 5 }}</a>
+                        &nbsp;
+                    {% endif %}
+                    {% if pagination.page_id > 4 %}
+                        <a href="/browse-page/{{ pagination.page_id - 4 }}">{{ pagination.page_id - 4 }}</a>
+                        &nbsp;
+                    {% endif %}
+                    {% if pagination.page_id > 3 %}
+                        <a href="/browse-page/{{ pagination.page_id - 3 }}">{{ pagination.page_id - 3 }}</a>
+                        &nbsp;
+                    {% endif %}
+                    {% if pagination.page_id > 2 %}
+                        <a href="/browse-page/{{ pagination.page_id - 2 }}">{{ pagination.page_id - 2 }}</a>
+                        &nbsp;
+                    {% endif %}
+                    {% if pagination.page_id > 1 %}
+                        <a href="/browse-page/{{ pagination.page_id - 1 }}">{{ pagination.page_id - 1 }}</a>
+                        &nbsp;
+                    {% endif %}
+                        {{ pagination.page_id }}
+                        &nbsp;
+                    {% if pagination.tot_pages - pagination.page_id > 0 %}
+                        <a href="/browse-page/{{ pagination.page_id + 1 }}">{{ pagination.page_id + 1 }}</a>
+                        &nbsp;
+                    {% endif %}
+                    {% if pagination.tot_pages - pagination.page_id > 1 %}
+                        <a href="/browse-page/{{ pagination.page_id + 2 }}">{{ pagination.page_id + 2 }}</a>
+                        &nbsp;
+                    {% endif %}
+                    {% if pagination.tot_pages - pagination.page_id > 2 %}
+                        <a href="/browse-page/{{ pagination.page_id + 3 }}">{{ pagination.page_id + 3 }}</a>
+                        &nbsp;
+                    {% endif %}
+                    {% if pagination.tot_pages - pagination.page_id > 3 %}
+                        <a href="/browse-page/{{ pagination.page_id + 4 }}">{{ pagination.page_id + 4 }}</a>
+                        &nbsp;
+                    {% endif %}
+                    {% if pagination.tot_pages - pagination.page_id > 4 %}
+                        <a href="/browse-page/{{ pagination.page_id + 5 }}">{{ pagination.page_id + 5 }}</a>
+                        &nbsp;
+                    {% endif %}
+                    {% if pagination.page_id < pagination.tot_pages %}
+                        <a href="/browse-page/{{ pagination.page_id + 1 }}">&gt;</a>&nbsp;
+                        <a href="/browse-page/{{ pagination.tot_pages }}">&gt;&gt;</a>
+                    {% else %}
+                        &gt;&nbsp;
+                        &gt;&gt;
+                    {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
