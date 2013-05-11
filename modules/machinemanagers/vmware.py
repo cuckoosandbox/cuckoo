@@ -26,7 +26,7 @@ class VMware(MachineManager):
             raise CuckooMachineError("VMware vmrun not found in specified path %s" % self.options.vmware.path)
         # Consistency checks.
         for machine in self.machines():
-            host, snapshot = self._parse_label(machine.label)
+            host, snapshot = self._get_host_and_snapshot(machine.label)
             self._check_vmx(host)
             self._check_snapshot(host, snapshot)
         # Base checks.
@@ -66,10 +66,10 @@ class VMware(MachineManager):
 
     def start(self, label):
         """Start a virtual machine.
-        @param label: virtual machine identifier: path to vmx file and current snapshot name.
+        @param label: virtual machine identifier: path to vmx file (in older configurations it also includes current snapshot name).
         @raise CuckooMachineError: if unable to start.
         """
-        host, snapshot = self._parse_label(label)
+        host, snapshot = self._get_host_and_snapshot(label)
 
         # Preventive check
         if self._is_running(host):
@@ -97,10 +97,10 @@ class VMware(MachineManager):
 
     def stop(self, label):
         """Stops a virtual machine.
-        @param label: virtual machine identifier: path to vmx file and current snapshot name.
+        @param label: virtual machine identifier: path to vmx file (in older configurations it also includes current snapshot name).
         @raise CuckooMachineError: if unable to stop.
         """
-        host, snapshot = self._parse_label(label)
+        host, snapshot = self._get_host_and_snapshot(label)
 
         log.debug("Stopping vm %s" % host)
         if self._is_running(host):
@@ -166,3 +166,21 @@ class VMware(MachineManager):
         label = opts[0].strip()
         snapshot = opts[1].strip()
         return label, snapshot
+    
+    def _get_host_and_snapshot(self, label):
+        """Get host and snapshot for a given label
+        New configuration files have a specific 'snapshot' option, while 
+        older configuration files have a label in the format: 'file.vmx,Snapshot'
+        @param label: configuration option from config file
+        """
+        vm_info = self.db.view_machine(label)
+        
+        if vm_info.snapshot:
+            # Make sure to exclude any snapshot name from older conf files if you also have the new option parameter
+            host = label.split(',')[0] 
+            snapshot = vm_info.snapshot
+        else:
+            # Keep support for older conf files
+            host, snapshot = self._parse_label(label)
+        
+        return (host, snapshot)
