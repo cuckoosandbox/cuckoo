@@ -67,11 +67,7 @@ Following is the default *conf/virtualbox.conf* file::
     [cuckoo1]
     # Specify the label name of the current machine as specified in your
     # VirtualBox configuration.
-    label = cuckoo1
-    
-    # Specify the snapshot name to use. Optional, if you do not specify a snapshot
-    # name, the VirtualBox MachineManager will use the current snapshot.
-    #snapshot = Snapshot1  
+    label = cuckoo1 
 
     # Specify the operating system platform used by current machine
     # [windows/darwin/linux].
@@ -82,10 +78,16 @@ Following is the default *conf/virtualbox.conf* file::
     # the analysis will fail.
     ip = 192.168.56.101
     
-    # Specify the name of the network interface that should be used when dumping
-    # network traffic from this machine with tcpdump. This setting is optional
-    # and, if specified, overrides the default interface specified in cuckoo.conf
-    #interface = virbr0
+    # (Optional) Specify the snapshot name to use. If you do not specify a snapshot
+    # name, the VirtualBox MachineManager will use the current snapshot.
+    # Example (Snapshot1 is the snapshot name):
+    # snapshot = Snapshot1
+
+    # (Optional) Specify the name of the network interface that should be used
+    # when dumping network traffic from this machine with tcpdump. If specified,
+    # overrides the default interface specified in cuckoo.conf
+    # Example (virbr0 is the interface name):
+    # interface = virbr0
 
 You can use this same configuration structure for any other machine manager module.
 
@@ -103,10 +105,6 @@ Following is the default *conf/kvm.conf* file::
     # Specify the label name of the current machine as specified in your
     # libvirt configuration.
     label = cuckoo1
-    
-    # Specify the snapshot name to use. Optional, if you do not specify a snapshot
-    # name, the KVM MachineManager will use the current snapshot.
-    #snapshot = Snapshot1 
 
     # Specify the operating system platform used by current machine
     # [windows/darwin/linux].
@@ -118,11 +116,16 @@ Following is the default *conf/kvm.conf* file::
     # /etc/libvirt/<hypervisor>/networks/
     ip = 192.168.122.105
     
-    # Specify the name of the network interface that should be used when dumping
-    # network traffic from this machine with tcpdump. This setting is optional
-    # and, if specified, overrides the default interface specified in cuckoo.conf
-    #interface = virbr0
+    # (Optional) Specify the snapshot name to use. If you do not specify a snapshot
+    # name, the KVM MachineManager will use the current snapshot.
+    # Example (Snapshot1 is the snapshot name):
+    # snapshot = Snapshot1
 
+    # (Optional) Specify the name of the network interface that should be used
+    # when dumping network traffic from this machine with tcpdump. If specified,
+    # overrides the default interface specified in cuckoo.conf
+    # Example (virbr0 is the interface name):
+    # interface = virbr0
 
 .. note::
 
