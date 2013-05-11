@@ -131,7 +131,7 @@ Following is a list of currently available resources and a brief description. Fo
 /tasks/list
 -----------
 
-    **GET /tasks/list/** *(int: limit)*
+    **GET /tasks/list/** *(int: limit)* **/** *(int: offset)*
 
         Returns list of tasks.
 
@@ -188,6 +188,7 @@ Following is a list of currently available resources and a brief description. Fo
 
         **Parameters**:
             * ``limit`` *(optional)* *(int)* - maximum number of returned tasks
+            * ``offset`` *(optional)* *(int)* - data offset
 
         **Status codes**:
             * ``200`` - no error

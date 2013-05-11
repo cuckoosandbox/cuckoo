@@ -786,6 +786,8 @@ class Database(object):
     def list_tasks(self, limit=None, details=False, offset=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
+        @param details: if details about must be included
+        @param offset: list offset
         @return: list of tasks.
         """
         session = self.Session()

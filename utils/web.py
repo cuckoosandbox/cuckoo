@@ -5,10 +5,10 @@
 
 import os
 import sys
+import time
 import logging
 import argparse
 from datetime import datetime, timedelta
-import time
 
 try:
     from jinja2.loaders import FileSystemLoader
@@ -37,30 +37,36 @@ db = Database()
 
 
 def parse_tasks(rows):
-    """Parse tasks from DB and prepare them to be shown in the output table"""
+    """Parse tasks from DB and prepare them to be shown in the output table.
+    @params rows: data from DB
+    @return: task list
+    """
     tasks = []
-    for row in rows:
-        task = {
-            "id" : row.id,
-            "target" : row.target,
-            "category" : row.category,
-            "status" : row.status,
-            "added_on" : row.added_on,
-            "processed" : False
-        }
+    if rows:
+        for row in rows:
+            task = {
+                "id" : row.id,
+                "target" : row.target,
+                "category" : row.category,
+                "status" : row.status,
+                "added_on" : row.added_on,
+                "processed" : False
+            }
 
-        if os.path.exists(os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]), "reports", "report.html")):
-            task["processed"] = True
+            if os.path.exists(os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]), "reports", "report.html")):
+                task["processed"] = True
 
-        if row.category == "file":
-            sample = db.view_sample(row.id)
-            task["md5"] = sample.md5
+            if row.category == "file":
+                sample = db.view_sample(row.id)
+                task["md5"] = sample.md5
 
-        tasks.append(task)
+            tasks.append(task)
     return tasks
 
 def get_pagination_limit(new_limit):
-    """Defines the right pagination limit and sets cookies accordingly."""
+    """Defines the right pagination limit and sets cookies accordingly.
+    @params new_limit: new pagination limit
+    """
     default_limit = 50
     
     limit_cookie = request.get_cookie("pagination_limit")
@@ -73,7 +79,6 @@ def get_pagination_limit(new_limit):
             try:
                 limit = int(limit_cookie)
                 logging.info("Using limit from cookie: {0}".format(limit))
-                #response.set_header('Set-Cookie', 'pagination_limit={0}'.format(limit))
                 response.set_cookie('pagination_limit', str(limit), path='/', expires=cookie_expires)
             except Exception as e:
                 logging.error("Cookie: {0}, exception: {1}".format(limit_cookie, e))
@@ -84,7 +89,6 @@ def get_pagination_limit(new_limit):
     else:
         limit = new_limit
         logging.info("Setting new limit: {0}".format(limit))
-        #response.set_header('Set-Cookie', 'pagination_limit={0}'.format(limit))
         response.set_cookie('pagination_limit', str(limit), path='/', expires=cookie_expires)
     
     return limit
@@ -116,11 +120,11 @@ def browse():
 
     return template.render({"rows" : tasks, "os" : os})
 
-@route("/browse-page")
-@route("/browse-page/")
-@route("/browse-page/<page_id:int>")
-@route("/browse-page/<page_id:int>/")
-@route("/browse-page/<page_id:int>/<new_limit:int>")
+@route("/browse/page")
+@route("/browse/page/")
+@route("/browse/page/<page_id:int>")
+@route("/browse/page/<page_id:int>/")
+@route("/browse/page/<page_id:int>/<new_limit:int>")
 def browse_page(page_id=1, new_limit=-1):
     if page_id < 1:
         page_id = 1
