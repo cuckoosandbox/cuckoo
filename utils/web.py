@@ -158,7 +158,7 @@ def browse_page(page_id=1, new_limit=-1):
         'tot_pages' : tot_pages
     }
     
-    template = env.get_template("browse-page.html")
+    template = env.get_template("browse.html")
     
     return template.render({"rows": tasks, "os" : os, "pagination" : pagination})
 
