@@ -48,7 +48,7 @@ class VirtualBox(MachineManager):
         if self._status(label) == self.RUNNING:
             raise CuckooMachineError("Trying to start an already started vm %s" % label)
 
-        vm_info = self.db.view_machine(label)
+        vm_info = self.db.view_machine_by_label(label)
         virtualbox_args = [self.options.virtualbox.path, "snapshot", label]
         if vm_info.snapshot:
             log.debug("Using snapshot {0} for virtual machine {1}".format(vm_info.snapshot, label))

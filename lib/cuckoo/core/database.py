@@ -910,6 +910,21 @@ class Database(object):
             session.close()
         return machine
 
+    def view_machine_by_label(self, label):
+        """Show virtual machine.
+        @params label: virtual machine label
+        @return: virtual machine's details
+        """
+        session = self.Session()
+        try:
+            machine = session.query(Machine).filter(Machine.label == label).first()
+        except SQLAlchemyError:
+            return None
+        finally:
+            session.expunge(machine)
+            session.close()
+        return machine
+
     def view_errors(self, task_id):
         """Get all errors related to a task.
         @param task_id: ID of task associated to the errors

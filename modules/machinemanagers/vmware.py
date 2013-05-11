@@ -66,7 +66,7 @@ class VMware(MachineManager):
 
     def start(self, label):
         """Start a virtual machine.
-        @param label: virtual machine identifier: path to vmx file (in older configurations it also includes current snapshot name).
+        @param label: virtual machine identifier: path to vmx file.
         @raise CuckooMachineError: if unable to start.
         """
         host, snapshot = self._get_host_and_snapshot(label)
@@ -173,7 +173,7 @@ class VMware(MachineManager):
         older configuration files have a label in the format: 'file.vmx,Snapshot'
         @param label: configuration option from config file
         """
-        vm_info = self.db.view_machine(label)
+        vm_info = self.db.view_machine_by_label(label)
         
         if vm_info.snapshot:
             # Make sure to exclude any snapshot name from older conf files if you also have the new option parameter
@@ -182,5 +182,6 @@ class VMware(MachineManager):
         else:
             # Keep support for older conf files
             host, snapshot = self._parse_label(label)
-        
-        return (host, snapshot)
+            log.warning("Deprecation warning: your vmware configuartion file is using old snaphost syntax, please use the option 'snapshot' instead.")
+    
+        return host, snapshot
