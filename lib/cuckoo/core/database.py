@@ -783,7 +783,7 @@ class Database(object):
                         enforce_timeout,
                         clock)
 
-    def list_tasks(self, limit=None, details=False):
+    def list_tasks(self, limit=None, details=False, offset=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @return: list of tasks.
@@ -791,14 +791,31 @@ class Database(object):
         session = self.Session()
         try:
             if details:
-                tasks = session.query(Task).options(joinedload("guest"), joinedload("errors")).order_by("added_on desc").limit(limit).all()
+                tasks = session.query(Task).options(joinedload("guest"), joinedload("errors")).order_by("added_on desc").limit(limit).offset(offset).all()
             else:
-                tasks = session.query(Task).order_by("added_on desc").limit(limit).all()
+                tasks = session.query(Task).order_by("added_on desc").limit(limit).offset(offset).all()
         except SQLAlchemyError:
             return None
         finally:
             session.close()
         return tasks
+
+    def count_tasks(self, status=None):
+        """Count tasks in the database
+        @param status: apply a filter according to the task status
+        @return: number of tasks found
+        """
+        session = self.Session()
+        try:
+            if status:
+                tasks_count = session.query(Task).filter(Task.status == status).count()
+            else:
+                tasks_count = session.query(Task).count()
+        except SQLAlchemyError:
+            return 0
+        finally:
+            session.close()
+        return tasks_count
 
     def view_task(self, task_id, details=False):
         """Retrieve information on a task.

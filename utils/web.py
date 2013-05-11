@@ -7,6 +7,9 @@ import os
 import sys
 import logging
 import argparse
+from datetime import datetime, timedelta
+import time
+
 try:
     from jinja2.loaders import FileSystemLoader
     from jinja2.environment import Environment
@@ -32,6 +35,60 @@ env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT, "data", "html"))
 # Global db pointer.
 db = Database()
 
+
+def parse_tasks(rows):
+    """Parse tasks from DB and prepare them to be shown in the output table"""
+    tasks = []
+    for row in rows:
+        task = {
+            "id" : row.id,
+            "target" : row.target,
+            "category" : row.category,
+            "status" : row.status,
+            "added_on" : row.added_on,
+            "processed" : False
+        }
+
+        if os.path.exists(os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]), "reports", "report.html")):
+            task["processed"] = True
+
+        if row.category == "file":
+            sample = db.view_sample(row.id)
+            task["md5"] = sample.md5
+
+        tasks.append(task)
+    return tasks
+
+def get_pagination_limit(new_limit):
+    """Defines the right pagination limit and sets cookies accordingly."""
+    default_limit = 50
+    
+    limit_cookie = request.get_cookie("pagination_limit")
+    logging.info("Got cookie: {0}".format(limit_cookie))
+    
+    cookie_expires = time.mktime((datetime.now() + timedelta(days=365)).timetuple())
+    
+    if new_limit <= 0:
+        if limit_cookie:
+            try:
+                limit = int(limit_cookie)
+                logging.info("Using limit from cookie: {0}".format(limit))
+                #response.set_header('Set-Cookie', 'pagination_limit={0}'.format(limit))
+                response.set_cookie('pagination_limit', str(limit), path='/', expires=cookie_expires)
+            except Exception as e:
+                logging.error("Cookie: {0}, exception: {1}".format(limit_cookie, e))
+                limit = default_limit
+        else:
+            limit = default_limit
+            logging.info("Using default limit: {0}".format(limit))
+    else:
+        limit = new_limit
+        logging.info("Setting new limit: {0}".format(limit))
+        #response.set_header('Set-Cookie', 'pagination_limit={0}'.format(limit))
+        response.set_cookie('pagination_limit', str(limit), path='/', expires=cookie_expires)
+    
+    return limit
+
 @hook("after_request")
 def custom_headers():
     """Set some custom headers across all HTTP responses."""
@@ -53,29 +110,53 @@ def index():
 def browse():
     rows = db.list_tasks()
 
-    tasks = []
-    for row in rows:
-        task = {
-            "id" : row.id,
-            "target" : row.target,
-            "category" : row.category,
-            "status" : row.status,
-            "added_on" : row.added_on,
-            "processed" : False
-        }
-
-        if os.path.exists(os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]), "reports", "report.html")):
-            task["processed"] = True
-
-        if row.category == "file":
-            sample = db.view_sample(row.id)
-            task["md5"] = sample.md5
-
-        tasks.append(task)
+    tasks = parse_tasks(rows)
 
     template = env.get_template("browse.html")
 
     return template.render({"rows" : tasks, "os" : os})
+
+@route("/browse-page")
+@route("/browse-page/")
+@route("/browse-page/<page_id:int>")
+@route("/browse-page/<page_id:int>/")
+@route("/browse-page/<page_id:int>/<new_limit:int>")
+def browse_page(page_id=1, new_limit=-1):
+    if page_id < 1:
+        page_id = 1
+    
+    limit = get_pagination_limit(new_limit)
+    
+    tot_results = db.count_tasks()
+    tot_pages = (tot_results / limit) + ((tot_results % limit) and 1 or 0) # Add 1 to tot_pages
+                                                                           # if there's some remainder
+    # Check that the user doesn't require an impossible pagination
+    if page_id > tot_pages:
+        page_id = tot_pages
+    
+    offset = (page_id - 1) * limit
+    rows = db.list_tasks(limit=limit, offset=offset)
+    
+    tasks = parse_tasks(rows)
+    
+    if tot_results:
+        pagination_start = offset + 1
+    else:
+        pagination_start = 0
+    pagination_end = offset + len(rows)
+    
+    pagination = {
+        'start' : pagination_start,
+        'end' : pagination_end,
+        'limit' : limit,
+        'page_id' : page_id,
+        'tot_results' : tot_results,
+        'tot_pages' : tot_pages
+    }
+    
+    template = env.get_template("browse-page.html")
+    
+    return template.render({"rows": tasks, "os" : os, "pagination" : pagination})
 
 @route("/static/<filename:path>")
 def server_static(filename):

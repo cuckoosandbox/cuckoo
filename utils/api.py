@@ -113,13 +113,14 @@ def tasks_create_url():
     return jsonize(response)
 
 @route("/tasks/list", method="GET")
-@route("/tasks/list/<limit>", method="GET")
-def tasks_list(limit=None):
+@route("/tasks/list/<limit:int>", method="GET")
+@route("/tasks/list/<limit:int>/<offset:int>", method="GET")
+def tasks_list(limit=None, offset=None):
     response = {}
 
     response["tasks"] = []
 
-    for row in db.list_tasks(limit, details=True):
+    for row in db.list_tasks(limit=limit, details=True, offset=offset):
         task = row.to_dict()
         task["guest"] = {}
         if row.guest:
