@@ -64,13 +64,16 @@ class MachineManager(object):
                 machine.platform = machine_opts["platform"].strip()
                 machine.ip = machine_opts["ip"].strip()
                 # If configured, use specific network interface for this machine, else use the default value.
-                machine.interface = machine_opts.get("interface", self.options_globals.sniffer.interface)
+                machine.interface = machine_opts.get("interface", self.options_globals.sniffer.interface).strip()
+                # If configured, use specific snapshot name, else leave it empty and use default behaviour
+                machine.snapshot = machine_opts.get("snapshot", "").strip()
 
                 self.db.add_machine(name=machine.id,
                                     label=machine.label,
                                     ip=machine.ip,
                                     platform=machine.platform,
-                                    interface=machine.interface)
+                                    interface=machine.interface,
+                                    snapshot=machine.snapshot)
             except (AttributeError, CuckooOperationalError):
                 log.warning("Configuration details about machine %s are missing. Continue", machine_id)
                 continue
@@ -255,13 +258,25 @@ class LibVirtMachineManager(MachineManager):
         conn = self._connect()
 
         try:
-            snap = self.vms[label].hasCurrentSnapshot(flags=0)
-        except libvirt.libvirtError:
+            snapshots = self.vms[label].snapshotListNames(flags=0)
+            has_current = self.vms[label].hasCurrentSnapshot(flags=0)
+        except libvirt.libvirtError as e:
             self._disconnect(conn)
-            raise CuckooMachineError("Unable to get current snapshot for virtual machine {0}".format(label))
+            raise CuckooMachineError("Unable to get snapshot info for virtual machine {0}: {1}".format(label, e))
 
-        # Revert to latest snapshot.
-        if snap:
+        vm_info = self.db.view_machine(label)
+        if vm_info.snapshot and vm_info.snapshot in snapshots:
+            # Revert to desired snapshot, if it exists.
+            log.debug("Using snapshot {0} for virtual machine {1}".format(vm_info.snapshot, label))
+            try:
+                self.vms[label].revertToSnapshot(self.vms[label].snapshotLookupByName(vm_info.snapshot, flags=0), flags=0)
+            except libvirt.libvirtError:
+                raise CuckooMachineError("Unable to restore snapshot {0} on virtual machine {1}".format(vm_info.snapshot, label))
+            finally:
+                self._disconnect(conn)
+        elif has_current:
+            # Revert to current snapshot.
+            log.debug("Using current snapshot for virtual machine {0}".format(label)) 
             try:
                 current = self.vms[label].snapshotCurrent(flags=0)
                 self.vms[label].revertToSnapshot(current, flags=0)
