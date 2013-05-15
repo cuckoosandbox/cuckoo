@@ -369,8 +369,15 @@ class Analyzer:
 
         # Set virtual machine clock.
         clock = datetime.strptime(self.config.clock, "%Y%m%dT%H:%M:%S")
-        os.system("date {0}".format(clock.strftime("%m-%d-%y")))
-        os.system("time {0}".format(clock.strftime("%H:%M:%S")))
+        # Setting date and time.
+        # NOTE: Windows system has only localized commands with date format
+        # following localization settings, so these commands for english date
+        # format cannot work in other localizations.
+        # In addition DATE and TIME commands are blocking if an incorrect
+        # syntax is provided, so an echo trick is used to bypass the input
+        # request and not block analysis.
+        os.system("echo:|date {0}".format(clock.strftime("%m-%d-%y")))
+        os.system("echo:|time {0}".format(clock.strftime("%H:%M:%S")))
 
         # Initialize and start the Pipe Servers. This is going to be used for
         # communicating with the injected and monitored processes.
