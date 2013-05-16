@@ -71,6 +71,22 @@ class MongoDB(Report):
         # reporting modules.
         report = dict(results)
 
+        # Check whether an older analysis with the same task id already exists. If so,
+        # add a '_id' field to the report so that self.db.analysis.save() can update it
+        # instead of creating a new one. Also delete old api calls as they will be recreated
+        # later on.
+        old_analysis = self.db.analysis.find_one({"info.id": results["info"]["id"]})
+        if old_analysis:
+            old_id = old_analysis.get('_id', None)
+            if old_id:
+                report['_id'] = old_id
+                try:
+                    for process in old_analysis["behavior"]["processes"]:
+                        for chunk_id in process["calls"]:
+                            self.db.calls.remove(chunk_id)
+                except KeyError:
+                    pass
+
         # Set an unique index on stored files, to avoid duplicates.
         # From pymongo docs:
         #  Returns the name of the created index if an index is actually created. 
@@ -153,5 +169,5 @@ class MongoDB(Report):
         report["behavior"]["processes"] = new_processes
 
         # Store the report and retrieve its object id.
-        self.db.analysis.insert(report)
+        self.db.analysis.save(report)
         self.conn.disconnect()
