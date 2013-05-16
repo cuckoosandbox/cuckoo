@@ -77,9 +77,9 @@ class MongoDB(Report):
         # later on.
         old_analysis = self.db.analysis.find_one({"info.id": results["info"]["id"]})
         if old_analysis:
-            old_id = old_analysis.get('_id', None)
+            old_id = old_analysis.get("_id", None)
             if old_id:
-                report['_id'] = old_id
+                report["_id"] = old_id
                 try:
                     for process in old_analysis["behavior"]["processes"]:
                         for chunk_id in process["calls"]:
