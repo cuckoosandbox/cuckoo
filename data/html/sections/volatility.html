@@ -1,0 +1,403 @@
+<section id="volatility">
+    <div class="section-title">
+        <h4>Volatility</h4>
+    </div>
+
+    {% if results.volatility %}        
+
+        <!-- Mutantscan -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_mutantscan');"><b>Mutantscan</b></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#mutantscan"><small>Scanning the whole system for Mutexes</small></a>
+            <div id="volatility_mutantscan" style="display: none;">
+                {% if results.volatility.mutantscan and results.volatility.mutantscan.config.filter == True %}
+                <small>Filtered</small>
+                {% endif %}
+                {% if results.volatility.mutantscan %}
+                    <ul>
+                        {% for mutex in results.volatility.mutantscan.data %}
+                            {% if mutex.mutant_name != "" %}
+                                <li><span class="mono">{{mutex.mutant_name}}</span></li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Malfind -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_malfind');"><b>Malfind</b></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#malfind"><small>Scanning for injections</small></a>
+            <div id="volatility_malfind" style="display: none;">
+                {% if results.volatility.malfind and results.volatility.malfind.config.filter == True %}
+                <small>Filtered</small>
+                {% endif %}
+                {% if results.volatility.malfind %}
+                <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                    <tr>
+                        <th>PID</th>
+                        <th>Process name</th>
+                        <th>VAD start</th>
+                        <th>VAD tag</th>
+                    </tr>
+                    {% for mal in results.volatility.malfind.data %}
+                    <tr>
+                        <td>{{mal.process_id}}</td>
+                        <td>{{mal.process_name}}</td>
+                        <td>{{mal.vad_start}}</td>
+                        <td>{{mal.vad_tag}}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+
+        <!-- APIHooks -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_apihooks');"><b>Apihooks</b></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#apihooks"><small>Listing API hooks</small></a>
+            <div id="volatility_apihooks" style="display: none;">
+                {% if results.volatility.apihooks and results.volatility.apihooks.config.filter == True %}
+                <small>Filtered</small>
+                {% endif %}
+                {% if results.volatility.apihooks %}
+                <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                    <tr>
+                        <th>PID</th>
+                        <th>Process name</th>
+                        <th>Victim module</th>
+                        <th>Victim function</th>
+                        <th>Hook address</th>
+                        <th>Hooking module</th>
+                        <th>Hook mode</th>
+                        <th>Hook type</th>                                               
+                    </tr>
+                    {% for ah in results.volatility.apihooks.data %}
+                    <tr> 
+                        <td>{{ah.process_id}}</td>
+                        <td>{{ah.process_name}}</td>
+                        <td>{{ah.victim_module}}</td>
+                        <td>{{ah.victim_function}}</td>
+                        <td>{{ah.hook_address}}</td>
+                        <td>{{ah.hooking_module}}</td>
+                        <td>{{ah.hook_mode}}</td>
+                        <td>{{ah.hook_type}}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pslist -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_pslist');"><b>PSList</b></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#pslist"><small>Listing processes</small></a>
+            <div id="volatility_pslist" style="display: none;">
+                {% if results.volatility.pslist and results.volatility.pslist.config.filter == True %}
+                <small>Filtered</small>
+                {% endif %}
+                {% if results.volatility.pslist %}
+                <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                    <tr>
+                        <th>PID</th>
+                        <th>Process name</th>
+                        <th>Parent PID</th>
+                        <th>Session ID</th>
+                        <th>Number of threads</th>
+                        <th>Number of handles</th>
+                        <th>Create time</th>
+                        <th>Exit time</th>
+                    </tr>
+                    {% for p in results.volatility.pslist.data %}
+                    <tr> 
+                        <td>{{p.process_id}}</td>
+                        <td>{{p.process_name}}</td>
+                        <td>{{p.parent_id}}</td>
+                        <td>{{p.session_id}}</td>
+                        <td>{{p.num_threads}}</td>
+                        <td>{{p.num_handles}}</td>
+                        <td>{{p.create_time}}</td>
+                        <td>{{p.exit_time}}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Dlllist -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_dlllist');"><b>DllList</b></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#dlllist"><small>Listing loaded dlls</small></a>
+            <div id="volatility_dlllist" style="display: none;">
+                {% if results.volatility.dlllist and results.volatility.dlllist.config.filter == True %}
+                <small>Filtered</small>
+                {% endif %}
+                {% if results.volatility.dlllist %}
+                <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                    <tr>
+                        <th>PID</th>
+                        <th>Process name</th>
+                        <th>Commandline</th>
+                        <th>Dll full name</th>
+                        <th>Dll base</th>
+                        <th>Dll size</th>
+                        <th>Load count</th>
+                    </tr>
+                    {% for d in results.volatility.dlllist.data %}
+                        {% for m in d.loaded_modules %}
+                            <tr> 
+                                <td>{{d.process_id}}</td>
+                                <td>{{d.process_name}}</td>
+                                <td>{{d.commandline}}</td>
+                                <td>{{m.dll_full_name}}</td>
+                                <td>{{m.dll_base}}</td>
+                                <td>{{m.dll_size}}</td>
+                                <td>{{m.dll_load_count}}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Handles -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_handles');"><b>Handles</b></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#handles"><small>Listing handles</small></a>
+            <div id="volatility_handles" style="display: none;">
+                {% if results.volatility.handles and results.volatility.handles.config.filter == True %}
+                <small>Filtered</small>
+                {% endif %}
+                {% if results.volatility.handles %}
+                <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                    <tr>
+                        <th>PID</th>
+                        <th>Handle name</th>
+                        <th>Handle type</th>
+                        <th>Handle value</th>
+                        <th>Handle granted access</th>
+                    </tr>
+                    {% for h in results.volatility.handles.data %}
+                        <tr> 
+                            <td>{{h.process_id}}</td>
+                            <td>{{h.handle_name}}</td>
+                            <td>{{h.handle_type}}</td>
+                            <td>{{h.handle_value}}</td>
+                            <td>{{h.handle_granted_access}}</td>
+                            <td>{{h.dll_size}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+
+        <!-- Ldrmodules -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_ldrmodules');"><b>Ldrmodules</b></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#ldrmodules"><small>Listing loaded dlls</small></a>
+            <div id="volatility_ldrmodules" style="display: none;">
+                {% if results.volatility.ldrmodules and results.volatility.ldrmodules.config.filter == True %}
+                <small>Filtered</small>
+                {% endif %}
+                {% if results.volatility.ldrmodules %}
+                <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                    <tr>
+                        <th>PID</th>
+                        <th>Process name</th>
+                        <th>Dll mapped path</th>
+                        <th>Dll base</th>
+                        <th>In load</th>
+                        <th>In init</th>
+                        <th>In mem</th>
+                        <th>Load full dll name</th>
+                        <th>Init full dll name</th>
+                        <th>Mem full dll name</th>
+                    </tr>
+                    {% for l in results.volatility.ldrmodules.data %}
+                        <tr> 
+                            <td>{{l.process_id}}</td>
+                            <td>{{l.process_name}}</td>
+                            <td>{{l.dll_mapped_path}}</td>
+                            <td>{{l.dll_base}}</td>
+                            <td>{{l.dll_in_load}}</td>
+                            <td>{{l.dll_in_init}}</td>
+                            <td>{{l.dll_in_mem}}</td>
+                            <td>{{l.load_full_dll_name}}</td>
+                            <td>{{l.init_full_dll_name}}</td>
+                            <td>{{l.mem_full_dll_name}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+
+        <!-- Devicetree -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_devicetree');"><b>Devicetree</b></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#devicetree"><small>Listing loaded dlls</small></a>
+            <div id="volatility_devicetree" style="display: none;">
+                {% if results.volatility.devicetree and results.volatility.devicetree.config.filter == True %}
+                <small>Filtered</small>
+                {% endif %}
+                {% if results.volatility.devicetree %}
+                <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                    <tr>
+                        <th>Driver offset</th>
+                        <th>Driver name</th>
+                        <th>Device offset</th>
+                        <th>Device name</th>
+                        <th>Device type</th>
+                        <th>Attached Device offset</th>
+                        <th>Attached Device name</th>
+                        <th>Attached device type</th>
+                        <th>Attached device level</th>
+                    </tr>
+                    {% for dr in results.volatility.devicetree.data %}
+                        <tr> 
+                            <td>{{dr.driver_offset}}</td>
+                            <td>{{dr.driver_name}}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {% for de in dr["devices"] %}
+                        <tr> 
+                            <td></td>
+                            <td></td>
+                            <td>{{de.device_offset}}</td>
+                            <td>{{de.device_name}}</td>
+                            <td>{{de.device_type}}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                            {% for at in de["devices_attached"] %}
+                            <tr> 
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>{{at.attached_device_offset}}</td>
+                                <td>{{at.attached_device_name}}</td>
+                                <td>{{at.attached_device_type}}</td>
+                                <td>{{at.level}}</td>
+                            </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+
+        <!-- Svcscan -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_svcscan');"><b>Svcscan</b></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#svcscan"><small>Listing loaded dlls</small></a>
+            <div id="volatility_svcscan" style="display: none;">
+                {% if results.volatility.svcscan and results.volatility.svcscan.config.filter == True %}
+                <small>Filtered</small>
+                {% endif %}
+                {% if results.volatility.svcscan %}
+                <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                    <tr>
+                        <th>PID</th>
+                        <th>Service name</th>
+                        <th>Display name</th>
+                        <th>Binary path</th>
+                        <th>Type</th>
+                        <th>State</th>
+                        <th>Service offset</th>
+                        <th>Service order</th>
+                    </tr>
+
+                    {% for s in results.volatility.svcscan.data %}
+                        <tr> 
+                            <td>{{s.process_id}}</td>
+                            <td>{{s.service_name}}</td>
+                            <td>{{s.service_display_name}}</td>
+                            <td>{{s.service_binary_path}}</td>
+                            <td>{{s.service_type}}</td>
+                            <td>{{s.service_state}}</td>
+                            <td>{{s.service_offset}}</td>
+                            <td>{{s.service_order}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+
+        <!-- Modscan -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_modscan');"><b>Modscan</b></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#modscan"><small>Listing loaded dlls</small></a>
+            <div id="volatility_modscan" style="display: none;">
+                {% if results.volatility.modscan and results.volatility.modscan.config.filter == True %}
+                <small>Filtered</small>
+                {% endif %}
+                {% if results.volatility.modscan %}
+                <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                    <tr>
+                        <th>Module name</th>
+                        <th>Module file name</th>
+                        <th>Module offset</th>
+                        <th>Module base</th>
+                        <th>Module size</th>
+                    </tr>
+
+                    {% for m in results.volatility.modscan.data %}
+                        <tr> 
+                            <td>{{m.kernel_module_name}}</td>
+                            <td>{{m.kernel_module_file}}</td>
+                            <td>{{m.kernel_module_offset}}</td>
+                            <td>{{m.kernel_module_base}}</td>
+                            <td>{{m.kernel_module_size}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        Nothing to display.
+    {% endif %}
+</section>
