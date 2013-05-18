@@ -66,18 +66,30 @@ class MongoDB(Report):
         """
         self.connect()
 
+        # Set an unique index on stored files, to avoid duplicates.
+        # From pymongo docs:
+        #  Returns the name of the created index if an index is actually created.
+        #  Returns None if the index already exists.
+        self.db.fs.files.ensure_index("sha256", unique=True, name="sha256_unique")
+
         # Create a copy of the dictionary. This is done in order to not modify
         # the original dictionary and possibly compromise the following
         # reporting modules.
         report = dict(results)
 
-        # Check whether an older analysis with the same task id already exists. If so,
-        # add a '_id' field to the report so that self.db.analysis.save() can update it
+        # Check whether the analysis already exists to avoid inserting duplicates.
+        # For example when re-running an analysis with process.py utility.
+        # If a duplicated is detected, add a '_id' field to the report and update it
         # instead of creating a new one. Also delete old api calls as they will be recreated
         # later on.
-        old_analysis = self.db.analysis.find_one({"info.id": results["info"]["id"]})
+
+        # Use ID and timestamp to detect dups, beacuse if using only id if the SQL db
+        # is cleaned up you may delete not duplicated analysis.
+        old_analysis = self.db.analysis.find_one({"info.id": results["info"]["id"],
+                                                  "info.started": results["info"]["started"],
+                                                  "info.ended": results["info"]["ended"]})
         if old_analysis:
-            old_id = old_analysis.get("_id", None)
+            old_id = old_analysis.get("_id")
             if old_id:
                 report["_id"] = old_id
                 try:
@@ -86,12 +98,6 @@ class MongoDB(Report):
                             self.db.calls.remove(chunk_id)
                 except KeyError:
                     pass
-
-        # Set an unique index on stored files, to avoid duplicates.
-        # From pymongo docs:
-        #  Returns the name of the created index if an index is actually created. 
-        #  Returns None if the index already exists.
-        self.db.fs.files.ensure_index("sha256", unique=True, name="sha256_unique")
 
         # Store the PCAP file in GridFS and reference it back in the report.
         pcap_path = os.path.join(self.analysis_path, "dump.pcap")
