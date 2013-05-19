@@ -3,10 +3,8 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import sys
-import csv
-
 import logging
+
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.utils import convert_to_printable, logtime
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -28,17 +26,13 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-
-class volapi():
-    """ Volatility api
-
-    Copyright information: The plugin connectors contain copied and modified
-        code from the respective volatility plugins.
+class VolatilityAPI():
+    """ Volatility api.
+    @copyright: The plugin connectors contain copied and modified code from the respective volatility plugins.
     """
 
-    def __init__(self, memdump, osprofile='WinXPSP3x86'):
-        """
-        @param memdump: the memdump file path
+    def __init__(self, memdump, osprofile="WinXPSP3x86"):
+        """@param memdump: the memdump file path
         @param osprofile: the profile (OS type)
         """
         registry.PluginImporter()
@@ -48,35 +42,35 @@ class volapi():
         self.__config()
 
     def __config(self):
-        """ Creates a volatility configuration
-        """
+        """Creates a volatility configuration."""
         self.config = conf.ConfObject()
         self.config.optparser.set_conflict_handler("resolve")
         registry.register_global_options(self.config, commands.Command)
         the_file = "file://" + self.memdump
-        base_conf = {'profile': self.osprofile,
-        'use_old_as': None,
-        'kdbg': None,
-        'help': False,
-        'kpcr': None,
-        'tz': None,
-        'pid': None,
-        'output_file': None,
-        'physical_offset': None,
-        'conf_file': None,
-        'dtb': None,
-        'output': None,
-        'info': None,
-        'location': the_file,
-        'plugins': None,
-        'debug': None,
-        'cache_dtb': True,
-        'filename': None,
-        'cache_directory': None,
-        'verbose': None,
-        'write': False}
+        base_conf = {"profile": self.osprofile,
+                     "use_old_as": None,
+                     "kdbg": None,
+                     "help": False,
+                     "kpcr": None,
+                     "tz": None,
+                     "pid": None,
+                     "output_file": None,
+                     "physical_offset": None,
+                     "conf_file": None,
+                     "dtb": None,
+                     "output": None,
+                     "info": None,
+                     "location": the_file,
+                     "plugins": None,
+                     "debug": None,
+                     "cache_dtb": True,
+                     "filename": None,
+                     "cache_directory": None,
+                     "verbose": None,
+                     "write": False
+                    }
 
-        # set the default config
+        # Set the default config
         for k, v in base_conf.items():
             self.config.update(k, v)
         self.addr_space = utils.load_as(self.config)
@@ -85,9 +79,8 @@ class volapi():
         return self.config
 
     def pslist(self):
-        """ Volatility pslist plugin
-        """
-        log.info('volatility pslist for: {0}'.format(self.memdump))
+        """Volatility pslist plugin."""
+        log.debug("Volatility pslist for: {0}".format(self.memdump))
         self.__config()
         res = []
         p = taskmods.PSList(self.config)
@@ -98,18 +91,18 @@ class volapi():
                    "num_threads": str(process.ActiveThreads),
                    "num_handles": str(process.ObjectTable.HandleCount),
                    "session_id": str(process.SessionId),
-                   "create_time": str(process.CreateTime or ''),
-                   "exit_time": str(process.ExitTime or ''),}
+                   "create_time": str(process.CreateTime or ""),
+                   "exit_time": str(process.ExitTime or ""),
+                   }
             res.append(new)
 
         return {"config": {}, "data": res}
 
     def malfind(self, dump_dir=None):
-        """ Volatility malfind plugin
-
+        """Volatility malfind plugin.
         @param dump_dir: optional directory for dumps
         """
-        log.info('volatility malfind for: {0}'.format(self.memdump))
+        log.debug("Volatility malfind for: {0}".format(self.memdump))
         self.__config()
         res = []
 
@@ -134,20 +127,19 @@ class volapi():
         return {"config": {}, "data": res}
 
     def apihooks(self):
-        """ Volatility apihooks plugin
-        """
-        log.info('volatility apihooks for: {0}'.format(self.memdump))
+        """Volatility apihooks plugin."""
+        log.info("Volatility apihooks for: {0}".format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["apihooks"](self.config)
         for process, module, hook in command.calculate():
             new = {"hook_mode": str(hook.Mode),
                    "hook_type": str(hook.Type),
-                   "victim_module": str(module.BaseDllName or ''),
+                   "victim_module": str(module.BaseDllName or ""),
                    "victim_function": str(hook.Detail),
                    "hook_address":  "{0:#x}".format(hook.hook_address),
                    "hooking_module": str(hook.HookModule)
-                    }
+                  }
             if process:
                 new["process_id"] = int(process.UniqueProcessId)
                 new["process_name"] = str(process.ImageFileName)
@@ -156,32 +148,29 @@ class volapi():
         return {"config": {}, "data": res}
 
     def dlllist(self):
-        """ Volatility dlllist plugin
-        """
-        log.info('volatility dlllist for: {0}'.format(self.memdump))
+        """Volatility dlllist plugin."""
+        log.info("Volatility dlllist for: {0}".format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["dlllist"](self.config)
         for task in command.calculate():
             new = {"process_id": int(task.UniqueProcessId),
                    "process_name": str(task.ImageFileName),
-                   "commandline": str(
-                        task.Peb.ProcessParameters.CommandLine or ''),
+                   "commandline": str(task.Peb.ProcessParameters.CommandLine or ""),
                    "loaded_modules": []
-                    }
+                  }
             for m in task.get_load_modules():
                     new["loaded_modules"].append({"dll_base": str(m.DllBase),
-                                     "dll_size": str(m.SizeOfImage),
-                                     "dll_full_name": str(m.FullDllName or ''),
-                                     "dll_load_count": int(m.LoadCount),
-                                     })
+                                                  "dll_size": str(m.SizeOfImage),
+                                                  "dll_full_name": str(m.FullDllName or ""),
+                                                  "dll_load_count": int(m.LoadCount),
+                                                 })
             res.append(new)
         return {"config": {}, "data": res}
 
     def handles(self):
-        """ Volatility handles plugin
-        """
-        log.info('volatility handles for: {0}'.format(self.memdump))
+        """Volatility handles plugin."""
+        log.debug("Volatility handles for: {0}".format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["handles"](self.config)
@@ -191,15 +180,14 @@ class volapi():
                    "handle_granted_access": str(handle.GrantedAccess),
                    "handle_type": str(object_type),
                    "handle_name": str(name)
-                    }
+                  }
 
             res.append(new)
         return {"config": {}, "data": res}
 
     def ldrmodules(self):
-        """ Volatility ldrmodules plugin
-        """
-        log.info('volatility ldrmodules for: {0}'.format(self.memdump))
+        """Volatility ldrmodules plugin."""
+        log.info("Volatility ldrmodules for: {0}".format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["ldrmodules"](self.config)
@@ -224,7 +212,7 @@ class volapi():
                     vm=address_space).e_magic != 0x5A4D:
                     continue
                 mapped_files[int(vad.Start)] = str(
-                    vad.FileObject.FileName or '')
+                    vad.FileObject.FileName or "")
 
             # For each base address with a mapped file, print info on
             # the other PEB lists to spot discrepancies.
@@ -234,16 +222,16 @@ class volapi():
                 init_mod = ininitorder.get(base, None)
                 mem_mod = inmemorder.get(base, None)
                 new = {"process_id": int(task.UniqueProcessId),
-                   "process_name": str(task.ImageFileName),
-                   "dll_base": "{0:#x}".format(base),
-                   "dll_in_load": load_mod != None,
-                   "dll_in_init": init_mod != None,
-                   "dll_in_mem": mem_mod != None,
-                   "dll_mapped_path": str(mapped_files[base]),
-                   "load_full_dll_name": "",
-                   "init_full_dll_name": "",
-                   "mem_full_dll_name": ""
-                    }
+                       "process_name": str(task.ImageFileName),
+                       "dll_base": "{0:#x}".format(base),
+                       "dll_in_load": load_mod != None,
+                       "dll_in_init": init_mod != None,
+                       "dll_in_mem": mem_mod != None,
+                       "dll_mapped_path": str(mapped_files[base]),
+                       "load_full_dll_name": "",
+                       "init_full_dll_name": "",
+                       "mem_full_dll_name": ""
+                      }
                 if load_mod:
                     new["load_full_dll_name"] = str(load_mod.FullDllName)
                 if init_mod:
@@ -255,9 +243,8 @@ class volapi():
         return {"config": {}, "data": res}
 
     def mutantscan(self):
-        """ Volatility mutantscan plugin
-        """
-        log.info('volatility mutantscan for: {0}'.format(self.memdump))
+        """Volatility mutantscan plugin."""
+        log.debug("Volatility mutantscan for: {0}".format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["mutantscan"](self.config)
@@ -266,37 +253,36 @@ class volapi():
             tid = 0
             pid = 0
             if mutant.OwnerThread > 0x80000000:
-                thread = mutant.OwnerThread.dereference_as('_ETHREAD')
+                thread = mutant.OwnerThread.dereference_as("_ETHREAD")
                 tid = thread.Cid.UniqueThread
                 pid = thread.Cid.UniqueProcess
 
             new = {"mutant_offset": "{0:#x}".format(mutant.obj_offset),
-               "num_pointer": int(object_obj.PointerCount),
-               "num_handles": int(object_obj.HandleCount),
-               "mutant_signal_state": str(mutant.Header.SignalState),
-               "mutant_name": str(object_obj.NameInfo.Name or ''),
-               "process_id": int(pid),
-               "thread_id": int(tid)
-                }
+                   "num_pointer": int(object_obj.PointerCount),
+                   "num_handles": int(object_obj.HandleCount),
+                   "mutant_signal_state": str(mutant.Header.SignalState),
+                   "mutant_name": str(object_obj.NameInfo.Name or ""),
+                   "process_id": int(pid),
+                   "thread_id": int(tid)
+                  }
 
             res.append(new)
         return {"config": {}, "data": res}
 
     def devicetree(self):
-        """ Volatility devicetree plugin
-        """
-        log.info('volatility devicetree for: {0}'.format(self.memdump))
+        """Volatility devicetree plugin."""
+        log.debug("Volatility devicetree for: {0}".format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["devicetree"](self.config)
 
         for _object_obj, driver_obj, _ in command.calculate():
             new = {"driver_offset": "0x{0:08x}".format(driver_obj.obj_offset),
-                   "driver_name": str(driver_obj.DriverName or ''),
-                   "devices": []}
+                   "driver_name": str(driver_obj.DriverName or ""),
+                   "devices": []
+                  }
 
             for device in driver_obj.devices():
-
                 device_header = obj.Object("_OBJECT_HEADER",
                         offset=device.obj_offset - \
                         device.obj_vm.profile.get_obj_offset(
@@ -305,7 +291,7 @@ class volapi():
                         native_vm=device.obj_native_vm
                         )
 
-                device_name = str(device_header.NameInfo.Name or '')
+                device_name = str(device_header.NameInfo.Name or "")
 
                 nd = {"device_offset": "0x{0:08x}".format(device.obj_offset),
                                         "device_name": device_name,
@@ -326,9 +312,9 @@ class volapi():
                         native_vm = att_device.obj_native_vm
                         )
 
-                    device_name = str(device_header.NameInfo.Name or '')
+                    device_name = str(device_header.NameInfo.Name or "")
                     name = (device_name + " - " +
-                           str(att_device.DriverObject.DriverName or ''))
+                           str(att_device.DriverObject.DriverName or ""))
                     nd["devices_attached"].append({"level": level,
                                                  "attached_device_offset":\
                             "0x{0:08x}".format(att_device.obj_offset),
@@ -343,65 +329,60 @@ class volapi():
         return {"config": {}, "data": res}
 
     def svcscan(self):
-        """ Volatility svcscan plugin - scans for services
-        """
-        log.info('volatility svcscan for: {0}'.format(self.memdump))
+        """Volatility svcscan plugin - scans for services."""
+        log.debug("Volatility svcscan for: {0}".format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["svcscan"](self.config)
 
         for rec in command.calculate():
             new = {"service_offset": "{0:#x}".format(rec.obj_offset),
-               "service_order": int(rec.Order),
-               "process_id": int(rec.Pid),
-               "service_name": str(rec.ServiceName.dereference()),
-               "service_display_name": str(rec.DisplayName.dereference()),
-               "service_type": str(rec.Type),
-               "service_binary_path": str(rec.Binary),
-               "service_state": str(rec.State)
-                }
+                   "service_order": int(rec.Order),
+                   "process_id": int(rec.Pid),
+                   "service_name": str(rec.ServiceName.dereference()),
+                   "service_display_name": str(rec.DisplayName.dereference()),
+                   "service_type": str(rec.Type),
+                   "service_binary_path": str(rec.Binary),
+                   "service_state": str(rec.State)
+                  }
 
             res.append(new)
         return {"config": {}, "data": res}
 
     def modscan(self):
-        """ Volatility modscan plugin
-        """
-        log.info('volatility modscan for: {0}'.format(self.memdump))
+        """Volatility modscan plugin."""
+        log.debug("Volatility modscan for: {0}".format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["modscan"](self.config)
 
         for ldr_entry in command.calculate():
             new = {"kernel_module_offset":\
-                    "{0:#x}".format(ldr_entry.obj_offset),
-               "kernel_module_name": str(ldr_entry.BaseDllName or ''),
-               "kernel_module_file": str(ldr_entry.FullDllName or ''),
-               "kernel_module_base": "{0:#x}".format(ldr_entry.DllBase),
-               "kernel_module_size": int(ldr_entry.SizeOfImage),
-                }
+                        "{0:#x}".format(ldr_entry.obj_offset),
+                   "kernel_module_name": str(ldr_entry.BaseDllName or ""),
+                   "kernel_module_file": str(ldr_entry.FullDllName or ""),
+                   "kernel_module_base": "{0:#x}".format(ldr_entry.DllBase),
+                   "kernel_module_size": int(ldr_entry.SizeOfImage),
+                  }
 
             res.append(new)
         return {"config": {}, "data": res}
 
 
 class volmanager():
-    """
-    Handle several voaltility results
-    """
+    """Handle several voaltility results."""
 
     def __init__(self, memfile):
-
         # Intelligent filtering
         self.mask_pid = []
         self.taint_pid = set()
-
         self.memfile = memfile
         # Read config
         self.voptions = Config(os.path.join(
-                CUCKOO_ROOT,
-                "conf",
-                "volatility.conf"))
+                                            CUCKOO_ROOT,
+                                            "conf",
+                                            "volatility.conf"
+                                           ))
         for pid in self.voptions.mask.pid_generic.split(","):
             pid = int(pid.strip())
             self.mask_pid.append(pid)
@@ -410,33 +391,31 @@ class volmanager():
     def run(self):
         res = {}
         if self.voptions.pslist.enabled:
-            res["pslist"] = volapi(self.memfile).pslist()
+            res["pslist"] = VolatilityAPI(self.memfile).pslist()
         if self.voptions.malfind.enabled:
-            res["malfind"] = volapi(self.memfile).malfind()
+            res["malfind"] = VolatilityAPI(self.memfile).malfind()
         if self.voptions.apihooks.enabled:
-            res["apihooks"] = volapi(self.memfile).apihooks()
+            res["apihooks"] = VolatilityAPI(self.memfile).apihooks()
         if self.voptions.dlllist.enabled:
-            res["dlllist"] = volapi(self.memfile).dlllist()
+            res["dlllist"] = VolatilityAPI(self.memfile).dlllist()
         if self.voptions.handles.enabled:
-            res["handles"] = volapi(self.memfile).handles()
+            res["handles"] = VolatilityAPI(self.memfile).handles()
         if self.voptions.ldrmodules.enabled:
-            res["ldrmodules"] = volapi(self.memfile).ldrmodules()
+            res["ldrmodules"] = VolatilityAPI(self.memfile).ldrmodules()
         if self.voptions.mutantscan.enabled:
-            res["mutantscan"] = volapi(self.memfile).mutantscan()
+            res["mutantscan"] = VolatilityAPI(self.memfile).mutantscan()
         if self.voptions.devicetree.enabled:
-            res["devicetree"] = volapi(self.memfile).devicetree()
+            res["devicetree"] = VolatilityAPI(self.memfile).devicetree()
         if self.voptions.svcscan.enabled:
-            res["svcscan"] = volapi(self.memfile).svcscan()
+            res["svcscan"] = VolatilityAPI(self.memfile).svcscan()
         if self.voptions.modscan.enabled:
-            res["modscan"] = volapi(self.memfile).modscan()
+            res["modscan"] = VolatilityAPI(self.memfile).modscan()
         self.find_taint(res)
         self.cleanup()
         return self.mask_filter(res)
 
     def mask_filter(self, old):
-        """
-        Filter out masked stuff. Keep tainted stuff
-        """
+        """Filter out masked stuff. Keep tainted stuff."""
         new = {}
 
         for akey in old.keys():
@@ -455,16 +434,13 @@ class volmanager():
         return new
 
     def find_taint(self, res):
-        """
-        Find tainted items
-        """
+        """Find tainted items."""
         if "malfind" in res:
             for item in res["malfind"]["data"]:
                 self.taint_pid.add(item["process_id"])
 
     def cleanup(self):
-        """ Delete the memory dump (if configured to do so)
-        """
+        """Delete the memory dump (if configured to do so)."""
 
         if self.voptions.basic.delete_memdump:
             try:
@@ -479,18 +455,19 @@ class VolatilityAnalysis(Processing):
 
     def run(self):
         """Run analysis.
-        @return: results dict.
+        @return: volatility results dict.
         """
-
-        # Machine should be in self.tasks. Use that for specific masks
         self.key = "volatility"
+
         vol = {}
         if HAVE_VOLATILITY:
             if self.memory_path and os.path.exists(self.memory_path):
-                v = volmanager(self.memory_path)
-                vol = v.run()
+                    v = volmanager(self.memory_path)
+                    vol = v.run()
+            else:
+                log.error("Memory dump not found: to run volatility you have to enable memory_dump")
         else:
-            log.warn('Volatility not available')
+            log.error("Cannot run volatility module: volatility library not available")
             return None
 
         return vol
