@@ -252,7 +252,7 @@ class FileUpload(object):
         if dir_part:
             try: create_folder(self.storagepath, dir_part)
             except CuckooOperationalError:
-                log.error("Unable to create folder %s" % folder)
+                log.error("Unable to create folder %s" % dir_part)
                 return False
 
         file_path = os.path.join(self.storagepath, buf.strip())
