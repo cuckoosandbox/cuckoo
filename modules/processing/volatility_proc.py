@@ -35,7 +35,7 @@ class VolatilityAPI():
     @organization: Volatile Systems
     """
 
-    def __init__(self, memdump, osprofile="WinXPSP3x86"):
+    def __init__(self, memdump, osprofile=None):
         """@param memdump: the memdump file path
         @param osprofile: the profile (OS type)
         """
@@ -51,7 +51,7 @@ class VolatilityAPI():
         self.config.optparser.set_conflict_handler("resolve")
         registry.register_global_options(self.config, commands.Command)
         the_file = "file://" + self.memdump
-        base_conf = {"profile": self.osprofile,
+        base_conf = {"profile": "WinXPSP2x86",
                      "use_old_as": None,
                      "kdbg": None,
                      "help": False,
@@ -73,6 +73,9 @@ class VolatilityAPI():
                      "verbose": None,
                      "write": False
                     }
+
+        if self.osprofile:
+            base_conf["profile"] = self.osprofile
 
         # Set the default config
         for k, v in base_conf.items():
@@ -414,11 +417,31 @@ class VolatilityAPI():
             res.append(new)
         return {"config": {}, "data": res}
 
+    def imageinfo(self):
+        """Volatility imageinfo plugin.
+        @author:       Mike Auty <mike.auty@gmail.com>
+        @license:      GNU General Public License 2.0 or later
+        @see volatility/plugins/imageinfo.py
+        """
+        log.debug("Volatility imageinfo for: {0}".format(self.memdump))
+        self.__config()
+        res = []
+        command = self.plugins["imageinfo"](self.config)
+        new = {}
+        for k, v in command.calculate():
+            new[k] = v
+
+        osp = new["Suggested Profile(s)"].split(",")[0]
+        new["osprofile"] = osp
+
+        res.append(new)
+        return {"config": {}, "data": res}
+
 
 class volmanager():
     """Handle several volatility results."""
 
-    def __init__(self, memfile):
+    def __init__(self, memfile, osprofile=None):
         # Intelligent filtering
         self.mask_pid = []
         self.taint_pid = set()
@@ -433,29 +456,35 @@ class volmanager():
             pid = int(pid.strip())
             self.mask_pid.append(pid)
         self.no_filter = not self.voptions.mask.enabled
+        self.osprofile = osprofile or self.get_osprofile()
+
+    def get_osprofile(self):
+        """Get the OS profile"""        
+        res = VolatilityAPI(self.memfile).imageinfo()["data"][0]["osprofile"]
+        return res
 
     def run(self):
         res = {}
         if self.voptions.pslist.enabled:
-            res["pslist"] = VolatilityAPI(self.memfile).pslist()
+            res["pslist"] = VolatilityAPI(self.memfile, self.osprofile).pslist()
         if self.voptions.malfind.enabled:
-            res["malfind"] = VolatilityAPI(self.memfile).malfind()
+            res["malfind"] = VolatilityAPI(self.memfile, self.osprofile).malfind()
         if self.voptions.apihooks.enabled:
-            res["apihooks"] = VolatilityAPI(self.memfile).apihooks()
+            res["apihooks"] = VolatilityAPI(self.memfile, self.osprofile).apihooks()
         if self.voptions.dlllist.enabled:
-            res["dlllist"] = VolatilityAPI(self.memfile).dlllist()
+            res["dlllist"] = VolatilityAPI(self.memfile, self.osprofile).dlllist()
         if self.voptions.handles.enabled:
-            res["handles"] = VolatilityAPI(self.memfile).handles()
+            res["handles"] = VolatilityAPI(self.memfile, self.osprofile).handles()
         if self.voptions.ldrmodules.enabled:
-            res["ldrmodules"] = VolatilityAPI(self.memfile).ldrmodules()
+            res["ldrmodules"] = VolatilityAPI(self.memfile, self.osprofile).ldrmodules()
         if self.voptions.mutantscan.enabled:
-            res["mutantscan"] = VolatilityAPI(self.memfile).mutantscan()
+            res["mutantscan"] = VolatilityAPI(self.memfile, self.osprofile).mutantscan()
         if self.voptions.devicetree.enabled:
-            res["devicetree"] = VolatilityAPI(self.memfile).devicetree()
+            res["devicetree"] = VolatilityAPI(self.memfile, self.osprofile).devicetree()
         if self.voptions.svcscan.enabled:
-            res["svcscan"] = VolatilityAPI(self.memfile).svcscan()
+            res["svcscan"] = VolatilityAPI(self.memfile, self.osprofile).svcscan()
         if self.voptions.modscan.enabled:
-            res["modscan"] = VolatilityAPI(self.memfile).modscan()
+            res["modscan"] = VolatilityAPI(self.memfile, self.osprofile).modscan()
         self.find_taint(res)
         self.cleanup()
         return self.mask_filter(res)
