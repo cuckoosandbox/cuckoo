@@ -8,6 +8,7 @@ Cuckoo relies on four main configuration files:
     * :ref:`<machinemanager>_conf`: for defining the options for your virtualization software.
     * :ref:`processing_conf`: for enabling and configuraing processing modules.
     * :ref:`reporting_conf`: for enabling or disabling report formats.
+    * :ref:`volatility_conf`: Volatility configuration
 
 .. _cuckoo_conf:
 
@@ -234,3 +235,45 @@ It contains the following sections::
 
 By setting those option to *on* or *off* you enable or disable the generation
 of such reports.
+
+.. _volatility_conf:
+
+volatility.conf
+===============
+
+The volatility tool offers a large set of plugins for memory dump analysis.
+Some of them are quite slow. volatility.conf enables you to enable or disable the plugins of your choice.
+
+In the basic section you can configure the deletion of memory dumps after processing::
+
+    # Basic settings
+    [basic]
+    # Delete memory dump after volatility processing.
+    delete_memdump = no
+
+After that every plugin has an own section for configuration::
+
+    # Scans for hidden/injected code and dlls
+    # http://code.google.com/p/volatility/wiki/CommandReference#malfind
+    [malfind]
+    enabled = on
+    filter = on
+
+    # Lists hooked api in user mode and kernel space
+    # Expect it to be very slow when enabled
+    # http://code.google.com/p/volatility/wiki/CommandReference#apihooks
+    [apihooks]
+    enabled = on
+    filter = on
+
+The filter configuration helps you to remove known clean data from the resulting report. It can be configured seperately for every plugin.
+
+The filter itself is configured in the [mask] section.
+You can enter a list of pids in pid_generic to filter out processes::
+
+    # Masks. Data that should not be logged
+    # Just get this information from your plain VM Snapshot (without running malware)
+    # This will filter out unwanted information in the logs
+    [mask]
+    # pid_generic: a list of process ids that already existed on the machine before the malware was started.
+    pid_generic = 4, 680, 752, 776, 828, 840, 1000, 1052, 1168, 1364, 1428, 1476, 1808, 452, 580, 652, 248, 1992, 1696, 1260, 1656, 1156
