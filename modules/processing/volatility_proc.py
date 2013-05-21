@@ -537,8 +537,11 @@ class VolatilityAnalysis(Processing):
         vol = {}
         if HAVE_VOLATILITY:
             if self.memory_path and os.path.exists(self.memory_path):
-                    v = volmanager(self.memory_path)
-                    vol = v.run()
+                    try:
+                        v = volmanager(self.memory_path)
+                        vol = v.run()
+                    except:
+                        log.error("Generic error executing volatility")
             else:
                 log.error("Memory dump not found: to run volatility you have to enable memory_dump")
         else:
