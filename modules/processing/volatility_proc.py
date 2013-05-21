@@ -28,7 +28,11 @@ log = logging.getLogger(__name__)
 
 class VolatilityAPI():
     """ Volatility api.
-    @copyright: The plugin connectors contain copied and modified code from the respective volatility plugins.
+    @copyright: The plugin connectors contain copied and modified code from the respective volatility plugins. Copyright (C) 2008 Volatile Systems
+    @author:       AAron Walters and Brendan Dolan-Gavitt
+    @license:      GNU General Public License 2.0 or later
+    @contact:      awalters@volatilesystems.com,bdolangavitt@wesleyan.edu
+    @organization: Volatile Systems
     """
 
     def __init__(self, memdump, osprofile="WinXPSP3x86"):
@@ -79,7 +83,11 @@ class VolatilityAPI():
         return self.config
 
     def pslist(self):
-        """Volatility pslist plugin."""
+        """Volatility pslist plugin.
+        @author Michael Cohen <scudette@users.sourceforge.net> and Mike Auty <mike.auty@gmail.com>
+        @copyright Copyright (C) 2007-2011 Volatile Systems
+        @see volatility/plugins/taskmods.py
+        """
         log.debug("Volatility pslist for: {0}".format(self.memdump))
         self.__config()
         res = []
@@ -101,6 +109,9 @@ class VolatilityAPI():
     def malfind(self, dump_dir=None):
         """Volatility malfind plugin.
         @param dump_dir: optional directory for dumps
+        @author Michael Ligh <michael.ligh@mnin.org>
+        @copyright Copyright (c) 2010, 2011, 2012 Michael Ligh <michael.ligh@mnin.org>
+        @see volatility/plugins/malware/malfind.py
         """
         log.debug("Volatility malfind for: {0}".format(self.memdump))
         self.__config()
@@ -127,7 +138,10 @@ class VolatilityAPI():
         return {"config": {}, "data": res}
 
     def apihooks(self):
-        """Volatility apihooks plugin."""
+        """Volatility apihooks plugin.
+        @author Michael Ligh <michael.ligh@mnin.org>
+        @see volatility/plugins/malware/apihooks.py
+        """
         log.debug("Volatility apihooks for: {0}".format(self.memdump))
         self.__config()
         res = []
@@ -148,7 +162,11 @@ class VolatilityAPI():
         return {"config": {}, "data": res}
 
     def dlllist(self):
-        """Volatility dlllist plugin."""
+        """Volatility dlllist plugin.
+        @author Michael Cohen <scudette@users.sourceforge.net> and Mike Auty <mike.auty@gmail.com>
+        @copyright Copyright (C) 2007-2011 Volatile Systems
+        @see volatility/plugins/taskmods.py
+        """
         log.debug("Volatility dlllist for: {0}".format(self.memdump))
         self.__config()
         res = []
@@ -169,7 +187,11 @@ class VolatilityAPI():
         return {"config": {}, "data": res}
 
     def handles(self):
-        """Volatility handles plugin."""
+        """Volatility handles plugin.
+        @author Michael Ligh <michael.ligh@mnin.org>
+        @copyright Copyright (C) 2007-2011 Volatile Systems
+        @see volatility/plugins/handles.py
+        """
         log.debug("Volatility handles for: {0}".format(self.memdump))
         self.__config()
         res = []
@@ -186,7 +208,11 @@ class VolatilityAPI():
         return {"config": {}, "data": res}
 
     def ldrmodules(self):
-        """Volatility ldrmodules plugin."""
+        """Volatility ldrmodules plugin.
+        @author Michael Ligh <michael.ligh@mnin.org>
+        @copyright Copyright (c) 2010, 2011, 2012 Michael Ligh <michael.ligh@mnin.org>
+        @see volatility/plugins/malware/malfind.py
+        """
         log.debug("Volatility ldrmodules for: {0}".format(self.memdump))
         self.__config()
         res = []
@@ -243,7 +269,13 @@ class VolatilityAPI():
         return {"config": {}, "data": res}
 
     def mutantscan(self):
-        """Volatility mutantscan plugin."""
+        """Volatility mutantscan plugin.
+        @author:       Andreas Schuster
+        @license:      GNU General Public License 2.0 or later
+        @contact:      a.schuster@forensikblog.de
+        @organization: http://computer.forensikblog.de/en/
+        @see volatility/plugins/fielscan.py
+        """
         log.debug("Volatility mutantscan for: {0}".format(self.memdump))
         self.__config()
         res = []
@@ -270,7 +302,11 @@ class VolatilityAPI():
         return {"config": {}, "data": res}
 
     def devicetree(self):
-        """Volatility devicetree plugin."""
+        """Volatility devicetree plugin.
+        @author Michael Ligh <michael.ligh@mnin.org>
+        @copyright Copyright (c) 2010, 2011, 2012 Michael Ligh <michael.ligh@mnin.org>
+        @see volatility/plugins/malware/devicetree.py
+        """
         log.debug("Volatility devicetree for: {0}".format(self.memdump))
         self.__config()
         res = []
@@ -329,7 +365,11 @@ class VolatilityAPI():
         return {"config": {}, "data": res}
 
     def svcscan(self):
-        """Volatility svcscan plugin - scans for services."""
+        """Volatility svcscan plugin - scans for services.
+        @author Michael Ligh <michael.ligh@mnin.org>
+        @copyright Copyright (c) 2010, 2011, 2012 Michael Ligh <michael.ligh@mnin.org>
+        @see volatility/plugins/malware/svcscan.py
+        """
         log.debug("Volatility svcscan for: {0}".format(self.memdump))
         self.__config()
         res = []
@@ -350,7 +390,13 @@ class VolatilityAPI():
         return {"config": {}, "data": res}
 
     def modscan(self):
-        """Volatility modscan plugin."""
+        """Volatility modscan plugin.
+        @author:       AAron Walters and Brendan Dolan-Gavitt
+        @license:      GNU General Public License 2.0 or later
+        @contact:      awalters@volatilesystems.com,bdolangavitt@wesleyan.edu
+        @organization: Volatile Systems
+        @see volatility/plugins/modscan.py
+        """
         log.debug("Volatility modscan for: {0}".format(self.memdump))
         self.__config()
         res = []
@@ -370,7 +416,7 @@ class VolatilityAPI():
 
 
 class volmanager():
-    """Handle several voaltility results."""
+    """Handle several volatility results."""
 
     def __init__(self, memfile):
         # Intelligent filtering
