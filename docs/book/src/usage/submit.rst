@@ -94,6 +94,10 @@ some options (in this case a command line argument for the malware)::
 
     $ ./utils/submit.py --clock "01-24-2001 14:41:20" /path/to/binary
 
+*Example*: submit a sample for volatility analysis (to reduce side effects of the cuckoo hooking, switch it off by *options free=True*)::
+
+    $ ./utils/submit.py --memory --options free=True /path/to/binary
+
 .. _apipy:
 
 API

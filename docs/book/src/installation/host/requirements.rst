@@ -120,3 +120,23 @@ Or otherwise (**not recommended**) do::
 
 .. _tcpdump: http://www.tcpdump.org
 
+Installing Volatility
+=====================
+
+Volatility is an optional tool to do forensic analysis on memory dumps. 
+This will gather os modifications and traces of rootkits. Other than the the
+default cuckoo hooking it will not be a continuous log but an analysis of a 
+snapshot made after the malware executed.
+
+In order to do memory dump forensics install volatility 2.3
+(other versions are not supported)
+
+.. _official download page: http://code.google.com/p/volatility/downloads/list
+
+See the volatility documentation for installation instructions.
+
+You will have to set the path to the volatility installation by adding::
+
+   export PYTHONPATH="<volatility-path>"
+
+to the file .bashrc in your home path.
