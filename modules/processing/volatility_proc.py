@@ -128,7 +128,7 @@ class VolatilityAPI():
 
     def apihooks(self):
         """Volatility apihooks plugin."""
-        log.info("Volatility apihooks for: {0}".format(self.memdump))
+        log.debug("Volatility apihooks for: {0}".format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["apihooks"](self.config)
@@ -149,7 +149,7 @@ class VolatilityAPI():
 
     def dlllist(self):
         """Volatility dlllist plugin."""
-        log.info("Volatility dlllist for: {0}".format(self.memdump))
+        log.debug("Volatility dlllist for: {0}".format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["dlllist"](self.config)
@@ -187,7 +187,7 @@ class VolatilityAPI():
 
     def ldrmodules(self):
         """Volatility ldrmodules plugin."""
-        log.info("Volatility ldrmodules for: {0}".format(self.memdump))
+        log.debug("Volatility ldrmodules for: {0}".format(self.memdump))
         self.__config()
         res = []
         command = self.plugins["ldrmodules"](self.config)
