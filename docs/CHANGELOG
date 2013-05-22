@@ -8,6 +8,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Added option to set sniffing interface for each virtual machine
 * Added option to set snapshot for each virtual machine
 * Added pagination to API and web interface
+* Modified the default Sniffer to become part of a set of network analysis modules
 
 Cuckoo Sandbox 0.6 (2013-04-15)
 ===============================

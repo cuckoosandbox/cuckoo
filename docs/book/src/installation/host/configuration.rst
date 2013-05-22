@@ -2,11 +2,12 @@
 Configuration
 =============
 
-Cuckoo relies on four main configuration files:
+Cuckoo relies on five main configuration files:
 
     * :ref:`cuckoo_conf`: for configuring general behavior and analysis options.
     * :ref:`<machinemanager>_conf`: for defining the options for your virtualization software.
-    * :ref:`processing_conf`: for enabling and configuraing processing modules.
+    * :ref:`networkanalyzer_conf`: for enabling and configuring network analysis modules (sniffer, etc).
+    * :ref:`processing_conf`: for enabling and configuring processing modules.
     * :ref:`reporting_conf`: for enabling or disabling report formats.
 
 .. _cuckoo_conf:
@@ -140,6 +141,26 @@ Following is the default *conf/kvm.conf* file::
             </dhcp>
           </ip>
         </network>
+
+.. _networkanalyzer_conf:
+
+networkanalyzer.conf
+====================
+
+This file allows you to enable, disable and configure all network analysis modules.
+These modules are located under `modules/networking/` and allow you to launch specific
+tools (e.g. a network sniffer like tcpdump) when an analysis is started. The tools
+are then stopped when the analysis finishes, right before running the processing modules.
+
+You will find a section for each network analysis module::
+
+    [tcpdump]
+    # Enable or disable the use of an external sniffer (tcpdump) [yes/no].
+    enabled = yes
+
+    # Specify the path to your local installation of tcpdump. Make sure this
+    # path is correct.
+    tcpdump = /usr/sbin/tcpdump
 
 .. _processing_conf:
 
