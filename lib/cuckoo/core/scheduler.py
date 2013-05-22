@@ -22,10 +22,10 @@ from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.resultserver import Resultserver
-from lib.cuckoo.core.sniffer import Sniffer
 from lib.cuckoo.core.processor import Processor
 from lib.cuckoo.core.reporter import Reporter
 from lib.cuckoo.core.plugins import import_plugin, list_plugins
+from lib.cuckoo.core.networkanalyzer import NetworkAnalyzer
 
 log = logging.getLogger(__name__)
 
@@ -163,7 +163,6 @@ class AnalysisManager(Thread):
 
     def launch_analysis(self):
         """Start analysis."""
-        sniffer = None
         succeeded = False
 
         log.info("Starting analysis of %s \"%s\" (task=%d)", self.task.category.upper(), self.task.target, self.task.id)
@@ -190,13 +189,9 @@ class AnalysisManager(Thread):
             mmanager.release(machine.label)
             self.errors.put(e)
 
-        # If enabled in the configuration, start the tcpdump instance.
-        if self.cfg.sniffer.enabled:
-            sniffer = Sniffer(self.cfg.sniffer.tcpdump)
-            
-            sniffer.start(interface=machine.interface,
-                          host=machine.ip,
-                          file_path=os.path.join(self.storage, "dump.pcap"))
+        # Start the network analysis modules.
+        networkanalyzer = NetworkAnalyzer(self.task, machine)
+        networkanalyzer.start()
 
         try:
             # Mark the selected analysis machine in the database as started.
@@ -209,9 +204,8 @@ class AnalysisManager(Thread):
         except CuckooMachineError as e:
             log.error(str(e), extra={"task_id" : self.task.id})
 
-            # Stop the sniffer.
-            if sniffer:
-                sniffer.stop()
+            # Stop the network analyzer modules.
+            networkanalyzer.stop()
 
             return False
         else:
@@ -223,9 +217,8 @@ class AnalysisManager(Thread):
             except CuckooGuestError as e:
                 log.error(str(e), extra={"task_id" : self.task.id})
 
-                # Stop the sniffer.
-                if sniffer:
-                    sniffer.stop()
+                # Stop the network analyzer modules.
+                networkanalyzer.stop()
 
                 return False
             else:
@@ -238,9 +231,8 @@ class AnalysisManager(Thread):
                     succeeded = False
 
         finally:
-            # Stop the sniffer.
-            if sniffer:
-                sniffer.stop()
+            # Stop the network analyzer modules.
+            networkanalyzer.stop()
 
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:

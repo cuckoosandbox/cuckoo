@@ -12,6 +12,7 @@ import pkgutil
 import logging
 import logging.handlers
 
+import modules.networking
 import modules.processing
 import modules.signatures
 import modules.reporting
@@ -173,6 +174,8 @@ def init_modules():
     """Initializes plugins."""
     log.debug("Importing modules...")
 
+    # Import all networking modules.
+    import_package(modules.networking)
     # Import all processing modules.
     import_package(modules.processing)
     # Import all signatures.

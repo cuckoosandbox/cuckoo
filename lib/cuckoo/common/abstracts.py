@@ -64,7 +64,7 @@ class MachineManager(object):
                 machine.platform = machine_opts["platform"]
                 machine.ip = machine_opts["ip"]
                 # If configured, use specific network interface for this machine, else use the default value.
-                machine.interface = machine_opts.get("interface", self.options_globals.sniffer.interface)
+                machine.interface = machine_opts.get("interface", self.options_globals.networkanalyzer.interface)
                 # If configured, use specific snapshot name, else leave it empty and use default behaviour.
                 machine.snapshot = machine_opts.get("snapshot", None)
 
@@ -737,6 +737,52 @@ class Report(object):
 
     def run(self):
         """Start report processing.
+        @raise NotImplementedError: this method is abstract.
+        """
+        raise NotImplementedError
+
+class Networking(object):
+    """Base abstract class for network analyzer module."""
+    order = 1
+    enabled = True
+
+    def __init__(self):
+        self.analysis_path = ""
+        self.machine = None
+        self.options = None
+
+    def set_options(self, options):
+        """Set report options.
+        @param options: report options dict.
+        """
+        self.options = options
+
+    def set_task(self, task):
+        """Add task information.
+        @param task: task dictionary.
+        """
+        self.task = task
+
+    def set_machine(self, machine):
+        """Add machine information.
+        @param machine: machine dictionary.
+        """
+        self.machine = machine
+
+    def set_path(self, analysis_path):
+        """Set paths.
+        @param analysis_path: analysis folder path.
+        """
+        self.analysis_path = analysis_path
+
+    def start(self):
+        """Start the network analyzer module.
+        @raise NotImplementedError: this method is abstract.
+        """
+        raise NotImplementedError
+
+    def stop(self):
+        """Stop the network analyzer module.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
