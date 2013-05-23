@@ -20,7 +20,7 @@ def create_folders(root=".", folders=[]):
     @raise CuckooOperationalError: if fails to create folder.
     """
     for folder in folders:
-        if os.path.exists(os.path.join(root, folder)):
+        if os.path.isdir(os.path.join(root, folder)):
             continue
         else:
             create_folder(root, folder)
@@ -32,12 +32,13 @@ def create_folder(root=".", folder=None):
     @raise CuckooOperationalError: if fails to create folder.
     """
     if not os.path.exists(os.path.join(root, folder)) and folder:
-        try:
-            folder_path = os.path.join(root, folder)
-            os.makedirs(folder_path)
-        except OSError:
-            raise CuckooOperationalError("Unable to create folder: %s"
-                                         % folder_path)
+        folder_path = os.path.join(root, folder)
+        if not os.path.isdir(folder_path):
+            try:
+                os.makedirs(folder_path)
+            except OSError:
+                raise CuckooOperationalError("Unable to create folder: %s"
+                                            % folder_path)
 
 def delete_folder(folder):
     """Delete a folder and all its subdirectories.
