@@ -9,6 +9,7 @@ from collections import defaultdict
 
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.abstracts import MachineManager
+from lib.cuckoo.common.abstracts import Auxiliary
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.abstracts import Signature
 from lib.cuckoo.common.abstracts import Report
@@ -39,6 +40,8 @@ def load_plugins(module):
         if inspect.isclass(value):
             if issubclass(value, MachineManager) and value is not MachineManager:
                 register_plugin("machinemanagers", value)
+            if issubclass(value, Auxiliary) and value is not Auxiliary:
+                register_plugin("auxiliaries", value)
             elif issubclass(value, Processing) and value is not Processing:
                 register_plugin("processing", value)
             elif issubclass(value, Signature) and value is not Signature:
