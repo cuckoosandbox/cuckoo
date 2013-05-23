@@ -64,7 +64,7 @@ class MachineManager(object):
                 machine.platform = machine_opts["platform"]
                 machine.ip = machine_opts["ip"]
                 # If configured, use specific network interface for this machine, else use the default value.
-                machine.interface = machine_opts.get("interface", self.options_globals.networkanalyzer.interface)
+                machine.interface = machine_opts.get("interface", self.options_globals.auxiliaries.interface)
                 # If configured, use specific snapshot name, else leave it empty and use default behaviour.
                 machine.snapshot = machine_opts.get("snapshot", None)
 
@@ -741,8 +741,8 @@ class Report(object):
         """
         raise NotImplementedError
 
-class Networking(object):
-    """Base abstract class for network analyzer module."""
+class Auxiliary(object):
+    """Base abstract class for auxiliary module."""
     order = 1
     enabled = True
 
@@ -776,13 +776,13 @@ class Networking(object):
         self.analysis_path = analysis_path
 
     def start(self):
-        """Start the network analyzer module.
+        """Start the auxiliary module.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
 
     def stop(self):
-        """Stop the network analyzer module.
+        """Stop the auxiliary module.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError

@@ -11,7 +11,7 @@ to fit all user's needs.
 
     machinemanagers
     packages
-    networking
+    auxiliaries
     processing
     signatures
     reporting

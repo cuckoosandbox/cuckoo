@@ -25,7 +25,7 @@ from lib.cuckoo.core.resultserver import Resultserver
 from lib.cuckoo.core.processor import Processor
 from lib.cuckoo.core.reporter import Reporter
 from lib.cuckoo.core.plugins import import_plugin, list_plugins
-from lib.cuckoo.core.networkanalyzer import NetworkAnalyzer
+from lib.cuckoo.core.auxiliaries import Auxiliaries
 
 log = logging.getLogger(__name__)
 
@@ -189,9 +189,9 @@ class AnalysisManager(Thread):
             mmanager.release(machine.label)
             self.errors.put(e)
 
-        # Start the network analysis modules.
-        networkanalyzer = NetworkAnalyzer(self.task, machine)
-        networkanalyzer.start()
+        # Start the auxiliary modules.
+        auxiliaries = Auxiliaries(self.task, machine)
+        auxiliaries.start()
 
         try:
             # Mark the selected analysis machine in the database as started.
@@ -204,8 +204,8 @@ class AnalysisManager(Thread):
         except CuckooMachineError as e:
             log.error(str(e), extra={"task_id" : self.task.id})
 
-            # Stop the network analyzer modules.
-            networkanalyzer.stop()
+            # Stop the auxiliary modules.
+            auxiliaries.stop()
 
             return False
         else:
@@ -217,8 +217,8 @@ class AnalysisManager(Thread):
             except CuckooGuestError as e:
                 log.error(str(e), extra={"task_id" : self.task.id})
 
-                # Stop the network analyzer modules.
-                networkanalyzer.stop()
+                # Stop the auxiliary modules.
+                auxiliaries.stop()
 
                 return False
             else:
@@ -231,8 +231,8 @@ class AnalysisManager(Thread):
                     succeeded = False
 
         finally:
-            # Stop the network analyzer modules.
-            networkanalyzer.stop()
+            # Stop the auxiliary modules.
+            auxiliaries.stop()
 
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:

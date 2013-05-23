@@ -10,11 +10,11 @@ import subprocess
 
 from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.abstracts import Networking
+from lib.cuckoo.common.abstracts import Auxiliary
 
 log = logging.getLogger(__name__)
 
-class Tcpdump(Networking):
+class Tcpdump(Auxiliary):
     """Tcpdump Manager.
 
     This class handles the execution of the external tcpdump instance.
