@@ -190,8 +190,8 @@ def tasks_report(task_id, report_format="json"):
     }
 
     bz_formats = {
-        "all": {"type": "-","files": ["memory.dmp"]},
-        "dropped": {"type": "+","files": ["files"]},
+        "all": {"type": "-", "files": ["memory.dmp"]},
+        "dropped": {"type": "+", "files": ["files"]},
     }
 
     if report_format.lower() in formats:
@@ -208,7 +208,7 @@ def tasks_report(task_id, report_format="json"):
                                    "analyses",
                                    task_id)
             s = StringIO.StringIO()
-            tar = tarfile.open(fileobj = s, mode = "w:bz2")
+            tar = tarfile.open(fileobj=s, mode="w:bz2")
             for filedir in os.listdir(srcdir):
                 if bzf["type"] == "-" and not filedir in bzf["files"]:
                     tar.add(os.path.join(srcdir, filedir), arcname=filedir)
