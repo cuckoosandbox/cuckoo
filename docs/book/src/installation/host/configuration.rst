@@ -241,8 +241,9 @@ of such reports.
 volatility.conf
 ===============
 
-The volatility tool offers a large set of plugins for memory dump analysis.
-Some of them are quite slow. volatility.conf enables you to enable or disable the plugins of your choice.
+The volatility tool offers a large set of plugins for memory dump analysis. Some of them are quite slow.
+In volatility.conf enables you to enable or disable the plugins of your choice.
+To use Volatility you have to enable it before in processing.conf and enable memory_dump in cuckoo.conf.
 
 In the basic section you can configure the deletion of memory dumps after processing::
 

@@ -37,6 +37,7 @@ The following libraries are not strictly required, but their installation is rec
     * `Libvirt`_ (Optional): for using the KVM machine manager.
     * `Bottlepy`_ (Optional): for using the ``web.py`` and ``api.py`` utilities (use release 0.10 or above).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
+    * `Volatility`_ (Optional): used for forensic analysis on memory dump
 
 Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
 
@@ -61,6 +62,7 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Libvirt: http://www.libvirt.org
 .. _Bottlepy: http://www.bottlepy.org
 .. _Pefile: http://code.google.com/p/pefile/
+.. _Volatility: http://code.google.com/p/volatility/
 
 Virtualization Software
 =======================
@@ -128,7 +130,7 @@ This will gather os modifications and traces of rootkits. Other than the the
 default cuckoo hooking it will not be a continuous log but an analysis of a 
 snapshot made after the malware executed.
 
-In order to do memory dump forensics install volatility 2.3
+In order to do memory dump forensics install volatility 2.3 or above
 (other versions are not supported)
 
 .. _official download page: http://code.google.com/p/volatility/downloads/list
