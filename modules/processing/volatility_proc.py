@@ -27,13 +27,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 class VolatilityAPI():
-    """ Volatility api.
-    @copyright: The plugin connectors contain copied and modified code from the respective volatility plugins. Copyright (C) 2008 Volatile Systems
-    @author:       AAron Walters and Brendan Dolan-Gavitt
-    @license:      GNU General Public License 2.0 or later
-    @contact:      awalters@volatilesystems.com,bdolangavitt@wesleyan.edu
-    @organization: Volatile Systems
-    """
+    """ Volatility api."""
 
     def __init__(self, memdump, osprofile=None):
         """@param memdump: the memdump file path
@@ -465,26 +459,27 @@ class volmanager():
 
     def run(self):
         res = {}
+        vol = VolatilityAPI(self.memfile, self.osprofile)
         if self.voptions.pslist.enabled:
-            res["pslist"] = VolatilityAPI(self.memfile, self.osprofile).pslist()
+            res["pslist"] = vol.pslist()
         if self.voptions.malfind.enabled:
-            res["malfind"] = VolatilityAPI(self.memfile, self.osprofile).malfind()
+            res["malfind"] = vol.malfind()
         if self.voptions.apihooks.enabled:
-            res["apihooks"] = VolatilityAPI(self.memfile, self.osprofile).apihooks()
+            res["apihooks"] = vol.apihooks()
         if self.voptions.dlllist.enabled:
-            res["dlllist"] = VolatilityAPI(self.memfile, self.osprofile).dlllist()
+            res["dlllist"] = vol.dlllist()
         if self.voptions.handles.enabled:
-            res["handles"] = VolatilityAPI(self.memfile, self.osprofile).handles()
+            res["handles"] = vol.handles()
         if self.voptions.ldrmodules.enabled:
-            res["ldrmodules"] = VolatilityAPI(self.memfile, self.osprofile).ldrmodules()
+            res["ldrmodules"] = vol.ldrmodules()
         if self.voptions.mutantscan.enabled:
-            res["mutantscan"] = VolatilityAPI(self.memfile, self.osprofile).mutantscan()
+            res["mutantscan"] = vol.mutantscan()
         if self.voptions.devicetree.enabled:
-            res["devicetree"] = VolatilityAPI(self.memfile, self.osprofile).devicetree()
+            res["devicetree"] = vol.devicetree()
         if self.voptions.svcscan.enabled:
-            res["svcscan"] = VolatilityAPI(self.memfile, self.osprofile).svcscan()
+            res["svcscan"] = vol.svcscan()
         if self.voptions.modscan.enabled:
-            res["modscan"] = VolatilityAPI(self.memfile, self.osprofile).modscan()
+            res["modscan"] = vol.modscan()
         self.find_taint(res)
         self.cleanup()
         return self.mask_filter(res)
@@ -540,8 +535,8 @@ class VolatilityAnalysis(Processing):
                     try:
                         v = volmanager(self.memory_path)
                         vol = v.run()
-                    except:
-                        log.error("Generic error executing volatility")
+                    except Exception as e:
+                        log.error("Generic error executing volatility {0}".format(e))
             else:
                 log.error("Memory dump not found: to run volatility you have to enable memory_dump")
         else:
