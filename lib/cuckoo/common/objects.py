@@ -202,7 +202,7 @@ class File:
 
         return file_type
 
-    def get_yara(self, rulepath=os.path.join(CUCKOO_ROOT, "data", "yara", "index.yar")):
+    def get_yara(self, rulepath=os.path.join(CUCKOO_ROOT, "data", "yara", "index_binary.yar")):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
         """

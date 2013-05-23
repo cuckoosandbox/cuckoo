@@ -2,6 +2,6 @@
 // This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 // See the file 'docs/LICENSE' for copying permission.
 
-include "embedded.yar"
-include "shellcodes.yar"
-include "vmdetect.yar"
+include "signatures/embedded.yar"
+include "signatures/shellcodes.yar"
+include "signatures/vmdetect.yar"
