@@ -56,9 +56,9 @@
 
             // Set some options to change the graph layout
             var options_tasks_year = {
-                title: 'Last year',
-                hAxis: {title: 'Months', titleTextStyle: {color: 'red'}},
+                chartArea: {top: '30', left: '80', width: "100%"},
                 vAxis: {viewWindowMode: 'explicit', viewWindow: {min: '0'}},
+                legend: {position: 'bottom'},
                 series: series,
                 isStacked: true,
             };
@@ -99,9 +99,9 @@
 
             // Set some options to change the graph layout
             var options_tasks_month = {
-                title: 'Last month',
-                hAxis: {title: 'Days', titleTextStyle: {color: 'red'}},
+                chartArea: {top: '30', left: '80', width: "100%"},
                 vAxis: {viewWindowMode: 'explicit', viewWindow: {min: '0'}},
+                legend: {position: 'bottom'},
                 series: series,
                 isStacked: true
             };
@@ -142,9 +142,9 @@
 
             // Set some options to change the graph layout
             var options_tasks_day = {
-                title: 'Last day',
-                hAxis: {title: 'Hours', titleTextStyle: {color: 'red'}},
+                chartArea: {top: '30', left: '80', width: "100%"},
                 vAxis: {viewWindowMode: 'explicit', viewWindow: {min: '0'}},
+                legend: {position: 'bottom'},
                 series: series,
                 isStacked: true,
             };
@@ -160,12 +160,11 @@
 
 {%- block content %}
     <div class="tasks">
-        <div class="page-header">
-            <h3>Statistics</h3>
-        </div>
         {%- if stats %}
         {%- if stats.machines %}
-        <h4>Machines</h4>
+        <div class="page-header">
+            <h3>Machines</h3>
+        </div>
         <table class="table table-striped table-bordered">
             <tbody>
                 <tr>
@@ -193,7 +192,9 @@
         {%- endif %}
         
         {%- if stats.tasks %}
-        <h4>Tasks</h4>
+        <div class="page-header">
+            <h3>Tasks</h3>
+        </div>
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>
@@ -321,12 +322,26 @@
             </tbody>
         </table>
         {%- endif %}
-        
+
         {%- if stats.trends %}
-        <h4>Graphs</h4>
-        <div id="graph_tasks_year" style="width:100&#37;; height:400px;"></div>
-        <div id="graph_tasks_month" style="width:100&#37;; height:400px;"></div>
-        <div id="graph_tasks_day" style="width:100&#37;; height:400px;"></div>
+        <div class="page-header">
+            <h3>Graphs</h3>
+        </div>
+        
+        <div>
+            <h4>Last Year</h4>
+            <div id="graph_tasks_year" style="width:100&#37;; height:400px;"></div>
+        </div>
+        <hr class="bs-docs-separator">
+        <div>
+            <h4>Last Month</h4>
+            <div id="graph_tasks_month" style="width:100&#37;; height:400px;"></div>
+        </div>
+        <hr class="bs-docs-separator">
+        <div>
+            <h4>Last Day</h4>
+            <div id="graph_tasks_day" style="width:100&#37;; height:400px;"></div>
+        </div>
         {%- endif %}
         
         {%- else %}
