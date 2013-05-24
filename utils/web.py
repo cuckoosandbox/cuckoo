@@ -87,7 +87,7 @@ def get_pagination_limit(new_limit):
     logging.info("Got cookie: {0}".format(limit_cookie))
     
     if HAVE_DATEUTIL:
-        cookie_expires = time.mktime((datetime.now + relativedelta(years=1)).timetuple())
+        cookie_expires = time.mktime((datetime.now() + relativedelta(years=1)).timetuple())
     else:
         cookie_expires = time.mktime((datetime.now() + timedelta(days=365)).timetuple())
     
