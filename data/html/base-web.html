@@ -59,6 +59,7 @@ body {
 <link rel="apple-touch-icon-precomposed" sizes="114x114" href="ico/apple-touch-icon-114-precomposed.png">
 <link rel="apple-touch-icon-precomposed" sizes="72x72" href="ico/apple-touch-icon-72-precomposed.png">
 <link rel="apple-touch-icon-precomposed" href="ico/apple-touch-icon-57-precomposed.png">
+{% block custom_headers %}{% endblock %}
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -73,6 +74,7 @@ body {
                     <ul class="nav">
                         <li><a href="/">Home</a></li>
                         <li><a href="/browse/page/1">Browse</a></li>
+                        <li><a href="/stats">Stats</a></li>
                     </ul>
                 </div>
             </div>
