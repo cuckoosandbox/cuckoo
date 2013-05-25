@@ -213,11 +213,11 @@ def submit():
 
     if task_id:
         template = env.get_template("success.html")
+        return template.render({"taskid" : task_id,
+                            "submitfile" : data.filename.decode("utf-8")})
     else:
         template = env.get_template("error.html")
-    
-    return template.render({"taskid" : task_id,
-                            "submitfile" : data.filename.decode("utf-8")})
+        return template.render({"error" : "The server encountered an internal error while submitting {0}".format(data.filename.decode("utf-8"))})
 
 @route("/view/<task_id>")
 def view(task_id):
