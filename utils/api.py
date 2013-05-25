@@ -7,9 +7,11 @@ import os
 import sys
 import json
 import argparse
+from StringIO import StringIO
+from zipfile import ZipFile, BadZipfile, ZIP_STORED
 
 try:
-    from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response, HTTPError
+    from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response, HTTPError, static_file
 except ImportError:
     sys.exit("ERROR: Bottle.py library is missing")
 
@@ -231,6 +233,52 @@ def files_get(sha256):
         return open(file_path, "rb").read()
     else:
         return HTTPError(404, "File not found")
+
+@route("/dropped/get/<task_id>/all")
+def dropped_get_all(task_id):
+    root = os.path.abspath(os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                           task_id, "files"))
+
+    # Check to ensure the task actually exists
+    if not os.path.exists(root):
+        return HTTPError(404, "No task with id %s" % task_id)
+
+    download = "dropped_%s.zip" % task_id
+    zip_data = StringIO()
+
+    with ZipFile(zip_data, "w", ZIP_STORED) as dropped:
+        for base, dirs, files in os.walk(root):
+            for name in files:
+                # Save files to the zip without their full paths
+                path = os.path.join(base, name)
+                archive_name = os.path.join(os.path.split(base)[1], name)
+
+                try:
+                    dropped.write(path, archive_name)
+                except IOError:
+                    return HTTPError(404, "Error accessing dropped files.")
+
+    response.content_type = "application/octet-stream; charset=UTF-8"
+    response.set_header("Content-Disposition", 'attachment; filename="%s"'
+                        % download)
+    data = zip_data.getvalue()
+    zip_data.close()
+    return data
+
+@route("/dropped/get/<task_id>/<path:path>")
+def dropped_get(task_id, path):
+    root = os.path.abspath(os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                           task_id, "files"))
+
+    # Check to ensure the task actually exists
+    if not os.path.exists(root):
+        return HTTPError(404, "No task with id %s" % task_id)
+
+    (base, filename) = os.path.split(path)
+    random_dir = os.path.split(base)[1]
+
+    serving_root = os.path.abspath(os.path.join(root, random_dir))
+    return static_file(filename, serving_root, download=filename)
 
 @route("/machines/list", method="GET")
 def machines_list():
