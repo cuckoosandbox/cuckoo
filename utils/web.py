@@ -174,7 +174,7 @@ def submit():
     package  = request.forms.get("package", "")
     options  = request.forms.get("options", "")
     priority = request.forms.get("priority", 1)
-    timeout  = request.forms.get("timeout", "")
+    timeout  = request.forms.get("timeout", 0)
     machine  = request.forms.get("machine", "")
     memory  = request.forms.get("memory", "")
     data = request.files.file
@@ -211,7 +211,11 @@ def submit():
                          machine=machine,
                          memory=memory)
 
-    template = env.get_template("success.html")
+    if task_id:
+        template = env.get_template("success.html")
+    else:
+        template = env.get_template("error.html")
+    
     return template.render({"taskid" : task_id,
                             "submitfile" : data.filename.decode("utf-8")})
 
