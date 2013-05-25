@@ -183,8 +183,7 @@ def tasks_report(task_id, report_format="json"):
         "json" : "report.json",
         "html" : "report.html",
         "maec" : "report.maec-1.1.xml",
-        "metadata" : "report.metadata.xml",
-        "pickle" : "report.pickle"
+        "metadata" : "report.metadata.xml"
     }
 
     if report_format.lower() in formats:
