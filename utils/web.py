@@ -203,13 +203,13 @@ def submit():
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
 
-    task_id= db.add_path(file_path=temp_file_path,
-                         timeout=timeout,
-                         priority=priority,
-                         options=options,
-                         package=package,
-                         machine=machine,
-                         memory=memory)
+    task_id = db.add_path(file_path=temp_file_path,
+                          timeout=timeout,
+                          priority=priority,
+                          options=options,
+                          package=package,
+                          machine=machine,
+                          memory=memory)
 
     if task_id:
         template = env.get_template("success.html")
