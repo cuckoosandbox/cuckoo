@@ -276,7 +276,7 @@ Following is a list of currently available resources and a brief description. Fo
 
         **Parameters**:
             * ``id`` *(required)* *(int)* - ID of the task to get the report for
-            * ``format`` *(optional)* - format of the report to retrieve [json/html/maec/metadata/picke]. If none is specified the JSON report will be returned
+            * ``format`` *(optional)* - format of the report to retrieve [json/html/maec/metadata/pickle/all/dropped]. If none is specified the JSON report will be returned. ``all`` returns all the result files as tar.bz2, ``dropped`` the dropped files as tar.bz2
 
         **Status codes**:
             * ``200`` - no error
