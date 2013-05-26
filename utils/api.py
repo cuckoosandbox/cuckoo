@@ -7,6 +7,8 @@ import os
 import sys
 import json
 import argparse
+import tarfile
+import StringIO
 
 try:
     from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response, HTTPError
@@ -186,6 +188,11 @@ def tasks_report(task_id, report_format="json"):
         "metadata" : "report.metadata.xml"
     }
 
+    bz_formats = {
+        "all": {"type": "-", "files": ["memory.dmp"]},
+        "dropped": {"type": "+", "files": ["files"]},
+    }
+
     if report_format.lower() in formats:
         report_path = os.path.join(CUCKOO_ROOT,
                                    "storage",
@@ -193,6 +200,21 @@ def tasks_report(task_id, report_format="json"):
                                    task_id,
                                    "reports",
                                    formats[report_format.lower()])
+    elif report_format.lower() in bz_formats:
+            bzf = bz_formats[report_format.lower()]
+            srcdir = os.path.join(CUCKOO_ROOT,
+                                   "storage",
+                                   "analyses",
+                                   task_id)
+            s = StringIO.StringIO()
+            tar = tarfile.open(fileobj=s, mode="w:bz2")
+            for filedir in os.listdir(srcdir):
+                if bzf["type"] == "-" and not filedir in bzf["files"]:
+                    tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+                if bzf["type"] == "+" and filedir in bzf["files"]:
+                    tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+            tar.close()
+            return s.getvalue()
     else:
         return HTTPError(400, "Invalid report format")
 
