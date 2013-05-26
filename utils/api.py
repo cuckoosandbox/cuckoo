@@ -179,8 +179,6 @@ def tasks_delete(task_id):
 @route("/tasks/report/<task_id>", method="GET")
 @route("/tasks/report/<task_id>/<report_format>", method="GET")
 def tasks_report(task_id, report_format="json"):
-    response = {}
-
     formats = {
         "json" : "report.json",
         "html" : "report.html",
@@ -214,6 +212,7 @@ def tasks_report(task_id, report_format="json"):
                 if bzf["type"] == "+" and filedir in bzf["files"]:
                     tar.add(os.path.join(srcdir, filedir), arcname=filedir)
             tar.close()
+            response.content_type = "application/x-tar; charset=UTF-8"
             return s.getvalue()
     else:
         return HTTPError(400, "Invalid report format")
