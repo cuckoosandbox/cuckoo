@@ -121,7 +121,7 @@ class AnalysisManager(Thread):
             # If the user specified a specific machine ID or a platform to be
             # used, acquire the machine accordingly.
             machine = mmanager.acquire(machine_id=self.task.machine,
-                                            platform=self.task.platform)
+                                       platform=self.task.platform)
             machine_lock.release()
 
             # If no machine is available at this moment, wait for one second
@@ -150,7 +150,7 @@ class AnalysisManager(Thread):
         options["options"] = self.task.options
         options["enforce_timeout"] = self.task.enforce_timeout
         options["clock"] = self.task.clock
-        
+
         if not self.task.timeout or self.task.timeout == 0:
             options["timeout"] = self.cfg.timeouts.default
         else:
