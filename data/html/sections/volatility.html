@@ -214,7 +214,7 @@
         <!-- Ldrmodules -->
         <div class="well well-small">
             <a href="javascript:showHide('volatility_ldrmodules');"><b>Ldrmodules</b></a>
-            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#ldrmodules"><small>Listing loaded dlls</small></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#ldrmodules"><small>Listing hidden and loaded dlls</small></a>
             <div id="volatility_ldrmodules" style="display: none;">
                 {% if results.volatility.ldrmodules and results.volatility.ldrmodules.config.filter == True %}
                 <small>Filtered</small>
@@ -258,7 +258,7 @@
         <!-- Devicetree -->
         <div class="well well-small">
             <a href="javascript:showHide('volatility_devicetree');"><b>Devicetree</b></a>
-            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#devicetree"><small>Listing loaded dlls</small></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#devicetree"><small>Listing devices and drivers</small></a>
             <div id="volatility_devicetree" style="display: none;">
                 {% if results.volatility.devicetree and results.volatility.devicetree.config.filter == True %}
                 <small>Filtered</small>
@@ -326,7 +326,7 @@
         <!-- Svcscan -->
         <div class="well well-small">
             <a href="javascript:showHide('volatility_svcscan');"><b>Svcscan</b></a>
-            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#svcscan"><small>Listing loaded dlls</small></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#svcscan"><small>Scanning for services</small></a>
             <div id="volatility_svcscan" style="display: none;">
                 {% if results.volatility.svcscan and results.volatility.svcscan.config.filter == True %}
                 <small>Filtered</small>
@@ -367,7 +367,7 @@
         <!-- Modscan -->
         <div class="well well-small">
             <a href="javascript:showHide('volatility_modscan');"><b>Modscan</b></a>
-            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#modscan"><small>Listing loaded dlls</small></a>
+            <a href = "http://code.google.com/p/volatility/wiki/CommandReference#modscan"><small>Scan for (hidden) kernel drivers.</small></a>
             <div id="volatility_modscan" style="display: none;">
                 {% if results.volatility.modscan and results.volatility.modscan.config.filter == True %}
                 <small>Filtered</small>
