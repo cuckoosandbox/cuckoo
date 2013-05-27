@@ -74,7 +74,9 @@ class MachineManager(object):
                 # Strip params.
                 for key in machine.keys():
                     if machine[key]:
-                        machine[key] = machine[key].strip()
+                        # Only strip strings
+                        if isinstance(machine[key], str) or isinstance(machine[key], unicode):
+                            machine[key] = machine[key].strip()
 
                 self.db.add_machine(name=machine.id,
                                     label=machine.label,
