@@ -37,10 +37,11 @@ The following libraries are not strictly required, but their installation is rec
     * `Libvirt`_ (Optional): for using the KVM machine manager.
     * `Bottlepy`_ (Optional): for using the ``web.py`` and ``api.py`` utilities (use release 0.10 or above).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
+    * `python-dateutil`_ (Optional): used in the web GUI to work with dates in the graphs.
 
 Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
 
-    $ sudo apt-get install python-dpkt python-jinja2 python-magic python-pymongo python-libvirt python-bottle python-pefile
+    $ sudo apt-get install python-dpkt python-jinja2 python-magic python-pymongo python-libvirt python-bottle python-pefile python-dateutil
 
 Except for *python-magic* and *python-libvirt*, the others can be installed through ``pip`` too::
 
@@ -61,6 +62,7 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Libvirt: http://www.libvirt.org
 .. _Bottlepy: http://www.bottlepy.org
 .. _Pefile: http://code.google.com/p/pefile/
+.. _python-dateutil: http://labix.org/python-dateutil
 
 Virtualization Software
 =======================

@@ -6,6 +6,7 @@ import os
 import sys
 import json
 import logging
+import time
 from datetime import datetime
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -29,6 +30,12 @@ try:
 except ImportError:
     raise CuckooDependencyError("SQLAlchemy library not found, "
                                 "verify your setup")
+
+try:
+    from dateutil.relativedelta import relativedelta
+    HAVE_DATEUTIL = True
+except:
+    HAVE_DATEUTIL = False
 
 log = logging.getLogger(__name__)
 
@@ -827,22 +834,131 @@ class Database(object):
             session.close()
         return tasks
 
-    def count_tasks(self, status=None):
+    def count_tasks(self, status=None, min_added_on=None, max_added_on=None):
         """Count tasks in the database
         @param status: apply a filter according to the task status
+        @param min_added_on: apply a filter allowing only tasks added after this value
+        @param max_added_on: apply a filter allowing only tasks added before this value
         @return: number of tasks found
         """
+        # Validate arguments, use default values if invalid
+        if min_added_on and not isinstance(min_added_on, datetime):
+            min_added_on = None
+        if max_added_on and not isinstance(max_added_on, datetime):
+            max_added_on = None
+        
+        # Construct the query step by step
         session = self.Session()
         try:
+            query = session.query(Task)
             if status:
-                tasks_count = session.query(Task).filter(Task.status == status).count()
-            else:
-                tasks_count = session.query(Task).count()
+                query = query.filter(Task.status == status)
+            if min_added_on:
+                query = query.filter(Task.added_on >= min_added_on)
+            if max_added_on:
+                query = query.filter(Task.added_on <= max_added_on)
+            tasks_count = query.count()
         except SQLAlchemyError:
             return 0
         finally:
             session.close()
         return tasks_count
+
+    def get_tasks_trend(self, status=None, min_added_on=None, max_added_on=None, group_by="day"):
+        """Get task trends to use in graphs
+        @param status: apply a filter according to the task status
+        @param min_added_on: apply a filter allowing only tasks added after this value
+        @param max_added_on: apply a filter allowing only tasks added before this value
+        @param group_by: one of "month", "day", "hour", indicates the granularity used in the graphs
+        @return: number of tasks found
+        """
+        # Validate arguments, use default values if invalid
+        if min_added_on and not isinstance(min_added_on, datetime):
+            min_added_on = None
+        if max_added_on and not isinstance(max_added_on, datetime):
+            max_added_on = None
+        if group_by not in ["month", "day", "hour"]:
+            group_by = "day"
+        
+        # Construct the query step by step
+        session = self.Session()
+        try:
+            query = session.query(Task)
+            if status:
+                query = query.filter(Task.status == status)
+            if min_added_on:
+                query = query.filter(Task.added_on >= min_added_on)
+            if max_added_on:
+                query = query.filter(Task.added_on <= max_added_on)
+            tasks = query.order_by("added_on").all()
+        except SQLAlchemyError:
+            return {}
+        finally:
+            session.close()
+        
+        if not tasks:
+            return {}
+        
+        # Unfortunately SQLAlchemy does not provide generic cross-DBMS functions to work
+        # with dates so, instead of using backend-specific functions, we'll do the dirty
+        # work from python
+        if not min_added_on:
+            min_added_on = tasks[0].added_on
+        if not max_added_on:
+            max_added_on = datetime.now()
+        
+        if HAVE_DATEUTIL:
+            if group_by == "month":
+                dateformat = "%Y-%m"
+                granularity = relativedelta(months=1)
+            elif group_by == "day":
+                dateformat = "%Y-%m-%d"
+                granularity = relativedelta(days=1)
+            elif group_by == "hour":
+                dateformat = "%Y-%m-%d %H"
+                granularity = relativedelta(hours=1)
+            else:
+                # Should never happen
+                return {}
+        else:
+            if group_by == "month":
+                dateformat = "%Y-%m"
+                granularity = 30 * 24 * 60 * 60 # 30 days
+            elif group_by == "day":
+                dateformat = "%Y-%m-%d"
+                granularity = 24 * 60 * 60 # 24 hours
+            elif group_by == "hour":
+                dateformat = "%Y-%m-%d %H"
+                granularity = 60 * 60 # 1 hour
+            else:
+                # Should never happen
+                return {}
+        
+        # The double conversion with time.strptime(datetime.strftime()) is used to remove the unwanted
+        # part from each datetime object: for example, if you are grouping by months, you should only
+        # consider yearn and month; if grouping by hour, only consider year, month, day and hour.
+        if HAVE_DATEUTIL:
+            timestamps_range = []
+            curr_date = min_added_on
+            while curr_date <= max_added_on:
+                timestamps_range.append(int(time.mktime(time.strptime(curr_date.strftime(dateformat), dateformat))))
+                curr_date += granularity
+        else:
+            start_timestamp = int(time.mktime(time.strptime(min_added_on.strftime(dateformat), dateformat)))
+            end_timestamp = int(time.mktime(time.strptime(max_added_on.strftime(dateformat), dateformat)))
+            timestamps_range = range(start_timestamp, end_timestamp, granularity)
+            # range() excludes the last extreme, so let's put it back
+            timestamps_range.append(end_timestamp)
+        
+        # Create the tasks_trend dictionary whose keys are the timestamps, with the given
+        # granularity, and initialize all values to 0
+        tasks_trend = dict.fromkeys(timestamps_range, 0)
+        
+        for task in tasks:
+            timestamp = int(time.mktime(time.strptime(task.added_on.strftime(dateformat), dateformat)))
+            tasks_trend[timestamp] += 1
+        
+        return tasks_trend
 
     def view_task(self, task_id, details=False):
         """Retrieve information on a task.

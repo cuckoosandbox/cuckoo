@@ -11,6 +11,12 @@ import argparse
 from datetime import datetime, timedelta
 
 try:
+    from dateutil.relativedelta import relativedelta
+    HAVE_DATEUTIL = True
+except:
+    HAVE_DATEUTIL = False
+
+try:
     from jinja2.loaders import FileSystemLoader
     from jinja2.environment import Environment
 except ImportError:
@@ -22,15 +28,23 @@ except ImportError:
     sys.stderr.write("ERROR: Bottle library is missing")
     sys.exit(1)
 
+
 logging.basicConfig()
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file
+from lib.cuckoo.common.objects import Dictionary
+
+
+def timestampformat(value, format='%d %B %Y'):
+    """Custom filter for the jinja2 template"""
+    return datetime.fromtimestamp(value).strftime(format)
 
 # Templating engine.
-env = Environment()
+env = Environment(extensions=['jinja2.ext.loopcontrols'])
+env.filters['timestampformat'] = timestampformat
 env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT, "data", "html"))
 # Global db pointer.
 db = Database()
@@ -72,7 +86,10 @@ def get_pagination_limit(new_limit):
     limit_cookie = request.get_cookie("pagination_limit")
     logging.info("Got cookie: {0}".format(limit_cookie))
     
-    cookie_expires = time.mktime((datetime.now() + timedelta(days=365)).timetuple())
+    if HAVE_DATEUTIL:
+        cookie_expires = time.mktime((datetime.now() + relativedelta(years=1)).timetuple())
+    else:
+        cookie_expires = time.mktime((datetime.now() + timedelta(days=365)).timetuple())
     
     if new_limit <= 0:
         if limit_cookie:
@@ -92,6 +109,65 @@ def get_pagination_limit(new_limit):
         response.set_cookie('pagination_limit', str(limit), path='/', expires=cookie_expires)
     
     return limit
+
+def get_task_stats(min_added_on=None):
+    task_stats = Dictionary()
+    
+    task_stats.total      = db.count_tasks(min_added_on=min_added_on)
+    task_stats.pending    = db.count_tasks(status="pending", min_added_on=min_added_on)
+    task_stats.processing = db.count_tasks(status="processing", min_added_on=min_added_on)
+    task_stats.success    = db.count_tasks(status="success", min_added_on=min_added_on)
+    task_stats.failure    = db.count_tasks(status="failure", min_added_on=min_added_on)
+    
+    return task_stats
+
+def get_tasks_trend(min_added_on=None, max_added_on=None, group_by="day"):
+    tasks_trend = Dictionary()
+    tasks_trend.timestamps = None
+    tasks_trend.status = ["success", "failure", "pending", "processing"]
+    for status in tasks_trend.status:
+        tasks_trend[status] = db.get_tasks_trend(status=status,
+                                                 min_added_on=min_added_on,
+                                                 max_added_on=max_added_on,
+                                                 group_by=group_by)
+        if not tasks_trend.timestamps and tasks_trend[status]:
+            tasks_trend.timestamps = sorted(tasks_trend[status].keys())
+    return tasks_trend
+
+def get_basic_stats():
+    machines = db.list_machines()
+    
+    stats = Dictionary()
+    
+    stats.machines = Dictionary()
+    stats.machines.total = machines
+    stats.machines.free  = [machine for machine in machines if not machine.locked]
+    stats.machines.busy  = [machine for machine in machines if machine.locked]
+    
+    stats.tasks = Dictionary()
+    stats.tasks.overall      = get_task_stats()
+    if HAVE_DATEUTIL:
+        stats.tasks.six_months   = get_task_stats(datetime.now() - relativedelta(years=1))
+        stats.tasks.three_months = get_task_stats(datetime.now() - relativedelta(months=3))
+        stats.tasks.one_month    = get_task_stats(datetime.now() - relativedelta(months=1))
+        stats.tasks.one_week     = get_task_stats(datetime.now() - relativedelta(days=7))
+    else:
+        stats.tasks.six_months   = get_task_stats(datetime.now() - timedelta(days=180))
+        stats.tasks.three_months = get_task_stats(datetime.now() - timedelta(days=90))
+        stats.tasks.one_month    = get_task_stats(datetime.now() - timedelta(days=30))
+        stats.tasks.one_week     = get_task_stats(datetime.now() - timedelta(days=7))
+    
+    stats.trends = Dictionary()
+    if HAVE_DATEUTIL:
+        stats.trends.year  = get_tasks_trend(min_added_on=datetime.now() - relativedelta(years=1), group_by="month")
+        stats.trends.month = get_tasks_trend(min_added_on=datetime.now() - relativedelta(months=1), group_by="day")
+        stats.trends.day   = get_tasks_trend(min_added_on=datetime.now() - relativedelta(days=1), group_by="hour")
+    else:
+        stats.trends.year  = get_tasks_trend(min_added_on=datetime.now() - timedelta(days=360), group_by="month")
+        stats.trends.month = get_tasks_trend(min_added_on=datetime.now() - timedelta(days=30), group_by="day")
+        stats.trends.day   = get_tasks_trend(min_added_on=datetime.now() - timedelta(days=1), group_by="hour")
+
+    return stats
 
 @hook("after_request")
 def custom_headers():
@@ -230,6 +306,14 @@ def view(task_id):
         return HTTPError(code=404, output="Report not found")
 
     return open(report_path, "rb").read()
+
+@route("/stats")
+def show_stats():
+    stats = get_basic_stats()
+    
+    template = env.get_template("stats.html")
+    
+    return template.render({"stats": stats})
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
