@@ -67,9 +67,9 @@ class MachineManager(object):
                 machine.interface = machine_opts.get("interface", self.options_globals.sniffer.interface)
                 # If configured, use specific snapshot name, else leave it empty and use default behaviour.
                 machine.snapshot = machine_opts.get("snapshot", None)
-                # If configured, use specific resultserver IP and port, else leave it empty for default behaviour
-                machine.resultserver_ip = machine_opts.get("resultserver_ip", None)
-                machine.resultserver_port = machine_opts.get("resultserver_port", None)
+                # If configured, use specific resultserver IP and port, else use the default value.
+                machine.resultserver_ip = machine_opts.get("resultserver_ip", self.options_globals.resultserver.ip)
+                machine.resultserver_port = machine_opts.get("resultserver_port", self.options_globals.resultserver.port)
 
                 # Strip params.
                 for key in machine.keys():

@@ -142,6 +142,8 @@ class AnalysisManager(Thread):
         options = {}
 
         options["id"] = self.task.id
+        options["ip"] = self.machine.resultserver_ip
+        options["port"] = self.machine.resultserver_port
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
@@ -149,18 +151,6 @@ class AnalysisManager(Thread):
         options["enforce_timeout"] = self.task.enforce_timeout
         options["clock"] = self.task.clock
         
-        # Resultserver IP and port can be configured on a per-machine basis,
-        # else we will use the default values
-        if self.machine.resultserver_ip:
-            options["ip"] = self.machine.resultserver_ip
-        else:
-            options["ip"] = self.cfg.resultserver.ip
-        
-        if self.machine.resultserver_port:
-            options["port"] = self.machine.resultserver_port
-        else:
-            options["port"] = self.cfg.resultserver.port
-
         if not self.task.timeout or self.task.timeout == 0:
             options["timeout"] = self.cfg.timeouts.default
         else:
