@@ -47,6 +47,8 @@ class Machine(Base):
     locked_changed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(String(255), nullable=True)
     status_changed_on = Column(DateTime(timezone=False), nullable=True)
+    resultserver_ip = Column(String(255), nullable=True)
+    resultserver_port = Column(String(255), nullable=True)
 
     def __repr__(self):
         return "<Machine('%s','%s')>" % (self.id, self.name)
