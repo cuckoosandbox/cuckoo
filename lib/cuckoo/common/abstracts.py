@@ -83,7 +83,9 @@ class MachineManager(object):
                                     ip=machine.ip,
                                     platform=machine.platform,
                                     interface=machine.interface,
-                                    snapshot=machine.snapshot)
+                                    snapshot=machine.snapshot,
+                                    resultserver_ip=machine.resultserver_ip,
+                                    resultserver_port=machine.resultserver_port)
             except (AttributeError, CuckooOperationalError):
                 log.warning("Configuration details about machine %s are missing. Continue", machine_id)
                 continue
