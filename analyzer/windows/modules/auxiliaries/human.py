@@ -46,6 +46,7 @@ def foreach_child(hwnd, lparam):
         for button in buttons:
             if text.value.lower().startswith(button):
                 log.info("Found button \"%s\", clicking it" % text.value)
+                USER32.SetForegroundWindow(hwnd)
                 KERNEL32.Sleep(1000)
                 USER32.SendMessageW(hwnd, BM_CLICK, 0, 0)
 
