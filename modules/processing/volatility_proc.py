@@ -81,8 +81,6 @@ class VolatilityAPI():
 
     def pslist(self):
         """Volatility pslist plugin.
-        @author Michael Cohen <scudette@users.sourceforge.net> and Mike Auty <mike.auty@gmail.com>
-        @copyright Copyright (C) 2007-2011 Volatile Systems
         @see volatility/plugins/taskmods.py
         """
         log.debug("Volatility pslist for: {0}".format(self.memdump))
@@ -106,8 +104,6 @@ class VolatilityAPI():
     def malfind(self, dump_dir=None):
         """Volatility malfind plugin.
         @param dump_dir: optional directory for dumps
-        @author Michael Ligh <michael.ligh@mnin.org>
-        @copyright Copyright (c) 2010, 2011, 2012 Michael Ligh <michael.ligh@mnin.org>
         @see volatility/plugins/malware/malfind.py
         """
         log.debug("Volatility malfind for: {0}".format(self.memdump))
@@ -136,7 +132,6 @@ class VolatilityAPI():
 
     def apihooks(self):
         """Volatility apihooks plugin.
-        @author Michael Ligh <michael.ligh@mnin.org>
         @see volatility/plugins/malware/apihooks.py
         """
         log.debug("Volatility apihooks for: {0}".format(self.memdump))
@@ -160,8 +155,6 @@ class VolatilityAPI():
 
     def dlllist(self):
         """Volatility dlllist plugin.
-        @author Michael Cohen <scudette@users.sourceforge.net> and Mike Auty <mike.auty@gmail.com>
-        @copyright Copyright (C) 2007-2011 Volatile Systems
         @see volatility/plugins/taskmods.py
         """
         log.debug("Volatility dlllist for: {0}".format(self.memdump))
@@ -185,8 +178,6 @@ class VolatilityAPI():
 
     def handles(self):
         """Volatility handles plugin.
-        @author Michael Ligh <michael.ligh@mnin.org>
-        @copyright Copyright (C) 2007-2011 Volatile Systems
         @see volatility/plugins/handles.py
         """
         log.debug("Volatility handles for: {0}".format(self.memdump))
@@ -206,8 +197,6 @@ class VolatilityAPI():
 
     def ldrmodules(self):
         """Volatility ldrmodules plugin.
-        @author Michael Ligh <michael.ligh@mnin.org>
-        @copyright Copyright (c) 2010, 2011, 2012 Michael Ligh <michael.ligh@mnin.org>
         @see volatility/plugins/malware/malfind.py
         """
         log.debug("Volatility ldrmodules for: {0}".format(self.memdump))
@@ -267,11 +256,7 @@ class VolatilityAPI():
 
     def mutantscan(self):
         """Volatility mutantscan plugin.
-        @author:       Andreas Schuster
-        @license:      GNU General Public License 2.0 or later
-        @contact:      a.schuster@forensikblog.de
-        @organization: http://computer.forensikblog.de/en/
-        @see volatility/plugins/fielscan.py
+        @see volatility/plugins/filescan.py
         """
         log.debug("Volatility mutantscan for: {0}".format(self.memdump))
         self.__config()
@@ -300,8 +285,6 @@ class VolatilityAPI():
 
     def devicetree(self):
         """Volatility devicetree plugin.
-        @author Michael Ligh <michael.ligh@mnin.org>
-        @copyright Copyright (c) 2010, 2011, 2012 Michael Ligh <michael.ligh@mnin.org>
         @see volatility/plugins/malware/devicetree.py
         """
         log.debug("Volatility devicetree for: {0}".format(self.memdump))
@@ -363,8 +346,6 @@ class VolatilityAPI():
 
     def svcscan(self):
         """Volatility svcscan plugin - scans for services.
-        @author Michael Ligh <michael.ligh@mnin.org>
-        @copyright Copyright (c) 2010, 2011, 2012 Michael Ligh <michael.ligh@mnin.org>
         @see volatility/plugins/malware/svcscan.py
         """
         log.debug("Volatility svcscan for: {0}".format(self.memdump))
@@ -388,10 +369,6 @@ class VolatilityAPI():
 
     def modscan(self):
         """Volatility modscan plugin.
-        @author:       AAron Walters and Brendan Dolan-Gavitt
-        @license:      GNU General Public License 2.0 or later
-        @contact:      awalters@volatilesystems.com,bdolangavitt@wesleyan.edu
-        @organization: Volatile Systems
         @see volatility/plugins/modscan.py
         """
         log.debug("Volatility modscan for: {0}".format(self.memdump))
@@ -413,8 +390,6 @@ class VolatilityAPI():
 
     def imageinfo(self):
         """Volatility imageinfo plugin.
-        @author:       Mike Auty <mike.auty@gmail.com>
-        @license:      GNU General Public License 2.0 or later
         @see volatility/plugins/imageinfo.py
         """
         log.debug("Volatility imageinfo for: {0}".format(self.memdump))
