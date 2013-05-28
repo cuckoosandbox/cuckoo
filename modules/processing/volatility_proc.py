@@ -407,7 +407,7 @@ class VolatilityAPI():
         return {"config": {}, "data": res}
 
 
-class volmanager():
+class VolatilityManager():
     """Handle several volatility results."""
 
     def __init__(self, memfile, osprofile=None):
@@ -508,7 +508,7 @@ class VolatilityAnalysis(Processing):
         if HAVE_VOLATILITY:
             if self.memory_path and os.path.exists(self.memory_path):
                     try:
-                        v = volmanager(self.memory_path)
+                        v = VolatilityManager(self.memory_path)
                         vol = v.run()
                     except Exception as e:
                         log.error("Generic error executing volatility {0}".format(e))
