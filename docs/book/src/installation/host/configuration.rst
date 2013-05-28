@@ -30,7 +30,9 @@ want to pay more attention to are:
 .. warning:: Check your interface for resultserver IP! Some virtualization software (for example Virtualbox)
     doesn't bring up the virtual networking interface until a virtual machine is started.
     Cuckoo needs to have the interface where you bind the resultserver up before the start, so please
-    check your network setup.
+    check your network setup. If you are using NAT/PAT in your network, you can set up the resultserver IP
+    to 0.0.0.0 to listen on all interfaces, then use the specific options `resultserver_ip` and `resultserver_port`
+    in *<machinemanager>.conf* to specify the address and port as every machine sees them.
 
 .. _<machinemanager>_conf:
 
@@ -88,6 +90,22 @@ Following is the default *conf/virtualbox.conf* file::
     # overrides the default interface specified in cuckoo.conf
     # Example (virbr0 is the interface name):
     # interface = virbr0
+    
+    # (Optional) Specify the IP of the Result Server, as your virtual machine sees it.
+    # The Result Server will always bind to the address and port specified in cuckoo.conf,
+    # however you could set up your virtual network to use NAT/PAT, so you can specify here 
+    # the IP address for the Result Server as your machine sees it. If you don't specify an
+    # address here, the machine will use the default value from cuckoo.conf.
+    # Example:
+    resultserver_ip = 192.168.100.1
+
+    # (Optional) Specify the port for the Result Server, as your virtual machine sees it.
+    # The Result Server will always bind to the address and port specified in cuckoo.conf,
+    # however you could set up your virtual network to use NAT/PAT, so you can specify here
+    # the port for the Result Server as your machine sees it. If you don't specify a port
+    # here, the machine will use the default value from cuckoo.conf.
+    # Example:
+    # resultserver_port = 2042
 
 You can use this same configuration structure for any other machine manager module.
 
@@ -126,6 +144,22 @@ Following is the default *conf/kvm.conf* file::
     # overrides the default interface specified in cuckoo.conf
     # Example (virbr0 is the interface name):
     # interface = virbr0
+
+    # (Optional) Specify the IP of the Result Server, as your virtual machine sees it.
+    # The Result Server will always bind to the address and port specified in cuckoo.conf,
+    # however you could set up your virtual network to use NAT/PAT, so you can specify here 
+    # the IP address for the Result Server as your machine sees it. If you don't specify an
+    # address here, the machine will use the default value from cuckoo.conf.
+    # Example:
+    resultserver_ip = 192.168.100.1
+
+    # (Optional) Specify the port for the Result Server, as your virtual machine sees it.
+    # The Result Server will always bind to the address and port specified in cuckoo.conf,
+    # however you could set up your virtual network to use NAT/PAT, so you can specify here
+    # the port for the Result Server as your machine sees it. If you don't specify a port
+    # here, the machine will use the default value from cuckoo.conf.
+    # Example:
+    # resultserver_port = 2042
 
 .. note::
 
