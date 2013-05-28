@@ -264,7 +264,7 @@ After that every plugin has an own section for configuration::
     # Expect it to be very slow when enabled
     # http://code.google.com/p/volatility/wiki/CommandReference#apihooks
     [apihooks]
-    enabled = on
+    enabled = off
     filter = on
 
 The filter configuration helps you to remove known clean data from the resulting report. It can be configured seperately for every plugin.
