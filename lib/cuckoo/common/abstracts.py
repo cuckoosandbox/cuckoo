@@ -67,18 +67,25 @@ class MachineManager(object):
                 machine.interface = machine_opts.get("interface", self.options_globals.sniffer.interface)
                 # If configured, use specific snapshot name, else leave it empty and use default behaviour.
                 machine.snapshot = machine_opts.get("snapshot", None)
+                # If configured, use specific resultserver IP and port, else use the default value.
+                machine.resultserver_ip = machine_opts.get("resultserver_ip", self.options_globals.resultserver.ip)
+                machine.resultserver_port = machine_opts.get("resultserver_port", self.options_globals.resultserver.port)
 
                 # Strip params.
                 for key in machine.keys():
                     if machine[key]:
-                        machine[key] = machine[key].strip()
+                        # Only strip strings
+                        if isinstance(machine[key], str) or isinstance(machine[key], unicode):
+                            machine[key] = machine[key].strip()
 
                 self.db.add_machine(name=machine.id,
                                     label=machine.label,
                                     ip=machine.ip,
                                     platform=machine.platform,
                                     interface=machine.interface,
-                                    snapshot=machine.snapshot)
+                                    snapshot=machine.snapshot,
+                                    resultserver_ip=machine.resultserver_ip,
+                                    resultserver_port=machine.resultserver_port)
             except (AttributeError, CuckooOperationalError):
                 log.warning("Configuration details about machine %s are missing. Continue", machine_id)
                 continue
