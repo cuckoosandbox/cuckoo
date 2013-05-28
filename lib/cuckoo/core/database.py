@@ -47,6 +47,8 @@ class Machine(Base):
     locked_changed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(String(255), nullable=True)
     status_changed_on = Column(DateTime(timezone=False), nullable=True)
+    resultserver_ip = Column(String(255), nullable=False)
+    resultserver_port = Column(String(255), nullable=False)
 
     def __repr__(self):
         return "<Machine('%s','%s')>" % (self.id, self.name)
@@ -76,13 +78,17 @@ class Machine(Base):
                  ip,
                  platform,
                  interface,
-                 snapshot):
+                 snapshot,
+                 resultserver_ip,
+                 resultserver_port):
         self.name = name
         self.label = label
         self.ip = ip
         self.platform = platform
         self.interface = interface
         self.snapshot = snapshot
+        self.resultserver_ip = resultserver_ip
+        self.resultserver_port = resultserver_port
 
 class Guest(Base):
     """Tracks guest run."""
@@ -367,7 +373,9 @@ class Database(object):
                     ip,
                     platform,
                     interface,
-                    snapshot):
+                    snapshot,
+                    resultserver_ip,
+                    resultserver_port):
         """Add a guest machine.
         @param name: machine id
         @param label: machine label
@@ -375,6 +383,8 @@ class Database(object):
         @param platform: machine supported platform
         @param interface: sniffing interface for this machine
         @param snapshot: snapshot name to use instead of the current one, if configured
+        @param resultserver_ip: IP address of the Result Server
+        @param resultserver_port: port of the Result Server
         """
         session = self.Session()
         machine = Machine(name=name,
@@ -382,7 +392,9 @@ class Database(object):
                           ip=ip,
                           platform=platform,
                           interface=interface,
-                          snapshot=snapshot)
+                          snapshot=snapshot,
+                          resultserver_ip=resultserver_ip,
+                          resultserver_port=resultserver_port)
         session.add(machine)
         try:
             session.commit()
