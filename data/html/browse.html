@@ -2,7 +2,12 @@
 {% block content %}
     <div class="tasks">
         <div class="page-header">
-            <h3>Analysis Tasks <small>performed, processing and pending analyses</small></h3>
+            <div class="row-fluid">
+                <div class="span8">
+                <h3>Analysis Tasks <small>performed, processing and pending analyses</small></h3>
+                </div>
+                {% include "pagination-rpp.html" %}
+            </div>
         </div>
         {% if rows %}
             {% include "pagination-menu.html" %}
