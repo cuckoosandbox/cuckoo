@@ -27,12 +27,6 @@ from lib.cuckoo.common.colors import *
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
 from lib.cuckoo.core.database import Database
 
-try:
-    import graypy
-    HAVE_GRAYPY = True
-except ImportError:
-    HAVE_GRAYPY = False
-
 log = logging.getLogger()
 
 def check_python_version():
@@ -40,21 +34,18 @@ def check_python_version():
     @raise CuckooStartupError: if version is not supported.
     """
     if sys.version_info[:2] != (2, 7):
-        raise CuckooStartupError("You are running an incompatible version "
-                                 "of Python, please use 2.7")
+        raise CuckooStartupError("You are running an incompatible version of Python, please use 2.7")
 
 def check_working_directory():
     """Checks if working directories are ready.
     @raise CuckooStartupError: if directories are not properly configured.
     """
     if not os.path.exists(CUCKOO_ROOT):
-        raise CuckooStartupError("You specified a non-existing root "
-                                 "directory: %s" % CUCKOO_ROOT)
+        raise CuckooStartupError("You specified a non-existing root directory: {0}".foramt(CUCKOO_ROOT))
 
     cwd = os.path.join(os.getcwd(), "cuckoo.py")
     if not os.path.exists(cwd):
-        raise CuckooStartupError("You are not running Cuckoo from it's "
-                                 "root directory")
+        raise CuckooStartupError("You are not running Cuckoo from it's root directory")
 
 def check_configs():
     """Checks if config files exist.
@@ -65,17 +56,18 @@ def check_configs():
 
     for config in configs:
         if not os.path.exists(config):
-            raise CuckooStartupError("Config file does not exist at path: %s"
-                                     % config)
+            raise CuckooStartupError("Config file does not exist at path: {0}".format(config))
 
     return True
 
 def create_structure():
     """Creates Cuckoo directories."""
-    folders = ["log",
-               "storage",
-               os.path.join("storage", "analyses"),
-               os.path.join("storage", "binaries")]
+    folders = [
+        "log",
+        "storage",
+        os.path.join("storage", "analyses"),
+        os.path.join("storage", "binaries")
+    ]
 
     try:
         create_folders(root=CUCKOO_ROOT,folders=folders)
@@ -109,8 +101,7 @@ def check_version():
 
     if not response_data["error"]:
         if response_data["response"] == "NEW_VERSION":
-            print(red(" Outdated! ") + "Cuckoo Sandbox version %s is "
-                  "available now.\n" % response_data["current"])
+            print(red(" Outdated! ") + "Cuckoo Sandbox version {0} is available now.\n".format(response_data["current"]))
         else:
             print(green(" Good! ") + "You have the latest version available.\n")
 
@@ -153,20 +144,6 @@ def init_logging():
     dh = DatabaseHandler()
     dh.setLevel(logging.ERROR)
     log.addHandler(dh)
-
-    if cfg.graylog.enabled:
-        if HAVE_GRAYPY:
-            gray = graypy.GELFHandler(cfg.graylog.host, cfg.graylog.port)
-
-            try:
-                level = logging.getLevelName(cfg.graylog.level.upper())
-            except ValueError:
-                level = logging.ERROR
-
-            gray.setLevel(level)
-            log.addHandler(gray)
-        else:
-            raise CuckooDependencyError("Graypy is not installed")
 
     log.setLevel(logging.INFO)
 
