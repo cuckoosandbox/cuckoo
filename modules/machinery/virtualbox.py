@@ -9,13 +9,13 @@ import logging
 import subprocess
 import os.path
 
-from lib.cuckoo.common.abstracts import MachineManager
+from lib.cuckoo.common.abstracts import Machinery
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
 
 log = logging.getLogger(__name__)
 
-class VirtualBox(MachineManager):
+class VirtualBox(Machinery):
     """Virtualization layer for VirtualBox."""
 
     # VM states.

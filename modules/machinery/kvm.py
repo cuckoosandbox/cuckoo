@@ -4,9 +4,9 @@
 
 import logging
 
-from lib.cuckoo.common.abstracts import LibVirtMachineManager
+from lib.cuckoo.common.abstracts import LibVirtMachinery
 
-class KVM(LibVirtMachineManager):
+class KVM(LibVirtMachinery):
     """Virtualization layer for KVM based on python-libvirt."""
 
     # Set KVM connection string.

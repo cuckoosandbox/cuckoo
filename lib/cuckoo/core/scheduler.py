@@ -11,25 +11,19 @@ import Queue
 from threading import Thread, Lock
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.exceptions import CuckooMachineError
-from lib.cuckoo.common.exceptions import CuckooGuestError
-from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.exceptions import CuckooCriticalError
-from lib.cuckoo.common.abstracts import  MachineManager
+from lib.cuckoo.common.exceptions import CuckooMachineError, CuckooGuestError, CuckooOperationalError, CuckooCriticalError
+from lib.cuckoo.common.abstracts import  Machinery
 from lib.cuckoo.common.objects import Dictionary, File
 from lib.cuckoo.common.utils import  create_folders, create_folder
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.resultserver import Resultserver
-from lib.cuckoo.core.sniffer import Sniffer
-from lib.cuckoo.core.processor import Processor
-from lib.cuckoo.core.reporter import Reporter
-from lib.cuckoo.core.plugins import import_plugin, list_plugins
+from lib.cuckoo.core.plugins import import_plugin, list_plugins, RunAuxiliary, RunProcessing, RunSignatures, RunReporting
 
 log = logging.getLogger(__name__)
 
-mmanager = None
+machinery = None
 machine_lock = Lock()
 
 class AnalysisManager(Thread):
@@ -120,8 +114,8 @@ class AnalysisManager(Thread):
             machine_lock.acquire()
             # If the user specified a specific machine ID or a platform to be
             # used, acquire the machine accordingly.
-            machine = mmanager.acquire(machine_id=self.task.machine,
-                                       platform=self.task.platform)
+            machine = machinery.acquire(machine_id=self.task.machine,
+                                        platform=self.task.platform)
             machine_lock.release()
 
             # If no machine is available at this moment, wait for one second
@@ -188,25 +182,20 @@ class AnalysisManager(Thread):
         try:
             Resultserver().add_task(self.task, self.machine)
         except Exception as e:
-            mmanager.release(self.machine.label)
+            machinery.release(self.machine.label)
             self.errors.put(e)
 
-        # If enabled in the configuration, start the tcpdump instance.
-        if self.cfg.sniffer.enabled:
-            sniffer = Sniffer(self.cfg.sniffer.tcpdump)
-            
-            sniffer.start(interface=self.machine.interface,
-                          host=self.machine.ip,
-                          file_path=os.path.join(self.storage, "dump.pcap"))
+        aux = RunAuxiliary(task=self.task, machine=self.machine)
+        aux.start()
 
         try:
             # Mark the selected analysis machine in the database as started.
             guest_log = Database().guest_start(self.task.id,
                                                self.machine.name,
                                                self.machine.label,
-                                               mmanager.__class__.__name__)
+                                               machinery.__class__.__name__)
             # Start the machine.
-            mmanager.start(self.machine.label)
+            machinery.start(self.machine.label)
         except CuckooMachineError as e:
             log.error(str(e), extra={"task_id" : self.task.id})
 
@@ -239,14 +228,13 @@ class AnalysisManager(Thread):
                     succeeded = False
 
         finally:
-            # Stop the sniffer.
-            if sniffer:
-                sniffer.stop()
+            # Stop Auxiliary modules.
+            aux.stop()
 
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:
                 try:
-                    mmanager.dump_memory(self.machine.label,
+                    machinery.dump_memory(self.machine.label,
                                          os.path.join(self.storage, "memory.dmp"))
                 except NotImplementedError:
                     log.error("The memory dump functionality is not available "
@@ -256,7 +244,7 @@ class AnalysisManager(Thread):
 
             try:
                 # Stop the analysis machine.
-                mmanager.stop(self.machine.label)
+                machinery.stop(self.machine.label)
             except CuckooMachineError as e:
                 log.warning("Unable to stop machine %s: %s", self.machine.label, e)
 
@@ -265,7 +253,7 @@ class AnalysisManager(Thread):
 
             try:
                 # Release the analysis machine.
-                mmanager.release(self.machine.label)
+                machinery.release(self.machine.label)
             except CuckooMachineError as e:
                 log.error("Unable to release machine %s, reason %s. "
                           "You might need to restore it manually", self.machine.label, e)
@@ -277,8 +265,9 @@ class AnalysisManager(Thread):
 
     def process_results(self):
         """Process the analysis results and generate the enabled reports."""
-        results = Processor(self.task.id).run()
-        Reporter(self.task.id).run(results)
+        results = RunProcessing(task_id=self.task.id).run()
+        RunSignatures(results=results).run()
+        RunReporting(task_id=self.task.id, results=results).run()
 
         # If the target is a file and the user enabled the option,
         # delete the original copy.
@@ -286,8 +275,7 @@ class AnalysisManager(Thread):
             try:
                 os.remove(self.task.target)
             except OSError as e:
-                log.error("Unable to delete original file at path \"%s\": "
-                          "%s", self.task.target, e)
+                log.error("Unable to delete original file at path \"%s\": %s", self.task.target, e)
 
         log.info("Task #%d: reports generation completed (path=%s)", self.task.id, self.storage)
 
@@ -321,46 +309,45 @@ class Scheduler:
 
     def initialize(self):
         """Initialize the machine manager."""
-        global mmanager
+        global machinery
 
-        mmanager_name = self.cfg.cuckoo.machine_manager
+        machinery_name = self.cfg.cuckoo.machine_manager
 
-        log.info("Using \"%s\" machine manager", mmanager_name)
+        log.info("Using \"%s\" machine manager", machinery_name)
 
         # Get registered class name. Only one machine manager is imported,
         # therefore there should be only one class in the list.
-        plugin = list_plugins("machinemanagers")[0]
+        plugin = list_plugins("machinery")[0]
         # Initialize the machine manager.
-        mmanager = plugin()
+        machinery = plugin()
 
         # Find its configuration file.
-        conf = os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % mmanager_name)
+        conf = os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % machinery_name)
 
         if not os.path.exists(conf):
             raise CuckooCriticalError("The configuration file for machine "
                                       "manager \"{0}\" does not exist at path: "
-                                      "{1}".format(mmanager_name, conf))
+                                      "{1}".format(machinery_name, conf))
 
         # Provide a dictionary with the configuration options to the
         # machine manager instance.
-        mmanager.set_options(Config(conf))
+        machinery.set_options(Config(conf))
         # Initialize the machine manager.
-        mmanager.initialize(mmanager_name)
+        machinery.initialize(machinery_name)
 
         # At this point all the available machines should have been identified
         # and added to the list. If none were found, Cuckoo needs to abort the
         # execution.
-        if len(mmanager.machines()) == 0:
+        if len(machinery.machines()) == 0:
             raise CuckooCriticalError("No machines available")
         else:
-            log.info("Loaded %s machine/s", len(mmanager.machines()))
-
+            log.info("Loaded %s machine/s", len(machinery.machines()))
 
     def stop(self):
         """Stop scheduler."""
         self.running = False
         # Shutdown machine manager (used to kill machines that still alive).
-        mmanager.shutdown()
+        machinery.shutdown()
 
     def start(self):
         """Start scheduler."""
@@ -377,7 +364,7 @@ class Scheduler:
 
             # If no machines are available, it's pointless to fetch for
             # pending tasks. Loop over.
-            if mmanager.availables() == 0:
+            if machinery.availables() == 0:
                 continue
 
             # Fetch a pending analysis task.

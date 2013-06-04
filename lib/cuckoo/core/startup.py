@@ -12,6 +12,7 @@ import pkgutil
 import logging
 import logging.handlers
 
+import modules.auxiliary
 import modules.processing
 import modules.signatures
 import modules.reporting
@@ -173,41 +174,23 @@ def init_modules():
     """Initializes plugins."""
     log.debug("Importing modules...")
 
+    # Import all auxiliary modules.
+    import_package(modules.auxiliary)
     # Import all processing modules.
     import_package(modules.processing)
     # Import all signatures.
     import_package(modules.signatures)
-
-    # Import only enabled reporting modules.
-    report_cfg = Config(cfg=os.path.join(CUCKOO_ROOT,
-                                         "conf",
-                                         "reporting.conf"))
-
-    prefix = modules.reporting.__name__ + "."
-    for loader, name, ispkg in pkgutil.iter_modules(modules.reporting.__path__):
-        if ispkg:
-            continue
-
-        try:
-            options = report_cfg.get(name)
-        except (AttributeError, CuckooOperationalError):
-            log.debug("Reporting module %s not found in "
-                      "configuration file" % name)
-
-        if not options.enabled:
-            continue
-
-        import_plugin("%s.%s" % (modules.reporting.__name__, name))
+    # Import all reporting modules.
+    import_package(modules.reporting)
 
     # Import machine manager.
-    import_plugin("modules.machinemanagers.%s"
-                  % Config().cuckoo.machine_manager)
+    import_plugin("modules.machinery.{0}".format(Config().cuckoo.machine_manager))
 
-    for category, mods in list_plugins().items():
-        log.debug("Imported \"%s\" modules:" % category)
+    for category, entries in list_plugins().items():
+        log.debug("Imported \"%s\" modules:", category)
 
-        for mod in mods:
-            if mod == mods[-1]:
-                log.debug("\t `-- %s" % mod.__name__)
+        for entry in entries:
+            if entry == entries[-1]:
+                log.debug("\t `-- %s", entry.__name__)
             else:
-                log.debug("\t |-- %s" % mod.__name__)
+                log.debug("\t |-- %s", entry.__name__)

@@ -8,12 +8,12 @@ import subprocess
 import os.path
 import time
 
-from lib.cuckoo.common.abstracts import MachineManager
+from lib.cuckoo.common.abstracts import Machinery
 from lib.cuckoo.common.exceptions import CuckooMachineError
 
 log = logging.getLogger(__name__)
 
-class VMware(MachineManager):
+class VMware(Machinery):
     """Virtualization layer for VMware Workstation using vmrun utility."""
 
     def _initialize_check(self):

@@ -26,7 +26,7 @@ from lib.core.config import Config
 from lib.core.startup import create_folders, init_logging
 from lib.core.privileges import grant_debug_privilege
 from lib.core.packages import choose_package
-import modules.auxiliaries as auxiliaries
+import modules.auxiliary as auxiliary
 
 log = logging.getLogger()
 
@@ -495,8 +495,8 @@ class Analyzer:
 
         # Initialize Auxiliary modules
         Auxiliary()
-        prefix = auxiliaries.__name__ + "."
-        for loader, name, ispkg in pkgutil.iter_modules(auxiliaries.__path__, prefix):
+        prefix = auxiliary.__name__ + "."
+        for loader, name, ispkg in pkgutil.iter_modules(auxiliary.__path__, prefix):
             if ispkg:
                 continue
 
@@ -508,10 +508,10 @@ class Analyzer:
 
         # Walk through the available auxiliary modules.
         aux_enabled = []
-        for auxiliary in Auxiliary.__subclasses__():
+        for module in Auxiliary.__subclasses__():
             # Try to start the auxiliary module.
             try:
-                aux = auxiliary()
+                aux = module()
                 aux.start()
             except (NotImplementedError, AttributeError):
                 log.warning("Auxiliary module %s was not implemented", aux.__class__.__name__)

@@ -20,8 +20,31 @@ from lib.cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
 
-class MachineManager(object):
-    """Base abstract class for analysis machine manager."""
+class Auxiliary(object):
+    """Base abstract class for auxiliary modules."""
+
+    def __init__(self):
+        self.task = None
+        self.machine = None
+        self.options = None
+
+    def set_task(self, task):
+        self.task = task
+
+    def set_machine(self, machine):
+        self.machine = machine
+
+    def set_options(self, options):
+        self.options = options
+
+    def start(self):
+        raise NotImplementedError
+
+    def stop(self):
+        raise NotImplementedError
+
+class Machinery(object):
+    """Base abstract class for machinery modules."""
 
     def __init__(self):
         self.module_name = ""
@@ -64,7 +87,7 @@ class MachineManager(object):
                 machine.platform = machine_opts["platform"]
                 machine.ip = machine_opts["ip"]
                 # If configured, use specific network interface for this machine, else use the default value.
-                machine.interface = machine_opts.get("interface", self.options_globals.sniffer.interface)
+                machine.interface = machine_opts.get("interface", None)
                 # If configured, use specific snapshot name, else leave it empty and use default behaviour.
                 machine.snapshot = machine_opts.get("snapshot", None)
                 # If configured, use specific resultserver IP and port, else use the default value.
@@ -86,8 +109,8 @@ class MachineManager(object):
                                     snapshot=machine.snapshot,
                                     resultserver_ip=machine.resultserver_ip,
                                     resultserver_port=machine.resultserver_port)
-            except (AttributeError, CuckooOperationalError):
-                log.warning("Configuration details about machine %s are missing. Continue", machine_id)
+            except (AttributeError, CuckooOperationalError) as e:
+                log.warning("Configuration details about machine %s are missing: %s", machine_id, e)
                 continue
 
     def _initialize_check(self):
@@ -216,7 +239,7 @@ class MachineManager(object):
             waitme += 1
             current = self._status(label)
 
-class LibVirtMachineManager(MachineManager):
+class LibVirtMachinery(Machinery):
     """Libvirt based machine manager.
 
     If you want to write a custom module for a virtualization software supported
@@ -235,14 +258,14 @@ class LibVirtMachineManager(MachineManager):
             import libvirt
         except ImportError:
             raise CuckooDependencyError("Unable to import libvirt")
-        super(LibVirtMachineManager, self).__init__()
+        super(LibVirtMachinery, self).__init__()
 
     def initialize(self, module):
         """Initialize machine manager module. Ovverride defualt to set proper
         connection string.
         @param module:  machine manager module
         """
-        super(LibVirtMachineManager, self).initialize(module)
+        super(LibVirtMachinery, self).initialize(module)
 
     def _initialize_check(self):
         """Runs all checks when a machine manager is initialized.
@@ -254,7 +277,7 @@ class LibVirtMachineManager(MachineManager):
         # Preload VMs
         self.vms = self._fetch_machines()
         # Base checks.
-        super(LibVirtMachineManager, self)._initialize_check()
+        super(LibVirtMachinery, self)._initialize_check()
 
     def start(self, label):
         """Starts a virtual machine.
@@ -328,7 +351,7 @@ class LibVirtMachineManager(MachineManager):
 
     def shutdown(self):
         """Override shutdown to free libvirt handlers, anyway they print errors."""
-        super(LibVirtMachineManager, self).shutdown()
+        super(LibVirtMachinery, self).shutdown()
         # Free handlers.
         self.vms = None
 
