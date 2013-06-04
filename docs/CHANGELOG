@@ -11,6 +11,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Added option to REST API to return compressed archives of files ("all" and "dropped")
 * Added option to set Result Server IP and port for each virtual machine
 * Added processing module for volatility to analyze memory dumps, disabled by default
+* Added "processed" state to database. Set after reports are generated
 
 Cuckoo Sandbox 0.6 (2013-04-15)
 ===============================

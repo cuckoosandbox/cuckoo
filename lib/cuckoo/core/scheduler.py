@@ -288,6 +288,8 @@ class AnalysisManager(Thread):
 
         self.process_results()
 
+        Database().processed(self.task.id, success)
+
         log.debug("Released database task #%d with status %s", self.task.id, success)
         log.info("Task #%d: analysis procedure completed", self.task.id)
 
