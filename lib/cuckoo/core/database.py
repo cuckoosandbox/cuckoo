@@ -478,9 +478,10 @@ class Database(object):
 
     def processed(self, task_id, success=True):
         """Mark a task as processed.
-        @param task_id: task id.
-        @param success: processed with status.
-        @return: operation status.
+
+        @param task_id: task id
+        @param success: processed with status
+        @return: operation status
         """
         session = self.Session()
         try:
@@ -490,8 +491,10 @@ class Database(object):
             return False
 
         if success:
-            task.status = "processed"        
-        
+            task.status = "processed"
+        else:
+            task.status = "failure"
+
         try:
             session.commit()
         except SQLAlchemyError:
