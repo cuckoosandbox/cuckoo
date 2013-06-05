@@ -15,6 +15,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Transitioned network sniffer to auxiliary module
 * Renamed MachineManagers to Machinery modules
 * Removed support for GrayLog2
+* Added "processed" state to database. Set after reports are generated
 
 Cuckoo Sandbox 0.6 (2013-04-15)
 ===============================
