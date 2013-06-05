@@ -157,7 +157,7 @@ def tasks_view(task_id):
 
     return jsonize(response)
 
-@route("/tasks/reschedule/<task_id>", methid="GET")
+@route("/tasks/reschedule/<task_id>", method="GET")
 def tasks_reschedule(task_id):
     response = {}
 
