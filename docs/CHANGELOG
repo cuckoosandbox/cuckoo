@@ -3,19 +3,20 @@
 Cuckoo Sandbox 0.7 (TBD)
 ========================
 
-* Fixed virtual machine clock, now is updated to current time or specified by user via --clock option
-* Removed pickle reporting module
+* Introduced Auxiliary modules
 * Added option to set sniffing interface for each virtual machine
 * Added option to set snapshot for each virtual machine
 * Added pagination to API and web interface
 * Added option to REST API to return compressed archives of files ("all" and "dropped")
 * Added option to set Result Server IP and port for each virtual machine
 * Added processing module for volatility to analyze memory dumps, disabled by default
-* Introduced Auxiliary modules
+* Added new "reported" status for analysis tasks
+* Added automated rescheduling of locked tasks at startup
 * Transitioned network sniffer to auxiliary module
 * Renamed MachineManagers to Machinery modules
+* Fixed virtual machine clock, now is updated to current time or specified by user via --clock option
 * Removed support for GrayLog2
-* Added "processed" state to database. Set after reports are generated
+* Removed pickle reporting module
 
 Cuckoo Sandbox 0.6 (2013-04-15)
 ===============================

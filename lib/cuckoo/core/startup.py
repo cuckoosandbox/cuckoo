@@ -25,7 +25,7 @@ from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.colors import *
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
-from lib.cuckoo.core.database import Database
+from lib.cuckoo.core.database import Database, TASK_RUNNING
 
 log = logging.getLogger()
 
@@ -146,6 +146,20 @@ def init_logging():
     log.addHandler(dh)
 
     log.setLevel(logging.INFO)
+
+def init_tasks():
+    """Check tasks and reschedule uncompleted ones."""
+    db = Database()
+
+    log.debug("Checking for locked tasks...")
+
+    tasks = db.list_tasks()
+
+    if len(tasks) > 0:
+        for task in tasks:
+            if task.status == TASK_RUNNING:
+                db.reschedule(task.id)
+                log.info("Rescheduled task with ID {0} and target {1}".format(task.id, task.target))
 
 def init_modules():
     """Initializes plugins."""

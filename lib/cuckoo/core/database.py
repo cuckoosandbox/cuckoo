@@ -673,11 +673,14 @@ class Database(object):
         task.enforce_timeout = enforce_timeout
 
         if clock:
-            try:
-                task.clock = datetime.strptime(clock, "%m-%d-%Y %H:%M:%S")
-            except ValueError:
-                log.warning("The date you specified has an invalid format, using current timestamp")
-                task.clock = datetime.now()
+            if isinstance(clock, str) or isinstance(clock, unicode):
+                try:
+                    task.clock = datetime.strptime(clock, "%m-%d-%Y %H:%M:%S")
+                except ValueError:
+                    log.warning("The date you specified has an invalid format, using current timestamp")
+                    task.clock = datetime.now()
+            else:
+                task.clock = clock
 
         session.add(task)
 
@@ -781,6 +784,32 @@ class Database(object):
                         memory,
                         enforce_timeout,
                         clock)
+
+    def reschedule(self, task_id):
+        """Reschedule a task.
+        @param task_id: ID of the task to reschedule.
+        @return: ID of the newly created task.
+        """
+        task = self.view_task(task_id)
+        if not task:
+            return None
+
+        if task.category == "file":
+            add = self.add_path
+        elif task.category == "url":
+            add = self.add_url
+
+        return add(task.target,
+                   task.timeout,
+                   task.package,
+                   task.options,
+                   task.priority,
+                   task.custom,
+                   task.machine,
+                   task.platform,
+                   task.memory,
+                   task.enforce_timeout,
+                   task.clock)
 
     def list_tasks(self, limit=None, details=False, offset=None):
         """Retrieve list of task.
