@@ -27,10 +27,14 @@ try:
     from sqlalchemy.pool import NullPool
     Base = declarative_base()
 except ImportError:
-    raise CuckooDependencyError("SQLAlchemy library not found, "
-                                "verify your setup")
+    raise CuckooDependencyError("SQLAlchemy library not found, verify your setup")
 
 log = logging.getLogger(__name__)
+
+TASK_PENDING = "pending"
+TASK_RUNNING = "running"
+TASK_COMPLETED = "completed"
+TASK_REPORTED = "reported"
 
 class Machine(Base):
     """Configured virtual machines to be used as guests."""
@@ -51,7 +55,7 @@ class Machine(Base):
     resultserver_port = Column(String(255), nullable=False)
 
     def __repr__(self):
-        return "<Machine('%s','%s')>" % (self.id, self.name)
+        return "<Machine('{0}','{1}')>".format(self.id, self.name)
 
     def to_dict(self):
         """Converts object to dict.
@@ -108,7 +112,7 @@ class Guest(Base):
                      unique=True)
 
     def __repr__(self):
-        return "<Guest('%s','%s')>" % (self.id, self.name)
+        return "<Guest('{0}','{1}')>".format(self.id, self.name)
 
     def to_dict(self):
         """Converts object to dict.
@@ -156,7 +160,7 @@ class Sample(Base):
                             unique=True), )
 
     def __repr__(self):
-        return "<Sample('%s','%s')>" % (self.id, self.sha256)
+        return "<Sample('{0}','{1}')>".format(self.id, self.sha256)
 
     def to_dict(self):
         """Converts object to dict.
@@ -226,7 +230,7 @@ class Error(Base):
         self.task_id = task_id
 
     def __repr__(self):
-        return "<Error('%s','%s','%s')>" % (self.id, self.message, self.task_id)
+        return "<Error('{0}','{1}','{2}')>".format(self.id, self.message, self.task_id)
 
 class Task(Base):
     """Analysis task queue."""
@@ -252,13 +256,12 @@ class Task(Base):
                       nullable=False)
     started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(Enum("pending",
-                         "processing",
-                         "failure",
-                         "success",
-                         "processed",
+    status = Column(Enum(TASK_PENDING,
+                         TASK_RUNNING,
+                         TASK_COMPLETED,
+                         TASK_REPORTED,
                          name="status_type"),
-                         server_default="pending",
+                         server_default=TASK_PENDING,
                          nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     sample = relationship("Sample", backref="tasks")
@@ -288,7 +291,7 @@ class Task(Base):
         self.target = target
 
     def __repr__(self):
-        return "<Task('%s','%s')>" % (self.id, self.target)
+        return "<Task('{1}','{2}')>".format(self.id, self.target)
 
 class Database(object):
     """Analysis queue database.
@@ -314,9 +317,9 @@ class Database(object):
                     try:
                         create_folder(folder=db_dir)
                     except CuckooOperationalError as e:
-                        raise CuckooDatabaseError("Unable to create database "
-                                                  "directory: %s" % e)
-            self.engine = create_engine("sqlite:///%s" % db_file, poolclass=NullPool)
+                        raise CuckooDatabaseError("Unable to create database directory: {0}".format(e))
+
+            self.engine = create_engine("sqlite:///{0}".format(db_file), poolclass=NullPool)
 
         # Disable SQL logging. Turn it on for debugging.
         self.engine.echo = False
@@ -329,8 +332,7 @@ class Database(object):
         try:
             Base.metadata.create_all(self.engine)
         except SQLAlchemyError as e:
-            raise CuckooDatabaseError("Unable to create or connect to "
-                                      "database: %s" % e)
+            raise CuckooDatabaseError("Unable to create or connect to database: {0}".format(e))
 
         # Get db session.
         self.Session = sessionmaker(bind=self.engine)
@@ -349,24 +351,6 @@ class Database(object):
             session.rollback()
         finally:
             session.close()
-
-    def _set_status(self, task_id, status):
-        """Set task status.
-        @param task_id: task identifier
-        @param status: status string
-        @return: operation status
-        """
-        session = self.Session()
-        try:
-            session.query(Task).get(task_id).status = status
-            session.commit()
-        except SQLAlchemyError:
-            session.rollback()
-            return False
-        finally:
-            session.close()
-
-        return True
 
     def add_machine(self,
                     name,
@@ -397,6 +381,7 @@ class Database(object):
                           resultserver_ip=resultserver_ip,
                           resultserver_port=resultserver_port)
         session.add(machine)
+
         try:
             session.commit()
         except SQLAlchemyError:
@@ -404,106 +389,49 @@ class Database(object):
         finally:
             session.close()
 
-    def fetch(self):
-        """Fetch a task.
-        @return: task dict or None.
+    def set_status(self, task_id, status):
+        """Set task status.
+        @param task_id: task identifier
+        @param status: status string
+        @return: operation status
         """
         session = self.Session()
         try:
-            row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
+            row = session.query(Task).get(task_id)
+            row.status = status
+
+            if status == TASK_RUNNING:
+                row.started_on = datetime.now()
+            elif status == TASK_COMPLETED:
+                row.completed_on = datetime.now()
+
+            session.commit()
         except SQLAlchemyError:
-            return None
+            session.rollback()
         finally:
-            session.expunge(row)
             session.close()
-        return row
 
-    def process(self, task_id):
-        """Set task status as processing.
-        @param task_id: task identifier
-        @return: operation status
-        """
-        return self._set_status(task_id, "processing")
-
-    def fetch_and_process(self):
-        """Fetches a task waiting to be processed and locks it for processing.
+    def fetch(self, lock=True):
+        """Fetches a task waiting to be processed and locks it for running.
         @return: None or task
         """
         session = self.Session()
+
         try:
-            row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
-            if row:
-                row.status = "processing"
-                row.started_on = datetime.now()
-            else:
+            row = session.query(Task).filter(Task.status == TASK_PENDING).order_by("priority desc, added_on").first()
+
+            if not row:
                 return None
-            session.commit()
-            session.refresh(row)
+
+            if lock:
+                self.set_status(task_id=row.id, status=TASK_RUNNING)
+                session.refresh(row)
         except SQLAlchemyError:
             session.rollback()
-            return None
         finally:
             session.close()
+
         return row
-
-    def complete(self, task_id, success=True):
-        """Mark a task as completed.
-        @param task_id: task id.
-        @param success: completed with status.
-        @return: operation status.
-        """
-        session = self.Session()
-        try:
-            task = session.query(Task).get(task_id)
-        except SQLAlchemyError:
-            session.close()
-            return False
-
-        if success:
-            task.status = "success"
-        else:
-            task.status = "failure"
-
-        task.completed_on = datetime.now()
-
-        try:
-            session.commit()
-        except SQLAlchemyError:
-            session.rollback()
-            return False
-        finally:
-            session.close()
-
-        return True
-
-    def processed(self, task_id, success=True):
-        """Mark a task as processed.
-
-        @param task_id: task id
-        @param success: processed with status
-        @return: operation status
-        """
-        session = self.Session()
-        try:
-            task = session.query(Task).get(task_id)
-        except SQLAlchemyError:
-            session.close()
-            return False
-
-        if success:
-            task.status = "processed"
-        else:
-            task.status = "failure"
-
-        try:
-            session.commit()
-        except SQLAlchemyError:
-            session.rollback()
-            return False
-        finally:
-            session.close()
-
-        return True
 
     def guest_start(self, task_id, name, label, manager):
         """Logs guest start.

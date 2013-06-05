@@ -14,6 +14,7 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.startup import init_modules
+from lib.cuckoo.core.database import Database, TASK_REPORTED
 from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 
 def main():
@@ -29,6 +30,7 @@ def main():
     
     if args.report:
         RunReporting(task_id=args.id, results=results).run()
+        Database().set_status(args.id, TASK_REPORTED)
 
 if __name__ == "__main__":
     main()

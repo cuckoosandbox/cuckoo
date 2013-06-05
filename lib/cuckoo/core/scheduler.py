@@ -16,7 +16,7 @@ from lib.cuckoo.common.abstracts import  Machinery
 from lib.cuckoo.common.objects import Dictionary, File
 from lib.cuckoo.common.utils import  create_folders, create_folder
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.core.database import Database
+from lib.cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED
 from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.resultserver import Resultserver
 from lib.cuckoo.core.plugins import import_plugin, list_plugins, RunAuxiliary, RunProcessing, RunSignatures, RunReporting
@@ -158,7 +158,6 @@ class AnalysisManager(Thread):
 
     def launch_analysis(self):
         """Start analysis."""
-        sniffer = None
         succeeded = False
 
         log.info("Starting analysis of %s \"%s\" (task=%d)", self.task.category.upper(), self.task.target, self.task.id)
@@ -199,9 +198,8 @@ class AnalysisManager(Thread):
         except CuckooMachineError as e:
             log.error(str(e), extra={"task_id" : self.task.id})
 
-            # Stop the sniffer.
-            if sniffer:
-                sniffer.stop()
+            # Stop Auxiliary modules.
+            aux.stop()
 
             return False
         else:
@@ -213,9 +211,8 @@ class AnalysisManager(Thread):
             except CuckooGuestError as e:
                 log.error(str(e), extra={"task_id" : self.task.id})
 
-                # Stop the sniffer.
-                if sniffer:
-                    sniffer.stop()
+                # Stop Auxiliary modules.
+                aux.stop()
 
                 return False
             else:
@@ -284,13 +281,13 @@ class AnalysisManager(Thread):
     def run(self):
         """Run manager thread."""
         success = self.launch_analysis()
-        Database().complete(self.task.id, success)
-
-        self.process_results()
-
-        Database().processed(self.task.id, success)
+        Database().set_status(self.task.id, TASK_COMPLETED)
 
         log.debug("Released database task #%d with status %s", self.task.id, success)
+
+        self.process_results()
+        Database().set_status(self.task.id, TASK_REPORTED)
+
         log.info("Task #%d: analysis procedure completed", self.task.id)
 
 class Scheduler:
@@ -370,7 +367,7 @@ class Scheduler:
                 continue
 
             # Fetch a pending analysis task.
-            task = self.db.fetch_and_process()
+            task = self.db.fetch()
 
             if task:
                 log.debug("Processing task #%s", task.id)
@@ -382,8 +379,8 @@ class Scheduler:
 
             # Deal with errors.
             try:
-                exc = errors.get(block=False)
+                error = errors.get(block=False)
             except Queue.Empty:
                 pass
             else:
-                raise exc
+                raise error
