@@ -62,8 +62,7 @@ def list_plugins(group=None):
         return _modules
 
 class RunAuxiliary(object):
-    """Auxiliary modules manager.
-    """
+    """Auxiliary modules manager."""
 
     def __init__(self, task, machine):
         self.task = task
@@ -215,8 +214,7 @@ class RunProcessing(object):
         return results
 
 class RunSignatures(object):
-    """Run Signatures.
-    """
+    """Run Signatures."""
 
     def __init__(self, results):
         self.results = results
@@ -323,8 +321,7 @@ class RunReporting:
     """
 
     def __init__(self, task_id, results):
-        """@param analysis_path: analysis folder path.
-        """
+        """@param analysis_path: analysis folder path."""
         self.task = Database().view_task(task_id).to_dict()
         self.results = results
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
