@@ -157,6 +157,21 @@ def tasks_view(task_id):
 
     return jsonize(response)
 
+@route("/tasks/reschedule/<task_id>", methid="GET")
+def tasks_reschedule(task_id):
+    response = {}
+
+    if not db.view_task(task_id):
+        return HTTPError(404, "There is no analysis with the specified ID")
+
+    new_id = db.reschedule(task_id)
+    if new_id:
+        response["status"] = "OK"
+    else:
+        return HTTPError(500, "An error occurred while trying to reschedule the task")
+
+    return jsonize(response)
+
 @route("/tasks/delete/<task_id>", method="GET")
 def tasks_delete(task_id):
     response = {}
