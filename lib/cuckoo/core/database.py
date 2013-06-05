@@ -815,6 +815,7 @@ class Database(object):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
+        @param category: filter by category
         @param offset: list offset
         @return: list of tasks.
         """
