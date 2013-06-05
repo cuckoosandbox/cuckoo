@@ -811,7 +811,7 @@ class Database(object):
                    task.enforce_timeout,
                    task.clock)
 
-    def list_tasks(self, limit=None, details=False, offset=None):
+    def list_tasks(self, limit=None, details=False, category=None, offset=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
@@ -820,10 +820,14 @@ class Database(object):
         """
         session = self.Session()
         try:
+            search = session.query(Task)
+
+            if category:
+                search = search.filter(Task.category == category)
             if details:
-                tasks = session.query(Task).options(joinedload("guest"), joinedload("errors")).order_by("added_on desc").limit(limit).offset(offset).all()
-            else:
-                tasks = session.query(Task).order_by("added_on desc").limit(limit).offset(offset).all()
+                search = search.options(joinedload("guest"), joinedload("errors"))
+
+            tasks = search.order_by("added_on desc").limit(limit).offset(offset).all()
         except SQLAlchemyError:
             return None
         finally:
