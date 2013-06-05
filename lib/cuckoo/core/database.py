@@ -714,6 +714,7 @@ class Database(object):
                             file_type=obj.get_type(),
                             ssdeep=obj.get_ssdeep())
             session.add(sample)
+
             try:
                 session.commit()
             except IntegrityError:
@@ -742,23 +743,26 @@ class Database(object):
         task.platform = platform
         task.memory = memory
         task.enforce_timeout = enforce_timeout
+
         if clock:
             try:
                 task.clock = datetime.strptime(clock, "%m-%d-%Y %H:%M:%S")
             except ValueError:
-                log.warning("Cannot set date as requeste: wrong format! Setting date as now.")
+                log.warning("The date you specified has an invalid format, using current timestamp")
                 task.clock = datetime.now()
+
         session.add(task)
 
         try:
             session.commit()
-            id = task.id
+            task_id = task.id
         except SQLAlchemyError:
             session.rollback()
             return None
         finally:
             session.close()
-        return id
+
+        return task_id
 
     def add_path(self,
                  file_path,
