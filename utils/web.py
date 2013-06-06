@@ -57,7 +57,7 @@ def parse_tasks(rows):
                 task["processed"] = True
 
             if row.category == "file":
-                sample = db.view_sample(row.id)
+                sample = db.view_sample(row.sample_id)
                 task["md5"] = sample.md5
 
             tasks.append(task)
