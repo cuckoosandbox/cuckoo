@@ -231,6 +231,21 @@ def view(task_id):
 
     return open(report_path, "rb").read()
 
+@route("/pcap/<task_id>")
+def get_pcap(task_id):
+    if not task_id.isdigit():
+        return HTTPError(code=404, output="The specified ID is invalid")
+
+    pcap_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "dump.pcap")
+
+    if not os.path.exists(pcap_path):
+        return HTTPError(code=404, output="PCAP not found")
+
+    response.content_type = 'application/vnd.tcpdump.pcap'
+    response.set_header('Content-Disposition', "attachment; filename=cuckoo_task_%s.pcap" % (task_id,))
+
+    return open(pcap_path, "rb").read()
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-H", "--host", help="Host to bind the web server on", default="0.0.0.0", action="store", required=False)
