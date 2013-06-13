@@ -219,6 +219,20 @@ def submit():
         template = env.get_template("error.html")
         return template.render({"error" : "The server encountered an internal error while submitting {0}".format(data.filename.decode("utf-8"))})
 
+@route("/download_report/<task_id>")
+def downlaod_report(task_id):
+    if not task_id.isdigit():
+        return HTTPError(code=404, output="The specified ID is invalid")
+
+    report_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "reports", "report.html")
+
+    if not os.path.exists(report_path):
+        return HTTPError(code=404, output="Report not found")
+
+    response.content_type = 'text/html'
+    response.set_header('Content-Disposition', "attachment; filename=cuckoo_task_%s.html" % (task_id,))
+
+    return open(report_path, "rb").read()
 @route("/view/<task_id>")
 def view(task_id):
     if not task_id.isdigit():
@@ -229,7 +243,7 @@ def view(task_id):
     if not os.path.exists(report_path):
         return HTTPError(code=404, output="Report not found")
 
-    return open(report_path, "rb").read()
+    return open(report_path, "rb").read().replace("<!-- BOTTLEREMOVEME", "").replace("BOTTLEREMOVEME --!>", "")
 
 @route("/pcap/<task_id>")
 def get_pcap(task_id):
