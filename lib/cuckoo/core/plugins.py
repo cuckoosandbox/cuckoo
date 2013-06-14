@@ -281,8 +281,7 @@ class RunSignatures(object):
                     "families": current.families
                 }
 
-                log.debug("Analysis at \"%s\" matched signature \"%s\"",
-                          self.analysis_path, current.name)
+                log.debug("Analysis matched signature \"%s\"", current.name)
 
                 # Return information on the matched signature.
                 return matched
