@@ -523,8 +523,7 @@ class VolatilityManager(object):
             try:
                 os.remove(self.memfile)
             except OSError as e:
-                log.error("Unable to delete memory dump file at path \"%s\" ",
-                    self.memfile)
+                log.error("Unable to delete memory dump file at path \"%s\" ", self.memfile)
 
 class VolatilityAnalysis(Processing):
     """Volatility Analyzer."""
@@ -535,18 +534,17 @@ class VolatilityAnalysis(Processing):
         """
         self.key = "volatility"
 
-        vol = {}
+        results = {}
         if HAVE_VOLATILITY:
             if self.memory_path and os.path.exists(self.memory_path):
                 try:
-                    v = VolatilityManager(self.memory_path)
-                    vol = v.run()
+                    vol = VolatilityManager(self.memory_path)
+                    results = vol.run()
                 except Exception as e:
                     log.error("Generic error executing volatility {0}".format(e))
             else:
                 log.error("Memory dump not found: to run volatility you have to enable memory_dump")
         else:
             log.error("Cannot run volatility module: volatility library not available")
-            return None
 
-        return vol
+        return results
