@@ -212,19 +212,3 @@ class GuestManager:
         @return agent's status.
         """
         return self.server.get_status()
-
-    def reboot(self):
-        """Reboot analysis sandbox.
-        @raise CuckooGuestError: if sandbox cannot be reached.
-        """
-        try:
-            self.server.reboot()
-
-        except socket.error:
-            raise CuckooGuestError("%s: cannot communicate with agent."
-                                   % self.id)
-
-        except socket.timeout:
-            raise CuckooGuestError("%s: guest communication timeout: " \
-                                   "unable to get results, check networking" \
-                                   " or try to increase timeout" % self.id)
