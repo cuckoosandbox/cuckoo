@@ -63,7 +63,13 @@ class Fog(MachineManager):
         status = self._status(label)
         if status == self.RUNNING:
             log.debug("Rebooting machine: %s." % label)
-            guest.reboot()
+            shutdown = subprocess.Popen(['net', 'rpc', 'shutdown', '-I', label, '-U', 'administrator%mcafee', '-r', '-f', '--timeout=5'], stdout=subprocess.PIPE)
+            output = shutdown.communicate()[0]
+            if not "Shutdown of remote machine succeeded" in output:
+                raise CuckooMachineError('Unable to initiate RPC request')
+                
+            else:
+                log.debug("Reboot success: %s." % label)
 
         else:
             log.debug("Currently rebooting: %s." % label)
