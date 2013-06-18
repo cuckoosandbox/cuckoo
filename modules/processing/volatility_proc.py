@@ -184,10 +184,10 @@ class VolatilityAPI(object):
 
             for module in task.get_load_modules():
                 new["loaded_modules"].append({
-                    "dll_base": str(m.DllBase),
-                    "dll_size": str(m.SizeOfImage),
-                    "dll_full_name": str(m.FullDllName or ""),
-                    "dll_load_count": int(m.LoadCount),
+                    "dll_base": str(module.DllBase),
+                    "dll_size": str(module.SizeOfImage),
+                    "dll_full_name": str(module.FullDllName or ""),
+                    "dll_load_count": int(module.LoadCount),
                 })
 
             results.append(new)
@@ -452,7 +452,9 @@ class VolatilityManager(object):
         self.voptions = Config(os.path.join(CUCKOO_ROOT, "conf", "volatility.conf"))
 
         for pid in self.voptions.mask.pid_generic.split(","):
-            self.mask_pid.append(int(pid.strip()))
+            pid = pid.strip()
+            if pid:
+                self.mask_pid.append(int(pid))
 
         self.no_filter = not self.voptions.mask.enabled
         self.osprofile = osprofile or self.get_osprofile()
@@ -541,7 +543,7 @@ class VolatilityAnalysis(Processing):
                     vol = VolatilityManager(self.memory_path)
                     results = vol.run()
                 except Exception as e:
-                    log.error("Generic error executing volatility {0}".format(e))
+                    log.exception("Generic error executing volatility")
             else:
                 log.error("Memory dump not found: to run volatility you have to enable memory_dump")
         else:
