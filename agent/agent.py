@@ -201,18 +201,6 @@ class Agent:
 
         return True
 
-    def reboot(self):
-        """Reboot host.
-        @return: task status, always True.
-        """
-        # '-t 5' instructs windows to wait
-        # five seconds before shutting down.
-        # This allows the agent to respond. If it
-        # is reduced, errors will be raised.
-        cmd = 'shutdown -r -t 5'
-        x = subprocess.Popen(cmd, shell=True)
-        return True
-
 if __name__ == "__main__":
     try:
         if not BIND_IP:
