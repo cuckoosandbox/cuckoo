@@ -527,14 +527,14 @@ class VolatilityManager(object):
             except OSError as e:
                 log.error("Unable to delete memory dump file at path \"%s\" ", self.memfile)
 
-class VolatilityAnalysis(Processing):
+class Memory(Processing):
     """Volatility Analyzer."""
 
     def run(self):
         """Run analysis.
         @return: volatility results dict.
         """
-        self.key = "volatility"
+        self.key = "memory"
 
         results = {}
         if HAVE_VOLATILITY:
