@@ -83,21 +83,13 @@ class MongoDB(Report):
         # instead of creating a new one. Also delete old api calls as they will be recreated
         # later on.
 
-        # Use ID and timestamp to detect dups, beacuse if using only id if the SQL db
-        # is cleaned up you may delete not duplicated analysis.
-        old_analysis = self.db.analysis.find_one({"info.id": results["info"]["id"],
-                                                  "info.started": results["info"]["started"],
-                                                  "info.ended": results["info"]["ended"]})
-        if old_analysis:
-            old_id = old_analysis.get("_id")
-            if old_id:
-                report["_id"] = old_id
-                try:
-                    for process in old_analysis["behavior"]["processes"]:
-                        for chunk_id in process["calls"]:
-                            self.db.calls.remove(chunk_id)
-                except KeyError:
-                    pass
+        # Store the sample in GridFS.
+        if results["info"]["category"] == "file":
+            sample = File(self.file_path)
+            if sample.valid():
+                sample_id = self.store_file(sample, filename=results["target"]["file"]["name"])
+                report["target"] = {"file_id" : sample_id}
+                report["target"].update(results["target"])
 
         # Store the PCAP file in GridFS and reference it back in the report.
         pcap_path = os.path.join(self.analysis_path, "dump.pcap")
