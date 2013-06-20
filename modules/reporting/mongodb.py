@@ -70,7 +70,7 @@ class MongoDB(Report):
         # From pymongo docs:
         #  Returns the name of the created index if an index is actually created.
         #  Returns None if the index already exists.
-        self.db.fs.files.ensure_index("sha256", unique=True, name="sha256_unique")
+        self.db.fs.files.ensure_index("sha256", unique=True, sparse=True, name="sha256_unique")
 
         # Create a copy of the dictionary. This is done in order to not modify
         # the original dictionary and possibly compromise the following
