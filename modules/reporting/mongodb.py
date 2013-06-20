@@ -77,12 +77,6 @@ class MongoDB(Report):
         # reporting modules.
         report = dict(results)
 
-        # Check whether the analysis already exists to avoid inserting duplicates.
-        # For example when re-running an analysis with process.py utility.
-        # If a duplicated is detected, add a '_id' field to the report and update it
-        # instead of creating a new one. Also delete old api calls as they will be recreated
-        # later on.
-
         # Store the sample in GridFS.
         if results["info"]["category"] == "file":
             sample = File(self.file_path)
