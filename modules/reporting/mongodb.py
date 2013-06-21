@@ -13,8 +13,9 @@ try:
     from pymongo.errors import ConnectionFailure, InvalidDocument
     from gridfs import GridFS
     from gridfs.errors import FileExists
+    HAVE_MONGO = True
 except ImportError:
-    raise CuckooDependencyError("Unable to import pymongo")
+    HAVE_MONGO = False
 
 class MongoDB(Report):
     """Stores report in MongoDB."""
@@ -64,6 +65,9 @@ class MongoDB(Report):
         @param results: analysis results dictionary.
         @raise CuckooReportError: if fails to connect or write to MongoDB.
         """
+        if not HAVE_MONGO:
+          raise CuckooDependencyError("Unable to import pymongo")
+
         self.connect()
 
         # Set an unique index on stored files, to avoid duplicates.
