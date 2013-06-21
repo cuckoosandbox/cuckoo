@@ -887,14 +887,13 @@ class Database(object):
             session.close()
         return True
 
-    def view_sample(self, task_id):
-        """Retrieve information on a sample given a task id.
-        @param task_id: ID of the task to query.
-        @return: details on the sample used in task: task_id.
+    def view_sample(self, sample_id):
+        """Retrieve information on a sample given a sample id.
+        @param sample_id: ID of the sample to query.
+        @return: details on the sample used in sample: sample_id.
         """
         session = self.Session()
         try:
-            sample_id = session.query(Task).get(task_id).sample_id
             sample = session.query(Sample).get(sample_id)
         except (SQLAlchemyError, AttributeError):
             return None
