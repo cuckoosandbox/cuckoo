@@ -84,10 +84,10 @@ class RunAuxiliary(object):
                     options = self.cfg.get(module_name)
                 except CuckooOperationalError:
                     log.debug("Auxiliary module %s not found in configuration file", module_name)
-                    return
+                    continue
 
                 if not options.enabled:
-                    return
+                    continue
 
                 current.set_task(self.task)
                 current.set_machine(self.machine)
