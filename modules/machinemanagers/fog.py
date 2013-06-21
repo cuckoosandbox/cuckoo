@@ -5,10 +5,12 @@
 import socket
 import logging
 import xmlrpclib
+import subprocess
 
 from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.exceptions import CuckooMachineError
+from lib.cuckoo.common.exceptions import CuckooCriticalError
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +22,17 @@ class Fog(MachineManager):
     RUNNING = 'running'
     STOPPED = 'stopped'
     ERROR = 'error'
+
+    def _initialize_check(self):
+        """Ensures that credentials have been entered into the config file.
+        @raise CuckooMachineError: if VBoxManage is not found.
+        """
+        if not self.options.fog.user or not self.options.fog.password:
+            raise CuckooCriticalError("FOG machine credentials are missing, please add it to the config file")
+
+        for machine in self.machines():
+            if self._status(machine.label) != self.RUNNING:
+                raise CuckooCriticalError("FOG machine is currently offline")
 
     def _get_machine(self, label):
         """Retreive all machine info given a machine's name.
@@ -58,15 +71,22 @@ class Fog(MachineManager):
         """
         # Since we are 'stopping' a physical machine, it must
         # actually be rebooted to kick off the reimaging process
-        machine = self._get_machine(label)
-        guest = GuestManager(machine.id, machine.ip, machine.platform)
+        n = self.options.fog.user
+        p = self.options.fog.password
+        creds = str(n) + '%' + str(p)
         status = self._status(label)
+        
         if status == self.RUNNING:
             log.debug("Rebooting machine: %s." % label)
-            guest.reboot()
+            machine = self._get_machine(label)
+            shutdown = subprocess.Popen(['net', 'rpc', 'shutdown', '-I', label, '-U', creds, '-r', '-f', '--timeout=5'], stdout=subprocess.PIPE)
+            output = shutdown.communicate()[0]
+            
+            if not "Shutdown of remote machine succeeded" in output:
+                raise CuckooMachineError('Unable to initiate RPC request')
 
-        else:
-            log.debug("Currently rebooting: %s." % label)
+            else:
+                log.debug("Reboot success: %s." % label)
 
     def _list(self):
         """Lists physical machines installed.
