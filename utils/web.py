@@ -35,7 +35,6 @@ env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT, "data", "html"))
 # Global db pointer.
 db = Database()
 
-
 def parse_tasks(rows):
     """Parse tasks from DB and prepare them to be shown in the output table.
     @params rows: data from DB
@@ -79,7 +78,7 @@ def get_pagination_limit(new_limit):
             try:
                 limit = int(limit_cookie)
                 logging.info("Using limit from cookie: {0}".format(limit))
-                response.set_cookie('pagination_limit', str(limit), path='/', expires=cookie_expires)
+                response.set_cookie("pagination_limit", str(limit), path="/", expires=cookie_expires)
             except Exception as e:
                 logging.error("Cookie: {0}, exception: {1}".format(limit_cookie, e))
                 limit = default_limit
@@ -89,7 +88,7 @@ def get_pagination_limit(new_limit):
     else:
         limit = new_limit
         logging.info("Setting new limit: {0}".format(limit))
-        response.set_cookie('pagination_limit', str(limit), path='/', expires=cookie_expires)
+        response.set_cookie("pagination_limit", str(limit), path="/", expires=cookie_expires)
     
     return limit
 
@@ -150,12 +149,12 @@ def browse_page(page_id=1, new_limit=-1):
     pagination_end = offset + len(rows)
     
     pagination = {
-        'start' : pagination_start,
-        'end' : pagination_end,
-        'limit' : limit,
-        'page_id' : page_id,
-        'tot_results' : tot_results,
-        'tot_pages' : tot_pages
+        "start" : pagination_start,
+        "end" : pagination_end,
+        "limit" : limit,
+        "page_id" : page_id,
+        "tot_results" : tot_results,
+        "tot_pages" : tot_pages
     }
     
     template = env.get_template("browse.html")
@@ -219,7 +218,7 @@ def submit():
         template = env.get_template("error.html")
         return template.render({"error" : "The server encountered an internal error while submitting {0}".format(data.filename.decode("utf-8"))})
 
-@route("/download_report/<task_id>")
+@route("/view/<task_id>/download")
 def downlaod_report(task_id):
     if not task_id.isdigit():
         return HTTPError(code=404, output="The specified ID is invalid")
@@ -229,10 +228,11 @@ def downlaod_report(task_id):
     if not os.path.exists(report_path):
         return HTTPError(code=404, output="Report not found")
 
-    response.content_type = 'text/html'
-    response.set_header('Content-Disposition', "attachment; filename=cuckoo_task_%s.html" % (task_id,))
+    response.content_type = "text/html"
+    response.set_header("Content-Disposition", "attachment; filename=cuckoo_task_{0}.html".format(task_id))
 
     return open(report_path, "rb").read()
+
 @route("/view/<task_id>")
 def view(task_id):
     if not task_id.isdigit():
@@ -255,8 +255,8 @@ def get_pcap(task_id):
     if not os.path.exists(pcap_path):
         return HTTPError(code=404, output="PCAP not found")
 
-    response.content_type = 'application/vnd.tcpdump.pcap'
-    response.set_header('Content-Disposition', "attachment; filename=cuckoo_task_%s.pcap" % (task_id,))
+    response.content_type = "application/vnd.tcpdump.pcap"
+    response.set_header("Content-Disposition", "attachment; filename=cuckoo_task_{0}.pcap".format(task_id))
 
     return open(pcap_path, "rb").read()
 
