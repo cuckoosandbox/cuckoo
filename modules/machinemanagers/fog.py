@@ -6,8 +6,14 @@ import socket
 import logging
 import xmlrpclib
 import subprocess
+from warnings import filterwarnings
+import MySQLdb as Database
+filterwarnings('ignore', category = Database.Warning)
+import shutil
+import os
 
 from lib.cuckoo.core.guest import GuestManager
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooCriticalError
@@ -30,9 +36,17 @@ class Fog(MachineManager):
         if not self.options.fog.user or not self.options.fog.password:
             raise CuckooCriticalError("FOG machine credentials are missing, please add it to the config file")
 
+        if not self.options.fog.mysqluser:
+            raise CuckooCriticalError("MySQL user is missing, please add it to the config file")
+
         for machine in self.machines():
             if self._status(machine.label) != self.RUNNING:
                 raise CuckooCriticalError("FOG machine is currently offline")
+        
+        pxecfg = str(CUCKOO_ROOT) + '/data/pxecfg/'
+        
+        if os.listdir(pxecfg) == []:
+            raise CuckooCriticalError("PXE boot configuration folder is empty")
 
     def _get_machine(self, label):
         """Retreive all machine info given a machine's name.
@@ -69,12 +83,43 @@ class Fog(MachineManager):
         @param label: physical machine name.
         @raise CuckooMachineError: if unable to stop.
         """
-        # Since we are 'stopping' a physical machine, it must
-        # actually be rebooted to kick off the reimaging process
-        n = self.options.fog.user
-        p = self.options.fog.password
-        creds = str(n) + '%' + str(p)
+        # Collect machine credentials
+        mach_n = self.options.fog.user
+        mach_p = self.options.fog.password
+        mach_creds = str(mach_n) + '%' + str(mach_p)
+        
+        # Collect MySQL credentials
+        mysql_n = self.options.fog.mysqluser
+        mysql_p = self.options.fog.mysqlpassword
+        
         status = self._status(label)
+        
+        # Make a connection to MySQL
+        db = Database.connect(host= "localhost",
+                              user=mysql_n,
+                              passwd=mysql_p,
+                              db="fog")
+        
+        cursor = db.cursor()
+        
+        # Obtain Host ID number and MAC Address
+        get_specs = "SELECT * FROM hosts WHERE hostName='" + str(label) + "'"
+        
+        try:
+            cursor.execute(get_specs)
+            results = cursor.fetchall()
+            for row in results:
+                hostID = row[0]
+                hostMAC = row[8]
+            except Database.Error, e:
+                log.debug("Querying for Host ID & MAC failed with: %s." % e)
+        
+        mac = hostMAC.replace(':', '-')
+        
+        img_task = """INSERT INTO tasks(taskName, taskCreateTime,
+                 taskCheckIn, taskHostID, taskState, taskCreateBy,
+                 taskForce, taskType, taskNFSGroupID, taskNFSMemberID) 
+                 VALUES ('', NOW(), NOW(), '""" + str(hostID) + """', '0', 'cuckoo', '0', 'D', '1', '1' )""" 
         
         if status == self.RUNNING:
             log.debug("Rebooting machine: %s." % label)
@@ -87,6 +132,21 @@ class Fog(MachineManager):
 
             else:
                 log.debug("Reboot success: %s." % label)
+                try:
+                    cursor.execute(img_task)
+                    db.commit()
+                    src = str(CUCKOO_ROOT) + '/data/pxecfg/01-' + str(mac)
+                    dst = '/tftpboot/pxelinux.cfg/01-' + str(mac)
+                    shutil.copyfile(src, dst)
+                except Database.Error, e:
+                    # Rollback in case there is any error
+                    log.debug("Adding imaging task to FOG DB failed with: %s." % e)
+                    db.rollback()
+                    raise CuckooMachineError('Unable to add imaging task to FOG DB')
+                else:
+                    log.debug("Imaging task success: %s." % label)
+            
+            db.close()
 
     def _list(self):
         """Lists physical machines installed.
