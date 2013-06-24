@@ -6,8 +6,13 @@ import socket
 import logging
 import xmlrpclib
 import subprocess
+import MySQLdb
+import os
+import urllib
+import httplib2
 
 from lib.cuckoo.core.guest import GuestManager
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import MachineManager
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooCriticalError
@@ -29,6 +34,12 @@ class Fog(MachineManager):
         """
         if not self.options.fog.user or not self.options.fog.password:
             raise CuckooCriticalError("FOG machine credentials are missing, please add it to the config file")
+        
+        if not self.options.fog.foguser or not self.options.fog.fogpassword:
+            raise CuckooCriticalError("FOG WebUI credentials are missing, please add it to the config file")
+        
+        if not self.options.fog.mysqluser:
+            raise CuckooCriticalError("MySQL user is missing, please add it to the config file")
 
         for machine in self.machines():
             if self._status(machine.label) != self.RUNNING:
@@ -69,12 +80,41 @@ class Fog(MachineManager):
         @param label: physical machine name.
         @raise CuckooMachineError: if unable to stop.
         """
-        # Since we are 'stopping' a physical machine, it must
-        # actually be rebooted to kick off the reimaging process
-        n = self.options.fog.user
-        p = self.options.fog.password
-        creds = str(n) + '%' + str(p)
+        # Collect machine credentials
+        mach_user = self.options.fog.user
+        mach_pass = self.options.fog.password
+        mach_creds = str(mach_user) + '%' + str(mach_pass)
+        
+        # Collect MySQL credentials
+        mysql_user = self.options.fog.mysqluser
+        mysql_pass = self.options.fog.mysqlpassword
+        
+        # Collect FOG WebUI credentials
+        fog_user = self.options.fog.foguser
+        fog_pass = self.options.fog.fogpassword
+        
         status = self._status(label)
+        
+        # Make a connection to MySQL
+        db = MySQLdb.connect(host= "localhost",
+                             user=mysql_user,
+                             passwd=mysql_pass,
+                             db="fog")
+                             
+        cursor = db.cursor()
+        
+        # Obtain Host ID
+        get_specs = "SELECT * FROM hosts WHERE hostName='" + str(label) + "'"
+        
+        try:
+            cursor.execute(get_specs)
+            results = cursor.fetchall()
+            for row in results:
+                hostID = row[0]
+        except MySQLdb.Error, e:
+            log.debug("Querying for Host ID failed with: %s." % e)
+
+        task_get_url = 'http://127.0.0.1/fog/management/index.php?node=tasks&sub=&debug=&confirm=' + str(hostID) + '&type=host&direction=down&singlescheddate=&cronMin=min&cronHour=hour&cronDOM=dom&cronMonth=month&cronDOW=dow'        
         
         if status == self.RUNNING:
             log.debug("Rebooting machine: %s." % label)
@@ -87,6 +127,25 @@ class Fog(MachineManager):
 
             else:
                 log.debug("Reboot success: %s." % label)
+                
+                # POST credentials form and save cookie
+                http = httplib2.Http()
+                url = 'http://127.0.0.1/fog/management/index.php?node=login'
+                body = {'uname': fog_user, 'upass': fog_pass}
+                headers = {'Content-type': 'application/x-www-form-urlencoded'}
+                response, content = http.request(url, 'POST', headers=headers, body=urllib.urlencode(body))
+                headers = {'Cookie': response['set-cookie']}
+                
+                # Perform GET operation to send task to FOG
+                response, content = http.request(task_get_url, 'GET', headers=headers)
+                
+                if 'FOG Management Login' in content:
+                    log.debug("Adding task failed; Credentials for FOG WebUI invalid: %s." % label)
+                elif 'task-start-failed' in content:
+                    log.debug("Adding task failed; Task already exists: %s." % label)
+                elif 'task-start-ok' in content:
+                    log.debug("Adding task success: %s." % label)
+                
 
     def _list(self):
         """Lists physical machines installed.
