@@ -143,7 +143,7 @@ class RunProcessing(object):
             current = module()
         except:
             log.exception("Failed to load the processing module \"{0}\":".format(module))
-        return
+            return
 
         # Extract the module name.
         module_name = inspect.getmodule(current).__name__
