@@ -104,7 +104,7 @@ class RunAuxiliary(object):
                 #except Exception as e:
                 #    log.warning("Unable to start auxiliary module %s: %s", module_name, e)
                 else:
-                    log.debug("Stopped auxilairy module: %s", module_name)
+                    log.debug("Stopped auxiliary module: %s", module_name)
                     self.enabled.append(current)
 
     def stop(self):
