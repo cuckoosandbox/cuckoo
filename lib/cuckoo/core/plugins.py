@@ -208,7 +208,7 @@ class RunProcessing(object):
                 if result:
                     results.update(result)
         else:
-            log.debug("No processing modules loaded")
+            log.info("No processing modules loaded")
 
         # Return the fat dict.
         return results
@@ -307,7 +307,7 @@ class RunSignatures(object):
                 # Sort the matched signatures by their severity level.
                 matched.sort(key=lambda key: key["severity"])
         else:
-            log.debug("No signatures loaded")
+            log.info("No signatures loaded")
 
         self.results["signatures"] = matched
 
@@ -384,4 +384,4 @@ class RunReporting:
             for module in reporting_list:
                 self.process(module)
         else:
-            log.debug("No reporting modules loaded")
+            log.info("No reporting modules loaded")
