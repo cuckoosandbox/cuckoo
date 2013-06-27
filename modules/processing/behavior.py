@@ -530,10 +530,11 @@ class Enhanced(object):
                     "event" : item["event"],
                     "object" : item["object"],
                     "timestamp": call["timestamp"],
-                    "eid": self.eid
+                    "eid": self.eid,
+                    "data": {}
                 }
                 for (logname, dataname) in item["args"]:
-                    event[logname] = args.get(dataname, None)
+                    event["data"][logname] = args.get(dataname, None)
                 return event
 
         def _generic_handle(self, data, call):
@@ -756,19 +757,19 @@ class Enhanced(object):
 
         if event:
             if call["api"] in ["NtReadFile", "ReadFile", "NtWriteFile"]:
-                event["file"] = _get_file_handle(self.filehandles, args["FileHandle"])
+                event["data"]["file"] = _get_file_handle(self.filehandles, args["FileHandle"])
 
             elif call["api"] in ["RegDeleteKeyA", "RegDeleteKeyW"]:
-                event["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("SubKey", ""))
+                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("SubKey", ""))
 
             elif call["api"] in ["RegSetValueExA", "RegSetValueExW"]:
-                event["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("ValueName", ""))
 
             elif call["api"] in ["RegQueryValueExA", "RegQueryValueExW", "RegDeleteValueA", "RegDeleteValueW", "NtDeleteValueKey"]:
-                event["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "UNKNOWN")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "UNKNOWN")), args.get("ValueName", ""))
 
             elif call["api"] in ["NtQueryValueKey"]:
-                event["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("KeyHandle", "UNKNOWN")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("KeyHandle", "UNKNOWN")), args.get("ValueName", ""))
 
             elif call["api"] in ["LoadLibraryA", "LoadLibraryW", "LoadLibraryExA", "LoadLibraryExW", "LdrGetDllHandle"] and call["status"]:
                 self._add_loaded_module(args.get("FileName", ""), args.get("ModuleHandle", ""))
@@ -778,10 +779,10 @@ class Enhanced(object):
 
             elif call["api"] in ["LdrGetProcedureAddress"] and call["status"]:
                 self._add_procedure(args.get("ModuleHandle", ""), args.get("FunctionName", ""), args.get("FunctionAddress", ""))
-                event["module"] = self._get_loaded_module(args.get("ModuleHandle", ""))
+                event["data"]["module"] = self._get_loaded_module(args.get("ModuleHandle", ""))
 
             elif call["api"] in ["SetWindowsHookExA"]:
-                event["module"] = self._get_loaded_module(args.get("ModuleAddress", ""))
+                event["data"]["module"] = self._get_loaded_module(args.get("ModuleAddress", ""))
 
             return event
 
