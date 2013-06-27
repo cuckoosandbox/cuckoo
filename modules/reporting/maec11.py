@@ -11,7 +11,7 @@ from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.utils import datetime_to_iso
 
 
-class Report(Report):
+class ReportMAEC(Report):
     """Generates a MAEC 1.1 report."""
 
     def run(self, results):
