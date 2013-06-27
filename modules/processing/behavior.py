@@ -530,10 +530,11 @@ class Enhanced(object):
                     "event" : item["event"],
                     "object" : item["object"],
                     "timestamp": call["timestamp"],
-                    "eid": self.eid
+                    "eid": self.eid,
+                    "args": {}
                 }
                 for (logname, dataname) in item["args"]:
-                    event[logname] = args.get(dataname, None)
+                    event["args"][logname] = args.get(dataname, None)
                 return event
 
         def _generic_handle(self, data, call):
