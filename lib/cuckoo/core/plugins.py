@@ -181,7 +181,7 @@ class RunProcessing(object):
         except CuckooProcessingError as e:
             log.warning("The processing module \"%s\" returned the following error: %s",
                         current.__class__.__name__, e)
-        except Exception as e:
+        except:
             log.exception("Failed to run the processing module \"%s\":",
                           current.__class__.__name__)
 
@@ -297,7 +297,7 @@ class RunSignatures(object):
 
                 # Return information on the matched signature.
                 return matched
-        except Exception as e:
+        except:
             log.exception("Failed to run signature \"%s\":", current.name)
 
         return None
@@ -379,7 +379,7 @@ class RunReporting:
             log.debug("Executed reporting module \"%s\"", current.__class__.__name__)
         except CuckooReportError as e:
             log.warning("The reporting module \"%s\" returned the following error: %s", current.__class__.__name__, e)
-        except Exception as e:
+        except:
             log.exception("Failed to run the reporting module \"%s\":", current.__class__.__name__)
 
     def run(self):
