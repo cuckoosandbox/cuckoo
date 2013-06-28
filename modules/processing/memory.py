@@ -449,7 +449,14 @@ class VolatilityManager(object):
         self.mask_pid = []
         self.taint_pid = set()
         self.memfile = memfile
-        self.voptions = Config(os.path.join(CUCKOO_ROOT, "conf", "volatility.conf"))
+
+        conf_path = os.path.join(CUCKOO_ROOT, "conf", "volatility.conf")
+        if not os.path.exists(conf_path):
+            log.error("Configuration file volatility.conf not found".format(conf_path))
+            self.voptions = False
+            return
+
+        self.voptions = Config(conf_path)
 
         for pid in self.voptions.mask.pid_generic.split(","):
             pid = pid.strip()
@@ -465,6 +472,11 @@ class VolatilityManager(object):
 
     def run(self):
         results = {}
+
+        # Exit if options were not loaded.
+        if not self.voptions:
+            return
+
         vol = VolatilityAPI(self.memfile, self.osprofile)
 
         # TODO: improve the load of volatility functions.
