@@ -50,7 +50,8 @@ def check_configs():
     @raise CuckooStartupError: if config files do not exist.
     """
     configs = [os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"),
-               os.path.join(CUCKOO_ROOT, "conf", "reporting.conf")]
+               os.path.join(CUCKOO_ROOT, "conf", "reporting.conf"),
+               os.path.join(CUCKOO_ROOT, "conf", "auxiliary.conf")]
 
     for config in configs:
         if not os.path.exists(config):
