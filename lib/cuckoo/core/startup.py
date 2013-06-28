@@ -8,7 +8,6 @@ import copy
 import json
 import urllib
 import urllib2
-import pkgutil
 import logging
 import logging.handlers
 
@@ -20,7 +19,6 @@ import modules.reporting
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooStartupError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.colors import *
