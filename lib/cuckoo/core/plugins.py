@@ -78,7 +78,7 @@ class RunAuxiliary(object):
                     current = module()
                 except:
                     log.exception("Failed to load the auxiliary module \"{0}\":".format(module))
-                return
+                    return
 
                 module_name = inspect.getmodule(current).__name__
                 if "." in module_name:
@@ -238,7 +238,7 @@ class RunSignatures(object):
             current = signature(self.results)
         except:
             log.exception("Failed to load signature \"{0}\":".format(signature))
-        return
+            return
 
         log.debug("Running signature \"%s\"", current.name)
 
