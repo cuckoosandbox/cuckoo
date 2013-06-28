@@ -106,12 +106,16 @@ def check_version():
             print(green(" Good! ") + "You have the latest version available.\n")
 
 class DatabaseHandler(logging.Handler):
+    """Logging to database handler."""
+
     def emit(self, record):
         if hasattr(record, "task_id"):
             db = Database()
             db.add_error(record.msg, int(record.task_id))
 
 class ConsoleHandler(logging.StreamHandler):
+    """Logging to console handler."""
+
     def emit(self, record):
         colored = copy.copy(record)
 
