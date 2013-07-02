@@ -406,7 +406,7 @@ class MAEC40Report(Report):
         dynamic_analysis = Analysis(self.id_generator.generate_analysis_id(), "dynamic", "triage", BundleReference.from_dict({'bundle_idref' : self.dynamic_bundle.id}))
         dynamic_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
         dynamic_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
-        dynamic_analysis.summary = "Cuckoo Sandbox dynamic analysis of the malware instance object."
+        dynamic_analysis.summary = StructuredText("Cuckoo Sandbox dynamic analysis of the malware instance object.")
         dynamic_analysis.add_tool(ToolInformation.from_dict({"id" : self.id_generator.generate_tool_id(),
                                                              "name" : "Cuckoo Sandbox",
                                                              "version" : self.results["info"]["version"],
@@ -418,7 +418,7 @@ class MAEC40Report(Report):
             static_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref" : self.static_bundle.id}))
             static_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             static_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
-            static_analysis.summary = "Cuckoo Sandbox static (PE) analysis of the malware instance object."
+            static_analysis.summary = StructuredText("Cuckoo Sandbox static (PE) analysis of the malware instance object.")
             static_analysis.add_tool(ToolInformation.from_dict({"id" : self.id_generator.generate_tool_id(),
                                                                 "name" : "Cuckoo Sandbox Static Analysis",
                                                                 "version" : self.results["info"]["version"],
@@ -431,7 +431,7 @@ class MAEC40Report(Report):
             strings_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref" : self.strings_bundle.id}))
             strings_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             strings_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
-            strings_analysis.summary = "Cuckoo Sandbox strings analysis of the malware instance object."
+            strings_analysis.summary = StructuredText("Cuckoo Sandbox strings analysis of the malware instance object.")
             strings_analysis.add_tool(ToolInformation.from_dict({"id" : self.id_generator.generate_tool_id(),
                                                                  "name" : "Cuckoo Sandbox Strings",
                                                                  "version" : self.results["info"]["version"],
@@ -444,7 +444,7 @@ class MAEC40Report(Report):
             virustotal_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref" : self.strings_bundle.id}))
             virustotal_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             virustotal_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
-            virustotal_analysis.summary = "Virustotal results for the malware instance object."
+            virustotal_analysis.summary = StructuredText("Virustotal results for the malware instance object.")
             virustotal_analysis.add_tool(ToolInformation.from_dict({"id" : self.id_generator.generate_tool_id(),
                                                                     "name" : "VirusTotal",
                                                                     "vendor" : "https://www.virustotal.com/"}))
