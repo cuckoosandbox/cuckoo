@@ -18,6 +18,7 @@ from maec.id_generator import Generator
 from maec.package.malware_subject import MalwareSubject
 from maec.package.package import Package
 from maec.package.analysis import Analysis
+from maec.utils import MAECNamespaceParser
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
@@ -118,8 +119,8 @@ class MAEC40Report(Report):
         """
         src_category = "ipv4-addr"
         dst_category = "ipv4-addr"
-        if ":" in network_data["src"]: src_category = "ipv6-addr"
-        if ":" in network_data["dst"]: src_category = "ipv6-addr"
+        if ":" in network_data.get('src', ""): src_category = "ipv6-addr"
+        if ":" in network_data.get('dst', ""): dst_category = "ipv6-addr"
         # Construct the various dictionaries
         if layer7_protocol is not None:
             object_properties = {"xsi:type" : "NetworkConnectionObjectType",
@@ -414,7 +415,7 @@ class MAEC40Report(Report):
         self.subject.add_analysis(dynamic_analysis)
 
         # Add the static analysis
-        if self.results["static"] or self.results["strings"]:
+        if self.results["static"]:
             static_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref" : self.static_bundle.id}))
             static_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             static_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
