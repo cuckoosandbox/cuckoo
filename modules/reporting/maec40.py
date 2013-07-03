@@ -452,8 +452,11 @@ class MAEC40Report(Report):
             self.subject.add_analysis(virustotal_analysis)
             # Add the VirusTotal results
             for engine, signature in self.results["virustotal"]["scans"].items():
-                self.virustotal_bundle.add_av_classification(AVClassification.from_dict({"tool_vendor" : engine,
-                                                                                         "classification_name" : signature}))
+                if signature['detected']:
+                    self.virustotal_bundle.add_av_classification(AVClassification.from_dict({"vendor" : engine,
+                                                                                             "engine_version" : signature["version"],
+                                                                                             "definition_version" : signature["update"],
+                                                                                             "classification_name" : signature["result"]}))
         
     def addDroppedFiles(self):
         """Adds Dropped files as Objects."""
