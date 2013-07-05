@@ -382,7 +382,7 @@ class MAEC40Report(Report):
                       {"type" : "SHA512", "simple_hash_value" : file["sha512"]}]
         object_dict = {"id" : self.id_generator.generate_object_id(),
                         "properties" : {"xsi:type":"FileObjectType",
-                                        "name" : file["name"],
+                                        "file_name" : file["name"],
                                         "file_path" : {"value" : file["path"]},
                                         "file_format" : file["type"],
                                         "size_in_bytes" : file["size"],
