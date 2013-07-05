@@ -106,12 +106,6 @@ class MAEC40Report(Report):
                     self.dynamic_bundle.add_named_action_collection("Network Actions", self.id_generator.generate_action_collection_id())
                 for network_data in self.results["network"]["http"]:
                     self.createActionNet(network_data, {"value" : "send http " + str(network_data["method"]).lower() + " request", "xsi:type" : "maecVocabs:HTTPActionNameVocab-1.0"}, "TCP", "HTTP")
-            #if "irc" in self.results["network"] and isinstance(self.results["network"]["irc"], list): #TODO: determine how IRC data is represented in the dictionary
-            #    for network_data in self.results["network"]["irc"]:
-            #        self.createActionNet(network_data, {"value" : "connect to socket address", "xsi:type" : "maecVocabs:maecVocabs:NetworkActionNameVocab-1.0"}, "TCP", "IRC")
-            #if "smtp" in self.results["network"] and isinstance(self.results["network"]["smtp"], list): #TODO: add support for SMTP to MAEC/CybOX
-            #    for network_data in self.results["network"]["smtp"]:
-            #        self.createActionNet(network_data, {"value" : "connect to socket address", "xsi:type" : "maecVocabs:maecVocabs:NetworkActionNameVocab-1.0"}, "TCP", "SMTP")
 
     def createActionNet(self, network_data, action_name, layer4_protocol = None, layer7_protocol = None):
         """Create a network Action.
