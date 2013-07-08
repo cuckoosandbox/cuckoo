@@ -61,7 +61,7 @@ def move_mouse():
     x = random.randint(0, RESOLUTION["x"])
     y = random.randint(0, RESOLUTION["y"])
 
-    USER32.mouse_event(1, x, y, 0, None)
+    USER32.mouse_event(0x8000, x, y, 0, None)
 
 def click_mouse():
     # mouse down
