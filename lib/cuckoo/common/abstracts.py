@@ -536,6 +536,9 @@ class Signature(object):
     enabled = True
     minimum = None
     maximum = None
+    evented = False
+    filter_processnames = set()
+    filter_apinames = set()
 
     def __init__(self, results=None):
         self.data = []
@@ -653,30 +656,53 @@ class Signature(object):
 
             # Loop through API calls.
             for call in item["calls"]:
-                # Check if there's an API name filter.
-                if api:
-                    if call["api"] != api:
-                        continue
-
-                # Check if there's a category filter.
-                if category:
-                    if call["category"] != category:
-                        continue
-
-                # Loop through arguments.
-                for argument in call["arguments"]:
-                    # Check if there's an argument name filter.
-                    if name:
-                        if argument["name"] != name:
-                            continue
-
-                    # Check if the argument value matches.
-                    if self._check_value(pattern=pattern,
-                                         subject=argument["value"],
-                                         regex=regex):
-                        return argument["value"]
+                r = self.check_argument_call(call, pattern, name, api, category, regex)
+                if r:
+                    return r
 
         return None
+
+    def check_argument_call(self,
+                            call,
+                            pattern,
+                            name=None,
+                            api=None,
+                            category=None,
+                            regex=False):
+        """Checks for a specific argument of an invoked API.
+        @param call: API call information.
+        @param pattern: string or expression to check for.
+        @param name: optional filter for the argument name.
+        @param api: optional filter for the API function name.
+        @param category: optional filter for a category name.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        # Check if there's an API name filter.
+        if api:
+            if call["api"] != api:
+                return False
+
+        # Check if there's a category filter.
+        if category:
+            if call["category"] != category:
+                return False
+
+        # Loop through arguments.
+        for argument in call["arguments"]:
+            # Check if there's an argument name filter.
+            if name:
+                if argument["name"] != name:
+                    return False
+
+            # Check if the argument value matches.
+            if self._check_value(pattern=pattern,
+                                 subject=argument["value"],
+                                 regex=regex):
+                return argument["value"]
+
+        return False
 
     def check_ip(self, pattern, regex=False):
         """Checks for an IP address being contacted.
@@ -719,9 +745,30 @@ class Signature(object):
 
         return None
 
+    def as_result(self):
+        """Properties as a dict (for results).
+        @return: result dict.
+        """
+        return {
+            "name" : self.name,
+            "description" : self.description,
+            "severity" : self.severity,
+            "references" : self.references,
+            "data" : self.data,
+            "alert" : self.alert,
+            "families": self.families
+        }
+
     def run(self):
         """Start signature processing.
         @param results: analysis results.
+        @raise NotImplementedError: this method is abstract.
+        """
+        raise NotImplementedError
+
+    def event_apicall(self, call):
+        """Notify signature about API call.
+        @param call: logged API call.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError

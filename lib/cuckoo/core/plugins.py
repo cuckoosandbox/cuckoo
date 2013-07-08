@@ -227,25 +227,11 @@ class RunSignatures(object):
     def __init__(self, results):
         self.results = results
 
-    def process(self, signature):
-        """Run a signature.
-        @param signature: signature to run.
-        @param signs: signature results dict.
-        @return: matched signature.
+    def _check_signature_version(self, current):
+        """Check signature version.
+        @param current: signature class/instance to check.
+        @return: check result.
         """
-        # Initialize the current signature.
-        try:
-            current = signature(self.results)
-        except:
-            log.exception("Failed to load signature \"{0}\":".format(signature))
-            return
-
-        log.debug("Running signature \"%s\"", current.name)
-
-        # If the signature is disabled, skip it.
-        if not current.enabled:
-            return None
-
         # Since signatures can hardcode some values or checks that might
         # become obsolete in future versions or that might already be obsolete,
         # I need to match its requirements with the running version of Cuckoo.
@@ -279,24 +265,38 @@ class RunSignatures(object):
                 log.debug("Wrong major version number in signature %s", current.name)
                 return None
 
+        return True
+
+    def process(self, signature):
+        """Run a signature.
+        @param signature: signature to run.
+        @param signs: signature results dict.
+        @return: matched signature.
+        """
+        # Initialize the current signature.
+        try:
+            current = signature(self.results)
+        except:
+            log.exception("Failed to load signature \"{0}\":".format(signature))
+            return
+
+        log.debug("Running signature \"%s\"", current.name)
+
+        # If the signature is disabled, skip it.
+        if not current.enabled:
+            return None
+
+        if not self._check_signature_version(current):
+            return None
+
         try:
             # Run the signature and if it gets matched, extract key information
             # from it and append it to the results container.
             if current.run():
-                matched = {
-                    "name" : current.name,
-                    "description" : current.description,
-                    "severity" : current.severity,
-                    "references" : current.references,
-                    "data" : current.data,
-                    "alert" : current.alert,
-                    "families": current.families
-                }
-
                 log.debug("Analysis matched signature \"%s\"", current.name)
 
                 # Return information on the matched signature.
-                return matched
+                return current.as_result()
         except:
             log.exception("Failed to run signature \"%s\":", current.name)
 
@@ -307,6 +307,40 @@ class RunSignatures(object):
         matched = []
 
         signatures_list = list_plugins(group="signatures")
+
+        # All new (evented) signatures
+        active_sigs = [sig() for sig in signatures_list if sig.enabled and sig.evented and self._check_signature_version(sig)]
+
+        if active_sigs:
+            log.debug("Processing API calls for %u evented signatures.", len(active_sigs))
+
+            # Iterate calls and tell interested signatures about them
+            for proc in self.results["behavior"]["processes"]:
+                for call in proc["calls"]:
+                    for sig in active_sigs:
+                        if sig.filter_processnames and not proc["process_name"] in sig.filter_processnames:
+                            continue
+                        if sig.filter_apinames and not call["api"] in sig.filter_apinames:
+                            continue
+
+                        r = None
+
+                        try: r = sig.event_apicall(call)
+                        except:
+                            log.exception("Failed to run signature \"%s\":", sig.name)
+                            r = False
+
+                        # if it returns None, we just carry on
+                        if r == None:
+                            continue
+
+                        # on True, the signature matched
+                        if r == True:
+                            matched.append(sig.as_result())
+                        
+                        # either True or False, we don't need to check this sig anymore
+                        active_sigs.remove(sig)
+                        del sig
 
         if signatures_list:
             for signature in signatures_list:
