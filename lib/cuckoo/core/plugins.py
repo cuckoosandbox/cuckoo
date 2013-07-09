@@ -309,7 +309,7 @@ class RunSignatures(object):
         signatures_list = list_plugins(group="signatures")
 
         # All new (evented) signatures
-        active_sigs = [sig() for sig in signatures_list if sig.enabled and sig.evented and self._check_signature_version(sig)]
+        active_sigs = [sig(self.results) for sig in signatures_list if sig.enabled and sig.evented and self._check_signature_version(sig)]
 
         if active_sigs:
             log.debug("Processing API calls for %u evented signatures.", len(active_sigs))
