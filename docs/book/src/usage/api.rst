@@ -84,6 +84,7 @@ Following is a list of currently available resources and a brief description. Fo
             * ``options`` *(optional)* - options to pass to the analysis package
             * ``machine`` *(optional)* - ID of the analysis machine to use for the analysis
             * ``platform`` *(optional)* - name of the platform to select the analysis machine from (e.g. "windows")
+            * ``tags`` *(optional)* - define machine to start by tags. Platform must be set to use that. Tags are comma separated
             * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
