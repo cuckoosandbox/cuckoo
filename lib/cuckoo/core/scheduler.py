@@ -266,6 +266,10 @@ class AnalysisManager(Thread):
         RunSignatures(results=results).run()
         RunReporting(task_id=self.task.id, results=results).run()
 
+        for proc in results["behavior"]["processes"]:
+            log.debug("ParseProcessLog instance for %d (%s) parsed its log %d times.",
+                proc["process_id"], proc["process_name"], proc["calls"].parsecount)
+
         # If the target is a file and the user enabled the option,
         # delete the original copy.
         if self.task.category == "file" and self.cfg.cuckoo.delete_original:
