@@ -10,7 +10,7 @@ class SystemMetrics(Signature):
     severity = 2
     categories = ["generic"]
     authors = ["Cuckoo Developers"]
-    minimum = "0.7"
+    minimum = "1.0"
 
     # Evented signatures need to implement the "event_apicall" method
     evented = True
