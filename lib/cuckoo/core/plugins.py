@@ -344,8 +344,22 @@ class RunSignatures(object):
                         active_sigs.remove(sig)
                         del sig
 
+                # call the stop method on all remaining instances
+                for sig in active_sigs:
+                    r = None
+
+                    try: r = sig.stop()
+                    except:
+                        log.exception("Failed to stop signature \"%s\":", sig.name)
+
+                    if r == True:
+                        matched.append(sig.as_result())
+
+        # compat loop for old-style (non evented) signatures
         if signatures_list:
             for signature in signatures_list:
+                if signature.evented: continue
+
                 match = self.process(signature)
                 # If the signature is matched, add it to the list.
                 if match:

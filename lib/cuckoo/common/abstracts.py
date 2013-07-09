@@ -761,6 +761,12 @@ class Signature(object):
             "families": self.families
         }
 
+    def stop(self):
+        """Evented signature is notified when all API calls are done.
+        @return: Match state.
+        """
+        pass
+
     def run(self):
         """Start signature processing.
         @param results: analysis results.
