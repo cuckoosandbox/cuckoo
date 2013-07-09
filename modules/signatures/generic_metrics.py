@@ -28,9 +28,6 @@ class SystemMetrics(Signature):
     # These use a more efficient way of processing logged API calls.
     enabled = False
 
-    def run(self):
-        return False
-
     # This method will be called for every logged API call by the loop
     #  in the RunSignatures plugin. The return value determines the "state"
     #  of this signature. True means the signature matched and False means
