@@ -98,7 +98,7 @@ def main():
     parser.add_argument("-r", "--reporting", help="Download reporting modules", action="store_true", required=False)
     parser.add_argument("-f", "--force", help="Install files without confirmation", action="store_true", required=False)
     parser.add_argument("-w", "--rewrite", help="Rewrite existing files", action="store_true", required=False)
-    parser.add_argument("-b", "--branch", help="Specify a different branch", action="store", required=False)
+    parser.add_argument("-b", "--branch", help="Specify a different branch", action="store", default="master", required=False)
     args = parser.parse_args()
 
     enabled = []
@@ -130,10 +130,7 @@ def main():
     if args.rewrite:
         rewrite = True
 
-    if args.branch:
-        URL = URL.format(args.branch)
-    else:
-        URL = URL.format("master")
+    URL = URL.format(args.branch)
 
     install(enabled, force, rewrite)
 
