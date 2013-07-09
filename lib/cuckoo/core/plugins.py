@@ -322,6 +322,8 @@ class RunSignatures(object):
                             continue
                         if sig.filter_apinames and not call["api"] in sig.filter_apinames:
                             continue
+                        if sig.filter_categories and not call["category"] in sig.filter_categories:
+                            continue
 
                         r = None
 

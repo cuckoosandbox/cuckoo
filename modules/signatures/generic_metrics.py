@@ -11,7 +11,16 @@ class SystemMetrics(Signature):
     categories = ["generic"]
     authors = ["Cuckoo Developers"]
     minimum = "0.7"
+
+    # Evented signatures need to implement the "event_apicall" method
     evented = True
+
+    # Evented signatures can specify filters that reduce the amount of
+    #  API calls that are streamed in. One can filter Process name, API
+    #  name/identifier and category. These should be sets for faster lookup.
+    filter_processnames = set()
+    filter_apinames = set(["GetSystemMetrics"])
+    filter_categories = set()
 
     # This is a signature template. It should be used as a skeleton for
     # creating custom signatures, therefore is disabled by default.
@@ -22,8 +31,17 @@ class SystemMetrics(Signature):
     def run(self):
         return False
 
+    # This method will be called for every logged API call by the loop
+    #  in the RunSignatures plugin. The return value determines the "state"
+    #  of this signature. True means the signature matched and False means
+    #  it can't match anymore. Both of which stop streaming in API calls.
+    #  Returning None keeps the signature active and will continue.
     def event_apicall(self, call):
+        # This check would in reality not be needed as we already make use
+        #  of filter_apinames above.
         if call["api"] == "GetSystemMetrics":
+            # Signature matched, return True.
             return True
 
+        # continue
         return None
