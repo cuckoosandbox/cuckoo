@@ -85,6 +85,7 @@ class Machinery(object):
                 machine.id = machine_id.strip()
                 machine.label = machine_opts["label"]
                 machine.platform = machine_opts["platform"]
+                machine.tags = machine_opts["tags"]
                 machine.ip = machine_opts["ip"]
                 # If configured, use specific network interface for this machine, else use the default value.
                 machine.interface = machine_opts.get("interface", None)
@@ -105,6 +106,7 @@ class Machinery(object):
                                     label=machine.label,
                                     ip=machine.ip,
                                     platform=machine.platform,
+                                    tags=machine.tags,
                                     interface=machine.interface,
                                     snapshot=machine.snapshot,
                                     resultserver_ip=machine.resultserver_ip,
@@ -145,18 +147,19 @@ class Machinery(object):
         """
         return self.db.count_machines_available()
 
-    def acquire(self, machine_id=None, platform=None):
+    def acquire(self, machine_id=None, platform=None, tags=None):
         """Acquire a machine to start analysis.
         @param machine_id: machine ID.
         @param platform: machine platform.
+        @param tags: machine tags
         @return: machine or None.
         """
         if machine_id:
             return self.db.lock_machine(name=machine_id)
         elif platform:
-            return self.db.lock_machine(platform=platform)
+            return self.db.lock_machine(platform=platform, tags=tags)
         else:
-            return self.db.lock_machine()
+            return self.db.lock_machine(tags=tags)
 
     def release(self, label=None):
         """Release a machine.

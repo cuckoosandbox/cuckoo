@@ -45,6 +45,7 @@ class Machine(Base):
     label = Column(String(255), nullable=False)
     ip = Column(String(255), nullable=False)
     platform = Column(String(255), nullable=False)
+    tags = Column(String(255), nullable=False)
     interface = Column(String(255), nullable=True)
     snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)
@@ -81,6 +82,7 @@ class Machine(Base):
                  label,
                  ip,
                  platform,
+                 tags,
                  interface,
                  snapshot,
                  resultserver_ip,
@@ -89,6 +91,7 @@ class Machine(Base):
         self.label = label
         self.ip = ip
         self.platform = platform
+        self.tags = tags
         self.interface = interface
         self.snapshot = snapshot
         self.resultserver_ip = resultserver_ip
@@ -244,6 +247,7 @@ class Task(Base):
     custom = Column(String(255), nullable=True)
     machine = Column(String(255), nullable=True)
     package = Column(String(255), nullable=True)
+    tags = Column(String(255), nullable=True)
     options = Column(String(255), nullable=True)
     platform = Column(String(255), nullable=True)
     memory = Column(Boolean, nullable=False, default=False)
@@ -357,6 +361,7 @@ class Database(object):
                     label,
                     ip,
                     platform,
+                    tags,
                     interface,
                     snapshot,
                     resultserver_ip,
@@ -376,6 +381,7 @@ class Database(object):
                           label=label,
                           ip=ip,
                           platform=platform,
+                          tags=tags,
                           interface=interface,
                           snapshot=snapshot,
                           resultserver_ip=resultserver_ip,
@@ -483,10 +489,11 @@ class Database(object):
             session.close()
         return machines
 
-    def lock_machine(self, name=None, platform=None):
+    def lock_machine(self, name=None, platform=None, tags=None):
         """Places a lock on a free virtual machine.
         @param name: optional virtual machine name
         @param platform: optional virtual machine platform
+        @param tags: optional tags required (list)
         @return: locked machine
         """
         session = self.Session()
@@ -494,8 +501,20 @@ class Database(object):
             if name and platform:
                 # Wrong usage.
                 return None
+            elif name and tags:
+                # Also wrong usage
+                return None
             elif name:
                 machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
+            elif tags and platform:
+                    machines = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False)
+                    machine = None
+                    want = tags.replace(" ","").split(",")
+                    for m in machines:
+                        have = m.tags.replace(" ","").split(",")
+                        if len(set(want) - set(have)) == 0:
+                            machine = m
+                            break
             elif platform:
                 machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
             else:
@@ -515,6 +534,8 @@ class Database(object):
                 return None
             finally:
                 session.close()
+        else:
+            log.error("No machine found for name: %s platform: %s tags: %s" % (str(name), str(platform), str(tags)))
 
         return machine
 
@@ -608,6 +629,7 @@ class Database(object):
             custom="",
             machine="",
             platform="",
+            tags=None,
             memory=False,
             enforce_timeout=False,
             clock=None):
@@ -619,6 +641,7 @@ class Database(object):
         @param custom: custom options.
         @param machine: selected machine.
         @param platform: platform.
+        @param tags: optional tags that must be set for machine selection
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
         @param clock: virtual machine clock time
@@ -669,6 +692,7 @@ class Database(object):
         task.custom = custom
         task.machine = machine
         task.platform = platform
+        task.tags=tags
         task.memory = memory
         task.enforce_timeout = enforce_timeout
 
@@ -704,6 +728,7 @@ class Database(object):
                  custom="",
                  machine="",
                  platform="",
+                 tags=None,
                  memory=False,
                  enforce_timeout=False,
                  clock=None):
@@ -715,6 +740,7 @@ class Database(object):
         @param custom: custom options.
         @param machine: selected machine.
         @param platform: platform.
+        @param tags: Tags required in machine selection
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
         @param clock: virtual machine clock time
@@ -737,6 +763,7 @@ class Database(object):
                         custom,
                         machine,
                         platform,
+                        tags,
                         memory,
                         enforce_timeout,
                         clock)
@@ -750,6 +777,7 @@ class Database(object):
                 custom="",
                 machine="",
                 platform="",
+                tags=None,
                 memory=False,
                 enforce_timeout=False,
                 clock=None):
@@ -761,6 +789,7 @@ class Database(object):
         @param custom: custom options.
         @param machine: selected machine.
         @param platform: platform.
+        @param tags: tags for machine selection
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
         @param clock: virtual machine clock time
@@ -781,6 +810,7 @@ class Database(object):
                         custom,
                         machine,
                         platform,
+                        tags,
                         memory,
                         enforce_timeout,
                         clock)
