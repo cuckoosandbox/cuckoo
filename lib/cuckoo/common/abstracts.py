@@ -536,7 +536,7 @@ class Signature(object):
     enabled = True
     minimum = None
     maximum = None
-    
+
     evented = False
     filter_processnames = set()
     filter_apinames = set()
@@ -768,10 +768,11 @@ class Signature(object):
         """
         raise NotImplementedError
 
-    def event_apicall(self, call):
+    def event_apicall(self, call, process):
         """Notify signature about API call. Return value determines
         if this signature is done or could still match.
         @param call: logged API call.
+        @param process: process doing API call.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError

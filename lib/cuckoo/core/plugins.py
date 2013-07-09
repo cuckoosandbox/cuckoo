@@ -327,7 +327,7 @@ class RunSignatures(object):
 
                         r = None
 
-                        try: r = sig.event_apicall(call)
+                        try: r = sig.event_apicall(call, proc)
                         except:
                             log.exception("Failed to run signature \"%s\":", sig.name)
                             r = False

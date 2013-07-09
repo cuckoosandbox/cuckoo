@@ -36,7 +36,7 @@ class SystemMetrics(Signature):
     #  of this signature. True means the signature matched and False means
     #  it can't match anymore. Both of which stop streaming in API calls.
     #  Returning None keeps the signature active and will continue.
-    def event_apicall(self, call):
+    def event_apicall(self, call, process):
         # This check would in reality not be needed as we already make use
         #  of filter_apinames above.
         if call["api"] == "GetSystemMetrics":
