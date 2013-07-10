@@ -17,9 +17,11 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 import lib.cuckoo.common.colors as colors
 
-URL = "https://github.com/cuckoobox/community/zipball/master"
+URL = "https://github.com/cuckoobox/community/archive/{0}.zip"
 
 def download_archive():
+    print("Downloading modules from {0}".format(URL))
+
     try:
         data = urllib2.urlopen(URL).read()
     except Exception as e:
@@ -86,6 +88,8 @@ def install(enabled, force, rewrite):
     shutil.rmtree(temp)
 
 def main():
+    global URL
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--all", help="Download everything", action="store_true", required=False)
     parser.add_argument("-s", "--signatures", help="Download Cuckoo signatures", action="store_true", required=False)
@@ -94,6 +98,7 @@ def main():
     parser.add_argument("-r", "--reporting", help="Download reporting modules", action="store_true", required=False)
     parser.add_argument("-f", "--force", help="Install files without confirmation", action="store_true", required=False)
     parser.add_argument("-w", "--rewrite", help="Rewrite existing files", action="store_true", required=False)
+    parser.add_argument("-b", "--branch", help="Specify a different branch", action="store", default="master", required=False)
     args = parser.parse_args()
 
     enabled = []
@@ -124,6 +129,8 @@ def main():
         force = True
     if args.rewrite:
         rewrite = True
+
+    URL = URL.format(args.branch)
 
     install(enabled, force, rewrite)
 

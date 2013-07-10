@@ -17,6 +17,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Fixed virtual machine clock, now is updated to current time or specified by user via --clock option
 * Removed support for GrayLog2
 * Removed pickle reporting module
+* Added tags
 
 Cuckoo Sandbox 0.6 (2013-04-15)
 ===============================
