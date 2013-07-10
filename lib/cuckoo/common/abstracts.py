@@ -510,8 +510,7 @@ class Processing(object):
         """
         self.analysis_path = analysis_path
         self.log_path = os.path.join(self.analysis_path, "analysis.log")
-        self.file_path = os.path.realpath(os.path.join(self.analysis_path,
-                                                       "binary"))
+        self.file_path = os.path.realpath(os.path.join(self.analysis_path, "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
         self.logs_path = os.path.join(self.analysis_path, "logs")
         self.shots_path = os.path.join(self.analysis_path, "shots")
