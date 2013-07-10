@@ -312,7 +312,9 @@ class RunSignatures(object):
         active_sigs = [sig(self.results) for sig in signatures_list if sig.enabled and sig.evented and self._check_signature_version(sig)]
 
         if active_sigs:
-            log.debug("Processing API calls for %u evented signatures.", len(active_sigs))
+            log.debug("Running %u evented signatures", len(active_sigs))
+            for sig in active_sigs:
+                log.debug("\t%s", sig.name)
 
             # Iterate calls and tell interested signatures about them
             for proc in self.results["behavior"]["processes"]:
@@ -326,8 +328,6 @@ class RunSignatures(object):
                             continue
                         if sig.filter_categories and not call["category"] in sig.filter_categories:
                             continue
-
-                        log.debug("Running signature \"%s\"", sig.name)
 
                         result = None
                         try:
@@ -363,6 +363,8 @@ class RunSignatures(object):
 
         # Compat loop for old-style (non evented) signatures.
         if signatures_list:
+            log.debug("Running non-evented signatures")
+
             for signature in signatures_list:
                 if signature.evented: continue
 
