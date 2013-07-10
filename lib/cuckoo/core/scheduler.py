@@ -112,8 +112,8 @@ class AnalysisManager(Thread):
         # Start a loop to acquire the a machine to run the analysis on.
         while True:
             machine_lock.acquire()
-            # If the user specified a specific machine ID or a platform to be
-            # used, acquire the machine accordingly.
+            # If the user specified a specific machine ID, a platform to be
+            # used or machine tags acquire the machine accordingly.
             machine = machinery.acquire(machine_id=self.task.machine,
                                         platform=self.task.platform,
                                         tags=self.task.tags)
