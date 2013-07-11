@@ -29,6 +29,7 @@ def main():
     parser.add_argument("--memory", action="store_true", default=False, help="Enable to take a memory dump of the analysis machine", required=False)
     parser.add_argument("--enforce-timeout", action="store_true", default=False, help="Enable to force the analysis to run for the full timeout period", required=False)
     parser.add_argument("--clock", type=str, action="store", default=None, help="Set virtual machine clock", required=False)
+    parser.add_argument("--tags", type=str, action="store", default=None, help="Specify tags identifier of a machine you want to use", required=False)
 
     try:
         args = parser.parse_args()
@@ -55,7 +56,8 @@ def main():
                              custom=args.custom,
                              memory=args.memory,
                              enforce_timeout=args.enforce_timeout,
-                             clock=args.clock)
+                             clock=args.clock,
+                             tags=args.tags)
 
         print(bold(green("Success")) + ": URL \"{0}\" added as task with ID {1}".format(target, task_id))
     else:
@@ -88,7 +90,8 @@ def main():
                                   custom=args.custom,
                                   memory=args.memory,
                                   enforce_timeout=args.enforce_timeout,
-                                  clock=args.clock)
+                                  clock=args.clock,
+                                  tags=args.tags)
 
             if task_id:
                 print(bold(green("Success")) + ": File \"{0}\" added as task with ID {1}".format(file_path, task_id))
