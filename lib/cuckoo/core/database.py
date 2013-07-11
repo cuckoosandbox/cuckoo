@@ -19,8 +19,8 @@ from lib.cuckoo.common.utils import create_folder, Singleton
 try:
     from sqlalchemy import create_engine, Column
     from sqlalchemy import Integer, String, Boolean, DateTime, Enum
-    from sqlalchemy import ForeignKey, Text, Index
-    from sqlalchemy.orm import sessionmaker, relationship, joinedload
+    from sqlalchemy import ForeignKey, Text, Index, Table
+    from sqlalchemy.orm import sessionmaker, relationship, joinedload, backref
     from sqlalchemy.sql import func
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -36,6 +36,18 @@ TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
 TASK_REPORTED = "reported"
 
+# Secondary table used in association Machine - Tag.
+machines_tags = Table("machines_tags", Base.metadata,
+    Column("machine_id", Integer, ForeignKey("machines.id")),
+    Column("tag_id", Integer, ForeignKey("tags.id"))
+)
+
+# Secondary table used in association Task - Tag.
+tasks_tags = Table("tasks_tags", Base.metadata,
+    Column("task_id", Integer, ForeignKey("tasks.id")),
+    Column("tag_id", Integer, ForeignKey("tags.id"))
+)
+
 class Machine(Base):
     """Configured virtual machines to be used as guests."""
     __tablename__ = "machines"
@@ -45,7 +57,8 @@ class Machine(Base):
     label = Column(String(255), nullable=False)
     ip = Column(String(255), nullable=False)
     platform = Column(String(255), nullable=False)
-    tags = Column(String(255), nullable=False)
+    tags = relationship("Tag", secondary=machines_tags, cascade="all, delete",
+                        single_parent=True, backref=backref("machine", cascade="all"))
     interface = Column(String(255), nullable=True)
     snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)
@@ -82,7 +95,6 @@ class Machine(Base):
                  label,
                  ip,
                  platform,
-                 tags,
                  interface,
                  snapshot,
                  resultserver_ip,
@@ -91,11 +103,24 @@ class Machine(Base):
         self.label = label
         self.ip = ip
         self.platform = platform
-        self.tags = tags
         self.interface = interface
         self.snapshot = snapshot
         self.resultserver_ip = resultserver_ip
         self.resultserver_port = resultserver_port
+
+class Tag(Base):
+    """Tag describing anything you want."""
+    __tablename__ = "tags"
+
+    id = Column(Integer(), primary_key=True)
+    name = Column(String(255), nullable=False, unique=True)
+
+    def __repr__(self):
+        return "<MachineTag('{0}','{1}')>".format(self.id, self.name)
+
+    def __init__(self,
+                 name):
+        self.name = name
 
 class Guest(Base):
     """Tracks guest run."""
@@ -247,7 +272,9 @@ class Task(Base):
     custom = Column(String(255), nullable=True)
     machine = Column(String(255), nullable=True)
     package = Column(String(255), nullable=True)
-    tags = Column(String(255), nullable=True)
+    tags = relationship("Tag", secondary=tasks_tags, cascade="all, delete",
+                        single_parent=True, backref=backref("task", cascade="all"),
+                        lazy="subquery")
     options = Column(String(255), nullable=True)
     platform = Column(String(255), nullable=True)
     memory = Column(Boolean, nullable=False, default=False)
@@ -345,16 +372,28 @@ class Database(object):
         """Disconnects pool."""
         self.engine.dispose()
 
+    def _get_or_create(self, session, model, **kwargs):
+        instance = session.query(model).filter_by(**kwargs).first()
+        if instance:
+            return instance
+        else:
+            instance = model(**kwargs)
+            return instance
+
     def clean_machines(self):
-        """Clean old stored machines."""
+        """Clean old stored machines and related tables."""
         session = self.Session()
         try:
             session.query(Machine).delete()
+            #session.query(Tag).delete()
             session.commit()
         except SQLAlchemyError:
             session.rollback()
         finally:
             session.close()
+        # Secondary table.
+        # TODO: this is better done via cascade delete.
+        self.engine.execute(machines_tags.delete())
 
     def add_machine(self,
                     name,
@@ -381,11 +420,14 @@ class Database(object):
                           label=label,
                           ip=ip,
                           platform=platform,
-                          tags=tags,
                           interface=interface,
                           snapshot=snapshot,
                           resultserver_ip=resultserver_ip,
                           resultserver_port=resultserver_port)
+        # Deal with tags format (i.e. foo,bar,baz)
+        if tags:
+            for tag in tags.replace(" ","").split(","):
+                machine.tags.append(self._get_or_create(session, Tag, name=tag))
         session.add(machine)
 
         try:
@@ -500,23 +542,22 @@ class Database(object):
         try:
             if name and platform:
                 # Wrong usage.
+                log.error("You can select machine only by name or by platform.")
                 return None
             elif name and tags:
                 # Also wrong usage
+                log.error("You can select machine only by name or by tags.")
                 return None
             elif name:
                 machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
-            elif tags and platform:
-                    machines = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False)
-                    machine = None
-                    want = tags.replace(" ","").split(",")
-                    for m in machines:
-                        have = m.tags.replace(" ","").split(",")
-                        if len(set(want) - set(have)) == 0:
-                            machine = m
-                            break
-            elif platform:
-                machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
+            elif tags or platform:
+                machines = session.query(Machine)
+                if platform:
+                    machines = machines.filter(Machine.platform == platform).filter(Machine.locked == False)
+                if tags:
+                    for tag in tags:
+                        machines = machines.filter(Machine.tags.any(name=tag.name))
+                machine = machines.first()
             else:
                 machine = session.query(Machine).filter(Machine.locked == False).first()
         except SQLAlchemyError:
@@ -534,8 +575,6 @@ class Database(object):
                 return None
             finally:
                 session.close()
-        else:
-            log.error("No machine found for name: %s platform: %s tags: %s" % (str(name), str(platform), str(tags)))
 
         return machine
 
@@ -692,9 +731,13 @@ class Database(object):
         task.custom = custom
         task.machine = machine
         task.platform = platform
-        task.tags=tags
         task.memory = memory
         task.enforce_timeout = enforce_timeout
+
+        # Deal with tags format (i.e. foo,bar,baz)
+        if tags:
+            for tag in tags.replace(" ","").split(","):
+                task.tags.append(self._get_or_create(session, Tag, name=tag))
 
         if clock:
             if isinstance(clock, str) or isinstance(clock, unicode):
