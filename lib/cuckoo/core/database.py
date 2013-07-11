@@ -385,7 +385,6 @@ class Database(object):
         session = self.Session()
         try:
             session.query(Machine).delete()
-            #session.query(Tag).delete()
             session.commit()
         except SQLAlchemyError:
             session.rollback()
