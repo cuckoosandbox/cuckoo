@@ -85,7 +85,7 @@ class Machinery(object):
                 machine.id = machine_id.strip()
                 machine.label = machine_opts["label"]
                 machine.platform = machine_opts["platform"]
-                machine.tags = machine_opts["tags"]
+                machine.tags = machine_opts.get("tags", None)
                 machine.ip = machine_opts["ip"]
                 # If configured, use specific network interface for this machine, else use the default value.
                 machine.interface = machine_opts.get("interface", None)
