@@ -322,7 +322,7 @@ class Task(Base):
         self.target = target
 
     def __repr__(self):
-        return "<Task('{1}','{2}')>".format(self.id, self.target)
+        return "<Task('{0}','{1}')>".format(self.id, self.target)
 
 class Database(object):
     """Analysis queue database.
