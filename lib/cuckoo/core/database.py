@@ -314,6 +314,10 @@ class Task(Base):
                 d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
             else:
                 d[column.name] = value
+
+        # Tags are a relation so no column to iterate.
+        d["tags"] = [tag.name for tag in self.tags]
+
         return d
 
     def to_json(self):
@@ -910,7 +914,7 @@ class Database(object):
             if category:
                 search = search.filter(Task.category == category)
             if details:
-                search = search.options(joinedload("guest"), joinedload("errors"))
+                search = search.options(joinedload("guest"), joinedload("errors"), joinedload("tags"))
 
             tasks = search.order_by("added_on desc").limit(limit).offset(offset).all()
         except SQLAlchemyError:
@@ -944,7 +948,7 @@ class Database(object):
         session = self.Session()
         try:
             if details:
-                task = session.query(Task).options(joinedload("guest"), joinedload("errors")).get(task_id)
+                task = session.query(Task).options(joinedload("guest"), joinedload("errors"), joinedload("tags")).get(task_id)
             else:
                 task = session.query(Task).get(task_id)
         except SQLAlchemyError:
