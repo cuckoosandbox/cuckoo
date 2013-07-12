@@ -162,7 +162,7 @@ class MAEC40Report(Report):
         """Creates the ProcessTree corresponding to that observed by cuckoo.
         """
         if "behavior" in self.results and "processtree" in self.results["behavior"]:
-            root_node = self.results["behavior"]["processtree"]
+            root_node = self.results["behavior"]["processtree"][0]
             if root_node:
                 root_node_dict = {"pid" : root_node["pid"],
                                     "name" : root_node["name"],
