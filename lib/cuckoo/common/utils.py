@@ -125,11 +125,13 @@ def store_temp_file(filedata, filename):
 
     return tmp_file_path
 
-# xmlrpc + timeout - still a bit ugly - but at least gets rid of setdefaulttimeout
-# inspired by 
-# http://stackoverflow.com/questions/372365/set-timeout-for-xmlrpclib-serverproxy
-# (although their stuff was messy, this is cleaner)
 class TimeoutServer(xmlrpclib.ServerProxy):
+    """Timeout server for XMLRPC.
+    XMLRPC + timeout - still a bit ugly - but at least gets rid of setdefaulttimeout
+    inspired by http://stackoverflow.com/questions/372365/set-timeout-for-xmlrpclib-serverproxy
+    (although their stuff was messy, this is cleaner)
+    @see: http://stackoverflow.com/questions/372365/set-timeout-for-xmlrpclib-serverproxy
+    """
     def __init__(self, *args, **kwargs):
         timeout = kwargs.pop("timeout", None)
         kwargs["transport"] = TimeoutTransport(timeout=timeout)
@@ -138,7 +140,7 @@ class TimeoutServer(xmlrpclib.ServerProxy):
     def _set_timeout(self, timeout):
         t = self._ServerProxy__transport
         t.timeout = timeout
-        # if we still have a socket we need to update that as well
+        # If we still have a socket we need to update that as well.
         if hasattr(t, "_connection") and t._connection[1] and t._connection[1].sock:
             t._connection[1].sock.settimeout(timeout)
 
@@ -152,8 +154,10 @@ class TimeoutTransport(xmlrpclib.Transport):
         if self.timeout != None: conn.timeout = self.timeout
         return conn
 
-# http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 class Singleton(type):
+    """Singleton.
+    @see: http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+    """
     _instances = {}
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
