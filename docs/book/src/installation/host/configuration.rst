@@ -108,6 +108,10 @@ Following is the default *conf/virtualbox.conf* file::
     # Example:
     # resultserver_port = 2042
 
+    # (Optional) Set your own tags. These are comma separated and help to identify
+    # specific VMs. You can run samples on VMs with tag you require.
+    # tags = windows_xp_sp3,32_bit,acrobat_reader_6
+
 You can use this same configuration structure for any other machine manager module.
 
 The comments for the options are self-explainatory.
@@ -161,6 +165,10 @@ Following is the default *conf/kvm.conf* file::
     # here, the machine will use the default value from cuckoo.conf.
     # Example:
     # resultserver_port = 2042
+
+    # (Optional) Set your own tags. These are comma separated and help to identify
+    # specific VMs. You can run samples on VMs with tag you require.
+    # tags = windows_xp_sp3,32_bit,acrobat_reader_6
 
 .. note::
 

@@ -159,7 +159,8 @@ Following is a list of currently available resources and a brief description. Fo
                         "status": "pending", 
                         "enforce_timeout": false, 
                         "timeout": 0, 
-                        "memory": false, 
+                        "memory": false,
+                        "tags": []
                         "id": 1, 
                         "added_on": "2012-12-19 14:18:25", 
                         "completed_on": null
@@ -179,7 +180,11 @@ Following is a list of currently available resources and a brief description. Fo
                         "status": "pending", 
                         "enforce_timeout": false, 
                         "timeout": 0, 
-                        "memory": false, 
+                        "memory": false,
+                        "tags": [
+                                    "32bit",
+                                    "acrobat_6",
+                                ],
                         "id": 2, 
                         "added_on": "2012-12-19 14:18:25", 
                         "completed_on": null
@@ -226,7 +231,11 @@ Following is a list of currently available resources and a brief description. Fo
                         "status": "pending", 
                         "enforce_timeout": false, 
                         "timeout": 0, 
-                        "memory": false, 
+                        "memory": false,
+                        "tags": [
+                                    "32bit",
+                                    "acrobat_6",
+                                ],
                         "id": 1, 
                         "added_on": "2012-12-19 14:18:25", 
                         "completed_on": null
@@ -365,7 +374,11 @@ Following is a list of currently available resources and a brief description. Fo
                         "status": null, 
                         "locked": false, 
                         "name": "cuckoo1", 
-                        "ip": "192.168.56.101", 
+                        "ip": "192.168.56.101",
+                        "tags": [
+                                    "32bit",
+                                    "acrobat_6",
+                                ],
                         "label": "cuckoo1", 
                         "locked_changed_on": null, 
                         "platform": "windows", 
@@ -399,7 +412,11 @@ Following is a list of currently available resources and a brief description. Fo
                         "status": null, 
                         "locked": false, 
                         "name": "cuckoo1", 
-                        "ip": "192.168.56.101", 
+                        "ip": "192.168.56.101",
+                        "tags": [
+                                    "32bit",
+                                    "acrobat_6",
+                                ],
                         "label": "cuckoo1", 
                         "locked_changed_on": null, 
                         "platform": "windows", 
