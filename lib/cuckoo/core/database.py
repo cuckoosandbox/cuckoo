@@ -543,27 +543,30 @@ class Database(object):
         @return: locked machine
         """
         session = self.Session()
+
+        # Preventive checks.
+        if name and platform:
+            # Wrong usage.
+            log.error("You can select machine only by name or by platform.")
+            return None
+        elif name and tags:
+            # Also wrong usage
+            log.error("You can select machine only by name or by tags.")
+            return None
+
         try:
-            if name and platform:
-                # Wrong usage.
-                log.error("You can select machine only by name or by platform.")
-                return None
-            elif name and tags:
-                # Also wrong usage
-                log.error("You can select machine only by name or by tags.")
-                return None
-            elif name:
-                machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
-            elif tags or platform:
-                machines = session.query(Machine)
-                if platform:
-                    machines = machines.filter(Machine.platform == platform).filter(Machine.locked == False)
-                if tags:
-                    for tag in tags:
-                        machines = machines.filter(Machine.tags.any(name=tag.name))
-                machine = machines.first()
-            else:
-                machine = session.query(Machine).filter(Machine.locked == False).first()
+            machines = session.query(Machine)
+            if name:
+                machines = machines.filter(Machine.name == name)
+            if platform:
+                machines = machines.filter(Machine.platform == platform)
+            if tags:
+                for tag in tags:
+                    machines = machines.filter(Machine.tags.any(name=tag.name))
+            # Get only free machines.
+            machines = machines.filter(Machine.locked == False)
+            # Get only one.
+            machine = machines.first()
         except SQLAlchemyError:
             session.close()
             return None
