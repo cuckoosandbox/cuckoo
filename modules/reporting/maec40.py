@@ -69,13 +69,13 @@ class MAEC40Report(Report):
         # Add the Bundle to the Subject
         self.subject.add_findings_bundle(self.dynamic_bundle)
         # Generate Static Analysis Bundles, if static results exist
-        if self.results["static"]:
+        if "static" in self.results and self.results["static"]:
             self.static_bundle = Bundle(self.id_generator.generate_bundle_id(), False, 4.0, "static analysis tool output")
             self.subject.add_findings_bundle(self.static_bundle) 
-        if self.results["strings"]:
+        if "strings" in self.results and self.results["strings"]:
             self.strings_bundle = Bundle(self.id_generator.generate_bundle_id(), False, 4.0, "static analysis tool output")
             self.subject.add_findings_bundle(self.strings_bundle)
-        if self.results["virustotal"]:
+        if "virustotal" in self.results and self.results["virustotal"]:
             self.virustotal_bundle = Bundle(self.id_generator.generate_bundle_id(), False, 4.0, "static analysis tool output")
             self.subject.add_findings_bundle(self.virustotal_bundle) 
 
@@ -161,9 +161,9 @@ class MAEC40Report(Report):
     def addProcessTree(self):
         """Creates the ProcessTree corresponding to that observed by cuckoo.
         """
-        if "behaviors" in self.results and "processtree" in self.results["behaviors"]:
-            root_node = self.results["behaviors"]["processtree"]
-            if root_node is not None:
+        if "behavior" in self.results and "processtree" in self.results["behavior"]:
+            root_node = self.results["behavior"]["processtree"]
+            if root_node:
                 root_node_dict = {"pid" : root_node["pid"],
                                     "name" : root_node["name"],
                                     "initiated_actions" : self.pidActionMap[root_node["pid"]],
@@ -435,7 +435,7 @@ class MAEC40Report(Report):
             # Add the strings results
             self.strings_bundle.add_object(self.createFileStringsObj())
         # Add the VirusTotal analysis
-        if self.results["virustotal"]:
+        if "virustotal" in self.results and self.results["virustotal"]:
             virustotal_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref" : self.strings_bundle.id}))
             virustotal_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             virustotal_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
