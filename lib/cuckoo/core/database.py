@@ -82,6 +82,10 @@ class Machine(Base):
                 d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
             else:
                 d[column.name] = value
+
+        # Tags are a relation so no column to iterate.
+        d["tags"] = [tag.name for tag in self.tags]
+
         return d
 
     def to_json(self):
@@ -526,9 +530,9 @@ class Database(object):
         session = self.Session()
         try:
             if locked:
-                machines = session.query(Machine).filter(Machine.locked == True).all()
+                machines = session.query(Machine).options(joinedload("tags")).filter(Machine.locked == True).all()
             else:
-                machines = session.query(Machine).all()
+                machines = session.query(Machine).options(joinedload("tags")).all()
         except SQLAlchemyError:
             return None
         finally:
@@ -1008,7 +1012,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).filter(Machine.name == name).first()
+            machine = session.query(Machine).options(joinedload("tags")).filter(Machine.name == name).first()
         except SQLAlchemyError:
             return None
         finally:
@@ -1023,7 +1027,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).filter(Machine.label == label).first()
+            machine = session.query(Machine).options(joinedload("tags")).filter(Machine.label == label).first()
         except SQLAlchemyError:
             return None
         finally:
