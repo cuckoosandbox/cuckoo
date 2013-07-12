@@ -373,6 +373,11 @@ class Database(object):
         self.engine.dispose()
 
     def _get_or_create(self, session, model, **kwargs):
+        """Get an ORM instance or create it if not exist.
+        @param session: SQLAlchemy session object
+        @param model: model to query
+        @return: row instance
+        """
         instance = session.query(model).filter_by(**kwargs).first()
         if instance:
             return instance
