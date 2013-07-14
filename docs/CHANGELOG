@@ -12,12 +12,16 @@ Cuckoo Sandbox 0.7 (TBD)
 * Added processing module for volatility to analyze memory dumps, disabled by default
 * Added new "reported" status for analysis tasks
 * Added automated rescheduling of locked tasks at startup
+* Added tags to machines
+* Added reduced behavioral events
+* Refactored processing to improve performances
+* Refactored signature engine, introducing event-based signatures to improve performances
 * Transitioned network sniffer to auxiliary module
 * Renamed MachineManagers to Machinery modules
 * Fixed virtual machine clock, now is updated to current time or specified by user via --clock option
+* Fixed bug in Human auxiliary module, now moving cursor to absolute positions
 * Removed support for GrayLog2
 * Removed pickle reporting module
-* Added tags
 
 Cuckoo Sandbox 0.6 (2013-04-15)
 ===============================

@@ -41,6 +41,7 @@ command-line utility. It currently has the following options available::
       --enforce-timeout    Enable to force the analysis to run for the full
                            timeout period
       --clock CLOCK        Set virtual machine clock
+      --tags TAGS          Specify tags identifier of a machine you want to use
 
 If you specify a directory as path, all the files contained in it will be
 submitted for analysis.

@@ -7,6 +7,7 @@ import time
 import shutil
 import ntpath
 import string
+import chardet
 import tempfile
 import xmlrpclib
 from datetime import datetime
@@ -125,11 +126,13 @@ def store_temp_file(filedata, filename):
 
     return tmp_file_path
 
-# xmlrpc + timeout - still a bit ugly - but at least gets rid of setdefaulttimeout
-# inspired by 
-# http://stackoverflow.com/questions/372365/set-timeout-for-xmlrpclib-serverproxy
-# (although their stuff was messy, this is cleaner)
 class TimeoutServer(xmlrpclib.ServerProxy):
+    """Timeout server for XMLRPC.
+    XMLRPC + timeout - still a bit ugly - but at least gets rid of setdefaulttimeout
+    inspired by http://stackoverflow.com/questions/372365/set-timeout-for-xmlrpclib-serverproxy
+    (although their stuff was messy, this is cleaner)
+    @see: http://stackoverflow.com/questions/372365/set-timeout-for-xmlrpclib-serverproxy
+    """
     def __init__(self, *args, **kwargs):
         timeout = kwargs.pop("timeout", None)
         kwargs["transport"] = TimeoutTransport(timeout=timeout)
@@ -138,7 +141,7 @@ class TimeoutServer(xmlrpclib.ServerProxy):
     def _set_timeout(self, timeout):
         t = self._ServerProxy__transport
         t.timeout = timeout
-        # if we still have a socket we need to update that as well
+        # If we still have a socket we need to update that as well.
         if hasattr(t, "_connection") and t._connection[1] and t._connection[1].sock:
             t._connection[1].sock.settimeout(timeout)
 
@@ -152,8 +155,10 @@ class TimeoutTransport(xmlrpclib.Transport):
         if self.timeout != None: conn.timeout = self.timeout
         return conn
 
-# http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 class Singleton(type):
+    """Singleton.
+    @see: http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+    """
     _instances = {}
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
@@ -176,3 +181,52 @@ def time_from_cuckoomon(s):
     @return: datetime object
     """
     return datetime.strptime(s, "%Y-%m-%d %H:%M:%S,%f")
+
+def to_unicode(str):
+    """Attempt to fix non uft-8 string into utf-8. It tries to guess input encoding,
+    if fail retry with a replace strategy (so undetectable chars will be escaped).
+    @see: fuller list of encodings at http://docs.python.org/library/codecs.html#standard-encodings
+    """
+
+    def brute_enc(str):
+        """Trying to decode via simple brute forcing."""
+        result = None
+        encodings = ("ascii", "utf8", "latin1")
+        for enc in encodings:
+            if result:
+                break
+            try:
+                result = unicode(str, enc)
+            except UnicodeDecodeError:
+                pass
+        return result
+
+    def chardet_enc(str):
+        """Guess encoding via chardet."""
+        result = None
+        enc = chardet.detect(str)["encoding"]
+
+        try:
+            result = unicode(str, enc)
+        except UnicodeDecodeError:
+            pass
+
+        return result
+
+    # If already in unicode, skip.
+    if isinstance(str, unicode):
+        return str
+
+    # First try to decode against a little set of common encodings.
+    result = brute_enc(str)
+
+    # Try via chardet.
+    if not result:
+        result = chardet_enc(str)
+
+    # If not possible to convert the input string, try again with
+    # a replace strategy.
+    if not result:
+        result = unicode(str, errors="replace")
+
+    return result

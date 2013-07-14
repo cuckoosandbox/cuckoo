@@ -85,7 +85,7 @@ class Machinery(object):
                 machine.id = machine_id.strip()
                 machine.label = machine_opts["label"]
                 machine.platform = machine_opts["platform"]
-                machine.tags = machine_opts["tags"]
+                machine.tags = machine_opts.get("tags", None)
                 machine.ip = machine_opts["ip"]
                 # If configured, use specific network interface for this machine, else use the default value.
                 machine.interface = machine_opts.get("interface", None)
@@ -510,8 +510,7 @@ class Processing(object):
         """
         self.analysis_path = analysis_path
         self.log_path = os.path.join(self.analysis_path, "analysis.log")
-        self.file_path = os.path.realpath(os.path.join(self.analysis_path,
-                                                       "binary"))
+        self.file_path = os.path.realpath(os.path.join(self.analysis_path, "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
         self.logs_path = os.path.join(self.analysis_path, "logs")
         self.shots_path = os.path.join(self.analysis_path, "shots")

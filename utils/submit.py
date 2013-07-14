@@ -13,6 +13,7 @@ logging.basicConfig()
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.colors import *
+from lib.cuckoo.common.utils import to_unicode
 from lib.cuckoo.core.database import Database
 
 def main():
@@ -29,6 +30,7 @@ def main():
     parser.add_argument("--memory", action="store_true", default=False, help="Enable to take a memory dump of the analysis machine", required=False)
     parser.add_argument("--enforce-timeout", action="store_true", default=False, help="Enable to force the analysis to run for the full timeout period", required=False)
     parser.add_argument("--clock", type=str, action="store", default=None, help="Set virtual machine clock", required=False)
+    parser.add_argument("--tags", type=str, action="store", default=None, help="Specify tags identifier of a machine you want to use", required=False)
 
     try:
         args = parser.parse_args()
@@ -38,11 +40,7 @@ def main():
 
     db = Database()
 
-    # Try to get input as utf-8.
-    try:
-        target = args.target.decode("utf-8")
-    except UnicodeEncodeError:
-        target = args.target
+    target = to_unicode(args.target)
 
     if args.url:
         task_id = db.add_url(target,
@@ -55,15 +53,16 @@ def main():
                              custom=args.custom,
                              memory=args.memory,
                              enforce_timeout=args.enforce_timeout,
-                             clock=args.clock)
+                             clock=args.clock,
+                             tags=args.tags)
 
-        print(bold(green("Success")) + ": URL \"{0}\" added as task with ID {1}".format(target, task_id))
+        print(bold(green("Success")) + u": URL \"{0}\" added as task with ID {1}".format(target, task_id))
     else:
         # Get absolute path to deal with relative.
-        path = os.path.abspath(target)
+        path = to_unicode(os.path.abspath(target))
 
         if not os.path.exists(path):
-            print(bold(red("Error")) + ": the specified file/folder does not exist at path \"{0}\"".format(path))
+            print(bold(red("Error")) + u": the specified file/folder does not exist at path \"{0}\"".format(path))
             return False
 
         files = []
@@ -73,7 +72,7 @@ def main():
                     file_path = os.path.join(dirname, file_name)
 
                     if os.path.isfile(file_path):
-                        files.append(file_path)
+                        files.append(to_unicode(file_path))
         else:
             files.append(path)
 
@@ -88,10 +87,11 @@ def main():
                                   custom=args.custom,
                                   memory=args.memory,
                                   enforce_timeout=args.enforce_timeout,
-                                  clock=args.clock)
+                                  clock=args.clock,
+                                  tags=args.tags)
 
             if task_id:
-                print(bold(green("Success")) + ": File \"{0}\" added as task with ID {1}".format(file_path, task_id))
+                print(bold(green("Success")) + u": File \"{0}\" added as task with ID {1}".format(file_path, task_id))
             else:
                 print(bold(red("Error")) + ": adding task to database")
 

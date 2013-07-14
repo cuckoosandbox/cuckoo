@@ -312,12 +312,16 @@ class RunSignatures(object):
         active_sigs = [sig(self.results) for sig in signatures_list if sig.enabled and sig.evented and self._check_signature_version(sig)]
 
         if active_sigs:
-            log.debug("Processing API calls for %u evented signatures.", len(active_sigs))
+            log.debug("Running %u evented signatures", len(active_sigs))
+            for sig in active_sigs:
+                log.debug("\t%s", sig.name)
 
             # Iterate calls and tell interested signatures about them
             for proc in self.results["behavior"]["processes"]:
                 for call in proc["calls"]:
+                    # Loop through active evented signatures.
                     for sig in active_sigs:
+                        # Skip current call if it doesn't matched the filters (if any).
                         if sig.filter_processnames and not proc["process_name"] in sig.filter_processnames:
                             continue
                         if sig.filter_apinames and not call["api"] in sig.filter_apinames:
@@ -325,38 +329,42 @@ class RunSignatures(object):
                         if sig.filter_categories and not call["category"] in sig.filter_categories:
                             continue
 
-                        r = None
-
-                        try: r = sig.event_apicall(call, proc)
+                        result = None
+                        try:
+                            result = sig.event_apicall(call, proc)
                         except:
                             log.exception("Failed to run signature \"%s\":", sig.name)
-                            r = False
+                            result = False
 
-                        # if it returns None, we just carry on
-                        if r == None:
+                        # If the signature returns None we can carry on, the
+                        # condition was not matched.
+                        if result == None:
                             continue
 
-                        # on True, the signature matched
-                        if r == True:
+                        # On True, the signature is matched.
+                        if result == True:
+                            log.debug("Analysis matched signature \"%s\"", sig.name)
                             matched.append(sig.as_result())
                         
-                        # either True or False, we don't need to check this sig anymore
+                        # Either True or False, we don't need to check this sig anymore.
                         active_sigs.remove(sig)
                         del sig
 
-                # call the stop method on all remaining instances
+                # Call the stop method on all remaining instances.
                 for sig in active_sigs:
-                    r = None
+                    result = None
 
-                    try: r = sig.stop()
+                    try: result = sig.stop()
                     except:
                         log.exception("Failed to stop signature \"%s\":", sig.name)
 
-                    if r == True:
+                    if result == True:
                         matched.append(sig.as_result())
 
-        # compat loop for old-style (non evented) signatures
+        # Compat loop for old-style (non evented) signatures.
         if signatures_list:
+            log.debug("Running non-evented signatures")
+
             for signature in signatures_list:
                 if signature.evented: continue
 
