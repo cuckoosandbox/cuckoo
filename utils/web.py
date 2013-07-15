@@ -49,6 +49,37 @@ def index():
     template = env.get_template("submit.html")
     return template.render({"context" : context})
 
+@route("/url")
+def url():
+	context = {}
+	template = env.get_template("url.html")
+	return template.render({"context" : context})
+
+@route("/url", method="POST")
+def submit_url():
+	context = {}
+	errors = False
+
+	url = request.forms.get("url","")
+	priority = 3
+
+	if url == None or url == "":
+		context["error_toggle"] = True
+		errors = True
+
+	if errors:
+		template = env.get_template("url.html")
+		return template.render({"url" : url,
+					"context" : context})
+
+	task_id = db.add_url(url=url,
+				priority=priority)	
+
+	template = env.get_template("url_success.html")
+	return template.render({"taskid" : task_id,
+				"submiturl" : url})
+
+
 @route("/browse")
 def browse():
     rows = db.list_tasks()

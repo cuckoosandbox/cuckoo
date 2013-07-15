@@ -1,0 +1,23 @@
+{% extends "base-web.html" %}
+{% block content %}
+	<div class="urlsubmit">
+		<div class="page-header">
+		   <h3>New Analysis <small>use this form to submit a URL</small></h3>
+		</div>
+	<form method="POST" action="/url" class="form-horizontal" enctype="multipart/form-data">
+		<fieldset>
+			<div class="control-group">
+			<label class="control-label" for="input01">URL to analyze</label>
+			<div class="controls">
+				<input type="text" name="url" class="input-xlarge" id="input01" value="{{url}}">
+			</div>
+			</div>
+			<div class="form-actions">
+			<button type="submit" class="btn btn-primary">Submit</button>
+                    <button class="btn">Cancel</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+{% endblock %}
+
