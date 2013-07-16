@@ -9,6 +9,10 @@ import json
 import argparse
 import tarfile
 import StringIO
+import socket
+
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
+from lib.cuckoo.common.constants import CUCKOO_VERSION
 
 try:
     from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response, HTTPError
@@ -280,6 +284,21 @@ def machines_list():
     response["machines"] = []
     for row in machines:
         response["machines"].append(row.to_dict())
+
+    return jsonize(response)
+
+@route("/cuckoo/status", method="GET")
+def cuckoo_status():
+    response = {"version": CUCKOO_VERSION,
+                "hostname": socket.gethostname(),
+                "machines": {"total": len(db.list_machines()),
+                             "available": db.count_machines_available()},
+                "tasks":{"total": db.count_tasks(),
+                         "pending": db.count_tasks("pending"),
+                         "running": db.count_tasks("running"),
+                         "completed": db.count_tasks("completed"),
+                         "reported": db.count_tasks("reported")}
+                }
 
     return jsonize(response)
 
