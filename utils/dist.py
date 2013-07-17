@@ -350,6 +350,12 @@ class CuckooConnect():
 
         return res
 
+    def cuckoo_status(self):
+        """ Get cuckoo status """
+
+        request = self.url + "/cuckoo/status"
+        return self.__request(request)
+
     def task_status(self, taskid):
         """ Return the task status as string
 
@@ -427,28 +433,12 @@ class RESTServer():
 
         self.machines = []
 
-        def get_platform(pname):
-            """ Read platform part of the config
+        def get_vms(connection):
+            """ Return all vms on a system and the configurations
 
-            @param pname: Platform section name
+            @param connection: Connection to the cuckoo
             """
-            res = {}
-            res["id"] = config.get(pname, "id")
-            res["name"] = config.get(pname, "name")
-            res["os"] = config.get(pname, "os")
-            res["bit"] = config.getint(pname, "bit")
-            return res
-
-        def get_tool(tname):
-            """ Reading tool part of the configuration
-
-            @param tool: tool section name
-            """
-            res = {}
-            res["id"] = config.get(tname, "id")
-            res["name"] = config.get(tname, "name")
-            res["version"] = config.get(tname, "version")
-            return res
+            return connection.machines_list()
 
         def get_machine(mname):
             """ Read machine part of the config
@@ -456,22 +446,25 @@ class RESTServer():
             @param mname: machine section name
             """
             res = {}
-            res["id"] = config.get(mname, "id")
+
             url = config.get(mname, "url")
-            self.connections[res["id"]] = {"url": url,
-                                           "con": CuckooConnect(url,
-                                                                self.logger)}
-            res["name"] = config.get(mname, "name")
-            res["stable"] = config.get(mname, "stable")
-            res["cuckoo_version"] = config.get(mname, "cuckoo_version")
-            res["platforms"] = []
-            for i in config.get(mname, "platforms").split(","):
-                res["platforms"].append(get_platform(i.strip()))
+            res = {"url": url,
+                    "con": CuckooConnect(url,
+                    self.logger)}
 
-            res["tools"] = []
-            for i in config.get(mname, "tools").split(","):
-                res["tools"].append(get_tool(i.strip()))
+            state = res["con"].cuckoo_status()
+            
+            res["cuckoo_version"] = state["version"]
+            res["stable"] = True
+            if state["version"].lower().endswith("dev"):
+                res["stable"] = False
+            res["id"] = state["hostname"]
 
+            self.connections[res["id"]] = res
+
+            res["vms"] = get_vms(res["con"])["machines"]
+            
+            print res
             return res
 
         for t in config.get("Rest", "machines_active").split(","):
@@ -564,30 +557,6 @@ class RESTServer():
                "error": False,
                "error_text": ""}
         return jsonize(res)
-
-    def upload_gui(self):
-        """ Display an upload form for testing (hey, this is no web gui)
-        """
-
-        form = """
-        <html>
-        <body>
-        An upload form for testing (hey, this is no web gui)
-        <form method=Post action = analyse_file enctype="multipart/form-data">
-          Cuckoo version:      <input type="text" name="cuckooversion" /> <br>
-          Platform-ID: <input type="text" name="platform" /><br>
-          Tool-ID: <input type="text" name="tool" /><br>
-          Priority: <input type="text" name="priority" value="1"></input><br>
-          File: <input type="file" name="file" /><br>
-          <input type="submit" value="Start upload" /><br>
-        </form>
-        </body>
-
-        </html>
-
-                """
-
-        return form
 
     def get_machines(self, version, platform, tool):
         """return a list of machines with matching parameters
