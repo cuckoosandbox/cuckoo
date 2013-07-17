@@ -588,7 +588,6 @@ class RESTServer():
                     tagok = True
                 else:
                     for v in m["vms"]:
-                        print ("%s in %s" % (str(t), str(v["tags"])))
                         if len(set(t) - set(v["tags"])) == 0:
                             if pok and tok:
                                 vms.append(v["name"])
