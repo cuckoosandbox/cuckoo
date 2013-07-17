@@ -290,6 +290,7 @@ def machines_list():
 @route("/cuckoo/status", method="GET")
 def cuckoo_status():
     response = {"version": CUCKOO_VERSION,
+                "protocol_version": 1,
                 "hostname": socket.gethostname(),
                 "machines": {"total": len(db.list_machines()),
                              "available": db.count_machines_available()},
