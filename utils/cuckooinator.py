@@ -190,7 +190,7 @@ class Dist_connect():
         return rfile
 
     def analyse_file(self, filename, c_ver="1.0-dev", platform="windows",
-                     tool="vanilla", priority=1, tags=""):
+                     tool="vanilla", priority=1, tags=None):
         """ Send a file to analysis
 
         @param filename: The file to send for scanning
@@ -206,7 +206,7 @@ class Dist_connect():
         form.add_field("cuckooversion", str(c_ver))
         form.add_field("platform", str(platform))
         form.add_field("tool", str(tool))
-        form.add_field("tags", str(tags))
+        form.add_field("tags", tags or "")
         form.add_field("priority", str(priority))
 
         form.add_file_content('file', filename,
@@ -221,13 +221,14 @@ class Dist_connect():
 
         return self.__request(request)
 
-    def scan(self, filename):
+    def scan(self, filename, tags=None):
         """ Scan one file
 
         @param filename: Send a file to scanning
+        @param tags: The tags required
         """
-        #self.logger.info("Before sending file: %s" % (filename))
-        res = self.analyse_file(filename)
+
+        res = self.analyse_file(filename, tags=tags)
         res["filename"] = filename
         if res["error"]:
             self.logger.error("Error scanning file: %s %s " %
@@ -297,7 +298,7 @@ class Dist_connect():
 
         results = []
         for afile in allFiles(args.file):
-            a = self.scan(afile)
+            a = self.scan(afile, args.tags)
             if not a["error"]:
                 results.append(a)
             else:
@@ -346,6 +347,8 @@ if __name__ == "__main__":
                         help="Timeout for every additional result." +
                         " In seconds, 0 is off.",
                         type=int, default=240)
+    parser.add_argument("--tags", help="Required tags, CSV string", default=None)
+        
 
     args = parser.parse_args()
     ps = args.packages.split(",")

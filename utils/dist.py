@@ -452,6 +452,9 @@ class RESTServer():
                     self.logger)}
 
             state = res["con"].cuckoo_status()
+            if state["protocol_version"] != 1:
+                self.logger.error("Wrong protocol version api->dist: %s" % str(state["protocol_version"]))
+                return None
             
             res["cuckoo_version"] = state["version"]
             res["stable"] = True
@@ -463,8 +466,7 @@ class RESTServer():
 
             res["vms"] = get_vms(res["con"])["machines"]
             res["tools"] = state["tools"]
-            
-            print res
+
             return res
 
         for t in config.get("Rest", "machines_active").split(","):
@@ -558,8 +560,8 @@ class RESTServer():
                "error_text": ""}
         return jsonize(res)
 
-    def get_machines(self, version, platform, tool, tags):
-        """return a list of machines with matching parameters
+    def get_vms_for_tags(self, version, platform, tool, tags=None):
+        """return a dict of machines/vms with matching parameters
 
         @param version: Cuckoo version to filter for
         @param platform: Platform to filter for
@@ -567,9 +569,12 @@ class RESTServer():
         @param tags: The tags to look for
         """
 
-        t = tags.replace(" ","").split(",")
-        res = []
+        if not tags is None:
+            t = tags.replace(" ","").split(",")
+        res = {}
+
         for m in self.machines:
+            vms = []
             if m["cuckoo_version"] == version:
                 pok = False
                 tok = False
@@ -578,9 +583,34 @@ class RESTServer():
                         pok = True
                 if tool in m["tools"]:
                     tok = True
-                if pok and tok:
-                    res.append(m["id"])
+
+                if tags == "" or tags is None:
+                    tagok = True
+                else:
+                    for v in m["vms"]:
+                        print ("%s in %s" % (str(t), str(v["tags"])))
+                        if len(set(t) - set(v["tags"])) == 0:
+                            if pok and tok:
+                                vms.append(v["name"])
+            if len(vms):                
+                pending = m["con"].cuckoo_status()["tasks"]["pending"]
+                res[m["id"]] = {"vms": vms,
+                                "pending_tasks": pending}
         return res
+
+    def find_slacker(self,mlist):
+        """ Find a machien out of a dict that slacks
+    
+        @param mlist: The dict containing machines
+        """
+
+        lowest = None
+        name = None
+        for m in mlist:
+            if lowest is None or mlist[m]["pending_tasks"] < lowest:
+                lowest = mlist[m]["pending_tasks"]
+                name = m
+        return name
 
     def analyse_file(self):
         response = {"error": False,
@@ -590,10 +620,10 @@ class RESTServer():
         cuckoo_ver = request.forms.get("cuckooversion", "")
         platform = request.forms.get("platform", None)
         tool = request.forms.get("tool", "vanilla")
-        tags = request.forms.get("tags", "")
+        tags = request.forms.get("tags", None)
         priority = request.forms.get("priority", 1)
 
-        m_pot = self.get_machines(cuckoo_ver, platform, tool, tags)
+        m_pot = self.get_vms_for_tags(cuckoo_ver, platform, tool, tags)
         if len(m_pot) == 0:
             response["error"] = True
             response["error_text"] =\
@@ -603,7 +633,7 @@ class RESTServer():
                 "No machine available for cv: %s, pl: %s, tool: %s" %
                 (str(cuckoo_ver), str(platform), str(tool)))
         else:
-            machine_id = choice(m_pot)
+            machine_id = self.find_slacker(m_pot)
             options = {"priority": priority}
             if platform:
                 options["platform"] = platform.strip()
