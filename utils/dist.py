@@ -369,7 +369,6 @@ class CuckooConnect():
 
         @param taskid: Task to get status for
         """
-        # "TASK_REPORTED" for cuckoo 0.7, success for cuckoo 0.6
 
         if self.task_status(taskid) in ["reported"]:
             return True
@@ -463,6 +462,7 @@ class RESTServer():
             self.connections[res["id"]] = res
 
             res["vms"] = get_vms(res["con"])["machines"]
+            res["tools"] = state["tools"]
             
             print res
             return res
@@ -558,25 +558,26 @@ class RESTServer():
                "error_text": ""}
         return jsonize(res)
 
-    def get_machines(self, version, platform, tool):
+    def get_machines(self, version, platform, tool, tags):
         """return a list of machines with matching parameters
 
         @param version: Cuckoo version to filter for
         @param platform: Platform to filter for
         @param tool: Tool to filter for
+        @param tags: The tags to look for
         """
 
+        t = tags.replace(" ","").split(",")
         res = []
         for m in self.machines:
             if m["cuckoo_version"] == version:
                 pok = False
                 tok = False
-                for p in m["platforms"]:
-                    if p["id"] == platform:
+                for p in m["vms"]:
+                    if p["platform"] == platform:
                         pok = True
-                for t in m["tools"]:
-                    if t["id"] == tool:
-                        tok = True
+                if tool in m["tools"]:
+                    tok = True
                 if pok and tok:
                     res.append(m["id"])
         return res
@@ -589,9 +590,10 @@ class RESTServer():
         cuckoo_ver = request.forms.get("cuckooversion", "")
         platform = request.forms.get("platform", None)
         tool = request.forms.get("tool", "vanilla")
+        tags = request.forms.get("tags", "")
         priority = request.forms.get("priority", 1)
 
-        m_pot = self.get_machines(cuckoo_ver, platform, tool)
+        m_pot = self.get_machines(cuckoo_ver, platform, tool, tags)
         if len(m_pot) == 0:
             response["error"] = True
             response["error_text"] =\

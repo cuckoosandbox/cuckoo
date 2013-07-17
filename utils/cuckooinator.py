@@ -189,8 +189,8 @@ class Dist_connect():
                 pass
         return rfile
 
-    def analyse_file(self, filename, c_ver="0.6", platform="windows",
-                     tool="vanilla", priority=1):
+    def analyse_file(self, filename, c_ver="1.0-dev", platform="windows",
+                     tool="vanilla", priority=1, tags=""):
         """ Send a file to analysis
 
         @param filename: The file to send for scanning
@@ -199,12 +199,14 @@ class Dist_connect():
         @param tool: The tool to use. "vanilla" for Cuckoo default,
             "volatility" for volatility
         @param priority: The priority to process that file with
+        @param tags: The tags to use, CSV in string
         """
         form = MultiPartForm()
 
         form.add_field("cuckooversion", str(c_ver))
         form.add_field("platform", str(platform))
         form.add_field("tool", str(tool))
+        form.add_field("tags", str(tags))
         form.add_field("priority", str(priority))
 
         form.add_file_content('file', filename,
@@ -298,6 +300,8 @@ class Dist_connect():
             a = self.scan(afile)
             if not a["error"]:
                 results.append(a)
+            else:
+                self.logger.error(a["error_text"])
 
         total = str(len(results))
         print "submitted %s samples" % total

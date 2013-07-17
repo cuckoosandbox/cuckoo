@@ -297,8 +297,15 @@ def cuckoo_status():
                          "pending": db.count_tasks("pending"),
                          "running": db.count_tasks("running"),
                          "completed": db.count_tasks("completed"),
-                         "reported": db.count_tasks("reported")}
+                         "reported": db.count_tasks("reported")},
+                "tools":["vanilla"]
                 }
+
+    try:
+        import volatility.conf as conf
+        response["tools"].append("volatility")
+    except ImportError:
+        pass
 
     return jsonize(response)
 
