@@ -156,16 +156,16 @@ class CuckooConnect():
             timeout Timeout to set
             options Additional options
             machine Machine to use
-            platform Platform to use
             custom Custom string to pass through the analysis process
             memory Do memory dump
+            priority Priority of the scan process
             enforce_timeout enforce the execution for the full timeout value
         """
 
         form = MultiPartForm()
 
-        optional = ["package", "timeout", "options", "machine",
-                    "platform", "custom", "memory", "enforce_timeout"]
+        optional = ["package", "timeout", "options", "machine", "priority",
+                    "custom", "platform", "memory", "enforce_timeout", "tags"]
 
         for o in optional:
             if o in options:
@@ -198,6 +198,7 @@ class CuckooConnect():
             options Additional options
             machine Machine to use
             platform Platform to use
+            priority Priority of the scan process
             custom Custom string to pass through the analysis process
             memory Do memory dump
             enforce_timeout enforce the execution for the full timeout value
@@ -205,8 +206,8 @@ class CuckooConnect():
 
         form = MultiPartForm()
 
-        optional = ["package", "timeout", "options", "machine",
-                    "platform", "custom", "memory", "enforce_timeout"]
+        optional = ["package", "timeout", "options", "machine", "priority"
+                    "platform", "custom", "memory", "enforce_timeout", "tags"]
 
         for o in optional:
             if o in options:
@@ -560,11 +561,10 @@ class RESTServer():
                "error_text": ""}
         return jsonize(res)
 
-    def get_vms_for_tags(self, version, platform, tool, tags=None):
+    def get_vms_for_tags(self, version, tool, tags=None):
         """return a dict of machines/vms with matching parameters
 
         @param version: Cuckoo version to filter for
-        @param platform: Platform to filter for
         @param tool: Tool to filter for
         @param tags: The tags to look for
         """
@@ -576,20 +576,17 @@ class RESTServer():
         for m in self.machines:
             vms = []
             if m["cuckoo_version"] == version:
-                pok = False
                 tok = False
-                for p in m["vms"]:
-                    if p["platform"] == platform:
-                        pok = True
                 if tool in m["tools"]:
                     tok = True
 
                 if tags == "" or tags is None:
-                    tagok = True
+                    if tok:
+                        vms.append(v["name"])
                 else:
                     for v in m["vms"]:
                         if len(set(t) - set(v["tags"])) == 0:
-                            if pok and tok:
+                            if tok:
                                 vms.append(v["name"])
             if len(vms):                
                 pending = m["con"].cuckoo_status()["tasks"]["pending"]
@@ -617,25 +614,26 @@ class RESTServer():
 
         data = request.files.file
         cuckoo_ver = request.forms.get("cuckooversion", "")
-        platform = request.forms.get("platform", None)
+        custom = request.forms.get("custom", "")
         tool = request.forms.get("tool", "vanilla")
         tags = request.forms.get("tags", None)
         priority = request.forms.get("priority", 1)
 
-        m_pot = self.get_vms_for_tags(cuckoo_ver, platform, tool, tags)
+        m_pot = self.get_vms_for_tags(cuckoo_ver, tool, tags)
         if len(m_pot) == 0:
             response["error"] = True
             response["error_text"] =\
-                "No machine available for cv: %s, pl: %s, tool: %s" %\
-                (str(cuckoo_ver), str(platform), str(tool))
+                "No machine available for cv: %s, tool: %s" %\
+                (str(cuckoo_ver), str(tool))
             self.logger.error(
-                "No machine available for cv: %s, pl: %s, tool: %s" %
-                (str(cuckoo_ver), str(platform), str(tool)))
+                "No machine available for cv: %s, tool: %s" %
+                (str(cuckoo_ver), str(tool)))
         else:
             machine_id = self.find_slacker(m_pot)
-            options = {"priority": priority}
-            if platform:
-                options["platform"] = platform.strip()
+            options = {"priority": int(priority),
+                       "custom": custom,
+                       "tags": tags}
+
             if tool == "volatility":
                 options["memory"] = True
                 options["options"] = "free=True"

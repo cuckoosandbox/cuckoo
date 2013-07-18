@@ -189,25 +189,25 @@ class Dist_connect():
                 pass
         return rfile
 
-    def analyse_file(self, filename, c_ver="1.0-dev", platform="windows",
-                     tool="vanilla", priority=1, tags=None):
+    def analyse_file(self, filename, c_ver="1.0",
+                     tool="vanilla", priority=1, tags=None, custom=""):
         """ Send a file to analysis
 
         @param filename: The file to send for scanning
         @param c_ver: The cuckoo version to use
-        @param platform: The platform to use. "windows"
         @param tool: The tool to use. "vanilla" for Cuckoo default,
             "volatility" for volatility
         @param priority: The priority to process that file with
         @param tags: The tags to use, CSV in string
+        @param custom: Custom string to pass through analysis
         """
         form = MultiPartForm()
 
         form.add_field("cuckooversion", str(c_ver))
-        form.add_field("platform", str(platform))
         form.add_field("tool", str(tool))
         form.add_field("tags", tags or "")
         form.add_field("priority", str(priority))
+        form.add_field("custom", str(custom))
 
         form.add_file_content('file', filename,
                               open(filename, "rb").read())
@@ -221,14 +221,25 @@ class Dist_connect():
 
         return self.__request(request)
 
-    def scan(self, filename, tags=None):
+    def scan(self, filename, c_ver="1.0", tool="vanilla", priority=1,
+             tags=None, custom=""):
         """ Scan one file
 
         @param filename: Send a file to scanning
+        @param c_ver: The cuckoo version to use
+        @param tool: The tool to use. "vanilla" for Cuckoo default,
+            "volatility" for volatility
+        @param priority: The priority to process that file with
         @param tags: The tags required
+        @param custom: Custom string to pass through analysis
         """
 
-        res = self.analyse_file(filename, tags=tags)
+        res = self.analyse_file(filename,
+                                c_ver=c_ver,
+                                tool=tool,
+                                priority=priority,
+                                tags=tags,
+                                custom=custom)
         res["filename"] = filename
         if res["error"]:
             self.logger.error("Error scanning file: %s %s " %
@@ -298,7 +309,12 @@ class Dist_connect():
 
         results = []
         for afile in allFiles(args.file):
-            a = self.scan(afile, args.tags)
+            a = self.scan(afile,
+                          c_ver=args.cuckoo_version,
+                          tool=args.tool,
+                          priority=args.priority,
+                          tags=args.tags,
+                          custom=args.custom)
             if not a["error"]:
                 results.append(a)
             else:
@@ -336,6 +352,8 @@ if __name__ == "__main__":
                         default="dropped")
     parser.add_argument("--logfile", help="Logfile to store the results",
                         default="cuckooinator.log")
+    parser.add_argument("--custom", help="Custom string to log",
+                        default="")
     parser.add_argument("file",
                         help="File or path to test with. " +
                         "Paths will be handled recursively")
@@ -347,8 +365,15 @@ if __name__ == "__main__":
                         help="Timeout for every additional result." +
                         " In seconds, 0 is off.",
                         type=int, default=240)
-    parser.add_argument("--tags", help="Required tags, CSV string", default=None)
-        
+    parser.add_argument("--tags", help="Tags for VM selection, CSV string",
+                        default=None)
+    parser.add_argument("--cuckoo_version",
+                        help="Select Cuckoo version to use",
+                        default="1.0")
+    parser.add_argument("--tool", 
+                        help="Select Cuckoo tool to use (vanilla or volatility)",
+                        default="vanilla")
+    parser.add_argument("--priority", help="Select priority to use", default="1")
 
     args = parser.parse_args()
     ps = args.packages.split(",")
