@@ -38,7 +38,8 @@ class AnalysisInfo(Processing):
             "ended" : self.task.get("completed_on", "none"),
             "duration" : duration,
             "id" : int(self.task["id"]),
-            "category" : self.task["category"]
+            "category" : self.task["category"],
+            "custom" : self.task["custom"]
         }
 
         return info
