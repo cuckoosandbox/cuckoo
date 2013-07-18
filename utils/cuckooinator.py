@@ -126,7 +126,8 @@ class Dist_connect():
             if HAVE_SOCKS:
                 print ("Setting proxy %s %s " % (proxy, proxy_port))
                 self.logger.info("Setting proxy %s %s " % (proxy, proxy_port))
-                socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy, proxy_port)
+                socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5,
+                                      proxy, proxy_port)
                 socks.wrapmodule(urllib2)
             else:
                 self.logger.error("Proxy library missing")
@@ -370,10 +371,12 @@ if __name__ == "__main__":
     parser.add_argument("--cuckoo_version",
                         help="Select Cuckoo version to use",
                         default="1.0")
-    parser.add_argument("--tool", 
-                        help="Select Cuckoo tool to use (vanilla or volatility)",
+    parser.add_argument("--tool",
+                        help="Select Cuckoo tool to use " +
+                        "(\"vanilla\" or \"volatility\")",
                         default="vanilla")
-    parser.add_argument("--priority", help="Select priority to use", default="1")
+    parser.add_argument("--priority", help="Select priority to use",
+                        default="1")
 
     args = parser.parse_args()
     ps = args.packages.split(",")

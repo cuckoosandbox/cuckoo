@@ -428,7 +428,9 @@ class RESTServer():
         """ Read configuration file
         """
         self.conf = Config(os.path.join(CUCKOO_ROOT, "conf", "dist.conf"))
-        self.logfile = os.path.join(CUCKOO_ROOT, "log", self.conf.distributed.logfile)
+        self.logfile = os.path.join(CUCKOO_ROOT,
+                                    "log",
+                                    self.conf.distributed.logfile)
 
         hdlr = logging.FileHandler(self.logfile)
         formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
@@ -454,14 +456,15 @@ class RESTServer():
             res = {}
 
             res = {"url": url,
-                    "con": CuckooConnect(url,
-                    self.logger)}
+                   "con": CuckooConnect(url,
+                   self.logger)}
 
             state = res["con"].cuckoo_status()
             if state["protocol_version"] != 1:
-                self.logger.error("Wrong protocol version api->dist: %s" % str(state["protocol_version"]))
+                self.logger.error("Wrong protocol version api->dist: %s" %
+                                  str(state["protocol_version"]))
                 return None
-            
+
             res["cuckoo_version"] = state["version"]
             res["stable"] = True
             if state["version"].lower().endswith("dev"):
@@ -515,18 +518,19 @@ class RESTServer():
                "error_text": ""}
 
         try:
-            task = self.connections[machine_id]["con"].tasks_view(task_id)["task"]
+            task = self.connections[machine_id]["con"].\
+                tasks_view(task_id)["task"]
             if task["status"] in ["reported"]:
                 res["finished"] = True
                 self.logger.info("Cuckoo finished %s/%s" %
-                              (str(machine_id), str(task_id)))
+                                 (str(machine_id), str(task_id)))
             if task["status"] in ["running", "completed", "reported"]:
                 res["started"] = True
             if len(task["errors"]) > 0:
                 res["analysis_error"] = True
                 res["error_text"] = "Cuckoo state is failure"
                 self.logger.error("Cuckoo error %s/%s" %
-                              (str(machine_id), str(task_id)))
+                                  (str(machine_id), str(task_id)))
         except:
             res["error"] = True
             res["error_text"] = "Error connecting to api"
@@ -554,7 +558,7 @@ class RESTServer():
             tasks_report(task_id, format=report_format)
 
         self.logger.info("Cuckoo report %s/%s Format: %s" %
-                              (str(machine_id), str(task_id), report_format))
+                         (str(machine_id), str(task_id), report_format))
         if report_format in ["all", "dropped"]:
             response.content_type = "application/x-tar; charset=UTF-8"
 
@@ -577,7 +581,7 @@ class RESTServer():
         """
 
         if not tags is None:
-            t = tags.replace(" ","").split(",")
+            t = tags.replace(" ", "").split(",")
         res = {}
 
         for m in self.machines:
@@ -595,15 +599,15 @@ class RESTServer():
                         if len(set(t) - set(v["tags"])) == 0:
                             if tok:
                                 vms.append(v["name"])
-            if len(vms):                
+            if len(vms):
                 pending = m["con"].cuckoo_status()["tasks"]["pending"]
                 res[m["id"]] = {"vms": vms,
                                 "pending_tasks": pending}
         return res
 
-    def find_slacker(self,mlist):
+    def find_slacker(self, mlist):
         """ Find a machien out of a dict that slacks
-    
+
         @param mlist: The dict containing machines
         """
 
