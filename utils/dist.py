@@ -15,7 +15,12 @@ import os
 import time
 import logging
 from bottle import Bottle, run, response, request
-from random import choice
+import sys
+
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
+
+from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 
 def jsonize(data):
@@ -412,6 +417,7 @@ class RESTServer():
         self.inifile = inifile
         self.connections = {}  # Internal connection data
         self.machines = None   # List of machine data
+        self.conf = None
         self.logger = logging.getLogger("Distributed Cuckoo REST")
         self._app = Bottle()
         self.load_conf()
@@ -421,9 +427,9 @@ class RESTServer():
     def load_conf(self):
         """ Read configuration file
         """
-        config = ConfigParser.ConfigParser()
-        config.read(self.inifile)
-        self.logfile = config.get("Basic", "logfile")
+        self.conf = Config(os.path.join(CUCKOO_ROOT, "conf", "dist.conf"))
+        self.logfile = os.path.join(CUCKOO_ROOT, "log", self.conf.distributed.logfile)
+
         hdlr = logging.FileHandler(self.logfile)
         formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
         hdlr.setFormatter(formatter)
@@ -440,14 +446,13 @@ class RESTServer():
             """
             return connection.machines_list()
 
-        def get_machine(mname):
+        def get_machine(url):
             """ Read machine part of the config
 
-            @param mname: machine section name
+            @param url: machine url where api is waiting (including port)
             """
             res = {}
 
-            url = config.get(mname, "url")
             res = {"url": url,
                     "con": CuckooConnect(url,
                     self.logger)}
@@ -470,8 +475,10 @@ class RESTServer():
 
             return res
 
-        for t in config.get("Rest", "machines_active").split(","):
-            self.machines.append(get_machine(t.strip()))
+        for url in self.conf.distributed.machines_active.split(","):
+            url = url.strip()
+            self.machines.append(get_machine(url))
+            self.logger.info("Adding machine with the url %s" % url)
         self.logger.info("Finished loading INI")
 
     def _route(self):
