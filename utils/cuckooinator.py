@@ -266,9 +266,9 @@ class Dist_connect():
         elif res["finished"]:
             result = "finished"
         elif res["analysis_error"]:
-            self.logger.error("Failed, Analysis Error: %s in %s/%s: %s" %
-                              (res["error_text"], scan["machine_id"],
-                               scan["task_id"], scan["filename"]))
+            self.logger.error("Failed, Analysis Error: %s in %s/%s" %
+                              (res["error_text"], machine_id,
+                               task_id))
             result = "failed"
 
         return result
