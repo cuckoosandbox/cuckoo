@@ -277,10 +277,12 @@ class LibVirtMachinery(Machinery):
         # Version checks.
         if not self._version_check():
             raise CuckooMachineError("Libvirt version is not supported, please get an updated version")
-        # Preload VMs
-        self.vms = self._fetch_machines()
+
         # Base checks.
         super(LibVirtMachinery, self)._initialize_check()
+
+        # Preload VMs
+        self.vms = self._fetch_machines()
 
     def start(self, label):
         """Starts a virtual machine.
