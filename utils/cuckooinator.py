@@ -249,55 +249,88 @@ class Dist_connect():
             self.logger.info("Scanning file: %s" % (filename))
         return res
 
-    def getem(self, scan, packages=["dropped"], timeout=0):
-        """ Get results
-
-        @param scan: scan information to identify the file to get
-        @param packages: a list of result-types (dropped, json, html, ...)
-        @param timeout: timeout for this result-fetch
+    def get_state_plus(self, machine_id, task_id):
         """
-        def fetchit(machine_id, task_id, filename, packages):
+
+        @param machine_id: ID of the machine
+        @param task_id: ID of the task
+        @return "finished", "failed", "pending"
+        """
+
+        result = "pending"
+
+        res = self.get_state(machine_id, task_id)
+        if res is None or res["error"]:
+            self.logger.error("ERROR, malformated return")
+            result = "pending"
+        elif res["finished"]:
+            result = "finished"
+        elif res["analysis_error"]:
+            self.logger.error("Failed, Analysis Error: %s in %s/%s: %s" %
+                              (res["error_text"], scan["machine_id"],
+                               scan["task_id"], scan["filename"]))
+            result = "failed"
+
+        return result
+
+    def fetchit(self, machine_id, task_id, filename, packages):
             for i in packages:
                 self.get_result(machine_id, task_id, filename, i)
             return True
-        self.logger.info("Want results for %s/%s: %s" % (scan["machine_id"],
-                                                         scan["task_id"],
-                                                         scan["filename"]))
 
-        # Waiting for results
+    def sweep_fetch(self, args, scans, packages):
+        """ Get the results as fast as possible, spending network bandwidth
+
+        @param args: args from the commandline
+        @param scans: The expected results (list of running scans)
+        @param packages: A list of packages to fetch
+        """
+        done = []
+        failed = []
+
+        count = 0
+        total = len(scans)
+        # First sample does have an extreme timeout
         start = datetime.now()
         while True:
-            res = self.get_state(scan["machine_id"], scan["task_id"])
-            if res is None or res["error"]:
-                self.logger.error("ERROR, malformated return")
-                break
-            elif res["finished"]:
-                if fetchit(scan["machine_id"], scan["task_id"],
-                           scan["filename"], packages):
-                    self.logger.info("Fetched results for %s/%s: %s" %
-                                     (scan["machine_id"],
-                                      scan["task_id"],
-                                      scan["filename"]))
-                    break
-            elif res["analysis_error"]:
-                self.logger.error("Failed, Analysis Error: %s in %s/%s: %s" %
-                                  (res["error_text"], scan["machine_id"],
-                                   scan["task_id"], scan["filename"]))
-                break
-            now = datetime.now()
-            diff = now - start
-            if timeout > 0 and diff.seconds > timeout:
+            diff = datetime.now() - start
+            if args.timeout > 0 and diff.seconds > args.timeout:
                 self.logger.error("Timeout hit. Ignoring this sample:" +
                                   "%s/%s: %s" % (scan["machine_id"],
                                                  scan["task_id"],
                                                  scan["filename"]))
                 break
-            time.sleep(5)
+            for ares in scans:
+                if (ares["machine_id"], ares["task_id"]) in done:
+                    pass
+                elif (ares["machine_id"], ares["task_id"]) in failed:
+                    pass
+                else:
+                    state = self.get_state_plus(ares["machine_id"],
+                                                ares["task_id"])
+                    if state == "finished":
+                        self.fetchit(ares["machine_id"], ares["task_id"],
+                                     ares["filename"], packages)
+                        count += 1
+                        print "Got %s %s" % (ares["machine_id"],
+                                             ares["task_id"])
+                        done.append((ares["machine_id"], ares["task_id"]))
+                    if state == "failed":
+                        count += 1
+                        print "Failed %s %s" % (ares["machine_id"],
+                                                ares["task_id"])
+                        failed.append((ares["machine_id"], ares["task_id"]))
 
-    def process(self, args):
+            print "Done: %s/%s" % (str(count), str(total))
+            if count == total:
+                break
+            time.sleep(60)
+
+    def process(self, args, packages):
         """ Accept a path, scan this recursively and get the results
 
         @param args: Arguments from commandline
+        @param packages: Packages to fetch
         """
         def allFiles(root):
             """ Recursive processing
@@ -325,15 +358,8 @@ class Dist_connect():
         print "submitted %s samples" % total
         self.logger.info("Submission done. Number of samples: %s" % total)
 
-        # First sample does have an extreme timeout
-        timeout = args.master_timeout
+        self.sweep_fetch(args, results, packages)
 
-        count = 0
-        for ares in results:
-            self.getem(ares, ps, timeout)
-            timeout = args.sub_timeout
-            count += 1
-            print "Done: %s/%s" % (str(count), total)
         self.logger.info("Finished")
 
 
@@ -358,14 +384,10 @@ if __name__ == "__main__":
     parser.add_argument("file",
                         help="File or path to test with. " +
                         "Paths will be handled recursively")
-    parser.add_argument("--master_timeout",
+    parser.add_argument("--timeout",
                         help="Timeout till analysis must start and first" +
                         " result is returned. n seconds. 0 is off",
                         type=int, default=60 * 60 * 3)
-    parser.add_argument("--sub-timeout",
-                        help="Timeout for every additional result." +
-                        " In seconds, 0 is off.",
-                        type=int, default=240)
     parser.add_argument("--tags", help="Tags for VM selection, CSV string",
                         default=None)
     parser.add_argument("--cuckoo_version",
@@ -382,4 +404,4 @@ if __name__ == "__main__":
     ps = args.packages.split(",")
     dc = Dist_connect(args.url, args.resdir,
                       args.proxy, args.proxyport, logfile=args.logfile)
-    dc.process(args)
+    dc.process(args, ps)
