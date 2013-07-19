@@ -295,10 +295,7 @@ class Dist_connect():
         while True:
             diff = datetime.now() - start
             if args.timeout > 0 and diff.seconds > args.timeout:
-                self.logger.error("Timeout hit. Ignoring this sample:" +
-                                  "%s/%s: %s" % (scan["machine_id"],
-                                                 scan["task_id"],
-                                                 scan["filename"]))
+                self.logger.error("Timeout hit")
                 break
             for ares in scans:
                 if (ares["machine_id"], ares["task_id"]) in done:
