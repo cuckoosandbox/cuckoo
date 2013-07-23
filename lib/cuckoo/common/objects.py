@@ -3,11 +3,9 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import sys
 import hashlib
 import binascii
 import logging
-from datetime import datetime
 
 try:
     import magic
@@ -26,7 +24,6 @@ try:
 except ImportError:
     HAVE_YARA = False
 
-from lib.cuckoo.common.utils import convert_to_printable
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 log = logging.getLogger(__name__)
