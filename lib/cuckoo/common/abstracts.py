@@ -668,9 +668,7 @@ class Signature(object):
 
         return None
 
-    def get_argument(self,
-                     call,
-                     name):
+    def get_argument(self, call, name):
         """Gets the argument <name> from the call. Or None
         @param call: API call information
         @param name: The argument to get
@@ -678,6 +676,7 @@ class Signature(object):
         for argument in call["arguments"]:
             if argument["name"] == name:
                 return argument["value"]
+
         return None
 
     def check_argument_call(self,
