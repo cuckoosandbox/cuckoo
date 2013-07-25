@@ -350,16 +350,16 @@ class RunSignatures(object):
                         active_sigs.remove(sig)
                         del sig
 
-                # Call the stop method on all remaining instances.
-                for sig in active_sigs:
-                    result = None
+            # Call the stop method on all remaining instances.
+            for sig in active_sigs:
+                result = None
 
-                    try: result = sig.stop()
-                    except:
-                        log.exception("Failed to stop signature \"%s\":", sig.name)
+                try: result = sig.stop()
+                except:
+                    log.exception("Failed to stop signature \"%s\":", sig.name)
 
-                    if result == True:
-                        matched.append(sig.as_result())
+                if result == True:
+                    matched.append(sig.as_result())
 
         # Compat loop for old-style (non evented) signatures.
         if signatures_list:
