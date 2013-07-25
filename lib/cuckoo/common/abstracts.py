@@ -549,6 +549,8 @@ class Signature(object):
     def __init__(self, results=None):
         self.data = []
         self.results = results
+        self._current_call_cache = None
+        self._current_call_dict = None
 
     def _check_value(self, pattern, subject, regex=False):
         """Checks a pattern against a given subject.
@@ -636,49 +638,6 @@ class Signature(object):
 
         return None
 
-    def check_argument(self,
-                       pattern,
-                       name=None,
-                       api=None,
-                       category=None,
-                       process=None,
-                       regex=False):
-        """Checks for a specific argument of an invoked API.
-        @param pattern: string or expression to check for.
-        @param name: optional filter for the argument name.
-        @param api: optional filter for the API function name.
-        @param category: optional filter for a category name.
-        @param process: optional filter for a specific process name.
-        @param regex: boolean representing if the pattern is a regular
-                      expression or not and therefore should be compiled.
-        @return: boolean with the result of the check.
-        """
-        # Loop through processes.
-        for item in self.results["behavior"]["processes"]:
-            # Check if there's a process name filter.
-            if process:
-                if item["process_name"] != process:
-                    continue
-
-            # Loop through API calls.
-            for call in item["calls"]:
-                r = self.check_argument_call(call, pattern, name, api, category, regex)
-                if r:
-                    return r
-
-        return None
-
-    def get_argument(self, call, name):
-        """Gets the argument <name> from the call. Or None
-        @param call: API call information
-        @param name: The argument to get
-        """
-        for argument in call["arguments"]:
-            if argument["name"] == name:
-                return argument["value"]
-
-        return None
-
     def check_argument_call(self,
                             call,
                             pattern,
@@ -721,6 +680,38 @@ class Signature(object):
 
         return False
 
+    def check_argument(self,
+                       pattern,
+                       name=None,
+                       api=None,
+                       category=None,
+                       process=None,
+                       regex=False):
+        """Checks for a specific argument of an invoked API.
+        @param pattern: string or expression to check for.
+        @param name: optional filter for the argument name.
+        @param api: optional filter for the API function name.
+        @param category: optional filter for a category name.
+        @param process: optional filter for a specific process name.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        # Loop through processes.
+        for item in self.results["behavior"]["processes"]:
+            # Check if there's a process name filter.
+            if process:
+                if item["process_name"] != process:
+                    continue
+
+            # Loop through API calls.
+            for call in item["calls"]:
+                r = self.check_argument_call(call, pattern, name, api, category, regex)
+                if r:
+                    return r
+
+        return None
+
     def check_ip(self, pattern, regex=False):
         """Checks for an IP address being contacted.
         @param pattern: string or expression to check for.
@@ -762,25 +753,33 @@ class Signature(object):
 
         return None
 
-    def as_result(self):
-        """Properties as a dict (for results).
-        @return: result dict.
+    def get_argument(self, call, name):
+        """Retrieves the value of a specific argument from an API call.
+        @param call: API call object.
+        @param name: name of the argument to retrieve.
+        @return: value of the requried argument.
         """
-        return {
-            "name" : self.name,
-            "description" : self.description,
-            "severity" : self.severity,
-            "references" : self.references,
-            "data" : self.data,
-            "alert" : self.alert,
-            "families": self.families
-        }
+        # Check if the call passed to it was cached already.
+        # If not, we can start caching it and store a copy converted to a dict.
+        if call is not self._current_call_cache:
+            self._current_call_cache = call
+            self._current_call_dict = dict()
+
+            for argument in call["arguments"]:
+                self._current_call_dict[argument["name"]] = argument["value"]
+
+        # Return the required argument.
+        if name in self._current_call_dict:
+            return self._current_call_dict[name]
+
+        return None
 
     def stop(self):
         """Evented signature is notified when all API calls are done.
         @return: Match state.
+        @raise NotImplementedError: this method is abstract.
         """
-        pass
+        raise NotImplementedError
 
     def run(self):
         """Start signature processing.
@@ -797,6 +796,20 @@ class Signature(object):
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
+
+    def as_result(self):
+        """Properties as a dict (for results).
+        @return: result dictionary.
+        """
+        return dict(
+            name=self.name,
+            description=self.description,
+            severity=self.severity,
+            references=self.references,
+            data=self.data,
+            alert=self.alert,
+            families=self.families
+        )
 
 class Report(object):
     """Base abstract class for reporting module."""

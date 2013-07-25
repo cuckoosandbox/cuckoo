@@ -332,6 +332,8 @@ class RunSignatures(object):
                         result = None
                         try:
                             result = sig.event_apicall(call, proc)
+                        except NotImplementedError:
+                            result = False
                         except:
                             log.exception("Failed to run signature \"%s\":", sig.name)
                             result = False
@@ -354,12 +356,16 @@ class RunSignatures(object):
             for sig in active_sigs:
                 result = None
 
-                try: result = sig.stop()
+                try:
+                    result = sig.stop()
+                except NotImplementedError:
+                    continue
                 except:
                     log.exception("Failed to stop signature \"%s\":", sig.name)
-
-                if result == True:
-                    matched.append(sig.as_result())
+                    continue
+                else:
+                    if result == True:
+                        matched.append(sig.as_result())
 
         # Compat loop for old-style (non evented) signatures.
         if signatures_list:
