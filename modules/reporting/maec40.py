@@ -310,35 +310,35 @@ class MAEC40Report(Report):
             # Version info
             if len(self.results["static"]["pe_versioninfo"]) > 0:
                 for k in self.results["static"]["pe_versioninfo"]:
-                    if k["name"] == "Comments":
+                    if k["name"] == "Comments" and len(k["value"]) > 0:
                         version_info["comments"] = k["value"]
-                    if k["name"] == "CompanyName":
+                    if k["name"] == "CompanyName" and len(k["value"]) > 0:
                         version_info["companyname"] = k["value"]
-                    if k["name"] == "ProductVersion":
+                    if k["name"] == "ProductVersion" and len(k["value"]) > 0:
                         version_info["productversion"] = k["value"]
-                    if k["name"] == "ProductName":
+                    if k["name"] == "ProductName" and len(k["value"]) > 0:
                         version_info["product_name"] = k["value"]
-                    if k["name"] == "FileDescription":
+                    if k["name"] == "FileDescription" and len(k["value"]) > 0:
                         version_info["filedescription"] = k["value"]
-                    if k["name"] == "FileVersion":
+                    if k["name"] == "FileVersion" and len(k["value"]) > 0:
                         version_info["fileversion"] = k["value"]
-                    if k["name"] == "InternalName":
+                    if k["name"] == "InternalName" and len(k["value"]) > 0:
                         version_info["internalname"] = k["value"]
-                    if k["name"] == "LangID":
+                    if k["name"] == "LangID" and len(k["value"]) > 0:
                         version_info["langid"] = k["value"]
-                    if k["name"] == "LegalCopyright":
+                    if k["name"] == "LegalCopyright" and len(k["value"]) > 0:
                         version_info["legalcopyright"] = k["value"]
-                    if k["name"] == "LegalTrademarks":
+                    if k["name"] == "LegalTrademarks" and len(k["value"]) > 0:
                         version_info["legaltrademarks"] = k["value"]
-                    if k["name"] == "OriginalFilename":
+                    if k["name"] == "OriginalFilename" and len(k["value"]) > 0:
                         version_info["originalfilename"] = k["value"]
-                    if k["name"] == "PrivateBuild":
+                    if k["name"] == "PrivateBuild" and len(k["value"]) > 0:
                         version_info["privatebuild"] = k["value"]
-                    if k["name"] == "ProductName":
+                    if k["name"] == "ProductName" and len(k["value"]) > 0:
                         version_info["productname"] = k["value"]
-                    if k["name"] == "ProductVersion":
+                    if k["name"] == "ProductVersion" and len(k["value"]) > 0:
                         version_info["productversion"] = k["value"]
-                    if k["name"] == "SpecialBuild":
+                    if k["name"] == "SpecialBuild" and len(k["value"]) > 0:
                         version_info["specialbuild"] = k["value"]
                 resources.append(version_info)
         win_exec_file_obj = Object.from_dict(object_dict)
