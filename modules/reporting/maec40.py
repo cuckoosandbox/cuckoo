@@ -251,6 +251,30 @@ class MAEC40Report(Report):
     def createWinExecFileObj(self):
         """Creates a Windows Executable File (PE) object for capturing static analysis output.
         """
+
+        # A mapping of Cuckoo resource type names to their name in MAEC
+        resource_type_mappings = {"GIF" : "Bitmap",
+                                  "RT_ACCELERATOR" : "Accelerators",
+                                  "RT_ANICURSOR" : "AniCursor",
+                                  "RT_ANIICON" : "AniIcon",
+                                  "RT_BITMAP" : "Bitmap",
+                                  "RT_CURSOR" : "Cursor",
+                                  "RT_DIALOG" : "Dialog",
+                                  "RT_DLGINCLUDE" : "DLGInclude",
+                                  "RT_FONT" : "Font",
+                                  "RT_FONTDIR" : "Fontdir",
+                                  "RT_GROUP_CURSOR" : "GroupCursor",
+                                  "RT_GROUP_ICON" : "GroupIcon",
+                                  "RT_HTML" : "HTML",
+                                  "RT_ICON" : "Icon",
+                                  "RT_MANIFEST" : "Manifest",
+                                  "RT_MENU" : "Menu",
+                                  "RT_PLUGPLAY" : "PlugPlay",
+                                  "RT_RCDATA" : "RCData",
+                                  "RT_STRING" : "String",
+                                  "RT_VERSION" : "VersionInfo",
+                                  "RT_VXD" : "Vxd"}
+
         if len(self.results["static"]) > 0:
             exports = {}
             imports = []
@@ -293,8 +317,9 @@ class MAEC40Report(Report):
             # Resources
             if len(self.results["static"]["pe_resources"]) > 0:
                 for r in self.results["static"]["pe_resources"]:
-                    resource_dict = {"name" : r["name"]}
-                    resources.append(resource_dict)
+                    if r["name"] in resource_type_mappings:
+                        resource_dict = {"type" : resource_type_mappings[r["name"]]}
+                        resources.append(resource_dict)
             # Sections
             if len(self.results["static"]["pe_sections"]) > 0:
                 for s in self.results["static"]["pe_sections"]:
