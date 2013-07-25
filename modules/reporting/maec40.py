@@ -327,7 +327,7 @@ class MAEC40Report(Report):
                     if k["name"] == "LangID":
                         version_info["langid"] = k["value"]
                     if k["name"] == "LegalCopyright":
-                        version_info["legalcopright"] = k["value"]
+                        version_info["legalcopyright"] = k["value"]
                     if k["name"] == "LegalTrademarks":
                         version_info["legaltrademarks"] = k["value"]
                     if k["name"] == "OriginalFilename":
