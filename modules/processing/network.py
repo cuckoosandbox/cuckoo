@@ -4,7 +4,6 @@
 
 import os
 import re
-import sys
 import socket
 import logging
 from urlparse import urlunparse
