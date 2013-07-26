@@ -168,10 +168,10 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         # create all missing folders for this analysis
         self.create_folders()
 
-        # initialize the protocol handler class for this connection
-        self.negotiate_protocol()
-
         try:
+            # initialize the protocol handler class for this connection
+            self.negotiate_protocol()
+
             while True:
                 r = self.protocol.read_next_message()
                 if not r: break
