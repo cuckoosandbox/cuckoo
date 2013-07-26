@@ -77,7 +77,7 @@ class BsonParser(object):
             args = dec.get("args", [])
 
             if len(args) != len(argnames):
-                log.warning("Inconsistent arg count (compared to arg names): {0}".format(dec))
+                log.warning("Inconsistent arg count (compared to arg names) on {2}: {0} names {1}".format(dec, argnames, apiname))
                 return True
 
             argdict = dict((argnames[i], args[i]) for i in range(len(args)))
@@ -103,6 +103,8 @@ class BsonParser(object):
                 self.handler.log_thread(context, pid)
                 return True
 
+            context[1] = argdict.pop("is_success", 1)
+            context[2] = argdict.pop("retval", 0)
             arguments = argdict.items()
             arguments += dec.get("aux", {}).items()
 
