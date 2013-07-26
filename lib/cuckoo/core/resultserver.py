@@ -15,7 +15,7 @@ from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooOperationalError, CuckooCriticalError
 from lib.cuckoo.common.constants import *
 from lib.cuckoo.common.utils import create_folder, Singleton, logtime
-from lib.cuckoo.common.netlog import NetlogParser
+from lib.cuckoo.common.netlog import BsonParser
 
 log = logging.getLogger(__name__)
 
@@ -127,7 +127,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             if not tmp: raise Disconnect()
             buf += tmp
 
-        if isinstance(self.protocol, NetlogParser):
+        if isinstance(self.protocol, BsonParser):
             if self.rawlogfd: self.rawlogfd.write(buf)
             else: self.startbuf += buf
         return buf
@@ -149,7 +149,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         buf = self.read_newline()
 
         if "NETLOG" in buf:
-            self.protocol = NetlogParser(self)
+            self.protocol = BsonParser(self)
         elif "FILE" in buf:
             self.protocol = FileUpload(self)
         elif "LOG" in buf:

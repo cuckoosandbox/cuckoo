@@ -11,7 +11,7 @@ import inspect
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.utils import convert_to_printable, logtime
-from lib.cuckoo.common.netlog import NetlogParser, BsonParser
+from lib.cuckoo.common.netlog import BsonParser
 from lib.cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
@@ -38,15 +38,14 @@ class ParseProcessLog(list):
 
     def parse_first_and_reset(self):
         self.fd = open(self._log_path, "rb")
-        if self._log_path.endswith(".raw"):
-            self.parser = NetlogParser(self)
-        elif self._log_path.endswith(".bson"):
+        if self._log_path.endswith(".bson"):
             self.parser = BsonParser(self)
         else:
             self.fd.close()
             self.fd = None
             return
 
+        # should be the first two messages to get the process information
         self.parser.read_next_message()
         self.parser.read_next_message()
         self.fd.seek(0)
