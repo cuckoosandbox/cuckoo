@@ -208,10 +208,16 @@ class Pcap:
                 ans = {}
                 if answer.type == dpkt.dns.DNS_A:
                     ans["type"] = "A"
-                    ans["data"] = socket.inet_ntoa(answer.rdata)
+                    try:
+                        ans["data"] = socket.inet_ntoa(answer.rdata)
+                    except socket.error:
+                        continue
                 elif answer.type == dpkt.dns.DNS_AAAA:
                     ans["type"] = "AAAA"
-                    ans["data"] = socket.inet_ntop(socket.AF_INET6, answer.rdata)
+                    try:
+                        ans["data"] = socket.inet_ntop(socket.AF_INET6, answer.rdata)
+                    except (socket.error, ValueError):
+                        continue
                 elif answer.type == dpkt.dns.DNS_CNAME:
                     ans["type"] = "CNAME"
                     ans["data"] = answer.cname
