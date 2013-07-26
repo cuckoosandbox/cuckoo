@@ -300,7 +300,7 @@ class Pcap:
         """
         try:
             req = ircMessage()
-        except Exception, why:
+        except Exception:
             return False
 
         return req.isthereIRC(tcpdata)
@@ -318,7 +318,7 @@ class Pcap:
             filters_sc = ["266"]
             filters_cc = []
             self.irc_requests = self.irc_requests + reqc.getClientMessages(tcpdata) + reqs.getServerMessagesFilter(tcpdata,filters_sc)
-        except Exception, why:
+        except Exception:
             return False
 
         return True
