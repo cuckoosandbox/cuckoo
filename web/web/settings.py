@@ -8,9 +8,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 # Cuckoo path.
-CUCKOO_PATH = (
-    os.path.join(os.getcwd(), ".."),
-)
+CUCKOO_PATH = os.path.join(os.getcwd(), "..")
 
 # Database settings. We don't need it.
 DATABASES = {}
