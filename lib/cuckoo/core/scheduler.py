@@ -201,7 +201,7 @@ class AnalysisManager(Thread):
             # Start the machine.
             machinery.start(self.machine.label)
         except CuckooMachineError as e:
-            log.error(str(e), extra={"task_id" : self.task.id})
+            log.error(str(e), extra={"task_id": self.task.id})
 
             # Stop Auxiliary modules.
             aux.stop()
@@ -214,7 +214,7 @@ class AnalysisManager(Thread):
                 # Start the analysis.
                 guest.start_analysis(options)
             except CuckooGuestError as e:
-                log.error(str(e), extra={"task_id" : self.task.id})
+                log.error(str(e), extra={"task_id": self.task.id})
 
                 # Stop Auxiliary modules.
                 aux.stop()
@@ -226,7 +226,7 @@ class AnalysisManager(Thread):
                     guest.wait_for_completion()
                     succeeded = True
                 except CuckooGuestError as e:
-                    log.error(str(e), extra={"task_id" : self.task.id})
+                    log.error(str(e), extra={"task_id": self.task.id})
                     succeeded = False
 
         finally:
@@ -237,7 +237,7 @@ class AnalysisManager(Thread):
             if self.cfg.cuckoo.memory_dump or self.task.memory:
                 try:
                     machinery.dump_memory(self.machine.label,
-                                         os.path.join(self.storage, "memory.dmp"))
+                                          os.path.join(self.storage, "memory.dmp"))
                 except NotImplementedError:
                     log.error("The memory dump functionality is not available "
                               "for current machine manager")
