@@ -114,10 +114,12 @@ class AnalysisManager(Thread):
             machine_lock.acquire()
             # If the user specified a specific machine ID, a platform to be
             # used or machine tags acquire the machine accordingly.
-            machine = machinery.acquire(machine_id=self.task.machine,
-                                        platform=self.task.platform,
-                                        tags=self.task.tags)
-            machine_lock.release()
+            try:
+                machine = machinery.acquire(machine_id=self.task.machine,
+                                            platform=self.task.platform,
+                                            tags=self.task.tags)
+            finally:
+                machine_lock.release()
 
             # If no machine is available at this moment, wait for one second
             # and try again.
@@ -173,12 +175,16 @@ class AnalysisManager(Thread):
                 return False
 
         # Acquire analysis machine.
-        self.acquire_machine()
+        try:
+            self.acquire_machine()
+        except CuckooOperationalError as e:
+            log.error("Cannot acquire machine: {0}".format(e))
+            return False
 
         # Generate the analysis configuration file.
         options = self.build_options()
 
-        # At this point we can tell the Resultserver about it
+        # At this point we can tell the Resultserver about it.
         try:
             Resultserver().add_task(self.task, self.machine)
         except Exception as e:
