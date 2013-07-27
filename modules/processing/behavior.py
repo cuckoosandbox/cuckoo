@@ -3,11 +3,8 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import sys
-import csv
 import logging
 import datetime
-import inspect
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.utils import convert_to_printable, logtime
@@ -49,6 +46,7 @@ class ParseProcessLog(list):
         return buf
 
     def __iter__(self):
+        #import inspect
         #log.debug('iter called by this guy: {0}'.format(inspect.stack()[1]))
         return self
 
