@@ -35,7 +35,8 @@ The following libraries are not strictly required, but their installation is rec
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
     * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use release 1.7 or above or the svn version).
     * `Libvirt`_ (Optional): for using the KVM machine manager.
-    * `Bottlepy`_ (Optional): for using the ``web.py`` and ``api.py`` utilities (use release 0.10 or above).
+    * `Bottlepy`_ (Optional): for using the ``api.py`` utility (use release 0.10 or above).
+    * `Django`_ (Optional): for using the web interface (use release 1.5 or above).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
     * `Volatility`_ (Optional): used for forensic analysis on memory dump
 
@@ -61,6 +62,7 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Yara: http://code.google.com/p/yara-project/
 .. _Libvirt: http://www.libvirt.org
 .. _Bottlepy: http://www.bottlepy.org
+.. _Django: https://www.djangoproject.com/
 .. _Pefile: http://code.google.com/p/pefile/
 .. _Volatility: http://code.google.com/p/volatility/
 
