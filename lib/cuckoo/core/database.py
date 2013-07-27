@@ -571,6 +571,10 @@ class Database(object):
             if tags:
                 for tag in tags:
                     machines = machines.filter(Machine.tags.any(name=tag.name))
+            # Check if there machines that they satisfy selection requirements.
+            if machines.count() == 0:
+                raise CuckooOperationalError("No machines match selection criteria")
+
             # Get only free machines.
             machines = machines.filter(Machine.locked == False)
             # Get only one.
