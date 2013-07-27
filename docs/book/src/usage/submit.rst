@@ -106,36 +106,6 @@ API
 
 Detailed usage of the REST API interface is described in :doc:`api`.
 
-.. _webpy:
-
-Web Utility
-===========
-
-Cuckoo provides a very basic web utility that you can use to submit files to
-be analyzed.
-
-You can find the script at path *utils/web.py* and you can start it with::
-
-    $ python utils/web.py
-
-By default it will create a webserver on localhost and port 8080. Open your
-browser at *http://localhost:8080* and it will prompt you a simple form that
-allows you to upload a file, specify some options (with the same format as
-the *submit.py* utility) and submit it.
-
-In the *Browse* section you can track the status of pending, failed and
-succeeded analyses and, when available, you'll be prompted a link to view
-the HTML report.
-
-    .. note::
-
-        This is by no means supposed to be a full fledged web interface:
-        it's a very simple utility that we put together to allow users to
-        simply upload files and consumes the generated HTML report.
-        Despite being incorporated and rendered dynamically, the results
-        displayed are nothing else than the *report.html* file, therefore
-        it is supposed to be independent from the utility.
-
 .. _python:
 
 Python Functions
