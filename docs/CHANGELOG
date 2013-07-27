@@ -14,6 +14,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Added automated rescheduling of locked tasks at startup
 * Added tags to machines
 * Added reduced behavioral events
+* Added new web interface, removed old web.py
 * Refactored processing to improve performances
 * Refactored signature engine, introducing event-based signatures to improve performances
 * Transitioned network sniffer to auxiliary module
