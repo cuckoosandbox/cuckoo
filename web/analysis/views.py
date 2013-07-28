@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import sys
+import re
 
 from django.conf import settings
 from django.template import RequestContext
@@ -117,4 +118,93 @@ def file(request, category, object_id):
     else:
         return render_to_response("error.html",
                                   {"error": "File not found"},
+                                  context_instance=RequestContext(request))
+
+def search(request):
+    if "search" in request.POST:
+        error = None
+
+        try:
+            term, value = request.POST["search"].strip().split(":", 1)
+        except ValueError:
+            term = ""
+            value = request.POST["search"].strip()
+
+        if term:
+            # Check on search size.
+            if len(value) < 3:
+                return render_to_response("analysis/search.html",
+                                          {"analyses": None,
+                                           "term": request.POST["search"],
+                                           "error": "Search term too short, minimum 3 characters required"},
+                                          context_instance=RequestContext(request))
+
+            # Search logic.
+            if term == "name":
+                records = results_db.analysis.find({"target.file.name": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
+            elif term == "type":
+                records = results_db.analysis.find({"target.file.type": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
+            elif term == "ssdeep":
+                records = results_db.analysis.find({"target.file.ssdeep": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
+            elif term == "crc32":
+                records = results_db.analysis.find({"target.file.crc32": value}).sort([["_id", -1]])
+            elif term == "file":
+                records = results_db.analysis.find({"behavior.summary.files": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
+            elif term == "key":
+                records = results_db.analysis.find({"behavior.summary.keys": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
+            elif term == "mutex":
+                records = results_db.analysis.find({"behavior.summary.mutexes": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
+            elif term == "domain":
+                records = results_db.analysis.find({"network.domains.domain": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
+            elif term == "ip":
+                records = results_db.analysis.find({"network.hosts": value}).sort([["_id", -1]])
+            elif term == "signature":
+                records = results_db.analysis.find({"signatures.description": {"$regex" : value, "$options" : "-1"}}).sort([["_id", -1]])
+            else:
+                return render_to_response("analysis/search.html",
+                                          {"analyses": None,
+                                           "term": request.POST["search"],
+                                           "error": "Invalid search term: %s" % term},
+                                          context_instance=RequestContext(request))
+        else:
+            if re.match(r"^([a-fA-F\d]{32})$", value):
+                records = results_db.analysis.find({"target.file.md5": value}).sort([["_id", -1]])
+            elif re.match(r"^([a-fA-F\d]{40})$", value):
+                records = results_db.analysis.find({"target.file.sha1": value}).sort([["_id", -1]])
+            elif re.match(r"^([a-fA-F\d]{64})$", value):
+                records = results_db.analysis.find({"target.file.sha256": value}).sort([["_id", -1]])
+            elif re.match(r"^([a-fA-F\d]{128})$", value):
+                records = results_db.analysis.find({"target.file.sha512": value}).sort([["_id", -1]])
+            else:
+                return render_to_response("analysis/search.html",
+                                          {"analyses": None,
+                                           "term": None,
+                                           "error": "Unable to recognize the search syntax"},
+                                          context_instance=RequestContext(request))
+
+        # Get data from cuckoo db.
+        db = Database()
+
+        analyses_files = []
+        analyses_urls = []
+
+        for result in records:
+            new = db.view_task(result["info"]["id"]).to_dict()
+            new["sample"] = db.view_sample(new["sample_id"]).to_dict()
+            if result["info"]["category"] == "file":
+                analyses_files.append(new)
+            elif result["info"]["category"] == "url":
+                analyses_urls.append(new)
+
+        return render_to_response("analysis/search.html",
+                                  {"files": analyses_files,
+                                   "urls": analyses_urls,
+                                   "term": request.POST["search"],
+                                   "error": None},
+                                  context_instance=RequestContext(request))
+    else:
+        return render_to_response("analysis/search.html",
+                                  {"analyses": None,
+                                   "term": None,
+                                   "error": None},
                                   context_instance=RequestContext(request))
