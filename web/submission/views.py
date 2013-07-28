@@ -31,6 +31,7 @@ def index(request):
         custom = request.POST.get("custom", "")
         memory = bool(request.POST.get("memory", False))
         enforce_timeout = bool(request.POST.get("enforce_timeout", False))
+        tags = request.POST.get("tags", None)
 
         if request.POST.get("free"):
             if options:
@@ -65,7 +66,8 @@ def index(request):
                                   machine=machine,
                                   custom=custom,
                                   memory=memory,
-                                  enforce_timeout=enforce_timeout)
+                                  enforce_timeout=enforce_timeout,
+                                  tags=tags)
 
             if task_id:
                 return render_to_response("success.html",
@@ -86,7 +88,8 @@ def index(request):
                                  machine=machine,
                                  custom=custom,
                                  memory=memory,
-                                 enforce_timeout=enforce_timeout)
+                                 enforce_timeout=enforce_timeout,
+                                 tags=tags)
 
             if task_id:
                 return render_to_response("success.html",
