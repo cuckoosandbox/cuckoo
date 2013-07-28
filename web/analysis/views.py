@@ -184,21 +184,17 @@ def search(request):
 
         # Get data from cuckoo db.
         db = Database()
-
-        analyses_files = []
-        analyses_urls = []
+        analyses = []
 
         for result in records:
             new = db.view_task(result["info"]["id"]).to_dict()
-            new["sample"] = db.view_sample(new["sample_id"]).to_dict()
             if result["info"]["category"] == "file":
-                analyses_files.append(new)
-            elif result["info"]["category"] == "url":
-                analyses_urls.append(new)
+                new["sample"] = db.view_sample(new["sample_id"]).to_dict()
+
+            analyses.append(new)
 
         return render_to_response("analysis/search.html",
-                                  {"files": analyses_files,
-                                   "urls": analyses_urls,
+                                  {"analyses": analyses,
                                    "term": request.POST["search"],
                                    "error": None},
                                   context_instance=RequestContext(request))

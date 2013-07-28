@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-
 <div class="center">
-    <p style="margin-bottom: 25px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+    <p><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
     <form class="form-search" action="{% url "analysis.views.search" %}" enctype="multipart/form-data" method="post">{% csrf_token %}
         <p class="muted" style="margin-top: 5px;">For details on how to perform searches, get some <a href="#help" data-toggle="collapse">help</a>.</p>
         <div class="input-append">
@@ -67,11 +66,51 @@
 {% if term %}
     <h3>Term <span class="text-info"><i>{{term}}</i></span></h3>
 {% endif %}
-
-<div class="box">
-    <div class="box-header">
-        <h3>Search Results</h3>
-    </div>
-    {% include "analysis/_table.html" %}
-</div>
+{% if analyses != None %}
+    {% if analyses|length > 0 %}
+        <div class="box">
+            <div class="box-header">
+                <h3>Search Results</h3>
+            </div>
+            <div class="box-content" style="padding: 0;">
+                <table class="table table-striped" style="table-layout: fixed;">
+                    <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Category</th>
+                        <th>Target</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for analysis in analyses %}
+                        <tr>
+                            <td>
+                            {% if analysis.status == "reported" %}
+                                {{analysis.completed_on}}
+                            {% else %}
+                                <span class="muted">{{analysis.added_on}} (added on)</span>
+                            {% endif %}
+                            </td>
+                            <td>{{analysis.category|upper}}</td>
+                            <td style="word-wrap: break-word;"><a href="{% url "analysis.views.report" analysis.id %}">
+                                {% if analysis.category == "url" %}
+                                    <span class="mono">{{analysis.target}}</span></a>
+                                {% else %}
+                                    <span class="mono">{{analysis.sample.md5}}</span></a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info" style="text-align: center;"><b>No results found.</b></div>
+    {% endif %}
+{% else %}
+    {% if error %}
+        <div class="alert alert-error" style="text-align: center;"><b>{{error}}</b></div>
+    {% endif %}
+{% endif %}
 {% endblock %}
