@@ -35,3 +35,10 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
+
+# A list of strings representing the host/domain names that this Django site
+# can serve.
+# Values in this list can be fully qualified names (e.g. 'www.example.com').
+# When DEBUG is True or when running tests, host validation is disabled; any
+# host will be accepted. Thus it's usually only necessary to set it in production.
+ALLOWED_HOSTS = ["*"]
