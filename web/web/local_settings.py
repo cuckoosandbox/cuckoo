@@ -15,7 +15,7 @@ from settings import *
 MAX_UPLOAD_SIZE = 26214400
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'z=#dz9%bce-_%l3s!$uldoq^!mb^kl*k%6p%t2ycn#(ug+6#7o'
+SECRET_KEY = "z=#dz9%bce-_%l3s!$uldoq^!mb^kl*k%6p%t2ycn#(ug+6#7o"
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -24,14 +24,14 @@ SECRET_KEY = 'z=#dz9%bce-_%l3s!$uldoq^!mb^kl*k%6p%t2ycn#(ug+6#7o'
 # timezone as the operating system.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = "America/Chicago"
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
 ADMINS = (
-    # ('Your Name', 'your_email@example.com'),
+    # ("Your Name", "your_email@example.com"),
 )
 
 MANAGERS = ADMINS
