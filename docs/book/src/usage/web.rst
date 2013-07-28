@@ -10,6 +10,7 @@ Configuration
 
 The web interface pulls data from Mongo database so have Mongo reporting module
 enabled in reports.conf is mandatory for web interface usage.
+If Mongo module is not enabled the web application wouldn't start raising an exception.
 
 Web interface settings can be configured edititing *local_settings.py* in web folder::
 
