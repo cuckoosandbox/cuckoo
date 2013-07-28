@@ -14,8 +14,9 @@ from settings import *
 # Maximum upload size.
 MAX_UPLOAD_SIZE = 26214400
 
+# Override default secret key stored in secret_key.py
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = "z=#dz9%bce-_%l3s!$uldoq^!mb^kl*k%6p%t2ycn#(ug+6#7o"
+# SECRET_KEY = "YOUR_RANDOM_KEY"
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
