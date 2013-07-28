@@ -26,6 +26,21 @@ USE_L10N = True
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
 
+# Unique secret key generator.
+# Secret key will be placed in secret_key.py file.
+try:
+    from secret_key import *
+except ImportError:
+    SETTINGS_DIR=os.path.abspath(os.path.dirname(__file__))
+    # Using the same generation schema of Django startproject.
+    from django.utils.crypto import get_random_string
+    key = get_random_string(50, "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)")
+    # Write secret_key.py
+    with open(os.path.join(SETTINGS_DIR, "secret_key.py"), "w") as file:
+        file.write("SECRET_KEY = \"{0}\"".format(key))
+    # Reload key.
+    from secret_key import *
+
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
 MEDIA_ROOT = ''
