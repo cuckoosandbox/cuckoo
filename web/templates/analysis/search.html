@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-{% load analysis_tags %}
+
 <div class="center">
     <p style="margin-bottom: 25px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
     <form class="form-search" action="{% url "analysis.views.search" %}" enctype="multipart/form-data" method="post">{% csrf_token %}
@@ -59,10 +59,6 @@
                         <td><code>signature:</code></td>
                         <td>Search for Cuckoo Sandbox signatures</td>
                     </tr>
-                    <tr>
-                        <td><code>tag:</code></td>
-                        <td>Search on your personal tags</td>
-                    </tr>
                 </tbody>
             </table>
         </div>
@@ -71,20 +67,11 @@
 {% if term %}
     <h3>Term <span class="text-info"><i>{{term}}</i></span></h3>
 {% endif %}
-{% if analyses != None %}
-    {% if analyses|length > 0 %}
-        <div class="box">
-            <div class="box-header">
-                <h3>Search Results</h3>
-            </div>
-            {% include "analysis/_table.html" %}
-        </div>
-    {% else %}
-        <div class="alert alert-info" style="text-align: center;"><b>No results found.</b></div>
-    {% endif %}
-{% else %}
-    {% if error %}
-        <div class="alert alert-error" style="text-align: center;"><b>{{error}}</b></div>
-    {% endif %}
-{% endif %}
+
+<div class="box">
+    <div class="box-header">
+        <h3>Search Results</h3>
+    </div>
+    {% include "analysis/_table.html" %}
+</div>
 {% endblock %}
