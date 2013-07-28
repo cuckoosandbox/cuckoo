@@ -38,7 +38,7 @@ MANAGERS = ADMINS
 
 # Allow verbose debug error message in case of application fault.
 # It's strongly suggested to set it to False if you are serving the
-# web application from a web server fron-end (i.e. Apache).
+# web application from a web server front-end (i.e. Apache).
 DEBUG = True
 
 # A list of strings representing the host/domain names that this Django site
