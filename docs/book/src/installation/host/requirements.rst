@@ -132,10 +132,10 @@ This will gather os modifications and traces of rootkits. Other than the the
 default cuckoo hooking it will not be a continuous log but an analysis of a 
 snapshot made after the malware executed.
 
-In order to do memory dump forensics install volatility 2.3 or above
-(other versions are not supported)
+In order to do memory dump forensics install volatility 2.3 or above (SVN
+checkout), other versions are not supported.
 
-.. _official download page: http://code.google.com/p/volatility/downloads/list
+.. _official download page: http://code.google.com/p/volatility/
 
 See the volatility documentation for installation instructions.
 
