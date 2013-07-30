@@ -1,0 +1,12 @@
+<li>
+    <strong>{{process.name}}</strong> {{process.pid}}
+    {% if process.children %}
+        <ul>
+            {% for child in process.children %}
+                {% with process=child template_name="analysis/behavior/_tree_process.html" %}
+                    {% include template_name %}
+                {% endwith %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>
