@@ -104,7 +104,7 @@ def index(request):
 
         packages = []
         for name in files:
-            name = name.rstrip(".py")
+            name = os.path.splitext(name)[0]
             if name == "__init__":
                 continue
 
