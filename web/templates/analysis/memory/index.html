@@ -1,0 +1,22 @@
+<div class="tabbable tabs">
+    <ul class="nav nav-pills" style="margin-bottom: 0;">
+        <li class="active"><a href="#memory_pslist" data-toggle="tab">Process List</a></li>
+        <li><a href="#memory_svcscan" data-toggle="tab">Services</a></li>
+        <li><a href="#memory_modscan" data-toggle="tab">Kernel Modules</a></li>
+        <li><a href="#memory_malfind" data-toggle="tab">Code Injection</a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane fade in active" id="memory_pslist">
+            {% include "analysis/memory/_pslist.html" %}
+        </div>
+        <div class="tab-pane fade in" id="memory_svcscan">
+            {% include "analysis/memory/_svcscan.html" %}
+        </div>
+        <div class="tab-pane fade in" id="memory_modscan">
+            {% include "analysis/memory/_modscan.html" %}
+        </div>
+        <div class="tab-pane fade in" id="memory_malfind">
+            {% include "analysis/memory/_malfind.html" %}
+        </div>
+    </div>
+</div>

@@ -26,8 +26,7 @@ Following is an example of an analysis directory structure::
     |   |-- report.html
     |   |-- report.json
     |   |-- report.maec11.xml
-    |   |-- report.metadata.xml
-    |   `-- report.pickle
+    |   `-- report.metadata.xml
     `-- shots
         |-- 0001.jpg
         |-- 0002.jpg

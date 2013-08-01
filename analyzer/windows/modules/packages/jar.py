@@ -13,6 +13,7 @@ class Jar(Package):
 
     def get_path(self):
         paths = [
+            os.path.join(os.getenv("ProgramFiles"), "Java", "jre7", "bin", "java.exe"),
             os.path.join(os.getenv("ProgramFiles"), "Java", "jre6", "bin", "java.exe"),
         ]
 

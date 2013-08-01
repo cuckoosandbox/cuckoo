@@ -1,0 +1,28 @@
+<section id="static_antivirus">
+    {% if analysis.virustotal %}
+    <table class="table table-striped table-bordered">
+        <tr>
+            <th>Antivirus</th>
+            <th>Signature</th>
+        </tr>
+        {% for av, values in analysis.virustotal.scans.items %}
+        <tr>
+            <td>{{av}}</td>
+            <td>
+                {% if analysis.info.category == "file" %}
+                    {% if not values.result %}
+                        <span class="muted">Clean</span>
+                    {% else %}
+                        <span class="text-error">{{values.result}}</span>
+                    {% endif %}
+                {% else %}
+                    {{values.result}}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    Antivirus signatures not available.
+    {% endif %}
+</section>

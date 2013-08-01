@@ -33,10 +33,12 @@ The following libraries are not strictly required, but their installation is rec
     * `Magic`_ (Optional): for identifying files' formats (otherwise use "file" command line utility)
     * `Pydeep`_ (Optional): for calculating ssdeep fuzzy hash of files.
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
-    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use the svn version).
+    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use release 1.7 or above or the svn version).
     * `Libvirt`_ (Optional): for using the KVM machine manager.
-    * `Bottlepy`_ (Optional): for using the ``web.py`` and ``api.py`` utilities.
+    * `Bottlepy`_ (Optional): for using the ``api.py`` utility (use release 0.10 or above).
+    * `Django`_ (Optional): for using the web interface (use release 1.5 or above).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
+    * `Volatility`_ (Optional): used for forensic analysis on memory dump
 
 Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
 
@@ -60,7 +62,9 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Yara: http://code.google.com/p/yara-project/
 .. _Libvirt: http://www.libvirt.org
 .. _Bottlepy: http://www.bottlepy.org
+.. _Django: https://www.djangoproject.com/
 .. _Pefile: http://code.google.com/p/pefile/
+.. _Volatility: http://code.google.com/p/volatility/
 
 Virtualization Software
 =======================
@@ -120,3 +124,23 @@ Or otherwise (**not recommended**) do::
 
 .. _tcpdump: http://www.tcpdump.org
 
+Installing Volatility
+=====================
+
+Volatility is an optional tool to do forensic analysis on memory dumps. 
+This will gather os modifications and traces of rootkits. Other than the the
+default cuckoo hooking it will not be a continuous log but an analysis of a 
+snapshot made after the malware executed.
+
+In order to do memory dump forensics install volatility 2.3 or above (SVN
+checkout), other versions are not supported.
+
+.. _official download page: http://code.google.com/p/volatility/
+
+See the volatility documentation for installation instructions.
+
+You will have to set the path to the volatility installation by adding::
+
+   export PYTHONPATH="<volatility-path>"
+
+to the file .bashrc in your home path.

@@ -1,0 +1,22 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Base Address</th>
+            <th>Offset</th>
+            <th>Name</th>
+            <th>File</th>
+            <th>Size</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for mod in analysis.memory.modscan.data %}
+        <tr>
+            <td><span class="mono">{{mod.kernel_module_base}}</span></td>
+            <td><span class="mono">{{mod.kernel_module_offset}}</span></td>
+            <td>{{mod.kernel_module_name}}</td>
+            <td>{{mod.kernel_module_file}}</td>
+            <td>{{mod.kernel_module_size}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

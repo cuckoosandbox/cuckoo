@@ -1,0 +1,6 @@
+<div class="alert alert-info center"><a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "pcap" analysis.network.pcap_id %}">Download PCAP</a></div>
+{% include "analysis/network/_hosts.html" %}
+<hr />
+{% include "analysis/network/_dns.html" %}
+<hr />
+{% include "analysis/network/_http.html" %}
