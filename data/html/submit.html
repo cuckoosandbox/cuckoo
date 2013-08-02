@@ -1,5 +1,19 @@
 {% extends "base-web.html" %}
 {% block content %}
+    <script type="application/x-javascript">
+    function reload_module_select(os) {
+        var modules = {{context["os_modules"]}};
+        document.getElementById('select02').innerHTML = "";
+        for (var i=0; i< modules.length; i++) {
+            if (modules[i].indexOf(os,0)>=0)
+            {
+                module_name = modules[i].substr(modules[i].indexOf(os,0)+os.length+1,modules[i].length);
+                document.getElementById('select02').innerHTML += "<option value="+module_name+">"+module_name+"</option>";
+            }
+        }
+    }
+    </script>
+    
     <div class="fileupload">
         <div class="page-header">
             <h3>New Analysis <small>use this form to add a new analysis task</smalll></h3>
@@ -19,15 +33,33 @@
                     </div>
                 </div>
 
-                <div class="control-group {{'error' if context.get('error_package', '') else ''}}">
-                    <label class="control-label" for="input02">Package to use</label>
+                <div class="control-group {{'error' if context.get('error_package','') else ''}}">
+                    <label class="control-label" for="select03">Platform to use</label>
                     <div class="controls">
-                        <input type="text" name="package" class="input-xlarge" id="input02" value="{{package}}">
+                        <select id="select03" name="platform" onchange="reload_module_select(document.getElementById('select03').value);">
+                            <option selected value="aucun"></option>                              
+                            {%for i in context.operating_system%}   
+                            <option {{'selected' if platform == 1 else ''}} value="{{i}}">{{i}}</option>                              
+                            {%endfor%}
+                        </select>
                         {% if context.error_package %}
                             <span class="help-inline">{{context.error_package}}</span>
                         {% endif %}
                     </div>
-                </div>
+                </div>     
+
+                
+                <div class="control-group {{'error' if context.get('error_package','') else ''}}">
+                    <label class="control-label" for="select02">Package to use</label>
+                    <div class="controls">
+                        <select id="select02" name="package">
+                            
+                        </select>
+                        {% if context.error_package %}
+                            <span class="help-inline">{{context.error_package}}</span>
+                        {% endif %}
+                    </div>
+                </div>     
 
                 <div class="control-group {{'error' if context.get('error_options', '') else ''}}">
                     <label class="control-label" for="input03">Options</label>

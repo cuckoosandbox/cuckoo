@@ -4,6 +4,8 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+from os.path import isfile,isdir,join
+from os import listdir
 import sys
 import logging
 import argparse
@@ -43,9 +45,19 @@ def custom_headers():
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Expires"] = "0"
 
+def define_modules_list(context):
+    mypath = os.path.join(CUCKOO_ROOT, "analyzer")
+    context["operating_system"] = [ osys for osys in listdir(mypath) if isdir(join(mypath,osys)) ]
+    for osystem in context["operating_system"]:
+        mypath = os.path.join(CUCKOO_ROOT, "analyzer",osystem,"modules","packages")
+        context["os_modules"]=[ osystem+"_"+f.replace(".py","") for f in listdir(mypath) if isfile(join(mypath,f)) and f <> "__init__.py"   ]
+    return context    
+
 @route("/")
 def index():
     context = {}
+    context = define_modules_list(context)
+    
     template = env.get_template("submit.html")
     return template.render({"context" : context})
 
@@ -87,6 +99,7 @@ def submit():
     errors = False
 
     package  = request.forms.get("package", "")
+    platform  = request.forms.get("platform", "")
     options  = request.forms.get("options", "")
     priority = request.forms.get("priority", 1)
     timeout  = request.forms.get("timeout", "")
@@ -110,6 +123,7 @@ def submit():
                                 "priority" : priority,
                                 "options" : options,
                                 "package" : package,
+                                "platform" : platform,
                                 "context" : context})
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
@@ -118,7 +132,8 @@ def submit():
                          timeout=timeout,
                          priority=priority,
                          options=options,
-                         package=package)
+                         package=package,
+                         platform=platform)
 
     template = env.get_template("success.html")
     return template.render({"taskid" : task_id,
