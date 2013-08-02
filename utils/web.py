@@ -47,10 +47,13 @@ def custom_headers():
 
 def define_modules_list(context):
     mypath = os.path.join(CUCKOO_ROOT, "analyzer")
-    context["operating_system"] = [ osys for osys in listdir(mypath) if isdir(join(mypath,osys)) ]
-    for osystem in context["operating_system"]:
-        mypath = os.path.join(CUCKOO_ROOT, "analyzer",osystem,"modules","packages")
-        context["os_modules"]=[ osystem+"_"+f.replace(".py","") for f in listdir(mypath) if isfile(join(mypath,f)) and f <> "__init__.py"   ]
+    try:
+        context["operating_system"] = [ osys for osys in listdir(mypath) if isdir(join(mypath,osys)) ]
+        for osystem in context["operating_system"]:
+            mypath = os.path.join(CUCKOO_ROOT, "analyzer",osystem,"modules","packages")
+            context["os_modules"]=[ osystem+"_"+f.replace(".py","") for f in listdir(mypath) if isfile(join(mypath,f)) and f <> "__init__.py"   ]
+    except Exception:
+        pass
     return context    
 
 @route("/")
