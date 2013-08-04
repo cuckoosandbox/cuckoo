@@ -29,6 +29,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
+    parser.add_argument("-m", "--memory_debug", help="Use pympler to track memory usage", action="store_true", required=False)
     parser.add_argument("-v", "--version", action="version", version="You are running Cuckoo Sandbox %s" % CUCKOO_VERSION)
     parser.add_argument("-a", "--artwork", help="Show artwork", action="store_true", required=False)
     args = parser.parse_args()
@@ -48,17 +49,38 @@ def main():
         log.setLevel(logging.WARN)
     elif args.debug:
         log.setLevel(logging.DEBUG)
+    if args.memory_debug:
+        try:
+            from pympler import tracker
+        except ImportError:
+            sys.exit("ERROR: Missing dependency: pympler")
+        memory_tracker = tracker.SummaryTracker()
+        print("Starting")
+        memory_tracker.print_diff()
 
     init_modules()
     init_tasks()
 
+    if args.memory_debug:
+        print("After init")
+        memory_tracker.print_diff()
     Resultserver()
 
     try:
         sched = Scheduler()
+        if args.memory_debug:
+            print("After scheduler")
+            memory_tracker.print_diff()
         sched.start()
     except KeyboardInterrupt:
+        if args.memory_debug:
+            print("After keyboard interrupt")
+            memory_tracker.print_diff()
         sched.stop()
+    finally:
+        if args.memory_debug:
+            print("Finally")
+            memory_tracker.print_diff()
 
 if __name__ == "__main__":
     try:
