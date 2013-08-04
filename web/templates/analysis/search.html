@@ -2,7 +2,7 @@
 {% block content %}
 <div class="center">
     <p><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
-    <form class="form-search" action="{% url "analysis.views.search" %}" enctype="multipart/form-data" method="post">{% csrf_token %}
+    <form class="form-search" action="{% url analysis.views.search %}" enctype="multipart/form-data" method="post">{% csrf_token %}
         <p class="muted" style="margin-top: 5px;">For details on how to perform searches, get some <a href="#help" data-toggle="collapse">help</a>.</p>
         <div class="input-append">
             <input type="text" class="span4 search-query" name="search" />
@@ -92,7 +92,7 @@
                             {% endif %}
                             </td>
                             <td>{{analysis.category|upper}}</td>
-                            <td style="word-wrap: break-word;"><a href="{% url "analysis.views.report" analysis.id %}">
+                            <td style="word-wrap: break-word;"><a href="{% url analysis.views.report analysis.id %}">
                                 {% if analysis.category == "url" %}
                                     <span class="mono">{{analysis.target}}</span></a>
                                 {% else %}

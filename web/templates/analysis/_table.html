@@ -24,7 +24,7 @@
                             </td>
                             <td style="word-wrap: break-word;">
                                 {% if analysis.status == "reported" %}
-                                    <a href="{% url "analysis.views.report" analysis.id %}"><span class="mono">{{analysis.sample.md5}}</span></a>
+                                    <a href="{% url analysis.views.report analysis.id %}"><span class="mono">{{analysis.sample.md5}}</span></a>
                                 {% else %}
                                     <span class="mono">{{analysis.sample.md5}}</span>
                                 {% endif %}
@@ -65,7 +65,7 @@
                             </td>
                             <td style="word-wrap: break-word;">
                                 {% if analysis.status == "reported" %}
-                                    <a href="{% url "analysis.views.report" analysis.id %}"><span class="mono">{{analysis.target}}</span></a></td>
+                                    <a href="{% url analysis.views.report analysis.id %}"><span class="mono">{{analysis.target}}</span></a></td>
                                 {% else %}
                                     <span class="mono">{{analysis.target}}</span>
                                 {% endif %}

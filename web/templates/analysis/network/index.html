@@ -1,5 +1,5 @@
 {% if analysis.network.pcap_id %}
-<div class="alert alert-info center"><a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "pcap" analysis.network.pcap_id %}">Download PCAP</a></div>
+<div class="alert alert-info center"><a class="btn btn-primary btn-small" href="{% url analysis.views.file "pcap" analysis.network.pcap_id %}">Download PCAP</a></div>
 {% endif %}
 <div class="tabbable tabs">
     <ul class="nav nav-pills" style="margin-bottom: 0;">

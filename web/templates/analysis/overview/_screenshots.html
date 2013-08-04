@@ -3,7 +3,7 @@
     {% if analysis.shots %}
         <div>
         {% for shot in analysis.shots %}
-            <a rel="lightbox" href="{% url "analysis.views.file" "screenshot" shot %}"><img class="opaque" rel="lightbox" src="{% url "analysis.views.file" "screenshot" shot %}" style="height: 120px;" /></a>
+            <a rel="lightbox" href="{% url analysis.views.file "screenshot" shot %}"><img class="opaque" rel="lightbox" src="{% url analysis.views.file "screenshot" shot %}" style="height: 120px;" /></a>
         {% endfor %}
         </div>
     {% else %}
