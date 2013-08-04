@@ -29,7 +29,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
-    parser.add_argument("-v", "--version", action="version", version="You are running Cuckoo Sandbox %s" % CUCKOO_VERSION)
+    parser.add_argument("-v", "--version", action="version", version="You are running Cuckoo Sandbox {0}".format(CUCKOO_VERSION))
     parser.add_argument("-a", "--artwork", help="Show artwork", action="store_true", required=False)
     args = parser.parse_args()
 
@@ -64,10 +64,10 @@ if __name__ == "__main__":
     try:
         main()
     except CuckooCriticalError as e:
-        message = "%s: %s" % (e.__class__.__name__, e)
+        message = "{0}: {1}".format(e.__class__.__name__, e)
         if len(log.handlers) > 0:
             log.critical(message)
         else:
-            sys.stderr.write("%s\n" % message)
+            sys.stderr.write("{0}\n".format(message))
 
         sys.exit(1)
