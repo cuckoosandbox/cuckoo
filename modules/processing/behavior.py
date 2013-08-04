@@ -8,7 +8,7 @@ import datetime
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.utils import convert_to_printable, logtime
-from lib.cuckoo.common.netlog import NetlogParser
+from lib.cuckoo.common.netlog import BsonParser
 from lib.cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
@@ -35,7 +35,15 @@ class ParseProcessLog(list):
 
     def parse_first_and_reset(self):
         self.fd = open(self._log_path, "rb")
-        self.parser = NetlogParser(self)
+        if self._log_path.endswith(".bson"):
+            self.parser = BsonParser(self)
+        else:
+            self.fd.close()
+            self.fd = None
+            return
+
+        # should be the first two messages to get the process information
+        self.parser.read_next_message()
         self.parser.read_next_message()
         self.fd.seek(0)
 
@@ -84,6 +92,8 @@ class ParseProcessLog(list):
         return True
 
     def next(self):
+        if not self.fd: raise StopIteration()
+
         x = self.wait_for_lastcall()
         if not x:
             self.parsecount += 1
@@ -107,7 +117,7 @@ class ParseProcessLog(list):
     def log_thread(self, context, pid):
         pass
 
-    def log_call(self, context, apiname, modulename, arguments):
+    def log_call(self, context, apiname, category, arguments):
         apiindex, status, returnval, tid, timediff = context
 
         current_time = self.first_seen + datetime.timedelta(0,0, timediff*1000)
@@ -115,7 +125,7 @@ class ParseProcessLog(list):
 
         self.lastcall = self._parse([timestring,
                                      tid,
-                                     modulename,
+                                     category,
                                      apiname, 
                                      status,
                                      returnval] + arguments)
@@ -200,9 +210,6 @@ class Processes:
             if os.path.isdir(file_path):
                 continue
             
-            if not file_path.endswith(".raw"):
-                continue
-
             # Skipping the current log file if it's too big.
             if os.stat(file_path).st_size > self.cfg.processing.analysis_size_limit:
                 log.warning("Behavioral log {0} too big to be processed, skipped.".format(file_name))
