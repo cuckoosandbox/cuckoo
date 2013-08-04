@@ -11,7 +11,9 @@ TEMPLATE_DEBUG = DEBUG
 CUCKOO_PATH = os.path.join(os.getcwd(), "..")
 
 # Database settings. We don't need it.
-DATABASES = {}
+DATABASES = {
+    'default': {}
+    }
 
 SITE_ID = 1
 
