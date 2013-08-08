@@ -314,7 +314,10 @@ class RunSignatures(object):
         if active_sigs:
             log.debug("Running %u evented signatures", len(active_sigs))
             for sig in active_sigs:
-                log.debug("\t%s", sig.name)
+                if sig == active_sigs[-1]:
+                    log.debug("\t `-- %s", sig.name)
+                else:
+                    log.debug("\t |-- %s", sig.name)
 
             # Iterate calls and tell interested signatures about them
             for proc in self.results["behavior"]["processes"]:
