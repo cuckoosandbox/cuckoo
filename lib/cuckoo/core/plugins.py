@@ -369,7 +369,8 @@ class RunSignatures(object):
                     if result == True:
                         log.debug("Analysis matched signature \"%s\"", sig.name)
                         matched.append(sig.as_result())
-                        complete_list.remove(sig)
+                        if sig in complete_list:
+                            complete_list.remove(sig)
 
         # Compat loop for old-style (non evented) signatures.
         if complete_list:
