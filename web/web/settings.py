@@ -35,9 +35,11 @@ except ImportError:
     # Using the same generation schema of Django startproject.
     from django.utils.crypto import get_random_string
     key = get_random_string(50, "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)")
+
     # Write secret_key.py
-    with open(os.path.join(SETTINGS_DIR, "secret_key.py"), "w") as file:
-        file.write("SECRET_KEY = \"{0}\"".format(key))
+    with open(os.path.join(SETTINGS_DIR, "secret_key.py"), "w") as key_file:
+        key_file.write("SECRET_KEY = \"{0}\"".format(key))
+
     # Reload key.
     from secret_key import *
 
