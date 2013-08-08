@@ -24,6 +24,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Fixed bug in Human auxiliary module, now moving cursor to absolute positions
 * Removed support for GrayLog2
 * Removed pickle reporting module
+* Added initial support for VMWare ESXi/vSphere
 
 Cuckoo Sandbox 0.6 (2013-04-15)
 ===============================
