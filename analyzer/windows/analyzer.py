@@ -520,6 +520,7 @@ class Analyzer:
                 log.warning("Cannot execute auxiliary module %s: %s", aux.__class__.__name__, e)
                 continue
             finally:
+                log.info("Started auxiliary module %s", aux.__class__.__name__)
                 aux_enabled.append(aux)
 
         # Start analysis package. If for any reason, the execution of the
@@ -619,6 +620,8 @@ class Analyzer:
         for aux in aux_enabled:
             try:
                 aux.stop()
+            except (NotImplementedError, AttributeError):
+                continue
             except Exception as e:
                 log.warning("Cannot terminate auxiliary module %s: %s",
                             aux.__class__.__name__, e)
