@@ -8,7 +8,6 @@ from datetime import datetime
 
 from lib.cuckoo.common.constants import CUCKOO_VERSION
 from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
 
