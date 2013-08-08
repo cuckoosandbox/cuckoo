@@ -213,7 +213,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         current_time = self.connect_time + datetime.timedelta(0,0, timediff*1000)
         timestring = logtime(current_time)
 
-        argumentstrings = ["{0}->{1}".format(argname, r) for argname, r in arguments]
+        argumentstrings = ["{0}->{1}".format(argname, repr(str(r))[1:-1]) for argname, r in arguments]
 
         if self.logfd:
             print >>self.logfd, ",".join("\"{0}\"".format(i) for i in [timestring, self.pid,
