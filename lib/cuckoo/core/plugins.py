@@ -297,6 +297,8 @@ class RunSignatures(object):
 
                 # Return information on the matched signature.
                 return current.as_result()
+        except NotImplementedError:
+            return None
         except:
             log.exception("Failed to run signature \"%s\":", current.name)
 
