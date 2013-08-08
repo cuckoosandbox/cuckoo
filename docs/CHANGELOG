@@ -6,7 +6,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Introduced Auxiliary modules
 * Added option to set sniffing interface for each virtual machine
 * Added option to set snapshot for each virtual machine
-* Added pagination to API and web interface
+* Added pagination to API
 * Added option to REST API to return compressed archives of files ("all" and "dropped")
 * Added option to set Result Server IP and port for each virtual machine
 * Added processing module for volatility to analyze memory dumps, disabled by default
@@ -15,6 +15,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Added tags to machines
 * Added reduced behavioral events
 * Added new web interface, removed old web.py
+* Added Windows analyzer auxiliary module to disguise the analysis environment
 * Refactored processing to improve performances
 * Refactored signature engine, introducing event-based signatures to improve performances
 * Transitioned network sniffer to auxiliary module
