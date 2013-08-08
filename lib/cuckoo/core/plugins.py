@@ -306,15 +306,13 @@ class RunSignatures(object):
         # This will contain all the matched signatures.
         matched = []
 
-        signatures_list = list_plugins(group="signatures")
+        complete_list = list_plugins(group="signatures")
+        evented_list = [sig(self.results) for sig in complete_list if sig.enabled and sig.evented and self._check_signature_version(sig)]
 
-        # All new (evented) signatures
-        active_sigs = [sig(self.results) for sig in signatures_list if sig.enabled and sig.evented and self._check_signature_version(sig)]
-
-        if active_sigs:
-            log.debug("Running %u evented signatures", len(active_sigs))
-            for sig in active_sigs:
-                if sig == active_sigs[-1]:
+        if evented_list:
+            log.debug("Running %u evented signatures", len(evented_list))
+            for sig in evented_list:
+                if sig == evented_list[-1]:
                     log.debug("\t `-- %s", sig.name)
                 else:
                     log.debug("\t |-- %s", sig.name)
@@ -323,8 +321,8 @@ class RunSignatures(object):
             for proc in self.results["behavior"]["processes"]:
                 for call in proc["calls"]:
                     # Loop through active evented signatures.
-                    for sig in active_sigs:
-                        # Skip current call if it doesn't matched the filters (if any).
+                    for sig in evented_list:
+                        # Skip current call if it doesn't match the filters (if any).
                         if sig.filter_processnames and not proc["process_name"] in sig.filter_processnames:
                             continue
                         if sig.filter_apinames and not call["api"] in sig.filter_apinames:
@@ -334,7 +332,7 @@ class RunSignatures(object):
 
                         result = None
                         try:
-                            result = sig.event_apicall(call, proc)
+                            result = sig.on_call(call, proc)
                         except NotImplementedError:
                             result = False
                         except:
@@ -350,43 +348,40 @@ class RunSignatures(object):
                         if result == True:
                             log.debug("Analysis matched signature \"%s\"", sig.name)
                             matched.append(sig.as_result())
+                            complete_list.remove(sig)
                         
                         # Either True or False, we don't need to check this sig anymore.
-                        active_sigs.remove(sig)
+                        evented_list.remove(sig)
                         del sig
 
             # Call the stop method on all remaining instances.
-            for sig in active_sigs:
-                result = None
-
+            for sig in evented_list:
                 try:
-                    result = sig.stop()
+                    result = sig.on_complete()
                 except NotImplementedError:
                     continue
                 except:
-                    log.exception("Failed to stop signature \"%s\":", sig.name)
+                    log.exception("Failed run on_complete() method for signature \"%s\":", sig.name)
                     continue
                 else:
                     if result == True:
+                        log.debug("Analysis matched signature \"%s\"", sig.name)
                         matched.append(sig.as_result())
+                        complete_list.remove(sig)
 
         # Compat loop for old-style (non evented) signatures.
-        if signatures_list:
+        if complete_list:
             log.debug("Running non-evented signatures")
 
-            for signature in signatures_list:
-                if signature.evented: continue
-
+            for signature in complete_list:
                 match = self.process(signature)
                 # If the signature is matched, add it to the list.
                 if match:
                     matched.append(match)
 
-            if matched:
-                # Sort the matched signatures by their severity level.
-                matched.sort(key=lambda key: key["severity"])
-        else:
-            log.info("No signatures loaded")
+        if matched:
+            # Sort the matched signatures by their severity level.
+            matched.sort(key=lambda key: key["severity"])
 
         self.results["signatures"] = matched
 
