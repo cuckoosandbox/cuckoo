@@ -774,7 +774,16 @@ class Signature(object):
 
         return None
 
-    def stop(self):
+    def on_call(self, call, process):
+        """Notify signature about API call. Return value determines
+        if this signature is done or could still match.
+        @param call: logged API call.
+        @param process: process doing API call.
+        @raise NotImplementedError: this method is abstract.
+        """
+        raise NotImplementedError
+
+    def on_complete(self):
         """Evented signature is notified when all API calls are done.
         @return: Match state.
         @raise NotImplementedError: this method is abstract.
@@ -784,15 +793,6 @@ class Signature(object):
     def run(self):
         """Start signature processing.
         @param results: analysis results.
-        @raise NotImplementedError: this method is abstract.
-        """
-        raise NotImplementedError
-
-    def event_apicall(self, call, process):
-        """Notify signature about API call. Return value determines
-        if this signature is done or could still match.
-        @param call: logged API call.
-        @param process: process doing API call.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
