@@ -23,8 +23,7 @@ def import_plugin(name):
     try:
         module = __import__(name, globals(), locals(), ["dummy"], -1)
     except ImportError as e:
-        raise CuckooCriticalError("Unable to import plugin \"%s\": %s"
-                                  % (name, e))
+        raise CuckooCriticalError("Unable to import plugin \"{0}\": {1}".format(name, e))
     else:
         load_plugins(module)
 
