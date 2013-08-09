@@ -22,7 +22,7 @@ from lib.cuckoo.common.exceptions import CuckooMachineError
 
 log = logging.getLogger(__name__)
 
-class Esxi(MachineManager):
+class Esxi(Machinery):
     """Virtualization layer for VMware ESXi/vCenter (via vmware-vsphere-cli)."""
 
     def _initialize_check(self):
