@@ -245,9 +245,7 @@ class Summary:
 
     key = "summary"
     
-    def __init__(self, proc_results):
-        """@param oroc_results: enumerated processes results."""
-        self.proc_results = proc_results
+    def __init__(self):
         self.keys = []
         self.mutexes = []
         self.files = []
@@ -345,9 +343,7 @@ class ProcessTree:
 
     key = "processtree"
 
-    def __init__(self, proc_results):
-        """@param proc_results: enumerated processes information."""
-        self.proc_results = proc_results
+    def __init__(self):
         self.processes = []
         self.proctree = []
         self.procmap = {}
@@ -410,15 +406,13 @@ class ProcessTree:
         """Run analysis.
         @return: results dict or None.
         """
-        if not self.proc_results or len(self.proc_results) == 0:
-            return None
-    
-        root = {}
-        root["name"] = self.processes[0]["name"]
-        root["pid"] = self.processes[0]["pid"]
-        root["children"] = []
-        self.proctree.append(root)
-        self.populate(self.processes[0])
+        if len(self.processes) > 0:    
+            root = {}
+            root["name"] = self.processes[0]["name"]
+            root["pid"] = self.processes[0]["pid"]
+            root["children"] = []
+            self.proctree.append(root)
+            self.populate(self.processes[0])
 
         return self.proctree
 
@@ -426,12 +420,10 @@ class Enhanced(object):
 
     key = "enhanced"
 
-    def __init__(self, proc_results, details=False):
+    def __init__(self, details=False):
         """
-        @param proc_results: enumerated processes results.
         @param details: Also add some (not so relevant) Details to the log
         """
-        self.proc_results = proc_results
         self.currentdir = "C: "
         self.eid = 0
         self.details = details
@@ -857,9 +849,9 @@ class BehaviorAnalysis(Processing):
         behavior["processes"] = Processes(self.logs_path).run()
 
         instances = [
-            ProcessTree(behavior["processes"]),
-            Summary(behavior["processes"]),
-            Enhanced(behavior["processes"]),
+            ProcessTree(),
+            Summary(),
+            Enhanced(),
         ]
 
         # Iterate calls and tell interested signatures about them
