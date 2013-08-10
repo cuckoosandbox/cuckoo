@@ -120,7 +120,7 @@ class ParseProcessLog(list):
     def log_call(self, context, apiname, category, arguments):
         apiindex, status, returnval, tid, timediff = context
 
-        current_time = self.first_seen + datetime.timedelta(0,0, timediff*1000)
+        current_time = self.first_seen + datetime.timedelta(0, 0, timediff*1000)
         timestring = logtime(current_time)
 
         self.lastcall = self._parse([timestring,
@@ -164,7 +164,7 @@ class ParseProcessLog(list):
             argument["name"] = arg_name
 
             arg_value = str(arg_value)
-            if arg_value[:4] == '\\??\\':
+            if arg_value[:4] == "\\??\\":
                 arg_value = arg_value[4:]
 
             argument["value"] = convert_to_printable(arg_value)
