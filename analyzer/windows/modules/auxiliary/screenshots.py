@@ -2,13 +2,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import time
 import logging
 import StringIO
 from threading import Thread
 
-from lib.common.constants import PATHS
 from lib.common.abstracts import Auxiliary
 from lib.common.results import NetlogFile
 from lib.api.screenshot import Screenshot
