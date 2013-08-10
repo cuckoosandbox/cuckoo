@@ -23,8 +23,7 @@ def import_plugin(name):
     try:
         module = __import__(name, globals(), locals(), ["dummy"], -1)
     except ImportError as e:
-        raise CuckooCriticalError("Unable to import plugin \"%s\": %s"
-                                  % (name, e))
+        raise CuckooCriticalError("Unable to import plugin \"{0}\": {1}".format(name, e))
     else:
         load_plugins(module)
 
@@ -369,7 +368,8 @@ class RunSignatures(object):
                     if result == True:
                         log.debug("Analysis matched signature \"%s\"", sig.name)
                         matched.append(sig.as_result())
-                        complete_list.remove(sig)
+                        if sig in complete_list:
+                            complete_list.remove(sig)
 
         # Compat loop for old-style (non evented) signatures.
         if complete_list:
