@@ -79,7 +79,7 @@ def chunk(request, task_id, pid, pagenum):
             raise PermissionDenied
 
         objectid = process["calls"][pagenum]
-        chunk = results_db.calls.find_one({"_id" : ObjectId(objectid)})
+        chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
 
         return render_to_response("analysis/behavior/_chunk.html",
                                   {"chunk": chunk},
@@ -89,7 +89,7 @@ def chunk(request, task_id, pid, pagenum):
 
 @require_safe
 def report(request, task_id):
-    report = results_db.analysis.find_one({"info.id" : int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
+    report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
 
     return render_to_response("analysis/report.html",
                               {"analysis": report},
