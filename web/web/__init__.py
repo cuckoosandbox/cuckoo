@@ -16,3 +16,7 @@ cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "reporting.conf")).mongodb
 # Checks if mongo reporting is enabled in Cuckoo.
 if not cfg.get("enabled"):
     raise Exception("Mongo reporting module is not enabled in cuckoo, aborting!")
+
+# Get connection options from reporting.conf.
+settings.MONGO_HOST = cfg.get("host", "127.0.0.1")
+settings.MONGO_PORT = cfg.get("port", 27017)
