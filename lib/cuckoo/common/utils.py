@@ -152,7 +152,9 @@ class TimeoutTransport(xmlrpclib.Transport):
 
     def make_connection(self, *args, **kwargs):
         conn = xmlrpclib.Transport.make_connection(self, *args, **kwargs)
-        if self.timeout != None: conn.timeout = self.timeout
+        if self.timeout != None: 
+            conn.timeout = self.timeout
+            conn._conn.timeout = self.timeout
         return conn
 
 class Singleton(type):
