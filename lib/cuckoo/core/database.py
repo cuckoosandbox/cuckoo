@@ -957,8 +957,10 @@ class Database(object):
                 task = session.query(Task).get(task_id)
         except SQLAlchemyError:
             return None
+        else:
+            if task:
+                session.expunge(task)
         finally:
-            session.expunge(task)
             session.close()
         return task
 
@@ -989,8 +991,10 @@ class Database(object):
             sample = session.query(Sample).get(sample_id)
         except (SQLAlchemyError, AttributeError):
             return None
+        else:
+            if sample:
+                session.expunge(sample)
         finally:
-            session.expunge(sample)
             session.close()
 
         return sample
@@ -1008,8 +1012,10 @@ class Database(object):
                 sample = session.query(Sample).filter(Sample.sha256 == sha256).first()
         except SQLAlchemyError:
             return None
+        else:
+            if sample:
+                session.expunge(sample)
         finally:
-            session.expunge(sample)
             session.close()
         return sample
 
@@ -1023,8 +1029,10 @@ class Database(object):
             machine = session.query(Machine).options(joinedload("tags")).filter(Machine.name == name).first()
         except SQLAlchemyError:
             return None
+        else:
+            if machine:
+                session.expunge(machine)
         finally:
-            session.expunge(machine)
             session.close()
         return machine
 
@@ -1038,8 +1046,10 @@ class Database(object):
             machine = session.query(Machine).options(joinedload("tags")).filter(Machine.label == label).first()
         except SQLAlchemyError:
             return None
+        else:
+            if machine:
+                session.expunge(machine)
         finally:
-            session.expunge(machine)
             session.close()
         return machine
 
