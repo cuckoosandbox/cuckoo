@@ -186,7 +186,14 @@ class Dist_connect():
             try:
                 data = self.__request(request, convert=False)
                 fh.write(data)
+                self.logger.info("Got file: %s for %s %s" % (rfile,
+                                 str(machine_id),
+                                 str(task_id)))
             except:
+                self.logger.error("Getting file: %s for %s %s" %
+                                  (rfile,
+                                   str(machine_id),
+                                   str(task_id)))
                 pass
         return rfile
 
@@ -261,7 +268,8 @@ class Dist_connect():
 
         res = self.get_state(machine_id, task_id)
         if res is None or res["error"]:
-            self.logger.error("ERROR, malformated return")
+            self.logger.error("%s %s, malformated return" %
+                              (str(machine_id), str(task_id)))
             result = "pending"
         elif res["finished"]:
             result = "finished"
@@ -291,6 +299,7 @@ class Dist_connect():
         count = 0
         total = len(scans)
         # First sample does have an extreme timeout
+        time.sleep(60)
         start = datetime.now()
         while True:
             diff = datetime.now() - start
