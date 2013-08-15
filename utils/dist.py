@@ -211,7 +211,7 @@ class CuckooConnect():
 
         form = MultiPartForm()
 
-        optional = ["package", "timeout", "options", "machine", "priority"
+        optional = ["package", "timeout", "options", "machine", "priority",
                     "platform", "custom", "memory", "enforce_timeout", "tags"]
 
         for o in optional:
