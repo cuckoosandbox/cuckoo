@@ -5,6 +5,8 @@
 import os
 import hashlib
 import re
+import traceback
+import pprint
 
 from cybox.core import Object
 from cybox.common import ToolInformation
@@ -19,6 +21,7 @@ from maec.package.malware_subject import MalwareSubject
 from maec.package.package import Package
 from maec.package.analysis import Analysis
 from maec.utils import MAECNamespaceParser
+from maec40_mappings import api_call_mappings, hiveHexToString
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
@@ -26,7 +29,12 @@ from lib.cuckoo.common.utils import datetime_to_iso
 
 
 class MAEC40Report(Report):
-    """Generates a MAEC 4.0 report."""
+    """Generates a MAEC 4.0 report.
+       Output modes:
+       mode = "full" : Output fully mapped Actions along with Action Implementations
+       mode = "overview" : Output only fully mapped Actions with no Action Implementations
+       mode = "api" : Output only Actions with Action Implementations, but no mapped components
+    """
 
     def run(self, results):
         """Writes report.
@@ -113,8 +121,8 @@ class MAEC40Report(Report):
         """
         src_category = "ipv4-addr"
         dst_category = "ipv4-addr"
-        if ":" in network_data.get('src', ""): src_category = "ipv6-addr"
-        if ":" in network_data.get('dst', ""): dst_category = "ipv6-addr"
+        if ":" in network_data.get("src", ""): src_category = "ipv6-addr"
+        if ":" in network_data.get("dst", ""): dst_category = "ipv6-addr"
         # Construct the various dictionaries
         if layer7_protocol is not None:
             object_properties = {"xsi:type" : "NetworkConnectionObjectType",
@@ -152,7 +160,6 @@ class MAEC40Report(Report):
                                                                                     ]}
                                                        }
         action_dict = {"id" : self.id_generator.generate_malware_action_id(),
-                       "context" : "Network",
                        "name" : action_name,
                        "associated_objects" : [associated_object]}
         # Add the Action to the dynamic analysis bundle
@@ -182,6 +189,192 @@ class MAEC40Report(Report):
                             }
         return process_node_dict
 
+    def apiCallToAction(self, call, pos):
+        """Create and return a dictionary representing a MAEC Malware Action.
+        @param call: the input API call.
+        @param pos: position of the Action with respect to the execution of the malware.
+        """ 
+        # Setup the action/action implementation dictionaries and lists
+        action_dict = {}
+        parameter_list = []
+        # Add the action parameter arguments
+        apos = 1
+        for arg in call["arguments"]:
+            parameter_list.append({"ordinal_position" : apos,
+                                   "name" : arg["name"],
+                                   "value" : self._illegal_xml_chars_RE.sub("?", arg["value"])
+                                        })
+            apos = apos + 1
+        # Try to add the mapped Action Name
+        if call["api"] in api_call_mappings:
+            mapping_dict = api_call_mappings[call["api"]]
+            # Handle the Action Name
+            if "action_vocab" in mapping_dict:
+                action_dict["name"] = {"value" : mapping_dict["action_name"], "xsi:type" : mapping_dict["action_vocab"]}
+            else:
+                action_dict["name"] = {"value" : mapping_dict["action_name"]}
+        # Try to add the mapped Action Arguments and Associated Objects
+        # Only output in "overview" or "full" modes 
+        if self.options["mode"].lower() == "overview" or self.options["mode"].lower() == "full":
+            # Check to make sure we have a mapping for this API call
+            if call["api"] in api_call_mappings:
+                mapping_dict = api_call_mappings[call["api"]]
+                # Handle the Action Name
+                if "action_vocab" in mapping_dict:
+                    action_dict["name"] = {"value" : mapping_dict["action_name"], "xsi:type" : mapping_dict["action_vocab"]}
+                else:
+                    action_dict["name"] = {"value" : mapping_dict["action_name"]}
+                # Handle any Parameters
+                if "parameter_associated_arguments" in mapping_dict:
+                    action_dict["action_arguments"] = self.processActionArguments(mapping_dict["parameter_associated_arguments"], parameter_list)
+                # Handle any Associated Objects
+                if "parameter_associated_objects" in mapping_dict:
+                    action_dict["associated_objects"] = self.processActionAssociatedObjects(mapping_dict["parameter_associated_objects"], parameter_list)
+
+        # Only output Implementation in "api" or "full" modes
+        if self.options["mode"].lower() == "api" or self.options["mode"].lower() == "full":
+            action_dict["implementation"] = self.processActionImplementation(call, parameter_list)
+
+        # Add the common Action properties
+        action_dict["id"] = self.id_generator.generate_malware_action_id()
+        action_dict["ordinal_position"] = pos
+        action_dict["action_status"] = self.mapActionStatus(call["status"])
+        action_dict["timestamp"] = str(call["timestamp"]).replace(" ", "T").replace(",",".")
+
+        return action_dict
+
+    def processActionImplementation(self, call, parameter_list):
+        """Creates a MAEC Action Implementation based on API call input.
+        @param parameter_list: the input parameter list (from the API call).
+        """
+        # Generate the API Call dictionary
+        if len(parameter_list) > 0:
+            api_call_dict = {"function_name" : call["api"],
+                                "return_value" : call["return"],
+                                "parameters" : parameter_list}
+        else:
+            api_call_dict = {"function_name" : call["api"],
+                                "return_value" : call["return"]}
+        # Generate the action implementation dictionary
+        action_implementation_dict = {"id" : self.id_generator.generate_action_implementation_id(),
+                                        "type" : "api call",
+                                        "api_call" : api_call_dict}
+        return action_implementation_dict
+                      
+    def processActionArguments(self, parameter_mappings_dict, parameter_list):
+        """Processes a dictionary of parameters that should be mapped to Action Arguments in the Malware Action.
+        @param parameter_mappings_dict: the input parameter to Arguments mappings.
+        @param parameter_list: the input parameter list (from the API call).
+        """  
+        arguments_list = []
+        for call_parameter in parameter_list:
+            parameter_name = call_parameter["name"]
+            if parameter_name in parameter_mappings_dict and "associated_argument_vocab" in parameter_mappings_dict[parameter_name]:
+                arguments_list.append({"argument_value" : call_parameter["value"], 
+                                        "argument_name" : {"value" : parameter_mappings_dict[parameter_name]["associated_argument_name"],
+                                                            "xsi:type" : parameter_mappings_dict[parameter_name]["associated_argument_vocab"]}})
+            elif parameter_name in parameter_mappings_dict and "associated_argument_vocab" not in parameter_mappings_dict[parameter_name]:
+                arguments_list.append({"argument_value" : call_parameter["value"], 
+                                        "argument_name" : {"value" : parameter_mappings_dict[parameter_name]["associated_argument_name"]}})
+        return arguments_list
+
+    def processActionAssociatedObjects(self, associated_objects_dict, parameter_list):
+        """Processes a dictionary of parameters that should be mapped to Associated Objects in the Action
+        @param associated_objects_dict: the input parameter to Associated_Objects mappings.
+        @param parameter_list: the input parameter list (from the API call).
+        """ 
+        associated_objects_list = []
+        processed_parameters = []
+        # First, handle any parameters that need to be grouped together into a single Object
+        if "group_together" in associated_objects_dict:
+            grouped_list = associated_objects_dict["group_together"]
+            associated_object_dict = {}
+            associated_object_dict["id"] = self.id_generator.generate_object_id()
+            associated_object_dict["properties"] = {}
+            for parameter_name in grouped_list:
+                self.processAssociatedObject(associated_objects_dict[parameter_name], self.getParameterValue(parameter_list, parameter_name), associated_object_dict)
+                # Add the parameter to the list of those that have already been processed
+                processed_parameters.append(parameter_name)
+            associated_objects_list.append(associated_object_dict)
+        # Handle grouped nested parameters (corner case)
+        if "group_together_nested" in associated_objects_dict:
+            nested_group_dict = associated_objects_dict["group_together_nested"]
+            # Construct the values dictionary
+            values_dict = {}
+            for parameter_mapping in nested_group_dict["parameter_mappings"]:
+                values_dict[parameter_mapping["element_name"].lower()] = self.getParameterValue(parameter_list, parameter_mapping["parameter_name"])
+            associated_objects_list.append(self.processAssociatedObject(nested_group_dict, values_dict))
+        # Handle non-grouped, normal parameters
+        for call_parameter in parameter_list:
+            if call_parameter["name"] not in processed_parameters and call_parameter["name"] in associated_objects_dict:
+                associated_objects_list.append(self.processAssociatedObject(associated_objects_dict[call_parameter["name"]], self.getParameterValue(parameter_list, call_parameter["name"])))
+        return associated_objects_list
+
+    
+    def processAssociatedObject(self, parameter_mapping_dict, parameter_value, associated_object_dict = None):
+        """Process a single Associated Object mapping.
+        @param parameter_mapping_dict: input parameter to Associated Object mapping dictionary.
+        @param parameter_value: the input parameter value (from the API call).
+        @param associated_object_dict: optional associated object dict, for special cases.
+        """
+        if not associated_object_dict:   
+            associated_object_dict = {}
+            associated_object_dict["id"] = self.id_generator.generate_object_id()
+            associated_object_dict["properties"] = {}
+        # Set the XSI type if it has not been set already
+        if "xsi:type" not in associated_object_dict["properties"]: 
+            associated_object_dict["properties"]["xsi:type"] = parameter_mapping_dict["associated_object_type"]
+        # Set the Association Type if it has not been set already
+        if "association_type" not in associated_object_dict: 
+            associated_object_dict["association_type"] = {"value" : parameter_mapping_dict["association_type"], "xsi:type" : "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}
+        # Handle any values that require post-processing (via external functions)
+        if "post_processing" in parameter_mapping_dict:
+            parameter_value = globals()[parameter_mapping_dict["post_processing"]](parameter_value)
+        # Handle the actual element value
+        if parameter_mapping_dict["associated_object_element"]:
+            # Handle simple (non-nested) elements
+            if "/" not in parameter_mapping_dict["associated_object_element"]:
+                associated_object_dict["properties"][parameter_mapping_dict["associated_object_element"].lower()] = parameter_value
+            # Handle complex (nested) elements
+            elif "/" in parameter_mapping_dict["associated_object_element"]:
+                split_elements = parameter_mapping_dict["associated_object_element"].split("/")
+                associated_object_dict["properties"][split_elements[0].lower()] = self.createNestedDict(split_elements[1:], parameter_value)
+        return associated_object_dict
+
+    def createNestedDict(self, list, value):
+        """Helper function: returns a nested dictionary for an input list.
+        @param list: input list.
+        @param value: value to set the last embedded dictionary item to.
+        """   
+        nested_dict = {}
+
+        if len(list) == 1:
+            if 'list__' in list[0]:
+                if isinstance(value, dict):
+                    list_element = [value]
+                else:
+                    list_element = [{list[0].lstrip('list__').lower() : value}]
+                return list_element
+            else:
+                nested_dict[list[0].lower()] = value
+                return nested_dict
+
+        for list_item in list:
+            next_index = list.index(list_item) + 1
+            nested_dict[list_item.lower()] = self.createNestedDict(list[next_index:], value)
+            break
+
+        return nested_dict
+    
+    def getParameterValue(self, parameter_list, parameter_name):
+        """Finds and returns an API call parameter value from a list.
+        @param parameter_list: list of API call parameters.
+        @param parameter_name: name of parameter to return value for.
+        """                
+        for parameter_dict in parameter_list:
+            if parameter_dict["name"] == parameter_name:
+                return parameter_dict["value"]
+
     def createProcessActions(self, process):
         """Creates the Actions corresponding to the API calls initiated by a process.
         @param process: process from cuckoo dict.
@@ -194,39 +387,9 @@ class MAEC40Report(Report):
             action_collection_name = str(call["category"]).capitalize() + " Actions"
             if not self.dynamic_bundle.collections.action_collections.has_collection(action_collection_name):
                 self.dynamic_bundle.add_named_action_collection(action_collection_name, self.id_generator.generate_action_collection_id())
-            # Setup the action/action implementation dictionaries and lists
-            parameter_list = []
-            # Add the action parameter arguments
-            apos = 1
-            for arg in call["arguments"]:
-                parameter_list.append({"ordinal_position" : apos,
-                                         "name" : arg["name"],
-                                         "value" : self._illegal_xml_chars_RE.sub("?", arg["value"])
-                                         })
-                apos = apos + 1
-            # Generate the API Call dictionary
-            if len(parameter_list) > 0:
-                api_call_dict = {"function_name" : call["api"],
-                                 "return_value" : call["return"],
-                                 "parameters" : parameter_list}
-            else:
-                api_call_dict = {"function_name" : call["api"],
-                                 "return_value" : call["return"]}
-            # Generate the action implementation dictionary
-            action_implementation_dict = {"id" : self.id_generator.generate_action_implementation_id(),
-                                          "type" : "api call",
-                                          "api_call" : {"function_name" : call["api"],
-                                                        "return_value" : call["return"],
-                                                        "parameters" : parameter_list
-                                                        }
-                                          }
-            # Generate the action dictionary
-            action_dict = {"id" : self.id_generator.generate_malware_action_id(),
-                           "ordinal_position" : pos,
-                           "action_status" : self.mapActionStatus(call["status"]),
-                           "context" : "Host",
-                           "timestamp" : str(call["timestamp"]).replace(" ", "T").replace(",","."), 
-                           "implementation" : action_implementation_dict}
+
+            # Generate the Action dictionary
+            action_dict = self.apiCallToAction(call, pos)
 
             # Add the action ID to the list of Actions spawned by the process
             if pid in self.pidActionMap:
@@ -411,6 +574,7 @@ class MAEC40Report(Report):
         return file_obj
 
     def addSubjectAttributes(self):
+        """Add Malware Instance Object Attributes to the Malware Subject."""
         # Add subject
         # File Object
         if self.results["target"]["category"] == "file":
@@ -498,7 +662,10 @@ class MAEC40Report(Report):
             report.write("http://www.cuckoosandbox.org\n")
             report.write("-->\n")
             self.package.to_obj().export(report, 0, name_="MAEC_Package", namespacedef_=MAECNamespaceParser(self.package.to_obj()).get_namespace_schemalocation_str())
+            report.flush()
             report.close()
         except (TypeError, IOError) as e:
+            traceback.print_exc()
             raise CuckooReportError("Failed to generate MAEC 4.0 report: %s" % e)
+            
             
