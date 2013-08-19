@@ -12,7 +12,6 @@ from django.shortcuts import render_to_response
 from django.views.decorators.http import require_safe
 
 import pymongo
-from pymongo import MongoClient
 from bson.objectid import ObjectId
 from django.core.exceptions import PermissionDenied
 from gridfs import GridFS
@@ -21,7 +20,7 @@ sys.path.append(settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database
 
-results_db = MongoClient(settings.MONGO_HOST, settings.MONGO_PORT).cuckoo
+results_db = pymongo.connection.Connection(settings.MONGO_HOST, settings.MONGO_PORT).cuckoo
 fs = GridFS(results_db)
 
 @require_safe
