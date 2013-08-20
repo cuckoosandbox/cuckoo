@@ -205,7 +205,7 @@ class File:
         """
         matches = []
 
-        if HAVE_YARA:
+        if HAVE_YARA and os.path.getsize(self.file_path) > 0:
             try:
                 rules = yara.compile(rulepath)
 
