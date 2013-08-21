@@ -269,12 +269,16 @@ class MAEC40Report(Report):
         arguments_list = []
         for call_parameter in parameter_list:
             parameter_name = call_parameter["name"]
+            argument_value = call_parameter["value"]
+            # Make sure the argument value is set, otherwise skip this parameter
+            if not argument_value : 
+                continue
             if parameter_name in parameter_mappings_dict and "associated_argument_vocab" in parameter_mappings_dict[parameter_name]:
-                arguments_list.append({"argument_value" : call_parameter["value"], 
+                arguments_list.append({"argument_value" : argument_value, 
                                         "argument_name" : {"value" : parameter_mappings_dict[parameter_name]["associated_argument_name"],
                                                             "xsi:type" : parameter_mappings_dict[parameter_name]["associated_argument_vocab"]}})
             elif parameter_name in parameter_mappings_dict and "associated_argument_vocab" not in parameter_mappings_dict[parameter_name]:
-                arguments_list.append({"argument_value" : call_parameter["value"], 
+                arguments_list.append({"argument_value" : argument_value, 
                                         "argument_name" : {"value" : parameter_mappings_dict[parameter_name]["associated_argument_name"]}})
         return arguments_list
 
@@ -292,7 +296,10 @@ class MAEC40Report(Report):
             associated_object_dict["id"] = self.id_generator.generate_object_id()
             associated_object_dict["properties"] = {}
             for parameter_name in grouped_list:
-                self.processAssociatedObject(associated_objects_dict[parameter_name], self.getParameterValue(parameter_list, parameter_name), associated_object_dict)
+                parameter_value = self.getParameterValue(parameter_list, parameter_name)
+                # Make sure the parameter value is set
+                if parameter_value:
+                    self.processAssociatedObject(associated_objects_dict[parameter_name], parameter_value, associated_object_dict)
                 # Add the parameter to the list of those that have already been processed
                 processed_parameters.append(parameter_name)
             associated_objects_list.append(associated_object_dict)
@@ -302,12 +309,20 @@ class MAEC40Report(Report):
             # Construct the values dictionary
             values_dict = {}
             for parameter_mapping in nested_group_dict["parameter_mappings"]:
-                values_dict[parameter_mapping["element_name"].lower()] = self.getParameterValue(parameter_list, parameter_mapping["parameter_name"])
-            associated_objects_list.append(self.processAssociatedObject(nested_group_dict, values_dict))
+                parameter_value = self.getParameterValue(parameter_list, parameter_mapping["parameter_name"])
+                # Make sure the parameter value is set
+                if parameter_value:
+                    values_dict[parameter_mapping["element_name"].lower()] = parameter_value
+            # Make sure we have data in the values dictionary
+            if values_dict:
+                associated_objects_list.append(self.processAssociatedObject(nested_group_dict, values_dict))
         # Handle non-grouped, normal parameters
         for call_parameter in parameter_list:
             if call_parameter["name"] not in processed_parameters and call_parameter["name"] in associated_objects_dict:
-                associated_objects_list.append(self.processAssociatedObject(associated_objects_dict[call_parameter["name"]], self.getParameterValue(parameter_list, call_parameter["name"])))
+                parameter_value = self.getParameterValue(parameter_list, call_parameter["name"])
+                # Make sure the parameter value is set
+                if parameter_value:
+                    associated_objects_list.append(self.processAssociatedObject(associated_objects_dict[call_parameter["name"]], parameter_value))
         return associated_objects_list
 
     
