@@ -73,9 +73,9 @@ class MachineManager(object):
                 continue
 
     def _initialize_check(self):
-        """Runs checks against virtualization software when a machine manager 
+        """Runs checks against virtualization software when a machine manager
         is initialized.
-        @note: in machine manager modules you may override or superclass 
+        @note: in machine manager modules you may override or superclass
                his method.
         @raise CuckooMachineError: if a misconfiguration or a unkown vm state
                                    is found.
@@ -202,10 +202,10 @@ class LibVirtMachineManager(MachineManager):
     """Libvirt based machine manager.
 
     If you want to write a custom module for a virtualization software supported
-    by libvirt you have just to inherit this machine manager and change the 
+    by libvirt you have just to inherit this machine manager and change the
     connection string.
     """
-    
+
     # VM states.
     RUNNING = "running"
     POWEROFF = "poweroff"
@@ -244,24 +244,18 @@ class LibVirtMachineManager(MachineManager):
         @raise CuckooMachineError: if unable to start virtual machine.
         """
         log.debug("Staring machine %s", label)
-        
+
         if self._status(label) == self.RUNNING:
             raise CuckooMachineError("Trying to start an already started machine {0}".format(label))
 
         # Get current snapshot.
         conn = self._connect()
-
-        try:
-            snap = self.vms[label].hasCurrentSnapshot(flags=0)
-        except libvirt.libvirtError:
-            self._disconnect(conn)
-            raise CuckooMachineError("Unable to get current snapshot for virtual machine {0}".format(label))
+        snap = self._get_snapshot(label)
 
         # Revert to latest snapshot.
         if snap:
             try:
-                current = self.vms[label].snapshotCurrent(flags=0)
-                self.vms[label].revertToSnapshot(current, flags=0)
+                self.vms[label].revertToSnapshot(snap, flags=0)
             except libvirt.libvirtError:
                 raise CuckooMachineError("Unable to restore snapshot on virtual machine {0}".format(label))
             finally:
@@ -322,7 +316,7 @@ class LibVirtMachineManager(MachineManager):
         @return: status string.
         """
         log.debug("Getting status for %s", label)
-        
+
         # Stetes mapping of python-libvirt.
         # virDomainState
         # VIR_DOMAIN_NOSTATE = 0
@@ -424,6 +418,32 @@ class LibVirtMachineManager(MachineManager):
             return True
         else:
             return False
+
+    def _get_snapshot(self,label):
+        """Get current snapshot for virtual machine
+        @param label: virtual machine name
+        @return None or current snapshot
+        @raise CuckooMachineError: if cannot find current snapshot or too many snapshots avaible
+        """
+        try:
+            snap = self.vms[label].hasCurrentSnapshot(flags=0)
+        except libvirt.libvirtError:
+            self._disconnect(conn)
+            raise CuckooMachineError("Unable to get current snapshot for virtual machine {0}".format(label))
+
+        if snap:
+            return vms[label].snapshotCurrent(flags=0)
+
+        try:
+            snaps = self.vms[label].snapshotListNames(flags=0)
+            if len(snaps) != 1:
+                self._disconnect()
+                raise CuckooMachineError("To many snapshots for virtual machine {0}".format(label))
+
+            return self.vms[label].snapshotLookupByName(snaps[0],flags=0)
+
+        except libvirt.libvirtError:
+            return None
 
 class Processing(object):
     """Base abstract class for processing module."""
