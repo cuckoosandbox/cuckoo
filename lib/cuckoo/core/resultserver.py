@@ -192,10 +192,10 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         # CSV format files are optional
         if self.server.cfg.resultserver.store_csvs:
-            self.logfd = open(os.path.join(self.storagepath, "logs", str(pid) + ".csv"), "w")
+            self.logfd = open(os.path.join(self.storagepath, "logs", str(pid) + ".csv"), "wb")
 
         # Netlog raw format is mandatory (postprocessing)
-        self.rawlogfd = open(os.path.join(self.storagepath, "logs", str(pid) + ".raw"), "w")
+        self.rawlogfd = open(os.path.join(self.storagepath, "logs", str(pid) + ".raw"), "wb")
         self.rawlogfd.write(self.startbuf)
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
@@ -291,5 +291,5 @@ class LogHandler(object):
 
     def _open(self):
         if os.path.exists(self.logpath):
-            return open(self.logpath, "a")
-        return open(self.logpath, "w")
+            return open(self.logpath, "ab")
+        return open(self.logpath, "wb")
