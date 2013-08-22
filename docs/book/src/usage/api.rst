@@ -80,7 +80,8 @@ Following is a list of currently available resources and a brief description. Fo
         **Form parameters**:
             * ``file`` *(required)* - path to the file to submit
             * ``package`` *(optional)* - analysis package to be used for the analysis
-            * ``timeout`` *(optional)* *(int)* - priority to assign to the task (1-3)
+            * ``timeout`` *(optional)* *(int)* - analysis timeout (in seconds)
+            * ``priority`` *(optional)* *(int)* - priority to assign to the task (1-3)
             * ``options`` *(optional)* - options to pass to the analysis package
             * ``machine`` *(optional)* - ID of the analysis machine to use for the analysis
             * ``platform`` *(optional)* - name of the platform to select the analysis machine from (e.g. "windows")
@@ -115,10 +116,12 @@ Following is a list of currently available resources and a brief description. Fo
         **Form parameters**:
             * ``url`` *(required)* - URL to analyze
             * ``package`` *(optional)* - analysis package to be used for the analysis
-            * ``timeout`` *(optional)* *(int)* - priority to assign to the task (1-3)
+            * ``timeout`` *(optional)* *(int)* - analysis timeout (in seconds)
+            * ``priority`` *(optional)* *(int)* - priority to assign to the task (1-3)
             * ``options`` *(optional)* - options to pass to the analysis package
             * ``machine`` *(optional)* - ID of the analysis machine to use for the analysis
             * ``platform`` *(optional)* - name of the platform to select the analysis machine from (e.g. "windows")
+            * ``tags`` *(optional)* - define machine to start by tags. Platform must be set to use that. Tags are comma separated
             * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
@@ -215,33 +218,31 @@ Following is a list of currently available resources and a brief description. Fo
         **Example response**::
 
             {
-                "task": [
-                    {
-                        "category": "url", 
-                        "machine": null, 
-                        "errors": [], 
-                        "target": "http://www.malicious.site", 
-                        "package": null, 
-                        "sample_id": null, 
-                        "guest": {}, 
-                        "custom": null, 
-                        "priority": 1, 
-                        "platform": null, 
-                        "options": null, 
-                        "status": "pending", 
-                        "enforce_timeout": false, 
-                        "timeout": 0, 
-                        "memory": false,
-                        "tags": [
-                                    "32bit",
-                                    "acrobat_6",
-                                ],
-                        "id": 1, 
-                        "added_on": "2012-12-19 14:18:25", 
-                        "completed_on": null
-                    }
-                ]
-            } 
+                "task": {
+                    "category": "url",
+                    "machine": null,
+                    "errors": [],
+                    "target": "http://www.malicious.site",
+                    "package": null,
+                    "sample_id": null,
+                    "guest": {},
+                    "custom": null,
+                    "priority": 1,
+                    "platform": null,
+                    "options": null,
+                    "status": "pending",
+                    "enforce_timeout": false,
+                    "timeout": 0,
+                    "memory": false,
+                    "tags": [
+                                "32bit",
+                                "acrobat_6",
+                            ],
+                    "id": 1,
+                    "added_on": "2012-12-19 14:18:25",
+                    "completed_on": null
+                }
+            }
 
         **Parameters**:
             * ``id`` *(required)* *(int)* - ID of the task to lookup
@@ -374,6 +375,7 @@ Following is a list of currently available resources and a brief description. Fo
                         "status": null, 
                         "locked": false, 
                         "name": "cuckoo1", 
+                        "resultserver_ip": "192.168.56.1",
                         "ip": "192.168.56.101",
                         "tags": [
                                     "32bit",
@@ -382,8 +384,11 @@ Following is a list of currently available resources and a brief description. Fo
                         "label": "cuckoo1", 
                         "locked_changed_on": null, 
                         "platform": "windows", 
+                        "snapshot": null,
+                        "interface": null,
                         "status_changed_on": null, 
-                        "id": 1
+                        "id": 1,
+                        "resultserver_port": "2042"
                     }
                 ]
             }
@@ -407,23 +412,25 @@ Following is a list of currently available resources and a brief description. Fo
         **Example response**::
 
             {
-                "machine": [
-                    {
-                        "status": null, 
-                        "locked": false, 
-                        "name": "cuckoo1", 
-                        "ip": "192.168.56.101",
-                        "tags": [
-                                    "32bit",
-                                    "acrobat_6",
-                                ],
-                        "label": "cuckoo1", 
-                        "locked_changed_on": null, 
-                        "platform": "windows", 
-                        "status_changed_on": null, 
-                        "id": 1
-                    }
-                ]
+                "machine": {
+                    "status": null,
+                    "locked": false,
+                    "name": "cuckoo1",
+                    "resultserver_ip": "192.168.56.1",
+                    "ip": "192.168.56.101",
+                    "tags": [
+                                "32bit",
+                                "acrobat_6",
+                            ],
+                    "label": "cuckoo1",
+                    "locked_changed_on": null,
+                    "platform": "windows",
+                    "snapshot": null,
+                    "interface": null,
+                    "status_changed_on": null,
+                    "id": 1,
+                    "resultserver_port": "2042"
+                }
             }
 
         **Status codes**:
