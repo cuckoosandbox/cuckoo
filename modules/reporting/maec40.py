@@ -8,6 +8,8 @@ import re
 import traceback
 import pprint
 
+import cybox
+import cybox.utils.nsparser
 from cybox.core import Object
 from cybox.common import ToolInformation
 from cybox.common import StructuredText
@@ -26,7 +28,6 @@ from maec40_mappings import api_call_mappings, hiveHexToString
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.utils import datetime_to_iso
-
 
 class MAEC40Report(Report):
     """Generates a MAEC 4.0 report.
@@ -169,24 +170,35 @@ class MAEC40Report(Report):
         """Creates the ProcessTree corresponding to that observed by cuckoo.
         """
         if "behavior" in self.results and "processtree" in self.results["behavior"]:
+            # Process Tree TypedField Fix
+            NS_LIST = cybox.utils.nsparser.NS_LIST + [
+                ('http://maec.mitre.org/XMLSchema/maec-bundle-4', 'maecBundle', 'http://maec.mitre.org/language/version4.0/maec_bundle_schema.xsd'),
+            ]
+            OBJ_LIST = cybox.utils.nsparser.OBJ_LIST + [
+                ('ProcessTreeNodeType', 'maec.bundle.process_tree.ProcessTreeNode', '', 'http://cybox.mitre.org/objects#ProcessObject-2', ['ProcessObjectType']),
+            ]
+            cybox.META = cybox.utils.nsparser.Metadata(NS_LIST, OBJ_LIST)
+
             root_node = self.results["behavior"]["processtree"][0]
+
             if root_node:
-                root_node_dict = {"pid" : root_node["pid"],
-                                    "name" : root_node["name"],
-                                    "initiated_actions" : self.pidActionMap[root_node["pid"]],
-                                    "spawned_processes" : [self.createProcessTreeNode(child_process) for child_process in root_node["children"]]
-                                    }
-                self.dynamic_bundle.set_process_tree(ProcessTree.from_dict(root_node_dict))
+                root_node_dict = {"id" : self.id_generator.generate_process_tree_node_id(),
+                                  "pid" : root_node["pid"],
+                                  "name" : root_node["name"],
+                                  "initiated_actions" : self.pidActionMap[root_node["pid"]],
+                                  "spawned_processes" : [self.createProcessTreeNode(child_process) for child_process in root_node["children"]]}
+                
+                self.dynamic_bundle.set_process_tree(ProcessTree.from_dict({"root_process" : root_node_dict}))
 
     def createProcessTreeNode(self, process):
         """Creates a single ProcessTreeNode corresponding to a single node in the tree observed cuckoo.
         @param process: process from cuckoo dict.
         """
-        process_node_dict = {"pid" : process["pid"],
-                            "name" : process["name"],
-                            "initiated_actions" : self.pidActionMap[process["pid"]],
-                            "spawned_processes" : [self.createProcessTreeNode(child_process) for child_process in process["children"]]
-                            }
+        process_node_dict = {"id" : self.id_generator.generate_process_tree_node_id(),
+                             "pid" : process["pid"],
+                             "name" : process["name"],
+                             "initiated_actions" : self.pidActionMap[process["pid"]],
+                             "spawned_processes" : [self.createProcessTreeNode(child_process) for child_process in process["children"]]}
         return process_node_dict
 
     def apiCallToAction(self, call, pos):
