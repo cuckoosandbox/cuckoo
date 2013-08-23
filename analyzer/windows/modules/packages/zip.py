@@ -28,9 +28,7 @@ class Zip(Package):
                 except RuntimeError as e:
                     raise CuckooPackageError("Unable to extract Zip file, unknown password?")
 
-        package = self.options.get("zippackage", None)
-        if package == None:
-            package = self.options.get("package", "exe")
+        package = self.options.get("package", "exe")
         file_path = os.path.join(root, self.options.get("file", "sample.exe"))
 
         # Generate the package path.
