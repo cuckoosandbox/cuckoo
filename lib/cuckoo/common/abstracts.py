@@ -7,6 +7,8 @@ import re
 import logging
 import time
 
+import xml.etree.ElementTree as ET
+
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -426,23 +428,23 @@ class LibVirtMachineManager(MachineManager):
         @raise CuckooMachineError: if cannot find current snapshot or too many snapshots avaible
         """
         try:
-            snap = self.vms[label].hasCurrentSnapshot(flags=0)
+            vm = self.vms[label]
+            snap = vm.hasCurrentSnapshot(flags=0)
         except libvirt.libvirtError:
             self._disconnect(conn)
             raise CuckooMachineError("Unable to get current snapshot for virtual machine {0}".format(label))
 
         if snap:
-            return vms[label].snapshotCurrent(flags=0)
+            return vm.snapshotCurrent(flags=0)
 
         try:
-            snaps = self.vms[label].snapshotListNames(flags=0)
-            if len(snaps) != 1:
-                self._disconnect()
-                raise CuckooMachineError("To many snapshots for virtual machine {0}".format(label))
-
-            return self.vms[label].snapshotLookupByName(snaps[0],flags=0)
+            snaps = vm[label].snapshotListNames(flags=0)
+            getCreate = lambda sn: ET.fromstring(sn.getXMLDesc(flags=0)).findtext('./creationTime')
+            return max(getCreate(vm.snapshotLookupByName(n,flags=0)) for n in snaps)
 
         except libvirt.libvirtError:
+            return None
+        except ValueError:
             return None
 
 class Processing(object):
