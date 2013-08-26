@@ -150,7 +150,7 @@ class MAEC40Report(Report):
                                                                          "answer_resource_records" : answer_resource_records}]}
         elif layer7_protocol == "HTTP":
             object_properties["layer7_connections"] = {"http_session" : 
-                                                       {"http_request_responses" : [{"http_client_request": {"http_request_line" : {"http_method" : network_data["method"],
+                                                       {"http_request_response" : [{"http_client_request": {"http_request_line" : {"http_method" : network_data["method"],
                                                                                                                                     "value" : network_data["path"],
                                                                                                                                     "version" : network_data["version"]},
                                                                                                              "http_request_header" : {"parsed_header" : {"user_agent" : network_data["user-agent"],
@@ -348,9 +348,6 @@ class MAEC40Report(Report):
             associated_object_dict = {}
             associated_object_dict["id"] = self.id_generator.generate_object_id()
             associated_object_dict["properties"] = {}
-        # Set the XSI type if it has not been set already
-        if "xsi:type" not in associated_object_dict["properties"]: 
-            associated_object_dict["properties"]["xsi:type"] = parameter_mapping_dict["associated_object_type"]
         # Set the Association Type if it has not been set already
         if "association_type" not in associated_object_dict: 
             associated_object_dict["association_type"] = {"value" : parameter_mapping_dict["association_type"], "xsi:type" : "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}
@@ -365,7 +362,11 @@ class MAEC40Report(Report):
             # Handle complex (nested) elements
             elif "/" in parameter_mapping_dict["associated_object_element"]:
                 split_elements = parameter_mapping_dict["associated_object_element"].split("/")
-                associated_object_dict["properties"][split_elements[0].lower()] = self.createNestedDict(split_elements[1:], parameter_value)
+                associated_object_dict["properties"] = self.createNestedDict(split_elements, parameter_value)
+        # Finally, set the XSI type if it has not been set already
+        if "xsi:type" not in associated_object_dict["properties"]: 
+            associated_object_dict["properties"]["xsi:type"] = parameter_mapping_dict["associated_object_type"]
+
         return associated_object_dict
 
     def createNestedDict(self, list, value):
@@ -388,7 +389,10 @@ class MAEC40Report(Report):
 
         for list_item in list:
             next_index = list.index(list_item) + 1
-            nested_dict[list_item.lower()] = self.createNestedDict(list[next_index:], value)
+            if 'list__' in list_item:
+                nested_dict[list_item.lower().lstrip('list__')] = [self.createNestedDict(list[next_index:], value)]
+            else:
+                nested_dict[list_item.lower()] = self.createNestedDict(list[next_index:], value)
             break
 
         return nested_dict
