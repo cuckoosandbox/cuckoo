@@ -27,11 +27,13 @@ Can I use Volatility with Cuckoo?
 
 Cuckoo 0.5 introduces support for optional full memory dumps, which are created at
 the end of the analysis process. You can use these memory dumps to perform additional
-memory forensic analysis with Volatility.
+memory forensic analysis with `Volatility`_.
 
 Please also consider that we don't particularly encourage this: since Cuckoo employs
 some rootkit-like technologies to perform its operaitons, the results of a forensic
 analysis would be polluted by the sandbox's components.
+
+.. _`Volatility`: http://code.google.com/p/volatility/
 
 Troubleshooting
 ===============
