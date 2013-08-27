@@ -9,7 +9,7 @@ import logging
 import xmlrpclib
 from threading import Timer, Event
 from StringIO import StringIO
-from zipfile import ZipFile, BadZipfile, ZIP_STORED
+from zipfile import ZipFile, ZIP_STORED
 
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooGuestError

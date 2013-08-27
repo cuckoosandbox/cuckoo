@@ -3,11 +3,9 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import sys
 import hashlib
 import binascii
 import logging
-from datetime import datetime
 
 try:
     import magic
@@ -26,7 +24,6 @@ try:
 except ImportError:
     HAVE_YARA = False
 
-from lib.cuckoo.common.utils import convert_to_printable
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 log = logging.getLogger(__name__)
@@ -202,13 +199,13 @@ class File:
 
         return file_type
 
-    def get_yara(self, rulepath=os.path.join(CUCKOO_ROOT, "data", "yara", "index.yar")):
+    def get_yara(self, rulepath=os.path.join(CUCKOO_ROOT, "data", "yara", "index_binary.yar")):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
         """
         matches = []
 
-        if HAVE_YARA:
+        if HAVE_YARA and os.path.getsize(self.file_path) > 0:
             try:
                 rules = yara.compile(rulepath)
 

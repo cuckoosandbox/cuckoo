@@ -5,6 +5,7 @@
 import os
 import sys
 import json
+import logging
 from datetime import datetime
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -18,16 +19,34 @@ from lib.cuckoo.common.utils import create_folder, Singleton
 try:
     from sqlalchemy import create_engine, Column
     from sqlalchemy import Integer, String, Boolean, DateTime, Enum
-    from sqlalchemy import ForeignKey, Text, Index
-    from sqlalchemy.orm import sessionmaker, relationship, joinedload
+    from sqlalchemy import ForeignKey, Text, Index, Table
+    from sqlalchemy.orm import sessionmaker, relationship, joinedload, backref
     from sqlalchemy.sql import func
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
     from sqlalchemy.pool import NullPool
     Base = declarative_base()
 except ImportError:
-    raise CuckooDependencyError("SQLAlchemy library not found, "
-                                "verify your setup")
+    raise CuckooDependencyError("SQLAlchemy library not found, verify your setup")
+
+log = logging.getLogger(__name__)
+
+TASK_PENDING = "pending"
+TASK_RUNNING = "running"
+TASK_COMPLETED = "completed"
+TASK_REPORTED = "reported"
+
+# Secondary table used in association Machine - Tag.
+machines_tags = Table("machines_tags", Base.metadata,
+    Column("machine_id", Integer, ForeignKey("machines.id")),
+    Column("tag_id", Integer, ForeignKey("tags.id"))
+)
+
+# Secondary table used in association Task - Tag.
+tasks_tags = Table("tasks_tags", Base.metadata,
+    Column("task_id", Integer, ForeignKey("tasks.id")),
+    Column("tag_id", Integer, ForeignKey("tags.id"))
+)
 
 class Machine(Base):
     """Configured virtual machines to be used as guests."""
@@ -38,13 +57,19 @@ class Machine(Base):
     label = Column(String(255), nullable=False)
     ip = Column(String(255), nullable=False)
     platform = Column(String(255), nullable=False)
+    tags = relationship("Tag", secondary=machines_tags, cascade="all, delete",
+                        single_parent=True, backref=backref("machine", cascade="all"))
+    interface = Column(String(255), nullable=True)
+    snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)
     locked_changed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(String(255), nullable=True)
     status_changed_on = Column(DateTime(timezone=False), nullable=True)
+    resultserver_ip = Column(String(255), nullable=False)
+    resultserver_port = Column(String(255), nullable=False)
 
     def __repr__(self):
-        return "<Machine('%s','%s')>" % (self.id, self.name)
+        return "<Machine('{0}','{1}')>".format(self.id, self.name)
 
     def to_dict(self):
         """Converts object to dict.
@@ -57,6 +82,10 @@ class Machine(Base):
                 d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
             else:
                 d[column.name] = value
+
+        # Tags are a relation so no column to iterate.
+        d["tags"] = [tag.name for tag in self.tags]
+
         return d
 
     def to_json(self):
@@ -69,11 +98,33 @@ class Machine(Base):
                  name,
                  label,
                  ip,
-                 platform):
+                 platform,
+                 interface,
+                 snapshot,
+                 resultserver_ip,
+                 resultserver_port):
         self.name = name
         self.label = label
         self.ip = ip
         self.platform = platform
+        self.interface = interface
+        self.snapshot = snapshot
+        self.resultserver_ip = resultserver_ip
+        self.resultserver_port = resultserver_port
+
+class Tag(Base):
+    """Tag describing anything you want."""
+    __tablename__ = "tags"
+
+    id = Column(Integer(), primary_key=True)
+    name = Column(String(255), nullable=False, unique=True)
+
+    def __repr__(self):
+        return "<Tag('{0}','{1}')>".format(self.id, self.name)
+
+    def __init__(self,
+                 name):
+        self.name = name
 
 class Guest(Base):
     """Tracks guest run."""
@@ -93,7 +144,7 @@ class Guest(Base):
                      unique=True)
 
     def __repr__(self):
-        return "<Guest('%s','%s')>" % (self.id, self.name)
+        return "<Guest('{0}','{1}')>".format(self.id, self.name)
 
     def to_dict(self):
         """Converts object to dict.
@@ -141,7 +192,7 @@ class Sample(Base):
                             unique=True), )
 
     def __repr__(self):
-        return "<Sample('%s','%s')>" % (self.id, self.sha256)
+        return "<Sample('{0}','{1}')>".format(self.id, self.sha256)
 
     def to_dict(self):
         """Converts object to dict.
@@ -211,7 +262,7 @@ class Error(Base):
         self.task_id = task_id
 
     def __repr__(self):
-        return "<Error('%s','%s','%s')>" % (self.id, self.message, self.task_id)
+        return "<Error('{0}','{1}','{2}')>".format(self.id, self.message, self.task_id)
 
 class Task(Base):
     """Analysis task queue."""
@@ -225,21 +276,27 @@ class Task(Base):
     custom = Column(String(255), nullable=True)
     machine = Column(String(255), nullable=True)
     package = Column(String(255), nullable=True)
+    tags = relationship("Tag", secondary=tasks_tags, cascade="all, delete",
+                        single_parent=True, backref=backref("task", cascade="all"),
+                        lazy="subquery")
     options = Column(String(255), nullable=True)
     platform = Column(String(255), nullable=True)
     memory = Column(Boolean, nullable=False, default=False)
     enforce_timeout = Column(Boolean, nullable=False, default=False)
+    clock = Column(DateTime(timezone=False),
+                   default=datetime.now,
+                   nullable=False)
     added_on = Column(DateTime(timezone=False),
                       default=datetime.now,
                       nullable=False)
     started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(Enum("pending",
-                         "processing",
-                         "failure",
-                         "success",
+    status = Column(Enum(TASK_PENDING,
+                         TASK_RUNNING,
+                         TASK_COMPLETED,
+                         TASK_REPORTED,
                          name="status_type"),
-                         server_default="pending",
+                         server_default=TASK_PENDING,
                          nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     sample = relationship("Sample", backref="tasks")
@@ -257,6 +314,10 @@ class Task(Base):
                 d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
             else:
                 d[column.name] = value
+
+        # Tags are a relation so no column to iterate.
+        d["tags"] = [tag.name for tag in self.tags]
+
         return d
 
     def to_json(self):
@@ -269,7 +330,7 @@ class Task(Base):
         self.target = target
 
     def __repr__(self):
-        return "<Task('%s','%s')>" % (self.id, self.target)
+        return "<Task('{0}','{1}')>".format(self.id, self.target)
 
 class Database(object):
     """Analysis queue database.
@@ -295,9 +356,9 @@ class Database(object):
                     try:
                         create_folder(folder=db_dir)
                     except CuckooOperationalError as e:
-                        raise CuckooDatabaseError("Unable to create database "
-                                                  "directory: %s" % e)
-            self.engine = create_engine("sqlite:///%s" % db_file, poolclass=NullPool)
+                        raise CuckooDatabaseError("Unable to create database directory: {0}".format(e))
+
+            self.engine = create_engine("sqlite:///{0}".format(db_file), poolclass=NullPool)
 
         # Disable SQL logging. Turn it on for debugging.
         self.engine.echo = False
@@ -310,8 +371,7 @@ class Database(object):
         try:
             Base.metadata.create_all(self.engine)
         except SQLAlchemyError as e:
-            raise CuckooDatabaseError("Unable to create or connect to "
-                                      "database: %s" % e)
+            raise CuckooDatabaseError("Unable to create or connect to database: {0}".format(e))
 
         # Get db session.
         self.Session = sessionmaker(bind=self.engine)
@@ -320,8 +380,21 @@ class Database(object):
         """Disconnects pool."""
         self.engine.dispose()
 
+    def _get_or_create(self, session, model, **kwargs):
+        """Get an ORM instance or create it if not exist.
+        @param session: SQLAlchemy session object
+        @param model: model to query
+        @return: row instance
+        """
+        instance = session.query(model).filter_by(**kwargs).first()
+        if instance:
+            return instance
+        else:
+            instance = model(**kwargs)
+            return instance
+
     def clean_machines(self):
-        """Clean old stored machines."""
+        """Clean old stored machines and related tables."""
         session = self.Session()
         try:
             session.query(Machine).delete()
@@ -330,8 +403,53 @@ class Database(object):
             session.rollback()
         finally:
             session.close()
+        # Secondary table.
+        # TODO: this is better done via cascade delete.
+        self.engine.execute(machines_tags.delete())
 
-    def _set_status(self, task_id, status):
+    def add_machine(self,
+                    name,
+                    label,
+                    ip,
+                    platform,
+                    tags,
+                    interface,
+                    snapshot,
+                    resultserver_ip,
+                    resultserver_port):
+        """Add a guest machine.
+        @param name: machine id
+        @param label: machine label
+        @param ip: machine IP address
+        @param platform: machine supported platform
+        @param interface: sniffing interface for this machine
+        @param snapshot: snapshot name to use instead of the current one, if configured
+        @param resultserver_ip: IP address of the Result Server
+        @param resultserver_port: port of the Result Server
+        """
+        session = self.Session()
+        machine = Machine(name=name,
+                          label=label,
+                          ip=ip,
+                          platform=platform,
+                          interface=interface,
+                          snapshot=snapshot,
+                          resultserver_ip=resultserver_ip,
+                          resultserver_port=resultserver_port)
+        # Deal with tags format (i.e. foo,bar,baz)
+        if tags:
+            for tag in tags.replace(" ","").split(","):
+                machine.tags.append(self._get_or_create(session, Tag, name=tag))
+        session.add(machine)
+
+        try:
+            session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+        finally:
+            session.close()
+
+    def set_status(self, task_id, status):
         """Set task status.
         @param task_id: task identifier
         @param status: status string
@@ -339,111 +457,41 @@ class Database(object):
         """
         session = self.Session()
         try:
-            session.query(Task).get(task_id).status = status
-            session.commit()
-        except SQLAlchemyError:
-            session.rollback()
-            return False
-        finally:
-            session.close()
+            row = session.query(Task).get(task_id)
+            row.status = status
 
-        return True
+            if status == TASK_RUNNING:
+                row.started_on = datetime.now()
+            elif status == TASK_COMPLETED:
+                row.completed_on = datetime.now()
 
-    def add_machine(self,
-                    name,
-                    label,
-                    ip,
-                    platform):
-        """Add a guest machine.
-        @param name: machine id
-        @param labal: machine label
-        @param ip: machine IP address
-        @param platform: machine supported platform
-        """
-        session = self.Session()
-        machine = Machine(name=name,
-                          label=label,
-                          ip=ip,
-                          platform=platform)
-        session.add(machine)
-        try:
             session.commit()
         except SQLAlchemyError:
             session.rollback()
         finally:
             session.close()
 
-    def fetch(self):
-        """Fetch a task.
-        @return: task dict or None.
-        """
-        session = self.Session()
-        try:
-            row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
-        except SQLAlchemyError:
-            return None
-        finally:
-            session.expunge(row)
-            session.close()
-        return row
-
-    def process(self, task_id):
-        """Set task status as processing.
-        @param task_id: task identifier
-        @return: operation status
-        """
-        return self._set_status(task_id, "processing")
-
-    def fetch_and_process(self):
-        """Fetches a task waiting to be processed and locks it for processing.
+    def fetch(self, lock=True):
+        """Fetches a task waiting to be processed and locks it for running.
         @return: None or task
         """
         session = self.Session()
+
         try:
-            row = session.query(Task).filter(Task.status == "pending").order_by("priority desc, added_on").first()
-            if row:
-                row.status = "processing"
-                row.started_on = datetime.now()
-            else:
+            row = session.query(Task).filter(Task.status == TASK_PENDING).order_by("priority desc, added_on").first()
+
+            if not row:
                 return None
-            session.commit()
-            session.refresh(row)
+
+            if lock:
+                self.set_status(task_id=row.id, status=TASK_RUNNING)
+                session.refresh(row)
         except SQLAlchemyError:
             session.rollback()
-            return None
         finally:
             session.close()
+
         return row
-
-    def complete(self, task_id, success=True):
-        """Mark a task as completed.
-        @param task_id: task id.
-        @param success: completed with status.
-        @return: operation status.
-        """
-        session = self.Session()
-        try:
-            task = session.query(Task).get(task_id)
-        except SQLAlchemyError:
-            session.close()
-            return False
-
-        if success:
-            task.status = "success"
-        else:
-            task.status = "failure"
-
-        task.completed_on = datetime.now()
-
-        try:
-            session.commit()
-        except SQLAlchemyError:
-            session.rollback()
-            return False
-        finally:
-            session.close()
-
-        return True
 
     def guest_start(self, task_id, name, label, manager):
         """Logs guest start.
@@ -486,32 +534,51 @@ class Database(object):
         session = self.Session()
         try:
             if locked:
-                machines = session.query(Machine).filter(Machine.locked == True).all()
+                machines = session.query(Machine).options(joinedload("tags")).filter(Machine.locked == True).all()
             else:
-                machines = session.query(Machine).all()
+                machines = session.query(Machine).options(joinedload("tags")).all()
         except SQLAlchemyError:
             return None
         finally:
             session.close()
         return machines
 
-    def lock_machine(self, name=None, platform=None):
+    def lock_machine(self, name=None, platform=None, tags=None):
         """Places a lock on a free virtual machine.
         @param name: optional virtual machine name
         @param platform: optional virtual machine platform
+        @param tags: optional tags required (list)
         @return: locked machine
         """
         session = self.Session()
+
+        # Preventive checks.
+        if name and platform:
+            # Wrong usage.
+            log.error("You can select machine only by name or by platform.")
+            return None
+        elif name and tags:
+            # Also wrong usage
+            log.error("You can select machine only by name or by tags.")
+            return None
+
         try:
-            if name and platform:
-                # Wrong usage.
-                return None
-            elif name:
-                machine = session.query(Machine).filter(Machine.name == name).filter(Machine.locked == False).first()
-            elif platform:
-                machine = session.query(Machine).filter(Machine.platform == platform).filter(Machine.locked == False).first()
-            else:
-                machine = session.query(Machine).filter(Machine.locked == False).first()
+            machines = session.query(Machine)
+            if name:
+                machines = machines.filter(Machine.name == name)
+            if platform:
+                machines = machines.filter(Machine.platform == platform)
+            if tags:
+                for tag in tags:
+                    machines = machines.filter(Machine.tags.any(name=tag.name))
+            # Check if there machines that they satisfy selection requirements.
+            if machines.count() == 0:
+                raise CuckooOperationalError("No machines match selection criteria")
+
+            # Get only free machines.
+            machines = machines.filter(Machine.locked == False)
+            # Get only one.
+            machine = machines.first()
         except SQLAlchemyError:
             session.close()
             return None
@@ -620,21 +687,31 @@ class Database(object):
             custom="",
             machine="",
             platform="",
+            tags=None,
             memory=False,
-            enforce_timeout=False):
+            enforce_timeout=False,
+            clock=None):
         """Add a task to database.
-        @param file_path: sample path.
+        @param obj: object to add (File or URL).
         @param timeout: selected timeout.
         @param options: analysis options.
         @param priority: analysis priority.
         @param custom: custom options.
         @param machine: selected machine.
         @param platform: platform.
+        @param tags: optional tags that must be set for machine selection
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
+        @param clock: virtual machine clock time
         @return: cursor or None.
         """
         session = self.Session()
+
+        # Convert empty strings and None values to a valid int
+        if not timeout:
+            timeout = 0
+        if not priority:
+            priority = 1
 
         if isinstance(obj, File):
             sample = Sample(md5=obj.get_md5(),
@@ -646,6 +723,7 @@ class Database(object):
                             file_type=obj.get_type(),
                             ssdeep=obj.get_ssdeep())
             session.add(sample)
+
             try:
                 session.commit()
             except IntegrityError:
@@ -674,17 +752,34 @@ class Database(object):
         task.platform = platform
         task.memory = memory
         task.enforce_timeout = enforce_timeout
+
+        # Deal with tags format (i.e. foo,bar,baz)
+        if tags:
+            for tag in tags.replace(" ","").split(","):
+                task.tags.append(self._get_or_create(session, Tag, name=tag))
+
+        if clock:
+            if isinstance(clock, str) or isinstance(clock, unicode):
+                try:
+                    task.clock = datetime.strptime(clock, "%m-%d-%Y %H:%M:%S")
+                except ValueError:
+                    log.warning("The date you specified has an invalid format, using current timestamp")
+                    task.clock = datetime.now()
+            else:
+                task.clock = clock
+
         session.add(task)
 
         try:
             session.commit()
-            id = task.id
+            task_id = task.id
         except SQLAlchemyError:
             session.rollback()
             return None
         finally:
             session.close()
-        return id
+
+        return task_id
 
     def add_path(self,
                  file_path,
@@ -695,8 +790,10 @@ class Database(object):
                  custom="",
                  machine="",
                  platform="",
+                 tags=None,
                  memory=False,
-                 enforce_timeout=False):
+                 enforce_timeout=False,
+                 clock=None):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -705,12 +802,20 @@ class Database(object):
         @param custom: custom options.
         @param machine: selected machine.
         @param platform: platform.
+        @param tags: Tags required in machine selection
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
+        @param clock: virtual machine clock time
         @return: cursor or None.
         """
         if not file_path or not os.path.exists(file_path):
             return None
+        
+        # Convert empty strings and None values to a valid int
+        if not timeout:
+            timeout = 0
+        if not priority:
+            priority = 1
 
         return self.add(File(file_path),
                         timeout,
@@ -720,8 +825,10 @@ class Database(object):
                         custom,
                         machine,
                         platform,
+                        tags,
                         memory,
-                        enforce_timeout)
+                        enforce_timeout,
+                        clock)
 
     def add_url(self,
                 url,
@@ -732,8 +839,10 @@ class Database(object):
                 custom="",
                 machine="",
                 platform="",
+                tags=None,
                 memory=False,
-                enforce_timeout=False):
+                enforce_timeout=False,
+                clock=None):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
@@ -742,10 +851,19 @@ class Database(object):
         @param custom: custom options.
         @param machine: selected machine.
         @param platform: platform.
+        @param tags: tags for machine selection
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
+        @param clock: virtual machine clock time
         @return: cursor or None.
         """
+        
+        # Convert empty strings and None values to a valid int
+        if not timeout:
+            timeout = 0
+        if not priority:
+            priority = 1
+        
         return self.add(URL(url),
                         timeout,
                         package,
@@ -754,25 +872,77 @@ class Database(object):
                         custom,
                         machine,
                         platform,
+                        tags,
                         memory,
-                        enforce_timeout)
+                        enforce_timeout,
+                        clock)
 
-    def list_tasks(self, limit=None, details=False):
+    def reschedule(self, task_id):
+        """Reschedule a task.
+        @param task_id: ID of the task to reschedule.
+        @return: ID of the newly created task.
+        """
+        task = self.view_task(task_id)
+        if not task:
+            return None
+
+        if task.category == "file":
+            add = self.add_path
+        elif task.category == "url":
+            add = self.add_url
+
+        return add(task.target,
+                   task.timeout,
+                   task.package,
+                   task.options,
+                   task.priority,
+                   task.custom,
+                   task.machine,
+                   task.platform,
+                   task.memory,
+                   task.enforce_timeout,
+                   task.clock)
+
+    def list_tasks(self, limit=None, details=False, category=None, offset=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
+        @param details: if details about must be included
+        @param category: filter by category
+        @param offset: list offset
         @return: list of tasks.
         """
         session = self.Session()
         try:
+            search = session.query(Task)
+
+            if category:
+                search = search.filter(Task.category == category)
             if details:
-                tasks = session.query(Task).options(joinedload("guest"), joinedload("errors")).order_by("added_on desc").limit(limit).all()
-            else:
-                tasks = session.query(Task).order_by("added_on desc").limit(limit).all()
+                search = search.options(joinedload("guest"), joinedload("errors"), joinedload("tags"))
+
+            tasks = search.order_by("added_on desc").limit(limit).offset(offset).all()
         except SQLAlchemyError:
             return None
         finally:
             session.close()
         return tasks
+
+    def count_tasks(self, status=None):
+        """Count tasks in the database
+        @param status: apply a filter according to the task status
+        @return: number of tasks found
+        """
+        session = self.Session()
+        try:
+            if status:
+                tasks_count = session.query(Task).filter(Task.status == status).count()
+            else:
+                tasks_count = session.query(Task).count()
+        except SQLAlchemyError:
+            return 0
+        finally:
+            session.close()
+        return tasks_count
 
     def view_task(self, task_id, details=False):
         """Retrieve information on a task.
@@ -782,13 +952,15 @@ class Database(object):
         session = self.Session()
         try:
             if details:
-                task = session.query(Task).options(joinedload("guest"), joinedload("errors")).get(task_id)
+                task = session.query(Task).options(joinedload("guest"), joinedload("errors"), joinedload("tags")).get(task_id)
             else:
                 task = session.query(Task).get(task_id)
         except SQLAlchemyError:
             return None
+        else:
+            if task:
+                session.expunge(task)
         finally:
-            session.expunge(task)
             session.close()
         return task
 
@@ -809,19 +981,20 @@ class Database(object):
             session.close()
         return True
 
-    def view_sample(self, task_id):
-        """Retrieve information on a sample given a task id.
-        @param task_id: ID of the task to query.
-        @return: details on the sample used in task: task_id.
+    def view_sample(self, sample_id):
+        """Retrieve information on a sample given a sample id.
+        @param sample_id: ID of the sample to query.
+        @return: details on the sample used in sample: sample_id.
         """
         session = self.Session()
         try:
-            sample_id = session.query(Task).get(task_id).sample_id
             sample = session.query(Sample).get(sample_id)
         except (SQLAlchemyError, AttributeError):
             return None
+        else:
+            if sample:
+                session.expunge(sample)
         finally:
-            session.expunge(sample)
             session.close()
 
         return sample
@@ -839,8 +1012,10 @@ class Database(object):
                 sample = session.query(Sample).filter(Sample.sha256 == sha256).first()
         except SQLAlchemyError:
             return None
+        else:
+            if sample:
+                session.expunge(sample)
         finally:
-            session.expunge(sample)
             session.close()
         return sample
 
@@ -851,11 +1026,30 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).filter(Machine.name == name).first()
+            machine = session.query(Machine).options(joinedload("tags")).filter(Machine.name == name).first()
         except SQLAlchemyError:
             return None
+        else:
+            if machine:
+                session.expunge(machine)
         finally:
-            session.expunge(machine)
+            session.close()
+        return machine
+
+    def view_machine_by_label(self, label):
+        """Show virtual machine.
+        @params label: virtual machine label
+        @return: virtual machine's details
+        """
+        session = self.Session()
+        try:
+            machine = session.query(Machine).options(joinedload("tags")).filter(Machine.label == label).first()
+        except SQLAlchemyError:
+            return None
+        else:
+            if machine:
+                session.expunge(machine)
+        finally:
             session.close()
         return machine
 

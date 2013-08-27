@@ -7,6 +7,8 @@ import os
 import sys
 import json
 import argparse
+import tarfile
+import StringIO
 
 try:
     from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response, HTTPError
@@ -52,8 +54,10 @@ def tasks_create_file():
     options = request.forms.get("options", "")
     machine = request.forms.get("machine", "")
     platform = request.forms.get("platform", "")
+    tags = request.forms.get("tags", None)
     custom = request.forms.get("custom", "")
     memory = request.forms.get("memory", False)
+    clock = request.forms.get("clock", None)
     if memory:
         memory = True
     enforce_timeout = request.forms.get("enforce_timeout", False)
@@ -68,9 +72,11 @@ def tasks_create_file():
                           options=options,
                           machine=machine,
                           platform=platform,
+                          tags=tags,
                           custom=custom,
                           memory=memory,
-                          enforce_timeout=enforce_timeout)
+                          enforce_timeout=enforce_timeout,
+                          clock=clock)
 
     response["task_id"] = task_id
     return jsonize(response)
@@ -86,6 +92,7 @@ def tasks_create_url():
     options = request.forms.get("options", "")
     machine = request.forms.get("machine", "")
     platform = request.forms.get("platform", "")
+    tags = request.forms.get("tags", None)
     custom = request.forms.get("custom", "")
     memory = request.forms.get("memory", False)
     if memory:
@@ -93,6 +100,7 @@ def tasks_create_url():
     enforce_timeout = request.forms.get("enforce_timeout", False)
     if enforce_timeout:
         enforce_timeout = True
+    clock = request.forms.get("clock", None)
 
     task_id = db.add_url(url=url,
                          package=package,
@@ -101,21 +109,24 @@ def tasks_create_url():
                          priority=priority,
                          machine=machine,
                          platform=platform,
+                         tags=tags,
                          custom=custom,
                          memory=memory,
-                         enforce_timeout=enforce_timeout)
+                         enforce_timeout=enforce_timeout,
+                         clock=clock)
 
     response["task_id"] = task_id
     return jsonize(response)
 
 @route("/tasks/list", method="GET")
-@route("/tasks/list/<limit>", method="GET")
-def tasks_list(limit=None):
+@route("/tasks/list/<limit:int>", method="GET")
+@route("/tasks/list/<limit:int>/<offset:int>", method="GET")
+def tasks_list(limit=None, offset=None):
     response = {}
 
     response["tasks"] = []
 
-    for row in db.list_tasks(limit, details=True):
+    for row in db.list_tasks(limit=limit, details=True, offset=offset):
         task = row.to_dict()
         task["guest"] = {}
         if row.guest:
@@ -150,6 +161,20 @@ def tasks_view(task_id):
 
     return jsonize(response)
 
+@route("/tasks/reschedule/<task_id>", method="GET")
+def tasks_reschedule(task_id):
+    response = {}
+
+    if not db.view_task(task_id):
+        return HTTPError(404, "There is no analysis with the specified ID")
+
+    if db.reschedule(task_id):
+        response["status"] = "OK"
+    else:
+        return HTTPError(500, "An error occurred while trying to reschedule the task")
+
+    return jsonize(response)
+
 @route("/tasks/delete/<task_id>", method="GET")
 def tasks_delete(task_id):
     response = {}
@@ -172,14 +197,16 @@ def tasks_delete(task_id):
 @route("/tasks/report/<task_id>", method="GET")
 @route("/tasks/report/<task_id>/<report_format>", method="GET")
 def tasks_report(task_id, report_format="json"):
-    response = {}
-
     formats = {
         "json" : "report.json",
         "html" : "report.html",
         "maec" : "report.maec-1.1.xml",
-        "metadata" : "report.metadata.xml",
-        "pickle" : "report.pickle"
+        "metadata" : "report.metadata.xml"
+    }
+
+    bz_formats = {
+        "all": {"type": "-", "files": ["memory.dmp"]},
+        "dropped": {"type": "+", "files": ["files"]},
     }
 
     if report_format.lower() in formats:
@@ -189,6 +216,22 @@ def tasks_report(task_id, report_format="json"):
                                    task_id,
                                    "reports",
                                    formats[report_format.lower()])
+    elif report_format.lower() in bz_formats:
+            bzf = bz_formats[report_format.lower()]
+            srcdir = os.path.join(CUCKOO_ROOT,
+                                   "storage",
+                                   "analyses",
+                                   task_id)
+            s = StringIO.StringIO()
+            tar = tarfile.open(fileobj=s, mode="w:bz2")
+            for filedir in os.listdir(srcdir):
+                if bzf["type"] == "-" and not filedir in bzf["files"]:
+                    tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+                if bzf["type"] == "+" and filedir in bzf["files"]:
+                    tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+            tar.close()
+            response.content_type = "application/x-tar; charset=UTF-8"
+            return s.getvalue()
     else:
         return HTTPError(400, "Invalid report format")
 
