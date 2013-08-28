@@ -68,7 +68,7 @@ We try to make it as easy to use as possible, but you have to keep in mind that
 it's not a technology meant to be accessible to just anyone.
 
 That being said, if a problem occurs you have to make sure that you did everything
-you could before asking for time and efforts from our developers and users.
+you could before asking for time and effort from our developers and users.
 We just can't help everyone, we have limited time and it has to be dedicated to
 the development and fixing actual bugs.
 
