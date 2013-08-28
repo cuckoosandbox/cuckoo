@@ -54,9 +54,9 @@ Please follow the upgrade steps described in :doc:`../installation/upgrade`.
 Cuckoo stumbles and produces some error I don't understand
 ----------------------------------------------------------
 
-Cuckoo is a young and still evolving project, it might definitely happen that
-you will occur in some problems while running it, but before you rush into
-sending emails to everyone make sure to read what follows.
+Cuckoo is a young and still evolving project, it's possible that
+you encounter some problems while running it, but before you rush into
+sending emails to everyone make sure you read what follows.
 
 Cuckoo is not meant to be a point-and-click tool: it's designed to be a highly
 customizable and configurable solution for somewhat experienced users and
