@@ -70,7 +70,7 @@ it's not a technology meant to be accessible to just anyone.
 That being said, if a problem occurs you have to make sure that you did everything
 you could before asking for time and effort from our developers and users.
 We just can't help everyone, we have limited time and it has to be dedicated to
-the development and fixing actual bugs.
+the development and fixing of actual bugs.
 
     * We have an extensive documentation, read it carefully. You can't just skip parts
       of it.
