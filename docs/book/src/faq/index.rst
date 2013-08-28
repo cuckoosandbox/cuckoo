@@ -51,8 +51,8 @@ Please follow the upgrade steps described in :doc:`../installation/upgrade`.
 
 .. _troubles_problem:
 
-Cuckoo stumbles in some error I don't understand
-------------------------------------------------
+Cuckoo stumbles and produces some error I don't understand
+----------------------------------------------------------
 
 Cuckoo is a young and still evolving project, it might definitely happen that
 you will occur in some problems while running it, but before you rush into
