@@ -366,7 +366,10 @@ class MAEC40Report(Report):
             # Handle complex (nested) elements
             elif "/" in parameter_mapping_dict["associated_object_element"]:
                 split_elements = parameter_mapping_dict["associated_object_element"].split("/")
-                associated_object_dict["properties"] = self.createNestedDict(split_elements, parameter_value)
+                if "list__" in split_elements[0]:
+                    associated_object_dict["properties"][split_elements[0].lstrip("list__").lower()] = [self.createNestedDict(split_elements[1:], parameter_value)]
+                else:
+                    associated_object_dict["properties"][split_elements[0].lower()] = self.createNestedDict(split_elements[1:], parameter_value)
         # Finally, set the XSI type if it has not been set already
         if "xsi:type" not in associated_object_dict["properties"]: 
             associated_object_dict["properties"]["xsi:type"] = parameter_mapping_dict["associated_object_type"]
