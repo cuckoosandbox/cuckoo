@@ -717,8 +717,8 @@ api_call_mappings = {
 				 												   	                                       "association_type" : "input"}}},
 "WriteConsoleA" : {"action_name" : "write to console",
                    "parameter_associated_objects" : {"ConsoleHandle" : {"associated_object_type" : "WindowsHandleObjectType",
-				 												   	                                    "associated_object_element" : "ID",
-				 												   	                                    "association_type" : "input"}}},
+				 												   	                                "associated_object_element" : "ID",
+				 												   	                                 "association_type" : "input"}}},
 "WriteConsoleW" : {"action_name" : "write to console",
                    "parameter_associated_objects" : {"ConsoleHandle" : {"associated_object_type" : "WindowsHandleObjectType",
 				 												   	                                    "associated_object_element" : "ID",
@@ -734,15 +734,129 @@ api_call_mappings = {
 					   "action_vocab" : "maecVocabs:SystemActionNameVocab-1.0"},
 "WSAStartup" : {"action_name" : "initialize winsock",
 				"parameter_associated_arguments" : {"VersionRequested" : {"associated_argument_name" : "Version Requested"}}},
-"NtCreateMutant" : {"action_name" : "create mutex",
-					"action_vocab" : "maecVocabs:SynchronizationActionNameVocab-1.0",
-					"parameter_associated_objects" : {"Handle" : {"associated_object_type" : "WindowsHandleObjectType",
-																  "associated_object_element" : "ID",
-																  "association_type" : "output"},
-                                                      "MutexName" : {"associated_object_type" : "WindowsMutexObjectType",
-																     "associated_object_element" : "Name",
-																     "association_type" : "output"}},
-					"parameter_associated_arguments" : {"InitialOwner" : {"associated_argument_name" : "Initial Owner"}}},
+"gethostbyname" : {"action_name" : "get host by name",
+                   "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+                   "parameter_associated_arguments" : {"Name" : {"associated_argument_name" : "Hostname", 
+                                                                  "associated_argument_vocab" : "cyboxVocabs:ActionArgumentNameVocab-1.0"}}},
+"socket" : {"action_name" : "create socket",
+            "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+		    "parameter_associated_objects" : {"type" : {"associated_object_type" : "NetworkSocketObjectType",
+														"associated_object_element" : "Type",
+													    "association_type" : "output",
+                                                        "post_processing" : "socketTypeToString"},
+                                              "af" : {"associated_object_type" : "NetworkSocketObjectType",
+												      "associated_object_element" : "Address_Family",
+													  "association_type" : "output",
+                                                      "post_processing" : "socketAFToString"},
+                                              "protocol" : {"associated_object_type" : "NetworkSocketObjectType",
+													        "associated_object_element" : "Protocol",
+															"association_type" : "output",
+                                                            "post_processing" : "socketProtoToString"},
+                                              "group_together" : ["type", "protocol", "af"]}},
+"connect" : {"action_name" : "connect to socket",
+             "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+             "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"}}},
+"send" : {"action_name" : "send data on socket",
+          "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+          "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"},
+                                              "buffer" : {"associated_argument_name" : "Data Buffer"}}},
+"sendto" : {"action_name" : "send data to address on socket",
+            "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+            "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"},
+                                                "buffer" : {"associated_argument_name" : "Data Buffer"}}},
+"recv" : {"action_name" : "receive data on socket",
+          "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+          "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"},
+                                              "buffer" : {"associated_argument_name" : "Data Buffer"}}},
+"recvfrom" : {"action_name" : "receive data on socket",
+              "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+              "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"},
+                                                  "buffer" : {"associated_argument_name" : "Data Buffer"}}},
+"accept" : {"action_name" : "accept socket connection",
+            "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+            "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"}}},
+"bind" : {"action_name" : "bind address to socket",
+          "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+		  "parameter_associated_objects" : {"ip" : {"associated_object_type" : "NetworkSocketObjectType",
+												    "associated_object_element" : "Local_Address/IP_Address/Address_Value",
+													"association_type" : "inpuy"},
+                                            "port" : {"associated_object_type" : "NetworkSocketObjectType",
+													  "associated_object_element" : "Local_Address/Port/Port_Value",
+													  "association_type" : "input"},
+                                             "group_together" : ["ip", "port"]},
+          "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"}}},
+"listen" : {"action_name" : "listen on socket",
+            "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+            "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"}}},
+"select" : {"action_name" : "check for ready sockets",
+            "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"}}},
+"setsockopt" : {"action_name" : "set socket option",
+                "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"}}},
+"ioctlsocket" : {"action_name" : "send command to socket",
+                 "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"},
+                                                     "command" : {"associated_argument_name" : "Command"}}},
+"closesocket" : {"action_name" : "close socket",
+                 "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+                 "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"}}},
+"shutdown" : {"action_name" : "disable socket operation",
+              "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"},
+                                                  "how" : {"associated_argument_name" : "Operation"}}},
+"WSARecv" : {"action_name" : "receive data on socket",
+             "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+             "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"}}},
+"WSARecvFrom" : {"action_name" : "receive data on socket",
+                 "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+                 "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"}}},
+"WSASend" : {"action_name" : "send data on socket",
+             "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+             "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"}}},
+"WSASendTo" : {"action_name" : "send data on socket",
+               "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+               "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"}}},
+"WSASocketA" : {"action_name" : "create socket",
+                "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+		        "parameter_associated_objects" : {"type" : {"associated_object_type" : "NetworkSocketObjectType",
+														    "associated_object_element" : "Type",
+													        "association_type" : "output",
+                                                            "post_processing" : "socketTypeToString"},
+                                              "af" : {"associated_object_type" : "NetworkSocketObjectType",
+												      "associated_object_element" : "Address_Family",
+													  "association_type" : "output",
+                                                      "post_processing" : "socketAFToString"},
+                                              "protocol" : {"associated_object_type" : "NetworkSocketObjectType",
+													        "associated_object_element" : "Protocol",
+															"association_type" : "output",
+                                                            "post_processing" : "socketProtoToString"},
+                                              "group_together" : ["type", "protocol", "af"]}},
+"WSASocketW" : {"action_name" : "create socket",
+                "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+		        "parameter_associated_objects" : {"type" : {"associated_object_type" : "NetworkSocketObjectType",
+														    "associated_object_element" : "Type",
+													        "association_type" : "output",
+                                                            "post_processing" : "socketTypeToString"},
+                                              "af" : {"associated_object_type" : "NetworkSocketObjectType",
+												      "associated_object_element" : "Address_Family",
+													  "association_type" : "output",
+                                                      "post_processing" : "socketAFToString"},
+                                              "protocol" : {"associated_object_type" : "NetworkSocketObjectType",
+													        "associated_object_element" : "Protocol",
+															"association_type" : "output",
+                                                            "post_processing" : "socketProtoToString"},
+                                              "group_together" : ["type", "protocol", "af"]}},
+"ConnectEx" : {"action_name" : "connect to socket",
+               "action_vocab" : "maecVocabs:SocketActionNameVocab-1.0",
+               "parameter_associated_arguments" : {"socket" : {"associated_argument_name" : "Socket Descriptor"}}},
+"TransmitFile" : {"action_name" : "send file over socket",
+                  "parameter_associated_objects" : {"socket" : {"associated_object_type" : "WindowsHandleObjectType",
+				 												"associated_object_element" : "ID",
+				 												"association_type" : "input"},
+                                                    "FileHandle" : {"associated_object_type" : "WindowsHandleObjectType",
+				 												    "associated_object_element" : "ID",
+				 												    "association_type" : "input"},
+                                                    "NumberOfBytesToWrite" : {"associated_object_type" : "FileObjectType",
+						   									 	              "associated_object_element" : "Size_In_Bytes",
+						   									 	              "association_type" : "output"}},
+                  "parameter_associated_arguments" : {"NumberOfBytesPerSend" : {"associated_argument_name" : "Send Data Block Size"}}},
 "NtOpenMutant" : {"action_name" : "open mutex",
 				  "action_vocab" : "maecVocabs:SynchronizationActionNameVocab-1.0",
 				  "parameter_associated_objects" : {"Handle" : {"associated_object_type" : "WindowsHandleObjectType",
@@ -975,7 +1089,7 @@ api_call_mappings = {
                                                        "Flags" : {"associated_argument_name" : "Flags"}}}, 
 "InternetOpenW" : {"action_name" : "initialize wininet",
 				   "parameter_associated_objects" : {"Agent" : {"associated_object_type" : "HTTPSessionObjectType",
-																"associated_object_element" : "list__HTTP_Request_Responses/HTTP_Client_Request/HTTP_Request_Header/Parsed_Header/User_Agent",
+																"associated_object_element" : "list__HTTP_Request_Response/HTTP_Client_Request/HTTP_Request_Header/Parsed_Header/User_Agent",
 																"association_type" : "input"}},
                    "parameter_associated_arguments" : {"AccessType" : {"associated_argument_name" : "Access Mode",
                                                                         "associated_argument_vocab" : "cyboxVocabs:ActionArgumentNameVocab-1.0"},
@@ -1054,3 +1168,58 @@ def hiveHexToString(hive_hex_value):
         return "HKEY_DYN_DATA"
     else:
         return hive_hex_value
+
+def socketProtoToString(proto_int_value):
+    """Maps a Socket Protocol integer input to its String (name) equivalent"""
+    if str(proto_int_value) == "1":
+        return "IPPROTO_ICMP"
+    elif str(proto_int_value) == "2":
+        return "IPPROTO_IGMP"
+    elif str(proto_int_value) == "3":
+        return "BTHPROTO_RFCOMM"
+    elif str(proto_int_value) == "6":
+        return "IPPROTO_TCP"
+    elif str(proto_int_value) == "17":
+        return "IPPROTO_UDP"
+    elif str(proto_int_value) == "58":
+        return "IPPROTO_ICMPV6"
+    elif str(proto_int_value) == "113":
+        return "IPPROTO_RM"
+    else:
+        return proto_int_value
+
+def socketAFToString(af_int_value):
+    """Maps a Socket Address Family integer input to its String (name) equivalent"""
+    if str(af_int_value) == "0":
+        return "AF_UNSPEC"
+    elif str(af_int_value) == "2":
+        return "AF_INET"
+    elif str(af_int_value) == "6":
+        return "AF_IPX"
+    elif str(af_int_value) == "16":
+        return "AF_APPLETALK"
+    elif str(af_int_value) == "17":
+        return "AF_NETBIOS"
+    elif str(af_int_value) == "23":
+        return "AF_INET6"
+    elif str(af_int_value) == "26":
+        return "AF_IRDA"
+    elif str(af_int_value) == "32":
+        return "AF_BTH"
+    else:
+        return af_int_value
+
+def socketTypeToString(type_int_value):
+    """Maps a Socket Type integer input to its String (name) equivalent"""
+    if str(type_int_value) == "1":
+        return "SOCK_STREAM"
+    elif str(type_int_value) == "2":
+        return "SOCK_DGRAM"
+    elif str(type_int_value) == "3":
+        return "SOCK_RAW"
+    elif str(type_int_value) == "4":
+        return "SOCK_RDM"
+    elif str(type_int_value) == "5":
+        return "SOCK_SEQPACKET"
+    else:
+        return type_int_value
