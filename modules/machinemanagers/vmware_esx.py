@@ -11,7 +11,7 @@ from lib.cuckoo.common.exceptions import CuckooMachineError
 
 #Verify if we have the required vsphere/esxi module installed for communication
 try:
-    from pysphere import VIServer
+    from pysphere import VIServer, VIException
 except ImportError:
     raise CuckooMachineError("Need PySphere to use VMware_ESX MachineManager.")
 
@@ -22,7 +22,22 @@ class VMware_ESX(MachineManager):
     server = None
     server_type = None
     server_version = 0.0
-    
+
+    def _connect(self):
+        """Initializes a session with VISphere."""
+        self.server = VIServer()
+        self.server.connect(self.options.vmware_esx.esx_server,
+                            self.options.vmware_esx.esx_username,
+                            self.options.vmware_esx.esx_password)
+
+        # set some variables
+        self.server_type = self.server.get_server_type()
+        self.server_version = self.server.get_api_version()
+
+        log.info("Connected to %s v%s at %s" % (self.server_type,
+                                                self.server_version,
+                                                self.options.vmware_esx.esx_server))
+
     def _initialize_check(self):
         """Check for configuration file and vmware setup.
         @raise CuckooMachineError: if configuration is missing or wrong.
@@ -32,15 +47,8 @@ class VMware_ESX(MachineManager):
 
         log.info("Attempting to establish connection to %s" % (self.options.vmware_esx.esx_server,))
 
-        self.server = VIServer()
-        self.server.connect(self.options.vmware_esx.esx_server, self.options.vmware_esx.esx_username, self.options.vmware_esx.esx_password)
+        self._connect()
 
-        #Set some variables
-        self.server_type = self.server.get_server_type()
-        self.server_version = self.server.get_api_version()
-        
-        log.info("Connected to %s v%s at %s" % (self.server_type, self.server_version, self.options.vmware_esx.esx_server))
-                
         # Consistency checks.
         for machine in self.machines():
             host, snapshot = self._parse_label(machine.label)
@@ -124,7 +132,7 @@ class VMware_ESX(MachineManager):
         except OSError as e:
             raise CuckooMachineError("Unable to revert snapshot for machine %s: %s" % (host, e))
 
-    def _is_running(self, host):
+    def _is_running(self, host, try_again=True):
         """Checks if host is running.
         @param host: hostname
         @return: running status
@@ -137,8 +145,15 @@ class VMware_ESX(MachineManager):
             else:
                 logging.debug("_is_running: false")
                 return False
-        except OSError as e:
-            raise CuckooMachineError("Unable to check running status for %s. Reason: %s" % (host, e))
+        except (OSError, VIException) as e:
+            if not try_again:
+                raise CuckooMachineError("Unable to check running status for %s. Reason: %s" % (host, e))
+
+            # on the first failure, try to connect again and do the api call afterwards
+            # do note that we should not disconnect the current session at this point, as that
+            # results in a "not authenticated" exception
+            self._connect()
+            return self._is_running(host, False)
 
     def _parse_label(self, label):
         """Parse configuration file label.
