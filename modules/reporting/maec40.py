@@ -324,8 +324,11 @@ class MAEC40Report(Report):
             for parameter_mapping in nested_group_dict["parameter_mappings"]:
                 parameter_value = self.getParameterValue(parameter_list, parameter_mapping["parameter_name"])
                 # Make sure the parameter value is set
-                if parameter_value:
+                if parameter_value and "/" not in parameter_mapping["element_name"]:
                     values_dict[parameter_mapping["element_name"].lower()] = parameter_value
+                elif parameter_value and "/" in parameter_mapping["element_name"]:
+                    split_element_name =  parameter_mapping["element_name"].split("/")
+                    values_dict[split_element_name[0].lower()] = self.createNestedDict(split_element_name[1:], parameter_value)
             # Make sure we have data in the values dictionary
             if values_dict:
                 associated_objects_list.append(self.processAssociatedObject(nested_group_dict, values_dict))
