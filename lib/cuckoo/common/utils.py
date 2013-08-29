@@ -52,12 +52,18 @@ def delete_folder(folder):
         except OSError:
             raise CuckooOperationalError("Unable to delete folder: {0}".format(folder))
 
+
+# don't allow all characters in "string.printable", as newlines, carriage
+# returns, tabs, \x0b, and \x0c may mess up reports
+PRINTABLE_CHARACTERS = string.letters + string.digits + string.punctuation + " \t"
+
+
 def convert_char(c):
     """Escapes characters.
     @param c: dirty char.
     @return: sanitized char.
     """
-    if c in string.printable:
+    if c in PRINTABLE_CHARACTERS:
         return c
     else:
         return r"\x%02x" % ord(c)
@@ -65,7 +71,7 @@ def convert_char(c):
 def is_printable(s):
     """ Test if a string is printable."""
     for c in s:
-        if not c in string.printable:
+        if not c in PRINTABLE_CHARACTERS:
             return False
     return True
 
