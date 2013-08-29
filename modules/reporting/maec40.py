@@ -23,7 +23,8 @@ from maec.package.malware_subject import MalwareSubject
 from maec.package.package import Package
 from maec.package.analysis import Analysis
 from maec.utils import MAECNamespaceParser
-from maec40_mappings import api_call_mappings, hiveHexToString
+from maec40_mappings import api_call_mappings, hiveHexToString,\
+    socketTypeToString, socketProtoToString, socketAFToString
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
