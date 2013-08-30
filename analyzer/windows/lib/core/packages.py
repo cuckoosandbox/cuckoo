@@ -25,4 +25,4 @@ def choose_package(file_type, file_name):
     elif file_name.endswith(".jar"):
         return "jar"
     else:
-        return None
+        return "generic"
