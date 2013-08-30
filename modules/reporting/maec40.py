@@ -369,8 +369,11 @@ class MAEC40Report(Report):
                     associated_object_dict["properties"][split_elements[0].lstrip("list__").lower()] = [self.createNestedDict(split_elements[1:], parameter_value)]
                 else:
                     associated_object_dict["properties"][split_elements[0].lower()] = self.createNestedDict(split_elements[1:], parameter_value)
+        # Set any "forced" properties that should be set alongside the current
+        if "forced" in parameter_mapping_dict:
+            self.processAssociatedObject(parameter_mapping_dict["forced"], parameter_mapping_dict["forced"]["value"], associated_object_dict)
         # Finally, set the XSI type if it has not been set already
-        if "xsi:type" not in associated_object_dict["properties"]: 
+        if "associated_object_type" in parameter_mapping_dict and "xsi:type" not in associated_object_dict["properties"]: 
             associated_object_dict["properties"]["xsi:type"] = parameter_mapping_dict["associated_object_type"]
 
         return associated_object_dict
