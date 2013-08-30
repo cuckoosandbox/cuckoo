@@ -6,7 +6,6 @@ import os
 import hashlib
 import re
 import traceback
-import pprint
 
 import cybox
 import cybox.utils.nsparser
