@@ -1420,13 +1420,13 @@ api_call_mappings = {
 
 def hiveHexToString(hive_hex_value):
     """Maps a Registry Hive hex input to its String (name) equivalent"""
-    if str(hive_hex_value) == "0x80000000":
+    if str(hive_hex_value) == "0x80000000" or str(hive_hex_value) == "-2147483648":
         return "HKEY_CLASSES_ROOT"
-    elif str(hive_hex_value) == "0x80000001":
+    elif str(hive_hex_value) == "0x80000001" or str(hive_hex_value) == "-2147483647":
         return "HKEY_CURRENT_USER"
-    elif str(hive_hex_value) == "0x80000002":
+    elif str(hive_hex_value) == "0x80000002" or str(hive_hex_value) == "-2147483646":
         return "HKEY_LOCAL_MACHINE"
-    elif str(hive_hex_value) == "0x80000003":
+    elif str(hive_hex_value) == "0x80000003" or str(hive_hex_value) == "-2147483645":
         return "HKEY_USERS"
     elif str(hive_hex_value) == "0x80000004":
         return "HKEY_PERFORMANCE_DATA"
