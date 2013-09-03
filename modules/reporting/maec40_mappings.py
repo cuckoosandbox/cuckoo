@@ -269,7 +269,8 @@ api_call_mappings = {
                                                                     "association_type" : "output"},
                                                     "Type" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
                                                                     "associated_object_element" : "Values/list__Datatype",
-                                                                    "association_type" : "output"},
+                                                                    "association_type" : "output",
+                                                                    "post_processing" : "regDatatypeToString"},
                                                     "Data" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
                                                                     "associated_object_element" : "Values/list__Data",
                                                                     "association_type" : "output"},
@@ -286,7 +287,8 @@ api_call_mappings = {
                                                                     "association_type" : "output"},
                                                     "Type" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
                                                                     "associated_object_element" : "Values/list__Datatype",
-                                                                    "association_type" : "output"},
+                                                                    "association_type" : "output",
+                                                                    "post_processing" : "regDatatypeToString"},
                                                     "Data" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
                                                                     "associated_object_element" : "Values/list__Data",
                                                                     "association_type" : "output"},
@@ -303,7 +305,8 @@ api_call_mappings = {
                                                                     "association_type" : "output"},
                                                     "Type" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
                                                                     "associated_object_element" : "Values/list__Datatype",
-                                                                    "association_type" : "output"},
+                                                                    "association_type" : "output",
+                                                                    "post_processing" : "regDatatypeToString"},
                                                     "Buffer" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
                                                                     "associated_object_element" : "Values/list__Data",
                                                                     "association_type" : "output"},
@@ -320,7 +323,8 @@ api_call_mappings = {
                                                                     "association_type" : "output"},
                                                     "Type" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
                                                                     "associated_object_element" : "Values/list__Datatype",
-                                                                    "association_type" : "output"},
+                                                                    "association_type" : "output",
+                                                                    "post_processing" : "regDatatypeToString"},
                                                     "Buffer" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
                                                                     "associated_object_element" : "Values/list__Data",
                                                                     "association_type" : "output"},
@@ -473,7 +477,8 @@ api_call_mappings = {
                                                                     "association_type" : "output"},
                                                     "Type" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
                                                               "associated_object_element" : "Values/list__Datatype",
-                                                              "association_type" : "output"},
+                                                              "association_type" : "output",
+                                                              "post_processing" : "regDatatypeToString"},
                                                     "Buffer" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
                                                                 "associated_object_element" : "Values/list__Data",
                                                                 "association_type" : "output"},
@@ -490,7 +495,8 @@ api_call_mappings = {
                                                                       "association_type" : "input"},
                                                         "Type" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
                                                                   "associated_object_element" : "Values/list__Datatype",
-                                                                  "association_type" : "output"},
+                                                                  "association_type" : "output",
+                                                                  "post_processing" : "regDatatypeToString"},
                                                         "Information" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
                                                                          "associated_object_element" : "Values/list__Data",
                                                                          "association_type" : "output"},
@@ -1438,6 +1444,34 @@ def hiveHexToString(hive_hex_value):
         return "HKEY_DYN_DATA"
     else:
         return hive_hex_value
+
+def regDatatypeToString(datatype_int_value):
+    """Maps a Registry Datatype integer input to its String (name) equivalent"""
+    if str(datatype_int_value) == "1":
+        return "REG_SZ"
+    elif str(datatype_int_value) == "2":
+        return "REG_EXPAND_SZ"
+    elif str(datatype_int_value) == "3":
+        return "REG_BINARY"
+    elif str(datatype_int_value) == "4":
+        return "REG_DWORD"
+    elif str(datatype_int_value) == "5":
+        return "REG_DWORD_BIG_ENDIAN"
+    elif str(datatype_int_value) == "6":
+        return "REG_LINK"
+    elif str(datatype_int_value) == "7":
+        return "REG_MULTI_SZ"
+    elif str(datatype_int_value) == "8":
+        return "REG_RESOURCE_LIST"
+    elif str(datatype_int_value) == "9":
+        return "REG_FULL_RESOURCE_DESCRIPTOR"
+    elif str(datatype_int_value) == "10":
+        return "REG_RESOURCE_REQUIREMENTS_LIST"
+    elif str(datatype_int_value) == "11":
+        return "REG_QWORD"
+    else:
+        return datatype_int_value
+
 
 def socketProtoToString(proto_int_value):
     """Maps a Socket Protocol integer input to its String (name) equivalent"""
