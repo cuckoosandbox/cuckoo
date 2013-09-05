@@ -6,6 +6,8 @@ import os
 import hashlib
 import re
 import traceback
+import pprint
+from collections import defaultdict
 
 import cybox
 import cybox.utils.nsparser
@@ -23,7 +25,8 @@ from maec.package.package import Package
 from maec.package.analysis import Analysis
 from maec.utils import MAECNamespaceParser
 from maec40_mappings import api_call_mappings, hiveHexToString,\
-    socketTypeToString, socketProtoToString, socketAFToString
+    socketTypeToString, socketProtoToString, socketAFToString,\
+    regDatatypeToString
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
@@ -45,6 +48,8 @@ class MAEC40Report(Report):
         self._illegal_xml_chars_RE = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
         # Map of PIDs to the Actions that they spawned
         self.pidActionMap = {}
+        # Windows Handle map
+        self.handleMap = {}
         # Save results
         self.results = results
         # Setup MAEC document structure
@@ -338,9 +343,165 @@ class MAEC40Report(Report):
                 # Make sure the parameter value is set
                 if parameter_value:
                     associated_objects_list.append(self.processAssociatedObject(associated_objects_dict[call_parameter["name"]], parameter_value))
+        # Process any RegKeys to account for the Hive == Handle corner case
+        self.processRegKeys(associated_objects_list)
+        # Perform Windows Handle Update/Replacement Processing
+        return self.processWinHandles(associated_objects_list)
+
+    def processWinHandles(self, associated_objects_list):
+        """Process any Windows Handles that may be associated with an Action. Replace Handle references with
+        actual Object, if possible.
+        @param associated_objects_list: the list of associated_objects processed for the Action.
+        """
+        input_handles = []
+        output_handles = []
+        input_objects = []
+        output_object = None
+
+        # Add the named object collection if it does not exist
+        if not self.dynamic_bundle.collections.object_collections.has_collection("Handle-mapped Objects"):
+            self.dynamic_bundle.add_named_object_collection("Handle-mapped Objects", self.id_generator.generate_object_collection_id())
+
+        # Determine the types of objects we're dealing with
+        for associated_object_dict in associated_objects_list:
+            object_type = associated_object_dict["properties"]["xsi:type"]
+            object_association_type = associated_object_dict["association_type"]["value"]
+            # Check for handle objects
+            if object_type is "WindowsHandleObjectType":
+                if object_association_type is "output":
+                    output_handles.append(associated_object_dict)
+                elif object_association_type is "input":
+                    input_handles.append(associated_object_dict)
+            # Check for non-handle objects
+            elif object_type is not "WindowsHandleObjectType":
+                if object_association_type is "output":
+                    output_object = associated_object_dict
+                elif object_association_type is "input":
+                    input_objects.append(associated_object_dict)
+        # Handle the different cases
+        # If no input/output handle, then just return the list unchanged
+        if not input_handles and not output_handles:
+            return associated_objects_list
+        # Handle the case where there is an input object and output handle
+        # Equivalent to cases with an output object and output handle
+        # Add the handle to the mapping
+        if (input_objects or output_object) and len(output_handles) == 1 and len(input_objects) == 1:
+            input_object = input_objects[0]
+            output_handle = output_handles[0]
+            if input_object:
+                substituted_object = self.addHandleToMap(output_handle, input_object)
+                if substituted_object:
+                    associated_objects_list.remove(input_object)
+                    associated_objects_list.append(substituted_object)
+            elif output_object:
+                substituted_object = self.addHandleToMap(output_handle, output_object)
+                if substituted_object:
+                    associated_objects_list.remove(output_object)
+                    associated_objects_list.append(substituted_object)
+        # Corner case for certain calls with two output handles and input objects
+        elif len(output_handles) == 2 and len(input_objects) == 2:
+            for input_object in input_objects:
+                if input_object["properties"]["xsi:type"] is "WindowsThreadObjectType":
+                    for output_handle in output_handles:
+                        if "type" in output_handle["properties"] and output_handle["properties"]["type"] is "Thread":
+                            substituted_object = self.addHandleToMap(output_handle, input_object)
+                            if substituted_object:
+                                associated_objects_list.remove(input_object)
+                                associated_objects_list.append(substituted_object)
+                elif input_object["properties"]["xsi:type"] is "ProcessObjectType":
+                    for output_handle in output_handles:
+                        if "type" in output_handle["properties"] and output_handle["properties"]["type"] is "Process":
+                            substituted_object = self.addHandleToMap(output_handle, input_object)
+                            if substituted_object:
+                                associated_objects_list.remove(input_object)
+                                associated_objects_list.append(substituted_object)
+            
+        # Handle the case where there is an input_handle
+        # Lookup the handle and replace it with the appropriate object if we've seen it before
+        if input_handles:
+            for input_handle in input_handles:
+                if "type" in input_handle["properties"]:
+                    handle_type = input_handle["properties"]["type"]
+                    handle_id = input_handle["properties"]["id"] 
+                    if handle_type in self.handleMap and handle_id in self.handleMap[handle_type]:
+                        mapped_object = self.handleMap[handle_type][handle_id]
+                        # If the input object is of the same type, then "merge" them into a new object
+                        for input_object in input_objects:
+                            if input_object["properties"]["xsi:type"] == mapped_object["properties"]["xsi:type"]:
+                                merged_dict = defaultdict(dict)
+                                for k, v in input_object.iteritems():
+                                    if isinstance(v, dict):
+                                        merged_dict[k].update(v)
+                                    else:
+                                        merged_dict[k] = v
+                                for k, v in mapped_object.iteritems():
+                                    if isinstance(v, dict):
+                                        merged_dict[k].update(v)
+                                    else:
+                                        merged_dict[k] = v
+                                # Assign the merged object a new ID
+                                merged_dict["id"] = self.id_generator.generate_object_id()
+                                # Add the new object to the list of associated objects
+                                associated_objects_list.remove(input_handle)
+                                associated_objects_list.remove(input_object)
+                                associated_objects_list.append(merged_dict)
+                            # Otherwise, add the existing object via a reference
+                            else:
+                                substituted_object = {"idref" : mapped_object["id"], 
+                                                      "association_type" : {"value" : "input", "xsi:type" : "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}}
+                                associated_objects_list.remove(input_handle)
+                                associated_objects_list.append(substituted_object)
         return associated_objects_list
 
-    
+    def addHandleToMap(self, handle_dict, object_dict):
+        """Add a new Handle/Object pairing to the Handle mappings dictionary.
+        @param handle_dict: the dictionary of the Handle to which the object is mapped.
+        @param object_dict: the dictionary of the object mapped to the Handle.
+        return: the substituted object dictionary
+        """
+        if "type" in handle_dict["properties"]:
+            handle_type = handle_dict["properties"]["type"]
+            handle_id = handle_dict["properties"]["id"]
+            substituted_object = {"idref" : "", 
+                                    "association_type" : {"value" : "", "xsi:type" : "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}}
+            if handle_type not in self.handleMap:
+                self.handleMap[handle_type] = {}
+            self.handleMap[handle_type][handle_id] = object_dict
+            self.dynamic_bundle.add_object(Object.from_dict(object_dict), "Handle-mapped Objects")
+            substituted_object["idref"] = object_dict["id"]
+            substituted_object["association_type"]["value"] = "input"
+            return substituted_object
+        return None
+
+    def processRegKeys(self, associated_objects_list):
+        """Process any Registry Key associated with an action. Special case to handle registry Hives that may refer to Handles.
+        @param associated_objects_list: the list of associated_objects processed for the Action.
+        """
+        for associated_object in associated_objects_list:
+            if associated_object["properties"]["xsi:type"] is "WindowsRegistryKeyObjectType":
+                if "hive" in associated_object["properties"] and "HKEY_" not in associated_object["properties"]["hive"]:
+                    associated_object = self.processRegKeyHandle(associated_object["properties"]["hive"], associated_object)
+
+    def processRegKeyHandle(self, handle_id, current_dict):
+        """Process a Registry Key Handle and return the full key, recursing as necessary.
+        @param handle_id: the id of the root-level handle
+        @param current_dict: the dictionary containing the properties of the current key
+        """
+        if handle_id in self.handleMap["RegistryKey"]:
+           handle_mapped_key = self.handleMap["RegistryKey"][handle_id]
+           if "key" in handle_mapped_key["properties"]:
+               current_dict["properties"]["key"] = (handle_mapped_key["properties"]["key"] + "\\" + current_dict["properties"]["key"])
+           if "hive" in handle_mapped_key["properties"]:
+               # If we find the "HKEY_" then we assume we're done
+               if "HKEY_" in handle_mapped_key["properties"]["hive"]:
+                   current_dict["properties"]["hive"] = handle_mapped_key["properties"]["hive"]
+                   return current_dict
+               # If not, then we assume the hive refers to a Handle so we recurse
+               else:
+                   self.processRegKeyHandle(handle_mapped_key["properties"]["hive"], current_dict)
+        else:
+            return current_dict
+
     def processAssociatedObject(self, parameter_mapping_dict, parameter_value, associated_object_dict = None):
         """Process a single Associated Object mapping.
         @param parameter_mapping_dict: input parameter to Associated Object mapping dictionary.
