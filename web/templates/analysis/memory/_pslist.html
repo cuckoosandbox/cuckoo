@@ -1,0 +1,28 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Parent PID</th>
+            <th>PID</th>
+            <th>Name</th>
+            <th>Create Time</th>
+            <th>Exit Time</th>
+            <th># Threads</th>
+            <th># Handles</th>
+            <th>Session ID</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for process in analysis.memory.pslist.data %}
+        <tr>
+            <td>{{process.parent_id}}</td>
+            <td>{{process.process_id}}</td>
+            <td>{{process.process_name}}</td>
+            <td>{{process.create_time}}</td>
+            <td>{{process.exit_time}}</td>
+            <td>{{process.num_threads}}</td>
+            <td>{{process.num_handles}}</td>
+            <td>{{process.session_id}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

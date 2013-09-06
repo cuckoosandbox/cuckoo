@@ -1,6 +1,33 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 0.6 (2012-04-15)
+Cuckoo Sandbox 0.7 (TBD)
+========================
+
+* Introduced Auxiliary modules
+* Added option to set sniffing interface for each virtual machine
+* Added option to set snapshot for each virtual machine
+* Added pagination to API
+* Added option to REST API to return compressed archives of files ("all" and "dropped")
+* Added option to set Result Server IP and port for each virtual machine
+* Added processing module for volatility to analyze memory dumps, disabled by default
+* Added new "reported" status for analysis tasks
+* Added automated rescheduling of locked tasks at startup
+* Added tags to machines
+* Added reduced behavioral events
+* Added new web interface, removed old web.py
+* Added Windows analyzer auxiliary module to disguise the analysis environment
+* Added VBS analysis package
+* Added generic analysis package to execute samples via cmd.exe
+* Refactored processing to improve performances
+* Refactored signature engine, introducing event-based signatures to improve performances
+* Transitioned network sniffer to auxiliary module
+* Renamed MachineManagers to Machinery modules
+* Fixed virtual machine clock, now is updated to current time or specified by user via --clock option
+* Fixed bug in Human auxiliary module, now moving cursor to absolute positions
+* Removed support for GrayLog2
+* Removed pickle reporting module
+
+Cuckoo Sandbox 0.6 (2013-04-15)
 ===============================
 
 * Added procmemdump option to all analysis packages

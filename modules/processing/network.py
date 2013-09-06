@@ -4,7 +4,6 @@
 
 import os
 import re
-import sys
 import socket
 import logging
 from urlparse import urlunparse
@@ -183,7 +182,7 @@ class Pcap:
             query["request"] = q_name
             if q_type == dpkt.dns.DNS_A:
                 query["type"] = "A"
-            if q_type == dpkt.dns.DNS_AAAA:    
+            if q_type == dpkt.dns.DNS_AAAA:
                 query["type"] = "AAAA"
             elif q_type == dpkt.dns.DNS_CNAME:
                 query["type"] = "CNAME"
@@ -196,7 +195,7 @@ class Pcap:
             elif q_type == dpkt.dns.DNS_SOA:
                 query["type"] = "SOA"
             elif q_type == dpkt.dns.DNS_HINFO:
-                query["type"] = "HINFO"     
+                query["type"] = "HINFO"
             elif q_type == dpkt.dns.DNS_TXT:
                 query["type"] = "TXT"
             elif q_type == dpkt.dns.DNS_SRV:
@@ -208,10 +207,16 @@ class Pcap:
                 ans = {}
                 if answer.type == dpkt.dns.DNS_A:
                     ans["type"] = "A"
-                    ans["data"] = socket.inet_ntoa(answer.rdata)
+                    try:
+                        ans["data"] = socket.inet_ntoa(answer.rdata)
+                    except socket.error:
+                        continue
                 elif answer.type == dpkt.dns.DNS_AAAA:
                     ans["type"] = "AAAA"
-                    ans["data"] = socket.inet_ntop(socket.AF_INET6, answer.rdata)
+                    try:
+                        ans["data"] = socket.inet_ntop(socket.AF_INET6, answer.rdata)
+                    except (socket.error, ValueError):
+                        continue
                 elif answer.type == dpkt.dns.DNS_CNAME:
                     ans["type"] = "CNAME"
                     ans["data"] = answer.cname
@@ -223,19 +228,19 @@ class Pcap:
                     ans["data"] = answer.ptrname
                 elif answer.type == dpkt.dns.DNS_NS:
                     ans["type"] = "NS"
-                    ans["data"] = answer.nsname   
+                    ans["data"] = answer.nsname
                 elif answer.type == dpkt.dns.DNS_SOA:
                     ans["type"] = "SOA"
-                    ans["data"] = ",".join(answer.mname,
+                    ans["data"] = ",".join([answer.mname,
                                            answer.rname,
                                            str(answer.serial),
                                            str(answer.refresh),
                                            str(answer.retry),
                                            str(answer.expire),
-                                           str(answer.minimum)) 
+                                           str(answer.minimum)])
                 elif answer.type == dpkt.dns.DNS_HINFO:
                     ans["type"] = "HINFO"
-                    ans["data"] = " ".join(answer.text)             
+                    ans["data"] = " ".join(answer.text)
                 elif answer.type == dpkt.dns.DNS_TXT:
                     ans["type"] = "TXT"
                     ans["data"] = " ".join(answer.text)
@@ -276,7 +281,7 @@ class Pcap:
         if conn["dport"] == 25:
             self._reassemble_smtp(conn, data)
         # IRC.
-        if self._check_irc(data):
+        if conn["dport"] != 21 and self._check_irc(data):
             self._add_irc(data)
 
     def _udp_dissect(self, conn, data):
@@ -295,7 +300,7 @@ class Pcap:
         """
         try:
             req = ircMessage()
-        except Exception, why:
+        except Exception:
             return False
 
         return req.isthereIRC(tcpdata)
@@ -313,7 +318,7 @@ class Pcap:
             filters_sc = ["266"]
             filters_cc = []
             self.irc_requests = self.irc_requests + reqc.getClientMessages(tcpdata) + reqs.getServerMessagesFilter(tcpdata,filters_sc)
-        except Exception, why:
+        except Exception:
             return False
 
         return True

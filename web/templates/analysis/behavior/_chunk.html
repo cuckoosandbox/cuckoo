@@ -1,0 +1,43 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>API</th>
+            <th>Arguments</th>
+            <th>Status</th>
+            <th>Return</th>
+            <th>Repeated</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for call in chunk.calls %}
+        <tr class="{{call.category}}">
+            <td>{{call.timestamp}}</td>
+            <td><strong>{{call.api}}</strong></td>
+            <td style="word-wrap: break-word;">
+                {% for argument in call.arguments %}
+                    <span class="gray">{{argument.name}}:</span> <span class="mono">{{argument.value}}</span><br />
+                {% endfor %}
+            </td>
+            <td>
+                {% if call.status %}
+                    success
+                {% else %}
+                    failed
+                {% endif %}
+            </td>
+            <td><span class="mono">{{call.return}}</span></td>
+            <td>
+                {% if call.repeated > 0 %}
+                    {{call.repeated}}
+                    {% if call.repeated > 1 %}
+                        times
+                    {% else %}
+                        time
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

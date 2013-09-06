@@ -192,10 +192,10 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         # CSV format files are optional
         if self.server.cfg.resultserver.store_csvs:
-            self.logfd = open(os.path.join(self.storagepath, "logs", str(pid) + ".csv"), "w")
+            self.logfd = open(os.path.join(self.storagepath, "logs", str(pid) + ".csv"), "wb")
 
         # Netlog raw format is mandatory (postprocessing)
-        self.rawlogfd = open(os.path.join(self.storagepath, "logs", str(pid) + ".raw"), "w")
+        self.rawlogfd = open(os.path.join(self.storagepath, "logs", str(pid) + ".raw"), "wb")
         self.rawlogfd.write(self.startbuf)
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
@@ -213,7 +213,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         current_time = self.connect_time + datetime.timedelta(0,0, timediff*1000)
         timestring = logtime(current_time)
 
-        argumentstrings = ["{0}->{1}".format(argname, r) for argname, r in arguments]
+        argumentstrings = ["{0}->{1}".format(argname, repr(str(r))[1:-1]) for argname, r in arguments]
 
         if self.logfd:
             print >>self.logfd, ",".join("\"{0}\"".format(i) for i in [timestring, self.pid,
@@ -252,7 +252,7 @@ class FileUpload(object):
         if dir_part:
             try: create_folder(self.storagepath, dir_part)
             except CuckooOperationalError:
-                log.error("Unable to create folder %s" % folder)
+                log.error("Unable to create folder %s" % dir_part)
                 return False
 
         file_path = os.path.join(self.storagepath, buf.strip())
@@ -291,5 +291,5 @@ class LogHandler(object):
 
     def _open(self):
         if os.path.exists(self.logpath):
-            return open(self.logpath, "a")
-        return open(self.logpath, "w")
+            return open(self.logpath, "ab")
+        return open(self.logpath, "wb")
