@@ -392,11 +392,13 @@ class MAEC40Report(Report):
                 substituted_object = self.addHandleToMap(output_handle, input_object)
                 if substituted_object:
                     associated_objects_list.remove(input_object)
+                    associated_objects_list.remove(output_handle)
                     associated_objects_list.append(substituted_object)
             elif output_object:
                 substituted_object = self.addHandleToMap(output_handle, output_object)
                 if substituted_object:
                     associated_objects_list.remove(output_object)
+                    associated_objects_list.remove(output_handle)
                     associated_objects_list.append(substituted_object)
         # Corner case for certain calls with two output handles and input objects
         elif len(output_handles) == 2 and len(input_objects) == 2:
@@ -407,6 +409,7 @@ class MAEC40Report(Report):
                             substituted_object = self.addHandleToMap(output_handle, input_object)
                             if substituted_object:
                                 associated_objects_list.remove(input_object)
+                                associated_objects_list.remove(output_handle)
                                 associated_objects_list.append(substituted_object)
                 elif input_object["properties"]["xsi:type"] is "ProcessObjectType":
                     for output_handle in output_handles:
@@ -414,6 +417,7 @@ class MAEC40Report(Report):
                             substituted_object = self.addHandleToMap(output_handle, input_object)
                             if substituted_object:
                                 associated_objects_list.remove(input_object)
+                                associated_objects_list.remove(output_handle)
                                 associated_objects_list.append(substituted_object)
             
         # Handle the case where there is an input_handle
@@ -467,6 +471,9 @@ class MAEC40Report(Report):
             if handle_type not in self.handleMap:
                 self.handleMap[handle_type] = {}
             self.handleMap[handle_type][handle_id] = object_dict
+            # Add the Handle to the Mapped Object as a related object
+            handle_dict["relationship"] = {"value" : "Related_To", "xsi:type" : "cyboxVocabs:ObjectRelationshipVocab-1.0"}
+            object_dict["related_objects"] = [handle_dict]
             self.dynamic_bundle.add_object(Object.from_dict(object_dict), "Handle-mapped Objects")
             substituted_object["idref"] = object_dict["id"]
             substituted_object["association_type"]["value"] = "input"
