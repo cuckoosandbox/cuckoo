@@ -174,7 +174,7 @@ class MAEC40Report(Report):
     def addProcessTree(self):
         """Creates the ProcessTree corresponding to that observed by cuckoo.
         """
-        if "behavior" in self.results and "processtree" in self.results["behavior"]:
+        if "behavior" in self.results and "processtree" in self.results["behavior"] and self.options["processtree"]:
             # Process Tree TypedField Fix
             NS_LIST = cybox.utils.nsparser.NS_LIST + [
                 ('http://maec.mitre.org/XMLSchema/maec-bundle-4', 'maecBundle', 'http://maec.mitre.org/language/version4.0/maec_bundle_schema.xsd'),
