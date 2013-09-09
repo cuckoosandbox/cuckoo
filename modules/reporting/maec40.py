@@ -83,13 +83,13 @@ class MAEC40Report(Report):
         # Add the Bundle to the Subject
         self.subject.add_findings_bundle(self.dynamic_bundle)
         # Generate Static Analysis Bundles, if static results exist
-        if "static" in self.results and self.results["static"]:
+        if self.options["static"] and "static" in self.results and self.results["static"]:
             self.static_bundle = Bundle(self.id_generator.generate_bundle_id(), False, 4.0, "static analysis tool output")
             self.subject.add_findings_bundle(self.static_bundle) 
-        if "strings" in self.results and self.results["strings"]:
+        if self.options["strings"] and "strings" in self.results and self.results["strings"]:
             self.strings_bundle = Bundle(self.id_generator.generate_bundle_id(), False, 4.0, "static analysis tool output")
             self.subject.add_findings_bundle(self.strings_bundle)
-        if "virustotal" in self.results and self.results["virustotal"]:
+        if self.options["virustotal"] and "virustotal" in self.results and self.results["virustotal"]:
             self.virustotal_bundle = Bundle(self.id_generator.generate_bundle_id(), False, 4.0, "static analysis tool output")
             self.subject.add_findings_bundle(self.virustotal_bundle) 
 
@@ -803,7 +803,7 @@ class MAEC40Report(Report):
         self.subject.add_analysis(dynamic_analysis)
 
         # Add the static analysis
-        if self.results["static"]:
+        if self.options["static"] and self.results["static"]:
             static_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref" : self.static_bundle.id}))
             static_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             static_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
@@ -816,20 +816,20 @@ class MAEC40Report(Report):
             # Add the static file results
             self.static_bundle.add_object(self.createWinExecFileObj())
         # Add the strings analysis
-        if self.results["strings"]:
+        if self.options["strings"] and self.results["strings"]:
             strings_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref" : self.strings_bundle.id}))
             strings_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             strings_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
             strings_analysis.summary = StructuredText("Cuckoo Sandbox strings analysis of the malware instance object.")
             strings_analysis.add_tool(ToolInformation.from_dict({"id" : self.id_generator.generate_tool_id(),
-                                                                 "name" : "Cuckoo Sandbox Strings",
-                                                                 "version" : self.results["info"]["version"],
-                                                                 "vendor" : "http://www.cuckoosandbox.org"}))
+                                                                    "name" : "Cuckoo Sandbox Strings",
+                                                                    "version" : self.results["info"]["version"],
+                                                                    "vendor" : "http://www.cuckoosandbox.org"}))
             self.subject.add_analysis(strings_analysis)
             # Add the strings results
             self.strings_bundle.add_object(self.createFileStringsObj())
         # Add the VirusTotal analysis
-        if "virustotal" in self.results and self.results["virustotal"]:
+        if self.options["virustotal"] and "virustotal" in self.results and self.results["virustotal"]:
             virustotal_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref" : self.strings_bundle.id}))
             virustotal_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             virustotal_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
@@ -842,9 +842,9 @@ class MAEC40Report(Report):
             for engine, signature in self.results["virustotal"]["scans"].items():
                 if signature['detected']:
                     self.virustotal_bundle.add_av_classification(AVClassification.from_dict({"vendor" : engine,
-                                                                                             "engine_version" : signature["version"],
-                                                                                             "definition_version" : signature["update"],
-                                                                                             "classification_name" : signature["result"]}))
+                                                                                                "engine_version" : signature["version"],
+                                                                                                "definition_version" : signature["update"],
+                                                                                                "classification_name" : signature["result"]}))
         
     def addDroppedFiles(self):
         """Adds Dropped files as Objects."""
