@@ -490,6 +490,8 @@ class MAEC40Report(Report):
         if handle_id in self.handleMap["RegistryKey"]:
            handle_mapped_key = self.handleMap["RegistryKey"][handle_id]
            if "key" in handle_mapped_key["properties"]:
+               if "key" not in current_dict["properties"]:
+                   current_dict["properties"]["key"] = {}
                current_dict["properties"]["key"] = (handle_mapped_key["properties"]["key"] + "\\" + current_dict["properties"]["key"])
            if "hive" in handle_mapped_key["properties"]:
                # If we find the "HKEY_" then we assume we're done
