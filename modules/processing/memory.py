@@ -449,7 +449,7 @@ class VolatilityManager(object):
         self.taint_pid = set()
         self.memfile = memfile
 
-        conf_path = os.path.join(CUCKOO_ROOT, "conf", "volatility.conf")
+        conf_path = os.path.join(CUCKOO_ROOT, "conf", "memory.conf")
         if not os.path.exists(conf_path):
             log.error("Configuration file volatility.conf not found".format(conf_path))
             self.voptions = False
