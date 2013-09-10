@@ -17,6 +17,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Added new web interface, removed old web.py
 * Added Windows analyzer auxiliary module to disguise the analysis environment
 * Added VBS analysis package
+* Added generic analysis package to execute samples via cmd.exe
 * Refactored processing to improve performances
 * Refactored signature engine, introducing event-based signatures to improve performances
 * Transitioned network sniffer to auxiliary module
