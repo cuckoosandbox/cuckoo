@@ -642,3 +642,19 @@ PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS 
 FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+
+The file jquery.js is copyrighted by John Resig and dual licensed under the MIT or GPL
+Version 2 licenses (see: http://jquery.org/license).
+
+The files lightbox.js and lightbox.css are copyrighted by Lokesh Dhakar and licensed under
+the Creative Commons Attribution 2.5 License
+(see: http://creativecommons.org/licenses/by/2.5/).
+
+The files bootstrap-fileupload.js, jasny-bootstrap.js, jasny-bootstrap.min.js,
+jasny-bootstrap.css, jasny-bootstrap.min.css, jasny-bootstrap-responsive.css,
+jasny-bootstrap-responsive.min.css are copyrighted by Jasny BV and licensed under the Apache
+License, Version 2.0.
+
+The files bootstrap.min.js, bootstrap.min.css, bootstrap-responsive.min.css,
+glyphicons-halflings.png, glyphicons-halflings-white.png are copyrighted by Twitter, Inc.
+and licensed under the Apache License, Version 2.0.

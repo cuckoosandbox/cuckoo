@@ -1,0 +1,20 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>PID</th>
+            <th>Process Name</th>
+            <th>Start</th>
+            <th>Tag</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for mal in analysis.memory.malfind.data %}
+        <tr>
+            <td>{{mal.process_id}}</td>
+            <td>{{mal.process_name}}</td>
+            <td><span class="mono">{{mal.vad_start}}</span></td>
+            <td>{{mal.vad_tag}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

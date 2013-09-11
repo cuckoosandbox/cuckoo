@@ -9,7 +9,7 @@ Cuckoo Sandbox is an *Open Source* software for automating analysis of suspiciou
 To do so it makes use of custom components that monitor the behavior of the malicious
 processes while running in an isolated environment.
 
-This guide will explain you how to setup Cuckoo, use it and customize it.
+This guide will explain how to set up Cuckoo, use it and customize it.
 
 Having troubles?
 ================
@@ -21,7 +21,7 @@ it might already have the answers to your questions.
 
     faq/index
 
-Otherwise you can ask to the developers and to other Cuckoo users, see 
+Otherwise you can ask the developers and/or other Cuckoo users, see 
 :doc:`Join the discussion <finalremarks/index>`.
 
 Contents

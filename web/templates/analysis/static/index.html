@@ -1,0 +1,22 @@
+<div class="tabbable tabs">
+    <ul class="nav nav-pills" style="margin-bottom: 0;">
+        <li class="active"><a href="#static_analysis_tab" data-toggle="tab">Static Analysis</a></li>
+        <li><a href="#static_strings_tab" data-toggle="tab">Strings</a></li>
+        <li><a href="#static_antivirus_tab" data-toggle="tab">Antivirus</a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane fade in active" id="static_analysis_tab">
+            {% if "PE32" in analysis.target.file.type %}
+                {% include "analysis/static/_pe32.html" %}
+            {% else %}
+                No static analysis available.
+            {% endif %}
+        </div>
+        <div class="tab-pane fade" id="static_strings_tab">
+            {% include "analysis/static/_strings.html" %}
+        </div>
+        <div class="tab-pane fade" id="static_antivirus_tab">
+            {% include "analysis/static/_antivirus.html" %}
+        </div>
+    </div>
+</div>

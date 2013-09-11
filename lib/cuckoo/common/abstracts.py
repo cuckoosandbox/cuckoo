@@ -20,8 +20,31 @@ from lib.cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
 
-class MachineManager(object):
-    """Base abstract class for analysis machine manager."""
+class Auxiliary(object):
+    """Base abstract class for auxiliary modules."""
+
+    def __init__(self):
+        self.task = None
+        self.machine = None
+        self.options = None
+
+    def set_task(self, task):
+        self.task = task
+
+    def set_machine(self, machine):
+        self.machine = machine
+
+    def set_options(self, options):
+        self.options = options
+
+    def start(self):
+        raise NotImplementedError
+
+    def stop(self):
+        raise NotImplementedError
+
+class Machinery(object):
+    """Base abstract class for machinery modules."""
 
     def __init__(self):
         self.module_name = ""
@@ -60,16 +83,36 @@ class MachineManager(object):
                 machine_opts = self.options.get(machine_id.strip())
                 machine = Dictionary()
                 machine.id = machine_id.strip()
-                machine.label = machine_opts["label"].strip()
-                machine.platform = machine_opts["platform"].strip()
-                machine.ip = machine_opts["ip"].strip()
+                machine.label = machine_opts["label"]
+                machine.platform = machine_opts["platform"]
+                machine.tags = machine_opts.get("tags", None)
+                machine.ip = machine_opts["ip"]
+                # If configured, use specific network interface for this machine, else use the default value.
+                machine.interface = machine_opts.get("interface", None)
+                # If configured, use specific snapshot name, else leave it empty and use default behaviour.
+                machine.snapshot = machine_opts.get("snapshot", None)
+                # If configured, use specific resultserver IP and port, else use the default value.
+                machine.resultserver_ip = machine_opts.get("resultserver_ip", self.options_globals.resultserver.ip)
+                machine.resultserver_port = machine_opts.get("resultserver_port", self.options_globals.resultserver.port)
+
+                # Strip params.
+                for key in machine.keys():
+                    if machine[key]:
+                        # Only strip strings
+                        if isinstance(machine[key], str) or isinstance(machine[key], unicode):
+                            machine[key] = machine[key].strip()
 
                 self.db.add_machine(name=machine.id,
                                     label=machine.label,
                                     ip=machine.ip,
-                                    platform=machine.platform)
-            except (AttributeError, CuckooOperationalError):
-                log.warning("Configuration details about machine %s are missing. Continue", machine_id)
+                                    platform=machine.platform,
+                                    tags=machine.tags,
+                                    interface=machine.interface,
+                                    snapshot=machine.snapshot,
+                                    resultserver_ip=machine.resultserver_ip,
+                                    resultserver_port=machine.resultserver_port)
+            except (AttributeError, CuckooOperationalError) as e:
+                log.warning("Configuration details about machine %s are missing: %s", machine_id, e)
                 continue
 
     def _initialize_check(self):
@@ -104,18 +147,19 @@ class MachineManager(object):
         """
         return self.db.count_machines_available()
 
-    def acquire(self, machine_id=None, platform=None):
+    def acquire(self, machine_id=None, platform=None, tags=None):
         """Acquire a machine to start analysis.
         @param machine_id: machine ID.
         @param platform: machine platform.
+        @param tags: machine tags
         @return: machine or None.
         """
         if machine_id:
             return self.db.lock_machine(name=machine_id)
         elif platform:
-            return self.db.lock_machine(platform=platform)
+            return self.db.lock_machine(platform=platform, tags=tags)
         else:
-            return self.db.lock_machine()
+            return self.db.lock_machine(tags=tags)
 
     def release(self, label=None):
         """Release a machine.
@@ -198,7 +242,7 @@ class MachineManager(object):
             waitme += 1
             current = self._status(label)
 
-class LibVirtMachineManager(MachineManager):
+class LibVirtMachinery(Machinery):
     """Libvirt based machine manager.
 
     If you want to write a custom module for a virtualization software supported
@@ -217,14 +261,14 @@ class LibVirtMachineManager(MachineManager):
             import libvirt
         except ImportError:
             raise CuckooDependencyError("Unable to import libvirt")
-        super(LibVirtMachineManager, self).__init__()
+        super(LibVirtMachinery, self).__init__()
 
     def initialize(self, module):
         """Initialize machine manager module. Ovverride defualt to set proper
         connection string.
         @param module:  machine manager module
         """
-        super(LibVirtMachineManager, self).initialize(module)
+        super(LibVirtMachinery, self).initialize(module)
 
     def _initialize_check(self):
         """Runs all checks when a machine manager is initialized.
@@ -233,17 +277,19 @@ class LibVirtMachineManager(MachineManager):
         # Version checks.
         if not self._version_check():
             raise CuckooMachineError("Libvirt version is not supported, please get an updated version")
+
+        # Base checks.
+        super(LibVirtMachinery, self)._initialize_check()
+
         # Preload VMs
         self.vms = self._fetch_machines()
-        # Base checks.
-        super(LibVirtMachineManager, self)._initialize_check()
 
     def start(self, label):
         """Starts a virtual machine.
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to start virtual machine.
         """
-        log.debug("Staring machine %s", label)
+        log.debug("Starting machine %s", label)
         
         if self._status(label) == self.RUNNING:
             raise CuckooMachineError("Trying to start an already started machine {0}".format(label))
@@ -252,13 +298,25 @@ class LibVirtMachineManager(MachineManager):
         conn = self._connect()
 
         try:
-            snap = self.vms[label].hasCurrentSnapshot(flags=0)
-        except libvirt.libvirtError:
+            snapshots = self.vms[label].snapshotListNames(flags=0)
+            has_current = self.vms[label].hasCurrentSnapshot(flags=0)
+        except libvirt.libvirtError as e:
             self._disconnect(conn)
-            raise CuckooMachineError("Unable to get current snapshot for virtual machine {0}".format(label))
+            raise CuckooMachineError("Unable to get snapshot info for virtual machine {0}: {1}".format(label, e))
 
-        # Revert to latest snapshot.
-        if snap:
+        vm_info = self.db.view_machine_by_label(label)
+        if vm_info.snapshot and vm_info.snapshot in snapshots:
+            # Revert to desired snapshot, if it exists.
+            log.debug("Using snapshot {0} for virtual machine {1}".format(vm_info.snapshot, label))
+            try:
+                self.vms[label].revertToSnapshot(self.vms[label].snapshotLookupByName(vm_info.snapshot, flags=0), flags=0)
+            except libvirt.libvirtError:
+                raise CuckooMachineError("Unable to restore snapshot {0} on virtual machine {1}".format(vm_info.snapshot, label))
+            finally:
+                self._disconnect(conn)
+        elif has_current:
+            # Revert to current snapshot.
+            log.debug("Using current snapshot for virtual machine {0}".format(label)) 
             try:
                 current = self.vms[label].snapshotCurrent(flags=0)
                 self.vms[label].revertToSnapshot(current, flags=0)
@@ -298,7 +356,7 @@ class LibVirtMachineManager(MachineManager):
 
     def shutdown(self):
         """Override shutdown to free libvirt handlers, anyway they print errors."""
-        super(LibVirtMachineManager, self).shutdown()
+        super(LibVirtMachinery, self).shutdown()
         # Free handlers.
         self.vms = None
 
@@ -454,8 +512,7 @@ class Processing(object):
         """
         self.analysis_path = analysis_path
         self.log_path = os.path.join(self.analysis_path, "analysis.log")
-        self.file_path = os.path.realpath(os.path.join(self.analysis_path,
-                                                       "binary"))
+        self.file_path = os.path.realpath(os.path.join(self.analysis_path, "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
         self.logs_path = os.path.join(self.analysis_path, "logs")
         self.shots_path = os.path.join(self.analysis_path, "shots")
@@ -484,9 +541,16 @@ class Signature(object):
     minimum = None
     maximum = None
 
+    evented = False
+    filter_processnames = set()
+    filter_apinames = set()
+    filter_categories = set()
+
     def __init__(self, results=None):
         self.data = []
         self.results = results
+        self._current_call_cache = None
+        self._current_call_dict = None
 
     def _check_value(self, pattern, subject, regex=False):
         """Checks a pattern against a given subject.
@@ -574,6 +638,48 @@ class Signature(object):
 
         return None
 
+    def check_argument_call(self,
+                            call,
+                            pattern,
+                            name=None,
+                            api=None,
+                            category=None,
+                            regex=False):
+        """Checks for a specific argument of an invoked API.
+        @param call: API call information.
+        @param pattern: string or expression to check for.
+        @param name: optional filter for the argument name.
+        @param api: optional filter for the API function name.
+        @param category: optional filter for a category name.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        # Check if there's an API name filter.
+        if api:
+            if call["api"] != api:
+                return False
+
+        # Check if there's a category filter.
+        if category:
+            if call["category"] != category:
+                return False
+
+        # Loop through arguments.
+        for argument in call["arguments"]:
+            # Check if there's an argument name filter.
+            if name:
+                if argument["name"] != name:
+                    return False
+
+            # Check if the argument value matches.
+            if self._check_value(pattern=pattern,
+                                 subject=argument["value"],
+                                 regex=regex):
+                return argument["value"]
+
+        return False
+
     def check_argument(self,
                        pattern,
                        name=None,
@@ -600,28 +706,9 @@ class Signature(object):
 
             # Loop through API calls.
             for call in item["calls"]:
-                # Check if there's an API name filter.
-                if api:
-                    if call["api"] != api:
-                        continue
-
-                # Check if there's a category filter.
-                if category:
-                    if call["category"] != category:
-                        continue
-
-                # Loop through arguments.
-                for argument in call["arguments"]:
-                    # Check if there's an argument name filter.
-                    if name:
-                        if argument["name"] != name:
-                            continue
-
-                    # Check if the argument value matches.
-                    if self._check_value(pattern=pattern,
-                                         subject=argument["value"],
-                                         regex=regex):
-                        return argument["value"]
+                r = self.check_argument_call(call, pattern, name, api, category, regex)
+                if r:
+                    return r
 
         return None
 
@@ -666,12 +753,63 @@ class Signature(object):
 
         return None
 
+    def get_argument(self, call, name):
+        """Retrieves the value of a specific argument from an API call.
+        @param call: API call object.
+        @param name: name of the argument to retrieve.
+        @return: value of the requried argument.
+        """
+        # Check if the call passed to it was cached already.
+        # If not, we can start caching it and store a copy converted to a dict.
+        if call is not self._current_call_cache:
+            self._current_call_cache = call
+            self._current_call_dict = dict()
+
+            for argument in call["arguments"]:
+                self._current_call_dict[argument["name"]] = argument["value"]
+
+        # Return the required argument.
+        if name in self._current_call_dict:
+            return self._current_call_dict[name]
+
+        return None
+
+    def on_call(self, call, process):
+        """Notify signature about API call. Return value determines
+        if this signature is done or could still match.
+        @param call: logged API call.
+        @param process: process doing API call.
+        @raise NotImplementedError: this method is abstract.
+        """
+        raise NotImplementedError
+
+    def on_complete(self):
+        """Evented signature is notified when all API calls are done.
+        @return: Match state.
+        @raise NotImplementedError: this method is abstract.
+        """
+        raise NotImplementedError
+
     def run(self):
         """Start signature processing.
         @param results: analysis results.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
+
+    def as_result(self):
+        """Properties as a dict (for results).
+        @return: result dictionary.
+        """
+        return dict(
+            name=self.name,
+            description=self.description,
+            severity=self.severity,
+            references=self.references,
+            data=self.data,
+            alert=self.alert,
+            families=self.families
+        )
 
 class Report(object):
     """Base abstract class for reporting module."""
@@ -689,8 +827,7 @@ class Report(object):
         """
         self.analysis_path = analysis_path
         self.conf_path = os.path.join(self.analysis_path, "analysis.conf")
-        self.file_path = os.path.realpath(os.path.join(self.analysis_path,
-                                                       "binary"))
+        self.file_path = os.path.realpath(os.path.join(self.analysis_path, "binary"))
         self.reports_path = os.path.join(self.analysis_path, "reports")
         self.shots_path = os.path.join(self.analysis_path, "shots")
         self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")

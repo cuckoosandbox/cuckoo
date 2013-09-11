@@ -57,6 +57,9 @@ On 24th July 2012, Cuckoo Sandbox 0.4 is released.
 
 On 20th December 2012, Cuckoo Sandbox 0.5 "To The End Of The World" is released.
 
+On 15th April 2013 we released Cuckoo Sandbox 0.6, shortly after having launched
+the second version of `Malwr.com`_.
+
 .. _`Google Summer of Code`: http://www.google-melange.com
 .. _`The Honeynet Project`: http://www.honeynet.org
 .. _`Malwr.com`: http://malwr.com

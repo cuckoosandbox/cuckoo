@@ -13,8 +13,9 @@ try:
     from pymongo.errors import ConnectionFailure, InvalidDocument
     from gridfs import GridFS
     from gridfs.errors import FileExists
+    HAVE_MONGO = True
 except ImportError:
-    raise CuckooDependencyError("Unable to import pymongo")
+    HAVE_MONGO = False
 
 class MongoDB(Report):
     """Stores report in MongoDB."""
@@ -64,18 +65,29 @@ class MongoDB(Report):
         @param results: analysis results dictionary.
         @raise CuckooReportError: if fails to connect or write to MongoDB.
         """
+        if not HAVE_MONGO:
+          raise CuckooDependencyError("Unable to import pymongo")
+
         self.connect()
+
+        # Set an unique index on stored files, to avoid duplicates.
+        # From pymongo docs:
+        #  Returns the name of the created index if an index is actually created.
+        #  Returns None if the index already exists.
+        self.db.fs.files.ensure_index("sha256", unique=True, sparse=True, name="sha256_unique")
 
         # Create a copy of the dictionary. This is done in order to not modify
         # the original dictionary and possibly compromise the following
         # reporting modules.
         report = dict(results)
 
-        # Set an unique index on stored files, to avoid duplicates.
-        # From pymongo docs:
-        #  Returns the name of the created index if an index is actually created. 
-        #  Returns None if the index already exists.
-        self.db.fs.files.ensure_index("sha256", unique=True, name="sha256_unique")
+        # Store the sample in GridFS.
+        if results["info"]["category"] == "file":
+            sample = File(self.file_path)
+            if sample.valid():
+                sample_id = self.store_file(sample, filename=results["target"]["file"]["name"])
+                report["target"] = {"file_id" : sample_id}
+                report["target"].update(results["target"])
 
         # Store the PCAP file in GridFS and reference it back in the report.
         pcap_path = os.path.join(self.analysis_path, "dump.pcap")
@@ -153,5 +165,5 @@ class MongoDB(Report):
         report["behavior"]["processes"] = new_processes
 
         # Store the report and retrieve its object id.
-        self.db.analysis.insert(report)
+        self.db.analysis.save(report)
         self.conn.disconnect()

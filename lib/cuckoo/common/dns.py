@@ -55,7 +55,7 @@ def with_timeout(func, args=(), kwargs={}):
     if it.isAlive():
         return DNS_TIMEOUT_VALUE
     else:
-        if it.error: raise e
+        if it.error: raise it.error
         return it.result
 
 def resolve_thread(name):
