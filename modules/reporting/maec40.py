@@ -6,7 +6,6 @@ import os
 import hashlib
 import re
 import traceback
-import pprint
 from collections import defaultdict
 
 import cybox
@@ -421,41 +420,40 @@ class MAEC40Report(Report):
             
         # Handle the case where there is an input_handle
         # Lookup the handle and replace it with the appropriate object if we've seen it before
-        if input_handles:
-            for input_handle in input_handles:
-                if "type" in input_handle["properties"]:
-                    handle_type = input_handle["properties"]["type"]
-                    handle_id = input_handle["properties"]["id"] 
-                    if handle_type in self.handleMap and handle_id in self.handleMap[handle_type]:
-                        merged_objects = False
-                        mapped_object = self.handleMap[handle_type][handle_id]
-                        # If the input object is of the same type, then "merge" them into a new object
-                        for input_object in input_objects:
-                            if input_object["properties"]["xsi:type"] == mapped_object["properties"]["xsi:type"]:
-                                merged_dict = defaultdict(dict)
-                                for k, v in input_object.iteritems():
-                                    if isinstance(v, dict):
-                                        merged_dict[k].update(v)
-                                    else:
-                                        merged_dict[k] = v
-                                for k, v in mapped_object.iteritems():
-                                    if isinstance(v, dict):
-                                        merged_dict[k].update(v)
-                                    else:
-                                        merged_dict[k] = v
-                                # Assign the merged object a new ID
-                                merged_dict["id"] = self.id_generator.generate_object_id()
-                                # Add the new object to the list of associated objects
-                                associated_objects_list.remove(input_handle)
-                                associated_objects_list.remove(input_object)
-                                associated_objects_list.append(merged_dict)
-                                merged_objects = True
-                        # Otherwise, add the existing object via a reference
-                        if not merged_objects:   
-                            substituted_object = {"idref" : mapped_object["id"], 
-                                                    "association_type" : {"value" : "input", "xsi:type" : "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}}
+        for input_handle in input_handles:
+            if "type" in input_handle["properties"]:
+                handle_type = input_handle["properties"]["type"]
+                handle_id = input_handle["properties"]["id"] 
+                if handle_type in self.handleMap and handle_id in self.handleMap[handle_type]:
+                    merged_objects = False
+                    mapped_object = self.handleMap[handle_type][handle_id]
+                    # If the input object is of the same type, then "merge" them into a new object
+                    for input_object in input_objects:
+                        if input_object["properties"]["xsi:type"] == mapped_object["properties"]["xsi:type"]:
+                            merged_dict = defaultdict(dict)
+                            for k, v in input_object.iteritems():
+                                if isinstance(v, dict):
+                                    merged_dict[k].update(v)
+                                else:
+                                    merged_dict[k] = v
+                            for k, v in mapped_object.iteritems():
+                                if isinstance(v, dict):
+                                    merged_dict[k].update(v)
+                                else:
+                                    merged_dict[k] = v
+                            # Assign the merged object a new ID
+                            merged_dict["id"] = self.id_generator.generate_object_id()
+                            # Add the new object to the list of associated objects
                             associated_objects_list.remove(input_handle)
-                            associated_objects_list.append(substituted_object)
+                            associated_objects_list.remove(input_object)
+                            associated_objects_list.append(merged_dict)
+                            merged_objects = True
+                    # Otherwise, add the existing object via a reference
+                    if not merged_objects:   
+                        substituted_object = {"idref" : mapped_object["id"], 
+                                                "association_type" : {"value" : "input", "xsi:type" : "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}}
+                        associated_objects_list.remove(input_handle)
+                        associated_objects_list.append(substituted_object)
         return associated_objects_list
 
     def addHandleToMap(self, handle_dict, object_dict):
