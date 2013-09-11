@@ -361,7 +361,7 @@ class MAEC40Report(Report):
         # Add the named object collections if they do not exist
         if not self.dynamic_bundle.collections.object_collections.has_collection("Handle-mapped Objects"):
             self.dynamic_bundle.add_named_object_collection("Handle-mapped Objects", self.id_generator.generate_object_collection_id())
-        if not self.dynamic_bundle.collections.object_collections.has_collection("Windows Handles"):
+        if self.options["output_handles"] and not self.dynamic_bundle.collections.object_collections.has_collection("Windows Handles"):
             self.dynamic_bundle.add_named_object_collection("Windows Handles", self.id_generator.generate_object_collection_id())
         # Determine the types of objects we're dealing with
         for associated_object_dict in associated_objects_list:
@@ -384,25 +384,22 @@ class MAEC40Report(Report):
         if not input_handles and not output_handles:
             return associated_objects_list
         # Handle the case where there is an input object and output handle
-        # Equivalent to cases with an output object and output handle
-        if (input_objects or output_object) and len(output_handles) == 1 and len(input_objects) == 1:
-            input_object = input_objects[0]
+        # Also handle the case where there is an output handle and output object
+        if len(output_handles) == 1:
+            mapped_object = None
             output_handle = output_handles[0]
-            if input_object:
-                # Add the handle to the mapping and get the substituted object
-                substituted_object = self.addHandleToMap(output_handle, input_object)
-                if substituted_object:
-                    associated_objects_list.remove(input_object)
-                    associated_objects_list.remove(output_handle)
-                    associated_objects_list.append(substituted_object)
+            if len(input_objects) == 1:
+                mapped_object = input_objects[0]
             elif output_object:
-                # Add the handle to the mapping and get the substituted object
-                substituted_object = self.addHandleToMap(output_handle, output_object)
+                mapped_object = output_object
+            # Add the handle to the mapping and get the substituted object
+            if mapped_object:
+                substituted_object = self.addHandleToMap(output_handle, mapped_object)
                 if substituted_object:
-                    associated_objects_list.remove(output_object)
+                    associated_objects_list.remove(mapped_object)
                     associated_objects_list.remove(output_handle)
                     associated_objects_list.append(substituted_object)
-        # Corner case for certain calls with two output handles and input objects
+        # Handle the corner case for certain calls with two output handles and input objects
         elif len(output_handles) == 2 and len(input_objects) == 2:
             for input_object in input_objects:
                 if input_object["properties"]["xsi:type"] is "WindowsThreadObjectType":
@@ -470,21 +467,21 @@ class MAEC40Report(Report):
         if "type" in handle_dict["properties"]:
             handle_type = handle_dict["properties"]["type"]
             handle_id = handle_dict["properties"]["id"]
-            substituted_object = {"idref" : "", 
-                                    "association_type" : {"value" : "", "xsi:type" : "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}}
+            substituted_object = {"idref" : object_dict["id"],
+                                  "association_type" : object_dict["association_type"]}
             if handle_type not in self.handleMap:
                 self.handleMap[handle_type] = {}
             self.handleMap[handle_type][handle_id] = object_dict
             # Add the Handle to the Mapped Object as a related object
-            handle_reference_dict = {}
-            handle_reference_dict["relationship"] = {"value" : "Related_To", "xsi:type" : "cyboxVocabs:ObjectRelationshipVocab-1.0"}
-            handle_reference_dict["idref"] = handle_dict["id"]
-            object_dict["related_objects"] = [handle_reference_dict]
+            # This is optional, as the handles themselves may not be very useful
+            if self.options["output_handles"]:
+                handle_reference_dict = {}
+                handle_reference_dict["relationship"] = {"value" : "Related_To", "xsi:type" : "cyboxVocabs:ObjectRelationshipVocab-1.0"}
+                handle_reference_dict["idref"] = handle_dict["id"]
+                object_dict["related_objects"] = [handle_reference_dict]
             # Add the Objects to their corresponding Collections
-            self.dynamic_bundle.add_object(Object.from_dict(handle_dict), "Windows Handles")
+                self.dynamic_bundle.add_object(Object.from_dict(handle_dict), "Windows Handles")
             self.dynamic_bundle.add_object(Object.from_dict(object_dict), "Handle-mapped Objects")
-            substituted_object["idref"] = object_dict["id"]
-            substituted_object["association_type"]["value"] = "input"
             return substituted_object
         return None
 
