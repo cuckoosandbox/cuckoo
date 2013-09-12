@@ -499,19 +499,19 @@ class MAEC40Report(Report):
         @param current_dict: the dictionary containing the properties of the current key
         """
         if "RegistryKey" in self.handleMap and handle_id in self.handleMap["RegistryKey"]:
-           handle_mapped_key = self.handleMap["RegistryKey"][handle_id]
-           if "key" in handle_mapped_key["properties"]:
-               if "key" not in current_dict["properties"]:
-                   current_dict["properties"]["key"] = ''
-               current_dict["properties"]["key"] = (handle_mapped_key["properties"]["key"] + "\\" + current_dict["properties"]["key"])
-           if "hive" in handle_mapped_key["properties"]:
-               # If we find the "HKEY_" then we assume we're done
-               if "HKEY_" in handle_mapped_key["properties"]["hive"]:
-                   current_dict["properties"]["hive"] = handle_mapped_key["properties"]["hive"]
-                   return current_dict
-               # If not, then we assume the hive refers to a Handle so we recurse
-               else:
-                   self.processRegKeyHandle(handle_mapped_key["properties"]["hive"], current_dict)
+            handle_mapped_key = self.handleMap["RegistryKey"][handle_id]
+            if "key" in handle_mapped_key["properties"]:
+                if "key" not in current_dict["properties"]:
+                    current_dict["properties"]["key"] = ''
+                current_dict["properties"]["key"] = (handle_mapped_key["properties"]["key"] + "\\" + current_dict["properties"]["key"])
+            if "hive" in handle_mapped_key["properties"]:
+                # If we find the "HKEY_" then we assume we're done
+                if "HKEY_" in handle_mapped_key["properties"]["hive"]:
+                    current_dict["properties"]["hive"] = handle_mapped_key["properties"]["hive"]
+                    return current_dict
+                # If not, then we assume the hive refers to a Handle so we recurse
+                else:
+                    self.processRegKeyHandle(handle_mapped_key["properties"]["hive"], current_dict)
         else:
             return current_dict
 
