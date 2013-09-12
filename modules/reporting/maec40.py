@@ -25,7 +25,7 @@ from maec.package.analysis import Analysis
 from maec.utils import MAECNamespaceParser
 from maec40_mappings import api_call_mappings, hiveHexToString,\
     socketTypeToString, socketProtoToString, socketAFToString,\
-    regDatatypeToString
+    regDatatypeToString, intToHex
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
@@ -326,6 +326,9 @@ class MAEC40Report(Report):
             values_dict = {}
             for parameter_mapping in nested_group_dict["parameter_mappings"]:
                 parameter_value = self.getParameterValue(parameter_list, parameter_mapping["parameter_name"])
+                # Handle any values that require post-processing (via external functions)
+                if "post_processing" in parameter_mapping:
+                     parameter_value = globals()[parameter_mapping["post_processing"]](parameter_value)
                 # Make sure the parameter value is set
                 if parameter_value and "/" not in parameter_mapping["element_name"]:
                     values_dict[parameter_mapping["element_name"].lower()] = parameter_value
