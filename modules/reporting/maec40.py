@@ -33,9 +33,9 @@ from lib.cuckoo.common.utils import datetime_to_iso
 class MAEC40Report(Report):
     """Generates a MAEC 4.0 report.
        Output modes:
-       mode = "full" : Output fully mapped Actions along with Action Implementations
-       mode = "overview" : Output only fully mapped Actions with no Action Implementations
-       mode = "api" : Output only Actions with Action Implementations, but no mapped components
+       mode = "full": Output fully mapped Actions along with Action Implementations
+       mode = "overview": Output only fully mapped Actions with no Action Implementations
+       mode = "api": Output only Actions with Action Implementations, but no mapped components
     """
 
     def run(self, results):
@@ -102,22 +102,22 @@ class MAEC40Report(Report):
                 if not self.dynamic_bundle.collections.action_collections.has_collection("Network Actions"):
                     self.dynamic_bundle.add_named_action_collection("Network Actions", self.id_generator.generate_action_collection_id())
                 for network_data in self.results["network"]["udp"]:
-                    self.createActionNet(network_data, {"value" : "connect to socket address", "xsi:type" : "maecVocabs:NetworkActionNameVocab-1.0"}, "UDP")
+                    self.createActionNet(network_data, {"value": "connect to socket address", "xsi:type": "maecVocabs:NetworkActionNameVocab-1.0"}, "UDP")
             if "dns" in self.results["network"] and isinstance(self.results["network"]["dns"], list) and len(self.results["network"]["dns"]) > 0:
                 if not self.dynamic_bundle.collections.action_collections.has_collection("Network Actions"):
                     self.dynamic_bundle.add_named_action_collection("Network Actions", self.id_generator.generate_action_collection_id())
                 for network_data in self.results["network"]["dns"]:
-                    self.createActionNet(network_data, {"value" : "send dns query", "xsi:type" : "maecVocabs:DNSActionNameVocab-1.0"}, "UDP", "DNS")
+                    self.createActionNet(network_data, {"value": "send dns query", "xsi:type": "maecVocabs:DNSActionNameVocab-1.0"}, "UDP", "DNS")
             if "tcp" in self.results["network"] and isinstance(self.results["network"]["tcp"], list) and len(self.results["network"]["tcp"]) > 0:
                 if not self.dynamic_bundle.collections.action_collections.has_collection("Network Actions"):
                     self.dynamic_bundle.add_named_action_collection("Network Actions", self.id_generator.generate_action_collection_id())
                 for network_data in self.results["network"]["tcp"]:
-                    self.createActionNet(network_data, {"value" : "connect to socket address", "xsi:type" : "maecVocabs:NetworkActionNameVocab-1.0"}, "TCP")
+                    self.createActionNet(network_data, {"value": "connect to socket address", "xsi:type": "maecVocabs:NetworkActionNameVocab-1.0"}, "TCP")
             if "http" in self.results["network"] and isinstance(self.results["network"]["http"], list) and len(self.results["network"]["http"]) > 0:
                 if not self.dynamic_bundle.collections.action_collections.has_collection("Network Actions"):
                     self.dynamic_bundle.add_named_action_collection("Network Actions", self.id_generator.generate_action_collection_id())
                 for network_data in self.results["network"]["http"]:
-                    self.createActionNet(network_data, {"value" : "send http " + str(network_data["method"]).lower() + " request", "xsi:type" : "maecVocabs:HTTPActionNameVocab-1.0"}, "TCP", "HTTP")
+                    self.createActionNet(network_data, {"value": "send http " + str(network_data["method"]).lower() + " request", "xsi:type": "maecVocabs:HTTPActionNameVocab-1.0"}, "TCP", "HTTP")
 
     def createActionNet(self, network_data, action_name, layer4_protocol = None, layer7_protocol = None):
         """Create a network Action.
@@ -129,43 +129,43 @@ class MAEC40Report(Report):
         if ":" in network_data.get("dst", ""): dst_category = "ipv6-addr"
         # Construct the various dictionaries
         if layer7_protocol is not None:
-            object_properties = {"xsi:type" : "NetworkConnectionObjectType",
-                                 "layer4_protocol" : {"value" : layer4_protocol, "force_datatype" : True},
-                                 "layer7_protocol" : {"value" : layer7_protocol, "force_datatype" : True}}
+            object_properties = {"xsi:type": "NetworkConnectionObjectType",
+                                 "layer4_protocol": {"value": layer4_protocol, "force_datatype": True},
+                                 "layer7_protocol": {"value": layer7_protocol, "force_datatype": True}}
         else:
-            object_properties = {"xsi:type" : "NetworkConnectionObjectType",
-                                 "layer4_protocol" : {"value" : layer4_protocol, "force_datatype" : True}}
-        associated_object = {"id" : self.id_generator.generate_object_id(), "properties": object_properties}
+            object_properties = {"xsi:type": "NetworkConnectionObjectType",
+                                 "layer4_protocol": {"value": layer4_protocol, "force_datatype": True}}
+        associated_object = {"id": self.id_generator.generate_object_id(), "properties": object_properties}
         # General network connection properties
         if layer7_protocol == None:
-            object_properties["source_socket_address"] = {"ip_address" : {"category" : src_category, "address_value" : network_data["src"]},
-                                                          "port" : {"port_value" : network_data["sport"]}}
-            object_properties["destination_socket_address"] = {"ip_address" : {"category" : dst_category, "address_value" : network_data["dst"]},
-                                                          "port" : {"port_value" : network_data["dport"]}}
+            object_properties["source_socket_address"] = {"ip_address": {"category": src_category, "address_value": network_data["src"]},
+                                                          "port": {"port_value": network_data["sport"]}}
+            object_properties["destination_socket_address"] = {"ip_address": {"category": dst_category, "address_value": network_data["dst"]},
+                                                          "port": {"port_value": network_data["dport"]}}
         # Layer 7-specific object properties
         if layer7_protocol == "DNS":
             answer_resource_records = []
             for answer_record in network_data["answers"]:
-                answer_resource_records.append({"entity_type" : answer_record["type"],
-                                                "record_data" : answer_record["data"]})
-            object_properties["layer7_connections"] = {"dns_queries" : [{"question" : {"qname" : {"value" : network_data["request"]},
-                                                                                       "qtype" : network_data["type"]},
-                                                                         "answer_resource_records" : answer_resource_records}]}
+                answer_resource_records.append({"entity_type": answer_record["type"],
+                                                "record_data": answer_record["data"]})
+            object_properties["layer7_connections"] = {"dns_queries": [{"question": {"qname": {"value": network_data["request"]},
+                                                                                       "qtype": network_data["type"]},
+                                                                         "answer_resource_records": answer_resource_records}]}
         elif layer7_protocol == "HTTP":
-            object_properties["layer7_connections"] = {"http_session" :
-                                                       {"http_request_response" : [{"http_client_request": {"http_request_line" : {"http_method" : network_data["method"],
-                                                                                                                                    "value" : network_data["path"],
-                                                                                                                                    "version" : network_data["version"]},
-                                                                                                             "http_request_header" : {"parsed_header" : {"user_agent" : network_data["user-agent"],
-                                                                                                                                                         "host" : {"domain_name" : {"value" : network_data["host"]},
-                                                                                                                                                                   "port" : {"port_value" : network_data["port"]}}}},
-                                                                                                             "http_message_body" : {"message_body" : network_data["body"]}}
+            object_properties["layer7_connections"] = {"http_session":
+                                                       {"http_request_response": [{"http_client_request": {"http_request_line": {"http_method": network_data["method"],
+                                                                                                                                    "value": network_data["path"],
+                                                                                                                                    "version": network_data["version"]},
+                                                                                                             "http_request_header": {"parsed_header": {"user_agent": network_data["user-agent"],
+                                                                                                                                                         "host": {"domain_name": {"value": network_data["host"]},
+                                                                                                                                                                   "port": {"port_value": network_data["port"]}}}},
+                                                                                                             "http_message_body": {"message_body": network_data["body"]}}
                                                                                      }
                                                                                     ]}
                                                        }
-        action_dict = {"id" : self.id_generator.generate_malware_action_id(),
-                       "name" : action_name,
-                       "associated_objects" : [associated_object]}
+        action_dict = {"id": self.id_generator.generate_malware_action_id(),
+                       "name": action_name,
+                       "associated_objects": [associated_object]}
         # Add the Action to the dynamic analysis bundle
         self.dynamic_bundle.add_action(MalwareAction.from_dict(action_dict), "Network Actions")
 
@@ -185,23 +185,23 @@ class MAEC40Report(Report):
             root_node = self.results["behavior"]["processtree"][0]
 
             if root_node:
-                root_node_dict = {"id" : self.id_generator.generate_process_tree_node_id(),
-                                  "pid" : root_node["pid"],
-                                  "name" : root_node["name"],
-                                  "initiated_actions" : self.pidActionMap[root_node["pid"]],
-                                  "spawned_processes" : [self.createProcessTreeNode(child_process) for child_process in root_node["children"]]}
+                root_node_dict = {"id": self.id_generator.generate_process_tree_node_id(),
+                                  "pid": root_node["pid"],
+                                  "name": root_node["name"],
+                                  "initiated_actions": self.pidActionMap[root_node["pid"]],
+                                  "spawned_processes": [self.createProcessTreeNode(child_process) for child_process in root_node["children"]]}
 
-                self.dynamic_bundle.set_process_tree(ProcessTree.from_dict({"root_process" : root_node_dict}))
+                self.dynamic_bundle.set_process_tree(ProcessTree.from_dict({"root_process": root_node_dict}))
 
     def createProcessTreeNode(self, process):
         """Creates a single ProcessTreeNode corresponding to a single node in the tree observed cuckoo.
         @param process: process from cuckoo dict.
         """
-        process_node_dict = {"id" : self.id_generator.generate_process_tree_node_id(),
-                             "pid" : process["pid"],
-                             "name" : process["name"],
-                             "initiated_actions" : self.pidActionMap[process["pid"]],
-                             "spawned_processes" : [self.createProcessTreeNode(child_process) for child_process in process["children"]]}
+        process_node_dict = {"id": self.id_generator.generate_process_tree_node_id(),
+                             "pid": process["pid"],
+                             "name": process["name"],
+                             "initiated_actions": self.pidActionMap[process["pid"]],
+                             "spawned_processes": [self.createProcessTreeNode(child_process) for child_process in process["children"]]}
         return process_node_dict
 
     def apiCallToAction(self, call, pos):
@@ -215,9 +215,9 @@ class MAEC40Report(Report):
         # Add the action parameter arguments
         apos = 1
         for arg in call["arguments"]:
-            parameter_list.append({"ordinal_position" : apos,
-                                   "name" : arg["name"],
-                                   "value" : self._illegal_xml_chars_RE.sub("?", arg["value"])
+            parameter_list.append({"ordinal_position": apos,
+                                   "name": arg["name"],
+                                   "value": self._illegal_xml_chars_RE.sub("?", arg["value"])
                                         })
             apos = apos + 1
         # Try to add the mapped Action Name
@@ -225,9 +225,9 @@ class MAEC40Report(Report):
             mapping_dict = api_call_mappings[call["api"]]
             # Handle the Action Name
             if "action_vocab" in mapping_dict:
-                action_dict["name"] = {"value" : mapping_dict["action_name"], "xsi:type" : mapping_dict["action_vocab"]}
+                action_dict["name"] = {"value": mapping_dict["action_name"], "xsi:type": mapping_dict["action_vocab"]}
             else:
-                action_dict["name"] = {"value" : mapping_dict["action_name"]}
+                action_dict["name"] = {"value": mapping_dict["action_name"]}
         # Try to add the mapped Action Arguments and Associated Objects
         # Only output in "overview" or "full" modes
         if self.options["mode"].lower() == "overview" or self.options["mode"].lower() == "full":
@@ -236,9 +236,9 @@ class MAEC40Report(Report):
                 mapping_dict = api_call_mappings[call["api"]]
                 # Handle the Action Name
                 if "action_vocab" in mapping_dict:
-                    action_dict["name"] = {"value" : mapping_dict["action_name"], "xsi:type" : mapping_dict["action_vocab"]}
+                    action_dict["name"] = {"value": mapping_dict["action_name"], "xsi:type": mapping_dict["action_vocab"]}
                 else:
-                    action_dict["name"] = {"value" : mapping_dict["action_name"]}
+                    action_dict["name"] = {"value": mapping_dict["action_name"]}
                 # Handle any Parameters
                 if "parameter_associated_arguments" in mapping_dict:
                     action_dict["action_arguments"] = self.processActionArguments(mapping_dict["parameter_associated_arguments"], parameter_list)
@@ -264,16 +264,16 @@ class MAEC40Report(Report):
         """
         # Generate the API Call dictionary
         if len(parameter_list) > 0:
-            api_call_dict = {"function_name" : call["api"],
-                                "return_value" : call["return"],
-                                "parameters" : parameter_list}
+            api_call_dict = {"function_name": call["api"],
+                                "return_value": call["return"],
+                                "parameters": parameter_list}
         else:
-            api_call_dict = {"function_name" : call["api"],
-                                "return_value" : call["return"]}
+            api_call_dict = {"function_name": call["api"],
+                                "return_value": call["return"]}
         # Generate the action implementation dictionary
-        action_implementation_dict = {"id" : self.id_generator.generate_action_implementation_id(),
-                                        "type" : "api call",
-                                        "api_call" : api_call_dict}
+        action_implementation_dict = {"id": self.id_generator.generate_action_implementation_id(),
+                                        "type": "api call",
+                                        "api_call": api_call_dict}
         return action_implementation_dict
 
     def processActionArguments(self, parameter_mappings_dict, parameter_list):
@@ -286,15 +286,15 @@ class MAEC40Report(Report):
             parameter_name = call_parameter["name"]
             argument_value = call_parameter["value"]
             # Make sure the argument value is set, otherwise skip this parameter
-            if not argument_value :
+            if not argument_value:
                 continue
             if parameter_name in parameter_mappings_dict and "associated_argument_vocab" in parameter_mappings_dict[parameter_name]:
-                arguments_list.append({"argument_value" : argument_value,
-                                        "argument_name" : {"value" : parameter_mappings_dict[parameter_name]["associated_argument_name"],
-                                                            "xsi:type" : parameter_mappings_dict[parameter_name]["associated_argument_vocab"]}})
+                arguments_list.append({"argument_value": argument_value,
+                                        "argument_name": {"value": parameter_mappings_dict[parameter_name]["associated_argument_name"],
+                                                            "xsi:type": parameter_mappings_dict[parameter_name]["associated_argument_vocab"]}})
             elif parameter_name in parameter_mappings_dict and "associated_argument_vocab" not in parameter_mappings_dict[parameter_name]:
-                arguments_list.append({"argument_value" : argument_value,
-                                        "argument_name" : {"value" : parameter_mappings_dict[parameter_name]["associated_argument_name"]}})
+                arguments_list.append({"argument_value": argument_value,
+                                        "argument_name": {"value": parameter_mappings_dict[parameter_name]["associated_argument_name"]}})
         return arguments_list
 
     def processActionAssociatedObjects(self, associated_objects_dict, parameter_list):
@@ -449,8 +449,8 @@ class MAEC40Report(Report):
                             merged_objects = True
                     # Otherwise, add the existing object via a reference
                     if not merged_objects:
-                        substituted_object = {"idref" : mapped_object["id"],
-                                                "association_type" : {"value" : "input", "xsi:type" : "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}}
+                        substituted_object = {"idref": mapped_object["id"],
+                                                "association_type": {"value": "input", "xsi:type": "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}}
                         associated_objects_list.remove(input_handle)
                         associated_objects_list.append(substituted_object)
         return associated_objects_list
@@ -464,8 +464,8 @@ class MAEC40Report(Report):
         if "type" in handle_dict["properties"]:
             handle_type = handle_dict["properties"]["type"]
             handle_id = handle_dict["properties"]["id"]
-            substituted_object = {"idref" : object_dict["id"],
-                                  "association_type" : object_dict["association_type"]}
+            substituted_object = {"idref": object_dict["id"],
+                                  "association_type": object_dict["association_type"]}
             if handle_type not in self.handleMap:
                 self.handleMap[handle_type] = {}
             self.handleMap[handle_type][handle_id] = object_dict
@@ -473,7 +473,7 @@ class MAEC40Report(Report):
             # This is optional, as the handles themselves may not be very useful
             if self.options["output_handles"]:
                 handle_reference_dict = {}
-                handle_reference_dict["relationship"] = {"value" : "Related_To", "xsi:type" : "cyboxVocabs:ObjectRelationshipVocab-1.0"}
+                handle_reference_dict["relationship"] = {"value": "Related_To", "xsi:type": "cyboxVocabs:ObjectRelationshipVocab-1.0"}
                 handle_reference_dict["idref"] = handle_dict["id"]
                 object_dict["related_objects"] = [handle_reference_dict]
             # Add the Objects to their corresponding Collections
@@ -525,7 +525,7 @@ class MAEC40Report(Report):
             associated_object_dict["properties"] = {}
         # Set the Association Type if it has not been set already
         if "association_type" not in associated_object_dict:
-            associated_object_dict["association_type"] = {"value" : parameter_mapping_dict["association_type"], "xsi:type" : "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}
+            associated_object_dict["association_type"] = {"value": parameter_mapping_dict["association_type"], "xsi:type": "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}
         # Handle any values that require post-processing (via external functions)
         if "post_processing" in parameter_mapping_dict:
             parameter_value = globals()[parameter_mapping_dict["post_processing"]](parameter_value)
@@ -562,7 +562,7 @@ class MAEC40Report(Report):
                 if isinstance(value, dict):
                     list_element = [value]
                 else:
-                    list_element = [{list[0].lstrip('list__').lower() : value}]
+                    list_element = [{list[0].lstrip('list__').lower(): value}]
                 return list_element
             else:
                 nested_dict[list[0].lower()] = value
@@ -605,9 +605,9 @@ class MAEC40Report(Report):
 
             # Add the action ID to the list of Actions spawned by the process
             if pid in self.pidActionMap:
-                action_list = self.pidActionMap[pid].append({'action_id' : action_dict['id']})
+                action_list = self.pidActionMap[pid].append({'action_id': action_dict['id']})
             else:
-                self.pidActionMap[pid] = [{'action_id' : action_dict['id']}]
+                self.pidActionMap[pid] = [{'action_id': action_dict['id']}]
 
             # Add the action to the dynamic analysis Bundle
             self.dynamic_bundle.add_action(MalwareAction.from_dict(action_dict), action_collection_name)
@@ -628,27 +628,27 @@ class MAEC40Report(Report):
         """
 
         # A mapping of Cuckoo resource type names to their name in MAEC
-        resource_type_mappings = {"GIF" : "Bitmap",
-                                  "RT_ACCELERATOR" : "Accelerators",
-                                  "RT_ANICURSOR" : "AniCursor",
-                                  "RT_ANIICON" : "AniIcon",
-                                  "RT_BITMAP" : "Bitmap",
-                                  "RT_CURSOR" : "Cursor",
-                                  "RT_DIALOG" : "Dialog",
-                                  "RT_DLGINCLUDE" : "DLGInclude",
-                                  "RT_FONT" : "Font",
-                                  "RT_FONTDIR" : "Fontdir",
-                                  "RT_GROUP_CURSOR" : "GroupCursor",
-                                  "RT_GROUP_ICON" : "GroupIcon",
-                                  "RT_HTML" : "HTML",
-                                  "RT_ICON" : "Icon",
-                                  "RT_MANIFEST" : "Manifest",
-                                  "RT_MENU" : "Menu",
-                                  "RT_PLUGPLAY" : "PlugPlay",
-                                  "RT_RCDATA" : "RCData",
-                                  "RT_STRING" : "String",
-                                  "RT_VERSION" : "VersionInfo",
-                                  "RT_VXD" : "Vxd"}
+        resource_type_mappings = {"GIF": "Bitmap",
+                                  "RT_ACCELERATOR": "Accelerators",
+                                  "RT_ANICURSOR": "AniCursor",
+                                  "RT_ANIICON": "AniIcon",
+                                  "RT_BITMAP": "Bitmap",
+                                  "RT_CURSOR": "Cursor",
+                                  "RT_DIALOG": "Dialog",
+                                  "RT_DLGINCLUDE": "DLGInclude",
+                                  "RT_FONT": "Font",
+                                  "RT_FONTDIR": "Fontdir",
+                                  "RT_GROUP_CURSOR": "GroupCursor",
+                                  "RT_GROUP_ICON": "GroupIcon",
+                                  "RT_HTML": "HTML",
+                                  "RT_ICON": "Icon",
+                                  "RT_MANIFEST": "Manifest",
+                                  "RT_MENU": "Menu",
+                                  "RT_PLUGPLAY": "PlugPlay",
+                                  "RT_RCDATA": "RCData",
+                                  "RT_STRING": "String",
+                                  "RT_VERSION": "VersionInfo",
+                                  "RT_VXD": "Vxd"}
 
         if len(self.results["static"]) > 0:
             exports = {}
@@ -657,12 +657,12 @@ class MAEC40Report(Report):
             resources = []
             version_info = {}
 
-            object_dict = {"id" : self.id_generator.generate_object_id(),
-                           "properties" : {"xsi:type":"WindowsExecutableFileObjectType",
-                                            "imports" : imports,
-                                            "exports" : exports,
-                                            "sections" : sections,
-                                            "resources" : resources
+            object_dict = {"id": self.id_generator.generate_object_id(),
+                           "properties": {"xsi:type":"WindowsExecutableFileObjectType",
+                                            "imports": imports,
+                                            "exports": exports,
+                                            "sections": sections,
+                                            "resources": resources
                                             }
                             }
             # PE exports
@@ -670,9 +670,9 @@ class MAEC40Report(Report):
                 exported_function_list = []
                 for x in self.results["static"]["pe_exports"]:
                     exported_function_dict = {
-                                                "function_name" : x["name"],
-                                                "ordinal" : x["ordinal"],
-                                                "entry_point" : x["address"]
+                                                "function_name": x["name"],
+                                                "ordinal": x["ordinal"],
+                                                "entry_point": x["address"]
                                                 }
                     exported_function_list.append(exported_function_dict)
                 exports['exported_functions'] = exported_function_list
@@ -680,31 +680,31 @@ class MAEC40Report(Report):
             if len(self.results["static"]["pe_imports"]) > 0:
                 for x in self.results["static"]["pe_imports"]:
                     imported_functions = []
-                    import_dict = { "file_name" : x["dll"],
-                                    "imported_functions" : imported_functions}
+                    import_dict = { "file_name": x["dll"],
+                                    "imported_functions": imported_functions}
 
                     # Imported functions
                     for i in x["imports"]:
-                        imported_function_dict = { "function_name" : i["name"],
-                                                    "virtual_address" : i["address"]}
+                        imported_function_dict = { "function_name": i["name"],
+                                                    "virtual_address": i["address"]}
                         imported_functions.append(imported_function_dict)
                     imports.append(import_dict)
             # Resources
             if len(self.results["static"]["pe_resources"]) > 0:
                 for r in self.results["static"]["pe_resources"]:
                     if r["name"] in resource_type_mappings:
-                        resource_dict = {"type" : resource_type_mappings[r["name"]]}
+                        resource_dict = {"type": resource_type_mappings[r["name"]]}
                         resources.append(resource_dict)
             # Sections
             if len(self.results["static"]["pe_sections"]) > 0:
                 for s in self.results["static"]["pe_sections"]:
-                    section_dict = {"section_header" :
-                                    {"virtual_size" : int(s["virtual_size"], 16),
-                                        "virtual_address" : s["virtual_address"],
-                                        "name" : s["name"],
-                                        "size_of_raw_data" : s["size_of_data"]
+                    section_dict = {"section_header":
+                                    {"virtual_size": int(s["virtual_size"], 16),
+                                        "virtual_address": s["virtual_address"],
+                                        "name": s["name"],
+                                        "size_of_raw_data": s["size_of_data"]
                                         },
-                                    "entropy" : {"value" : s["entropy"]}
+                                    "entropy": {"value": s["entropy"]}
                                     }
                     sections.append(section_dict)
             # Version info
@@ -750,11 +750,11 @@ class MAEC40Report(Report):
         """Creates a File object for capturing strings output."""
         extracted_string_list = []
         for extracted_string in self.results["strings"]:
-            extracted_string_list.append({"string_value" : self._illegal_xml_chars_RE.sub("?", extracted_string)})
-        extracted_features = {"strings" : extracted_string_list}
-        object_dict = {"id" : self.id_generator.generate_object_id(),
-                        "properties" : {"xsi:type":"FileObjectType",
-                                        "extracted_features" : extracted_features
+            extracted_string_list.append({"string_value": self._illegal_xml_chars_RE.sub("?", extracted_string)})
+        extracted_features = {"strings": extracted_string_list}
+        object_dict = {"id": self.id_generator.generate_object_id(),
+                        "properties": {"xsi:type":"FileObjectType",
+                                        "extracted_features": extracted_features
                                         }
                         }
         strings_file_obj = Object.from_dict(object_dict)
@@ -766,23 +766,23 @@ class MAEC40Report(Report):
         @requires: file object.
         """
         if "ssdeep" in file and file["ssdeep"] is not None:
-            hashes_list = [{"type" : "MD5", "simple_hash_value" : file["md5"]},
-                      {"type" : "SHA1", "simple_hash_value" : file["sha1"]},
-                      {"type" : "SHA256", "simple_hash_value" : file["sha256"]},
-                      {"type" : "SHA512", "simple_hash_value" : file["sha512"]},
-                      {"type" : "SSDEEP", "fuzzy_hash_value" : file["ssdeep"]}]
+            hashes_list = [{"type": "MD5", "simple_hash_value": file["md5"]},
+                      {"type": "SHA1", "simple_hash_value": file["sha1"]},
+                      {"type": "SHA256", "simple_hash_value": file["sha256"]},
+                      {"type": "SHA512", "simple_hash_value": file["sha512"]},
+                      {"type": "SSDEEP", "fuzzy_hash_value": file["ssdeep"]}]
         else:
-            hashes_list = [{"type" : "MD5", "simple_hash_value" : file["md5"]},
-                      {"type" : "SHA1", "simple_hash_value" : file["sha1"]},
-                      {"type" : "SHA256", "simple_hash_value" : file["sha256"]},
-                      {"type" : "SHA512", "simple_hash_value" : file["sha512"]}]
-        object_dict = {"id" : self.id_generator.generate_object_id(),
-                        "properties" : {"xsi:type":"FileObjectType",
-                                        "file_name" : file["name"],
-                                        "file_path" : {"value" : file["path"]},
-                                        "file_format" : file["type"],
-                                        "size_in_bytes" : file["size"],
-                                        "hashes" : hashes_list}
+            hashes_list = [{"type": "MD5", "simple_hash_value": file["md5"]},
+                      {"type": "SHA1", "simple_hash_value": file["sha1"]},
+                      {"type": "SHA256", "simple_hash_value": file["sha256"]},
+                      {"type": "SHA512", "simple_hash_value": file["sha512"]}]
+        object_dict = {"id": self.id_generator.generate_object_id(),
+                        "properties": {"xsi:type":"FileObjectType",
+                                        "file_name": file["name"],
+                                        "file_path": {"value": file["path"]},
+                                        "file_format": file["type"],
+                                        "size_in_bytes": file["size"],
+                                        "hashes": hashes_list}
                         }
         file_obj = Object.from_dict(object_dict)
         return file_obj
@@ -795,65 +795,65 @@ class MAEC40Report(Report):
             self.subject.set_malware_instance_object_attributes(self.createFileObj(self.results["target"]["file"]))
         # URL Object
         elif self.results["target"]["category"] == "url":
-            url_object_dict = {"id" : self.id_generator.generate_object_id(), "properties" :  {"xsi:type" : "URIObjectType", "value" : self.results["target"]["url"]}}
+            url_object_dict = {"id": self.id_generator.generate_object_id(), "properties":  {"xsi:type": "URIObjectType", "value": self.results["target"]["url"]}}
             self.subject.set_malware_instance_object_attributes(Object.from_dict(url_object_dict))
 
     def addAnalyses(self):
         """Adds analysis header."""
         # Add the dynamic analysis
-        dynamic_analysis = Analysis(self.id_generator.generate_analysis_id(), "dynamic", "triage", BundleReference.from_dict({'bundle_idref' : self.dynamic_bundle.id}))
+        dynamic_analysis = Analysis(self.id_generator.generate_analysis_id(), "dynamic", "triage", BundleReference.from_dict({'bundle_idref': self.dynamic_bundle.id}))
         dynamic_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
         dynamic_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
         dynamic_analysis.summary = StructuredText("Cuckoo Sandbox dynamic analysis of the malware instance object.")
-        dynamic_analysis.add_tool(ToolInformation.from_dict({"id" : self.id_generator.generate_tool_id(),
-                                                             "name" : "Cuckoo Sandbox",
-                                                             "version" : self.results["info"]["version"],
-                                                             "vendor" : "http://www.cuckoosandbox.org"}))
+        dynamic_analysis.add_tool(ToolInformation.from_dict({"id": self.id_generator.generate_tool_id(),
+                                                             "name": "Cuckoo Sandbox",
+                                                             "version": self.results["info"]["version"],
+                                                             "vendor": "http://www.cuckoosandbox.org"}))
         self.subject.add_analysis(dynamic_analysis)
 
         # Add the static analysis
         if self.options["static"] and self.results["static"]:
-            static_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref" : self.static_bundle.id}))
+            static_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref": self.static_bundle.id}))
             static_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             static_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
             static_analysis.summary = StructuredText("Cuckoo Sandbox static (PE) analysis of the malware instance object.")
-            static_analysis.add_tool(ToolInformation.from_dict({"id" : self.id_generator.generate_tool_id(),
-                                                                "name" : "Cuckoo Sandbox Static Analysis",
-                                                                "version" : self.results["info"]["version"],
-                                                                "vendor" : "http://www.cuckoosandbox.org"}))
+            static_analysis.add_tool(ToolInformation.from_dict({"id": self.id_generator.generate_tool_id(),
+                                                                "name": "Cuckoo Sandbox Static Analysis",
+                                                                "version": self.results["info"]["version"],
+                                                                "vendor": "http://www.cuckoosandbox.org"}))
             self.subject.add_analysis(static_analysis)
             # Add the static file results
             self.static_bundle.add_object(self.createWinExecFileObj())
         # Add the strings analysis
         if self.options["strings"] and self.results["strings"]:
-            strings_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref" : self.strings_bundle.id}))
+            strings_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref": self.strings_bundle.id}))
             strings_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             strings_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
             strings_analysis.summary = StructuredText("Cuckoo Sandbox strings analysis of the malware instance object.")
-            strings_analysis.add_tool(ToolInformation.from_dict({"id" : self.id_generator.generate_tool_id(),
-                                                                    "name" : "Cuckoo Sandbox Strings",
-                                                                    "version" : self.results["info"]["version"],
-                                                                    "vendor" : "http://www.cuckoosandbox.org"}))
+            strings_analysis.add_tool(ToolInformation.from_dict({"id": self.id_generator.generate_tool_id(),
+                                                                    "name": "Cuckoo Sandbox Strings",
+                                                                    "version": self.results["info"]["version"],
+                                                                    "vendor": "http://www.cuckoosandbox.org"}))
             self.subject.add_analysis(strings_analysis)
             # Add the strings results
             self.strings_bundle.add_object(self.createFileStringsObj())
         # Add the VirusTotal analysis
         if self.options["virustotal"] and "virustotal" in self.results and self.results["virustotal"]:
-            virustotal_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref" : self.strings_bundle.id}))
+            virustotal_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref": self.strings_bundle.id}))
             virustotal_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             virustotal_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
             virustotal_analysis.summary = StructuredText("Virustotal results for the malware instance object.")
-            virustotal_analysis.add_tool(ToolInformation.from_dict({"id" : self.id_generator.generate_tool_id(),
-                                                                    "name" : "VirusTotal",
-                                                                    "vendor" : "https://www.virustotal.com/"}))
+            virustotal_analysis.add_tool(ToolInformation.from_dict({"id": self.id_generator.generate_tool_id(),
+                                                                    "name": "VirusTotal",
+                                                                    "vendor": "https://www.virustotal.com/"}))
             self.subject.add_analysis(virustotal_analysis)
             # Add the VirusTotal results
             for engine, signature in self.results["virustotal"]["scans"].items():
                 if signature['detected']:
-                    self.virustotal_bundle.add_av_classification(AVClassification.from_dict({"vendor" : engine,
-                                                                                                "engine_version" : signature["version"],
-                                                                                                "definition_version" : signature["update"],
-                                                                                                "classification_name" : signature["result"]}))
+                    self.virustotal_bundle.add_av_classification(AVClassification.from_dict({"vendor": engine,
+                                                                                                "engine_version": signature["version"],
+                                                                                                "definition_version": signature["update"],
+                                                                                                "classification_name": signature["result"]}))
 
     def addDroppedFiles(self):
         """Adds Dropped files as Objects."""
