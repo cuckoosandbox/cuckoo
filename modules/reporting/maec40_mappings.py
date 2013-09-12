@@ -827,20 +827,22 @@ api_call_mappings = {
 "LdrLoadDll" : {"action_name" : "load library",
 				"action_vocab" : "maecVocabs:LibraryActionNameVocab-1.0",
 				"parameter_associated_objects" : {"FileName" : {"associated_object_type" : "LibraryObjectType",
-				 												   	                            "associated_object_element" : "Name",
-				 												   	                            "association_type" : "input"},
-                                                  "BaseAddress" : {"associated_object_type" : "LibraryObjectType",
-				 												   	                               "associated_object_element" : "Base_Address",
-				 												   	                               "association_type" : "output"}}},
+				 												"associated_object_element" : "Name",
+				 												"association_type" : "input"},
+                                                  "BaseAddress" : {"associated_object_type" : "WindowsHandleObjectType",
+				 												   "associated_object_element" : "ID",
+				 												   "association_type" : "output",
+                                                                   "forced" : {"associated_object_element" : "Type", 
+                                                                               "value" : "Module"}}}},
 "LdrGetDllHandle" : {"action_name" : "get dll handle",
 				     "parameter_associated_objects" : {"FileName" : {"associated_object_type" : "LibraryObjectType",
-				 												   	                                 "associated_object_element" : "Name",
-				 												   	                                 "association_type" : "input"},
+				 												   	 "associated_object_element" : "Name",
+				 												   	 "association_type" : "input"},
                                                        "ModuleHandle" : {"associated_object_type" : "WindowsHandleObjectType",
-				 												   	                                     "associated_object_element" : "ID",
-				 												   	                                     "association_type" : "output",
-                                                                                                         "forced" : {"associated_object_element" : "Type", 
-                                                                                                                     "value" : "Module"}}}},
+				 												   	     "associated_object_element" : "ID",
+				 												   	     "association_type" : "output",
+                                                                         "forced" : {"associated_object_element" : "Type", 
+                                                                                     "value" : "Module"}}}},
 "LdrGetProcedureAddress" : {"action_name" : "get function address",
                             "action_vocab" : "maecVocabs:LibraryActionNameVocab-1.0",
 				            "parameter_associated_objects" : {"ModuleHandle" : {"associated_object_type" : "WindowsHandleObjectType",
@@ -848,6 +850,10 @@ api_call_mappings = {
 				 												   	            "association_type" : "input",
                                                                                 "forced" : {"associated_object_element" : "Type", 
                                                                                             "value" : "Module"}},
+                                                               "FunctionAddress" : {"associated_object_type" : "APIObjectType",
+				 												   	                "associated_object_element" : "Address",
+				 												   	                "association_type" : "output",
+                                                                                    "post_processing" : "intToHex"},
                                                                "group_together_nested" : {"parameter_mappings" : [{"parameter_name" : "FunctionName", "element_name" : "Function_Name"}, 
                                                                                                                   {"parameter_name" : "Ordinal", "element_name" : "Ordinal"}],
                                                                                             "associated_object_type" : "WindowsExecutableFileObjectType",
@@ -1595,3 +1601,7 @@ def socketTypeToString(type_int_value):
         return "SOCK_SEQPACKET"
     else:
         return type_int_value
+
+def intToHex(int_value):
+    """Convert an integer to a hex string"""
+    return str(hex(int(int_value)))
