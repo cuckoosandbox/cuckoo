@@ -31,6 +31,7 @@ from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.utils import datetime_to_iso
 
+
 class MAEC40Report(Report):
     """Generates a MAEC 4.0 report.
        Output modes:
@@ -60,7 +61,7 @@ class MAEC40Report(Report):
         self.addActions()
         self.addProcessTree()
         # Write XML report
-        self.output() 
+        self.output()
 
     def setupMAEC(self):
         """Generates MAEC Package, Malware Subject, and Bundle structure"""
@@ -84,13 +85,13 @@ class MAEC40Report(Report):
         # Generate Static Analysis Bundles, if static results exist
         if self.options["static"] and "static" in self.results and self.results["static"]:
             self.static_bundle = Bundle(self.id_generator.generate_bundle_id(), False, 4.0, "static analysis tool output")
-            self.subject.add_findings_bundle(self.static_bundle) 
+            self.subject.add_findings_bundle(self.static_bundle)
         if self.options["strings"] and "strings" in self.results and self.results["strings"]:
             self.strings_bundle = Bundle(self.id_generator.generate_bundle_id(), False, 4.0, "static analysis tool output")
             self.subject.add_findings_bundle(self.strings_bundle)
         if self.options["virustotal"] and "virustotal" in self.results and self.results["virustotal"]:
             self.virustotal_bundle = Bundle(self.id_generator.generate_bundle_id(), False, 4.0, "static analysis tool output")
-            self.subject.add_findings_bundle(self.virustotal_bundle) 
+            self.subject.add_findings_bundle(self.virustotal_bundle)
 
     def addActions(self):
         """Add Actions section."""
@@ -147,13 +148,13 @@ class MAEC40Report(Report):
         if layer7_protocol == "DNS":
             answer_resource_records = []
             for answer_record in network_data["answers"]:
-                answer_resource_records.append({"entity_type" : answer_record["type"], 
+                answer_resource_records.append({"entity_type" : answer_record["type"],
                                                 "record_data" : answer_record["data"]})
             object_properties["layer7_connections"] = {"dns_queries" : [{"question" : {"qname" : {"value" : network_data["request"]},
                                                                                        "qtype" : network_data["type"]},
                                                                          "answer_resource_records" : answer_resource_records}]}
         elif layer7_protocol == "HTTP":
-            object_properties["layer7_connections"] = {"http_session" : 
+            object_properties["layer7_connections"] = {"http_session" :
                                                        {"http_request_response" : [{"http_client_request": {"http_request_line" : {"http_method" : network_data["method"],
                                                                                                                                     "value" : network_data["path"],
                                                                                                                                     "version" : network_data["version"]},
@@ -191,7 +192,7 @@ class MAEC40Report(Report):
                                   "name" : root_node["name"],
                                   "initiated_actions" : self.pidActionMap[root_node["pid"]],
                                   "spawned_processes" : [self.createProcessTreeNode(child_process) for child_process in root_node["children"]]}
-                
+
                 self.dynamic_bundle.set_process_tree(ProcessTree.from_dict({"root_process" : root_node_dict}))
 
     def createProcessTreeNode(self, process):
@@ -209,7 +210,7 @@ class MAEC40Report(Report):
         """Create and return a dictionary representing a MAEC Malware Action.
         @param call: the input API call.
         @param pos: position of the Action with respect to the execution of the malware.
-        """ 
+        """
         # Setup the action/action implementation dictionaries and lists
         action_dict = {}
         parameter_list = []
@@ -230,7 +231,7 @@ class MAEC40Report(Report):
             else:
                 action_dict["name"] = {"value" : mapping_dict["action_name"]}
         # Try to add the mapped Action Arguments and Associated Objects
-        # Only output in "overview" or "full" modes 
+        # Only output in "overview" or "full" modes
         if self.options["mode"].lower() == "overview" or self.options["mode"].lower() == "full":
             # Check to make sure we have a mapping for this API call
             if call["api"] in api_call_mappings:
@@ -276,25 +277,25 @@ class MAEC40Report(Report):
                                         "type" : "api call",
                                         "api_call" : api_call_dict}
         return action_implementation_dict
-                      
+
     def processActionArguments(self, parameter_mappings_dict, parameter_list):
         """Processes a dictionary of parameters that should be mapped to Action Arguments in the Malware Action.
         @param parameter_mappings_dict: the input parameter to Arguments mappings.
         @param parameter_list: the input parameter list (from the API call).
-        """  
+        """
         arguments_list = []
         for call_parameter in parameter_list:
             parameter_name = call_parameter["name"]
             argument_value = call_parameter["value"]
             # Make sure the argument value is set, otherwise skip this parameter
-            if not argument_value : 
+            if not argument_value :
                 continue
             if parameter_name in parameter_mappings_dict and "associated_argument_vocab" in parameter_mappings_dict[parameter_name]:
-                arguments_list.append({"argument_value" : argument_value, 
+                arguments_list.append({"argument_value" : argument_value,
                                         "argument_name" : {"value" : parameter_mappings_dict[parameter_name]["associated_argument_name"],
                                                             "xsi:type" : parameter_mappings_dict[parameter_name]["associated_argument_vocab"]}})
             elif parameter_name in parameter_mappings_dict and "associated_argument_vocab" not in parameter_mappings_dict[parameter_name]:
-                arguments_list.append({"argument_value" : argument_value, 
+                arguments_list.append({"argument_value" : argument_value,
                                         "argument_name" : {"value" : parameter_mappings_dict[parameter_name]["associated_argument_name"]}})
         return arguments_list
 
@@ -302,7 +303,7 @@ class MAEC40Report(Report):
         """Processes a dictionary of parameters that should be mapped to Associated Objects in the Action
         @param associated_objects_dict: the input parameter to Associated_Objects mappings.
         @param parameter_list: the input parameter list (from the API call).
-        """ 
+        """
         associated_objects_list = []
         processed_parameters = []
         # First, handle any parameters that need to be grouped together into a single Object
@@ -417,13 +418,13 @@ class MAEC40Report(Report):
                                 associated_objects_list.remove(input_object)
                                 associated_objects_list.remove(output_handle)
                                 associated_objects_list.append(substituted_object)
-            
+
         # Handle the case where there is an input_handle
         # Lookup the handle and replace it with the appropriate object if we've seen it before
         for input_handle in input_handles:
             if "type" in input_handle["properties"]:
                 handle_type = input_handle["properties"]["type"]
-                handle_id = input_handle["properties"]["id"] 
+                handle_id = input_handle["properties"]["id"]
                 if handle_type in self.handleMap and handle_id in self.handleMap[handle_type]:
                     merged_objects = False
                     mapped_object = self.handleMap[handle_type][handle_id]
@@ -449,8 +450,8 @@ class MAEC40Report(Report):
                             associated_objects_list.append(merged_dict)
                             merged_objects = True
                     # Otherwise, add the existing object via a reference
-                    if not merged_objects:   
-                        substituted_object = {"idref" : mapped_object["id"], 
+                    if not merged_objects:
+                        substituted_object = {"idref" : mapped_object["id"],
                                                 "association_type" : {"value" : "input", "xsi:type" : "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}}
                         associated_objects_list.remove(input_handle)
                         associated_objects_list.append(substituted_object)
@@ -520,12 +521,12 @@ class MAEC40Report(Report):
         @param parameter_value: the input parameter value (from the API call).
         @param associated_object_dict: optional associated object dict, for special cases.
         """
-        if not associated_object_dict:   
+        if not associated_object_dict:
             associated_object_dict = {}
             associated_object_dict["id"] = self.id_generator.generate_object_id()
             associated_object_dict["properties"] = {}
         # Set the Association Type if it has not been set already
-        if "association_type" not in associated_object_dict: 
+        if "association_type" not in associated_object_dict:
             associated_object_dict["association_type"] = {"value" : parameter_mapping_dict["association_type"], "xsi:type" : "maecVocabs:ActionObjectAssociationTypeVocab-1.0"}
         # Handle any values that require post-processing (via external functions)
         if "post_processing" in parameter_mapping_dict:
@@ -546,7 +547,7 @@ class MAEC40Report(Report):
         if "forced" in parameter_mapping_dict:
             self.processAssociatedObject(parameter_mapping_dict["forced"], parameter_mapping_dict["forced"]["value"], associated_object_dict)
         # Finally, set the XSI type if it has not been set already
-        if "associated_object_type" in parameter_mapping_dict and "xsi:type" not in associated_object_dict["properties"]: 
+        if "associated_object_type" in parameter_mapping_dict and "xsi:type" not in associated_object_dict["properties"]:
             associated_object_dict["properties"]["xsi:type"] = parameter_mapping_dict["associated_object_type"]
 
         return associated_object_dict
@@ -555,7 +556,7 @@ class MAEC40Report(Report):
         """Helper function: returns a nested dictionary for an input list.
         @param list: input list.
         @param value: value to set the last embedded dictionary item to.
-        """   
+        """
         nested_dict = {}
 
         if len(list) == 1:
@@ -578,12 +579,12 @@ class MAEC40Report(Report):
             break
 
         return nested_dict
-    
+
     def getParameterValue(self, parameter_list, parameter_name):
         """Finds and returns an API call parameter value from a list.
         @param parameter_list: list of API call parameters.
         @param parameter_name: name of parameter to return value for.
-        """                
+        """
         for parameter_dict in parameter_list:
             if parameter_dict["name"] == parameter_name:
                 return parameter_dict["value"]
@@ -614,7 +615,7 @@ class MAEC40Report(Report):
             self.dynamic_bundle.add_action(MalwareAction.from_dict(action_dict), action_collection_name)
             # Update the action position
             pos = pos + 1
-            
+
     # Map the Cuckoo status to that used in the MAEC/CybOX action_status field
     def mapActionStatus(self, status):
         if status == True or status == 1:
@@ -683,7 +684,7 @@ class MAEC40Report(Report):
                     imported_functions = []
                     import_dict = { "file_name" : x["dll"],
                                     "imported_functions" : imported_functions}
-                                                
+
                     # Imported functions
                     for i in x["imports"]:
                         imported_function_dict = { "function_name" : i["name"],
@@ -699,7 +700,7 @@ class MAEC40Report(Report):
             # Sections
             if len(self.results["static"]["pe_sections"]) > 0:
                 for s in self.results["static"]["pe_sections"]:
-                    section_dict = {"section_header" : 
+                    section_dict = {"section_header" :
                                     {"virtual_size" : int(s["virtual_size"], 16),
                                         "virtual_address" : s["virtual_address"],
                                         "name" : s["name"],
@@ -746,7 +747,7 @@ class MAEC40Report(Report):
                 resources.append(version_info)
         win_exec_file_obj = Object.from_dict(object_dict)
         return win_exec_file_obj
-        
+
     def createFileStringsObj(self):
         """Creates a File object for capturing strings output."""
         extracted_string_list = []
@@ -760,7 +761,7 @@ class MAEC40Report(Report):
                         }
         strings_file_obj = Object.from_dict(object_dict)
         return strings_file_obj
-        
+
     def createFileObj(self, file):
         """Creates a File object.
         @param file: file dict from Cuckoo dict.
@@ -855,7 +856,7 @@ class MAEC40Report(Report):
                                                                                                 "engine_version" : signature["version"],
                                                                                                 "definition_version" : signature["update"],
                                                                                                 "classification_name" : signature["result"]}))
-        
+
     def addDroppedFiles(self):
         """Adds Dropped files as Objects."""
         objs = self.results["dropped"]
@@ -865,7 +866,7 @@ class MAEC40Report(Report):
         self.dynamic_bundle.add_named_object_collection("Dropped Files", self.id_generator.generate_object_collection_id())
         for file in objs:
             self.dynamic_bundle.add_object(self.createFileObj(file), "Dropped Files")
-            
+
     def output(self):
         """Writes report to disk."""
         try:
@@ -882,5 +883,5 @@ class MAEC40Report(Report):
         except (TypeError, IOError) as e:
             traceback.print_exc()
             raise CuckooReportError("Failed to generate MAEC 4.0 report: %s" % e)
-            
-            
+
+
