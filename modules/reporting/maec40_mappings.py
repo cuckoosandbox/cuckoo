@@ -436,7 +436,7 @@ api_call_mappings = {
                                                                          "association_type" : "output"},
                                                   "OldHiveFileName" : {"associated_object_type" : "FileObjectType",
                                                                        "associated_object_element" : "File_Path",
-                                                                       "association_type" : "output"},
+                                                                       "association_type" : "input"},
                                                   "KeyHandle" : {"associated_object_type" : "WindowsHandleObjectType",
                                                                  "associated_object_element" : "ID",
                                                                  "association_type" : "input",
