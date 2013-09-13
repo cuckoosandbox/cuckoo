@@ -5,7 +5,7 @@
 from lib.cuckoo.common.abstracts import Signature
 
 class SystemMetrics(Signature):
-    name = "uses_system_metrics"
+    name = "generic_metrics"
     description = "Uses GetSystemMetrics"
     severity = 2
     categories = ["generic"]
@@ -16,8 +16,8 @@ class SystemMetrics(Signature):
     evented = True
 
     # Evented signatures can specify filters that reduce the amount of
-    #  API calls that are streamed in. One can filter Process name, API
-    #  name/identifier and category. These should be sets for faster lookup.
+    # API calls that are streamed in. One can filter Process name, API
+    # name/identifier and category. These should be sets for faster lookup.
     filter_processnames = set()
     filter_apinames = set(["GetSystemMetrics"])
     filter_categories = set()
@@ -35,13 +35,13 @@ class SystemMetrics(Signature):
         return False
 
     # This method will be called for every logged API call by the loop
-    #  in the RunSignatures plugin. The return value determines the "state"
-    #  of this signature. True means the signature matched and False means
-    #  it can't match anymore. Both of which stop streaming in API calls.
-    #  Returning None keeps the signature active and will continue.
+    # in the RunSignatures plugin. The return value determines the "state"
+    # of this signature. True means the signature matched and False means
+    # it can't match anymore. Both of which stop streaming in API calls.
+    # Returning None keeps the signature active and will continue.
     def event_apicall(self, call, process):
         # This check would in reality not be needed as we already make use
-        #  of filter_apinames above.
+        # of filter_apinames above.
         if call["api"] == "GetSystemMetrics":
             # Signature matched, return True.
             return True
