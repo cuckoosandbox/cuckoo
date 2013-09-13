@@ -358,7 +358,7 @@ class MAEC40Report(Report):
         input_handles = []
         output_handles = []
         input_objects = []
-        output_object = None
+        output_objects = []
 
         # Add the named object collections if they do not exist
         if not self.dynamic_bundle.collections.object_collections.has_collection("Handle-mapped Objects"):
@@ -378,7 +378,7 @@ class MAEC40Report(Report):
             # Check for non-handle objects
             elif object_type is not "WindowsHandleObjectType":
                 if object_association_type is "output":
-                    output_object = associated_object_dict
+                    output_objects.append(associated_object_dict)
                 elif object_association_type is "input":
                     input_objects.append(associated_object_dict)
         # Handle the different cases
@@ -392,8 +392,8 @@ class MAEC40Report(Report):
             output_handle = output_handles[0]
             if len(input_objects) == 1:
                 mapped_object = input_objects[0]
-            elif output_object:
-                mapped_object = output_object
+            elif len(output_objects) == 1:
+                mapped_object = output_objects[0]
             # Add the handle to the mapping and get the substituted object
             if mapped_object:
                 substituted_object = self.addHandleToMap(output_handle, mapped_object)
