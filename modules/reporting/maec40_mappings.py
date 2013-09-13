@@ -602,7 +602,7 @@ api_call_mappings = {
                                                                                           "value" : "Thread"}},
 					 										"ThreadName" : {"associated_object_type" : "WindowsThreadObjectType",
 					 														"associated_object_element" : "Thread_ID",
-					 														"association_type" : "input"},
+					 														"association_type" : "output"},
                                                      "group_together_nested" : {"parameter_mappings" : [{"parameter_name" : "ProcessFileName", "element_name" : "File_Name",},
                                                                                                        {"parameter_name" : "ImagePathName", "element_name" : "Path"}],
                                                                                    "associated_object_type" : "ProcessObjectType",
