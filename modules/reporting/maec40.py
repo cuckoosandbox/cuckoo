@@ -452,6 +452,8 @@ class MAEC40Report(Report):
                                     merged_dict[k] = v
                             # Assign the merged object a new ID
                             merged_dict["id"] = self.id_generator.generate_object_id()
+                            # Set the association type to that of the input object
+                            merged_dict["association_type"] = input_object["association_type"]
                             # Add the new object to the list of associated objects
                             associated_objects_list.remove(input_handle)
                             associated_objects_list.remove(input_object)
