@@ -330,85 +330,6 @@ class Summary:
         """
         return {"files": self.files, "keys": self.keys, "mutexes": self.mutexes}
 
-
-class ProcessTree:
-    """Creates process tree."""
-
-    key = "processtree"
-
-    def __init__(self):
-        self.processes = []
-        self.proctree = []
-        self.procmap = {}
-
-    def add_node(self, node, parent_id, tree):
-        """Add a node to a tree.
-        @param node: node to add.
-        @param parent_id: parent node.
-        @param tree: processes tree.
-        @return: boolean with operation success status.
-        """
-        for process in tree:
-            if process["pid"] == parent_id:
-                new = {}
-                new["name"] = node["name"]
-                new["pid"] = node["pid"]
-                new["children"] = []
-                process["children"].append(new)
-                return True
-            self.add_node(node, parent_id, process["children"])
-            
-        return False
-
-    def populate(self, node):
-        """Populate tree.
-        @param node: node to add.
-        @return: True.
-        """
-        for children in node["children"]:
-            for proc in self.processes:
-                if int(proc["pid"]) == int(children):
-                    self.add_node(proc, node["pid"], self.proctree)
-                    self.populate(proc)
-
-        return True
-
-    def event_apicall(self, call, entry):
-        """Generate processes list from streamed calls/processes.
-        @return: None.
-        """
-        pid = int(entry["process_id"])
-
-        if not pid in self.procmap:
-            process = {}
-            process["name"] = entry["process_name"]
-            process["pid"] = int(entry["process_id"])
-            process["children"] = []
-        
-            self.procmap[pid] = process
-            self.processes.append(process)
-        else:
-            process = self.procmap[pid]
-        
-        if call["api"] == "CreateProcessInternalW":
-            for argument in call["arguments"]:
-                if argument["name"] == "ProcessId":
-                    process["children"].append(int(argument["value"]))
-
-    def run(self):
-        """Run analysis.
-        @return: results dict or None.
-        """
-        if len(self.processes) > 0:    
-            root = {}
-            root["name"] = self.processes[0]["name"]
-            root["pid"] = self.processes[0]["pid"]
-            root["children"] = []
-            self.proctree.append(root)
-            self.populate(self.processes[0])
-
-        return self.proctree
-
 class Enhanced(object):
 
     key = "enhanced"
@@ -829,15 +750,78 @@ class Enhanced(object):
         """
         return self.events
 
+class ProcessTree:
+    """Generates process tree."""
+
+    key = "processtree"
+
+    def __init__(self):
+        self.processes = []
+        self.tree = []
+
+    def add_node(self, node, tree):
+        """Add a node to a process tree.
+        @param node: node to add.
+        @param tree: processes tree.
+        @return: boolean with operation success status.
+        """
+        # Walk through the existing tree.
+        for process in tree:
+            # If the current process has the same ID of the parent process of
+            # the provided one, append it the children.
+            if process["pid"] == node["parent_id"]:
+                process["children"].append(node)
+            # Otherwise try with the children of the current process.
+            else:
+                self.add_node(node, process["children"])
+
+    def event_apicall(self, call, process):
+        for entry in self.processes:
+            if entry["pid"] == process["process_id"]:
+                return
+
+        self.processes.append(dict(
+            name=process["process_name"],
+            pid=process["process_id"],
+            parent_id=process["parent_id"],
+            children=[]
+        ))
+
+    def run(self):
+        children = []
+
+        # Walk through the generated list of processes.
+        for process in self.processes:
+            has_parent = False
+            # Walk through the list again.
+            for process_again in self.processes:
+                # If we find a parent for the first process, we mark it as
+                # as a child.
+                if process_again["pid"] == process["parent_id"]:
+                    has_parent = True
+
+            # If the process has a parent, add it to the children list.
+            if has_parent:
+                children.append(process)
+            # Otherwise it's an orphan and we add it to the tree root.
+            else:
+                self.tree.append(process)
+
+        # Now we loop over the remaining child processes.
+        for process in children:
+            self.add_node(process, self.tree)
+
+        return self.tree
+
 class BehaviorAnalysis(Processing):
     """Behavior Analyzer."""
+
+    key = "behavior"
 
     def run(self):
         """Run analysis.
         @return: results dict.
         """
-        self.key = "behavior"
-
         behavior = {}
         behavior["processes"] = Processes(self.logs_path).run()
 
@@ -848,17 +832,18 @@ class BehaviorAnalysis(Processing):
         ]
 
         # Iterate calls and tell interested signatures about them
-        for proc in behavior["processes"]:
-            for call in proc["calls"]:
-                for i in instances:
-                    try: r = i.event_apicall(call, proc)
+        for process in behavior["processes"]:
+            for call in process["calls"]:
+                for instance in instances:
+                    try:
+                        instance.event_apicall(call, process)
                     except:
-                        log.exception("Failure in partial behavior \"%s\"", i.key)
+                        log.exception("Failure in partial behavior \"%s\"", instance.key)
 
-        for i in instances:
+        for instance in instances:
             try:
-                behavior[i.key] = i.run()
+                behavior[instance.key] = instance.run()
             except:
-                log.exception("Failed to run partial behavior class \"%s\"", i.key)
+                log.exception("Failed to run partial behavior class \"%s\"", instance.key)
 
         return behavior
