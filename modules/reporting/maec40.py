@@ -1,4 +1,6 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (c) 2013, The MITRE Corporation
+# All rights reserved.
+
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
@@ -34,10 +36,20 @@ from lib.cuckoo.common.utils import datetime_to_iso
 
 class MAEC40Report(Report):
     """Generates a MAEC 4.0 report.
-       Output modes:
-       mode = "full": Output fully mapped Actions along with Action Implementations
-       mode = "overview": Output only fully mapped Actions with no Action Implementations
-       mode = "api": Output only Actions with Action Implementations, but no mapped components
+       --Output modes (set in reporting.conf):
+           mode = "full": Output fully mapped Actions (see maec40_mappings), including Windows Handle mapped/substituted objects,
+                          along with API call/parameter capture via Action Implementations.
+           mode = "overview": Output only fully mapped Actions, without any Action Implementations. Default mode.
+           mode = "api": Output only Actions with Action Implementations, but no mapped components.
+       --Other configuration parameters:
+           processtree = "true" | "false". Output captured ProcessTree as part of dynamic analysis MAEC Bundle. Default = "true".
+           output_handles = "true" | "false". Output the Windows Handles used to  construct the Object-Handle mappings as a 
+                                              separate Object Collection in the dynamic analysis MAEC Bundle. Only applicable 
+                                              for mode = "full" or mode = "overview". Default = "false".
+           static = "true" | "false". Output Cuckoo static analysis (PEfile) output as a separate MAEC Bundle in the document. 
+                                      Default = "true".
+           strings = "true" | "false". Output Cuckoo strings output as a separate MAEC Bundle in the document. Default = "true".
+           virustotal = "true" | "false". Output VirusTotal output as a separate MAEC Bundle in the document. Default = "true".
     """
 
     def run(self, results):
