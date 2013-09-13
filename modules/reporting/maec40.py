@@ -401,26 +401,32 @@ class MAEC40Report(Report):
                     associated_objects_list.remove(mapped_object)
                     associated_objects_list.remove(output_handle)
                     associated_objects_list.append(substituted_object)
-        # Handle the corner case for certain calls with two output handles and input objects
-        elif len(output_handles) == 2 and len(input_objects) == 2:
-            for input_object in input_objects:
-                if input_object["properties"]["xsi:type"] is "WindowsThreadObjectType":
+        # Handle the corner case for certain calls with two output handles and input objects or output objects
+        elif len(output_handles) == 2:
+            object_list = []
+            if len(input_objects) == 2:
+                object_list = input_objects
+            elif len(output_objects) == 2:
+                object_list = output_objects
+
+            for object in object_list:
+                if "properties" in object and object["properties"]["xsi:type"] is "WindowsThreadObjectType":
                     for output_handle in output_handles:
                         if "type" in output_handle["properties"] and output_handle["properties"]["type"] is "Thread":
-                            substituted_object = self.addHandleToMap(output_handle, input_object)
+                            substituted_object = self.addHandleToMap(output_handle, object)
                             if substituted_object:
-                                associated_objects_list.remove(input_object)
+                                associated_objects_list.remove(object)
                                 associated_objects_list.remove(output_handle)
                                 associated_objects_list.append(substituted_object)
-                elif input_object["properties"]["xsi:type"] is "ProcessObjectType":
+                elif "properties" in object and object["properties"]["xsi:type"] is "ProcessObjectType":
                     for output_handle in output_handles:
                         if "type" in output_handle["properties"] and output_handle["properties"]["type"] is "Process":
-                            substituted_object = self.addHandleToMap(output_handle, input_object)
+                            substituted_object = self.addHandleToMap(output_handle, object)
                             if substituted_object:
-                                associated_objects_list.remove(input_object)
+                                associated_objects_list.remove(object)
                                 associated_objects_list.remove(output_handle)
                                 associated_objects_list.append(substituted_object)
-            
+
         # Handle the case where there is an input_handle
         # Lookup the handle and replace it with the appropriate object if we've seen it before
         for input_handle in input_handles:
