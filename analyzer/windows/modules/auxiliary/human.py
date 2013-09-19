@@ -23,13 +23,13 @@ RESOLUTION = {
 
 def foreach_child(hwnd, lparam):
     buttons = [
-        "&yes",
-        "&ok",
-        "&accept",
-        "&next",
-        "&install",
-        "&run",
-        "&agree"
+        "yes",
+        "ok",
+        "accept",
+        "next",
+        "install",
+        "run",
+        "agree"
     ]
 
     classname = create_unicode_buffer(50)
@@ -44,7 +44,7 @@ def foreach_child(hwnd, lparam):
 
         # Check if the button is "positive".
         for button in buttons:
-            if text.value.lower().startswith(button):
+            if button in text.value.lower():
                 log.info("Found button \"%s\", clicking it" % text.value)
                 USER32.SetForegroundWindow(hwnd)
                 KERNEL32.Sleep(1000)
