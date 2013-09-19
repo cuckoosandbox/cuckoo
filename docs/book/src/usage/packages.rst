@@ -89,6 +89,7 @@ Following is the list of existing packages in alphabetical order:
 
         **Options**:
             * ``file``: specify the name of the file contained in the archive to execute. If none is specified, Cuckoo will try to execute *sample.exe*.
+            * ``package``: specify the name of the analysis package to use when executing this sample. If none is specified, Cuckoo will try to use *exe*.
             * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
             * ``arguments``: specify any command line argument to pass to the initial process of the submitted malware.
             * ``password``: specify the password of the archive. If none is specified, Cuckoo will try to extract the archive without password or use the password "*infected*".
