@@ -26,9 +26,7 @@ from lib.cuckoo.common.utils import convert_to_printable
 # Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 
 class PortableExecutable:
-    """PE analysis.
-    @note: Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py.
-    """
+    """PE analysis."""
 
     def __init__(self, file_path):
         """@param file_path: file path."""
@@ -128,9 +126,9 @@ class PortableExecutable:
             try:
                 section = {}
                 section["name"] = convert_to_printable(entry.Name.strip("\x00"))
-                section["virtual_address"] = hex(entry.VirtualAddress)
-                section["virtual_size"] = hex(entry.Misc_VirtualSize)
-                section["size_of_data"] = hex(entry.SizeOfRawData)
+                section["virtual_address"] = "0x{0:08x}".format(entry.VirtualAddress)
+                section["virtual_size"] = "0x{0:08x}".format(entry.Misc_VirtualSize)
+                section["size_of_data"] = "0x{0:08x}".format(entry.SizeOfRawData)
                 section["entropy"] = entry.get_entropy()
                 sections.append(section)
             except:
@@ -153,11 +151,11 @@ class PortableExecutable:
                     resource = {}
 
                     if resource_type.name is not None:
-                        name = "%s" % resource_type.name
+                        name = str(resource_type.name)
                     else:
-                        name = "%s" % pefile.RESOURCE_TYPE.get(resource_type.struct.Id)
+                        name = str(pefile.RESOURCE_TYPE.get(resource_type.struct.Id))
                     if name == None:
-                        name = "%d" % resource_type.struct.Id
+                        name = str(esource_type.struct.Id)
 
                     if hasattr(resource_type, "directory"):
                         for resource_id in resource_type.directory.entries:
@@ -169,8 +167,8 @@ class PortableExecutable:
                                     sublanguage = pefile.get_sublang_name_for_lang(resource_lang.data.lang, resource_lang.data.sublang)
 
                                     resource["name"] = name
-                                    resource["offset"] = ("%-8s" % hex(resource_lang.data.struct.OffsetToData)).strip()
-                                    resource["size"] = ("%-8s" % hex(resource_lang.data.struct.Size)).strip()
+                                    resource["offset"] = "0x{0:08x}".format(resource_lang.data.struct.OffsetToData)
+                                    resource["size"] = "0x{0:08x}".format(resource_lang.data.struct.Size)
                                     resource["filetype"] = filetype
                                     resource["language"] = language
                                     resource["sublanguage"] = sublanguage

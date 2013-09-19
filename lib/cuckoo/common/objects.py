@@ -14,9 +14,9 @@ except ImportError:
 
 try:
     import pydeep
-    HAVE_SSDEEP = True
+    HAVE_PYDEEP = True
 except ImportError:
-    HAVE_SSDEEP = False
+    HAVE_PYDEEP = False
 
 try:
     import yara
@@ -162,7 +162,8 @@ class File:
         """Get SSDEEP.
         @return: SSDEEP.
         """
-        if not HAVE_SSDEEP:
+        if not HAVE_PYDEEP:
+            log.warning("Unable to import pydeep (install with `pip install pydeep`)")
             return None
 
         try:
@@ -205,29 +206,32 @@ class File:
         """
         matches = []
 
-        if HAVE_YARA and os.path.getsize(self.file_path) > 0:
-            try:
-                rules = yara.compile(rulepath)
+        if HAVE_YARA:
+            if os.path.getsize(self.file_path) > 0:
+                try:
+                    rules = yara.compile(rulepath)
 
-                for match in rules.match(self.file_path):
-                    strings = []
-                    for s in match.strings:
-                        # Beware, spaghetti code ahead.
-                        try:
-                            new = s[2].encode("utf-8")
-                        except UnicodeDecodeError:
-                            s = s[2].lstrip("uU").encode("hex").upper()
-                            s = " ".join(s[i:i+2] for i in range(0, len(s), 2))
-                            new = "{ %s }" % s
+                    for match in rules.match(self.file_path):
+                        strings = []
+                        for s in match.strings:
+                            # Beware, spaghetti code ahead.
+                            try:
+                                new = s[2].encode("utf-8")
+                            except UnicodeDecodeError:
+                                s = s[2].lstrip("uU").encode("hex").upper()
+                                s = " ".join(s[i:i+2] for i in range(0, len(s), 2))
+                                new = "{ %s }" % s
 
-                        if new not in strings:
-                            strings.append(new)
+                            if new not in strings:
+                                strings.append(new)
 
-                    matches.append({"name" : match.rule,
-                                    "meta" : match.meta,
-                                    "strings" : strings})
-            except yara.Error as e:
-                log.warning("Unable to match Yara signatures: %s", e)
+                        matches.append({"name" : match.rule,
+                                        "meta" : match.meta,
+                                        "strings" : strings})
+                except yara.Error as e:
+                    log.warning("Unable to match Yara signatures: %s", e)
+        else:
+            log.warning("Unable to import yara (please compile from sources)")
 
         return matches
 

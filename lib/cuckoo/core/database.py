@@ -27,7 +27,7 @@ try:
     from sqlalchemy.pool import NullPool
     Base = declarative_base()
 except ImportError:
-    raise CuckooDependencyError("SQLAlchemy library not found, verify your setup")
+    raise CuckooDependencyError("Unable to import sqlalchemy (intall with `pip install sqlalchemy`)")
 
 log = logging.getLogger(__name__)
 

@@ -65,8 +65,10 @@ class MongoDB(Report):
         @param results: analysis results dictionary.
         @raise CuckooReportError: if fails to connect or write to MongoDB.
         """
+        # We put the raise here and not at the import because it would
+        # otherwise trigger even if the module is not enabled in the config.
         if not HAVE_MONGO:
-          raise CuckooDependencyError("Unable to import pymongo")
+            raise CuckooDependencyError("Unable to import pymongo (install with `pip install pymongo`)")
 
         self.connect()
 
