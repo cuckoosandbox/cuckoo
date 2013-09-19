@@ -1,4 +1,5 @@
 # Copyright (c) 2013, The MITRE Corporation
+# Copyright (c) 2013, Cuckoo Developers
 # All rights reserved.
 
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org

@@ -1,4 +1,5 @@
 # Copyright (c) 2013, The MITRE Corporation
+# Copyright (c) 2013, Cuckoo Developers
 # All rights reserved.
 
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
@@ -10,29 +11,32 @@ import re
 import traceback
 from collections import defaultdict
 
-import cybox
-import cybox.utils.nsparser
-from cybox.core import Object
-from cybox.common import ToolInformation
-from cybox.common import StructuredText
-from maec.bundle.bundle import Bundle
-from maec.bundle.malware_action import MalwareAction
-from maec.bundle.bundle_reference import BundleReference
-from maec.bundle.process_tree import ProcessTree
-from maec.bundle.av_classification import AVClassification
-from maec.id_generator import Generator
-from maec.package.malware_subject import MalwareSubject
-from maec.package.package import Package
-from maec.package.analysis import Analysis
-from maec.utils import MAECNamespaceParser
-from maec40_mappings import api_call_mappings, hiveHexToString,\
+from lib.maec.maec40 import api_call_mappings, hiveHexToString,\
     socketTypeToString, socketProtoToString, socketAFToString,\
     regDatatypeToString, intToHex
 
 from lib.cuckoo.common.abstracts import Report
-from lib.cuckoo.common.exceptions import CuckooReportError
+from lib.cuckoo.common.exceptions import CuckooDependencyError, CuckooReportError
 from lib.cuckoo.common.utils import datetime_to_iso
 
+try:
+    import cybox
+    import cybox.utils.nsparser
+    from cybox.core import Object
+    from cybox.common import ToolInformation
+    from cybox.common import StructuredText
+    from maec.bundle.bundle import Bundle
+    from maec.bundle.malware_action import MalwareAction
+    from maec.bundle.bundle_reference import BundleReference
+    from maec.bundle.process_tree import ProcessTree
+    from maec.bundle.av_classification import AVClassification
+    from maec.id_generator import Generator
+    from maec.package.malware_subject import MalwareSubject
+    from maec.package.package import Package
+    from maec.package.analysis import Analysis
+    from maec.utils import MAECNamespaceParser
+except ImportError:
+    raise CuckooDependencyError("Unable to import cybox and maec (install with `pip install maec`)")
 
 class MAEC40Report(Report):
     """Generates a MAEC 4.0 report.
