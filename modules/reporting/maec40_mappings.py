@@ -1582,6 +1582,9 @@ def socketTypeToString(type_int_value):
     else:
         return type_int_value
 
-def intToHex(int_value):
+def intToHex(value):
     """Convert an integer to a hex string"""
-    return str(hex(int(int_value)))
+    if isinstance(value, int):
+        value = "0x{0:08x}".format(value)
+
+    return value
