@@ -61,7 +61,13 @@ def move_mouse():
     x = random.randint(0, RESOLUTION["x"])
     y = random.randint(0, RESOLUTION["y"])
 
-    USER32.mouse_event(0x8000, x, y, 0, None)
+    # Originally was:
+    #USER32.mouse_event(0x8000, x, y, 0, None)
+    # Changed to SetCurorPos, since using GetCursorPos would not detect
+    # the mouse events. This actually moves the cursor around which might
+    # cause some unintended activity on the desktop. We might want to make
+    # this featur optional.
+    USER32.SetCursorPos(x, y)
 
 def click_mouse():
     # mouse down
