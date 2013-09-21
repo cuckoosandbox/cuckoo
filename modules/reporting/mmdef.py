@@ -11,7 +11,7 @@ from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.utils import datetime_to_iso
 
 
-class Metadata(Report):
+class MMDef(Report):
     """Generates a MAEC Malware Metadata Sharing report."""
 
     def run(self, results):
