@@ -197,9 +197,9 @@ class PipeHandler(Thread):
                 def hookdll_encode(names):
                     # We have to encode each dll name as unicode string
                     # with length 16.
-                    names = [name + '\x00' * (16-len(name)) for name in names]
-                    f = lambda s: ''.join(ch + '\x00' for ch in s)
-                    return ''.join(f(name) for name in names)
+                    names = [name + "\x00" * (16-len(name)) for name in names]
+                    f = lambda s: "".join(ch + "\x00" for ch in s)
+                    return "".join(f(name) for name in names)
 
                 # If this sample is not a URL, then we don't want to limit
                 # any API hooks (at least for now), so we write a null-byte
