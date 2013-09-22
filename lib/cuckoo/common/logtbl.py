@@ -192,4 +192,5 @@ table = [
     ("RtlCreateUserThread", "threading", ("plppPl", "ProcessHandle", "CreateSuspended", "StartAddress", "StartParameter", "ThreadHandle", "ThreadIdentifier")),
     ("ZwMapViewOfSection", "process", ("ppPp", "SectionHandle", "ProcessHandle", "BaseAddress", "SectionOffset")),
     ("GetSystemMetrics", "misc", ("l", "SystemMetricIndex")),
+    ("GetCursorPos", "misc", ("ll", "x", "y")),
 ]
