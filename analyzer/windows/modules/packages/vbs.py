@@ -27,6 +27,7 @@ class VBS(Package):
 
     def start(self, path):
         wscript = self.get_path()
+        dll = self.options.get("dll")
         if not wscript:
             raise CuckooPackageError("Unable to find any WScript executable available")
 
@@ -40,7 +41,10 @@ class VBS(Package):
             raise CuckooPackageError("Unable to execute initial WScript process, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            if dll:
+                p.inject(os.path.join("dll", dll))
+            else:
+                p.inject()
             p.resume()
             return p.pid
         else:

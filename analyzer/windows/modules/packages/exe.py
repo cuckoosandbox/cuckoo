@@ -12,6 +12,7 @@ class Exe(Package):
     def start(self, path):
         free = self.options.get("free", False)
         args = self.options.get("arguments", None)
+        dll = self.options.get("dll")
         suspended = True
         if free:
             suspended = False
@@ -21,7 +22,10 @@ class Exe(Package):
             raise CuckooPackageError("Unable to execute initial process, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            if dll:
+                p.inject(os.path.join("dll", dll))
+            else:
+                p.inject()
             p.resume()
             p.close()
             return p.pid
