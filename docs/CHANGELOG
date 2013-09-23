@@ -18,14 +18,20 @@ Cuckoo Sandbox 0.7 (TBD)
 * Added Windows analyzer auxiliary module to disguise the analysis environment
 * Added VBS analysis package
 * Added generic analysis package to execute samples via cmd.exe
+* Added MAEC 4.0 reporting module
+* Added filter for private networks in Network Analysis processing module
 * Refactored processing to improve performances
 * Refactored signature engine, introducing event-based signatures to improve performances
+* Refactored generation of process tree
 * Transitioned network sniffer to auxiliary module
 * Renamed MachineManagers to Machinery modules
+* Renamed Metadata to MMDef reporting module
 * Fixed virtual machine clock, now is updated to current time or specified by user via --clock option
 * Fixed bug in Human auxiliary module, now moving cursor to absolute positions
+* Fixed issue in Human auxiliary module, using SetCursorPos instead of mouse_event
 * Removed support for GrayLog2
 * Removed pickle reporting module
+* Removed MAEC 1.1 reporting module
 
 Cuckoo Sandbox 0.6 (2013-04-15)
 ===============================
