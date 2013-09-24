@@ -7,6 +7,9 @@ import struct
 import datetime
 import string
 
+try: import bson
+except: pass
+
 from lib.cuckoo.common.logtbl import table as LOGTBL
 from lib.cuckoo.common.utils import get_filename_from_path, time_from_cuckoomon
 
@@ -33,6 +36,12 @@ def expand_format(fs):
             out += x
         i += 1
     return out
+
+
+###############################################################################
+# Custom Cuckoomon "Netlog" protocol - by skier and rep
+# Kind of deprecated, more generic BSON protocol below
+###############################################################################
 
 class NetlogParser(object):
     def __init__(self, handler):
@@ -153,3 +162,130 @@ class NetlogParser(object):
 
     def read_argv(self):
         return self.read_list(self.read_string)
+
+
+###############################################################################
+# Generic BSON based protocol - by rep
+# Allows all kinds of languages / sources to generate input for Cuckoo
+#  thus we can reuse report generation / signatures for other API trace sources
+###############################################################################
+
+TYPECONVERTERS = {
+    "p": lambda v: "0x%08x" % default_converter(v),
+}
+
+APICATEGORIES = dict((i[0], i[1]) for i in LOGTBL)
+
+def default_converter(v):
+    # fix signed ints (bson is kind of limited there)
+    if type(v) in (int, long) and v < 0: return v + 0x100000000
+    return v
+
+def check_names_for_typeinfo(arginfo):
+    argnames = [i[0] if type(i) in (list, tuple) else i for i in arginfo]
+
+    converters = []
+    for i in arginfo:
+        if type(i) in (list, tuple):
+            r = TYPECONVERTERS.get(i[1], None)
+            if not r:
+                log.debug("Analyzer sent unknown format specifier '{0}'".format(i[1]))
+                r = default_converter
+            converters.append(r)
+        else:
+            converters.append(default_converter)
+
+    return argnames, converters
+
+
+class BsonParser(object):
+    def __init__(self, handler):
+        self.handler = handler
+        self.infomap = {}
+
+    def read_next_message(self):
+        data = self.handler.read(4)
+        blen = struct.unpack("I", data)[0]
+
+        data += self.handler.read(blen-4)
+
+        try:
+            dec = bson.BSON(data).decode()
+        except Exception as e:
+            log.warning("BsonParser decoding problem {0} on data {1}".format(e,repr(data)))
+            return False
+
+        mtype = dec.get("type", "none")
+        index = dec.get("I", -1)
+        tid = dec.get("T", 0)
+        time = dec.get("t", 0)
+
+        #context = (apiindex, status, returnval, tid, timediff)
+        context = [index, 1, 0, tid, time]
+
+        if mtype == "info":
+            # API call index info message, explaining the argument names, etc
+            name = dec.get("name", "NONAME")
+            arginfo = dec.get("args", [])
+
+            self.infomap[index] = (name, arginfo)
+
+        elif mtype == "debug":
+            log.info("Debug message from monitor: {0}".format(dec.get("msg", "")))
+
+        elif mtype == "new_process":
+            # new_process message from VMI monitor
+            vmtime = datetime.datetime.fromtimestamp(dec.get("starttime", 0))
+            procname = dec.get("name", "NONAME")
+            ppid = 0
+            modulepath = "DUMMY"
+
+            self.handler.log_process(context, vmtime, pid, ppid, modulepath, procname)
+
+        else: # regular api call
+            if not index in self.infomap:
+                log.warning("Got API with unknown index - monitor needs to explain first: {0}".format(dec))
+                return True
+
+            apiname, arginfo = self.infomap[index]
+            argnames, converters = check_names_for_typeinfo(arginfo)
+            args = dec.get("args", [])
+
+            if len(args) != len(argnames):
+                log.warning("Inconsistent arg count (compared to arg names) on {2}: {0} names {1}".format(dec, argnames, apiname))
+                return True
+
+            argdict = dict((argnames[i], converters[i](args[i])) for i in range(len(args)))
+
+            if apiname == "__process__":
+                # special new process message from cuckoomon
+                timelow = argdict["TimeLow"]
+                timehigh = argdict["TimeHigh"]
+                # FILETIME is 100-nanoseconds from 1601 :/
+                vmtimeunix = (timelow + (timehigh << 32)) / 10000000.0 - 11644473600
+                vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
+
+                pid = argdict["ProcessIdentifier"]
+                ppid = argdict["ParentProcessIdentifier"]
+                modulepath = argdict["ModulePath"]
+                procname = get_filename_from_path(modulepath)
+
+                self.handler.log_process(context, vmtime, pid, ppid, modulepath, procname)
+                return True
+
+            elif apiname == "__thread__":
+                pid = argdict["ProcessIdentifier"]
+                self.handler.log_thread(context, pid)
+                return True
+
+            context[1] = argdict.pop("is_success", 1)
+            context[2] = argdict.pop("retval", 0)
+            arguments = argdict.items()
+            arguments += dec.get("aux", {}).items()
+
+            modulename = "NONE"
+            category = APICATEGORIES.get(apiname, "unknown")
+
+            self.handler.log_call(context, apiname, category, arguments)
+
+        return True

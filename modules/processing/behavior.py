@@ -7,8 +7,8 @@ import logging
 import datetime
 
 from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.utils import convert_to_printable, logtime
-from lib.cuckoo.common.netlog import NetlogParser
+from lib.cuckoo.common.utils import convert_to_printable, logtime, cleanup_value
+from lib.cuckoo.common.netlog import NetlogParser, BsonParser
 from lib.cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
@@ -35,8 +35,20 @@ class ParseProcessLog(list):
 
     def parse_first_and_reset(self):
         self.fd = open(self._log_path, "rb")
-        self.parser = NetlogParser(self)
-        self.parser.read_next_message()
+
+        if self._log_path.endswith(".bson"):
+            self.parser = BsonParser(self)
+        elif self._log_path.endswith(".raw"):
+            self.parser = NetlogParser(self)
+        else:
+            self.fd.close()
+            self.fd = None
+            return
+
+        # get the process information from file to determine process id (file names)
+        while not self.process_id:
+            self.parser.read_next_message()
+
         self.fd.seek(0)
 
     def read(self, length):
@@ -84,6 +96,8 @@ class ParseProcessLog(list):
         return True
 
     def next(self):
+        if not self.fd: raise StopIteration()
+
         x = self.wait_for_lastcall()
         if not x:
             self.parsecount += 1
@@ -107,7 +121,7 @@ class ParseProcessLog(list):
     def log_thread(self, context, pid):
         pass
 
-    def log_call(self, context, apiname, modulename, arguments):
+    def log_call(self, context, apiname, category, arguments):
         apiindex, status, returnval, tid, timediff = context
 
         current_time = self.first_seen + datetime.timedelta(0, 0, timediff*1000)
@@ -115,7 +129,7 @@ class ParseProcessLog(list):
 
         self.lastcall = self._parse([timestring,
                                      tid,
-                                     modulename,
+                                     category,
                                      apiname, 
                                      status,
                                      returnval] + arguments)
@@ -153,11 +167,7 @@ class ParseProcessLog(list):
 
             argument["name"] = arg_name
 
-            arg_value = str(arg_value)
-            if arg_value[:4] == "\\??\\":
-                arg_value = arg_value[4:]
-
-            argument["value"] = convert_to_printable(arg_value)
+            argument["value"] = convert_to_printable(cleanup_value(arg_value))
             arguments.append(argument)
 
         call["timestamp"] = timestamp
@@ -169,7 +179,7 @@ class ParseProcessLog(list):
         if isinstance(return_value, int):
             call["return"] = "0x%.08x" % return_value
         else:
-            call["return"] = convert_to_printable(str(return_value))
+            call["return"] = convert_to_printable(cleanup_value(return_value))
 
         call["arguments"] = arguments
         call["repeated"] = 0
@@ -203,9 +213,6 @@ class Processes:
             file_path = os.path.join(self._logs_path, file_name)
 
             if os.path.isdir(file_path):
-                continue
-            
-            if not file_path.endswith(".raw"):
                 continue
 
             # Skipping the current log file if it's too big.

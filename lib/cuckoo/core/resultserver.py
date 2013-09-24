@@ -15,11 +15,15 @@ from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooOperationalError, CuckooCriticalError
 from lib.cuckoo.common.constants import *
 from lib.cuckoo.common.utils import create_folder, Singleton, logtime
-from lib.cuckoo.common.netlog import NetlogParser
+from lib.cuckoo.common.netlog import NetlogParser, BsonParser
 
 log = logging.getLogger(__name__)
 
 BUFSIZE = 16 * 1024
+EXTENSIONS = {
+    NetlogParser: ".raw",
+    BsonParser: ".bson",
+}
 
 class Disconnect(Exception):
     pass
@@ -150,6 +154,8 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         if "NETLOG" in buf:
             self.protocol = NetlogParser(self)
+        elif "BSON" in buf:
+            self.protocol = BsonParser(self)
         elif "FILE" in buf:
             self.protocol = FileUpload(self)
         elif "LOG" in buf:
@@ -168,10 +174,10 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         # create all missing folders for this analysis
         self.create_folders()
 
-        # initialize the protocol handler class for this connection
-        self.negotiate_protocol()
-
         try:
+            # initialize the protocol handler class for this connection
+            self.negotiate_protocol()
+
             while True:
                 r = self.protocol.read_next_message()
                 if not r: break
@@ -195,7 +201,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             self.logfd = open(os.path.join(self.storagepath, "logs", str(pid) + ".csv"), "wb")
 
         # Netlog raw format is mandatory (postprocessing)
-        self.rawlogfd = open(os.path.join(self.storagepath, "logs", str(pid) + ".raw"), "wb")
+        self.rawlogfd = open(os.path.join(self.storagepath, "logs", str(pid) + EXTENSIONS.get(type(self.protocol), ".raw")), "wb")
         self.rawlogfd.write(self.startbuf)
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
