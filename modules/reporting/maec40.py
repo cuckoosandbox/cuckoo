@@ -35,8 +35,9 @@ try:
     from maec.package.package import Package
     from maec.package.analysis import Analysis
     from maec.utils import MAECNamespaceParser
+    HAVE_MAEC = True
 except ImportError:
-    raise CuckooDependencyError("Unable to import cybox and maec (install with `pip install maec`)")
+    HAVE_MAEC = False
 
 class MAEC40Report(Report):
     """Generates a MAEC 4.0 report.
@@ -61,6 +62,11 @@ class MAEC40Report(Report):
         @param results: Cuckoo results dict.
         @raise CuckooReportError: if fails to write report.
         """
+        # We put the raise here and not at the import because it would
+        # otherwise trigger even if the module is not enabled in the config.
+        if not HAVE_MAEC:
+            raise CuckooDependencyError("Unable to import cybox and maec (install with `pip install maec`)")
+
         self._illegal_xml_chars_RE = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
         # Map of PIDs to the Actions that they spawned
         self.pidActionMap = {}
