@@ -188,52 +188,47 @@ def time_from_cuckoomon(s):
     """
     return datetime.strptime(s, "%Y-%m-%d %H:%M:%S,%f")
 
-def to_unicode(str):
+def to_unicode(s):
     """Attempt to fix non uft-8 string into utf-8. It tries to guess input encoding,
     if fail retry with a replace strategy (so undetectable chars will be escaped).
     @see: fuller list of encodings at http://docs.python.org/library/codecs.html#standard-encodings
     """
 
-    def brute_enc(str):
+    def brute_enc(s2):
         """Trying to decode via simple brute forcing."""
-        result = None
         encodings = ("ascii", "utf8", "latin1")
         for enc in encodings:
-            if result:
-                break
             try:
-                result = unicode(str, enc)
+                return unicode(s2, enc)
             except UnicodeDecodeError:
                 pass
-        return result
+        return None
 
-    def chardet_enc(str):
+    def chardet_enc(s2):
         """Guess encoding via chardet."""
-        result = None
-        enc = chardet.detect(str)["encoding"]
+        enc = chardet.detect(s2)["encoding"]
 
         try:
-            result = unicode(str, enc)
+            return unicode(s2, enc)
         except UnicodeDecodeError:
             pass
-
-        return result
+        return None
 
     # If already in unicode, skip.
-    if isinstance(str, unicode):
-        return str
+    if isinstance(s, unicode):
+        return s
 
     # First try to decode against a little set of common encodings.
-    result = brute_enc(str)
+    result = brute_enc(s)
 
     # Try via chardet.
     if not result:
-        result = chardet_enc(str)
+        result = chardet_enc(s)
 
     # If not possible to convert the input string, try again with
     # a replace strategy.
     if not result:
-        result = unicode(str, errors="replace")
+        result = unicode(s, errors="replace")
 
     return result
 
