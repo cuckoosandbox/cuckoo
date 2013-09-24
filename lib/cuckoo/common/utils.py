@@ -236,3 +236,10 @@ def to_unicode(str):
         result = unicode(str, errors="replace")
 
     return result
+
+def cleanup_value(v):
+    """Cleanup utility function, strips some unwanted parts from values."""
+    v = str(v)
+    if v.startswith("\\??\\"):
+        v = v[4:]
+    return v
