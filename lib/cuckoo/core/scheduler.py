@@ -366,6 +366,9 @@ class Scheduler:
         # Message queue with threads to transmit exceptions (used as IPC).
         errors = Queue.Queue()
 
+        analysiscount = 0
+        maxcount = self.cfg.cuckoo.max_analysis_count
+
         # This loop runs forever.
         while self.running:
             time.sleep(1)
@@ -393,3 +396,7 @@ class Scheduler:
                 pass
             else:
                 raise error
+
+            analysiscount += 1
+            if maxcount >= 0 and analysiscount >= maxcount:
+                self.running = False
