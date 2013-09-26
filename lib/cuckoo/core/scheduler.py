@@ -24,6 +24,9 @@ log = logging.getLogger(__name__)
 machinery = None
 machine_lock = Lock()
 
+total_analysis_count = 0
+active_analysis_count = 0
+
 class AnalysisManager(Thread):
     """Analysis Manager.
 
@@ -289,6 +292,7 @@ class AnalysisManager(Thread):
 
     def run(self):
         """Run manager thread."""
+        active_analysis_count += 1
         success = self.launch_analysis()
         Database().set_status(self.task.id, TASK_COMPLETED)
 
@@ -298,6 +302,8 @@ class AnalysisManager(Thread):
         Database().set_status(self.task.id, TASK_REPORTED)
 
         log.info("Task #%d: analysis procedure completed", self.task.id)
+        total_analysis_count += 1
+        active_analysis_count -= 1
 
 class Scheduler:
     """Tasks Scheduler.
@@ -366,7 +372,6 @@ class Scheduler:
         # Message queue with threads to transmit exceptions (used as IPC).
         errors = Queue.Queue()
 
-        analysiscount = 0
         maxcount = self.cfg.cuckoo.max_analysis_count
 
         # This loop runs forever.
@@ -378,16 +383,20 @@ class Scheduler:
             if machinery.availables() == 0:
                 continue
 
-            # Fetch a pending analysis task.
-            task = self.db.fetch()
+            if total_analysis_count >= maxcount:
+                if active_analysis_count <= 0:
+                    self.stop()
+            else:
+                # Fetch a pending analysis task.
+                task = self.db.fetch()
 
-            if task:
-                log.debug("Processing task #%s", task.id)
+                if task:
+                    log.debug("Processing task #%s", task.id)
 
-                # Initialize the analysis manager.
-                analysis = AnalysisManager(task, errors)
-                # Start.
-                analysis.start()
+                    # Initialize the analysis manager.
+                    analysis = AnalysisManager(task, errors)
+                    # Start.
+                    analysis.start()
 
             # Deal with errors.
             try:
@@ -396,7 +405,3 @@ class Scheduler:
                 pass
             else:
                 raise error
-
-            analysiscount += 1
-            if maxcount >= 0 and analysiscount >= maxcount:
-                self.stop()
