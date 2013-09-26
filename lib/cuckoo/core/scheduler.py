@@ -303,7 +303,6 @@ class AnalysisManager(Thread):
         Database().set_status(self.task.id, TASK_REPORTED)
 
         log.info("Task #%d: analysis procedure completed", self.task.id)
-        total_analysis_count += 1
         active_analysis_count -= 1
 
 class Scheduler:
@@ -393,6 +392,7 @@ class Scheduler:
 
                 if task:
                     log.debug("Processing task #%s", task.id)
+                    total_analysis_count += 1
 
                     # Initialize the analysis manager.
                     analysis = AnalysisManager(task, errors)
