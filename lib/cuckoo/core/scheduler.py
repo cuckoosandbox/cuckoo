@@ -292,6 +292,7 @@ class AnalysisManager(Thread):
 
     def run(self):
         """Run manager thread."""
+        global active_analysis_count, total_analysis_count
         active_analysis_count += 1
         success = self.launch_analysis()
         Database().set_status(self.task.id, TASK_COMPLETED)
