@@ -399,4 +399,4 @@ class Scheduler:
 
             analysiscount += 1
             if maxcount >= 0 and analysiscount >= maxcount:
-                self.running = False
+                self.stop()
