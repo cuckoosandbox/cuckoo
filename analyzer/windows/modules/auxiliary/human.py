@@ -70,10 +70,12 @@ def move_mouse():
     USER32.SetCursorPos(x, y)
 
 def click_mouse():
-    # mouse down
+    # Move mouse to start position.
+    USER32.SetCursorPos(0, 0)
+    # Mouse down.
     USER32.mouse_event(2, 0, 0, 0, None)
     KERNEL32.Sleep(50)
-    # mouse up
+    # Mouse up.
     USER32.mouse_event(4, 0, 0, 0, None)
 
 class Human(Auxiliary, Thread):
