@@ -244,8 +244,9 @@ def sanitize_filename(x):
     get rid of unicode problems."""
     out = ""
     for c in x:
-        if c in string.letters + string.digits:
+        if c in string.letters + string.digits + " _-.":
             out += c
         else:
-            out += ""
+            out += "_"
+
     return out

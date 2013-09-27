@@ -127,7 +127,6 @@ class GuestManager:
         log.info("Starting analysis on guest (id=%s, ip=%s)", self.id, self.ip)
 
         options["file_name"] = sanitize_filename(options["file_name"])
-        targetpath = options.pop("target")
 
         try:
             # Wait for the agent to respond. This is done to check the
@@ -146,9 +145,9 @@ class GuestManager:
             # If the target of the analysis is a file, upload it to the guest.
             if options["category"] == "file":
                 try:
-                    file_data = open(targetpath, "rb").read()
+                    file_data = open(options["target"], "rb").read()
                 except (IOError, OSError) as e:
-                    raise CuckooGuestError("Unable to read {0}, error: {1}".format(targetpath, e))
+                    raise CuckooGuestError("Unable to read {0}, error: {1}".format(options["target"], e))
                 
                 data = xmlrpclib.Binary(file_data)
 
