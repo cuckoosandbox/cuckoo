@@ -252,7 +252,7 @@ class AnalysisManager(Thread):
                 machinery.stop(self.machine.label)
             except CuckooMachineError as e:
                 log.warning("Unable to stop machine %s: %s", self.machine.label, e)
- 
+
             # Market the machine in the database as stopped.
             Database().guest_stop(guest_log)
 

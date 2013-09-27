@@ -238,3 +238,14 @@ def cleanup_value(v):
     if v.startswith("\\??\\"):
         v = v[4:]
     return v
+
+def sanitize_filename(x):
+    """Kind of awful but necessary sanitizing of filenames to 
+    get rid of unicode problems."""
+    out = ""
+    for c in x:
+        if c in string.letters + string.digits:
+            out += c
+        else:
+            out += ""
+    return out
