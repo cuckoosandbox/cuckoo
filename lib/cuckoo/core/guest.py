@@ -14,7 +14,7 @@ from zipfile import ZipFile, ZIP_STORED
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooGuestError
 from lib.cuckoo.common.constants import *
-from lib.cuckoo.common.utils import TimeoutServer
+from lib.cuckoo.common.utils import TimeoutServer, sanitize_filename
 
 log = logging.getLogger(__name__)
 
@@ -125,6 +125,8 @@ class GuestManager:
         @return: operation status.
         """
         log.info("Starting analysis on guest (id=%s, ip=%s)", self.id, self.ip)
+
+        options["file_name"] = sanitize_filename(options["file_name"])
 
         try:
             # Wait for the agent to respond. This is done to check the
