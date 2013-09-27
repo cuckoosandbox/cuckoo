@@ -205,11 +205,6 @@ class AnalysisManager(Thread):
             machinery.start(self.machine.label)
         except CuckooMachineError as e:
             log.error(str(e), extra={"task_id": self.task.id})
-
-            # Stop Auxiliary modules.
-            aux.stop()
-
-            return False
         else:
             try:
                 # Initialize the guest manager.
@@ -218,11 +213,6 @@ class AnalysisManager(Thread):
                 guest.start_analysis(options)
             except CuckooGuestError as e:
                 log.error(str(e), extra={"task_id": self.task.id})
-
-                # Stop Auxiliary modules.
-                aux.stop()
-
-                return False
             else:
                 # Wait for analysis completion.
                 try:

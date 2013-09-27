@@ -127,6 +127,7 @@ class GuestManager:
         log.info("Starting analysis on guest (id=%s, ip=%s)", self.id, self.ip)
 
         options["file_name"] = sanitize_filename(options["file_name"])
+        targetpath = options.pop("target")
 
         try:
             # Wait for the agent to respond. This is done to check the
@@ -137,14 +138,17 @@ class GuestManager:
             self.upload_analyzer()
             # Give the analysis options to the guest, so it can generate the
             # analysis.conf inside the guest.
-            self.server.add_config(options)
+            try:
+                self.server.add_config(options)
+            except:
+                raise CuckooGuestError("{0}: unable to upload config to analysis machine".format(self.id))
 
             # If the target of the analysis is a file, upload it to the guest.
             if options["category"] == "file":
                 try:
-                    file_data = open(options["target"], "rb").read()
+                    file_data = open(targetpath, "rb").read()
                 except (IOError, OSError) as e:
-                    raise CuckooGuestError("Unable to read {0}, error: {1}".format(options["target"], e))
+                    raise CuckooGuestError("Unable to read {0}, error: {1}".format(targetpath, e))
                 
                 data = xmlrpclib.Binary(file_data)
 
