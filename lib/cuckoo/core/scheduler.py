@@ -252,7 +252,7 @@ class AnalysisManager(Thread):
                 machinery.stop(self.machine.label)
             except CuckooMachineError as e:
                 log.warning("Unable to stop machine %s: %s", self.machine.label, e)
-
+ 
             # Market the machine in the database as stopped.
             Database().guest_stop(guest_log)
 
@@ -294,15 +294,19 @@ class AnalysisManager(Thread):
         """Run manager thread."""
         global active_analysis_count
         active_analysis_count += 1
-        success = self.launch_analysis()
-        Database().set_status(self.task.id, TASK_COMPLETED)
+        try:
+            success = self.launch_analysis()
+            Database().set_status(self.task.id, TASK_COMPLETED)
 
-        log.debug("Released database task #%d with status %s", self.task.id, success)
+            log.debug("Released database task #%d with status %s", self.task.id, success)
 
-        self.process_results()
-        Database().set_status(self.task.id, TASK_REPORTED)
+            self.process_results()
+            Database().set_status(self.task.id, TASK_REPORTED)
 
-        log.info("Task #%d: analysis procedure completed", self.task.id)
+            log.info("Task #%d: analysis procedure completed", self.task.id)
+        except:
+            log.exception("Failure in AnalysisManager.run")
+
         active_analysis_count -= 1
 
 class Scheduler:
