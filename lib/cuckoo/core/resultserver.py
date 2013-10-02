@@ -186,6 +186,8 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             pass
         except socket.error, e:
             log.debug("socket.error: {0}".format(e))
+        except Exception, e:
+            log.critical("FIXME - exception in resultserver connection %s: %s", str(self.client_address), e)
 
         try: self.protocol.close()
         except: pass
