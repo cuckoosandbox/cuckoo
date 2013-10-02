@@ -232,7 +232,8 @@ class Resulthandler(SocketServer.BaseRequestHandler):
                 ] + argumentstrings)
 
     def log_error(self, emsg):
-        log.warning("Resultserver error condition on connection %s: %s", str(self.client_address), emsg)
+        log.warning("Resultserver error condition on connection %s (pid %s procname %s): %s",
+            str(self.client_address), str(self.pid), str(self.procname), emsg)
 
     def create_folders(self):
         folders = ["shots", "files", "logs"]
