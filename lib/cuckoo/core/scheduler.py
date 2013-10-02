@@ -374,7 +374,8 @@ class Scheduler:
             if machinery.availables() == 0:
                 continue
 
-            if total_analysis_count >= maxcount:
+            # Exits if max_analysis_count is defined in config file and is reached.
+            if maxcount and total_analysis_count >= maxcount:
                 if active_analysis_count <= 0:
                     self.stop()
             else:
