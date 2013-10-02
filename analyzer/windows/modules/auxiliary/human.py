@@ -70,8 +70,8 @@ def move_mouse():
     USER32.SetCursorPos(x, y)
 
 def click_mouse():
-    # Move mouse to start position.
-    USER32.SetCursorPos(0, 0)
+    # Move mouse to bottom-right position.
+    USER32.SetCursorPos(RESOLUTION['x'], RESOLUTION['y'])
     # Mouse down.
     USER32.mouse_event(2, 0, 0, 0, None)
     KERNEL32.Sleep(50)
