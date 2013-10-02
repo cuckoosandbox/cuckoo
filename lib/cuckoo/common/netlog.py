@@ -127,6 +127,11 @@ class NetlogParser(object):
     def read_string(self):
         """Reads an utf8 string from the socket."""
         length, maxlength = struct.unpack("II", self.handler.read(8))
+        if length < 0:
+            log.critical("read_string length < 0? length: %d maxlength: %d", length, maxlength)
+            self.handler.log_error("read_string length failure, protocol broken?")
+            return ""
+
         s = self.handler.read(length)
         if maxlength > length: s += "... (truncated)"
         return s

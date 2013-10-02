@@ -112,6 +112,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         self.startbuf = ""
         self.end_request = Event()
         self.done_event = Event()
+        self.pid, self.ppid, self.procname = (None, None, None)
         self.server.register_handler(self)
 
     def finish(self):
@@ -203,6 +204,8 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         # Netlog raw format is mandatory (postprocessing)
         self.rawlogfd = open(os.path.join(self.storagepath, "logs", str(pid) + EXTENSIONS.get(type(self.protocol), ".raw")), "wb")
         self.rawlogfd.write(self.startbuf)
+        if self.pid != None:
+            log.warning("Resultserver got a new process message but already has pid %d ppid %s procname %s", pid, str(ppid), procname)
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
     def log_thread(self, context, pid):
@@ -225,6 +228,9 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             print >>self.logfd, ",".join("\"{0}\"".format(i) for i in [timestring, self.pid,
                 self.procname, tid, self.ppid, modulename, apiname, status, returnval,
                 ] + argumentstrings)
+
+    def log_error(self, emsg):
+        log.warning("Resultserver error condition on connection %s: %s", str(self.client_address), emsg)
 
     def create_folders(self):
         folders = ["shots", "files", "logs"]

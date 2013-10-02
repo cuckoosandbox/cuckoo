@@ -115,6 +115,10 @@ class ParseProcessLog(list):
         return nextcall
 
     def log_process(self, context, timestring, pid, ppid, modulepath, procname):
+        if self.process_id != None:
+            log.warning("ParseProcessLog got a new process message but already has pid %d ppid %s procname %s",
+                self.process_id, str(self.parent_id), self.process_name)
+
         self.process_id, self.parent_id, self.process_name = pid, ppid, procname
         self.first_seen = timestring
 
@@ -133,6 +137,9 @@ class ParseProcessLog(list):
                                      apiname, 
                                      status,
                                      returnval] + arguments)
+
+    def log_error(self, emsg):
+        log.warning("ParseProcessLog error condition on log %s: %s", str(self._log_path), emsg)
 
     def _parse(self, row):
         """Parse log row.
