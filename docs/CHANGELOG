@@ -20,6 +20,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Added generic analysis package to execute samples via cmd.exe
 * Added MAEC 4.0 reporting module
 * Added filter for private networks in Network Analysis processing module
+* Added max_analysis_count to cuckoo.conf to automatically shutdown Cuckoo
 * Refactored processing to improve performances
 * Refactored signature engine, introducing event-based signatures to improve performances
 * Refactored generation of process tree
