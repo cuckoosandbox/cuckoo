@@ -38,7 +38,8 @@ The following libraries are not strictly required, but their installation is rec
     * `Bottlepy`_ (Optional): for using the ``api.py`` utility (use release 0.10 or above).
     * `Django`_ (Optional): for using the web interface (use release 1.5 or above).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
-    * `Volatility`_ (Optional): used for forensic analysis on memory dump
+    * `Volatility`_ (Optional): used for forensic analysis on memory
+    * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use release 4.0 or above).
 
 Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
 
@@ -46,7 +47,7 @@ Some of them are already packaged in Debian/Ubuntu and can be installed with the
 
 Except for *python-magic* and *python-libvirt*, the others can be installed through ``pip`` too::
 
-    $ sudo pip install dpkt jinja2 pymongo bottle pefile
+    $ sudo pip install dpkt jinja2 pymongo bottle pefile maec
 
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 
@@ -65,6 +66,7 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Django: https://www.djangoproject.com/
 .. _Pefile: http://code.google.com/p/pefile/
 .. _Volatility: http://code.google.com/p/volatility/
+.. _MAEC Python bindings: https://pypi.python.org/pypi/maec
 
 Virtualization Software
 =======================

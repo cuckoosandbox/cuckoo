@@ -253,27 +253,35 @@ It contains the following sections::
     # they will be available in your Python class.
 
     [jsondump]
-    enabled = on
+    enabled = yes
 
     [reporthtml]
-    enabled = on
+    enabled = yes
 
-    [metadata]
-    enabled = off
+    [mmdef]
+    enabled = no
 
-    [maec11]
-    enabled = off
+    [maec40]
+    enabled = no
+    mode = overview
+    processtree = true
+    output_handles = false
+    static = true
+    strings = true
+    virustotal = true
 
     [mongodb]
-    enabled = off
+    enabled = no
+    host = 127.0.0.1
+    port = 27017
 
     [hpfclient]
-    enabled = off
-    host = 
+    enabled = no
+    host =
     port = 10000
-    ident = 
-    secret = 
-    channel = 
+    ident =
+    secret =
+    channel =
 
 By setting those option to *on* or *off* you enable or disable the generation
 of such reports.
