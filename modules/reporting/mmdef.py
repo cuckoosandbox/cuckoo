@@ -38,11 +38,11 @@ class MMDef(Report):
             raise CuckooReportError("Unknown target type")
 
         self.m = maec.malwareMetaData(
-            version = "1.1",
-            id = id,
-            author = "Cuckoo Sandbox %s" % self.results["info"]["version"],
-            comment = "Report created with Cuckoo Sandbox %s automated and open source malware sandbox: http://www.cuckoosandbox.org" % self.results["info"]["version"],
-            timestamp = datetime_to_iso(self.results["info"]["started"])
+            version="1.1",
+            id=id,
+            author="Cuckoo Sandbox %s" % self.results["info"]["version"],
+            comment="Report created with Cuckoo Sandbox %s automated and open source malware sandbox: http://www.cuckoosandbox.org" % self.results["info"]["version"],
+            timestamp=datetime_to_iso(self.results["info"]["started"])
         )
         # Objects
         self.objects = maec.objectsType()
@@ -62,8 +62,8 @@ class MMDef(Report):
             self.objects.add_file(self.createFileObject(self.results["target"]["file"]))
         elif self.results["target"]["category"] == "url":
             self.objects.add_uri(maec.uriObject(
-                                                id = hashlib.md5(self.results["target"]["url"]).hexdigest(),
-                                                uriString = self.results["target"]["url"])
+                                                id=hashlib.md5(self.results["target"]["url"]).hexdigest(),
+                                                uriString=self.results["target"]["url"])
                                  )
         else:
             raise CuckooReportError("Unknown target type")
@@ -94,25 +94,25 @@ class MMDef(Report):
         @return: file object.
         """
         file = maec.fileObject(
-                               id = f["md5"], 
-                               fileType = [f["type"]], 
-                               size = f["size"], 
-                               crc32 = f["crc32"],
-                               md5 = f["md5"], 
-                               sha1 = f["sha1"], 
-                               sha512 = f["sha512"]
+                               id=f["md5"],
+                               fileType=[f["type"]],
+                               size=f["size"],
+                               crc32=f["crc32"],
+                               md5=f["md5"],
+                               sha1=f["sha1"],
+                               sha512=f["sha512"]
                                )
         file.add_extraHash(maec.extraHashType("ssdeep", f["ssdeep"]))
         # Add related filename
         prop = maec.objectProperty()
         prop.add_property(maec.property(
-                                        type_= "filename",
-                                        valueOf_ = f["name"]
+                                        type_="filename",
+                                        valueOf_=f["name"]
                                         )
                           )
         prop.set_references(
                             maec.reference(
-                                           valueOf_ = "file[@id='%s']" % f["md5"]
+                                           valueOf_="file[@id='%s']" % f["md5"]
                                            )
                             ) 
         self.properties.add_objectProperty(prop)
@@ -138,9 +138,9 @@ class MMDef(Report):
         # Dropped files
         for file in self.results["dropped"]:
             self.relationships.add_relationship(self.createRelation(
-                                                                    action = "installed",
-                                                                    src = src,
-                                                                    dst = "file[@id='%s']" % file["md5"]
+                                                                    action="installed",
+                                                                    src=src,
+                                                                    dst="file[@id='%s']" % file["md5"]
                                                                     )
                                                 )
         # Network
@@ -163,18 +163,18 @@ class MMDef(Report):
                                 self.objects.add_ip(found)
                             # Create relation
                             self.relationships.add_relationship(self.createRelation(
-                                                                                    action = "isServerOfService", 
-                                                                                    src = "ip[@id='%s']" % found.id, 
-                                                                                    dst = "uri[@id='%s']" % req.id
+                                                                                    action="isServerOfService",
+                                                                                    src="ip[@id='%s']" % found.id,
+                                                                                    dst="uri[@id='%s']" % req.id
                                                                                     )
                                                                 )
             # HTTP requests
             if "http" in self.results["network"] and isinstance(self.results["network"]["http"], list):
                 for req in self.results["network"]["http"]:
                     self.relationships.add_relationship(self.createRelation(
-                                                                            action = "contactedBy",
-                                                                            src = src,
-                                                                            dst = "uri[@id='%s']" % req["uri"]
+                                                                            action="contactedBy",
+                                                                            src=src,
+                                                                            dst="uri[@id='%s']" % req["uri"]
                                                                             )
                                                         )
 
@@ -186,15 +186,15 @@ class MMDef(Report):
         @return: relation object
         """
         return maec.relationship(
-                                id = self.getRelId(),
-                                type_ = action,
-                                source = maec.reference(
-                                                        valueOf_ = src
+                                id=self.getRelId(),
+                                type_=action,
+                                source=maec.reference(
+                                                        valueOf_=src
                                                         ),
-                                target = maec.reference(
-                                                        valueOf_ = dst
+                                target=maec.reference(
+                                                        valueOf_=dst
                                                         )
-                                )            
+                                )
 
     def createIpObject(self, ip):
         """Creates an single IP object, not an IP range object.
@@ -202,14 +202,14 @@ class MMDef(Report):
         @return: IP object
         """
         return maec.IPObject(
-                             id = "%s-%s" % (ip, ip),
-                             startAddress = maec.IPAddress(
-                                                           type_ = "ipv4",
-                                                           valueOf_ = ip
+                             id="%s-%s" % (ip, ip),
+                             startAddress=maec.IPAddress(
+                                                           type_="ipv4",
+                                                           valueOf_=ip
                                                            ),
-                             endAddress = maec.IPAddress(
-                                                           type_ = "ipv4",
-                                                           valueOf_ = ip
+                             endAddress=maec.IPAddress(
+                                                           type_="ipv4",
+                                                           valueOf_=ip
                                                            )
                              )
 
@@ -219,36 +219,36 @@ class MMDef(Report):
         @return: created URI object
         """
         uri = maec.uriObject(
-                             id = req["uri"],
-                             uriString = req["uri"],
-                             protocol = "http",
-                             hostname = req["host"],
-                             port = req["port"],
-                             path = req["path"],
-                             ipProtocol = "tcp"
+                             id=req["uri"],
+                             uriString=req["uri"],
+                             protocol="http",
+                             hostname=req["host"],
+                             port=req["port"],
+                             path=req["path"],
+                             ipProtocol="tcp"
                              )
         # Add details
         prop = maec.objectProperty()
         prop.add_property(maec.property(
-                                        type_= "httpMethod",
-                                        valueOf_ = req["method"]
+                                        type_="httpMethod",
+                                        valueOf_=req["method"]
                                         )
                           )
         if req["method"] == "POST":
             prop.add_property(maec.property(
-                                        type_= "postData",
-                                        valueOf_ = "<![CDATA[%s]]>" % req["body"]
+                                        type_="postData",
+                                        valueOf_="<![CDATA[%s]]>" % req["body"]
                                         )
                           )
         if "user-agent" in req:
             prop.add_property(maec.property(
-                                        type_= "userAgent",
-                                        valueOf_ = req["user-agent"]
+                                        type_="userAgent",
+                                        valueOf_=req["user-agent"]
                                         )
                           )
         prop.set_references(
                             maec.reference(
-                                           valueOf_ = "uri[@id='%s']" % req["uri"]
+                                           valueOf_="uri[@id='%s']" % req["uri"]
                                            )
                             )
         self.properties.add_objectProperty(prop)
@@ -263,7 +263,7 @@ class MMDef(Report):
             report.write("Cuckoo Sandbox malware analysis report\n")
             report.write("http://www.cuckoosandbox.org\n")
             report.write("-->\n")
-            self.m.export(report, 0, namespace_ = "", namespacedef_ = "xmlns='http://xml/metadataSharing.xsd' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://xml/metadataSharing.xsd'")
+            self.m.export(report, 0, namespace_="", namespacedef_="xmlns='http://xml/metadataSharing.xsd' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://xml/metadataSharing.xsd'")
             report.close()
         except (TypeError, IOError) as e:
             raise CuckooReportError("Failed to generate MAEC Metadata report: %s" % e)
