@@ -17,8 +17,8 @@ EnumWindowsProc = WINFUNCTYPE(c_bool, POINTER(c_int), POINTER(c_int))
 EnumChildProc = WINFUNCTYPE(c_bool, POINTER(c_int), POINTER(c_int))
 
 RESOLUTION = {
-    "x" : USER32.GetSystemMetrics(0),
-    "y" : USER32.GetSystemMetrics(1)
+    "x": USER32.GetSystemMetrics(0),
+    "y": USER32.GetSystemMetrics(1)
 }
 
 def foreach_child(hwnd, lparam):
@@ -71,7 +71,7 @@ def move_mouse():
 
 def click_mouse():
     # Move mouse to bottom-right position.
-    USER32.SetCursorPos(RESOLUTION['x'], RESOLUTION['y'])
+    USER32.SetCursorPos(RESOLUTION["x"], RESOLUTION["y"])
     # Mouse down.
     USER32.mouse_event(2, 0, 0, 0, None)
     KERNEL32.Sleep(50)
