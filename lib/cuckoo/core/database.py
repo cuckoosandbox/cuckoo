@@ -34,6 +34,7 @@ log = logging.getLogger(__name__)
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
+TASK_RECOVERED = "recovered"
 TASK_REPORTED = "reported"
 
 # Secondary table used in association Machine - Tag.
@@ -295,6 +296,7 @@ class Task(Base):
                          TASK_RUNNING,
                          TASK_COMPLETED,
                          TASK_REPORTED,
+                         TASK_RECOVERED,
                          name="status_type"),
                          server_default=TASK_PENDING,
                          nullable=False)
@@ -883,6 +885,7 @@ class Database(object):
         @return: ID of the newly created task.
         """
         task = self.view_task(task_id)
+
         if not task:
             return None
 
@@ -890,6 +893,23 @@ class Database(object):
             add = self.add_path
         elif task.category == "url":
             add = self.add_url
+
+        # Change status to recovered.
+        session = self.Session()
+        session.query(Task).get(task_id).status = TASK_RECOVERED
+        try:
+            session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+        # Normalize tags.
+        if task.tags:
+            tags = ",".join([tag.name for tag in task.tags])
+        else:
+            tags = task.tags
 
         return add(task.target,
                    task.timeout,
@@ -899,6 +919,7 @@ class Database(object):
                    task.custom,
                    task.machine,
                    task.platform,
+                   tags,
                    task.memory,
                    task.enforce_timeout,
                    task.clock)
