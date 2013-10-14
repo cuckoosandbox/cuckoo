@@ -56,7 +56,10 @@ def main():
                              clock=args.clock,
                              tags=args.tags)
 
-        print(bold(green("Success")) + u": URL \"{0}\" added as task with ID {1}".format(target, task_id))
+        if task_id:
+            print(bold(green("Success")) + u": URL \"{0}\" added as task with ID {1}".format(target, task_id))
+        else:
+            print(bold(red("Error")) + ": adding task to database")	
     else:
         # Get absolute path to deal with relative.
         path = to_unicode(os.path.abspath(target))
