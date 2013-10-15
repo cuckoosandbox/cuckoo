@@ -496,7 +496,7 @@ class LibVirtMachinery(Machinery):
             self._disconnect(conn)
 
         if snap:
-            return snap
+            return vm.snapshotCurrent(flags=0)
 
         # If no current snapshot, get the last one.
         conn = self._connect()
