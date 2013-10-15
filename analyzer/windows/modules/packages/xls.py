@@ -31,6 +31,7 @@ class XLS(Package):
             raise CuckooPackageError("Unable to find any Microsoft Office Excel executable available")
 
         free = self.options.get("free", False)
+        dll = self.options.get("dll")
         suspended = True
         if free:
             suspended = False
@@ -40,7 +41,10 @@ class XLS(Package):
             raise CuckooPackageError("Unable to execute initial Microsoft Office Excel process, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            if dll:
+                p.inject(os.path.join("dll", dll))
+            else:
+                p.inject()
             p.resume()
             return p.pid
         else:

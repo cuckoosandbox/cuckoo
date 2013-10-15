@@ -13,6 +13,7 @@ class HTML(Package):
 
     def start(self, path):
         free = self.options.get("free", False)
+        dll = self.options.get("dll")
         suspended = True
         if free:
             suspended = False
@@ -22,7 +23,10 @@ class HTML(Package):
             raise CuckooPackageError("Unable to execute initial Internet Explorer process, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            if dll:
+                p.inject(os.path.join("dll", dll))
+            else:
+                p.inject()
             p.resume()
             return p.pid
         else:

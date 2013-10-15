@@ -27,6 +27,7 @@ class PDF(Package):
 
     def start(self, path):
         reader = self.get_path()
+        dll = self.options.get("dll")
         if not reader:
             raise CuckooPackageError("Unable to find any Adobe Reader executable available")
 
@@ -40,7 +41,10 @@ class PDF(Package):
             raise CuckooPackageError("Unable to execute initial Adobe Reader process, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            if dll:
+                p.inject(os.path.join("dll", dll))
+            else:
+                p.inject()
             p.resume()
             return p.pid
         else:

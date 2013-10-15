@@ -25,6 +25,7 @@ class Jar(Package):
 
     def start(self, path):
         java = self.get_path()
+        dll = self.options.get("dll")
         if not java:
             raise CuckooPackageError("Unable to find any Java executable available")
 
@@ -44,7 +45,10 @@ class Jar(Package):
             raise CuckooPackageError("Unable to execute initial Java process, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            if dll:
+                p.inject(os.path.join("dll", dll))
+            else:
+                p.inject()
             p.resume()
             return p.pid
         else:

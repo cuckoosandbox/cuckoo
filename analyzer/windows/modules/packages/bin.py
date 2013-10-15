@@ -2,6 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os
+
 from lib.common.abstracts import Package
 from lib.api.process import Process
 
@@ -10,8 +12,12 @@ class Shellcode(Package):
 
     def start(self, path):
         p = Process()
+        dll = self.options.get("dll")
         p.execute(path="bin/execsc.exe", args=path, suspended=True)
-        p.inject()
+        if dll:
+            p.inject(os.path.join("dll", dll))
+        else:
+            p.inject()
         p.resume()
 
         return p.pid
