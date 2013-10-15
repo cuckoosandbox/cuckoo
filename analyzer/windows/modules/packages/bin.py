@@ -14,10 +14,7 @@ class Shellcode(Package):
         p = Process()
         dll = self.options.get("dll")
         p.execute(path="bin/execsc.exe", args=path, suspended=True)
-        if dll:
-            p.inject(os.path.join("dll", dll))
-        else:
-            p.inject()
+        p.inject(dll)
         p.resume()
 
         return p.pid

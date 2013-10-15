@@ -35,6 +35,7 @@ FILES_LIST = []
 DUMPED_LIST = []
 PROCESS_LIST = []
 PROCESS_LOCK = Lock()
+DEFAULT_DLL = None
 
 PID = os.getpid()
 PPID = Process(pid=PID).get_parent_pid()
@@ -143,13 +144,10 @@ class PipeHandler(Thread):
     decides what to do with them.
     """
 
-    def __init__(self, h_pipe, dll):
+    def __init__(self, h_pipe):
         """@param h_pipe: PIPE to read."""
         Thread.__init__(self)
         self.h_pipe = h_pipe
-        if dll == None:
-            dll = "cuckoomon.dll"
-        self.dll = dll
 
     def run(self):
         """Run handler.
@@ -220,11 +218,12 @@ class PipeHandler(Thread):
                 # process.
                 PROCESS_LOCK.acquire()
 
+                # Set the current DLL to the default one provided at submission.
+                dll = DEFAULT_DLL
+
                 # We parse the process ID.
                 data = command[8:]
-
                 process_id = thread_id = None
-                dll = os.path.join("dll", self.dll)
                 if not "," in data:
                     if data.isdigit():
                         process_id = int(data)
@@ -239,8 +238,9 @@ class PipeHandler(Thread):
                     if param.isdigit():
                         thread_id = int(param)
                     else:
+                        # XXX: Expect a new DLL as a message parameter?
                         if isinstance(param, str):
-                            dll = os.path.join("dll", param)
+                            dll = param
 
                 if process_id:
                     if process_id not in (PID, PPID):
@@ -326,10 +326,9 @@ class PipeServer(Thread):
     new processes being spawned and for files being created or deleted.
     """
 
-    def __init__(self, dll, pipe_name=PIPE):
+    def __init__(self, pipe_name=PIPE):
         """@param pipe_name: Cuckoo PIPE server name."""
         Thread.__init__(self)
-        self.dll = dll
         self.pipe_name = pipe_name
         self.do_run = True
 
@@ -358,9 +357,8 @@ class PipeServer(Thread):
                 return False
 
             # If we receive a connection to the pipe, we invoke the handler.
-            if KERNEL32.ConnectNamedPipe(h_pipe, None) or \
-                    KERNEL32.GetLastError() == ERROR_PIPE_CONNECTED:
-                handler = PipeHandler(h_pipe, self.dll)
+            if KERNEL32.ConnectNamedPipe(h_pipe, None) or KERNEL32.GetLastError() == ERROR_PIPE_CONNECTED:
+                handler = PipeHandler(h_pipe)
                 handler.daemon = True
                 handler.start()
             else:
@@ -384,6 +382,8 @@ class Analyzer:
 
     def prepare(self):
         """Prepare env for analysis."""
+        global DEFAULT_DLL
+
         # Get SeDebugPrivilege for the Python process. It will be needed in
         # order to perform the injections.
         grant_debug_privilege()
@@ -409,18 +409,20 @@ class Analyzer:
         os.system("echo:|date {0}".format(clock.strftime("%m-%d-%y")))
         os.system("echo:|time {0}".format(clock.strftime("%H:%M:%S")))
 
+        # Set the default DLL to be used by the PipeHandler.
+        DEFAULT_DLL = self.get_options().get("dll", None)
+
         # Initialize and start the Pipe Servers. This is going to be used for
         # communicating with the injected and monitored processes.
         for x in xrange(self.PIPE_SERVER_COUNT):
-            self.pipes[x] = PipeServer(self.get_options().get("dll"), PIPE)
+            self.pipes[x] = PipeServer()
             self.pipes[x].daemon = True
             self.pipes[x].start()
 
         # We update the target according to its category. If it's a file, then
         # we store the path.
         if self.config.category == "file":
-            self.target = os.path.join(os.environ["TEMP"] + os.sep,
-                                       str(self.config.file_name))
+            self.target = os.path.join(os.environ["TEMP"] + os.sep, str(self.config.file_name))
         # If it's a URL, well.. we store the URL.
         else:
             self.target = self.config.target
@@ -448,8 +450,7 @@ class Analyzer:
                     try:
                         key, value = field.strip().split("=")
                     except ValueError as e:
-                        log.warning("Failed parsing option (%s): %s"
-                                    % (field, e))
+                        log.warning("Failed parsing option (%s): %s", field, e)
                     else:
                         # If the parsing went good, we add the option to the
                         # dictionary.
@@ -473,9 +474,9 @@ class Analyzer:
         """
         self.prepare()
 
-        log.info("Starting analyzer from: %s" % os.getcwd())
-        log.info("Storing results at: %s" % PATHS["root"])
-        log.info("Pipe server name: %s" % PIPE)
+        log.info("Starting analyzer from: %s", os.getcwd())
+        log.info("Storing results at: %s", PATHS["root"])
+        log.info("Pipe server name: %s", PIPE)
 
         # If no analysis package was specified at submission, we try to select
         # one automatically.
@@ -493,8 +494,7 @@ class Analyzer:
             # If we weren't able to automatically determine the proper package,
             # we need to abort the analysis.
             if not package:
-                raise CuckooError("No valid package available for file type: %s"
-                                  % self.config.file_type)
+                raise CuckooError("No valid package available for file type: {0}".format(self.config.file_type))
 
             log.info("Automatically selected analysis package \"%s\"", package)
         # Otherwise just select the specified package.

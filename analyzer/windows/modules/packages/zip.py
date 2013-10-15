@@ -14,7 +14,6 @@ class Zip(Package):
 
     def start(self, path):
         root = os.environ["TEMP"]
-        dll = self.options.get("dll")
         password = self.options.get("password", None)
 
         with ZipFile(path, "r") as archive:
@@ -29,6 +28,7 @@ class Zip(Package):
                     raise CuckooPackageError("Unable to extract Zip file, unknown password?")
 
         file_path = os.path.join(root, self.options.get("file", "sample.exe"))
+        dll = self.options.get("dll", None)
         free = self.options.get("free", False)
         args = self.options.get("arguments", None)
         suspended = True
@@ -40,10 +40,7 @@ class Zip(Package):
             raise CuckooPackageError("Unable to execute initial process, analysis aborted")
 
         if not free and suspended:
-            if dll:
-                p.inject(os.path.join("dll", dll))
-            else:
-                p.inject()
+            p.inject(dll)
             p.resume()
             return p.pid
         else:

@@ -15,7 +15,7 @@ class Dll(Package):
         free = self.options.get("free", False)
         function = self.options.get("function", "DllMain")
         arguments = self.options.get("arguments", None)
-        dll = self.options.get("dll")
+        dll = self.options.get("dll", None)
         suspended = True
         if free:
             suspended = False
@@ -29,10 +29,7 @@ class Dll(Package):
             raise CuckooPackageError("Unable to execute rundll32, analysis aborted")
 
         if not free and suspended:
-            if dll:
-                p.inject(os.path.join("dll", dll))
-            else:
-                p.inject()
+            p.inject(dll)
             p.resume()
             return p.pid
         else:
