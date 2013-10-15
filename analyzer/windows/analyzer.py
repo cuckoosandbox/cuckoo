@@ -143,10 +143,13 @@ class PipeHandler(Thread):
     decides what to do with them.
     """
 
-    def __init__(self, h_pipe):
+    def __init__(self, h_pipe, dll):
         """@param h_pipe: PIPE to read."""
         Thread.__init__(self)
         self.h_pipe = h_pipe
+        if dll == None:
+            dll = "cuckoomon.dll"
+        self.dll = dll
 
     def run(self):
         """Run handler.
@@ -221,20 +224,23 @@ class PipeHandler(Thread):
                 data = command[8:]
 
                 process_id = thread_id = None
+                dll = os.path.join("dll", self.dll)
                 if not "," in data:
                     if data.isdigit():
                         process_id = int(data)
                 elif len(data.split(",")) == 2:
-                    process_id, thread_id = data.split(",")
+                    process_id, param = data.split(",")
+                    thread_id = None
                     if process_id.isdigit():
                         process_id = int(process_id)
                     else:
                         process_id = None
 
-                    if thread_id.isdigit():
-                        thread_id = int(thread_id)
+                    if param.isdigit():
+                        thread_id = int(param)
                     else:
-                        thread_id = None
+                        if isinstance(param, str):
+                            dll = os.path.join("dll", param)
 
                 if process_id:
                     if process_id not in (PID, PPID):
@@ -259,12 +265,12 @@ class PipeHandler(Thread):
                                 # If we have both pid and tid, then we can use
                                 # apc to inject
                                 if process_id and thread_id:
-                                    proc.inject(apc=True)
+                                    proc.inject(dll, apc=True)
                                 else:
                                     # we inject using CreateRemoteThread, this
                                     # needs the waiting in order to make sure no
                                     # race conditions occur
-                                    proc.inject()
+                                    proc.inject(dll)
                                     wait = True
 
                                 log.info("Successfully injected process with pid %s", proc.pid)
@@ -320,9 +326,10 @@ class PipeServer(Thread):
     new processes being spawned and for files being created or deleted.
     """
 
-    def __init__(self, pipe_name=PIPE):
+    def __init__(self, dll, pipe_name=PIPE):
         """@param pipe_name: Cuckoo PIPE server name."""
         Thread.__init__(self)
+        self.dll = dll
         self.pipe_name = pipe_name
         self.do_run = True
 
@@ -353,7 +360,7 @@ class PipeServer(Thread):
             # If we receive a connection to the pipe, we invoke the handler.
             if KERNEL32.ConnectNamedPipe(h_pipe, None) or \
                     KERNEL32.GetLastError() == ERROR_PIPE_CONNECTED:
-                handler = PipeHandler(h_pipe)
+                handler = PipeHandler(h_pipe, self.dll)
                 handler.daemon = True
                 handler.start()
             else:
@@ -405,7 +412,7 @@ class Analyzer:
         # Initialize and start the Pipe Servers. This is going to be used for
         # communicating with the injected and monitored processes.
         for x in xrange(self.PIPE_SERVER_COUNT):
-            self.pipes[x] = PipeServer()
+            self.pipes[x] = PipeServer(self.get_options().get("dll"), PIPE)
             self.pipes[x].daemon = True
             self.pipes[x].start()
 

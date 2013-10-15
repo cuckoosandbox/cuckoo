@@ -2,6 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os
+
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
@@ -13,6 +15,7 @@ class Dll(Package):
         free = self.options.get("free", False)
         function = self.options.get("function", "DllMain")
         arguments = self.options.get("arguments", None)
+        dll = self.options.get("dll")
         suspended = True
         if free:
             suspended = False
@@ -26,7 +29,10 @@ class Dll(Package):
             raise CuckooPackageError("Unable to execute rundll32, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            if dll:
+                p.inject(os.path.join("dll", dll))
+            else:
+                p.inject()
             p.resume()
             return p.pid
         else:

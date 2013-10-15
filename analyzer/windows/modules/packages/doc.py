@@ -30,6 +30,7 @@ class DOC(Package):
 
     def start(self, path):
         word = self.get_path()
+        dll = self.options.get("dll")
         if not word:
             raise CuckooPackageError("Unable to find any Microsoft Office Word executable available")
 
@@ -43,7 +44,10 @@ class DOC(Package):
             raise CuckooPackageError("Unable to execute initial Microsoft Office Word process, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            if dll:
+                p.inject(os.path.join("dll", dll))
+            else:
+                p.inject()
             p.resume()
             return p.pid
         else:

@@ -43,6 +43,7 @@ class Applet(Package):
 
     def start(self, path):
         browser = self.get_path()
+        dll = self.options.get("dll")
         if not browser:
             raise CuckooPackageError("Unable to find any browser executable available")
 
@@ -59,7 +60,10 @@ class Applet(Package):
             raise CuckooPackageError("Unable to execute initial Internet Exploer process, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            if dll:
+                p.inject(os.path.join("dll", dll))
+            else:
+                p.inject()
             p.resume()
             return p.pid
         else:

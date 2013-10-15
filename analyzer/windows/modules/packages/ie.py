@@ -8,11 +8,13 @@ from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
+
 class IE(Package):
     """Internet Explorer analysis package."""
 
     def start(self, url):
         free = self.options.get("free", False)
+        dll = self.options.get("dll")
         suspended = True
         if free:
             suspended = False
@@ -22,7 +24,10 @@ class IE(Package):
             raise CuckooPackageError("Unable to execute initial Internet Explorer process, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            if dll:
+                p.inject(os.path.join("dll",dll))
+            else:
+                p.inject()
             p.resume()
             return p.pid
         else:
