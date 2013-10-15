@@ -370,23 +370,22 @@ class Scheduler:
             time.sleep(1)
 
             # If not enough free diskspace is available, then we print an
-            # error message and wait another round. (This check is ignored
-            # when freespace is set to zero.)
+            # error message and wait another round (this check is ignored
+            # when freespace is set to zero).
             if self.cfg.cuckoo.freespace:
                 # Resolve the full base path to the analysis folder, just in
                 # case somebody decides to make a symlink out of it.
                 dir_path = os.path.join(CUCKOO_ROOT, "storage", "analyses")
 
-                # TODO windows support
+                # TODO: Windows support
                 if hasattr(os, "statvfs"):
-                    s = os.statvfs(dir_path)
+                    dir_stats = os.statvfs(dir_path)
 
                     # Free diskspace in megabytes.
-                    avail = (s.f_bavail * s.f_frsize) / 1024 / 1024
+                    space_available = (dir_stats.f_bavail * dir_stats.f_frsize) / 1024 / 1024
 
-                    if avail < self.cfg.cuckoo.freespace:
-                        log.error("Not enough free diskspace! (Only %d MB!)" %
-                                  avail)
+                    if space_available < self.cfg.cuckoo.freespace:
+                        log.error("Not enough free diskspace! (Only {0} MB!)".format(space_available))
                         continue
 
             # If no machines are available, it's pointless to fetch for
