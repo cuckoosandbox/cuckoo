@@ -385,7 +385,7 @@ class Scheduler:
                     space_available = (dir_stats.f_bavail * dir_stats.f_frsize) / 1024 / 1024
 
                     if space_available < self.cfg.cuckoo.freespace:
-                        log.error("Not enough free diskspace! (Only {0} MB!)".format(space_available))
+                        log.error("Not enough free diskspace! (Only %d MB!)", space_available)
                         continue
 
             # If no machines are available, it's pointless to fetch for
