@@ -41,7 +41,7 @@ class Pcap:
         self.tcp_connections = []
         # List containing all UDP packets.
         self.udp_connections = []
-	# List containing all ICMP requests.
+        # List containing all ICMP requests.
         self.icmp_requests = []
         # List containing all HTTP requests.
         self.http_requests = []
@@ -207,9 +207,9 @@ class Pcap:
 
     def _check_icmp_echo_request(self, icmpdata):
         """Checks for ICMP echo request traffic.
-        @param udpdata: ICMP data flow.
+        @param icmpdata: ICMP data flow.
         """
-	return  icmpdata.type == dpkt.icmp.ICMP_ECHO
+        return icmpdata.type == dpkt.icmp.ICMP_ECHO
 
     def _check_dns(self, udpdata):
         """Checks for DNS traffic.
@@ -357,7 +357,7 @@ class Pcap:
 
     def _icmp_dissect(self, conn, data):
         """Runs all ICMP dissectors.
-	@param conn: connection.
+        @param conn: connection.
         @param data: payload data.
         """
         if self._check_icmp_echo_request(data):
