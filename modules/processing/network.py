@@ -361,11 +361,10 @@ class Pcap:
         @param data: payload data.
         """
         if self._check_icmp_echo_request(data):
-            #self._add_icmp(data)
-	    entry = {}
+            entry = {}
             entry["host"] = conn["dst"]
             #extract data from dpkg.icmp.ICMP to dpkg.icmp.Echo to str
-	    try: 
+            try: 
 	        entry["data"] = convert_to_printable(data.data.data)
             except: 
 	        entry["data"] = ""  
