@@ -365,9 +365,9 @@ class Pcap:
             entry["host"] = conn["dst"]
             #extract data from dpkg.icmp.ICMP to dpkg.icmp.Echo to str
             try: 
-	        entry["data"] = convert_to_printable(data.data.data)
+                entry["data"] = convert_to_printable(data.data.data)
             except: 
-	        entry["data"] = ""  
+                entry["data"] = ""  
             self.icmp_requests.append(entry)
 
     def _check_irc(self, tcpdata):
