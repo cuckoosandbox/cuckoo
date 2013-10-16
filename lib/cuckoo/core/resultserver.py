@@ -207,7 +207,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         self.rawlogfd = open(os.path.join(self.storagepath, "logs", str(pid) + EXTENSIONS.get(type(self.protocol), ".raw")), "wb")
         self.rawlogfd.write(self.startbuf)
         if self.pid != None:
-            log.warning("Resultserver got a new process message but already has pid %d ppid %s procname %s", pid, str(ppid), procname)
+            log.debug("Resultserver got a new process message but already has pid %d ppid %s procname %s", pid, str(ppid), procname)
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
     def log_thread(self, context, pid):
