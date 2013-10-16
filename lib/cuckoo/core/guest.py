@@ -126,7 +126,9 @@ class GuestManager:
         """
         log.info("Starting analysis on guest (id=%s, ip=%s)", self.id, self.ip)
 
-        options["file_name"] = sanitize_filename(options["file_name"])
+        # TODO: deal with unicode URLs.
+        if options["category"] == "file":
+            options["file_name"] = sanitize_filename(options["file_name"])
 
         try:
             # Wait for the agent to respond. This is done to check the
