@@ -126,8 +126,6 @@ class GuestManager:
         """
         log.info("Starting analysis on guest (id=%s, ip=%s)", self.id, self.ip)
 
-        options["file_name"] = sanitize_filename(options["file_name"])
-
         try:
             # Wait for the agent to respond. This is done to check the
             # availability of the agent and verify that it's ready to receive
@@ -144,6 +142,7 @@ class GuestManager:
 
             # If the target of the analysis is a file, upload it to the guest.
             if options["category"] == "file":
+                options["file_name"] = sanitize_filename(options["file_name"])
                 try:
                     file_data = open(options["target"], "rb").read()
                 except (IOError, OSError) as e:
