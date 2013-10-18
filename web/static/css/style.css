@@ -120,3 +120,7 @@ a.tag-label {
 td {
     word-wrap: break-word;
 }
+
+.tab-content {
+    margin-top: 25px;
+}
