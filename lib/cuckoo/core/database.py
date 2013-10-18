@@ -481,6 +481,7 @@ class Database(object):
         @return: None or task
         """
         session = self.Session()
+        row = None
 
         try:
             row = session.query(Task).filter(Task.status == TASK_PENDING).order_by("priority desc, added_on").first()
