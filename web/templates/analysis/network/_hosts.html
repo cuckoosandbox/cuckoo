@@ -8,7 +8,7 @@
             {% for host in analysis.network.hosts %}
             <tr>
                 {% if host|slice:":7" != "192.168" %}
-                <td>{{host}}</tr>
+                <td>{{host}}</td>
                 {% endif %}
             </tr>
             {% endfor %}
