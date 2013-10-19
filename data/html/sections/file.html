@@ -94,7 +94,11 @@
                                 <tr>
                                     <td>{{key}}</td>
                                     <td>{{results["virustotal"]["scans"][key]["version"]}}</td>
-                                    <td>{{results["virustotal"]["scans"][key]["result"]}}</td>
+                                    {% if results["virustotal"]["scans"][key]["result"] == None %}
+                                        <td><span class="muted">Clean</span></td>
+                                    {% else %}
+                                        <td><span class="text-error">{{results["virustotal"]["scans"][key]["result"]}}</span></td>
+                                    {% endif %}
                                 </tr>
                                 {% endfor %}
                             </table>
