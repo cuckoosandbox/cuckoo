@@ -24,6 +24,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Added check for available disk space
 * Added support for BSON logging format
 * Added option to specify a custom DLL to the analyzer and the analysis packages
+* Added ICMP protocol dissection
 * Refactored processing to improve performances
 * Refactored signature engine, introducing event-based signatures to improve performances
 * Refactored generation of process tree
