@@ -205,11 +205,14 @@ class Pcap:
 
         return True
 
-    def _check_icmp_echo_request(self, icmpdata):
-        """Checks for ICMP echo request traffic.
-        @param icmpdata: ICMP data flow.
+    def _check_icmp(self, icmp_data):
+        """Checks for ICMP traffic.
+        @param icmp_data: ICMP data flow.
         """
-        return icmpdata.type == dpkt.icmp.ICMP_ECHO
+        try:
+            return isinstance(icmp_data, dpkt.icmp.ICMP) and len(icmp_data.data) > 0
+        except:
+            return False
 
     def _check_dns(self, udpdata):
         """Checks for DNS traffic.
@@ -360,14 +363,17 @@ class Pcap:
         @param conn: connection.
         @param data: payload data.
         """
-        if self._check_icmp_echo_request(data):
+
+        if self._check_icmp(data):
             entry = {}
-            entry["host"] = conn["dst"]
-            #extract data from dpkg.icmp.ICMP to dpkg.icmp.Echo to str
+            entry["src"] = conn["src"]
+            entry["dst"] = conn["dst"]
+            entry["type"] = data.type
+            # Extract data from dpkg.icmp.ICMP.
             try: 
                 entry["data"] = convert_to_printable(data.data.data)
             except: 
-                entry["data"] = ""  
+                entry["data"] = ""
             self.icmp_requests.append(entry)
 
     def _check_irc(self, tcpdata):
@@ -469,9 +475,7 @@ class Pcap:
                         self.udp_connections.append(connection)
                 elif ip.p == dpkt.ip.IP_PROTO_ICMP:
                     icmp = ip.data
-
-		    if len(icmp.data) > 0:
-		         self._icmp_dissect(connection, icmp)
+                    self._icmp_dissect(connection, icmp)
             except AttributeError:
                 continue
             except dpkt.dpkt.NeedData:
