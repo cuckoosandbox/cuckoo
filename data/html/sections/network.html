@@ -3,7 +3,9 @@
         <h4>Network Analysis</h4>
     </div>
     {% if results.network %}
+        {% set network_details_displayed = 0 %}
         {% if results.network.hosts %}
+            {% set network_details_displayed = 1 %}
             <div>
                 <h4><a href="javascript:showHide('hosts');">Hosts Involved</a></h4>
                 <div id="hosts" style="display: none;">
@@ -22,6 +24,7 @@
         {% endif %}
 
         {% if results.network.domains %}
+        {% set network_details_displayed = 1 %}
         <div>
             <h4><a href="javascript:showHide('dns');">DNS Requests</a></h4>
             <div id="dns" style="display: none;">
@@ -42,6 +45,7 @@
         {% endif %}
 
         {% if results.network.http %}
+        {% set network_details_displayed = 1 %}
         <div>
             <h4><a href="javascript:showHide('http');">HTTP Requests</a></h4>
             <div id="http" style="display: none;">
@@ -62,6 +66,7 @@
         {% endif %}
 
         {% if results.network.irc %}
+        {% set network_details_displayed = 1 %}
         <div>
             <h4><a href="javascript:showHide('irc');">IRC Requests</a></h4>
             <div id="irc" style="display: none;">
@@ -81,6 +86,29 @@
                 </table>
             </div>
         </div>
+        {% endif %}
+        {% if results.network.icmp %}
+        {% set network_details_displayed = 1 %}
+        <div>
+            <h4><a href="javascript:showHide('icmp');">Ping Requests</a></h4>
+            <div id="icmp" style="display: none;">
+                <table class="table table-striped table-bordered">
+                    <tr>
+                       <th>Host</th>
+                       <th>Data</th>
+                    </tr>
+                    {% for icmp in results.network.icmp %}
+                    <tr>
+                       <td><span class="mono">{{icmp.host}}</span></td>
+                       <td><span class="mono"><pre>{{icmp.data}}</pre></span></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+         </div>
+        {% endif %}
+        {% if network_details_displayed == 0 %}
+            Nothing to display.
         {% endif %}
     {% else %}
         Nothing to display.
