@@ -1,0 +1,21 @@
+<h4>ICMP traffic</h4>
+{% if analysis.network.icmp %}
+<table class="table table-striped table-bordered" style="table-layout: fixed;">
+    <tr>
+        <th>Source</th>
+        <th>Destination</th>
+        <th>ICMP Type</th>
+        <th>Data</th>
+    </tr>
+    {% for packet in analysis.network.icmp %}
+    <tr>
+        <td style="word-wrap: break-word;">{{packet.src}}</td>
+        <td style="word-wrap: break-word;">{{packet.dst}}</td>
+        <td style="word-wrap: break-word;">{{packet.type}}</td>
+        <td style="word-wrap: break-word;">{{packet.data}}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No ICMP traffic performed.</p>
+{% endif %}

@@ -82,6 +82,34 @@
             </div>
         </div>
         {% endif %}
+
+        {% if results.network.icmp %}
+        <div>
+            <h4><a href="javascript:showHide('icmp');">ICMP requests</a></h4>
+            <div id="icmp" style="display: none;">
+                <table class="table table-striped table-bordered">
+                    <tr>
+                       <th>Source</th>
+                       <th>Destination</th>
+                       <th>ICMP Type</th>
+                       <th>Data</th>
+                    </tr>
+                    {% for icmp in results.network.icmp %}
+                    <tr>
+                       <td><span class="mono">{{icmp.src}}</span></td>
+                       <td><span class="mono">{{icmp.dst}}</span></td>
+                       <td><span class="mono">{{icmp.type}}</span></td>
+                       <td><span class="mono"><pre>{{icmp.data}}</pre></span></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+         </div>
+        {% endif %}
+
+        {% if not results.network.hosts and not results.network.domains and not results.network.http and not results.network.irc and not results.network.icmp %}
+            Nothing to display.
+        {% endif %}
     {% else %}
         Nothing to display.
     {% endif %}

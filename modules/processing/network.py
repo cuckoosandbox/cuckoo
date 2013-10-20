@@ -41,6 +41,8 @@ class Pcap:
         self.tcp_connections = []
         # List containing all UDP packets.
         self.udp_connections = []
+        # List containing all ICMP requests.
+        self.icmp_requests = []
         # List containing all HTTP requests.
         self.http_requests = []
         # List containing all DNS requests.
@@ -203,6 +205,15 @@ class Pcap:
 
         return True
 
+    def _check_icmp(self, icmp_data):
+        """Checks for ICMP traffic.
+        @param icmp_data: ICMP data flow.
+        """
+        try:
+            return isinstance(icmp_data, dpkt.icmp.ICMP) and len(icmp_data.data) > 0
+        except:
+            return False
+
     def _check_dns(self, udpdata):
         """Checks for DNS traffic.
         @param udpdata: UDP data flow.
@@ -347,6 +358,24 @@ class Pcap:
             if self._check_dns(data):
                 self._add_dns(data)
 
+    def _icmp_dissect(self, conn, data):
+        """Runs all ICMP dissectors.
+        @param conn: connection.
+        @param data: payload data.
+        """
+
+        if self._check_icmp(data):
+            entry = {}
+            entry["src"] = conn["src"]
+            entry["dst"] = conn["dst"]
+            entry["type"] = data.type
+            # Extract data from dpkg.icmp.ICMP.
+            try: 
+                entry["data"] = convert_to_printable(data.data.data)
+            except: 
+                entry["data"] = ""
+            self.icmp_requests.append(entry)
+
     def _check_irc(self, tcpdata):
         """
         Checks for IRC traffic.
@@ -444,8 +473,9 @@ class Pcap:
                         connection["dport"] = udp.dport
                         self._udp_dissect(connection, udp.data)
                         self.udp_connections.append(connection)
-                #elif ip.p == dpkt.ip.IP_PROTO_ICMP:
-                    #icmp = ip.data
+                elif ip.p == dpkt.ip.IP_PROTO_ICMP:
+                    icmp = ip.data
+                    self._icmp_dissect(connection, icmp)
             except AttributeError:
                 continue
             except dpkt.dpkt.NeedData:
@@ -461,6 +491,7 @@ class Pcap:
         self.results["domains"] = self.unique_domains
         self.results["tcp"] = self.tcp_connections
         self.results["udp"] = self.udp_connections
+        self.results["icmp"] = self.icmp_requests
         self.results["http"] = self.http_requests
         self.results["dns"] = self.dns_requests
         self.results["smtp"] = self.smtp_requests
