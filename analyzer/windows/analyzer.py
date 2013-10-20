@@ -12,6 +12,7 @@ import pkgutil
 import logging
 import hashlib
 import xmlrpclib
+import traceback
 from ctypes import *
 from threading import Lock, Thread
 from datetime import datetime
@@ -679,13 +680,13 @@ if __name__ == "__main__":
     # exceptions.
     except Exception as e:
         # Store the error.
-        error = str(e)
+        error = traceback.format_exc()
 
         # Just to be paranoid.
         if len(log.handlers) > 0:
-            log.critical(error)
+            log.exception(error)
         else:
-            sys.stderr.write("{0}\n".format(e))
+            sys.stderr.write("{0}\n".format(error))
     # Once the analysis is completed or terminated for any reason, we report
     # back to the agent, notifying that it can report back to the host.
     finally:
