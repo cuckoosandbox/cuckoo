@@ -11,9 +11,9 @@
             <td>
                 {% if analysis.info.category == "file" %}
                     {% if not values.result %}
-                        <span class="muted">Clean</span>
+                        <span class="text-muted">Clean</span>
                     {% else %}
-                        <span class="text-error">{{values.result}}</span>
+                        <span class="text-danger">{{values.result}}</span>
                     {% endif %}
                 {% else %}
                     {{values.result}}

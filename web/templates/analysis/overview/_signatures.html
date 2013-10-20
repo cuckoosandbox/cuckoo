@@ -13,9 +13,9 @@
             {% if signature.severity <= 1 %}
                 <div class="alert alert-info signature">
             {% elif signature.severity == 2 %}
-                <div class="alert signature">
+                <div class="alert alert-warning signature">
             {% elif signature.severity >= 3 %}
-                <div class="alert alert-error signature">
+                <div class="alert alert-danger signature">
             {% endif %}
             {{signature.description}}</div></a>
             <div id="signature_{{signature.name}}" class="collapse">
