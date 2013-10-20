@@ -680,13 +680,14 @@ if __name__ == "__main__":
     # exceptions.
     except Exception as e:
         # Store the error.
-        error = traceback.format_exc()
+        error_exc = traceback.format_exc()
+        error = str(e)
 
         # Just to be paranoid.
         if len(log.handlers) > 0:
-            log.exception(error)
+            log.exception(error_exc)
         else:
-            sys.stderr.write("{0}\n".format(error))
+            sys.stderr.write("{0}\n".format(error_exc))
     # Once the analysis is completed or terminated for any reason, we report
     # back to the agent, notifying that it can report back to the host.
     finally:
