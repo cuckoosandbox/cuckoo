@@ -112,7 +112,6 @@ class File:
 
     @property
     def file_data(self):
-        log.warning("Usage of File.file_data is deprecated, use chunks of files only.")
         if not self._file_data: self._file_data = open(self.file_path, "rb").read()
         return self._file_data
 
