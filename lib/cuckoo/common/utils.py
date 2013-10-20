@@ -55,7 +55,7 @@ def delete_folder(folder):
 
 # don't allow all characters in "string.printable", as newlines, carriage
 # returns, tabs, \x0b, and \x0c may mess up reports
-PRINTABLE_CHARACTERS = string.letters + string.digits + string.punctuation + " \t"
+PRINTABLE_CHARACTERS = string.letters + string.digits + string.punctuation + " \t\r\n"
 
 
 def convert_char(c):
