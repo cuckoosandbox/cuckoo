@@ -451,7 +451,7 @@ Following is a list of currently available resources and a brief description. Fo
 
         **Example request**::
 
-            curl http://localhost:8090/cuckoo/status/
+            curl http://localhost:8090/cuckoo/status
 
         **Example response**::
 
@@ -463,12 +463,14 @@ Following is a list of currently available resources and a brief description. Fo
                     "completed": 0, 
                     "pending": 0
                 }, 
-                "version": "1.0", 
+                "version": "1.0",
+                "protocol_version": 1,
                 "hostname": "Patient0", 
                 "machines": {
                     "available": 4, 
                     "total": 5
                 }
+                "tools":["vanilla"]
             }
             
         **Status codes**:
