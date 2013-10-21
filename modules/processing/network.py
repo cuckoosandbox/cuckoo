@@ -41,6 +41,8 @@ class Pcap:
         self.tcp_connections = []
         # List containing all UDP packets.
         self.udp_connections = []
+        # List containing all ICMP requests.
+        self.icmp_requests = []
         # List containing all HTTP requests.
         self.http_requests = []
         # List containing all DNS requests.
@@ -53,6 +55,17 @@ class Pcap:
         self.irc_requests = []
         # Dictionary containing all the results of this processing.
         self.results = {}
+
+    def _dns_gethostbyname(self, name):
+        """Get host by name wrapper.
+        @param name: hostname.
+        @return: IP address or blank
+        """
+        if Config().processing.resolve_dns:
+            ip = resolve(name)
+        else:
+            ip = ""
+        return ip
 
     def _is_private_ip(self, ip):
         """Check if the IP belongs to private network blocks.
@@ -122,89 +135,57 @@ class Pcap:
         except:
             pass
 
-    def _dns_gethostbyname(self, name):
-        """Get host by name wrapper.
-        @param name: hostname.
-        @return: IP address or blank
+    def _tcp_dissect(self, conn, data):
+        """Runs all TCP dissectors.
+        @param conn: connection.
+        @param data: payload data.
         """
-        if Config().processing.resolve_dns:
-            ip = resolve(name)
-        else:
-            ip = ""
-        return ip
+        if self._check_http(data):
+            self._add_http(data, conn["dport"])
+        # SMTP.
+        if conn["dport"] == 25:
+            self._reassemble_smtp(conn, data)
+        # IRC.
+        if conn["dport"] != 21 and self._check_irc(data):
+            self._add_irc(data)
 
-    def _add_domain(self, domain):
-        """Add a domain to unique list.
-        @param domain: domain name.
+    def _udp_dissect(self, conn, data):
+        """Runs all UDP dissectors.
+        @param conn: connection.
+        @param data: payload data.
         """
-        filters = [
-            ".*\\.windows\\.com$",
-            ".*\\.in\\-addr\\.arpa$"
-        ]
+        if conn["dport"] == 53 or conn["sport"] == 53:
+            if self._check_dns(data):
+                self._add_dns(data)
 
-        regexps = [re.compile(filter) for filter in filters]
-        for regexp in regexps:
-            if regexp.match(domain):
-                return
-
-        for entry in self.unique_domains:
-            if entry["domain"] == domain:
-                return
-
-        self.unique_domains.append({"domain" : domain,
-                                    "ip" : self._dns_gethostbyname(domain)})
-
-    def _check_http(self, tcpdata):
-        """Checks for HTTP traffic.
-        @param tcpdata: TCP data flow.
+    def _check_icmp(self, icmp_data):
+        """Checks for ICMP traffic.
+        @param icmp_data: ICMP data flow.
         """
         try:
-            r = dpkt.http.Request()
-            r.method, r.version, r.uri = None, None, None
-            r.unpack(tcpdata)
-        except dpkt.dpkt.UnpackError:
-            if r.method != None or r.version != None or r.uri != None:
-                return True
+            return isinstance(icmp_data, dpkt.icmp.ICMP) and len(icmp_data.data) > 0
+        except:
             return False
 
-        return True
-
-    def _add_http(self, tcpdata, dport):
-        """Adds an HTTP flow.
-        @param tcpdata: TCP data flow.
-        @param dport: destination port.
+    def _icmp_dissect(self, conn, data):
+        """Runs all ICMP dissectors.
+        @param conn: connection.
+        @param data: payload data.
         """
-        try:
-            http = dpkt.http.Request()
-            http.unpack(tcpdata)
-        except dpkt.dpkt.UnpackError:
-            pass
 
-        try:
+        if self._check_icmp(data):
             entry = {}
+            entry["src"] = conn["src"]
+            entry["dst"] = conn["dst"]
+            entry["type"] = data.type
 
-            if "host" in http.headers:
-                entry["host"] = convert_to_printable(http.headers["host"])
-            else:
-                entry["host"] = ""
+            # Extract data from dpkg.icmp.ICMP.
+            try: 
+                entry["data"] = convert_to_printable(data.data.data)
+            except: 
+                entry["data"] = ""
 
-            entry["port"] = dport
-            entry["data"] = convert_to_printable(tcpdata)
-            entry["uri"] = convert_to_printable(urlunparse(("http", entry["host"], http.uri, None, None, None)))
-            entry["body"] = convert_to_printable(http.body)
-            entry["path"] = convert_to_printable(http.uri)
-
-            if "user-agent" in http.headers:
-                entry["user-agent"] = convert_to_printable(http.headers["user-agent"])
-
-            entry["version"] = convert_to_printable(http.version)
-            entry["method"] = convert_to_printable(http.method)
-
-            self.http_requests.append(entry)
-        except Exception:
-            return False
-
-        return True
+            self.icmp_requests.append(entry)
 
     def _check_dns(self, udpdata):
         """Checks for DNS traffic.
@@ -310,6 +291,79 @@ class Pcap:
 
         return True
 
+    def _add_domain(self, domain):
+        """Add a domain to unique list.
+        @param domain: domain name.
+        """
+        filters = [
+            ".*\\.windows\\.com$",
+            ".*\\.in\\-addr\\.arpa$"
+        ]
+
+        regexps = [re.compile(filter) for filter in filters]
+        for regexp in regexps:
+            if regexp.match(domain):
+                return
+
+        for entry in self.unique_domains:
+            if entry["domain"] == domain:
+                return
+
+        self.unique_domains.append({"domain" : domain,
+                                    "ip" : self._dns_gethostbyname(domain)})
+
+    def _check_http(self, tcpdata):
+        """Checks for HTTP traffic.
+        @param tcpdata: TCP data flow.
+        """
+        try:
+            r = dpkt.http.Request()
+            r.method, r.version, r.uri = None, None, None
+            r.unpack(tcpdata)
+        except dpkt.dpkt.UnpackError:
+            if r.method != None or r.version != None or r.uri != None:
+                return True
+            return False
+
+        return True
+
+    def _add_http(self, tcpdata, dport):
+        """Adds an HTTP flow.
+        @param tcpdata: TCP data flow.
+        @param dport: destination port.
+        """
+        try:
+            http = dpkt.http.Request()
+            http.unpack(tcpdata)
+        except dpkt.dpkt.UnpackError:
+            pass
+
+        try:
+            entry = {}
+
+            if "host" in http.headers:
+                entry["host"] = convert_to_printable(http.headers["host"])
+            else:
+                entry["host"] = ""
+
+            entry["port"] = dport
+            entry["data"] = convert_to_printable(tcpdata)
+            entry["uri"] = convert_to_printable(urlunparse(("http", entry["host"], http.uri, None, None, None)))
+            entry["body"] = convert_to_printable(http.body)
+            entry["path"] = convert_to_printable(http.uri)
+
+            if "user-agent" in http.headers:
+                entry["user-agent"] = convert_to_printable(http.headers["user-agent"])
+
+            entry["version"] = convert_to_printable(http.version)
+            entry["method"] = convert_to_printable(http.method)
+
+            self.http_requests.append(entry)
+        except Exception:
+            return False
+
+        return True
+
     def _reassemble_smtp(self, conn, data):
         """Reassemble a SMTP flow.
         @param conn: connection dict.
@@ -326,29 +380,6 @@ class Pcap:
             # Detect new SMTP flow.
             if data.startswith("EHLO") or data.startswith("HELO"):
                 self.smtp_requests.append({"dst": conn, "raw": data})
-
-    def _tcp_dissect(self, conn, data):
-        """Runs all TCP dissectors.
-        @param conn: connection.
-        @param data: payload data.
-        """
-        if self._check_http(data):
-            self._add_http(data, conn["dport"])
-        # SMTP.
-        if conn["dport"] == 25:
-            self._reassemble_smtp(conn, data)
-        # IRC.
-        if conn["dport"] != 21 and self._check_irc(data):
-            self._add_irc(data)
-
-    def _udp_dissect(self, conn, data):
-        """Runs all UDP dissectors.
-        @param conn: connection.
-        @param data: payload data.
-        """
-        if conn["dport"] == 53 or conn["sport"] == 53:
-            if self._check_dns(data):
-                self._add_dns(data)
 
     def _check_irc(self, tcpdata):
         """
@@ -449,12 +480,15 @@ class Pcap:
                         connection["dport"] = udp.dport
                         self._udp_dissect(connection, udp.data)
                         self.udp_connections.append(connection)
-                #elif ip.p == dpkt.ip.IP_PROTO_ICMP:
-                    #icmp = ip.data
+                elif ip.p == dpkt.ip.IP_PROTO_ICMP:
+                    icmp = ip.data
+                    self._icmp_dissect(connection, icmp)
             except AttributeError:
                 continue
             except dpkt.dpkt.NeedData:
                 continue
+            except Exception as e:
+                log.exception("Failed to process packet:")
 
         file.close()
 
