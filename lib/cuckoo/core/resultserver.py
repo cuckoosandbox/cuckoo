@@ -12,7 +12,7 @@ import SocketServer
 from threading import Timer, Event, Thread
 
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.exceptions import CuckooOperationalError, CuckooCriticalError
+from lib.cuckoo.common.exceptions import CuckooOperationalError, CuckooCriticalError, CuckooResultError
 from lib.cuckoo.common.constants import *
 from lib.cuckoo.common.utils import create_folder, Singleton, logtime
 from lib.cuckoo.common.netlog import NetlogParser, BsonParser
@@ -182,6 +182,8 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             while True:
                 r = self.protocol.read_next_message()
                 if not r: break
+        except CuckooResultError as e:
+            log.warning("Resultserver connection stopping because of CuckooResultError: %s.", str(e))
         except Disconnect:
             pass
         except socket.error, e:
@@ -197,6 +199,10 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         log.debug("Connection closed: {0}:{1}".format(ip, port))
 
     def log_process(self, context, timestring, pid, ppid, modulepath, procname):
+        if self.pid != None:
+            log.debug("Resultserver got a new process message but already has pid %d ppid %s procname %s", pid, str(ppid), procname)
+            raise CuckooResultError("Resultserver connection state incosistent.")
+
         log.debug("New process (pid={0}, ppid={1}, name={2}, path={3})".format(pid, ppid, procname, modulepath))
 
         # CSV format files are optional
@@ -206,8 +212,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         # Netlog raw format is mandatory (postprocessing)
         self.rawlogfd = open(os.path.join(self.storagepath, "logs", str(pid) + EXTENSIONS.get(type(self.protocol), ".raw")), "wb")
         self.rawlogfd.write(self.startbuf)
-        if self.pid != None:
-            log.debug("Resultserver got a new process message but already has pid %d ppid %s procname %s", pid, str(ppid), procname)
+
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
     def log_thread(self, context, pid):
