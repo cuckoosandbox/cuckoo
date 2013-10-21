@@ -12,6 +12,7 @@ except: pass
 
 from lib.cuckoo.common.logtbl import table as LOGTBL
 from lib.cuckoo.common.utils import get_filename_from_path, time_from_cuckoomon
+from lib.cuckoo.common.exceptions import CuckooResultError
 
 log = logging.getLogger(__name__)
 
@@ -78,12 +79,27 @@ class NetlogParser(object):
             timehigh = self.read_int32()
             # FILETIME is 100-nanoseconds from 1601 :/
             vmtimeunix = (timelow + (timehigh << 32)) / 10000000.0 - 11644473600
-            vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
+            try:
+                vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
+            except:
+                log.critical("vmtime in new-process-messsage out of range (protocol out of sync?)")
+                return False
 
             pid = self.read_int32()
             ppid = self.read_int32()
-            modulepath = self.read_string()
-            procname = get_filename_from_path(modulepath)
+
+            try:
+                modulepath = self.read_string()
+                procname = get_filename_from_path(modulepath)
+            except:
+                log.exception("Exception in netlog protocol, stopping parser.")
+                return False
+
+            if len(procname) > 255:
+                log.critical("Huge process name (>255), assuming netlog protocol out of sync.")
+                log.debug("Process name: %s", repr(procname))
+                return False
+
             self.handler.log_process(context, vmtime, pid, ppid, modulepath, procname)
 
         elif apiindex == 1:
@@ -106,7 +122,12 @@ class NetlogParser(object):
                 argname = argnames[pos]
                 fn = self.formatmap.get(fs, None)
                 if fn:
-                    r = fn()
+                    try:
+                        r = fn()
+                    except:
+                        log.exception("Exception in netlog protocol, stopping parser.")
+                        return False
+
                     arguments.append((argname, r))
                 else:
                     log.warning("No handler for format specifier {0} on apitype {1}".format(fs,apiname))
@@ -127,10 +148,9 @@ class NetlogParser(object):
     def read_string(self):
         """Reads an utf8 string from the socket."""
         length, maxlength = struct.unpack("II", self.handler.read(8))
-        if length < 0:
-            log.critical("read_string length < 0? length: %d maxlength: %d", length, maxlength)
-            self.handler.log_error("read_string length failure, protocol broken?")
-            return ""
+        if length < 0 or length > 0x10000:
+            log.critical("read_string length weirdness length: %d maxlength: %d", length, maxlength)
+            raise CuckooResultError("read_string length failure, protocol broken?")
 
         s = self.handler.read(length)
         if maxlength > length: s += "... (truncated)"
