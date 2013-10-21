@@ -53,7 +53,10 @@ class NetlogConnection(object):
             if retry:
                 self.send(data, retry=False)
         except:
-            log.debug("Could not send to remote Netlog!")
+            # We really have nowhere to log this, if the netlog connection does not work,
+            #  we can assume that any logging won't work either.
+            # So we just fail silently.
+            self.close()
 
     def close(self):
         try:
