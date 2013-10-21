@@ -201,6 +201,9 @@ TYPECONVERTERS = {
 
 APICATEGORIES = dict((i[0], i[1]) for i in LOGTBL)
 
+# 1 Mb max message length
+MAX_MESSAGE_LENGTH = 20 * 1024 * 1024
+
 def default_converter(v):
     # fix signed ints (bson is kind of limited there)
     if type(v) in (int, long) and v < 0: return v + 0x100000000
@@ -231,13 +234,16 @@ class BsonParser(object):
     def read_next_message(self):
         data = self.handler.read(4)
         blen = struct.unpack("I", data)[0]
+        if blen > MAX_MESSAGE_LENGTH:
+            log.critical("BSON message larger than MAX_MESSAGE_LENGTH, stopping handler.")
+            return False
 
         data += self.handler.read(blen-4)
 
         try:
             dec = bson.BSON(data).decode()
         except Exception as e:
-            log.warning("BsonParser decoding problem {0} on data {1}".format(e,repr(data)))
+            log.warning("BsonParser decoding problem {0} on data[:50] {1}".format(e,repr(data[:50])))
             return False
 
         mtype = dec.get("type", "none")
