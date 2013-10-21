@@ -286,8 +286,9 @@ class AnalysisManager(Thread):
 
             log.debug("Released database task #%d with status %s", self.task.id, success)
 
-            self.process_results()
-            Database().set_status(self.task.id, TASK_REPORTED)
+            if self.cfg.cuckoo.process_results:
+                self.process_results()
+                Database().set_status(self.task.id, TASK_REPORTED)
 
             log.info("Task #%d: analysis procedure completed", self.task.id)
         except:
