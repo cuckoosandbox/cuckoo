@@ -36,6 +36,8 @@ TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
 TASK_RECOVERED = "recovered"
 TASK_REPORTED = "reported"
+TASK_FAILED_ANALYSIS = "failed_analysis"
+TASK_FAILED_PROCESSING = "failed_processing"
 
 # Secondary table used in association Machine - Tag.
 machines_tags = Table("machines_tags", Base.metadata,
@@ -943,7 +945,7 @@ class Database(object):
                    task.enforce_timeout,
                    task.clock)
 
-    def list_tasks(self, limit=None, details=False, category=None, offset=None):
+    def list_tasks(self, limit=None, details=False, category=None, offset=None, status=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
@@ -955,6 +957,8 @@ class Database(object):
         try:
             search = session.query(Task)
 
+            if status:
+                search = search.filter(Task.status == status)
             if category:
                 search = search.filter(Task.category == category)
             if details:

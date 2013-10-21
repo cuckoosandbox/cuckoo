@@ -158,13 +158,11 @@ def init_tasks():
     if cfg.cuckoo.reschedule:
         log.debug("Checking for locked tasks...")
 
-        tasks = db.list_tasks()
+        tasks = db.list_tasks(status=TASK_RUNNING)
 
-        if len(tasks) > 0:
-            for task in tasks:
-                if task.status == TASK_RUNNING:
-                    db.reschedule(task.id)
-                    log.info("Rescheduled task with ID {0} and target {1}".format(task.id, task.target))
+        for task in tasks:
+            db.reschedule(task.id)
+            log.info("Rescheduled task with ID {0} and target {1}".format(task.id, task.target))
 
 def init_modules():
     """Initializes plugins."""
