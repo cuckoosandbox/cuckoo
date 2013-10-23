@@ -11,7 +11,7 @@
     <tr>
         <td style="word-wrap: break-word;">{{packet.src}}</td>
         <td style="word-wrap: break-word;">{{packet.dst}}</td>
-        <td style="word-wrap: break-word;">{{packet.type}}</td>
+        <td style="word-wrap: break-word;">{%load network %}{{packet.type|icmp_type_to_str}}</td>
         <td style="word-wrap: break-word;">{{packet.data}}</td>
     </tr>
     {% endfor %}

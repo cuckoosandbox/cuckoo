@@ -5,7 +5,7 @@
             <th>Antivirus</th>
             <th>Signature</th>
         </tr>
-        {% for av, values in analysis.virustotal.scans.items %}
+        {%load list %}{% for av, values in analysis.virustotal.scans.items|sort %}
         <tr>
             <td>{{av}}</td>
             <td>

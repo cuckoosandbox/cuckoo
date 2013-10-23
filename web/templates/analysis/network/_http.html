@@ -8,7 +8,7 @@
     {% for request in analysis.network.http %}
     <tr>
         <td style="word-wrap: break-word;">{{request.uri}}</td>
-        <td style="word-wrap: break-word;"><pre>{{request.data}}</pre></td>
+        <td style="word-wrap: break-word;"><pre>{%load string %}{{request.data|replace:"/\\\x0d\\\x0a/\\n"}}</pre></td>
     </tr>
     {% endfor %}
 </table>
