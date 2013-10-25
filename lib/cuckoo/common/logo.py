@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -142,5 +142,6 @@ def logo():
     print
     print(" Cuckoo Sandbox %s" % yellow(CUCKOO_VERSION))
     print(" www.cuckoosandbox.org")
-    print(" Copyright (c) 2010-2012")
+    print(" Copyright (c) 2010-2013")
     print
+    sys.stdout.flush()

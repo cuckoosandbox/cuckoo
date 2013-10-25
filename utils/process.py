@@ -1,29 +1,67 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
 import sys
+import time
 import logging
 import argparse
 
 logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger()
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.core.processor import Processor
-from lib.cuckoo.core.reporter import Reporter
+from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.config import Config
+from lib.cuckoo.core.startup import init_modules
+from lib.cuckoo.core.database import Database, TASK_REPORTED, TASK_COMPLETED, TASK_FAILED_PROCESSING
+from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
+
+def do(aid, report=False):
+    results = RunProcessing(task_id=aid).run()
+    RunSignatures(results=results).run()
+
+    if report:
+        RunReporting(task_id=aid, results=results).run()
+        Database().set_status(aid, TASK_REPORTED)
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("path", type=str, help="Path to the folder containing the analysis results to process")
+    parser.add_argument("id", type=str, help="ID of the analysis to process")
     parser.add_argument("-r", "--report", help="Re-generate report", action="store_true", required=False)
     args = parser.parse_args()
 
-    results = Processor(args.path).run()
-    if args.report:
-        Reporter(args.path).run(results)
+    init_modules()
+
+    if args.id == "auto":
+        cfg = Config()
+        maxcount = cfg.cuckoo.max_analysis_count
+        count = 0
+        db = Database()
+        while count < maxcount:
+            tasks = db.list_tasks(status=TASK_COMPLETED, limit=1)
+
+            for task in tasks:
+                log.info("Processing analysis data for Task #%d", task.id)
+                try:
+                    do(task.id, report=True)
+                except:
+                    log.exception("Exception when processing a task.")
+                    db.set_status(task.id, TASK_FAILED_PROCESSING)
+                else:
+                    log.info("Task #%d: reports generation completed", task.id)
+
+                count += 1
+
+            if not tasks:
+                time.sleep(5)
+
+    else:
+        do(args.id, report=args.report)
+
 
 if __name__ == "__main__":
     main()

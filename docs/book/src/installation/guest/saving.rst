@@ -68,10 +68,21 @@ And change "type" to qcow2 and "source file" to your qcow2 disk image, like this
     </disk>
 
 Now test your virtual machine, if all works prepare it for snapshotting while
-running Cuckoo's agent.
+running Cuckoo's agent. This means the virtual machine needs to be running
+while you are taking the snapshot. Then you can shut it down.
 You can finally take a snapshot with the following command::
 
     $ virsh snapshot-create "<Name of VM>"
+
+Having multiple snapshots can cause errors.
+
+ERROR: No snapshot found for virtual machine VM-Name
+
+VM snapshots can be managed using the following commands.
+
+    $ virsh snapshot-list "VM-Name"
+
+    $ virsh snapshot-delete "VM-Name" 1234567890
 
 VMware Workstation
 ==================

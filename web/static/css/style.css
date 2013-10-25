@@ -1,0 +1,126 @@
+html {
+    background: #1c1c1c;
+}
+body {
+    padding-top: 60px;
+    background: #ffffff url('/static/graphic/background.png') repeat-x;
+}
+@media (max-width: 979px) {
+    body {
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+}
+footer {
+    background: #292727;
+    margin: 40px 0 0;
+    padding: 20px 0 15px;
+    width: 100%;
+    color: #ccc;
+}
+footer a:link, footer a:visited {
+    color: #ccc;
+    text-decoration: none;
+}
+footer a:hover {
+    color: #ccc;
+    text-decoration: underline;
+}
+#footer-extra {
+    background: #1c1c1c;
+    padding: 10px 0;
+    font-size: 11px;
+    color: #999;
+}
+#footer-extra a:link, #footer-extra a:visited {
+    color: #999;
+    font-weight: bold;
+    text-decoration: none;
+}
+#footer-extra a:hover {
+    color: #ccc;
+    text-decoration: underline;
+}
+.center {
+    text-align: center;
+}
+.mono {
+    font-family: monospace;
+}
+.content {
+    background-color: white;
+    padding: 40px;
+    padding-top: 15px;
+    -moz-border-radius-bottomleft: 15px;
+    -moz-border-radius-bottomright: 15px;
+    -webkit-border-bottom-left-radius: 15px;
+    -webkit-border-bottom-right-radius: 15px;
+}
+.section-title {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+    margin-top: 20px;
+    padding-bottom: 3px;
+}
+span.block-title {
+    font-size: 18px;
+    font-weight: bold;
+}
+img.opaque {
+    opacity: 0.3;
+    filter: alpha(opacity=30);
+}
+img.opaque:hover {
+    opacity: 1.0;
+    filter: alpha(opacity=100);
+}
+.gray {
+    color: #666;
+}
+.table-centered {
+    margin: 0 auto !important;
+    float: none !important;
+}
+a.tag-label {
+    color: white;
+}
+
+.filesystem {
+    background-color: #ffe3c5;
+}
+.registry {
+    background-color: #ffc5c5;
+}
+.process {
+    background-color: #c5e0ff;
+}
+.services {
+    background-color: #ccc5ff;
+}
+.device {
+    background-color: #ccc5ff;
+}
+.network {
+    background-color: #d3ffc5;
+}
+.socket {
+    background-color: #d3ffc5;
+}
+.synchronization {
+    background-color: #f9c5ff;
+}
+
+.page-header {
+    margin-bottom: 10px;
+}
+
+/* Fix the icon tab override */
+.nav-tabs > .active > a > [class^="icon-"],.nav-tabs>.active>a>[class*=" icon-"] { background-image:url("../img/glyphicons-halflings.png") !important; }
+
+td {
+    word-wrap: break-word;
+}
+
+.tab-content {
+    margin-top: 25px;
+}

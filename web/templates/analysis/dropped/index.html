@@ -1,0 +1,62 @@
+{% if analysis.dropped|length > 0 %}
+    {% for file in analysis.dropped %}
+        <div class="panel panel-default">
+            <table class="table table-striped">
+                <tr>
+                    <th style="border-top: 0;">File name</th>
+                    <td style="border-top: 0;"><b>{{file.name}}</b></td>
+                </tr>
+                <tr>
+                    <th>File Size</th>
+                    <td>{{file.size}} bytes</th>
+                </tr>
+                <tr>
+                    <th>File Type</th>
+                    <td>{{file.type}}</th>
+                </tr>
+                <tr>
+                    <th>MD5</th>
+                    <td>{{file.md5}}</th>
+                </tr>
+                <tr>
+                    <th>SHA1</th>
+                    <td>{{file.sha1}}</th>
+                </tr>
+                <tr>
+                    <th>SHA256</th>
+                    <td>{{file.sha256}}</th>
+                </tr>
+                <tr>
+                    <th>CRC32</th>
+                    <td>{{file.crc32}}</th>
+                </tr>
+                <tr>
+                    <th>Ssdeep</th>
+                    <td>{{file.ssdeep}}</th>
+                </tr>
+                <tr>
+                    <th>Yara</th>
+                    <td>
+                    {% if file.yara %}
+                        <ul style="margin-bottom: 0;">
+                        {% for sign in file.yara %}
+                            <li>{{sign.name}} - {{sign.meta.description}}</li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        None matched
+                    {% endif %}
+                    </td>
+                </tr>
+                {% if file.object_id %}
+                <tr>
+                    <th></th>
+                    <td><a href="{% url "analysis.views.file" "dropped" file.object_id %}" class="btn btn-primary btn-small">Download</a></td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info"><b>Sorry!</b> No dropped files.</div>
+{% endif %}

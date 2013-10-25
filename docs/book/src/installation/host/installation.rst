@@ -2,7 +2,8 @@
 Installing Cuckoo
 =================
 
-Proceed with download and installation.
+Proceed with download and installation. Read :doc:`../../introduction/what` to
+learn where you can obtain a copy of the sandbox.
 
 Create a user
 =============
@@ -20,13 +21,13 @@ Create a new user::
 If you're using VirtualBox, make sure the new user belongs to the "vboxusers"
 group (or the group you used to run VirtualBox)::
 
-    $ sudo useradd -G vboxusers cuckoo
+    $ sudo usermod -G vboxusers cuckoo
 
 If you're using KVM or any other libvirt based module, make sure the new user
 belongs to the "libvirtd" group (or the group your Linux distribution uses to
 run libvirt)::
 
-    $ sudo useradd -G libvirtd cuckoo
+    $ sudo usermod -G libvirtd cuckoo
 
 Install Cuckoo
 ==============

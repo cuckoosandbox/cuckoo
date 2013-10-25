@@ -4,25 +4,28 @@ Cuckoo is the result of the work and efforts of many people. Some main developer
 and some friends and users who kindly provided us with feedback and new features.
 You'll find contributions to the code mentioned in the specific source files.
 
-ACTIVE DEVELOPERS:
-Claudio "nex" Guarnieri     Lead Developer    <nex at cuckoobox dot org>
-Alessandro "jekil" Tanasi   Developer         <alessandro at lonerunners dot net>
-Jurriaan "skier" Bremer     Developer         <jurriaanbremer at gmail dot com>
-Mark "rep" Schloesser       Developer         
-
-INACTIVE DEVELOPERS:
-Dario Fernandes
+DEVELOPERS:
+Claudio "nex" Guarnieri     Lead Developer    @botherder
+Alessandro "jekil" Tanasi   Developer         @jekil
+Jurriaan "skier" Bremer     Developer         @skier_t
+Mark "rep" Schloesser       Developer         @repmovsb
 
 CONTRIBUTORS:
-Thorsten Sick   (Various patches and contributions)
-Adam Pridgen    (Various patches and contributions)
-Mike Tu         (Initial VMWare Workstation machine manager)
-Loic Jaquemet   (Improvements in VirtualBox machine manager)
+Thorsten Sick
+Adam Pridgen
+Mike Tu
+Loic Jaquemet
+Pietro Delsante
+JoseMi Holguin (@j0sm1)
+bcyrill
+Stephen DiCato
+chort (@chort0)
+Hugh Pearse
+vacmf
+Ben Lyon
+Greg Back
 
-BUG REPORTERS/ADVISORS:
-Giacomo Milani
-Stefan Hausotte
-Felix Leder
-Georg Wicherski
-Kjell Christian Nilsen
-Carsten Willems
+Thanks to the whole community and mailing list members who submitted bug
+reports and suggested new features.
+Forgive us if we forgot about someone, it's hard to keep track of all our
+amazing users and contributors.

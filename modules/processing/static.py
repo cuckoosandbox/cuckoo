@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,11 +8,15 @@ import sys
 try:
     import magic
     HAVE_MAGIC = True
-except:
+except ImportError:
     HAVE_MAGIC = False
 
-import pefile
-import peutils
+try:
+    import pefile
+    import peutils
+    HAVE_PEFILE = True
+except ImportError:
+    HAVE_PEFILE = False
 
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -22,9 +26,7 @@ from lib.cuckoo.common.utils import convert_to_printable
 # Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 
 class PortableExecutable:
-    """PE analysis.
-    @note: Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py.
-    """
+    """PE analysis."""
 
     def __init__(self, file_path):
         """@param file_path: file path."""
@@ -124,9 +126,9 @@ class PortableExecutable:
             try:
                 section = {}
                 section["name"] = convert_to_printable(entry.Name.strip("\x00"))
-                section["virtual_address"] = hex(entry.VirtualAddress)
-                section["virtual_size"] = hex(entry.Misc_VirtualSize)
-                section["size_of_data"] = hex(entry.SizeOfRawData)
+                section["virtual_address"] = "0x{0:08x}".format(entry.VirtualAddress)
+                section["virtual_size"] = "0x{0:08x}".format(entry.Misc_VirtualSize)
+                section["size_of_data"] = "0x{0:08x}".format(entry.SizeOfRawData)
                 section["entropy"] = entry.get_entropy()
                 sections.append(section)
             except:
@@ -149,11 +151,11 @@ class PortableExecutable:
                     resource = {}
 
                     if resource_type.name is not None:
-                        name = "%s" % resource_type.name
+                        name = str(resource_type.name)
                     else:
-                        name = "%s" % pefile.RESOURCE_TYPE.get(resource_type.struct.Id)
+                        name = str(pefile.RESOURCE_TYPE.get(resource_type.struct.Id))
                     if name == None:
-                        name = "%d" % resource_type.struct.Id
+                        name = str(esource_type.struct.Id)
 
                     if hasattr(resource_type, "directory"):
                         for resource_id in resource_type.directory.entries:
@@ -165,8 +167,8 @@ class PortableExecutable:
                                     sublanguage = pefile.get_sublang_name_for_lang(resource_lang.data.lang, resource_lang.data.sublang)
 
                                     resource["name"] = name
-                                    resource["offset"] = ("%-8s" % hex(resource_lang.data.struct.OffsetToData)).strip()
-                                    resource["size"] = ("%-8s" % hex(resource_lang.data.struct.Size)).strip()
+                                    resource["offset"] = "0x{0:08x}".format(resource_lang.data.struct.OffsetToData)
+                                    resource["size"] = "0x{0:08x}".format(resource_lang.data.struct.Size)
                                     resource["filetype"] = filetype
                                     resource["language"] = language
                                     resource["sublanguage"] = sublanguage
@@ -226,7 +228,7 @@ class PortableExecutable:
         results["pe_sections"] = self._get_sections()
         results["pe_resources"] = self._get_resources()
         results["pe_versioninfo"] = self._get_versioninfo()
-        results["imported_dll_count"] = len([x for x in results["pe_imports"] if "dll" in x and x['dll'] is not None ])
+        results["imported_dll_count"] = len([x for x in results["pe_imports"] if "dll" in x and x["dll"] is not None ])
 
         return results
 
@@ -240,9 +242,9 @@ class Static(Processing):
         self.key = "static"
         static = {}
 
-        if self.cfg.analysis.category == "file":
-            if self.cfg.analysis.file_type:
-                if "PE32" in self.cfg.analysis.file_type:
+        if HAVE_PEFILE:
+            if self.task["category"] == "file":
+                if "PE32" in File(self.file_path).get_type():
                     static = PortableExecutable(self.file_path).run()
 
         return static

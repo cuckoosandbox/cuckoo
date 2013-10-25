@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -20,12 +20,6 @@ class TestProcessor:
         res = self.p._run_processing(ProcessingMock)
         assert "foo" in res
         assert "bar" in res["foo"]
-
-    def test_run_signature(self):
-        data = {"foo": "bar"}
-        res = self.p._run_signature(SignatureMock, data)
-        assert "name" in res
-        assert_equals("mock", res["name"])
 
     def test_run_signature_alter_results(self):
         """@note: regression test."""

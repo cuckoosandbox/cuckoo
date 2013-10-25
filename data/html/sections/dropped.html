@@ -1,6 +1,6 @@
 <section id="dropped">
     <div class="section-title">
-        <h3>Dropped Files <small>files created or deleted by the malware</small></h3>
+        <h4>Dropped Files</h4>
     </div>
     {% if results.dropped %}
         {% set counter = 1 %}
@@ -44,6 +44,24 @@
                         <tr>
                             <th>Ssdeep</th>
                             <td><span class="mono">{{dropped_file.ssdeep}}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Yara</th>
+                            <td>
+                                {% if dropped_file.yara|length == 0 %}
+                                    None matched
+                                {% else %}
+                                    <ul style="margin-top: 0;margin-bottom: 0;">
+                                        {% for sign in dropped_file.yara %}
+                                        <li>{{sign.name}} ({{sign.meta.description}})</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>VirusTotal</th>
+                            <td><span class="mono"><a href="https://www.virustotal.com/en/file/{{dropped_file.sha256}}/analysis/">Search for Analysis</a></span></td>
                         </tr>
                     </table>
                 </div>

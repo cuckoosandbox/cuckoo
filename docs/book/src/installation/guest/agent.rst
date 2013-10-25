@@ -20,3 +20,5 @@ On Windows simply launching the script will also spawn a Python window, if
 you want to hide it you can rename the file from *agent.py* to **agent.pyw**
 which will prevent the window from spawning.
 
+If you want the script to be launched at Windows' boot, placing the file in
+the `Startup` folder will make it.

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -19,7 +19,7 @@ class JsonDump(Report):
         """
         try:
             report = codecs.open(os.path.join(self.reports_path, "report.json"), "w", "utf-8")
-            report.write(json.dumps(results, sort_keys=False, indent=4))
+            json.dump(results, report, sort_keys=False, indent=4)
             report.close()
-        except (TypeError, IOError) as e:
+        except (UnicodeError, TypeError, IOError) as e:
             raise CuckooReportError("Failed to generate JSON report: %s" % e)

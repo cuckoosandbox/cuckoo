@@ -1,0 +1,19 @@
+<section id="hosts">
+    <h4>Hosts</h4>
+    {% if analysis.network.hosts %}
+        <table class="table table-striped table-bordered">
+            <tr>
+                <th>IP</th>
+            </tr>
+            {% for host in analysis.network.hosts %}
+            <tr>
+                {% if host|slice:":7" != "192.168" %}
+                <td>{{host}}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No hosts contacted.</p>
+    {% endif %}
+</section>

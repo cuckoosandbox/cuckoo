@@ -1,6 +1,6 @@
 <!--
   Cuckoo Sandbox - Automated Malware Analysis
-  Copyright (C) 2010-2012  Cuckoo Sandbox Developers.
+  Copyright (C) 2010-2013  Cuckoo Sandbox Developers.
   http://www.cuckoosandbox.org
  
   This file is part of Cuckoo.
@@ -62,14 +62,38 @@ img.fade:hover {
     margin-top: 20px;
     padding-bottom: 3px;
 }
+.filesystem {
+    background-color: #ffe3c5; {# Light Orange #}
+}
+.registry {
+    background-color: #ffc5c5; {# Light Red #}
+}
+.process {
+    background-color: #c5e0ff; {# Light Blue #}
+}
+.services {
+    background-color: #ccc5ff;
+}
+.device {
+    background-color: #ccc5ff;
+}
+.network {
+    background-color: #d3ffc5; {# Light Green #}
+}
+.socket {
+    background-color: #d3ffc5;
+}
+.synchronization {
+    background-color: #f9c5ff;
+}
 </style>
 </head>
 <body>
-<div class="container">
+<div class="container-fluid">
     {% include "graphic/logo.html" %}
     <div class="navbar navbar-inverse" style="margin-top: 10px;">
         <div class="navbar-inner">
-            <div class="container">
+            <div class="container-fluid">
                 <div class="nav-collapse">
                     <ul class="nav">
                         <li><a href="#info">Info</a></li>
@@ -86,6 +110,7 @@ img.fade:hover {
                         <li><a href="#dropped">Dropped</a></li>
                         <li><a href="#network">Network</a></li>
                         <li><a href="#behavior">Behavior</a></li>
+                        <li><a href="#volatility">Volatility</a></li>
                     </ul>
                 </div>
             </div>
@@ -95,7 +120,7 @@ img.fade:hover {
 
     <footer class="footer">
         <p class="pull-right"><a href="#">Back to top</a></p>
-        <p>&copy;2010-2012 <a href="http://www.cuckoosandbox.org">Cuckoo Sandbox</a></p>
+        <p>&copy;2010-2013 <a href="http://www.cuckoosandbox.org">Cuckoo Sandbox</a></p>
     </footer>
 </div>
 <script>

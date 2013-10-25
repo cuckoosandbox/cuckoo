@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -13,6 +13,7 @@ logging.basicConfig()
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.colors import *
+from lib.cuckoo.common.utils import to_unicode
 from lib.cuckoo.core.database import Database
 
 def main():
@@ -27,6 +28,9 @@ def main():
     parser.add_argument("--machine", type=str, action="store", default="", help="Specify the identifier of a machine you want to use", required=False)
     parser.add_argument("--platform", type=str, action="store", default="", help="Specify the operating system platform you want to use (windows/darwin/linux)", required=False)
     parser.add_argument("--memory", action="store_true", default=False, help="Enable to take a memory dump of the analysis machine", required=False)
+    parser.add_argument("--enforce-timeout", action="store_true", default=False, help="Enable to force the analysis to run for the full timeout period", required=False)
+    parser.add_argument("--clock", type=str, action="store", default=None, help="Set virtual machine clock", required=False)
+    parser.add_argument("--tags", type=str, action="store", default=None, help="Specify tags identifier of a machine you want to use", required=False)
 
     try:
         args = parser.parse_args()
@@ -36,11 +40,7 @@ def main():
 
     db = Database()
 
-    # Try to get input as utf-8.
-    try:
-        target = args.target.decode("utf-8")
-    except UnicodeEncodeError:
-        target = args.target
+    target = to_unicode(args.target)
 
     if args.url:
         task_id = db.add_url(target,
@@ -51,15 +51,21 @@ def main():
                              machine=args.machine,
                              platform=args.platform,
                              custom=args.custom,
-                             memory=args.memory)
+                             memory=args.memory,
+                             enforce_timeout=args.enforce_timeout,
+                             clock=args.clock,
+                             tags=args.tags)
 
-        print(bold(green("Success")) + ": URL \"%s\" added as task with ID %d" % (target, task_id))
+        if task_id:
+            print(bold(green("Success")) + u": URL \"{0}\" added as task with ID {1}".format(target, task_id))
+        else:
+            print(bold(red("Error")) + ": adding task to database")	
     else:
         # Get absolute path to deal with relative.
-        path = os.path.abspath(target)
+        path = to_unicode(os.path.abspath(target))
 
         if not os.path.exists(path):
-            print(bold(red("Error")) + ": the specified file/folder does not exist at path \"%s\"" % path)
+            print(bold(red("Error")) + u": the specified file/folder does not exist at path \"{0}\"".format(path))
             return False
 
         files = []
@@ -69,7 +75,7 @@ def main():
                     file_path = os.path.join(dirname, file_name)
 
                     if os.path.isfile(file_path):
-                        files.append(file_path)
+                        files.append(to_unicode(file_path))
         else:
             files.append(path)
 
@@ -82,10 +88,13 @@ def main():
                                   machine=args.machine,
                                   platform=args.platform,
                                   custom=args.custom,
-                                  memory=args.memory)
+                                  memory=args.memory,
+                                  enforce_timeout=args.enforce_timeout,
+                                  clock=args.clock,
+                                  tags=args.tags)
 
             if task_id:
-                print(bold(green("Success")) + ": File \"%s\" added as task with ID %d" % (file_path, task_id))
+                print(bold(green("Success")) + u": File \"{0}\" added as task with ID {1}".format(file_path, task_id))
             else:
                 print(bold(red("Error")) + ": adding task to database")
 

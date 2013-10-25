@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -66,6 +66,7 @@ PIPE_UNLIMITED_INSTANCES  = 0x000000ff
 INVALID_HANDLE_VALUE      = 0xffffffff
 ERROR_BROKEN_PIPE         = 0x0000006d
 ERROR_MORE_DATA           = 0x000000EA
+ERROR_PIPE_CONNECTED      = 0x00000217
 
 FILE_ATTRIBUTE_HIDDEN     = 0x00000002
 
@@ -105,20 +106,20 @@ class PROCESS_INFORMATION(Structure):
 
 class LUID(Structure):
     _fields_ = [
-        ('LowPart', DWORD),
-        ('HighPart', LONG),
+        ("LowPart", DWORD),
+        ("HighPart", LONG),
         ]
 
 class LUID_AND_ATTRIBUTES(Structure):
     _fields_ = [
-        ('Luid', LUID),
-        ('Attributes', DWORD),
+        ("Luid", LUID),
+        ("Attributes", DWORD),
         ]
     
 class TOKEN_PRIVILEGES(Structure):
     _fields_ = [
-        ('PrivilegeCount', DWORD),
-        ('Privileges', LUID_AND_ATTRIBUTES),
+        ("PrivilegeCount", DWORD),
+        ("Privileges", LUID_AND_ATTRIBUTES),
         ]
 
 class MEMORY_BASIC_INFORMATION(Structure):

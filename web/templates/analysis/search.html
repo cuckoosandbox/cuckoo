@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-6 col-md-offset-3 center">
+        <p><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+
+        <form class="form-inline" role="form" action="{% url "analysis.views.search" %}" enctype="multipart/form-data" method="post">{% csrf_token %}
+            <p class="text-muted" style="margin-top: 5px;">For details on how to perform searches, get some <a href="#help" data-toggle="collapse">help</a>.</p>
+
+            <div class="form-group">
+                <label class="sr-only" for="form_search">Search term</label>
+                <input type="text" class="form-control" id="form_search" name="search" placeholder="Search term" />
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+        <div id="help" class="collapse">
+            <p class="text-muted" style="margin-top: 10px;">For MD5, SHA1, SHA256 and SHA512 no prefix is needed.</p>
+            <table class="table table-striped table-centered">
+                <thead>
+                    <tr>
+                        <th style="text-align: center;">Prefix</th>
+                        <th style="text-align: center;">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>name:</code></td>
+                        <td>File name pattern</td>
+                    </tr>
+                    <tr>
+                        <td><code>type:</code></td>
+                        <td>File type/format</td>
+                    </tr>
+                    <tr>
+                        <td><code>ssdeep:</code></td>
+                        <td>Fuzzy hash</td>
+                    </tr>
+                    <tr>
+                        <td><code>crc32:</code></td>
+                        <td>CRC32 hash</td>
+                    </tr>
+                    <tr>
+                        <td><code>file:</code></td>
+                        <td>Open files matching the pattern</td>
+                    </tr>
+                    <tr>
+                        <td><code>key:</code></td>
+                        <td>Open registry keys matching the pattern</td>
+                    </tr>
+                    <tr>
+                        <td><code>mutex:</code></td>
+                        <td>Open mutexes matching the pattern</td>
+                    </tr>
+                    <tr>
+                        <td><code>domain:</code></td>
+                        <td>Contact the specified domain</td>
+                    </tr>
+                    <tr>
+                        <td><code>ip:</code></td>
+                        <td>Contact the specified IP address</td>
+                    </tr>
+                    <tr>
+                        <td><code>signature:</code></td>
+                        <td>Search for Cuckoo Sandbox signatures</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% if term %}
+    <h3>Term <span class="text-info"><i>{{term}}</i></span></h3>
+{% endif %}
+{% if analyses != None %}
+    {% if analyses|length > 0 %}
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Search Results</h3>
+            </div>
+            <table class="table table-striped" style="table-layout: fixed;">
+                <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Category</th>
+                    <th>Target</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for analysis in analyses %}
+                    <tr>
+                        <td>
+                        {% if analysis.status == "reported" %}
+                            {{analysis.completed_on}}
+                        {% else %}
+                            <span class="text-muted">{{analysis.added_on}} (added on)</span>
+                        {% endif %}
+                        </td>
+                        <td>{{analysis.category|upper}}</td>
+                        <td style="word-wrap: break-word;"><a href="{% url "analysis.views.report" analysis.id %}">
+                            {% if analysis.category == "url" %}
+                                <span class="mono">{{analysis.target}}</span></a>
+                            {% else %}
+                                <span class="mono">{{analysis.sample.md5}}</span></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info" style="text-align: center;"><b>No results found.</b></div>
+    {% endif %}
+{% else %}
+    {% if error %}
+        <div class="alert alert-error" style="text-align: center;"><b>{{error}}</b></div>
+    {% endif %}
+{% endif %}
+{% endblock %}

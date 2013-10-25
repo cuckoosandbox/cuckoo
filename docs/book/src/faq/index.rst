@@ -4,6 +4,7 @@ FAQ
 
 Frequently Asked Questions:
 
+    * :ref:`analyze_urls`
     * :ref:`general_volatility`
     * :ref:`troubles_upgrade`
     * :ref:`troubles_problem`
@@ -12,24 +13,27 @@ Frequently Asked Questions:
 General Questions
 =================
 
+.. _analyze_urls:
+
+Can I analyze URLs with Cuckoo?
+-------------------------------
+
+Yes you can. Since version 0.5 URLs are natively supported by Cuckoo.
+
 .. _general_volatility:
 
 Can I use Volatility with Cuckoo?
 ---------------------------------
 
-Cuckoo does not provide support for Volatility by default. If you want to perform
-additional forensics on the analysis machine, at the moment you'll have to implement
-such support by yourself.
-In the future we might support a full memory dump of the virtual machines, but it's
-not in our short term plans at the moment.
+Cuckoo 0.5 introduces support for optional full memory dumps, which are created at
+the end of the analysis process. You can use these memory dumps to perform additional
+memory forensic analysis with `Volatility`_.
 
 Please also consider that we don't particularly encourage this: since Cuckoo employs
-some rootkit-like technologies to perform its operaitons, the results of a forensic
+some rootkit-like technologies to perform its operations, the results of a forensic
 analysis would be polluted by the sandbox's components.
 
-Despite being highly customizable, please also consider that Cuckoo has been designed
-for full automation. If you're planning to perform manual analysis of your
-malwares, probably Cuckoo is not the best choice.
+.. _`Volatility`: http://code.google.com/p/volatility/
 
 Troubleshooting
 ===============
@@ -47,12 +51,12 @@ Please follow the upgrade steps described in :doc:`../installation/upgrade`.
 
 .. _troubles_problem:
 
-Cuckoo stumbles in some error I don't understand
-------------------------------------------------
+Cuckoo stumbles and produces some error I don't understand
+----------------------------------------------------------
 
-Cuckoo is a young and still evolving project, it might definitely happen that
-you will occur in some problems while running it, but before you rush into
-sending emails to everyone make sure to read what follows.
+Cuckoo is a young and still evolving project, it's possible that
+you encounter some problems while running it, but before you rush into
+sending emails to everyone make sure you read what follows.
 
 Cuckoo is not meant to be a point-and-click tool: it's designed to be a highly
 customizable and configurable solution for somewhat experienced users and
@@ -64,15 +68,15 @@ We try to make it as easy to use as possible, but you have to keep in mind that
 it's not a technology meant to be accessible to just anyone.
 
 That being said, if a problem occurs you have to make sure that you did everything
-you could before asking for time and efforts from our developers and users.
+you could before asking for time and effort from our developers and users.
 We just can't help everyone, we have limited time and it has to be dedicated to
-the development and fixing actual bugs.
+the development and fixing of actual bugs.
 
-    * We have an extensive documentation, read it carefully. You can't just skip parts
+    * We have extensive documentation, read it carefully. You can't just skip parts
       of it.
     * We have a mailing list archive, search through it for previous threads where
       your same problem could have been already addressed and solved.
-    * We have a blog, read it.
+    * We have a `Community`_ platform for asking questions, use it.
     * We have lot of users producing content on Internet, `Google`_ it.
     * Spend some of your own time trying fixing the issues before asking ours, you
       might even get to learn and understand Cuckoo better.
@@ -92,6 +96,7 @@ Make sure when you ask for help to:
       setup.
     * Eventually provide a copy of the analysis that generated the problem.
 
+.. _`Community`: http://community.cuckoosandbox.org
 .. _`Google`: http://www.google.com
 
 Check and restore current snapshot with KVM
@@ -149,20 +154,3 @@ If you have a snapshot marked with a star "*" your snapshot is ready, anyway
 you have to restore the current snapshot::
 
     $ VBoxManage snapshot "<Name of VM>" restorecurrent
-
-Cuckoo eats all my RAM
-----------------------
-
-It's a rare case, but some sample can generate gigs of logs. These logs must
-be processed by Cuckoo and all reports generated, and eat some RAM.
-To avoid memory leaks, file bigger than analysis_size_limit in cuckoo.conf aren't
-processed.
-If you need to process them, you have to do it manually via submit.py utility.
-
-I got a lot of errors from virtualization
------------------------------------------
-
-Proper sizing of VM number running on a host is fundamental, if you oversize
-the VM number you get too much I/O. All virtualization software we have tested,
-under high I/O, raise error when you try to run CLI utilities.
-If you get some errors, try to decrease the number of running VMs.

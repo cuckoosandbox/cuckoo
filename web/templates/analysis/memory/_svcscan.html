@@ -1,0 +1,28 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Display Name</th>
+            <th>Binary Path</th>
+            <th>PID</th>
+            <th>Type</th>
+            <th>Order</th>
+            <th>Offset</th>
+            <th>State</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for service in analysis.memory.svcscan.data %}
+        <tr>
+            <td>{{service.service_name}}</td>
+            <td>{{service.service_display_name}}</td>
+            <td>{{service.service_binary_path}}</td>
+            <td>{{service.pricess_id}}</td>
+            <td>{{service.service_type}}</td>
+            <td>{{service.service_order}}</td>
+            <td><span class="mono">{{service.service_offset}}</span></td>
+            <td>{{service.service_state}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

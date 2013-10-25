@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,11 +8,13 @@ from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
+
 class IE(Package):
     """Internet Explorer analysis package."""
 
     def start(self, url):
         free = self.options.get("free", False)
+        dll = self.options.get("dll", None)
         suspended = True
         if free:
             suspended = False
@@ -22,7 +24,7 @@ class IE(Package):
             raise CuckooPackageError("Unable to execute initial Internet Explorer process, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            p.inject(dll)
             p.resume()
             return p.pid
         else:
@@ -32,4 +34,9 @@ class IE(Package):
         return True
 
     def finish(self):
+        if self.options.get("procmemdump", False):
+            for pid in self.pids:
+                p = Process(pid=pid)
+                p.dump_memory()
+
         return True

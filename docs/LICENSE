@@ -623,33 +623,6 @@ copy of the Program in return for a fee.
 
                      END OF TERMS AND CONDITIONS
 
-The files peutils.py and pefile.py are copyrighted by Ero Carrera <ero.carrera@gmail.com>
-and distributed under the following license.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.  
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-this list of conditions and the following disclaimer in the documentation
-and/or other materials provided with the distribution.
-
-3. The name of the author may not be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
-WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
-OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
-OF SUCH DAMAGE.
-
 The file UserDB.txt is copyrighted by BoB / Team PEiD distributed under the following
 MIT license.
 
@@ -670,23 +643,18 @@ FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TOR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
-The file bottle.py is copyrighted by Marcel Hellkamp distributed under the following
-MIT license.
+The file jquery.js is copyrighted by John Resig and dual licensed under the MIT or GPL
+Version 2 licenses (see: http://jquery.org/license).
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+The files lightbox.js and lightbox.css are copyrighted by Lokesh Dhakar and licensed under
+the Creative Commons Attribution 2.5 License
+(see: http://creativecommons.org/licenses/by/2.5/).
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+The files bootstrap-fileupload.js, jasny-bootstrap.js, jasny-bootstrap.min.js,
+jasny-bootstrap.css, jasny-bootstrap.min.css, jasny-bootstrap-responsive.css,
+jasny-bootstrap-responsive.min.css are copyrighted by Jasny BV and licensed under the Apache
+License, Version 2.0.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+The files bootstrap.min.js, bootstrap.min.css, bootstrap-responsive.min.css,
+glyphicons-halflings.png, glyphicons-halflings-white.png are copyrighted by Twitter, Inc.
+and licensed under the Apache License, Version 2.0.

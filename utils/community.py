@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -12,15 +12,16 @@ import tempfile
 from zipfile import ZipFile
 from StringIO import StringIO
 
-ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..")
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-sys.path.append(ROOT)
-
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 import lib.cuckoo.common.colors as colors
 
-URL = "https://github.com/cuckoobox/community/zipball/master"
+URL = "https://github.com/cuckoobox/community/archive/{0}.zip"
 
 def download_archive():
+    print("Downloading modules from {0}".format(URL))
+
     try:
         data = urllib2.urlopen(URL).read()
     except Exception as e:
@@ -40,28 +41,36 @@ def download_archive():
 def install(enabled, force, rewrite):
     (temp, source) = download_archive()
 
-    folders = {"signatures" : os.path.join("modules", "signatures")}
+    folders = {
+        "signatures" : os.path.join("modules", "signatures"),
+        "processing" : os.path.join("modules", "processing"),
+        "reporting" : os.path.join("modules", "reporting"),
+        "machinemanagers" : os.path.join("modules", "machinemanagers")
+    }
 
     for category in enabled:
         folder = folders[category]
 
-        print("\nInstalling %s" % colors.cyan(category.upper()))
+        print("\nInstalling {0}".format(colors.cyan(category.upper())))
 
         origin = os.path.join(source, folder)
 
         for file_name in os.listdir(origin):
-            destination = os.path.join(ROOT, folder, file_name)
+            if file_name == ".gitignore":
+                continue
+
+            destination = os.path.join(CUCKOO_ROOT, folder, file_name)
 
             if not rewrite:
                 if os.path.exists(destination):
-                    print("File \"%s\" already exists, %s" % (file_name, colors.yellow("skipped")))
+                    print("File \"{0}\" already exists, {1}".format(file_name, colors.yellow("skipped")))
                     continue
 
             install = False
 
             if not force:
                 while 1:
-                    choice = raw_input("Do you want to install file \"%s\"? [yes/no] " % file_name)
+                    choice = raw_input("Do you want to install file \"{0}\"? [yes/no] ".format(file_name))
                     if choice.lower() == "yes":
                         install = True
                         break
@@ -74,19 +83,22 @@ def install(enabled, force, rewrite):
 
             if install:
                 shutil.copy(os.path.join(origin, file_name), destination)
-                print("File \"%s\" %s" % (file_name, colors.green("installed")))
+                print("File \"{0}\" {1}".format(file_name, colors.green("installed")))
 
     shutil.rmtree(temp)
 
 def main():
+    global URL
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--all", help="Download everything", action="store_true", required=False)
     parser.add_argument("-s", "--signatures", help="Download Cuckoo signatures", action="store_true", required=False)
-    #parser.add_argument("-p", "--processing", help="Download processing modules", action="store_true", required=False)
-    #parser.add_argument("-m", "--machinemanagers", help="Download machine managers", action="store_true", required=False)
-    #parser.add_argument("-r", "--reporting", help="Download reporting modules", action="store_true", required=False)
+    parser.add_argument("-p", "--processing", help="Download processing modules", action="store_true", required=False)
+    parser.add_argument("-m", "--machinemanagers", help="Download machine managers", action="store_true", required=False)
+    parser.add_argument("-r", "--reporting", help="Download reporting modules", action="store_true", required=False)
     parser.add_argument("-f", "--force", help="Install files without confirmation", action="store_true", required=False)
     parser.add_argument("-w", "--rewrite", help="Rewrite existing files", action="store_true", required=False)
+    parser.add_argument("-b", "--branch", help="Specify a different branch", action="store", default="master", required=False)
     args = parser.parse_args()
 
     enabled = []
@@ -94,10 +106,19 @@ def main():
     rewrite = False
 
     if args.all:
+        enabled.append("processing")
         enabled.append("signatures")
+        enabled.append("reporting")
+        enabled.append("machinemanagers")
     else:
         if args.signatures:
             enabled.append("signatures")
+        if args.processing:
+            enabled.append("processing")
+        if args.reporting:
+            enabled.append("reporting")
+        if args.machinemanagers:
+            enabled.append("machinemanagers")
 
     if not enabled:
         print(colors.red("You need to enable some category!\n"))
@@ -108,6 +129,8 @@ def main():
         force = True
     if args.rewrite:
         rewrite = True
+
+    URL = URL.format(args.branch)
 
     install(enabled, force, rewrite)
 

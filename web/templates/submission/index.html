@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 999px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    background: red;
+    cursor: inherit;
+    display: block;
+}
+input[readonly] {
+    background-color: white !important;
+    cursor: text !important;
+}
+</style>
+<script>
+$(document)
+    .on('change', '.btn-file :file', function() {
+        var input = $(this),
+        numFiles = input.get(0).files ? input.get(0).files.length : 1,
+        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+        input.trigger('fileselect', [numFiles, label]);
+});
+
+$(document).ready( function() {
+    $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
+        
+        var input = $(this).parents('.input-group').find(':text'),
+            log = numFiles > 1 ? numFiles + ' files selected' : label;
+        
+        if( input.length ) {
+            input.val(log);
+        } else {
+            if( log ) alert(log);
+        }
+        
+    });
+});     
+</script>
+<div class="row">
+    <div class="col-md-6 col-md-offset-3 center">
+        <p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+
+        <form role="form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+            <div class="tabbable">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#file" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> File</a></li>
+                    <li><a href="#url" data-toggle="tab"><span class="glyphicon glyphicon-globe"></span> URL</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade in active" id="file">
+                        <div class="input-group col-md-6">
+                            <span class="input-group-btn">
+                                <input type="text" class="form-control" readonly>
+                                <span class="btn btn-primary btn-file">
+                                    Select <input type="file" name="sample">
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="url">
+                        <div class="input-group">
+                            <label class="sr-only" form="form_url">URL</label>
+                            <input type="text" class="form-control" id="form_url" name="url" placeholder="URL" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="accordion" style="margin-top: 20px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#options"><i class="icon icon-cog"></i> Advanced Options</a>
+                    </div>
+                    <div id="options" class="panel-collapse collapse" style="text-align: left;">
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label for="form_package">Analysis Package</label>
+                                <select class="form-control" id="form_package" name="package">
+                                    <option value="" active>Detect Automatically</option>
+                                    {% for package in packages %}
+                                    <option value="{{package}}">{{package}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="form_timeout">Timeout</label>
+                                <input type="text" class="form-control" id="form_timeout" name="timeout" />
+                            </div>
+                            <div class="form-group">
+                                <label for="form_options">Options</label>
+                                <input type="text" class="form-control" id="form_options" name="options" />
+                            </div>
+                            <div class="form-group">
+                                <label for="form_priority">Priority</label>
+                                <select class="form-control" id="form_priority" name="priority">
+                                    <option value="1">Low</option>
+                                    <option value="2">Medium</option>
+                                    <option value="3">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="form_machine">Machine</label>
+                                <input type="text" class="form-control" id="form_machine" name="machine" />
+                            </div>
+                            <div class="form-group">
+                                <label for="form_custom">Custom</label>
+                                <input type="text" class="form-control" id="form_custom" name="custom" />
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="free" /> No Injection <span class="text-muted"><small>(disable behavioral analysis)</small></span>
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="process_memory" /> Process Memory Dump
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="memory" /> Full Memory Dump
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enforce_timeout" /> Enforce Timeout
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="form_tags">Tags</label>
+                                <input type="text" class="form-control" id="form_tags" name="tags" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 20px;"><button type="submit" class="btn btn-primary btn-lg">Analyze</button></div>
+        </form>
+    </div>
+</div>
+{% endblock %}

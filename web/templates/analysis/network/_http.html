@@ -1,0 +1,17 @@
+<h4>HTTP Requests</h4>
+{% if analysis.network.http %}
+<table class="table table-striped table-bordered" style="table-layout: fixed;">
+    <tr>
+        <th>URI</th>
+        <th>Data</th>
+    </tr>
+    {% for request in analysis.network.http %}
+    <tr>
+        <td style="word-wrap: break-word;">{{request.uri}}</td>
+        <td style="word-wrap: break-word;"><pre>{{request.data}}</pre></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No HTTP requests performed.</p>
+{% endif %}

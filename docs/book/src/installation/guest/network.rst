@@ -48,3 +48,17 @@ characteristics of your virtualization software.
         their networking.
         You you aren't sure about that check your virtualization software
         documentation and test connectivity with ping and telnet.
+
+The recommended setup is using a Host-Only networking layout with proper
+forwarding and filtering configuration done with ``iptables`` on the Host.
+
+For example, using VirtualBox, you can enable Internet access to the virtual
+machines using the following ``iptables`` rules::
+
+    iptables -A FORWARD -o eth0 -i vboxnet0 -s 192.168.56.0/24 -m conntrack --ctstate NEW -j ACCEPT
+    iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    iptables -A POSTROUTING -t nat -j MASQUERADE
+
+And adding IP forward::
+
+    sysctl -w net.ipv4.ip_forward=1

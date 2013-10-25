@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -14,19 +14,21 @@ class Zip(Package):
 
     def start(self, path):
         root = os.environ["TEMP"]
+        password = self.options.get("password", None)
 
         with ZipFile(path, "r") as archive:
             try:
-                archive.extractall(root)
+                archive.extractall(path=root, pwd=password)
             except BadZipfile as e:
                 raise CuckooPackageError("Invalid Zip file")
             except RuntimeError:
                 try:
-                    archive.extractall(path=root, pwd="infected")
+                    archive.extractall(path=root, pwd=self.options.get("password", "infected"))
                 except RuntimeError as e:
                     raise CuckooPackageError("Unable to extract Zip file, unknown password?")
 
         file_path = os.path.join(root, self.options.get("file", "sample.exe"))
+        dll = self.options.get("dll", None)
         free = self.options.get("free", False)
         args = self.options.get("arguments", None)
         suspended = True
@@ -38,7 +40,7 @@ class Zip(Package):
             raise CuckooPackageError("Unable to execute initial process, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            p.inject(dll)
             p.resume()
             return p.pid
         else:
@@ -48,4 +50,9 @@ class Zip(Package):
         return True
 
     def finish(self):
+        if self.options.get("procmemdump", False):
+            for pid in self.pids:
+                p = Process(pid=pid)
+                p.dump_memory()
+
         return True

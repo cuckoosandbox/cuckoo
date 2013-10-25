@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#overview" data-toggle="tab">Quick Overview</a></li>
+    <li><a href="#static" data-toggle="tab">Static Analysis</a></li>
+    {% if analysis.behavior.processes %}<li><a href="#behavior" data-toggle="tab" id="graph_hook">Behavioral Analysis</a></li>{% endif %}
+    <li><a href="#network" data-toggle="tab">Network Analysis</a></li>
+    <li><a href="#dropped" data-toggle="tab">Dropped Files</a></li>
+    {% if analysis.memory %}<li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>{% endif %}
+</ul>
+<div class="tab-content">
+    <div class="tab-pane fade in active" id="overview">
+        {% include "analysis/overview/index.html" %}
+    </div>
+    <div class="tab-pane fade" id="static">
+        {% include "analysis/static/index.html" %}
+    </div>
+    {% if analysis.behavior.processes %}
+    <div class="tab-pane fade" id="behavior">
+        {% include "analysis/behavior/index.html" %}
+    </div>
+    {% endif %}
+    <div class="tab-pane fade" id="network">
+        {% include "analysis/network/index.html" %}
+    </div>
+    <div class="tab-pane fade" id="dropped">
+        {% include "analysis/dropped/index.html" %}
+    </div>
+    {% if analysis.memory %}
+    <div class="tab-pane fade" id="memory">
+        {% include "analysis/memory/index.html" %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

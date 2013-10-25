@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,12 +10,20 @@ class CreatesExe(Signature):
     severity = 2
     categories = ["generic"]
     authors = ["Cuckoo Developers"]
-    minimum = "0.4"
+    minimum = "0.5"
 
-    def run(self, results):
-        for file_name in results["behavior"]["summary"]["files"]:
-            if file_name.endswith(".exe"):
-                self.data.append({"file_name" : file_name})
-                return True
+    # This is a signature template. It should be used as a skeleton for
+    # creating custom signatures, therefore is disabled by default.
+    # It doesn't verify whether a .exe is actually being created, but
+    # it matches files being opened with any access type, including
+    # read and attributes lookup.
+    enabled = False
+
+    def run(self):
+        match = self.check_file(pattern=".*\\.exe$",
+                                regex=True)
+        if match:
+            self.data.append({"file" : match})
+            return True
 
         return False

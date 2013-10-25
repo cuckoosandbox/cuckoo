@@ -1,6 +1,8 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+
+import os
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
@@ -28,6 +30,7 @@ class XLS(Package):
         if not excel:
             raise CuckooPackageError("Unable to find any Microsoft Office Excel executable available")
 
+        dll = self.options.get("dll", None)
         free = self.options.get("free", False)
         suspended = True
         if free:
@@ -38,7 +41,7 @@ class XLS(Package):
             raise CuckooPackageError("Unable to execute initial Microsoft Office Excel process, analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            p.inject(dll)
             p.resume()
             return p.pid
         else:
@@ -48,4 +51,9 @@ class XLS(Package):
         return True
 
     def finish(self):
+        if self.options.get("procmemdump", False):
+            for pid in self.pids:
+                p = Process(pid=pid)
+                p.dump_memory()
+
         return True

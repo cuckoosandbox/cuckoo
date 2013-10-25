@@ -1,6 +1,8 @@
-# Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+
+import os
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
@@ -10,8 +12,9 @@ class Shellcode(Package):
 
     def start(self, path):
         p = Process()
+        dll = self.options.get("dll")
         p.execute(path="bin/execsc.exe", args=path, suspended=True)
-        p.inject()
+        p.inject(dll)
         p.resume()
 
         return p.pid
@@ -20,4 +23,9 @@ class Shellcode(Package):
         return True
 
     def finish(self):
+        if self.options.get("procmemdump", False):
+            for pid in self.pids:
+                p = Process(pid=pid)
+                p.dump_memory()
+
         return True
