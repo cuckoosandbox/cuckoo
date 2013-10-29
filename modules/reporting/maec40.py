@@ -177,12 +177,12 @@ class MAEC40Report(Report):
                                                                          "answer_resource_records": answer_resource_records}]}
         elif layer7_protocol == "HTTP":
             object_properties["layer7_connections"] = {"http_session":
-                                                       {"http_request_response": [{"http_client_request": {"http_request_line": {"http_method": network_data["method"],
-                                                                                                                                    "value": network_data["path"],
-                                                                                                                                    "version": network_data["version"]},
+                                                       {"http_request_response": [{"http_client_request": {"http_request_line": {"http_method": {"value" : network_data["method"], "force_datatype": True},
+                                                                                                                                 "value": network_data["path"],
+                                                                                                                                 "version": network_data["version"]},
                                                                                                              "http_request_header": {"parsed_header": {"user_agent": network_data["user-agent"],
-                                                                                                                                                         "host": {"domain_name": {"value": network_data["host"]},
-                                                                                                                                                                   "port": {"port_value": network_data["port"]}}}},
+                                                                                                                                                       "host": {"domain_name": {"value": network_data["host"]},
+                                                                                                                                                       "port": {"port_value": network_data["port"]}}}},
                                                                                                              "http_message_body": {"message_body": network_data["body"]}}
                                                                                      }
                                                                                     ]}
