@@ -590,6 +590,15 @@ class Enhanced(object):
                 "args" : [("file", "CommandLine")]
             },
             {
+                "event" : "execute",
+                "object" : "file",
+                "apis" : [
+                    "ShellExecuteExA",
+                    "ShellExecuteExW",
+                ],
+                "args" : [("file", "FilePath")]
+            },
+            {
                 "event" : "load",
                 "object" : "library",
                 "apis" : [
