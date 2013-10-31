@@ -10,10 +10,12 @@
                     <table class="table table-striped table-bordered">
                         <tr>
                             <th>IP Address</th>
+                            <th>Country Name</th>
                         </tr>
                         {% for host in results.network.hosts %}
                         <tr>
-                            <td><span class="mono">{{host}}</span></td>
+                            <td><span class="mono">{{host.ip}}</span></td>
+                            <td><span class="mono">{{host.country_name}}</span></td>
                         </tr>
                         {% endfor %}
                     </table>

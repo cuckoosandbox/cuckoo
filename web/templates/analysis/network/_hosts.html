@@ -4,11 +4,13 @@
         <table class="table table-striped table-bordered">
             <tr>
                 <th>IP</th>
+                <th>Country Name</th>
             </tr>
             {% for host in analysis.network.hosts %}
             <tr>
-                {% if host|slice:":7" != "192.168" %}
-                <td>{{host}}</td>
+                {% if host.ip|slice:":7" != "192.168" %}
+                <td>{{host.ip}}</td>
+                <td>{{host.country_name}}</td>
                 {% endif %}
             </tr>
             {% endfor %}
