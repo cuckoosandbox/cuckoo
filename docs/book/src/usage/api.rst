@@ -57,6 +57,9 @@ Following is a list of currently available resources and a brief description. Fo
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`machines_view`      | Returns details on the analysis machine associated with the specified name.                                      |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`cuckoo_status`      | Returns the basic cuckoo status, including version and tasks overview                                            |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+
 
 .. _tasks_create_file:
 
@@ -433,6 +436,43 @@ Following is a list of currently available resources and a brief description. Fo
                 }
             }
 
+        **Status codes**:
+            * ``200`` - no error
+            * ``404`` - machine not found
+
+.. _cuckoo_status:
+
+/cuckoo/status
+--------------
+
+    **GET /cuckoo/status/**
+
+        Returns status of the cuckoo server.
+
+        **Example request**::
+
+            curl http://localhost:8090/cuckoo/status
+
+        **Example response**::
+
+            {
+                "tasks": {
+                    "reported": 165, 
+                    "running": 2, 
+                    "total": 167, 
+                    "completed": 0, 
+                    "pending": 0
+                }, 
+                "version": "1.0",
+                "protocol_version": 1,
+                "hostname": "Patient0", 
+                "machines": {
+                    "available": 4, 
+                    "total": 5
+                }
+                "tools":["vanilla"]
+            }
+            
         **Status codes**:
             * ``200`` - no error
             * ``404`` - machine not found

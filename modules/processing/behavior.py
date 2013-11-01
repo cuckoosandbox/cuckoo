@@ -582,6 +582,23 @@ class Enhanced(object):
                 "args" : [("file", "FileName")]
             },
             {
+                "event" : "execute",
+                "object" : "file",
+                "apis" : [
+                    "CreateProcessInternalW",
+                ],
+                "args" : [("file", "CommandLine")]
+            },
+            {
+                "event" : "execute",
+                "object" : "file",
+                "apis" : [
+                    "ShellExecuteExA",
+                    "ShellExecuteExW",
+                ],
+                "args" : [("file", "FilePath")]
+            },
+            {
                 "event" : "load",
                 "object" : "library",
                 "apis" : [
