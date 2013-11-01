@@ -11,9 +11,6 @@ import tarfile
 import StringIO
 import socket
 
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
-from lib.cuckoo.common.constants import CUCKOO_VERSION
-
 try:
     from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response, HTTPError
 except ImportError:
@@ -21,7 +18,7 @@ except ImportError:
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file, delete_folder
 from lib.cuckoo.core.database import Database
 
