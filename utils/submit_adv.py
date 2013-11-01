@@ -5,11 +5,13 @@
 
 __author__ = 'Alejandro Nolla - z0mbiehunt3r'
 
-import fnmatch
-import os
-import sys
-import logging
 import argparse
+import fnmatch
+import logging
+import os
+import random
+import sys
+
 
 logging.basicConfig()
 
@@ -63,6 +65,9 @@ def main():
                         required=False)
     parser.add_argument("--pattern", type=str, action="store", default=None,
                         help="Pattern of files to submit", required=False)
+    parser.add_argument("--shuffle", action="store_true", default=False,
+                        help="Shuffle samples before submitting them",
+                        required=False)
 
     try:
         args = parser.parse_args()
@@ -119,6 +124,9 @@ def main():
 
         if args.max:
             files = files[0:args.max]
+
+        if args.shuffle:
+            random.shuffle(files)
 
         for file_path in files:
             task_id = db.add_path(file_path=file_path,
