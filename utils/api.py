@@ -69,18 +69,20 @@ def tasks_create_file():
         enforce_timeout = True
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
-    task_id = db.add_path(file_path=temp_file_path,
-                          package=package,
-                          timeout=timeout,
-                          priority=priority,
-                          options=options,
-                          machine=machine,
-                          platform=platform,
-                          tags=tags,
-                          custom=custom,
-                          memory=memory,
-                          enforce_timeout=enforce_timeout,
-                          clock=clock)
+    task_id = db.add_path(
+        file_path=temp_file_path,
+        package=package,
+        timeout=timeout,
+        priority=priority,
+        options=options,
+        machine=machine,
+        platform=platform,
+        tags=tags,
+        custom=custom,
+        memory=memory,
+        enforce_timeout=enforce_timeout,
+        clock=clock
+    )
 
     response["task_id"] = task_id
     return jsonize(response)
@@ -106,18 +108,20 @@ def tasks_create_url():
         enforce_timeout = True
     clock = request.forms.get("clock", None)
 
-    task_id = db.add_url(url=url,
-                         package=package,
-                         timeout=timeout,
-                         options=options,
-                         priority=priority,
-                         machine=machine,
-                         platform=platform,
-                         tags=tags,
-                         custom=custom,
-                         memory=memory,
-                         enforce_timeout=enforce_timeout,
-                         clock=clock)
+    task_id = db.add_url(
+        url=url,
+        package=package,
+        timeout=timeout,
+        options=options,
+        priority=priority,
+        machine=machine,
+        platform=platform,
+        tags=tags,
+        custom=custom,
+        memory=memory,
+        enforce_timeout=enforce_timeout,
+        clock=clock
+    )
 
     response["task_id"] = task_id
     return jsonize(response)
@@ -214,18 +218,10 @@ def tasks_report(task_id, report_format="json"):
     }
 
     if report_format.lower() in formats:
-        report_path = os.path.join(CUCKOO_ROOT,
-                                   "storage",
-                                   "analyses",
-                                   task_id,
-                                   "reports",
-                                   formats[report_format.lower()])
+        report_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "reports", formats[report_format.lower()])
     elif report_format.lower() in bz_formats:
             bzf = bz_formats[report_format.lower()]
-            srcdir = os.path.join(CUCKOO_ROOT,
-                                   "storage",
-                                   "analyses",
-                                   task_id)
+            srcdir = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id)
             s = StringIO.StringIO()
             tar = tarfile.open(fileobj=s, mode="w:bz2")
             for filedir in os.listdir(srcdir):
@@ -289,24 +285,21 @@ def machines_list():
 
 @route("/cuckoo/status", method="GET")
 def cuckoo_status():
-    response = {"version": CUCKOO_VERSION,
-                "protocol_version": 1,
-                "hostname": socket.gethostname(),
-                "machines": {"total": len(db.list_machines()),
-                             "available": db.count_machines_available()},
-                "tasks":{"total": db.count_tasks(),
-                         "pending": db.count_tasks("pending"),
-                         "running": db.count_tasks("running"),
-                         "completed": db.count_tasks("completed"),
-                         "reported": db.count_tasks("reported")},
-                "tools":["vanilla"]
-                }
-
-    try:
-        import volatility.conf as conf
-        response["tools"].append("volatility")
-    except ImportError:
-        pass
+    response = dict(
+        version=CUCKOO_VERSION,
+        hostname=socket.gethostname(),
+        machines=dict(
+            total=len(db.list_machines()),
+            available=db.count_machines_available()
+        ),
+        tasks=dict(
+            total=db.count_tasks(),
+            pending=db.count_tasks("pending"),
+            running=db.count_tasks("running"),
+            completed=db.count_tasks("completed"),
+            reported=db.count_tasks("reported")
+        ),
+    )
 
     return jsonize(response)
 
