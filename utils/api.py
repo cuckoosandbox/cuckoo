@@ -207,10 +207,10 @@ def tasks_delete(task_id):
 @route("/tasks/report/<task_id>/<report_format>", method="GET")
 def tasks_report(task_id, report_format="json"):
     formats = {
-        "json" : "report.json",
-        "html" : "report.html",
-        "maec" : "report.maec-1.1.xml",
-        "metadata" : "report.metadata.xml"
+        "json": "report.json",
+        "html": "report.html",
+        "maec": "report.maec-1.1.xml",
+        "metadata": "report.metadata.xml"
     }
 
     bz_formats = {

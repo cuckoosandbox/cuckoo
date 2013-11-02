@@ -44,7 +44,7 @@ class ircMessage(object):
             return False
 
         for element in lines:
-            if re.match("^:",element) != None:
+            if not re.match("^:", element) is None:
                 command = "([a-zA-Z]+|[0-9]{3})"
                 params = "(\x20.+)"
                 irc_server_msg = re.findall("(^:[\w+.{}!@|()]+\x20)"+command+params,element)

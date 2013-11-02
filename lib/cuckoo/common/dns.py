@@ -45,7 +45,8 @@ def with_timeout(func, args=(), kwargs={}):
             threading.Thread.__init__(self)
             self.result, self.error = None, None
         def run(self):
-            try: self.result = func(*args, **kwargs)
+            try:
+                self.result = func(*args, **kwargs)
             except Exception, e:
                 self.error = e
 
@@ -55,14 +56,16 @@ def with_timeout(func, args=(), kwargs={}):
     if it.isAlive():
         return DNS_TIMEOUT_VALUE
     else:
-        if it.error: raise it.error
+        if it.error:
+            raise it.error
         return it.result
 
 def resolve_thread(name):
     return with_timeout(gethostbyname, (name,))
 
 def gethostbyname(name):
-    try: ip = socket.gethostbyname(name)
+    try:
+        ip = socket.gethostbyname(name)
     except socket.gaierror:
         ip = ""
     return ip
@@ -79,16 +82,17 @@ def resolve_cares(name):
 
     def setresult_cb(res, error):
         # ignore error and just take first result ip (randomized anyway)
-        if res and res.addresses: result.value = res.addresses[0]
+        if res and res.addresses:
+            result.value = res.addresses[0]
 
     # resolve with cb
     careschan.gethostbyname(name, socket.AF_INET, setresult_cb)
 
     # now do the actual work
     readfds, writefds = careschan.getsock()
-    for rfd in canreadfds: 
     canreadfds, canwritefds, _ = select.select(readfds, writefds, [],
                                                DNS_TIMEOUT)
+    for rfd in canreadfds:
         careschan.process_fd(rfd, -1)
 
     # if the query did not succeed, setresult was not called and we just
@@ -97,7 +101,8 @@ def resolve_cares(name):
     return result.value
 
 # workaround until py3 nonlocal (for c-ares and gevent)
-class Resultholder: pass
+class Resultholder:
+    pass
 
 
 # gevent based resolver with timeout
@@ -113,17 +118,22 @@ def resolve_gevent(name):
 def resolve_gevent_real(name):
     result = DNS_TIMEOUT_VALUE
     with gevent.Timeout(DNS_TIMEOUT, False):
-        try: result = gevent.socket.gethostbyname(name)
-        except socket.gaierror: pass
-    
+        try:
+            result = gevent.socket.gethostbyname(name)
+        except socket.gaierror:
+            pass
+
     return result
 
 
 # choose resolver automatically
 def resolve(name):
-    if HAVE_CARES: return resolve_cares(name)
-    elif HAVE_GEVENT: return resolve_gevent(name)
-    else: return resolve_thread(name)
+    if HAVE_CARES:
+        return resolve_cares(name)
+    elif HAVE_GEVENT:
+        return resolve_gevent(name)
+    else:
+        return resolve_thread(name)
 
 # another alias
 resolve_best = resolve

@@ -75,7 +75,7 @@ def create_structure():
     ]
 
     try:
-        create_folders(root=CUCKOO_ROOT,folders=folders)
+        create_folders(root=CUCKOO_ROOT, folders=folders)
     except CuckooOperationalError as e:
         raise CuckooStartupError(e)
 
@@ -89,7 +89,7 @@ def check_version():
     print(" Checking for updates...")
 
     url = "http://api.cuckoosandbox.org/checkversion.php"
-    data = urllib.urlencode({"version" : CUCKOO_VERSION})
+    data = urllib.urlencode({"version": CUCKOO_VERSION})
 
     try:
         request = urllib2.Request(url, data)

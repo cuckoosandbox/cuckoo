@@ -14,8 +14,8 @@ from lib.cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
 
-class Sniffer(Auxiliary):
 
+class Sniffer(Auxiliary):
     def start(self):
         tcpdump = self.options.get("tcpdump", "/usr/sbin/tcpdump")
         interface = self.options.get("interface")

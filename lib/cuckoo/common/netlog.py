@@ -7,8 +7,10 @@ import struct
 import datetime
 import string
 
-try: import bson
-except: pass
+try:
+    import bson
+except:
+    pass
 
 from lib.cuckoo.common.logtbl import table as LOGTBL
 from lib.cuckoo.common.utils import get_filename_from_path
@@ -163,7 +165,8 @@ class NetlogParser(object):
                                     "protocol broken?")
 
         s = self.handler.read(length)
-        if maxlength > length: s += "... (truncated)"
+        if maxlength > length:
+            s += "... (truncated)"
         return s
 
     def read_buffer(self):
@@ -172,7 +175,8 @@ class NetlogParser(object):
         # only return the maxlength, as we don't log the actual
         # buffer right now
         buf = self.handler.read(length)
-        if maxlength > length: buf += " ... (truncated)"
+        if maxlength > length:
+            buf += " ... (truncated)"
         return buf
 
     def read_registry(self):
@@ -217,7 +221,8 @@ MAX_MESSAGE_LENGTH = 20 * 1024 * 1024
 
 def default_converter(v):
     # fix signed ints (bson is kind of limited there)
-    if type(v) in (int, long) and v < 0: return v + 0x100000000
+    if type(v) in (int, long) and v < 0:
+        return v + 0x100000000
     return v
 
 def check_names_for_typeinfo(arginfo):
@@ -289,7 +294,8 @@ class BsonParser(object):
             self.handler.log_process(context, vmtime, None, ppid,
                                      modulepath, procname)
 
-        else: # regular api call
+        else:
+            # regular api call
             if not index in self.infomap:
                 log.warning("Got API with unknown index - monitor needs "
                             "to explain first: {0}".format(dec))

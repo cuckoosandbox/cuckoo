@@ -207,10 +207,10 @@ class Pcap:
 
         # DNS query parsing.
         query = {}
- 
+
         if dns.rcode == dpkt.dns.DNS_RCODE_NOERR or \
-           dns.qr == dpkt.dns.DNS_R or \
-           dns.opcode == dpkt.dns.DNS_QUERY or True:
+                dns.qr == dpkt.dns.DNS_R or \
+                dns.opcode == dpkt.dns.DNS_QUERY or True:
             # DNS question.
             try:
                 q_name = dns.qd[0].name
@@ -311,8 +311,8 @@ class Pcap:
             if entry["domain"] == domain:
                 return
 
-        self.unique_domains.append({"domain" : domain,
-                                    "ip" : self._dns_gethostbyname(domain)})
+        self.unique_domains.append({"domain": domain,
+                                    "ip": self._dns_gethostbyname(domain)})
 
     def _check_http(self, tcpdata):
         """Checks for HTTP traffic.

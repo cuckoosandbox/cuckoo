@@ -69,7 +69,8 @@ def convert_char(c):
     if c in PRINTABLE_CHARACTERS:
         return c
     else:
-        return r"\x%02x" % ord(c)
+        return "\\x%02x" % ord(c)
+
 
 def is_printable(s):
     """ Test if a string is printable."""
@@ -161,7 +162,8 @@ class TimeoutTransport(xmlrpclib.Transport):
 
     def make_connection(self, *args, **kwargs):
         conn = xmlrpclib.Transport.make_connection(self, *args, **kwargs)
-        if self.timeout != None: conn.timeout = self.timeout
+        if not self.timeout is None:
+            conn.timeout = self.timeout
         return conn
 
 class Singleton(type):

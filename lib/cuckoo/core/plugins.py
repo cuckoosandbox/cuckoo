@@ -189,7 +189,7 @@ class RunProcessing(object):
 
             # If succeeded, return they module's key name and the data to be
             # appended to it.
-            return {current.key : data}
+            return {current.key: data}
         except CuckooProcessingError as e:
             log.warning("The processing module \"%s\" returned the following "
                         "error: %s", current.__class__.__name__, e)

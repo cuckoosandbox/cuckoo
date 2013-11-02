@@ -128,27 +128,35 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
     def wait_sock_or_end(self):
         while True:
-            if self.end_request.isSet(): return False
-            rs,ws,xs = select.select([self.request],[],[],1)
-            if rs: return True
+            if self.end_request.isSet():
+                return False
+            rs, ws, xs = select.select([self.request], [], [], 1)
+            if rs:
+                return True
 
     def read(self, length):
         buf = ""
         while len(buf) < length:
-            if not self.wait_sock_or_end(): raise Disconnect()
+            if not self.wait_sock_or_end():
+                raise Disconnect()
             tmp = self.request.recv(length-len(buf))
-            if not tmp: raise Disconnect()
+            if not tmp:
+                raise Disconnect()
             buf += tmp
 
         if isinstance(self.protocol, (NetlogParser, BsonParser)):
-            if self.rawlogfd: self.rawlogfd.write(buf)
-            else: self.startbuf += buf
+            if self.rawlogfd:
+                self.rawlogfd.write(buf)
+            else:
+                self.startbuf += buf
         return buf
 
     def read_any(self):
-        if not self.wait_sock_or_end(): raise Disconnect()
+        if not self.wait_sock_or_end():
+            raise Disconnect()
         tmp = self.request.recv(BUFSIZE)
-        if not tmp: raise Disconnect()
+        if not tmp:
+            raise Disconnect()
         return tmp
 
     def read_newline(self):
@@ -175,11 +183,12 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
         ip, port = self.client_address
-        self.connect_time = datetime.datetime.now()        
+        self.connect_time = datetime.datetime.now()
         log.debug("New connection from: {0}:{1}".format(ip, port))
 
         self.storagepath = self.server.build_storage_path(ip)
-        if not self.storagepath: return
+        if not self.storagepath:
+            return
 
         # create all missing folders for this analysis
         self.create_folders()
@@ -190,7 +199,8 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
             while True:
                 r = self.protocol.read_next_message()
-                if not r: break
+                if not r:
+                    break
         except CuckooResultError as e:
             log.warning("Resultserver connection stopping because of "
                         "CuckooResultError: %s.", str(e))
@@ -202,11 +212,15 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             log.exception("FIXME - exception in resultserver connection %s",
                           str(self.client_address))
 
-        try: self.protocol.close()
-        except: pass
+        try:
+            self.protocol.close()
+        except:
+            pass
 
-        if self.logfd: self.logfd.close()
-        if self.rawlogfd: self.rawlogfd.close()
+        if self.logfd:
+            self.logfd.close()
+        if self.rawlogfd:
+            self.rawlogfd.close()
         log.debug("Connection closed: {0}:{1}".format(ip, port))
 
     def log_process(self, ctx, timestring, pid, ppid, modulepath, procname):
@@ -293,7 +307,8 @@ class FileUpload(object):
         dir_part, filename = os.path.split(buf)
 
         if dir_part:
-            try: create_folder(self.storagepath, dir_part)
+            try:
+                create_folder(self.storagepath, dir_part)
             except CuckooOperationalError:
                 log.error("Unable to create folder %s" % dir_part)
                 return False
@@ -324,7 +339,8 @@ class LogHandler(object):
 
     def read_next_message(self):
         buf = self.handler.read_newline()
-        if not buf: return False
+        if not buf:
+            return False
         self.fd.write(buf)
         self.fd.flush()
         return True

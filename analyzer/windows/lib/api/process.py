@@ -94,10 +94,10 @@ class Process:
         NT_SUCCESS = lambda val: val >= 0
 
         if self.h_process:
-            ret = NT_SUCCESS( KERNEL32.CloseHandle(self.h_process) )
+            ret = NT_SUCCESS(KERNEL32.CloseHandle(self.h_process))
 
         if self.h_thread:
-            ret = NT_SUCCESS( KERNEL32.CloseHandle(self.h_thread) )
+            ret = NT_SUCCESS(KERNEL32.CloseHandle(self.h_thread))
 
         return ret
 

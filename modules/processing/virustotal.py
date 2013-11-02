@@ -40,7 +40,7 @@ class VirusTotal(Processing):
             resource = self.task["target"]
             url = VIRUSTOTAL_URL_URL
 
-        data = urllib.urlencode({"resource" : resource, "apikey" : key})
+        data = urllib.urlencode({"resource": resource, "apikey": key})
 
         try:
             request = urllib2.Request(url, data)

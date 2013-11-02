@@ -17,7 +17,7 @@ class Debug(Processing):
         @return: debug information dict.
         """
         self.key = "debug"
-        debug = {"log" : "", "errors" : []}
+        debug = {"log": "", "errors": []}
 
         if os.path.exists(self.log_path):
             try:

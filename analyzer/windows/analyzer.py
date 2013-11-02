@@ -48,7 +48,8 @@ PPID = Process(pid=PID).get_parent_pid()
 # this is still preparation status - needs finalizing
 def protected_filename(fname):
     """Checks file name against some protected names."""
-    if not fname: return False
+    if not fname:
+        return False
 
     protected_names = []
     for name in protected_names:
@@ -358,8 +359,8 @@ class PipeServer(Thread):
             # Create the Named Pipe.
             h_pipe = KERNEL32.CreateNamedPipeA(self.pipe_name,
                                                PIPE_ACCESS_DUPLEX,
-                                               PIPE_TYPE_MESSAGE | \
-                                               PIPE_READMODE_MESSAGE | \
+                                               PIPE_TYPE_MESSAGE |
+                                               PIPE_READMODE_MESSAGE |
                                                PIPE_WAIT,
                                                PIPE_UNLIMITED_INSTANCES,
                                                BUFSIZE,

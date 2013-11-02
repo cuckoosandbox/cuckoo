@@ -93,9 +93,9 @@ class MongoDB(Report):
         if results["info"]["category"] == "file":
             sample = File(self.file_path)
             if sample.valid():
-                report["target"] = {"file_id" : sample_id}
                 fname = results["target"]["file"]["name"]
                 sample_id = self.store_file(sample, filename=fname)
+                report["target"] = {"file_id": sample_id}
                 report["target"].update(results["target"])
 
         # Store the PCAP file in GridFS and reference it back in the report.

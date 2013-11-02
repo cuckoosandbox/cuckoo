@@ -36,16 +36,17 @@ def download_archive():
     archive.close()
     final_dir = os.path.join(temp_dir, os.listdir(temp_dir)[0])
 
-    return (temp_dir, final_dir)
+    return temp_dir, final_dir
+
 
 def install(enabled, force, rewrite):
     (temp, source) = download_archive()
 
     folders = {
-        "signatures" : os.path.join("modules", "signatures"),
-        "processing" : os.path.join("modules", "processing"),
-        "reporting" : os.path.join("modules", "reporting"),
-        "machinemanagers" : os.path.join("modules", "machinemanagers")
+        "signatures": os.path.join("modules", "signatures"),
+        "processing": os.path.join("modules", "processing"),
+        "reporting": os.path.join("modules", "reporting"),
+        "machinemanagers": os.path.join("modules", "machinemanagers")
     }
 
     for category in enabled:

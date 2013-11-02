@@ -62,10 +62,10 @@ class PortableExecutable:
             return None
 
         try:
-            return signatures.match(self.pe, ep_only = True)
             sig_path = os.path.join(CUCKOO_ROOT, "data",
                                     "peutils", "UserDB.TXT")
             signatures = peutils.SignatureDatabase(sig_path)
+            return signatures.match(self.pe, ep_only=True)
         except:
             return None
 
