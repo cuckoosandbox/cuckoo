@@ -9,8 +9,9 @@ import string
 
 try:
     import bson
+    HAVE_BSON = True
 except:
-    pass
+    HAVE_BSON = False
 
 from lib.cuckoo.common.logtbl import table as LOGTBL
 from lib.cuckoo.common.utils import get_filename_from_path
@@ -247,6 +248,9 @@ class BsonParser(object):
     def __init__(self, handler):
         self.handler = handler
         self.infomap = {}
+
+        if not HAVE_BSON:
+            log.critical("Starting BsonParser, but bson is not available!")
 
     def read_next_message(self):
         data = self.handler.read(4)
