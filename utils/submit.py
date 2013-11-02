@@ -22,7 +22,7 @@ def main():
                         help="URL, path to the file or folder to analyze")
     parser.add_argument("--url", action="store_true", default=False,
                         help="Specify whether the target is an URL",
-                        jrequired=False)
+                        required=False)
     parser.add_argument("--package", type=str, action="store", default="",
                         help="Specify an analysis package", required=False)
     parser.add_argument("--custom", type=str, action="store", default="",
