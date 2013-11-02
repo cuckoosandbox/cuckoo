@@ -86,12 +86,13 @@ def resolve_cares(name):
 
     # now do the actual work
     readfds, writefds = careschan.getsock()
-    canreadfds, canwritefds, _ = select.select(readfds, writefds, [], DNS_TIMEOUT)
     for rfd in canreadfds: 
+    canreadfds, canwritefds, _ = select.select(readfds, writefds, [],
+                                               DNS_TIMEOUT)
         careschan.process_fd(rfd, -1)
 
-    # if the query did not succeed, setresult was not called and we just return result
-    # destroy the channel first to not leak anything
+    # if the query did not succeed, setresult was not called and we just
+    # return result destroy the channel first to not leak anything
     careschan.destroy()
     return result.value
 
@@ -103,7 +104,8 @@ class Resultholder: pass
 def resolve_gevent(name):
     result = resolve_gevent_real(name)
     # if it failed, do this a second time because of strange libevent behavior
-    # basically sometimes the Timeout fires immediately instead of after DNS_TIMEOUT
+    # basically sometimes the Timeout fires immediately instead of after
+    # DNS_TIMEOUT
     if result == DNS_TIMEOUT_VALUE:
         result = resolve_gevent_real(name)
     return result

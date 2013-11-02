@@ -105,7 +105,8 @@ class AnalysisManager(Thread):
             else:
                 shutil.copy(self.binary, new_binary_path)
         except (AttributeError, OSError) as e:
-            log.error("Unable to create symlink/copy from \"%s\" to \"%s\"", self.binary, self.storage)
+            log.error("Unable to create symlink/copy from \"%s\" to "
+                      "\"%s\": %s", self.binary, self.storage, e)
 
         return True
 
@@ -131,7 +132,8 @@ class AnalysisManager(Thread):
                 log.debug("Task #%d: no machine available yet", self.task.id)
                 time.sleep(1)
             else:
-                log.info("Task #%d: acquired machine %s (label=%s)", self.task.id, machine.name, machine.label)
+                log.info("Task #%d: acquired machine %s (label=%s)",
+                         self.task.id, machine.name, machine.label)
                 break
 
         self.machine = machine
@@ -167,7 +169,8 @@ class AnalysisManager(Thread):
         """Start analysis."""
         succeeded = False
 
-        log.info("Starting analysis of %s \"%s\" (task=%d)", self.task.category.upper(), self.task.target, self.task.id)
+        log.info("Starting analysis of %s \"%s\" (task=%d)",
+                 self.task.category.upper(), self.task.target, self.task.id)
 
         # Initialize the the analysis folders.
         if not self.init_storage():
@@ -211,7 +214,8 @@ class AnalysisManager(Thread):
         else:
             try:
                 # Initialize the guest manager.
-                guest = GuestManager(self.machine.name, self.machine.ip, self.machine.platform)
+                guest = GuestManager(self.machine.name, self.machine.ip,
+                                     self.machine.platform)
                 # Start the analysis.
                 guest.start_analysis(options)
             except CuckooGuestError as e:
@@ -233,7 +237,8 @@ class AnalysisManager(Thread):
             if self.cfg.cuckoo.memory_dump or self.task.memory:
                 try:
                     machinery.dump_memory(self.machine.label,
-                                          os.path.join(self.storage, "memory.dmp"))
+                                          os.path.join(self.storage,
+                                                       "memory.dmp"))
                 except NotImplementedError:
                     log.error("The memory dump functionality is not available "
                               "for current machine manager")
@@ -244,7 +249,8 @@ class AnalysisManager(Thread):
                 # Stop the analysis machine.
                 machinery.stop(self.machine.label)
             except CuckooMachineError as e:
-                log.warning("Unable to stop machine %s: %s", self.machine.label, e)
+                log.warning("Unable to stop machine %s: %s",
+                            self.machine.label, e)
 
             # Market the machine in the database as stopped.
             Database().guest_stop(guest_log)
@@ -254,7 +260,8 @@ class AnalysisManager(Thread):
                 machinery.release(self.machine.label)
             except CuckooMachineError as e:
                 log.error("Unable to release machine %s, reason %s. "
-                          "You might need to restore it manually", self.machine.label, e)
+                          "You might need to restore it manually",
+                          self.machine.label, e)
 
             # after all this, we can make the Resultserver forget about it
             Resultserver().del_task(self.task, self.machine)
@@ -273,9 +280,11 @@ class AnalysisManager(Thread):
             try:
                 os.remove(self.task.target)
             except OSError as e:
-                log.error("Unable to delete original file at path \"%s\": %s", self.task.target, e)
+                log.error("Unable to delete original file at path \"%s\": %s",
+                          self.task.target, e)
 
-        log.info("Task #%d: reports generation completed (path=%s)", self.task.id, self.storage)
+        log.info("Task #%d: reports generation completed (path=%s)",
+                 self.task.id, self.storage)
 
         return True
 
@@ -287,7 +296,8 @@ class AnalysisManager(Thread):
             success = self.launch_analysis()
             Database().set_status(self.task.id, TASK_COMPLETED)
 
-            log.debug("Released database task #%d with status %s", self.task.id, success)
+            log.debug("Released database task #%d with status %s",
+                      self.task.id, success)
 
             if self.cfg.cuckoo.process_results:
                 self.process_results()
@@ -334,8 +344,8 @@ class Scheduler:
 
         if not os.path.exists(conf):
             raise CuckooCriticalError("The configuration file for machine "
-                                      "manager \"{0}\" does not exist at path: "
-                                      "{1}".format(machinery_name, conf))
+                                      "manager \"{0}\" does not exist at path:"
+                                      " {1}".format(machinery_name, conf))
 
         # Provide a dictionary with the configuration options to the
         # machine manager instance.
@@ -386,10 +396,12 @@ class Scheduler:
                     dir_stats = os.statvfs(dir_path)
 
                     # Free diskspace in megabytes.
-                    space_available = (dir_stats.f_bavail * dir_stats.f_frsize) / 1024 / 1024
+                    space_available = dir_stats.f_bavail * dir_stats.f_frsize
+                    space_available /= 1024 * 1024
 
                     if space_available < self.cfg.cuckoo.freespace:
-                        log.error("Not enough free diskspace! (Only %d MB!)", space_available)
+                        log.error("Not enough free diskspace! (Only %d MB!)",
+                                  space_available)
                         continue
 
             # If no machines are available, it's pointless to fetch for
@@ -397,7 +409,8 @@ class Scheduler:
             if machinery.availables() == 0:
                 continue
 
-            # Exits if max_analysis_count is defined in config file and is reached.
+            # Exits if max_analysis_count is defined in config file and
+            # is reached.
             if maxcount and total_analysis_count >= maxcount:
                 if active_analysis_count <= 0:
                     self.stop()

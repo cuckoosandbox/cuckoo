@@ -21,9 +21,12 @@ class VMware(Machinery):
         @raise CuckooMachineError: if configuration is missing or wrong.
         """  
         if not self.options.vmware.path:
-            raise CuckooMachineError("VMware vmrun path missing, please add it to vmware.conf")
+            raise CuckooMachineError("VMware vmrun path missing, "
+                                     "please add it to vmware.conf")
         if not os.path.exists(self.options.vmware.path):
-            raise CuckooMachineError("VMware vmrun not found in specified path %s" % self.options.vmware.path)
+            raise CuckooMachineError("VMware vmrun not found in "
+                                     "specified path %s" %
+                                     self.options.vmware.path)
         # Consistency checks.
         for machine in self.machines():
             host, snapshot = self._get_host_and_snapshot(machine.label)
@@ -38,7 +41,8 @@ class VMware(Machinery):
         @raise CuckooMachineError: if file not found or not ending with .vmx
         """
         if not host.endswith(".vmx"):
-            raise CuckooMachineError("Wrong configuration: vm path not ending with .vmx: %s)" % host)
+            raise CuckooMachineError("Wrong configuration: vm path not "
+                                     "ending with .vmx: %s)" % host)
         if not os.path.exists(self.options.vmware.path):
             raise CuckooMachineError("Vm file %s not found" % host)
 
@@ -49,20 +53,23 @@ class VMware(Machinery):
         @raise CuckooMachineError: if snapshot not found
         """
         try:
-            output, error = subprocess.Popen([self.options.vmware.path,
-                              "listSnapshots",
-                              host],
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE).communicate()
+            p = subprocess.Popen([self.options.vmware.path,
+                                  "listSnapshots", host],
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+            output, error = p.communicate()
             if output:
                 if snapshot in output:
                     return True
                 else:
                     return False
             else:
-                raise CuckooMachineError("Unable to get snapshot list for %s. No output from `vmrun listSnapshots`" % host)
+                raise CuckooMachineError("Unable to get snapshot list for %s. "
+                                         "No output from "
+                                         "`vmrun listSnapshots`" % host)
         except OSError as e:
-            raise CuckooMachineError("Unable to get snapshot list for %s. Reason: %s" % (host, e))
+            raise CuckooMachineError("Unable to get snapshot list for %s. "
+                                     "Reason: %s" % (host, e))
 
     def start(self, label):
         """Start a virtual machine.
@@ -81,23 +88,24 @@ class VMware(Machinery):
 
         log.debug("Starting vm %s" % host)
         try:
-            proc = subprocess.Popen([self.options.vmware.path,
-                              "start",
-                              host,
-                              self.options.vmware.mode],
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
+            p = subprocess.Popen([self.options.vmware.path,
+                                  "start", host, self.options.vmware.mode],
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
             if self.options.vmware.mode.lower() == "gui":
-                output, error = proc.communicate()
+                output, error = p.communicate()
                 if output:
-                    raise CuckooMachineError("Unable to start machine %s: %s" % (host, output))
+                    raise CuckooMachineError("Unable to start machine "
+                                             "%s: %s" % (host, output))
         except OSError as e:
-            raise CuckooMachineError("Unable to start machine %s in %s mode: %s"
-                                     % (host, self.options.vmware.mode.upper(), e))
+            mode = self.options.vmware.mode.upper()
+            raise CuckooMachineError("Unable to start machine %s in %s "
+                                     "mode: %s" % (host, mode, e))
 
     def stop(self, label):
         """Stops a virtual machine.
-        @param label: virtual machine identifier: path to vmx file (in older configurations it also includes current snapshot name).
+        @param label: virtual machine identifier: path to vmx file
+            (in older configurations it also includes current snapshot name).
         @raise CuckooMachineError: if unable to stop.
         """
         host, snapshot = self._get_host_and_snapshot(label)
@@ -106,14 +114,16 @@ class VMware(Machinery):
         if self._is_running(host):
             try:
                 if subprocess.call([self.options.vmware.path,
-                                   "stop",
+                                    "stop",
                                     host,
-                                   "hard"], # Machete never wait.
+                                    "hard"],  # Machete never wait.
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE):
-                    raise CuckooMachineError("Error shutting down machine %s" % host)
+                    raise CuckooMachineError("Error shutting down "
+                                             "machine %s" % host)
             except OSError as e:
-                raise CuckooMachineError("Error shutting down machine %s: %s" % (host, e))
+                raise CuckooMachineError("Error shutting down machine "
+                                         "%s: %s" % (host, e))
         else:
             log.warning("Trying to stop an already stopped machine: %s" % host)
 
@@ -131,9 +141,12 @@ class VMware(Machinery):
                                snapshot],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE):
-                raise CuckooMachineError("Unable to revert snapshot for machine %s: vmrun exited with error" % host)
+                raise CuckooMachineError("Unable to revert snapshot for "
+                                         "machine %s: vmrun exited with "
+                                         "error" % host)
         except OSError as e:
-            raise CuckooMachineError("Unable to revert snapshot for machine %s: %s" % (host, e))
+            raise CuckooMachineError("Unable to revert snapshot for "
+                                     "machine %s: %s" % (host, e))
 
     def _is_running(self, host):
         """Checks if host is running.
@@ -141,19 +154,22 @@ class VMware(Machinery):
         @return: running status
         """
         try:
-            output, error = subprocess.Popen([self.options.vmware.path,
-                              "list"],
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE).communicate()
+            p = subprocess.Popen([self.options.vmware.path, "list"],
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+            output, error = p.communicate()
             if output:
                 if host in output:
                     return True
                 else:
                     return False
             else:
-                raise CuckooMachineError("Unable to check running status for %s. No output from `vmrun list`" % host)
+                raise CuckooMachineError("Unable to check running status "
+                                         "for %s. No output from "
+                                         "`vmrun list`" % host)
         except OSError as e:
-            raise CuckooMachineError("Unable to check running status for %s. Reason: %s" % (host, e))
+            raise CuckooMachineError("Unable to check running status for %s. "
+                                     "Reason: %s" % (host, e))
 
     def _parse_label(self, label):
         """Parse configuration file label.
@@ -162,26 +178,31 @@ class VMware(Machinery):
         """
         opts = label.strip().split(",")
         if len(opts) != 2:
-            raise CuckooMachineError("Wrong label syntax for %s in vmware.conf: %s" % label)
+            raise CuckooMachineError("Wrong label syntax for %s in "
+                                     "vmware.conf: %s" % label)
         label = opts[0].strip()
         snapshot = opts[1].strip()
         return label, snapshot
     
     def _get_host_and_snapshot(self, label):
         """Get host and snapshot for a given label
-        New configuration files have a specific 'snapshot' option, while 
-        older configuration files have a label in the format: 'file.vmx,Snapshot'
+        New configuration files have a specific 'snapshot' option, while
+        older configuration files have a label in the format:
+        'file.vmx,Snapshot'.
         @param label: configuration option from config file
         """
         vm_info = self.db.view_machine_by_label(label)
         
         if vm_info.snapshot:
-            # Make sure to exclude any snapshot name from older conf files if you also have the new option parameter
             host = label.split(',')[0] 
+            # Make sure to exclude any snapshot name from older conf files
+            # if you also have the new option parameter
             snapshot = vm_info.snapshot
         else:
             # Keep support for older conf files
             host, snapshot = self._parse_label(label)
-            log.warning("Deprecation warning: your vmware configuartion file is using old snaphost syntax, please use the option 'snapshot' instead.")
-    
+            log.warning("Deprecation warning: your vmware configuartion "
+                        "file is using old snaphost syntax, please use the "
+                        "option 'snapshot' instead.")
+
         return host, snapshot

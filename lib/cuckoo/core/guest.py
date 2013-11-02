@@ -37,8 +37,9 @@ class GuestManager:
 
         self.cfg = Config()
         self.timeout = self.cfg.timeouts.critical
-        self.server = TimeoutServer("http://{0}:{1}".format(ip, CUCKOO_GUEST_PORT),
-                                    allow_none=True, 
+
+        url = "http://{0}:{1}".format(ip, CUCKOO_GUEST_PORT)
+        self.server = TimeoutServer(url, allow_none=True,
                                     timeout=self.timeout)
 
     def wait(self, status):
@@ -64,7 +65,8 @@ class GuestManager:
             # Check if the timer was hit and the abort event was set.
             if abort.is_set():
                 raise CuckooGuestError("{0}: the guest initialization hit the "
-                                       "critical timeout, analysis aborted".format(self.id))
+                                       "critical timeout, analysis "
+                                       "aborted".format(self.id))
 
             try:
                 # If the server returns the given status, break the loop
@@ -110,7 +112,8 @@ class GuestManager:
         data = xmlrpclib.Binary(zip_data.getvalue())
         zip_data.close()
 
-        log.debug("Uploading analyzer to guest (id=%s, ip=%s)", self.id, self.ip)
+        log.debug("Uploading analyzer to guest (id=%s, ip=%s)",
+                  self.id, self.ip)
 
         # Send the zip containing the analyzer to the agent running inside
         # the guest.
@@ -144,21 +147,25 @@ class GuestManager:
             try:
                 self.server.add_config(options)
             except:
-                raise CuckooGuestError("{0}: unable to upload config to analysis machine".format(self.id))
+                raise CuckooGuestError("{0}: unable to upload config to "
+                                       "analysis machine".format(self.id))
 
             # If the target of the analysis is a file, upload it to the guest.
             if options["category"] == "file":
                 try:
                     file_data = open(options["target"], "rb").read()
                 except (IOError, OSError) as e:
-                    raise CuckooGuestError("Unable to read {0}, error: {1}".format(options["target"], e))
-                
+                    raise CuckooGuestError("Unable to read {0}, error: "
+                                           "{1}".format(options["target"], e))
+
                 data = xmlrpclib.Binary(file_data)
 
                 try:
                     self.server.add_malware(data, options["file_name"])
                 except MemoryError as e:
-                    raise CuckooGuestError("{0}: unable to upload malware to analysis machine, not enough memory".format(self.id))
+                    raise CuckooGuestError("{0}: unable to upload malware to "
+                                           "analysis machine, not enough "
+                                           "memory".format(self.id))
 
             # Launch the analyzer.
             pid = self.server.execute()
@@ -167,7 +174,8 @@ class GuestManager:
         # exception and abort the analysis.
         except (socket.timeout, socket.error):
             raise CuckooGuestError("{0}: guest communication timeout, check "
-                                   "networking or try to increase timeout".format(self.id))
+                                   "networking or try to increase "
+                                   "timeout".format(self.id))
 
     def wait_for_completion(self):
         """Wait for analysis completion.
@@ -212,6 +220,7 @@ class GuestManager:
 
                 raise CuckooGuestError("Analysis failed: {0}".format(error))
             else:
-                log.debug("%s: analysis not completed yet (status=%s)", self.id, status)
+                log.debug("%s: analysis not completed yet (status=%s)",
+                          self.id, status)
 
         self.server._set_timeout(None)

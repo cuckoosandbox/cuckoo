@@ -31,7 +31,8 @@ def do(aid, report=False):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("id", type=str, help="ID of the analysis to process")
-    parser.add_argument("-r", "--report", help="Re-generate report", action="store_true", required=False)
+    parser.add_argument("-r", "--report", help="Re-generate report",
+                        action="store_true", required=False)
     args = parser.parse_args()
 
     init_modules()

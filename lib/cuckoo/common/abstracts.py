@@ -45,16 +45,20 @@ class Auxiliary(object):
     def stop(self):
         raise NotImplementedError
 
+
 class Machinery(object):
     """Base abstract class for machinery modules."""
 
     def __init__(self):
         self.module_name = ""
         self.options = None
-        self.options_globals = Config(os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"))
+        self.options_globals = Config(os.path.join(CUCKOO_ROOT,
+                                                   "conf", "cuckoo.conf"))
         # Database pointer.
         self.db = Database()
-        # Machine table is cleaned to be filled from configuration file at each start.
+
+        # Machine table is cleaned to be filled from configuration file
+        # at each start.
         self.db.clean_machines()
 
     def set_options(self, options):
@@ -64,7 +68,7 @@ class Machinery(object):
         self.options = options
 
     def initialize(self, module_name):
-        """Read and load machines configuration, try to check the configuration.
+        """Read, load, and verify machines configuration.
         @param module_name: module name.
         """
         # Load.
@@ -89,19 +93,30 @@ class Machinery(object):
                 machine.platform = machine_opts["platform"]
                 machine.tags = machine_opts.get("tags", None)
                 machine.ip = machine_opts["ip"]
-                # If configured, use specific network interface for this machine, else use the default value.
+
+                # If configured, use specific network interface for this
+                # machine, else use the default value.
                 machine.interface = machine_opts.get("interface", None)
-                # If configured, use specific snapshot name, else leave it empty and use default behaviour.
+
+                # If configured, use specific snapshot name, else leave it
+                # empty and use default behaviour.
                 machine.snapshot = machine_opts.get("snapshot", None)
-                # If configured, use specific resultserver IP and port, else use the default value.
-                machine.resultserver_ip = machine_opts.get("resultserver_ip", self.options_globals.resultserver.ip)
-                machine.resultserver_port = machine_opts.get("resultserver_port", self.options_globals.resultserver.port)
+
+                # If configured, use specific resultserver IP and port,
+                # else use the default value.
+                opt_resultserver = self.options_globals.resultserver
+                ip = machine_opts.get("resultserver_ip", opt_resultserver.ip)
+                port = machine_opts.get("resultserver_port",
+                                        opt_resultserver.port)
+
+                machine.resultserver_ip = ip
+                machine.resultserver_port = port
 
                 # Strip params.
                 for key in machine.keys():
                     if machine[key]:
                         # Only strip strings
-                        if isinstance(machine[key], str) or isinstance(machine[key], unicode):
+                        if isinstance(machine[key], (str, unicode)):
                             machine[key] = machine[key].strip()
 
                 self.db.add_machine(name=machine.id,
@@ -111,10 +126,11 @@ class Machinery(object):
                                     tags=machine.tags,
                                     interface=machine.interface,
                                     snapshot=machine.snapshot,
-                                    resultserver_ip=machine.resultserver_ip,
-                                    resultserver_port=machine.resultserver_port)
+                                    resultserver_ip=ip,
+                                    resultserver_port=port)
             except (AttributeError, CuckooOperationalError) as e:
-                log.warning("Configuration details about machine %s are missing: %s", machine_id, e)
+                log.warning("Configuration details about machine %s "
+                            "are missing: %s", machine_id, e)
                 continue
 
     def _initialize_check(self):
@@ -132,10 +148,14 @@ class Machinery(object):
 
         for machine in self.machines():
             if machine.label not in configured_vm:
-                raise CuckooCriticalError("Configured machine {0} was not detected or it's not in proper state".format(machine.label))
+                raise CuckooCriticalError("Configured machine {0} was not "
+                                          "detected or it's not in proper "
+                                          "state".format(machine.label))
 
         if not self.options_globals.timeouts.vm_state:
-            raise CuckooCriticalError("Virtual machine state change timeout setting not found, please add it to the config file")
+            raise CuckooCriticalError("Virtual machine state change timeout "
+                                      "setting not found, please add it to "
+                                      "the config file")
 
     def machines(self):
         """List virtual machines.
@@ -180,7 +200,8 @@ class Machinery(object):
         @raise CuckooMachineError: if unable to stop machine.
         """
         if len(self.running()) > 0:
-            log.info("Still %s guests alive. Shutting down...", len(self.running()))
+            log.info("Still %s guests alive. Shutting down...",
+                     len(self.running()))
             for machine in self.running():
                 try:
                     self.stop(machine.label)
@@ -224,7 +245,7 @@ class Machinery(object):
     def _wait_status(self, label, state):
         """Waits for a vm status.
         @param label: virtual machine name.
-        @param state: virtual machine status, accepts more than one states in a list.
+        @param state: virtual machine status, accepts multiple states as list.
         @raise CuckooMachineError: if default waiting timeout expire.
         """
         # This block was originally suggested by Loic Jaquemet.
@@ -237,19 +258,22 @@ class Machinery(object):
         if isinstance(state, str):
             state = [state]
         while current not in state:
-            log.debug("Waiting %i cuckooseconds for machine %s to switch to status %s", waitme, label, state)
+            log.debug("Waiting %i cuckooseconds for machine %s to switch "
+                      "to status %s", waitme, label, state)
             if waitme > int(self.options_globals.timeouts.vm_state):
-                raise CuckooMachineError("Timeout hit while for machine {0} to change status".format(label))
+                raise CuckooMachineError("Timeout hit while for machine {0} "
+                                         "to change status".format(label))
             time.sleep(1)
             waitme += 1
             current = self._status(label)
 
+
 class LibVirtMachinery(Machinery):
     """Libvirt based machine manager.
 
-    If you want to write a custom module for a virtualization software supported
-    by libvirt you have just to inherit this machine manager and change the
-    connection string.
+    If you want to write a custom module for a virtualization software
+    supported by libvirt you have just to inherit this machine manager and
+    change the connection string.
     """
 
     # VM states.
@@ -278,7 +302,8 @@ class LibVirtMachinery(Machinery):
         """
         # Version checks.
         if not self._version_check():
-            raise CuckooMachineError("Libvirt version is not supported, please get an updated version")
+            raise CuckooMachineError("Libvirt version is not supported, "
+                                     "please get an updated version")
 
         # Base checks.
         super(LibVirtMachinery, self)._initialize_check()
@@ -294,7 +319,8 @@ class LibVirtMachinery(Machinery):
         log.debug("Starting machine %s", label)
 
         if self._status(label) == self.RUNNING:
-            raise CuckooMachineError("Trying to start an already started machine {0}".format(label))
+            raise CuckooMachineError("Trying to start an already started "
+                                     "machine {0}".format(label))
 
         conn = self._connect()
 

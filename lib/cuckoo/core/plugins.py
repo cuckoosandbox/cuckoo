@@ -27,7 +27,8 @@ def import_plugin(name):
     try:
         module = __import__(name, globals(), locals(), ["dummy"], -1)
     except ImportError as e:
-        raise CuckooCriticalError("Unable to import plugin \"{0}\": {1}".format(name, e))
+        raise CuckooCriticalError("Unable to import plugin "
+                                  "\"{0}\": {1}".format(name, e))
     else:
         load_plugins(module)
 
@@ -70,7 +71,8 @@ class RunAuxiliary(object):
     def __init__(self, task, machine):
         self.task = task
         self.machine = machine
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "auxiliary.conf"))
+        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT,
+                                           "conf", "auxiliary.conf"))
         self.enabled = []
 
     def start(self):
@@ -80,7 +82,8 @@ class RunAuxiliary(object):
                 try:
                     current = module()
                 except:
-                    log.exception("Failed to load the auxiliary module \"{0}\":".format(module))
+                    log.exception("Failed to load the auxiliary module "
+                                  "\"{0}\":".format(module))
                     return
 
                 module_name = inspect.getmodule(current).__name__
@@ -90,7 +93,8 @@ class RunAuxiliary(object):
                 try:
                     options = self.cfg.get(module_name)
                 except CuckooOperationalError:
-                    log.debug("Auxiliary module %s not found in configuration file", module_name)
+                    log.debug("Auxiliary module %s not found in "
+                              "configuration file", module_name)
                     continue
 
                 if not options.enabled:
@@ -105,7 +109,8 @@ class RunAuxiliary(object):
                 except NotImplementedError:
                     pass
                 #except Exception as e:
-                #    log.warning("Unable to start auxiliary module %s: %s", module_name, e)
+                #    log.warning("Unable to start auxiliary module %s: %s",
+                #                module_name, e)
                 else:
                     log.debug("Stopped auxiliary module: %s", module_name)
                     self.enabled.append(current)
@@ -132,8 +137,10 @@ class RunProcessing(object):
     def __init__(self, task_id):
         """@param task_id: ID of the analyses to process."""
         self.task = Database().view_task(task_id).to_dict()
-        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "processing.conf"))
+        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage",
+                                          "analyses", str(task_id))
+        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT,
+                                           "conf", "processing.conf"))
 
     def process(self, module):
         """Run a processing module.
@@ -145,7 +152,8 @@ class RunProcessing(object):
         try:
             current = module()
         except:
-            log.exception("Failed to load the processing module \"{0}\":".format(module))
+            log.exception("Failed to load the processing module "
+                          "\"{0}\":".format(module))
             return
 
         # Extract the module name.
@@ -156,7 +164,8 @@ class RunProcessing(object):
         try:
             options = self.cfg.get(module_name)
         except CuckooOperationalError:
-            log.debug("Processing module %s not found in configuration file", module_name)
+            log.debug("Processing module %s not found in configuration file",
+                      module_name)
             return None
 
         # If the processing module is disabled in the config, skip it.
@@ -175,15 +184,15 @@ class RunProcessing(object):
             # appended to the general results container.
             data = current.run()
 
-            log.debug("Executed processing module \"%s\" on analysis at \"%s\"",
-                      current.__class__.__name__, self.analysis_path)
+            log.debug("Executed processing module \"%s\" on analysis at "
+                      "\"%s\"", current.__class__.__name__, self.analysis_path)
 
             # If succeeded, return they module's key name and the data to be
             # appended to it.
             return {current.key : data}
         except CuckooProcessingError as e:
-            log.warning("The processing module \"%s\" returned the following error: %s",
-                        current.__class__.__name__, e)
+            log.warning("The processing module \"%s\" returned the following "
+                        "error: %s", current.__class__.__name__, e)
         except:
             log.exception("Failed to run the processing module \"%s\":",
                           current.__class__.__name__)
@@ -246,12 +255,16 @@ class RunSignatures(object):
             try:
                 # If the running Cuckoo is older than the required minimum
                 # version, skip this signature.
-                if StrictVersion(version) < StrictVersion(current.minimum.split("-")[0]):
-                    log.debug("You are running an older incompatible version of Cuckoo, the signature \"%s\" requires minimum version %s",
+                minimum_version = StrictVersion(current.minimum.split("-")[0])
+                if StrictVersion(version) < minimum_version:
+                    log.debug("You are running an older incompatible version "
+                              "of Cuckoo, the signature \"%s\" requires "
+                              "minimum version %s",
                               current.name, current.minimum)
                     return None
             except ValueError:
-                log.debug("Wrong minor version number in signature %s", current.name)
+                log.debug("Wrong minor version number in signature %s",
+                          current.name)
                 return None
 
         # If provided, check the maximum working Cuckoo version for this
@@ -260,12 +273,16 @@ class RunSignatures(object):
             try:
                 # If the running Cuckoo is newer than the required maximum
                 # version, skip this signature.
-                if StrictVersion(version) > StrictVersion(current.maximum.split("-")[0]):
-                    log.debug("You are running a newer incompatible version of Cuckoo, the signature \"%s\" requires maximum version %s",
+                maximum_version = StrictVersion(current.maximum.split("-")[0])
+                if StrictVersion(version) > maximum_version:
+                    log.debug("You are running a newer incompatible version "
+                              "of Cuckoo, the signature \"%s\" requires "
+                              "maximum version %s",
                               current.name, current.maximum)
                     return None
             except ValueError:
-                log.debug("Wrong major version number in signature %s", current.name)
+                log.debug("Wrong major version number in signature %s",
+                          current.name)
                 return None
 
         return True
@@ -280,7 +297,8 @@ class RunSignatures(object):
         try:
             current = signature(self.results)
         except:
-            log.exception("Failed to load signature \"{0}\":".format(signature))
+            log.exception("Failed to load signature "
+                          "\"{0}\":".format(signature))
             return
 
         log.debug("Running signature \"%s\"", current.name)
@@ -312,7 +330,10 @@ class RunSignatures(object):
         matched = []
 
         complete_list = list_plugins(group="signatures")
-        evented_list = [sig(self.results) for sig in complete_list if sig.enabled and sig.evented and self._check_signature_version(sig)]
+        evented_list = [sig(self.results)
+                        for sig in complete_list
+                        if sig.enabled and sig.evented and
+                        self._check_signature_version(sig)]
 
         if evented_list:
             log.debug("Running %u evented signatures", len(evented_list))

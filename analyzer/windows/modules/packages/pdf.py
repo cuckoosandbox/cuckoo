@@ -12,11 +12,12 @@ class PDF(Package):
     """PDF analysis package."""
 
     def get_path(self):
+        adobe = os.path.join(os.getenv("ProgramFiles"), "Adobe")
         paths = [
-            os.path.join(os.getenv("ProgramFiles"), "Adobe", "Reader 8.0", "Reader", "AcroRd32.exe"),
-            os.path.join(os.getenv("ProgramFiles"), "Adobe", "Reader 9.0", "Reader", "AcroRd32.exe"),
-            os.path.join(os.getenv("ProgramFiles"), "Adobe", "Reader 10.0", "Reader", "AcroRd32.exe"),
-            os.path.join(os.getenv("ProgramFiles"), "Adobe", "Reader 11.0", "Reader", "AcroRd32.exe")
+            os.path.join(adobe, "Reader 8.0", "Reader", "AcroRd32.exe"),
+            os.path.join(adobe, "Reader 9.0", "Reader", "AcroRd32.exe"),
+            os.path.join(adobe, "Reader 10.0", "Reader", "AcroRd32.exe"),
+            os.path.join(adobe, "Reader 11.0", "Reader", "AcroRd32.exe"),
         ]
 
         for path in paths:
@@ -28,7 +29,8 @@ class PDF(Package):
     def start(self, path):
         reader = self.get_path()
         if not reader:
-            raise CuckooPackageError("Unable to find any Adobe Reader executable available")
+            raise CuckooPackageError("Unable to find any Adobe Reader "
+                                     "executable available")
 
         dll = self.options.get("dll", None)
         free = self.options.get("free", False)
@@ -37,8 +39,10 @@ class PDF(Package):
             suspended = False
 
         p = Process()
-        if not p.execute(path=reader, args="\"%s\"" % path, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial Adobe Reader process, analysis aborted")
+        if not p.execute(path=reader, args="\"%s\"" % path,
+                         suspended=suspended):
+            raise CuckooPackageError("Unable to execute initial Adobe Reader "
+                                     "process, analysis aborted")
 
         if not free and suspended:
             p.inject(dll)
