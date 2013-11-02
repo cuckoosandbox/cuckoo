@@ -7,7 +7,8 @@ import logging
 import datetime
 
 from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.utils import convert_to_printable, logtime, cleanup_value
+from lib.cuckoo.common.utils import convert_to_printable, logtime
+from lib.cuckoo.common.utils import cleanup_value
 from lib.cuckoo.common.netlog import NetlogParser, BsonParser
 from lib.cuckoo.common.config import Config
 

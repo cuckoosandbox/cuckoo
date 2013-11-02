@@ -21,7 +21,7 @@ from lib.cuckoo.common.exceptions import CuckooStartupError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.colors import *
+from lib.cuckoo.common.colors import red, green, yellow, cyan
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
 from lib.cuckoo.core.database import Database, TASK_RUNNING
 

@@ -12,8 +12,12 @@ from distutils.version import StrictVersion
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
-from lib.cuckoo.common.exceptions import CuckooCriticalError, CuckooOperationalError, CuckooProcessingError, CuckooReportError
-from lib.cuckoo.common.abstracts import Auxiliary, Machinery, Processing, Report, Signature
+from lib.cuckoo.common.exceptions import CuckooCriticalError
+from lib.cuckoo.common.exceptions import CuckooOperationalError
+from lib.cuckoo.common.exceptions import CuckooProcessingError
+from lib.cuckoo.common.exceptions import CuckooReportError
+from lib.cuckoo.common.abstracts import Auxiliary, Machinery, Processing
+from lib.cuckoo.common.abstracts import Report, Signature
 
 log = logging.getLogger(__name__)
 

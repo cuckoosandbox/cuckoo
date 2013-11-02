@@ -3,7 +3,9 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
-from _winreg import *
+from _winreg import OpenKey, SetValueEx
+from _winreg import HKEY_LOCAL_MACHINE, KEY_SET_VALUE, REG_SZ
+
 
 from lib.common.abstracts import Auxiliary
 from lib.common.rand import random_integer

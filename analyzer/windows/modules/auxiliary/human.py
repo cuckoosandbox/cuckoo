@@ -6,10 +6,12 @@
 import random
 import logging
 from threading import Thread
-from ctypes import *
+from ctypes import WINFUNCTYPE, POINTER
+from ctypes import c_bool, c_int, create_unicode_buffer
 
 from lib.common.abstracts import Auxiliary
-from lib.common.defines import KERNEL32, USER32, WM_GETTEXT, WM_GETTEXTLENGTH, BM_CLICK
+from lib.common.defines import KERNEL32, USER32
+from lib.common.defines import WM_GETTEXT, WM_GETTEXTLENGTH, BM_CLICK
 
 log = logging.getLogger(__name__)
 

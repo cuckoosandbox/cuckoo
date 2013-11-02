@@ -11,8 +11,10 @@ import SocketServer
 from threading import Event, Thread
 
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.exceptions import CuckooOperationalError, CuckooCriticalError, CuckooResultError
-from lib.cuckoo.common.constants import *
+from lib.cuckoo.common.exceptions import CuckooOperationalError
+from lib.cuckoo.common.exceptions import CuckooCriticalError
+from lib.cuckoo.common.exceptions import CuckooResultError
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import create_folder, Singleton, logtime
 from lib.cuckoo.common.netlog import NetlogParser, BsonParser
 

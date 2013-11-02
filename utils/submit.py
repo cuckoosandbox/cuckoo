@@ -12,7 +12,7 @@ logging.basicConfig()
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.common.colors import *
+from lib.cuckoo.common.colors import bold, green, red
 from lib.cuckoo.common.utils import to_unicode
 from lib.cuckoo.core.database import Database
 
