@@ -39,7 +39,7 @@ class PortableExecutable:
         @param data: data to be analyzed.
         @return: file type or None.
         """
-        if not IS_MAGIC:
+        if not HAVE_MAGIC:
             return None
 
         try:
