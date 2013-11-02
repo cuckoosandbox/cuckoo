@@ -14,7 +14,6 @@ log = logging.getLogger()
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.startup import init_modules
 from lib.cuckoo.core.database import Database, TASK_REPORTED, TASK_COMPLETED, TASK_FAILED_PROCESSING

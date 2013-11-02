@@ -6,6 +6,8 @@ import os
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
+from lib.common.exceptions import CuckooPackageError
+
 
 class XLS(Package):
     """Excel analysis package."""

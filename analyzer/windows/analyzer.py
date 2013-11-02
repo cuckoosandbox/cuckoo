@@ -4,10 +4,9 @@
 
 import os
 import sys
+import socket
 import struct
-import string
 import random
-import shutil
 import pkgutil
 import logging
 import hashlib

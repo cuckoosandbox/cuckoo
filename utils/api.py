@@ -12,7 +12,7 @@ import StringIO
 import socket
 
 try:
-    from bottle import Bottle, route, run, request, server_names, ServerAdapter, hook, response, HTTPError
+    from bottle import route, run, request, hook, response, HTTPError
 except ImportError:
     sys.exit("ERROR: Bottle.py library is missing")
 

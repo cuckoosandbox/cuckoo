@@ -13,9 +13,7 @@ try:
     import volatility.conf as conf
     import volatility.registry as registry
     import volatility.commands as commands
-    import volatility.win32.network as network
     import volatility.utils as utils
-    import volatility.plugins.malware.malfind as malfind
     import volatility.plugins.malware.devicetree as devicetree
     import volatility.plugins.taskmods as taskmods
     import volatility.obj as obj

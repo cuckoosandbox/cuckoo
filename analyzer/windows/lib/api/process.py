@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import random
 import logging
 from time import time
 from ctypes import *

@@ -11,7 +11,7 @@ try: import bson
 except: pass
 
 from lib.cuckoo.common.logtbl import table as LOGTBL
-from lib.cuckoo.common.utils import get_filename_from_path, time_from_cuckoomon
+from lib.cuckoo.common.utils import get_filename_from_path
 from lib.cuckoo.common.exceptions import CuckooResultError
 
 log = logging.getLogger(__name__)

@@ -6,10 +6,9 @@ import os
 import socket
 import select
 import logging
-import time
 import datetime
 import SocketServer
-from threading import Timer, Event, Thread
+from threading import Event, Thread
 
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.exceptions import CuckooOperationalError, CuckooCriticalError, CuckooResultError

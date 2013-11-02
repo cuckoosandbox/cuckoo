@@ -5,7 +5,6 @@
 import math
 
 try:
-    import Image
     import ImageGrab
     import ImageChops
     HAVE_PIL = True

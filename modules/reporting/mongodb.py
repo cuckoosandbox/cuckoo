@@ -10,7 +10,7 @@ from lib.cuckoo.common.objects import File
 
 try:
     from pymongo.connection import Connection
-    from pymongo.errors import ConnectionFailure, InvalidDocument
+    from pymongo.errors import ConnectionFailure
     from gridfs import GridFS
     from gridfs.errors import FileExists
     HAVE_MONGO = True

@@ -9,11 +9,10 @@ import socket
 import string
 import random
 import platform
-import xmlrpclib
 import subprocess
 import ConfigParser
 from StringIO import StringIO
-from zipfile import ZipFile, BadZipfile, ZIP_STORED
+from zipfile import ZipFile
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 
 BIND_IP = "0.0.0.0"

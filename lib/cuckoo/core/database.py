@@ -21,7 +21,6 @@ try:
     from sqlalchemy import Integer, String, Boolean, DateTime, Enum
     from sqlalchemy import ForeignKey, Text, Index, Table
     from sqlalchemy.orm import sessionmaker, relationship, joinedload, backref
-    from sqlalchemy.sql import func
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
     from sqlalchemy.pool import NullPool
