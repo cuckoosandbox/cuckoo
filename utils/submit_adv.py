@@ -3,7 +3,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-__author__ = 'Alejandro Nolla - z0mbiehunt3r'
 
 import argparse
 import fnmatch
@@ -122,11 +121,11 @@ def main():
         else:
             files.append(path)
 
-        if args.max:
-            files = files[0:args.max]
-
         if args.shuffle:
             random.shuffle(files)
+
+        if args.max:
+            files = files[0:args.max]
 
         for file_path in files:
             task_id = db.add_path(file_path=file_path,
