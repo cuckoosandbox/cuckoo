@@ -10,6 +10,7 @@ import logging
 import os
 import random
 import sys
+import time
 
 
 logging.basicConfig()
@@ -66,6 +67,9 @@ def main():
                         help="Pattern of files to submit", required=False)
     parser.add_argument("--shuffle", action="store_true", default=False,
                         help="Shuffle samples before submitting them",
+                        required=False)
+    parser.add_argument("--interval", type=int, action="store", default=False,
+                        help="Seconds to wait between each submited sample",
                         required=False)
 
     try:
@@ -145,6 +149,8 @@ def main():
                 print(bold(green("Success"))
                       + u": File \"{0}\" added as task with ID {1}".format(
                         file_path, task_id))
+                if args.interval:
+                    time.sleep(args.interval)
             else:
                 print(bold(red("Error")) + ": adding task to database")
 
