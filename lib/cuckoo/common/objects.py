@@ -49,6 +49,11 @@ class URL:
 class File:
     """Basic file object class with all useful utilities."""
 
+    # static fields which indicate whether the user has been
+    # notified about missing dependencies already
+    notified_yara = False
+    notified_pydeep = False
+
     def __init__(self, file_path):
         """@param file_path: file path."""
         self.file_path = file_path
@@ -162,7 +167,9 @@ class File:
         @return: SSDEEP.
         """
         if not HAVE_PYDEEP:
-            log.warning("Unable to import pydeep (install with `pip install pydeep`)")
+            if not File.notified_pydeep:
+                File.notified_pydeep = True
+                log.warning("Unable to import pydeep (install with `pip install pydeep`)")
             return None
 
         try:
@@ -230,7 +237,9 @@ class File:
                 except yara.Error as e:
                     log.warning("Unable to match Yara signatures: %s", e)
         else:
-            log.warning("Unable to import yara (please compile from sources)")
+            if not File.notified_yara:
+                File.notified_yara = True
+                log.warning("Unable to import yara (please compile from sources)")
 
         return matches
 
