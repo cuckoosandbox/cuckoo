@@ -33,6 +33,8 @@ def foreach_child(hwnd, lparam):
         "run",
         "agree",
         "enable",
+        "don't send",
+        "continue",
     ]
 
     classname = create_unicode_buffer(50)
