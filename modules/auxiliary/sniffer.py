@@ -38,7 +38,7 @@ class Sniffer(Auxiliary):
             log.error("Network interface not defined, network capture aborted")
             return
 
-        pargs = [tcpdump, "-U", "-q", "-i", interface, "-n"]
+        pargs = [tcpdump, "-U", "-q", "-s", "0", "-i", interface, "-n"]
 
         # Trying to save pcap with the same user which cuckoo is running.
         try:
