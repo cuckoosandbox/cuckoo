@@ -10,7 +10,7 @@ import string
 try:
     import bson
     HAVE_BSON = True
-except:
+except ImportError:
     HAVE_BSON = False
 
 from lib.cuckoo.common.logtbl import table as LOGTBL
