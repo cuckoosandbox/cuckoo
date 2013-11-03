@@ -87,12 +87,11 @@ class File:
     def get_chunks(self):
         """Read file contents in chunks (generator)."""
 
-        fd = open(self.file_path, "rb")
-        while True:
-            chunk = fd.read(FILE_CHUNK_SIZE)
-            if not chunk: break
-            yield chunk
-        fd.close()
+        with open(self.file_path, "rb") as fd:
+            while True:
+                chunk = fd.read(FILE_CHUNK_SIZE)
+                if not chunk: break
+                yield chunk
 
     def calc_hashes(self):
         """Calculate all possible hashes for this file."""
