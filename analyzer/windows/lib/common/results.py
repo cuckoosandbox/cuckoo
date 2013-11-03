@@ -20,11 +20,11 @@ def upload_to_host(file_path, dump_path):
         while tmp:
             nc.send(tmp)
             tmp = infd.read(BUFSIZE)
-
-        infd.close()
-        nc.close()
     except Exception as e:
         log.error("Exception uploading file to host: %s", e)
+    finally:
+        infd.close()
+        nc.close()
 
 class NetlogConnection(object):
     def __init__(self, proto=""):
