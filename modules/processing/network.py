@@ -513,6 +513,7 @@ class Pcap:
         self.results["domains"] = self.unique_domains
         self.results["tcp"] = self.tcp_connections
         self.results["udp"] = self.udp_connections
+        self.results["icmp"] = self.icmp_requests
         self.results["http"] = self.http_requests
         self.results["dns"] = self.dns_requests
         self.results["smtp"] = self.smtp_requests

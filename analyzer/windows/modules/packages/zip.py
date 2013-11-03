@@ -15,8 +15,10 @@ class Zip(Package):
     def start(self, path):
         root = os.environ["TEMP"]
         password = self.options.get("password", None)
+        default_file_name = "sample.exe"   
 
         with ZipFile(path, "r") as archive:
+            zipinfos = archive.infolist()
             try:
                 archive.extractall(path=root, pwd=password)
             except BadZipfile as e:
@@ -29,7 +31,15 @@ class Zip(Package):
                     raise CuckooPackageError("Unable to extract Zip file: "
                                              "{0}".format(e))
 
-        file_path = os.path.join(root, self.options.get("file", "sample.exe"))
+        file_name = self.options.get("file", default_file_name)
+        if file_name == default_file_name:   
+            #no name provided try to find a better name
+            if len(zipinfos) > 0:
+                #take the first one
+                file_name = zipinfos[0].filename
+
+        file_path = os.path.join(root, file_name)
+
         dll = self.options.get("dll", None)
         free = self.options.get("free", False)
         args = self.options.get("arguments", None)
