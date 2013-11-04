@@ -38,9 +38,8 @@ class Applet(Package):
         file_name = "".join(random.choice(string.ascii_lowercase)
                             for x in range(6)) + ".html"
         file_path = os.path.join(os.getenv("TEMP"), file_name)
-        file_handle = open(file_path, "w")
-        file_handle.write(html)
-        file_handle.close()
+        with open(file_path, "w") as file_handle:
+            file_handle.write(html)
 
         return file_path
 

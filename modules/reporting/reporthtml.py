@@ -65,9 +65,8 @@ class ReportHTML(Report):
             raise CuckooReportError("Failed to generate HTML report: %s" % e)
         
         try:
-            report = open(os.path.join(self.reports_path, "report.html"), "w")
-            report.write(html)
-            report.close()
+            with open(os.path.join(self.reports_path, "report.html"), "w") as report:
+                report.write(html)
         except (TypeError, IOError) as e:
             raise CuckooReportError("Failed to write HTML report: %s" % e)
 
