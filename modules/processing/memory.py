@@ -464,7 +464,10 @@ class VolatilityManager(object):
                 self.mask_pid.append(int(pid))
 
         self.no_filter = not self.voptions.mask.enabled
-        self.osprofile = osprofile or self.get_osprofile()
+        if self.voptions.basic.guest_profile:
+            self.osprofile = self.voptions.basic.guest_profile
+        else:
+            self.osprofile = osprofile or self.get_osprofile()
 
     def get_osprofile(self):
         """Get the OS profile"""        
