@@ -4,6 +4,7 @@
 
 import os
 import logging
+import random
 from time import time
 from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
 from shutil import copy
@@ -314,12 +315,20 @@ class Process:
         with open(config_path, "w") as config:
             cfg = Config("analysis.conf")
 
+            # The first time we come up with a random startup-time.
+            if Process.first_process:
+                # This adds 1 up to 30 times of 20 minutes to the startup
+                # time of the process, therefore bypassing anti-vm checks
+                # which check whether the VM has only been up for <10 minutes.
+                Process.startup_time = random.randint(1, 30) * 20 * 60 * 1000
+
             config.write("host-ip={0}\n".format(cfg.ip))
             config.write("host-port={0}\n".format(cfg.port))
             config.write("pipe={0}\n".format(PIPE))
             config.write("results={0}\n".format(PATHS["root"]))
             config.write("analyzer={0}\n".format(os.getcwd()))
             config.write("first-process={0}\n".format(Process.first_process))
+            config.write("startup-time={0}\n".format(Process.startup_time))
 
             Process.first_process = False
 
