@@ -40,7 +40,7 @@ class NetlogConnection(object):
             s.sendall(self.proto)
         except Exception as e:
             # Inception.
-            log.error("Exception connecting logging handler: %s", e)
+            #log.error("Exception connecting logging handler: %s", e)
         else:
             self.sock = s
             self.file = s.makefile()
