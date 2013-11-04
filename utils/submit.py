@@ -3,10 +3,12 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-import sys
-import logging
 import argparse
+import fnmatch
+import logging
+import os
+import random
+import sys
 
 logging.basicConfig()
 
@@ -60,6 +62,14 @@ def main():
                         help="Specify tags identifier of a machine you "
                              "want to use",
                         required=False)
+    parser.add_argument("--max", type=int, action="store", default=100,
+                        help="Maximum samples to add in a row",
+                        required=False)
+    parser.add_argument("--pattern", type=str, action="store", default=None,
+                        help="Pattern of files to submit", required=False)
+    parser.add_argument("--shuffle", action="store_true", default=False,
+                        help="Shuffle samples before submitting them",
+                        required=False)
 
     try:
         args = parser.parse_args()
@@ -108,9 +118,19 @@ def main():
                     file_path = os.path.join(dirname, file_name)
 
                     if os.path.isfile(file_path):
-                        files.append(to_unicode(file_path))
+                        if args.pattern:
+                            if fnmatch.fnmatch(file_name, args.pattern):
+                                files.append(to_unicode(file_path))
+                        else:
+                            files.append(to_unicode(file_path))
         else:
             files.append(path)
+
+        if args.shuffle:
+            random.shuffle(files)
+
+        if args.max:
+            files = files[0:args.max]
 
         for file_path in files:
             task_id = db.add_path(file_path=file_path,
