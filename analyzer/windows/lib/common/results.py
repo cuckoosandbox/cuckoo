@@ -38,9 +38,8 @@ class NetlogConnection(object):
         try:
             s.connect((self.hostip, self.hostport))
             s.sendall(self.proto)
-        except Exception as e:
-            # Inception.
-            #log.error("Exception connecting logging handler: %s", e)
+        except:
+            pass
         else:
             self.sock = s
             self.file = s.makefile()
