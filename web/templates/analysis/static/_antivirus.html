@@ -3,7 +3,11 @@
     <table class="table table-striped table-bordered">
         <tr>
             <th>Antivirus</th>
-            <th>Signature</th>
+            {% if analysis.info.category == "file" %}
+                <th>Signature</th>
+            {% else %}
+                <th>Result</th>
+            {% endif %}
         </tr>
         {% for av, values in analysis.virustotal.scans.items %}
         <tr>
@@ -16,7 +20,13 @@
                         <span class="text-danger">{{values.result}}</span>
                     {% endif %}
                 {% else %}
-                    {{values.result}}
+                    {% if not values.detected %}
+                        <span class="text-muted">
+                    {% else %}
+                        <span class="text-danger">
+                    {% endif %}
+                    {{ values.result|title }}
+                    </span>
                 {% endif %}
             </td>
         </tr>
