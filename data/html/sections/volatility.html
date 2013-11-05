@@ -148,6 +148,51 @@
             </div>
         </div>
 
+        <!-- Psxview -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_psxview');"><b>PSXView</b></a>
+            <small>
+                Listing hidden processes
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReference#psxview" target="_blank">help</a>)
+            </small>
+            <div id="volatility_psxview" style="display: none;">
+                {% if results.memory.psxview and results.memory.psxview.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.psxview %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>PID</th>
+                            <th>Process name</th>
+                            <th>In pslist</th>
+                            <th>In psscan</th>
+                            <th>In thrdproc</th>
+                            <th>In pspcid</th>
+                            <th>In csrss</th>
+                            <th>In session</th>
+                            <th>In deskthrd</th>
+                        </tr>
+
+                        {% for p in results.memory.psxview.data %}
+                            <tr> 
+                                <td>{{p.process_id}}</td>
+                                <td>{{p.process_name}}</td>
+                                <td>{{p.pslist}}</td>
+                                <td>{{p.psscan}}</td>
+                                <td>{{p.thrdproc}}</td>
+                                <td>{{p.pspcid}}</td>
+                                <td>{{p.csrss}}</td>
+                                <td>{{p.session}}</td>
+                                <td>{{p.deskthrd}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
         <!-- DLLlist -->
         <div class="well well-small">
             <a href="javascript:showHide('volatility_dlllist');"><b>DllList</b></a>

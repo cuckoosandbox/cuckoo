@@ -104,6 +104,34 @@ class VolatilityAPI(object):
 
         return dict(config={}, data=results)
 
+    def psxview(self):
+        """Volatility psxview plugin.
+        @see volatility/plugins/malware/psxview.py
+        """
+        log.debug("Executing Volatility psxview plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["psxview"](self.config)
+        for offset, process, ps_sources in command.calculate():
+            new = {
+                "process_name": str(process.ImageFileName),
+                "process_id": int(process.UniqueProcessId),
+                "pslist": str(ps_sources['pslist'].has_key(offset)),
+                "psscan": str(ps_sources['psscan'].has_key(offset)),
+                "thrdproc": str(ps_sources['thrdproc'].has_key(offset)),
+                "pspcid": str(ps_sources['pspcid'].has_key(offset)),
+                "csrss": str(ps_sources['csrss'].has_key(offset)),
+                "session": str(ps_sources['session'].has_key(offset)),
+                "deskthrd": str(ps_sources['deskthrd'].has_key(offset))
+            }
+
+            results.append(new)
+
+        return dict(config={}, data=results)
+
     def malfind(self, dump_dir=None):
         """Volatility malfind plugin.
         @param dump_dir: optional directory for dumps
@@ -482,6 +510,8 @@ class VolatilityManager(object):
         # TODO: improve the load of volatility functions.
         if self.voptions.pslist.enabled:
             results["pslist"] = vol.pslist()
+        if self.voptions.psxview.enabled:
+            results["psxview"] = vol.psxview()
         if self.voptions.malfind.enabled:
             results["malfind"] = vol.malfind()
         if self.voptions.apihooks.enabled:
