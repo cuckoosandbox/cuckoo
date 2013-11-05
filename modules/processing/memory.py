@@ -163,6 +163,40 @@ class VolatilityAPI(object):
 
         return dict(config={}, data=results)
 
+    def idt(self):
+        """Volatility idt plugin.
+        @see volatility/plugins/malware/idt.py
+        """
+        log.debug("Executing Volatility callbacks plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["idt"](self.config)
+        for n, entry, addr, module in command.calculate():
+            if module:
+                module_name = str(module.BaseDllName or '')
+                sect_name = command.get_section_name(module, addr)
+            else:
+                module_name = "UNKNOWN"
+                sect_name = ''
+
+            # The parent is IDT. The grand-parent is _KPCR. 
+            cpu_number = entry.obj_parent.obj_parent.ProcessorBlock.Number
+            new = {
+                "cpu_number": int(cpu_number),
+                "index":int(n),
+                "selector":hex(int(entry.Selector)),
+                "address":hex(int(addr)),
+                "module":module_name,
+                "section":sect_name,
+                }
+
+            results.append(new)
+
+        return dict(config={}, data=results)
+
     def malfind(self, dump_dir=None):
         """Volatility malfind plugin.
         @param dump_dir: optional directory for dumps
@@ -545,6 +579,8 @@ class VolatilityManager(object):
             results["psxview"] = vol.psxview()
         if self.voptions.callbacks.enabled:
             results["callbacks"] = vol.callbacks()
+        if self.voptions.idt.enabled:
+            results["idt"] = vol.idt()
         if self.voptions.malfind.enabled:
             results["malfind"] = vol.malfind()
         if self.voptions.apihooks.enabled:

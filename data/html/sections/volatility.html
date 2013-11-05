@@ -499,6 +499,45 @@
                 {% endif %}
             </div>
         </div>
+
+        <!-- idt -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_idt');"><b>IDT</b></a>
+            <small>
+                Listing IDTs
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceMal23#idt" target="_blank">help</a>)
+            </small>
+            <div id="volatility_idt" style="display: none;">
+                {% if results.memory.idt and results.memory.idt.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.idt %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>CPU</th>
+                            <th>Index</th>
+                            <th>Selector</th>
+                            <th>Address</th>
+                            <th>Module</th>
+                            <th>Section</th>
+                        </tr>
+                        {% for h in results.memory.idt.data %}
+                            <tr>
+                                <td>{{h.cpu_number}}</td>
+                                <td>{{h.index}}</td>
+                                <td>{{h.selector}}</td>
+                                <td>{{h.address}}</td>
+                                <td>{{h.module}}</td>
+                                <td>{{h.section}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
     {% else %}
         Nothing to display.
     {% endif %}
