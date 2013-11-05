@@ -197,6 +197,43 @@ class VolatilityAPI(object):
 
         return dict(config={}, data=results)
 
+    def timers(self):
+        """Volatility timers plugin.
+        @see volatility/plugins/malware/timers.py
+        """
+        log.debug("Executing Volatility callbacks plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["timers"](self.config)
+        for timer,module in command.calculate():
+            if timer.Header.SignalState.v():
+                signaled = "Yes"
+            else:
+                signaled = "-"
+
+            if module:
+                module_name = str(module.BaseDllName or '')
+            else:
+                module_name = "UNKNOWN"
+
+            due_time = "{0:#010x}:{1:#010x}".format(timer.DueTime.HighPart, timer.DueTime.LowPart)
+
+            new = {
+                "offset": hex(timer.obj_offset),
+                "due_time":due_time,
+                "period":int(timer.Period),
+                "signaled":signaled,
+                "routine":hex(int(timer.Dpc.DeferredRoutine)),
+                "module":module_name,
+                }
+
+            results.append(new)
+
+        return dict(config={}, data=results)
+
     def malfind(self, dump_dir=None):
         """Volatility malfind plugin.
         @param dump_dir: optional directory for dumps
@@ -581,6 +618,8 @@ class VolatilityManager(object):
             results["callbacks"] = vol.callbacks()
         if self.voptions.idt.enabled:
             results["idt"] = vol.idt()
+        if self.voptions.timers.enabled:
+            results["timers"] = vol.timers()
         if self.voptions.malfind.enabled:
             results["malfind"] = vol.malfind()
         if self.voptions.apihooks.enabled:

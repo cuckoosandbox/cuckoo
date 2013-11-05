@@ -538,6 +538,46 @@
             </div>
         </div>
 
+        <!-- timers -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_timers');"><b>Timers</b></a>
+            <small>
+                Listing timers
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceMal23#timers" target="_blank">help</a>)
+            </small>
+            <div id="volatility_timers" style="display: none;">
+                {% if results.memory.timers and results.memory.timers.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.timers %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>Offset</th>
+                            <th>Due time</th>
+                            <th>Period (ms)</th>
+                            <th>Signaled</th>
+                            <th>Routine</th>
+                            <th>Module</th>
+                        </tr>
+
+                        {% for h in results.memory.timers.data %}
+                            <tr>
+                                <td>{{h.offset}}</td>
+                                <td>{{h.due_time}}</td>
+                                <td>{{h.period}}</td>
+                                <td>{{h.signaled}}</td>
+                                <td>{{h.routine}}</td>
+                                <td>{{h.module}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+
     {% else %}
         Nothing to display.
     {% endif %}
