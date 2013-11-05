@@ -272,6 +272,40 @@
             </div>
         </div>
 
+        <!-- Callbacks -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_callbacks');"><b>Callbacks</b></a>
+            <small>
+                Listing registered callbacks
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceMal23#callbacks" target="_blank">help</a>)
+            </small>
+            <div id="volatility_callbacks" style="display: none;">
+                {% if results.memory.callbacks and results.memory.callbacks.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.callbacks %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>Type</th>
+                            <th>Callback</th>
+                            <th>Module</th>
+                            <th>Detail</th>
+                        </tr>
+                        {% for h in results.memory.callbacks.data %}
+                            <tr>
+                                <td>{{h.type}}</td>
+                                <td>{{h.callback}}</td>
+                                <td>{{h.module}}</td>
+                                <td>{{h.details}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
         <!-- Ldrmodules -->
         <div class="well well-small">
             <a href="javascript:showHide('volatility_ldrmodules');"><b>Ldrmodules</b></a>

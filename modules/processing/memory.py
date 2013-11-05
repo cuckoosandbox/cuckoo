@@ -16,6 +16,7 @@ try:
     import volatility.utils as utils
     import volatility.plugins.malware.devicetree as devicetree
     import volatility.plugins.taskmods as taskmods
+    import volatility.win32.tasks as tasks
     import volatility.obj as obj
     HAVE_VOLATILITY = True
 except ImportError:
@@ -126,6 +127,36 @@ class VolatilityAPI(object):
                 "csrss": str(ps_sources['csrss'].has_key(offset)),
                 "session": str(ps_sources['session'].has_key(offset)),
                 "deskthrd": str(ps_sources['deskthrd'].has_key(offset))
+            }
+
+            results.append(new)
+
+        return dict(config={}, data=results)
+
+    def callbacks(self):
+        """Volatility callbacks plugin.
+        @see volatility/plugins/malware/callbacks.py
+        """
+        log.debug("Executing Volatility callbacks plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["callbacks"](self.config)
+        for (sym, cb, detail), mods, mod_addrs in command.calculate():
+            module = tasks.find_module(mods, mod_addrs, command.kern_space.address_mask(cb))
+
+            if module:
+                module_name = module.BaseDllName or module.FullDllName
+            else:
+                module_name = "UNKNOWN"
+
+            new = {
+                "type": str(sym),
+                "callback": hex(int(cb)),
+                "module": str(module_name),
+                "details": str(detail or "-"),
             }
 
             results.append(new)
@@ -512,6 +543,8 @@ class VolatilityManager(object):
             results["pslist"] = vol.pslist()
         if self.voptions.psxview.enabled:
             results["psxview"] = vol.psxview()
+        if self.voptions.callbacks.enabled:
+            results["callbacks"] = vol.callbacks()
         if self.voptions.malfind.enabled:
             results["malfind"] = vol.malfind()
         if self.voptions.apihooks.enabled:
