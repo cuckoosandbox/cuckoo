@@ -9,12 +9,16 @@ import logging
 import os
 import random
 import sys
+import time
+import ConfigParser
 
 logging.basicConfig()
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.colors import bold, green, red
+from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import to_unicode
 from lib.cuckoo.core.database import Database
 
@@ -70,6 +74,9 @@ def main():
     parser.add_argument("--shuffle", action="store_true", default=False,
                         help="Shuffle samples before submitting them",
                         required=False)
+    parser.add_argument("--interval", type=int, action="store", default=False,
+                        help="Seconds to wait between each submited sample",
+                        required=False)
 
     try:
         args = parser.parse_args()
@@ -78,6 +85,24 @@ def main():
         return False
 
     db = Database()
+
+    cfg = Config()
+    machine_manager = cfg.cuckoo.machine_manager
+    machine_manager_cfg_file = os.path.join(CUCKOO_ROOT, "conf",
+                                            "%s.conf" % machine_manager)
+
+    if not os.path.exists(machine_manager_cfg_file):
+        msg = ": the specified file/folder does not exist " \
+              "at path \"{0}\"".format(machine_manager_cfg_file)
+        print(bold(red("Error")) + msg)
+        return False
+
+    machine_manager_config = ConfigParser.ConfigParser()
+    machine_manager_config.read(machine_manager_cfg_file)
+
+    guest_machines = [machine for machine in machine_manager_config.sections()
+                      if machine != machine_manager]
+    guest_machines_num = len(guest_machines)
 
     target = to_unicode(args.target)
 
@@ -132,7 +157,7 @@ def main():
         if args.max:
             files = files[0:args.max]
 
-        for file_path in files:
+        for x, file_path in enumerate(files):
             task_id = db.add_path(file_path=file_path,
                                   package=args.package,
                                   timeout=args.timeout,
@@ -150,6 +175,8 @@ def main():
                 msg = ": File \"{0}\" added as task with " \
                       "ID {1}".format(file_path, task_id)
                 print(bold(green("Success")) + msg)
+                if args.interval and x < guest_machines_num:
+                    time.sleep(args.interval)
             else:
                 print(bold(red("Error")) + ": adding task to database")
 
