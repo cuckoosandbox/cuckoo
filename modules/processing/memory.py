@@ -234,6 +234,58 @@ class VolatilityAPI(object):
 
         return dict(config={}, data=results)
 
+    def messagehooks(self):
+        """Volatility messagehooks plugin.
+        @see volatility/plugins/malware/messagehooks.py
+        """
+        log.debug("Executing Volatility callbacks plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["messagehooks"](self.config)
+        for winsta, atom_tables in command.calculate():
+            for desk in winsta.desktops():
+                for name, hook in desk.hooks():
+                    module = command.translate_hmod(winsta, atom_tables, hook.ihmod)
+                    new = {
+                        "offset": hex(int(hook.obj_offset)),
+                        "session": int(winsta.dwSessionId),
+                        "desktop":"{0}\\{1}".format(winsta.Name, desk.Name),
+                        "thread":"<any>",
+                        "filter":str(name),
+                        "flags":str(hook.flags),
+                        "function":hex(int(hook.offPfn)),
+                        "module":str(module),
+                        }
+
+                    results.append(new)
+
+                for thrd in desk.threads():
+                    info = "{0} ({1} {2})".format(
+                            thrd.pEThread.Cid.UniqueThread,
+                            thrd.ppi.Process.ImageFileName,
+                            thrd.ppi.Process.UniqueProcessId
+                            )
+                    for name, hook in thrd.hooks():
+                        module = command.translate_hmod(winsta, atom_tables, hook.ihmod)
+
+                        new = {
+                            "offset": hex(int(hook.obj_offset)),
+                            "session":int(winsta.dwSessionId),
+                            "desktop":"{0}\\{1}".format(winsta.Name, desk.Name),
+                            "thread":str(info),
+                            "filter":str(name),
+                            "flags":str(hook.flags),
+                            "function":hex(int(hook.offPfn)),
+                            "module":str(module),
+                            }
+
+                        results.append(new)
+
+        return dict(config={}, data=results)
+
     def malfind(self, dump_dir=None):
         """Volatility malfind plugin.
         @param dump_dir: optional directory for dumps
@@ -623,6 +675,8 @@ class VolatilityManager(object):
             results["idt"] = vol.idt()
         if self.voptions.timers.enabled:
             results["timers"] = vol.timers()
+        if self.voptions.messagehooks.enabled:
+            results["messagehooks"] = vol.messagehooks()
         if self.voptions.malfind.enabled:
             results["malfind"] = vol.malfind()
         if self.voptions.apihooks.enabled:

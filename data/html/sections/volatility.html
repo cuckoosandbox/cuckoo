@@ -306,6 +306,48 @@
             </div>
         </div>
 
+        <!-- Messagehooks -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_messagehooks');"><b>Messagehooks</b></a>
+            <small>
+                Registered Messagehooks
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceGui23#messagehooks" target="_blank">help</a>)
+            </small>
+            <div id="volatility_messagehooks" style="display: none;">
+                {% if results.memory.messagehooks and results.memory.messagehooks.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.messagehooks %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>Offset</th>
+                            <th>Session</th>
+                            <th>Desktop</th>
+                            <th>Thread</th>
+                            <th>Filter</th>
+                            <th>Flags</th>
+                            <th>Function</th>
+                            <th>Module</th>
+                        </tr>
+                        {% for h in results.memory.messagehooks.data %}
+                            <tr>
+                                <td>{{h.offset}}</td>
+                                <td>{{h.session}}</td>
+                                <td>{{h.desktop}}</td>
+                                <td>{{h.thread}}</td>
+                                <td>{{h.filter}}</td>
+                                <td>{{h.flags}}</td>
+                                <td>{{h.function}}</td>
+                                <td>{{h.module}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
         <!-- Ldrmodules -->
         <div class="well well-small">
             <a href="javascript:showHide('volatility_ldrmodules');"><b>Ldrmodules</b></a>
