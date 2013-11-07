@@ -468,7 +468,7 @@ class Database(object):
 
             if status == TASK_RUNNING:
                 row.started_on = datetime.now()
-            elif status == TASK_COMPLETED:
+            elif status in (TASK_COMPLETED, TASK_FAILED_ANALYSIS):
                 row.completed_on = datetime.now()
 
             session.commit()
