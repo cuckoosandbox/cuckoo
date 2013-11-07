@@ -15,7 +15,7 @@ logging.basicConfig()
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.colors import bold, green, red
-from lib.cuckoo.common.utils import to_unicode
+from lib.cuckoo.common.utils import to_unicode, convert_to_printable
 from lib.cuckoo.core.database import Database
 
 def main():
@@ -148,7 +148,7 @@ def main():
 
             if task_id:
                 msg = ": File \"{0}\" added as task with " \
-                      "ID {1}".format(file_path, task_id)
+                      "ID {1}".format(convert_to_printable(file_path), task_id)
                 print(bold(green("Success")) + msg)
             else:
                 print(bold(red("Error")) + ": adding task to database")
