@@ -348,6 +348,40 @@
             </div>
         </div>
 
+        <!-- Getsids -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_getsids');"><b>Getsids</b></a>
+            <small>
+                Sids
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReference23#getsids" target="_blank">help</a>)
+            </small>
+            <div id="volatility_getsids" style="display: none;">
+                {% if results.memory.getsids and results.memory.getsids.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.getsids %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>Process Id</th>
+                            <th>Name</th>
+                            <th>SID String</th>
+                            <th>SID Name</th>
+                        </tr>
+                        {% for h in results.memory.getsids.data %}
+                            <tr>
+                                <td>{{h.process_id}}</td>
+                                <td>{{h.filename}}</td>
+                                <td>{{h.sid_string}}</td>
+                                <td>{{h.sid_name}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
         <!-- Ldrmodules -->
         <div class="well well-small">
             <a href="javascript:showHide('volatility_ldrmodules');"><b>Ldrmodules</b></a>

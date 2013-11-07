@@ -15,6 +15,7 @@ try:
     import volatility.commands as commands
     import volatility.utils as utils
     import volatility.plugins.malware.devicetree as devicetree
+    import volatility.plugins.getsids as sidm
     import volatility.plugins.taskmods as taskmods
     import volatility.win32.tasks as tasks
     import volatility.obj as obj
@@ -283,6 +284,45 @@ class VolatilityAPI(object):
                             }
 
                         results.append(new)
+
+        return dict(config={}, data=results)
+
+    def getsids(self):
+        """Volatility getsids plugin.
+        @see volatility/plugins/malware/getsids.py
+        """
+
+        log.debug("Executing Volatility getsids plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["getsids"](self.config)
+        for task in command.calculate():
+            token = task.get_token()
+
+            if not token:
+                continue
+
+            for sid_string in token.get_sids():
+                if sid_string in sidm.well_known_sids:
+                    sid_name = " {0}".format(sidm.well_known_sids[sid_string])
+                else:
+                    sid_name_re = sidm.find_sid_re(sid_string, sidm.well_known_sid_re)
+                    if sid_name_re:
+                        sid_name = " {0}".format(sid_name_re)
+                    else:
+                        sid_name = ""
+
+                new = {
+                    "filename": str(task.ImageFileName),
+                    "process_id":int(task.UniqueProcessId),
+                    "sid_string":str(sid_string),
+                    "sid_name":str(sid_name),
+                    }
+
+                results.append(new)
 
         return dict(config={}, data=results)
 
@@ -677,6 +717,8 @@ class VolatilityManager(object):
             results["timers"] = vol.timers()
         if self.voptions.messagehooks.enabled:
             results["messagehooks"] = vol.messagehooks()
+        if self.voptions.getsids.enabled:
+            results["getsids"] = vol.getsids()
         if self.voptions.malfind.enabled:
             results["malfind"] = vol.malfind()
         if self.voptions.apihooks.enabled:
