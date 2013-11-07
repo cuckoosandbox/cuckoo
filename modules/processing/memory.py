@@ -168,7 +168,7 @@ class VolatilityAPI(object):
         """Volatility idt plugin.
         @see volatility/plugins/malware/idt.py
         """
-        log.debug("Executing Volatility callbacks plugin on "
+        log.debug("Executing Volatility idt plugin on "
                   "{0}".format(self.memdump))
 
         self.__config()
@@ -202,7 +202,7 @@ class VolatilityAPI(object):
         """Volatility timers plugin.
         @see volatility/plugins/malware/timers.py
         """
-        log.debug("Executing Volatility callbacks plugin on "
+        log.debug("Executing Volatility timers plugin on "
                   "{0}".format(self.memdump))
 
         self.__config()
@@ -239,7 +239,7 @@ class VolatilityAPI(object):
         """Volatility messagehooks plugin.
         @see volatility/plugins/malware/messagehooks.py
         """
-        log.debug("Executing Volatility callbacks plugin on "
+        log.debug("Executing Volatility messagehooks plugin on "
                   "{0}".format(self.memdump))
 
         self.__config()
