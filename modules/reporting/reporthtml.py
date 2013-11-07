@@ -9,6 +9,7 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.objects import File
+from lib.cuckoo.common.utils import convert_to_printable
 
 try:
     from jinja2.loaders import FileSystemLoader
@@ -66,6 +67,7 @@ class ReportHTML(Report):
         
         try:
             with open(os.path.join(self.reports_path, "report.html"), "w") as report:
+                html = convert_to_printable(html)
                 report.write(html)
         except (TypeError, IOError) as e:
             raise CuckooReportError("Failed to write HTML report: %s" % e)
