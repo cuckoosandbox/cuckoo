@@ -73,7 +73,7 @@ class ParseProcessLog(list):
         return "ParseProcessLog {0}".format(self._log_path)
 
     def __nonzero__(self):
-        return True
+        return self.wait_for_lastcall()
 
     def compare_calls(self, a, b):
         """Compare two calls for equality. Same implementation as before netlog.
