@@ -298,6 +298,7 @@ class Task(Base):
                          TASK_COMPLETED,
                          TASK_REPORTED,
                          TASK_RECOVERED,
+                         TASK_FAILED_ANALYSIS,
                          name="status_type"),
                          server_default=TASK_PENDING,
                          nullable=False)

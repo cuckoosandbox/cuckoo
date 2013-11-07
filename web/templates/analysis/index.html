@@ -21,14 +21,14 @@
                 {% for analysis in files %}
                     <tr>
                         <td>
-                        {% if analysis.status == "reported" %}
+                        {% if analysis.status == "reported"  or analysis.status == "failed_analysis" %}
                             {{analysis.completed_on}}
                         {% else %}
                             <span class="muted">{{analysis.added_on}} (added on)</span>
                         {% endif %}
                         </td>
                         <td style="word-wrap: break-word;">
-                            {% if analysis.status == "reported" %}
+                            {% if analysis.status == "reported"  or analysis.status == "failed_analysis" %}
                                 <a href="{% url "analysis.views.report" analysis.id %}"><span class="mono">{{analysis.sample.md5}}</span></a>
                             {% else %}
                                 <span class="mono">{{analysis.sample.md5}}</span>
@@ -62,14 +62,14 @@
                 {% for analysis in urls %}
                     <tr>
                         <td>
-                        {% if analysis.status == "reported" %}
+                        {% if analysis.status == "reported"  or analysis.status == "failed_analysis" %}
                             {{analysis.completed_on}}
                         {% else %}
                             <span class="muted">{{analysis.added_on}} (added on)</span>
                         {% endif %}
                         </td>
                         <td style="word-wrap: break-word;">
-                            {% if analysis.status == "reported" %}
+                            {% if analysis.status == "reported"  or analysis.status == "failed_analysis" %}
                                 <a href="{% url "analysis.views.report" analysis.id %}"><span class="mono">{{analysis.target}}</span></a></td>
                             {% else %}
                                 <span class="mono">{{analysis.target}}</span>
