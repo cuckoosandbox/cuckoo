@@ -16,6 +16,7 @@ try:
     import volatility.utils as utils
     import volatility.plugins.malware.devicetree as devicetree
     import volatility.plugins.getsids as sidm
+    import volatility.plugins.privileges as privm
     import volatility.plugins.taskmods as taskmods
     import volatility.win32.tasks as tasks
     import volatility.obj as obj
@@ -320,6 +321,47 @@ class VolatilityAPI(object):
                     "process_id":int(task.UniqueProcessId),
                     "sid_string":str(sid_string),
                     "sid_name":str(sid_name),
+                    }
+
+                results.append(new)
+
+        return dict(config={}, data=results)
+
+    def privs(self):
+        """Volatility privs plugin.
+        @see volatility/plugins/malware/privs.py
+        """
+
+        log.debug("Executing Volatility privs plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["privs"](self.config)
+
+        for task in command.calculate():
+            for value, present, enabled, default in task.get_token().privileges():
+                try:
+                    name, desc = privm.PRIVILEGE_INFO[int(value)]
+                except KeyError:
+                    continue 
+
+                attributes = []
+                if present:
+                    attributes.append("Present")
+                if enabled:
+                    attributes.append("Enabled")
+                if default:
+                    attributes.append("Default")
+
+                new = {
+                    "process_id":int(task.UniqueProcessId),
+                    "filename":str(task.ImageFileName),
+                    "value":int(value),
+                    "privilege":str(name),
+                    "attributes":",".join(attributes),
+                    "description":str(desc),
                     }
 
                 results.append(new)
@@ -719,6 +761,8 @@ class VolatilityManager(object):
             results["messagehooks"] = vol.messagehooks()
         if self.voptions.getsids.enabled:
             results["getsids"] = vol.getsids()
+        if self.voptions.privs.enabled:
+            results["privs"] = vol.privs()
         if self.voptions.malfind.enabled:
             results["malfind"] = vol.malfind()
         if self.voptions.apihooks.enabled:

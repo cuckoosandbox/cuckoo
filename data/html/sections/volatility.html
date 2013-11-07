@@ -382,6 +382,44 @@
             </div>
         </div>
 
+        <!-- Privs -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_privs');"><b>Privs</b></a>
+            <small>
+                Privileges
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReference23#privs" target="_blank">help</a>)
+            </small>
+            <div id="volatility_privs" style="display: none;">
+                {% if results.memory.privs and results.memory.privs.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.privs %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>Process Id</th>
+                            <th>Name</th>
+                            <th>Value</th>
+                            <th>Privilege</th>
+                            <th>Attributes</th>
+                            <th>Description</th>
+                        </tr>
+                        {% for h in results.memory.privs.data %}
+                            <tr>
+                                <td>{{h.process_id}}</td>
+                                <td>{{h.filename}}</td>
+                                <td>{{h.value}}</td>
+                                <td>{{h.privilege}}</td>
+                                <td>{{h.attributes}}</td>
+                                <td>{{h.description}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
         <!-- Ldrmodules -->
         <div class="well well-small">
             <a href="javascript:showHide('volatility_ldrmodules');"><b>Ldrmodules</b></a>
