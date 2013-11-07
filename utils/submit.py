@@ -137,11 +137,12 @@ def main():
             files = files[0:args.max]
 
         for file_path in files:
-            sha256 = File(file_path).get_sha256()
-            if args.unique and not db.find_sample(sha256=sha256) is None:
-                msg = ": Sample {0}".format(file_path)
-                print(bold(yellow("Duplicate")) + msg)
-                continue
+            if args.unique:
+                sha256 = File(file_path).get_sha256()
+                if not db.find_sample(sha256=sha256) is None:
+                    msg = ": Sample {0}".format(file_path)
+                    print(bold(yellow("Duplicate")) + msg)
+                    continue
 
             task_id = db.add_path(file_path=file_path,
                                   package=args.package,
