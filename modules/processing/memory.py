@@ -15,6 +15,8 @@ try:
     import volatility.commands as commands
     import volatility.utils as utils
     import volatility.plugins.malware.devicetree as devicetree
+    import volatility.plugins.getsids as sidm
+    import volatility.plugins.privileges as privm
     import volatility.plugins.taskmods as taskmods
     import volatility.win32.tasks as tasks
     import volatility.obj as obj
@@ -167,7 +169,7 @@ class VolatilityAPI(object):
         """Volatility idt plugin.
         @see volatility/plugins/malware/idt.py
         """
-        log.debug("Executing Volatility callbacks plugin on "
+        log.debug("Executing Volatility idt plugin on "
                   "{0}".format(self.memdump))
 
         self.__config()
@@ -201,7 +203,7 @@ class VolatilityAPI(object):
         """Volatility timers plugin.
         @see volatility/plugins/malware/timers.py
         """
-        log.debug("Executing Volatility callbacks plugin on "
+        log.debug("Executing Volatility timers plugin on "
                   "{0}".format(self.memdump))
 
         self.__config()
@@ -231,6 +233,138 @@ class VolatilityAPI(object):
                 }
 
             results.append(new)
+
+        return dict(config={}, data=results)
+
+    def messagehooks(self):
+        """Volatility messagehooks plugin.
+        @see volatility/plugins/malware/messagehooks.py
+        """
+        log.debug("Executing Volatility messagehooks plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["messagehooks"](self.config)
+        for winsta, atom_tables in command.calculate():
+            for desk in winsta.desktops():
+                for name, hook in desk.hooks():
+                    module = command.translate_hmod(winsta, atom_tables, hook.ihmod)
+                    new = {
+                        "offset": hex(int(hook.obj_offset)),
+                        "session": int(winsta.dwSessionId),
+                        "desktop":"{0}\\{1}".format(winsta.Name, desk.Name),
+                        "thread":"<any>",
+                        "filter":str(name),
+                        "flags":str(hook.flags),
+                        "function":hex(int(hook.offPfn)),
+                        "module":str(module),
+                        }
+
+                    results.append(new)
+
+                for thrd in desk.threads():
+                    info = "{0} ({1} {2})".format(
+                            thrd.pEThread.Cid.UniqueThread,
+                            thrd.ppi.Process.ImageFileName,
+                            thrd.ppi.Process.UniqueProcessId
+                            )
+                    for name, hook in thrd.hooks():
+                        module = command.translate_hmod(winsta, atom_tables, hook.ihmod)
+
+                        new = {
+                            "offset": hex(int(hook.obj_offset)),
+                            "session":int(winsta.dwSessionId),
+                            "desktop":"{0}\\{1}".format(winsta.Name, desk.Name),
+                            "thread":str(info),
+                            "filter":str(name),
+                            "flags":str(hook.flags),
+                            "function":hex(int(hook.offPfn)),
+                            "module":str(module),
+                            }
+
+                        results.append(new)
+
+        return dict(config={}, data=results)
+
+    def getsids(self):
+        """Volatility getsids plugin.
+        @see volatility/plugins/malware/getsids.py
+        """
+
+        log.debug("Executing Volatility getsids plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["getsids"](self.config)
+        for task in command.calculate():
+            token = task.get_token()
+
+            if not token:
+                continue
+
+            for sid_string in token.get_sids():
+                if sid_string in sidm.well_known_sids:
+                    sid_name = " {0}".format(sidm.well_known_sids[sid_string])
+                else:
+                    sid_name_re = sidm.find_sid_re(sid_string, sidm.well_known_sid_re)
+                    if sid_name_re:
+                        sid_name = " {0}".format(sid_name_re)
+                    else:
+                        sid_name = ""
+
+                new = {
+                    "filename": str(task.ImageFileName),
+                    "process_id":int(task.UniqueProcessId),
+                    "sid_string":str(sid_string),
+                    "sid_name":str(sid_name),
+                    }
+
+                results.append(new)
+
+        return dict(config={}, data=results)
+
+    def privs(self):
+        """Volatility privs plugin.
+        @see volatility/plugins/malware/privs.py
+        """
+
+        log.debug("Executing Volatility privs plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["privs"](self.config)
+
+        for task in command.calculate():
+            for value, present, enabled, default in task.get_token().privileges():
+                try:
+                    name, desc = privm.PRIVILEGE_INFO[int(value)]
+                except KeyError:
+                    continue 
+
+                attributes = []
+                if present:
+                    attributes.append("Present")
+                if enabled:
+                    attributes.append("Enabled")
+                if default:
+                    attributes.append("Default")
+
+                new = {
+                    "process_id":int(task.UniqueProcessId),
+                    "filename":str(task.ImageFileName),
+                    "value":int(value),
+                    "privilege":str(name),
+                    "attributes":",".join(attributes),
+                    "description":str(desc),
+                    }
+
+                results.append(new)
 
         return dict(config={}, data=results)
 
@@ -623,6 +757,12 @@ class VolatilityManager(object):
             results["idt"] = vol.idt()
         if self.voptions.timers.enabled:
             results["timers"] = vol.timers()
+        if self.voptions.messagehooks.enabled:
+            results["messagehooks"] = vol.messagehooks()
+        if self.voptions.getsids.enabled:
+            results["getsids"] = vol.getsids()
+        if self.voptions.privs.enabled:
+            results["privs"] = vol.privs()
         if self.voptions.malfind.enabled:
             results["malfind"] = vol.malfind()
         if self.voptions.apihooks.enabled:
