@@ -2,15 +2,19 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-import hashlib
 import binascii
+import hashlib
 import logging
+import os
+import subprocess
+
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 try:
     import magic
+    HAVE_MAGIC = True
 except ImportError:
-    pass
+    HAVE_MAGIC = False
 
 try:
     import pydeep
@@ -23,8 +27,6 @@ try:
     HAVE_YARA = True
 except ImportError:
     HAVE_YARA = False
-
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 log = logging.getLogger(__name__)
 
@@ -180,26 +182,28 @@ class File:
         """Get MIME file type.
         @return: file type.
         """
-        try:
-            ms = magic.open(magic.MAGIC_NONE)
-            ms.load()
-            file_type = ms.file(self.file_path)
-        except:
+        file_type = None
+        if HAVE_MAGIC:
             try:
-                file_type = magic.from_file(self.file_path)
+                ms = magic.open(magic.MAGIC_NONE)
+                ms.load()
+                file_type = ms.file(self.file_path)
             except:
                 try:
-                    import subprocess
-                    file_process = subprocess.Popen(["file",
-                                                     "-b",
-                                                     self.file_path],
-                                                    stdout = subprocess.PIPE)
-                    file_type = file_process.stdout.read().strip()
+                    file_type = magic.from_file(self.file_path)
                 except:
-                    return ""
-        finally:
+                    pass
+            finally:
+                try:
+                    ms.close()
+                except:
+                    pass
+
+        if file_type is None:
             try:
-                ms.close()
+                p = subprocess.Popen(["file", "-b", self.file_path],
+                                     stdout=subprocess.PIPE)
+                file_type = p.stdout.read().strip()
             except:
                 pass
 
