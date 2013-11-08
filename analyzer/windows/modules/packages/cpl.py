@@ -12,9 +12,11 @@ class CPL(Package):
     """Control Panel Applet analysis package."""
 
     def get_path(self):
-        control = os.path.join("c:\\windows\\system32", "control.exe")
+        path = os.path.join(os.getenv("SystemRoot"), "system32", "control.exe")
+        if os.path.exists(path):
+            return path
 
-        return control
+        return
 
     def start(self, path):
         control = self.get_path()
