@@ -14,7 +14,8 @@ logging.basicConfig()
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.common.colors import bold, green, red
+from lib.cuckoo.common.colors import bold, green, red, yellow
+from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import to_unicode
 from lib.cuckoo.core.database import Database
 
@@ -69,6 +70,9 @@ def main():
                         help="Pattern of files to submit", required=False)
     parser.add_argument("--shuffle", action="store_true", default=False,
                         help="Shuffle samples before submitting them",
+                        required=False)
+    parser.add_argument("--unique", action="store_true", default=False,
+                        help="Only submit new samples, ignore duplicates",
                         required=False)
 
     try:
@@ -133,6 +137,13 @@ def main():
             files = files[0:args.max]
 
         for file_path in files:
+            if args.unique:
+                sha256 = File(file_path).get_sha256()
+                if not db.find_sample(sha256=sha256) is None:
+                    msg = ": Sample {0}".format(file_path)
+                    print(bold(yellow("Duplicate")) + msg)
+                    continue
+
             task_id = db.add_path(file_path=file_path,
                                   package=args.package,
                                   timeout=args.timeout,
