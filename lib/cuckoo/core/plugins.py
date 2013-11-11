@@ -407,6 +407,10 @@ class RunSignatures(object):
                 if match:
                     matched.append(match)
 
+                # Reset the ParseProcessLog instances after each signature
+                for process in self.results["behavior"]["processes"]:
+                    process["calls"].reset()
+
         if matched:
             # Sort the matched signatures by their severity level.
             matched.sort(key=lambda key: key["severity"])

@@ -881,7 +881,7 @@ class BehaviorAnalysis(Processing):
             except:
                 log.exception("Failed to run partial behavior class \"%s\"", instance.key)
 
-            # Reset the ParseProcessLog instances after each classic signature
+            # Reset the ParseProcessLog instances after each module
             for process in behavior["processes"]:
                 process["calls"].reset()
 
