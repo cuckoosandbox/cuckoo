@@ -75,6 +75,11 @@ class ParseProcessLog(list):
     def __nonzero__(self):
         return self.wait_for_lastcall()
 
+    def reset(self):
+        self.parsecount += 1
+        self.fd.seek(0)
+        self.lastcall = None
+
     def compare_calls(self, a, b):
         """Compare two calls for equality. Same implementation as before netlog.
         @param a: call a
@@ -104,8 +109,7 @@ class ParseProcessLog(list):
 
         x = self.wait_for_lastcall()
         if not x:
-            self.parsecount += 1
-            self.fd.seek(0)
+            self.reset()
             raise StopIteration()
 
         nextcall, self.lastcall = self.lastcall, None
@@ -876,5 +880,9 @@ class BehaviorAnalysis(Processing):
                 behavior[instance.key] = instance.run()
             except:
                 log.exception("Failed to run partial behavior class \"%s\"", instance.key)
+
+            # Reset the ParseProcessLog instances after each classic signature
+            for process in behavior["processes"]:
+                process["calls"].reset()
 
         return behavior
