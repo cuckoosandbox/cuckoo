@@ -14,6 +14,24 @@ from lib.cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
 
+def fix_key(key):
+    """ Fix a registry key to have it normalized
+    """
+    res = key
+    if key.lower().startswith("registry\\machine\\"):
+        res = "HKEY_LOCAL_MACHINE\\" + key[17:]
+    elif key.lower().startswith("registry\\user\\"):
+        res = "HKEY_USERS\\" + key[14:]
+    elif key.lower().startswith("\\registry\\machine\\"):
+        res = "HKEY_LOCAL_MACHINE\\" + key[18:]
+    elif key.lower().startswith("\\registry\\user\\"):
+        res = "HKEY_USERS\\" + key[15:]
+
+    if not res.endswith("\\\\"):
+        res = res + "\\"
+    return res
+
+
 class ParseProcessLog(list):
     """Parses process log file."""
     
@@ -268,6 +286,8 @@ class Summary:
                 return None
 
         name = ""
+        if registry == -1:
+            name = ""
         if registry == 0x80000000:
             name = "HKEY_CLASSES_ROOT\\"
         elif registry == 0x80000001:
@@ -287,8 +307,9 @@ class Summary:
                 if registry == known_handle["handle"]:
                     name = known_handle["name"] + "\\"
 
-        self.handles.append({"handle" : handle, "name" : name + subkey})
-        return name + subkey
+        key = fix_key(name + subkey)
+        self.handles.append({"handle" : handle, "name" : key})
+        return key
 
     def event_apicall(self, call, process):
         """Generate processes list from streamed calls/processes.
@@ -306,6 +327,34 @@ class Summary:
                 elif argument["name"] == "SubKey":
                     subkey = argument["value"]
                 elif argument["name"] == "Handle":
+                    handle = int(argument["value"], 16)
+
+            name = self._check_registry(registry, subkey, handle)
+            if name and name not in self.keys:
+                self.keys.append(name)
+        if call["api"].startswith("NtOpenKey"):
+            registry = -1
+            subkey = ""
+            handle = 0
+
+            for argument in call["arguments"]:
+                if argument["name"] == "ObjectAttributes":
+                    subkey = argument["value"]
+                elif argument["name"] == "KeyHandle":
+                    handle = int(argument["value"], 16)
+
+            name = self._check_registry(registry, subkey, handle)
+            if name and name not in self.keys:
+                self.keys.append(name)
+        if call["api"].startswith("NtDeleteValueKey"):
+            registry = -1
+            subkey = ""
+            handle = 0
+
+            for argument in call["arguments"]:
+                if argument["name"] == "ValueName":
+                    subkey = argument["value"]
+                elif argument["name"] == "KeyHandle":
                     handle = int(argument["value"], 16)
 
             name = self._check_registry(registry, subkey, handle)
@@ -414,7 +463,7 @@ class Enhanced(object):
             name = self.keyhandles[registry]
 
         nkey = name + subkey
-        nkey = self._fix_key(nkey)
+        nkey = fix_key(nkey)
 
         self.keyhandles[handle] = nkey
 
@@ -433,19 +482,6 @@ class Enhanced(object):
             return self.keyhandles[handle]
         except KeyError:
             return ""
-
-    def _fix_key(self, key):
-        """ Fix a registry key to have it normalized
-        """
-        res = key
-        if key.lower().startswith("registry\\machine\\"):
-            res = "HKEY_LOCAL_MACHINE\\" + key[17:]
-        elif key.lower().startswith("registry\\user\\"):
-            res = "HKEY_USERS\\" + key[14:]
-
-        if not res.endswith("\\\\"):
-            res = res + "\\"
-        return res
 
     def _process_call(self, call):
         """ Gets files calls
@@ -756,10 +792,10 @@ class Enhanced(object):
             elif call["api"] in ["RegSetValueExA", "RegSetValueExW"]:
                 event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("ValueName", ""))
 
-            elif call["api"] in ["RegQueryValueExA", "RegQueryValueExW", "RegDeleteValueA", "RegDeleteValueW", "NtDeleteValueKey"]:
+            elif call["api"] in ["RegQueryValueExA", "RegQueryValueExW", "RegDeleteValueA", "RegDeleteValueW"]:
                 event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "UNKNOWN")), args.get("ValueName", ""))
 
-            elif call["api"] in ["NtQueryValueKey"]:
+            elif call["api"] in ["NtQueryValueKey", "NtDeleteValueKey"]:
                 event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("KeyHandle", "UNKNOWN")), args.get("ValueName", ""))
 
             elif call["api"] in ["LoadLibraryA", "LoadLibraryW", "LoadLibraryExA", "LoadLibraryExW", "LdrGetDllHandle"] and call["status"]:
