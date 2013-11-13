@@ -332,7 +332,7 @@ class Summary:
             name = self._check_registry(registry, subkey, handle)
             if name and name not in self.keys:
                 self.keys.append(name)
-        if call["api"].startswith("NtOpenKey"):
+        elif call["api"].startswith("NtOpenKey"):
             registry = -1
             subkey = ""
             handle = 0
@@ -346,7 +346,7 @@ class Summary:
             name = self._check_registry(registry, subkey, handle)
             if name and name not in self.keys:
                 self.keys.append(name)
-        if call["api"].startswith("NtDeleteValueKey"):
+        elif call["api"].startswith("NtDeleteValueKey"):
             registry = -1
             subkey = ""
             handle = 0
@@ -368,8 +368,10 @@ class Summary:
                     handle = int(argument["value"], 16)
 
             if handle != 0:
-                try: self.handles.remove(handle)
-                except ValueError: pass
+                for a in self.handles:
+                    if a["handle"] == handle:
+                        try: self.handles.remove(a)
+                        except ValueError: pass
 
         elif call["category"] == "filesystem":
             for argument in call["arguments"]:
