@@ -16,7 +16,8 @@ from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import create_folder
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED
+from lib.cuckoo.core.database import (Database, TASK_COMPLETED, TASK_REPORTED,
+        TASK_FAILED_ANALYSIS)
 from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.resultserver import Resultserver
 from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
@@ -294,12 +295,17 @@ class AnalysisManager(Thread):
         active_analysis_count += 1
         try:
             success = self.launch_analysis()
-            Database().set_status(self.task.id, TASK_COMPLETED)
+            if success:
+                status = TASK_COMPLETED
+            else:
+                status = TASK_FAILED_ANALYSIS
+
+            Database().set_status(self.task.id, status)
 
             log.debug("Released database task #%d with status %s",
-                      self.task.id, success)
+                      self.task.id, status)
 
-            if self.cfg.cuckoo.process_results:
+            if success and self.cfg.cuckoo.process_results:
                 self.process_results()
                 Database().set_status(self.task.id, TASK_REPORTED)
 
