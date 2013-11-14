@@ -305,7 +305,7 @@ class LibVirtMachinery(Machinery):
         super(LibVirtMachinery, self).__init__()
 
     def initialize(self, module):
-        """Initialize machine manager module. Ovverride defualt to set proper
+        """Initialize machine manager module. Override default to set proper
         connection string.
         @param module:  machine manager module
         """
@@ -512,7 +512,7 @@ class LibVirtMachinery(Machinery):
         try:
             vm = conn.lookupByName(label)
         except libvirt.libvirtError:
-                raise CuckooMachineError("Cannot found machine "
+                raise CuckooMachineError("Cannot find machine "
                                          "{0}".format(label))
         finally:
             self._disconnect(conn)
