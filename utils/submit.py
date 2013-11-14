@@ -63,7 +63,7 @@ def main():
                         help="Specify tags identifier of a machine you "
                              "want to use",
                         required=False)
-    parser.add_argument("--max", type=int, action="store", default=100,
+    parser.add_argument("--max", type=int, action="store", default=None,
                         help="Maximum samples to add in a row",
                         required=False)
     parser.add_argument("--pattern", type=str, action="store", default=None,
