@@ -20,6 +20,12 @@ from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.database import Database
 
+try:
+    import libvirt
+    HAVE_LIBVIRT = True
+except ImportError:
+    HAVE_LIBVIRT = False
+
 log = logging.getLogger(__name__)
 
 class Auxiliary(object):
@@ -282,11 +288,9 @@ class LibVirtMachinery(Machinery):
     ERROR = "machete"
 
     def __init__(self):
-        try:
-            global libvirt
-            import libvirt
-        except ImportError:
+        if not HAVE_LIBVIRT:
             raise CuckooDependencyError("Unable to import libvirt")
+
         super(LibVirtMachinery, self).__init__()
 
     def initialize(self, module):
