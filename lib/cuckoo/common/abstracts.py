@@ -329,28 +329,39 @@ class LibVirtMachinery(Machinery):
         conn = self._connect()
 
         vm_info = self.db.view_machine_by_label(label)
+
+        snapshot_list = self.vms[label].snapshotListNames(flags=0)
+
         # If a snapshot is configured try to use it.
-        if vm_info.snapshot and vm_info.snapshot in self.vms[label].snapshotListNames(flags=0):
+        if vm_info.snapshot and vm_info.snapshot in snapshot_list:
             # Revert to desired snapshot, if it exists.
-            log.debug("Using snapshot {0} for virtual machine {1}".format(vm_info.snapshot, label))
+            log.debug("Using snapshot {0} for virtual machine "
+                      "{1}".format(vm_info.snapshot, label))
             try:
-                self.vms[label].revertToSnapshot(self.vms[label].snapshotLookupByName(vm_info.snapshot, flags=0), flags=0)
+                vm = self.vms[label]
+                snapshot = vm.snapshotLookupByName(vm_info.snapshot, flags=0)
+                self.vms[label].revertToSnapshot(snapshot, flags=0)
             except libvirt.libvirtError:
-                raise CuckooMachineError("Unable to restore snapshot {0} on virtual machine {1}".format(vm_info.snapshot, label))
+                raise CuckooMachineError("Unable to restore snapshot {0} on "
+                                         "virtual machine {1}".format(
+                                             vm_info.snapshot, label))
             finally:
                 self._disconnect(conn)
         elif self._get_snapshot(label):
             snapshot = self._get_snapshot(label)
-            log.debug("Using snapshot {0} for virtual machine {1}".format(snapshot, label))
+            log.debug("Using snapshot {0} for virtual machine "
+                      "{1}".format(snapshot, label))
             try:
                 self.vms[label].revertToSnapshot(snapshot, flags=0)
             except libvirt.libvirtError:
-                raise CuckooMachineError("Unable to restore snapshot on virtual machine {0}".format(label))
+                raise CuckooMachineError("Unable to restore snapshot on "
+                                         "virtual machine {0}".format(label))
             finally:
                 self._disconnect(conn)
         else:
             self._disconnect(conn)
-            raise CuckooMachineError("No snapshot found for virtual machine {0}".format(label))
+            raise CuckooMachineError("No snapshot found for virtual machine "
+                                     "{0}".format(label))
 
         # Check state.
         self._wait_status(label, self.RUNNING)
@@ -363,25 +374,29 @@ class LibVirtMachinery(Machinery):
         log.debug("Stopping machine %s", label)
 
         if self._status(label) == self.POWEROFF:
-            raise CuckooMachineError("Trying to stop an already stopped machine {0}".format(label))
+            raise CuckooMachineError("Trying to stop an already stopped "
+                                     "machine {0}".format(label))
 
         # Force virtual machine shutdown.
         conn = self._connect()
         try:
             if not self.vms[label].isActive():
-                log.debug("Trying to stop an already stopped machine %s. Skip", label)
+                log.debug("Trying to stop an already stopped machine %s. "
+                          "Skip", label)
             else:
-                self.vms[label].destroy() # Machete's way!
+                self.vms[label].destroy()  # Machete's way!
         except libvirt.libvirtError as e:
-            raise CuckooMachineError("Error stopping virtual machine {0}: {1}".format(label, e))
+            raise CuckooMachineError("Error stopping virtual machine "
+                                     "{0}: {1}".format(label, e))
         finally:
             self._disconnect(conn)
         # Check state.
         self._wait_status(label, self.POWEROFF)
 
     def shutdown(self):
-        """Override shutdown to free libvirt handlers, anyway they print errors."""
+        """Override shutdown to free libvirt handlers - they print errors."""
         super(LibVirtMachinery, self).shutdown()
+
         # Free handlers.
         self.vms = None
 
@@ -395,7 +410,8 @@ class LibVirtMachinery(Machinery):
         try:
             self.vms[label].coreDump(path, flags=libvirt.VIR_DUMP_MEMORY_ONLY)
         except libvirt.libvirtError as e:
-            raise CuckooMachineError("Error dumping memory virtual machine {0}: {1}".format(label, e))
+            raise CuckooMachineError("Error dumping memory virtual machine "
+                                     "{0}: {1}".format(label, e))
         finally:
             self._disconnect(conn)
 
@@ -421,7 +437,8 @@ class LibVirtMachinery(Machinery):
         try:
             state = self.vms[label].state(flags=0)
         except libvirt.libvirtError as e:
-            raise CuckooMachineError("Error getting status for virtual machine {0}: {1}".format(label, e))
+            raise CuckooMachineError("Error getting status for virtual "
+                                     "machine {0}: {1}".format(label, e))
         finally:
             self._disconnect(conn)
 
@@ -438,15 +455,17 @@ class LibVirtMachinery(Machinery):
             self.set_status(label, status)
             return status
         else:
-            raise CuckooMachineError("Unable to get status for {0}".format(label))
+            raise CuckooMachineError("Unable to get status for "
+                                     "{0}".format(label))
 
     def _connect(self):
         """Connects to libvirt subsystem.
-        @raise CuckooMachineError: if cannot connect to libvirt or missing connection string.
+        @raise CuckooMachineError: when unable to connect to libvirt.
         """
         # Check if a connection string is available.
         if not self.dsn:
-            raise CuckooMachineError("You must provide a proper connection string")
+            raise CuckooMachineError("You must provide a proper "
+                                     "connection string")
 
         try:
             return libvirt.open(self.dsn)
@@ -481,7 +500,8 @@ class LibVirtMachinery(Machinery):
         try:
             vm = conn.lookupByName(label)
         except libvirt.libvirtError:
-                raise CuckooMachineError("Cannot found machine {0}".format(label))
+                raise CuckooMachineError("Cannot found machine "
+                                         "{0}".format(label))
         finally:
             self._disconnect(conn)
         return vm
@@ -512,7 +532,8 @@ class LibVirtMachinery(Machinery):
         """Get current snapshot for virtual machine
         @param label: virtual machine name
         @return None or current snapshot
-        @raise CuckooMachineError: if cannot find current snapshot or too many snapshots avaible
+        @raise CuckooMachineError: if cannot find current snapshot or
+                                   when there are too many snapshots available
         """
         # Checks for current snapshots.
         conn = self._connect()
@@ -521,7 +542,8 @@ class LibVirtMachinery(Machinery):
             snap = vm.hasCurrentSnapshot(flags=0)
         except libvirt.libvirtError:
             self._disconnect(conn)
-            raise CuckooMachineError("Unable to get current snapshot for virtual machine {0}".format(label))
+            raise CuckooMachineError("Unable to get current snapshot for "
+                                     "virtual machine {0}".format(label))
         finally:
             self._disconnect(conn)
 
@@ -532,8 +554,13 @@ class LibVirtMachinery(Machinery):
         conn = self._connect()
         try:
             snaps = vm[label].snapshotListNames(flags=0)
-            getCreate = lambda sn: ET.fromstring(sn.getXMLDesc(flags=0)).findtext("./creationTime")
-            return max(getCreate(vm.snapshotLookupByName(n, flags=0)) for n in snaps)
+
+            def get_create(sn):
+                xml_desc = sn.getXMLDesc(flags=0)
+                return ET.fromstring(xml_desc).findtext("./creationTime")
+
+            return max(get_create(vm.snapshotLookupByName(name, flags=0))
+                       for name in snaps)
         except libvirt.libvirtError:
             return None
         except ValueError:
@@ -570,7 +597,8 @@ class Processing(object):
         """
         self.analysis_path = analysis_path
         self.log_path = os.path.join(self.analysis_path, "analysis.log")
-        self.file_path = os.path.realpath(os.path.join(self.analysis_path, "binary"))
+        self.file_path = os.path.realpath(os.path.join(self.analysis_path,
+                                                       "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
         self.logs_path = os.path.join(self.analysis_path, "logs")
         self.shots_path = os.path.join(self.analysis_path, "shots")
@@ -645,8 +673,9 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
+        subject = self.results["behavior"]["summary"]["files"]
         return self._check_value(pattern=pattern,
-                                 subject=self.results["behavior"]["summary"]["files"],
+                                 subject=subject,
                                  regex=regex)
 
     def check_key(self, pattern, regex=False):
@@ -656,8 +685,9 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
+        subject = self.results["behavior"]["summary"]["keys"]
         return self._check_value(pattern=pattern,
-                                 subject=self.results["behavior"]["summary"]["keys"],
+                                 subject=subject,
                                  regex=regex)
 
     def check_mutex(self, pattern, regex=False):
@@ -667,8 +697,9 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
+        subject = self.results["behavior"]["summary"]["mutexes"]
         return self._check_value(pattern=pattern,
-                                 subject=self.results["behavior"]["summary"]["mutexes"],
+                                 subject=subject,
                                  regex=regex)
 
     def check_api(self, pattern, process=None, regex=False):
@@ -764,7 +795,8 @@ class Signature(object):
 
             # Loop through API calls.
             for call in item["calls"]:
-                r = self.check_argument_call(call, pattern, name, api, category, regex)
+                r = self.check_argument_call(call, pattern, name,
+                                             api, category, regex)
                 if r:
                     return r
 
@@ -885,7 +917,8 @@ class Report(object):
         """
         self.analysis_path = analysis_path
         self.conf_path = os.path.join(self.analysis_path, "analysis.conf")
-        self.file_path = os.path.realpath(os.path.join(self.analysis_path, "binary"))
+        self.file_path = os.path.realpath(os.path.join(self.analysis_path,
+                                                       "binary"))
         self.reports_path = os.path.join(self.analysis_path, "reports")
         self.shots_path = os.path.join(self.analysis_path, "shots")
         self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
