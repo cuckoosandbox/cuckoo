@@ -148,15 +148,26 @@ class Machinery(object):
                                    is found.
         """
         try:
-            configured_vm = self._list()
+            configured_vms = self._list()
         except NotImplementedError:
             return
 
         for machine in self.machines():
-            if machine.label not in configured_vm:
-                raise CuckooCriticalError("Configured machine {0} was not "
-                                          "detected or it's not in proper "
-                                          "state".format(machine.label))
+            # If this machine is already in the "correct" state, then we
+            # go on to the next machine.
+            if machine.label in configured_vms and \
+                    self._status(machine.label) == self.POWEROFF:
+                continue
+
+            # This machine is currently not in its correct state, we're going
+            # to try to shut it down. If that works, then the machine is fine.
+            try:
+                self.stop(machine.label)
+            except CuckooMachineError as e:
+                msg = "Please update your configuration. Unable to shut " \
+                      "'{0}' down or find the machine in its proper state:" \
+                      " {1}".format(machine.label, e)
+                raise CuckooCriticalError(msg)
 
         if not self.options_globals.timeouts.vm_state:
             raise CuckooCriticalError("Virtual machine state change timeout "
@@ -309,11 +320,12 @@ class LibVirtMachinery(Machinery):
             raise CuckooMachineError("Libvirt version is not supported, "
                                      "please get an updated version")
 
-        # Base checks.
-        super(LibVirtMachinery, self)._initialize_check()
-
         # Preload VMs
         self.vms = self._fetch_machines()
+
+        # Base checks. Also attempts to shutdown any machines which are
+        # currently still active.
+        super(LibVirtMachinery, self)._initialize_check()
 
     def start(self, label):
         """Starts a virtual machine.
