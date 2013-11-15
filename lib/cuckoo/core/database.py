@@ -520,6 +520,20 @@ class Database(object):
             session.close()
         return guest.id
 
+    def guest_remove(self, guest_id):
+        """Removes a guest start entry."""
+        session = self.Session()
+        try:
+            guest = session.query(Guest).get(guest_id)
+            session.delete(guest)
+            session.commit()
+        except SQLAlchemyError as e:
+            log.debug("Database error logging guest remove: {0}".format(e))
+            session.rollback()
+            return None
+        finally:
+            session.close()
+
     def guest_stop(self, guest_id):
         """Logs guest stop.
         @param guest_id: guest log entry id

@@ -30,6 +30,16 @@ machine_lock = Lock()
 total_analysis_count = 0
 active_analysis_count = 0
 
+
+class CuckooDeadMachine(Exception):
+    """Exception thrown when a machine turns dead.
+
+    When this exception has been thrown, the analysis task will start again,
+    and will try to use another machine, when available.
+    """
+    pass
+
+
 class AnalysisManager(Thread):
     """Analysis Manager.
 
@@ -117,6 +127,15 @@ class AnalysisManager(Thread):
         # Start a loop to acquire the a machine to run the analysis on.
         while True:
             machine_lock.acquire()
+
+            # In some cases it's possible that we enter this loop without
+            # having any available machines. We should make sure this is not
+            # such case, or the analysis task will fail completely.
+            if not machinery.availables():
+                machine_lock.release()
+                time.sleep(1)
+                continue
+
             # If the user specified a specific machine ID, a platform to be
             # used or machine tags acquire the machine accordingly.
             try:
@@ -168,6 +187,7 @@ class AnalysisManager(Thread):
     def launch_analysis(self):
         """Start analysis."""
         succeeded = False
+        dead_machine = False
 
         log.info("Starting analysis of %s \"%s\" (task=%d)",
                  self.task.category.upper(), self.task.target, self.task.id)
@@ -211,6 +231,7 @@ class AnalysisManager(Thread):
             machinery.start(self.machine.label)
         except CuckooMachineError as e:
             log.error(str(e), extra={"task_id": self.task.id})
+            dead_machine = True
         else:
             try:
                 # Initialize the guest manager.
@@ -252,19 +273,38 @@ class AnalysisManager(Thread):
                 log.warning("Unable to stop machine %s: %s",
                             self.machine.label, e)
 
-            # Market the machine in the database as stopped.
+            # Mark the machine in the database as stopped. Unless this machine
+            # has been marked as dead, we just keep it as "started" in the
+            # database so it'll not be used later on in this session.
             Database().guest_stop(guest_log)
 
+            # After all this, we can make the Resultserver forget about the
+            # internal state for this analysis task.
+            Resultserver().del_task(self.task, self.machine)
+
+            if dead_machine:
+                # Remove the guest from the database, so that we can assign a
+                # new guest when the task is being analyzed with another
+                # machine.
+                Database().guest_remove(guest_log)
+
+                # Remove the analysis directory that has been created so
+                # far, as launch_analysis() is going to be doing that again.
+                shutil.rmtree(self.storage)
+
+                # This machine has turned dead, so we throw an exception here
+                # which informs the AnalysisManager that it should analyze
+                # this task again with another available machine.
+                raise CuckooDeadMachine()
+
             try:
-                # Release the analysis machine.
+                # Release the analysis machine. But only if the machine has
+                # not turned dead yet.
                 machinery.release(self.machine.label)
             except CuckooMachineError as e:
                 log.error("Unable to release machine %s, reason %s. "
                           "You might need to restore it manually",
                           self.machine.label, e)
-
-            # after all this, we can make the Resultserver forget about it
-            Resultserver().del_task(self.task, self.machine)
 
         return succeeded
 
@@ -293,7 +333,14 @@ class AnalysisManager(Thread):
         global active_analysis_count
         active_analysis_count += 1
         try:
-            success = self.launch_analysis()
+            while True:
+                try:
+                    success = self.launch_analysis()
+                except CuckooDeadMachine:
+                    continue
+
+                break
+
             Database().set_status(self.task.id, TASK_COMPLETED)
 
             log.debug("Released database task #%d with status %s",
