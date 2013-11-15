@@ -335,9 +335,10 @@ class LibVirtMachinery(Machinery):
         """
         log.debug("Starting machine %s", label)
 
-        if self._status(label) == self.RUNNING:
-            raise CuckooMachineError("Trying to start an already started "
-                                     "machine {0}".format(label))
+        if self._status(label) != self.POWEROFF:
+            msg = "Trying to start a virtual machine that has not " \
+                  "been turned off {0}".format(label)
+            raise CuckooMachineError(msg)
 
         conn = self._connect()
 
