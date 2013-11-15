@@ -262,7 +262,7 @@ class AnalysisManager(Thread):
                                                        "memory.dmp"))
                 except NotImplementedError:
                     log.error("The memory dump functionality is not available "
-                              "for current machine manager")
+                              "for the current machine manager")
                 except CuckooMachineError as e:
                     log.error(e)
 

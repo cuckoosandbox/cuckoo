@@ -593,7 +593,9 @@ class Database(object):
             if tags:
                 for tag in tags:
                     machines = machines.filter(Machine.tags.any(name=tag.name))
-            # Check if there machines that they satisfy selection requirements.
+
+            # Check if there are any machines that satisfy the
+            # selection requirements.
             if machines.count() == 0:
                 raise CuckooOperationalError("No machines match selection criteria")
 
