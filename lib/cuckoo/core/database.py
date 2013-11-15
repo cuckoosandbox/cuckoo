@@ -238,10 +238,7 @@ class Error(Base):
 
     id = Column(Integer(), primary_key=True)
     message = Column(String(255), nullable=False)
-    task_id = Column(Integer,
-                     ForeignKey("tasks.id"),
-                     nullable=False,
-                     unique=True)
+    task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
 
     def to_dict(self):
         """Converts object to dict.
