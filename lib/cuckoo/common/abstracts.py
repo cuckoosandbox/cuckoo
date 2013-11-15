@@ -295,6 +295,7 @@ class LibVirtMachinery(Machinery):
 
     # VM states.
     RUNNING = "running"
+    PAUSED = "paused"
     POWEROFF = "poweroff"
     ERROR = "machete"
 
@@ -455,8 +456,10 @@ class LibVirtMachinery(Machinery):
             self._disconnect(conn)
 
         if state:
-            if state[0] == 1 or state[0] == 3:
+            if state[0] == 1:
                 status = self.RUNNING
+            elif state[0] == 3:
+                status = self.PAUSED
             elif state[0] == 4 or state[0] == 5:
                 status = self.POWEROFF
             else:
