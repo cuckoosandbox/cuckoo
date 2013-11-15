@@ -133,9 +133,6 @@ def main():
         if args.shuffle:
             random.shuffle(files)
 
-        if args.max:
-            files = files[0:args.max]
-
         for file_path in files:
             if args.unique:
                 sha256 = File(file_path).get_sha256()
@@ -143,6 +140,13 @@ def main():
                     msg = ": Sample {0}".format(file_path)
                     print(bold(yellow("Duplicate")) + msg)
                     continue
+
+            if not args.max is None:
+                # Break if the maximum number of samples has been reached.
+                if not args.max:
+                    break
+
+                args.max -= 1
 
             task_id = db.add_path(file_path=file_path,
                                   package=args.package,
