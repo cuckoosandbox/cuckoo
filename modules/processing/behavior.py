@@ -360,6 +360,7 @@ class Enhanced(object):
         self.eid = 0
         self.details = details
         self.filehandles = {}
+        self.servicehandles = {}
         self.keyhandles = {
             "0x80000000" : "HKEY_CLASSES_ROOT\\",
             "0x80000001" : "HKEY_CURRENT_USER\\",
@@ -493,21 +494,35 @@ class Enhanced(object):
 
             return None
 
-        # File handles
-        def _add_file_handle(handles, handle, filename):
+        # Generic handles
+        def _add_handle(handles, handle, filename):
             handles[handle] = filename
 
-        def _remove_file_handle(handles, handle):
+        def _remove_handle(handles, handle):
             try:
                 handles.pop(handle)
             except KeyError:
                 pass
 
-        def _get_file_handle(handles, handle):
+        def _get_handle(handles, handle):
             try:
                 return handles[handle]
             except KeyError:
                 return None
+
+        def _get_service_action(ccode):
+            # http://msdn.microsoft.com/en-us/library/windows/desktop/ms682108%28v=vs.85%29.aspx
+            codes = {1:"stop",
+                     2:"pause",
+                     3:"continue",
+                     4:"info"}
+            try:
+                return codes[int(ccode)]
+            except KeyError:
+                if int(ccode >= 128):
+                    return "user"
+                else:
+                    return "notify"
 
         event = None
 
@@ -702,7 +717,21 @@ class Enhanced(object):
                     ("moduleaddress", "ModuleAddress"),
                     ("procedureaddress", "ProcedureAddress")
                 ]
-            },                  
+            },
+            {
+                "event" : "modify",
+                "object" : "service",
+                "apis" : ["ControlService"],
+                "args" : [("controlcode", "ControlCode")
+                ]
+            },
+            {
+                "event" : "delete",
+                "object" : "service",
+                "apis" : ["DeleteService"],
+                "args" : [
+                ]
+            },
         ]
 
         # Not sure I really want this, way too noisy anyway and doesn't bring
@@ -719,7 +748,7 @@ class Enhanced(object):
 
         if event:
             if call["api"] in ["NtReadFile", "ReadFile", "NtWriteFile"]:
-                event["data"]["file"] = _get_file_handle(self.filehandles, args["FileHandle"])
+                event["data"]["file"] = _get_handle(self.filehandles, args["FileHandle"])
 
             elif call["api"] in ["RegDeleteKeyA", "RegDeleteKeyW"]:
                 event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("SubKey", ""))
@@ -746,20 +775,33 @@ class Enhanced(object):
             elif call["api"] in ["SetWindowsHookExA"]:
                 event["data"]["module"] = self._get_loaded_module(args.get("ModuleAddress", ""))
 
+            if call["api"] in ["ControlService", "DeleteService"]:
+                event["data"]["service"] = _get_handle(self.servicehandles, args["ServiceHandle"])
+
+            if call["api"] in ["ControlService"]:
+                event["data"]["action"] = _get_service_action(args["ControlCode"])
+
+
             return event
 
         elif call["api"] in ["SetCurrentDirectoryA", "SetCurrentDirectoryW"]:
             self.currentdir = args["Path"]
 
+        # Files
         elif call["api"] in ["NtCreateFile", "NtOpenFile"]:
-            _add_file_handle(self.filehandles, args["FileHandle"], args["FileName"])
+            _add_handle(self.filehandles, args["FileHandle"], args["FileName"])
 
         elif call["api"] in ["CreateFileW"]:
-            _add_file_handle(self.filehandles, call["return"], args["FileName"])
+            _add_handle(self.filehandles, call["return"], args["FileName"])
 
         elif call["api"] in ["NtClose", "CloseHandle"]:
-            _remove_file_handle(self.filehandles, args["Handle"])
+            _remove_handle(self.filehandles, args["Handle"])
 
+        # Services
+        elif call["api"] in ["OpenServiceW"]:
+            _add_handle(self.servicehandles, call["return"], args["ServiceName"])
+
+        # Registry
         elif call["api"] in ["RegOpenKeyExA", "RegOpenKeyExW", "RegCreateKeyExA", "RegCreateKeyExW"]:
             regkey = self._add_keyhandle(args.get("Registry", ""), args.get("SubKey", ""), args.get("Handle", ""))
 
