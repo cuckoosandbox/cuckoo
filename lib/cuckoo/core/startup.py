@@ -21,7 +21,7 @@ from lib.cuckoo.common.exceptions import CuckooStartupError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.colors import *
+from lib.cuckoo.common.colors import red, green, yellow, cyan
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
 from lib.cuckoo.core.database import Database, TASK_RUNNING
 
@@ -32,18 +32,23 @@ def check_python_version():
     @raise CuckooStartupError: if version is not supported.
     """
     if sys.version_info[:2] != (2, 7):
-        raise CuckooStartupError("You are running an incompatible version of Python, please use 2.7")
+        raise CuckooStartupError("You are running an incompatible version "
+                                 "of Python, please use 2.7")
+
 
 def check_working_directory():
     """Checks if working directories are ready.
     @raise CuckooStartupError: if directories are not properly configured.
     """
     if not os.path.exists(CUCKOO_ROOT):
-        raise CuckooStartupError("You specified a non-existing root directory: {0}".format(CUCKOO_ROOT))
+        raise CuckooStartupError("You specified a non-existing root "
+                                 "directory: {0}".format(CUCKOO_ROOT))
 
     cwd = os.path.join(os.getcwd(), "cuckoo.py")
     if not os.path.exists(cwd):
-        raise CuckooStartupError("You are not running Cuckoo from it's root directory")
+        raise CuckooStartupError("You are not running Cuckoo from it's "
+                                 "root directory")
+
 
 def check_configs():
     """Checks if config files exist.
@@ -55,7 +60,8 @@ def check_configs():
 
     for config in configs:
         if not os.path.exists(config):
-            raise CuckooStartupError("Config file does not exist at path: {0}".format(config))
+            raise CuckooStartupError("Config file does not exist at "
+                                     "path: {0}".format(config))
 
     return True
 
@@ -69,7 +75,7 @@ def create_structure():
     ]
 
     try:
-        create_folders(root=CUCKOO_ROOT,folders=folders)
+        create_folders(root=CUCKOO_ROOT, folders=folders)
     except CuckooOperationalError as e:
         raise CuckooStartupError(e)
 
@@ -83,7 +89,7 @@ def check_version():
     print(" Checking for updates...")
 
     url = "http://api.cuckoosandbox.org/checkversion.php"
-    data = urllib.urlencode({"version" : CUCKOO_VERSION})
+    data = urllib.urlencode({"version": CUCKOO_VERSION})
 
     try:
         request = urllib2.Request(url, data)
@@ -100,9 +106,13 @@ def check_version():
 
     if not response_data["error"]:
         if response_data["response"] == "NEW_VERSION":
-            print(red(" Outdated! ") + "Cuckoo Sandbox version {0} is available now.\n".format(response_data["current"]))
+            msg = "Cuckoo Sandbox version {0} is available " \
+                  "now.\n".format(response_data["current"])
+            print(red(" Outdated! ") + msg)
         else:
-            print(green(" Good! ") + "You have the latest version available.\n")
+            print(green(" Good! ") + "You have the latest version "
+                                     "available.\n")
+
 
 class DatabaseHandler(logging.Handler):
     """Logging to database handler."""
@@ -133,10 +143,11 @@ class ConsoleHandler(logging.StreamHandler):
 def init_logging():
     """Initializes logging."""
     cfg = Config()
+    formatter = logging.Formatter("%(asctime)s [%(name)s] "
+                                  "%(levelname)s: %(message)s")
 
-    formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
-
-    fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log"))
+    fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT,
+                                                          "log", "cuckoo.log"))
     fh.setFormatter(formatter)
     log.addHandler(fh)
 
@@ -158,13 +169,13 @@ def init_tasks():
     if cfg.cuckoo.reschedule:
         log.debug("Checking for locked tasks...")
 
-        tasks = db.list_tasks()
+        tasks = db.list_tasks(status=TASK_RUNNING)
 
-        if len(tasks) > 0:
-            for task in tasks:
-                if task.status == TASK_RUNNING:
-                    db.reschedule(task.id)
-                    log.info("Rescheduled task with ID {0} and target {1}".format(task.id, task.target))
+        for task in tasks:
+            db.reschedule(task.id)
+            log.info("Rescheduled task with ID {0} and "
+                     "target {1}".format(task.id, task.target))
+
 
 def init_modules():
     """Initializes plugins."""
@@ -180,7 +191,7 @@ def init_modules():
     import_package(modules.reporting)
 
     # Import machine manager.
-    import_plugin("modules.machinery.{0}".format(Config().cuckoo.machine_manager))
+    import_plugin("modules.machinery." + Config().cuckoo.machine_manager)
 
     for category, entries in list_plugins().items():
         log.debug("Imported \"%s\" modules:", category)

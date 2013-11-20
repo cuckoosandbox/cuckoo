@@ -5,7 +5,8 @@
 import json
 
 from lib.cuckoo.common.abstracts import Report
-from lib.cuckoo.common.exceptions import CuckooDependencyError, CuckooReportError
+from lib.cuckoo.common.exceptions import CuckooDependencyError
+from lib.cuckoo.common.exceptions import CuckooReportError
 
 try:
 	import lib.hpfeeds as hpfeeds

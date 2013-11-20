@@ -78,9 +78,15 @@ def index(request):
                                           {"error": "Error adding task to Cuckoo's database."},
                                           context_instance=RequestContext(request))
         elif "url" in request.POST:
+            url = request.POST.get("url").strip()
+            if not url:
+                return render_to_response("error.html",
+                                          {"error": "You specified an invalid URL!"},
+                                          context_instance=RequestContext(request))
+
             db = Database()
 
-            task_id = db.add_url(url=request.POST.get("url"),
+            task_id = db.add_url(url=url,
                                  package=package,
                                  timeout=timeout,
                                  options=options,

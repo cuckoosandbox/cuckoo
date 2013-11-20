@@ -4,36 +4,34 @@
 <meta charset="utf-8">
 <title>Cuckoo Sandbox</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="">
-<meta name="author" content="">
+<meta name="description" content="Cuckoo Sandbox">
+<meta name="author" content="Cuckoo Sandbox">
 
 <!-- Le styles -->
 <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
-<link href="{{ STATIC_URL }}css/bootstrap-responsive.min.css" rel="stylesheet">
+<!--<link href="{{ STATIC_URL }}css/bootstrap-responsive.min.css" rel="stylesheet">-->
 <link href="{{ STATIC_URL }}css/style.css" rel="stylesheet">
 <link href="{{ STATIC_URL }}css/lightbox.css" rel="stylesheet">
-<link href="{{ STATIC_URL }}css/jasny-bootstrap.min.css" rel="stylesheet">
-<link href="{{ STATIC_URL }}css/jasny-bootstrap-responsive.min.css" rel="stylesheet">
 <script src="{{ STATIC_URL }}js/jquery.js"></script>
 </head>
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="navbar-inner">
-            <div class="container-fluid">
-                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+<header>
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="navbar-header">
+            <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
-                </a>
-                <div class="nav-collapse">
-                    <ul class="nav">
-                        <li><a href="/"><i class="icon icon-home icon-white"></i></a></li>
-                        <li><a href="{% url "analysis.views.index" %}">Recent</a></li>
-                        <li><a href="{% url "analysis.views.search" %}">Search</a></li>
-                        <li><a href="{% url "submission.views.index" %}">Submit</a></li>
-                    </ul>
-                </div>
-            </div>
+            </button>
         </div>
-    </div>
-    <div class="container-fluid">
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+            <ul class="nav navbar-nav">
+                <li><a href="/"><i class="icon icon-home icon-white"></i></a></li>
+                <li><a href="{% url "analysis.views.index" %}">Recent</a></li>
+                <li><a href="{% url "analysis.views.search" %}">Search</a></li>
+                <li><a href="{% url "submission.views.index" %}">Submit</a></li>
+            </ul>
+        </nav>
+    </nav>
+</header>

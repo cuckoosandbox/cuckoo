@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import sys
 
 try:
     import magic
@@ -23,7 +22,9 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.utils import convert_to_printable
 
-# Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
+
+# Partially taken from
+# http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 
 class PortableExecutable:
     """PE analysis."""
@@ -38,7 +39,7 @@ class PortableExecutable:
         @param data: data to be analyzed.
         @return: file type or None.
         """
-        if not IS_MAGIC:
+        if not HAVE_MAGIC:
             return None
 
         try:
@@ -61,8 +62,10 @@ class PortableExecutable:
             return None
 
         try:
-            signatures = peutils.SignatureDatabase(os.path.join(CUCKOO_ROOT, "data", "peutils" , "UserDB.TXT"))
-            return signatures.match(self.pe, ep_only = True)
+            sig_path = os.path.join(CUCKOO_ROOT, "data",
+                                    "peutils", "UserDB.TXT")
+            signatures = peutils.SignatureDatabase(sig_path)
+            return signatures.match(self.pe, ep_only=True)
         except:
             return None
 
@@ -106,7 +109,8 @@ class PortableExecutable:
         if hasattr(self.pe, "DIRECTORY_ENTRY_EXPORT"):
             for exported_symbol in self.pe.DIRECTORY_ENTRY_EXPORT.symbols:
                 symbol = {}
-                symbol["address"] = hex(self.pe.OPTIONAL_HEADER.ImageBase + exported_symbol.address)
+                symbol["address"] = hex(self.pe.OPTIONAL_HEADER.ImageBase +
+                                        exported_symbol.address)
                 symbol["name"] = exported_symbol.name
                 symbol["ordinal"] = exported_symbol.ordinal
                 exports.append(symbol)
@@ -125,10 +129,14 @@ class PortableExecutable:
         for entry in self.pe.sections:
             try:
                 section = {}
-                section["name"] = convert_to_printable(entry.Name.strip("\x00"))
-                section["virtual_address"] = "0x{0:08x}".format(entry.VirtualAddress)
-                section["virtual_size"] = "0x{0:08x}".format(entry.Misc_VirtualSize)
-                section["size_of_data"] = "0x{0:08x}".format(entry.SizeOfRawData)
+                section["name"] = \
+                    convert_to_printable(entry.Name.strip("\x00"))
+                section["virtual_address"] = \
+                    "0x{0:08x}".format(entry.VirtualAddress)
+                section["virtual_size"] = \
+                    "0x{0:08x}".format(entry.Misc_VirtualSize)
+                section["size_of_data"] = \
+                    "0x{0:08x}".format(entry.SizeOfRawData)
                 section["entropy"] = entry.get_entropy()
                 sections.append(section)
             except:
@@ -228,8 +236,8 @@ class PortableExecutable:
         results["pe_sections"] = self._get_sections()
         results["pe_resources"] = self._get_resources()
         results["pe_versioninfo"] = self._get_versioninfo()
-        results["imported_dll_count"] = len([x for x in results["pe_imports"] if "dll" in x and x["dll"] is not None ])
-
+        results["imported_dll_count"] = len([x for x in results["pe_imports"]
+                                             if x.get("dll")])
         return results
 
 class Static(Processing):

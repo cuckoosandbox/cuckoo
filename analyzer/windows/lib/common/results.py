@@ -20,11 +20,11 @@ def upload_to_host(file_path, dump_path):
         while tmp:
             nc.send(tmp)
             tmp = infd.read(BUFSIZE)
-
-        infd.close()
-        nc.close()
     except Exception as e:
         log.error("Exception uploading file to host: %s", e)
+    finally:
+        infd.close()
+        nc.close()
 
 class NetlogConnection(object):
     def __init__(self, proto=""):
@@ -38,9 +38,8 @@ class NetlogConnection(object):
         try:
             s.connect((self.hostip, self.hostport))
             s.sendall(self.proto)
-        except Exception as e:
-            # Inception.
-            log.error("Exception connecting logging handler: %s", e)
+        except:
+            pass
         else:
             self.sock = s
             self.file = s.makefile()
@@ -53,7 +52,10 @@ class NetlogConnection(object):
             if retry:
                 self.send(data, retry=False)
         except:
-            log.debug("Could not send to remote Netlog!")
+            # We really have nowhere to log this, if the netlog connection
+            # does not work, we can assume that any logging won't work either.
+            # So we just fail silently.
+            self.close()
 
     def close(self):
         try:
@@ -65,7 +67,8 @@ class NetlogConnection(object):
 class NetlogFile(NetlogConnection):
     def __init__(self, filepath):
         self.filepath = filepath
-        NetlogConnection.__init__(self, proto="FILE\n{0}\n".format(self.filepath))
+        NetlogConnection.__init__(self,
+                                  proto="FILE\n{0}\n".format(self.filepath))
         self.connect()
 
 class NetlogHandler(logging.Handler, NetlogConnection):

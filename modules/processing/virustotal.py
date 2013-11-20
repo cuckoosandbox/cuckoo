@@ -26,11 +26,13 @@ class VirusTotal(Processing):
 
         key = self.options.get("key", None)
         if not key:
-            raise CuckooProcessingError("VirusTotal API key not configured, skip")
+            raise CuckooProcessingError("VirusTotal API key not "
+                                        "configured, skip")
 
         if self.task["category"] == "file":
             if not os.path.exists(self.file_path):
-                raise CuckooProcessingError("File {0} not found, skip".format(self.file_path))
+                raise CuckooProcessingError("File {0} not found, "
+                                            "skip".format(self.file_path))
 
             resource = File(self.file_path).get_md5()
             url = VIRUSTOTAL_FILE_URL
@@ -38,23 +40,29 @@ class VirusTotal(Processing):
             resource = self.task["target"]
             url = VIRUSTOTAL_URL_URL
 
-        data = urllib.urlencode({"resource" : resource, "apikey" : key})
+        data = urllib.urlencode({"resource": resource, "apikey": key})
 
         try:
             request = urllib2.Request(url, data)
             response = urllib2.urlopen(request)
             response_data = response.read()
         except urllib2.URLError as e:
-            raise CuckooProcessingError("Unable to establish connection to VirusTotal: {0}".format(e))
+            raise CuckooProcessingError("Unable to establish connection "
+                                        "to VirusTotal: {0}".format(e))
         except urllib2.HTTPError as e:
-            raise CuckooProcessingError("Unable to perform HTTP request to VirusTotal (http code={0})".format(e.code))
+            raise CuckooProcessingError("Unable to perform HTTP request to "
+                                        "VirusTotal "
+                                        "(http code={0})".format(e.code))
 
         try:
             virustotal = json.loads(response_data)
         except ValueError as e:
-            raise CuckooProcessingError("Unable to convert response to JSON: {0}".format(e))
+            raise CuckooProcessingError("Unable to convert response to "
+                                        "JSON: {0}".format(e))
 
         if "scans" in virustotal:
-            virustotal["scans"] = dict([(engine.replace(".", "_"), signature) for engine, signature in virustotal["scans"].items()])
+            items = virustotal["scans"].items()
+            virustotal["scans"] = dict((engine.replace(".", "_"), signature)
+                                       for engine, signature in items)
 
         return virustotal

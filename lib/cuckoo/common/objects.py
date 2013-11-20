@@ -2,15 +2,19 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-import hashlib
 import binascii
+import hashlib
 import logging
+import os
+import subprocess
+
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 try:
     import magic
+    HAVE_MAGIC = True
 except ImportError:
-    pass
+    HAVE_MAGIC = False
 
 try:
     import pydeep
@@ -23,8 +27,6 @@ try:
     HAVE_YARA = True
 except ImportError:
     HAVE_YARA = False
-
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 log = logging.getLogger(__name__)
 
@@ -48,6 +50,11 @@ class URL:
 
 class File:
     """Basic file object class with all useful utilities."""
+
+    # static fields which indicate whether the user has been
+    # notified about missing dependencies already
+    notified_yara = False
+    notified_pydeep = False
 
     def __init__(self, file_path):
         """@param file_path: file path."""
@@ -82,12 +89,11 @@ class File:
     def get_chunks(self):
         """Read file contents in chunks (generator)."""
 
-        fd = open(self.file_path, "rb")
-        while True:
-            chunk = fd.read(FILE_CHUNK_SIZE)
-            if not chunk: break
-            yield chunk
-        fd.close()
+        with open(self.file_path, "rb") as fd:
+            while True:
+                chunk = fd.read(FILE_CHUNK_SIZE)
+                if not chunk: break
+                yield chunk
 
     def calc_hashes(self):
         """Calculate all possible hashes for this file."""
@@ -112,7 +118,6 @@ class File:
 
     @property
     def file_data(self):
-        log.warning("Usage of File.file_data is deprecated, use chunks of files only.")
         if not self._file_data: self._file_data = open(self.file_path, "rb").read()
         return self._file_data
 
@@ -163,7 +168,9 @@ class File:
         @return: SSDEEP.
         """
         if not HAVE_PYDEEP:
-            log.warning("Unable to import pydeep (install with `pip install pydeep`)")
+            if not File.notified_pydeep:
+                File.notified_pydeep = True
+                log.warning("Unable to import pydeep (install with `pip install pydeep`)")
             return None
 
         try:
@@ -175,26 +182,28 @@ class File:
         """Get MIME file type.
         @return: file type.
         """
-        try:
-            ms = magic.open(magic.MAGIC_NONE)
-            ms.load()
-            file_type = ms.file(self.file_path)
-        except:
+        file_type = None
+        if HAVE_MAGIC:
             try:
-                file_type = magic.from_file(self.file_path)
+                ms = magic.open(magic.MAGIC_NONE)
+                ms.load()
+                file_type = ms.file(self.file_path)
             except:
                 try:
-                    import subprocess
-                    file_process = subprocess.Popen(["file",
-                                                     "-b",
-                                                     self.file_path],
-                                                    stdout = subprocess.PIPE)
-                    file_type = file_process.stdout.read().strip()
+                    file_type = magic.from_file(self.file_path)
                 except:
-                    return ""
-        finally:
+                    pass
+            finally:
+                try:
+                    ms.close()
+                except:
+                    pass
+
+        if file_type is None:
             try:
-                ms.close()
+                p = subprocess.Popen(["file", "-b", self.file_path],
+                                     stdout=subprocess.PIPE)
+                file_type = p.stdout.read().strip()
             except:
                 pass
 
@@ -231,7 +240,9 @@ class File:
                 except yara.Error as e:
                     log.warning("Unable to match Yara signatures: %s", e)
         else:
-            log.warning("Unable to import yara (please compile from sources)")
+            if not File.notified_yara:
+                File.notified_yara = True
+                log.warning("Unable to import yara (please compile from sources)")
 
         return matches
 

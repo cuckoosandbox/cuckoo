@@ -14,7 +14,7 @@ class TargetInfo(Processing):
         """
         self.key = "target"
 
-        target_info = {"category" : self.task["category"]}
+        target_info = {"category": self.task["category"]}
 
         if self.task["category"] == "file":
             target_info["file"] = File(self.file_path).get_all()

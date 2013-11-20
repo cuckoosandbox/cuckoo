@@ -35,4 +35,6 @@ class Package(object):
         """
         raise NotImplementedError
 
-class Auxiliary(object): pass
+
+class Auxiliary(object):
+    pass

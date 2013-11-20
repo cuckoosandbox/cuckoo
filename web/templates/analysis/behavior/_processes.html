@@ -3,23 +3,23 @@ function paginationbar(pages, page) {
     if (pages === 0) return "";
 
     function alert_current_page (i, page) {
-        if (i == page) return ' style="background-color: #D9EDF7"';
+        if (i == page) return ' class="active"';
         return '';
     }
 
     var out = '';
-    out += '<li><a'+alert_current_page(1, page)+' href="#">1</a></li>';
+    out += '<li'+alert_current_page(1, page)+'><a href="#">1</a></li>';
 
     if (page-2 > 2) out += '<li><span>...</span></li>';
 
     for (i = Math.max(2, page-2); i <= Math.min(pages-1, page+2); i++) {
-        out += '<li><a'+alert_current_page(i, page)+' href="#">' + i + '</a></li>';
+        out += '<li'+alert_current_page(i, page)+'><a href="#">' + i + '</a></li>';
     }
 
     if (page+2 < pages-1) out += '<li><span>...</span></li>';
 
     if (pages > 1)
-        out += '<li><a'+alert_current_page(pages, page)+' href="#">' + pages + '</a></li>';
+        out += '<li'+alert_current_page(pages, page)+'><a href="#">' + pages + '</a></li>';
     return out;
 }
 function load_chunck(pid, pagenum) {
@@ -49,7 +49,7 @@ function load_chunck(pid, pagenum) {
         <div class="tab-pane{% if forloop.counter == 1%} active{% endif %}" id="process_{{process.process_id}}" data-pid="{{process.process_id}}" data-length="{{process.calls|length}}">
             <div class="alert alert-info" style="text-align: center;"><b>{{process.process_name}}</b>, PID: <b>{{process.process_id}}</b>, Parent PID: {{process.parent_id}}</div>
             <div class="pagination pagination-centered">
-                <ul>
+                <ul class="pagination">
                 </ul>
             </div>
 
@@ -64,7 +64,7 @@ function load_chunck(pid, pagenum) {
 
             <div class="calltable"></div>
             <div class="pagination pagination-centered pagination_{{process.process_id}}">
-                <ul>
+                <ul class="pagination">
                 </ul>
             </div>
             <script>

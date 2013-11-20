@@ -7,11 +7,15 @@ import struct
 import datetime
 import string
 
-try: import bson
-except: pass
+try:
+    import bson
+    HAVE_BSON = True
+except ImportError:
+    HAVE_BSON = False
 
 from lib.cuckoo.common.logtbl import table as LOGTBL
-from lib.cuckoo.common.utils import get_filename_from_path, time_from_cuckoomon
+from lib.cuckoo.common.utils import get_filename_from_path
+from lib.cuckoo.common.exceptions import CuckooResultError
 
 log = logging.getLogger(__name__)
 
@@ -77,14 +81,33 @@ class NetlogParser(object):
             timelow = self.read_int32()
             timehigh = self.read_int32()
             # FILETIME is 100-nanoseconds from 1601 :/
-            vmtimeunix = (timelow + (timehigh << 32)) / 10000000.0 - 11644473600
-            vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
+            vmtimeunix = (timelow + (timehigh << 32))
+            vmtimeunix = vmtimeunix / 10000000.0 - 11644473600
+            try:
+                vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
+            except:
+                log.critical("vmtime in new-process-messsage out of range "
+                             "(protocol out of sync?)")
+                return False
 
             pid = self.read_int32()
             ppid = self.read_int32()
-            modulepath = self.read_string()
-            procname = get_filename_from_path(modulepath)
-            self.handler.log_process(context, vmtime, pid, ppid, modulepath, procname)
+
+            try:
+                modulepath = self.read_string()
+                procname = get_filename_from_path(modulepath)
+            except:
+                log.exception("Exception in netlog protocol, stopping parser.")
+                return False
+
+            if len(procname) > 255:
+                log.critical("Huge process name (>255), assuming netlog "
+                             "protocol out of sync.")
+                log.debug("Process name: %s", repr(procname))
+                return False
+
+            self.handler.log_process(context, vmtime, pid, ppid,
+                                     modulepath, procname)
 
         elif apiindex == 1:
             # new thread message
@@ -96,20 +119,29 @@ class NetlogParser(object):
             try:
                 apiname, modulename, parseinfo = LOGTBL[apiindex]
             except IndexError:
-                log.debug("Netlog LOGTBL lookup error for API index {0} (pid={1}, tid={2})".format(apiindex, self.pid, tid))
+                log.debug("Netlog LOGTBL lookup error for API index {0} "
+                          "(pid={1}, tid={2})".format(apiindex, None, tid))
                 return False
 
-            formatspecifiers, argnames = expand_format(parseinfo[0]), parseinfo[1:]
+            formatspecifiers = expand_format(parseinfo[0])
+            argnames = parseinfo[1:]
             arguments = []
             for pos in range(len(formatspecifiers)):
                 fs = formatspecifiers[pos]
                 argname = argnames[pos]
                 fn = self.formatmap.get(fs, None)
                 if fn:
-                    r = fn()
+                    try:
+                        r = fn()
+                    except:
+                        log.exception("Exception in netlog protocol, "
+                                      "stopping parser.")
+                        return False
+
                     arguments.append((argname, r))
                 else:
-                    log.warning("No handler for format specifier {0} on apitype {1}".format(fs,apiname))
+                    log.warning("No handler for format specifier {0} on "
+                                "apitype {1}".format(fs, apiname))
 
             self.handler.log_call(context, apiname, modulename, arguments)
 
@@ -127,21 +159,25 @@ class NetlogParser(object):
     def read_string(self):
         """Reads an utf8 string from the socket."""
         length, maxlength = struct.unpack("II", self.handler.read(8))
-        if length < 0:
-            log.critical("read_string length < 0? length: %d maxlength: %d", length, maxlength)
-            self.handler.log_error("read_string length failure, protocol broken?")
-            return ""
+        if length < 0 or length > 0x10000:
+            log.critical("read_string length weirdness "
+                         "length: %d maxlength: %d", length, maxlength)
+            raise CuckooResultError("read_string length failure, "
+                                    "protocol broken?")
 
         s = self.handler.read(length)
-        if maxlength > length: s += "... (truncated)"
+        if maxlength > length:
+            s += "... (truncated)"
         return s
 
     def read_buffer(self):
         """Reads a memory socket from the socket."""
         length, maxlength = struct.unpack("II", self.handler.read(8))
-        # only return the maxlength, as we don't log the actual buffer right now
+        # only return the maxlength, as we don't log the actual
+        # buffer right now
         buf = self.handler.read(length)
-        if maxlength > length: buf += " ... (truncated)"
+        if maxlength > length:
+            buf += " ... (truncated)"
         return buf
 
     def read_registry(self):
@@ -181,9 +217,13 @@ TYPECONVERTERS = {
 
 APICATEGORIES = dict((i[0], i[1]) for i in LOGTBL)
 
+# 1 Mb max message length
+MAX_MESSAGE_LENGTH = 20 * 1024 * 1024
+
 def default_converter(v):
     # fix signed ints (bson is kind of limited there)
-    if type(v) in (int, long) and v < 0: return v + 0x100000000
+    if type(v) in (int, long) and v < 0:
+        return v + 0x100000000
     return v
 
 def check_names_for_typeinfo(arginfo):
@@ -194,7 +234,8 @@ def check_names_for_typeinfo(arginfo):
         if type(i) in (list, tuple):
             r = TYPECONVERTERS.get(i[1], None)
             if not r:
-                log.debug("Analyzer sent unknown format specifier '{0}'".format(i[1]))
+                log.debug("Analyzer sent unknown format "
+                          "specifier '{0}'".format(i[1]))
                 r = default_converter
             converters.append(r)
         else:
@@ -208,16 +249,24 @@ class BsonParser(object):
         self.handler = handler
         self.infomap = {}
 
+        if not HAVE_BSON:
+            log.critical("Starting BsonParser, but bson is not available!")
+
     def read_next_message(self):
         data = self.handler.read(4)
         blen = struct.unpack("I", data)[0]
+        if blen > MAX_MESSAGE_LENGTH:
+            log.critical("BSON message larger than MAX_MESSAGE_LENGTH, "
+                         "stopping handler.")
+            return False
 
         data += self.handler.read(blen-4)
 
         try:
             dec = bson.BSON(data).decode()
         except Exception as e:
-            log.warning("BsonParser decoding problem {0} on data {1}".format(e,repr(data)))
+            log.warning("BsonParser decoding problem {0} on "
+                        "data[:50] {1}".format(e, repr(data[:50])))
             return False
 
         mtype = dec.get("type", "none")
@@ -236,7 +285,8 @@ class BsonParser(object):
             self.infomap[index] = (name, arginfo)
 
         elif mtype == "debug":
-            log.info("Debug message from monitor: {0}".format(dec.get("msg", "")))
+            log.info("Debug message from monitor: "
+                     "{0}".format(dec.get("msg", "")))
 
         elif mtype == "new_process":
             # new_process message from VMI monitor
@@ -245,11 +295,14 @@ class BsonParser(object):
             ppid = 0
             modulepath = "DUMMY"
 
-            self.handler.log_process(context, vmtime, pid, ppid, modulepath, procname)
+            self.handler.log_process(context, vmtime, None, ppid,
+                                     modulepath, procname)
 
-        else: # regular api call
+        else:
+            # regular api call
             if not index in self.infomap:
-                log.warning("Got API with unknown index - monitor needs to explain first: {0}".format(dec))
+                log.warning("Got API with unknown index - monitor needs "
+                            "to explain first: {0}".format(dec))
                 return True
 
             apiname, arginfo = self.infomap[index]
@@ -257,17 +310,21 @@ class BsonParser(object):
             args = dec.get("args", [])
 
             if len(args) != len(argnames):
-                log.warning("Inconsistent arg count (compared to arg names) on {2}: {0} names {1}".format(dec, argnames, apiname))
+                log.warning("Inconsistent arg count (compared to arg names) "
+                            "on {2}: {0} names {1}".format(dec, argnames,
+                                                           apiname))
                 return True
 
-            argdict = dict((argnames[i], converters[i](args[i])) for i in range(len(args)))
+            argdict = dict((argnames[i], converters[i](args[i]))
+                           for i in range(len(args)))
 
             if apiname == "__process__":
                 # special new process message from cuckoomon
                 timelow = argdict["TimeLow"]
                 timehigh = argdict["TimeHigh"]
                 # FILETIME is 100-nanoseconds from 1601 :/
-                vmtimeunix = (timelow + (timehigh << 32)) / 10000000.0 - 11644473600
+                vmtimeunix = (timelow + (timehigh << 32))
+                vmtimeunix = vmtimeunix / 10000000.0 - 11644473600
                 vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
 
                 pid = argdict["ProcessIdentifier"]
@@ -275,7 +332,8 @@ class BsonParser(object):
                 modulepath = argdict["ModulePath"]
                 procname = get_filename_from_path(modulepath)
 
-                self.handler.log_process(context, vmtime, pid, ppid, modulepath, procname)
+                self.handler.log_process(context, vmtime, pid, ppid,
+                                         modulepath, procname)
                 return True
 
             elif apiname == "__thread__":

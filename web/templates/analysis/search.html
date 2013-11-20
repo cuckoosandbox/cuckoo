@@ -1,20 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="center">
-    <p><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
-    <form class="form-search" action="{% url "analysis.views.search" %}" enctype="multipart/form-data" method="post">{% csrf_token %}
-        <p class="muted" style="margin-top: 5px;">For details on how to perform searches, get some <a href="#help" data-toggle="collapse">help</a>.</p>
-        <div class="input-append">
-            <input type="text" class="span4 search-query" name="search" />
-            <button type="submit" class="btn">Search</button>
-        </div>
+<div class="row">
+    <div class="col-md-6 col-md-offset-3 center">
+        <p><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+
+        <form class="form-inline" role="form" action="{% url "analysis.views.search" %}" enctype="multipart/form-data" method="post">{% csrf_token %}
+            <p class="text-muted" style="margin-top: 5px;">For details on how to perform searches, get some <a href="#help" data-toggle="collapse">help</a>.</p>
+
+            <div class="form-group">
+                <label class="sr-only" for="form_search">Search term</label>
+                <input type="text" class="form-control" id="form_search" name="search" placeholder="Search term" />
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
         <div id="help" class="collapse">
-            <p class="muted" style="margin-top: 10px;">For MD5, SHA1, SHA256 and SHA512 no prefix is needed.</p>
-            <table class="span6 table table-striped table-bordered table-centered">
+            <p class="text-muted" style="margin-top: 10px;">For MD5, SHA1, SHA256 and SHA512 no prefix is needed.</p>
+            <table class="table table-striped table-centered">
                 <thead>
                     <tr>
-                        <th>Prefix</th>
-                        <th>Description</th>
+                        <th style="text-align: center;">Prefix</th>
+                        <th style="text-align: center;">Description</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -61,49 +66,47 @@
                 </tbody>
             </table>
         </div>
-    </form>
+    </div>
 </div>
 {% if term %}
     <h3>Term <span class="text-info"><i>{{term}}</i></span></h3>
 {% endif %}
 {% if analyses != None %}
     {% if analyses|length > 0 %}
-        <div class="box">
-            <div class="box-header">
-                <h3>Search Results</h3>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Search Results</h3>
             </div>
-            <div class="box-content" style="padding: 0;">
-                <table class="table table-striped" style="table-layout: fixed;">
-                    <thead>
+            <table class="table table-striped" style="table-layout: fixed;">
+                <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Category</th>
+                    <th>Target</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for analysis in analyses %}
                     <tr>
-                        <th>Timestamp</th>
-                        <th>Category</th>
-                        <th>Target</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for analysis in analyses %}
-                        <tr>
-                            <td>
-                            {% if analysis.status == "reported" %}
-                                {{analysis.completed_on}}
+                        <td>
+                        {% if analysis.status == "reported" %}
+                            {{analysis.completed_on}}
+                        {% else %}
+                            <span class="text-muted">{{analysis.added_on}} (added on)</span>
+                        {% endif %}
+                        </td>
+                        <td>{{analysis.category|upper}}</td>
+                        <td style="word-wrap: break-word;"><a href="{% url "analysis.views.report" analysis.id %}">
+                            {% if analysis.category == "url" %}
+                                <span class="mono">{{analysis.target}}</span></a>
                             {% else %}
-                                <span class="muted">{{analysis.added_on}} (added on)</span>
+                                <span class="mono">{{analysis.sample.md5}}</span></a>
                             {% endif %}
-                            </td>
-                            <td>{{analysis.category|upper}}</td>
-                            <td style="word-wrap: break-word;"><a href="{% url "analysis.views.report" analysis.id %}">
-                                {% if analysis.category == "url" %}
-                                    <span class="mono">{{analysis.target}}</span></a>
-                                {% else %}
-                                    <span class="mono">{{analysis.sample.md5}}</span></a>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
     {% else %}
         <div class="alert alert-info" style="text-align: center;"><b>No results found.</b></div>

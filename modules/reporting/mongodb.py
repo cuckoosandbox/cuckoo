@@ -5,12 +5,13 @@
 import os
 
 from lib.cuckoo.common.abstracts import Report
-from lib.cuckoo.common.exceptions import CuckooDependencyError, CuckooReportError
+from lib.cuckoo.common.exceptions import CuckooDependencyError
+from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.objects import File
 
 try:
     from pymongo.connection import Connection
-    from pymongo.errors import ConnectionFailure, InvalidDocument
+    from pymongo.errors import ConnectionFailure
     from gridfs import GridFS
     from gridfs.errors import FileExists
     HAVE_MONGO = True
@@ -50,13 +51,15 @@ class MongoDB(Report):
         if existing:
             return existing["_id"]
         else:
-            new = self.fs.new_file(filename=filename, sha256=file_obj.get_sha256())
+            new = self.fs.new_file(filename=filename,
+                                   sha256=file_obj.get_sha256())
             for chunk in file_obj.get_chunks():
                 new.write(chunk)
             try:
                 new.close()
             except FileExists:
-                return self.db.fs.files.find_one({"sha256": file_obj.get_sha256()})["_id"]
+                to_find = {"sha256": file_obj.get_sha256()}
+                return self.db.fs.files.find_one(to_find)["_id"]
             else:
                 return new._id
 
@@ -68,15 +71,18 @@ class MongoDB(Report):
         # We put the raise here and not at the import because it would
         # otherwise trigger even if the module is not enabled in the config.
         if not HAVE_MONGO:
-            raise CuckooDependencyError("Unable to import pymongo (install with `pip install pymongo`)")
+            raise CuckooDependencyError("Unable to import pymongo "
+                                        "(install with `pip install pymongo`)")
 
         self.connect()
 
         # Set an unique index on stored files, to avoid duplicates.
         # From pymongo docs:
-        #  Returns the name of the created index if an index is actually created.
+        #  Returns the name of the created index if an index is actually
+        #    created.
         #  Returns None if the index already exists.
-        self.db.fs.files.ensure_index("sha256", unique=True, sparse=True, name="sha256_unique")
+        self.db.fs.files.ensure_index("sha256", unique=True,
+                                      sparse=True, name="sha256_unique")
 
         # Create a copy of the dictionary. This is done in order to not modify
         # the original dictionary and possibly compromise the following
@@ -87,8 +93,9 @@ class MongoDB(Report):
         if results["info"]["category"] == "file":
             sample = File(self.file_path)
             if sample.valid():
-                sample_id = self.store_file(sample, filename=results["target"]["file"]["name"])
-                report["target"] = {"file_id" : sample_id}
+                fname = results["target"]["file"]["name"]
+                sample_id = self.store_file(sample, filename=fname)
+                report["target"] = {"file_id": sample_id}
                 report["target"].update(results["target"])
 
         # Store the PCAP file in GridFS and reference it back in the report.
@@ -118,9 +125,12 @@ class MongoDB(Report):
         shots_path = os.path.join(self.analysis_path, "shots")
         if os.path.exists(shots_path):
             # Walk through the files and select the JPGs.
-            shots = [shot for shot in os.listdir(shots_path) if shot.endswith(".jpg")]
+            shots = [shot for shot in os.listdir(shots_path)
+                     if shot.endswith(".jpg")]
+
             for shot_file in sorted(shots):
-                shot_path = os.path.join(self.analysis_path, "shots", shot_file)
+                shot_path = os.path.join(self.analysis_path,
+                                         "shots", shot_file)
                 shot = File(shot_path)
                 # If the screenshot path is a valid file, store it and
                 # reference it back in the report.
@@ -143,8 +153,9 @@ class MongoDB(Report):
                 # If the chunk size is 100 or if the loop is completed then
                 # store the chunk in MongoDB.
                 if len(chunk) == 100:
-                    chunk_id = self.db.calls.insert({"pid" : process["process_id"],
-                                                     "calls" : chunk})
+                    to_insert = {"pid": process["process_id"],
+                                 "calls": chunk}
+                    chunk_id = self.db.calls.insert(to_insert)
                     chunks_ids.append(chunk_id)
                     # Reset the chunk.
                     chunk = []
@@ -154,8 +165,8 @@ class MongoDB(Report):
 
             # Store leftovers.
             if chunk:
-                chunk_id = self.db.calls.insert({"pid" : process["process_id"],
-                                                 "calls" : chunk})
+                to_insert = {"pid": process["process_id"], "calls": chunk}
+                chunk_id = self.db.calls.insert(to_insert)
                 chunks_ids.append(chunk_id)
 
             # Add list of chunks.

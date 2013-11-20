@@ -11,6 +11,9 @@ import logging
 
 from lib.cuckoo.common.utils import convert_to_printable
 
+log = logging.getLogger("Processing.Pcap.irc.protocol")
+
+
 class ircMessage(object):
     """IRC Protocol Request."""
 
@@ -30,7 +33,6 @@ class ircMessage(object):
         self._sc = {}
         # Client commands : command - params 
         self._cc = {}
-        log = logging.getLogger("Processing.Pcap.irc.protocol")
 
     def _unpack(self, buf):
         """Extract into a list irc messages of a tcp streams.
@@ -44,7 +46,7 @@ class ircMessage(object):
             return False
 
         for element in lines:
-            if re.match("^:",element) != None:
+            if not re.match("^:", element) is None:
                 command = "([a-zA-Z]+|[0-9]{3})"
                 params = "(\x20.+)"
                 irc_server_msg = re.findall("(^:[\w+.{}!@|()]+\x20)"+command+params,element)

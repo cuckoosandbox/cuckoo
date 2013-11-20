@@ -10,8 +10,11 @@ import argparse
 try:
     from lib.cuckoo.common.logo import logo
     from lib.cuckoo.common.constants import CUCKOO_VERSION
-    from lib.cuckoo.common.exceptions import CuckooCriticalError, CuckooDependencyError
-    from lib.cuckoo.core.startup import *
+    from lib.cuckoo.common.exceptions import CuckooCriticalError
+    from lib.cuckoo.common.exceptions import CuckooDependencyError
+    from lib.cuckoo.core.startup import check_working_directory, check_configs
+    from lib.cuckoo.core.startup import check_version, create_structure
+    from lib.cuckoo.core.startup import init_logging, init_modules, init_tasks
     from lib.cuckoo.core.scheduler import Scheduler
     from lib.cuckoo.core.resultserver import Resultserver
 except (CuckooDependencyError, ImportError) as e:
@@ -27,10 +30,15 @@ def main():
     create_structure()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
-    parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
-    parser.add_argument("-v", "--version", action="version", version="You are running Cuckoo Sandbox {0}".format(CUCKOO_VERSION))
-    parser.add_argument("-a", "--artwork", help="Show artwork", action="store_true", required=False)
+    parser.add_argument("-q", "--quiet", help="Display only error messages",
+                        action="store_true", required=False)
+    parser.add_argument("-d", "--debug", help="Display debug messages",
+                        action="store_true", required=False)
+    parser.add_argument("-v", "--version", action="version",
+                        version="You are running Cuckoo Sandbox "
+                                "{0}".format(CUCKOO_VERSION))
+    parser.add_argument("-a", "--artwork", help="Show artwork",
+                        action="store_true", required=False)
     args = parser.parse_args()
 
     if args.artwork:

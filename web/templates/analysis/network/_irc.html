@@ -1,0 +1,19 @@
+<h4>IRC traffic</h4>
+{% if analysis.network.irc %}
+<table class="table table-striped table-bordered" style="table-layout: fixed;">
+    <tr>
+        <th>Command</th>
+        <th>Params</th>
+        <th>Type</th>
+    </tr>
+    {% for irc in analysis.network.irc %}
+    <tr>
+        <td style="word-wrap: break-word;">{{irc.command}}</td>
+        <td style="word-wrap: break-word;">{{irc.params}}</td>
+        <td style="word-wrap: break-word;">{{irc.type}}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No IRC requests performed.</p>
+{% endif %}

@@ -1,5 +1,88 @@
 {% extends "base.html" %}
 {% block content %}
 <p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
-{% include "analysis/_table.html" %}
+
+<div class="row">
+    <div class="col-xs-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Recent Files</h3>
+            </div>
+            {% if files %}
+            <table class="table table-striped" style="table-layout: fixed;">
+                <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>MD5</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for analysis in files %}
+                    <tr>
+                        <td>
+                        {% if analysis.status == "reported" %}
+                            {{analysis.completed_on}}
+                        {% else %}
+                            <span class="muted">{{analysis.added_on}} (added on)</span>
+                        {% endif %}
+                        </td>
+                        <td style="word-wrap: break-word;">
+                            {% if analysis.status == "reported" %}
+                                <a href="{% url "analysis.views.report" analysis.id %}"><span class="mono">{{analysis.sample.md5}}</span></a>
+                            {% else %}
+                                <span class="mono">{{analysis.sample.md5}}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{analysis.status}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="panel-body">No files analyzed yet.</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-xs-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Recent URLs</h3>
+            </div>
+            {% if urls %}
+            <table class="table table-striped" style="table-layout: fixed;">
+                <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>URL</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for analysis in urls %}
+                    <tr>
+                        <td>
+                        {% if analysis.status == "reported" %}
+                            {{analysis.completed_on}}
+                        {% else %}
+                            <span class="muted">{{analysis.added_on}} (added on)</span>
+                        {% endif %}
+                        </td>
+                        <td style="word-wrap: break-word;">
+                            {% if analysis.status == "reported" %}
+                                <a href="{% url "analysis.views.report" analysis.id %}"><span class="mono">{{analysis.target}}</span></a></td>
+                            {% else %}
+                                <span class="mono">{{analysis.target}}</span>
+                            {% endif %}
+                        <td>{{analysis.status}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="panel-body">No URLS analyzed yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

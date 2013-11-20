@@ -10,7 +10,7 @@
             <a href="javascript:showHide('volatility_mutantscan');"><b>Mutantscan</b></a>
             <small>
                 Scanning the whole system for Mutexes
-                (<a href="http://code.google.com/p/volatility/wiki/CommandReference#mutantscan" target="_blank">help</a>)
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReference23#mutantscan" target="_blank">help</a>)
             </small>
             <div id="volatility_mutantscan" style="display: none;">
                 {% if results.memory.mutantscan and results.memory.mutantscan.config.filter == True %}
@@ -35,7 +35,7 @@
             <a href="javascript:showHide('volatility_malfind');"><b>Malfind</b></a>
             <small>
                 Scanning for injections
-                (<a href="http://code.google.com/p/volatility/wiki/CommandReference#malfind" target="_blank">help</a>)
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceMal23#malfind" target="_blank">help</a>)
             </small>
             <div id="volatility_malfind" style="display: none;">
                 {% if results.memory.malfind and results.memory.malfind.config.filter == True %}
@@ -69,7 +69,7 @@
             <a href="javascript:showHide('volatility_apihooks');"><b>Apihooks</b></a>
             <small>
                 Listing API hooks
-                (<a href="http://code.google.com/p/volatility/wiki/CommandReference#apihooks" target="_blank">help</a>)
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceMal23#apihooks" target="_blank">help</a>)
             </small>
             <div id="volatility_apihooks" style="display: none;">
                 {% if results.memory.apihooks and results.memory.apihooks.config.filter == True %}
@@ -111,7 +111,7 @@
             <a href="javascript:showHide('volatility_pslist');"><b>PSList</b></a>
             <small>
                 Listing processes
-                (<a href="http://code.google.com/p/volatility/wiki/CommandReference#pslist" target="_blank">help</a>)
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReference23#pslist" target="_blank">help</a>)
             </small>
             <div id="volatility_pslist" style="display: none;">
                 {% if results.memory.pslist and results.memory.pslist.config.filter == True %}
@@ -148,12 +148,57 @@
             </div>
         </div>
 
+        <!-- Psxview -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_psxview');"><b>PSXView</b></a>
+            <small>
+                Listing hidden processes
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceMal23#psxview" target="_blank">help</a>)
+            </small>
+            <div id="volatility_psxview" style="display: none;">
+                {% if results.memory.psxview and results.memory.psxview.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.psxview %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>PID</th>
+                            <th>Process name</th>
+                            <th>In pslist</th>
+                            <th>In psscan</th>
+                            <th>In thrdproc</th>
+                            <th>In pspcid</th>
+                            <th>In csrss</th>
+                            <th>In session</th>
+                            <th>In deskthrd</th>
+                        </tr>
+
+                        {% for p in results.memory.psxview.data %}
+                            <tr> 
+                                <td>{{p.process_id}}</td>
+                                <td>{{p.process_name}}</td>
+                                <td>{{p.pslist}}</td>
+                                <td>{{p.psscan}}</td>
+                                <td>{{p.thrdproc}}</td>
+                                <td>{{p.pspcid}}</td>
+                                <td>{{p.csrss}}</td>
+                                <td>{{p.session}}</td>
+                                <td>{{p.deskthrd}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
         <!-- DLLlist -->
         <div class="well well-small">
             <a href="javascript:showHide('volatility_dlllist');"><b>DllList</b></a>
             <small>
                 Listing loaded DLLs
-                (<a href="http://code.google.com/p/volatility/wiki/CommandReference#dlllist" target="_blank">help</a>)
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReference23#dlllist" target="_blank">help</a>)
             </small>
             <div id="volatility_dlllist" style="display: none;">
                 {% if results.memory.dlllist and results.memory.dlllist.config.filter == True %}
@@ -195,7 +240,7 @@
             <a href="javascript:showHide('volatility_handles');"><b>Handles</b></a>
             <small>
                 Listing handles
-                (<a href="http://code.google.com/p/volatility/wiki/CommandReference#handles" target="_blank">help</a>)
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReference23#handles" target="_blank">help</a>)
             </small>
             <div id="volatility_handles" style="display: none;">
                 {% if results.memory.handles and results.memory.handles.config.filter == True %}
@@ -227,12 +272,160 @@
             </div>
         </div>
 
+        <!-- Callbacks -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_callbacks');"><b>Callbacks</b></a>
+            <small>
+                Listing registered callbacks
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceMal23#callbacks" target="_blank">help</a>)
+            </small>
+            <div id="volatility_callbacks" style="display: none;">
+                {% if results.memory.callbacks and results.memory.callbacks.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.callbacks %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>Type</th>
+                            <th>Callback</th>
+                            <th>Module</th>
+                            <th>Detail</th>
+                        </tr>
+                        {% for h in results.memory.callbacks.data %}
+                            <tr>
+                                <td>{{h.type}}</td>
+                                <td>{{h.callback}}</td>
+                                <td>{{h.module}}</td>
+                                <td>{{h.details}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Messagehooks -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_messagehooks');"><b>Messagehooks</b></a>
+            <small>
+                Registered Messagehooks
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceGui23#messagehooks" target="_blank">help</a>)
+            </small>
+            <div id="volatility_messagehooks" style="display: none;">
+                {% if results.memory.messagehooks and results.memory.messagehooks.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.messagehooks %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>Offset</th>
+                            <th>Session</th>
+                            <th>Desktop</th>
+                            <th>Thread</th>
+                            <th>Filter</th>
+                            <th>Flags</th>
+                            <th>Function</th>
+                            <th>Module</th>
+                        </tr>
+                        {% for h in results.memory.messagehooks.data %}
+                            <tr>
+                                <td>{{h.offset}}</td>
+                                <td>{{h.session}}</td>
+                                <td>{{h.desktop}}</td>
+                                <td>{{h.thread}}</td>
+                                <td>{{h.filter}}</td>
+                                <td>{{h.flags}}</td>
+                                <td>{{h.function}}</td>
+                                <td>{{h.module}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Getsids -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_getsids');"><b>Getsids</b></a>
+            <small>
+                Sids
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReference23#getsids" target="_blank">help</a>)
+            </small>
+            <div id="volatility_getsids" style="display: none;">
+                {% if results.memory.getsids and results.memory.getsids.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.getsids %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>Process Id</th>
+                            <th>Name</th>
+                            <th>SID String</th>
+                            <th>SID Name</th>
+                        </tr>
+                        {% for h in results.memory.getsids.data %}
+                            <tr>
+                                <td>{{h.process_id}}</td>
+                                <td>{{h.filename}}</td>
+                                <td>{{h.sid_string}}</td>
+                                <td>{{h.sid_name}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Privs -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_privs');"><b>Privs</b></a>
+            <small>
+                Privileges
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReference23#privs" target="_blank">help</a>)
+            </small>
+            <div id="volatility_privs" style="display: none;">
+                {% if results.memory.privs and results.memory.privs.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.privs %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>Process Id</th>
+                            <th>Name</th>
+                            <th>Value</th>
+                            <th>Privilege</th>
+                            <th>Attributes</th>
+                            <th>Description</th>
+                        </tr>
+                        {% for h in results.memory.privs.data %}
+                            <tr>
+                                <td>{{h.process_id}}</td>
+                                <td>{{h.filename}}</td>
+                                <td>{{h.value}}</td>
+                                <td>{{h.privilege}}</td>
+                                <td>{{h.attributes}}</td>
+                                <td>{{h.description}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
         <!-- Ldrmodules -->
         <div class="well well-small">
             <a href="javascript:showHide('volatility_ldrmodules');"><b>Ldrmodules</b></a>
             <small>
                 Listing hidden and loaded DLLs
-                (<a href="http://code.google.com/p/volatility/wiki/CommandReference#ldrmodules" target="_blank">help</a>)
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceMal23#ldrmodules" target="_blank">help</a>)
             </small>
             <div id="volatility_ldrmodules" style="display: none;">
                 {% if results.memory.ldrmodules and results.memory.ldrmodules.config.filter == True %}
@@ -278,7 +471,7 @@
             <a href="javascript:showHide('volatility_devicetree');"><b>Devicetree</b></a>
             <small>
                 Listing devices and drivers
-                (<a href="http://code.google.com/p/volatility/wiki/CommandReference#devicetree" target="_blank">help</a>)
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceMal23#devicetree" target="_blank">help</a>)
             </small>
             <div id="volatility_devicetree" style="display: none;">
                 {% if results.memory.devicetree and results.memory.devicetree.config.filter == True %}
@@ -348,7 +541,7 @@
             <a href="javascript:showHide('volatility_svcscan');"><b>Svcscan</b></a>
             <small>
                 Scanning for services
-                (<a href="http://code.google.com/p/volatility/wiki/CommandReference#svcscan" target="_blank">help</a>)
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceMal23#svcscan" target="_blank">help</a>)
             </small>
             <div id="volatility_svcscan" style="display: none;">
                 {% if results.memory.svcscan and results.memory.svcscan.config.filter == True %}
@@ -390,7 +583,7 @@
             <a href="javascript:showHide('volatility_modscan');"><b>Modscan</b></a>
             <small>
                 Scan for (hidden) kernel drivers
-                (<a href="http://code.google.com/p/volatility/wiki/CommandReference#modscan" target="_blank">help</a>)
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReference23#modscan" target="_blank">help</a>)
             </small>
             <div id="volatility_modscan" style="display: none;">
                 {% if results.memory.modscan and results.memory.modscan.config.filter == True %}
@@ -420,6 +613,85 @@
                 {% endif %}
             </div>
         </div>
+
+        <!-- idt -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_idt');"><b>IDT</b></a>
+            <small>
+                Listing IDTs
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceMal23#idt" target="_blank">help</a>)
+            </small>
+            <div id="volatility_idt" style="display: none;">
+                {% if results.memory.idt and results.memory.idt.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.idt %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>CPU</th>
+                            <th>Index</th>
+                            <th>Selector</th>
+                            <th>Address</th>
+                            <th>Module</th>
+                            <th>Section</th>
+                        </tr>
+                        {% for h in results.memory.idt.data %}
+                            <tr>
+                                <td>{{h.cpu_number}}</td>
+                                <td>{{h.index}}</td>
+                                <td>{{h.selector}}</td>
+                                <td>{{h.address}}</td>
+                                <td>{{h.module}}</td>
+                                <td>{{h.section}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- timers -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_timers');"><b>Timers</b></a>
+            <small>
+                Listing timers
+                (<a href="http://code.google.com/p/volatility/wiki/CommandReferenceMal23#timers" target="_blank">help</a>)
+            </small>
+            <div id="volatility_timers" style="display: none;">
+                {% if results.memory.timers and results.memory.timers.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.timers %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                        <tr>
+                            <th>Offset</th>
+                            <th>Due time</th>
+                            <th>Period (ms)</th>
+                            <th>Signaled</th>
+                            <th>Routine</th>
+                            <th>Module</th>
+                        </tr>
+
+                        {% for h in results.memory.timers.data %}
+                            <tr>
+                                <td>{{h.offset}}</td>
+                                <td>{{h.due_time}}</td>
+                                <td>{{h.period}}</td>
+                                <td>{{h.signaled}}</td>
+                                <td>{{h.routine}}</td>
+                                <td>{{h.module}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
+
     {% else %}
         Nothing to display.
     {% endif %}
