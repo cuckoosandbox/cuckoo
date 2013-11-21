@@ -238,10 +238,7 @@ class Error(Base):
 
     id = Column(Integer(), primary_key=True)
     message = Column(String(255), nullable=False)
-    task_id = Column(Integer,
-                     ForeignKey("tasks.id"),
-                     nullable=False,
-                     unique=True)
+    task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
 
     def to_dict(self):
         """Converts object to dict.
@@ -523,6 +520,20 @@ class Database(object):
             session.close()
         return guest.id
 
+    def guest_remove(self, guest_id):
+        """Removes a guest start entry."""
+        session = self.Session()
+        try:
+            guest = session.query(Guest).get(guest_id)
+            session.delete(guest)
+            session.commit()
+        except SQLAlchemyError as e:
+            log.debug("Database error logging guest remove: {0}".format(e))
+            session.rollback()
+            return None
+        finally:
+            session.close()
+
     def guest_stop(self, guest_id):
         """Logs guest stop.
         @param guest_id: guest log entry id
@@ -582,7 +593,9 @@ class Database(object):
             if tags:
                 for tag in tags:
                     machines = machines.filter(Machine.tags.any(name=tag.name))
-            # Check if there machines that they satisfy selection requirements.
+
+            # Check if there are any machines that satisfy the
+            # selection requirements.
             if machines.count() == 0:
                 raise CuckooOperationalError("No machines match selection criteria")
 

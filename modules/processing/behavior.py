@@ -188,7 +188,7 @@ class ParseProcessLog(list):
             argument = {}
 
             # Split the argument name with its value based on the separator.
-            try:                
+            try:
                 (arg_name, arg_value) = row[index]
             except ValueError as e:
                 log.debug("Unable to parse analysis row argument (row=%s): %s", row[index], e)
@@ -273,7 +273,7 @@ class Summary:
     """Generates summary information."""
 
     key = "summary"
-    
+
     def __init__(self):
         self.keys = []
         self.mutexes = []
@@ -308,7 +308,7 @@ class Summary:
                     name = known_handle["name"] + "\\"
 
         key = fix_key(name + subkey)
-        self.handles.append({"handle" : handle, "name" : key})
+        self.handles.append({"handle": handle, "name": key})
         return key
 
     def event_apicall(self, call, process):
@@ -413,13 +413,13 @@ class Enhanced(object):
         self.filehandles = {}
         self.servicehandles = {}
         self.keyhandles = {
-            "0x80000000" : "HKEY_CLASSES_ROOT\\",
-            "0x80000001" : "HKEY_CURRENT_USER\\",
-            "0x80000002" : "HKEY_LOCAL_MACHINE\\",
-            "0x80000003" : "HKEY_USERS\\",
-            "0x80000004" : "HKEY_PERFORMANCE_DATA\\",
-            "0x80000005" : "HKEY_CURRENT_CONFIG\\",
-            "0x80000006" : "HKEY_DYN_DATA\\"
+            "0x80000000": "HKEY_CLASSES_ROOT\\",
+            "0x80000001": "HKEY_CURRENT_USER\\",
+            "0x80000002": "HKEY_LOCAL_MACHINE\\",
+            "0x80000003": "HKEY_USERS\\",
+            "0x80000004": "HKEY_PERFORMANCE_DATA\\",
+            "0x80000005": "HKEY_CURRENT_CONFIG\\",
+            "0x80000006": "HKEY_DYN_DATA\\"
         }
         self.modules = {}
         self.procedures = {}
@@ -502,7 +502,6 @@ class Enhanced(object):
         def _generic_handle_details(self, call, item):
             """
             Generic handling of api calls
-
             @call: the call dict
             @item: Generic item to process
             """
@@ -511,8 +510,8 @@ class Enhanced(object):
                 args = _load_args(call)
                 self.eid += 1
                 event = {
-                    "event" : item["event"],
-                    "object" : item["object"],
+                    "event": item["event"],
+                    "object": item["object"],
                     "timestamp": call["timestamp"],
                     "eid": self.eid,
                     "data": {}
@@ -522,9 +521,7 @@ class Enhanced(object):
                 return event
 
         def _generic_handle(self, data, call):
-            """
-            Generic handling of api calls
-            """
+            """Generic handling of api calls."""
             for item in data:
                 event = _generic_handle_details(self, call, item)
                 if event:
@@ -550,10 +547,10 @@ class Enhanced(object):
 
         def _get_service_action(ccode):
             # http://msdn.microsoft.com/en-us/library/windows/desktop/ms682108%28v=vs.85%29.aspx
-            codes = {1:"stop",
-                     2:"pause",
-                     3:"continue",
-                     4:"info"}
+            codes = {1: "stop",
+                     2: "pause",
+                     3: "continue",
+                     4: "info"}
             try:
                 return codes[int(ccode)]
             except KeyError:
@@ -566,73 +563,73 @@ class Enhanced(object):
 
         gendat = [
             {
-                "event" : "move",
-                "object" : "file",
-                "apis" : [
+                "event": "move",
+                "object": "file",
+                "apis": [
                     "MoveFileWithProgressW",
                     "MoveFileExA",
                     "MoveFileExW"
                 ],
-                "args" : [
+                "args": [
                     ("from", "ExistingFileName"),
                     ("to", "NewFileName")
                 ]
             },
             {
-                "event" : "copy",
-                "object" : "file",
-                "apis" : [
+                "event": "copy",
+                "object": "file",
+                "apis": [
                     "CopyFileA",
                     "CopyFileW",
                     "CopyFileExW",
                     "CopyFileExA"
                 ],
-                "args" : [
+                "args": [
                     ("from", "ExistingFileName"),
                     ("to", "NewFileName")
                 ]
             },
             {
-                "event" : "delete",
-                "object" : "file",
-                "apis" : [
+                "event": "delete",
+                "object": "file",
+                "apis": [
                     "DeleteFileA",
                     "DeleteFileW",
                     "NtDeleteFile"
                 ],
-                "args" : [("file", "FileName")]
+                "args": [("file", "FileName")]
             },
             {
-                "event" : "delete",
-                "object" : "dir",
-                "apis" : [
+                "event": "delete",
+                "object": "dir",
+                "apis": [
                     "RemoveDirectoryA",
                     "RemoveDirectoryW"
                 ],
-                "args" : [("file", "DirectoryName")]
+                "args": [("file", "DirectoryName")]
             },
             {
-                "event" : "create",
-                "object" : "dir",
-                "apis" : [
+                "event": "create",
+                "object": "dir",
+                "apis": [
                     "CreateDirectoryW",
                     "CreateDirectoryExW"
                 ],
-                "args" : [("file", "DirectoryName")]
+                "args": [("file", "DirectoryName")]
             },
             {
-                "event" : "write",
-                "object" : "file",
-                "apis" : [
+                "event": "write",
+                "object": "file",
+                "apis": [
                     "URLDownloadToFileW",
                     "URLDownloadToFileA"
                 ],
-                "args" : [("file", "FileName")]
+                "args": [("file", "FileName")]
             },
             {
-                "event" : "execute",
-                "object" : "file",
-                "apis" : [
+                "event": "execute",
+                "object": "file",
+                "apis": [
                     "CreateProcessAsUserA",
                     "CreateProcessAsUserW",
                     "CreateProcessA",
@@ -640,29 +637,29 @@ class Enhanced(object):
                     "NtCreateProcess",
                     "NtCreateProcessEx"
                 ],
-                "args" : [("file", "FileName")]
+                "args": [("file", "FileName")]
             },
             {
-                "event" : "execute",
-                "object" : "file",
-                "apis" : [
+                "event": "execute",
+                "object": "file",
+                "apis": [
                     "CreateProcessInternalW",
                 ],
-                "args" : [("file", "CommandLine")]
+                "args": [("file", "CommandLine")]
             },
             {
-                "event" : "execute",
-                "object" : "file",
-                "apis" : [
+                "event": "execute",
+                "object": "file",
+                "apis": [
                     "ShellExecuteExA",
                     "ShellExecuteExW",
                 ],
-                "args" : [("file", "FilePath")]
+                "args": [("file", "FilePath")]
             },
             {
-                "event" : "load",
-                "object" : "library",
-                "apis" : [
+                "event": "load",
+                "object": "library",
+                "apis": [
                     "LoadLibraryA",
                     "LoadLibraryW",
                     "LoadLibraryExA",
@@ -670,104 +667,104 @@ class Enhanced(object):
                     "LdrLoadDll",
                     "LdrGetDllHandle"
                 ],
-                "args" : [
+                "args": [
                     ("file", "FileName"),
                     ("pathtofile", "PathToFile"),
                     ("moduleaddress", "BaseAddress")
                 ]
             },
             {
-                "event" : "findwindow",
-                "object" : "windowname",
-                "apis" : [
+                "event": "findwindow",
+                "object": "windowname",
+                "apis": [
                     "FindWindowA",
                     "FindWindowW",
                     "FindWindowExA",
                     "FindWindowExW"
                 ],
-                "args" : [
+                "args": [
                     ("classname", "ClassName"),
                     ("windowname", "WindowName")
                 ]
             },
             {
-                "event" : "read",
-                "object" : "file",
-                "apis" : [
+                "event": "read",
+                "object": "file",
+                "apis": [
                     "NtReadFile",
                     "ReadFile"
                 ],
-                "args" : []
+                "args": []
             },
             {
-                "event" : "write",
-                "object" : "file",
-                "apis" : ["NtWriteFile"],
-                "args" : []
+                "event": "write",
+                "object": "file",
+                "apis": ["NtWriteFile"],
+                "args": []
             },
             {
-                "event" : "delete",
-                "object" : "registry",
-                "apis" : [
+                "event": "delete",
+                "object": "registry",
+                "apis": [
                     "RegDeleteKeyA",
                     "RegDeleteKeyW"
                 ],
-                "args" : []
+                "args": []
             },
             {
-                "event" : "write",
-                "object" : "registry",
-                "apis" : [
+                "event": "write",
+                "object": "registry",
+                "apis": [
                     "RegSetValueExA",
                     "RegSetValueExW"
                 ],
-                "args" : [
+                "args": [
                     ("content", "Buffer"),
                     ("object", "object")
                 ]
             },
             {
-                "event" : "read",
-                "object" : "registry",
-                "apis" : [
+                "event": "read",
+                "object": "registry",
+                "apis": [
                     "RegQueryValueExA",
                     "RegQueryValueExW",
                     "NtQueryValueKey"
                 ],
-                "args" : []
+                "args": []
             },
             {
-                "event" : "delete",
-                "object" : "registry",
-                "apis" : [
+                "event": "delete",
+                "object": "registry",
+                "apis": [
                     "RegDeleteValueA",
                     "RegDeleteValueW",
                     "NtDeleteValueKey"
                 ],
-                "args" : []
+                "args": []
             },
             {
-                "event" : "create",
-                "object" : "windowshook",
-                "apis" : ["SetWindowsHookExA"],
-                "args" : [
+                "event": "create",
+                "object": "windowshook",
+                "apis": ["SetWindowsHookExA"],
+                "args": [
                     ("id", "HookIdentifier"),
                     ("moduleaddress", "ModuleAddress"),
                     ("procedureaddress", "ProcedureAddress")
                 ]
             },
             {
-                "event" : "modify",
-                "object" : "service",
-                "apis" : ["ControlService"],
-                "args" : [("controlcode", "ControlCode")
+                "event": "modify",
+                "object": "service",
+                "apis": ["ControlService"],
+                "args": [("controlcode", "ControlCode")
                 ]
             },
             {
-                "event" : "delete",
-                "object" : "service",
-                "apis" : ["DeleteService"],
-                "args" : [
+                "event": "delete",
+                "object": "service",
+                "apis": ["DeleteService"],
+                "args": [
                 ]
             },
         ]
