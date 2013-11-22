@@ -12,6 +12,7 @@ log = logging.getLogger(__name__)
 BUFSIZE = 16 * 1024
 
 def upload_to_host(file_path, dump_path):
+    nc = infd = None
     try:
         nc = NetlogFile(dump_path)
 
@@ -23,8 +24,10 @@ def upload_to_host(file_path, dump_path):
     except Exception as e:
         log.error("Exception uploading file to host: %s", e)
     finally:
-        infd.close()
-        nc.close()
+        if infd:
+            infd.close()
+        if nc:
+            nc.close()
 
 class NetlogConnection(object):
     def __init__(self, proto=""):
