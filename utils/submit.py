@@ -134,10 +134,15 @@ def main():
             random.shuffle(files)
 
         for file_path in files:
+            if not File(file_path).get_size():
+                msg = ": Sample {0} (skipping file)".format(file_path)
+                print(bold(red("Empty") + msg))
+                continue
+
             if args.unique:
                 sha256 = File(file_path).get_sha256()
                 if not db.find_sample(sha256=sha256) is None:
-                    msg = ": Sample {0}".format(file_path)
+                    msg = ": Sample {0} (skipping file)".format(file_path)
                     print(bold(yellow("Duplicate")) + msg)
                     continue
 
