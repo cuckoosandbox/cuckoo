@@ -19,8 +19,7 @@ class Sniffer(Auxiliary):
     def start(self):
         tcpdump = self.options.get("tcpdump", "/usr/sbin/tcpdump")
         interface = self.options.get("interface")
-        file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
-                                 str(self.task.id), "dump.pcap")
+        file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(self.task.id), "dump.pcap")
         host = self.machine.ip
 
         if not os.path.exists(tcpdump):

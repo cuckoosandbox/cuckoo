@@ -70,8 +70,7 @@ class NetlogConnection(object):
 class NetlogFile(NetlogConnection):
     def __init__(self, filepath):
         self.filepath = filepath
-        NetlogConnection.__init__(self,
-                                  proto="FILE\n{0}\n".format(self.filepath))
+        NetlogConnection.__init__(self, proto="FILE\n{0}\n".format(self.filepath))
         self.connect()
 
 class NetlogHandler(logging.Handler, NetlogConnection):

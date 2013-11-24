@@ -41,8 +41,7 @@ class XLS(Package):
             suspended = False
 
         p = Process()
-        if not p.execute(path=excel, args="\"%s\"" % path,
-                         suspended=suspended):
+        if not p.execute(path=excel, args="\"%s\"" % path, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Microsoft "
                                      "Office Excel process, analysis aborted")
 

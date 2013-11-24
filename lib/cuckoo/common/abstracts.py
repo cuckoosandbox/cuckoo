@@ -58,8 +58,7 @@ class Machinery(object):
     def __init__(self):
         self.module_name = ""
         self.options = None
-        self.options_globals = Config(os.path.join(CUCKOO_ROOT,
-                                                   "conf", "cuckoo.conf"))
+        self.options_globals = Config(os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"))
         # Database pointer.
         self.db = Database()
 
@@ -112,8 +111,7 @@ class Machinery(object):
                 # else use the default value.
                 opt_resultserver = self.options_globals.resultserver
                 ip = machine_opts.get("resultserver_ip", opt_resultserver.ip)
-                port = machine_opts.get("resultserver_port",
-                                        opt_resultserver.port)
+                port = machine_opts.get("resultserver_port", opt_resultserver.port)
 
                 machine.resultserver_ip = ip
                 machine.resultserver_port = port

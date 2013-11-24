@@ -29,14 +29,12 @@ class Applet(Package):
     def make_html(self, path, class_name):
         html = "<html>"
         html += "<body>"
-        html += "<applet archive=\"%s\" code=\"%s\"" % (path, class_name)
-        html += " width=\"1\" height=\"1\">"
+        html += "<applet archive=\"%s\" code=\"%s\" width=\"1\" height=\"1\">" % (path, class_name)
         html += "</applet>"
         html += "</body>"
         html += "</html>"
 
-        file_name = "".join(random.choice(string.ascii_lowercase)
-                            for x in range(6)) + ".html"
+        file_name = "".join(random.choice(string.ascii_lowercase) for x in range(6)) + ".html"
         file_path = os.path.join(os.getenv("TEMP"), file_name)
         with open(file_path, "w") as file_handle:
             file_handle.write(html)
@@ -59,8 +57,7 @@ class Applet(Package):
         html_path = self.make_html(path, class_name)
 
         p = Process()
-        if not p.execute(path=browser, args="\"%s\"" % html_path,
-                         suspended=suspended):
+        if not p.execute(path=browser, args="\"%s\"" % html_path, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Internet "
                                      "Explorer process, analysis aborted")
 

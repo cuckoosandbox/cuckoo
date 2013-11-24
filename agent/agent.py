@@ -42,8 +42,7 @@ class Agent:
 
         if not ANALYZER_FOLDER:
             random.seed(time.time())
-            container = "".join(random.choice(string.ascii_lowercase)
-                                for x in range(random.randint(5, 10)))
+            container = "".join(random.choice(string.ascii_lowercase) for x in range(random.randint(5, 10)))
 
             if self.system == "windows":
                 system_drive = os.environ["SYSTEMDRIVE"] + os.sep
@@ -98,7 +97,7 @@ class Agent:
             with open(file_path, "wb") as malware:
                 malware.write(data)
         except IOError as e:
-            ERROR_MESSAGE = "Unable to write malware to disk: %s" % e
+            ERROR_MESSAGE = "Unable to write malware to disk: {0}".format(e)
             return False
 
         return True

@@ -39,8 +39,7 @@ class PDF(Package):
             suspended = False
 
         p = Process()
-        if not p.execute(path=reader, args="\"%s\"" % path,
-                         suspended=suspended):
+        if not p.execute(path=reader, args="\"%s\"" % path, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Adobe Reader "
                                      "process, analysis aborted")
 

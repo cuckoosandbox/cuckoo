@@ -372,8 +372,7 @@ class PipeServer(Thread):
                 return False
 
             # If we receive a connection to the pipe, we invoke the handler.
-            if KERNEL32.ConnectNamedPipe(h_pipe, None) or \
-                    KERNEL32.GetLastError() == ERROR_PIPE_CONNECTED:
+            if KERNEL32.ConnectNamedPipe(h_pipe, None) or KERNEL32.GetLastError() == ERROR_PIPE_CONNECTED:
                 handler = PipeHandler(h_pipe)
                 handler.daemon = True
                 handler.start()
@@ -503,8 +502,7 @@ class Analyzer:
             # If the analysis target is a file, we choose the package according
             # to the file format.
             if self.config.category == "file":
-                package = choose_package(self.config.file_type,
-                                         self.config.file_name)
+                package = choose_package(self.config.file_type, self.config.file_name)
             # If it's an URL, we'll just use the default Internet Explorer
             # package.
             else:
@@ -548,8 +546,7 @@ class Analyzer:
         # Initialize Auxiliary modules
         Auxiliary()
         prefix = auxiliary.__name__ + "."
-        aux_path = auxiliary.__path__
-        for loader, name, ispkg in pkgutil.iter_modules(aux_path, prefix):
+        for loader, name, ispkg in pkgutil.iter_modules(auxiliary.__path__, prefix):
             if ispkg:
                 continue
 

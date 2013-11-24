@@ -38,8 +38,7 @@ class VBS(Package):
             suspended = False
 
         p = Process()
-        if not p.execute(path=wscript, args="\"{0}\"".format(path),
-                         suspended=suspended):
+        if not p.execute(path=wscript, args="\"{0}\"".format(path), suspended=suspended):
             raise CuckooPackageError("Unable to execute initial WScript "
                                      "process, analysis aborted")
 

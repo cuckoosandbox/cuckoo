@@ -129,14 +129,10 @@ class PortableExecutable:
         for entry in self.pe.sections:
             try:
                 section = {}
-                section["name"] = \
-                    convert_to_printable(entry.Name.strip("\x00"))
-                section["virtual_address"] = \
-                    "0x{0:08x}".format(entry.VirtualAddress)
-                section["virtual_size"] = \
-                    "0x{0:08x}".format(entry.Misc_VirtualSize)
-                section["size_of_data"] = \
-                    "0x{0:08x}".format(entry.SizeOfRawData)
+                section["name"] = convert_to_printable(entry.Name.strip("\x00"))
+                section["virtual_address"] = "0x{0:08x}".format(entry.VirtualAddress)
+                section["virtual_size"] = "0x{0:08x}".format(entry.Misc_VirtualSize)
+                section["size_of_data"] = "0x{0:08x}".format(entry.SizeOfRawData)
                 section["entropy"] = entry.get_entropy()
                 sections.append(section)
             except:
@@ -236,8 +232,7 @@ class PortableExecutable:
         results["pe_sections"] = self._get_sections()
         results["pe_resources"] = self._get_resources()
         results["pe_versioninfo"] = self._get_versioninfo()
-        results["imported_dll_count"] = len([x for x in results["pe_imports"]
-                                             if x.get("dll")])
+        results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
         return results
 
 class Static(Processing):
