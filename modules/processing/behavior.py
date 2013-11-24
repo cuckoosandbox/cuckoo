@@ -15,7 +15,9 @@ from lib.cuckoo.common.config import Config
 log = logging.getLogger(__name__)
 
 def fix_key(key):
-    """ Fix a registry key to have it normalized
+    """Fix a registry key to have it normalized.
+    @param key: raw key
+    @returns: normalized key
     """
     res = key
     if key.lower().startswith("registry\\machine\\"):
@@ -31,10 +33,9 @@ def fix_key(key):
         res = res + "\\"
     return res
 
-
 class ParseProcessLog(list):
     """Parses process log file."""
-    
+
     def __init__(self, log_path):
         """@param log_path: log file path."""
         self._log_path = log_path
@@ -546,7 +547,7 @@ class Enhanced(object):
                 return None
 
         def _get_service_action(ccode):
-            # http://msdn.microsoft.com/en-us/library/windows/desktop/ms682108%28v=vs.85%29.aspx
+            """@see: http://msdn.microsoft.com/en-us/library/windows/desktop/ms682108%28v=vs.85%29.aspx"""
             codes = {1: "stop",
                      2: "pause",
                      3: "continue",
