@@ -287,8 +287,7 @@ class Summary:
                 return None
 
         name = ""
-        if registry == -1:
-            name = ""
+
         if registry == 0x80000000:
             name = "HKEY_CLASSES_ROOT\\"
         elif registry == 0x80000001:
