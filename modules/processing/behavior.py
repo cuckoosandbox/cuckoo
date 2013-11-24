@@ -14,6 +14,24 @@ from lib.cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
 
+def fix_key(key):
+    """ Fix a registry key to have it normalized
+    """
+    res = key
+    if key.lower().startswith("registry\\machine\\"):
+        res = "HKEY_LOCAL_MACHINE\\" + key[17:]
+    elif key.lower().startswith("registry\\user\\"):
+        res = "HKEY_USERS\\" + key[14:]
+    elif key.lower().startswith("\\registry\\machine\\"):
+        res = "HKEY_LOCAL_MACHINE\\" + key[18:]
+    elif key.lower().startswith("\\registry\\user\\"):
+        res = "HKEY_USERS\\" + key[15:]
+
+    if not res.endswith("\\\\"):
+        res = res + "\\"
+    return res
+
+
 class ParseProcessLog(list):
     """Parses process log file."""
     
@@ -268,6 +286,8 @@ class Summary:
                 return None
 
         name = ""
+        if registry == -1:
+            name = ""
         if registry == 0x80000000:
             name = "HKEY_CLASSES_ROOT\\"
         elif registry == 0x80000001:
@@ -287,8 +307,9 @@ class Summary:
                 if registry == known_handle["handle"]:
                     name = known_handle["name"] + "\\"
 
-        self.handles.append({"handle": handle, "name": name + subkey})
-        return name + subkey
+        key = fix_key(name + subkey)
+        self.handles.append({"handle": handle, "name": key})
+        return key
 
     def event_apicall(self, call, process):
         """Generate processes list from streamed calls/processes.
@@ -311,6 +332,34 @@ class Summary:
             name = self._check_registry(registry, subkey, handle)
             if name and name not in self.keys:
                 self.keys.append(name)
+        elif call["api"].startswith("NtOpenKey"):
+            registry = -1
+            subkey = ""
+            handle = 0
+
+            for argument in call["arguments"]:
+                if argument["name"] == "ObjectAttributes":
+                    subkey = argument["value"]
+                elif argument["name"] == "KeyHandle":
+                    handle = int(argument["value"], 16)
+
+            name = self._check_registry(registry, subkey, handle)
+            if name and name not in self.keys:
+                self.keys.append(name)
+        elif call["api"].startswith("NtDeleteValueKey"):
+            registry = -1
+            subkey = ""
+            handle = 0
+
+            for argument in call["arguments"]:
+                if argument["name"] == "ValueName":
+                    subkey = argument["value"]
+                elif argument["name"] == "KeyHandle":
+                    handle = int(argument["value"], 16)
+
+            name = self._check_registry(registry, subkey, handle)
+            if name and name not in self.keys:
+                self.keys.append(name)
         elif call["api"].startswith("RegCloseKey"):
             handle = 0
 
@@ -319,8 +368,10 @@ class Summary:
                     handle = int(argument["value"], 16)
 
             if handle != 0:
-                try: self.handles.remove(handle)
-                except ValueError: pass
+                for a in self.handles:
+                    if a["handle"] == handle:
+                        try: self.handles.remove(a)
+                        except ValueError: pass
 
         elif call["category"] == "filesystem":
             for argument in call["arguments"]:
@@ -360,6 +411,7 @@ class Enhanced(object):
         self.eid = 0
         self.details = details
         self.filehandles = {}
+        self.servicehandles = {}
         self.keyhandles = {
             "0x80000000": "HKEY_CLASSES_ROOT\\",
             "0x80000001": "HKEY_CURRENT_USER\\",
@@ -413,7 +465,7 @@ class Enhanced(object):
             name = self.keyhandles[registry]
 
         nkey = name + subkey
-        nkey = self._fix_key(nkey)
+        nkey = fix_key(nkey)
 
         self.keyhandles[handle] = nkey
 
@@ -432,19 +484,6 @@ class Enhanced(object):
             return self.keyhandles[handle]
         except KeyError:
             return ""
-
-    def _fix_key(self, key):
-        """ Fix a registry key to have it normalized
-        """
-        res = key
-        if key.lower().startswith("registry\\machine\\"):
-            res = "HKEY_LOCAL_MACHINE\\" + key[17:]
-        elif key.lower().startswith("registry\\user\\"):
-            res = "HKEY_USERS\\" + key[14:]
-
-        if not res.endswith("\\\\"):
-            res = res + "\\"
-        return res
 
     def _process_call(self, call):
         """ Gets files calls
@@ -490,21 +529,35 @@ class Enhanced(object):
 
             return None
 
-        # File handles
-        def _add_file_handle(handles, handle, filename):
+        # Generic handles
+        def _add_handle(handles, handle, filename):
             handles[handle] = filename
 
-        def _remove_file_handle(handles, handle):
+        def _remove_handle(handles, handle):
             try:
                 handles.pop(handle)
             except KeyError:
                 pass
 
-        def _get_file_handle(handles, handle):
+        def _get_handle(handles, handle):
             try:
                 return handles[handle]
             except KeyError:
                 return None
+
+        def _get_service_action(ccode):
+            # http://msdn.microsoft.com/en-us/library/windows/desktop/ms682108%28v=vs.85%29.aspx
+            codes = {1: "stop",
+                     2: "pause",
+                     3: "continue",
+                     4: "info"}
+            try:
+                return codes[int(ccode)]
+            except KeyError:
+                if int(ccode >= 128):
+                    return "user"
+                else:
+                    return "notify"
 
         event = None
 
@@ -700,6 +753,20 @@ class Enhanced(object):
                     ("procedureaddress", "ProcedureAddress")
                 ]
             },
+            {
+                "event": "modify",
+                "object": "service",
+                "apis": ["ControlService"],
+                "args": [("controlcode", "ControlCode")
+                ]
+            },
+            {
+                "event": "delete",
+                "object": "service",
+                "apis": ["DeleteService"],
+                "args": [
+                ]
+            },
         ]
 
         # Not sure I really want this, way too noisy anyway and doesn't bring
@@ -716,7 +783,7 @@ class Enhanced(object):
 
         if event:
             if call["api"] in ["NtReadFile", "ReadFile", "NtWriteFile"]:
-                event["data"]["file"] = _get_file_handle(self.filehandles, args["FileHandle"])
+                event["data"]["file"] = _get_handle(self.filehandles, args["FileHandle"])
 
             elif call["api"] in ["RegDeleteKeyA", "RegDeleteKeyW"]:
                 event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("SubKey", ""))
@@ -724,10 +791,10 @@ class Enhanced(object):
             elif call["api"] in ["RegSetValueExA", "RegSetValueExW"]:
                 event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("ValueName", ""))
 
-            elif call["api"] in ["RegQueryValueExA", "RegQueryValueExW", "RegDeleteValueA", "RegDeleteValueW", "NtDeleteValueKey"]:
+            elif call["api"] in ["RegQueryValueExA", "RegQueryValueExW", "RegDeleteValueA", "RegDeleteValueW"]:
                 event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "UNKNOWN")), args.get("ValueName", ""))
 
-            elif call["api"] in ["NtQueryValueKey"]:
+            elif call["api"] in ["NtQueryValueKey", "NtDeleteValueKey"]:
                 event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("KeyHandle", "UNKNOWN")), args.get("ValueName", ""))
 
             elif call["api"] in ["LoadLibraryA", "LoadLibraryW", "LoadLibraryExA", "LoadLibraryExW", "LdrGetDllHandle"] and call["status"]:
@@ -743,20 +810,33 @@ class Enhanced(object):
             elif call["api"] in ["SetWindowsHookExA"]:
                 event["data"]["module"] = self._get_loaded_module(args.get("ModuleAddress", ""))
 
+            if call["api"] in ["ControlService", "DeleteService"]:
+                event["data"]["service"] = _get_handle(self.servicehandles, args["ServiceHandle"])
+
+            if call["api"] in ["ControlService"]:
+                event["data"]["action"] = _get_service_action(args["ControlCode"])
+
+
             return event
 
         elif call["api"] in ["SetCurrentDirectoryA", "SetCurrentDirectoryW"]:
             self.currentdir = args["Path"]
 
+        # Files
         elif call["api"] in ["NtCreateFile", "NtOpenFile"]:
-            _add_file_handle(self.filehandles, args["FileHandle"], args["FileName"])
+            _add_handle(self.filehandles, args["FileHandle"], args["FileName"])
 
         elif call["api"] in ["CreateFileW"]:
-            _add_file_handle(self.filehandles, call["return"], args["FileName"])
+            _add_handle(self.filehandles, call["return"], args["FileName"])
 
         elif call["api"] in ["NtClose", "CloseHandle"]:
-            _remove_file_handle(self.filehandles, args["Handle"])
+            _remove_handle(self.filehandles, args["Handle"])
 
+        # Services
+        elif call["api"] in ["OpenServiceW"]:
+            _add_handle(self.servicehandles, call["return"], args["ServiceName"])
+
+        # Registry
         elif call["api"] in ["RegOpenKeyExA", "RegOpenKeyExW", "RegCreateKeyExA", "RegCreateKeyExW"]:
             regkey = self._add_keyhandle(args.get("Registry", ""), args.get("SubKey", ""), args.get("Handle", ""))
 
