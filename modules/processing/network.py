@@ -163,8 +163,7 @@ class Pcap:
         @param icmp_data: ICMP data flow.
         """
         try:
-            return isinstance(icmp_data, dpkt.icmp.ICMP) and \
-                len(icmp_data.data) > 0
+            return isinstance(icmp_data, dpkt.icmp.ICMP) and len(icmp_data.data) > 0
         except:
             return False
 
@@ -253,8 +252,7 @@ class Pcap:
                 elif answer.type == dpkt.dns.DNS_AAAA:
                     ans["type"] = "AAAA"
                     try:
-                        ans["data"] = socket.inet_ntop(socket.AF_INET6,
-                                                       answer.rdata)
+                        ans["data"] = socket.inet_ntop(socket.AF_INET6, answer.rdata)
                     except (socket.error, ValueError):
                         continue
                 elif answer.type == dpkt.dns.DNS_CNAME:
@@ -323,8 +321,7 @@ class Pcap:
             r.method, r.version, r.uri = None, None, None
             r.unpack(tcpdata)
         except dpkt.dpkt.UnpackError:
-            if not r.method is None or not r.version is None or \
-                    not r.uri is None:
+            if r.method != None or r.version != None or r.uri != None:
                 return True
             return False
 
@@ -351,16 +348,12 @@ class Pcap:
 
             entry["port"] = dport
             entry["data"] = convert_to_printable(tcpdata)
-            entry["uri"] = convert_to_printable(urlunparse(("http",
-                                                            entry["host"],
-                                                            http.uri, None,
-                                                            None, None)))
+            entry["uri"] = convert_to_printable(urlunparse(("http", entry["host"], http.uri, None, None, None)))
             entry["body"] = convert_to_printable(http.body)
             entry["path"] = convert_to_printable(http.uri)
 
             if "user-agent" in http.headers:
-                entry["user-agent"] = \
-                    convert_to_printable(http.headers["user-agent"])
+                entry["user-agent"] = convert_to_printable(http.headers["user-agent"])
 
             entry["version"] = convert_to_printable(http.version)
             entry["method"] = convert_to_printable(http.method)
@@ -411,9 +404,8 @@ class Pcap:
             reqc = ircMessage()
             reqs = ircMessage()
             filters_sc = ["266"]
-            self.irc_requests = self.irc_requests + \
-                reqc.getClientMessages(tcpdata) + \
-                reqs.getServerMessagesFilter(tcpdata, filters_sc)
+            filters_cc = []
+            self.irc_requests = self.irc_requests + reqc.getClientMessages(tcpdata) + reqs.getServerMessagesFilter(tcpdata,filters_sc)
         except Exception:
             return False
 
@@ -430,8 +422,7 @@ class Pcap:
             return None
 
         if not os.path.exists(self.filepath):
-            log.warning("The PCAP file does not exist at path \"%s\".",
-                        self.filepath)
+            log.warning("The PCAP file does not exist at path \"%s\"." % self.filepath)
             return None
 
         if os.path.getsize(self.filepath) == 0:
@@ -447,12 +438,10 @@ class Pcap:
         try:
             pcap = dpkt.pcap.Reader(file)
         except dpkt.dpkt.NeedData:
-            log.error("Unable to read PCAP file at path \"%s\".",
-                      self.filepath)
+            log.error("Unable to read PCAP file at path \"%s\"." % self.filepath)
             return None
         except ValueError:
-            log.error("Unable to read PCAP file at path \"%s\". File is "
-                      "corrupted or wrong format." % self.filepath)
+            log.error("Unable to read PCAP file at path \"%s\". File is corrupted or wrong format." % self.filepath)
             return None
 
         for ts, buf in pcap:
@@ -465,10 +454,8 @@ class Pcap:
                     connection["src"] = socket.inet_ntoa(ip.src)
                     connection["dst"] = socket.inet_ntoa(ip.dst)
                 elif isinstance(ip, dpkt.ip6.IP6):
-                    connection["src"] = socket.inet_ntop(socket.AF_INET6,
-                                                         ip.src)
-                    connection["dst"] = socket.inet_ntop(socket.AF_INET6,
-                                                         ip.dst)
+                    connection["src"] = socket.inet_ntop(socket.AF_INET6, ip.src)
+                    connection["dst"] = socket.inet_ntop(socket.AF_INET6, ip.dst)
                 else:
                     continue
 
@@ -501,7 +488,7 @@ class Pcap:
             except dpkt.dpkt.NeedData:
                 continue
             except Exception as e:
-                log.exception("Failed to process packet: %s", e)
+                log.exception("Failed to process packet:")
 
         file.close()
 

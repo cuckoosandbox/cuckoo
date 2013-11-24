@@ -22,13 +22,8 @@ class AnalysisInfo(Processing):
         self.key = "info"
 
         try:
-            started = time.strptime(self.task["started_on"],
-                                    "%Y-%m-%d %H:%M:%S")
-            started = datetime.fromtimestamp(time.mktime(started))
-
-            ended = time.strptime(self.task["completed_on"],
-                                  "%Y-%m-%d %H:%M:%S")
-            ended = datetime.fromtimestamp(time.mktime(ended))
+            started = datetime.fromtimestamp(time.mktime(time.strptime(self.task["started_on"], "%Y-%m-%d %H:%M:%S")))
+            ended = datetime.fromtimestamp(time.mktime(time.strptime(self.task["completed_on"], "%Y-%m-%d %H:%M:%S")))
         except:
             log.critical("Failed to get start/end time from Task.")
             # just set it to default timeout

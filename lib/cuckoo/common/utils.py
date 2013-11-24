@@ -38,9 +38,8 @@ def create_folder(root=".", folder=None):
             try:
                 os.makedirs(folder_path)
             except OSError:
-                raise CuckooOperationalError("Unable to create folder: %s" %
-                                             folder_path)
-
+                raise CuckooOperationalError("Unable to create folder: %s"
+                                            % folder_path)
 
 def delete_folder(folder):
     """Delete a folder and all its subdirectories.
@@ -51,14 +50,12 @@ def delete_folder(folder):
         try:
             shutil.rmtree(folder)
         except OSError:
-            raise CuckooOperationalError("Unable to delete folder: "
-                                         "{0}".format(folder))
+            raise CuckooOperationalError("Unable to delete folder: {0}".format(folder))
 
 
 # don't allow all characters in "string.printable", as newlines, carriage
 # returns, tabs, \x0b, and \x0c may mess up reports
-PRINTABLE_CHARACTERS = (string.letters + string.digits +
-                        string.punctuation + " \t\r\n")
+PRINTABLE_CHARACTERS = string.letters + string.digits + string.punctuation + " \t\r\n"
 
 
 def convert_char(c):

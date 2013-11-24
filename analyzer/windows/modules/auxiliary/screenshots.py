@@ -30,8 +30,7 @@ class Screenshots(Auxiliary, Thread):
         @return: operation status.
         """
         if not Screenshot().have_pil():
-            log.warning("Python Image Library is not installed, "
-                        "screenshots are disabled")
+            log.warning("Python Image Library is not installed, screenshots are disabled")
             return False
 
         img_counter = 0

@@ -40,5 +40,4 @@ class Config:
             return getattr(self, section)
         except AttributeError as e:
             raise CuckooOperationalError("Option %s is not found in "
-                                         "configuration, error: %s" %
-                                         (section, e))
+                "configuration, error: %s" % (section, e))

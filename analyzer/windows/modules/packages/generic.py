@@ -23,8 +23,7 @@ class Genric(Package):
 
         p = Process()
         if not p.execute(path=cmd_path, args=cmd_args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial process, "
-                                     "analysis aborted")
+            raise CuckooPackageError("Unable to execute initial process, analysis aborted")
 
         if not free and suspended:
             p.inject(dll)
