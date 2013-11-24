@@ -64,7 +64,8 @@ class ParseProcessLog(list):
             self.fd = None
             return
 
-        # get the process information from file to determine process id (file names)
+        # get the process information from file to determine
+        # process id (file names)
         while not self.process_id:
             self.parser.read_next_message()
 

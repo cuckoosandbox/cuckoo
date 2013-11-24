@@ -42,10 +42,12 @@ class Agent:
 
         if not ANALYZER_FOLDER:
             random.seed(time.time())
-            container = "".join(random.choice(string.ascii_lowercase) for x in range(random.randint(5, 10)))
+            container = "".join(random.choice(string.ascii_lowercase)
+                                for x in range(random.randint(5, 10)))
 
             if self.system == "windows":
-                ANALYZER_FOLDER = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, container)
+                system_drive = os.environ["SYSTEMDRIVE"] + os.sep
+                ANALYZER_FOLDER = os.path.join(system_drive, container)
             elif self.system == "linux" or self.system == "darwin":
                 ANALYZER_FOLDER = os.path.join(os.environ["HOME"], container)
             else:
@@ -86,7 +88,8 @@ class Agent:
         elif self.system == "linux" or self.system == "darwin":
             root = "/tmp"
         else:
-            ERROR_MESSAGE = "Unable to write malware to disk because of failed identification of the operating system"
+            ERROR_MESSAGE = "Unable to write malware to disk because of " \
+                            "failed identification of the operating system"
             return False
 
         file_path = os.path.join(root, name)

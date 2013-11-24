@@ -75,7 +75,8 @@ class VolatilityAPI(object):
             self.config.update(key, value)
 
         self.addr_space = utils.load_as(self.config)
-        self.plugins = registry.get_plugin_classes(commands.Command, lower=True)
+        self.plugins = registry.get_plugin_classes(commands.Command,
+                                                   lower=True)
 
         return self.config
 
@@ -83,7 +84,8 @@ class VolatilityAPI(object):
         """Volatility pslist plugin.
         @see volatility/plugins/taskmods.py
         """
-        log.debug("Executing Volatility pslist plugin on {0}".format(self.memdump))
+        log.debug("Executing Volatility pslist plugin on "
+                  "{0}".format(self.memdump))
 
         self.__config()
         results = []
@@ -371,7 +373,8 @@ class VolatilityAPI(object):
         @param dump_dir: optional directory for dumps
         @see volatility/plugins/malware/malfind.py
         """
-        log.debug("Executing Volatility malfind plugin on {0}".format(self.memdump))
+        log.debug("Executing Volatility malfind plugin on "
+                  "{0}".format(self.memdump))
 
         self.__config()
         results = []

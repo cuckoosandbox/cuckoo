@@ -18,7 +18,8 @@ class JsonDump(Report):
         @raise CuckooReportError: if fails to write report.
         """
         try:
-            report = codecs.open(os.path.join(self.reports_path, "report.json"), "w", "utf-8")
+            path = os.path.join(self.reports_path, "report.json")
+            report = codecs.open(path, "w", "utf-8")
             json.dump(results, report, sort_keys=False, indent=4)
             report.close()
         except (UnicodeError, TypeError, IOError) as e:

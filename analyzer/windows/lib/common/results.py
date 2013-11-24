@@ -55,8 +55,8 @@ class NetlogConnection(object):
             if retry:
                 self.send(data, retry=False)
         except:
-            # We really have nowhere to log this, if the netlog connection does not work,
-            #  we can assume that any logging won't work either.
+            # We really have nowhere to log this, if the netlog connection
+            # does not work, we can assume that any logging won't work either.
             # So we just fail silently.
             self.close()
 
@@ -70,7 +70,8 @@ class NetlogConnection(object):
 class NetlogFile(NetlogConnection):
     def __init__(self, filepath):
         self.filepath = filepath
-        NetlogConnection.__init__(self, proto="FILE\n{0}\n".format(self.filepath))
+        NetlogConnection.__init__(self,
+                                  proto="FILE\n{0}\n".format(self.filepath))
         self.connect()
 
 class NetlogHandler(logging.Handler, NetlogConnection):

@@ -28,7 +28,8 @@ def randomize_dll(dll_path):
     @return: new DLL path.
     """
     new_dll_name = random_string(6)
-    new_dll_path = os.path.join(os.getcwd(), "dll", "{0}.dll".format(new_dll_name))
+    new_dll_path = os.path.join(os.getcwd(), "dll",
+                                "{0}.dll".format(new_dll_name))
 
     try:
         copy(dll_path, new_dll_path)
@@ -182,7 +183,8 @@ class Process:
         @return: operation status.
         """
         if not os.access(path, os.X_OK):
-            log.error("Unable to access file at path \"%s\", execution aborted", path)
+            log.error("Unable to access file at path \"%s\", "
+                      "execution aborted", path)
             return False
 
         startup_info = STARTUPINFO()
@@ -215,12 +217,13 @@ class Process:
             self.h_process = process_info.hProcess
             self.thread_id = process_info.dwThreadId
             self.h_thread = process_info.hThread
-            log.info("Successfully executed process from path \"%s\" with arguments \"%s\" with pid %d",
-                     path, args, self.pid)
+            log.info("Successfully executed process from path \"%s\" with "
+                     "arguments \"%s\" with pid %d", path, args, self.pid)
             return True
         else:
-            log.error("Failed to execute process from path \"%s\" with arguments \"%s\" (Error: %s)",
-                      path, args, get_error_string(KERNEL32.GetLastError()))
+            log.error("Failed to execute process from path \"%s\" with "
+                      "arguments \"%s\" (Error: %s)", path, args,
+                      get_error_string(KERNEL32.GetLastError()))
             return False
 
     def resume(self):
@@ -268,7 +271,8 @@ class Process:
             return False
 
         if not self.is_alive():
-            log.warning("The process with pid %s is not alive, injection aborted", self.pid)
+            log.warning("The process with pid %s is not alive, "
+                        "injection aborted", self.pid)
             return False
 
         if not dll:
@@ -277,7 +281,8 @@ class Process:
         dll = randomize_dll(os.path.join("dll", dll))
 
         if not dll or not os.path.exists(dll):
-            log.warning("No valid DLL specified to be injected in process with pid %d, injection aborted", self.pid)
+            log.warning("No valid DLL specified to be injected in process "
+                        "with pid %d, injection aborted", self.pid)
             return False
 
         arg = KERNEL32.VirtualAllocEx(self.h_process,
@@ -287,7 +292,8 @@ class Process:
                                       PAGE_READWRITE)
 
         if not arg:
-            log.error("VirtualAllocEx failed when injecting process with pid %d, injection aborted (Error: %s)",
+            log.error("VirtualAllocEx failed when injecting process with "
+                      "pid %d, injection aborted (Error: %s)",
                       self.pid, get_error_string(KERNEL32.GetLastError()))
             return False
 
@@ -297,7 +303,8 @@ class Process:
                                            dll + "\x00",
                                            len(dll) + 1,
                                            byref(bytes_written)):
-            log.error("WriteProcessMemory failed when injecting process with pid %d, injection aborted (Error: %s)",
+            log.error("WriteProcessMemory failed when injecting process with "
+                      "pid %d, injection aborted (Error: %s)",
                       self.pid, get_error_string(KERNEL32.GetLastError()))
             return False
 
@@ -328,11 +335,13 @@ class Process:
         if apc or self.suspended:
             log.info("Using QueueUserAPC injection")
             if not self.h_thread:
-                log.info("No valid thread handle specified for injecting process with pid %d, injection aborted", self.pid)
+                log.info("No valid thread handle specified for injecting "
+                         "process with pid %d, injection aborted", self.pid)
                 return False
 
             if not KERNEL32.QueueUserAPC(load_library, self.h_thread, arg):
-                log.error("QueueUserAPC failed when injecting process with pid %d (Error: %s)",
+                log.error("QueueUserAPC failed when injecting process with "
+                          "pid %d (Error: %s)",
                           self.pid, get_error_string(KERNEL32.GetLastError()))
                 return False
             log.info("Successfully injected process with pid %d" % self.pid)
@@ -356,7 +365,8 @@ class Process:
                                                         0,
                                                         byref(new_thread_id))
             if not thread_handle:
-                log.error("CreateRemoteThread failed when injecting process with pid %d (Error: %s)",
+                log.error("CreateRemoteThread failed when injecting process "
+                          "with pid %d (Error: %s)",
                           self.pid, get_error_string(KERNEL32.GetLastError()))
                 KERNEL32.CloseHandle(self.event_handle)
                 self.event_handle = None
@@ -382,7 +392,8 @@ class Process:
             return False
 
         if not self.is_alive():
-            log.warning("The process with pid %d is not alive, memory dump aborted", self.pid)
+            log.warning("The process with pid %d is not alive, memory "
+                        "dump aborted", self.pid)
             return False
 
         self.get_system_info()

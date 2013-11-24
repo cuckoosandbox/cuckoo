@@ -12,9 +12,10 @@ class Jar(Package):
     """Java analysis package."""
 
     def get_path(self):
+        java = os.path.join(os.getenv("ProgramFiles"), "Java")
         paths = [
-            os.path.join(os.getenv("ProgramFiles"), "Java", "jre7", "bin", "java.exe"),
-            os.path.join(os.getenv("ProgramFiles"), "Java", "jre6", "bin", "java.exe"),
+            os.path.join(java, "jre7", "bin", "java.exe"),
+            os.path.join(java, "jre6", "bin", "java.exe"),
         ]
 
         for path in paths:
@@ -26,7 +27,8 @@ class Jar(Package):
     def start(self, path):
         java = self.get_path()
         if not java:
-            raise CuckooPackageError("Unable to find any Java executable available")
+            raise CuckooPackageError("Unable to find any Java "
+                                     "executable available")
 
         dll = self.options.get("dll", None)
         free = self.options.get("free", False)
@@ -42,7 +44,8 @@ class Jar(Package):
 
         p = Process()
         if not p.execute(path=java, args=args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial Java process, analysis aborted")
+            raise CuckooPackageError("Unable to execute initial Java "
+                                     "process, analysis aborted")
 
         if not free and suspended:
             p.inject(dll)

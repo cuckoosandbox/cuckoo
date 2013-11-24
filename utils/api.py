@@ -176,7 +176,8 @@ def tasks_reschedule(task_id):
     if db.reschedule(task_id):
         response["status"] = "OK"
     else:
-        return HTTPError(500, "An error occurred while trying to reschedule the task")
+        return HTTPError(500, "An error occurred while trying to "
+                              "reschedule the task")
 
     return jsonize(response)
 
@@ -187,13 +188,16 @@ def tasks_delete(task_id):
     task = db.view_task(task_id)
     if task:
         if task.status == "processing":
-            return HTTPError(500, "The task is currently being processed, cannot delete")
+            return HTTPError(500, "The task is currently being "
+                                  "processed, cannot delete")
 
         if db.delete_task(task_id):
-            delete_folder(os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id))
+            delete_folder(os.path.join(CUCKOO_ROOT, "storage",
+                                       "analyses", task_id))
             response["status"] = "OK"
         else:
-            return HTTPError(500, "An error occurred while trying to delete the task")
+            return HTTPError(500, "An error occurred while trying to "
+                                  "delete the task")
     else:
         return HTTPError(404, "Task not found")
 
@@ -215,7 +219,9 @@ def tasks_report(task_id, report_format="json"):
     }
 
     if report_format.lower() in formats:
-        report_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "reports", formats[report_format.lower()])
+        report_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                                   task_id, "reports",
+                                   formats[report_format.lower()])
     elif report_format.lower() in bz_formats:
             bzf = bz_formats[report_format.lower()]
             srcdir = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id)
@@ -314,8 +320,10 @@ def machines_view(name=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-H", "--host", help="Host to bind the API server on", default="localhost", action="store", required=False)
-    parser.add_argument("-p", "--port", help="Port to bind the API server on", default=8090, action="store", required=False)
+    parser.add_argument("-H", "--host", help="Host to bind the API server on",
+                        default="localhost", action="store", required=False)
+    parser.add_argument("-p", "--port", help="Port to bind the API server on",
+                        default=8090, action="store", required=False)
     args = parser.parse_args()
 
     run(host=args.host, port=args.port)

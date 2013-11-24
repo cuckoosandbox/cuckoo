@@ -25,9 +25,11 @@ class Zip(Package):
                 raise CuckooPackageError("Invalid Zip file")
             except RuntimeError:
                 try:
-                    archive.extractall(path=root, pwd=self.options.get("password", "infected"))
+                    password = self.options.get("password", "infected")
+                    archive.extractall(path=root, pwd=password)
                 except RuntimeError as e:
-                    raise CuckooPackageError("Unable to extract Zip file, unknown password?")
+                    raise CuckooPackageError("Unable to extract Zip file: "
+                                             "{0}".format(e))
 
         file_name = self.options.get("file", default_file_name)
         if file_name == default_file_name:   
@@ -47,7 +49,8 @@ class Zip(Package):
 
         p = Process()
         if not p.execute(path=file_path, args=args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial process, analysis aborted")
+            raise CuckooPackageError("Unable to execute initial process, "
+                                     "analysis aborted")
 
         if not free and suspended:
             p.inject(dll)
