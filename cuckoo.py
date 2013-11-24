@@ -30,15 +30,10 @@ def main():
     create_structure()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-q", "--quiet", help="Display only error messages",
-                        action="store_true", required=False)
-    parser.add_argument("-d", "--debug", help="Display debug messages",
-                        action="store_true", required=False)
-    parser.add_argument("-v", "--version", action="version",
-                        version="You are running Cuckoo Sandbox "
-                                "{0}".format(CUCKOO_VERSION))
-    parser.add_argument("-a", "--artwork", help="Show artwork",
-                        action="store_true", required=False)
+    parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
+    parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
+    parser.add_argument("-v", "--version", action="version", version="You are running Cuckoo Sandbox {0}".format(CUCKOO_VERSION))
+    parser.add_argument("-a", "--artwork", help="Show artwork", action="store_true", required=False)
     args = parser.parse_args()
 
     if args.artwork:
