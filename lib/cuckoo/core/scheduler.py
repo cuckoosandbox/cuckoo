@@ -315,11 +315,15 @@ class AnalysisManager(Thread):
         # If the target is a file and the user enabled the option,
         # delete the original copy.
         if self.task.category == "file" and self.cfg.cuckoo.delete_original:
-            try:
-                os.remove(self.task.target)
-            except OSError as e:
-                log.error("Unable to delete original file at path \"%s\": %s",
-                          self.task.target, e)
+            if not os.path.exists(self.task.target):
+                log.warning("Original file does not exist anymore: \"%s\": "
+                            "File not found", self.task.target)
+            else:
+                try:
+                    os.remove(self.task.target)
+                except OSError as e:
+                    log.error("Unable to delete original file at path "
+                              "\"%s\": %s", self.task.target, e)
 
         log.info("Task #%d: reports generation completed (path=%s)",
                  self.task.id, self.storage)
