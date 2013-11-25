@@ -26,7 +26,7 @@
     {% if analysis.debug.errors %}
         <ul style="font-size: 16px;">
         {% for error in analysis.debug.errors %}
-            <li class="text-error"><b>Error:</b> {{error}}</li>
+            <li class="text-danger"><b>Error:</b> {{error}}</li>
         {% endfor %}
         </ul>
     {% endif %}

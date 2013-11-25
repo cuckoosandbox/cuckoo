@@ -235,8 +235,7 @@ class AnalysisManager(Thread):
         else:
             try:
                 # Initialize the guest manager.
-                guest = GuestManager(self.machine.name, self.machine.ip,
-                                     self.machine.platform)
+                guest = GuestManager(self.machine.name, self.machine.ip, self.machine.platform)
                 # Start the analysis.
                 guest.start_analysis(options)
             except CuckooGuestError as e:
@@ -258,8 +257,7 @@ class AnalysisManager(Thread):
             if self.cfg.cuckoo.memory_dump or self.task.memory:
                 try:
                     machinery.dump_memory(self.machine.label,
-                                          os.path.join(self.storage,
-                                                       "memory.dmp"))
+                                          os.path.join(self.storage, "memory.dmp"))
                 except NotImplementedError:
                     log.error("The memory dump functionality is not available "
                               "for the current machine manager")
@@ -317,11 +315,15 @@ class AnalysisManager(Thread):
         # If the target is a file and the user enabled the option,
         # delete the original copy.
         if self.task.category == "file" and self.cfg.cuckoo.delete_original:
-            try:
-                os.remove(self.task.target)
-            except OSError as e:
-                log.error("Unable to delete original file at path \"%s\": %s",
-                          self.task.target, e)
+            if not os.path.exists(self.task.target):
+                log.warning("Original file does not exist anymore: \"%s\": "
+                            "File not found", self.task.target)
+            else:
+                try:
+                    os.remove(self.task.target)
+                except OSError as e:
+                    log.error("Unable to delete original file at path "
+                              "\"%s\": %s", self.task.target, e)
 
         log.info("Task #%d: reports generation completed (path=%s)",
                  self.task.id, self.storage)

@@ -71,8 +71,7 @@ class RunAuxiliary(object):
     def __init__(self, task, machine):
         self.task = task
         self.machine = machine
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT,
-                                           "conf", "auxiliary.conf"))
+        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "auxiliary.conf"))
         self.enabled = []
 
     def start(self):
@@ -137,10 +136,8 @@ class RunProcessing(object):
     def __init__(self, task_id):
         """@param task_id: ID of the analyses to process."""
         self.task = Database().view_task(task_id).to_dict()
-        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage",
-                                          "analyses", str(task_id))
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT,
-                                           "conf", "processing.conf"))
+        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
+        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "processing.conf"))
 
     def process(self, module):
         """Run a processing module.
@@ -255,8 +252,7 @@ class RunSignatures(object):
             try:
                 # If the running Cuckoo is older than the required minimum
                 # version, skip this signature.
-                minimum_version = StrictVersion(current.minimum.split("-")[0])
-                if StrictVersion(version) < minimum_version:
+                if StrictVersion(version) < StrictVersion(current.minimum.split("-")[0]):
                     log.debug("You are running an older incompatible version "
                               "of Cuckoo, the signature \"%s\" requires "
                               "minimum version %s",
@@ -273,8 +269,7 @@ class RunSignatures(object):
             try:
                 # If the running Cuckoo is newer than the required maximum
                 # version, skip this signature.
-                maximum_version = StrictVersion(current.maximum.split("-")[0])
-                if StrictVersion(version) > maximum_version:
+                if StrictVersion(version) > StrictVersion(current.maximum.split("-")[0]):
                     log.debug("You are running a newer incompatible version "
                               "of Cuckoo, the signature \"%s\" requires "
                               "maximum version %s",

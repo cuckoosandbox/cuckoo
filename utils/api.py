@@ -320,10 +320,8 @@ def machines_view(name=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-H", "--host", help="Host to bind the API server on",
-                        default="localhost", action="store", required=False)
-    parser.add_argument("-p", "--port", help="Port to bind the API server on",
-                        default=8090, action="store", required=False)
+    parser.add_argument("-H", "--host", help="Host to bind the API server on", default="localhost", action="store", required=False)
+    parser.add_argument("-p", "--port", help="Port to bind the API server on", default=8090, action="store", required=False)
     args = parser.parse_args()
 
     run(host=args.host, port=args.port)

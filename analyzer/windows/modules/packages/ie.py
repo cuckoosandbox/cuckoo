@@ -19,12 +19,10 @@ class IE(Package):
         if free:
             suspended = False
 
-        iexplore = os.path.join(os.getenv("ProgramFiles"),
-                                "Internet Explorer", "iexplore.exe")
+        iexplore = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
 
         p = Process()
-        if not p.execute(path=iexplore, args="\"%s\"" % url,
-                         suspended=suspended):
+        if not p.execute(path=iexplore, args="\"%s\"" % url, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Internet "
                                      "Explorer process, analysis aborted")
 

@@ -28,8 +28,7 @@ def randomize_dll(dll_path):
     @return: new DLL path.
     """
     new_dll_name = random_string(6)
-    new_dll_path = os.path.join(os.getcwd(), "dll",
-                                "{0}.dll".format(new_dll_name))
+    new_dll_path = os.path.join(os.getcwd(), "dll", "{0}.dll".format(new_dll_name))
 
     try:
         copy(dll_path, new_dll_path)

@@ -23,8 +23,7 @@ class Dll(Package):
             args += " {0}".format(arguments)
 
         p = Process()
-        if not p.execute(path="C:\\WINDOWS\\system32\\rundll32.exe",
-                         args=args, suspended=suspended):
+        if not p.execute(path="C:\\WINDOWS\\system32\\rundll32.exe", args=args, suspended=suspended):
             raise CuckooPackageError("Unable to execute rundll32, "
                                      "analysis aborted")
 
