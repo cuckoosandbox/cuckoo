@@ -72,7 +72,7 @@ def main():
         path = to_unicode(os.path.abspath(target))
 
         if not os.path.exists(path):
-                print(bold(red("Error")) + u": the specified file/folder does not exist at path \"{0}\"".format(path))
+            print(bold(red("Error")) + u": the specified file/folder does not exist at path \"{0}\"".format(path))
             return False
 
         files = []
