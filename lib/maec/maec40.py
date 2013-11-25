@@ -5,6 +5,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
+from modules.processing.behavior import fix_key
+
 api_call_mappings = {
 "NtCreateFile" : {"action_name" : "create file",
                           "action_vocab" : "maecVocabs:FileActionNameVocab-1.0",
@@ -1613,29 +1615,11 @@ def intToHex(value):
 
 def regStringToHive(reg_string):
     """Maps a string representing a Registry Key from a NT* API call input to its normalized hive"""
-    lower_string = str(reg_string).lower().lstrip("\\")
-    if lower_string.startswith("registry\\machine\\system\\currentcontrolset\\hardware profiles\\current\\"):
-         return "HKEY_CURRENT_CONFIG"
-    elif lower_string.startswith("registry\\machine\\software\\classes\\"):
-         return "HKEY_CLASSES_ROOT"
-    elif lower_string.startswith("registry\\machine\\"):
-         return "HKEY_LOCAL_MACHINE"
-    elif lower_string.startswith("registry\\user\\"):
-         return "HKEY_USERS"
-    else:
-        return ""
+    normalized_key = fix_key(reg_string)
+    return normalized_key.split("\\")[0]
 
 def regStringToKey(reg_string):
-    """Maps a string representing a Registry Key from a NT* API call input to its normalized key"""
-    lower_string = str(reg_string).lower().lstrip("\\")
-    split_string = str(reg_string).lstrip("\\").split("\\")
-    if lower_string.startswith("registry\\machine\\system\\currentcontrolset\\hardware profiles\\current\\"):
-         return "\\".join(split_string[6:])
-    elif lower_string.startswith("registry\\machine\\software\\classes\\"):
-         return "\\".join(split_string[4:])
-    elif lower_string.startswith("registry\\machine\\"):
-         return "\\".join(split_string[2:])
-    elif lower_string.startswith("registry\\user\\"):
-         return "\\".join(split_string[2:])
-    else:
-        return reg_string
+    """Maps a string representing a Registry Key from a NT* API call input to its normalized key portion"""
+    normalized_key = fix_key(reg_string)
+    return "\\".join(normalized_key.split("\\")[1:])
+
