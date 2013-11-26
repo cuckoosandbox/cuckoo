@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os.path
 import re
 
 from lib.cuckoo.common.abstracts import Processing
@@ -18,6 +19,9 @@ class Strings(Processing):
         strings = []
 
         if self.task["category"] == "file":
+            if not os.path.exists(self.file_path):
+                raise CuckooProcessingError("Sample file doesn't exist: \"%s\"" % self.file_path)
+
             try:
                 data = open(self.file_path, "r").read()
             except (IOError, OSError) as e:

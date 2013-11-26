@@ -31,8 +31,7 @@ class VirusTotal(Processing):
 
         if self.task["category"] == "file":
             if not os.path.exists(self.file_path):
-                raise CuckooProcessingError("File {0} not found, "
-                                            "skip".format(self.file_path))
+                raise CuckooProcessingError("File {0} not found, skipping it".format(self.file_path))
 
             resource = File(self.file_path).get_md5()
             url = VIRUSTOTAL_FILE_URL
