@@ -13,7 +13,7 @@ from collections import defaultdict
 
 from lib.maec.maec40 import api_call_mappings, hiveHexToString,\
     socketTypeToString, socketProtoToString, socketAFToString,\
-    regDatatypeToString, intToHex
+    regDatatypeToString, intToHex, regStringToKey, regStringToHive
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooDependencyError, CuckooReportError
@@ -563,9 +563,10 @@ class MAEC40Report(Report):
         # Handle any values that require post-processing (via external functions).
         if "post_processing" in parameter_mapping_dict:
             parameter_value = globals()[parameter_mapping_dict["post_processing"]](parameter_value)
-        # Handle the actual element value.
-        if parameter_mapping_dict["associated_object_element"]:
-            # Handle simple (non-nested) elements.
+
+        # Handle the actual element value
+        if "associated_object_element" in parameter_mapping_dict and parameter_mapping_dict["associated_object_element"]:
+            # Handle simple (non-nested) elements
             if "/" not in parameter_mapping_dict["associated_object_element"]:
                 associated_object_dict["properties"][parameter_mapping_dict["associated_object_element"].lower()] = parameter_value
             # Handle complex (nested) elements.
@@ -575,7 +576,10 @@ class MAEC40Report(Report):
                     associated_object_dict["properties"][split_elements[0].lstrip("list__").lower()] = [self.createNestedDict(split_elements[1:], parameter_value)]
                 else:
                     associated_object_dict["properties"][split_elements[0].lower()] = self.createNestedDict(split_elements[1:], parameter_value)
-        # Set any "forced" properties that should be set alongside the current.
+        # Corner case for some Registry Keys
+        else:
+            associated_object_dict["properties"] = parameter_value
+        # Set any "forced" properties that should be set alongside the current
         if "forced" in parameter_mapping_dict:
             self.processAssociatedObject(parameter_mapping_dict["forced"], parameter_mapping_dict["forced"]["value"], associated_object_dict)
         # Finally, set the XSI type if it has not been set already.

@@ -5,6 +5,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
+from modules.processing.behavior import fix_key
+
 api_call_mappings = {
 "NtCreateFile" : {"action_name" : "create file",
                           "action_vocab" : "maecVocabs:FileActionNameVocab-1.0",
@@ -396,9 +398,12 @@ api_call_mappings = {
                                                                               "value" : "RegistryKey"}}}},
 "NtCreateKey" : {"action_name" : "create registry key",
                  "action_vocab" : "maecVocabs:RegistryActionNameVocab-1.0",
-                 "parameter_associated_objects" : {"ObjectAttributes" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
-                                                                         "associated_object_element" : "Key",
-                                                                         "association_type" : "output"},
+                 "parameter_associated_objects" : {"group_together_nested" : {"parameter_mappings" : [{"parameter_name" : "ObjectAttributes", "element_name" : "Hive",
+                                                                                                     "post_processing": "regStringToHive"},
+                                                                                                    {"parameter_name" : "ObjectAttributes", "element_name" : "Key",
+                                                                                                     "post_processing":"regStringToKey"}],
+                                                                            "associated_object_type" : "WindowsRegistryKeyObjectType",
+                                                                            "association_type" : "output"},
                                                    "KeyHandle" : {"associated_object_type" : "WindowsHandleObjectType",
                                                                   "associated_object_element" : "ID",
                                                                   "association_type" : "output",
@@ -406,9 +411,12 @@ api_call_mappings = {
                                                                               "value" : "RegistryKey"}}}},
 "NtOpenKey" : {"action_name" : "open registry key",
                "action_vocab" : "maecVocabs:RegistryActionNameVocab-1.0",
-               "parameter_associated_objects" : {"ObjectAttributes" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
-                                                                       "associated_object_element" : "Key",
-                                                                       "association_type" : "input"},
+               "parameter_associated_objects" : {"group_together_nested" : {"parameter_mappings" : [{"parameter_name" : "ObjectAttributes", "element_name" : "Hive",
+                                                                                                     "post_processing": "regStringToHive"},
+                                                                                                    {"parameter_name" : "ObjectAttributes", "element_name" : "Key",
+                                                                                                     "post_processing":"regStringToKey"}],
+                                                                            "associated_object_type" : "WindowsRegistryKeyObjectType",
+                                                                            "association_type" : "input"},
                                                   "KeyHandle" : {"associated_object_type" : "WindowsHandleObjectType",
                                                                  "associated_object_element" : "ID",
                                                                  "association_type" : "output",
@@ -416,18 +424,24 @@ api_call_mappings = {
                                                                               "value" : "RegistryKey"}}}},
 "NtOpenKeyEx" : {"action_name" : "open registry key",
                "action_vocab" : "maecVocabs:RegistryActionNameVocab-1.0",
-               "parameter_associated_objects" : {"ObjectAttributes" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
-                                                                       "associated_object_element" : "Key",
-                                                                       "association_type" : "input"},
+               "parameter_associated_objects" : {"group_together_nested" : {"parameter_mappings" : [{"parameter_name" : "ObjectAttributes", "element_name" : "Hive",
+                                                                                                     "post_processing": "regStringToHive"},
+                                                                                                    {"parameter_name" : "ObjectAttributes", "element_name" : "Key",
+                                                                                                     "post_processing":"regStringToKey"}],
+                                                                            "associated_object_type" : "WindowsRegistryKeyObjectType",
+                                                                            "association_type" : "input"},
                                                   "KeyHandle" : {"associated_object_type" : "WindowsHandleObjectType",
                                                                  "associated_object_element" : "ID",
                                                                  "association_type" : "output",
                                                                  "forced" : {"associated_object_element" : "Type", 
                                                                               "value" : "RegistryKey"}}}},
 "NtRenameKey" : {"action_name" : "rename registry key",
-                 "parameter_associated_objects" : {"NewName" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
-                                                                "associated_object_element" : "Key",
-                                                                "association_type" : "input"},
+                 "parameter_associated_objects" : {"group_together_nested" : {"parameter_mappings" : [{"parameter_name" : "NewName", "element_name" : "Hive",
+                                                                                                     "post_processing": "regStringToHive"},
+                                                                                                    {"parameter_name" : "NewName", "element_name" : "Key",
+                                                                                                     "post_processing":"regStringToKey"}],
+                                                                            "associated_object_type" : "WindowsRegistryKeyObjectType",
+                                                                            "association_type" : "input"},
                                                   "KeyHandle" : {"associated_object_type" : "WindowsHandleObjectType",
                                                                  "associated_object_element" : "ID",
                                                                  "association_type" : "input",
@@ -520,27 +534,36 @@ api_call_mappings = {
                                                                        "forced" : {"associated_object_element" : "Type", 
                                                                               "value" : "RegistryKey"}}}},
 "NtLoadKey" : {"action_name" : "load registry keys from file",
-               "parameter_associated_objects" : {"TargetKey" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
-                                                                "associated_object_element" : "Key",
-                                                                "association_type" : "input"},
+               "parameter_associated_objects" : {"group_together_nested" : {"parameter_mappings" : [{"parameter_name" : "TargetKey", "element_name" : "Hive",
+                                                                                                     "post_processing": "regStringToHive"},
+                                                                                                    {"parameter_name" : "TargetKey", "element_name" : "Key",
+                                                                                                     "post_processing":"regStringToKey"}],
+                                                                            "associated_object_type" : "WindowsRegistryKeyObjectType",
+                                                                            "association_type" : "input"},
                                                  "SourceFile" : {"associated_object_type" : "FileObjectType",
                                                                  "associated_object_element" : "File_Path",
                                                                  "association_type" : "input",
                                                                  "forced" : {"associated_object_element" : "Type", 
                                                                               "value" : "RegistryKey"}}}},
 "NtLoadKey2" : {"action_name" : "load registry keys from file",
-                "parameter_associated_objects" : {"TargetKey" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
-                                                                 "associated_object_element" : "Key",
-                                                                 "association_type" : "input"},
+                "parameter_associated_objects" : {"group_together_nested" : {"parameter_mappings" : [{"parameter_name" : "TargetKey", "element_name" : "Hive",
+                                                                                                     "post_processing": "regStringToHive"},
+                                                                                                    {"parameter_name" : "TargetKey", "element_name" : "Key",
+                                                                                                     "post_processing":"regStringToKey"}],
+                                                                            "associated_object_type" : "WindowsRegistryKeyObjectType",
+                                                                            "association_type" : "input"},
                                                  "SourceFile" : {"associated_object_type" : "FileObjectType",
                                                                  "associated_object_element" : "File_Path",
                                                                  "association_type" : "input",
                                                                  "forced" : {"associated_object_element" : "Type", 
                                                                               "value" : "RegistryKey"}}}},
 "NtLoadKeyEx" : {"action_name" : "load registry keys from file",
-                 "parameter_associated_objects" : {"TargetKey" : {"associated_object_type" : "WindowsRegistryKeyObjectType",
-                                                                  "associated_object_element" : "Key",
-                                                                  "association_type" : "input"},
+                 "parameter_associated_objects" : {"group_together_nested" : {"parameter_mappings" : [{"parameter_name" : "TargetKey", "element_name" : "Hive",
+                                                                                                     "post_processing": "regStringToHive"},
+                                                                                                    {"parameter_name" : "TargetKey", "element_name" : "Key",
+                                                                                                     "post_processing":"regStringToKey"}],
+                                                                            "associated_object_type" : "WindowsRegistryKeyObjectType",
+                                                                            "association_type" : "input"},
                                                   "SourceFile" : {"associated_object_type" : "FileObjectType",
                                                                   "associated_object_element" : "File_Path",
                                                                   "association_type" : "input",
@@ -1483,19 +1506,20 @@ api_call_mappings = {
 
 def hiveHexToString(hive_hex_value):
     """Maps a Registry Hive hex input to its String (name) equivalent"""
-    if str(hive_hex_value) == "0x80000000" or str(hive_hex_value) == "-2147483648":
+    str_val = str(hive_hex_value)
+    if str_val == "0x80000000" or str_val == "-2147483648" or str_val == "2147483648":
         return "HKEY_CLASSES_ROOT"
-    elif str(hive_hex_value) == "0x80000001" or str(hive_hex_value) == "-2147483647":
+    elif str_val == "0x80000001" or str_val == "-2147483647" or str_val == "2147483649":
         return "HKEY_CURRENT_USER"
-    elif str(hive_hex_value) == "0x80000002" or str(hive_hex_value) == "-2147483646":
+    elif str_val == "0x80000002" or str_val == "-2147483646" or str_val == "2147483650":
         return "HKEY_LOCAL_MACHINE"
-    elif str(hive_hex_value) == "0x80000003" or str(hive_hex_value) == "-2147483645":
+    elif str_val == "0x80000003" or str_val == "-2147483645" or str_val == "2147483651":
         return "HKEY_USERS"
-    elif str(hive_hex_value) == "0x80000004":
+    elif str_val == "0x80000004":
         return "HKEY_PERFORMANCE_DATA"
-    elif str(hive_hex_value) == "0x80000005":
+    elif str_val == "0x80000005" or str_val == "2147483653":
         return "HKEY_CURRENT_CONFIG"
-    elif str(hive_hex_value) == "0x80000006":
+    elif str_val == "0x80000006":
         return "HKEY_DYN_DATA"
     else:
         return hive_hex_value
@@ -1589,3 +1613,14 @@ def intToHex(value):
         value = "0x{0:08x}".format(value)
 
     return value
+
+def regStringToHive(reg_string):
+    """Maps a string representing a Registry Key from a NT* API call input to its normalized hive"""
+    normalized_key = fix_key(reg_string)
+    return normalized_key.split("\\")[0]
+
+def regStringToKey(reg_string):
+    """Maps a string representing a Registry Key from a NT* API call input to its normalized key portion"""
+    normalized_key = fix_key(reg_string)
+    return "\\".join(normalized_key.split("\\")[1:])
+
