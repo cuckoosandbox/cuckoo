@@ -341,6 +341,17 @@ class AnalysisManager(Thread):
                     log.error("Unable to delete original file at path "
                               "\"%s\": %s", self.task.target, e)
 
+        # If the target is a file and the user enabled the delete copy of
+        # the binary option, then delete the copy.
+        if self.task.category == "file" and self.cfg.cuckoo.delete_bin_copy:
+            if not os.path.exists(self.binary):
+                log.warning("Copy of the original file does not exist anymore: \"%s\": File not found", self.binary)
+            else:
+                try:
+                    os.remove(self.binary)
+                except OSError as e:
+                    log.error("Unable to delete the copy of the original file at path \"%s\": %s", self.binary, e)
+
         log.info("Task #%d: reports generation completed (path=%s)",
                  self.task.id, self.storage)
 
