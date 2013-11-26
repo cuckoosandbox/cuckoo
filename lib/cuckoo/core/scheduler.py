@@ -184,6 +184,8 @@ class AnalysisManager(Thread):
         options["enforce_timeout"] = self.task.enforce_timeout
         options["clock"] = self.task.clock
         options["terminate_processes"] = self.cfg.cuckoo.terminate_processes
+        options["tool"] = self.task.tool
+        options["tool_dir"] = self.task.tool_dir
 
         if not self.task.timeout or self.task.timeout == 0:
             options["timeout"] = self.cfg.timeouts.default

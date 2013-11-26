@@ -46,6 +46,8 @@ def main():
     parser.add_argument("--shuffle", action="store_true", default=False, help="Shuffle samples before submitting them", required=False)
     parser.add_argument("--unique", action="store_true", default=False, help="Only submit new samples, ignore duplicates", required=False)
     parser.add_argument("--quiet", action="store_true", default=False, help="Only print text on failure", required=False)
+    parser.add_argument("--tool", type=str, action="store", default=None, help="Specify tool to run on target", required=False)
+    parser.add_argument("--tool_dir", type=str, action="store", default=None, help="Specify directory of files to put on guest", required=False)
 
     try:
         args = parser.parse_args()
@@ -113,7 +115,9 @@ def main():
                                  memory=args.memory,
                                  enforce_timeout=args.enforce_timeout,
                                  clock=args.clock,
-                                 tags=args.tags)
+                                 tags=args.tags,
+                                 tool=args.tool,
+                                 tool_dir=args.tool_dir)
 
         if task_id:
             if not args.quiet:
@@ -127,6 +131,18 @@ def main():
         if not os.path.exists(path):
             print(bold(red("Error")) + u": the specified file/folder does not exist at path \"{0}\"".format(path))
             return False
+
+        # Get absolute path of tool 
+        if args.tool:
+            tool = to_unicode(args.tool)
+            tool_path = to_unicode(os.path.abspath(tool))
+            if tool and not os.path.exists(tool_path):
+                print(bold(red("Error")) + u": the specified file/folder does not exist at path \"{0}\"".format(tool_path))
+                return False
+        else:
+            if args.tool_dir:
+                print(bold(red("Error")) + u": --tool must be specified to use --tool_dir option")
+                return False
 
         files = []
         if os.path.isdir(path):
@@ -217,7 +233,9 @@ def main():
                                       memory=args.memory,
                                       enforce_timeout=args.enforce_timeout,
                                       clock=args.clock,
-                                      tags=args.tags)
+                                      tags=args.tags,
+                                       tool=args.tool,
+                                       tool_dir=args.tool_dir)
 
             if task_id:
                 if not args.quiet:

@@ -280,6 +280,8 @@ class Task(Base):
     sample = relationship("Sample", backref="tasks")
     guest = relationship("Guest", uselist=False, backref="tasks", cascade="save-update, delete")
     errors = relationship("Error", backref="tasks", cascade="save-update, delete")
+    tool = Column(String(255), nullable=True, default="")
+    tool_dir = Column(String(255), nullable=True, default="")
 
     def to_dict(self):
         """Converts object to dict.
@@ -779,7 +781,8 @@ class Database(object):
     @classlock
     def add(self, obj, timeout=0, package="", options="", priority=1,
             custom="", owner="", machine="", platform="", tags=None,
-            memory=False, enforce_timeout=False, clock=None):
+            memory=False, enforce_timeout=False, clock=None,
+            tool="", tool_dir=""):
         """Add a task to database.
         @param obj: object to add (File or URL).
         @param timeout: selected timeout.
@@ -793,6 +796,8 @@ class Database(object):
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
         @param clock: virtual machine clock time
+        @param tool: the tool that you want to run on a sample
+        @param tool_dir: path to a directory that contains files necessary to run the tool
         @return: cursor or None.
         """
         session = self.Session()
@@ -845,6 +850,8 @@ class Database(object):
         task.platform = platform
         task.memory = memory
         task.enforce_timeout = enforce_timeout
+        task.tool = tool
+        task.tool_dir = tool_dir
 
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
@@ -878,7 +885,8 @@ class Database(object):
 
     def add_path(self, file_path, timeout=0, package="", options="",
                  priority=1, custom="", owner="", machine="", platform="",
-                 tags=None, memory=False, enforce_timeout=False, clock=None):
+                 tags=None, memory=False, enforce_timeout=False, clock=None,
+                 tool="", tool_dir=""):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -892,6 +900,8 @@ class Database(object):
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
         @param clock: virtual machine clock time
+        @param tool: the tool that you want to run on a sample
+        @param tool_dir: path to a directory that contains files necessary to run the tool
         @return: cursor or None.
         """
         if not file_path or not os.path.exists(file_path):
@@ -906,7 +916,7 @@ class Database(object):
 
         return self.add(File(file_path), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
-                        enforce_timeout, clock)
+                        enforce_timeout, clock, tool, tool_dir)
 
     def add_url(self, url, timeout=0, package="", options="", priority=1,
                 custom="", owner="", machine="", platform="", tags=None,

@@ -5,6 +5,7 @@
 import os
 import sys
 import time
+import errno
 import socket
 import string
 import random
@@ -72,6 +73,54 @@ class Agent:
         @return: error message.
         """
         return str(ERROR_MESSAGE)
+
+    def add_tool(self, data, name):
+        """Adds a tool from the host to the guest
+        @param data: analysis data.
+        @param name: file name.
+        @return: operation status.
+        """
+        global ERROR_MESSAGE
+        data = data.data
+
+        if self.system == "windows":
+            root = os.environ["TEMP"]
+            root = os.path.join(root,"tool")
+            if not os.path.exists(root):
+                try:
+                    os.makedirs(root)
+                except OSError as e:
+                    if e.errno == errno.EEXIST:
+                        pass
+                    else:
+                        ERROR_MESSAGE = "Unable to create tool directory: %s" % e
+                        return False
+        elif self.system == "linux" or self.system == "darwin":
+            root = "/tmp"
+            root = os.path.join(root,"tool")
+            if not os.path.exists(root):
+                try:
+                    os.makedirs(root)
+                except OSError as e:
+                    if e.errno == errno.EEXIST:
+                        pass
+                    else:
+                        ERROR_MESSAGE = "Unable to create tool directory: %s" % e
+                        return False
+        else:
+            ERROR_MESSAGE = "Unable to write tool to disk because of failed identification of the operating system"
+            return False
+
+        file_path = os.path.join(root, name)
+
+        try:
+            with open(file_path, "wb") as tool:
+                tool.write(data)
+        except IOError as e:
+            ERROR_MESSAGE = "Unable to write tool to disk: %s" % e
+            return False
+
+        return True
 
     def add_malware(self, data, name):
         """Get analysis data.
