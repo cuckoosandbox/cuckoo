@@ -85,6 +85,17 @@ class AnalysisManager(Thread):
 
         return True
 
+    def check_file(self):
+        """Checks the integrity of the file to be analyzed."""
+        sample = Database().view_sample(self.task.sample_id)
+
+        sha256 = File(self.task.target).get_sha256()
+        if sha256 != sample.sha256:
+            log.error("Target file has been modified after submission: \"%s\"", self.task.target)
+            return False
+
+        return True
+
     def store_file(self):
         """Store a copy of the file being analyzed."""
         if not os.path.exists(self.task.target):
@@ -197,6 +208,11 @@ class AnalysisManager(Thread):
             return False
 
         if self.task.category == "file":
+            # Check whether the file has been changed for some unknown reason.
+            # And fail this analysis if it has been modified.
+            if not self.check_file():
+                return False
+
             # Store a copy of the original file.
             if not self.store_file():
                 return False
