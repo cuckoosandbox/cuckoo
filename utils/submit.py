@@ -153,7 +153,7 @@ def main():
                                   clock=args.clock,
                                   tags=args.tags,
                                   tool=args.tool,
-                                  tool_dir=args.tool_dir))
+                                  tool_dir=args.tool_dir)
 
             if task_id:
                 if not args.quiet:

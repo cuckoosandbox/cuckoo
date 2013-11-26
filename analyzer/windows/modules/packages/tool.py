@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -115,11 +116,16 @@ class Tool(Package):
             Returning False signals analyzer.py that the anyalysis
             is ready to be terminated
         """
-        if self.tool_pid.poll() is not None:
-            #  A None value indicates that the process hasn’t terminated yet.
-            return True
-        else:
+        try:
+            os.kill(self.tool_pid, 0)
+        except OSError:
             return False
+        else:
+            if self.tool_pid.poll() is None:
+                #  A None value indicates that the process hasn’t terminated yet.
+                return True
+            else:
+                return False
 
     def finish(self):
 
