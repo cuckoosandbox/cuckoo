@@ -403,8 +403,9 @@ class RunSignatures(object):
                     matched.append(match)
 
                 # Reset the ParseProcessLog instances after each signature
-                for process in self.results["behavior"]["processes"]:
-                    process["calls"].reset()
+                if hasattr(self.results, "behavior"):
+                    for process in self.results["behavior"]["processes"]:
+                        process["calls"].reset()
 
         if matched:
             # Sort the matched signatures by their severity level.
