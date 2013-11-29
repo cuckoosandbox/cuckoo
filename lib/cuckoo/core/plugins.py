@@ -403,7 +403,7 @@ class RunSignatures(object):
                     matched.append(match)
 
                 # Reset the ParseProcessLog instances after each signature
-                if hasattr(self.results, "behavior"):
+                if "behavior" in self.results:
                     for process in self.results["behavior"]["processes"]:
                         process["calls"].reset()
 
