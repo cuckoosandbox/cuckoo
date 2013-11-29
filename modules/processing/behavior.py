@@ -48,7 +48,6 @@ class ParseProcessLog(list):
         self.first_seen = None
         self.calls = self
         self.lastcall = None
-        self.parsecount = 0
 
         if os.path.exists(log_path) and os.stat(log_path).st_size > 0:
             self.parse_first_and_reset()
@@ -95,7 +94,6 @@ class ParseProcessLog(list):
         return self.wait_for_lastcall()
 
     def reset(self):
-        self.parsecount += 1
         self.fd.seek(0)
         self.lastcall = None
 
@@ -106,16 +104,17 @@ class ParseProcessLog(list):
         @return: True if a == b else False
         """
         if a["api"] == b["api"] and \
-           a["status"] == b["status"] and \
-           a["arguments"] == b["arguments"] and \
-           a["return"] == b["return"]:
+                a["status"] == b["status"] and \
+                a["arguments"] == b["arguments"] and \
+                a["return"] == b["return"]:
             return True
         return False
 
     def wait_for_lastcall(self):
         while not self.lastcall:
             r = None
-            try: r = self.parser.read_next_message()
+            try:
+                r = self.parser.read_next_message()
             except EOFError:
                 return False
 
@@ -124,20 +123,20 @@ class ParseProcessLog(list):
         return True
 
     def next(self):
-        if not self.fd: raise StopIteration()
+        if not self.fd:
+            raise StopIteration()
 
-        x = self.wait_for_lastcall()
-        if not x:
+        if not self.wait_for_lastcall():
             self.reset()
             raise StopIteration()
 
         nextcall, self.lastcall = self.lastcall, None
 
-        x = self.wait_for_lastcall()
+        self.wait_for_lastcall()
         while self.lastcall and self.compare_calls(nextcall, self.lastcall):
             nextcall["repeated"] += 1
             self.lastcall = None
-            x = self.wait_for_lastcall()
+            self.wait_for_lastcall()
 
         return nextcall
 
@@ -190,7 +189,7 @@ class ParseProcessLog(list):
 
             # Split the argument name with its value based on the separator.
             try:
-                (arg_name, arg_value) = row[index]
+                arg_name, arg_value = row[index]
             except ValueError as e:
                 log.debug("Unable to parse analysis row argument (row=%s): %s", row[index], e)
                 continue
@@ -252,16 +251,17 @@ class Processes:
 
             # Invoke parsing of current log file.
             current_log = ParseProcessLog(file_path)
-            if current_log.process_id == None: continue
+            if current_log.process_id is None:
+                continue
 
             # If the current log actually contains any data, add its data to
-            # the global results list.
+            # the results list.
             results.append({
                 "process_id": current_log.process_id,
                 "process_name": current_log.process_name,
                 "parent_id": current_log.parent_id,
                 "first_seen": logtime(current_log.first_seen),
-                "calls": current_log
+                "calls": current_log.calls,
             })
 
         # Sort the items in the results list chronologically. In this way we
@@ -370,8 +370,10 @@ class Summary:
             if handle != 0:
                 for a in self.handles:
                     if a["handle"] == handle:
-                        try: self.handles.remove(a)
-                        except ValueError: pass
+                        try:
+                            self.handles.remove(a)
+                        except ValueError:
+                            pass
 
         elif call["category"] == "filesystem":
             for argument in call["arguments"]:
@@ -460,8 +462,8 @@ class Enhanced(object):
             return self.keyhandles[handle]
 
         name = ""
-        if registry and registry != "0x00000000" and\
-            registry in self.keyhandles:
+        if registry and registry != "0x00000000" and \
+                registry in self.keyhandles:
             name = self.keyhandles[registry]
 
         nkey = name + subkey
@@ -554,7 +556,7 @@ class Enhanced(object):
             try:
                 return codes[int(ccode)]
             except KeyError:
-                if int(ccode >= 128):
+                if int(ccode) >= 128:
                     return "user"
                 else:
                     return "notify"
@@ -757,15 +759,13 @@ class Enhanced(object):
                 "event": "modify",
                 "object": "service",
                 "apis": ["ControlService"],
-                "args": [("controlcode", "ControlCode")
-                ]
+                "args": [("controlcode", "ControlCode")]
             },
             {
                 "event": "delete",
                 "object": "service",
                 "apis": ["DeleteService"],
-                "args": [
-                ]
+                "args": [],
             },
         ]
 
@@ -816,7 +816,6 @@ class Enhanced(object):
             if call["api"] in ["ControlService"]:
                 event["data"]["action"] = _get_service_action(args["ControlCode"])
 
-
             return event
 
         elif call["api"] in ["SetCurrentDirectoryA", "SetCurrentDirectoryW"]:
@@ -838,13 +837,13 @@ class Enhanced(object):
 
         # Registry
         elif call["api"] in ["RegOpenKeyExA", "RegOpenKeyExW", "RegCreateKeyExA", "RegCreateKeyExW"]:
-            regkey = self._add_keyhandle(args.get("Registry", ""), args.get("SubKey", ""), args.get("Handle", ""))
+            self._add_keyhandle(args.get("Registry", ""), args.get("SubKey", ""), args.get("Handle", ""))
 
         elif call["api"] in ["NtOpenKey"]:
-            regkey = self._add_keyhandle(None, args.get("ObjectAttributes", ""), args.get("KeyHandle", ""))
+            self._add_keyhandle(None, args.get("ObjectAttributes", ""), args.get("KeyHandle", ""))
 
         elif call["api"] in ["RegCloseKey"]:
-            regkey = self._remove_keyhandle(args.get("Handle", ""))
+            self._remove_keyhandle(args.get("Handle", ""))
 
         return event
 
