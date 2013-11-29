@@ -117,7 +117,7 @@ class Tool(Package):
             is ready to be terminated
         """
         try:
-            os.kill(self.tool_pid, 0)
+            os.kill(self.tool_pid.pid, 0)
         except OSError:
             return False
         else:
