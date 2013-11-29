@@ -158,8 +158,6 @@ class PortableExecutable:
                         name = str(resource_type.name)
                     else:
                         name = str(pefile.RESOURCE_TYPE.get(resource_type.struct.Id))
-                    if name == None:
-                        name = str(esource_type.struct.Id)
 
                     if hasattr(resource_type, "directory"):
                         for resource_id in resource_type.directory.entries:

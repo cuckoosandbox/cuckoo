@@ -188,13 +188,12 @@ class VolatilityAPI(object):
             cpu_number = entry.obj_parent.obj_parent.ProcessorBlock.Number
             new = {
                 "cpu_number": int(cpu_number),
-                "index":int(n),
-                "selector":hex(int(entry.Selector)),
-                "address":hex(int(addr)),
-                "module":module_name,
-                "section":sect_name,
-                }
-
+                "index": int(n),
+                "selector": hex(int(entry.Selector)),
+                "address": hex(int(addr)),
+                "module": module_name,
+                "section": sect_name,
+            }
             results.append(new)
 
         return dict(config={}, data=results)
@@ -210,7 +209,7 @@ class VolatilityAPI(object):
         results = []
 
         command = self.plugins["timers"](self.config)
-        for timer,module in command.calculate():
+        for timer, module in command.calculate():
             if timer.Header.SignalState.v():
                 signaled = "Yes"
             else:
@@ -225,13 +224,12 @@ class VolatilityAPI(object):
 
             new = {
                 "offset": hex(timer.obj_offset),
-                "due_time":due_time,
-                "period":int(timer.Period),
-                "signaled":signaled,
-                "routine":hex(int(timer.Dpc.DeferredRoutine)),
-                "module":module_name,
-                }
-
+                "due_time": due_time,
+                "period": int(timer.Period),
+                "signaled": signaled,
+                "routine": hex(int(timer.Dpc.DeferredRoutine)),
+                "module": module_name,
+            }
             results.append(new)
 
         return dict(config={}, data=results)
@@ -254,36 +252,34 @@ class VolatilityAPI(object):
                     new = {
                         "offset": hex(int(hook.obj_offset)),
                         "session": int(winsta.dwSessionId),
-                        "desktop":"{0}\\{1}".format(winsta.Name, desk.Name),
-                        "thread":"<any>",
-                        "filter":str(name),
-                        "flags":str(hook.flags),
-                        "function":hex(int(hook.offPfn)),
-                        "module":str(module),
-                        }
-
+                        "desktop": "{0}\\{1}".format(winsta.Name, desk.Name),
+                        "thread": "<any>",
+                        "filter": str(name),
+                        "flags": str(hook.flags),
+                        "function": hex(int(hook.offPfn)),
+                        "module": str(module),
+                    }
                     results.append(new)
 
                 for thrd in desk.threads():
                     info = "{0} ({1} {2})".format(
-                            thrd.pEThread.Cid.UniqueThread,
-                            thrd.ppi.Process.ImageFileName,
-                            thrd.ppi.Process.UniqueProcessId
-                            )
+                        thrd.pEThread.Cid.UniqueThread,
+                        thrd.ppi.Process.ImageFileName,
+                        thrd.ppi.Process.UniqueProcessId)
+
                     for name, hook in thrd.hooks():
                         module = command.translate_hmod(winsta, atom_tables, hook.ihmod)
 
                         new = {
                             "offset": hex(int(hook.obj_offset)),
-                            "session":int(winsta.dwSessionId),
-                            "desktop":"{0}\\{1}".format(winsta.Name, desk.Name),
-                            "thread":str(info),
-                            "filter":str(name),
-                            "flags":str(hook.flags),
-                            "function":hex(int(hook.offPfn)),
-                            "module":str(module),
-                            }
-
+                            "session": int(winsta.dwSessionId),
+                            "desktop": "{0}\\{1}".format(winsta.Name, desk.Name),
+                            "thread": str(info),
+                            "filter": str(name),
+                            "flags": str(hook.flags),
+                            "function": hex(int(hook.offPfn)),
+                            "module": str(module),
+                        }
                         results.append(new)
 
         return dict(config={}, data=results)
@@ -318,11 +314,10 @@ class VolatilityAPI(object):
 
                 new = {
                     "filename": str(task.ImageFileName),
-                    "process_id":int(task.UniqueProcessId),
-                    "sid_string":str(sid_string),
-                    "sid_name":str(sid_name),
-                    }
-
+                    "process_id": int(task.UniqueProcessId),
+                    "sid_string": str(sid_string),
+                    "sid_name": str(sid_name),
+                }
                 results.append(new)
 
         return dict(config={}, data=results)
@@ -356,14 +351,13 @@ class VolatilityAPI(object):
                     attributes.append("Default")
 
                 new = {
-                    "process_id":int(task.UniqueProcessId),
-                    "filename":str(task.ImageFileName),
-                    "value":int(value),
-                    "privilege":str(name),
-                    "attributes":",".join(attributes),
-                    "description":str(desc),
-                    }
-
+                    "process_id": int(task.UniqueProcessId),
+                    "filename": str(task.ImageFileName),
+                    "value": int(value),
+                    "privilege": str(name),
+                    "attributes": ",".join(attributes),
+                    "description": str(desc),
+                }
                 results.append(new)
 
         return dict(config={}, data=results)
@@ -391,7 +385,6 @@ class VolatilityAPI(object):
                     "vad_start": "{0:#x}".format(vad.Start),
                     "vad_tag": str(vad.Tag),
                 }
-
                 results.append(new)
 
                 if dump_dir:
@@ -520,9 +513,9 @@ class VolatilityAPI(object):
                     "process_id": int(task.UniqueProcessId),
                     "process_name": str(task.ImageFileName),
                     "dll_base": "{0:#x}".format(base),
-                    "dll_in_load": load_mod != None,
-                    "dll_in_init": init_mod != None,
-                    "dll_in_mem": mem_mod != None,
+                    "dll_in_load": not load_mod is None,
+                    "dll_in_init": not init_mod is None,
+                    "dll_in_mem": not mem_mod is None,
                     "dll_mapped_path": str(mapped_files[base]),
                     "load_full_dll_name": "",
                     "init_full_dll_name": "",
@@ -615,9 +608,9 @@ class VolatilityAPI(object):
                 for att_device in device.attached_devices():
                     device_header = obj.Object(
                         "_OBJECT_HEADER",
-                        offset = att_device.obj_offset - att_device.obj_vm.profile.get_obj_offset("_OBJECT_HEADER", "Body"),
-                        vm = att_device.obj_vm,
-                        native_vm = att_device.obj_native_vm
+                        offset=att_device.obj_offset - att_device.obj_vm.profile.get_obj_offset("_OBJECT_HEADER", "Body"),
+                        vm=att_device.obj_vm,
+                        native_vm=att_device.obj_native_vm
                     )
 
                     device_name = str(device_header.NameInfo.Name or "")
@@ -817,7 +810,7 @@ class VolatilityManager(object):
         if self.voptions.basic.delete_memdump:
             try:
                 os.remove(self.memfile)
-            except OSError as e:
+            except OSError:
                 log.error("Unable to delete memory dump file at path \"%s\" ", self.memfile)
 
 class Memory(Processing):
@@ -835,7 +828,7 @@ class Memory(Processing):
                 try:
                     vol = VolatilityManager(self.memory_path)
                     results = vol.run()
-                except Exception as e:
+                except Exception:
                     log.exception("Generic error executing volatility")
             else:
                 log.error("Memory dump not found: to run volatility you have to enable memory_dump")

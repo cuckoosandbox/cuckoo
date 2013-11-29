@@ -142,7 +142,6 @@ class ConsoleHandler(logging.StreamHandler):
 
 def init_logging():
     """Initializes logging."""
-    cfg = Config()
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 
     fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log"))

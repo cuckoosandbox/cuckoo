@@ -362,11 +362,11 @@ class RunSignatures(object):
 
                         # If the signature returns None we can carry on, the
                         # condition was not matched.
-                        if result == None:
+                        if result is None:
                             continue
 
                         # On True, the signature is matched.
-                        if result == True:
+                        if result is True:
                             log.debug("Analysis matched signature \"%s\"", sig.name)
                             matched.append(sig.as_result())
                             if sig in complete_list:
@@ -386,7 +386,7 @@ class RunSignatures(object):
                     log.exception("Failed run on_complete() method for signature \"%s\":", sig.name)
                     continue
                 else:
-                    if result == True:
+                    if result is True:
                         log.debug("Analysis matched signature \"%s\"", sig.name)
                         matched.append(sig.as_result())
                         if sig in complete_list:

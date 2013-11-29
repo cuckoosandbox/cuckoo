@@ -53,6 +53,7 @@ class GuestManager:
         # the critical timeout is h it.
         abort = Event()
         abort.clear()
+
         def die():
             abort.set()
 
@@ -186,6 +187,7 @@ class GuestManager:
         # Same procedure as in self.wait(). Just look at the comments there.
         abort = Event()
         abort.clear()
+
         def die():
             abort.set()
 

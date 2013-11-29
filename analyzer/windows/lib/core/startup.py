@@ -18,7 +18,7 @@ def create_folders():
 
         try:
             os.makedirs(folder)
-        except OSError as e:
+        except OSError:
             pass
 
 def init_logging():
