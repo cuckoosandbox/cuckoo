@@ -278,7 +278,8 @@ class BsonParser(object):
             name = dec.get("name", "NONAME")
             arginfo = dec.get("args", [])
 
-            self.infomap[index] = (name, arginfo)
+            argnames, converters = check_names_for_typeinfo(arginfo)
+            self.infomap[index] = name, arginfo, argnames, converters
 
         elif mtype == "debug":
             log.info("Debug message from monitor: "
@@ -301,8 +302,7 @@ class BsonParser(object):
                             "to explain first: {0}".format(dec))
                 return True
 
-            apiname, arginfo = self.infomap[index]
-            argnames, converters = check_names_for_typeinfo(arginfo)
+            apiname, arginfo, argnames, converters = self.infomap[index]
             args = dec.get("args", [])
 
             if len(args) != len(argnames):
