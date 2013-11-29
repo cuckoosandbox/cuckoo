@@ -203,8 +203,8 @@ class NetlogParser(object):
 
 ###############################################################################
 # Generic BSON based protocol - by rep
-# Allows all kinds of languages / sources to generate input for Cuckoo
-#  thus we can reuse report generation / signatures for other API trace sources
+# Allows all kinds of languages / sources to generate input for Cuckoo,
+# thus we can reuse report generation / signatures for other API trace sources
 ###############################################################################
 
 TYPECONVERTERS = {
