@@ -211,8 +211,6 @@ TYPECONVERTERS = {
     "p": lambda v: "0x%08x" % default_converter(v),
 }
 
-APICATEGORIES = dict((i[0], i[1]) for i in LOGTBL)
-
 # 1 Mb max message length
 MAX_MESSAGE_LENGTH = 20 * 1024 * 1024
 
@@ -277,9 +275,10 @@ class BsonParser(object):
             # API call index info message, explaining the argument names, etc
             name = dec.get("name", "NONAME")
             arginfo = dec.get("args", [])
+            category = dec.get("category", "")
 
             argnames, converters = check_names_for_typeinfo(arginfo)
-            self.infomap[index] = name, arginfo, argnames, converters
+            self.infomap[index] = name, arginfo, argnames, converters, category
 
         elif mtype == "debug":
             log.info("Debug message from monitor: "
@@ -302,7 +301,7 @@ class BsonParser(object):
                             "to explain first: {0}".format(dec))
                 return True
 
-            apiname, arginfo, argnames, converters = self.infomap[index]
+            apiname, arginfo, argnames, converters, category = self.infomap[index]
             args = dec.get("args", [])
 
             if len(args) != len(argnames):
@@ -342,7 +341,6 @@ class BsonParser(object):
             arguments = argdict.items()
             arguments += dec.get("aux", {}).items()
 
-            category = APICATEGORIES.get(apiname, "unknown")
             self.handler.log_call(context, apiname, category, arguments)
 
         return True
