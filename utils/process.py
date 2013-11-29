@@ -42,7 +42,7 @@ def main():
         maxcount = cfg.cuckoo.max_analysis_count
         count = 0
         db = Database()
-        while count < maxcount:
+        while count < maxcount or not maxcount:
             tasks = db.list_tasks(status=TASK_COMPLETED, limit=1)
 
             for task in tasks:
