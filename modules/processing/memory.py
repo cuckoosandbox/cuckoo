@@ -6,8 +6,8 @@ import os
 import logging
 
 from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 try:
     import volatility.conf as conf

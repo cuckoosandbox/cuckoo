@@ -9,8 +9,8 @@ import logging
 import subprocess
 
 from lib.cuckoo.common.abstracts import Auxiliary
-from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_GUEST_PORT
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_GUEST_PORT
 
 log = logging.getLogger(__name__)
 

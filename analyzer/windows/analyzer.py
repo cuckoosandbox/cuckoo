@@ -18,20 +18,20 @@ from threading import Lock, Thread
 from datetime import datetime
 
 from lib.api.process import Process
-from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.abstracts import Package, Auxiliary
+from lib.common.constants import PATHS, PIPE
 from lib.common.defines import KERNEL32
 from lib.common.defines import ERROR_MORE_DATA, ERROR_PIPE_CONNECTED
 from lib.common.defines import PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE
 from lib.common.defines import PIPE_READMODE_MESSAGE, PIPE_WAIT
 from lib.common.defines import PIPE_UNLIMITED_INSTANCES, INVALID_HANDLE_VALUE
-from lib.common.constants import PATHS, PIPE
+from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.results import upload_to_host
 from lib.core.config import Config
-from lib.core.startup import create_folders, init_logging
-from lib.core.privileges import grant_debug_privilege
 from lib.core.packages import choose_package
-import modules.auxiliary as auxiliary
+from lib.core.privileges import grant_debug_privilege
+from lib.core.startup import create_folders, init_logging
+from modules import auxiliary
 
 log = logging.getLogger()
 

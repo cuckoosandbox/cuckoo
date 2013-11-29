@@ -7,11 +7,11 @@ import json
 import logging
 from datetime import datetime
 
+from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
-from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.objects import File, URL
 from lib.cuckoo.common.utils import create_folder, Singleton
 
@@ -19,9 +19,9 @@ try:
     from sqlalchemy import create_engine, Column
     from sqlalchemy import Integer, String, Boolean, DateTime, Enum
     from sqlalchemy import ForeignKey, Text, Index, Table
-    from sqlalchemy.orm import sessionmaker, relationship, joinedload, backref
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+    from sqlalchemy.orm import sessionmaker, relationship, joinedload, backref
     from sqlalchemy.pool import NullPool
     Base = declarative_base()
 except ImportError:

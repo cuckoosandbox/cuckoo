@@ -5,8 +5,8 @@
 import math
 
 try:
-    import ImageGrab
     import ImageChops
+    import ImageGrab
     HAVE_PIL = True
 except:
     HAVE_PIL = False

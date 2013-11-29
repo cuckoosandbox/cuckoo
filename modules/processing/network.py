@@ -9,12 +9,12 @@ import socket
 import logging
 from urlparse import urlunparse
 
-from lib.cuckoo.common.utils import convert_to_printable
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.dns import resolve
 from lib.cuckoo.common.irc import ircMessage
 from lib.cuckoo.common.objects import File
+from lib.cuckoo.common.utils import convert_to_printable
 
 try:
     import dpkt

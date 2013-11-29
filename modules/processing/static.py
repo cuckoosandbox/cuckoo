@@ -17,9 +17,9 @@ try:
 except ImportError:
     HAVE_PEFILE = False
 
-from lib.cuckoo.common.objects import File
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Processing
+from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import convert_to_printable
 
 

@@ -7,9 +7,9 @@ import json
 import urllib
 import urllib2
 
-from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.exceptions import CuckooProcessingError
+from lib.cuckoo.common.objects import File
 
 VIRUSTOTAL_FILE_URL = "https://www.virustotal.com/vtapi/v2/file/report"
 VIRUSTOTAL_URL_URL = "https://www.virustotal.com/vtapi/v2/url/report"

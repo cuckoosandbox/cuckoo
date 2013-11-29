@@ -14,8 +14,8 @@ from StringIO import StringIO
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 import lib.cuckoo.common.colors as colors
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 URL = "https://github.com/cuckoobox/community/archive/{0}.zip"
 

@@ -5,14 +5,14 @@
 import os
 import base64
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Report
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.objects import File
 
 try:
-    from jinja2.loaders import FileSystemLoader
     from jinja2.environment import Environment
+    from jinja2.loaders import FileSystemLoader
     HAVE_JINJA2 = True
 except ImportError:
     HAVE_JINJA2 = False
