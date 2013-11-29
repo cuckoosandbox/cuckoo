@@ -13,19 +13,15 @@ try:
 except ImportError:
     HAVE_BSON = False
 
+from lib.cuckoo.common.defines import REG_SZ, REG_EXPAND_SZ
+from lib.cuckoo.common.defines import REG_DWORD_BIG_ENDIAN
+from lib.cuckoo.common.defines import REG_DWORD_LITTLE_ENDIAN
 from lib.cuckoo.common.exceptions import CuckooResultError
 from lib.cuckoo.common.logtbl import table as LOGTBL
 from lib.cuckoo.common.utils import get_filename_from_path
 
 log = logging.getLogger(__name__)
 
-REG_NONE                = 0
-REG_SZ                  = 1
-REG_EXPAND_SZ           = 2
-REG_BINARY              = 3
-REG_DWORD_LITTLE_ENDIAN = 4
-REG_DWORD               = 4
-REG_DWORD_BIG_ENDIAN    = 5
 
 # should probably prettify this
 def expand_format(fs):
@@ -346,9 +342,7 @@ class BsonParser(object):
             arguments = argdict.items()
             arguments += dec.get("aux", {}).items()
 
-            modulename = "NONE"
             category = APICATEGORIES.get(apiname, "unknown")
-
             self.handler.log_call(context, apiname, category, arguments)
 
         return True
