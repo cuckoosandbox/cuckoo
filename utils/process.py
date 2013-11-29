@@ -9,7 +9,7 @@ import time
 import logging
 import argparse
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
@@ -31,9 +31,12 @@ def do(aid, report=False):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("id", type=str, help="ID of the analysis to process")
-    parser.add_argument("-r", "--report", help="Re-generate report",
-                        action="store_true", required=False)
+    parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
+    parser.add_argument("-r", "--report", help="Re-generate report", action="store_true", required=False)
     args = parser.parse_args()
+
+    if args.debug:
+        log.setLevel(logging.DEBUG)
 
     init_modules()
 
