@@ -46,7 +46,6 @@ class ParseProcessLog(list):
         self.process_name = None
         self.parent_id = None
         self.first_seen = None
-        self.calls = self
         self.lastcall = None
 
         if os.path.exists(log_path) and os.stat(log_path).st_size > 0:
@@ -253,7 +252,7 @@ class Processes:
                 "process_name": current_log.process_name,
                 "parent_id": current_log.parent_id,
                 "first_seen": logtime(current_log.first_seen),
-                "calls": current_log.calls,
+                "calls": current_log,
             })
 
         # Sort the items in the results list chronologically. In this way we
