@@ -275,7 +275,17 @@ class BsonParser(object):
             # API call index info message, explaining the argument names, etc
             name = dec.get("name", "NONAME")
             arginfo = dec.get("args", [])
-            category = dec.get("category", "")
+            category = dec.get("category")
+
+            # Bson dumps that were generated before cuckoomon exported the
+            # "category" field have to get the category using the old method.
+            if not category:
+                # Try to find the entry/entries with this api name.
+                category = [_ for _ in LOGTBL if _[0] == name]
+
+                # If we found an entry, take its category, otherwise we take
+                # the default string "unknown."
+                category = category[0][1] if category else "unknown"
 
             argnames, converters = check_names_for_typeinfo(arginfo)
             self.infomap[index] = name, arginfo, argnames, converters, category
