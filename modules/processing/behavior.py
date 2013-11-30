@@ -72,8 +72,8 @@ class ParseProcessLog(list):
         self.fd.seek(0)
 
     def read(self, length):
-        if length == 0:
-            return b''
+        if not length:
+            return ''
         buf = self.fd.read(length)
         if not buf or len(buf) != length:
             raise EOFError()
@@ -83,11 +83,8 @@ class ParseProcessLog(list):
         self.reset()
         return self
 
-    def __getitem__(self, key):
-        return getattr(self, key)
-
     def __repr__(self):
-        return "ParseProcessLog {0}".format(self._log_path)
+        return "<ParseProcessLog log-path: %r>" % self._log_path
 
     def __nonzero__(self):
         return self.wait_for_lastcall()
@@ -397,6 +394,7 @@ class Summary:
         return {"files": self.files, "keys": self.keys, "mutexes": self.mutexes}
 
 class Enhanced(object):
+    """Generates a more extensive high-level representation than Summary."""
 
     key = "enhanced"
 
@@ -427,12 +425,6 @@ class Enhanced(object):
         Add a procedure address
         """
         self.procedures[base] = "{0}:{1}".format(self._get_loaded_module(mbase), name)
-
-    def _get_procedure(self, base):
-        """
-        Get the name of a procedure
-        """
-        return self.procedures.get(base, "")
 
     def _add_loaded_module(self, name, base):
         """
@@ -470,17 +462,14 @@ class Enhanced(object):
 
     def _remove_keyhandle(self, handle):
         key = self._get_keyhandle(handle)
-        try:
+
+        if handle in self.keyhandles:
             self.keyhandles.pop(handle)
-        except KeyError:
-            pass
+
         return key
 
     def _get_keyhandle(self, handle):
-        try:
-            return self.keyhandles[handle]
-        except KeyError:
-            return ""
+        return self.keyhandles.get(handle, "")
 
     def _process_call(self, call):
         """ Gets files calls
@@ -506,6 +495,7 @@ class Enhanced(object):
             if call["api"] in item["apis"]:
                 args = _load_args(call)
                 self.eid += 1
+
                 event = {
                     "event": item["event"],
                     "object": item["object"],
@@ -513,8 +503,9 @@ class Enhanced(object):
                     "eid": self.eid,
                     "data": {}
                 }
-                for (logname, dataname) in item["args"]:
-                    event["data"][logname] = args.get(dataname, None)
+
+                for logname, dataname in item["args"]:
+                    event["data"][logname] = args.get(dataname)
                 return event
 
         def _generic_handle(self, data, call):
@@ -531,30 +522,21 @@ class Enhanced(object):
             handles[handle] = filename
 
         def _remove_handle(handles, handle):
-            try:
+            if handle in handles:
                 handles.pop(handle)
-            except KeyError:
-                pass
 
         def _get_handle(handles, handle):
-            try:
-                return handles[handle]
-            except KeyError:
-                return None
+            return handles.get(handle)
 
-        def _get_service_action(ccode):
+        def _get_service_action(control_code):
             """@see: http://msdn.microsoft.com/en-us/library/windows/desktop/ms682108%28v=vs.85%29.aspx"""
             codes = {1: "stop",
                      2: "pause",
                      3: "continue",
                      4: "info"}
-            try:
-                return codes[int(ccode)]
-            except KeyError:
-                if int(ccode) >= 128:
-                    return "user"
-                else:
-                    return "notify"
+
+            default = "user" if control_code >= 128 else "notify"
+            return codes.get(control_code, default)
 
         event = None
 
