@@ -685,6 +685,18 @@ class Analyzer:
                 log.warning("Cannot terminate auxiliary module %s: %s",
                             aux.__class__.__name__, e)
 
+        # Try to terminate remaining active processes. We do this to make sure
+        # that we clean up remaining open handles (sockets, files, etc.).
+        log.info("Terminating remaining processes before shutdown...")
+
+        for pid in PROCESS_LIST:
+            proc = Process(pid=pid)
+            if proc.is_alive():
+                try:
+                    proc.terminate()
+                except:
+                    continue
+
         # Let's invoke the completion procedure.
         self.complete()
 
