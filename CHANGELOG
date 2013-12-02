@@ -1,0 +1,48 @@
+CHANGELOG
+
+utils\submit.py
+	added arguments "--tool" and "--tool_dir"
+	Checks whether or not the path to the tool/directory exists
+
+lib\cuckoo\core\database.py
+	added tool and tool_dir column to task database
+
+agent\agent.py
+	added an add_tool function
+		creates a folder on the guest %Temp%\tool
+		writes tool to that folder
+
+lib\cuckoo\core\guest.py
+	calls add_tool if --tool was specified
+	Checks to see whether --tool is a directory or a file (nested directories not supported)
+	Adds an individual tool and, if specified, a group of files within a directory to the guest
+	Programatically passes the path to which files will be uploaded to
+
+lib\cuckoo\core\scheduler.py
+	added "tool" and "tool_dir" to the options dictionary
+
+analyzer\windows\analyzer.py
+	Added code to automatically use package tool.py if --tool is specified
+
+analyzer\windows\modules\packages\tool.py
+	space_buffer:
+		adds a " " before and after a string
+
+	format_user_options(self, options, sample_options, path)
+		replaces any occurrence of "sample" within options param with path param
+		replaces any occurrence of "sample_options" within options param with sample_options param
+		defualt behavior results in the following: path sample_options
+
+	get_tool_name(self):
+		Searches the tool directory (%Temp\tool) for a file with a .exe extension
+		Only supports existence of a single exe file
+
+	start(self, path):
+		Runs command which can be seen in output file "command.log"
+
+	check(self):
+		Checks for the process running the tool to finish
+
+	finish(self):
+		Writes files inside of %Temp%\tool to ../storage/analyses/{task_#}/files/ or, if that fails, /tmp/upload/ on host
+
