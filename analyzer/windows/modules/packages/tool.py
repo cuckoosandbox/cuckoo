@@ -112,20 +112,21 @@ class Tool(Package):
         return 0
 
     def check(self):
-        """ Checks to see if process is terminated.
-            Returning False signals analyzer.py that the anyalysis
-            is ready to be terminated
+        """ Check to see if process has terminated.
+
+        Returning `False` signals to analyzer.py that the analysis has been
+        completed.
         """
+        # If the process does not exist, os.kill will raise an OSError. We
+        # assume this means it has already finished successfully. This does NOT
+        # actually kill the process if it is running.
         try:
             os.kill(self.tool_pid.pid, 0)
         except OSError:
             return False
-        else:
-            if self.tool_pid.poll() is None:
-                #  A None value indicates that the process hasn’t terminated yet.
-                return True
-            else:
-                return False
+
+        # `None` indicates that the process hasn't terminated yet.
+        return (self.tool_pid.poll() is None)
 
     def finish(self):
 
