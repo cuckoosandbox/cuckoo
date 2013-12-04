@@ -640,6 +640,7 @@ class Signature(object):
     enabled = True
     minimum = None
     maximum = None
+    order = 0
 
     evented = False
     filter_processnames = set()

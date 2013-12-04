@@ -392,8 +392,12 @@ class RunSignatures(object):
                         if sig in complete_list:
                             complete_list.remove(sig)
 
+        matched.sort(key=lambda key: key["severity"])
+        self.results["signatures"] = matched
+
         # Compat loop for old-style (non evented) signatures.
         if complete_list:
+            complete_list.sort(key=lambda module: module.order)
             log.debug("Running non-evented signatures")
 
             for signature in complete_list:
@@ -401,12 +405,9 @@ class RunSignatures(object):
                 # If the signature is matched, add it to the list.
                 if match:
                     matched.append(match)
-
-        if matched:
-            # Sort the matched signatures by their severity level.
-            matched.sort(key=lambda key: key["severity"])
-
-        self.results["signatures"] = matched
+                    # Sort the matched signatures by their severity level.
+                    matched.sort(key=lambda key: key["severity"])
+                    self.results["signatures"] = matched
 
 class RunReporting:
     """Reporting Engine.
