@@ -19,7 +19,7 @@ class Genric(Package):
             suspended = False
 
         cmd_path = os.path.join(os.getenv("SystemRoot"), "system32", "cmd.exe")
-        cmd_args = "/c start {0}".format(path)
+        cmd_args = "/c start \"{0}\"".format(path)
 
         p = Process()
         if not p.execute(path=cmd_path, args=cmd_args, suspended=suspended):
