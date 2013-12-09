@@ -4,13 +4,15 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import logging
 from subprocess import Popen
 
-from lib.common.abstracts import Package
 from lib.api.process import Process
-from lib.common.exceptions import CuckooPackageError
+from lib.common.abstracts import Package
 from lib.common.results import upload_to_host
+from lib.common.exceptions import CuckooPackageError
 
+log = logging.getLogger()
 
 class Tool(Package):
     """Tool analysis package.
@@ -21,8 +23,8 @@ class Tool(Package):
     temp_dir = ""
     tool_dir = ""
     tool_name = ""
-    tool_pid = 0
-    log_file_name = "pkg.log"
+    tool_process = None
+    log_file_name = "tool_output.log"
     log_file_path = ""
     orig_files = []
 
@@ -31,8 +33,8 @@ class Tool(Package):
 
     def format_user_options(self, options, sample_options, path):
         options = self.space_buffer(options)
-        if "sample" in options:
-            options = options.replace("sample", path)
+        if "$sample" in options:
+            options = options.replace("$sample", path)
         else:
             options = options + path
 
@@ -87,15 +89,12 @@ class Tool(Package):
         options = self.options.get("tool_options", "")
         sample_options = self.options.get("sample_options", "")
         options = self.format_user_options(options, sample_options, path)
-        options = options.split()
+
+        log.info("Running command: " + tool_path + options)
+
         cmd_list = []
         cmd_list.append(tool_path)
-        cmd_list.extend(options)
-
-        # Write command to a file
-        with open("command.log", 'w') as logfile:
-            for item in cmd_list:
-                logfile.write("%s " % item)
+        cmd_list.extend(options.split())
 
         # 0x08000000 = CREATE_NO_WINDOW 
         # Either set creation flag to CREATE_NO_WINDOW 
@@ -103,13 +102,13 @@ class Tool(Package):
         # because the module will interfere with the running tool
         creation_flag = 0x08000000 
         with open(self.log_file_name, 'w') as output_file:
-            self.tool_pid = Popen(cmd_list,
+            self.tool_process = Popen(cmd_list,
                                   stdout=output_file,
                                   stderr=output_file,
                                   creationflags=creation_flag,
-                                  shell=True)
-            self.tool_pid.communicate()
-        if self.tool_pid < 0:
+                                  shell=False)
+            self.tool_process.communicate()
+        if self.tool_process < 0:
             raise CuckooPackageError("Unable to execute initial process, analysis aborted")
 
         # return to initial directory
@@ -126,12 +125,12 @@ class Tool(Package):
         # assume this means it has already finished successfully. This does NOT
         # actually kill the process if it is running.
         try:
-            os.kill(self.tool_pid.pid, 0)
+            os.kill(self.tool_process.pid, 0)
         except OSError:
             return False
 
         # `None` indicates that the process hasn't terminated yet.
-        return (self.tool_pid.poll() is None)
+        return (self.tool_process.poll() is None)
 
     def finish(self):
         upload_path = self.options.get("upload_path", "/tmp/upload")
