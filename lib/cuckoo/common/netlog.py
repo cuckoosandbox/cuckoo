@@ -242,33 +242,19 @@ class BsonParser(object):
     def __init__(self, handler):
         self.handler = handler
         self.infomap = {}
-        self.exc = None
 
         if not HAVE_BSON:
             log.critical("Starting BsonParser, but bson is not available!")
 
     def read_next_message(self):
-        # Once EOFError has been raised and catch, we can predict that all
-        # further calls to .read() will raise EOFError as well. However, in
-        # the design of BsonParser there's a cyclic reference. In order to
-        # make BsonParser and the caller Garbage Collectable again we unset
-        # the .handler member upon receiving the first EOFError exception.
-        if self.exc:
-            raise self.exc
+        data = self.handler.read(4)
+        blen = struct.unpack("I", data)[0]
+        if blen > MAX_MESSAGE_LENGTH:
+            log.critical("BSON message larger than MAX_MESSAGE_LENGTH, "
+                         "stopping handler.")
+            return False
 
-        try:
-            data = self.handler.read(4)
-            blen = struct.unpack("I", data)[0]
-            if blen > MAX_MESSAGE_LENGTH:
-                log.critical("BSON message larger than MAX_MESSAGE_LENGTH, "
-                             "stopping handler.")
-                return False
-
-            data += self.handler.read(blen-4)
-        except EOFError as e:
-            # Unset the .handler member and set the exception message.
-            self.handler, self.exc = None, e
-            raise e
+        data += self.handler.read(blen-4)
 
         try:
             dec = bson.BSON(data).decode()
