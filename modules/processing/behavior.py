@@ -80,7 +80,8 @@ class ParseProcessLog(list):
         return buf
 
     def __iter__(self):
-        self.reset()
+        #import inspect
+        #log.debug('iter called by this guy: {0}'.format(inspect.stack()[1]))
         return self
 
     def __repr__(self):
@@ -119,7 +120,11 @@ class ParseProcessLog(list):
         return True
 
     def next(self):
-        if not self.fd or not self.wait_for_lastcall():
+        if not self.fd:
+            raise StopIteration()
+
+        if not self.wait_for_lastcall():
+            self.reset()
             raise StopIteration()
 
         nextcall, self.lastcall = self.lastcall, None
@@ -933,5 +938,9 @@ class BehaviorAnalysis(Processing):
                 behavior[instance.key] = instance.run()
             except:
                 log.exception("Failed to run partial behavior class \"%s\"", instance.key)
+
+            # Reset the ParseProcessLog instances after each module
+            for process in behavior["processes"]:
+                process["calls"].reset()
 
         return behavior
