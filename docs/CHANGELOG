@@ -1,6 +1,6 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 0.7 (TBD)
+Cuckoo Sandbox 1.0 (TBD)
 ========================
 
 * Introduced Auxiliary modules
@@ -16,7 +16,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Added reduced behavioral events
 * Added new web interface, removed old web.py
 * Added Windows analyzer auxiliary module to disguise the analysis environment
-* Added VBS analysis package
+* Added VBS and RTF analysis package
 * Added generic analysis package to execute samples via cmd.exe
 * Added MAEC 4.0.1 reporting module
 * Added filter for private networks in Network Analysis processing module
@@ -25,6 +25,8 @@ Cuckoo Sandbox 0.7 (TBD)
 * Added support for BSON logging format
 * Added option to specify a custom DLL to the analyzer and the analysis packages
 * Added ICMP protocol dissection
+* Added ESX Virtual Machine Manager
+* Slightly improved CuckooMon's stealthiness and stability
 * Refactored processing to improve performances
 * Refactored signature engine, introducing event-based signatures to improve performances
 * Refactored generation of process tree
@@ -34,6 +36,7 @@ Cuckoo Sandbox 0.7 (TBD)
 * Fixed virtual machine clock, now is updated to current time or specified by user via --clock option
 * Fixed bug in Human auxiliary module, now moving cursor to absolute positions
 * Fixed issue in Human auxiliary module, using SetCursorPos instead of mouse_event
+* Fixed issues with resolving relative filenames in CuckooMon
 * Removed support for GrayLog2
 * Removed pickle reporting module
 * Removed MAEC 1.1 reporting module
