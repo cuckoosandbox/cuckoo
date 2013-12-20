@@ -30,7 +30,7 @@ the end of the analysis process. You can use these memory dumps to perform addit
 memory forensic analysis with Volatility.
 
 Please also consider that we don't particularly encourage this: since Cuckoo employs
-some rootkit-like technologies to perform its operaitons, the results of a forensic
+some rootkit-like technologies to perform its operations, the results of a forensic
 analysis would be polluted by the sandbox's components.
 
 Troubleshooting
@@ -52,47 +52,47 @@ Please follow the upgrade steps described in :doc:`../installation/upgrade`.
 Cuckoo stumbles in some error I don't understand
 ------------------------------------------------
 
-Cuckoo is a young and still evolving project, it might definitely happen that
-you will occur in some problems while running it, but before you rush into
-sending emails to everyone make sure to read what follows.
+Cuckoo is a young and evolving project, it might definitely happen that
+you will encounter some issues while running it, but before you rush into
+sending emails to everyone make sure you read what follows.
 
 Cuckoo is not meant to be a point-and-click tool: it's designed to be a highly
 customizable and configurable solution for somewhat experienced users and
 malware analysts.
 
-It requires you to have a decent understanding of your operating systems, Python,
+It requires you to have a decent understanding of your operating system, Python,
 the concepts behind virtualization and sandboxing.
 We try to make it as easy to use as possible, but you have to keep in mind that
 it's not a technology meant to be accessible to just anyone.
 
 That being said, if a problem occurs you have to make sure that you did everything
 you could before asking for time and efforts from our developers and users.
-We just can't help everyone, we have limited time and it has to be dedicated to
-the development and fixing actual bugs.
+We just can't help everyone since we have limited time and it has to be dedicated to
+development and fixing actual bugs.
 
     * We have an extensive documentation, read it carefully. You can't just skip parts
       of it.
     * We have a mailing list archive, search through it for previous threads where
-      your same problem could have been already addressed and solved.
+      a problem similar to yours could have been addressed and solved.
     * We have a `Community`_ platform for asking questions, use it.
     * We have lot of users producing content on Internet, `Google`_ it.
-    * Spend some of your own time trying fixing the issues before asking ours, you
+    * Spend some of your own time trying to fix issues before asking us, you
       might even get to learn and understand Cuckoo better.
 
-Long story short: use the existing resources, put some efforts into it and don't
+Long story short: use existing resources, put some efforts into it and don't
 abuse people.
 
-If you still can't figure out your problem, you can ask help on our online communities
+If you still can't figure out your problem, you can ask for help on our online communities
 (see :doc:`../finalremarks/index`).
-Make sure when you ask for help to:
+Make sure when you ask for help you:
 
     * Use a clear and explicit title for your emails: "I have a problem", "Help me" or
       "Cuckoo error" are **NOT** good titles.
-    * Explain **in details** what you're experiencing. Try to reproduce several
-      times your issue and write down all steps to achieve that.
-    * Use no-paste services and link your logs, configuration files and details on your
+    * Explain **in details** what you're experiencing. Try to reproduce your issue several
+      times and write down all steps to achieve that.
+    * Use no-paste services and link your logs, configuration files and details of your
       setup.
-    * Eventually provide a copy of the analysis that generated the problem.
+    * Eventually, provide a copy of the analysis that generated the problem.
 
 .. _`Community`: http://community.cuckoosandbox.org
 .. _`Google`: http://www.google.com
@@ -100,20 +100,20 @@ Make sure when you ask for help to:
 Check and restore current snapshot with KVM
 -------------------------------------------
 
-If something goes wrong with virtual machine it's best practice to check curent snapshot
+If something goes wrong with virtual machine it's a best practice to check curent snapshot
 status.
 You can do that with the following::
 
     $ virsh snapshot-current "<Name of VM>"
 
-If you got a long XML as output your current snapshot is configured and you can skip
+If you got a long XML as output, your current snapshot is configured and you can skip
 the rest of this chapter; anyway if you got an error like the following your current
 snapshot is broken::
 
     $ virsh snapshot-current "<Name of VM>"
     error: domain '<Name of VM>' has no current snapshot
 
-To fix and create a current snapshot firt list all machine's snapshots::
+To fix and create a current snapshot first list snapshots for all machines::
 
     $ virsh snapshot-list "<Name of VM>"
      Name                 Creation Time             State
@@ -130,25 +130,25 @@ Now the virtual machine state is fixed.
 Check and restore current snapshot with VirtualBox
 --------------------------------------------------
 
-If something goes wrong with virtual it's best practice to check the virtual machine
-status and the curent snapshot.
+If something goes wrong with virtual machine it's a best practice to check its
+status and current snapshot.
 First of all check the virtual machine status with the following::
 
     $ VBoxManage showvminfo "<Name of VM>" | grep State
     State:           powered off (since 2012-06-27T22:03:57.000000000)
 
 If the state is "powered off" you can go ahead with the next check, if the state is
-"aborted" or something else you have to restore it to "powered off" before::
+"aborted" or something else you have to restore it to "powered off"::
 
     $ VBoxManage controlvm "<Name of VM>" poweroff
 
-With the following check the current snapshots state::
+With the following, check the current snapshot state::
 
     $ VBoxManage snapshot "<Name of VM>" list --details
        Name: s1 (UUID: 90828a77-72f4-4a5e-b9d3-bb1fdd4cef5f)
           Name: s2 (UUID: 97838e37-9ca4-4194-a041-5e9a40d6c205) *
 
-If you have a snapshot marked with a star "*" your snapshot is ready, anyway
+If you have a snapshot marked with a star "*", it is ready, anyway
 you have to restore the current snapshot::
 
     $ VBoxManage snapshot "<Name of VM>" restorecurrent
