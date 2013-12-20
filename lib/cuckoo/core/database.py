@@ -1083,6 +1083,18 @@ class Database(object):
             session.close()
         return sample
 
+    def count_samples(self):
+        """Counts the amount of samples in the database."""
+        session = self.Session()
+        try:
+            sample_count = session.query(Sample).count()
+        except SQLAlchemyError as e:
+            log.debug("Database error counting samples: {0}".format(e))
+            return 0
+        finally:
+            session.close()
+        return sample_count
+
     def view_machine(self, name):
         """Show virtual machine.
         @params name: virtual machine name
