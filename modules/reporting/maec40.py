@@ -367,10 +367,13 @@ class MAEC40Report(Report):
                 # Make sure the parameter value is set.
                 if parameter_value:
                     associated_objects_list.append(self.processAssociatedObject(associated_objects_dict[call_parameter["name"]], parameter_value))
-        # Process any RegKeys to account for the Hive == Handle corner case.
-        self.processRegKeys(associated_objects_list)
-        # Perform Windows Handle Update/Replacement Processing.
-        return self.processWinHandles(associated_objects_list)
+        if associated_objects_list:
+            # Process any RegKeys to account for the Hive == Handle corner case.
+            self.processRegKeys(associated_objects_list)
+            # Perform Windows Handle Update/Replacement Processing.
+            return self.processWinHandles(associated_objects_list)
+        else:
+            return None
 
     def processWinHandles(self, associated_objects_list):
         """Process any Windows Handles that may be associated with an Action. Replace Handle references with
