@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
-# See the file "docs/LICENSE" for copying permission.
+# See the file 'docs/LICENSE' for copying permission.
 
 import os.path
 import sys
@@ -39,7 +39,7 @@ def main():
     # have been restarted at some point in time.
     offset = None
 
-    # For the following stats we"re only interested in completed tasks.
+    # For the following stats we're only interested in completed tasks.
     tasks = db.list_tasks(offset=offset, status=TASK_COMPLETED)
     tasks += db.list_tasks(offset=offset, status=TASK_REPORTED)
 
