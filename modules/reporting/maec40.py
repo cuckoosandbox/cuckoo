@@ -318,7 +318,10 @@ class MAEC40Report(Report):
             elif parameter_name in parameter_mappings_dict and "associated_argument_vocab" not in parameter_mappings_dict[parameter_name]:
                 arguments_list.append({"argument_value": argument_value,
                                        "argument_name": {"value": parameter_mappings_dict[parameter_name]["associated_argument_name"]}})
-        return arguments_list
+        if arguments_list:
+            return arguments_list
+        else:
+            return None
 
     def processActionAssociatedObjects(self, associated_objects_dict, parameter_list):
         """Processes a dictionary of parameters that should be mapped to Associated Objects in the Action
@@ -367,10 +370,13 @@ class MAEC40Report(Report):
                 # Make sure the parameter value is set.
                 if parameter_value:
                     associated_objects_list.append(self.processAssociatedObject(associated_objects_dict[call_parameter["name"]], parameter_value))
-        # Process any RegKeys to account for the Hive == Handle corner case.
-        self.processRegKeys(associated_objects_list)
-        # Perform Windows Handle Update/Replacement Processing.
-        return self.processWinHandles(associated_objects_list)
+        if associated_objects_list:
+            # Process any RegKeys to account for the Hive == Handle corner case.
+            self.processRegKeys(associated_objects_list)
+            # Perform Windows Handle Update/Replacement Processing.
+            return self.processWinHandles(associated_objects_list)
+        else:
+            return None
 
     def processWinHandles(self, associated_objects_list):
         """Process any Windows Handles that may be associated with an Action. Replace Handle references with
@@ -689,22 +695,14 @@ class MAEC40Report(Report):
                                   "RT_VXD": "Vxd"}
 
         if len(self.results["static"]) > 0:
-            exports = {}
-            imports = []
-            sections = []
-            resources = []
-            version_info = {}
+            exports = None
+            imports = None
+            sections = None
+            resources = None
 
-            object_dict = {"id": self.id_generator.generate_object_id(),
-                           "properties": {"xsi:type":"WindowsExecutableFileObjectType",
-                                            "imports": imports,
-                                            "exports": exports,
-                                            "sections": sections,
-                                            "resources": resources
-                                            }
-                            }
             # PE exports.
             if len(self.results["static"]["pe_exports"]) > 0:
+                exports = {}
                 exported_function_list = []
                 for x in self.results["static"]["pe_exports"]:
                     exported_function_dict = {
@@ -716,6 +714,7 @@ class MAEC40Report(Report):
                 exports["exported_functions"] = exported_function_list
             # PE Imports.
             if len(self.results["static"]["pe_imports"]) > 0:
+                imports = []
                 for x in self.results["static"]["pe_imports"]:
                     imported_functions = []
                     import_dict = { "file_name": x["dll"],
@@ -729,12 +728,14 @@ class MAEC40Report(Report):
                     imports.append(import_dict)
             # Resources.
             if len(self.results["static"]["pe_resources"]) > 0:
+                resources = []
                 for r in self.results["static"]["pe_resources"]:
                     if r["name"] in resource_type_mappings:
                         resource_dict = {"type": resource_type_mappings[r["name"]]}
                         resources.append(resource_dict)
             # Sections.
             if len(self.results["static"]["pe_sections"]) > 0:
+                sections = []
                 for s in self.results["static"]["pe_sections"]:
                     section_dict = {"section_header":
                                     {"virtual_size": int(s["virtual_size"], 16),
@@ -747,6 +748,9 @@ class MAEC40Report(Report):
                     sections.append(section_dict)
             # Version info.
             if len(self.results["static"]["pe_versioninfo"]) > 0:
+                if not resources:
+                    resources = []
+                version_info = {}
                 for k in self.results["static"]["pe_versioninfo"]:
                     if not k["value"]:
                         continue
@@ -781,6 +785,14 @@ class MAEC40Report(Report):
                     if k["name"].lower() == "specialbuild":
                         version_info["specialbuild"] = k["value"]
                 resources.append(version_info)
+            object_dict = {"id": self.id_generator.generate_object_id(),
+                           "properties": {"xsi:type":"WindowsExecutableFileObjectType",
+                                            "imports": imports,
+                                            "exports": exports,
+                                            "sections": sections,
+                                            "resources": resources
+                                            }
+                            }
         win_exec_file_obj = Object.from_dict(object_dict)
         return win_exec_file_obj
 
