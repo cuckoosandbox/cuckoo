@@ -21,8 +21,8 @@ def timestamp(dt):
 def main():
     db = Database()
 
-    print(db.count_samples(), "samples in db")
-    print(db.count_tasks(), "tasks in db")
+    print("%d samples in db" % db.count_samples())
+    print("%d tasks in db" % db.count_tasks())
 
     states = (
         TASK_PENDING, TASK_RUNNING,
@@ -31,8 +31,7 @@ def main():
     )
 
     for state in states:
-        count = db.count_tasks(state)
-        print state, count, "tasks"
+        print("%s %d tasks" % (state, db.count_tasks(state)))
 
     # Later on we might be interested in only calculating stats for all
     # tasks starting at a certain offset, because the Cuckoo daemon may
@@ -54,8 +53,8 @@ def main():
 
     hourly = 60 * 60 * finished / (completed - started)
 
-    print("roughly", int(hourly), "tasks an hour")
-    print("roughly", int(24 * hourly), "tasks a day")
+    print("roughly %d tasks an hour" % int(hourly))
+    print("roughly %d tasks a day" % int(24 * hourly))
 
 if __name__ == "__main__":
     main()
