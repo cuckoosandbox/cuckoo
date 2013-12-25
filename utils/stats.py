@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
-# See the file 'docs/LICENSE' for copying permission.
+# See the file "docs/LICENSE" for copying permission.
 
 import os.path
 import sys
@@ -14,17 +14,15 @@ from lib.cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED
 from lib.cuckoo.core.database import TASK_REPORTED, TASK_FAILED_ANALYSIS
 from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
 
-
 def timestamp(dt):
     """Returns the timestamp of a datetime object."""
     return time.mktime(dt.timetuple())
 
-
-if __name__ == '__main__':
+def main():
     db = Database()
 
-    print db.count_samples(), 'samples in db'
-    print db.count_tasks(), 'tasks in db'
+    print(db.count_samples(), "samples in db")
+    print(db.count_tasks(), "tasks in db")
 
     states = (
         TASK_PENDING, TASK_RUNNING,
@@ -34,14 +32,14 @@ if __name__ == '__main__':
 
     for state in states:
         count = db.count_tasks(state)
-        print state, count, 'tasks'
+        print state, count, "tasks"
 
     # Later on we might be interested in only calculating stats for all
     # tasks starting at a certain offset, because the Cuckoo daemon may
     # have been restarted at some point in time.
     offset = None
 
-    # For the following stats we're only interested in completed tasks.
+    # For the following stats we"re only interested in completed tasks.
     tasks = db.list_tasks(offset=offset, status=TASK_COMPLETED)
     tasks += db.list_tasks(offset=offset, status=TASK_REPORTED)
 
@@ -56,5 +54,8 @@ if __name__ == '__main__':
 
     hourly = 60 * 60 * finished / (completed - started)
 
-    print 'roughly', int(hourly), 'tasks an hour'
-    print 'roughly', int(24 * hourly), 'tasks a day'
+    print("roughly", int(hourly), "tasks an hour")
+    print("roughly", int(24 * hourly), "tasks a day")
+
+if __name__ == "__main__":
+    main()
