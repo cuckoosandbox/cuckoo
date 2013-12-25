@@ -14,7 +14,7 @@ Cuckoo Sandbox 1.0 (TBD)
 * Added automated rescheduling of locked tasks at startup
 * Added tags to machines
 * Added reduced behavioral events
-* Added new web interface, removed old web.py
+* Added new web interface
 * Added Windows analyzer auxiliary module to disguise the analysis environment
 * Added VBS and RTF analysis package
 * Added generic analysis package to execute samples via cmd.exe
