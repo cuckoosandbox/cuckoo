@@ -42,19 +42,20 @@ def main():
     tasks = db.list_tasks(offset=offset, status=TASK_COMPLETED)
     tasks += db.list_tasks(offset=offset, status=TASK_REPORTED)
 
-    # Get the time when the first task started.
-    started = min(timestamp(_.started_on) for _ in tasks)
+    if tasks:
+        # Get the time when the first task started.
+        started = min(timestamp(task.started_on) for task in tasks)
 
-    # Get the time when the last task completed.
-    completed = max(timestamp(_.completed_on) for _ in tasks)
+        # Get the time when the last task completed.
+        completed = max(timestamp(task.completed_on) for task in tasks)
 
-    # Get the amount of tasks that actually completed.
-    finished = len(tasks)
+        # Get the amount of tasks that actually completed.
+        finished = len(tasks)
 
-    hourly = 60 * 60 * finished / (completed - started)
+        hourly = 60 * 60 * finished / (completed - started)
 
-    print("roughly %d tasks an hour" % int(hourly))
-    print("roughly %d tasks a day" % int(24 * hourly))
+        print("roughly %d tasks an hour" % int(hourly))
+        print("roughly %d tasks a day" % int(24 * hourly))
 
 if __name__ == "__main__":
     main()
