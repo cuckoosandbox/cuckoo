@@ -101,7 +101,7 @@ class Pcap:
                 network_low = struct.unpack(">I", socket.inet_aton(netaddr))[0]
                 network_high = network_low | 1 << (32 - int(bits)) - 1
 
-                if (ipaddr <= network_high) and (ipaddr >= network_low):
+                if ipaddr <= network_high and ipaddr >= network_low:
                     return True
             except:
                 continue
