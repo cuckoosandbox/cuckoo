@@ -10,7 +10,7 @@ import logging
 import argparse
 
 logging.basicConfig(level=logging.INFO)
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
@@ -21,7 +21,11 @@ from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from lib.cuckoo.core.startup import init_modules
 
 def do(aid, report=False):
-    results = RunProcessing(task_id=aid).run()
+    try:
+        results = RunProcessing(task_id=aid).run()
+    except Exception as e:
+        log.error(e)
+        return
     RunSignatures(results=results).run()
 
     if report:
@@ -64,7 +68,16 @@ def main():
                 time.sleep(5)
 
     else:
-        do(args.id, report=args.report)
+        try:
+            task_id = int(args.id)
+        except ValueError:
+            log.error("Invalid task id value")
+            return
+        log.info("Processing analysis data for Task #%d", task_id)
+        try:
+            do(task_id, report=args.report)
+        except:
+            log.exception("Exception when processing a task.")
 
 
 if __name__ == "__main__":
