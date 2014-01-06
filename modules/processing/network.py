@@ -427,33 +427,33 @@ class Pcap:
 
         if not IS_DPKT:
             log.error("Python DPKT is not installed, aborting PCAP analysis.")
-            return None
+            return self.results
 
         if not os.path.exists(self.filepath):
             log.warning("The PCAP file does not exist at path \"%s\".",
                         self.filepath)
-            return None
+            return self.results
 
         if os.path.getsize(self.filepath) == 0:
             log.error("The PCAP file at path \"%s\" is empty." % self.filepath)
-            return None
+            return self.results
 
         try:
             file = open(self.filepath, "rb")
         except (IOError, OSError):
             log.error("Unable to open %s" % self.filepath)
-            return None
+            return self.results
 
         try:
             pcap = dpkt.pcap.Reader(file)
         except dpkt.dpkt.NeedData:
             log.error("Unable to read PCAP file at path \"%s\".",
                       self.filepath)
-            return None
+            return self.results
         except ValueError:
             log.error("Unable to read PCAP file at path \"%s\". File is "
                       "corrupted or wrong format." % self.filepath)
-            return None
+            return self.results
 
         for ts, buf in pcap:
             try:
