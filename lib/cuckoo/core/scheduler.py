@@ -405,7 +405,7 @@ class Scheduler:
         """Initialize the machine manager."""
         global machinery
 
-        machinery_name = self.cfg.cuckoo.machine_manager
+        machinery_name = self.cfg.cuckoo.machinery
 
         log.info("Using \"%s\" machine manager", machinery_name)
 

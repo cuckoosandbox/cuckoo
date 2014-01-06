@@ -188,7 +188,7 @@ def init_modules():
     import_package(modules.reporting)
 
     # Import machine manager.
-    import_plugin("modules.machinery." + Config().cuckoo.machine_manager)
+    import_plugin("modules.machinery." + Config().cuckoo.machinery)
 
     for category, entries in list_plugins().items():
         log.debug("Imported \"%s\" modules:", category)

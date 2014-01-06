@@ -21,7 +21,7 @@ options that you might want to verify before launching Cuckoo.
 The file is largely commented and self-explainatory, but some of the options you might
 want to pay more attention to are:
 
-    * ``machine_manager`` in ``[cuckoo]``: this defines which Machine Manager module you want Cuckoo to use to interact with your analysis machines. The value must be the name of the module without extention.
+    * ``machinery`` in ``[cuckoo]``: this defines which Machinery module you want Cuckoo to use to interact with your analysis machines. The value must be the name of the module without extention.
     * ``ip`` and ``port`` in ``[resultserver]``: defines the local IP address and port that Cuckoo is going to use to bind the result server on. Make sure this is aligned with the network configuration of your analysis machines, or they won't be able to return the collected results.
     * ``connection`` in ``[database]``: defines how to connect to the internal database. You can use any DBMS supported by `SQLAlchemy`_ using a valid `Database Urls`_ syntax.
 
@@ -33,19 +33,19 @@ want to pay more attention to are:
     Cuckoo needs to have the interface where you bind the resultserver up before the start, so please
     check your network setup. If you are using NAT/PAT in your network, you can set up the resultserver IP
     to 0.0.0.0 to listen on all interfaces, then use the specific options `resultserver_ip` and `resultserver_port`
-    in *<machinemanager>.conf* to specify the address and port as every machine sees them.
+    in *<machinery>.conf* to specify the address and port as every machine sees them.
 
-.. _<machinemanager>_conf:
+.. _<machinery>_conf:
 
-<machinemanager>.conf
-=====================
+<machinery>.conf
+================
 
-Machine managers are the modules that define how Cuckoo should interact with
+Machinery modules are scripts that define how Cuckoo should interact with
 your virtualization software of choice.
 
 Every module should have a dedicated configuration file which defines the
 details on the available machines. For example, if you created a *vmware.py*
-machine manager module, you should specify *vmware* in *conf/cuckoo.conf*
+machinery module, you should specify *vmware* in *conf/cuckoo.conf*
 and have a *conf/vmware.conf* file.
 
 Cuckoo provides some modules by default and for the sake of this guide, we'll
@@ -112,7 +112,8 @@ Following is the default *conf/virtualbox.conf* file::
     # specific VMs. You can run samples on VMs with tag you require.
     # tags = windows_xp_sp3,32_bit,acrobat_reader_6
 
-You can use this same configuration structure for any other machine manager module.
+You can use this same configuration structure for any other machinery module, although
+existing ones might have some variations or additional configuration options.
 
 The comments for the options are self-explainatory.
 
