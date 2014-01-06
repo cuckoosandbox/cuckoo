@@ -5,7 +5,7 @@ Configuration
 Cuckoo relies on four main configuration files:
 
     * :ref:`cuckoo_conf`: for configuring general behavior and analysis options.
-    * :ref:`<machinemanager>_conf`: for defining the options for your virtualization software.
+    * :ref:`machinery_conf`: for defining the options for your virtualization software.
     * :ref:`processing_conf`: for enabling and configuraing processing modules.
     * :ref:`reporting_conf`: for enabling or disabling report formats.
     * :ref:`volatility_conf`: Volatility configuration
@@ -29,13 +29,13 @@ want to pay more attention to are:
 .. _`Database Urls`: http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
 
 .. warning:: Check your interface for resultserver IP! Some virtualization software (for example Virtualbox)
-    doesn't bring up the virtual networking interface until a virtual machine is started.
+    don't bring up the virtual networking interfaces until a virtual machine is started.
     Cuckoo needs to have the interface where you bind the resultserver up before the start, so please
     check your network setup. If you are using NAT/PAT in your network, you can set up the resultserver IP
     to 0.0.0.0 to listen on all interfaces, then use the specific options `resultserver_ip` and `resultserver_port`
     in *<machinery>.conf* to specify the address and port as every machine sees them.
 
-.. _<machinery>_conf:
+.. _machinery_conf:
 
 <machinery>.conf
 ================
@@ -98,7 +98,7 @@ Following is the default *conf/virtualbox.conf* file::
     # the IP address for the Result Server as your machine sees it. If you don't specify an
     # address here, the machine will use the default value from cuckoo.conf.
     # Example:
-    resultserver_ip = 192.168.100.1
+    # resultserver_ip = 192.168.56.1
 
     # (Optional) Specify the port for the Result Server, as your virtual machine sees it.
     # The Result Server will always bind to the address and port specified in cuckoo.conf,
@@ -157,7 +157,7 @@ Following is the default *conf/kvm.conf* file::
     # the IP address for the Result Server as your machine sees it. If you don't specify an
     # address here, the machine will use the default value from cuckoo.conf.
     # Example:
-    resultserver_ip = 192.168.100.1
+    # resultserver_ip = 192.168.122.101
 
     # (Optional) Specify the port for the Result Server, as your virtual machine sees it.
     # The Result Server will always bind to the address and port specified in cuckoo.conf,

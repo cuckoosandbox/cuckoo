@@ -76,7 +76,7 @@ Active Developers
     +------------------------------+--------------------+-------------------------------------+
     | Name                         | Role               | Contact                             |
     +==============================+====================+=====================================+
-    | Claudio `nex`_ Guarnieri     | Lead Developer     | ``nex at cuckoobox dot org``        |
+    | Claudio `nex`_ Guarnieri     | Lead Developer     | ``nex at nex dot sx``               |
     +------------------------------+--------------------+-------------------------------------+
     | Alessandro `jekil`_ Tanasi   | Developer          | ``alessandro at tanasi dot it``     |
     +------------------------------+--------------------+-------------------------------------+
@@ -101,15 +101,9 @@ Supporters
     * `The Honeynet Project`_
     * `The Shadowserver Foundation`_
 
-Sponsors
-========
-
-    * `Rapid7`_
-
-.. _`nex`: http://twitter.com/botherder
-.. _`jekil`: http://twitter.com/jekil
-.. _`skier`: http://twitter.com/skier_t
-.. _`rep`: http://twitter.com/repmovsb
+.. _`nex`: https://twitter.com/botherder
+.. _`jekil`: https://twitter.com/jekil
+.. _`skier`: https://twitter.com/skier_t
+.. _`rep`: https://twitter.com/repmovsb
 .. _`The Honeynet Project`: http://www.honeynet.org
 .. _`The Shadowserver Foundation`: http://www.shadowserver.org
-.. _`Rapid7`: http://www.rapid7.com

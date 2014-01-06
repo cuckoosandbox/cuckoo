@@ -2,17 +2,18 @@
 Web interface
 =============
 
-Cuckoo provides a web interface utility that you can use to submit files to
-be analyzed and view analysis reports.
+Cuckoo provides a full-fledged web interface in the form of a Django application.
+This interface will allow you to submit files, browse through the reports as well
+as search across all the analysis results.
 
 Configuration
 =============
 
 The web interface pulls data from Mongo database so have Mongo reporting module
-enabled in reports.conf is mandatory for web interface usage.
-If Mongo module is not enabled the web application wouldn't start raising an exception.
+enabled in ``reporting.conf`` is mandatory for the functioning of the interface.
+If that's not the case, the application won't start and it will raise an exception.
 
-Web interface settings can be configured edititing *local_settings.py* in web folder::
+The interface can be configured edititing ``local_settings.py`` under ``web/web/``::
 
     # If you want to customize your cuckoo path set it here.
     # CUCKOO_PATH = "/where/cuckoo/is/placed/"
@@ -61,15 +62,10 @@ Web interface settings can be configured edititing *local_settings.py* in web fo
 Usage
 =====
 
-You can find the folder at path *web* in the Cuckoo's root and you can start it running
-the following command inside the *web* directory::
+In order to start the web interface, you can simply run the following command
+from the ``web/`` directory::
 
     $ python manage.py runserver
-
-By default it will create a webserver on localhost and port 8000. Open your
-browser at *http://localhost:8000* and it will prompt you a simple form that
-allows you to upload a file, specify some options (with the same format as
-the *submit.py* utility) and submit it.
 
 If you want to configure the web interface as listening for any IPs on a
 specified port, you run start it with the following command (replace PORT
@@ -77,6 +73,11 @@ with the number of your desired port)::
 
     $ python manage.py runserver 0.0.0.0:PORT
 
+You can also serve the web interface using the WSGI interface of the web server of your choice:
+Apache, Nginx, Unicorn and so on. Please refer to the respective documentation 
+
 You can serve Cuckoo's web interface using WSGI interface with common web servers:
 Apache, Nginx, Unicorn and so on.
-Please refer to your web server documentation on how to deploy WSGI applications.
+Please refer both to the documentation of the web server of your choice as well as `Django documentation`_.
+
+.. _`Django documentation`: https://docs.djangoproject.com/en/1.6/
