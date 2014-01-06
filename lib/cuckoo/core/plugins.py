@@ -17,6 +17,7 @@ from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooProcessingError
 from lib.cuckoo.common.exceptions import CuckooReportError
+from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
@@ -187,6 +188,8 @@ class RunProcessing(object):
             # If succeeded, return they module's key name and the data to be
             # appended to it.
             return {current.key: data}
+        except CuckooDependencyError as e:
+            log.warning("The processing module \"%s\" has missing dependencies: %s", current.__class__.__name__, e)
         except CuckooProcessingError as e:
             log.warning("The processing module \"%s\" returned the following "
                         "error: %s", current.__class__.__name__, e)
@@ -467,6 +470,8 @@ class RunReporting:
         try:
             current.run(self.results)
             log.debug("Executed reporting module \"%s\"", current.__class__.__name__)
+        except CuckooDependencyError as e:
+            log.warning("The reporting module \"%s\" has missing dependencies: %s", current.__class__.__name__, e)
         except CuckooReportError as e:
             log.warning("The reporting module \"%s\" returned the following error: %s", current.__class__.__name__, e)
         except:
