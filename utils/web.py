@@ -68,7 +68,7 @@ def browse():
             task["processed"] = True
 
         if row.category == "file":
-            sample = db.view_sample(row.sample_id)
+            sample = db.view_sample(row.id)
             task["md5"] = sample.md5
 
         tasks.append(task)
