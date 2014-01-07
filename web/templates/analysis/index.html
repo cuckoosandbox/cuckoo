@@ -2,8 +2,13 @@
 {% block content %}
 <p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
 
-<div class="row">
-    <div class="col-xs-6">
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#files" data-toggle="tab">Files</a></li>
+    <li><a href="#urls" data-toggle="tab">URLs</a></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade in active" id="files">
         <div class="panel panel-primary">
             <div class="panel-heading">
                 <h3 class="panel-title">Recent Files</h3>
@@ -34,7 +39,19 @@
                                 <span class="mono">{{analysis.sample.md5}}</span>
                             {% endif %}
                         </td>
-                        <td>{{analysis.status}}</td>
+                        <td>
+                            {% if analysis.status == "pending" %}
+                                <span class="text-muted">pending</span>
+                            {% elif analysis.status == "running" %}
+                                <span class="text-warning">running</span>
+                            {% elif analysis.status == "completed" %}
+                                <span class="text-info">completed</span>
+                            {% elif analysis.status == "reported" %}
+                                <span class="text-success">reported</span>
+                            {% else %}
+                                <span class="text-danger">{{analysis.status}}</span>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -44,7 +61,8 @@
             {% endif %}
         </div>
     </div>
-    <div class="col-xs-6">
+
+    <div class="tab-pane fade" id="urls">
         <div class="panel panel-primary">
             <div class="panel-heading">
                 <h3 class="panel-title">Recent URLs</h3>
@@ -74,7 +92,19 @@
                             {% else %}
                                 <span class="mono">{{analysis.target}}</span>
                             {% endif %}
-                        <td>{{analysis.status}}</td>
+                        <td>
+                            {% if analysis.status == "pending" %}
+                                <span class="text-muted">pending</span>
+                            {% elif analysis.status == "running" %}
+                                <span class="text-warning">running</span>
+                            {% elif analysis.status == "completed" %}
+                                <span class="text-info">completed</span>
+                            {% elif analysis.status == "reported" %}
+                                <span class="text-success">reported</span>
+                            {% else %}
+                                <span class="text-danger">{{analysis.status}}</span>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
