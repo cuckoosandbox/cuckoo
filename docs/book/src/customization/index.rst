@@ -9,7 +9,7 @@ to fit all user's needs.
 
 .. toctree::
 
-    machinemanagers
+    machinery
     packages
     processing
     signatures
