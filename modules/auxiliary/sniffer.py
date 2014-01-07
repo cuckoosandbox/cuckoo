@@ -18,8 +18,8 @@ log = logging.getLogger(__name__)
 class Sniffer(Auxiliary):
     def start(self):
         tcpdump = self.options.get("tcpdump", "/usr/sbin/tcpdump")
-        bpf = self.options.get("bp_filter", "")
         interface = self.options.get("interface")
+        bpf = self.options.get("bpf", "")
         file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(self.task.id), "dump.pcap")
         host = self.machine.ip
 
