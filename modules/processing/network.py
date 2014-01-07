@@ -175,6 +175,11 @@ class Pcap:
         """
 
         if self._check_icmp(data):
+            # If ICMP packets are coming from the host, it probably isn't
+            # relevant traffic, hence we can skip from reporting it.
+            if conn["src"] == Config().resultserver.ip:
+                return
+
             entry = {}
             entry["src"] = conn["src"]
             entry["dst"] = conn["dst"]
