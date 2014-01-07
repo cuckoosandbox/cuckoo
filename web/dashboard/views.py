@@ -20,6 +20,7 @@ from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
 
 def timestamp(dt):
     """Returns the timestamp of a datetime object."""
+    if not dt: return None
     return time.mktime(dt.timetuple())
 
 @require_safe
