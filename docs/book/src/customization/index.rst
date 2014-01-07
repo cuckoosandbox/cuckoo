@@ -9,6 +9,7 @@ to fit all user's needs.
 
 .. toctree::
 
+    auxiliary
     machinery
     packages
     processing
