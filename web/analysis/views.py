@@ -210,7 +210,13 @@ def search(request):
         analyses = []
 
         for result in records:
-            new = db.view_task(result["info"]["id"]).to_dict()
+            new = db.view_task(result["info"]["id"])
+
+            if not new:
+                continue
+
+            new = new.to_dict()
+
             if result["info"]["category"] == "file":
                 new["sample"] = db.view_sample(new["sample_id"]).to_dict()
 
