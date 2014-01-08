@@ -77,6 +77,9 @@ def chunk(request, task_id, pid, pagenum):
         if not process:
             raise PermissionDenied
 
+        if pagenum >= len(process["calls"]):
+            raise PermissionDenied
+
         objectid = process["calls"][pagenum]
         chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
 
@@ -191,7 +194,16 @@ def search(request):
         analyses = []
 
         for result in records:
-            new = db.view_task(result["info"]["id"]).to_dict()
+            newfromtask = db.view_task(result["info"]["id"])
+            #check if task was deleted
+            if not newfromtask:
+                return render_to_response("analysis/search.html",
+                                        {"analyses": analyses,
+                                        "term": request.POST["search"],
+                                        "error": None},
+                                        context_instance=RequestContext(request))
+ 
+            new = newfromtask.to_dict()
             if result["info"]["category"] == "file":
                 new["sample"] = db.view_sample(new["sample_id"]).to_dict()
 
