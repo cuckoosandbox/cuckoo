@@ -26,8 +26,8 @@ fs = GridFS(results_db)
 @require_safe
 def index(request):
     db = Database()
-    tasks_files = db.list_tasks(limit=50, category="file")
-    tasks_urls = db.list_tasks(limit=50, category="url")
+    tasks_files = db.list_tasks(limit=50, category="file", not_status=TASK_PENDING)
+    tasks_urls = db.list_tasks(limit=50, category="url", not_status=TASK_PENDING)
 
     analyses_files = []
     analyses_urls = []
@@ -35,19 +35,12 @@ def index(request):
     if tasks_files:
         for task in tasks_files:
             new = task.to_dict()
-            if new["status"] == TASK_PENDING:
-                continue
-
             new["sample"] = db.view_sample(new["sample_id"]).to_dict()
             analyses_files.append(new)
 
     if tasks_urls:
         for task in tasks_urls:
-            new = task.to_dict()
-            if new["status"] == TASK_PENDING:
-                continue
-
-            analyses_urls.append(new)
+            analyses_urls.append(task.to_dict())
 
     return render_to_response("analysis/index.html",
                               {"files": analyses_files, "urls": analyses_urls},

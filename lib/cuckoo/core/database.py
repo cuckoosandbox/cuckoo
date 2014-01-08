@@ -957,7 +957,7 @@ class Database(object):
                    task.enforce_timeout,
                    task.clock)
 
-    def list_tasks(self, limit=None, details=False, category=None, offset=None, status=None):
+    def list_tasks(self, limit=None, details=False, category=None, offset=None, status=None, not_status=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
@@ -971,6 +971,8 @@ class Database(object):
 
             if status:
                 search = search.filter(Task.status == status)
+            if not_status:
+                search = search.filter(Task.status != not_status)
             if category:
                 search = search.filter(Task.category == category)
             if details:
