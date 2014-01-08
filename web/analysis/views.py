@@ -36,7 +36,7 @@ def index(request):
         for task in tasks_files:
             new = task.to_dict()
             new["sample"] = db.view_sample(new["sample_id"]).to_dict()
-            if db.view_errors(task["id"]):
+            if db.view_errors(task.id):
                 new["errors"] = True
 
             analyses_files.append(new)
@@ -45,7 +45,7 @@ def index(request):
         for task in tasks_urls:
             new = task.to_dict()
 
-            if db.view_errors(task["id"]):
+            if db.view_errors(task.id):
                 new["errors"] = True
 
             analyses_urls.append(new)

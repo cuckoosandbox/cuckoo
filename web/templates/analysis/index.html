@@ -47,13 +47,15 @@
                             {% elif analysis.status == "completed" %}
                                 <span class="text-info">completed</span>
                             {% elif analysis.status == "reported" %}
-                                <span class="text-success">reported</span>
+                                {% if analysis.errors %}
+                                    <span class="text-danger">
+                                {% else %}
+                                    <span class="text-success">
+                                {% endif%}
+
+                                reported</span>
                             {% else %}
                                 <span class="text-danger">{{analysis.status}}</span>
-                            {% endif %}
-
-                            {% if analysis.errors %}
-                                <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span></span>
                             {% endif %}
                         </td>
                     </tr>
