@@ -54,7 +54,7 @@ def index(request):
                               context_instance=RequestContext(request))
 
 @require_safe
-def index(request):
+def pending(request):
     db = Database()
     tasks = db.list_tasks(status=TASK_PENDING)
 
