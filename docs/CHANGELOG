@@ -1,7 +1,7 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 1.0 (TBD)
-========================
+Cuckoo Sandbox 1.0 (2014-01-09)
+===============================
 
 * Introduced Auxiliary modules
 * Added option to set sniffing interface for each virtual machine
@@ -14,9 +14,9 @@ Cuckoo Sandbox 1.0 (TBD)
 * Added automated rescheduling of locked tasks at startup
 * Added tags to machines
 * Added reduced behavioral events
-* Added new web interface
+* Added new Django/Mongo-powered web interface
 * Added Windows analyzer auxiliary module to disguise the analysis environment
-* Added VBS and RTF analysis package
+* Added VBS, CPL and RTF analysis package
 * Added generic analysis package to execute samples via cmd.exe
 * Added MAEC 4.0.1 reporting module
 * Added filter for private networks in Network Analysis processing module
