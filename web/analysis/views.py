@@ -218,9 +218,10 @@ def search(request):
             new = new.to_dict()
 
             if result["info"]["category"] == "file":
-                sample = db.view_sample(new["sample_id"])
-                if sample:
-                    new["sample"] = sample.to_dict()
+                if new["sample_id"]:
+                    sample = db.view_sample(new["sample_id"])
+                    if sample:
+                        new["sample"] = sample.to_dict()
 
             analyses.append(new)
 
