@@ -9,4 +9,5 @@ urlpatterns = patterns("",
     url(r"^(?P<task_id>\d+)/$", "analysis.views.report"),
     url(r"^chunk/(?P<task_id>\d+)/(?P<pid>\d+)/(?P<pagenum>\d+)/$", "analysis.views.chunk"),
     url(r"^search/$", "analysis.views.search"),
+    url(r"^pending/$", "analysis.views.pending"),
 )

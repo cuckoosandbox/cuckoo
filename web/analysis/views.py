@@ -54,6 +54,19 @@ def index(request):
                               context_instance=RequestContext(request))
 
 @require_safe
+def index(request):
+    db = Database()
+    tasks = db.list_tasks(status=TASK_PENDING)
+
+    pending = []
+    for task in tasks:
+        pending.append(task.to_dict())
+
+    return render_to_response("analysis/pending.html",
+                              {"tasks" : pending},
+                              context_instance=RequestContext(request))
+
+@require_safe
 def chunk(request, task_id, pid, pagenum):
     try:
         pid, pagenum = int(pid), int(pagenum)-1
