@@ -963,6 +963,8 @@ class Database(object):
         @param details: if details about must be included
         @param category: filter by category
         @param offset: list offset
+        @param status: filter by task status
+        @param not_status: exclude this task status from filter
         @return: list of tasks.
         """
         session = self.Session()
