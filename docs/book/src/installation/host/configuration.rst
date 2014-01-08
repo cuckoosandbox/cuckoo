@@ -2,13 +2,17 @@
 Configuration
 =============
 
-Cuckoo relies on four main configuration files:
+Cuckoo relies on six main configuration files:
 
     * :ref:`cuckoo_conf`: for configuring general behavior and analysis options.
-    * :ref:`machinery_conf`: for defining the options for your virtualization software.
-    * :ref:`processing_conf`: for enabling and configuraing processing modules.
+    * :ref:`auxiliary_conf`: for enabling and configuring auxiliary modules.
+    * :ref:`machinery_conf`: for defining the options for your virtualization software
+        (the file has the same name of the machinery module you choose in cuckoo.conf).
+    * :ref:`memory_conf`: Volatility configuration
+    * :ref:`processing_conf`: for enabling and configuring processing modules.
     * :ref:`reporting_conf`: for enabling or disabling report formats.
-    * :ref:`volatility_conf`: Volatility configuration
+
+To get Cuckoo working you have to edit :ref:`auxiliary_conf`:, :ref:`cuckoo_conf` and :ref:`machinery_conf` at least.
 
 .. _cuckoo_conf:
 
@@ -31,9 +35,36 @@ want to pay more attention to are:
 .. warning:: Check your interface for resultserver IP! Some virtualization software (for example Virtualbox)
     don't bring up the virtual networking interfaces until a virtual machine is started.
     Cuckoo needs to have the interface where you bind the resultserver up before the start, so please
-    check your network setup. If you are using NAT/PAT in your network, you can set up the resultserver IP
+    check your network setup. If you are not sure about how to get the interface up, a good trick is to manually start
+    and stop an analysis virtual machine, this will bring virtual networking up.
+    If you are using NAT/PAT in your network, you can set up the resultserver IP
     to 0.0.0.0 to listen on all interfaces, then use the specific options `resultserver_ip` and `resultserver_port`
     in *<machinery>.conf* to specify the address and port as every machine sees them.
+
+.. _auxiliary_conf:
+
+auxiliary.conf
+==============
+
+Auxiliary modules are scripts that run concurrently with malware analysis, this file defines
+their options.
+
+Following is the default *conf/auxiliary.conf* file::
+
+    [sniffer]
+    # Enable or disable the use of an external sniffer (tcpdump) [yes/no].
+    enabled = yes
+
+    # Specify the path to your local installation of tcpdump. Make sure this
+    # path is correct.
+    tcpdump = /usr/sbin/tcpdump
+
+    # Specify the network interface name on which tcpdump should monitor the
+    # traffic. Make sure the interface is active.
+    interface = vboxnet0
+
+    # Specify a Berkeley packet filter to pass to tcpdump.
+    # bpf = not arp
 
 .. _machinery_conf:
 
@@ -185,6 +216,54 @@ Following is the default *conf/kvm.conf* file::
           </ip>
         </network>
 
+.. _memory_conf:
+
+memory.conf
+===============
+
+The volatility tool offers a large set of plugins for memory dump analysis. Some of them are quite slow.
+In volatility.conf enables you to enable or disable the plugins of your choice.
+To use Volatility you have to follow two steps:
+ * Enable it before in processing.conf
+ * Enable memory_dump in cuckoo.conf
+
+In the memory.conf's basic section you can configure the Volatility profile and
+the deletion of memory dumps after processing::
+
+    # Basic settings
+    [basic]
+    # Profile to avoid wasting time identifying it
+    guest_profile = WinXPSP2x86
+    # Delete memory dump after volatility processing.
+    delete_memdump = no
+
+After that every plugin has an own section for configuration::
+
+    # Scans for hidden/injected code and dlls
+    # http://code.google.com/p/volatility/wiki/CommandReference#malfind
+    [malfind]
+    enabled = on
+    filter = on
+
+    # Lists hooked api in user mode and kernel space
+    # Expect it to be very slow when enabled
+    # http://code.google.com/p/volatility/wiki/CommandReference#apihooks
+    [apihooks]
+    enabled = off
+    filter = on
+
+The filter configuration helps you to remove known clean data from the resulting report. It can be configured seperately for every plugin.
+
+The filter itself is configured in the [mask] section.
+You can enter a list of pids in pid_generic to filter out processes::
+
+    # Masks. Data that should not be logged
+    # Just get this information from your plain VM Snapshot (without running malware)
+    # This will filter out unwanted information in the logs
+    [mask]
+    # pid_generic: a list of process ids that already existed on the machine before the malware was started.
+    pid_generic = 4, 680, 752, 776, 828, 840, 1000, 1052, 1168, 1364, 1428, 1476, 1808, 452, 580, 652, 248, 1992, 1696, 1260, 1656, 1156
+
 .. _processing_conf:
 
 processing.conf
@@ -213,6 +292,9 @@ You will find a section for each processing module::
 
     [dropped]
     enabled = yes
+
+    [memory]
+    enabled = no
 
     [network]
     enabled = yes
@@ -286,46 +368,3 @@ It contains the following sections::
 
 By setting those option to *on* or *off* you enable or disable the generation
 of such reports.
-
-.. _volatility_conf:
-
-volatility.conf
-===============
-
-The volatility tool offers a large set of plugins for memory dump analysis. Some of them are quite slow.
-In volatility.conf enables you to enable or disable the plugins of your choice.
-To use Volatility you have to enable it before in processing.conf and enable memory_dump in cuckoo.conf.
-
-In the basic section you can configure the deletion of memory dumps after processing::
-
-    # Basic settings
-    [basic]
-    # Delete memory dump after volatility processing.
-    delete_memdump = no
-
-After that every plugin has an own section for configuration::
-
-    # Scans for hidden/injected code and dlls
-    # http://code.google.com/p/volatility/wiki/CommandReference#malfind
-    [malfind]
-    enabled = on
-    filter = on
-
-    # Lists hooked api in user mode and kernel space
-    # Expect it to be very slow when enabled
-    # http://code.google.com/p/volatility/wiki/CommandReference#apihooks
-    [apihooks]
-    enabled = off
-    filter = on
-
-The filter configuration helps you to remove known clean data from the resulting report. It can be configured seperately for every plugin.
-
-The filter itself is configured in the [mask] section.
-You can enter a list of pids in pid_generic to filter out processes::
-
-    # Masks. Data that should not be logged
-    # Just get this information from your plain VM Snapshot (without running malware)
-    # This will filter out unwanted information in the logs
-    [mask]
-    # pid_generic: a list of process ids that already existed on the machine before the malware was started.
-    pid_generic = 4, 680, 752, 776, 828, 840, 1000, 1052, 1168, 1364, 1428, 1476, 1808, 452, 580, 652, 248, 1992, 1696, 1260, 1656, 1156
