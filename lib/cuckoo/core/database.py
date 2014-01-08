@@ -395,6 +395,10 @@ class Database(object):
 
     def clean_machines(self):
         """Clean old stored machines and related tables."""
+        # Secondary table.
+        # TODO: this is better done via cascade delete.
+        self.engine.execute(machines_tags.delete())
+
         session = self.Session()
         try:
             session.query(Machine).delete()
@@ -404,9 +408,6 @@ class Database(object):
             session.rollback()
         finally:
             session.close()
-        # Secondary table.
-        # TODO: this is better done via cascade delete.
-        self.engine.execute(machines_tags.delete())
 
     def add_machine(self,
                     name,
