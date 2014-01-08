@@ -362,7 +362,7 @@ class LibVirtMachinery(Machinery):
         elif self._get_snapshot(label):
             snapshot = self._get_snapshot(label)
             log.debug("Using snapshot {0} for virtual machine "
-                      "{1}".format(snapshot, label))
+                      "{1}".format(snapshot.getName(), label))
             try:
                 self.vms[label].revertToSnapshot(snapshot, flags=0)
             except libvirt.libvirtError:
