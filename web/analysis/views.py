@@ -18,7 +18,7 @@ from gridfs import GridFS
 
 sys.path.append(settings.CUCKOO_PATH)
 
-from lib.cuckoo.core.database import Database
+from lib.cuckoo.core.database import Database, TASK_PENDING
 
 results_db = pymongo.connection.Connection(settings.MONGO_HOST, settings.MONGO_PORT).cuckoo
 fs = GridFS(results_db)
@@ -35,13 +35,19 @@ def index(request):
     if tasks_files:
         for task in tasks_files:
             new = task.to_dict()
-            new["sample"] = db.view_sample(new["sample_id"]).to_dict()
+            if new["status"] == TASK_PENDING:
+                continue
 
+            new["sample"] = db.view_sample(new["sample_id"]).to_dict()
             analyses_files.append(new)
 
     if tasks_urls:
         for task in tasks_urls:
-            analyses_urls.append(task.to_dict())
+            new = task.to_dict()
+            if new["status"] == TASK_PENDING:
+                continue
+
+            analyses_urls.append(new)
 
     return render_to_response("analysis/index.html",
                               {"files": analyses_files, "urls": analyses_urls},
