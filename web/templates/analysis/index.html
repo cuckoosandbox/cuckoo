@@ -52,7 +52,7 @@
                                 <span class="text-danger">{{analysis.status}}</span>
                             {% endif %}
 
-                            {% if analysis.errors.count > 0 %}
+                            {% if analysis.errors %}
                                 <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span></span>
                             {% endif %}
                         </td>

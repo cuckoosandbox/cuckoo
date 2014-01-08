@@ -36,11 +36,19 @@ def index(request):
         for task in tasks_files:
             new = task.to_dict()
             new["sample"] = db.view_sample(new["sample_id"]).to_dict()
+            if db.view_errors(task["id"]):
+                new["errors"] = True
+
             analyses_files.append(new)
 
     if tasks_urls:
         for task in tasks_urls:
-            analyses_urls.append(task.to_dict())
+            new = task.to_dict()
+
+            if db.view_errors(task["id"]):
+                new["errors"] = True
+
+            analyses_urls.append(new)
 
     return render_to_response("analysis/index.html",
                               {"files": analyses_files, "urls": analyses_urls},
