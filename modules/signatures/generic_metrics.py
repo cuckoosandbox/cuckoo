@@ -12,7 +12,7 @@ class SystemMetrics(Signature):
     authors = ["Cuckoo Developers"]
     minimum = "1.0"
 
-    # Evented signatures need to implement the "event_apicall" method
+    # Evented signatures need to implement the "on_call" method
     evented = True
 
     # Evented signatures can specify filters that reduce the amount of
@@ -24,7 +24,7 @@ class SystemMetrics(Signature):
 
     # This is a signature template. It should be used as a skeleton for
     # creating custom signatures, therefore is disabled by default.
-    # The event_apicall function is used in "evented" signatures.
+    # The on_call function is used in "evented" signatures.
     # These use a more efficient way of processing logged API calls.
     enabled = False
 
@@ -39,7 +39,7 @@ class SystemMetrics(Signature):
     # of this signature. True means the signature matched and False means
     # it can't match anymore. Both of which stop streaming in API calls.
     # Returning None keeps the signature active and will continue.
-    def event_apicall(self, call, process):
+    def on_call(self, call, process):
         # This check would in reality not be needed as we already make use
         # of filter_apinames above.
         if call["api"] == "GetSystemMetrics":
