@@ -3,7 +3,7 @@ Requirements
 ============
 
 Before proceeding on configuring Cuckoo, you'll need to install some required
-softwares and libraries.
+software and libraries.
 
 Installing Python libraries
 ===========================
@@ -47,7 +47,7 @@ Some of them are already packaged in Debian/Ubuntu and can be installed with the
 
 Except for *python-magic* and *python-libvirt*, the others can be installed through ``pip`` too::
 
-    $ sudo pip install dpkt jinja2 pymongo bottle pefile maec
+    $ sudo pip install dpkt jinja2 pymongo bottle pefile maec django
 
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 

@@ -60,6 +60,8 @@ On 20th December 2012, Cuckoo Sandbox 0.5 "To The End Of The World" is released.
 On 15th April 2013 we released Cuckoo Sandbox 0.6, shortly after having launched
 the second version of `Malwr.com`_.
 
+On 9th January 2014, Cuckoo Sandbox 1.0 is released.
+
 .. _`Google Summer of Code`: http://www.google-melange.com
 .. _`The Honeynet Project`: http://www.honeynet.org
 .. _`Malwr.com`: http://malwr.com
@@ -78,8 +80,12 @@ It can be used to analyze:
     * DLL files
     * PDF documents
     * Microsoft Office documents
-    * URLs
+    * URLs and HTML files
     * PHP scripts
+    * CPL files
+    * Visual Basic (VB) scripts
+    * ZIP files
+    * Java JAR
     * *Almost anything else*
 
 Thanks to its modularity and powerful scripting capabilities, there's not limit

@@ -101,9 +101,9 @@ the example below:
 
         from lib.cuckoo.common.abstracts import LibVirtMachinery
 
-		class MyMachinery(LibVirtMachinery):
-		    # Set connection string.
-		    dsn = "my:///connection"
+        class MyMachinery(LibVirtMachinery):
+            # Set connection string.
+            dsn = "my:///connection"
 
 
 This works for all the virtualization technologies supported by LibVirt. Just remember to 
@@ -112,15 +112,15 @@ distribution) is compiled with the support for the technology you need.
 
 You can check it with the following command::
 
-	$ virsh -V
-	Virsh command line tool of libvirt 0.9.13
-	See web site at http://libvirt.org/
-	
-	Compiled with support for:
-	 Hypervisors: QEmu/KVM LXC UML Xen OpenVZ VMWare Test
-	 Networking: Remote Daemon Network Bridging Interface Nwfilter VirtualPort
-	 Storage: Dir Disk Filesystem SCSI Multipath iSCSI LVM
-	 Miscellaneous: Nodedev AppArmor Secrets Debug Readline Modular
+    $ virsh -V
+    Virsh command line tool of libvirt 0.9.13
+    See web site at http://libvirt.org/
+
+    Compiled with support for:
+     Hypervisors: QEmu/KVM LXC UML Xen OpenVZ VMWare Test
+     Networking: Remote Daemon Network Bridging Interface Nwfilter VirtualPort
+     Storage: Dir Disk Filesystem SCSI Multipath iSCSI LVM
+     Miscellaneous: Nodedev AppArmor Secrets Debug Readline Modular
 
 If you don't find your virtualization technology in the list of ``Hypervisors``, you will
 need to recompile LibVirt with the specific support for the missing one.
