@@ -244,7 +244,7 @@ class BsonParser(object):
         self.infomap = {}
 
         if not HAVE_BSON:
-            log.critical("Starting BsonParser, but bson is not available!")
+            log.critical("Starting BsonParser, but bson is not available! (install with `pip install pymongo`)")
 
     def read_next_message(self):
         data = self.handler.read(4)
