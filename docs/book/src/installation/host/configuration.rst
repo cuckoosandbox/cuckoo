@@ -39,7 +39,8 @@ want to pay more attention to are:
     and stop an analysis virtual machine, this will bring virtual networking up.
     If you are using NAT/PAT in your network, you can set up the resultserver IP
     to 0.0.0.0 to listen on all interfaces, then use the specific options `resultserver_ip` and `resultserver_port`
-    in *<machinery>.conf* to specify the address and port as every machine sees them.
+    in *<machinery>.conf* to specify the address and port as every machine sees them. Note that if you set
+    resultserver IP to 0.0.0.0 in cuckoo.conf you have to set `resultserver_ip` for all your virtual machines.
 
 .. _auxiliary_conf:
 
