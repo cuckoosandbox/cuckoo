@@ -203,20 +203,6 @@ Following is the default *conf/kvm.conf* file::
     # specific VMs. You can run samples on VMs with tag you require.
     # tags = windows_xp_sp3,32_bit,acrobat_reader_6
 
-.. note::
-
-    You may want to add a static IP address for your virtual machine::
-
-        <network>
-          ...
-          <ip address="192.168.122.1" netmask="255.255.255.0">
-            <dhcp>
-              <range start="192.168.122.2" end="192.168.122.254" />
-              <host mac="01:23:45:67:89:ab" ip="192.168.122.105" />
-            </dhcp>
-          </ip>
-        </network>
-
 .. _memory_conf:
 
 memory.conf
