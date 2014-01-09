@@ -15,15 +15,15 @@ Install Python on Ubuntu::
 
     $ sudo apt-get install python
 
-In order to properly function, Cuckoo requires SQLAlchemy to be installed.
+In order to properly function, Cuckoo requires SQLAlchemy and Python BSON to be installed.
 
 Install with ``apt-get``::
 
-    $ sudo apt-get install python-sqlalchemy
+    $ sudo apt-get install python-sqlalchemy python-bson
 
 Install with ``pip``::
 
-    $ sudo pip install sqlalchemy
+    $ sudo pip install sqlalchemy pymongo
 
 There are other optional dependencies that are mostly used by modules and utilities.
 The following libraries are not strictly required, but their installation is recommended:
