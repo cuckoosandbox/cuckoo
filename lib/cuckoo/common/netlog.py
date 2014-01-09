@@ -15,11 +15,11 @@ except ImportError:
 
 if HAVE_BSON:
     # The BSON module provided by pymongo works through its "BSON" class.
-    if hasattr(bson, 'BSON'):
+    if hasattr(bson, "BSON"):
         bson_decode = lambda d: bson.BSON(d).decode()
     # The BSON module provided by "pip install bson" works through the
     # "loads" function (just like pickle etc.)
-    elif hasattr(bson, 'loads'):
+    elif hasattr(bson, "loads"):
         bson_decode = lambda d: bson.loads(d)
     else:
         HAVE_BSON = False
@@ -255,7 +255,7 @@ class BsonParser(object):
         self.infomap = {}
 
         if not HAVE_BSON:
-            log.critical("Starting BsonParser, but bson is not available! (install with `pip install pymongo`)")
+            log.critical("Starting BsonParser, but bson is not available! (install with `pip install bson`)")
 
     def read_next_message(self):
         data = self.handler.read(4)

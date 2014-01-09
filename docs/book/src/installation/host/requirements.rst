@@ -23,7 +23,7 @@ Install with ``apt-get``::
 
 Install with ``pip``::
 
-    $ sudo pip install sqlalchemy pymongo
+    $ sudo pip install sqlalchemy bson
 
 There are other optional dependencies that are mostly used by modules and utilities.
 The following libraries are not strictly required, but their installation is recommended:
