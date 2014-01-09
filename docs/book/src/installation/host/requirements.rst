@@ -45,9 +45,9 @@ Some of them are already packaged in Debian/Ubuntu and can be installed with the
 
     $ sudo apt-get install python-dpkt python-jinja2 python-magic python-pymongo python-libvirt python-bottle python-pefile
 
-Except for *python-magic* and *python-libvirt*, the others can be installed through ``pip`` too::
+Except for *python-magic*, *python-dpkt* and *python-libvirt*, the others can be installed through ``pip`` too::
 
-    $ sudo pip install dpkt jinja2 pymongo bottle pefile maec django
+    $ sudo pip install jinja2 pymongo bottle pefile maec django
 
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 
