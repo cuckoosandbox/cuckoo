@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,16 +9,16 @@ import logging
 import subprocess
 
 from lib.cuckoo.common.abstracts import Auxiliary
-from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_GUEST_PORT
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_GUEST_PORT
 
 log = logging.getLogger(__name__)
-
 
 class Sniffer(Auxiliary):
     def start(self):
         tcpdump = self.options.get("tcpdump", "/usr/sbin/tcpdump")
         interface = self.options.get("interface")
+        bpf = self.options.get("bpf", "")
         file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(self.task.id), "dump.pcap")
         host = self.machine.ip
 
@@ -56,6 +56,9 @@ class Sniffer(Auxiliary):
         pargs.extend(["and", "not", "(", "host",
                       str(Config().resultserver.ip), "and", "port",
                       str(Config().resultserver.port), ")"])
+
+        if bpf:
+            pargs.extend(["and", bpf])
 
         try:
             self.proc = subprocess.Popen(pargs, stdout=subprocess.PIPE,

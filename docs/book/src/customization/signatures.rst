@@ -190,6 +190,76 @@ you could translate the previous signature in the following:
 
             return False
 
+Evented Signatures
+==================
+
+Since version 1.0, Cuckoo provides a way to write more performant signatures.
+In the past every signature was required to loop through the whole collection of API calls
+collected during the analysis. This was necessarily causing some performance issues when such
+collection would be of a large size.
+
+Cuckoo now supports both the old model as well as what we call "evented signatures".
+The main difference is that with this new format, all the signatures will be executed in parallel
+and a callback function called ``on_call()`` will be invoked for each signature within one
+single loop through the collection of API calls.
+
+An example signature using this technique is the following:
+
+    .. code-block:: python
+        :linenos:
+
+        from lib.cuckoo.common.abstracts import Signature
+
+        class SystemMetrics(Signature):
+            name = "generic_metrics"
+            description = "Uses GetSystemMetrics"
+            severity = 2
+            categories = ["generic"]
+            authors = ["Cuckoo Developers"]
+            minimum = "1.0"
+
+            # Evented signatures need to implement the "on_call" method
+            evented = True
+
+            # Evented signatures can specify filters that reduce the amount of
+            # API calls that are streamed in. One can filter Process name, API
+            # name/identifier and category. These should be sets for faster lookup.
+            filter_processnames = set()
+            filter_apinames = set(["GetSystemMetrics"])
+            filter_categories = set()
+
+            # This is a signature template. It should be used as a skeleton for
+            # creating custom signatures, therefore is disabled by default.
+            # The on_call function is used in "evented" signatures.
+            # These use a more efficient way of processing logged API calls.
+            enabled = False
+
+            def stop(self):
+                # In the stop method one can implement any cleanup code and
+                #  decide one last time if this signature matches or not.
+                #  Return True in case it matches.
+                return False
+
+            # This method will be called for every logged API call by the loop
+            # in the RunSignatures plugin. The return value determines the "state"
+            # of this signature. True means the signature matched and False means
+            # it can't match anymore. Both of which stop streaming in API calls.
+            # Returning None keeps the signature active and will continue.
+            def on_call(self, call, process):
+                # This check would in reality not be needed as we already make use
+                # of filter_apinames above.
+                if call["api"] == "GetSystemMetrics":
+                    # Signature matched, return True.
+                    return True
+
+                # continue
+                return None
+
+The inline comments are already self-explainatory.
+You can find many more example of both evented and traditional signatures in our `community repository`_.
+
+.. _`community repository`: https://github.com/cuckoobox/community
+
 Helpers
 =======
 

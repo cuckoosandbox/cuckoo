@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
@@ -9,4 +9,5 @@ urlpatterns = patterns("",
     url(r"^(?P<task_id>\d+)/$", "analysis.views.report"),
     url(r"^chunk/(?P<task_id>\d+)/(?P<pid>\d+)/(?P<pagenum>\d+)/$", "analysis.views.chunk"),
     url(r"^search/$", "analysis.views.search"),
+    url(r"^pending/$", "analysis.views.pending"),
 )

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -19,7 +19,7 @@ class Genric(Package):
             suspended = False
 
         cmd_path = os.path.join(os.getenv("SystemRoot"), "system32", "cmd.exe")
-        cmd_args = "/c start {0}".format(path)
+        cmd_args = "/c start \"{0}\"".format(path)
 
         p = Process()
         if not p.execute(path=cmd_path, args=cmd_args, suspended=suspended):

@@ -3,7 +3,7 @@ Requirements
 ============
 
 Before proceeding on configuring Cuckoo, you'll need to install some required
-softwares and libraries.
+software and libraries.
 
 Installing Python libraries
 ===========================
@@ -15,15 +15,15 @@ Install Python on Ubuntu::
 
     $ sudo apt-get install python
 
-In order to properly function, Cuckoo requires SQLAlchemy to be installed.
+In order to properly function, Cuckoo requires SQLAlchemy and Python BSON to be installed.
 
 Install with ``apt-get``::
 
-    $ sudo apt-get install python-sqlalchemy
+    $ sudo apt-get install python-sqlalchemy python-bson
 
 Install with ``pip``::
 
-    $ sudo pip install sqlalchemy
+    $ sudo pip install sqlalchemy bson
 
 There are other optional dependencies that are mostly used by modules and utilities.
 The following libraries are not strictly required, but their installation is recommended:
@@ -35,19 +35,20 @@ The following libraries are not strictly required, but their installation is rec
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
     * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use release 1.7 or above or the svn version).
     * `Libvirt`_ (Optional): for using the KVM machine manager.
-    * `Bottlepy`_ (Optional): for using the ``api.py`` utility (use release 0.10 or above).
+    * `Bottlepy`_ (Optional): for using the ``api.py`` or ``web.py`` utility (use release 0.10 or above).
     * `Django`_ (Optional): for using the web interface (use release 1.5 or above).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
     * `Volatility`_ (Optional): used for forensic analysis on memory
     * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use release 4.0 or above).
+    * `Chardet`_ (Optional): used for detecting string encoding.
 
 Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
 
-    $ sudo apt-get install python-dpkt python-jinja2 python-magic python-pymongo python-libvirt python-bottle python-pefile
+    $ sudo apt-get install python-dpkt python-jinja2 python-magic python-pymongo python-libvirt python-bottle python-pefile python-chardet
 
-Except for *python-magic* and *python-libvirt*, the others can be installed through ``pip`` too::
+Except for *python-magic*, *python-dpkt* and *python-libvirt*, the others can be installed through ``pip`` too::
 
-    $ sudo pip install dpkt jinja2 pymongo bottle pefile maec
+    $ sudo pip install jinja2 pymongo bottle pefile maec django chardet
 
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 
@@ -67,6 +68,7 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Pefile: http://code.google.com/p/pefile/
 .. _Volatility: http://code.google.com/p/volatility/
 .. _MAEC Python bindings: https://pypi.python.org/pypi/maec
+.. _Chardet: https://pypi.python.org/pypi/chardet
 
 Virtualization Software
 =======================
@@ -130,19 +132,13 @@ Installing Volatility
 =====================
 
 Volatility is an optional tool to do forensic analysis on memory dumps. 
-This will gather os modifications and traces of rootkits. Other than the the
-default cuckoo hooking it will not be a continuous log but an analysis of a 
-snapshot made after the malware executed.
+In combination with Cuckoo, it can automatically provide additional visibility
+into deep modifications in the operating system as well as detect the presence
+of rootkit technology that escaped the monitoring domain of Cuckoo's analyzer.
 
-In order to do memory dump forensics install volatility 2.3 or above (SVN
-checkout), other versions are not supported.
+In order to function properly, Cuckoo requires at least version 2.3 of Volatility.
+You can get it from the `official repository`_.
 
-.. _official download page: http://code.google.com/p/volatility/
+See the volatility documentation for detailed instructions on how to install it.
 
-See the volatility documentation for installation instructions.
-
-You will have to set the path to the volatility installation by adding::
-
-   export PYTHONPATH="<volatility-path>"
-
-to the file .bashrc in your home path.
+.. _official repository: http://code.google.com/p/volatility/

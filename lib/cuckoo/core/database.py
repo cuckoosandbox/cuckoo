@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,11 +7,11 @@ import json
 import logging
 from datetime import datetime
 
+from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
-from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.objects import File, URL
 from lib.cuckoo.common.utils import create_folder, Singleton
 
@@ -19,9 +19,9 @@ try:
     from sqlalchemy import create_engine, Column
     from sqlalchemy import Integer, String, Boolean, DateTime, Enum
     from sqlalchemy import ForeignKey, Text, Index, Table
-    from sqlalchemy.orm import sessionmaker, relationship, joinedload, backref
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+    from sqlalchemy.orm import sessionmaker, relationship, joinedload, backref
     from sqlalchemy.pool import NullPool
     Base = declarative_base()
 except ImportError:
@@ -397,6 +397,10 @@ class Database(object):
 
     def clean_machines(self):
         """Clean old stored machines and related tables."""
+        # Secondary table.
+        # TODO: this is better done via cascade delete.
+        self.engine.execute(machines_tags.delete())
+
         session = self.Session()
         try:
             session.query(Machine).delete()
@@ -406,9 +410,6 @@ class Database(object):
             session.rollback()
         finally:
             session.close()
-        # Secondary table.
-        # TODO: this is better done via cascade delete.
-        self.engine.execute(machines_tags.delete())
 
     def add_machine(self,
                     name,
@@ -441,7 +442,7 @@ class Database(object):
                           resultserver_port=resultserver_port)
         # Deal with tags format (i.e. foo,bar,baz)
         if tags:
-            for tag in tags.replace(" ","").split(","):
+            for tag in tags.replace(" ", "").split(","):
                 machine.tags.append(self._get_or_create(session, Tag, name=tag))
         session.add(machine)
 
@@ -967,12 +968,14 @@ class Database(object):
                    task.enforce_timeout,
                    task.clock)
 
-    def list_tasks(self, limit=None, details=False, category=None, offset=None, status=None):
+    def list_tasks(self, limit=None, details=False, category=None, offset=None, status=None, not_status=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
         @param category: filter by category
         @param offset: list offset
+        @param status: filter by task status
+        @param not_status: exclude this task status from filter
         @return: list of tasks.
         """
         session = self.Session()
@@ -981,6 +984,8 @@ class Database(object):
 
             if status:
                 search = search.filter(Task.status == status)
+            if not_status:
+                search = search.filter(Task.status != not_status)
             if category:
                 search = search.filter(Task.category == category)
             if details:
@@ -1092,6 +1097,18 @@ class Database(object):
         finally:
             session.close()
         return sample
+
+    def count_samples(self):
+        """Counts the amount of samples in the database."""
+        session = self.Session()
+        try:
+            sample_count = session.query(Sample).count()
+        except SQLAlchemyError as e:
+            log.debug("Database error counting samples: {0}".format(e))
+            return 0
+        finally:
+            session.close()
+        return sample_count
 
     def view_machine(self, name):
         """Show virtual machine.

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -11,12 +11,12 @@ import SocketServer
 from threading import Event, Thread
 
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooResultError
-from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.utils import create_folder, Singleton, logtime
 from lib.cuckoo.common.netlog import NetlogParser, BsonParser
+from lib.cuckoo.common.utils import create_folder, Singleton, logtime
 
 log = logging.getLogger(__name__)
 

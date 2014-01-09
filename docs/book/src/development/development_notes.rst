@@ -37,12 +37,9 @@ The testing stage from git ends with "-beta" and development stage with "-dev".
 Ticketing system
 ================
 
-We use a ticketing system to track all Cuckoo's developments, bugs and features.
-`Official tracking system`_ is public available, if you want to contribute to
-Cuckoo please take a look to it before reporting bugs or asking for new
-features.
+To submit bug reports or feature requests, please use GitHub's `Issue`_ tracking system.
 
-.. _`Official tracking system`: http://dev.cuckoosandbox.org
+.. _`Issue`: https://github.com/cuckoobox/cuckoo/issues
 
 Contribute
 ==========

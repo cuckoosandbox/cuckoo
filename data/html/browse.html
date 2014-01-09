@@ -1,0 +1,57 @@
+{% extends "base-web.html" %}
+{% block content %}
+    <div class="tasks">
+        <div class="page-header">
+            <div class="row-fluid">
+                <div class="span8">
+                    <h3>Analysis Tasks <small>performed, processing and pending analyses</small></h3>
+                </div>
+                {% include "pagination-rpp.html" %}
+            </div>
+        </div>
+        {% if rows %}
+            {% include "pagination-menu.html" %}
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Category</th>
+                        <th style="width: 40%;">Target</th>
+                        <th>Added</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td>{{row.id}}</td>
+                        <td>{{row.category|upper}}</td>
+                        <td>
+                            {% if row.processed %}
+                                <a href="/view/{{row.id}}">
+                            {% endif %}
+                            <span class="mono">
+                                {% if row.category == "file" %}
+                                    {{row.md5}}
+                                {% elif row.category == "url" %}
+                                    {{row.target}}
+                                {% endif %}
+                            </span>
+                            {% if row.processed %}
+                                </a>
+                            {% endif %}
+                        </td>
+                        <td>{{row.added_on}}</td>
+                        <td>{{row.status}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% include "pagination-menu.html" %}
+        {% else %}
+            <div class="alert alert-info">
+                <b>Analysis not found!</b> Your database is empty. Run an analysis.
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,6 +9,8 @@ import time
 
 import xml.etree.ElementTree as ET
 
+from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -16,8 +18,6 @@ from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.objects import Dictionary
 from lib.cuckoo.common.utils import create_folder
-from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.database import Database
 
 try:
@@ -362,7 +362,7 @@ class LibVirtMachinery(Machinery):
         elif self._get_snapshot(label):
             snapshot = self._get_snapshot(label)
             log.debug("Using snapshot {0} for virtual machine "
-                      "{1}".format(snapshot, label))
+                      "{1}".format(snapshot.getName(), label))
             try:
                 self.vms[label].revertToSnapshot(snapshot, flags=0)
             except libvirt.libvirtError:

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h3 class="panel-title">Pending Tasks</h3>
+    </div>
+    {% if tasks %}
+    <table class="table table-striped" style="table-layout: fixed;">
+        <thead>
+        <tr>
+            <th>Timestamp</th>
+            <th>Category</th>
+            <th>Target</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for task in tasks %}
+            <tr>
+                <td>
+                {% if task.status == "reported" %}
+                    {{task.completed_on}}
+                {% else %}
+                    <span class="muted">{{task.added_on}} (added on)</span>
+                {% endif %}
+                </td>
+                <td>{{task.category}}</td>
+                <td>{{task.target}}</td>
+                <td>
+                    {% if task.status == "pending" %}
+                        <span class="text-muted">pending</span>
+                    {% elif task.status == "running" %}
+                        <span class="text-warning">running</span>
+                    {% elif task.status == "completed" %}
+                        <span class="text-info">completed</span>
+                    {% elif task.status == "reported" %}
+                        <span class="text-success">reported</span>
+                    {% else %}
+                        <span class="text-danger">{{task.status}}</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="panel-body">No pending tasks.</div>
+    {% endif %}
+        </div>
+{% endblock %}

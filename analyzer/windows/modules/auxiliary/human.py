@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -75,8 +75,8 @@ def move_mouse():
     USER32.SetCursorPos(x, y)
 
 def click_mouse():
-    # Move mouse to bottom-right position.
-    USER32.SetCursorPos(RESOLUTION["x"], RESOLUTION["y"])
+    # Move mouse to top-middle position.
+    USER32.SetCursorPos(RESOLUTION["x"] / 2, 0)
     # Mouse down.
     USER32.mouse_event(2, 0, 0, 0, None)
     KERNEL32.Sleep(50)

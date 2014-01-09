@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,9 +7,9 @@ import json
 import urllib
 import urllib2
 
-from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.exceptions import CuckooProcessingError
+from lib.cuckoo.common.objects import File
 
 VIRUSTOTAL_FILE_URL = "https://www.virustotal.com/vtapi/v2/file/report"
 VIRUSTOTAL_URL_URL = "https://www.virustotal.com/vtapi/v2/url/report"
@@ -31,8 +31,7 @@ class VirusTotal(Processing):
 
         if self.task["category"] == "file":
             if not os.path.exists(self.file_path):
-                raise CuckooProcessingError("File {0} not found, "
-                                            "skip".format(self.file_path))
+                raise CuckooProcessingError("File {0} not found, skipping it".format(self.file_path))
 
             resource = File(self.file_path).get_md5()
             url = VIRUSTOTAL_FILE_URL

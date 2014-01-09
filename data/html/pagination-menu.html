@@ -1,0 +1,57 @@
+        <div class="row-fluid">
+            <div class="span4" style="text-align: left;">
+                <div class="pagination" style="vertical-align: middle;">
+                    Results {{ pagination.start }}-{{ pagination.end }} of {{ pagination.tot_results }}
+                </div>
+            </div>
+            <div class="span4" style="text-align: center;">
+                <div class="pagination" style="vertical-align: middle;">
+                    Page {{ pagination.page_id }} of {{ pagination.tot_pages }}
+                </div>
+            </div>
+            <div class="span4" style="text-align: right;">
+                <div class="pagination">
+                    <ul>
+                        {% if pagination.page_id > 1 %}
+                            <li><a href="/browse/page/1">&lt;&lt;</a></li>
+                            <li><a href="/browse/page/{{ pagination.page_id - 1 }}">&lt;</a></li>
+                        {% endif %}
+                        {% if pagination.page_id > 5 %}
+                            <li><a href="/browse/page/{{ pagination.page_id - 5 }}">{{ pagination.page_id - 5 }}</a></li>
+                        {% endif %}
+                        {% if pagination.page_id > 4 %}
+                            <li><a href="/browse/page/{{ pagination.page_id - 4 }}">{{ pagination.page_id - 4 }}</a></li>
+                        {% endif %}
+                        {% if pagination.page_id > 3 %}
+                            <li><a href="/browse/page/{{ pagination.page_id - 3 }}">{{ pagination.page_id - 3 }}</a></li>
+                        {% endif %}
+                        {% if pagination.page_id > 2 %}
+                            <li><a href="/browse/page/{{ pagination.page_id - 2 }}">{{ pagination.page_id - 2 }}</a></li>
+                        {% endif %}
+                        {% if pagination.page_id > 1 %}
+                            <li><a href="/browse/page/{{ pagination.page_id - 1 }}">{{ pagination.page_id - 1 }}</a></li>
+                        {% endif %}
+                            <li class="active disabled"><a><b>{{ pagination.page_id }}</b></a></li>
+                        {% if pagination.tot_pages - pagination.page_id > 0 %}
+                            <li><a href="/browse/page/{{ pagination.page_id + 1 }}">{{ pagination.page_id + 1 }}</a></li>
+                        {% endif %}
+                        {% if pagination.tot_pages - pagination.page_id > 1 %}
+                            <li><a href="/browse/page/{{ pagination.page_id + 2 }}">{{ pagination.page_id + 2 }}</a></li>
+                        {% endif %}
+                        {% if pagination.tot_pages - pagination.page_id > 2 %}
+                            <li><a href="/browse/page/{{ pagination.page_id + 3 }}">{{ pagination.page_id + 3 }}</a></li>
+                        {% endif %}
+                        {% if pagination.tot_pages - pagination.page_id > 3 %}
+                            <li><a href="/browse/page/{{ pagination.page_id + 4 }}">{{ pagination.page_id + 4 }}</a></li>
+                        {% endif %}
+                        {% if pagination.tot_pages - pagination.page_id > 4 %}
+                            <li><a href="/browse/page/{{ pagination.page_id + 5 }}">{{ pagination.page_id + 5 }}</a></li>
+                        {% endif %}
+                        {% if pagination.page_id < pagination.tot_pages %}
+                            <li><a href="/browse/page/{{ pagination.page_id + 1 }}">&gt;</a></li>
+                            <li><a href="/browse/page/{{ pagination.tot_pages }}">&gt;&gt;</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>

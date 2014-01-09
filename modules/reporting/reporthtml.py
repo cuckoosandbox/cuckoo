@@ -1,18 +1,19 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import codecs
 import base64
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Report
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.objects import File
 
 try:
-    from jinja2.loaders import FileSystemLoader
     from jinja2.environment import Environment
+    from jinja2.loaders import FileSystemLoader
     HAVE_JINJA2 = True
 except ImportError:
     HAVE_JINJA2 = False
@@ -65,7 +66,7 @@ class ReportHTML(Report):
             raise CuckooReportError("Failed to generate HTML report: %s" % e)
         
         try:
-            with open(os.path.join(self.reports_path, "report.html"), "w") as report:
+            with codecs.open(os.path.join(self.reports_path, "report.html"), "w", encoding="utf-8") as report:
                 report.write(html)
         except (TypeError, IOError) as e:
             raise CuckooReportError("Failed to write HTML report: %s" % e)

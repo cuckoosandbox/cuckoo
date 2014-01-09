@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -17,9 +17,9 @@ try:
 except ImportError:
     HAVE_PEFILE = False
 
-from lib.cuckoo.common.objects import File
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Processing
+from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import convert_to_printable
 
 
@@ -158,8 +158,6 @@ class PortableExecutable:
                         name = str(resource_type.name)
                     else:
                         name = str(pefile.RESOURCE_TYPE.get(resource_type.struct.Id))
-                    if name == None:
-                        name = str(esource_type.struct.Id)
 
                     if hasattr(resource_type, "directory"):
                         for resource_id in resource_type.directory.entries:

@@ -1,0 +1,95 @@
+<!--
+  Cuckoo Sandbox - Automated Malware Analysis
+  Copyright (C) 2010-2014  Cuckoo Sandbox Developers.
+  http://www.cuckoosandbox.org
+ 
+  This file is part of Cuckoo.
+ 
+  Cuckoo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  Cuckoo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see http://www.gnu.org/licenses/
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cuckoo Sandbox</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+<style>
+{% include "css/bootstrap.min.css" %}
+{% include "css/bootstrap-responsive.min.css" %}
+body {
+    padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+}
+.footer {
+    margin-top: 45px;
+    padding: 35px 0 36px;
+    border-top: 1px solid #e5e5e5;
+}
+.footer p {
+    margin-bottom: 0;
+    color: #555;
+}
+.mono {
+    font-family: monospace;
+}
+.signature {
+    padding: 6px;
+    margin-bottom: 3px;
+}
+</style>
+
+<!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+
+<link rel="shortcut icon" href="ico/favicon.ico">
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="ico/apple-touch-icon-144-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="ico/apple-touch-icon-114-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="ico/apple-touch-icon-72-precomposed.png">
+<link rel="apple-touch-icon-precomposed" href="ico/apple-touch-icon-57-precomposed.png">
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                </a>
+                <div class="nav-collapse">
+                    <ul class="nav">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/browse/page/1">Browse</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        {% include "graphic/logo.html" %}
+        {% block content %}{% endblock %}
+
+        <footer class="footer">
+            <p class="pull-right"><a href="#">Back to top</a></p>
+            <p>&copy;2010-2014 <a href="http://www.cuckoosandbox.org">Cuckoo Sandbox</a></p>
+        </footer>
+    </div>
+<script>
+{% include "js/bootstrap.min.js" %}
+{% include "js/functions.js" %}
+</script>
+</body>
+</html>

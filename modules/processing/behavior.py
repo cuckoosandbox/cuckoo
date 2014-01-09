@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,10 +7,10 @@ import logging
 import datetime
 
 from lib.cuckoo.common.abstracts import Processing
+from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.netlog import NetlogParser, BsonParser
 from lib.cuckoo.common.utils import convert_to_printable, logtime
 from lib.cuckoo.common.utils import cleanup_value
-from lib.cuckoo.common.netlog import NetlogParser, BsonParser
-from lib.cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
 
@@ -48,7 +48,6 @@ class ParseProcessLog(list):
         self.first_seen = None
         self.calls = self
         self.lastcall = None
-        self.parsecount = 0
 
         if os.path.exists(log_path) and os.stat(log_path).st_size > 0:
             self.parse_first_and_reset()
@@ -73,8 +72,8 @@ class ParseProcessLog(list):
         self.fd.seek(0)
 
     def read(self, length):
-        if length == 0:
-            return b''
+        if not length:
+            return ''
         buf = self.fd.read(length)
         if not buf or len(buf) != length:
             raise EOFError()
@@ -85,17 +84,13 @@ class ParseProcessLog(list):
         #log.debug('iter called by this guy: {0}'.format(inspect.stack()[1]))
         return self
 
-    def __getitem__(self, key):
-        return getattr(self, key)
-
     def __repr__(self):
-        return "ParseProcessLog {0}".format(self._log_path)
+        return "<ParseProcessLog log-path: %r>" % self._log_path
 
     def __nonzero__(self):
         return self.wait_for_lastcall()
 
     def reset(self):
-        self.parsecount += 1
         self.fd.seek(0)
         self.lastcall = None
 
@@ -106,16 +101,17 @@ class ParseProcessLog(list):
         @return: True if a == b else False
         """
         if a["api"] == b["api"] and \
-           a["status"] == b["status"] and \
-           a["arguments"] == b["arguments"] and \
-           a["return"] == b["return"]:
+                a["status"] == b["status"] and \
+                a["arguments"] == b["arguments"] and \
+                a["return"] == b["return"]:
             return True
         return False
 
     def wait_for_lastcall(self):
         while not self.lastcall:
             r = None
-            try: r = self.parser.read_next_message()
+            try:
+                r = self.parser.read_next_message()
             except EOFError:
                 return False
 
@@ -124,20 +120,20 @@ class ParseProcessLog(list):
         return True
 
     def next(self):
-        if not self.fd: raise StopIteration()
+        if not self.fd:
+            raise StopIteration()
 
-        x = self.wait_for_lastcall()
-        if not x:
+        if not self.wait_for_lastcall():
             self.reset()
             raise StopIteration()
 
         nextcall, self.lastcall = self.lastcall, None
 
-        x = self.wait_for_lastcall()
+        self.wait_for_lastcall()
         while self.lastcall and self.compare_calls(nextcall, self.lastcall):
             nextcall["repeated"] += 1
             self.lastcall = None
-            x = self.wait_for_lastcall()
+            self.wait_for_lastcall()
 
         return nextcall
 
@@ -190,7 +186,7 @@ class ParseProcessLog(list):
 
             # Split the argument name with its value based on the separator.
             try:
-                (arg_name, arg_value) = row[index]
+                arg_name, arg_value = row[index]
             except ValueError as e:
                 log.debug("Unable to parse analysis row argument (row=%s): %s", row[index], e)
                 continue
@@ -252,16 +248,17 @@ class Processes:
 
             # Invoke parsing of current log file.
             current_log = ParseProcessLog(file_path)
-            if current_log.process_id == None: continue
+            if current_log.process_id is None:
+                continue
 
             # If the current log actually contains any data, add its data to
-            # the global results list.
+            # the results list.
             results.append({
                 "process_id": current_log.process_id,
                 "process_name": current_log.process_name,
                 "parent_id": current_log.parent_id,
                 "first_seen": logtime(current_log.first_seen),
-                "calls": current_log
+                "calls": current_log.calls,
             })
 
         # Sort the items in the results list chronologically. In this way we
@@ -370,8 +367,10 @@ class Summary:
             if handle != 0:
                 for a in self.handles:
                     if a["handle"] == handle:
-                        try: self.handles.remove(a)
-                        except ValueError: pass
+                        try:
+                            self.handles.remove(a)
+                        except ValueError:
+                            pass
 
         elif call["category"] == "filesystem":
             for argument in call["arguments"]:
@@ -400,6 +399,7 @@ class Summary:
         return {"files": self.files, "keys": self.keys, "mutexes": self.mutexes}
 
 class Enhanced(object):
+    """Generates a more extensive high-level representation than Summary."""
 
     key = "enhanced"
 
@@ -431,12 +431,6 @@ class Enhanced(object):
         """
         self.procedures[base] = "{0}:{1}".format(self._get_loaded_module(mbase), name)
 
-    def _get_procedure(self, base):
-        """
-        Get the name of a procedure
-        """
-        return self.procedures.get(base, "")
-
     def _add_loaded_module(self, name, base):
         """
         Add a loaded module to the internal database
@@ -460,8 +454,8 @@ class Enhanced(object):
             return self.keyhandles[handle]
 
         name = ""
-        if registry and registry != "0x00000000" and\
-            registry in self.keyhandles:
+        if registry and registry != "0x00000000" and \
+                registry in self.keyhandles:
             name = self.keyhandles[registry]
 
         nkey = name + subkey
@@ -473,17 +467,14 @@ class Enhanced(object):
 
     def _remove_keyhandle(self, handle):
         key = self._get_keyhandle(handle)
-        try:
+
+        if handle in self.keyhandles:
             self.keyhandles.pop(handle)
-        except KeyError:
-            pass
+
         return key
 
     def _get_keyhandle(self, handle):
-        try:
-            return self.keyhandles[handle]
-        except KeyError:
-            return ""
+        return self.keyhandles.get(handle, "")
 
     def _process_call(self, call):
         """ Gets files calls
@@ -509,6 +500,7 @@ class Enhanced(object):
             if call["api"] in item["apis"]:
                 args = _load_args(call)
                 self.eid += 1
+
                 event = {
                     "event": item["event"],
                     "object": item["object"],
@@ -516,8 +508,9 @@ class Enhanced(object):
                     "eid": self.eid,
                     "data": {}
                 }
-                for (logname, dataname) in item["args"]:
-                    event["data"][logname] = args.get(dataname, None)
+
+                for logname, dataname in item["args"]:
+                    event["data"][logname] = args.get(dataname)
                 return event
 
         def _generic_handle(self, data, call):
@@ -534,30 +527,21 @@ class Enhanced(object):
             handles[handle] = filename
 
         def _remove_handle(handles, handle):
-            try:
+            if handle in handles:
                 handles.pop(handle)
-            except KeyError:
-                pass
 
         def _get_handle(handles, handle):
-            try:
-                return handles[handle]
-            except KeyError:
-                return None
+            return handles.get(handle)
 
-        def _get_service_action(ccode):
+        def _get_service_action(control_code):
             """@see: http://msdn.microsoft.com/en-us/library/windows/desktop/ms682108%28v=vs.85%29.aspx"""
             codes = {1: "stop",
                      2: "pause",
                      3: "continue",
                      4: "info"}
-            try:
-                return codes[int(ccode)]
-            except KeyError:
-                if int(ccode >= 128):
-                    return "user"
-                else:
-                    return "notify"
+
+            default = "user" if control_code >= 128 else "notify"
+            return codes.get(control_code, default)
 
         event = None
 
@@ -757,15 +741,13 @@ class Enhanced(object):
                 "event": "modify",
                 "object": "service",
                 "apis": ["ControlService"],
-                "args": [("controlcode", "ControlCode")
-                ]
+                "args": [("controlcode", "ControlCode")]
             },
             {
                 "event": "delete",
                 "object": "service",
                 "apis": ["DeleteService"],
-                "args": [
-                ]
+                "args": [],
             },
         ]
 
@@ -816,7 +798,6 @@ class Enhanced(object):
             if call["api"] in ["ControlService"]:
                 event["data"]["action"] = _get_service_action(args["ControlCode"])
 
-
             return event
 
         elif call["api"] in ["SetCurrentDirectoryA", "SetCurrentDirectoryW"]:
@@ -838,13 +819,13 @@ class Enhanced(object):
 
         # Registry
         elif call["api"] in ["RegOpenKeyExA", "RegOpenKeyExW", "RegCreateKeyExA", "RegCreateKeyExW"]:
-            regkey = self._add_keyhandle(args.get("Registry", ""), args.get("SubKey", ""), args.get("Handle", ""))
+            self._add_keyhandle(args.get("Registry", ""), args.get("SubKey", ""), args.get("Handle", ""))
 
         elif call["api"] in ["NtOpenKey"]:
-            regkey = self._add_keyhandle(None, args.get("ObjectAttributes", ""), args.get("KeyHandle", ""))
+            self._add_keyhandle(None, args.get("ObjectAttributes", ""), args.get("KeyHandle", ""))
 
         elif call["api"] in ["RegCloseKey"]:
-            regkey = self._remove_keyhandle(args.get("Handle", ""))
+            self._remove_keyhandle(args.get("Handle", ""))
 
         return event
 

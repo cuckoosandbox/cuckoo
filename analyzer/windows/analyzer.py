@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -18,20 +18,20 @@ from threading import Lock, Thread
 from datetime import datetime
 
 from lib.api.process import Process
-from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.abstracts import Package, Auxiliary
+from lib.common.constants import PATHS, PIPE
 from lib.common.defines import KERNEL32
 from lib.common.defines import ERROR_MORE_DATA, ERROR_PIPE_CONNECTED
 from lib.common.defines import PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE
 from lib.common.defines import PIPE_READMODE_MESSAGE, PIPE_WAIT
 from lib.common.defines import PIPE_UNLIMITED_INSTANCES, INVALID_HANDLE_VALUE
-from lib.common.constants import PATHS, PIPE
+from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.results import upload_to_host
 from lib.core.config import Config
-from lib.core.startup import create_folders, init_logging
-from lib.core.privileges import grant_debug_privilege
 from lib.core.packages import choose_package
-import modules.auxiliary as auxiliary
+from lib.core.privileges import grant_debug_privilege
+from lib.core.startup import create_folders, init_logging
+from modules import auxiliary
 
 log = logging.getLogger()
 
@@ -687,6 +687,18 @@ class Analyzer:
             except Exception as e:
                 log.warning("Cannot terminate auxiliary module %s: %s",
                             aux.__class__.__name__, e)
+
+        # Try to terminate remaining active processes. We do this to make sure
+        # that we clean up remaining open handles (sockets, files, etc.).
+        log.info("Terminating remaining processes before shutdown...")
+
+        for pid in PROCESS_LIST:
+            proc = Process(pid=pid)
+            if proc.is_alive():
+                try:
+                    proc.terminate()
+                except:
+                    continue
 
         # Let's invoke the completion procedure.
         self.complete()

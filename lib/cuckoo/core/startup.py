@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -16,14 +16,14 @@ import modules.processing
 import modules.signatures
 import modules.reporting
 
+from lib.cuckoo.common.colors import red, green, yellow, cyan
+from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooStartupError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.utils import create_folders
-from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.colors import red, green, yellow, cyan
-from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
 from lib.cuckoo.core.database import Database, TASK_RUNNING
+from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
 
 log = logging.getLogger()
 
@@ -142,7 +142,6 @@ class ConsoleHandler(logging.StreamHandler):
 
 def init_logging():
     """Initializes logging."""
-    cfg = Config()
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 
     fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log"))
@@ -189,7 +188,7 @@ def init_modules():
     import_package(modules.reporting)
 
     # Import machine manager.
-    import_plugin("modules.machinery." + Config().cuckoo.machine_manager)
+    import_plugin("modules.machinery." + Config().cuckoo.machinery)
 
     for category, entries in list_plugins().items():
         log.debug("Imported \"%s\" modules:", category)
