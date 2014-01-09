@@ -40,14 +40,15 @@ The following libraries are not strictly required, but their installation is rec
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
     * `Volatility`_ (Optional): used for forensic analysis on memory
     * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use release 4.0 or above).
+    * `Chardet`_ (Optional): used for detecting string encoding.
 
 Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
 
-    $ sudo apt-get install python-dpkt python-jinja2 python-magic python-pymongo python-libvirt python-bottle python-pefile
+    $ sudo apt-get install python-dpkt python-jinja2 python-magic python-pymongo python-libvirt python-bottle python-pefile python-chardet
 
 Except for *python-magic*, *python-dpkt* and *python-libvirt*, the others can be installed through ``pip`` too::
 
-    $ sudo pip install jinja2 pymongo bottle pefile maec django
+    $ sudo pip install jinja2 pymongo bottle pefile maec django chardet
 
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 
@@ -67,6 +68,7 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Pefile: http://code.google.com/p/pefile/
 .. _Volatility: http://code.google.com/p/volatility/
 .. _MAEC Python bindings: https://pypi.python.org/pypi/maec
+.. _Chardet: https://pypi.python.org/pypi/chardet
 
 Virtualization Software
 =======================

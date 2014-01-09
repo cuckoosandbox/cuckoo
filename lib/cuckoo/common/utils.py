@@ -7,12 +7,17 @@ import time
 import shutil
 import ntpath
 import string
-import chardet
 import tempfile
 import xmlrpclib
 from datetime import datetime
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
+
+try:
+    import chardet
+    HAVE_CHARDET = True
+except ImportError:
+    HAVE_CHARDET = False
 
 def create_folders(root=".", folders=[]):
     """Create directories.
@@ -223,7 +228,7 @@ def to_unicode(s):
     result = brute_enc(s)
 
     # Try via chardet.
-    if not result:
+    if (not result) and HAVE_CHARDET:
         result = chardet_enc(s)
 
     # If not possible to convert the input string, try again with
