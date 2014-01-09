@@ -440,7 +440,7 @@ class Database(object):
                           resultserver_port=resultserver_port)
         # Deal with tags format (i.e. foo,bar,baz)
         if tags:
-            for tag in tags.replace(" ","").split(","):
+            for tag in tags.replace(" ", "").split(","):
                 machine.tags.append(self._get_or_create(session, Tag, name=tag))
         session.add(machine)
 
