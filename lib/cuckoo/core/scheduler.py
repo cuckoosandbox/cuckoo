@@ -427,7 +427,10 @@ class Scheduler:
         # machine manager instance.
         machinery.set_options(Config(conf))
         # Initialize the machine manager.
-        machinery.initialize(machinery_name)
+        try:
+            machinery.initialize(machinery_name)
+        except CuckooMachineError as e:
+            raise CuckooCriticalError("Error initializing machines: %s" % e)
 
         # At this point all the available machines should have been identified
         # and added to the list. If none were found, Cuckoo needs to abort the
