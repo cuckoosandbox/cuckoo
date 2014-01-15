@@ -60,8 +60,9 @@ def pending(request):
     tasks = db.list_tasks(status=TASK_PENDING)
 
     pending = []
-    for task in tasks:
-        pending.append(task.to_dict())
+    if tasks:
+        for task in tasks:
+            pending.append(task.to_dict())
 
     return render_to_response("analysis/pending.html",
                               {"tasks" : pending},
