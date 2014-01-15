@@ -375,6 +375,9 @@ class LibVirtMachinery(Machinery):
             raise CuckooMachineError("No snapshot found for virtual machine "
                                      "{0}".format(label))
 
+        # Start the VM
+        self.vms[label].create()
+
         # Check state.
         self._wait_status(label, self.RUNNING)
 
