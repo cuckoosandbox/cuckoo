@@ -6,7 +6,6 @@ import os
 import re
 import logging
 import time
-import json
 
 import xml.etree.ElementTree as ET
 

@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import json
 import pkgutil
 import inspect
 import logging
@@ -336,7 +337,6 @@ class RunSignatures(object):
             # from it and append it to the results container.
             if current.run():
                 log.debug("Analysis matched signature \"%s\"", current.name)
-                current.load_overlay()
                 # Return information on the matched signature.
                 return current.as_result()
         except NotImplementedError:
@@ -398,7 +398,6 @@ class RunSignatures(object):
                         # On True, the signature is matched.
                         if result is True:
                             log.debug("Analysis matched signature \"%s\"", sig.name)
-                            sig.load_overlay()
                             matched.append(sig.as_result())
                             if sig in complete_list:
                                 complete_list.remove(sig)
@@ -419,7 +418,6 @@ class RunSignatures(object):
                 else:
                     if result is True:
                         log.debug("Analysis matched signature \"%s\"", sig.name)
-                        sig.load_overlay()
                         matched.append(sig.as_result())
                         if sig in complete_list:
                             complete_list.remove(sig)
