@@ -357,6 +357,7 @@ class RunSignatures(object):
                         self._check_signature_version(sig)]
 
         overlay = self._load_overlay()
+        log.debug("Applying signature overlays for signatures: %s", ", ".join(overlay.keys()))
         for signature in complete_list + evented_list:
             self._apply_overlay(signature, overlay)
 
