@@ -239,6 +239,29 @@ class RunSignatures(object):
     def __init__(self, results):
         self.results = results
 
+    def _load_overlay(self):
+        """Loads overlay data from a json file.
+        See example in data/signature_overlay.json
+        """
+        filename = os.path.join(CUCKOO_ROOT, "data", "signature_overlay.json")
+
+        try:
+            with open(filename) as fh:
+                odata = json.load(fh)
+                return odata
+        except IOError:
+            pass
+        
+        return {}
+
+    def _apply_overlay(self, signature, overlay):
+        """Applies the overlay attributes to the signature object.
+        """
+        if signature.name in overlay:
+            attrs = overlay[signature.name]
+            for attr, value in attrs.items():
+                setattr(signature, attr, value)
+
     def _check_signature_version(self, current):
         """Check signature version.
         @param current: signature class/instance to check.
@@ -332,6 +355,10 @@ class RunSignatures(object):
                         for sig in complete_list
                         if sig.enabled and sig.evented and
                         self._check_signature_version(sig)]
+
+        overlay = self._load_overlay()
+        for signature in complete_list + evented_list:
+            self._apply_overlay(signature, overlay)
 
         if evented_list:
             log.debug("Running %u evented signatures", len(evented_list))

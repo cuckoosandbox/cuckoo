@@ -686,20 +686,6 @@ class Signature(object):
 
         return None
 
-    def load_overlay(self):
-        """Loads overlay data from a json file
-        """
-        filename = os.path.join(CUCKOO_ROOT, "data", "overlay", "overlay.json")
-
-        try:
-            with open(filename) as fh:
-                odata = json.load(fh)
-                if self.name in odata:
-                    self.severity = odata[self.name]["severity"]
-                    self.alert = odata[self.name]["alert"]
-        except IOError:
-            pass
-
     def check_file(self, pattern, regex=False):
         """Checks for a file being opened.
         @param pattern: string or expression to check for.
