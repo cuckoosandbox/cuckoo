@@ -256,8 +256,7 @@ class RunSignatures(object):
         return {}
 
     def _apply_overlay(self, signature, overlay):
-        """Applies the overlay attributes to the signature object.
-        """
+        """Applies the overlay attributes to the signature object."""
         if signature.name in overlay:
             attrs = overlay[signature.name]
             for attr, value in attrs.items():
@@ -423,7 +422,7 @@ class RunSignatures(object):
                         if sig in complete_list:
                             complete_list.remove(sig)
 
-        # link this into the results already at this point, so non-evented signatures can use it
+        # Link this into the results already at this point, so non-evented signatures can use it
         self.results["signatures"] = matched
 
         # Compat loop for old-style (non evented) signatures.

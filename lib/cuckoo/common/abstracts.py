@@ -641,7 +641,7 @@ class Signature(object):
     minimum = None
     maximum = None
 
-    # higher order will be processed later (only for non-evented signatures)
+    # Higher order will be processed later (only for non-evented signatures)
     # this can be used for having meta-signatures that check on other lower-
     # order signatures being matched
     order = 0
