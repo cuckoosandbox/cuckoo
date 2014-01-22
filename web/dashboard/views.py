@@ -52,7 +52,9 @@ def index(request):
 
     # For the following stats we're only interested in completed tasks.
     tasks = db.list_tasks(offset=offset, status=TASK_COMPLETED)
-    tasks += db.list_tasks(offset=offset, status=TASK_REPORTED)
+    task_reported = db.list_tasks(offset=offset, status=TASK_REPORTED)
+    if task_reported:
+       tasks += task_reported
 
     if tasks:
         # Get the time when the first task started.
