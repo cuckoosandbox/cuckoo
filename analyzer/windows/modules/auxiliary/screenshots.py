@@ -17,8 +17,9 @@ SHOT_DELAY = 1
 class Screenshots(Auxiliary, Thread):
     """Take screenshots."""
     
-    def __init__(self):
+    def __init__(self, options={}):
         Thread.__init__(self)
+        Auxiliary.__init__(self, options)
         self.do_run = True
 
     def stop(self):
