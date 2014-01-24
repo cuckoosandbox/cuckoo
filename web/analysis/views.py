@@ -106,17 +106,41 @@ def chunk(request, task_id, pid, pagenum):
     else:
         raise PermissionDenied
 
+
 @require_safe
 def report(request, task_id):
     report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
-
+    hosts = {}
     if not report:
         return render_to_response("error.html",
                                   {"error" : "The specified analysis does not exist"},
                                   context_instance=RequestContext(request))
 
+    for protocol in ["tcp", "udp"]:
+        for entry in report["network"][protocol]:
+            # If destination is in the hosts list it probably isnt our IP.
+            if entry["dst"] in report["network"]["hosts"]:
+                port = "{0}:{1}".format(protocol, entry["dport"])
+                if entry["dst"] in hosts:
+                    if not port in hosts[entry["dst"]]:
+                        hosts[entry["dst"]].append(port)
+                else:
+                    hosts[entry["dst"]] = [port]
+
+            # If source is in the hosts list it probably isnt our IP.
+            if entry["src"] in report["network"]["hosts"]:
+                port = "{0}:{1}".format(protocol, entry["sport"])
+                if entry["src"] in hosts:
+                    if not port in hosts[entry["src"]]:
+                        hosts[entry["src"]].append(port)
+                else:
+                    hosts[entry["src"]] = [port]
+
     return render_to_response("analysis/report.html",
-                              {"analysis": report},
+                              {
+                                   "analysis": report,
+                                   "hosts": hosts,
+                               },
                               context_instance=RequestContext(request))
 
 @require_safe
