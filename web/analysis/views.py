@@ -162,6 +162,8 @@ def search(request):
                                            "term": request.POST["search"],
                                            "error": "Search term too short, minimum 3 characters required"},
                                           context_instance=RequestContext(request))
+            # name:foo or name: foo
+            value = value.lstrip()
 
             # Search logic.
             if term == "name":
