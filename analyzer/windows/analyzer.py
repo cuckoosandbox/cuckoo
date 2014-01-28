@@ -437,8 +437,12 @@ class Analyzer:
         # We update the target according to its category. If it's a file, then
         # we store the path.
         if self.config.category == "file":
-            self.target = os.path.join(os.environ["TEMP"] + os.sep,
-                                       str(self.config.file_name))
+            try:
+                self.target = os.path.join(self.config.file_path,
+                                            str(self.config.file_name))
+            except:
+                self.target = os.path.join(os.environ["TEMP"] + os.sep,
+                                           str(self.config.file_name))
         # If it's a URL, well.. we store the URL.
         else:
             self.target = self.config.target
