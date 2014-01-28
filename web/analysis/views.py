@@ -162,6 +162,8 @@ def search(request):
                                            "term": request.POST["search"],
                                            "error": "Search term too short, minimum 3 characters required"},
                                           context_instance=RequestContext(request))
+            # name:foo or name: foo
+            value = value.lstrip()
 
             # Search logic.
             if term == "name":
@@ -184,6 +186,8 @@ def search(request):
                 records = results_db.analysis.find({"network.hosts": value}).sort([["_id", -1]])
             elif term == "signature":
                 records = results_db.analysis.find({"signatures.description": {"$regex" : value, "$options" : "-1"}}).sort([["_id", -1]])
+            elif term == "url":
+                records = results_db.analysis.find({"target.url": value}).sort([["_id", -1]])
             else:
                 return render_to_response("analysis/search.html",
                                           {"analyses": None,
