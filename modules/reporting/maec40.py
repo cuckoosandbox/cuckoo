@@ -705,7 +705,7 @@ class MAEC40Report(Report):
             resources = None
 
             # PE exports.
-            if len(self.results["static"]["pe_exports"]) > 0:
+            if "pe_exports" in self.results["static"] and len(self.results["static"]["pe_exports"]) > 0:
                 exports = {}
                 exported_function_list = []
                 for x in self.results["static"]["pe_exports"]:
