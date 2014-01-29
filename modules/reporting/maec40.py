@@ -264,7 +264,11 @@ class MAEC40Report(Report):
                     action_dict["name"] = {"value": mapping_dict["action_name"]}
                 # Handle any Parameters.
                 if "parameter_associated_arguments" in mapping_dict:
-                    action_dict["action_arguments"] = self.processActionArguments(mapping_dict["parameter_associated_arguments"], parameter_list)
+                    actions_args = self.processActionArguments(mapping_dict["parameter_associated_arguments"], parameter_list)
+                    if actions_args:
+                        action_dict["action_arguments"] = actions_args
+                    else:
+                        action_dict["action_arguments"] = []
                 # Handle any Associated Objects.
                 if "parameter_associated_objects" in mapping_dict:
                     action_dict["associated_objects"] = self.processActionAssociatedObjects(mapping_dict["parameter_associated_objects"], parameter_list)
