@@ -14,6 +14,7 @@ class PDF(Package):
     def get_path(self):
         adobe = os.path.join(os.getenv("ProgramFiles"), "Adobe")
         paths = [
+            os.path.join(adobe, "Acrobat 7.0", "Reader", "AcroRd32.exe"),
             os.path.join(adobe, "Reader 8.0", "Reader", "AcroRd32.exe"),
             os.path.join(adobe, "Reader 9.0", "Reader", "AcroRd32.exe"),
             os.path.join(adobe, "Reader 10.0", "Reader", "AcroRd32.exe"),
