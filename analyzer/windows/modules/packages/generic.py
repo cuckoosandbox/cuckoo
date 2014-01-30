@@ -12,6 +12,9 @@ class Genric(Package):
     """Generic analysis package."""
 
     def start(self, path):
+        """
+        @param path: Path to the file to analyse
+        """
         free = self.options.get("free", False)
         dll = self.options.get("dll", None)
         suspended = True
@@ -21,7 +24,7 @@ class Genric(Package):
         cmd_path = os.path.join(os.getenv("SystemRoot"), "system32", "cmd.exe")
         cmd_args = "/c start \"{0}\"".format(path)
 
-        p = Process()
+        p = Process(configfile=self.configfile)
         if not p.execute(path=cmd_path, args=cmd_args, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial process, "
                                      "analysis aborted")
@@ -40,7 +43,7 @@ class Genric(Package):
     def finish(self):
         if self.options.get("procmemdump", False):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, configfile=self.configfile)
                 p.dump_memory()
 
         return True

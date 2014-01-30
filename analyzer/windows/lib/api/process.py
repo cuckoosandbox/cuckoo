@@ -40,7 +40,7 @@ class Process:
     """Windows process."""
     first_process = True
 
-    def __init__(self, pid=0, h_process=0, thread_id=0, h_thread=0):
+    def __init__(self, pid=0, h_process=0, thread_id=0, h_thread=0, configfile="analysis.conf"):
         """@param pid: PID.
         @param h_process: process handle.
         @param thread_id: thread id.
@@ -52,6 +52,7 @@ class Process:
         self.h_thread = h_thread
         self.suspended = False
         self.event_handle = None
+        self.configfile = configfile
 
     def __del__(self):
         """Close open handles."""
@@ -312,7 +313,7 @@ class Process:
 
         config_path = os.path.join(os.getenv("TEMP"), "%s.ini" % self.pid)
         with open(config_path, "w") as config:
-            cfg = Config("analysis.conf")
+            cfg = Config(self.configfile)
 
             # The first time we come up with a random startup-time.
             if Process.first_process:

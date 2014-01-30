@@ -13,6 +13,9 @@ class Zip(Package):
     """Zip analysis package."""
 
     def start(self, path):
+        """
+        @param path: Path to the file to analyse
+        """
         root = os.environ["TEMP"]
         password = self.options.get("password", None)
         default_file_name = "sample.exe"   
@@ -47,7 +50,7 @@ class Zip(Package):
         if free:
             suspended = False
 
-        p = Process()
+        p = Process(configfile=self.configfile)
         if not p.execute(path=file_path, args=args, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial process, "
                                      "analysis aborted")
@@ -65,7 +68,7 @@ class Zip(Package):
     def finish(self):
         if self.options.get("procmemdump", False):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, configfile=self.configfile)
                 p.dump_memory()
 
         return True

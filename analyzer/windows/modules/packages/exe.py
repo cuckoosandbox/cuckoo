@@ -10,6 +10,9 @@ class Exe(Package):
     """EXE analysis package."""
 
     def start(self, path):
+        """
+        @param path: Path to the file to analyse
+        """
         free = self.options.get("free", False)
         args = self.options.get("arguments", None)
         dll = self.options.get("dll", None)
@@ -17,7 +20,7 @@ class Exe(Package):
         if free:
             suspended = False
 
-        p = Process()
+        p = Process(configfile=self.configfile)
         if not p.execute(path=path, args=args, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial process, "
                                      "analysis aborted")
@@ -36,7 +39,7 @@ class Exe(Package):
     def finish(self):
         if self.options.get("procmemdump", False):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, configfile=self.configfile)
                 p.dump_memory()
 
         return True

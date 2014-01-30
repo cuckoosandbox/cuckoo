@@ -30,8 +30,11 @@ def upload_to_host(file_path, dump_path):
             nc.close()
 
 class NetlogConnection(object):
-    def __init__(self, proto=""):
-        config = Config(cfg="analysis.conf")
+    def __init__(self, proto="", configfile="analysis.conf"):
+        """
+        @param configfile: The configfile to use
+        """
+        config = Config(cfg=configfile)
         self.hostip, self.hostport = config.ip, config.port
         self.sock, self.file = None, None
         self.proto = proto
@@ -68,15 +71,18 @@ class NetlogConnection(object):
             pass
 
 class NetlogFile(NetlogConnection):
-    def __init__(self, filepath):
+    def __init__(self, filepath, configfile="analysis.conf"):
         self.filepath = filepath
-        NetlogConnection.__init__(self, proto="FILE\n{0}\n".format(self.filepath))
+        NetlogConnection.__init__(self, proto="FILE\n{0}\n".format(self.filepath), configfile=configfile)
         self.connect()
 
 class NetlogHandler(logging.Handler, NetlogConnection):
-    def __init__(self):
+    def __init__(self, configfile="analysis.conf"):
+        """
+        @param configfile: The config file to use
+        """
         logging.Handler.__init__(self)
-        NetlogConnection.__init__(self, proto="LOG\n")
+        NetlogConnection.__init__(self, proto="LOG\n", configfile=configfile)
         self.connect()
 
     def emit(self, record):

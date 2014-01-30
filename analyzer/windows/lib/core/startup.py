@@ -21,14 +21,16 @@ def create_folders():
         except OSError:
             pass
 
-def init_logging():
-    """Initialize logger."""
+def init_logging(configfile="analysis.conf"):
+    """Initialize logger.
+    @param configfile: The configuration file to use
+    """
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
     sh = logging.StreamHandler()
     sh.setFormatter(formatter)
     log.addHandler(sh)
     
-    nh = NetlogHandler()
+    nh = NetlogHandler(configfile)
     nh.setFormatter(formatter)
     log.addHandler(nh)
 

@@ -27,6 +27,9 @@ class PDF(Package):
         return None
 
     def start(self, path):
+        """
+        @param path: Path to the file to analyse
+        """
         reader = self.get_path()
         if not reader:
             raise CuckooPackageError("Unable to find any Adobe Reader "
@@ -38,7 +41,7 @@ class PDF(Package):
         if free:
             suspended = False
 
-        p = Process()
+        p = Process(configfile=self.configfile)
         if not p.execute(path=reader, args="\"%s\"" % path, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Adobe Reader "
                                      "process, analysis aborted")
@@ -56,7 +59,7 @@ class PDF(Package):
     def finish(self):
         if self.options.get("procmemdump", False):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, configfile=self.configfile)
                 p.dump_memory()
 
         return True

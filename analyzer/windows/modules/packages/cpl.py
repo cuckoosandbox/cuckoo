@@ -19,6 +19,9 @@ class CPL(Package):
         return
 
     def start(self, path):
+        """
+        @param path: Path to the file to analyse
+        """
         control = self.get_path()
         if not control:
             raise CuckooPackageError("Unable to find any control.exe "
@@ -30,7 +33,7 @@ class CPL(Package):
         if free:
             suspended = False
 
-        p = Process()
+        p = Process(configfile=self.configfile)
         if not p.execute(path=control, args="\"%s\"" % path,
                          suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Control "
@@ -49,7 +52,7 @@ class CPL(Package):
     def finish(self):
         if self.options.get("procmemdump", False):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, configfile=self.configfile)
                 p.dump_memory()
 
         return True

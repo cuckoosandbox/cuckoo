@@ -26,6 +26,9 @@ class VBS(Package):
         return None
 
     def start(self, path):
+        """
+        @param path: Path to the file to analyse
+        """
         wscript = self.get_path()
         if not wscript:
             raise CuckooPackageError("Unable to find any WScript "
@@ -55,7 +58,7 @@ class VBS(Package):
     def finish(self):
         if self.options.get("procmemdump", False):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, configfile=self.configfile)
                 p.dump_memory()
 
         return True

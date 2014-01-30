@@ -9,7 +9,10 @@ class Shellcode(Package):
     """Shellcode (any x86 executable code) analysis package."""
 
     def start(self, path):
-        p = Process()
+        """
+        @param path: Path to the file to analyse
+        """
+        p = Process(configfile=self.configfile)
         dll = self.options.get("dll")
         p.execute(path="bin/execsc.exe", args=path, suspended=True)
         p.inject(dll)
@@ -23,7 +26,7 @@ class Shellcode(Package):
     def finish(self):
         if self.options.get("procmemdump", False):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, configfile=self.configfile)
                 p.dump_memory()
 
         return True

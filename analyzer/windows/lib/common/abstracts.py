@@ -5,10 +5,14 @@
 class Package(object):
     """Base abstact analysis package."""
     
-    def __init__(self, options={}):
-        """@param options: options dict."""
+    def __init__(self, options={}, configfile="analysis.conf"):
+        """
+        @param options: options dict.
+        @param configfile: config file to use
+        """
         self.options = options
         self.pids = []
+        self.configfile = configfile
 
     def set_pids(self, pids):
         """Update list of monitored PIDs in the package context.
@@ -37,4 +41,8 @@ class Package(object):
 
 
 class Auxiliary(object):
-    pass
+    def __init__(self, configfile):
+        """
+        @param configfile: config file to use
+        """
+        self.configfile = configfile

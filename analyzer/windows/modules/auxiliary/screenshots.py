@@ -17,7 +17,8 @@ SHOT_DELAY = 1
 class Screenshots(Auxiliary, Thread):
     """Take screenshots."""
     
-    def __init__(self):
+    def __init__(self, configfile="analysis.conf"):
+        Auxiliary.__init__(self, configfile)
         Thread.__init__(self)
         self.do_run = True
 
@@ -58,7 +59,7 @@ class Screenshots(Auxiliary, Thread):
             tmpio.seek(0)
 
             # now upload to host from the StringIO
-            nf = NetlogFile("shots/%s.jpg" % str(img_counter).rjust(4, "0"))
+            nf = NetlogFile("shots/%s.jpg" % str(img_counter).rjust(4, "0"), self.configfile)
             
             for chunk in tmpio:
                 nf.sock.sendall(chunk)
