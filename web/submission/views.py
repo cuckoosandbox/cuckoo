@@ -43,8 +43,17 @@ def index(request):
                 options += "&"
             options += "procmemdump=yes"
 
+        db = Database()
+        task_ids = []
+        task_machines = []
+
+        if machine.lower() == "all":
+            for entry in db.list_machines():
+                task_machines.append(entry.label)
+        else:
+            task_machines.append(machine)
+
         if "sample" in request.FILES:
-            # Preventive checks.
             if request.FILES["sample"].size == 0:
                 return render_to_response("error.html",
                                           {"error": "You uploaded an empty file."},
@@ -56,44 +65,19 @@ def index(request):
 
             path = request.FILES["sample"].temporary_file_path()
 
-            db = Database()
-            task_ids = []
-            if machine == 'ALL':
-                for m in db.list_machines():
-                    task_ids.append(db.add_path(file_path=path,
-                                          package=package,
-                                          timeout=timeout,
-                                          options=options,
-                                          priority=priority,
-                                          machine=m,
-                                          custom=custom,
-                                          memory=memory,
-                                          enforce_timeout=enforce_timeout,
-                                          tags=tags))
-            else:
-                task_ids.append(db.add_path(file_path=path,
+            for entry in task_machines:
+                task_id = db.add_path(file_path=path,
                                       package=package,
                                       timeout=timeout,
                                       options=options,
                                       priority=priority,
-                                      machine=machine,
+                                      machine=entry,
                                       custom=custom,
                                       memory=memory,
                                       enforce_timeout=enforce_timeout,
-                                      tags=tags))
-
-            if len(task_ids) == 1: 
-                return render_to_response("success.html",
-                                          {"message": "The analysis task was successfully added with ID {0}.".format(task_ids[0])},
-                                          context_instance=RequestContext(request))
-            elif len(task_ids) > 1:
-                return render_to_response("success.html",
-                                          {"message": "The analysis task were successfully added with IDs {0}.".format(', '.join(str(i) for i in task_ids))},
-                                          context_instance=RequestContext(request))
-            else:
-                return render_to_response("error.html",
-                                          {"error": "Error adding task to Cuckoo's database."},
-                                          context_instance=RequestContext(request))
+                                      tags=tags)
+                if task_id:
+                    task_ids.append(task_id)
         elif "url" in request.POST:
             url = request.POST.get("url").strip()
             if not url:
@@ -101,66 +85,36 @@ def index(request):
                                           {"error": "You specified an invalid URL!"},
                                           context_instance=RequestContext(request))
 
-            db = Database()
-            task_ids = []
-            if machine == "ALL":
-                for m in db.list_machines():
-                    task_ids.append(db.add_url(url=url,
+            for entry in task_machines:
+                task_id = db.add_url(url=url,
                                      package=package,
                                      timeout=timeout,
                                      options=options,
                                      priority=priority,
-                                     machine=m,
+                                     machine=entry,
                                      custom=custom,
                                      memory=memory,
                                      enforce_timeout=enforce_timeout,
-                                     tags=tags))
+                                     tags=tags)
+                if task_id:
+                    task_ids.append(task_id)
+
+        tasks_count = len(task_ids)
+        if tasks_count > 0:
+            if tasks_count == 1:
+                message = "The analysis task was successfully added with ID {0}.".format(task_ids[0])
             else:
-                task_ids.append(db.add_url(url=url,
-                                     package=package,
-                                     timeout=timeout,
-                                     options=options,
-                                     priority=priority,
-                                     machine=machine,
-                                     custom=custom,
-                                     memory=memory,
-                                     enforce_timeout=enforce_timeout,
-                                     tags=tags))
-            if len(task_ids) == 1: 
-                return render_to_response("success.html",
-                                          {"message": "The analysis task was successfully added with ID {0}.".format(task_ids[0])},
-                                          context_instance=RequestContext(request))
-            elif len(task_ids) > 1:
-                return render_to_response("success.html",
-                                          {"message": "The analysis task were successfully added with IDs {0}.".format(', '.join(str(i) for i in task_ids))},
-                                          context_instance=RequestContext(request))
-            else:
-                return render_to_response("error.html",
-                                          {"error": "Error adding task to Cuckoo's database."},
-                                          context_instance=RequestContext(request))
+                message = "The analysis task were successfully added with IDs {0}.".format(", ".join(str(i) for i in task_ids))
+
+            return render_to_response("success.html",
+                                      {"message": message},
+                                      context_instance=RequestContext(request))
+        else:
+            return render_to_response("error.html",
+                                      {"error": "Error adding task to Cuckoo's database."},
+                                      context_instance=RequestContext(request))
     else:
         files = os.listdir(os.path.join(settings.CUCKOO_PATH, "analyzer", "windows", "modules", "packages"))
-
-        db = Database()
-        machines = []
-        machine_list = db.list_machines()
-
-        # Prepare a list of VM names, description label based on tags
-        for m in machine_list:
-            tags = []
-
-            for t in m.tags:
-                tags.append(t.name)
-
-            if len(tags) > 0:
-                label = m.name + ": " + ", ".join(tags) 
-            else: label = m.name
-
-            machines.append((m.name, label))
-
-        # Prepend ALL/ANY options
-        machines.insert(0, ("","First Available"))
-        machines.insert(1, ("ALL","ALL"))
 
         packages = []
         for name in files:
@@ -170,7 +124,25 @@ def index(request):
 
             packages.append(name)
 
+        # Prepare a list of VM names, description label based on tags.
+        machines = []
+        for machine in Database().list_machines():
+            tags = []
+            for tag in machine.tags:
+                tags.append(tag.name)
+
+            if len(tags) > 0:
+                label = machine.name + ": " + ", ".join(tags) 
+            else:
+                label = machine.name
+
+            machines.append((machine.name, label))
+
+        # Prepend ALL/ANY options.
+        machines.insert(0, ("", "First available"))
+        machines.insert(1, ("all", "All"))
+
         return render_to_response("submission/index.html",
                                   {"packages": sorted(packages),
-                                   "machines": machines,},
+                                   "machines": machines},
                                   context_instance=RequestContext(request))
