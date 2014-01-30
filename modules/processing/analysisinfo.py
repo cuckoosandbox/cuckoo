@@ -3,9 +3,11 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import time
+import json
 import logging
 from datetime import datetime
 
+from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.constants import CUCKOO_VERSION
 
@@ -36,6 +38,22 @@ class AnalysisInfo(Processing):
         else:
             duration = (ended - started).seconds
 
+        db = Database()
+
+        task = db.view_task(self.task["id"], details=True)
+        if task:
+            entry = task.to_dict()
+            print  entry
+
+            machine = db.view_machine(name=entry["machine"])
+            if machine:
+                self.task["machine"] = machine.to_dict()
+                self.task["machine"]["id"] = int(self.task["machine"]["id"])
+            else: 
+                self.task["machine"] = {}
+        else:
+            self.task["machine"] = {}
+
         info = {
             "version": CUCKOO_VERSION,
             "started": self.task["started_on"],
@@ -43,7 +61,8 @@ class AnalysisInfo(Processing):
             "duration": duration,
             "id": int(self.task["id"]),
             "category": self.task["category"],
-            "custom": self.task["custom"]
+            "custom": self.task["custom"],
+            "machine": self.task["machine"]
         }
 
         return info

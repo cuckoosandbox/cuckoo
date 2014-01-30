@@ -111,7 +111,11 @@ $(document).ready( function() {
                             </div>
                             <div class="form-group">
                                 <label for="form_machine">Machine</label>
-                                <input type="text" class="form-control" id="form_machine" name="machine" />
+                                <select class="form-control" id="form_machine" name="machine">
+                                {% for id,label in machines %}
+                                    <option value="{{id}}">{{label}}</option>
+                                {% endfor %}
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="form_custom">Custom</label>
