@@ -13,7 +13,10 @@ def choose_package(file_type, file_name):
     file_name = file_name.lower()
 
     if "DLL" in file_type:
-        return "dll"
+         if file_name.endswith(".cpl"):
+            return "cpl"
+         else:
+            return "dll"
     elif "PE32" in file_type or "MS-DOS" in file_type:
         return "exe"
     elif "PDF" in file_type or file_name.endswith(".pdf"):
