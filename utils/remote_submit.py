@@ -9,10 +9,12 @@ import argparse
 import os
 import sys
 import re
+import json
 
 def main():
 	# Pre-defined static URL
-	pre_def_url = "http://127.0.0.1:8080/submit"
+	pre_def_url = "http://127.0.0.1:8090/tasks/create/file"
+
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument("target", type=str, help="Path to the file or folder to analyze")
@@ -23,9 +25,9 @@ def main():
 	
 	# If User defied server URL, --server is optional
 	if "127.0.0.1" in pre_def_url:
-		parser.add_argument("--server", type=str, action="store", help="Specify a server to send request to in format (IP:PORT)", required=True)
+		parser.add_argument("--server", type=str, action="store", help="Specify a API server address to send request to in format (IP:PORT)", required=True)
 	else:
-		parser.add_argument("--server", type=str, action="store", help="Specify a server to send request to in format (IP:PORT)", required=False)
+		parser.add_argument("--server", type=str, action="store", help="Specify a API server address to send request to in format (IP:PORT)", required=False)
 
 	
 	try:
@@ -60,18 +62,13 @@ def main():
 	except:
 		sys.exit("Failed to Post file")
 
+	result = json.loads(raw_request.text)
 
-	if "The server encountered an internal error while submitting" in raw_request.text:
-		sys.exit("Error submitting %s " % args.target)
-	elif "was submitted for analysis with Task ID" in raw_request.text:
-		match_pattern = 'view.([0-9]+)"'
-		task_id = re.search(match_pattern, raw_request.text, re.M|re.I|re.S)
-		if task_id.group(1).isdigit():
-			print "Success: File %s added as task with ID %s" % (args.target, task_id.group(1))
-		else:
-			print "Success: File %s added as task" % (args.target)
+	if "task_id" in result:
+		print "Success: File %s added as task with ID %s" % (args.target, result["task_id"])
 	else:
-		print "Unknown error"
+		sys.exit("Error submitting %s " % args.target)
+
 
 if __name__ == "__main__":
 	main()
