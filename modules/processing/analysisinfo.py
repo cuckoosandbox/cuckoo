@@ -43,7 +43,6 @@ class AnalysisInfo(Processing):
         task = db.view_task(self.task["id"], details=True)
         if task:
             entry = task.to_dict()
-            print  entry
 
             machine = db.view_machine(name=entry["machine"])
             if machine:
