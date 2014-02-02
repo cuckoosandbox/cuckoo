@@ -717,7 +717,7 @@ class MAEC40Report(Report):
                     exported_function_list.append(exported_function_dict)
                 exports["exported_functions"] = exported_function_list
             # PE Imports.
-            if len(self.results["static"]["pe_imports"]) > 0:
+            if "pe_imports" in self.results["static"] and len(self.results["static"]["pe_imports"]) > 0:
                 imports = []
                 for x in self.results["static"]["pe_imports"]:
                     imported_functions = []
@@ -731,14 +731,14 @@ class MAEC40Report(Report):
                         imported_functions.append(imported_function_dict)
                     imports.append(import_dict)
             # Resources.
-            if len(self.results["static"]["pe_resources"]) > 0:
+            if "pe_resources" in self.results["static"] and len(self.results["static"]["pe_resources"]) > 0:
                 resources = []
                 for r in self.results["static"]["pe_resources"]:
                     if r["name"] in resource_type_mappings:
                         resource_dict = {"type": resource_type_mappings[r["name"]]}
                         resources.append(resource_dict)
             # Sections.
-            if len(self.results["static"]["pe_sections"]) > 0:
+            if "pe_sections" in self.results["static"] and len(self.results["static"]["pe_sections"]) > 0:
                 sections = []
                 for s in self.results["static"]["pe_sections"]:
                     section_dict = {"section_header":
@@ -751,7 +751,7 @@ class MAEC40Report(Report):
                                     }
                     sections.append(section_dict)
             # Version info.
-            if len(self.results["static"]["pe_versioninfo"]) > 0:
+            if "pe_versioninfo" in self.results["static"] and len(self.results["static"]["pe_versioninfo"]) > 0:
                 if not resources:
                     resources = []
                 version_info = {}
