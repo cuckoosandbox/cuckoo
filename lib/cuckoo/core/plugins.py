@@ -109,11 +109,11 @@ class RunAuxiliary(object):
                     current.start()
                 except NotImplementedError:
                     pass
-                #except Exception as e:
-                #    log.warning("Unable to start auxiliary module %s: %s",
-                #                module_name, e)
+                except Exception as e:
+                    log.warning("Unable to start auxiliary module %s: %s",
+                                module_name, e)
                 else:
-                    log.debug("Stopped auxiliary module: %s", module_name)
+                    log.debug("Started auxiliary module: %s", module_name)
                     self.enabled.append(current)
 
     def stop(self):
