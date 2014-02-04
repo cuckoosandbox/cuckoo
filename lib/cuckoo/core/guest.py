@@ -163,10 +163,9 @@ class GuestManager:
 
                 try:
                     self.server.add_malware(data, options["file_name"])
-                except MemoryError as e:
+                except Exception as e:
                     raise CuckooGuestError("{0}: unable to upload malware to "
-                                           "analysis machine, not enough "
-                                           "memory".format(self.id))
+                                           "analysis machine: {1}".format(self.id, e))
 
             # Launch the analyzer.
             pid = self.server.execute()
