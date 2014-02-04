@@ -219,10 +219,10 @@ class PortableExecutable:
         if not self.pe:
             return None
 
-        imphash = self.pe.get_imphash()
-
-        return imphash
-
+        try:
+            return self.pe.get_imphash()
+        except AttributeError:
+            return None
 
     def run(self):
         """Run analysis.
