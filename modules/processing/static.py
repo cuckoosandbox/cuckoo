@@ -211,6 +211,19 @@ class PortableExecutable:
 
         return infos
 
+
+    def _get_imphash(self):
+        """Gets imphash.
+        @return: imphash string or None.
+        """
+        if not self.pe:
+            return None
+
+        imphash = self.pe.get_imphash()
+
+        return imphash
+
+
     def run(self):
         """Run analysis.
         @return: analysis results dict or None.
@@ -230,6 +243,7 @@ class PortableExecutable:
         results["pe_sections"] = self._get_sections()
         results["pe_resources"] = self._get_resources()
         results["pe_versioninfo"] = self._get_versioninfo()
+        results["pe_imphash"] = self._get_imphash()
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
         return results
 
