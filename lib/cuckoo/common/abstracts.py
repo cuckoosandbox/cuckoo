@@ -251,7 +251,7 @@ class Machinery(object):
         """
         raise NotImplementedError
 
-    def dump_memory(self, path):
+    def dump_memory(self, label, path):
         """Takes a memory dump of a machine.
         @param path: path to where to store the memory dump.
         """
