@@ -1,26 +1,26 @@
-================
-Machine Managers
-================
+=================
+Machinery Modules
+=================
 
-**Machine managers** are modules that define how Cuckoo should interact with
+**Machinery** modules define how Cuckoo should interact with
 your virtualization software (or potentially even with physical disk imaging
 solutions).
 Since we decided to not enforce any particular vendor, from release 0.4 you
 are able to use your preferred and, in case is not supported by default,
 write a custom Python module that define how to make Cuckoo use it.
 
-Every machine manager module is and should be located inside 
-*modules/machinemanagers/*.
+Every machinery module is and should be located inside 
+*modules/machinery/*.
 
-A basic machine manager could look like:
+A basic machinery module could look like:
 
     .. code-block:: python
         :linenos:
 
-        from lib.cuckoo.common.abstracts import MachineManager
+        from lib.cuckoo.common.abstracts import Machinery
         from lib.cuckoo.common.exceptions import CuckooMachineError
 
-        class MyManager(MachineManager):
+        class MyMachinery(Machinery):
             def start(self, label):
                 try:
                     revert(label)
@@ -36,20 +36,20 @@ A basic machine manager could look like:
 
 The only requirements for Cuckoo are that:
 
-    * The class inherits ``MachineManager``.
+    * The class inherits ``Machinery``.
     * You have a ``start()`` and ``stop()`` functions.
     * You preferably raise ``CuckooMachineError`` when something fails.
 
-As you understand, the machine manager is a core part of a Cuckoo setup,
+As you understand, the machinery module is a core part of a Cuckoo setup,
 therefore make sure to spend enough time debugging your code and make it
 solid and resistant to any unexpected error.
 
 Configuration
 =============
 
-Every machine manager module should come with a dedicated configuration file
-located in *conf/<machine manager name>.conf*.
-For example for *modules/machinemanagers/kvm.py* we have a *conf/kvm.conf*.
+Every machinery module should come with a dedicated configuration file
+located in *conf/<machinery module name>.conf*.
+For example for *modules/machinery/kvm.py* we have a *conf/kvm.conf*.
 
 The configuration file should follow the default structure::
 
@@ -84,26 +84,26 @@ function that generates the list of available machines.
 
 If you plan to change the configuration structure you should override the ``initialize()``
 function (inside your own module, no need to modify Cuckoo's core code).
-You can find it's original code in the ``MachineManager`` abstract inside
+You can find it's original code in the ``Machinery`` abstract inside
 *lib/cuckoo/common/abstracts.py*.
 
 LibVirt
 =======
 
-Starting with Cuckoo 0.5 developing new machine managers based on LibVirt is easy.
-Inside *lib/cuckoo/common/abstracts.py* you can find ``LibVirtMachineManager`` that
-already provides all the functionalities for a LibVirt machine manager.
+Starting with Cuckoo 0.5 developing new machinery modules based on LibVirt is easy.
+Inside *lib/cuckoo/common/abstracts.py* you can find ``LibVirtMachinery`` that
+already provides all the functionalities for a LibVirt module.
 Just inherit this base class and specify your connection string, as in
 the example below:
 
     .. code-block:: python
         :linenos:
 
-        from lib.cuckoo.common.abstracts import LibVirtMachineManager
+        from lib.cuckoo.common.abstracts import LibVirtMachinery
 
-		class MyMachineManager(LibVirtMachineManager):
-		    # Set connection string.
-		    dsn = "my:///connection"
+        class MyMachinery(LibVirtMachinery):
+            # Set connection string.
+            dsn = "my:///connection"
 
 
 This works for all the virtualization technologies supported by LibVirt. Just remember to 
@@ -112,15 +112,15 @@ distribution) is compiled with the support for the technology you need.
 
 You can check it with the following command::
 
-	$ virsh -V
-	Virsh command line tool of libvirt 0.9.13
-	See web site at http://libvirt.org/
-	
-	Compiled with support for:
-	 Hypervisors: QEmu/KVM LXC UML Xen OpenVZ VMWare Test
-	 Networking: Remote Daemon Network Bridging Interface Nwfilter VirtualPort
-	 Storage: Dir Disk Filesystem SCSI Multipath iSCSI LVM
-	 Miscellaneous: Nodedev AppArmor Secrets Debug Readline Modular
+    $ virsh -V
+    Virsh command line tool of libvirt 0.9.13
+    See web site at http://libvirt.org/
+
+    Compiled with support for:
+     Hypervisors: QEmu/KVM LXC UML Xen OpenVZ VMWare Test
+     Networking: Remote Daemon Network Bridging Interface Nwfilter VirtualPort
+     Storage: Dir Disk Filesystem SCSI Multipath iSCSI LVM
+     Miscellaneous: Nodedev AppArmor Secrets Debug Readline Modular
 
 If you don't find your virtualization technology in the list of ``Hypervisors``, you will
 need to recompile LibVirt with the specific support for the missing one.

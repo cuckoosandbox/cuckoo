@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -15,19 +15,32 @@ class Zip(Package):
     def start(self, path):
         root = os.environ["TEMP"]
         password = self.options.get("password", None)
+        default_file_name = "sample.exe"   
 
         with ZipFile(path, "r") as archive:
+            zipinfos = archive.infolist()
             try:
                 archive.extractall(path=root, pwd=password)
             except BadZipfile as e:
                 raise CuckooPackageError("Invalid Zip file")
             except RuntimeError:
                 try:
-                    archive.extractall(path=root, pwd=self.options.get("password", "infected"))
+                    password = self.options.get("password", "infected")
+                    archive.extractall(path=root, pwd=password)
                 except RuntimeError as e:
-                    raise CuckooPackageError("Unable to extract Zip file, unknown password?")
+                    raise CuckooPackageError("Unable to extract Zip file: "
+                                             "{0}".format(e))
 
-        file_path = os.path.join(root, self.options.get("file", "sample.exe"))
+        file_name = self.options.get("file", default_file_name)
+        if file_name == default_file_name:   
+            #no name provided try to find a better name
+            if len(zipinfos) > 0:
+                #take the first one
+                file_name = zipinfos[0].filename
+
+        file_path = os.path.join(root, file_name)
+
+        dll = self.options.get("dll", None)
         free = self.options.get("free", False)
         args = self.options.get("arguments", None)
         suspended = True
@@ -36,10 +49,11 @@ class Zip(Package):
 
         p = Process()
         if not p.execute(path=file_path, args=args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial process, analysis aborted")
+            raise CuckooPackageError("Unable to execute initial process, "
+                                     "analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            p.inject(dll)
             p.resume()
             return p.pid
         else:

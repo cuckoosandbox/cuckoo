@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # Copyright (C) 2012 JoseMi Holguin (@j0sm1)
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -11,30 +11,31 @@ import logging
 
 from lib.cuckoo.common.utils import convert_to_printable
 
+log = logging.getLogger("Processing.Pcap.irc.protocol")
+
+
 class ircMessage(object):
     """IRC Protocol Request."""
 
-    # client commands
-    __methods_client = dict.fromkeys(( "PASS","JOIN","USER","OPER","MODE","SERVICE","QUIT","SQUIT",
-        "PART","TOPIC","NAMES","LIST","INVITE",
-        "KICK","PRIVMSG","NOTICE","MOTD","LUSERS","VERSION","STATS","LINKS","TIME","CONNECT",
-        "TRACE","ADMIN","INFO","SERVLIST",
-        "SQUERY","WHO","WHOIS","WHOWAS","KILL","PING","PONG","ERROR","AWAY","REHASH","DIE","RESTART",
-        "SUMMON","USERS","WALLOPS",
-        "USERHOST","NICK","ISON"
+    # Client commands
+    __methods_client = dict.fromkeys(( "PASS", "JOIN", "USER", "OPER", "MODE", "SERVICE", "QUIT", "SQUIT",
+        "PART", "TOPIC", "NAMES", "LIST", "INVITE",
+        "KICK", "PRIVMSG", "NOTICE", "MOTD", "LUSERS", "VERSION", "STATS", "LINKS", "TIME", "CONNECT",
+        "TRACE", "ADMIN", "INFO", "SERVLIST",
+        "SQUERY", "WHO", "WHOIS", "WHOWAS", "KILL", "PING", "PONG", "ERROR", "AWAY", "REHASH", "DIE", "RESTART",
+        "SUMMON", "USERS", "WALLOPS",
+        "USERHOST", "NICK", "ISON"
     ))
-   
+
     def __init__(self):
         self._messages = []
         # Server commandis : prefix - command - params 
         self._sc = {}
         # Client commands : command - params 
         self._cc = {}
-        log = logging.getLogger("Processing.Pcap.irc.protocol")
 
     def _unpack(self, buf):
-        """ 
-        Extract into a list irc messages of a tcp streams
+        """Extract into a list irc messages of a tcp streams.
         @buf: tcp stream data
         """
         try:
@@ -45,7 +46,7 @@ class ircMessage(object):
             return False
 
         for element in lines:
-            if re.match("^:",element) != None:
+            if not re.match("^:", element) is None:
                 command = "([a-zA-Z]+|[0-9]{3})"
                 params = "(\x20.+)"
                 irc_server_msg = re.findall("(^:[\w+.{}!@|()]+\x20)"+command+params,element)
@@ -54,18 +55,17 @@ class ircMessage(object):
                     self._sc["command"] = convert_to_printable(irc_server_msg[0][1].strip())
                     self._sc["params"] = convert_to_printable(irc_server_msg[0][2].strip())
                     self._sc["type"] = "server"
-                self._messages.append(dict(self._sc))
+                    self._messages.append(dict(self._sc))
             else:
                 irc_client_msg = re.findall("([a-zA-Z]+\x20)(.+[\x0a\0x0d])",element)
                 if irc_client_msg and irc_client_msg[0][0].strip() in self.__methods_client:
                     self._cc["command"] = convert_to_printable(irc_client_msg[0][0].strip())
                     self._cc["params"] = convert_to_printable(irc_client_msg[0][1].strip())
                     self._cc["type"] = "client"
-                self._messages.append(dict(self._cc))
+                    self._messages.append(dict(self._cc))
     
-    def getClientMessages(self,buf):
-        """
-        Get irc client commands of tcp streams
+    def getClientMessages(self, buf):
+        """Get irc client commands of tcp streams.
         @buf: list of messages
         @return: dictionary of the client messages
         """
@@ -78,13 +78,12 @@ class ircMessage(object):
         entry_cc = []
         for msg in self._messages:
             if msg["type"] == "client":
-                entry_cc.append(msg)     
+                entry_cc.append(msg)
 
         return entry_cc
 
-    def getClientMessagesFilter(self,buf,filters):
-        """
-        Get irc client commands of tcp streams
+    def getClientMessagesFilter(self, buf, filters):
+        """Get irc client commands of tcp streams.
         @buf: list of messages
         @return: dictionary of the client messages filtered
         """
@@ -101,9 +100,8 @@ class ircMessage(object):
 
         return entry_cc
 
-    def getServerMessages(self,buf):
-        """
-        Get irc server commands of tcp streams
+    def getServerMessages(self, buf):
+        """Get irc server commands of tcp streams.
         @buf: list of messages
         @return: dictionary of server messages
         """
@@ -121,9 +119,8 @@ class ircMessage(object):
 
         return entry_sc
 
-    def getServerMessagesFilter(self,buf,filters):
-        """
-        Get irc server commands of tcp streams
+    def getServerMessagesFilter(self, buf, filters):
+        """Get irc server commands of tcp streams.
         @buf: list of messages
         @return: dictionary of server messages filtered
         """
@@ -136,12 +133,11 @@ class ircMessage(object):
         for msg in self._messages:
             if msg["type"] == "server" and msg["command"] not in filters:
                 entry_sc.append(msg)
-        
+
         return entry_sc
 
-    def isthereIRC(self,buf):
-        """
-        Check if there is irc messages in a stream TCP
+    def isthereIRC(self, buf):
+        """Check if there is irc messages in a stream TCP.
         @buf: stream data
         @return: boolean result
         """

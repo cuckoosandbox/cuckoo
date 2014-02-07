@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -40,4 +40,5 @@ class Config:
             return getattr(self, section)
         except AttributeError as e:
             raise CuckooOperationalError("Option %s is not found in "
-                "configuration, error: %s" % (section, e))
+                                         "configuration, error: %s" %
+                                         (section, e))

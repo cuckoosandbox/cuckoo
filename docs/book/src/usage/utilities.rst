@@ -20,6 +20,9 @@ To clean your setup, run::
 
     $ ./utils/clean.sh
 
+This utility is designed to be used with Cuckoo (including API and web interface)
+not running.
+
 If you are using a custom database (MySQL, PostgreSQL or SQLite in custom
 location) clean.sh doesn't clean it, you have to take care of that.
 

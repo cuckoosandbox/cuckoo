@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+
+<div class="alert alert-info" style="text-align: center;font-size: 22px;">
+    Estimating <b>{{report.estimate_hour}}</b> analysis per hour, <b>{{report.estimate_day}}</b> per day.
+</div>
+
+<div class="row">
+    <div class="col-xs-6">
+        <div class="jumbotron" style="text-align: center;">
+            <h1>{{report.total_tasks}}</h1>
+            Total tasks
+        </div>
+    </div>
+    <div class="col-xs-6">
+        <div class="jumbotron" style="text-align: center;">
+            <h1>{{report.total_samples}}</h1>
+            Total samples
+        </div>
+    </div>
+</div>
+
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h3 class="panel-title">States</h3>
+    </div>
+    <table class="table table-striped" style="table-layout: fixed;">
+        <thead>
+        <tr>
+            <th>State</th>
+            <th>Count</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for state, count in report.states_count.items %}
+            <tr>
+                <td>{{state}}</td>
+                <td>{{count}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

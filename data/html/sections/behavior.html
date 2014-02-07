@@ -1,5 +1,5 @@
 <section id="behavior">
-    {% if results.behavior.summary %}
+    {% if results.behavior and results.behavior.summary %}
         <div class="section-title">
             <h4>Behavior Summary</h4>
         </div>
@@ -52,7 +52,7 @@
         <span class="badge network" style="color: black;">network</span>
         <span class="badge synchronization" style="color: black;">synchronization</span>
     </p>
-    {% if results.behavior.processes %}
+    {% if results.behavior and results.behavior.processes %}
         {% for process in results.behavior.processes %}
         <div>
             <h4><a href="javascript:showHide('process_{{process.process_id}}');">{{process.process_name}}</a> <small>PID: {{process.process_id}}, Parent PID: {{process.parent_id}}</small></h4>

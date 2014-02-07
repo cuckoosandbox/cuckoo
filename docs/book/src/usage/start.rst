@@ -16,9 +16,9 @@ You will get an output similar to this::
       88   88  8 88   88   8 8   8 8   8 
       88e8 88ee8 88e8 88   8 8eee8 8eee8
 
-     Cuckoo Sandbox 0.6
+     Cuckoo Sandbox 1.0
      www.cuckoosandbox.org
-     Copyright (c) 2010-2013
+     Copyright (c) 2010-2014
 
      Checking for updates...
      Good! You have the latest version available.

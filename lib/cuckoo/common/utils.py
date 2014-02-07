@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -12,6 +12,12 @@ import xmlrpclib
 from datetime import datetime
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
+
+try:
+    import chardet
+    HAVE_CHARDET = True
+except ImportError:
+    HAVE_CHARDET = False
 
 def create_folders(root=".", folders=[]):
     """Create directories.
@@ -37,8 +43,9 @@ def create_folder(root=".", folder=None):
             try:
                 os.makedirs(folder_path)
             except OSError:
-                raise CuckooOperationalError("Unable to create folder: %s"
-                                            % folder_path)
+                raise CuckooOperationalError("Unable to create folder: %s" %
+                                             folder_path)
+
 
 def delete_folder(folder):
     """Delete a folder and all its subdirectories.
@@ -49,22 +56,30 @@ def delete_folder(folder):
         try:
             shutil.rmtree(folder)
         except OSError:
-            raise CuckooOperationalError("Unable to delete folder: {0}".format(folder))
+            raise CuckooOperationalError("Unable to delete folder: "
+                                         "{0}".format(folder))
+
+
+# don't allow all characters in "string.printable", as newlines, carriage
+# returns, tabs, \x0b, and \x0c may mess up reports
+PRINTABLE_CHARACTERS = string.letters + string.digits + string.punctuation + " \t\r\n"
+
 
 def convert_char(c):
     """Escapes characters.
     @param c: dirty char.
     @return: sanitized char.
     """
-    if c in string.printable:
+    if c in PRINTABLE_CHARACTERS:
         return c
     else:
-        return r"\x%02x" % ord(c)
+        return "\\x%02x" % ord(c)
+
 
 def is_printable(s):
     """ Test if a string is printable."""
     for c in s:
-        if not c in string.printable:
+        if not c in PRINTABLE_CHARACTERS:
             return False
     return True
 
@@ -110,26 +125,25 @@ def store_temp_file(filedata, filename):
 
     tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=targetpath)
     tmp_file_path = os.path.join(tmp_dir, filename)
-    tmp_file = open(tmp_file_path, "wb")
-    
-    # if filedata is file object, do chunked copy
-    if hasattr(filedata, "read"):
-        chunk = filedata.read(1024)
-        while chunk:
-            tmp_file.write(chunk)
+    with open(tmp_file_path, "wb") as tmp_file:
+        # if filedata is file object, do chunked copy
+        if hasattr(filedata, "read"):
             chunk = filedata.read(1024)
-    else:
-        tmp_file.write(filedata)
-
-    tmp_file.close()
+            while chunk:
+                tmp_file.write(chunk)
+                chunk = filedata.read(1024)
+        else:
+            tmp_file.write(filedata)
 
     return tmp_file_path
 
-# xmlrpc + timeout - still a bit ugly - but at least gets rid of setdefaulttimeout
-# inspired by 
-# http://stackoverflow.com/questions/372365/set-timeout-for-xmlrpclib-serverproxy
-# (although their stuff was messy, this is cleaner)
 class TimeoutServer(xmlrpclib.ServerProxy):
+    """Timeout server for XMLRPC.
+    XMLRPC + timeout - still a bit ugly - but at least gets rid of setdefaulttimeout
+    inspired by http://stackoverflow.com/questions/372365/set-timeout-for-xmlrpclib-serverproxy
+    (although their stuff was messy, this is cleaner)
+    @see: http://stackoverflow.com/questions/372365/set-timeout-for-xmlrpclib-serverproxy
+    """
     def __init__(self, *args, **kwargs):
         timeout = kwargs.pop("timeout", None)
         kwargs["transport"] = TimeoutTransport(timeout=timeout)
@@ -138,7 +152,7 @@ class TimeoutServer(xmlrpclib.ServerProxy):
     def _set_timeout(self, timeout):
         t = self._ServerProxy__transport
         t.timeout = timeout
-        # if we still have a socket we need to update that as well
+        # If we still have a socket we need to update that as well.
         if hasattr(t, "_connection") and t._connection[1] and t._connection[1].sock:
             t._connection[1].sock.settimeout(timeout)
 
@@ -149,11 +163,14 @@ class TimeoutTransport(xmlrpclib.Transport):
 
     def make_connection(self, *args, **kwargs):
         conn = xmlrpclib.Transport.make_connection(self, *args, **kwargs)
-        if self.timeout != None: conn.timeout = self.timeout
+        if not self.timeout is None:
+            conn.timeout = self.timeout
         return conn
 
-# http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 class Singleton(type):
+    """Singleton.
+    @see: http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+    """
     _instances = {}
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
@@ -176,3 +193,66 @@ def time_from_cuckoomon(s):
     @return: datetime object
     """
     return datetime.strptime(s, "%Y-%m-%d %H:%M:%S,%f")
+
+def to_unicode(s):
+    """Attempt to fix non uft-8 string into utf-8. It tries to guess input encoding,
+    if fail retry with a replace strategy (so undetectable chars will be escaped).
+    @see: fuller list of encodings at http://docs.python.org/library/codecs.html#standard-encodings
+    """
+
+    def brute_enc(s2):
+        """Trying to decode via simple brute forcing."""
+        encodings = ("ascii", "utf8", "latin1")
+        for enc in encodings:
+            try:
+                return unicode(s2, enc)
+            except UnicodeDecodeError:
+                pass
+        return None
+
+    def chardet_enc(s2):
+        """Guess encoding via chardet."""
+        enc = chardet.detect(s2)["encoding"]
+
+        try:
+            return unicode(s2, enc)
+        except UnicodeDecodeError:
+            pass
+        return None
+
+    # If already in unicode, skip.
+    if isinstance(s, unicode):
+        return s
+
+    # First try to decode against a little set of common encodings.
+    result = brute_enc(s)
+
+    # Try via chardet.
+    if (not result) and HAVE_CHARDET:
+        result = chardet_enc(s)
+
+    # If not possible to convert the input string, try again with
+    # a replace strategy.
+    if not result:
+        result = unicode(s, errors="replace")
+
+    return result
+
+def cleanup_value(v):
+    """Cleanup utility function, strips some unwanted parts from values."""
+    v = str(v)
+    if v.startswith("\\??\\"):
+        v = v[4:]
+    return v
+
+def sanitize_filename(x):
+    """Kind of awful but necessary sanitizing of filenames to 
+    get rid of unicode problems."""
+    out = ""
+    for c in x:
+        if c in string.letters + string.digits + " _-.":
+            out += c
+        else:
+            out += "_"
+
+    return out

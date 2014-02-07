@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -12,6 +12,7 @@ log = logging.getLogger(__name__)
 BUFSIZE = 16 * 1024
 
 def upload_to_host(file_path, dump_path):
+    nc = infd = None
     try:
         nc = NetlogFile(dump_path)
 
@@ -20,11 +21,13 @@ def upload_to_host(file_path, dump_path):
         while tmp:
             nc.send(tmp)
             tmp = infd.read(BUFSIZE)
-
-        infd.close()
-        nc.close()
     except Exception as e:
         log.error("Exception uploading file to host: %s", e)
+    finally:
+        if infd:
+            infd.close()
+        if nc:
+            nc.close()
 
 class NetlogConnection(object):
     def __init__(self, proto=""):
@@ -38,9 +41,8 @@ class NetlogConnection(object):
         try:
             s.connect((self.hostip, self.hostport))
             s.sendall(self.proto)
-        except Exception as e:
-            # Inception.
-            log.error("Exception connecting logging handler: %s", e)
+        except:
+            pass
         else:
             self.sock = s
             self.file = s.makefile()
@@ -53,7 +55,10 @@ class NetlogConnection(object):
             if retry:
                 self.send(data, retry=False)
         except:
-            log.debug("Could not send to remote Netlog!")
+            # We really have nowhere to log this, if the netlog connection
+            # does not work, we can assume that any logging won't work either.
+            # So we just fail silently.
+            self.close()
 
     def close(self):
         try:

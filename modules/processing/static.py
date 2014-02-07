@@ -1,9 +1,8 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import sys
 
 try:
     import magic
@@ -18,17 +17,17 @@ try:
 except ImportError:
     HAVE_PEFILE = False
 
-from lib.cuckoo.common.objects import File
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Processing
+from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import convert_to_printable
 
-# Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
+
+# Partially taken from
+# http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 
 class PortableExecutable:
-    """PE analysis.
-    @note: Partially taken from http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py.
-    """
+    """PE analysis."""
 
     def __init__(self, file_path):
         """@param file_path: file path."""
@@ -40,7 +39,7 @@ class PortableExecutable:
         @param data: data to be analyzed.
         @return: file type or None.
         """
-        if not IS_MAGIC:
+        if not HAVE_MAGIC:
             return None
 
         try:
@@ -63,8 +62,10 @@ class PortableExecutable:
             return None
 
         try:
-            signatures = peutils.SignatureDatabase(os.path.join(CUCKOO_ROOT, "data", "peutils" , "UserDB.TXT"))
-            return signatures.match(self.pe, ep_only = True)
+            sig_path = os.path.join(CUCKOO_ROOT, "data",
+                                    "peutils", "UserDB.TXT")
+            signatures = peutils.SignatureDatabase(sig_path)
+            return signatures.match(self.pe, ep_only=True)
         except:
             return None
 
@@ -108,7 +109,8 @@ class PortableExecutable:
         if hasattr(self.pe, "DIRECTORY_ENTRY_EXPORT"):
             for exported_symbol in self.pe.DIRECTORY_ENTRY_EXPORT.symbols:
                 symbol = {}
-                symbol["address"] = hex(self.pe.OPTIONAL_HEADER.ImageBase + exported_symbol.address)
+                symbol["address"] = hex(self.pe.OPTIONAL_HEADER.ImageBase +
+                                        exported_symbol.address)
                 symbol["name"] = exported_symbol.name
                 symbol["ordinal"] = exported_symbol.ordinal
                 exports.append(symbol)
@@ -128,9 +130,9 @@ class PortableExecutable:
             try:
                 section = {}
                 section["name"] = convert_to_printable(entry.Name.strip("\x00"))
-                section["virtual_address"] = hex(entry.VirtualAddress)
-                section["virtual_size"] = hex(entry.Misc_VirtualSize)
-                section["size_of_data"] = hex(entry.SizeOfRawData)
+                section["virtual_address"] = "0x{0:08x}".format(entry.VirtualAddress)
+                section["virtual_size"] = "0x{0:08x}".format(entry.Misc_VirtualSize)
+                section["size_of_data"] = "0x{0:08x}".format(entry.SizeOfRawData)
                 section["entropy"] = entry.get_entropy()
                 sections.append(section)
             except:
@@ -153,11 +155,9 @@ class PortableExecutable:
                     resource = {}
 
                     if resource_type.name is not None:
-                        name = "%s" % resource_type.name
+                        name = str(resource_type.name)
                     else:
-                        name = "%s" % pefile.RESOURCE_TYPE.get(resource_type.struct.Id)
-                    if name == None:
-                        name = "%d" % resource_type.struct.Id
+                        name = str(pefile.RESOURCE_TYPE.get(resource_type.struct.Id))
 
                     if hasattr(resource_type, "directory"):
                         for resource_id in resource_type.directory.entries:
@@ -169,8 +169,8 @@ class PortableExecutable:
                                     sublanguage = pefile.get_sublang_name_for_lang(resource_lang.data.lang, resource_lang.data.sublang)
 
                                     resource["name"] = name
-                                    resource["offset"] = ("%-8s" % hex(resource_lang.data.struct.OffsetToData)).strip()
-                                    resource["size"] = ("%-8s" % hex(resource_lang.data.struct.Size)).strip()
+                                    resource["offset"] = "0x{0:08x}".format(resource_lang.data.struct.OffsetToData)
+                                    resource["size"] = "0x{0:08x}".format(resource_lang.data.struct.Size)
                                     resource["filetype"] = filetype
                                     resource["language"] = language
                                     resource["sublanguage"] = sublanguage
@@ -211,6 +211,19 @@ class PortableExecutable:
 
         return infos
 
+
+    def _get_imphash(self):
+        """Gets imphash.
+        @return: imphash string or None.
+        """
+        if not self.pe:
+            return None
+
+        try:
+            return self.pe.get_imphash()
+        except AttributeError:
+            return None
+
     def run(self):
         """Run analysis.
         @return: analysis results dict or None.
@@ -230,8 +243,8 @@ class PortableExecutable:
         results["pe_sections"] = self._get_sections()
         results["pe_resources"] = self._get_resources()
         results["pe_versioninfo"] = self._get_versioninfo()
-        results["imported_dll_count"] = len([x for x in results["pe_imports"] if "dll" in x and x["dll"] is not None ])
-
+        results["pe_imphash"] = self._get_imphash()
+        results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
         return results
 
 class Static(Processing):

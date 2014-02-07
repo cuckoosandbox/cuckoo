@@ -1,18 +1,19 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import codecs
 import base64
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.abstracts import Report
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.objects import File
 
 try:
-    from jinja2.loaders import FileSystemLoader
     from jinja2.environment import Environment
+    from jinja2.loaders import FileSystemLoader
     HAVE_JINJA2 = True
 except ImportError:
     HAVE_JINJA2 = False
@@ -26,7 +27,8 @@ class ReportHTML(Report):
         @raise CuckooReportError: if fails to write report.
         """
         if not HAVE_JINJA2:
-            raise CuckooReportError("Failed to generate HTML report: Jinja2 Python library is not installed")
+            raise CuckooReportError("Failed to generate HTML report: "
+                                    "Jinja2 Python library is not installed")
 
         shots_path = os.path.join(self.analysis_path, "shots")
         if os.path.exists(shots_path):
@@ -54,18 +56,18 @@ class ReportHTML(Report):
             results["screenshots"] = []
 
         env = Environment(autoescape=True)
-        env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT, "data", "html"))
+        env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT,
+                                                   "data", "html"))
 
         try:
             tpl = env.get_template("report.html")
-            html = tpl.render({"results" : results})
+            html = tpl.render({"results": results})
         except Exception as e:
             raise CuckooReportError("Failed to generate HTML report: %s" % e)
         
         try:
-            report = open(os.path.join(self.reports_path, "report.html"), "w")
-            report.write(html)
-            report.close()
+            with codecs.open(os.path.join(self.reports_path, "report.html"), "w", encoding="utf-8") as report:
+                report.write(html)
         except (TypeError, IOError) as e:
             raise CuckooReportError("Failed to write HTML report: %s" % e)
 

@@ -53,7 +53,9 @@ The recommended setup is using a Host-Only networking layout with proper
 forwarding and filtering configuration done with ``iptables`` on the Host.
 
 For example, using VirtualBox, you can enable Internet access to the virtual
-machines using the following ``iptables`` rules::
+machines using the following ``iptables`` rules (assuming that eth0 is your
+outgoing interface, vboxnet0 is your virtual interface and 192.168.56.0/24 is
+your subnet address)::
 
     iptables -A FORWARD -o eth0 -i vboxnet0 -s 192.168.56.0/24 -m conntrack --ctstate NEW -j ACCEPT
     iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT

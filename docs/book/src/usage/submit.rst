@@ -18,7 +18,8 @@ command-line utility. It currently has the following options available::
     usage: submit.py [-h] [--url] [--package PACKAGE] [--custom CUSTOM]
                      [--timeout TIMEOUT] [--options OPTIONS] [--priority PRIORITY]
                      [--machine MACHINE] [--platform PLATFORM] [--memory]
-                     [--enforce-timeout]
+                     [--enforce-timeout] [--clock CLOCK] [--tags TAGS] [--max MAX]
+                     [--pattern PATTERN] [--shuffle] [--unique] [--quiet]
                      target
 
     positional arguments:
@@ -41,6 +42,12 @@ command-line utility. It currently has the following options available::
       --enforce-timeout    Enable to force the analysis to run for the full
                            timeout period
       --clock CLOCK        Set virtual machine clock
+      --tags TAGS          Specify tags identifier of a machine you want to use
+      --max MAX            Maximum samples to add in a row
+      --pattern PATTERN    Pattern of files to submit
+      --shuffle            Shuffle samples before submitting them
+      --unique             Only submit new samples, ignore duplicates
+      --quiet              Only print text on failure
 
 If you specify a directory as path, all the files contained in it will be
 submitted for analysis.
@@ -98,42 +105,25 @@ some options (in this case a command line argument for the malware)::
 
     $ ./utils/submit.py --memory --options free=True /path/to/binary
 
+.. _webpy:
+
+web.py
+======
+
+Cuckoo provides a very small utility under ``utils/web.py``, which will bind a simple 
+webserver on localhost port 8080, through which you will be able to browse through
+existing reports as well as submit new files.
+
+Beware that this is not a full-fledged web interface, which is instead provided
+under the folder ``web/`` as a Django-powered application. You can find more details
+about that under :doc:`web`.
+
 .. _apipy:
 
 API
 ===
 
 Detailed usage of the REST API interface is described in :doc:`api`.
-
-.. _webpy:
-
-Web Utility
-===========
-
-Cuckoo provides a very basic web utility that you can use to submit files to
-be analyzed.
-
-You can find the script at path *utils/web.py* and you can start it with::
-
-    $ python utils/web.py
-
-By default it will create a webserver on localhost and port 8080. Open your
-browser at *http://localhost:8080* and it will prompt you a simple form that
-allows you to upload a file, specify some options (with the same format as
-the *submit.py* utility) and submit it.
-
-In the *Browse* section you can track the status of pending, failed and
-succeeded analyses and, when available, you'll be prompted a link to view
-the HTML report.
-
-    .. note::
-
-        This is by no means supposed to be a full fledged web interface:
-        it's a very simple utility that we put together to allow users to
-        simply upload files and consumes the generated HTML report.
-        Despite being incorporated and rendered dynamically, the results
-        displayed are nothing else than the *report.html* file, therefore
-        it is supposed to be independent from the utility.
 
 .. _python:
 
@@ -173,6 +163,8 @@ own Python submission script, you can use the ``add_path()`` and ``add_url()`` f
     :type memory: True or False
     :param enforce_timeout: set to ``True`` to force the executuion for the full timeout
     :type enforce_timeout: True or False
+    :param clock: provide a custom clock time to set in the analysis machine
+    :type clock: string or None
     :rtype: integer
 
     Example usage:
@@ -210,6 +202,8 @@ own Python submission script, you can use the ``add_path()`` and ``add_url()`` f
     :type memory: True or False
     :param enforce_timeout: set to ``True`` to force the executuion for the full timeout
     :type enforce_timeout: True or False
+    :param clock: provide a custom clock time to set in the analysis machine
+    :type clock: string or None
     :rtype: integer
 
 Example Usage:

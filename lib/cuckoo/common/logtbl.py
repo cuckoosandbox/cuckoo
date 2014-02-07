@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -192,4 +192,5 @@ table = [
     ("RtlCreateUserThread", "threading", ("plppPl", "ProcessHandle", "CreateSuspended", "StartAddress", "StartParameter", "ThreadHandle", "ThreadIdentifier")),
     ("ZwMapViewOfSection", "process", ("ppPp", "SectionHandle", "ProcessHandle", "BaseAddress", "SectionOffset")),
     ("GetSystemMetrics", "misc", ("l", "SystemMetricIndex")),
+    ("GetCursorPos", "misc", ("ll", "x", "y")),
 ]

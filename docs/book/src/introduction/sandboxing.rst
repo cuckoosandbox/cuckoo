@@ -46,7 +46,7 @@ Before getting hands on the virtualization product of your choice, you should
 already have a design plan that defines:
 
     * Which operating system, language and patching level to use.
-    * Which softwares to install and which versions (particularly important when analyzing exploits).
+    * Which software to install and which versions (particularly important when analyzing exploits).
 
 Consider that automated malware analysis is not deterministic and its success
 might depend on a trillion of factors: you are trying to make a malware run

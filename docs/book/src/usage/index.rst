@@ -9,6 +9,7 @@ This chapter explains how to use Cuckoo.
 
     start
     submit
+    web
     api
     packages
     results

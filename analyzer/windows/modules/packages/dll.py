@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -13,6 +13,7 @@ class Dll(Package):
         free = self.options.get("free", False)
         function = self.options.get("function", "DllMain")
         arguments = self.options.get("arguments", None)
+        dll = self.options.get("dll", None)
         suspended = True
         if free:
             suspended = False
@@ -23,10 +24,11 @@ class Dll(Package):
 
         p = Process()
         if not p.execute(path="C:\\WINDOWS\\system32\\rundll32.exe", args=args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute rundll32, analysis aborted")
+            raise CuckooPackageError("Unable to execute rundll32, "
+                                     "analysis aborted")
 
         if not free and suspended:
-            p.inject()
+            p.inject(dll)
             p.resume()
             return p.pid
         else:

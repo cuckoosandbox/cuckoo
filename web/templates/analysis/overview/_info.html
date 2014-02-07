@@ -1,0 +1,33 @@
+<section id="information">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h4 class="panel-title">Analysis</h4>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Started</th>
+                    <th>Completed</th>
+                    <th>Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{analysis.info.category|upper}}</td>
+                    <td>{{analysis.info.started}}</td>
+                    <td>{{analysis.info.ended}}</td>
+                    <td>{{analysis.info.duration}} seconds</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    {% if analysis.debug.errors %}
+        <ul style="font-size: 16px;">
+        {% for error in analysis.debug.errors %}
+            <li class="text-danger"><b>Error:</b> {{error}}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+</section>

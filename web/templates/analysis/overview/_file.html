@@ -1,0 +1,61 @@
+<section id="file">
+    <h4>File Details</h4>
+    <div class="panel panel-default">
+        <table class="table table-striped">
+            <tr>
+                <th style="border-top: 0;">File Name</th>
+                <td style="border-top: 0;">{{analysis.target.file.name}}</td>
+            </tr>
+            <tr>
+                <th>File Size</th>
+                <td>{{analysis.target.file.size}} bytes</td>
+            </tr>
+            <tr>
+                <th>File Type</th>
+                <td>{{analysis.target.file.type}}</td>
+            </tr>
+            <tr>
+                <th>MD5</th>
+                <td>{{analysis.target.file.md5}}</td>
+            </tr>
+            <tr>
+                <th>SHA1</th>
+                <td>{{analysis.target.file.sha1}}</td>
+            </tr>
+            <tr>
+                <th>SHA256</th>
+                <td>{{analysis.target.file.sha256}}</td>
+            </tr>
+            <tr>
+                <th>SHA512</th>
+                <td>{{analysis.target.file.sha512}}</td>
+            </tr>
+            <tr>
+                <th>CRC32</th>
+                <td>{{analysis.target.file.crc32}}</td>
+            </tr>
+            <tr>
+                <th>Ssdeep</th>
+                <td>{{analysis.target.file.ssdeep}}</td>
+            </tr>
+            <tr>
+                <th>Yara</th>
+                <td>
+                {% if analysis.target.file.yara %}
+                    <ul style="margin-bottom: 0;">
+                    {% for sign in analysis.target.file.yara %}
+                        <li>{{sign.name}} - {{sign.meta.description}}</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    None matched
+                {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th></th>
+                <td><a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "sample" analysis.target.file_id %}">Download</a></td>
+            </tr>
+        </table>
+    </div>
+</section>

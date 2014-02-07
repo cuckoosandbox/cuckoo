@@ -30,17 +30,20 @@ Windows executables (located at *analyzer/windows/packages/exe.py*):
             def start(self, path):
                 free = self.options.get("free", False)
                 args = self.options.get("arguments", None)
+                dll = self.options.get("dll", None)
                 suspended = True
                 if free:
                     suspended = False
 
                 p = Process()
                 if not p.execute(path=path, args=args, suspended=suspended):
-                    raise CuckooPackageError("Unable to execute initial process, analysis aborted")
+                    raise CuckooPackageError("Unable to execute initial process, "
+                                             "analysis aborted")
 
                 if not free and suspended:
-                    p.inject()
+                    p.inject(dll)
                     p.resume()
+                    p.close()
                     return p.pid
                 else:
                     return None
@@ -64,18 +67,18 @@ Let's walk through the code:
     * Line **8**: define the ``start()`` function, which takes as argument the path to the file to execute.
     * Line **9**: acquire the ``free`` option, which is used to define whether the process should be monitored or not.
     * Line **10**: acquire the ``arguments`` option, which is passed to the creation of the initial process.
-    * Line **15**: initialize a ``Process`` instance.
-    * Line **16** and **17**: try to execute the malware, if it fails it aborts the execution and notify the analyzer.
-    * Line **19**: check if the process should be monitored.
-    * Line **20**: inject the process with our DLL.
-    * Line **21**: resume the process from the suspended state.
-    * Line **22**: return the PID of the newly created process to the analyzer.
-    * Line **26**: define the ``check()`` function.
-    * Line **29**: define the ``finish()`` function.
-    * Line **30**: check if the ``procmemdump`` option was enabled.
-    * Line **31**: loop through the currently monitored processes.
-    * Line **32**: open a ``Process`` instance.
-    * Line **33**: take a dump of the process memory.
+    * Line **16**: initialize a ``Process`` instance.
+    * Line **17** and **18**: try to execute the malware, if it fails it aborts the execution and notify the analyzer.
+    * Line **21**: check if the process should be monitored.
+    * Line **22**: inject the process with our DLL.
+    * Line **23**: resume the process from the suspended state.
+    * Line **25**: return the PID of the newly created process to the analyzer.
+    * Line **29**: define the ``check()`` function.
+    * Line **32**: define the ``finish()`` function.
+    * Line **33**: check if the ``procmemdump`` option was enabled.
+    * Line **34**: loop through the currently monitored processes.
+    * Line **35**: open a ``Process`` instance.
+    * Line **36**: take a dump of the process memory.
 
 ``start()``
 -----------

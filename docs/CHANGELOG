@@ -1,22 +1,57 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 0.7 (TBD)
-========================
+Cuckoo Sandbox 1.0.1 (TBD)
+==========================
+
+* Added imphash to static PE analysis
+* Added search for URLs in the web interface
+* Added possibility in web interface to queue to all machines
+* Fixed bug in MAEC report
+* Fixed package selection for Office documents and CPL scripts
+* Fixed issue with tcpdump filters
+* Fixed unhandled exception when uploading files to the analysis machines
+* Fixed issues in CuckooMon that resulted in Internet Explorer crashes
+
+Cuckoo Sandbox 1.0 (2014-01-09)
+===============================
 
 * Introduced Auxiliary modules
 * Added option to set sniffing interface for each virtual machine
 * Added option to set snapshot for each virtual machine
-* Added pagination to API and web interface
+* Added pagination to API
 * Added option to REST API to return compressed archives of files ("all" and "dropped")
 * Added option to set Result Server IP and port for each virtual machine
 * Added processing module for volatility to analyze memory dumps, disabled by default
 * Added new "reported" status for analysis tasks
 * Added automated rescheduling of locked tasks at startup
+* Added tags to machines
+* Added reduced behavioral events
+* Added new Django/Mongo-powered web interface
+* Added Windows analyzer auxiliary module to disguise the analysis environment
+* Added VBS, CPL and RTF analysis package
+* Added generic analysis package to execute samples via cmd.exe
+* Added MAEC 4.0.1 reporting module
+* Added filter for private networks in Network Analysis processing module
+* Added max_analysis_count to cuckoo.conf to automatically shutdown Cuckoo
+* Added check for available disk space
+* Added support for BSON logging format
+* Added option to specify a custom DLL to the analyzer and the analysis packages
+* Added ICMP protocol dissection
+* Added ESX Virtual Machine Manager
+* Slightly improved CuckooMon's stealthiness and stability
+* Refactored processing to improve performances
+* Refactored signature engine, introducing event-based signatures to improve performances
+* Refactored generation of process tree
 * Transitioned network sniffer to auxiliary module
 * Renamed MachineManagers to Machinery modules
+* Renamed Metadata to MMDef reporting module
 * Fixed virtual machine clock, now is updated to current time or specified by user via --clock option
+* Fixed bug in Human auxiliary module, now moving cursor to absolute positions
+* Fixed issue in Human auxiliary module, using SetCursorPos instead of mouse_event
+* Fixed issues with resolving relative filenames in CuckooMon
 * Removed support for GrayLog2
 * Removed pickle reporting module
+* Removed MAEC 1.1 reporting module
 
 Cuckoo Sandbox 0.6 (2013-04-15)
 ===============================

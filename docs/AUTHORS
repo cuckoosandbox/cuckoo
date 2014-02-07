@@ -11,21 +11,41 @@ Jurriaan "skier" Bremer     Developer         @skier_t
 Mark "rep" Schloesser       Developer         @repmovsb
 
 CONTRIBUTORS:
-Thorsten Sick
-Adam Pridgen
-Mike Tu
-Loic Jaquemet
-Pietro Delsante
-JoseMi Holguin (@j0sm1)
-bcyrill
-Stephen DiCato
-chort (@chort0)
-Hugh Pearse
-vacmf
-Ben Lyon
-Greg Back
+$ git shortlog -s -n
+    814  Nex
+    611  jekil
+    187  rep
+    184  nex
+    125  Jurriaan Bremer
+     70  Ivan Kirillov
+     65  Thorsten Sick
+     24  Pietro Delsante
+     21  Alessandro Tanasi
+     19  Mark Schloesser
+     15  David Maciejak
+     12  Greg Back
+      9  Christopher Schmitt
+      9  Script Kiddie
+      7  Hugh Pearse
+      6  init99
+      4  Adam Pridgen
+      4  Ben Small
+      3  jamu
+      3  z0mbiehunt3r
+      2  Claudio Guarnieri
+      2  Richard Harman
+      2  Thomas Penteker
+      2  bcyrill
+      2  mak
+      2  mt00at
+      1  =
+      1  Allen Swackhamer
+      1  Ben Lyon
+      1  Stephen DiCato
+      1  bladeswords
+      1  chort
+      1  jvoisin
+      1  vacmf
 
 Thanks to the whole community and mailing list members who submitted bug
 reports and suggested new features.
-Forgive us if we forgot about someone, it's hard to keep track of all our
-amazing users and contributors.

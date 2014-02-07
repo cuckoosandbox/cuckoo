@@ -1,13 +1,12 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import math
 
 try:
-    import Image
-    import ImageGrab
     import ImageChops
+    import ImageGrab
     HAVE_PIL = True
 except:
     HAVE_PIL = False
@@ -30,8 +29,9 @@ class Screenshot:
         if not HAVE_PIL:
             return None
 
-        # To get a measure of how similar two images are, we use root-mean-square (RMS).
-        # If the images are exactly identical, this value is zero.
+        # To get a measure of how similar two images are, we use
+        # root-mean-square (RMS). If the images are exactly identical,
+        # this value is zero.
         diff = ImageChops.difference(img1, img2)
         h = diff.histogram()
         sq = (value*((idx%256)**2) for idx, value in enumerate(h))

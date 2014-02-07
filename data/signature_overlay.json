@@ -1,0 +1,7 @@
+{
+  "creates_exe": {
+    "severity": 2,
+    "alert": false,
+    "custom_attribute": "machete"
+  }
+}

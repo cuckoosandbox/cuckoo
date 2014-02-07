@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -6,19 +6,19 @@ import os
 import logging
 
 from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.utils import convert_to_printable, logtime
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 try:
     import volatility.conf as conf
     import volatility.registry as registry
     import volatility.commands as commands
-    import volatility.win32.network as network
     import volatility.utils as utils
-    import volatility.plugins.malware.malfind as malfind
     import volatility.plugins.malware.devicetree as devicetree
+    import volatility.plugins.getsids as sidm
+    import volatility.plugins.privileges as privm
     import volatility.plugins.taskmods as taskmods
+    import volatility.win32.tasks as tasks
     import volatility.obj as obj
     HAVE_VOLATILITY = True
 except ImportError:
@@ -75,7 +75,8 @@ class VolatilityAPI(object):
             self.config.update(key, value)
 
         self.addr_space = utils.load_as(self.config)
-        self.plugins = registry.get_plugin_classes(commands.Command, lower=True)
+        self.plugins = registry.get_plugin_classes(commands.Command,
+                                                   lower=True)
 
         return self.config
 
@@ -83,7 +84,8 @@ class VolatilityAPI(object):
         """Volatility pslist plugin.
         @see volatility/plugins/taskmods.py
         """
-        log.debug("Executing Volatility pslist plugin on {0}".format(self.memdump))
+        log.debug("Executing Volatility pslist plugin on "
+                  "{0}".format(self.memdump))
 
         self.__config()
         results = []
@@ -105,12 +107,268 @@ class VolatilityAPI(object):
 
         return dict(config={}, data=results)
 
+    def psxview(self):
+        """Volatility psxview plugin.
+        @see volatility/plugins/malware/psxview.py
+        """
+        log.debug("Executing Volatility psxview plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["psxview"](self.config)
+        for offset, process, ps_sources in command.calculate():
+            new = {
+                "process_name": str(process.ImageFileName),
+                "process_id": int(process.UniqueProcessId),
+                "pslist": str(ps_sources['pslist'].has_key(offset)),
+                "psscan": str(ps_sources['psscan'].has_key(offset)),
+                "thrdproc": str(ps_sources['thrdproc'].has_key(offset)),
+                "pspcid": str(ps_sources['pspcid'].has_key(offset)),
+                "csrss": str(ps_sources['csrss'].has_key(offset)),
+                "session": str(ps_sources['session'].has_key(offset)),
+                "deskthrd": str(ps_sources['deskthrd'].has_key(offset))
+            }
+
+            results.append(new)
+
+        return dict(config={}, data=results)
+
+    def callbacks(self):
+        """Volatility callbacks plugin.
+        @see volatility/plugins/malware/callbacks.py
+        """
+        log.debug("Executing Volatility callbacks plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["callbacks"](self.config)
+        for (sym, cb, detail), mods, mod_addrs in command.calculate():
+            module = tasks.find_module(mods, mod_addrs, command.kern_space.address_mask(cb))
+
+            if module:
+                module_name = module.BaseDllName or module.FullDllName
+            else:
+                module_name = "UNKNOWN"
+
+            new = {
+                "type": str(sym),
+                "callback": hex(int(cb)),
+                "module": str(module_name),
+                "details": str(detail or "-"),
+            }
+
+            results.append(new)
+
+        return dict(config={}, data=results)
+
+    def idt(self):
+        """Volatility idt plugin.
+        @see volatility/plugins/malware/idt.py
+        """
+        log.debug("Executing Volatility idt plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["idt"](self.config)
+        for n, entry, addr, module in command.calculate():
+            if module:
+                module_name = str(module.BaseDllName or '')
+                sect_name = command.get_section_name(module, addr)
+            else:
+                module_name = "UNKNOWN"
+                sect_name = ''
+
+            # The parent is IDT. The grand-parent is _KPCR. 
+            cpu_number = entry.obj_parent.obj_parent.ProcessorBlock.Number
+            new = {
+                "cpu_number": int(cpu_number),
+                "index": int(n),
+                "selector": hex(int(entry.Selector)),
+                "address": hex(int(addr)),
+                "module": module_name,
+                "section": sect_name,
+            }
+            results.append(new)
+
+        return dict(config={}, data=results)
+
+    def timers(self):
+        """Volatility timers plugin.
+        @see volatility/plugins/malware/timers.py
+        """
+        log.debug("Executing Volatility timers plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["timers"](self.config)
+        for timer, module in command.calculate():
+            if timer.Header.SignalState.v():
+                signaled = "Yes"
+            else:
+                signaled = "-"
+
+            if module:
+                module_name = str(module.BaseDllName or '')
+            else:
+                module_name = "UNKNOWN"
+
+            due_time = "{0:#010x}:{1:#010x}".format(timer.DueTime.HighPart, timer.DueTime.LowPart)
+
+            new = {
+                "offset": hex(timer.obj_offset),
+                "due_time": due_time,
+                "period": int(timer.Period),
+                "signaled": signaled,
+                "routine": hex(int(timer.Dpc.DeferredRoutine)),
+                "module": module_name,
+            }
+            results.append(new)
+
+        return dict(config={}, data=results)
+
+    def messagehooks(self):
+        """Volatility messagehooks plugin.
+        @see volatility/plugins/malware/messagehooks.py
+        """
+        log.debug("Executing Volatility messagehooks plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["messagehooks"](self.config)
+        for winsta, atom_tables in command.calculate():
+            for desk in winsta.desktops():
+                for name, hook in desk.hooks():
+                    module = command.translate_hmod(winsta, atom_tables, hook.ihmod)
+                    new = {
+                        "offset": hex(int(hook.obj_offset)),
+                        "session": int(winsta.dwSessionId),
+                        "desktop": "{0}\\{1}".format(winsta.Name, desk.Name),
+                        "thread": "<any>",
+                        "filter": str(name),
+                        "flags": str(hook.flags),
+                        "function": hex(int(hook.offPfn)),
+                        "module": str(module),
+                    }
+                    results.append(new)
+
+                for thrd in desk.threads():
+                    info = "{0} ({1} {2})".format(
+                        thrd.pEThread.Cid.UniqueThread,
+                        thrd.ppi.Process.ImageFileName,
+                        thrd.ppi.Process.UniqueProcessId)
+
+                    for name, hook in thrd.hooks():
+                        module = command.translate_hmod(winsta, atom_tables, hook.ihmod)
+
+                        new = {
+                            "offset": hex(int(hook.obj_offset)),
+                            "session": int(winsta.dwSessionId),
+                            "desktop": "{0}\\{1}".format(winsta.Name, desk.Name),
+                            "thread": str(info),
+                            "filter": str(name),
+                            "flags": str(hook.flags),
+                            "function": hex(int(hook.offPfn)),
+                            "module": str(module),
+                        }
+                        results.append(new)
+
+        return dict(config={}, data=results)
+
+    def getsids(self):
+        """Volatility getsids plugin.
+        @see volatility/plugins/malware/getsids.py
+        """
+
+        log.debug("Executing Volatility getsids plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["getsids"](self.config)
+        for task in command.calculate():
+            token = task.get_token()
+
+            if not token:
+                continue
+
+            for sid_string in token.get_sids():
+                if sid_string in sidm.well_known_sids:
+                    sid_name = " {0}".format(sidm.well_known_sids[sid_string])
+                else:
+                    sid_name_re = sidm.find_sid_re(sid_string, sidm.well_known_sid_re)
+                    if sid_name_re:
+                        sid_name = " {0}".format(sid_name_re)
+                    else:
+                        sid_name = ""
+
+                new = {
+                    "filename": str(task.ImageFileName),
+                    "process_id": int(task.UniqueProcessId),
+                    "sid_string": str(sid_string),
+                    "sid_name": str(sid_name),
+                }
+                results.append(new)
+
+        return dict(config={}, data=results)
+
+    def privs(self):
+        """Volatility privs plugin.
+        @see volatility/plugins/malware/privs.py
+        """
+
+        log.debug("Executing Volatility privs plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["privs"](self.config)
+
+        for task in command.calculate():
+            for value, present, enabled, default in task.get_token().privileges():
+                try:
+                    name, desc = privm.PRIVILEGE_INFO[int(value)]
+                except KeyError:
+                    continue 
+
+                attributes = []
+                if present:
+                    attributes.append("Present")
+                if enabled:
+                    attributes.append("Enabled")
+                if default:
+                    attributes.append("Default")
+
+                new = {
+                    "process_id": int(task.UniqueProcessId),
+                    "filename": str(task.ImageFileName),
+                    "value": int(value),
+                    "privilege": str(name),
+                    "attributes": ",".join(attributes),
+                    "description": str(desc),
+                }
+                results.append(new)
+
+        return dict(config={}, data=results)
+
     def malfind(self, dump_dir=None):
         """Volatility malfind plugin.
         @param dump_dir: optional directory for dumps
         @see volatility/plugins/malware/malfind.py
         """
-        log.debug("Executing Volatility malfind plugin on {0}".format(self.memdump))
+        log.debug("Executing Volatility malfind plugin on "
+                  "{0}".format(self.memdump))
 
         self.__config()
         results = []
@@ -127,7 +385,6 @@ class VolatilityAPI(object):
                     "vad_start": "{0:#x}".format(vad.Start),
                     "vad_tag": str(vad.Tag),
                 }
-
                 results.append(new)
 
                 if dump_dir:
@@ -256,9 +513,9 @@ class VolatilityAPI(object):
                     "process_id": int(task.UniqueProcessId),
                     "process_name": str(task.ImageFileName),
                     "dll_base": "{0:#x}".format(base),
-                    "dll_in_load": load_mod != None,
-                    "dll_in_init": init_mod != None,
-                    "dll_in_mem": mem_mod != None,
+                    "dll_in_load": not load_mod is None,
+                    "dll_in_init": not init_mod is None,
+                    "dll_in_mem": not mem_mod is None,
                     "dll_mapped_path": str(mapped_files[base]),
                     "load_full_dll_name": "",
                     "init_full_dll_name": "",
@@ -351,9 +608,9 @@ class VolatilityAPI(object):
                 for att_device in device.attached_devices():
                     device_header = obj.Object(
                         "_OBJECT_HEADER",
-                        offset = att_device.obj_offset - att_device.obj_vm.profile.get_obj_offset("_OBJECT_HEADER", "Body"),
-                        vm = att_device.obj_vm,
-                        native_vm = att_device.obj_native_vm
+                        offset=att_device.obj_offset - att_device.obj_vm.profile.get_obj_offset("_OBJECT_HEADER", "Body"),
+                        vm=att_device.obj_vm,
+                        native_vm=att_device.obj_native_vm
                     )
 
                     device_name = str(device_header.NameInfo.Name or "")
@@ -449,7 +706,14 @@ class VolatilityManager(object):
         self.mask_pid = []
         self.taint_pid = set()
         self.memfile = memfile
-        self.voptions = Config(os.path.join(CUCKOO_ROOT, "conf", "volatility.conf"))
+
+        conf_path = os.path.join(CUCKOO_ROOT, "conf", "memory.conf")
+        if not os.path.exists(conf_path):
+            log.error("Configuration file volatility.conf not found".format(conf_path))
+            self.voptions = False
+            return
+
+        self.voptions = Config(conf_path)
 
         for pid in self.voptions.mask.pid_generic.split(","):
             pid = pid.strip()
@@ -457,7 +721,10 @@ class VolatilityManager(object):
                 self.mask_pid.append(int(pid))
 
         self.no_filter = not self.voptions.mask.enabled
-        self.osprofile = osprofile or self.get_osprofile()
+        if self.voptions.basic.guest_profile:
+            self.osprofile = self.voptions.basic.guest_profile
+        else:
+            self.osprofile = osprofile or self.get_osprofile()
 
     def get_osprofile(self):
         """Get the OS profile"""        
@@ -465,11 +732,30 @@ class VolatilityManager(object):
 
     def run(self):
         results = {}
+
+        # Exit if options were not loaded.
+        if not self.voptions:
+            return
+
         vol = VolatilityAPI(self.memfile, self.osprofile)
 
         # TODO: improve the load of volatility functions.
         if self.voptions.pslist.enabled:
             results["pslist"] = vol.pslist()
+        if self.voptions.psxview.enabled:
+            results["psxview"] = vol.psxview()
+        if self.voptions.callbacks.enabled:
+            results["callbacks"] = vol.callbacks()
+        if self.voptions.idt.enabled:
+            results["idt"] = vol.idt()
+        if self.voptions.timers.enabled:
+            results["timers"] = vol.timers()
+        if self.voptions.messagehooks.enabled:
+            results["messagehooks"] = vol.messagehooks()
+        if self.voptions.getsids.enabled:
+            results["getsids"] = vol.getsids()
+        if self.voptions.privs.enabled:
+            results["privs"] = vol.privs()
         if self.voptions.malfind.enabled:
             results["malfind"] = vol.malfind()
         if self.voptions.apihooks.enabled:
@@ -524,7 +810,7 @@ class VolatilityManager(object):
         if self.voptions.basic.delete_memdump:
             try:
                 os.remove(self.memfile)
-            except OSError as e:
+            except OSError:
                 log.error("Unable to delete memory dump file at path \"%s\" ", self.memfile)
 
 class Memory(Processing):
@@ -542,7 +828,7 @@ class Memory(Processing):
                 try:
                     vol = VolatilityManager(self.memory_path)
                     results = vol.run()
-                except Exception as e:
+                except Exception:
                     log.exception("Generic error executing volatility")
             else:
                 log.error("Memory dump not found: to run volatility you have to enable memory_dump")

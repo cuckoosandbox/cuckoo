@@ -1,0 +1,76 @@
+<script>
+function paginationbar(pages, page) {
+    if (pages === 0) return "";
+
+    function alert_current_page (i, page) {
+        if (i == page) return ' class="active"';
+        return '';
+    }
+
+    var out = '';
+    out += '<li'+alert_current_page(1, page)+'><a href="#">1</a></li>';
+
+    if (page-2 > 2) out += '<li><span>...</span></li>';
+
+    for (i = Math.max(2, page-2); i <= Math.min(pages-1, page+2); i++) {
+        out += '<li'+alert_current_page(i, page)+'><a href="#">' + i + '</a></li>';
+    }
+
+    if (page+2 < pages-1) out += '<li><span>...</span></li>';
+
+    if (pages > 1)
+        out += '<li'+alert_current_page(pages, page)+'><a href="#">' + pages + '</a></li>';
+    return out;
+}
+function load_chunck(pid, pagenum) {
+    $("#process_"+pid+" div.calltable").load("/analysis/chunk/{{analysis.info.id}}/"+pid+"/"+pagenum+"/", function(data, status, xhr){
+        if (status == "error") {
+            $("#process_"+pid+" div.calltable").html("Error loading data. Please reload the page and if the error persists contact us.");
+        }
+        else {
+            $("#process_"+pid+" div.pagination ul").html(paginationbar(parseInt($("#process_"+pid).data('length')), pagenum));
+            $("#process_"+pid+" div.pagination a").click(function(e) {
+                var t = $(e.target);
+                load_chunck(t.parents("#process_"+pid).data('pid'), parseInt(t.text()));
+            });
+        }
+    });
+}
+</script>
+
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+    {% for process in analysis.behavior.processes %}
+        <li {% if forloop.counter == 1 %}class="active"{% endif %}><a href="#process_{{process.process_id}}" data-toggle="tab">{{process.process_name}}</a></li>
+    {% endfor %}
+    </ul>
+    <div class="tab-content">
+    {% for process in analysis.behavior.processes %}
+        <div class="tab-pane{% if forloop.counter == 1%} active{% endif %}" id="process_{{process.process_id}}" data-pid="{{process.process_id}}" data-length="{{process.calls|length}}">
+            <div class="alert alert-info" style="text-align: center;"><b>{{process.process_name}}</b>, PID: <b>{{process.process_id}}</b>, Parent PID: {{process.parent_id}}</div>
+            <div class="pagination pagination-centered">
+                <ul class="pagination">
+                </ul>
+            </div>
+
+            <p style="text-align: center;">
+                <span class="badge network" style="color: black;">network</span>
+                <span class="badge filesystem" style="color: black;">filesystem</span>
+                <span class="badge registry" style="color: black;">registry</span>
+                <span class="badge process" style="color: black;">process</span>
+                <span class="badge services" style="color: black;">services</span>
+                <span class="badge synchronization" style="color: black;">synchronization</span>
+            </p>
+
+            <div class="calltable"></div>
+            <div class="pagination pagination-centered pagination_{{process.process_id}}">
+                <ul class="pagination">
+                </ul>
+            </div>
+            <script>
+                load_chunck({{process.process_id}}, 1);
+            </script>
+        </div>
+    {% endfor %}
+    </div>
+</div>

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,11 +9,10 @@ import socket
 import string
 import random
 import platform
-import xmlrpclib
 import subprocess
 import ConfigParser
 from StringIO import StringIO
-from zipfile import ZipFile, BadZipfile, ZIP_STORED
+from zipfile import ZipFile
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 
 BIND_IP = "0.0.0.0"
@@ -46,7 +45,8 @@ class Agent:
             container = "".join(random.choice(string.ascii_lowercase) for x in range(random.randint(5, 10)))
 
             if self.system == "windows":
-                ANALYZER_FOLDER = os.path.join(os.environ["SYSTEMDRIVE"] + os.sep, container)
+                system_drive = os.environ["SYSTEMDRIVE"] + os.sep
+                ANALYZER_FOLDER = os.path.join(system_drive, container)
             elif self.system == "linux" or self.system == "darwin":
                 ANALYZER_FOLDER = os.path.join(os.environ["HOME"], container)
             else:
@@ -87,7 +87,8 @@ class Agent:
         elif self.system == "linux" or self.system == "darwin":
             root = "/tmp"
         else:
-            ERROR_MESSAGE = "Unable to write malware to disk because of failed identification of the operating system"
+            ERROR_MESSAGE = "Unable to write malware to disk because of " \
+                            "failed identification of the operating system"
             return False
 
         file_path = os.path.join(root, name)
@@ -96,7 +97,7 @@ class Agent:
             with open(file_path, "wb") as malware:
                 malware.write(data)
         except IOError as e:
-            ERROR_MESSAGE = "Unable to write malware to disk: %s" % e
+            ERROR_MESSAGE = "Unable to write malware to disk: {0}".format(e)
             return False
 
         return True

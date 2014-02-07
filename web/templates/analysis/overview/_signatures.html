@@ -1,0 +1,32 @@
+<style type="text/css">
+.signature {
+    padding: 5px;
+    padding-left: 10px;
+    margin-bottom: 5px;
+}
+</style>
+<section id="signatures">
+    <h4>Signatures</h4>
+    {% if analysis.signatures %}
+        {% for signature in analysis.signatures %}
+            <a style="text-decoration: none;" href="#signature_{{signature.name}}" data-toggle="collapse">
+            {% if signature.severity <= 1 %}
+                <div class="alert alert-info signature">
+            {% elif signature.severity == 2 %}
+                <div class="alert alert-warning signature">
+            {% elif signature.severity >= 3 %}
+                <div class="alert alert-danger signature">
+            {% endif %}
+            {{signature.description}}</div></a>
+            <div id="signature_{{signature.name}}" class="collapse">
+                {% for sign in signature.data %}
+                    {% for key, value in sign.items %}
+                        <div><b>{{key}}</b>: {{value}}</div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No signatures</p>
+    {% endif %}
+</section>

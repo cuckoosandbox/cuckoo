@@ -1,16 +1,12 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import string
-import random
+from lib.common.rand import random_string
 
-def _rand_string(a, b):
-    return "".join(random.choice(string.ascii_lowercase)
-                   for x in xrange(random.randint(a, b)))
 
-ROOT = os.path.join(os.getenv("SystemDrive"), "\\", _rand_string(6, 10))
+ROOT = os.path.join(os.getenv("SystemDrive"), "\\", random_string(6, 10))
 
 PATHS = {"root"   : ROOT,
          "logs"   : os.path.join(ROOT, "logs"),
@@ -19,4 +15,4 @@ PATHS = {"root"   : ROOT,
          "memory" : os.path.join(ROOT, "memory"),
          "drop"   : os.path.join(ROOT, "drop")}
 
-PIPE = "\\\\.\\PIPE\\" + _rand_string(6, 10)
+PIPE = "\\\\.\\PIPE\\" + random_string(6, 10)
