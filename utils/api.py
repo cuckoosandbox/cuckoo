@@ -218,6 +218,12 @@ def tasks_report(task_id, report_format="json"):
         "dropped": {"type": "+", "files": ["files"]},
     }
 
+    tar_formats = {
+        "bz2": "w:bz2",
+        "gz": "w:gz",
+        "tar": "w",
+    }
+
     if report_format.lower() in formats:
         report_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                                    task_id, "reports",
@@ -226,7 +232,11 @@ def tasks_report(task_id, report_format="json"):
             bzf = bz_formats[report_format.lower()]
             srcdir = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id)
             s = StringIO.StringIO()
-            tar = tarfile.open(fileobj=s, mode="w:bz2")
+
+            # By default go for bz2 encoded tar files (for legacy reasons.)
+            tarmode = tar_formats.get(request.get("tar"), "w:bz2")
+
+            tar = tarfile.open(fileobj=s, mode=tarmode)
             for filedir in os.listdir(srcdir):
                 if bzf["type"] == "-" and not filedir in bzf["files"]:
                     tar.add(os.path.join(srcdir, filedir), arcname=filedir)
