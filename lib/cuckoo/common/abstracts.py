@@ -154,7 +154,7 @@ class Machinery(object):
             # If this machine is already in the "correct" state, then we
             # go on to the next machine.
             if machine.label in configured_vms and \
-                    self._status(machine.label) == self.POWEROFF:
+                    self._status(machine.label) in [self.POWEROFF, self.ABORTED]:
                 continue
 
             # This machine is currently not in its correct state, we're going
