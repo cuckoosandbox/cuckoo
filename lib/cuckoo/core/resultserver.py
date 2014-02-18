@@ -259,6 +259,10 @@ class Resulthandler(SocketServer.BaseRequestHandler):
     def log_thread(self, context, pid):
         log.debug("New thread (tid={0}, pid={1})".format(context[3], pid))
 
+    def log_anomaly(self, subcategory, tid, msg):
+        log.debug("Anomaly (tid=%s, category=%s): %s",
+                  tid, subcategory, msg)
+
     def log_call(self, context, apiname, modulename, arguments):
         if not self.rawlogfd:
             raise CuckooOperationalError("Netlog failure, call "

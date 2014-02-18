@@ -363,6 +363,13 @@ class BsonParser(object):
                 self.handler.log_thread(context, pid)
                 return True
 
+            # elif apiname == "__anomaly__":
+                # tid = argdict["ThreadIdentifier"]
+                # subcategory = argdict["Subcategory"]
+                # msg = argdict["Message"]
+                # self.handler.log_anomaly(subcategory, tid, msg)
+                # return True
+
             context[1] = argdict.pop("is_success", 1)
             context[2] = argdict.pop("retval", 0)
             arguments = argdict.items()

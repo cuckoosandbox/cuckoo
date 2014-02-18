@@ -140,6 +140,10 @@ class ParseProcessLog(list):
     def log_thread(self, context, pid):
         pass
 
+    def log_anomaly(self, subcategory, tid, msg):
+        self.lastcall = dict(thread_id=tid, category="anomaly", api="",
+                             subcategory=subcategory, msg=msg)
+
     def log_call(self, context, apiname, category, arguments):
         apiindex, status, returnval, tid, timediff = context
 
@@ -838,6 +842,35 @@ class Enhanced(object):
         """
         return self.events
 
+
+class Anomaly(object):
+    key = "anomaly"
+
+    def __init__(self):
+        self.anomalies = []
+
+    def event_apicall(self, call, process):
+        if call["category"] != "anomaly":
+            return
+
+        category, message = None, None
+        for row in call["arguments"]:
+            if row["name"] == "Subcategory":
+                category = row["value"]
+            if row["name"] == "Message":
+                message = row["value"]
+
+        self.anomalies.append(dict(
+            name=process["process_name"],
+            pid=process["process_id"],
+            category=category,
+            message=message,
+        ))
+
+    def run(self):
+        return self.anomalies
+
+
 class ProcessTree:
     """Generates process tree."""
 
@@ -914,6 +947,7 @@ class BehaviorAnalysis(Processing):
         behavior["processes"] = Processes(self.logs_path).run()
 
         instances = [
+            Anomaly(),
             ProcessTree(),
             Summary(),
             Enhanced(),

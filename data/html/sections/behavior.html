@@ -1,4 +1,19 @@
 <section id="behavior">
+    {% if results.behavior and results.behavior.anomaly %}
+        <div class="section-title">
+            <h4>Anomalies</h4>
+        </div>
+        <div class="well well-small">
+            <ul>
+                {% for anomaly in results.behavior.anomaly %}
+                <li><span class="mono">
+                    <b>{{anomaly.category}}</b> {{anomaly.message}}
+                    (pid={{anomaly.pid}}, process={{anomaly.name}})
+                </span></li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
     {% if results.behavior and results.behavior.summary %}
         <div class="section-title">
             <h4>Behavior Summary</h4>
