@@ -9,7 +9,7 @@ Installing Python libraries
 ===========================
 
 Cuckoo host components are completely written in Python, therefore make sure to
-have an appropriate version installed. For current release **Python 2.7** is preferred.
+have an appropriate version installed. For the current release **Python 2.7** is preferred.
 
 Install Python on Ubuntu::
 
@@ -83,12 +83,13 @@ For the sake of this guide we will assume that you have VirtualBox installed
 execution and general configuration of the sandbox.
 
 You are completely responsible for the choice, configuration and execution of
-your virtualization software, therefore please hold from asking help on it in our
-channels and lists: refer to the software's official documentation and support.
+your virtualization software, therefore please refrain from asking for help on
+it in our channels and lists: refer to the software's official documentation
+and support.
 
 Assuming you decide to go for VirtualBox, you can get the proper package for
 your distribution at the `official download page`_.
-The installation of VirtualBox is not in the purpose of this documentation, if you
+The installation of VirtualBox is outside the scope of this documentation, if you
 are not familiar with it please refer to the `official documentation`_.
 
 .. _VirtualBox: http://www.virtualbox.org

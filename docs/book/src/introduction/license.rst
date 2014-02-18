@@ -2,8 +2,8 @@
 License
 =======
 
-Cuckoo Sandbox license is shipped with Cuckoo and contained in "LICENSE" file
-inside "docs" folder.
+Cuckoo Sandbox license is shipped with Cuckoo and contained in the "LICENSE"
+file inside the "docs" folder.
 
 ==========
 Disclaimer

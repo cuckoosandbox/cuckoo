@@ -9,11 +9,11 @@ as search across all the analysis results.
 Configuration
 =============
 
-The web interface pulls data from Mongo database so have Mongo reporting module
-enabled in ``reporting.conf`` is mandatory for the functioning of the interface.
+The web interface pulls data from a Mongo database, so having the Mongo reporting
+module enabled in ``reporting.conf`` is mandatory for this interface.
 If that's not the case, the application won't start and it will raise an exception.
 
-The interface can be configured edititing ``local_settings.py`` under ``web/web/``::
+The interface can be configured by editing ``local_settings.py`` under ``web/web/``::
 
     # If you want to customize your cuckoo path set it here.
     # CUCKOO_PATH = "/where/cuckoo/is/placed/"
@@ -67,14 +67,11 @@ from the ``web/`` directory::
 
     $ python manage.py runserver
 
-If you want to configure the web interface as listening for any IPs on a
-specified port, you run start it with the following command (replace PORT
-with the number of your desired port)::
+If you want to configure the web interface as listening for any IP on a
+specified port, you can start it with the following command (replace PORT
+with the desired port number)::
 
     $ python manage.py runserver 0.0.0.0:PORT
-
-You can also serve the web interface using the WSGI interface of the web server of your choice:
-Apache, Nginx, Unicorn and so on. Please refer to the respective documentation 
 
 You can serve Cuckoo's web interface using WSGI interface with common web servers:
 Apache, Nginx, Unicorn and so on.

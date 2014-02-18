@@ -2,15 +2,15 @@
 Utilities
 =========
 
-Cuckoo comes with a set of pre-built utilities to automatize several common
+Cuckoo comes with a set of pre-built utilities to automate several common
 tasks.
-You can find them in "utils" folder.
+You can find them under the "utils" folder.
 
 Cleanup utility
 ===============
 
 If you want to delete all history, analysis, data and begin again from the first
-task you need clean.sh utility.
+task you need the clean.sh utility.
 
 .. note::
 
@@ -29,7 +29,7 @@ location) clean.sh doesn't clean it, you have to take care of that.
 Submission Utility
 ==================
 
-Submits sample to analysis. This tool is already described in :doc:`submit`.
+Submits samples to analysis. This tool is already described in :doc:`submit`.
 
 Web Utility
 ===========
