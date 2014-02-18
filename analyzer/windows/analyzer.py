@@ -195,10 +195,18 @@ class PipeHandler(Thread):
         if data:
             command = data.strip()
 
+            # Debug, Regular, or Critical information from CuckooMon.
+            if command.startswith("DEBUG:"):
+                log.debug(command[6:])
+            elif command.startswith("INFO:"):
+                log.info(command[5:])
+            elif command.startswith("CRITICAL:"):
+                log.critical(command[9:])
+
             # Parse the prefix for the received notification.
             # In case of GETPIDS we're gonna return the current process ID
             # and the process ID of our parent process (agent.py).
-            if command == "GETPIDS":
+            elif command == "GETPIDS":
                 response = struct.pack("II", PID, PPID)
 
             # When analyzing we don't want to hook all functions, as we're
