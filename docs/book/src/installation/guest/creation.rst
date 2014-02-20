@@ -23,7 +23,7 @@ guide, so please refer to the official documentation.
     .. note::
 
         KVM Users - Be sure to choose a hard drive image format that supports snapshots.
-        See :doc:`../../Installation/Preparing the Guest/Saving the Virtual Machine/KVM`
+        See :doc:`saving`
         for more information.
 
 When creating the virtual machine, Cuckoo doesn't require any specific

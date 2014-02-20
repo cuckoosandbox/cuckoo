@@ -118,8 +118,8 @@ The following picture explains Cuckoo's main architecture:
     .. image:: ../_images/schemas/architecture-main.png
         :align: center
 
-Although recommended setup is *GNU/Linux* (Ubuntu preferrably) as host and
-*Windows XP Service Pack 3* as guest, Cuckoo proved to work smoothly also on
+Although the recommended setup is *GNU/Linux* (Ubuntu preferably) as host and
+*Windows XP Service Pack 3* as guest, Cuckoo has proved to work smoothly also on
 *Mac OS X* as host and *Windows Vista* and *Windows 7* as guests.
 
 Obtaining Cuckoo

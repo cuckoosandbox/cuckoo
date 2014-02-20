@@ -9,10 +9,10 @@ users and untrusted websites.*".
 
 This concept applies to malware analysis' sandboxing too: our goal is to run an
 unknown and untrusted application or file inside an isolated environment and get
-information and what it does.
+information on what it does.
 
 Malware sandboxing is a practical application of the dynamical analysis
-approach: instead of statically analyze the binary file, it gets executed and
+approach: instead of statically analyzing the binary file, it gets executed and
 monitored in real-time.
 
 This approach obviously has pros and cons, but it's a valuable technique to
@@ -28,13 +28,13 @@ analysis.
 Using a Sandbox
 ===============
 
-Before starting installing, configuring and using Cuckoo you should take some
+Before starting to install, configure and use Cuckoo, you should take some
 time to think on what you want to achieve with it and how.
 
 Some questions you should ask yourself:
 
     * What kind of files do I want to analyze?
-    * Which volumes of analyses do I want to be able to handle?
+    * What volume of analyses do I want to be able to handle?
     * Which platform do I want to use to run my analysis on?
     * What kind of information I want about the file?
 
@@ -51,7 +51,7 @@ already have a design plan that defines:
 Consider that automated malware analysis is not deterministic and its success
 might depend on a trillion of factors: you are trying to make a malware run
 in a virtualized system as it would do on a native one, which could be tricky to
-achieve and could not always succeed.
+achieve and may not always succeed.
 Your goal should be both to create a system able to handle all the requirements
 you need as well as try to make it as realistic as possible.
 

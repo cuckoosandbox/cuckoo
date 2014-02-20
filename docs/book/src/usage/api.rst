@@ -4,7 +4,7 @@ REST API
 
 As mentioned in :doc:`submit`, Cuckoo provides a simple and lightweight REST
 API server implemented in `Bottle.py`_, therefore in order to make the service
-work you'll need it installed, Bottle release must be 0.10 or above.
+work you'll need it installed. Bottle release must be 0.10 or above.
 
 On Debian/Ubuntu::
 
@@ -23,14 +23,14 @@ In order to start the API server you can simply do::
 
     $ ./utils/api.py
 
-By default it will bind the service on **localhost:8090**. If you want to change those values, you can for example with::
+By default it will bind the service on **localhost:8090**. If you want to change those values, you can for example do this::
 
     $ ./utils/api.py --host 0.0.0.0 --port 1337
 
 Resources
 =========
 
-Following is a list of currently available resources and a brief description. For details click on the resource name.
+Following is a list of currently available resources and a brief description of each one. For details click on the resource name.
 
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | Resource                          | Description                                                                                                      |
@@ -60,6 +60,7 @@ Following is a list of currently available resources and a brief description. Fo
 | ``GET`` :ref:`cuckoo_status`      | Returns the basic cuckoo status, including version and tasks overview                                            |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 
+.. highlight:: javascript
 
 .. _tasks_create_file:
 

@@ -84,7 +84,7 @@ Let's walk through the code:
 -----------
 
 In this function you have to place all the initialization operations you want to run.
-This might include running the malware process, launching additional applications,
+This may include running the malware process, launching additional applications,
 taking memory snapshots and more.
 
 ``check()``
@@ -108,7 +108,7 @@ For example::
             return True
 
 This ``check()`` function will cause Cuckoo to immediately terminate the analysis
-whenever *C:\config.bin* is created.
+whenever *C:\\config.bin* is created.
 
 ``finish()``
 ------------
