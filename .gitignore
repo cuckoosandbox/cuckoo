@@ -19,3 +19,7 @@ storage/*
 ehthumbs.db
 Icon?
 Thumbs.db
+
+# Ignore development files
+/docs/book/src/_build/
+/.idea/
