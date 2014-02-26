@@ -34,6 +34,7 @@ def main():
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
     parser.add_argument("-v", "--version", action="version", version="You are running Cuckoo Sandbox {0}".format(CUCKOO_VERSION))
     parser.add_argument("-a", "--artwork", help="Show artwork", action="store_true", required=False)
+    parser.add_argument("-t", "--test", help="Test startup", action="store_true", required=False)
     args = parser.parse_args()
 
     if args.artwork:
@@ -56,6 +57,11 @@ def main():
     init_tasks()
 
     Resultserver()
+
+    # This is just a temporary hack, we need an actual test suite to integrate
+    # with Travis-CI.
+    if args.test:
+        return
 
     try:
         sched = Scheduler()
