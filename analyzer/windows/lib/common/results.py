@@ -64,7 +64,7 @@ class NetlogConnection(object):
         try:
             self.file.close()
             self.sock.close()
-        except socket.error:
+        except Exception:
             pass
 
 class NetlogFile(NetlogConnection):
