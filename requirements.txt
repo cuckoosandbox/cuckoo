@@ -5,6 +5,7 @@ pymongo
 pydeep
 bottle
 pefile
-maec
 django
 chardet
+cybox
+maec
