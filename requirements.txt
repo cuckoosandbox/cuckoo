@@ -7,5 +7,3 @@ bottle
 pefile
 django
 chardet
-cybox
-maec
