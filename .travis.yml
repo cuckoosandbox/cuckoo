@@ -1,3 +1,6 @@
+branches:
+  only:
+    - development
 language: python
 python:
     - 2.7
