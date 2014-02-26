@@ -56,12 +56,12 @@ def main():
     init_modules()
     init_tasks()
 
-    Resultserver()
-
     # This is just a temporary hack, we need an actual test suite to integrate
     # with Travis-CI.
     if args.test:
         return
+
+    Resultserver()
 
     try:
         sched = Scheduler()
