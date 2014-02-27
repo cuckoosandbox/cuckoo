@@ -296,6 +296,7 @@ class LibVirtMachinery(Machinery):
     PAUSED = "paused"
     POWEROFF = "poweroff"
     ERROR = "machete"
+    ABORTED = "abort"
 
     def __init__(self):
         if not HAVE_LIBVIRT:
