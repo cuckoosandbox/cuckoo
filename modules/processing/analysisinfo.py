@@ -61,7 +61,8 @@ class AnalysisInfo(Processing):
             "id": int(self.task["id"]),
             "category": self.task["category"],
             "custom": self.task["custom"],
-            "machine": self.task["machine"]
+            "machine": self.task["machine"],
+            "package": self.task["package"],
         }
 
         return info
