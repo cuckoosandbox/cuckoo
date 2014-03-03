@@ -9,7 +9,7 @@ from time import time
 from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
 from shutil import copy
 
-from lib.common.constants import PIPE, PATHS
+from lib.common.constants import PIPE, PATHS, SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
 from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
 from lib.common.defines import STARTUPINFO, PROCESS_INFORMATION
@@ -328,6 +328,7 @@ class Process:
             config.write("analyzer={0}\n".format(os.getcwd()))
             config.write("first-process={0}\n".format(Process.first_process))
             config.write("startup-time={0}\n".format(Process.startup_time))
+            config.write("shutdown-mutex={0}\n".format(SHUTDOWN_MUTEX))
 
             Process.first_process = False
 
