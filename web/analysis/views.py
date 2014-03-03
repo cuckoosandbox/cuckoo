@@ -64,7 +64,7 @@ def pending(request):
         pending.append(task.to_dict())
 
     return render_to_response("analysis/pending.html",
-                              {"tasks" : pending},
+                              {"tasks": pending},
                               context_instance=RequestContext(request))
 
 @require_safe
@@ -112,7 +112,7 @@ def report(request, task_id):
 
     if not report:
         return render_to_response("error.html",
-                                  {"error" : "The specified analysis does not exist"},
+                                  {"error": "The specified analysis does not exist"},
                                   context_instance=RequestContext(request))
 
     return render_to_response("analysis/report.html",
@@ -185,7 +185,7 @@ def search(request):
             elif term == "ip":
                 records = results_db.analysis.find({"network.hosts": value}).sort([["_id", -1]])
             elif term == "signature":
-                records = results_db.analysis.find({"signatures.description": {"$regex" : value, "$options" : "-i"}}).sort([["_id", -1]])
+                records = results_db.analysis.find({"signatures.description": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
             elif term == "url":
                 records = results_db.analysis.find({"target.url": value}).sort([["_id", -1]])
             else:
