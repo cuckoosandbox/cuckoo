@@ -67,6 +67,7 @@ def foreach_window(hwnd, lparam):
     # for buttons.
     if USER32.IsWindowVisible(hwnd):
         USER32.EnumChildWindows(hwnd, EnumChildProc(foreach_child), 0)
+    return True
 
 def move_mouse():
     x = random.randint(0, RESOLUTION["x"])
