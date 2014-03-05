@@ -32,7 +32,6 @@ function load_chunck(pid, pagenum) {
             $("#process_"+pid+" div.pagination a").click(function(e) {
                 var t = $(e.target);
                 load_chunck(t.parents("#process_"+pid).data('pid'), parseInt(t.text()));
-		//alert( $("#process_"+pid).data('length') );  le nombre de pages maximale.
             });
         }
     });
