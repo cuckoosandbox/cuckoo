@@ -140,21 +140,7 @@ def filtred_chunk(request, task_id, pid, filter_crit):
                                   {"chunk": filter_process},
                                   context_instance=RequestContext(request))
     else:
-        raise PermissionDenied  
-        
-
-@require_safe
-def report(request, task_id):
-    report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
-
-    if not report:
-        return render_to_response("error.html",
-                                  {"error" : "The specified analysis does not exist"},
-                                  context_instance=RequestContext(request))
-
-    return render_to_response("analysis/report.html",
-                              {"analysis": report},
-                              context_instance=RequestContext(request))
+        raise PermissionDenied
 
 
 
