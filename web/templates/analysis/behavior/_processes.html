@@ -36,6 +36,20 @@ function load_chunck(pid, pagenum) {
         }
     });
 }
+function load_chunck_filtred(pid, filter_crit) {
+    $("#process_"+pid+" div.calltable").load("/analysis/chunk/{{analysis.info.id}}/"+pid+"/"+filter_crit+"/", function(data, status, xhr){
+        if (status == "error") {
+            $("#process_"+pid+" div.calltable").html("Error loading data. Please reload the page and if the error persists contact us.");
+        }
+        else {
+            $("#process_"+pid+" div.pagination ul").html(paginationbar(0, 0));
+            $("#process_"+pid+" div.pagination a").click(function(e) {
+                var t = $(e.target);
+                load_chunck(t.parents("#process_"+pid).data('pid'), parseInt(t.text()));
+            });
+        }
+    });
+}
 </script>
 
 <div class="tabbable">
@@ -48,19 +62,36 @@ function load_chunck(pid, pagenum) {
     {% for process in analysis.behavior.processes %}
         <div class="tab-pane{% if forloop.counter == 1%} active{% endif %}" id="process_{{process.process_id}}" data-pid="{{process.process_id}}" data-length="{{process.calls|length}}">
             <div class="alert alert-info" style="text-align: center;"><b>{{process.process_name}}</b>, PID: <b>{{process.process_id}}</b>, Parent PID: {{process.parent_id}}</div>
+
+	    <p style="text-align: center;">
+
+		<a id="default"    class="badge default"         style="color: black;"> default         </a>
+		<a id="network"    class="badge network"         style="color: black;"> network         </a>
+		<a id="filesystem" class="badge filesystem"      style="color: black;"> filesystem      </a>
+		<a id="registry"   class="badge registry"        style="color: black;"> registry        </a>
+		<a id="process"    class="badge process"         style="color: black;"> process         </a>
+		<a id="services"   class="badge services"        style="color: black;"> services        </a>
+		<a id="sync"       class="badge synchronization" style="color: black;"> synchronization </a>
+
+		<script>
+		$(document).ready(function()
+		{
+			$("#default")   .click(function() { load_chunck({{process.process_id}}, 1);;                        });
+			$("#network")   .click(function() { load_chunck_filtred({{process.process_id}}, "network");         });
+			$("#filesystem").click(function() { load_chunck_filtred({{process.process_id}}, "filesystem");      });
+			$("#registry")  .click(function() { load_chunck_filtred({{process.process_id}}, "registry");        });
+			$("#process")   .click(function() { load_chunck_filtred({{process.process_id}}, "process");         });
+			$("#services")  .click(function() { load_chunck_filtred({{process.process_id}}, "services");        });
+			$("#sync")      .click(function() { load_chunck_filtred({{process.process_id}}, "synchronization"); });
+		});
+		</script>
+
+            </p>
+
             <div class="pagination pagination-centered">
                 <ul class="pagination">
                 </ul>
             </div>
-
-            <p style="text-align: center;">
-                <span class="badge network" style="color: black;">network</span>
-                <span class="badge filesystem" style="color: black;">filesystem</span>
-                <span class="badge registry" style="color: black;">registry</span>
-                <span class="badge process" style="color: black;">process</span>
-                <span class="badge services" style="color: black;">services</span>
-                <span class="badge synchronization" style="color: black;">synchronization</span>
-            </p>
 
             <div class="calltable"></div>
             <div class="pagination pagination-centered pagination_{{process.process_id}}">
