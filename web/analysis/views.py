@@ -157,8 +157,6 @@ def report(request, task_id):
                               {"analysis": report},
                               context_instance=RequestContext(request))
 
-
-
 @require_safe
 def file(request, category, object_id):
     file_object = results_db.fs.files.find_one({"_id": ObjectId(object_id)})
