@@ -47,7 +47,6 @@ function load_chunck_filtred(pid, filter_crit) {
             $("#process_"+pid+" div.pagination a").click(function(e) {
                 var t = $(e.target);
                 load_chunck(t.parents("#process_"+pid).data('pid'), parseInt(t.text()));
-		//alert( $("#process_"+pid).data('length') );  le nombre de pages maximale.
             });
         }
     });
@@ -65,15 +64,15 @@ function load_chunck_filtred(pid, filter_crit) {
         <div class="tab-pane{% if forloop.counter == 1%} active{% endif %}" id="process_{{process.process_id}}" data-pid="{{process.process_id}}" data-length="{{process.calls|length}}">
             <div class="alert alert-info" style="text-align: center;"><b>{{process.process_name}}</b>, PID: <b>{{process.process_id}}</b>, Parent PID: {{process.parent_id}}</div>
 
-            <p style="text-align: center;">
+	    <p style="text-align: center;">
 
 		<a id="default"    class="badge default"         style="color: black;"> default         </a>
 		<a id="network"    class="badge network"         style="color: black;"> network         </a>
 		<a id="filesystem" class="badge filesystem"      style="color: black;"> filesystem      </a>
-                <a id="registry"   class="badge registry"        style="color: black;"> registry        </a>
-                <a id="process"    class="badge process"         style="color: black;"> process         </a>
-                <a id="services"   class="badge services"        style="color: black;"> services        </a>
-                <a id="sync"       class="badge synchronization" style="color: black;"> synchronization </a>
+		<a id="registry"   class="badge registry"        style="color: black;"> registry        </a>
+		<a id="process"    class="badge process"         style="color: black;"> process         </a>
+		<a id="services"   class="badge services"        style="color: black;"> services        </a>
+		<a id="sync"       class="badge synchronization" style="color: black;"> synchronization </a>
 
 		<script>
 		$(document).ready(function()
@@ -94,7 +93,6 @@ function load_chunck_filtred(pid, filter_crit) {
                 <ul class="pagination">
                 </ul>
             </div>
-	    <!--bock pour la barre de pagination -->
 
             <div class="calltable"></div>
             <div class="pagination pagination-centered pagination_{{process.process_id}}">
