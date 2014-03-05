@@ -1,4 +1,4 @@
-<table class="table table-bordered" style="table-layout: fixed;">
+<table class="table table-bordered" style="table-layout: fixed;" id="behavior_table">
     <thead>
         <tr>
             <th>Time</th>
@@ -12,6 +12,7 @@
     <tbody>
     {% for call in chunk.calls %}
         <tr class="{{call.category}}">
+
             <td>{{call.timestamp}}</td>
             <td><strong>{{call.api}}</strong></td>
             <td style="word-wrap: break-word;">
