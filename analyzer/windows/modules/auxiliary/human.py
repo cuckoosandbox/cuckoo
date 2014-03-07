@@ -54,6 +54,12 @@ def foreach_child(hwnd, lparam):
                 USER32.SetForegroundWindow(hwnd)
                 KERNEL32.Sleep(1000)
                 USER32.SendMessageW(hwnd, BM_CLICK, 0, 0)
+        # Don't search for childs (USER32.EnumChildWindows).
+        return False
+    else:
+        # Recursively search for childs (USER32.EnumChildWindows).
+        return True
+
 
 # Callback procedure invoked for every enumerated window.
 def foreach_window(hwnd, lparam):
