@@ -82,7 +82,7 @@ Following is a list of currently available resources and a brief description of 
             }
 
         **Form parameters**:
-            * ``file`` *(required)* - path to the file to submit
+            * ``file`` *(required)* - sample file (multipart encoded file content)
             * ``package`` *(optional)* - analysis package to be used for the analysis
             * ``timeout`` *(optional)* *(int)* - analysis timeout (in seconds)
             * ``priority`` *(optional)* *(int)* - priority to assign to the task (1-3)
