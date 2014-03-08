@@ -26,6 +26,9 @@ not running.
 If you are using a custom database (MySQL, PostgreSQL or SQLite in custom
 location) clean.sh doesn't clean it, you have to take care of that.
 
+If you are using MongoDB reporting module clean.sh doesn't clean your database,
+you have to take care of that.
+
 Submission Utility
 ==================
 
