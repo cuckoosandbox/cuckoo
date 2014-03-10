@@ -1,6 +1,6 @@
 # Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
-# See the file "docs/LICENSE" for copying permission.
+# See the file 'docs/LICENSE' for copying permission.
 
 import sys
 import re
@@ -108,7 +108,7 @@ def chunk(request, task_id, pid, pagenum):
         
         
 @require_safe
-def filtered_chunk(request, task_id, pid, filter_crit):
+def filtered_chunk(request, task_id, pid, category):
     try:
         pid = int(pid)
     except:
@@ -136,7 +136,7 @@ def filtered_chunk(request, task_id, pid, filter_crit):
     for call in process["calls"]:
         chunk = results_db.calls.find_one({"_id": call})
         for call in chunk["calls"]:
-            if call["category"] == filter_crit:
+            if call["category"] == category:
                 filter_process["calls"].append(call)
 
         return render_to_response("analysis/behavior/_chunk.html",

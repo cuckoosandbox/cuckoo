@@ -3,23 +3,23 @@ function paginationbar(pages, page) {
     if (pages === 0) return "";
 
     function alert_current_page (i, page) {
-        if (i == page) return " class="active"";
+        if (i == page) return " class=\"active\"";
         return "";
     }
 
     var out = "";
-    out += "<li"+alert_current_page(1, page)+"><a href="#">1</a></li>";
+    out += "<li"+alert_current_page(1, page)+"><a href=\"#\">1</a></li>";
 
     if (page-2 > 2) out += "<li><span>...</span></li>";
 
     for (i = Math.max(2, page-2); i <= Math.min(pages-1, page+2); i++) {
-        out += "<li"+alert_current_page(i, page)+"><a href="#">" + i + "</a></li>";
+        out += "<li"+alert_current_page(i, page)+"><a href=\"#\">" + i + "</a></li>";
     }
 
     if (page+2 < pages-1) out += "<li><span>...</span></li>";
 
     if (pages > 1)
-        out += "<li"+alert_current_page(pages, page)+"><a href="#">" + pages + "</a></li>";
+        out += "<li"+alert_current_page(pages, page)+"><a href=\"#\">" + pages + "</a></li>";
     return out;
 }
 function load_chunk(pid, pagenum) {
@@ -36,8 +36,8 @@ function load_chunk(pid, pagenum) {
         }
     });
 }
-function load_filtered_chunk(pid, filter_crit) {
-    $("#process_"+pid+" div.calltable").load("/analysis/chunk/{{analysis.info.id}}/"+pid+"/"+filter_crit+"/", function(data, status, xhr){
+function load_filtered_chunk(pid, category) {
+    $("#process_"+pid+" div.calltable").load("/analysis/filtered/{{analysis.info.id}}/"+pid+"/"+category+"/", function(data, status, xhr){
         if (status == "error") {
             $("#process_"+pid+" div.calltable").html("Error loading data. Please reload the page and if the error persists contact us.");
         }
