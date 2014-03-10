@@ -64,25 +64,25 @@ function load_filtered_chunk(pid, category) {
             <div class="alert alert-info" style="text-align: center;"><b>{{process.process_name}}</b>, PID: <b>{{process.process_id}}</b>, Parent PID: {{process.parent_id}}</div>
 
             <p style="text-align: center;">
-                <a id="default_{{process.process_id}}" class="badge default" style="color:black;">default</a>
-                <a id="network_{{process.process_id}}" class="badge network" style="color:black;">network</a>
-                <a id="filesystem_{{process.process_id}}" class="badge filesystem" style="color:black;">filesystem</a>
-                <a id="registry_{{process.process_id}}" class="badge registry" style="color:black;">registry</a>
-                <a id="process_{{process.process_id}}" class="badge process" style="color:black;">process</a>
-                <a id="services_{{process.process_id}}" class="badge services" style="color:black;">services</a>
-                <a id="sync_{{process.process_id}}" class="badge synchronization" style="color:black;">synchronization</a>
+                <a id="badge_default_{{process.process_id}}" class="badge default" style="color:black;">default</a>
+                <a id="badge_network_{{process.process_id}}" class="badge network" style="color:black;">network</a>
+                <a id="badge_filesystem_{{process.process_id}}" class="badge filesystem" style="color:black;">filesystem</a>
+                <a id="badge_registry_{{process.process_id}}" class="badge registry" style="color:black;">registry</a>
+                <a id="badge_process_{{process.process_id}}" class="badge process" style="color:black;">process</a>
+                <a id="badge_services_{{process.process_id}}" class="badge services" style="color:black;">services</a>
+                <a id="badge_sync_{{process.process_id}}" class="badge synchronization" style="color:black;">synchronization</a>
             </p>
 
             <script>
             $(document).ready(function()
             {
-                $("#default_{{process.process_id}}").click(function() { load_chunk({{process.process_id}}, 1); });
-                $("#network_{{process.process_id}}").click(function() { load_filtered_chunk({{process.process_id}}, "network"); });
-                $("#filesystem_{{process.process_id}}").click(function() { load_filtered_chunk({{process.process_id}}, "filesystem"); });
-                $("#registry_{{process.process_id}}").click(function() { load_filtered_chunk({{process.process_id}}, "registry"); });
-                $("#process_{{process.process_id}}").click(function() { load_filtered_chunk({{process.process_id}}, "process"); });
-                $("#services_{{process.process_id}}").click(function() { load_filtered_chunk({{process.process_id}}, "services"); });
-                $("#sync_{{process.process_id}}").click(function() { load_filtered_chunk({{process.process_id}}, "synchronization"); });
+                $("#badge_default_{{process.process_id}}").click(function() { load_chunk({{process.process_id}}, 1); });
+                $("#badge_network_{{process.process_id}}").click(function() { load_filtered_chunk({{process.process_id}}, "network"); });
+                $("#badge_filesystem_{{process.process_id}}").click(function() { load_filtered_chunk({{process.process_id}}, "filesystem"); });
+                $("#badge_registry_{{process.process_id}}").click(function() { load_filtered_chunk({{process.process_id}}, "registry"); });
+                $("#badge_process_{{process.process_id}}").click(function() { load_filtered_chunk({{process.process_id}}, "process"); });
+                $("#badge_services_{{process.process_id}}").click(function() { load_filtered_chunk({{process.process_id}}, "services"); });
+                $("#badge_sync_{{process.process_id}}").click(function() { load_filtered_chunk({{process.process_id}}, "synchronization"); });
             });
             </script>
 
