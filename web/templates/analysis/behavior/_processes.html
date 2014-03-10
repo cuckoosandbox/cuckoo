@@ -19,7 +19,7 @@ function paginationbar(pages, page) {
     if (page+2 < pages-1) out += "<li><span>...</span></li>";
 
     if (pages > 1)
-        out += "<li"+alert_current_page(pages, page)+"><a href=\"#\">" + pages + "</a></li>";
+        out += "<li"+alert_current_page(pages, page)+"><a href=\"#\">"+pages+"</a></li>";
     return out;
 }
 function load_chunk(pid, pagenum) {
