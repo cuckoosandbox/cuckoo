@@ -1,6 +1,6 @@
 # Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
-# See the file 'docs/LICENSE' for copying permission.
+# See the file "docs/LICENSE" for copying permission.
 
 import sys
 import re
@@ -108,14 +108,17 @@ def chunk(request, task_id, pid, pagenum):
         
         
 @require_safe
-def filtred_chunk(request, task_id, pid, filter_crit):
+def filtered_chunk(request, task_id, pid, filter_crit):
     try:
         pid = int(pid)
     except:
         raise PermissionDenied
 
     if request.is_ajax():
-        record = results_db.analysis.find_one( { "info.id": int(task_id), "behavior.processes.process_id": pid }, { "behavior.processes.process_id": 1, "behavior.processes.calls": 1 } )
+        record = results_db.analysis.find_one(
+            {"info.id": int(task_id), "behavior.processes.process_id": pid},
+            {"behavior.processes.process_id": 1, "behavior.processes.calls": 1}
+        )
 
         if not record:
             raise PermissionDenied
@@ -128,21 +131,19 @@ def filtred_chunk(request, task_id, pid, filter_crit):
         if not process:
             raise PermissionDenied
 
-	filter_process = { 'process_id': pid, 'calls': [] }
+    filter_process = {"process_id": pid, "calls": []}
 
-	for call in process['calls']:
-	    chunk = results_db.calls.find_one({"_id": call})
-	    for call in chunk['calls']:
-		if call['category'] == filter_crit:
-		    filter_process['calls'].append(call)
+    for call in process["calls"]:
+        chunk = results_db.calls.find_one({"_id": call})
+        for call in chunk["calls"]:
+            if call["category"] == filter_crit:
+                filter_process["calls"].append(call)
 
         return render_to_response("analysis/behavior/_chunk.html",
                                   {"chunk": filter_process},
                                   context_instance=RequestContext(request))
     else:
         raise PermissionDenied
-
-
 
 @require_safe
 def report(request, task_id):
