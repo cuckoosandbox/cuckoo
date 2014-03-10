@@ -1,4 +1,4 @@
-<script>
+<script type="text/javascript">
 function paginationbar(pages, page) {
     if (pages === 0) return "";
 
@@ -73,7 +73,7 @@ function load_filtered_chunk(pid, category) {
                 <a id="badge_sync_{{process.process_id}}" class="badge synchronization" style="color:black;">synchronization</a>
             </p>
 
-            <script>
+            <script type="text/javascript">
             $(document).ready(function()
             {
                 $("#badge_default_{{process.process_id}}").click(function() { load_chunk({{process.process_id}}, 1); });
@@ -96,7 +96,7 @@ function load_filtered_chunk(pid, category) {
                 <ul class="pagination">
                 </ul>
             </div>
-            <script>
+            <script type="text/javascript">
                 load_chunk({{process.process_id}}, 1);
             </script>
         </div>
