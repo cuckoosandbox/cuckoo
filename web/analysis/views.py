@@ -105,6 +105,44 @@ def chunk(request, task_id, pid, pagenum):
                                   context_instance=RequestContext(request))
     else:
         raise PermissionDenied
+        
+        
+@require_safe
+def filtred_chunk(request, task_id, pid, filter_crit):
+    try:
+        pid = int(pid)
+    except:
+        raise PermissionDenied
+
+    if request.is_ajax():
+        record = results_db.analysis.find_one( { "info.id": int(task_id), "behavior.processes.process_id": pid }, { "behavior.processes.process_id": 1, "behavior.processes.calls": 1 } )
+
+        if not record:
+            raise PermissionDenied
+
+        process = None
+        for pdict in record["behavior"]["processes"]:
+            if pdict["process_id"] == pid:
+                process = pdict
+
+        if not process:
+            raise PermissionDenied
+
+	filter_process = { 'process_id': pid, 'calls': [] }
+
+	for call in process['calls']:
+	    chunk = results_db.calls.find_one({"_id": call})
+	    for call in chunk['calls']:
+		if call['category'] == filter_crit:
+		    filter_process['calls'].append(call)
+
+        return render_to_response("analysis/behavior/_chunk.html",
+                                  {"chunk": filter_process},
+                                  context_instance=RequestContext(request))
+    else:
+        raise PermissionDenied
+
+
 
 @require_safe
 def report(request, task_id):
