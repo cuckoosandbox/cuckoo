@@ -223,7 +223,7 @@ def tasks_report(task_id, report_format="json"):
         "gz": "w:gz",
         "tar": "w",
     }
-
+  
     if report_format.lower() in formats:
         report_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                                    task_id, "reports",
@@ -327,6 +327,31 @@ def machines_view(name=None):
         return HTTPError(404, "Machine not found")
 
     return jsonize(response)
+
+@route("/tasks/screenshot/<task:int>/<screenshot>", method="GET")
+def tasks_screenshot(task=0, screenshot=0):
+    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "shots", str(screenshot) + ".jpg")
+    if os.path.exists(file_path):
+        response.content_type = "application/octet-stream; charset=UTF-8"
+        return open(file_path, "rb").read()
+    else:
+        return HTTPError(404, file_path)
+
+@route("/tasks/screenshots/<task:int>", method="GET")
+def task_screenshots(task = 0):
+    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "shots")
+    if os.path.exists(folder_path):
+        response = {}
+
+        response["screenshots"] = []
+
+        for subdir, dirs, files in os.walk(folder_path):
+            for file in files:
+                response["screenshots"].append(file.replace('.jpg', ''))
+
+        return jsonize(response)
+    else:
+        return HTTPError(404, file_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
