@@ -8,6 +8,7 @@ Cuckoo Sandbox 1.0.1 (TBD)
 * Added possibility in web interface to queue to all machines
 * Added remote submission to submit.py utility
 * Added filtering by behavior category in Django web interface
+* Added analyzer log to Django web interface
 * Fixed bug in MAEC report
 * Fixed package selection for Office documents and CPL scripts
 * Fixed issue with tcpdump filters
