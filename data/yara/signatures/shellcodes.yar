@@ -9,14 +9,16 @@ rule shellcode
         description = "Matched shellcode byte patterns"
 
     strings:
-        $a = { 64 8b 64 }
-        $b = { 64 a1 30 }
-        $c = { 64 8b 15 30 }
-        $d = { 64 8b 35 30 }
-        $e = { 55 8b ec 83 c4 }
-        $f = { 55 8b ec 81 ec }
-        $g = { 55 8b ec e8 }
-        $h = { 55 8b ec e9 }
+        $mz = { 4d 5a }
+        $shell1 = { 64 8b 64 }
+        $shell2 = { 64 a1 30 }
+        $shell3 = { 64 8b 15 30 }
+        $shell4 = { 64 8b 35 30 }
+        $shell5 = { 55 8b ec 83 c4 }
+        $shell6 = { 55 8b ec 81 ec }
+        $shell7 = { 55 8b ec e8 }
+        $shell8 = { 55 8b ec e9 }
     condition:
-        any of them
+        not ($mz at 0) and
+        any of ($shell*)
 }
