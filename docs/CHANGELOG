@@ -1,7 +1,7 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 1.0.1 (TBD)
-==========================
+Cuckoo Sandbox 1.1 (TBD)
+========================
 
 * Added imphash to static PE analysis
 * Added search for URLs in the web interface
