@@ -49,6 +49,8 @@ Following is a list of currently available resources and a brief description of 
 | ``GET`` :ref:`tasks_report`       | Returns the report generated out of the analysis of the task associated with the specified ID.                   |
 |                                   | You can optionally specify which report format to return, if none is specified the JSON report will be returned. |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_shots`        | Retrieves one or all screenshots associated with a given analysis task ID.                                       |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`files_view`         | Search the analyzed binaries by MD5 hash, SHA256 hash or internal ID (referenced by the tasks details).          |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`files_get`          | Returns the content of the binary with the specified SHA256 hash.                                                |
@@ -297,6 +299,26 @@ Following is a list of currently available resources and a brief description of 
             * ``200`` - no error
             * ``400`` - invalid report format
             * ``404`` - report not found
+
+.. _tasks_shots:
+
+/tasks/screenshots
+------------------
+
+    **GET /tasks/screenshots/** *(int: id)* **/** *(str: number)*
+
+        Returns one or all screenshots associated with the specified task ID.
+
+        **Example request**::
+
+            wget http://localhost:8090/tasks/screenshots/1
+
+        **Parameters**:
+            * ``id`` *(required)* *(int)* - ID of the task to get the report for
+            * ``screenshot`` *(optional)* - numerical identifier of a single screenshot (e.g. 0001, 0002)
+
+        **Status codes**:
+            * ``404`` - file or folder not found
 
 .. _files_view:
 
