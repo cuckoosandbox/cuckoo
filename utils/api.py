@@ -8,8 +8,9 @@ import sys
 import json
 import argparse
 import tarfile
-import StringIO
 import socket
+from StringIO import StringIO
+from zipfile import ZipFile, ZIP_STORED
 
 try:
     from bottle import route, run, request, hook, response, HTTPError
@@ -231,7 +232,7 @@ def tasks_report(task_id, report_format="json"):
     elif report_format.lower() in bz_formats:
             bzf = bz_formats[report_format.lower()]
             srcdir = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id)
-            s = StringIO.StringIO()
+            s = StringIO()
 
             # By default go for bz2 encoded tar files (for legacy reasons.)
             tarmode = tar_formats.get(request.get("tar"), "w:bz2")
@@ -328,30 +329,32 @@ def machines_view(name=None):
 
     return jsonize(response)
 
-@route("/tasks/screenshot/<task:int>/<screenshot>", method="GET")
-def tasks_screenshot(task=0, screenshot=0):
-    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "shots", str(screenshot) + ".jpg")
-    if os.path.exists(file_path):
-        response.content_type = "application/octet-stream; charset=UTF-8"
-        return open(file_path, "rb").read()
-    else:
-        return HTTPError(404, file_path)
-
 @route("/tasks/screenshots/<task:int>", method="GET")
-def task_screenshots(task = 0):
+@route("/tasks/screenshots/<task:int>/<screenshot>", method="GET")
+def task_screenshots(task=0, screenshot=None):
     folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "shots")
+
     if os.path.exists(folder_path):
-        response = {}
+        if screenshot:
+            screenshot_name = "{0}.jpg".format(screenshot)
+            screenshot_path = os.path.join(folder_path, screenshot_name)
+            if os.path.exists(screenshot_path):
+                # TODO: Add content disposition.
+                response.content_type = "image/jpeg"
+                return open(screenshot_path, "rb").read()
+            else:
+                return HTTPError(404, screenshot_path)
+        else:
+            zip_data = StringIO()
+            with ZipFile(zip_data, "w", ZIP_STORED) as zip_file:
+                for shot_name in os.listdir(folder_path):
+                    zip_file.write(os.path.join(folder_path, shot_name), shot_name)
 
-        response["screenshots"] = []
-
-        for subdir, dirs, files in os.walk(folder_path):
-            for file in files:
-                response["screenshots"].append(file.replace('.jpg', ''))
-
-        return jsonize(response)
+            # TODO: Add content disposition.
+            response.content_type = "application/zip"
+            return zip_data.getvalue()
     else:
-        return HTTPError(404, file_path)
+        return HTTPError(404, folder_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
