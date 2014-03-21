@@ -21,5 +21,8 @@ Icon?
 Thumbs.db
 
 # Ignore development files
-/docs/book/src/_build/
-/.idea/
+docs/book/src/_build/
+.idea/
+
+# Ignore Django secret_key
+web/web/secret_key.py
