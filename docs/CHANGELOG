@@ -15,6 +15,7 @@ Cuckoo Sandbox 1.1 (TBD)
 * Fixed issue with tcpdump filters
 * Fixed unhandled exception when uploading files to the analysis machines
 * Fixed issues in CuckooMon that resulted in Internet Explorer crashes
+* Fixed bug in CuckooMon that caused mutexes to be resolved as file paths
 
 Cuckoo Sandbox 1.0 (2014-01-09)
 ===============================
