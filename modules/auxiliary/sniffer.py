@@ -17,10 +17,14 @@ log = logging.getLogger(__name__)
 class Sniffer(Auxiliary):
     def start(self):
         tcpdump = self.options.get("tcpdump", "/usr/sbin/tcpdump")
-        interface = self.options.get("interface")
         bpf = self.options.get("bpf", "")
         file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(self.task.id), "dump.pcap")
         host = self.machine.ip
+        # Selects per-machine interface if available.
+        if self.machine.interface:
+            interface = self.machine.interface
+        else:
+            interface = self.options.get("interface")
 
         if not os.path.exists(tcpdump):
             log.error("Tcpdump does not exist at path \"%s\", network "
