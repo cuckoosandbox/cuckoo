@@ -1,6 +1,6 @@
-=================
-Install the Agent
-=================
+====================
+Installing the Agent
+====================
 
 From release 0.4 Cuckoo adopts a custom agent that runs inside the Guest and
 that handles the communication and the exchange of data with the Host.
@@ -20,5 +20,5 @@ On Windows simply launching the script will also spawn a Python window, if
 you want to hide it you can rename the file from *agent.py* to **agent.pyw**
 which will prevent the window from spawning.
 
-If you want the script to be launched at Windows' boot, placing the file in
-the `Startup` folder will make it.
+If you want the script to be launched at Windows' boot, just place the file in
+the `Startup` folder.

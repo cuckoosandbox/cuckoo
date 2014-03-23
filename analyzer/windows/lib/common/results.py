@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -64,7 +64,7 @@ class NetlogConnection(object):
         try:
             self.file.close()
             self.sock.close()
-        except socket.error:
+        except Exception:
             pass
 
 class NetlogFile(NetlogConnection):

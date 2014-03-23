@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -17,10 +17,14 @@ log = logging.getLogger(__name__)
 class Sniffer(Auxiliary):
     def start(self):
         tcpdump = self.options.get("tcpdump", "/usr/sbin/tcpdump")
-        interface = self.options.get("interface")
         bpf = self.options.get("bpf", "")
         file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(self.task.id), "dump.pcap")
         host = self.machine.ip
+        # Selects per-machine interface if available.
+        if self.machine.interface:
+            interface = self.machine.interface
+        else:
+            interface = self.options.get("interface")
 
         if not os.path.exists(tcpdump):
             log.error("Tcpdump does not exist at path \"%s\", network "
@@ -49,9 +53,13 @@ class Sniffer(Auxiliary):
 
         pargs.extend(["-w", file_path])
         pargs.extend(["host", host])
-        # TODO: this needs to be improved cause we're not catching potentially
-        # malicious traffic directed to the gateway.
-        pargs.extend(["and", "not", "host", Config().resultserver.ip])
+        # Do not capture XMLRPC agent traffic.
+        pargs.extend(["and", "not", "(", "dst host", host, "and", "dst port",
+                      str(CUCKOO_GUEST_PORT), ")"])
+        # Do not capture ResultServer traffic.
+        pargs.extend(["and", "not", "(", "host",
+                      str(Config().resultserver.ip), "and", "port",
+                      str(Config().resultserver.port), ")"])
 
         if bpf:
             pargs.extend(["and", bpf])

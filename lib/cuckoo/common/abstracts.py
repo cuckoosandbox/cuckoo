@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -154,7 +154,7 @@ class Machinery(object):
             # If this machine is already in the "correct" state, then we
             # go on to the next machine.
             if machine.label in configured_vms and \
-                    self._status(machine.label) == self.POWEROFF:
+                    self._status(machine.label) in [self.POWEROFF, self.ABORTED]:
                 continue
 
             # This machine is currently not in its correct state, we're going
@@ -296,6 +296,7 @@ class LibVirtMachinery(Machinery):
     PAUSED = "paused"
     POWEROFF = "poweroff"
     ERROR = "machete"
+    ABORTED = "abort"
 
     def __init__(self):
         if not HAVE_LIBVIRT:

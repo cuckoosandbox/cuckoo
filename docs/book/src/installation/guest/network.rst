@@ -2,18 +2,18 @@
 Network Configuration
 =====================
 
-Now it's the time to setup the network configuration for your virtual machine.
+Now it's time to setup the network for your virtual machine.
 
 Windows Settings
 ================
 
 Before configuring the underlying networking of the virtual machine, you might
-want to trick some settings inside Windows itself.
+want to tweak some settings inside Windows itself.
 
 One of the most important things to do is **disabling** *Windows Firewall* and the
 *Automatic Updates*. The reason behind this is that they can affect the behavior
 of the malware under normal circumstances and that they can pollute the network
-analysis performed by Cuckoo, by dropping connections or including unrelevant
+analysis performed by Cuckoo, by dropping connections or including irrelevant
 requests.
 
 You can do so from Windows' Control Panel as shown in the picture:
@@ -33,10 +33,10 @@ over the network using a simple XMLRPC protocol.
 
 In order to make it work properly you'll have to configure your machine's
 network so that the Host and the Guest can communicate.
-Test network trying to ping a guest is a good practice, to be sure about
-virtual network setup.
-Use only static address for your guest, as today Cuckoo doesn't support DHCP and
-using it will break your setup.
+Testing the network access by pinging a guest is a good practice, to make sure the
+virtual network was set up correctly.
+Use only static IP addresses for your guest, as today Cuckoo doesn't support DHCP
+and using it will break your setup.
 
 This stage is very much up to your own requirements and to the
 characteristics of your virtualization software.
@@ -46,7 +46,7 @@ characteristics of your virtualization software.
         sure to get connectivity between host and guest.
         Most of the issues reported by users are related to a wrong setup of
         their networking.
-        You you aren't sure about that check your virtualization software
+        If you aren't sure about that check your virtualization software
         documentation and test connectivity with ping and telnet.
 
 The recommended setup is using a Host-Only networking layout with proper
@@ -61,6 +61,6 @@ your subnet address)::
     iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
     iptables -A POSTROUTING -t nat -j MASQUERADE
 
-And adding IP forward::
+And adding IP forwarding::
 
     sysctl -w net.ipv4.ip_forward=1

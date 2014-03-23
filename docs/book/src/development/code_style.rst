@@ -19,7 +19,7 @@ Copyright header
 
 All source code files must start with the following copyright header::
 
-    # Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
+    # Copyright (C) 2010-2014 Cuckoo Foundation.
     # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
     # See the file 'docs/LICENSE' for copying permission.
 
@@ -89,14 +89,14 @@ Printing and Logging
 --------------------
 
 We discourage the use of ``print()``: if you need to log an event please use
-Python's ``logging`` which is already initialized by Cucoko.
+Python's ``logging`` which is already initialized by Cuckoo.
 
 In your module add::
 
     import logging
     log = logging.getLogger(__name__)
 
-And use the ``log`` handle, refer to Python's documentation.
+And use the ``log`` handle, for more details refer to the Python documentation.
 
 In case you really need to print a string to standard output, use the 
 ``print()`` function::
@@ -122,7 +122,7 @@ Exceptions
 Custom exceptions must be defined in the *lib/cuckoo/common/exceptions.py* file
 or in the local module if the exception should not be global.
 
-Following is current Cuckoo's exceptions chain::
+The following is the current Cuckoo exceptions chain::
 
     .-- CuckooCriticalError
     |   |-- CuckooStartupError
@@ -141,7 +141,7 @@ cause Cuckoo to terminate.
 Naming
 ------
 
-Custom exceptions name must prefix with "Cuckoo" and end with "Error" if it
+Custom exception names must start with "Cuckoo" and end with "Error" if it
 represents an unexpected malfunction.
 
 Exception handling
@@ -161,24 +161,23 @@ When catching an exception and accessing its handle, use ``as e``::
     except Exception, something:
         bar()
 
-It's a good practice use "e" instead of "e.message", as in the example above.
+It's a good practice use "e" instead of "e.message".
 
 Documentation
 =============
 
 All code must be documented in docstring format, see `PEP 257 -- Docstring
 Conventions <http://www.python.org/dev/peps/pep-0257/>`_.
-Additional comments may be added in logical blocks will be results hard to
-understand.
+Additional comments may be added in logical blocks to make the code easier to understand.
 
 Automated testing
 =================
 
-We belive in automated testing to provide high quality code and avoid dumb
+We believe in automated testing to provide high quality code and avoid dumb
 bugs.
 When possible, all code must be committed with proper unit tests. Particular
 attention must be placed when fixing bugs: it's good practice to write unit
 tests to reproduce the bug.
-All unit tests and fixtures are placed in the tests folder in the cuckoo
+All unit tests and fixtures are placed in the tests folder in the Cuckoo
 root.
-We adopt `Nose <http://nose.readthedocs.org/en/latest/>`_ as unit testing framework.
+We adopted `Nose <http://nose.readthedocs.org/en/latest/>`_ as unit testing framework.

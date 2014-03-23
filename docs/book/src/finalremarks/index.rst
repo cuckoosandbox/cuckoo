@@ -20,7 +20,7 @@ Links
 Join the discussion
 ===================
 
-You can get in contact with Cuckoo's developers and users through the `official
+You can get in contact with the Cuckoo developers and users through the `official
 mailing list`_ kindly provided by `The Honeynet Project`_ or on IRC at the
 official `#cuckoosandbox`_ channel.
 
@@ -31,19 +31,19 @@ go to our `Community`_ website.
 
 Please read the following rules before posting:
 
- * Before posting read the mailing list archives, read the Cuckoo blog, read
-   the documentation and Google about your issue. Stop posting questions that
+ * Before posting, read the mailing list archives, the Cuckoo blog,
+   the documentation and Google about your issue. **DO NOT** post questions that
    have already been answered over and over everywhere.
- * Posting messages saying just like "Doesn't work, help me" are completely
-   useless. If something is not working report the error, paste the logs, paste
-   the config file, paste the information on the virtual machine, paste the
-   results of the troubleshooting, give context. We are not wizards and we
-   don't have the crystal ball.
- * Use a proper title. Stuff like "Doesn't work", "Help me", "Error" is not a
-   proper title.
- * Tend to use `pastebin.com`_ or `pastie.org`_ and similar services to paste
-   logs and configs: make the message more readable.
- * **The community website uses Markdown syntax**. So please read `Markdown`_
+ * Posting messages saying just something like "Doesn't work, help me" are completely
+   useless. If something is not working report the error, paste the logs,
+   the config file, the information on the virtual machine, the
+   results of the troubleshooting, etc. Give context. We are not wizards and we
+   don't have a crystal ball.
+ * Use a proper title. Stuff like "Doesn't work", "Help me", "Error" are not
+   proper titles.
+ * Try to use `pastebin.com`_, `pastie.org`_ or similar services to paste
+   logs and configs: makes the message more readable.
+ * **The community website uses Markdown syntax**. So please read the `Markdown`_
    documentation before posting.
 
 .. _`pastebin.com`: http://pastebin.com/
@@ -61,7 +61,7 @@ and developed mostly during free time by volunteers. If you enjoy it and want to
 see it kept developed and updated, please consider supporting us.
 
 We are always looking for financial support, hardware support and contributions of
-other sort. If you're interested in cooperating with us, feel free to contact us.
+any sort. If you're interested in cooperating, feel free to contact us.
 
 People
 ======

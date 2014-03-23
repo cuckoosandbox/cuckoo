@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -134,17 +134,17 @@ class VirtualBox(Machinery):
                                      "list", "vms"],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            output = proc.communicate()
+            output, _ = proc.communicate()
         except OSError as e:
             raise CuckooMachineError("VBoxManage error listing "
                                      "installed machines: %s" % e)
 
         machines = []
-        for line in output[0].split("\n"):
+        for line in output.split("\n"):
             try:
                 label = line.split('"')[1]
                 if label == "<inaccessible>":
-                    log.warning("Found an inaccessible vitual machine: "
+                    log.warning("Found an inaccessible virtual machine: "
                                 "please check his state")
                 else:
                     machines.append(label)
@@ -158,7 +158,7 @@ class VirtualBox(Machinery):
         @param label: virtual machine name.
         @return: status string.
         """
-        log.debug("Getting status for %s"% label)
+        log.debug("Getting status for %s" % label)
         status = None
         try:
             proc = subprocess.Popen([self.options.virtualbox.path,

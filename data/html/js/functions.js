@@ -1,8 +1,18 @@
-function showHide(id) {
+function showHide(id, lbl) {
     var e = document.getElementById(id);
-    
-    if(e.style.display == "none")
+
+    if (lbl !== "undefined")
+        var l = document.getElementById(lbl);
+
+    if(e.style.display == "none") {
         e.style.display = "block";
-    else
+        if (l) {
+            l.innerHTML = "Collapse";
+        }
+    }
+    else {
         e.style.display = "none";
+        if (l)
+            l.innerHTML = "Expand";
+    }
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,8 +8,9 @@ import sys
 import json
 import argparse
 import tarfile
-import StringIO
 import socket
+from StringIO import StringIO
+from zipfile import ZipFile, ZIP_STORED
 
 try:
     from bottle import route, run, request, hook, response, HTTPError
@@ -218,6 +219,12 @@ def tasks_report(task_id, report_format="json"):
         "dropped": {"type": "+", "files": ["files"]},
     }
 
+    tar_formats = {
+        "bz2": "w:bz2",
+        "gz": "w:gz",
+        "tar": "w",
+    }
+  
     if report_format.lower() in formats:
         report_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                                    task_id, "reports",
@@ -225,8 +232,12 @@ def tasks_report(task_id, report_format="json"):
     elif report_format.lower() in bz_formats:
             bzf = bz_formats[report_format.lower()]
             srcdir = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id)
-            s = StringIO.StringIO()
-            tar = tarfile.open(fileobj=s, mode="w:bz2")
+            s = StringIO()
+
+            # By default go for bz2 encoded tar files (for legacy reasons.)
+            tarmode = tar_formats.get(request.get("tar"), "w:bz2")
+
+            tar = tarfile.open(fileobj=s, mode=tarmode)
             for filedir in os.listdir(srcdir):
                 if bzf["type"] == "-" and not filedir in bzf["files"]:
                     tar.add(os.path.join(srcdir, filedir), arcname=filedir)
@@ -317,6 +328,33 @@ def machines_view(name=None):
         return HTTPError(404, "Machine not found")
 
     return jsonize(response)
+
+@route("/tasks/screenshots/<task:int>", method="GET")
+@route("/tasks/screenshots/<task:int>/<screenshot>", method="GET")
+def task_screenshots(task=0, screenshot=None):
+    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "shots")
+
+    if os.path.exists(folder_path):
+        if screenshot:
+            screenshot_name = "{0}.jpg".format(screenshot)
+            screenshot_path = os.path.join(folder_path, screenshot_name)
+            if os.path.exists(screenshot_path):
+                # TODO: Add content disposition.
+                response.content_type = "image/jpeg"
+                return open(screenshot_path, "rb").read()
+            else:
+                return HTTPError(404, screenshot_path)
+        else:
+            zip_data = StringIO()
+            with ZipFile(zip_data, "w", ZIP_STORED) as zip_file:
+                for shot_name in os.listdir(folder_path):
+                    zip_file.write(os.path.join(folder_path, shot_name), shot_name)
+
+            # TODO: Add content disposition.
+            response.content_type = "application/zip"
+            return zip_data.getvalue()
+    else:
+        return HTTPError(404, folder_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
