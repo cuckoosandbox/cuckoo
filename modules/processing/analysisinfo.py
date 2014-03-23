@@ -13,7 +13,6 @@ from lib.cuckoo.common.constants import CUCKOO_VERSION
 
 log = logging.getLogger(__name__)
 
-
 class AnalysisInfo(Processing):
     """General information about analysis session."""
 
@@ -24,16 +23,12 @@ class AnalysisInfo(Processing):
         self.key = "info"
 
         try:
-            started = time.strptime(self.task["started_on"],
-                                    "%Y-%m-%d %H:%M:%S")
+            started = time.strptime(self.task["started_on"], "%Y-%m-%d %H:%M:%S")
             started = datetime.fromtimestamp(time.mktime(started))
-
-            ended = time.strptime(self.task["completed_on"],
-                                  "%Y-%m-%d %H:%M:%S")
+            ended = time.strptime(self.task["completed_on"], "%Y-%m-%d %H:%M:%S")
             ended = datetime.fromtimestamp(time.mktime(ended))
         except:
             log.critical("Failed to get start/end time from Task.")
-            # just set it to default timeout
             duration = -1
         else:
             duration = (ended - started).seconds
@@ -53,16 +48,14 @@ class AnalysisInfo(Processing):
         else:
             self.task["machine"] = {}
 
-        info = {
-            "version": CUCKOO_VERSION,
-            "started": self.task["started_on"],
-            "ended": self.task.get("completed_on", "none"),
-            "duration": duration,
-            "id": int(self.task["id"]),
-            "category": self.task["category"],
-            "custom": self.task["custom"],
-            "machine": self.task["machine"],
-            "package": self.task["package"],
-        }
-
-        return info
+        return dict(
+            version=CUCKOO_VERSION,
+            started=self.task["started_on"],
+            ended=self.task.get("completed_on", "none"),
+            duration=duration,
+            id=int(self.task["id"]),
+            category=self.task["category"],
+            custom=self.task["custom"],
+            machine=self.task["machine"],
+            package=self.task["package"]
+        )
