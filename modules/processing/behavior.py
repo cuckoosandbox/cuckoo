@@ -227,12 +227,11 @@ class Processes:
         results = []
 
         if not os.path.exists(self._logs_path):
-            log.error("Analysis results folder does not exist at path \"%s\".",
-                      self._logs_path)
+            log.warning("Analysis results folder does not exist at path \"%s\".", self._logs_path)
             return results
 
         if len(os.listdir(self._logs_path)) == 0:
-            log.error("Analysis results folder does not contain any file.")
+            log.warning("Analysis results folder does not contain any file.")
             return results
 
         for file_name in os.listdir(self._logs_path):
