@@ -39,6 +39,24 @@ TASK_REPORTED = "reported"
 TASK_FAILED_ANALYSIS = "failed_analysis"
 TASK_FAILED_PROCESSING = "failed_processing"
 
+ANALYSIS_STARTED = "analysis_started"
+ANALYSIS_FINISHED = "analysis_finished"
+PROCESSING_STARTED = "processing_started"
+PROCESSING_FINISHED = "processing_finished"
+SIGNATURES_STARTED = "signatures_started"
+SIGNATURES_FINISHED = "signatures_finished"
+REPORTING_STARTED = "reporting_started"
+REPORTING_FINISHED = "reporting_finished"
+
+DROPPED_FILES = "dropped_files"
+RUNNING_PROCESSES = "running_processes"
+API_CALLS = "api_calls"
+ACCESSED_DOMAINS = "accessed_domains"
+SIGNATURES_TOTAL = "signaturs_total"
+SIGNATURES_ALERT = "signatures_alert"
+FILES_WRITTEN = "files_written"
+REGISTRY_KEYS_MODIFIED = "registry_keys_modified"
+
 # Secondary table used in association Machine - Tag.
 machines_tags = Table("machines_tags", Base.metadata,
     Column("machine_id", Integer, ForeignKey("machines.id")),
@@ -291,6 +309,26 @@ class Task(Base):
                       nullable=False)
     started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
+    # Statistics data to identify broken Cuckoos servers or VMs
+    # Also for doing profiling to improve speed
+    dropped_files = Column(Integer(), nullable=True)
+    running_processes = Column(Integer(), nullable=True)
+    api_calls = Column(Integer(), nullable=True)
+    domains = Column(Integer(), nullable=True)
+    signatures_total = Column(Integer(), nullable=True)
+    signatures_alert = Column(Integer(), nullable=True)
+    files_written = Column(Integer(), nullable=True)
+    registry_keys_modified = Column(Integer(), nullable=True)
+    analysis_started_on = Column(DateTime(timezone=False), nullable=True)
+    analysis_finished_on = Column(DateTime(timezone=False), nullable=True)
+    processing_started_on = Column(DateTime(timezone=False), nullable=True)
+    processing_finished_on = Column(DateTime(timezone=False), nullable=True)
+    signatures_started_on = Column(DateTime(timezone=False), nullable=True)
+    signatures_finished_on = Column(DateTime(timezone=False), nullable=True)
+    reporting_started_on = Column(DateTime(timezone=False), nullable=True)
+    reporting_finished_on = Column(DateTime(timezone=False), nullable=True)
+
+
     status = Column(Enum(TASK_PENDING,
                          TASK_RUNNING,
                          TASK_COMPLETED,
@@ -493,6 +531,73 @@ class Database(object):
             session.commit()
         except SQLAlchemyError as e:
             log.debug("Database error setting status: {0}".format(e))
+            session.rollback()
+        finally:
+            session.close()
+
+    def set_statistics_time(self, task_id, event):
+        """Set task statistics time.
+        @param task_id: task identifier
+        @param event: event time to set
+        """
+        session = self.Session()
+        try:
+            row = session.query(Task).get(task_id)
+
+            if event == ANALYSIS_STARTED:
+                row.analysis_started_on = datetime.now()
+            elif event == ANALYSIS_FINISHED:
+                row.analysis_finished_on = datetime.now()
+            elif event == PROCESSING_STARTED:
+                row.processing_started_on = datetime.now()
+            elif event == PROCESSING_FINISHED:
+                row.processing_finished_on = datetime.now()
+            elif event == SIGNATURES_STARTED:
+                row.signatures_started_on = datetime.now()
+            elif event == SIGNATURES_FINISHED:
+                row.signatures_finished_on = datetime.now()
+            elif event == REPORTING_STARTED:
+                row.reporting_started_on = datetime.now()
+            elif event == REPORTING_FINISHED:
+                row.reporting_finished_on = datetime.now()
+
+            session.commit()
+        except SQLAlchemyError as e:
+            log.debug("Database error setting time statistics: {0}".format(e))
+            session.rollback()
+        finally:
+            session.close()
+
+    def set_statistics_counter(self, task_id, event, value):
+        """Set task statistics counter.
+        @param task_id: task identifier
+        @param event: event time to set
+        @param value: counter value
+        """
+        session = self.Session()
+        try:
+            row = session.query(Task).get(task_id)
+
+            if event == DROPPED_FILES:
+                row.dropped_files = value
+            elif event == RUNNING_PROCESSES:
+                row.running_processes = value
+            elif event == API_CALLS:
+                row.api_calls = value
+            elif event == ACCESSED_DOMAINS:
+                row.domains = value
+            elif event == SIGNATURES_TOTAL:
+                row.signatures_total = value
+            elif event == SIGNATURES_ALERT:
+                row.signatures_alert = value
+            elif event == FILES_WRITTEN:
+                row.files_written = value
+            elif event == REGISTRY_KEYS_MODIFIED:
+                row.registry_keys_modified = value
+
+            session.commit()
+        except SQLAlchemyError as e:
+            log.debug("Database error setting time statistics: {0}".format(e))
             session.rollback()
         finally:
             session.close()
@@ -1028,6 +1133,30 @@ class Database(object):
         finally:
             session.close()
         return tasks_count
+
+    def task_duration(self, year=None, month=None, day=None):
+        """Get durations of tasks in the database
+
+        @param year: year filter
+        @param month: month filter
+        @param day: day filter
+        @return: a list containing the durations
+        """
+
+        # TODO add filters
+        session = self.Session()
+        res = []
+        try:
+            all = session.query(Task)
+            for i in all:
+                res.append((i.completed_on - i.added_on).seconds/60)
+
+        except SQLAlchemyError as e:
+            log.debug("Database error counting tasks: {0}".format(e))
+            return 0
+        finally:
+            session.close()
+        return res
 
     def view_task(self, task_id, details=False):
         """Retrieve information on a task.

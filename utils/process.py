@@ -23,7 +23,7 @@ from lib.cuckoo.core.startup import init_modules
 
 def do(aid, report=False):
     results = RunProcessing(task_id=aid).run()
-    RunSignatures(results=results).run()
+    RunSignatures(task_id=aid, results=results).run()
 
     if report:
         RunReporting(task_id=aid, results=results).run()

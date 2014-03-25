@@ -17,10 +17,12 @@ from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import create_folder
 from lib.cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED
+from lib.cuckoo.core.database import ANALYSIS_STARTED, ANALYSIS_FINISHED
 from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
 from lib.cuckoo.core.plugins import RunSignatures, RunReporting
 from lib.cuckoo.core.resultserver import Resultserver
+from datetime import datetime
 
 log = logging.getLogger(__name__)
 
@@ -224,6 +226,7 @@ class AnalysisManager(Thread):
             log.error("Cannot acquire machine: {0}".format(e))
             return False
 
+        Database().set_statistics_time(self.task.id, ANALYSIS_STARTED)
         # Generate the analysis configuration file.
         options = self.build_options()
 
@@ -319,13 +322,14 @@ class AnalysisManager(Thread):
                 log.error("Unable to release machine %s, reason %s. "
                           "You might need to restore it manually",
                           self.machine.label, e)
+        Database().set_statistics_time(self.task.id, ANALYSIS_FINISHED)
 
         return succeeded
 
     def process_results(self):
         """Process the analysis results and generate the enabled reports."""
         results = RunProcessing(task_id=self.task.id).run()
-        RunSignatures(results=results).run()
+        RunSignatures(task_id=self.task.id, results=results).run()
         RunReporting(task_id=self.task.id, results=results).run()
 
         # If the target is a file and the user enabled the option,
