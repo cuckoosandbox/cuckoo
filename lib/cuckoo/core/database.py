@@ -1134,9 +1134,10 @@ class Database(object):
             session.close()
         return tasks_count
 
-    def task_duration(self, year=None, month=None, day=None):
+    def task_duration(self, stage="full", year=None, month=None, day=None):
         """Get durations of tasks in the database
 
+        @param stage: processing stage to process for
         @param year: year filter
         @param month: month filter
         @param day: day filter
@@ -1149,7 +1150,20 @@ class Database(object):
         try:
             all = session.query(Task)
             for i in all:
-                res.append((i.completed_on - i.added_on).seconds/60)
+                if stage == "full":
+                    res.append((i.completed_on - i.added_on).seconds/60)
+                elif stage == "analysis":
+                    if i.analysis_started_on and i.analysis_finished_on:
+                        res.append((i.analysis_finished_on - i.analysis_started_on).seconds/60)
+                elif stage == "processing":
+                    if i.processing_finished_on and i.processing_started_on:
+                        res.append((i.processing_finished_on - i.processing_started_on).seconds/60)
+                elif stage == "signatures":
+                    if i.signatures_started_on and i.signatures_finished_on:
+                        res.append((i.signatures_finished_on - i.signatures_started_on).seconds/60)
+                elif stage == "reporting":
+                    if i.reporting_finished_on and i.reporting_started_on:
+                        res.append((i.reporting_finished_on - i.reporting_started_on).seconds/60)
 
         except SQLAlchemyError as e:
             log.debug("Database error counting tasks: {0}".format(e))
