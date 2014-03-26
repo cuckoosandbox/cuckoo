@@ -29,8 +29,6 @@ def fix_key(key):
     elif key.lower().startswith("\\registry\\user\\"):
         res = "HKEY_USERS\\" + key[15:]
 
-    if not res.endswith("\\\\"):
-        res = res + "\\"
     return res
 
 class ParseProcessLog(list):
