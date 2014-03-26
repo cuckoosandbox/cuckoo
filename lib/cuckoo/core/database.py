@@ -1180,7 +1180,8 @@ class Database(object):
             all = session.query(Task)
             for i in all:
                 if stage == "full":
-                    res.append((i.completed_on - i.added_on).seconds/60)
+                    if i.completed_on and i.added_on:
+                        res.append((i.completed_on - i.added_on).seconds/60)
                 elif stage == "analysis":
                     if i.analysis_started_on and i.analysis_finished_on:
                         res.append((i.analysis_finished_on - i.analysis_started_on).seconds/60)
