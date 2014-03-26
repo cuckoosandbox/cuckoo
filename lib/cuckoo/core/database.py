@@ -339,6 +339,8 @@ class Task(Base):
                          nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     sample = relationship("Sample", backref="tasks")
+    machine_id = Column(Integer, ForeignKey("machines.id"), nullable=True)
+    sample = relationship("Machine", backref="tasks")
     guest = relationship("Guest", uselist=False, backref="tasks", cascade="save-update, delete")
     errors = relationship("Error", backref="tasks", cascade="save-update, delete")
 
@@ -778,6 +780,33 @@ class Database(object):
                 session.close()
 
         return machine
+
+    def recruit_machine(self, task_id, machine_id):
+        """Add a machine to a task
+        @param task_id: ID of the task to add
+        @param machine_id: ID of the machine to add
+        """
+
+        session = self.Session()
+        try:
+            #import pdb; pdb.set_trace()
+            task = session.query(Task).filter(Task.id == task_id).first()
+        except SQLAlchemyError as e:
+            log.debug("Database error recruiting machine: {0}".format(e))
+            session.close()
+            return None
+
+        if task:
+            task.machine_id = machine_id
+            try:
+                session.commit()
+                session.refresh(task)
+            except SQLAlchemyError as e:
+                log.debug("Database error recruiting machine: {0}".format(e))
+                session.rollback()
+                return None
+            finally:
+                session.close()
 
     def count_machines_available(self):
         """How many virtual machines are ready for analysis.
