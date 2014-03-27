@@ -17,7 +17,6 @@ import sys
 sys.path.append("../..")
 
 import lib.cuckoo.core.database as db
-from lib.cuckoo.core.database import Base
 
 def upgrade():
     # BEWARE: be prepared to really spaghetti code. To deal with SQLite limitations in Alembic we coded some workarounds.
