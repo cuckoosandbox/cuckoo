@@ -1145,17 +1145,20 @@ class Database(object):
             session.close()
         return tasks
 
-    def count_tasks(self, status=None):
+    def count_tasks(self, status=None, mid=None):
         """Count tasks in the database
         @param status: apply a filter according to the task status
+        @param mid: Machine id to filter for
         @return: number of tasks found
         """
         session = self.Session()
         try:
+            unfiltered = session.query(Task)
+            if mid:
+                unfiltered = unfiltered.filter(Task.machine_id == mid)
             if status:
-                tasks_count = session.query(Task).filter(Task.status == status).count()
-            else:
-                tasks_count = session.query(Task).count()
+                unfiltered = unfiltered.filter(Task.status == status)
+            tasks_count = unfiltered.count()
         except SQLAlchemyError as e:
             log.debug("Database error counting tasks: {0}".format(e))
             return 0
