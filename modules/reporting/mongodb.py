@@ -21,6 +21,9 @@ except ImportError:
 class MongoDB(Report):
     """Stores report in MongoDB."""
 
+    # Mongo schema version, used for data migration.
+    SCHEMA_VERSION = "1"
+
     def connect(self):
         """Connects to Mongo database, loads options and set connectors.
         @raise CuckooReportError: if unable to connect.
@@ -76,11 +79,22 @@ class MongoDB(Report):
 
         self.connect()
 
+        # Set mongo schema version.
+        # TODO: This is not optimal becuase it run each analysis. Need to run
+        # only one time at startup.
+        if "cuckoo_schema" in self.db.collection_names():
+            if self.db.cuckoo_schema.find_one()["version"] != self.SCHEMA_VERSION:
+                CuckooReportError("Mongo schema version not expected, check data migration tool")
+        else:
+            self.db.cuckoo_schema.save({"version": self.SCHEMA_VERSION})
+
         # Set an unique index on stored files, to avoid duplicates.
         # From pymongo docs:
         #  Returns the name of the created index if an index is actually
         #    created.
         #  Returns None if the index already exists.
+        # TODO: This is not optimal becuase it run each analysis. Need to run
+        # only one time at startup.
         self.db.fs.files.ensure_index("sha256", unique=True,
                                       sparse=True, name="sha256_unique")
 

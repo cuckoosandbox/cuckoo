@@ -10,14 +10,16 @@ Create Date: 2014-03-23 23:30:36.756792
 revision = "263a45963c72"
 down_revision = None
 
+import os
+import sys
 import sqlalchemy as sa
 from alembic import op
 
-import sys
-sys.path.append("../..")
+_current_dir = os.path.abspath(os.path.dirname(__file__))
+CUCKOO_ROOT = os.path.normpath(os.path.join(_current_dir, "..", ".."))
+sys.path.append(CUCKOO_ROOT)
 
 import lib.cuckoo.core.database as db
-from lib.cuckoo.core.database import Base
 
 def upgrade():
     # BEWARE: be prepared to really spaghetti code. To deal with SQLite limitations in Alembic we coded some workarounds.
