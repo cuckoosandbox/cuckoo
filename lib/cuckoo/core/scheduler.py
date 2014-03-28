@@ -22,7 +22,6 @@ from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
 from lib.cuckoo.core.plugins import RunSignatures, RunReporting
 from lib.cuckoo.core.resultserver import Resultserver
-from datetime import datetime
 
 log = logging.getLogger(__name__)
 
