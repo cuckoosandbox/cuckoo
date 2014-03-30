@@ -14,10 +14,19 @@ down_revision = None
 import os
 import sys
 import sqlalchemy as sa
-from alembic import op
 
-from pymongo.connection import Connection
-from pymongo.errors import ConnectionFailure
+try:
+    from alembic import op
+except ImportError:
+    print "Unable to import alembic (install with `pip install alembic`)"
+    sys.exit()
+
+try:
+    from pymongo.connection import Connection
+    from pymongo.errors import ConnectionFailure
+except ImportError:
+    print "Unable to import pymongo (install with `pip install pymongo`)"
+    sys.exit()
 
 sys.path.append(os.path.join("..", ".."))
 
