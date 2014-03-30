@@ -113,7 +113,10 @@ def upgrade():
     mongo_upgrade()
 
 def mongo_upgrade():
+    """Migrate mongodb schema and data."""
+    # Read reporting.conf to fetch mongo configuration.
     config = Config(os.path.join("..", "..", "conf", "reporting.conf"))
+    # Run migration only if mongo is enabled as reporting module.
     if config.mongodb.enabled:
         host = config.mongodb.get("host", "127.0.0.1")
         port = config.mongodb.get("port", 27017)
@@ -123,7 +126,6 @@ def mongo_upgrade():
         try:
             conn = Connection(host, port)
             db = conn.cuckoo
-            #fs = GridFS(db)
         except TypeError:
             print "Mongo connection port must be integer"
             sys.exit()
