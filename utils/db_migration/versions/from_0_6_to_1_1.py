@@ -1,3 +1,7 @@
+# Copyright (C) 2010-2014 Cuckoo Foundation.
+# This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+# See the file 'docs/LICENSE' for copying permission.
+
 """Database migration from Cuckoo 0.6 to Cuckoo 1.1.
 
 Revision ID: 263a45963c72
