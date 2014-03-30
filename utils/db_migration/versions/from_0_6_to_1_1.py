@@ -8,6 +8,7 @@ Create Date: 2014-03-23 23:30:36.756792
 
 # Revision identifiers, used by Alembic.
 revision = "263a45963c72"
+mongo_revision = "1"
 down_revision = None
 
 import os
@@ -15,11 +16,13 @@ import sys
 import sqlalchemy as sa
 from alembic import op
 
-_current_dir = os.path.abspath(os.path.dirname(__file__))
-CUCKOO_ROOT = os.path.normpath(os.path.join(_current_dir, "..", ".."))
-sys.path.append(CUCKOO_ROOT)
+from pymongo.connection import Connection
+from pymongo.errors import ConnectionFailure
+
+sys.path.append(os.path.join("..", ".."))
 
 import lib.cuckoo.core.database as db
+from lib.cuckoo.common.config import Config
 
 def upgrade():
     # BEWARE: be prepared to really spaghetti code. To deal with SQLite limitations in Alembic we coded some workarounds.
@@ -96,6 +99,38 @@ def upgrade():
     op.bulk_insert(db.Task.__table__, tasks_data)
     # Drop old table.
     op.drop_table("old_tasks")
+
+    # Migrate mongo.
+    mongo_upgrade()
+
+def mongo_upgrade():
+    config = Config(os.path.join("..", "..", "conf", "reporting.conf"))
+    if config.mongodb.enabled:
+        host = config.mongodb.get("host", "127.0.0.1")
+        port = config.mongodb.get("port", 27017)
+        print "Mongo reporting is enabled, strarting mongo data migration."
+
+        # Connect.
+        try:
+            conn = Connection(host, port)
+            db = conn.cuckoo
+            #fs = GridFS(db)
+        except TypeError:
+            print "Mongo connection port must be integer"
+            sys.exit()
+        except ConnectionFailure:
+            print "Cannot connect to MongoDB"
+            sys.exit()
+
+        # Check for schema version and create it.
+        if "cuckoo_schema" in db.collection_names():
+            print "Mongo schema version not expected"
+            sys.exit()
+        else:
+            db.cuckoo_schema.save({"version": mongo_revision})
+
+    else:
+        print "Mongo reporting module not enabled, skipping mongo migration."
 
 def downgrade():
     # We don"t support downgrade.
