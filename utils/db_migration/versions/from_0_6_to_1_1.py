@@ -75,7 +75,7 @@ def upgrade():
         d["clock"] = d["added_on"]
         # Enum migration, "success" isn"t a valid state now.
         if d["status"] == "success":
-            d["status"] = db.TASK_COMPLETED
+            d["status"] = "completed"
         tasks_data.append(d)
 
     # Rename original table.
@@ -99,7 +99,7 @@ def upgrade():
         sa.Column("added_on", sa.DateTime(timezone=False), nullable=False),
         sa.Column("started_on", sa.DateTime(timezone=False), nullable=True),
         sa.Column("completed_on", sa.DateTime(timezone=False), nullable=True),
-        sa.Column("status", sa.Enum(db.TASK_PENDING, db.TASK_RUNNING, db.TASK_COMPLETED, db.TASK_REPORTED, db.TASK_RECOVERED, name="status_type"), server_default=db.TASK_PENDING, nullable=False),
+        sa.Column("status", sa.Enum("pending", "running", "completed", "reported", "recovered", name="status_type"), server_default="pending", nullable=False),
         sa.Column("sample_id", sa.Integer, sa.ForeignKey("samples.id"), nullable=True),
         sa.PrimaryKeyConstraint("id")
     )
