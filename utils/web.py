@@ -180,7 +180,7 @@ def statistics_page():
                    "Task success by machine to identify damaged machines",
                    "/statistics_image/" + hs.task_success_by_machine_bar()),
                   ("Analysis issues",
-                   "Task analysis issues, global",
+                   "Task analysis issues, global\nAnti issues are just logging if a sample tried something, we do not know if it was successfull",
                    "/statistics_image/" + hs.task_analysis_pie())]
     return template.render({"stat_items": stat_items})
 

@@ -484,15 +484,22 @@ class RunSignatures(object):
         alert = 0
         normal = 0
         crash = 0
+        anti = 0
         for sig in self.results["signatures"]:
             if sig["alert"]:
                 alert += 1
             if sig["name"] in ["exec_crash"]:
                 crash += 1
+            if sig["name"] in ["antidbg_devices", "antidbg_windows", "antiemu_wine", "antisandbox_mouse_hook",
+                               "antivm_generic_bios", "antivm_generic_disk", "antivm_generic_ide",
+                               "antivm_generic_scsi", "antivm_vbox_acpi", "antivm_vbox_devices", "antivm_vbox_files",
+                               "antivm_vbox_keys", "antivm_vbox_libs"]:
+                anti += 1
             normal += 1
         Database().set_statistics_counter(self.task_id, SIGNATURES_TOTAL, normal)
         Database().set_statistics_counter(self.task_id, SIGNATURES_ALERT, alert)
         Database().set_statistics_counter(self.task_id, CRASH_ISSUES, crash)
+        Database().set_statistics_counter(self.task_id, ANTI_ISSUES, anti)
 
         Database().set_statistics_time(self.task_id, SIGNATURES_FINISHED)
 

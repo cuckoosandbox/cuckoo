@@ -63,6 +63,8 @@ DOTNET_ISSUES = "dotnet_issues"
 TASK_ISSUE_NONE = "no_issue"
 TASK_ISSUE_SHORT_API_CALL_LIST = "short_api_call_list"
 TASK_ISSUE_CRASH = "crash_issue"
+TASK_ISSUE_ANTI = "anti_issue"
+TASK_ISSUE_PERFECT = "no_issue_perfect_results"
 
 # Secondary table used in association Machine - Tag.
 machines_tags = Table("machines_tags", Base.metadata,
@@ -1236,17 +1238,25 @@ class Database(object):
             unfiltered = session.query(Task)
 
             # any alert signature marks it as success:
-            if issue != TASK_ISSUE_NONE:
+            if issue != TASK_ISSUE_NONE and issue != TASK_ISSUE_PERFECT:
                 unfiltered.filter(Task.signatures_alert == 0)
 
             if issue == TASK_ISSUE_SHORT_API_CALL_LIST:
                 unfiltered = unfiltered.filter(Task.api_calls <= api_call_limit)
 
-            if issue == TASK_ISSUE_CRASH:
+            elif issue == TASK_ISSUE_CRASH:
                 unfiltered = unfiltered.filter(Task.crash_issues > 0)
+
+            elif issue == TASK_ISSUE_ANTI:
+                unfiltered = unfiltered.filter(Task.anti_issues > 0)
+
+            elif issue == TASK_ISSUE_PERFECT:
+                unfiltered = unfiltered.filter(Task.api_calls > api_call_limit).filter(Task.crash_issues == 0)
+                unfiltered = unfiltered.filter(Task.anti_issues == 0).filter(Task.signatures_alert > 0)
 
             elif issue == TASK_ISSUE_NONE:
                 unfiltered = unfiltered.filter(Task.api_calls > api_call_limit).filter(Task.crash_issues == 0)
+                unfiltered = unfiltered.filter(Task.anti_issues == 0).filter(Task.signatures_alert == 0)
             res = unfiltered.count()
 
         except SQLAlchemyError as e:

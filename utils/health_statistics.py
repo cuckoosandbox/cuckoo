@@ -19,7 +19,8 @@ from lib.cuckoo.core.database import TASK_COMPLETED, TASK_PENDING, TASK_RECOVERE
 from lib.cuckoo.core.database import DOTNET_ISSUES, ANTI_ISSUES
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 
-from lib.cuckoo.core.database import TASK_ISSUE_NONE, TASK_ISSUE_SHORT_API_CALL_LIST, TASK_ISSUE_CRASH
+from lib.cuckoo.core.database import TASK_ISSUE_NONE, TASK_ISSUE_SHORT_API_CALL_LIST, TASK_ISSUE_CRASH, TASK_ISSUE_ANTI
+from lib.cuckoo.core.database import TASK_ISSUE_PERFECT
 
 class HealthStatistics():
 
@@ -111,7 +112,9 @@ class HealthStatistics():
         filename = os.path.join(self.datadir, name)
         status_list = [("Short API call list", TASK_ISSUE_SHORT_API_CALL_LIST),
                        ("Crash", TASK_ISSUE_CRASH),
-                       ("Ok", TASK_ISSUE_NONE)]
+                       ("Anti*", TASK_ISSUE_ANTI),
+                       ("Ok", TASK_ISSUE_NONE),
+                       ("Perfect", TASK_ISSUE_PERFECT)]
         status_pie = pygal.Pie(fill=self.style["fill"],
                                interpolate=self.style["interpolate"],
                                style=self.style["style"])
