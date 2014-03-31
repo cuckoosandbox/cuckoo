@@ -15,9 +15,11 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.database import TASK_REPORTED, TASK_FAILED_PROCESSING, TASK_FAILED_ANALYSIS
-from lib.cuckoo.core.database import TASK_COMPLETED, TASK_PENDING, TASK_RECOVERED, TASK_RUNNING
+from lib.cuckoo.core.database import TASK_COMPLETED, TASK_PENDING, TASK_RECOVERED, TASK_RUNNING, CRASH_ISSUES
+from lib.cuckoo.core.database import DOTNET_ISSUES, ANTI_ISSUES
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 
+from lib.cuckoo.core.database import TASK_ISSUE_NONE, TASK_ISSUE_SHORT_API_CALL_LIST, TASK_ISSUE_CRASH
 
 class HealthStatistics():
 
@@ -45,9 +47,10 @@ class HealthStatistics():
         td = self.db.task_duration()
         items = []
         total = 0
-        for i in range(max(td),min(td), -1):
-            total += td.count(i)
-            items.append(total)
+        if td:
+            for i in range(max(td), min(td), -1):
+                total += td.count(i)
+                items.append(total)
         items.reverse()
         line_chart = pygal.Line(fill=self.style["fill"],
                                interpolate=self.style["interpolate"],
@@ -101,6 +104,26 @@ class HealthStatistics():
         else:
             return filename
 
+    def task_analysis_pie(self):
+        """ Showing a pie chart for the task analysis. Viewing problems and issues like Anti-VM, crashes, ...
+        """
+        name = "analysis_issues_pie.svg"
+        filename = os.path.join(self.datadir, name)
+        status_list = [("Short API call list", TASK_ISSUE_SHORT_API_CALL_LIST),
+                       ("Crash", TASK_ISSUE_CRASH),
+                       ("Ok", TASK_ISSUE_NONE)]
+        status_pie = pygal.Pie(fill=self.style["fill"],
+                               interpolate=self.style["interpolate"],
+                               style=self.style["style"])
+        status_pie.title = 'Detailed analysis issues'
+        for human, stat in status_list:
+            status_pie.add(human, self.db.task_analysis_issues(stat))
+        status_pie.render_to_file(filename)
+        if self.simple:
+            return name
+        else:
+            return filename
+
     def task_success_by_machine_bar(self):
         """ Generate a bar graph showing success vs fail for the machines
         """
@@ -145,6 +168,7 @@ class HealthStatistics():
             return filename
 
         # TODO: Diagram percent of tasks reported per day. Bar graph
+        # TODO: Issue tracker. Create signatures for certain cuckoomon crashes: Exit != 0, dbwin/drwatson, mscoree.dll
 
 if __name__ == "__main__":
     hs = HealthStatistics()

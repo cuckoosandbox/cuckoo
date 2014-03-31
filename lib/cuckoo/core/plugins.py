@@ -23,7 +23,8 @@ from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.database import PROCESSING_STARTED, PROCESSING_FINISHED, SIGNATURES_STARTED, SIGNATURES_FINISHED
 from lib.cuckoo.core.database import REPORTING_STARTED, REPORTING_FINISHED
 from lib.cuckoo.core.database import DROPPED_FILES, RUNNING_PROCESSES, API_CALLS, ACCESSED_DOMAINS, SIGNATURES_TOTAL
-from lib.cuckoo.core.database import SIGNATURES_ALERT, FILES_WRITTEN, REGISTRY_KEYS_MODIFIED
+from lib.cuckoo.core.database import SIGNATURES_ALERT, FILES_WRITTEN, REGISTRY_KEYS_MODIFIED, CRASH_ISSUES, ANTI_ISSUES
+from lib.cuckoo.core.database import DOTNET_ISSUES
 
 log = logging.getLogger(__name__)
 
@@ -482,12 +483,16 @@ class RunSignatures(object):
         # Doing signature statistics
         alert = 0
         normal = 0
+        crash = 0
         for sig in self.results["signatures"]:
-            if sig["alert"] == True:
+            if sig["alert"]:
                 alert += 1
+            if sig["name"] in ["exec_crash"]:
+                crash += 1
             normal += 1
         Database().set_statistics_counter(self.task_id, SIGNATURES_TOTAL, normal)
         Database().set_statistics_counter(self.task_id, SIGNATURES_ALERT, alert)
+        Database().set_statistics_counter(self.task_id, CRASH_ISSUES, crash)
 
         Database().set_statistics_time(self.task_id, SIGNATURES_FINISHED)
 

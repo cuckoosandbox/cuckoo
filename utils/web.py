@@ -178,7 +178,10 @@ def statistics_page():
                    "/statistics_image/" + hs.task_status_pie()),
                   ("Success by machine",
                    "Task success by machine to identify damaged machines",
-                   "/statistics_image/" + hs.task_success_by_machine_bar())]
+                   "/statistics_image/" + hs.task_success_by_machine_bar()),
+                  ("Analysis issues",
+                   "Task analysis issues, global",
+                   "/statistics_image/" + hs.task_analysis_pie())]
     return template.render({"stat_items": stat_items})
 
 @route("/static/<filename:path>")

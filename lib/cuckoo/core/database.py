@@ -56,6 +56,13 @@ SIGNATURES_TOTAL = "signaturs_total"
 SIGNATURES_ALERT = "signatures_alert"
 FILES_WRITTEN = "files_written"
 REGISTRY_KEYS_MODIFIED = "registry_keys_modified"
+CRASH_ISSUES = "crash_issues"
+ANTI_ISSUES = "anti_something_issues"
+DOTNET_ISSUES = "dotnet_issues"
+
+TASK_ISSUE_NONE = "no_issue"
+TASK_ISSUE_SHORT_API_CALL_LIST = "short_api_call_list"
+TASK_ISSUE_CRASH = "crash_issue"
 
 # Secondary table used in association Machine - Tag.
 machines_tags = Table("machines_tags", Base.metadata,
@@ -319,6 +326,9 @@ class Task(Base):
     signatures_alert = Column(Integer(), nullable=True)
     files_written = Column(Integer(), nullable=True)
     registry_keys_modified = Column(Integer(), nullable=True)
+    crash_issues = Column(Integer(), nullable=True)
+    anti_issues = Column(Integer(), nullable=True)
+    dotnet_issues = Column(Integer(), nullable=True)
     analysis_started_on = Column(DateTime(timezone=False), nullable=True)
     analysis_finished_on = Column(DateTime(timezone=False), nullable=True)
     processing_started_on = Column(DateTime(timezone=False), nullable=True)
@@ -594,6 +604,12 @@ class Database(object):
                 row.signatures_alert = value
             elif event == FILES_WRITTEN:
                 row.files_written = value
+            elif event == CRASH_ISSUES:
+                row.crash_issues = value
+            elif event == ANTI_ISSUES:
+                row.anti_issues = value
+            elif event == DOTNET_ISSUES:
+                row.dotnet_issues = value
             elif event == REGISTRY_KEYS_MODIFIED:
                 row.registry_keys_modified = value
 
@@ -1197,6 +1213,41 @@ class Database(object):
                 elif stage == "reporting":
                     if i.reporting_finished_on and i.reporting_started_on:
                         res.append((i.reporting_finished_on - i.reporting_started_on).seconds/60)
+
+        except SQLAlchemyError as e:
+            log.debug("Database error counting tasks: {0}".format(e))
+            return 0
+        finally:
+            session.close()
+        return res
+
+    def task_analysis_issues(self, issue):
+        """Return number of tasks with specific analysis issues
+
+        @param issue: Issue to filter for
+        @return: number of tasks with the specific issue
+        """
+
+        api_call_limit = 50   # Number of api calls, we accept as success.
+
+        session = self.Session()
+        res = 0
+        try:
+            unfiltered = session.query(Task)
+
+            # any alert signature marks it as success:
+            if issue != TASK_ISSUE_NONE:
+                unfiltered.filter(Task.signatures_alert == 0)
+
+            if issue == TASK_ISSUE_SHORT_API_CALL_LIST:
+                unfiltered = unfiltered.filter(Task.api_calls <= api_call_limit)
+
+            if issue == TASK_ISSUE_CRASH:
+                unfiltered = unfiltered.filter(Task.crash_issues > 0)
+
+            elif issue == TASK_ISSUE_NONE:
+                unfiltered = unfiltered.filter(Task.api_calls > api_call_limit).filter(Task.crash_issues == 0)
+            res = unfiltered.count()
 
         except SQLAlchemyError as e:
             log.debug("Database error counting tasks: {0}".format(e))
