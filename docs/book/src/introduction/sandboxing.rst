@@ -9,7 +9,7 @@ users and untrusted websites.*".
 
 This concept applies to malware analysis' sandboxing too: our goal is to run an
 unknown and untrusted application or file inside an isolated environment and get
-information and what it does.
+information on what it does.
 
 Malware sandboxing is a practical application of the dynamical analysis
 approach: instead of statically analyze the binary file, it gets executed and
