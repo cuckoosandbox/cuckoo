@@ -181,7 +181,10 @@ def statistics_page():
                    "/statistics_image/" + hs.task_success_by_machine_bar()),
                   ("Analysis issues",
                    "Task analysis issues, global\nAnti issues are just logging if a sample tried something, we do not know if it was successfull",
-                   "/statistics_image/" + hs.task_analysis_pie())]
+                   "/statistics_image/" + hs.task_analysis_pie()),
+                  ("Analysis issues by machine",
+                   "Task analysis issues, sorted by machine",
+                   "/statistics_image/" + hs.task_analysis_by_machine_bar())]
     return template.render({"stat_items": stat_items})
 
 @route("/static/<filename:path>")

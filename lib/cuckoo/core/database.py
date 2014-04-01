@@ -1223,10 +1223,11 @@ class Database(object):
             session.close()
         return res
 
-    def task_analysis_issues(self, issue):
+    def task_analysis_issues(self, issue, mid=None):
         """Return number of tasks with specific analysis issues
 
         @param issue: Issue to filter for
+        @param mid: Machine id to filter for
         @return: number of tasks with the specific issue
         """
 
@@ -1237,9 +1238,12 @@ class Database(object):
         try:
             unfiltered = session.query(Task)
 
+            if not mid is None:
+                unfiltered = unfiltered.filter(Task.machine_id == mid)
+
             # any alert signature marks it as success:
             if issue != TASK_ISSUE_NONE and issue != TASK_ISSUE_PERFECT:
-                unfiltered.filter(Task.signatures_alert == 0)
+                unfiltered = unfiltered.filter(Task.signatures_alert == 0)
 
             if issue == TASK_ISSUE_SHORT_API_CALL_LIST:
                 unfiltered = unfiltered.filter(Task.api_calls <= api_call_limit)

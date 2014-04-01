@@ -127,6 +127,47 @@ class HealthStatistics():
         else:
             return filename
 
+    def task_analysis_by_machine_bar(self):
+        """ Showing a pie chart for the task analysis. Viewing problems and issues like Anti-VM, crashes, ...
+        """
+        name = "analysis_issues_by_machine_bar.svg"
+        filename = os.path.join(self.datadir, name)
+        machines = self.db.list_machines()
+        status_list = [("Short API call list", TASK_ISSUE_SHORT_API_CALL_LIST),
+                       ("Crash", TASK_ISSUE_CRASH),
+                       ("Anti*", TASK_ISSUE_ANTI),
+                       ("Ok", TASK_ISSUE_NONE),
+                       ("Perfect", TASK_ISSUE_PERFECT)]
+        analysis_bar = pygal.StackedBar(fill=self.style["fill"],
+                               interpolate=self.style["interpolate"],
+                               style=self.style["style"])
+        analysis_bar.title = 'Detailed analysis issues'
+        lshort = []
+        lcrash = []
+        lanti = []
+        lok = []
+        lperfect = []
+        label_list = []
+        for m in machines:
+            label_list.append(m.name)
+            lshort.append(self.db.task_analysis_issues(TASK_ISSUE_SHORT_API_CALL_LIST, mid=m.id))
+            lcrash.append(self.db.task_analysis_issues(TASK_ISSUE_CRASH, mid=m.id))
+            lanti.append(self.db.task_analysis_issues(TASK_ISSUE_ANTI, mid=m.id))
+            lok.append(self.db.task_analysis_issues(TASK_ISSUE_NONE, mid=m.id))
+            lperfect.append(self.db.task_analysis_issues(TASK_ISSUE_PERFECT, mid=m.id))
+
+        analysis_bar.x_labels = label_list
+        analysis_bar.add("Short API call list", lshort)
+        analysis_bar.add("Crash", lcrash)
+        analysis_bar.add("Anti*", lanti)
+        analysis_bar.add("Ok", lok)
+        analysis_bar.add("Perfect", lperfect)
+        analysis_bar.render_to_file(filename)
+        if self.simple:
+            return name
+        else:
+            return filename
+
     def task_success_by_machine_bar(self):
         """ Generate a bar graph showing success vs fail for the machines
         """
