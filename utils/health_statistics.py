@@ -28,7 +28,7 @@ class HealthStatistics():
         self.simple = simple
         self.style = {"fill": True,
                       "interpolate": "cubic",
-                      "style": pygal.style.LightSolarizedStyle}
+                      "style": pygal.style.LightStyle}
         self.db = Database()
         self.datadir = os.path.join(CUCKOO_ROOT, "data", "html", "statistics")
 
