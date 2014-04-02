@@ -15,7 +15,7 @@ Getting started
 ===============
 
 As an example we'll take a look at the default package for analyzing generic
-Windows executables (located at *analyzer/windows/packages/exe.py*):
+Windows executables (located at *analyzer/windows/modules/packages/exe.py*):
 
     .. code-block:: python
         :linenos:
