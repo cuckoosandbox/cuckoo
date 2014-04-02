@@ -330,7 +330,6 @@ class Task(Base):
     registry_keys_modified = Column(Integer(), nullable=True)
     crash_issues = Column(Integer(), nullable=True)
     anti_issues = Column(Integer(), nullable=True)
-    dotnet_issues = Column(Integer(), nullable=True)
     analysis_started_on = Column(DateTime(timezone=False), nullable=True)
     analysis_finished_on = Column(DateTime(timezone=False), nullable=True)
     processing_started_on = Column(DateTime(timezone=False), nullable=True)
@@ -1163,6 +1162,25 @@ class Database(object):
             session.close()
         return tasks
 
+    def get_file_types(self):
+        """Get sample filetypes
+
+        @return: A list of all available file types
+        """
+        session = self.Session()
+        try:
+            unfiltered = session.query(Sample.file_type).group_by(Sample.file_type)
+            res = []
+            for asample in unfiltered.all():
+                res.append(asample[0])
+            res.sort()
+        except SQLAlchemyError as e:
+            log.debug("Database error getting file_types: {0}".format(e))
+            return 0
+        finally:
+            session.close()
+        return res
+
     def count_tasks(self, status=None, mid=None):
         """Count tasks in the database
         @param status: apply a filter according to the task status
@@ -1223,11 +1241,12 @@ class Database(object):
             session.close()
         return res
 
-    def task_analysis_issues(self, issue, mid=None):
+    def task_analysis_issues(self, issue, mid=None, ftype=None):
         """Return number of tasks with specific analysis issues
 
         @param issue: Issue to filter for
         @param mid: Machine id to filter for
+        @param ftype: File type to filter for
         @return: number of tasks with the specific issue
         """
 
@@ -1240,6 +1259,8 @@ class Database(object):
 
             if not mid is None:
                 unfiltered = unfiltered.filter(Task.machine_id == mid)
+            if not ftype is None:
+                unfiltered = unfiltered.filter(Task.sample_id == Sample.id).filter(Sample.file_type == ftype)
 
             # any alert signature marks it as success:
             if issue != TASK_ISSUE_NONE and issue != TASK_ISSUE_PERFECT:

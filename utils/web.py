@@ -184,7 +184,10 @@ def statistics_page():
                    "/statistics_image/" + hs.task_analysis_pie()),
                   ("Analysis issues by machine",
                    "Task analysis issues, sorted by machine",
-                   "/statistics_image/" + hs.task_analysis_by_machine_bar())]
+                   "/statistics_image/" + hs.task_analysis_by_machine_bar()),
+                  ("Analysis issues by file type",
+                   "Task analysis issues, sorted by file type",
+                   "/statistics_image/" + hs.analysis_issues_by_file_type())]
     return template.render({"stat_items": stat_items})
 
 @route("/static/<filename:path>")

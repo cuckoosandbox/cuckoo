@@ -171,7 +171,7 @@ class HealthStatistics():
     def task_success_by_machine_bar(self):
         """ Generate a bar graph showing success vs fail for the machines
         """
-        name = "states_by_machine.svg"
+        name = "task_success_by_machine.svg"
         filename = os.path.join(self.datadir, name)
         machines = self.db.list_machines()
         bar_chart = pygal.StackedBar(fill=self.style["fill"],
@@ -210,6 +210,48 @@ class HealthStatistics():
             return name
         else:
             return filename
+
+    def analysis_issues_by_file_type(self):
+        """ Generate a bar graph showing success vs fail for the different file types
+        """
+
+        name = "analysis_issues_by_file_type.svg"
+        filename = os.path.join(self.datadir, name)
+        file_types = self.db.get_file_types()
+        bar_chart = pygal.StackedBar(fill=self.style["fill"],
+                                     interpolate=self.style["interpolate"],
+                                     style=self.style["style"],
+                                     x_label_rotation=80,
+                                     truncate_label=50,
+                                     height=1000)
+        bar_chart.title = 'Issues by file type'
+        lshort = []
+        lcrash = []
+        lanti = []
+        lok = []
+        lperfect = []
+        label_list = []
+
+        for ftype in file_types:
+            label_list.append(ftype)
+            lshort.append(self.db.task_analysis_issues(TASK_ISSUE_SHORT_API_CALL_LIST, ftype=ftype))
+            lcrash.append(self.db.task_analysis_issues(TASK_ISSUE_CRASH, ftype=ftype))
+            lanti.append(self.db.task_analysis_issues(TASK_ISSUE_ANTI, ftype=ftype))
+            lok.append(self.db.task_analysis_issues(TASK_ISSUE_NONE, ftype=ftype))
+            lperfect.append(self.db.task_analysis_issues(TASK_ISSUE_PERFECT, ftype=ftype))
+
+        bar_chart.x_labels = label_list
+        bar_chart.add("Short API call list", lshort)
+        bar_chart.add("Crash", lcrash)
+        bar_chart.add("Anti*", lanti)
+        bar_chart.add("Ok", lok)
+        bar_chart.add("Perfect", lperfect)
+        bar_chart.render_to_file(filename)
+        if self.simple:
+            return name
+        else:
+            return filename
+
 
         # TODO: Diagram percent of tasks reported per day. Bar graph
         # TODO: Issue tracker. Create signatures for certain cuckoomon crashes: Exit != 0, dbwin/drwatson, mscoree.dll
