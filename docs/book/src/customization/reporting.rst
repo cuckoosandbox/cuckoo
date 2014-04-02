@@ -2,18 +2,18 @@
 Reporting Modules
 =================
 
-After the analysis raw results have been processed and abstracted by the
+After the raw analysis results have been processed and abstracted by the
 processing modules and the global container is generated (ref. :doc:`processing`),
 it is passed over by Cuckoo to all the reporting modules available, which will
-make some use of it and will make it accessible and consumable in different
+make use of it and will make it accessible and consumable in different
 formats.
 
 Getting Started
 ===============
 
-All reporting modules are and should be placed inside the directory *modules/reporting/*.
+All reporting modules must be placed inside the directory *modules/reporting/*.
 
-Every module should also have a dedicated section in the file *conf/reporting.conf*: for
+Every module must also have a dedicated section in the file *conf/reporting.conf*: for
 example if you create a module *module/reporting/foobar.py* you will have to append
 the following section to *conf/reporting.conf*::
 
@@ -55,7 +55,7 @@ processing modules, converts it into JSON and writes it to a file.
 
 There are few requirements for writing a valid reporting module:
 
-    * Declare your class inheriting ``Report``.
+    * Declare your class inheriting from ``Report``.
     * Have a ``run()`` function performing the main operations.
     * Try to catch most exceptions and raise ``CuckooReportError`` to notify the issue.
 

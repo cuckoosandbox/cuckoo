@@ -8,7 +8,7 @@ Cuckoo relies on six main configuration files:
     * :ref:`auxiliary_conf`: for enabling and configuring auxiliary modules.
     * :ref:`machinery_conf`: for defining the options for your virtualization software
         (the file has the same name of the machinery module you choose in cuckoo.conf).
-    * :ref:`memory_conf`: Volatility configuration
+    * :ref:`memory_conf`: Volatility configuration.
     * :ref:`processing_conf`: for enabling and configuring processing modules.
     * :ref:`reporting_conf`: for enabling or disabling report formats.
 
@@ -25,8 +25,8 @@ options that you might want to verify before launching Cuckoo.
 The file is largely commented and self-explainatory, but some of the options you might
 want to pay more attention to are:
 
-    * ``machinery`` in ``[cuckoo]``: this defines which Machinery module you want Cuckoo to use to interact with your analysis machines. The value must be the name of the module without extention.
-    * ``ip`` and ``port`` in ``[resultserver]``: defines the local IP address and port that Cuckoo is going to use to bind the result server on. Make sure this is aligned with the network configuration of your analysis machines, or they won't be able to return the collected results.
+    * ``machinery`` in ``[cuckoo]``: this defines which Machinery module you want Cuckoo to use to interact with your analysis machines. The value must be the name of the module without extension.
+    * ``ip`` and ``port`` in ``[resultserver]``: defines the local IP address and port that Cuckoo is going to use to bind the result server on. Make sure this matches the network configuration of your analysis machines, or they won't be able to return the collected results.
     * ``connection`` in ``[database]``: defines how to connect to the internal database. You can use any DBMS supported by `SQLAlchemy`_ using a valid `Database Urls`_ syntax.
 
 .. _`SQLAlchemy`: http://www.sqlalchemy.org/
@@ -208,9 +208,10 @@ Following is the default *conf/kvm.conf* file::
 memory.conf
 ===============
 
-The volatility tool offers a large set of plugins for memory dump analysis. Some of them are quite slow.
-In volatility.conf enables you to enable or disable the plugins of your choice.
+The Volatility tool offers a large set of plugins for memory dump analysis. Some of them are quite slow.
+In volatility.conf lets you to enable or disable the plugins of your choice.
 To use Volatility you have to follow two steps:
+
  * Enable it before in processing.conf
  * Enable memory_dump in cuckoo.conf
 

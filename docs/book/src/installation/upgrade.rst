@@ -4,10 +4,15 @@ Upgrade from a previous release
 
 Cuckoo Sandbox grows really fast and in every release new features are added and
 some others are fixed or removed.
-If not otherwise specified in the release documentation, the suggested way to
-upgrade your Cuckoo instance is to perform a fresh setup as described in
-:doc:`index`.
+There are two ways to upgrade your Cuckoo: start from scratch or migrate your "old" setup (migration is supported only
+starting from Cuckoo 0.6).
+The suggested way to upgrade Cuckoo is to start from a fresh setup because it's easier and faster than migrate your
+old setup.
 
+Upgrade starting from scratch
+=============================
+
+To start from scratch you have to perform a fresh setup as described in :doc:`index`.
 The following steps are suggested:
 
 1. Backup your installation.
@@ -16,12 +21,12 @@ The following steps are suggested:
 4. Do a Cuckoo fresh installation of the Host components.
 5. Reconfigure Cuckoo as explained in this book (copying old configuration files
    is not safe because options can change between releases).
-6. If you are using an external database instead of default or you are using
-   MongoDb reporting module is suggested to start all databases from scratch, due
-   to possible schema changes between Cuckoo's releases.
+6. If you are using an external database instead of the default or you are using
+   the MongoDb reporting module is suggested to start all databases from scratch,
+   due to possible schema changes between Cuckoo releases.
 7. Test it!
 
-If something goes wrong you probably failed some steps during the fresh
+If something goes wrong you probably failed to do some steps during the fresh
 installation or reconfiguration. Check again the procedure explained in this
 book.
 
@@ -34,4 +39,36 @@ release files, as it might raise some problems because:
   CHANGELOG file for added or removed configuration options.
 * The part of Cuckoo which runs inside guests (agent.py) may change.
 * If you are using an external database like the reporting module for MongoDb a
-  change in the data schema may screw your database.
+  change in the data schema may corrupt your database.
+
+Migrate your Cuckoo
+===================
+
+Data migration is shipped starting from Cuckoo 1.1 and supports migration starting from Cuckoo 0.6.
+If your Cuckoo release is older than 0.6 you can't migrate your data.
+
+The following steps are suggested as requirement to migrate your data:
+
+1. Backup your installation.
+2. Read the documentation shipped with the new release.
+3. Make sure to have installed all required dependencies, otherwise install them.
+4. Download and extract the latest Cuckoo.
+5. Reconfigure Cuckoo as explained in this book (copying old configuration files
+   is not safe because options can change between releases), and update agent in
+   your virtual machines.
+6. Copy from your backup "storage" and "db" folders.
+
+Now setup Alembic (the framework used for migrations) with::
+
+    pip install alembic
+
+Enter the alembic migration directory in "utils/db_migration" with::
+
+    cd utils/db_migration
+
+If you are using a custom database (MySQL, PostgreSQL or SQLite in a non-default location) edit
+"alembic.ini" and change "sqlalchemy.url" to point your database.
+
+Run the database migrations with::
+
+    alembic upgrade head

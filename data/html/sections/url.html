@@ -18,7 +18,7 @@
                     {% if results.virustotal.response_code == 1 %}
                         <a href={{results.virustotal.permalink}}>Permalink</a><br>
                         VirusTotal Scan Date: {{results.virustotal.scan_date}}<br>
-                        Detection Rate: {{results.virustotal.positives}}/{{results.virustotal.total}} (<a href="javascript:showHide('virustotal');">collapse</a>)
+                        Detection Rate: {{results.virustotal.positives}}/{{results.virustotal.total}} (<a id="virustotal_lbl" href="javascript:showHide('virustotal', 'virustotal_lbl');">Expand</a>)
                         <div id="virustotal" style="display: none;margin-top: 5px;">
                             <table class="table table-bordered table-condensed">
                                 <tr>

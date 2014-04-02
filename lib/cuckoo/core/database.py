@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -30,6 +30,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+SCHEMA_VERSION = "263a45963c72"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -332,6 +333,12 @@ class Task(Base):
     def __repr__(self):
         return "<Task('{0}','{1}')>".format(self.id, self.target)
 
+class AlembicVersion(Base):
+    """Table used to pinpoint actual database schema release."""
+    __tablename__ = "alembic_version"
+
+    version_num = Column(String(32), nullable=False, primary_key=True)
+
 class Database(object):
     """Analysis queue database.
 
@@ -375,6 +382,21 @@ class Database(object):
 
         # Get db session.
         self.Session = sessionmaker(bind=self.engine)
+
+        # Set database schema version.
+        # TODO: it's a little bit dirty, needs refactoring.
+        tmp_session = self.Session()
+        if tmp_session.query(AlembicVersion).count() == 0:
+            tmp_session.add(AlembicVersion(version_num=SCHEMA_VERSION))
+            try:
+                tmp_session.commit()
+            except SQLAlchemyError as e:
+                raise CuckooDatabaseError("Unable to set schema version: {0}".format(e))
+                tmp_session.rollback()
+            finally:
+                tmp_session.close()
+        else:
+            tmp_session.close()
 
     def __del__(self):
         """Disconnects pool."""

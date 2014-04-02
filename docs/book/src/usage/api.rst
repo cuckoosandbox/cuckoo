@@ -4,7 +4,7 @@ REST API
 
 As mentioned in :doc:`submit`, Cuckoo provides a simple and lightweight REST
 API server implemented in `Bottle.py`_, therefore in order to make the service
-work you'll need it installed, Bottle release must be 0.10 or above.
+work you'll need it installed. Bottle release must be 0.10 or above.
 
 On Debian/Ubuntu::
 
@@ -23,14 +23,14 @@ In order to start the API server you can simply do::
 
     $ ./utils/api.py
 
-By default it will bind the service on **localhost:8090**. If you want to change those values, you can for example with::
+By default it will bind the service on **localhost:8090**. If you want to change those values, you can for example do this::
 
     $ ./utils/api.py --host 0.0.0.0 --port 1337
 
 Resources
 =========
 
-Following is a list of currently available resources and a brief description. For details click on the resource name.
+Following is a list of currently available resources and a brief description of each one. For details click on the resource name.
 
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | Resource                          | Description                                                                                                      |
@@ -49,6 +49,8 @@ Following is a list of currently available resources and a brief description. Fo
 | ``GET`` :ref:`tasks_report`       | Returns the report generated out of the analysis of the task associated with the specified ID.                   |
 |                                   | You can optionally specify which report format to return, if none is specified the JSON report will be returned. |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_shots`        | Retrieves one or all screenshots associated with a given analysis task ID.                                       |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`files_view`         | Search the analyzed binaries by MD5 hash, SHA256 hash or internal ID (referenced by the tasks details).          |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`files_get`          | Returns the content of the binary with the specified SHA256 hash.                                                |
@@ -60,6 +62,7 @@ Following is a list of currently available resources and a brief description. Fo
 | ``GET`` :ref:`cuckoo_status`      | Returns the basic cuckoo status, including version and tasks overview                                            |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 
+.. highlight:: javascript
 
 .. _tasks_create_file:
 
@@ -81,7 +84,7 @@ Following is a list of currently available resources and a brief description. Fo
             }
 
         **Form parameters**:
-            * ``file`` *(required)* - path to the file to submit
+            * ``file`` *(required)* - sample file (multipart encoded file content)
             * ``package`` *(optional)* - analysis package to be used for the analysis
             * ``timeout`` *(optional)* *(int)* - analysis timeout (in seconds)
             * ``priority`` *(optional)* *(int)* - priority to assign to the task (1-3)
@@ -296,6 +299,26 @@ Following is a list of currently available resources and a brief description. Fo
             * ``200`` - no error
             * ``400`` - invalid report format
             * ``404`` - report not found
+
+.. _tasks_shots:
+
+/tasks/screenshots
+------------------
+
+    **GET /tasks/screenshots/** *(int: id)* **/** *(str: number)*
+
+        Returns one or all screenshots associated with the specified task ID.
+
+        **Example request**::
+
+            wget http://localhost:8090/tasks/screenshots/1
+
+        **Parameters**:
+            * ``id`` *(required)* *(int)* - ID of the task to get the report for
+            * ``screenshot`` *(optional)* - numerical identifier of a single screenshot (e.g. 0001, 0002)
+
+        **Status codes**:
+            * ``404`` - file or folder not found
 
 .. _files_view:
 

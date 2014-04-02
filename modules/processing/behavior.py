@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -29,8 +29,6 @@ def fix_key(key):
     elif key.lower().startswith("\\registry\\user\\"):
         res = "HKEY_USERS\\" + key[15:]
 
-    if not res.endswith("\\\\"):
-        res = res + "\\"
     return res
 
 class ParseProcessLog(list):
@@ -227,12 +225,11 @@ class Processes:
         results = []
 
         if not os.path.exists(self._logs_path):
-            log.error("Analysis results folder does not exist at path \"%s\".",
-                      self._logs_path)
+            log.warning("Analysis results folder does not exist at path \"%s\".", self._logs_path)
             return results
 
         if len(os.listdir(self._logs_path)) == 0:
-            log.error("Analysis results folder does not contain any file.")
+            log.warning("Analysis results folder does not contain any file.")
             return results
 
         for file_name in os.listdir(self._logs_path):

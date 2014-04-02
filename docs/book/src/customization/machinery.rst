@@ -6,13 +6,13 @@ Machinery Modules
 your virtualization software (or potentially even with physical disk imaging
 solutions).
 Since we decided to not enforce any particular vendor, from release 0.4 you
-are able to use your preferred and, in case is not supported by default,
-write a custom Python module that define how to make Cuckoo use it.
+are able to use your preferred solution and, in case it's not supported by
+default, write a custom Python module that defines how to make Cuckoo use it.
 
-Every machinery module is and should be located inside 
+Every machinery module should be located inside
 *modules/machinery/*.
 
-A basic machinery module could look like:
+A basic machinery module would look like this:
 
     .. code-block:: python
         :linenos:
@@ -36,9 +36,9 @@ A basic machinery module could look like:
 
 The only requirements for Cuckoo are that:
 
-    * The class inherits ``Machinery``.
+    * The class inherits from ``Machinery``.
     * You have a ``start()`` and ``stop()`` functions.
-    * You preferably raise ``CuckooMachineError`` when something fails.
+    * You raise ``CuckooMachineError`` when something fails.
 
 As you understand, the machinery module is a core part of a Cuckoo setup,
 therefore make sure to spend enough time debugging your code and make it
@@ -76,7 +76,7 @@ The configuration file should follow the default structure::
 A main section called ``[<name of the module>]`` with a ``machines`` field
 containing a comma-separated list of machines IDs.
 
-For each machine you should specify a ``label``, a ``platform`` and it's
+For each machine you should specify a ``label``, a ``platform`` and its
 ``ip``.
 
 These fields are required by Cuckoo in order to use the already embedded ``initialize()``
@@ -84,7 +84,7 @@ function that generates the list of available machines.
 
 If you plan to change the configuration structure you should override the ``initialize()``
 function (inside your own module, no need to modify Cuckoo's core code).
-You can find it's original code in the ``Machinery`` abstract inside
+You can find its original code in the ``Machinery`` abstract inside
 *lib/cuckoo/common/abstracts.py*.
 
 LibVirt
@@ -92,7 +92,7 @@ LibVirt
 
 Starting with Cuckoo 0.5 developing new machinery modules based on LibVirt is easy.
 Inside *lib/cuckoo/common/abstracts.py* you can find ``LibVirtMachinery`` that
-already provides all the functionalities for a LibVirt module.
+already provides all the functionality for a LibVirt module.
 Just inherit this base class and specify your connection string, as in
 the example below:
 

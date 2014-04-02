@@ -97,11 +97,11 @@ some options (in this case a command line argument for the malware)::
 
     $ ./utils/submit.py --enforce-timeout /path/to/binary
 
-*Example*: submit a local binary and set virutal machine clock. Format is %m-%d-%Y %H:%M:%S. If not specified current time is used. For example if we want run a sample the 24 january 2001 at 14:41:20::
+*Example*: submit a local binary and set virtual machine clock. Format is %m-%d-%Y %H:%M:%S. If not specified, the current time is used. For example if we want run a sample the 24 january 2001 at 14:41:20::
 
     $ ./utils/submit.py --clock "01-24-2001 14:41:20" /path/to/binary
 
-*Example*: submit a sample for volatility analysis (to reduce side effects of the cuckoo hooking, switch it off by *options free=True*)::
+*Example*: submit a sample for Volatility analysis (to reduce side effects of the cuckoo hooking, switch it off with *options free=True*)::
 
     $ ./utils/submit.py --memory --options free=True /path/to/binary
 
@@ -136,8 +136,8 @@ use SQLite, MySQL, PostgreSQL and several other SQL database systems.
 
 Cuckoo is designed to be easily integrated in larger solutions and to be fully
 automated. In order to automate analysis submission we suggest to use the REST
-API interface described in :doc:`api`, but in the case you want to write your
-own Python submission script, you can use the ``add_path()`` and ``add_url()`` functions.
+API interface described in :doc:`api`, but in case you want to write your
+own Python submission script, you can also use the ``add_path()`` and ``add_url()`` functions.
 
 .. function:: add_path(file_path[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, machine=None[, platform=None[, memory=False[, enforce_timeout=False]]]]]]]]])
 

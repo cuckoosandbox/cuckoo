@@ -2,7 +2,7 @@
 Preparing the Guest
 ===================
 
-At this point you should have configured Cuckoo host component and you
+At this point you should have configured the Cuckoo host component and you
 should have designed and defined the number and the names of the virtual
 machines you are going to use for malware execution.
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -64,7 +64,7 @@ def pending(request):
         pending.append(task.to_dict())
 
     return render_to_response("analysis/pending.html",
-                              {"tasks" : pending},
+                              {"tasks": pending},
                               context_instance=RequestContext(request))
 
 @require_safe
@@ -105,6 +105,49 @@ def chunk(request, task_id, pid, pagenum):
                                   context_instance=RequestContext(request))
     else:
         raise PermissionDenied
+        
+        
+@require_safe
+def filtered_chunk(request, task_id, pid, category):
+    """Filters calls for call category.
+    @param task_id: cuckoo task id
+    @param pid: pid you want calls
+    @param category: call category type
+    """
+    if request.is_ajax():
+        # Search calls related to your PID.
+        record = results_db.analysis.find_one(
+            {"info.id": int(task_id), "behavior.processes.process_id": int(pid)},
+            {"behavior.processes.process_id": 1, "behavior.processes.calls": 1}
+        )
+
+        if not record:
+            raise PermissionDenied
+
+        # Extract embedded document related to your process from response collection.
+        process = None
+        for pdict in record["behavior"]["processes"]:
+            if pdict["process_id"] == int(pid):
+                process = pdict
+
+        if not process:
+            raise PermissionDenied
+
+        # Create empty process dict for AJAX view.
+        filtered_process = {"process_id": pid, "calls": []}
+
+        # Populate dict, fetching data from all calls and selecting only appropriate category.
+        for call in process["calls"]:
+            chunk = results_db.calls.find_one({"_id": call})
+            for call in chunk["calls"]:
+                if call["category"] == category:
+                    filtered_process["calls"].append(call)
+
+        return render_to_response("analysis/behavior/_chunk.html",
+                                  {"chunk": filtered_process},
+                                  context_instance=RequestContext(request))
+    else:
+        raise PermissionDenied
 
 @require_safe
 def report(request, task_id):
@@ -112,7 +155,7 @@ def report(request, task_id):
 
     if not report:
         return render_to_response("error.html",
-                                  {"error" : "The specified analysis does not exist"},
+                                  {"error": "The specified analysis does not exist"},
                                   context_instance=RequestContext(request))
 
     return render_to_response("analysis/report.html",
@@ -185,7 +228,7 @@ def search(request):
             elif term == "ip":
                 records = results_db.analysis.find({"network.hosts": value}).sort([["_id", -1]])
             elif term == "signature":
-                records = results_db.analysis.find({"signatures.description": {"$regex" : value, "$options" : "-1"}}).sort([["_id", -1]])
+                records = results_db.analysis.find({"signatures.description": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
             elif term == "url":
                 records = results_db.analysis.find({"target.url": value}).sort([["_id", -1]])
             else:

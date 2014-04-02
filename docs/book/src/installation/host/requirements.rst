@@ -9,7 +9,7 @@ Installing Python libraries
 ===========================
 
 Cuckoo host components are completely written in Python, therefore make sure to
-have an appropriate version installed. For current release **Python 2.7** is preferred.
+have an appropriate version installed. For the current release **Python 2.7** is preferred.
 
 Install Python on Ubuntu::
 
@@ -39,7 +39,7 @@ The following libraries are not strictly required, but their installation is rec
     * `Django`_ (Optional): for using the web interface (use release 1.5 or above).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
     * `Volatility`_ (Optional): used for forensic analysis on memory
-    * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use release 4.0 or above).
+    * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use a release >=4.0, but <4.1).
     * `Chardet`_ (Optional): used for detecting string encoding.
 
 Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
@@ -48,7 +48,7 @@ Some of them are already packaged in Debian/Ubuntu and can be installed with the
 
 Except for *python-magic*, *python-dpkt* and *python-libvirt*, the others can be installed through ``pip`` too::
 
-    $ sudo pip install jinja2 pymongo bottle pefile maec django chardet
+    $ sudo pip install jinja2 pymongo bottle pefile maec==4.0.1.0 django chardet
 
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 
@@ -67,7 +67,7 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Django: https://www.djangoproject.com/
 .. _Pefile: http://code.google.com/p/pefile/
 .. _Volatility: http://code.google.com/p/volatility/
-.. _MAEC Python bindings: https://pypi.python.org/pypi/maec
+.. _MAEC Python bindings: https://pypi.python.org/pypi/maec/4.0.1.0
 .. _Chardet: https://pypi.python.org/pypi/chardet
 
 Virtualization Software
@@ -83,12 +83,13 @@ For the sake of this guide we will assume that you have VirtualBox installed
 execution and general configuration of the sandbox.
 
 You are completely responsible for the choice, configuration and execution of
-your virtualization software, therefore please hold from asking help on it in our
-channels and lists: refer to the software's official documentation and support.
+your virtualization software, therefore please refrain from asking for help on
+it in our channels and lists: refer to the software's official documentation
+and support.
 
 Assuming you decide to go for VirtualBox, you can get the proper package for
 your distribution at the `official download page`_.
-The installation of VirtualBox is not in the purpose of this documentation, if you
+The installation of VirtualBox is outside the scope of this documentation, if you
 are not familiar with it please refer to the `official documentation`_.
 
 .. _VirtualBox: http://www.virtualbox.org

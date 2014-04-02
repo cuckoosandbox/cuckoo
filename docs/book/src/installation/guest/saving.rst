@@ -2,7 +2,7 @@
 Saving the Virtual Machine
 ==========================
 
-Now you should be ready to go and save the virtual machine to a snapshot state.
+Now you should be ready to save the virtual machine to a snapshot state.
 
 Before doing this **make sure you rebooted it softly and that it's currently
 running, with Cuckoo's agent running and with Windows fully booted**. 
@@ -36,16 +36,16 @@ By default libvirt tools create RAW virtual disks, and since we need snapshots
 you'll either have to use QCOW2 or LVM. For the scope of this guide we adopt QCOW2,
 which is easier to setup than LVM.
 
-The easiest way to create such a virtual disk in the correct way is using the
-tools provided by the libvirt suite. You can either use ``virsh`` if you prefer
+The easiest way to create such a virtual disk correctly is using the tools
+provided by the libvirt suite. You can either use ``virsh`` if you prefer
 command-line interfaces or ``virt-manager`` for a nice GUI.
 You should be able to directly create it in QCOW2 format, but in case you have
-a RAW disk you can convert it like following::
+a RAW disk you can convert it like this::
 
     $ cd /your/disk/image/path
     $ qemu-img convert -O qcow2 your_disk.raw your_disk.qcow2
 
-Now you have to edit your VM definition like following::
+Now you have to edit your VM definition as follows::
 
     $ virsh edit "<Name of VM>"
 
@@ -67,7 +67,7 @@ And change "type" to qcow2 and "source file" to your qcow2 disk image, like this
         <address type='drive' controller='0' bus='0' unit='0'/>
     </disk>
 
-Now test your virtual machine, if all works prepare it for snapshotting while
+Now test your virtual machine, if everything works prepare it for snapshotting while
 running Cuckoo's agent. This means the virtual machine needs to be running
 while you are taking the snapshot. Then you can shut it down.
 You can finally take a snapshot with the following command::
@@ -87,13 +87,12 @@ VM snapshots can be managed using the following commands.
 VMware Workstation
 ==================
 
-If decided to adopt VMware Workstation, you can take the snapshot from the graphical user
+If you decided to adopt VMware Workstation, you can take the snapshot from the graphical user
 interface or from the command line::
 
     $ vmrun snapshot "/your/disk/image/path/wmware_image_name.vmx" your_snapshot_name
 
 Where your_snapshot_name is the name you choose for the snapshot.
-After that power off the machine from the graphical user interface or from the
-command line::
+After that power off the machine from the GUI or from the command line::
 
     $ vmrun stop "/your/disk/image/path/wmware_image_name.vmx" hard
