@@ -285,9 +285,9 @@ def files_get(sha256):
     else:
         return HTTPError(404, "File not found")
         
-@route("/files/get/pcap/<id>", method="GET")
-def pcap_get(id):
-    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", id, "dump.pcap")
+@route("/pcap/get/<task_id>", method="GET")
+def pcap_get(task_id):
+    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "dump.pcap")
     if os.path.exists(file_path):
         response.content_type = "application/octet-stream; charset=UTF-8"
         return open(file_path, "rb").read()
