@@ -322,10 +322,8 @@ class MAEC40Report(Report):
             elif parameter_name in parameter_mappings_dict and "associated_argument_vocab" not in parameter_mappings_dict[parameter_name]:
                 arguments_list.append({"argument_value": argument_value,
                                        "argument_name": {"value": parameter_mappings_dict[parameter_name]["associated_argument_name"]}})
-        if arguments_list:
-            return arguments_list
-        else:
-            return None
+        return arguments_list
+        
 
     def processActionAssociatedObjects(self, associated_objects_dict, parameter_list):
         """Processes a dictionary of parameters that should be mapped to Associated Objects in the Action
