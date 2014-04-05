@@ -231,6 +231,8 @@ def search(request):
                 records = results_db.analysis.find({"signatures.description": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
             elif term == "url":
                 records = results_db.analysis.find({"target.url": value}).sort([["_id", -1]])
+            elif term == "imphash":
+                records = results_db.analysis.find({"static.pe_imphash": value}).sort([["_id", -1]])
             else:
                 return render_to_response("analysis/search.html",
                                           {"analyses": None,
