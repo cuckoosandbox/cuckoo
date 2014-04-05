@@ -137,7 +137,10 @@ class RunProcessing(object):
 
     def __init__(self, task_id):
         """@param task_id: ID of the analyses to process."""
-        self.task = Database().view_task(task_id).to_dict()
+        vtask = Database().view_task(task_id)
+        if not vtask:
+            raise Exception("Task id does not exist")
+        self.task = vtask.to_dict()
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
         self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "processing.conf"))
 
