@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2014 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,7 +8,7 @@ from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
-# Originally proposed by David Maciejak
+# Originally proposed by David Maciejak.
 
 class PS1(Package):
     """PowerShell analysis package."""
@@ -37,8 +37,10 @@ class PS1(Package):
         if free:
             suspended = False
 
+        args = "-NoProfile -ExecutionPolicy unrestricted -File \"{0}\"".format(path)
+
         p = Process()
-        if not p.execute(path=powershell, args="-NoProfile -ExecutionPolicy unrestricted -File \"{0}\"".format(path), suspended=suspended):
+        if not p.execute(path=powershell, args=args, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial PowerShell process, analysis aborted")
 
         if not free and suspended:
