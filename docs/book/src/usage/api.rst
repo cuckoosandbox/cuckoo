@@ -55,6 +55,8 @@ Following is a list of currently available resources and a brief description of 
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`files_get`          | Returns the content of the binary with the specified SHA256 hash.                                                |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`pcap_get`           | Returns the content of the PCAP associated with the given task.                                                  |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`machines_list`      | Returns the list of analysis machines available to Cuckoo.                                                       |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`machines_view`      | Returns details on the analysis machine associated with the specified name.                                      |
@@ -368,7 +370,24 @@ Following is a list of currently available resources and a brief description of 
 /files/get
 ----------
 
-    **GET /files/get/** *(str: sha256)*
+    **GET /files/get/** *(str: id)*
+
+        Returns the content of the PCAP associated with the given task.
+
+        **Example request**::
+
+            curl http://localhost:8090/pcap/get/1 > dump.pcap
+
+        **Status codes**:
+            * ``200`` - no error
+            * ``404`` - file not found
+
+.. _pcap_get:
+
+/pcap/get
+----------
+
+    **GET /pcap/get/** *(int: task)*
 
         Returns the binary content of the file matching the specified SHA256 hash.
 
@@ -379,6 +398,7 @@ Following is a list of currently available resources and a brief description of 
         **Status codes**:
             * ``200`` - no error
             * ``404`` - file not found
+
 
 .. _machines_list:
 
