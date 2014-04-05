@@ -290,7 +290,10 @@ def pcap_get(task_id):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "dump.pcap")
     if os.path.exists(file_path):
         response.content_type = "application/octet-stream; charset=UTF-8"
-        return open(file_path, "rb").read()
+        try:
+            return open(file_path, "rb").read()
+        except:
+            return HTTPError(500, "An error occurred while reading PCAP")
     else:
         return HTTPError(404, "File not found")
 
