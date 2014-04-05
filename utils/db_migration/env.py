@@ -1,3 +1,7 @@
+# Copyright (C) 2010-2014 Cuckoo Foundation.
+# This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+# See the file 'docs/LICENSE' for copying permission.
+
 from __future__ import with_statement
 from alembic import context
 from sqlalchemy import engine_from_config, pool
