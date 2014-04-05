@@ -27,5 +27,6 @@ class Strings(Processing):
             except (IOError, OSError) as e:
                 raise CuckooProcessingError("Error opening file %s" % e)
             strings = re.findall("[\x1f-\x7e]{6,}", data)
+            strings += [str(ws.decode("utf-16le")) for ws in re.findall("(?:[\x1f-\x7e][\x00]){6,}", data)]
 
         return strings
