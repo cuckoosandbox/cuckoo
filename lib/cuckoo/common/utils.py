@@ -12,6 +12,8 @@ import xmlrpclib
 from datetime import datetime
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
+from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 try:
     import chardet
@@ -118,7 +120,8 @@ def store_temp_file(filedata, filename):
     # reduce length (100 is arbitrary)
     filename = filename[:100]
 
-    tmppath = tempfile.gettempdir()
+    options = Config(os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"))
+    tmppath = options.cuckoo.tmppath
     targetpath = os.path.join(tmppath, "cuckoo-tmp")
     if not os.path.exists(targetpath):
         os.mkdir(targetpath)
