@@ -10,6 +10,7 @@ Cuckoo Sandbox 1.1 (TBD)
 * Added filtering by behavior category in Django web interface
 * Added analyzer log to Django web interface
 * Added REST API to retrieve screenshots associated with a task
+* Added REST API to retrieve the PCAP associated with a task
 * Added database migration utility
 * Fixed bug in MAEC report
 * Fixed package selection for Office documents and CPL scripts
@@ -17,6 +18,7 @@ Cuckoo Sandbox 1.1 (TBD)
 * Fixed unhandled exception when uploading files to the analysis machines
 * Fixed issues in CuckooMon that resulted in Internet Explorer crashes
 * Fixed bug in CuckooMon that caused mutexes to be resolved as file paths
+* Multiple minor bug fixes
 
 Cuckoo Sandbox 1.0 (2014-01-09)
 ===============================
