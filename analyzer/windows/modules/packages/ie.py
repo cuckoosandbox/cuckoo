@@ -13,6 +13,9 @@ class IE(Package):
     """Internet Explorer analysis package."""
 
     def start(self, url):
+        """
+        @param url: URL to the file to analyse
+        """
         free = self.options.get("free", False)
         dll = self.options.get("dll", None)
         suspended = True
@@ -21,7 +24,7 @@ class IE(Package):
 
         iexplore = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
 
-        p = Process()
+        p = Process(configfile=self.configfile)
         if not p.execute(path=iexplore, args="\"%s\"" % url, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Internet "
                                      "Explorer process, analysis aborted")
@@ -39,7 +42,7 @@ class IE(Package):
     def finish(self):
         if self.options.get("procmemdump", False):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, configfile=self.configfile)
                 p.dump_memory()
 
         return True

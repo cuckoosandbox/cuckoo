@@ -30,6 +30,9 @@ class DOC(Package):
         return None
 
     def start(self, path):
+        """
+        @param path: Path to the file to analyse
+        """
         word = self.get_path()
         if not word:
             raise CuckooPackageError("Unable to find any Microsoft "
@@ -41,7 +44,7 @@ class DOC(Package):
         if free:
             suspended = False
 
-        p = Process()
+        p = Process(configfile=self.configfile)
         if not p.execute(path=word, args="\"%s\"" % path, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Microsoft "
                                      "Office Word process, analysis aborted")
@@ -59,7 +62,7 @@ class DOC(Package):
     def finish(self):
         if self.options.get("procmemdump", False):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, configfile=self.configfile)
                 p.dump_memory()
 
         return True

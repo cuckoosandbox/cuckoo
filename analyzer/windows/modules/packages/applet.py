@@ -42,6 +42,9 @@ class Applet(Package):
         return file_path
 
     def start(self, path):
+        """
+        @param path: Path to the file to analyse
+        """
         browser = self.get_path()
         if not browser:
             raise CuckooPackageError("Unable to find any browser "
@@ -56,7 +59,7 @@ class Applet(Package):
 
         html_path = self.make_html(path, class_name)
 
-        p = Process()
+        p = Process(configfile=self.configfile)
         if not p.execute(path=browser, args="\"%s\"" % html_path, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Internet "
                                      "Explorer process, analysis aborted")
@@ -74,7 +77,7 @@ class Applet(Package):
     def finish(self):
         if self.options.get("procmemdump", False):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, configfile=self.configfile)
                 p.dump_memory()
 
         return True

@@ -10,6 +10,9 @@ class Dll(Package):
     """DLL analysis package."""
 
     def start(self, path):
+        """
+        @param path: Path to the file to analyse
+        """
         free = self.options.get("free", False)
         function = self.options.get("function", "DllMain")
         arguments = self.options.get("arguments", None)
@@ -22,7 +25,7 @@ class Dll(Package):
         if arguments:
             args += " {0}".format(arguments)
 
-        p = Process()
+        p = Process(configfile=self.configfile)
         if not p.execute(path="C:\\WINDOWS\\system32\\rundll32.exe", args=args, suspended=suspended):
             raise CuckooPackageError("Unable to execute rundll32, "
                                      "analysis aborted")
@@ -40,7 +43,7 @@ class Dll(Package):
     def finish(self):
         if self.options.get("procmemdump", False):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, configfile=self.configfile)
                 p.dump_memory()
 
         return True

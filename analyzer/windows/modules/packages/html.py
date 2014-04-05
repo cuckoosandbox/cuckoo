@@ -12,6 +12,9 @@ class HTML(Package):
     """HTML file analysis package."""
 
     def start(self, path):
+        """
+        @param path: Path to the file to analyse
+        """
         free = self.options.get("free", False)
         dll = self.options.get("dll", None)
         suspended = True
@@ -20,7 +23,7 @@ class HTML(Package):
 
         iexplore = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
 
-        p = Process()
+        p = Process(configfile=self.configfile)
         if not p.execute(path=iexplore, args="\"%s\"" % path, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Internet "
                                      "Explorer process, analysis aborted")
@@ -38,7 +41,7 @@ class HTML(Package):
     def finish(self):
         if self.options.get("procmemdump", False):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, configfile=self.configfile)
                 p.dump_memory()
 
         return True
