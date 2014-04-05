@@ -117,7 +117,7 @@ def store_temp_file(filedata, filename):
     """
     filename = get_filename_from_path(filename)
 
-    # reduce length (100 is arbitrary)
+    # Reduce length (100 is arbitrary).
     filename = filename[:100]
 
     options = Config(os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"))
@@ -129,7 +129,7 @@ def store_temp_file(filedata, filename):
     tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=targetpath)
     tmp_file_path = os.path.join(tmp_dir, filename)
     with open(tmp_file_path, "wb") as tmp_file:
-        # if filedata is file object, do chunked copy
+        # If filedata is file object, do chunked copy.
         if hasattr(filedata, "read"):
             chunk = filedata.read(1024)
             while chunk:
