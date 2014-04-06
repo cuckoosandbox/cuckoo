@@ -19,6 +19,8 @@ import os
 import sys
 import sqlalchemy as sa
 
+from dateutil.parser import parse
+
 try:
     from alembic import op
 except ImportError:
@@ -43,8 +45,14 @@ def upgrade():
     # Migrations are supported starting form Cuckoo 0.6 and Cuckoo 1.0; I need a way to figure out if from which release
     # it will start because both schema are missing alembic release versioning.
     # I check for tags table to distinguish between Cuckoo 0.6 and 1.0.
-    db_mgr = db.Database()
-    if db_mgr.engine.dialect.has_table(db_mgr.engine.connect(), "machines_tags"):
+    conn = op.get_bind()
+    try:
+        conn.execute("select * from machines_tags")
+        is_1_0 = True
+    except (sa.exc.ProgrammingError, sa.exc.OperationalError):
+        is_1_0 = False
+
+    if is_1_0:
         # If this table exist we are on Cuckoo 1.0 or above.
         # So skip SQL migration.
         pass
@@ -83,10 +91,33 @@ def upgrade():
 
         # Read data.
         tasks_data = []
-        for item in db_mgr.Session().query(db.Task).all():
+        old_tasks = conn.execute("select id, target, category, timeout, priority, custom, machine, package, options, platform, memory, enforce_timeout, added_on, started_on, completed_on, status, sample_id from tasks").fetchall()
+        for item in old_tasks:
             d = {}
-            for column in db.Task.__table__.columns:
-                d[column.name] = item.__getattribute__(column.name)
+            d["id"] = item[0]
+            d["target"] = item[1]
+            d["category"] = item[2]
+            d["timeout"] = item[3]
+            d["priority"] = item[4]
+            d["custom"] = item[5]
+            d["machine"] = item[6]
+            d["package"] = item[7]
+            d["options"] = item[8]
+            d["platform"] = item[9]
+            d["memory"] = item[10]
+            d["enforce_timeout"] = item[11]
+            d["added_on"] = parse(item[12])
+            if item[13]:
+                d["started_on"] = parse(item[13])
+            else:
+                d["started_on"] = item[13]
+            if item[14]:
+                d["completed_on"] = parse(item[14])
+            else:
+                d["completed_on"] = item[14]
+            d["status"] = item[15]
+            d["sample_id"] = item[16]
+
             # Force clock.
             # NOTE: We added this new column so we force clock time to the added_on for old analyses.
             d["clock"] = d["added_on"]
