@@ -64,7 +64,7 @@ Following are the usage options::
 
     $ ./utils/community.py
 
-    usage: community.py [-h] [-a] [-s] [-p] [-m] [-r] [-f] [-w]
+    usage: community.py [-h] [-a] [-s] [-p] [-m] [-r] [-f] [-w] [-b BRANCH]
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -76,6 +76,8 @@ Following are the usage options::
       -r, --reporting       Download reporting modules
       -f, --force           Install files without confirmation
       -w, --rewrite         Rewrite existing files
+      -b BRANCH, --branch BRANCH
+                            Specify a different branch
 
 *Example*: install all available signatures::
 
