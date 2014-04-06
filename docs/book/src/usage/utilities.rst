@@ -84,3 +84,13 @@ Following are the usage options::
   $ ./utils/community.py --signatures --force
 
 .. _`Cuckoo Community Repository`: https://github.com/cuckoobox/community
+
+Database migration utility
+==========================
+
+This utility is developed to migrate your data between Cuckoo's release.
+It's developed on top of the `Alembic`_ framework and it should provide data
+migration for both SQL database and Mongo database.
+This tool is already described in :doc:`../installation/upgrade`.
+
+.. _`Alembic`: http://alembic.readthedocs.org/en/latest/
