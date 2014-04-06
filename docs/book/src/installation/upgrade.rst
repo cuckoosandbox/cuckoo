@@ -71,6 +71,9 @@ If you are using a custom database (MySQL, PostgreSQL or SQLite in a non-default
 Before starting the migration script you must set your database connection in "cuckoo.conf"
 if you are using a custom one.
 
+Again, please remeber to backup before launching migration tool! A wrong configuration may
+corrupt your data, backup should save kittens!
+
 Run the database migrations with::
 
     alembic upgrade head
