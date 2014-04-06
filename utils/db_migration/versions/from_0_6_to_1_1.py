@@ -46,13 +46,8 @@ def upgrade():
     # it will start because both schema are missing alembic release versioning.
     # I check for tags table to distinguish between Cuckoo 0.6 and 1.0.
     conn = op.get_bind()
-    try:
-        conn.execute("select * from machines_tags")
-        is_1_0 = True
-    except (sa.exc.ProgrammingError, sa.exc.OperationalError):
-        is_1_0 = False
 
-    if is_1_0:
+    if conn.engine.dialect.has_table(conn.engine.connect(), "machines_tags"):
         # If this table exist we are on Cuckoo 1.0 or above.
         # So skip SQL migration.
         pass
