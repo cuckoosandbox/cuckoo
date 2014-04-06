@@ -93,7 +93,7 @@ class MongoDB(Report):
         #  Returns the name of the created index if an index is actually
         #    created.
         #  Returns None if the index already exists.
-        # TODO: This is not optimal becuase it run each analysis. Need to run
+        # TODO: This is not optimal because it run each analysis. Need to run
         # only one time at startup.
         self.db.fs.files.ensure_index("sha256", unique=True,
                                       sparse=True, name="sha256_unique")
