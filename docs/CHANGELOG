@@ -7,19 +7,22 @@ Cuckoo Sandbox 1.1 (TBD)
 * Added search for URLs in the web interface
 * Added search for PE Imphash in the web interface
 * Added possibility in web interface to queue to all machines
-* Added remote submission to submit.py utility
 * Added filtering by behavior category in Django web interface
 * Added analyzer log to Django web interface
 * Added REST API to retrieve screenshots associated with a task
 * Added REST API to retrieve the PCAP associated with a task
 * Added database migration utility
+* Added remote submission to submit.py utility
+* Added small stats utility (utils/stats.py)
 * Added analysis package for PowerShell scripts
+* Added overlay configuration for signatures (data/signatures_overlay.json)
 * Fixed bug in MAEC report
 * Fixed package selection for Office documents and CPL scripts
 * Fixed issue with tcpdump filters
 * Fixed unhandled exception when uploading files to the analysis machines
 * Fixed issues in CuckooMon that resulted in Internet Explorer crashes
 * Fixed bug in CuckooMon that caused mutexes to be resolved as file paths
+* Fixed bug in behavior processing module that resulted in a trailing backslash in summary's registry keys
 * Multiple minor bug fixes
 
 Cuckoo Sandbox 1.0 (2014-01-09)

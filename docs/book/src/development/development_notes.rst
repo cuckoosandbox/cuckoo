@@ -6,17 +6,9 @@ Git branches
 ============
 
 Cuckoo Sandbox source code is available in our `official git repository`_.
-You'll find multiple branches which are used for different stages of our
-development lifecycle.
 
-    * **Development**: This is where our developers commit their ongoing work for the upcoming releases. As a development branch, this can be really unstable and sometimes even broken and not usable. Users are discouraged to adopt this branch, this is aimed only to developers or guys with a deep knowledge into our technologies.
-    * **Testing**: When work on development branch is in a usable state and some new features or fixes are completed, the development branch in merged into testing. This is the branch where users can get a taste of the next release. If you want to be always up-to-date this branch is for you.
-    * **Stable**: When unstable branch is widely tested and bugs free and if all planned features has been completed, a new stable version will be released and available here.
-
-.. _`official git repository`: http://github.com/cuckoobox/cuckoo
-.. _`Development`: http://github.com/cuckoobox/cuckoo/tree/development
-.. _`Testing`: http://github.com/cuckoobox/cuckoo/tree/testing
-.. _`Stable`: http://github.com/cuckoobox/cuckoo
+Up until version 1.0 we used to coordinate all ongoing development in a dedicated "development" branch and we've been exclusively merging pull requests in such branch.
+Since version 1.1 we moved development to the traditional "master" branch and we make use of GitHub's tags and release system to reference development milestones in time.
 
 Release Versioning
 ==================
