@@ -69,6 +69,8 @@ On 9th January 2014, Cuckoo Sandbox 1.0 is released.
 In March 2014 `Cuckoo Foundation`_ born as non-profit organization dedicated to growth of Cuckoo Sandbox and the
 surrounding projects and initiatives.
 
+On 6th April 2014, Cuckoo Sandbox 1.1 is released.
+
 .. _`Google Summer of Code`: http://www.google-melange.com
 .. _`The Honeynet Project`: http://www.honeynet.org
 .. _`Malwr.com`: http://malwr.com
