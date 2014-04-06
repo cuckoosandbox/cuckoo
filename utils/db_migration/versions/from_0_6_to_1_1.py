@@ -52,6 +52,13 @@ def upgrade():
         # We are on Cuckoo < 1.0, hopefully 0.6.
         # So run SQL migration.
 
+        # Create table used by Tag.
+        op.create_table(
+            "tags",
+            sa.Column("id", sa.Integer(), primary_key=True),
+            sa.Column("name", sa.String(length=255), nullable=False, unique=True),
+        )
+
         # Create secondary table used in association Machine - Tag.
         op.create_table(
             "machines_tags",
@@ -67,12 +74,6 @@ def upgrade():
         # TODO: change default value, be aware sqlite doesn't support that kind of ALTER statement.
         op.add_column("machines", sa.Column("resultserver_port", sa.String(length=255), server_default="2042", nullable=False))
 
-        # Create table used by Tag.
-        op.create_table(
-            "tags",
-            sa.Column("id", sa.Integer(), primary_key=True),
-            sa.Column("name", sa.String(length=255), nullable=False, unique=True),
-        )
         # Add columns to Task.
         # We don"t provide a default value and leave the column as nullable because o further data migration.
         op.add_column("tasks", sa.Column("clock", sa.DateTime(timezone=False),nullable=True))
