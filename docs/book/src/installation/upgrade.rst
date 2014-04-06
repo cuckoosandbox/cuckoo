@@ -68,6 +68,8 @@ Enter the alembic migration directory in "utils/db_migration" with::
 
 If you are using a custom database (MySQL, PostgreSQL or SQLite in a non-default location) edit
 "alembic.ini" and change "sqlalchemy.url" to point your database.
+Before starting the migration script you must set your database connection in "cuckoo.conf"
+if you are using a custom one.
 
 Run the database migrations with::
 
