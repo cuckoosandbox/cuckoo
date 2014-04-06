@@ -7,13 +7,16 @@ Git branches
 
 Cuckoo Sandbox source code is available in our `official git repository`_.
 
-Up until version 1.0 we used to coordinate all ongoing development in a dedicated "development" branch and we've been exclusively merging pull requests in such branch.
-Since version 1.1 we moved development to the traditional "master" branch and we make use of GitHub's tags and release system to reference development milestones in time.
+Up until version 1.0 we used to coordinate all ongoing development in a dedicated "development" branch and we've been
+exclusively merging pull requests in such branch.
+Since version 1.1 we moved development to the traditional "master" branch and we make use of GitHub's tags and release
+system to reference development milestones in time.
 
 Release Versioning
 ==================
 
-Cuckoo releases are named using three numbers separated by dots, such as 1.2.3, where the first number is the release, the second number is the major version, the third number is the bugfix version.
+Cuckoo releases are named using three numbers separated by dots, such as 1.2.3, where the first number is the release,
+the second number is the major version, the third number is the bugfix version.
 The testing stage from git ends with "-beta" and development stage with "-dev".
 
     .. warning::
