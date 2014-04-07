@@ -61,7 +61,7 @@ def protected_filename(fname):
 def add_pid(pid):
     """Add a process to process list."""
     if type(pid) == long or type(pid) == int or type(pid) == str:
-        log.info("Added new process to list with pid: %s", pid)
+        log.info("Added new process to list with pid: {0}".format(pid))
         PROCESS_LIST.append(pid)
 
 def add_pids(pids):
@@ -88,10 +88,10 @@ def dump_file(file_path):
                 # The file was already dumped, just skip.
                 return
         else:
-            log.warning("File at path \"%s\" does not exist, skip", file_path)
+            log.warning("File at path \"{0}\" does not exist, skip {0}".format(file_path))
             return
     except IOError as e:
-        log.warning("Unable to access file at path \"%s\": %s", file_path, e)
+        log.warning("Unable to access file at path \"{0}\": {1}".format(file_path, e))
         return
 
     # 32k is the maximum length for a filename
@@ -115,8 +115,7 @@ def dump_file(file_path):
         upload_to_host(file_path, upload_path)
         DUMPED_LIST.append(sha256)
     except (IOError, socket.error) as e:
-        log.error("Unable to upload dropped file at path \"%s\": %s",
-                  file_path, e)
+        log.error("Unable to upload dropped file at path \"{0}\": {0}".format(file_path, e))
 
 
 def del_file(fname):
@@ -268,7 +267,7 @@ class PipeHandler(Thread):
                             filepath = proc.get_filepath()
                             filename = os.path.basename(filepath)
 
-                            log.info("Announced process name: %s", filename)
+                            log.info("Announced process name: {0}".format(filename))
 
                             if not protected_filename(filename):
                                 # Add the new process ID to the list of
@@ -716,7 +715,7 @@ if __name__ == "__main__":
         error = "Keyboard Interrupt"
     # If the analysis process encountered a critical error, it will raise a
     # CuckooError exception, which will force the termination of the analysis
-    # weill notify the agent of the failure. Also catched unexpected
+    # and will notify the agent of the failure. Also catch unexpected
     # exceptions.
     except Exception as e:
         # Store the error.
