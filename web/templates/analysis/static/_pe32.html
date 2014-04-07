@@ -1,8 +1,12 @@
 <section id="static_analysis">
-    <!--<div class="section-title">
-        <h3>Static Analysis</h3>
-    </div>-->
     {% if analysis.static %}
+        {% if analysis.static.pe_imphash %}
+        <div>
+            <h4>PE Imphash</h4>
+            <div class="well">{{analysis.static.pe_imphash}}</div>
+        </div>
+        <hr />
+        {% endif %}
         {% if analysis.static.pe_versioninfo %}
         <div>
             <h4>Version Infos</h4>

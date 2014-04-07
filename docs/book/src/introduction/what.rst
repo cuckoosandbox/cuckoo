@@ -66,12 +66,16 @@ at Black Hat Las Vegas.
 
 On 9th January 2014, Cuckoo Sandbox 1.0 is released.
 
+In March 2014 `Cuckoo Foundation`_ born as non-profit organization dedicated to growth of Cuckoo Sandbox and the
+surrounding projects and initiatives.
+
 .. _`Google Summer of Code`: http://www.google-melange.com
 .. _`The Honeynet Project`: http://www.honeynet.org
 .. _`Malwr.com`: http://malwr.com
 .. _`Magnificent7`: http://community.rapid7.com/community/open_source/magnificent7
 .. _`Mo' Malware Mo' Problems - Cuckoo Sandbox to the rescue`: https://media.blackhat.com/us-13/US-13-Bremer-Mo-Malware-Mo-Problems-Cuckoo-Sandbox-Slides.pdf
 .. _`Rapid7`: http://www.rapid7.com
+.. _`Cuckoo Foundation`: http://cuckoofoundation.org/
 
 Use Cases
 =========

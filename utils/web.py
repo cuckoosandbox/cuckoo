@@ -44,12 +44,12 @@ def parse_tasks(rows):
     if rows:
         for row in rows:
             task = {
-                "id" : row.id,
-                "target" : row.target,
-                "category" : row.category,
-                "status" : row.status,
-                "added_on" : row.added_on,
-                "processed" : False
+                "id": row.id,
+                "target": row.target,
+                "category": row.category,
+                "status": row.status,
+                "added_on": row.added_on,
+                "processed": False
             }
 
             if os.path.exists(os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]), "reports", "report.html")):
@@ -107,7 +107,7 @@ def custom_headers():
 def index():
     context = {}
     template = env.get_template("submit.html")
-    return template.render({"context" : context, "machines" : [m.name for m in db.list_machines()]})
+    return template.render({"context": context, "machines": [m.name for m in db.list_machines()]})
 
 @route("/browse")
 def browse():
@@ -117,7 +117,7 @@ def browse():
 
     template = env.get_template("browse.html")
 
-    return template.render({"rows" : tasks, "os" : os})
+    return template.render({"rows": tasks, "os": os})
 
 @route("/browse/page")
 @route("/browse/page/")
@@ -149,17 +149,17 @@ def browse_page(page_id=1, new_limit=-1):
     pagination_end = offset + len(rows)
     
     pagination = {
-        "start" : pagination_start,
-        "end" : pagination_end,
-        "limit" : limit,
-        "page_id" : page_id,
-        "tot_results" : tot_results,
-        "tot_pages" : tot_pages
+        "start": pagination_start,
+        "end": pagination_end,
+        "limit": limit,
+        "page_id": page_id,
+        "tot_results": tot_results,
+        "tot_pages": tot_pages
     }
     
     template = env.get_template("browse.html")
     
-    return template.render({"rows": tasks, "os" : os, "pagination" : pagination})
+    return template.render({"rows": tasks, "os": os, "pagination": pagination})
 
 @route("/static/<filename:path>")
 def server_static(filename):
@@ -192,13 +192,13 @@ def submit():
 
     if errors:
         template = env.get_template("submit.html")
-        return template.render({"timeout" : timeout,
-                                "priority" : priority,
-                                "options" : options,
-                                "package" : package,
-                                "context" : context,
-                                "machine" : machine,
-                                "memory" : memory})
+        return template.render({"timeout": timeout,
+                                "priority": priority,
+                                "options": options,
+                                "package": package,
+                                "context": context,
+                                "machine": machine,
+                                "memory": memory})
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
 
@@ -212,11 +212,11 @@ def submit():
 
     if task_id:
         template = env.get_template("success.html")
-        return template.render({"taskid" : task_id,
-                            "submitfile" : data.filename.decode("utf-8")})
+        return template.render({"taskid": task_id,
+                            "submitfile": data.filename.decode("utf-8")})
     else:
         template = env.get_template("error.html")
-        return template.render({"error" : "The server encountered an internal error while submitting {0}".format(data.filename.decode("utf-8"))})
+        return template.render({"error": "The server encountered an internal error while submitting {0}".format(data.filename.decode("utf-8"))})
 
 @route("/view/<task_id>/download")
 def downlaod_report(task_id):

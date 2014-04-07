@@ -779,7 +779,7 @@ class Signature(object):
             # Check if there's an argument name filter.
             if name:
                 if argument["name"] != name:
-                    return False
+                    continue
 
             # Check if the argument value matches.
             if self._check_value(pattern=pattern,

@@ -12,6 +12,7 @@ from django.template import RequestContext
 sys.path.append(settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database
+from lib.cuckoo.common.utils import store_temp_file
 
 def force_int(value):
     try:
@@ -63,7 +64,10 @@ def index(request):
                                           {"error": "You uploaded a file that exceeds that maximum allowed upload size."},
                                           context_instance=RequestContext(request))
 
-            path = request.FILES["sample"].temporary_file_path()
+            # Moving sample from django temporary file to Cuckoo temporary storage to
+            # let it persist between reboot (if user like to configure it in that way).
+            path = store_temp_file(request.FILES["sample"].read(),
+                                   request.FILES["sample"].name)
 
             for entry in task_machines:
                 task_id = db.add_path(file_path=path,

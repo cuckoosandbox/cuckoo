@@ -69,10 +69,6 @@ STATICFILES_DIRS = (
     os.path.join(os.getcwd(), 'static'),
 )
 
-CUCKOO_FILE_UPLOAD_TEMP_DIR = (
-    os.path.join(os.getcwd(), 'tmp_uploads'),
-)
-
 # List of finder classes that know how to find static files in
 # various locations.
 STATICFILES_FINDERS = (
@@ -96,10 +92,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     # Cuckoo headers.
     "web.headers.CuckooHeaders",
-)
-
-FILE_UPLOAD_HANDLERS = (
-    'web.upload.CuckooTemporaryFileUploadHandler',
 )
 
 ROOT_URLCONF = 'web.urls'
