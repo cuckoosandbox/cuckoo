@@ -58,9 +58,10 @@ The following steps are suggested as requirement to migrate your data:
    your virtual machines.
 6. Copy from your backup "storage" and "db" folders.
 
-Now setup Alembic (the framework used for migrations) with::
+Now setup Alembic (the framework used for migrations) and dateutil with::
 
     pip install alembic
+    pip install python-dateutil
 
 Enter the alembic migration directory in "utils/db_migration" with::
 
