@@ -15,11 +15,12 @@ Submission Utility
 The easiest way to submit an analysis is to use the provided *submit.py*
 command-line utility. It currently has the following options available::
 
-    usage: submit.py [-h] [--url] [--package PACKAGE] [--custom CUSTOM]
-                     [--timeout TIMEOUT] [--options OPTIONS] [--priority PRIORITY]
-                     [--machine MACHINE] [--platform PLATFORM] [--memory]
-                     [--enforce-timeout] [--clock CLOCK] [--tags TAGS] [--max MAX]
-                     [--pattern PATTERN] [--shuffle] [--unique] [--quiet]
+    usage: submit.py [-h] [--remote REMOTE] [--url] [--package PACKAGE]
+                     [--custom CUSTOM] [--timeout TIMEOUT] [--options OPTIONS]
+                     [--priority PRIORITY] [--machine MACHINE]
+                     [--platform PLATFORM] [--memory] [--enforce-timeout]
+                     [--clock CLOCK] [--tags TAGS] [--max MAX] [--pattern PATTERN]
+                     [--shuffle] [--unique] [--quiet]
                      target
 
     positional arguments:
@@ -27,6 +28,8 @@ command-line utility. It currently has the following options available::
 
     optional arguments:
       -h, --help           show this help message and exit
+      --remote REMOTE      Specify IP:port to a Cuckoo API server to submit
+                           remotely
       --url                Specify whether the target is an URL
       --package PACKAGE    Specify an analysis package
       --custom CUSTOM      Specify any custom value

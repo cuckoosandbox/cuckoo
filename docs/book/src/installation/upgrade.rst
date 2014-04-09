@@ -58,9 +58,10 @@ The following steps are suggested as requirement to migrate your data:
    your virtual machines.
 6. Copy from your backup "storage" and "db" folders.
 
-Now setup Alembic (the framework used for migrations) with::
+Now setup Alembic (the framework used for migrations) and dateutil with::
 
     pip install alembic
+    pip install python-dateutil
 
 Enter the alembic migration directory in "utils/db_migration" with::
 
@@ -68,6 +69,11 @@ Enter the alembic migration directory in "utils/db_migration" with::
 
 If you are using a custom database (MySQL, PostgreSQL or SQLite in a non-default location) edit
 "alembic.ini" and change "sqlalchemy.url" to point your database.
+Before starting the migration script you must set your database connection in "cuckoo.conf"
+if you are using a custom one.
+
+Again, please remeber to backup before launching migration tool! A wrong configuration may
+corrupt your data, backup should save kittens!
 
 Run the database migrations with::
 

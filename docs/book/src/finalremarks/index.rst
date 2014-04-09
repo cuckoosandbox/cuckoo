@@ -92,40 +92,52 @@ It's hard at this point to keep track of all individual contributions.
 Following is the list of people who contributed code to our GitHub repository::
 
     $ git shortlog -s -n
-        814  Nex
-        611  jekil
-        187  rep
-        184  nex
-        125  Jurriaan Bremer
-         70  Ivan Kirillov
-         65  Thorsten Sick
-         24  Pietro Delsante
-         21  Alessandro Tanasi
-         19  Mark Schloesser
-         15  David Maciejak
-         12  Greg Back
-          9  Christopher Schmitt
-          9  Script Kiddie
-          7  Hugh Pearse
-          6  init99
-          4  Adam Pridgen
-          4  Ben Small
-          3  jamu
-          3  z0mbiehunt3r
-          2  Claudio Guarnieri
-          2  Richard Harman
-          2  Thomas Penteker
-          2  bcyrill
-          2  mak
-          2  mt00at
-          1  =
-          1  Allen Swackhamer
-          1  Ben Lyon
-          1  Stephen DiCato
-          1  bladeswords
-          1  chort
-          1  jvoisin
-          1  vacmf
+       907  Nex
+       684  jekil
+       191  rep
+       184  nex
+       130  Jurriaan Bremer
+        72  Ivan Kirillov
+        68  Thorsten Sick
+        24  Pietro Delsante
+        24  Alessandro Tanasi
+        24  Mark Schloesser
+        22  David Maciejak
+        13  Greg Back
+         9  Script Kiddie
+         9  Christopher Schmitt
+         7  Hugh Pearse
+         7  SpoonBoy
+         6  init99
+         4  Adam Pridgen
+         4  Ben Small
+         3  Espen Fjellvær Olsen
+         3  jamu
+         3  wzr
+         3  z0mbiehunt3r
+         2  Richard Harman
+         2  mak
+         2  mt00at
+         2  Mario Vilas
+         2  Thomas Penteker
+         2  Claudio Guarnieri
+         2  Neriberto C.Prado
+         2  Max Taube
+         2  bcyrill
+         1  vacmf
+         1  jvoisin
+         1  Ben Lyon
+         1  Allen Swackhamer
+         1  sabri
+         1  Mark Woan
+         1  Justin Roberts
+         1  Stephen DiCato
+         1  =
+         1  Valter Santos
+         1  bladeswords
+         1  chort
+         1  chrestme
+         1  Crashman1983
 
 There is a number of friends who provided feedback, ideas and support during the years
 of development of this project, including:

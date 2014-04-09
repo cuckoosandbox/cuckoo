@@ -64,7 +64,7 @@ Following are the usage options::
 
     $ ./utils/community.py
 
-    usage: community.py [-h] [-a] [-s] [-p] [-m] [-r] [-f] [-w]
+    usage: community.py [-h] [-a] [-s] [-p] [-m] [-r] [-f] [-w] [-b BRANCH]
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -76,9 +76,21 @@ Following are the usage options::
       -r, --reporting       Download reporting modules
       -f, --force           Install files without confirmation
       -w, --rewrite         Rewrite existing files
+      -b BRANCH, --branch BRANCH
+                            Specify a different branch
 
 *Example*: install all available signatures::
 
   $ ./utils/community.py --signatures --force
 
 .. _`Cuckoo Community Repository`: https://github.com/cuckoobox/community
+
+Database migration utility
+==========================
+
+This utility is developed to migrate your data between Cuckoo's release.
+It's developed on top of the `Alembic`_ framework and it should provide data
+migration for both SQL database and Mongo database.
+This tool is already described in :doc:`../installation/upgrade`.
+
+.. _`Alembic`: http://alembic.readthedocs.org/en/latest/
