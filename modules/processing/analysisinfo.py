@@ -57,5 +57,6 @@ class AnalysisInfo(Processing):
             category=self.task["category"],
             custom=self.task["custom"],
             machine=self.task["machine"],
-            package=self.task["package"]
+            package=self.task["package"],
+            platform=self.task["platform"]
         )
