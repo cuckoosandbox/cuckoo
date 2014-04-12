@@ -54,7 +54,7 @@ class Sniffer(Auxiliary):
         pargs.extend(["-w", file_path])
         pargs.extend(["host", host])
         # Do not capture XMLRPC agent traffic.
-        pargs.extend(["and", "not", "(", "dst host", host, "and", "dst port",
+        pargs.extend(["and", "not", "(", "host", host, "and", "port",
                       str(CUCKOO_GUEST_PORT), ")"])
         # Do not capture ResultServer traffic.
         pargs.extend(["and", "not", "(", "host",
