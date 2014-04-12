@@ -56,7 +56,8 @@ The following steps are suggested as requirement to migrate your data:
 5. Reconfigure Cuckoo as explained in this book (copying old configuration files
    is not safe because options can change between releases), and update agent in
    your virtual machines.
-6. Copy from your backup "storage" and "db" folders.
+6. Copy from your backup "storage" and "db" folders. (Reports and analyses already
+   present in "storage" folder will keep the old format.)
 
 Now setup Alembic (the framework used for migrations) and dateutil with::
 
