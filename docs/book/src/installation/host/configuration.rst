@@ -346,13 +346,5 @@ It contains the following sections::
     host = 127.0.0.1
     port = 27017
 
-    [hpfclient]
-    enabled = no
-    host =
-    port = 10000
-    ident =
-    secret =
-    channel =
-
 By setting those option to *on* or *off* you enable or disable the generation
 of such reports.
