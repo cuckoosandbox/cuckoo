@@ -7,12 +7,16 @@ import os
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
+from platform import machine
 
 class DOC(Package):
     """Word analysis package."""
 
     def get_path(self):
-        ms_office = os.path.join(os.getenv("ProgramFiles"), "Microsoft Office")
+        if machine() == "AMD64":
+            ms_office = os.path.join(os.getenv("ProgramFiles(x86)"), "Microsoft Office")
+        else:
+            ms_office = os.path.join(os.getenv("ProgramFiles"), "Microsoft Office")
         paths = [
             os.path.join(ms_office, "WINWORD.EXE"),
             os.path.join(ms_office, "Office11", "WINWORD.EXE"),
@@ -25,7 +29,7 @@ class DOC(Package):
 
         for path in paths:
             if os.path.exists(path):
-                return path
+                return path         
 
         return None
 
@@ -63,3 +67,5 @@ class DOC(Package):
                 p.dump_memory()
 
         return True
+    
+

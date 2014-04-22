@@ -12,7 +12,10 @@ class PDF(Package):
     """PDF analysis package."""
 
     def get_path(self):
-        adobe = os.path.join(os.getenv("ProgramFiles"), "Adobe")
+        if machine() == "AMD64":
+            adobe = os.path.join(os.getenv("ProgramFiles(x86)"), "Adobe")
+        else:
+            adobe = os.path.join(os.getenv("ProgramFiles"), "Adobe")
         paths = [
             os.path.join(adobe, "Reader 8.0", "Reader", "AcroRd32.exe"),
             os.path.join(adobe, "Reader 9.0", "Reader", "AcroRd32.exe"),

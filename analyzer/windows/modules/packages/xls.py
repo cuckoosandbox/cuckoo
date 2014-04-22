@@ -13,7 +13,10 @@ class XLS(Package):
     """Excel analysis package."""
 
     def get_path(self):
-        office = os.path.join(os.getenv("ProgramFiles"), "Microsoft Office")
+        if machine() == "AMD64":
+            office = os.path.join(os.getenv("ProgramFiles(x86)"), "Microsoft Office")
+        else:
+            office = os.path.join(os.getenv("ProgramFiles"), "Microsoft Office")
         paths = [
             os.path.join(office, "EXCEL.EXE"),
             os.path.join(office, "Office11", "EXCEL.EXE"),
