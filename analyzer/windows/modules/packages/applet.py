@@ -11,7 +11,6 @@ from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
-
 class Applet(Package):
     """Java Applet analysis package."""
 
