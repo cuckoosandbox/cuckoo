@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import platform
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
@@ -12,7 +13,7 @@ class PDF(Package):
     """PDF analysis package."""
 
     def get_path(self):
-        if machine() == "AMD64":
+        if platform.machine() == "AMD64":
             adobe = os.path.join(os.getenv("ProgramFiles(x86)"), "Adobe")
         else:
             adobe = os.path.join(os.getenv("ProgramFiles"), "Adobe")

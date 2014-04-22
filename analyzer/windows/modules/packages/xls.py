@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import platform
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
@@ -13,7 +14,7 @@ class XLS(Package):
     """Excel analysis package."""
 
     def get_path(self):
-        if machine() == "AMD64":
+        if platform.machine() == "AMD64":
             office = os.path.join(os.getenv("ProgramFiles(x86)"), "Microsoft Office")
         else:
             office = os.path.join(os.getenv("ProgramFiles"), "Microsoft Office")

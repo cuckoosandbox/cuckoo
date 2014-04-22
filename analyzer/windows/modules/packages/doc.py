@@ -3,17 +3,17 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import platform
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
-from platform import machine
 
 class DOC(Package):
     """Word analysis package."""
 
     def get_path(self):
-        if machine() == "AMD64":
+        if platform.machine() == "AMD64":
             ms_office = os.path.join(os.getenv("ProgramFiles(x86)"), "Microsoft Office")
         else:
             ms_office = os.path.join(os.getenv("ProgramFiles"), "Microsoft Office")

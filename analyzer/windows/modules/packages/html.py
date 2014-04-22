@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import platform
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
@@ -18,7 +19,7 @@ class HTML(Package):
         if free:
             suspended = False
             
-        if machine() == "AMD64":
+        if platform.machine() == "AMD64":
             iexplore = os.path.join(os.getenv("ProgramFiles(x86)"), "Internet Explorer", "iexplore.exe")
         else:
             iexplore = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")

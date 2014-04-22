@@ -5,16 +5,21 @@
 import os
 import string
 import random
+import platform
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
+
 class Applet(Package):
     """Java Applet analysis package."""
 
     def get_path(self):
-        prog_files = os.getenv("ProgramFiles")
+        if platform.machine() == "AMD64":
+            prog_files = os.getenv("ProgramFiles(x86)")
+        else:
+            prog_files = os.getenv("ProgramFiles")
         paths = [
             os.path.join(prog_files, "Mozilla Firefox", "firefox.exe"),
             os.path.join(prog_files, "Internet Explorer", "iexplore.exe"),
