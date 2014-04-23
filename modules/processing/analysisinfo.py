@@ -12,8 +12,10 @@ from datetime import datetime
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.constants import CUCKOO_VERSION
+from lib.cuckoo.common.exceptions import CuckooProcessingError
 
 log = logging.getLogger(__name__)
+
 
 class AnalysisInfo(Processing):
     """General information about analysis session."""
@@ -23,15 +25,16 @@ class AnalysisInfo(Processing):
         """
         if os.path.exists(self.log_path):
             try:
-                log = codecs.open(self.log_path, "rb", "utf-8").read()
+                analysis_log = codecs.open(self.log_path, "rb", "utf-8").read()
             except ValueError as e:
                 raise CuckooProcessingError("Error decoding %s: %s" %
                                             (self.log_path, e))
             except (IOError, OSError) as e:
                 raise CuckooProcessingError("Error opening %s: %s" %
                                             (self.log_path, e))
-        if "INFO: Analysis timeout hit, terminating analysis" in log:
-            return True
+            else:
+                if "INFO: Analysis timeout hit, terminating analysis" in analysis_log:
+                    return True
         return False
 
     def run(self):
