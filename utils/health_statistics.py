@@ -59,8 +59,9 @@ class HealthStatistics():
                                x_title="Time in minutes",
                                y_title="Number of samples")
         line_chart.title = 'Full processing time, histogram'
-        line_chart.x_labels = map(str, range(min(td), max(td)))
-        line_chart.add('Full', items)
+        if len(td):
+            line_chart.x_labels = map(str, range(min(td), max(td)))
+            line_chart.add('Full', items)
         line_chart.render_to_file(filename)
         if self.simple:
             return name
@@ -80,7 +81,8 @@ class HealthStatistics():
         status_pie.title = 'Stage percentage'
         for i in stage_list:
             td = self.db.task_duration(stage=i)
-            status_pie.add(i, sum(td))
+            if len(td):
+                status_pie.add(i, sum(td))
         status_pie.render_to_file(filename)
         if self.simple:
             return name
