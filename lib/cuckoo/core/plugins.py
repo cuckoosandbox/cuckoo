@@ -23,8 +23,8 @@ from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.database import PROCESSING_STARTED, PROCESSING_FINISHED, SIGNATURES_STARTED, SIGNATURES_FINISHED
 from lib.cuckoo.core.database import REPORTING_STARTED, REPORTING_FINISHED
 from lib.cuckoo.core.database import DROPPED_FILES, RUNNING_PROCESSES, API_CALLS, ACCESSED_DOMAINS, SIGNATURES_TOTAL
-from lib.cuckoo.core.database import SIGNATURES_ALERT, FILES_WRITTEN, REGISTRY_KEYS_MODIFIED, CRASH_ISSUES, ANTI_ISSUES
-from lib.cuckoo.core.database import DOTNET_ISSUES, TIMEOUT
+from lib.cuckoo.core.database import SIGNATURES_ALERT, FILES_WRITTEN, REGISTRY_KEYS_MODIFIED
+from lib.cuckoo.core.database import TASK_ISSUE_CRASH, TASK_ISSUE_ANTI, TASK_TIMEOUT
 
 log = logging.getLogger(__name__)
 
@@ -498,10 +498,10 @@ class RunSignatures(object):
             normal += 1
         Database().set_statistics_counter(self.task_id, SIGNATURES_TOTAL, normal)
         Database().set_statistics_counter(self.task_id, SIGNATURES_ALERT, alert)
-        Database().set_statistics_counter(self.task_id, CRASH_ISSUES, crash)
-        Database().set_statistics_counter(self.task_id, ANTI_ISSUES, anti)
+        Database().set_statistics_counter(self.task_id, TASK_ISSUE_CRASH, crash)
+        Database().set_statistics_counter(self.task_id, TASK_ISSUE_ANTI, anti)
         if "info" in self.results and "timeout" in self.results["info"]:
-            Database().set_statistics_counter(self.task_id, TIMEOUT, self.results["info"]["timeout"])
+            Database().set_statistics_counter(self.task_id, TASK_TIMEOUT, self.results["info"]["timeout"])
         Database().set_statistics_time(self.task_id, SIGNATURES_FINISHED)
 
 class RunReporting:

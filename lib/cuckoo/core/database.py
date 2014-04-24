@@ -52,21 +52,17 @@ DROPPED_FILES = "dropped_files"
 RUNNING_PROCESSES = "running_processes"
 API_CALLS = "api_calls"
 ACCESSED_DOMAINS = "accessed_domains"
-SIGNATURES_TOTAL = "signaturs_total"
+SIGNATURES_TOTAL = "signatures_total"
 SIGNATURES_ALERT = "signatures_alert"
 FILES_WRITTEN = "files_written"
 REGISTRY_KEYS_MODIFIED = "registry_keys_modified"
-CRASH_ISSUES = "crash_issues"
-ANTI_ISSUES = "anti_something_issues"
-DOTNET_ISSUES = "dotnet_issues"
-TIMEOUT = "analysis_timeout"
 
 TASK_ISSUE_NONE = "no_issue"
 TASK_ISSUE_SHORT_API_CALL_LIST = "short_api_call_list"
 TASK_ISSUE_CRASH = "crash_issue"
 TASK_ISSUE_ANTI = "anti_issue"
 TASK_ISSUE_PERFECT = "no_issue_perfect_results"
-TASK_TIMEOUT = "task_timeout"
+TASK_TIMEOUT = "task_analysis_timeout"
 
 # Secondary table used in association Machine - Tag.
 machines_tags = Table("machines_tags", Base.metadata,
@@ -608,15 +604,13 @@ class Database(object):
                 row.signatures_alert = value
             elif event == FILES_WRITTEN:
                 row.files_written = value
-            elif event == CRASH_ISSUES:
+            elif event == TASK_ISSUE_CRASH:
                 row.crash_issues = value
-            elif event == ANTI_ISSUES:
+            elif event == TASK_ISSUE_ANTI:
                 row.anti_issues = value
-            elif event == DOTNET_ISSUES:
-                row.dotnet_issues = value
             elif event == REGISTRY_KEYS_MODIFIED:
                 row.registry_keys_modified = value
-            elif event == TIMEOUT:
+            elif event == TASK_TIMEOUT:
                 row.timeout = value
 
             session.commit()
@@ -1217,7 +1211,6 @@ class Database(object):
         @return: a list containing the durations
         """
 
-        # TODO add filters
         session = self.Session()
         res = []
         try:

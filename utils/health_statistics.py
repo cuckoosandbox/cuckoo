@@ -15,8 +15,7 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.database import TASK_REPORTED, TASK_FAILED_PROCESSING, TASK_FAILED_ANALYSIS
-from lib.cuckoo.core.database import TASK_COMPLETED, TASK_PENDING, TASK_RECOVERED, TASK_RUNNING, CRASH_ISSUES
-from lib.cuckoo.core.database import DOTNET_ISSUES, ANTI_ISSUES
+from lib.cuckoo.core.database import TASK_COMPLETED, TASK_PENDING, TASK_RECOVERED, TASK_RUNNING
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 from lib.cuckoo.core.database import TASK_ISSUE_NONE, TASK_ISSUE_SHORT_API_CALL_LIST, TASK_ISSUE_CRASH, TASK_ISSUE_ANTI
@@ -54,10 +53,10 @@ class HealthStatistics():
                 items.append(total)
         items.reverse()
         line_chart = pygal.Line(fill=self.style["fill"],
-                               interpolate=self.style["interpolate"],
-                               style=self.style["style"],
-                               x_title="Time in minutes",
-                               y_title="Number of samples")
+                                interpolate=self.style["interpolate"],
+                                style=self.style["style"],
+                                x_title="Time in minutes",
+                                y_title="Number of samples")
         line_chart.title = 'Full processing time, histogram'
         if len(td):
             line_chart.x_labels = map(str, range(min(td), max(td)))
@@ -94,7 +93,8 @@ class HealthStatistics():
         """
         name = "status_pie.svg"
         filename = os.path.join(self.datadir, name)
-        status_list = [TASK_COMPLETED, TASK_REPORTED, TASK_PENDING, TASK_RUNNING, TASK_RECOVERED, TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING]
+        status_list = [TASK_COMPLETED, TASK_REPORTED, TASK_PENDING, TASK_RUNNING, TASK_RECOVERED,
+                       TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING]
         status_pie = pygal.Pie(fill=self.style["fill"],
                                interpolate=self.style["interpolate"],
                                style=self.style["style"])
@@ -262,8 +262,6 @@ class HealthStatistics():
         else:
             return filename
 
-
-        # TODO: Diagram percent of tasks reported per day. Bar graph
 
 if __name__ == "__main__":
     hs = HealthStatistics()
