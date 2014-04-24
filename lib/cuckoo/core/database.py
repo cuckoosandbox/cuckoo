@@ -1221,23 +1221,23 @@ class Database(object):
         session = self.Session()
         res = []
         try:
-            all = session.query(Task)
-            for i in all:
+            alltasks = session.query(Task)
+            for i in alltasks:
                 if stage == "full":
                     if i.completed_on and i.added_on:
-                        res.append((i.completed_on - i.added_on).seconds/60)
+                        res.append(int((i.completed_on - i.added_on).total_seconds()))
                 elif stage == "analysis":
                     if i.analysis_started_on and i.analysis_finished_on:
-                        res.append((i.analysis_finished_on - i.analysis_started_on).seconds/60)
+                        res.append(int((i.analysis_finished_on - i.analysis_started_on).total_seconds()))
                 elif stage == "processing":
                     if i.processing_finished_on and i.processing_started_on:
-                        res.append((i.processing_finished_on - i.processing_started_on).seconds/60)
+                        res.append(int((i.processing_finished_on - i.processing_started_on).total_seconds()))
                 elif stage == "signatures":
                     if i.signatures_started_on and i.signatures_finished_on:
-                        res.append((i.signatures_finished_on - i.signatures_started_on).seconds/60)
+                        res.append(int((i.signatures_finished_on - i.signatures_started_on).total_seconds()))
                 elif stage == "reporting":
                     if i.reporting_finished_on and i.reporting_started_on:
-                        res.append((i.reporting_finished_on - i.reporting_started_on).seconds/60)
+                        res.append(int((i.reporting_finished_on - i.reporting_started_on).total_seconds()))
 
         except SQLAlchemyError as e:
             log.debug("Database error counting tasks: {0}".format(e))
