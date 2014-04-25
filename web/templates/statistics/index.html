@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 999px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    background: red;
+    cursor: inherit;
+    display: block;
+}
+input[readonly] {
+    background-color: white !important;
+    cursor: text !important;
+}
+</style>
+<script>
+$(document)
+    .on('change', '.btn-file :file', function() {
+        var input = $(this),
+        numFiles = input.get(0).files ? input.get(0).files.length : 1,
+        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+        input.trigger('fileselect', [numFiles, label]);
+});
+
+$(document).ready( function() {
+    $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
+        
+        var input = $(this).parents('.input-group').find(':text'),
+            log = numFiles > 1 ? numFiles + ' files selected' : label;
+        
+        if( input.length ) {
+            input.val(log);
+        } else {
+            if( log ) alert(log);
+        }
+        
+    });
+});     
+</script>
+<div class="row">
+    <div class="col-md-6 col-md-offset-3 center">
+        <p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+
+        <div class="row-fluid">
+            <div class="span8">
+                <h3>Statistics</h3>
+                {% for he, desc, im in stat_items %}
+                    <h2>{{he}}</h2>
+                    <img src="{{ STATIC_URL }}{{im}}"/>
+                    {{desc}}
+                {% endfor %}
+            </div>
+        </div>
+
+
+    </div>
+</div>
+{% endblock %}

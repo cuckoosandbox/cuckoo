@@ -29,7 +29,7 @@ class HealthStatistics():
                       "interpolate": "cubic",
                       "style": pygal.style.LightStyle}
         self.db = Database()
-        self.datadir = os.path.join(CUCKOO_ROOT, "data", "html", "statistics")
+        self.datadir = os.path.join(CUCKOO_ROOT, "web", "static", "generated")
 
     def all(self):
         """ Generating all charts
