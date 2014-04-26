@@ -234,9 +234,6 @@ class AnalysisManager(Thread):
             machinery.release(self.machine.label)
             self.errors.put(e)
 
-        aux = RunAuxiliary(task=self.task, machine=self.machine)
-        aux.start()
-
         try:
             # Mark the selected analysis machine in the database as started.
             guest_log = Database().guest_start(self.task.id,
@@ -250,6 +247,9 @@ class AnalysisManager(Thread):
             dead_machine = True
         else:
             try:
+                # Run auxiliary modules.
+                aux = RunAuxiliary(task=self.task, machine=self.machine)
+                aux.start()
                 # Initialize the guest manager.
                 guest = GuestManager(self.machine.name, self.machine.ip, self.machine.platform)
                 # Start the analysis.
