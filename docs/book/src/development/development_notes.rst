@@ -7,6 +7,8 @@ Git branches
 
 Cuckoo Sandbox source code is available in our `official git repository`_.
 
+.. _`official git repository`_: https://github.com/cuckoobox/cuckoo
+
 Up until version 1.0 we used to coordinate all ongoing development in a dedicated "development" branch and we've been
 exclusively merging pull requests in such branch.
 Since version 1.1 we moved development to the traditional "master" branch and we make use of GitHub's tags and release
@@ -39,7 +41,7 @@ To submit bug reports or feature requests, please use GitHub's `Issue`_ tracking
 Contribute
 ==========
 
-To submit your patch just create a Pull Request from yuor GitHub fork.
+To submit your patch just create a Pull Request from your GitHub fork.
 If you don't now how to create a Pull Request take a look to `GitHub help`_.
 
 .. _`GitHub help`: https://help.github.com/articles/using-pull-requests/
