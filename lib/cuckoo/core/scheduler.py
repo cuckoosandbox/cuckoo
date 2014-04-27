@@ -217,6 +217,7 @@ class AnalysisManager(Thread):
             if not self.store_file():
                 return False
 
+        aux = None
         # Acquire analysis machine.
         try:
             self.acquire_machine()
@@ -267,7 +268,8 @@ class AnalysisManager(Thread):
 
         finally:
             # Stop Auxiliary modules.
-            aux.stop()
+            if aux:
+                aux.stop()
 
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:
