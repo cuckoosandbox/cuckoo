@@ -173,6 +173,7 @@ def file(request, category, object_id):
         file_name = file_item.sha256
         if category == "pcap":
             file_name += ".pcap"
+            content_type = "application/vnd.tcpdump.pcap"
         elif category == "screenshot":
             file_name += ".jpg"
         else:
