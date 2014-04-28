@@ -167,6 +167,7 @@ def statistics_page():
     template = env.get_template("statistics.html")
 
     hs = HealthStatistics(simple=True)
+    hs.datadir = os.path.join(CUCKOO_ROOT, "data", "html", "statistics")
     stat_items = [("Processing stages",
                    "Time spent in the separate processing stages",
                    "/statistics_image/" + hs.processing_stages_pie()),
