@@ -368,6 +368,43 @@ def task_screenshots(task=0, screenshot=None):
     else:
         return HTTPError(404, folder_path)
 
+@route("/memory/list/<task:int>", method="GET")
+def memorydumps_list(task=0, pid=None):
+    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "memory")
+
+    if os.path.exists(folder_path):
+        memory_files = []
+        memory_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "memory")
+        for subdir, dirs, files in os.walk(memory_path):
+            for file in files:
+                memory_files.append(file.replace('.dmp', ''))
+
+        if len(memory_files) == 0:
+            return HTTPError(404, folder_path)
+
+        return jsonize(memory_files)
+    else:
+        return HTTPError(404, folder_path)
+
+@route("/memory/get/<task:int>/<pid>", method="GET")
+def memorydumps_get(task=0, pid=None):
+    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "memory")
+
+    if os.path.exists(folder_path):
+        if pid:
+            pid_name = "{0}.dmp".format(pid)
+            pid_path = os.path.join(folder_path, pid_name)
+            if os.path.exists(pid_path):
+                response.content_type = "application/octet-stream"
+                return open(pid_path, "rb").read()
+            else:
+                return HTTPError(404, pid_path)
+        else:
+            return HTTPError(404, folder_path)
+    else:
+        return HTTPError(404, folder_path)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-H", "--host", help="Host to bind the API server on", default="localhost", action="store", required=False)
