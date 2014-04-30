@@ -7,7 +7,7 @@ import tempfile
 import copy
 from nose.tools import assert_equal, raises, assert_not_equal
 
-from lib.cuckoo.common.objects import Dictionary, File, LocalDict
+from lib.cuckoo.common.objects import Dictionary, File
 
 class TestDictionary:
     def setUp(self):
@@ -22,34 +22,6 @@ class TestDictionary:
     @raises(AttributeError)
     def test_exception(self):
         self.d.b.a
-
-class TestLocalDict:
-    def setUp(self):
-        self.orig = {}
-        self.orig["foo"] = "bar"
-        self.orig["nested"] = {"foo": "bar"}
-        self.orig["dropped"] = []
-        self.orig["dropped"].append({"foo": "bar"})
-        self.backup = copy.deepcopy(self.orig)
-        self.copy = LocalDict(self.orig)
-
-    def test_value(self):
-        self.copy["test1"] = "foo"
-        self.copy["test2"] = 1
-        self.copy["test3"] = True
-        assert_equal(self.orig, self.backup)
-
-    def test_list(self):
-        self.copy["test4"] = []
-        self.copy["test4"].append("foo")
-        self.copy["dropped"].append({"foo2": "bar"})
-        assert_equal(self.orig, self.backup)
-
-    def test_dict(self):
-        self.copy["test1"] = {}
-        self.copy["test1"]["foo"] = "bar"
-        self.copy["nested"]["foo2"] = "bar"
-        assert_equal(self.orig, self.backup)
 
 class TestFile:
     def setUp(self):
