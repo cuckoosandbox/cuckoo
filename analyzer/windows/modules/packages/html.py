@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import platform
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
