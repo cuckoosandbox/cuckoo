@@ -15,13 +15,18 @@ class Applet(Package):
     """Java Applet analysis package."""
 
     def get_path(self):
-        if platform.machine() == "AMD64":
-            prog_files = os.getenv("ProgramFiles(x86)")
+        if os.getenv("ProgramFiles(x86"):
+            prog_filesx86 = os.getenv("ProgramFiles(x86)")
         else:
             prog_files = os.getenv("ProgramFiles")
+
+        prog_files = os.getenv("ProgramFiles")
+
         paths = [
             os.path.join(prog_files, "Mozilla Firefox", "firefox.exe"),
             os.path.join(prog_files, "Internet Explorer", "iexplore.exe"),
+            os.path.join(prog_filesx86, "Mozilla Firefox", "firefox.exe"),
+            os.path.join(prog_filesx86, "Internet Explorer", "iexplore.exe")
         ]
 
         for path in paths:

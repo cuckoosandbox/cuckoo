@@ -18,12 +18,14 @@ class HTML(Package):
         suspended = True
         if free:
             suspended = False
-            
-        if platform.machine() == "AMD64":
-            iexplore = os.path.join(os.getenv("ProgramFiles(x86)"), "Internet Explorer", "iexplore.exe")
-        else:
-            iexplore = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
 
+        iex86 = os.path.join(os.getenv("Program Files(x86)"), "Internet Explorer", "iexplore.exe")       
+        ie32 = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
+        
+        if os.path.exists(iex86):
+            iexplore = iex86
+        else:
+            iexplore = ie32
         p = Process()
         if not p.execute(path=iexplore, args="\"%s\"" % path, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Internet "
