@@ -8,7 +8,6 @@ from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
-
 class IE(Package):
     """Internet Explorer analysis package."""
 
@@ -19,8 +18,11 @@ class IE(Package):
         if free:
             suspended = False
 
-        iexplore = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
-
+        if platform.machine() == "AMD64":
+            iexplore = os.path.join(os.getenv("ProgramFiles(x86)"), "Internet Explorer", "iexplore.exe")
+        else:
+            iexplore = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
+            
         p = Process()
         if not p.execute(path=iexplore, args="\"%s\"" % url, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Internet "

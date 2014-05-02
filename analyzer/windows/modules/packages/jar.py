@@ -12,10 +12,14 @@ class Jar(Package):
     """Java analysis package."""
 
     def get_path(self):
-        java = os.path.join(os.getenv("ProgramFiles"), "Java")
+        javax86 = os.path.join(os.getenv("ProgramFiles(x86)"), "Java")
+        java32 = os.path.join(os.getenv("ProgramFiles"), "Java")
+            
         paths = [
-            os.path.join(java, "jre7", "bin", "java.exe"),
-            os.path.join(java, "jre6", "bin", "java.exe"),
+            os.path.join(java32, "jre7", "bin", "java.exe"),
+            os.path.join(java32, "jre6", "bin", "java.exe"),
+            os.path.join(javax86, "jre7", "bin", "java.exe"),
+            os.path.join(javax86, "jre6", "bin", "java.exe")
         ]
 
         for path in paths:
