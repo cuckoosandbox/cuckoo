@@ -12,8 +12,13 @@ class DOC(Package):
     """Word analysis package."""
 
     def get_path(self):
-        ms_officex86 = os.path.join(os.getenv("ProgramFiles(x86)"), "Microsoft Office")
+        if os.getenv("ProgramFiles(x86)"):
+            ms_officex86 = os.path.join(os.getenv("ProgramFiles(x86)"), "Microsoft Office")
+        else:
+            ms_officex86= os.path.join(os.getenv("ProgramFiles"), "Microsoft Office")
+
         ms_office = os.path.join(os.getenv("ProgramFiles"), "Microsoft Office")
+
         paths = [
             os.path.join(ms_office, "WINWORD.EXE"),
             os.path.join(ms_office, "Office11", "WINWORD.EXE"),

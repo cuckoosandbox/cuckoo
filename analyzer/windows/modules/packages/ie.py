@@ -18,7 +18,7 @@ class IE(Package):
         if free:
             suspended = False
 
-        if platform.machine() == "AMD64":
+        if os.getenv("ProgramFiles(x86)"):
             iexplore = os.path.join(os.getenv("ProgramFiles(x86)"), "Internet Explorer", "iexplore.exe")
         else:
             iexplore = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")

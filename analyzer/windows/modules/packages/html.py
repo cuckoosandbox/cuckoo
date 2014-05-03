@@ -18,7 +18,11 @@ class HTML(Package):
         if free:
             suspended = False
 
-        iex86 = os.path.join(os.getenv("Program Files(x86)"), "Internet Explorer", "iexplore.exe")       
+        if os.getenv("ProgramFiles(x86)"):
+            iex86 = os.path.join(os.getenv("ProgramFiles(x86)"), "Internet Explorer", "iexplore.exe")
+        else:
+            iex86 = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
+
         ie32 = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
         
         if os.path.exists(iex86):
