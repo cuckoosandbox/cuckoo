@@ -37,7 +37,7 @@ class DOC(Package):
 
         for path in paths:
             if os.path.exists(path):
-                return path         
+                return path
 
         return None
 
@@ -75,5 +75,3 @@ class DOC(Package):
                 p.dump_memory()
 
         return True
-    
-
