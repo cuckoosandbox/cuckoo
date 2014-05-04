@@ -12,7 +12,11 @@ class Jar(Package):
     """Java analysis package."""
 
     def get_path(self):
-        javax86 = os.path.join(os.getenv("ProgramFiles(x86)"), "Java")
+        if os.getenv("ProgramFiles(x86)"):
+            javax86 = os.path.join(os.getenv("ProgramFiles(x86)"), "Java")
+        else:
+            javax86 = os.path.join(os.getenv("ProgramFiles", "Java")
+
         java32 = os.path.join(os.getenv("ProgramFiles"), "Java")
             
         paths = [
