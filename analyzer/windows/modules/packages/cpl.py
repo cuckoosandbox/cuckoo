@@ -30,8 +30,15 @@ class CPL(Package):
         if free:
             suspended = False
 
+        # file need the .cpl extention to execute
+        if path.endswith('.cpl'):
+            cplpath = path
+        else:
+            cplpath = "%s.cpl" % path
+            os.rename(path, cplpath)
+
         p = Process()
-        if not p.execute(path=control, args="\"%s\"" % path,
+        if not p.execute(path=control, args="\"%s\"" % cplpath,
                          suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Control "
                                      "process, analysis aborted")
