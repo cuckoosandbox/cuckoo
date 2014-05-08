@@ -237,20 +237,20 @@ def tasks_report(task_id, report_format="json"):
             # By default go for bz2 encoded tar files (for legacy reasons.)
             tarmode = tar_formats.get(request.get("tar"), "w:bz2")
 
-            tar = tarfile.open(fileobj=s, mode=tarmode)
-            for filedir in os.listdir(srcdir):
-                if bzf["type"] == "-" and not filedir in bzf["files"]:
-                    tar.add(os.path.join(srcdir, filedir), arcname=filedir)
-                if bzf["type"] == "+" and filedir in bzf["files"]:
-                    tar.add(os.path.join(srcdir, filedir), arcname=filedir)
-            tar.close()
+            with tarfile.open(fileobj=s, mode=tarmode) as tar:
+                for filedir in os.listdir(srcdir):
+                    if bzf["type"] == "-" and not filedir in bzf["files"]:
+                        tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+                    if bzf["type"] == "+" and filedir in bzf["files"]:
+                        tar.add(os.path.join(srcdir, filedir), arcname=filedir)
             response.content_type = "application/x-tar; charset=UTF-8"
             return s.getvalue()
     else:
         return HTTPError(400, "Invalid report format")
 
     if os.path.exists(report_path):
-        return open(report_path, "rb").read()
+        with open(report_path, "rb") as file:
+            return file.read()
     else:
         return HTTPError(404, "Report not found")
 
@@ -281,7 +281,8 @@ def files_get(sha256):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", sha256)
     if os.path.exists(file_path):
         response.content_type = "application/octet-stream; charset=UTF-8"
-        return open(file_path, "rb").read()
+        with open(file_path, "rb") as file:
+            return file.read()
     else:
         return HTTPError(404, "File not found")
         
@@ -291,7 +292,8 @@ def pcap_get(task_id):
     if os.path.exists(file_path):
         response.content_type = "application/octet-stream; charset=UTF-8"
         try:
-            return open(file_path, "rb").read()
+            with open(file_path, "rb") as file:
+                return file.read()
         except:
             return HTTPError(500, "An error occurred while reading PCAP")
     else:
@@ -353,7 +355,8 @@ def task_screenshots(task=0, screenshot=None):
             if os.path.exists(screenshot_path):
                 # TODO: Add content disposition.
                 response.content_type = "image/jpeg"
-                return open(screenshot_path, "rb").read()
+                with open(screenshot_path, "rb") as file:
+                    return file.read()
             else:
                 return HTTPError(404, screenshot_path)
         else:

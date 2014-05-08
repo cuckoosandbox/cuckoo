@@ -43,10 +43,11 @@ class ReportHTML(Report):
                 if os.path.getsize(shot_path) == 0:
                     continue
 
-                shot = {}
-                shot["id"] = os.path.splitext(File(shot_path).get_name())[0]
-                shot["data"] = base64.b64encode(open(shot_path, "rb").read())
-                shots.append(shot)
+                with open(shot_path, "rb") as shot_file:
+                    shot = {}
+                    shot["id"] = os.path.splitext(File(shot_path).get_name())[0]
+                    shot["data"] = base64.b64encode(shot_file.read())
+                    shots.append(shot)
 
                 counter += 1
 

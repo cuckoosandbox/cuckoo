@@ -315,19 +315,18 @@ class FileUpload(object):
 
         file_path = os.path.join(self.storagepath, buf.strip())
 
-        fd = open(file_path, "wb")
-        chunk = self.handler.read_any()
-        while chunk:
-            fd.write(chunk)
-
-            if fd.tell() >= self.upload_max_size:
-                fd.write("... (truncated)")
-                break
-
+        with open(file_path, "wb") as fd:
             chunk = self.handler.read_any()
-
-        log.debug("Uploaded file length: {0}".format(fd.tell()))
-        fd.close()
+            while chunk:
+                fd.write(chunk)
+        
+                if fd.tell() >= self.upload_max_size:
+                    fd.write("... (truncated)")
+                    break
+        
+                chunk = self.handler.read_any()
+        
+            log.debug("Uploaded file length: {0}".format(fd.tell()))
 
 
 class LogHandler(object):

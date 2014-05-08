@@ -257,14 +257,13 @@ class MMDef(Report):
     def output(self):
         """Writes report to disk."""
         try:
-            report = open(os.path.join(self.reports_path, "report.metadata.xml"), "w")
-            report.write("<?xml version='1.0' ?>\n")
-            report.write("<!--\n")
-            report.write("Cuckoo Sandbox malware analysis report\n")
-            report.write("http://www.cuckoosandbox.org\n")
-            report.write("-->\n")
-            self.m.export(report, 0, namespace_="", namespacedef_="xmlns='http://xml/metadataSharing.xsd' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://xml/metadataSharing.xsd'")
-            report.close()
+            with open(os.path.join(self.reports_path, "report.metadata.xml"), "w") as report:
+                report.write("<?xml version='1.0' ?>\n")
+                report.write("<!--\n")
+                report.write("Cuckoo Sandbox malware analysis report\n")
+                report.write("http://www.cuckoosandbox.org\n")
+                report.write("-->\n")
+                self.m.export(report, 0, namespace_="", namespacedef_="xmlns='http://xml/metadataSharing.xsd' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://xml/metadataSharing.xsd'")
         except (TypeError, IOError) as e:
             raise CuckooReportError("Failed to generate MAEC Metadata report: %s" % e)
 

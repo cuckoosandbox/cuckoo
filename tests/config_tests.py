@@ -32,9 +32,8 @@ interface = vboxnet0
         """Loads a configuration from a string.
         @param conf: configuration string.
         """
-        f = open(self.file, "w")
-        f.write(conf)
-        f.close()
+        with open(self.file, "w") as f:
+            f.write(conf)
 
     def test_get_option_exist(self):
         """Fetch an option of each type from default config file."""

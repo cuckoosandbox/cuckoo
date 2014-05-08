@@ -459,56 +459,55 @@ class Pcap:
             log.error("Unable to read PCAP file at path \"%s\". File is "
                       "corrupted or wrong format." % self.filepath)
             return self.results
-
-        for ts, buf in pcap:
-            try:
-                eth = dpkt.ethernet.Ethernet(buf)
-                ip = eth.data
-
-                connection = {}
-                if isinstance(ip, dpkt.ip.IP):
-                    connection["src"] = socket.inet_ntoa(ip.src)
-                    connection["dst"] = socket.inet_ntoa(ip.dst)
-                elif isinstance(ip, dpkt.ip6.IP6):
-                    connection["src"] = socket.inet_ntop(socket.AF_INET6,
-                                                         ip.src)
-                    connection["dst"] = socket.inet_ntop(socket.AF_INET6,
-                                                         ip.dst)
-                else:
-                    continue
-
-                self._add_hosts(connection)
-
-                if ip.p == dpkt.ip.IP_PROTO_TCP:
-
-                    tcp = ip.data
-
-                    if len(tcp.data) > 0:
-                        connection["sport"] = tcp.sport
-                        connection["dport"] = tcp.dport
-                        self._tcp_dissect(connection, tcp.data)
-                        self.tcp_connections.append(connection)
+        
+        with file:
+            for ts, buf in pcap:
+                try:
+                    eth = dpkt.ethernet.Ethernet(buf)
+                    ip = eth.data
+    
+                    connection = {}
+                    if isinstance(ip, dpkt.ip.IP):
+                        connection["src"] = socket.inet_ntoa(ip.src)
+                        connection["dst"] = socket.inet_ntoa(ip.dst)
+                    elif isinstance(ip, dpkt.ip6.IP6):
+                        connection["src"] = socket.inet_ntop(socket.AF_INET6,
+                                                             ip.src)
+                        connection["dst"] = socket.inet_ntop(socket.AF_INET6,
+                                                             ip.dst)
                     else:
                         continue
-                elif ip.p == dpkt.ip.IP_PROTO_UDP:
-                    udp = ip.data
-
-                    if len(udp.data) > 0:
-                        connection["sport"] = udp.sport
-                        connection["dport"] = udp.dport
-                        self._udp_dissect(connection, udp.data)
-                        self.udp_connections.append(connection)
-                elif ip.p == dpkt.ip.IP_PROTO_ICMP:
-                    icmp = ip.data
-                    self._icmp_dissect(connection, icmp)
-            except AttributeError:
-                continue
-            except dpkt.dpkt.NeedData:
-                continue
-            except Exception as e:
-                log.exception("Failed to process packet: %s", e)
-
-        file.close()
+    
+                    self._add_hosts(connection)
+    
+                    if ip.p == dpkt.ip.IP_PROTO_TCP:
+    
+                        tcp = ip.data
+    
+                        if len(tcp.data) > 0:
+                            connection["sport"] = tcp.sport
+                            connection["dport"] = tcp.dport
+                            self._tcp_dissect(connection, tcp.data)
+                            self.tcp_connections.append(connection)
+                        else:
+                            continue
+                    elif ip.p == dpkt.ip.IP_PROTO_UDP:
+                        udp = ip.data
+    
+                        if len(udp.data) > 0:
+                            connection["sport"] = udp.sport
+                            connection["dport"] = udp.dport
+                            self._udp_dissect(connection, udp.data)
+                            self.udp_connections.append(connection)
+                    elif ip.p == dpkt.ip.IP_PROTO_ICMP:
+                        icmp = ip.data
+                        self._icmp_dissect(connection, icmp)
+                except AttributeError:
+                    continue
+                except dpkt.dpkt.NeedData:
+                    continue
+                except Exception as e:
+                    log.exception("Failed to process packet: %s", e)
 
         # Post processors for reconstructed flows.
         self._process_smtp()

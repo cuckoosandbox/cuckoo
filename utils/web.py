@@ -219,7 +219,7 @@ def submit():
         return template.render({"error": "The server encountered an internal error while submitting {0}".format(data.filename.decode("utf-8"))})
 
 @route("/view/<task_id>/download")
-def downlaod_report(task_id):
+def download_report(task_id):
     if not task_id.isdigit():
         return HTTPError(code=404, output="The specified ID is invalid")
 
@@ -231,7 +231,8 @@ def downlaod_report(task_id):
     response.content_type = "text/html"
     response.set_header("Content-Disposition", "attachment; filename=cuckoo_task_{0}.html".format(task_id))
 
-    return open(report_path, "rb").read()
+    with open(report_path, "rb") as file:
+        return file.read()
 
 @route("/view/<task_id>")
 def view(task_id):
@@ -242,8 +243,9 @@ def view(task_id):
 
     if not os.path.exists(report_path):
         return HTTPError(code=404, output="Report not found")
-
-    return open(report_path, "rb").read().replace("<!-- BOTTLEREMOVEME", "").replace("BOTTLEREMOVEME --!>", "")
+    
+    with open(report_path, "rb") as file:
+        return file.read().replace("<!-- BOTTLEREMOVEME", "").replace("BOTTLEREMOVEME --!>", "")
 
 @route("/pcap/<task_id>")
 def get_pcap(task_id):
@@ -258,7 +260,8 @@ def get_pcap(task_id):
     response.content_type = "application/vnd.tcpdump.pcap"
     response.set_header("Content-Disposition", "attachment; filename=cuckoo_task_{0}.pcap".format(task_id))
 
-    return open(pcap_path, "rb").read()
+    with open(pcap_path, "rb") as file:
+        return file.read()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
