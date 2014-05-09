@@ -46,22 +46,33 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         self.analysistasks = {}
         self.analysishandlers = {}
 
-        try:
-            server_addr = self.cfg.resultserver.ip, self.cfg.resultserver.port
-            SocketServer.ThreadingTCPServer.__init__(self,
-                                                     server_addr,
-                                                     Resulthandler,
-                                                     *args,
-                                                     **kwargs)
-        except Exception as e:
-            raise CuckooCriticalError("Unable to bind result server on "
-                                      "{0}:{1}: {2}".format(
-                                          self.cfg.resultserver.ip,
-                                          self.cfg.resultserver.port, str(e)))
-        else:
-            self.servethread = Thread(target=self.serve_forever)
-            self.servethread.setDaemon(True)
-            self.servethread.start()
+        ip = self.cfg.resultserver.ip
+        port = int(self.cfg.resultserver.port)
+        while True:
+            try:
+                server_addr = ip, port
+                SocketServer.ThreadingTCPServer.__init__(self,
+                                                         server_addr,
+                                                         Resulthandler,
+                                                         *args,
+                                                         **kwargs)
+            except Exception as e:
+                if e.errno == 98:
+                    log.warning("Cannot bind  ResultServer on port {0}, "
+                                "trying another one...".format(port))
+                    port += 1
+                else:
+                    raise CuckooCriticalError("Unable to bind ResultServer on "
+                                              "{0}:{1}: {2}".format(
+                                                  ip,
+                                                  port,
+                                                  str(e)))
+            else:
+                log.debug("ResultServer running on {0}:{1}".format(ip, port))
+                self.servethread = Thread(target=self.serve_forever)
+                self.servethread.setDaemon(True)
+                self.servethread.start()
+                break
 
     def add_task(self, task, machine):
         """Register a task/machine with the Resultserver."""
