@@ -1,0 +1,18 @@
+{% extends "base-web.html" %}
+{% block content %}
+
+    <div class="tasks">
+        <div class="page-header">
+            <div class="row-fluid">
+                <div class="span8">
+                    <h3>Statistics</h3>
+                    {% for he, desc, im in stat_items %}
+                        <h2>{{he}}</h2>
+                        <img src="{{im}}"/>
+                        {{desc}}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

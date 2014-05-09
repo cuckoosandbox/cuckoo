@@ -39,6 +39,31 @@ TASK_REPORTED = "reported"
 TASK_FAILED_ANALYSIS = "failed_analysis"
 TASK_FAILED_PROCESSING = "failed_processing"
 
+ANALYSIS_STARTED = "analysis_started"
+ANALYSIS_FINISHED = "analysis_finished"
+PROCESSING_STARTED = "processing_started"
+PROCESSING_FINISHED = "processing_finished"
+SIGNATURES_STARTED = "signatures_started"
+SIGNATURES_FINISHED = "signatures_finished"
+REPORTING_STARTED = "reporting_started"
+REPORTING_FINISHED = "reporting_finished"
+
+DROPPED_FILES = "dropped_files"
+RUNNING_PROCESSES = "running_processes"
+API_CALLS = "api_calls"
+ACCESSED_DOMAINS = "accessed_domains"
+SIGNATURES_TOTAL = "signatures_total"
+SIGNATURES_ALERT = "signatures_alert"
+FILES_WRITTEN = "files_written"
+REGISTRY_KEYS_MODIFIED = "registry_keys_modified"
+
+TASK_ISSUE_NONE = "no_issue"
+TASK_ISSUE_SHORT_API_CALL_LIST = "short_api_call_list"
+TASK_ISSUE_CRASH = "crash_issue"
+TASK_ISSUE_ANTI = "anti_issue"
+TASK_ISSUE_PERFECT = "no_issue_perfect_results"
+TASK_TIMEOUT = "task_analysis_timeout"
+
 # Secondary table used in association Machine - Tag.
 machines_tags = Table("machines_tags", Base.metadata,
     Column("machine_id", Integer, ForeignKey("machines.id")),
@@ -291,6 +316,29 @@ class Task(Base):
                       nullable=False)
     started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
+    # Statistics data to identify broken Cuckoos servers or VMs
+    # Also for doing profiling to improve speed
+    dropped_files = Column(Integer(), nullable=True)
+    running_processes = Column(Integer(), nullable=True)
+    api_calls = Column(Integer(), nullable=True)
+    domains = Column(Integer(), nullable=True)
+    signatures_total = Column(Integer(), nullable=True)
+    signatures_alert = Column(Integer(), nullable=True)
+    files_written = Column(Integer(), nullable=True)
+    registry_keys_modified = Column(Integer(), nullable=True)
+    crash_issues = Column(Integer(), nullable=True)
+    anti_issues = Column(Integer(), nullable=True)
+    analysis_started_on = Column(DateTime(timezone=False), nullable=True)
+    analysis_finished_on = Column(DateTime(timezone=False), nullable=True)
+    processing_started_on = Column(DateTime(timezone=False), nullable=True)
+    processing_finished_on = Column(DateTime(timezone=False), nullable=True)
+    signatures_started_on = Column(DateTime(timezone=False), nullable=True)
+    signatures_finished_on = Column(DateTime(timezone=False), nullable=True)
+    reporting_started_on = Column(DateTime(timezone=False), nullable=True)
+    reporting_finished_on = Column(DateTime(timezone=False), nullable=True)
+    timeout = Column(Boolean, nullable=False, default=False)
+
+
     status = Column(Enum(TASK_PENDING,
                          TASK_RUNNING,
                          TASK_COMPLETED,
@@ -301,6 +349,8 @@ class Task(Base):
                          nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     sample = relationship("Sample", backref="tasks")
+    machine_id = Column(Integer, ForeignKey("machines.id"), nullable=True)
+    sample = relationship("Machine", backref="tasks")
     guest = relationship("Guest", uselist=False, backref="tasks", cascade="save-update, delete")
     errors = relationship("Error", backref="tasks", cascade="save-update, delete")
 
@@ -497,6 +547,79 @@ class Database(object):
         finally:
             session.close()
 
+    def set_statistics_time(self, task_id, event):
+        """Set task statistics time.
+        @param task_id: task identifier
+        @param event: event time to set
+        """
+        session = self.Session()
+        try:
+            row = session.query(Task).get(task_id)
+
+            if event == ANALYSIS_STARTED:
+                row.analysis_started_on = datetime.now()
+            elif event == ANALYSIS_FINISHED:
+                row.analysis_finished_on = datetime.now()
+            elif event == PROCESSING_STARTED:
+                row.processing_started_on = datetime.now()
+            elif event == PROCESSING_FINISHED:
+                row.processing_finished_on = datetime.now()
+            elif event == SIGNATURES_STARTED:
+                row.signatures_started_on = datetime.now()
+            elif event == SIGNATURES_FINISHED:
+                row.signatures_finished_on = datetime.now()
+            elif event == REPORTING_STARTED:
+                row.reporting_started_on = datetime.now()
+            elif event == REPORTING_FINISHED:
+                row.reporting_finished_on = datetime.now()
+
+            session.commit()
+        except SQLAlchemyError as e:
+            log.debug("Database error setting time statistics: {0}".format(e))
+            session.rollback()
+        finally:
+            session.close()
+
+    def set_statistics_counter(self, task_id, event, value):
+        """Set task statistics counter.
+        @param task_id: task identifier
+        @param event: event time to set
+        @param value: counter value
+        """
+        session = self.Session()
+        try:
+            row = session.query(Task).get(task_id)
+
+            if event == DROPPED_FILES:
+                row.dropped_files = value
+            elif event == RUNNING_PROCESSES:
+                row.running_processes = value
+            elif event == API_CALLS:
+                row.api_calls = value
+            elif event == ACCESSED_DOMAINS:
+                row.domains = value
+            elif event == SIGNATURES_TOTAL:
+                row.signatures_total = value
+            elif event == SIGNATURES_ALERT:
+                row.signatures_alert = value
+            elif event == FILES_WRITTEN:
+                row.files_written = value
+            elif event == TASK_ISSUE_CRASH:
+                row.crash_issues = value
+            elif event == TASK_ISSUE_ANTI:
+                row.anti_issues = value
+            elif event == REGISTRY_KEYS_MODIFIED:
+                row.registry_keys_modified = value
+            elif event == TASK_TIMEOUT:
+                row.timeout = value
+
+            session.commit()
+        except SQLAlchemyError as e:
+            log.debug("Database error setting time statistics: {0}".format(e))
+            session.rollback()
+        finally:
+            session.close()
+
     def fetch(self, lock=True):
         """Fetches a task waiting to be processed and locks it for running.
         @return: None or task
@@ -676,6 +799,33 @@ class Database(object):
                 session.close()
 
         return machine
+
+    def recruit_machine(self, task_id, machine_id):
+        """Add a machine to a task
+        @param task_id: ID of the task to add
+        @param machine_id: ID of the machine to add
+        """
+
+        session = self.Session()
+        try:
+            #import pdb; pdb.set_trace()
+            task = session.query(Task).filter(Task.id == task_id).first()
+        except SQLAlchemyError as e:
+            log.debug("Database error recruiting machine: {0}".format(e))
+            session.close()
+            return None
+
+        if task:
+            task.machine_id = machine_id
+            try:
+                session.commit()
+                session.refresh(task)
+            except SQLAlchemyError as e:
+                log.debug("Database error recruiting machine: {0}".format(e))
+                session.rollback()
+                return None
+            finally:
+                session.close()
 
     def count_machines_available(self):
         """How many virtual machines are ready for analysis.
@@ -1014,23 +1164,136 @@ class Database(object):
             session.close()
         return tasks
 
-    def count_tasks(self, status=None):
+    def get_file_types(self):
+        """Get sample filetypes
+
+        @return: A list of all available file types
+        """
+        session = self.Session()
+        try:
+            unfiltered = session.query(Sample.file_type).group_by(Sample.file_type)
+            res = []
+            for asample in unfiltered.all():
+                res.append(asample[0])
+            res.sort()
+        except SQLAlchemyError as e:
+            log.debug("Database error getting file_types: {0}".format(e))
+            return 0
+        finally:
+            session.close()
+        return res
+
+    def count_tasks(self, status=None, mid=None):
         """Count tasks in the database
         @param status: apply a filter according to the task status
+        @param mid: Machine id to filter for
         @return: number of tasks found
         """
         session = self.Session()
         try:
+            unfiltered = session.query(Task)
+            if mid:
+                unfiltered = unfiltered.filter(Task.machine_id == mid)
             if status:
-                tasks_count = session.query(Task).filter(Task.status == status).count()
-            else:
-                tasks_count = session.query(Task).count()
+                unfiltered = unfiltered.filter(Task.status == status)
+            tasks_count = unfiltered.count()
         except SQLAlchemyError as e:
             log.debug("Database error counting tasks: {0}".format(e))
             return 0
         finally:
             session.close()
         return tasks_count
+
+    def task_duration(self, stage="full", year=None, month=None, day=None):
+        """Get durations of tasks in the database
+
+        @param stage: processing stage to process for
+        @param year: year filter
+        @param month: month filter
+        @param day: day filter
+        @return: a list containing the durations
+        """
+
+        session = self.Session()
+        res = []
+        try:
+            alltasks = session.query(Task)
+            for i in alltasks:
+                if stage == "full":
+                    if i.completed_on and i.added_on:
+                        res.append(int((i.completed_on - i.added_on).total_seconds()))
+                elif stage == "analysis":
+                    if i.analysis_started_on and i.analysis_finished_on:
+                        res.append(int((i.analysis_finished_on - i.analysis_started_on).total_seconds()))
+                elif stage == "processing":
+                    if i.processing_finished_on and i.processing_started_on:
+                        res.append(int((i.processing_finished_on - i.processing_started_on).total_seconds()))
+                elif stage == "signatures":
+                    if i.signatures_started_on and i.signatures_finished_on:
+                        res.append(int((i.signatures_finished_on - i.signatures_started_on).total_seconds()))
+                elif stage == "reporting":
+                    if i.reporting_finished_on and i.reporting_started_on:
+                        res.append(int((i.reporting_finished_on - i.reporting_started_on).total_seconds()))
+
+        except SQLAlchemyError as e:
+            log.debug("Database error counting tasks: {0}".format(e))
+            return 0
+        finally:
+            session.close()
+        return res
+
+    def task_analysis_issues(self, issue, mid=None, ftype=None):
+        """Return number of tasks with specific analysis issues
+
+        @param issue: Issue to filter for
+        @param mid: Machine id to filter for
+        @param ftype: File type to filter for
+        @return: number of tasks with the specific issue
+        """
+
+        api_call_limit = 50   # Number of api calls, we accept as success.
+
+        session = self.Session()
+        res = 0
+        try:
+            unfiltered = session.query(Task)
+
+            if not mid is None:
+                unfiltered = unfiltered.filter(Task.machine_id == mid)
+            if not ftype is None:
+                unfiltered = unfiltered.filter(Task.sample_id == Sample.id).filter(Sample.file_type == ftype)
+
+            # any alert signature marks it as success:
+            if issue != TASK_ISSUE_NONE and issue != TASK_ISSUE_PERFECT:
+                unfiltered = unfiltered.filter(Task.signatures_alert == 0)
+
+            if issue == TASK_TIMEOUT:
+                unfiltered = unfiltered.filter(Task.timeout == True)
+
+            elif issue == TASK_ISSUE_SHORT_API_CALL_LIST:
+                unfiltered = unfiltered.filter(Task.api_calls <= api_call_limit)
+
+            elif issue == TASK_ISSUE_CRASH:
+                unfiltered = unfiltered.filter(Task.crash_issues > 0)
+
+            elif issue == TASK_ISSUE_ANTI:
+                unfiltered = unfiltered.filter(Task.anti_issues > 0)
+
+            elif issue == TASK_ISSUE_PERFECT:
+                unfiltered = unfiltered.filter(Task.api_calls > api_call_limit).filter(Task.crash_issues == 0)
+                unfiltered = unfiltered.filter(Task.anti_issues == 0).filter(Task.signatures_alert > 0)
+
+            elif issue == TASK_ISSUE_NONE:
+                unfiltered = unfiltered.filter(Task.api_calls > api_call_limit).filter(Task.crash_issues == 0)
+                unfiltered = unfiltered.filter(Task.anti_issues == 0).filter(Task.signatures_alert == 0)
+            res = unfiltered.count()
+
+        except SQLAlchemyError as e:
+            log.debug("Database error counting tasks: {0}".format(e))
+            return 0
+        finally:
+            session.close()
+        return res
 
     def view_task(self, task_id, details=False):
         """Retrieve information on a task.

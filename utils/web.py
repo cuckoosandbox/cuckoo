@@ -9,6 +9,7 @@ import time
 import logging
 import argparse
 from datetime import datetime, timedelta
+from health_statistics import HealthStatistics
 
 try:
     from jinja2.loaders import FileSystemLoader
@@ -161,9 +162,42 @@ def browse_page(page_id=1, new_limit=-1):
     
     return template.render({"rows": tasks, "os": os, "pagination": pagination})
 
+@route("/statistics")
+def statistics_page():
+    template = env.get_template("statistics.html")
+
+    hs = HealthStatistics(simple=True)
+    hs.datadir = os.path.join(CUCKOO_ROOT, "data", "html", "statistics")
+    stat_items = [("Processing stages",
+                   "Time spent in the separate processing stages",
+                   "/statistics_image/" + hs.processing_stages_pie()),
+                  ("Processing time",
+                   "Number of samples vs processing time",
+                   "/statistics_image/" + hs.processing_time_line()),
+                  ("Task status",
+                   "Percent of samples in specific states",
+                   "/statistics_image/" + hs.task_status_pie()),
+                  ("Success by machine",
+                   "Task success by machine to identify damaged machines",
+                   "/statistics_image/" + hs.task_success_by_machine_bar()),
+                  ("Analysis issues",
+                   "Task analysis issues, global\nAnti issues are just logging if a sample tried something, we do not know if it was successfull",
+                   "/statistics_image/" + hs.task_analysis_pie()),
+                  ("Analysis issues by machine",
+                   "Task analysis issues, sorted by machine",
+                   "/statistics_image/" + hs.task_analysis_by_machine_bar()),
+                  ("Analysis issues by file type",
+                   "Task analysis issues, sorted by file type",
+                   "/statistics_image/" + hs.analysis_issues_by_file_type())]
+    return template.render({"stat_items": stat_items})
+
 @route("/static/<filename:path>")
 def server_static(filename):
     return static_file(filename, root=os.path.join(CUCKOO_ROOT, "data", "html"))
+
+@route("/statistics_image/<filename:path>")
+def server_generated_statistics(filename):
+    return static_file(filename, root=os.path.join(CUCKOO_ROOT, "data", "html", "statistics"))
 
 @route("/submit", method="POST")
 def submit():
