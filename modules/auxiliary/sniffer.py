@@ -57,6 +57,8 @@ class Sniffer(Auxiliary):
         pargs.extend(["and", "not", "(", "host", host, "and", "port",
                       str(CUCKOO_GUEST_PORT), ")"])
         # Do not capture ResultServer traffic.
+        # TODO: Now that the ResultServer port can change dynamically,
+        # we need to instruct sniffer.py of the change.
         pargs.extend(["and", "not", "(", "host",
                       str(Config().resultserver.ip), "and", "port",
                       str(Config().resultserver.port), ")"])
