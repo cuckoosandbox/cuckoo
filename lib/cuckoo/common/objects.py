@@ -237,10 +237,7 @@ class File:
                         matches.append({"name": match.rule,
                                         "meta": match.meta,
                                         "strings": strings})
-                except (yara.Error,
-                        yara.SyntaxError,
-                        yara.TimeoutError,
-                        yara.WarningError) as e:
+                except Exception as e:
                     log.warning("Unable to match Yara signatures: %s", e)
         else:
             if not File.notified_yara:
