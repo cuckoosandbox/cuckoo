@@ -224,6 +224,18 @@ class PortableExecutable:
         except AttributeError:
             return None
 
+    def _get_timestamp(self):
+        """Gets timestamp.
+        @return timestamp integer or None.
+        """
+        if not self.pe:
+            return None
+
+        try:
+            return self.pe.FILE_HEADER.TimeDateStamp
+        except AttributeError:
+            return None
+
     def run(self):
         """Run analysis.
         @return: analysis results dict or None.
@@ -244,6 +256,7 @@ class PortableExecutable:
         results["pe_resources"] = self._get_resources()
         results["pe_versioninfo"] = self._get_versioninfo()
         results["pe_imphash"] = self._get_imphash()
+        results["pe_timestamp"] = self._get_timestamp()
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
         return results
 
