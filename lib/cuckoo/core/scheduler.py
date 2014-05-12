@@ -325,7 +325,7 @@ class AnalysisManager(Thread):
     def process_results(self):
         """Process the analysis results and generate the enabled reports."""
         results = RunProcessing(task_id=self.task.id).run()
-        RunSignatures(results=results).run()
+        RunSignatures(results=results, task_id=self.task.id).run()
         RunReporting(task_id=self.task.id, results=results).run()
 
         # If the target is a file and the user enabled the option,

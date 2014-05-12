@@ -16,14 +16,15 @@ log = logging.getLogger()
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.database import Database, TASK_REPORTED, TASK_COMPLETED
 from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
 from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
-from lib.cuckoo.core.startup import init_modules
+from lib.cuckoo.core.startup import init_modules, init_logging
 
 def do(aid, report=False):
     results = RunProcessing(task_id=aid).run()
-    RunSignatures(results=results).run()
+    RunSignatures(results=results, task_id=aid).run()
 
     if report:
         RunReporting(task_id=aid, results=results).run()
@@ -87,6 +88,8 @@ def main():
     parser.add_argument("-r", "--report", help="Re-generate report", action="store_true", required=False)
     parser.add_argument("-p", "--parallel", help="Number of parallel threads to use (auto mode only).", type=int, required=False, default=1)
     args = parser.parse_args()
+
+    init_logging(os.path.join(CUCKOO_ROOT, "log", "process.log"), False)
 
     if args.debug:
         log.setLevel(logging.DEBUG)
