@@ -1,5 +1,13 @@
+{% load timestamp_utils %}
 <section id="static_analysis">
     {% if analysis.static %}
+        {% if analysis.static.pe_timestamp %}
+        <div>
+            <h4>Compilation timestamp</h4>
+            <div class="well">{{analysis.static.pe_timestamp|timestamp_to_datetime|date:"r"}}</div>
+        </div>
+        <hr />
+        {% endif %}
         {% if analysis.static.pe_imphash %}
         <div>
             <h4>PE Imphash</h4>
