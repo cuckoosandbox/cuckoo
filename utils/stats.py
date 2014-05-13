@@ -47,7 +47,14 @@ def main():
         started = min(timestamp(task.started_on) for task in tasks)
 
         # Get the time when the last task completed.
-        completed = max(timestamp(task.completed_on) for task in tasks)
+        stamps = []
+        for task in tasks:
+            try:
+                stamps.append(timestamp(task.completed_on))
+            except AttributeError:
+                pass
+
+        completed = max(stamps)
 
         # Get the amount of tasks that actually completed.
         finished = len(tasks)
