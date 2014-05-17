@@ -439,6 +439,7 @@ class Scheduler:
         # Provide a dictionary with the configuration options to the
         # machine manager instance.
         machinery.set_options(Config(conf))
+
         # Initialize the machine manager.
         try:
             machinery.initialize(machinery_name)
@@ -448,7 +449,7 @@ class Scheduler:
         # At this point all the available machines should have been identified
         # and added to the list. If none were found, Cuckoo needs to abort the
         # execution.
-        if len(machinery.machines()) == 0:
+        if not len(machinery.machines()):
             raise CuckooCriticalError("No machines available")
         else:
             log.info("Loaded %s machine/s", len(machinery.machines()))
@@ -475,34 +476,34 @@ class Scheduler:
         while self.running:
             time.sleep(1)
 
-            # If not enough free diskspace is available, then we print an
+            # If not enough free disk space is available, then we print an
             # error message and wait another round (this check is ignored
-            # when freespace is set to zero).
+            # when the freespace configuration variable is set to zero).
             if self.cfg.cuckoo.freespace:
                 # Resolve the full base path to the analysis folder, just in
-                # case somebody decides to make a symlink out of it.
+                # case somebody decides to make a symbolic link out of it.
                 dir_path = os.path.join(CUCKOO_ROOT, "storage", "analyses")
 
                 # TODO: Windows support
                 if hasattr(os, "statvfs"):
                     dir_stats = os.statvfs(dir_path)
 
-                    # Free diskspace in megabytes.
+                    # Calculate the free disk space in megabytes.
                     space_available = dir_stats.f_bavail * dir_stats.f_frsize
                     space_available /= 1024 * 1024
 
                     if space_available < self.cfg.cuckoo.freespace:
-                        log.error("Not enough free diskspace! (Only %d MB!)",
+                        log.error("Not enough free disk space! (Only %d MB!)",
                                   space_available)
                         continue
 
             # If no machines are available, it's pointless to fetch for
             # pending tasks. Loop over.
-            if machinery.availables() == 0:
+            if not machinery.availables():
                 continue
 
-            # Exits if max_analysis_count is defined in config file and
-            # is reached.
+            # Exits if max_analysis_count is defined in the configuration
+            # file and has been reached.
             if maxcount and total_analysis_count >= maxcount:
                 if active_analysis_count <= 0:
                     self.stop()
@@ -514,9 +515,8 @@ class Scheduler:
                     log.debug("Processing task #%s", task.id)
                     total_analysis_count += 1
 
-                    # Initialize the analysis manager.
+                    # Initialize and start the analysis manager.
                     analysis = AnalysisManager(task, errors)
-                    # Start.
                     analysis.start()
 
             # Deal with errors.

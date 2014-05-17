@@ -141,7 +141,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         while True:
             if self.end_request.isSet():
                 return False
-            rs, ws, xs = select.select([self.request], [], [], 1)
+            rs, _, _ = select.select([self.request], [], [], 1)
             if rs:
                 return True
 
@@ -172,12 +172,12 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
     def read_newline(self):
         buf = ""
-        while not "\n" in buf:
+        while "\n" not in buf:
             buf += self.read(1)
         return buf
 
     def negotiate_protocol(self):
-        # read until newline
+        # Read until newline.
         buf = self.read_newline()
 
         if "NETLOG" in buf:
@@ -201,11 +201,11 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         if not self.storagepath:
             return
 
-        # create all missing folders for this analysis
+        # Create all missing folders for this analysis.
         self.create_folders()
 
         try:
-            # initialize the protocol handler class for this connection
+            # Initialize the protocol handler class for this connection.
             self.negotiate_protocol()
 
             while True:
@@ -217,7 +217,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
                         "CuckooResultError: %s.", str(e))
         except Disconnect:
             pass
-        except socket.error, e:
+        except socket.error as e:
             log.debug("socket.error: {0}".format(e))
         except:
             log.exception("FIXME - exception in resultserver connection %s",
@@ -232,12 +232,13 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             self.logfd.close()
         if self.rawlogfd:
             self.rawlogfd.close()
+
         log.debug("Connection closed: {0}:{1}".format(ip, port))
 
     def log_process(self, ctx, timestring, pid, ppid, modulepath, procname):
         if not self.pid is None:
             log.debug("Resultserver got a new process message but already "
-                      "has pid %d ppid %s procname %s",
+                      "has pid %d ppid %s procname %s.",
                       pid, str(ppid), procname)
             raise CuckooResultError("Resultserver connection state "
                                     "incosistent.")
@@ -247,13 +248,13 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         # CSV format files are optional
         if self.server.cfg.resultserver.store_csvs:
-            self.logfd = open(os.path.join(self.storagepath, "logs",
-                                           str(pid) + ".csv"), "wb")
+            path = os.path.join(self.storagepath, "logs", str(pid) + ".csv")
+            self.logfd = open(path, "wb")
 
         # Raw Bson or Netlog extension
         ext = EXTENSIONS.get(type(self.protocol), ".raw")
-        self.rawlogfd = open(os.path.join(self.storagepath, "logs",
-                                          str(pid) + ext), "wb")
+        path = os.path.join(self.storagepath, "logs", str(pid) + ext)
+        self.rawlogfd = open(path, "wb")
         self.rawlogfd.write(self.startbuf)
 
         self.pid, self.ppid, self.procname = pid, ppid, procname
@@ -306,8 +307,8 @@ class FileUpload(object):
         self.storagepath = self.handler.storagepath
 
     def read_next_message(self):
-        # read until newline for file path
-        # e.g. shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
+        # Read until newline for file path, e.g.,
+        # shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
 
         buf = self.handler.read_newline().strip().replace("\\", "/")
         log.debug("File upload request for {0}".format(buf))

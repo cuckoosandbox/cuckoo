@@ -60,13 +60,13 @@ def protected_filename(fname):
 
 def add_pid(pid):
     """Add a process to process list."""
-    if type(pid) == long or type(pid) == int or type(pid) == str:
+    if isinstance(pid, (int, long, str)):
         log.info("Added new process to list with pid: %s", pid)
-        PROCESS_LIST.append(pid)
+        PROCESS_LIST.append(int(pid))
 
 def add_pids(pids):
     """Add PID."""
-    if type(pids) == list:
+    if isinstance(pids, (tuple, list)):
         for pid in pids:
             add_pid(pid)
     else:
@@ -88,7 +88,8 @@ def dump_file(file_path):
                 # The file was already dumped, just skip.
                 return
         else:
-            log.warning("File at path \"%s\" does not exist, skip", file_path)
+            log.warning("File at path \"%s\" does not exist, skip.",
+                        file_path)
             return
     except IOError as e:
         log.warning("Unable to access file at path \"%s\": %s", file_path, e)
@@ -99,7 +100,7 @@ def dump_file(file_path):
     name = c_wchar_p()
     KERNEL32.GetFullPathNameW(file_path, 32 * 1024, path, byref(name))
     file_path = path.value
-    
+
     # Check if the path has a valid file name, otherwise it's a directory
     # and we should abort the dump.
     if name.value:
@@ -122,7 +123,7 @@ def dump_file(file_path):
 def del_file(fname):
     dump_file(fname)
 
-    # Filenames are case-insenstive in windows.
+    # Filenames are case-insensitive in windows.
     fnames = [x.lower() for x in FILES_LIST]
 
     # If this filename exists in the FILES_LIST, then delete it, because it
@@ -131,7 +132,7 @@ def del_file(fname):
         FILES_LIST.pop(fnames.index(fname.lower()))
 
 def move_file(old_fname, new_fname):
-    # Filenames are case-insenstive in windows.
+    # Filenames are case-insensitive in windows.
     fnames = [x.lower() for x in FILES_LIST]
 
     # Check whether the old filename is in the FILES_LIST
@@ -187,7 +188,7 @@ class PipeHandler(Thread):
             #elif not success or bytes_read.value == 0:
             #    if KERNEL32.GetLastError() == ERROR_BROKEN_PIPE:
             #        pass
-            
+
             break
 
         if data:
@@ -239,7 +240,7 @@ class PipeHandler(Thread):
                 if not "," in data:
                     if data.isdigit():
                         process_id = int(data)
-                elif len(data.split(",")) == 2:
+                elif data.count(",") == 2:
                     process_id, param = data.split(",")
                     thread_id = None
                     if process_id.isdigit():
@@ -276,13 +277,13 @@ class PipeHandler(Thread):
                                 add_pids(process_id)
 
                                 # If we have both pid and tid, then we can use
-                                # apc to inject
+                                # apc to inject.
                                 if process_id and thread_id:
                                     proc.inject(dll, apc=True)
                                 else:
-                                    # we inject using CreateRemoteThread, this
+                                    # We inject using CreateRemoteThread, this
                                     # needs the waiting in order to make sure
-                                    # no race conditions occur
+                                    # no race conditions occur.
                                     proc.inject(dll)
                                     wait = True
 
@@ -311,7 +312,7 @@ class PipeHandler(Thread):
                 # Dump the file straight away.
                 del_file(file_path)
             elif command.startswith("FILE_MOVE:"):
-                # syntax = FILE_MOVE:old_file_path::new_file_path
+                # Syntax = "FILE_MOVE:old_file_path::new_file_path".
                 if "::" in command[10:]:
                     old_fname, new_fname = command[10:].split("::", 1)
                     move_file(old_fname.decode("utf-8"),
@@ -637,9 +638,9 @@ class Analyzer:
 
                     # If none of the monitored processes are still alive, we
                     # can terminate the analysis.
-                    if len(PROCESS_LIST) == 0:
+                    if not PROCESS_LIST:
                         log.info("Process list is empty, "
-                                 "terminating analysis...")
+                                 "terminating analysis.")
                         break
 
                     # Update the list of monitored processes available to the

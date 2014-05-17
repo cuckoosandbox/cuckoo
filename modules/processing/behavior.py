@@ -62,8 +62,8 @@ class ParseProcessLog(list):
             self.fd = None
             return
 
-        # get the process information from file to determine
-        # process id (file names)
+        # Get the process information from file to determine
+        # process id (file names.)
         while not self.process_id:
             self.parser.read_next_message()
 
@@ -107,14 +107,12 @@ class ParseProcessLog(list):
 
     def wait_for_lastcall(self):
         while not self.lastcall:
-            r = None
             try:
-                r = self.parser.read_next_message()
+                if not self.parser.read_next_message():
+                    return False
             except EOFError:
                 return False
 
-            if not r:
-                return False
         return True
 
     def next(self):
@@ -151,7 +149,7 @@ class ParseProcessLog(list):
         self.lastcall = self._parse([timestring,
                                      tid,
                                      category,
-                                     apiname, 
+                                     apiname,
                                      status,
                                      returnval] + arguments)
 

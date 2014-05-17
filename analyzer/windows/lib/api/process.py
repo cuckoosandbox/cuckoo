@@ -234,7 +234,7 @@ class Process:
                         % self.pid)
             return False
 
-        if self.h_thread == 0:
+        if not self.h_thread:
             return False
 
         KERNEL32.Sleep(2000)
@@ -265,7 +265,7 @@ class Process:
         @param dll: Cuckoo DLL path.
         @param apc: APC use.
         """
-        if self.pid == 0:
+        if not self.pid:
             log.warning("No valid pid specified, injection aborted")
             return False
 
@@ -281,7 +281,7 @@ class Process:
 
         if not dll or not os.path.exists(dll):
             log.warning("No valid DLL specified to be injected in process "
-                        "with pid %d, injection aborted", self.pid)
+                        "with pid %d, injection aborted.", self.pid)
             return False
 
         arg = KERNEL32.VirtualAllocEx(self.h_process,
@@ -335,7 +335,7 @@ class Process:
             log.info("Using QueueUserAPC injection")
             if not self.h_thread:
                 log.info("No valid thread handle specified for injecting "
-                         "process with pid %d, injection aborted", self.pid)
+                         "process with pid %d, injection aborted.", self.pid)
                 return False
 
             if not KERNEL32.QueueUserAPC(load_library, self.h_thread, arg):
@@ -343,7 +343,7 @@ class Process:
                           "pid %d (Error: %s)",
                           self.pid, get_error_string(KERNEL32.GetLastError()))
                 return False
-            log.info("Successfully injected process with pid %d" % self.pid)
+            log.info("Successfully injected process with pid %d." % self.pid)
         else:
             event_name = "CuckooEvent%d" % self.pid
             self.event_handle = KERNEL32.CreateEventA(None,
@@ -354,7 +354,7 @@ class Process:
                 log.warning("Unable to create notify event..")
                 return False
 
-            log.info("Using CreateRemoteThread injection")
+            log.info("Using CreateRemoteThread injection.")
             new_thread_id = c_ulong(0)
             thread_handle = KERNEL32.CreateRemoteThread(self.h_process,
                                                         None,
@@ -386,7 +386,7 @@ class Process:
         """Dump process memory.
         @return: operation status.
         """
-        if self.pid == 0:
+        if not self.pid:
             log.warning("No valid pid specified, memory dump aborted")
             return False
 
@@ -407,10 +407,10 @@ class Process:
         if not os.path.exists(root):
             os.makedirs(root)
 
-        # now upload to host from the StringIO
+        # Now upload to host from the StringIO.
         nf = NetlogFile("memory/%s.dmp" % str(self.pid))
-        
-        while(mem < max_addr):
+
+        while mem < max_addr:
             mbi = MEMORY_BASIC_INFORMATION()
             count = c_ulong(0)
 
