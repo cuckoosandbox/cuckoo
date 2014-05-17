@@ -379,6 +379,19 @@ class AnalysisManager(Thread):
                 self.process_results()
                 Database().set_status(self.task.id, TASK_REPORTED)
 
+            # We make a symbolic link ("latest") which links to the latest
+            # analysis - this is useful for debugging purposes. This is only
+            # supported under systems that support symbolic links.
+            if hasattr(os, "symlink"):
+                latest = os.path.join(CUCKOO_ROOT, "storage",
+                                      "analyses", "latest")
+
+                # First we have to remove the existing symbolic link.
+                if os.path.exists(latest):
+                    os.remove(latest)
+
+                os.symlink(self.storage, latest)
+
             log.info("Task #%d: analysis procedure completed", self.task.id)
         except:
             log.exception("Failure in AnalysisManager.run")
