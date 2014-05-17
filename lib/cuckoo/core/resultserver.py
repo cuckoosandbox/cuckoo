@@ -297,6 +297,8 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
 
 class FileUpload(object):
+    RESTRICTED_DIRECTORIES = 'reports/',
+
     def __init__(self, handler):
         self.handler = handler
         self.upload_max_size = \
@@ -314,6 +316,12 @@ class FileUpload(object):
         dir_part, filename = os.path.split(buf)
 
         if "./" in buf or not dir_part:
+            raise CuckooOperationalError("FileUpload failure, banned path.")
+
+        for restricted in RESTRICTED_DIRECTORIES:
+            if restricted not in dir_part:
+                continue
+
             raise CuckooOperationalError("FileUpload failure, banned path.")
 
         try:
