@@ -312,17 +312,16 @@ class FileUpload(object):
         buf = self.handler.read_newline().strip().replace("\\", "/")
         log.debug("File upload request for {0}".format(buf))
 
-        if "../" in buf:
-            raise CuckooOperationalError("FileUpload failure, banned path.")
-
         dir_part, filename = os.path.split(buf)
 
-        if dir_part:
-            try:
-                create_folder(self.storagepath, dir_part)
-            except CuckooOperationalError:
-                log.error("Unable to create folder %s" % dir_part)
-                return False
+        if "./" in buf or not dir_part:
+            raise CuckooOperationalError("FileUpload failure, banned path.")
+
+        try:
+            create_folder(self.storagepath, dir_part)
+        except CuckooOperationalError:
+            log.error("Unable to create folder %s" % dir_part)
+            return False
 
         file_path = os.path.join(self.storagepath, buf.strip())
 
