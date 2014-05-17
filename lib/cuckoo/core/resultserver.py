@@ -318,7 +318,7 @@ class FileUpload(object):
         if "./" in buf or not dir_part:
             raise CuckooOperationalError("FileUpload failure, banned path.")
 
-        for restricted in RESTRICTED_DIRECTORIES:
+        for restricted in self.RESTRICTED_DIRECTORIES:
             if restricted not in dir_part:
                 continue
 
