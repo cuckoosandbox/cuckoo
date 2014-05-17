@@ -223,10 +223,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             log.exception("FIXME - exception in resultserver connection %s",
                           str(self.client_address))
 
-        try:
-            self.protocol.close()
-        except:
-            pass
+        self.protocol.close()
 
         if self.logfd:
             self.logfd.close()
@@ -305,6 +302,7 @@ class FileUpload(object):
         self.upload_max_size = \
             self.handler.server.cfg.resultserver.upload_max_size
         self.storagepath = self.handler.storagepath
+        self.fd = None
 
     def read_next_message(self):
         # Read until newline for file path, e.g.,
@@ -326,19 +324,22 @@ class FileUpload(object):
 
         file_path = os.path.join(self.storagepath, buf.strip())
 
-        fd = open(file_path, "wb")
+        self.fd = open(file_path, "wb")
         chunk = self.handler.read_any()
         while chunk:
-            fd.write(chunk)
+            self.fd.write(chunk)
 
-            if fd.tell() >= self.upload_max_size:
-                fd.write("... (truncated)")
+            if self.fd.tell() >= self.upload_max_size:
+                self.fd.write("... (truncated)")
                 break
 
             chunk = self.handler.read_any()
 
-        log.debug("Uploaded file length: {0}".format(fd.tell()))
-        fd.close()
+        log.debug("Uploaded file length: {0}".format(self.fd.tell()))
+
+    def close(self):
+        if self.fd:
+            self.fd.close()
 
 
 class LogHandler(object):

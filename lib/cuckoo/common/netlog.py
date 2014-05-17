@@ -78,6 +78,9 @@ class NetlogParser(object):
             "R": self.read_registry,
         }
 
+    def close(self):
+        pass
+
     def read_next_message(self):
         apiindex, status = struct.unpack("BB", self.handler.read(2))
         returnval, tid, timediff = struct.unpack("III", self.handler.read(12))
@@ -256,6 +259,9 @@ class BsonParser(object):
 
         if not HAVE_BSON:
             log.critical("Starting BsonParser, but bson is not available! (install with `pip install bson`)")
+
+    def close(self):
+        pass
 
     def read_next_message(self):
         data = self.handler.read(4)
