@@ -26,6 +26,7 @@ from lib.common.defines import PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE
 from lib.common.defines import PIPE_READMODE_MESSAGE, PIPE_WAIT
 from lib.common.defines import PIPE_UNLIMITED_INSTANCES, INVALID_HANDLE_VALUE
 from lib.common.exceptions import CuckooError, CuckooPackageError
+from lib.common.hashing import hash_file
 from lib.common.results import upload_to_host
 from lib.core.config import Config
 from lib.core.packages import choose_package
@@ -83,7 +84,7 @@ def dump_file(file_path):
     """Create a copy of the give file path."""
     try:
         if os.path.exists(file_path):
-            sha256 = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
+            sha256 = hash_file(hashlib.sha256, file_path)
             if sha256 in DUMPED_LIST:
                 # The file was already dumped, just skip.
                 return
