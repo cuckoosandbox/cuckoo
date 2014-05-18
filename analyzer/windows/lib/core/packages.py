@@ -36,5 +36,7 @@ def choose_package(file_type, file_name):
         return "jar"
     elif "Zip" in file_type:
         return "zip"
+    elif file_name.endswith(".py") or "Python script" in file_type:
+        return "python"
     else:
         return "generic"
