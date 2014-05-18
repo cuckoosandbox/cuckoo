@@ -358,6 +358,9 @@ class LogHandler(object):
         log.debug("LogHandler for live analysis.log initialized.")
 
     def read_next_message(self):
+        if not self.fd:
+            return False
+
         buf = self.handler.read_newline()
         if not buf:
             return False
@@ -366,9 +369,9 @@ class LogHandler(object):
         return True
 
     def close(self):
-        self.fd.close()
+        if self.fd:
+            self.fd.close()
 
     def _open(self):
-        if os.path.exists(self.logpath):
-            return open(self.logpath, "ab")
-        return open(self.logpath, "wb")
+        if not os.path.exists(self.logpath):
+            return open(self.logpath, "wb")
