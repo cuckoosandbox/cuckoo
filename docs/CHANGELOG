@@ -1,5 +1,12 @@
                                   CHANGELOG
 
+Cuckoo Sandbox 1.2 (TBD)
+===============================
+
+* Added Python analysis module
+* Fixed issue with tcpdump filters
+* Removed hpfeeds reporting module
+
 Cuckoo Sandbox 1.1 (2014-04-07)
 ===============================
 
