@@ -319,10 +319,8 @@ class FileUpload(object):
             raise CuckooOperationalError("FileUpload failure, banned path.")
 
         for restricted in self.RESTRICTED_DIRECTORIES:
-            if restricted not in dir_part:
-                continue
-
-            raise CuckooOperationalError("FileUpload failure, banned path.")
+            if restricted in dir_part:
+                raise CuckooOperationalError("FileUpload failure, banned path.")
 
         try:
             create_folder(self.storagepath, dir_part)
