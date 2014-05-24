@@ -46,7 +46,7 @@ DEFAULT_DLL = None
 PID = os.getpid()
 PPID = Process(pid=PID).get_parent_pid()
 
-# this is still preparation status - needs finalizing
+# This is still in preparation status - needs finalizing.
 def protected_filename(fname):
     """Checks file name against some protected names."""
     if not fname:
@@ -136,13 +136,13 @@ def move_file(old_fname, new_fname):
     # Filenames are case-insensitive in windows.
     fnames = [x.lower() for x in FILES_LIST]
 
-    # Check whether the old filename is in the FILES_LIST
+    # Check whether the old filename is in the FILES_LIST.
     if old_fname.lower() in fnames:
 
-        # Get the index of the old filename
+        # Get the index of the old filename.
         idx = fnames.index(old_fname.lower())
 
-        # Replace the old filename by the new filename
+        # Replace the old filename by the new filename.
         FILES_LIST[idx] = new_fname
 
 def dump_files():
@@ -489,8 +489,10 @@ class Analyzer:
         # Stop the Pipe Servers.
         for x in xrange(self.PIPE_SERVER_COUNT):
             self.pipes[x].stop()
+
         # Dump all the notified files.
         dump_files()
+
         # Hell yeah.
         log.info("Analysis completed")
 
@@ -508,7 +510,7 @@ class Analyzer:
         # one automatically.
         if not self.config.package:
             log.info("No analysis package specified, trying to detect "
-                     "it automagically")
+                     "it automagically.")
             # If the analysis target is a file, we choose the package according
             # to the file format.
             if self.config.category == "file":
@@ -607,6 +609,7 @@ class Analyzer:
         if pids:
             add_pids(pids)
             pid_check = True
+
         # If the package didn't return any process ID (for example in the case
         # where the package isn't enabling any behavioral analysis), we don't
         # enable the process monitor.
@@ -630,8 +633,8 @@ class Analyzer:
                 break
 
             # If the process lock is locked, it means that something is
-            # operating on the list of monitored processes. Therefore we cannot
-            # proceed with the checks until the lock is released.
+            # operating on the list of monitored processes. Therefore we
+            # cannot proceed with the checks until the lock is released.
             if PROCESS_LOCK.locked():
                 KERNEL32.Sleep(1000)
                 continue
@@ -722,15 +725,17 @@ if __name__ == "__main__":
     try:
         # Initialize the main analyzer class.
         analyzer = Analyzer()
+
         # Run it and wait for the response.
         success = analyzer.run()
+
     # This is not likely to happen.
     except KeyboardInterrupt:
         error = "Keyboard Interrupt"
+
     # If the analysis process encountered a critical error, it will raise a
-    # CuckooError exception, which will force the termination of the analysis
-    # weill notify the agent of the failure. Also catched unexpected
-    # exceptions.
+    # CuckooError exception, which will force the termination of the analysis.
+    # Notify the agent of the failure. Also catch unexpected exceptions.
     except Exception as e:
         # Store the error.
         error_exc = traceback.format_exc()
@@ -741,6 +746,7 @@ if __name__ == "__main__":
             log.exception(error_exc)
         else:
             sys.stderr.write("{0}\n".format(error_exc))
+
     # Once the analysis is completed or terminated for any reason, we report
     # back to the agent, notifying that it can report back to the host.
     finally:
