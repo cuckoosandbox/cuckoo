@@ -45,8 +45,6 @@ class AnalysisInfo(Processing):
             del(machine["task_id"])
             # Save.
             self.task["machine"] = machine
-        else:
-            self.task["machine"] = {}
 
         return dict(
             version=CUCKOO_VERSION,
