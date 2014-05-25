@@ -3,10 +3,14 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import shutil
+import logging
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
+
+log = logging.getLogger(__name__)
 
 class HTML(Package):
     """HTML file analysis package."""
@@ -29,6 +33,18 @@ class HTML(Package):
             iexplore = iex86
         else:
             iexplore = ie32
+
+        # Travelling inside malware universe you should bring a towel with you.
+        # If a file detected as HTML is submitted without a proper extension,
+        # or without an extension at all (are you used to name samples with hash?),
+        # IE is going to open it as a text file, so you precious sample will not
+        # be executed.
+        # We help you sample to execute renaming it with a proper extension.
+        if not path.endswith(".html") or not path.endswith(".htm"):
+            shutil.copy(path, path + ".html")
+            path = path + ".html"
+            log.info("Submitted file is missing extension, adding .html")
+
         p = Process()
         if not p.execute(path=iexplore, args="\"%s\"" % path, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Internet "
