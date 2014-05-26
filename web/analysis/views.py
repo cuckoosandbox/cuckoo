@@ -288,3 +288,36 @@ def search(request):
                                    "term": None,
                                    "error": None},
                                   context_instance=RequestContext(request))
+
+@require_safe
+def remove(request, task_id):
+    anals = results_db.analysis.find({"info.id": task_id})
+    if anals.count() > 0:
+        # Delete dups too.
+        for analysis in anals:
+            # Delete sample if not used.
+            if results_db.analyses.find({"target.file_id": ObjectId(analysis["target"]["file_id"])}).count():
+                fs.delete(ObjectId(analysis["target"]["file_id"]))
+            # Delete screenshots.
+            for shot in analysis["shots"]:
+                if results_db.analyses.find({"shots.*": ObjectId(shot["_id"])}).count():
+                    fs.delete(ObjectId(shot["_id"]))
+            # Delete network pcap.
+            if results_db.analyses.find({"netowrk.pcap_id": ObjectId(analysis["network"]["pcap_id"])}):
+                fs.delete(ObjectId(analysis["network"]["pcap_id"]))
+            # Delete dropped.
+            for drop in analysis["dropped"]:
+                if results_db.analyses.find({"dropped.*.object_id": ObjectId(drop["object_id"])}).count():
+                   fs.delete(ObjectId(drop["object_id"]))
+            # Delete calls.
+            for process in analysis["behavior"]["processes"]:
+                for call in process["calls"]:
+                    results_db.calls.remove({"_id": ObjectId(call["_id"])})
+            # Delete analysis data.
+            results_db.analyses.remove({"_id": ObjectId(analysis["_id"])})
+    db = Database()
+    db.delete_task(task_id)
+
+    return render_to_response("success.html",
+                              {"message": "Task deleted, thanks for all the fish."},
+                              context_instance=RequestContext(request))
