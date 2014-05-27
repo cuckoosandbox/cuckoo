@@ -370,13 +370,13 @@ Following is a list of currently available resources and a brief description of 
 /files/get
 ----------
 
-    **GET /files/get/** *(str: id)*
+    **GET /files/get/** *(str: sha256)*
 
-        Returns the content of the PCAP associated with the given task.
+         Returns the binary content of the file matching the specified SHA256 hash.
 
         **Example request**::
 
-            curl http://localhost:8090/pcap/get/1 > dump.pcap
+            curl http://localhost:8090/files/get/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 > sample.exe
 
         **Status codes**:
             * ``200`` - no error
@@ -389,11 +389,11 @@ Following is a list of currently available resources and a brief description of 
 
     **GET /pcap/get/** *(int: task)*
 
-        Returns the binary content of the file matching the specified SHA256 hash.
+        Returns the content of the PCAP associated with the given task.
 
         **Example request**::
 
-            curl http://localhost:8090/files/get/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 > sample.exe
+            curl http://localhost:8090/pcap/get/1 > dump.pcap
 
         **Status codes**:
             * ``200`` - no error
