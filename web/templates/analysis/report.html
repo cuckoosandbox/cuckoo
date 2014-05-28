@@ -8,6 +8,7 @@
     <li><a href="#network" data-toggle="tab">Network Analysis</a></li>
     <li><a href="#dropped" data-toggle="tab">Dropped Files</a></li>
     {% if analysis.memory %}<li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>{% endif %}
+    <li><a href="#admin" data-toggle="tab">Admin</a></li>
 </ul>
 <div class="tab-content">
     <div class="tab-pane fade in active" id="overview">
@@ -32,5 +33,8 @@
         {% include "analysis/memory/index.html" %}
     </div>
     {% endif %}
+    <div class="tab-pane fade" id="admin">
+        {% include "analysis/admin/index.html" %}
+    </div>
 </div>
 {% endblock %}
