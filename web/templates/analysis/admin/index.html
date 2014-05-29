@@ -1,8 +1,13 @@
+{% load analysis_tags %}
 <div class="panel panel-default">
     <table class="table table-striped">
         <tr>
             <th>Task ID</th>
             <td>{{analysis.info.id}}</th>
+        </tr>
+        <tr>
+            <th>Mongo ID</th>
+            <td>{{analysis|mongo_id}}</th>
         </tr>
         <tr>
             <th>Cuckoo release</th>
