@@ -19,13 +19,14 @@ from datetime import datetime
 
 from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
-from lib.common.constants import PATHS, PIPE
+from lib.common.constants import PATHS, PIPE, SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32
 from lib.common.defines import ERROR_MORE_DATA, ERROR_PIPE_CONNECTED
 from lib.common.defines import PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE
 from lib.common.defines import PIPE_READMODE_MESSAGE, PIPE_WAIT
 from lib.common.defines import PIPE_UNLIMITED_INSTANCES, INVALID_HANDLE_VALUE
 from lib.common.exceptions import CuckooError, CuckooPackageError
+from lib.common.hashing import hash_file
 from lib.common.results import upload_to_host
 from lib.core.config import Config
 from lib.core.packages import choose_package
@@ -45,7 +46,7 @@ DEFAULT_DLL = None
 PID = os.getpid()
 PPID = Process(pid=PID).get_parent_pid()
 
-# this is still preparation status - needs finalizing
+# This is still in preparation status - needs finalizing.
 def protected_filename(fname):
     """Checks file name against some protected names."""
     if not fname:
@@ -60,13 +61,13 @@ def protected_filename(fname):
 
 def add_pid(pid):
     """Add a process to process list."""
-    if type(pid) == long or type(pid) == int or type(pid) == str:
+    if isinstance(pid, (int, long, str)):
         log.info("Added new process to list with pid: %s", pid)
-        PROCESS_LIST.append(pid)
+        PROCESS_LIST.append(int(pid))
 
 def add_pids(pids):
     """Add PID."""
-    if type(pids) == list:
+    if isinstance(pids, (tuple, list)):
         for pid in pids:
             add_pid(pid)
     else:
@@ -83,12 +84,13 @@ def dump_file(file_path):
     """Create a copy of the give file path."""
     try:
         if os.path.exists(file_path):
-            sha256 = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
+            sha256 = hash_file(hashlib.sha256, file_path)
             if sha256 in DUMPED_LIST:
                 # The file was already dumped, just skip.
                 return
         else:
-            log.warning("File at path \"%s\" does not exist, skip", file_path)
+            log.warning("File at path \"%s\" does not exist, skip.",
+                        file_path)
             return
     except IOError as e:
         log.warning("Unable to access file at path \"%s\": %s", file_path, e)
@@ -99,7 +101,7 @@ def dump_file(file_path):
     name = c_wchar_p()
     KERNEL32.GetFullPathNameW(file_path, 32 * 1024, path, byref(name))
     file_path = path.value
-    
+
     # Check if the path has a valid file name, otherwise it's a directory
     # and we should abort the dump.
     if name.value:
@@ -122,7 +124,7 @@ def dump_file(file_path):
 def del_file(fname):
     dump_file(fname)
 
-    # Filenames are case-insenstive in windows.
+    # Filenames are case-insensitive in windows.
     fnames = [x.lower() for x in FILES_LIST]
 
     # If this filename exists in the FILES_LIST, then delete it, because it
@@ -131,16 +133,16 @@ def del_file(fname):
         FILES_LIST.pop(fnames.index(fname.lower()))
 
 def move_file(old_fname, new_fname):
-    # Filenames are case-insenstive in windows.
+    # Filenames are case-insensitive in windows.
     fnames = [x.lower() for x in FILES_LIST]
 
-    # Check whether the old filename is in the FILES_LIST
+    # Check whether the old filename is in the FILES_LIST.
     if old_fname.lower() in fnames:
 
-        # Get the index of the old filename
+        # Get the index of the old filename.
         idx = fnames.index(old_fname.lower())
 
-        # Replace the old filename by the new filename
+        # Replace the old filename by the new filename.
         FILES_LIST[idx] = new_fname
 
 def dump_files():
@@ -187,16 +189,24 @@ class PipeHandler(Thread):
             #elif not success or bytes_read.value == 0:
             #    if KERNEL32.GetLastError() == ERROR_BROKEN_PIPE:
             #        pass
-            
+
             break
 
         if data:
             command = data.strip()
 
+            # Debug, Regular, or Critical information from CuckooMon.
+            if command.startswith("DEBUG:"):
+                log.debug(command[6:])
+            elif command.startswith("INFO:"):
+                log.info(command[5:])
+            elif command.startswith("CRITICAL:"):
+                log.critical(command[9:])
+
             # Parse the prefix for the received notification.
             # In case of GETPIDS we're gonna return the current process ID
             # and the process ID of our parent process (agent.py).
-            if command == "GETPIDS":
+            elif command == "GETPIDS":
                 response = struct.pack("II", PID, PPID)
 
             # When analyzing we don't want to hook all functions, as we're
@@ -239,7 +249,7 @@ class PipeHandler(Thread):
                 if not "," in data:
                     if data.isdigit():
                         process_id = int(data)
-                elif len(data.split(",")) == 2:
+                elif data.count(",") == 2:
                     process_id, param = data.split(",")
                     thread_id = None
                     if process_id.isdigit():
@@ -276,13 +286,13 @@ class PipeHandler(Thread):
                                 add_pids(process_id)
 
                                 # If we have both pid and tid, then we can use
-                                # apc to inject
+                                # apc to inject.
                                 if process_id and thread_id:
                                     proc.inject(dll, apc=True)
                                 else:
-                                    # we inject using CreateRemoteThread, this
+                                    # We inject using CreateRemoteThread, this
                                     # needs the waiting in order to make sure
-                                    # no race conditions occur
+                                    # no race conditions occur.
                                     proc.inject(dll)
                                     wait = True
 
@@ -311,7 +321,7 @@ class PipeHandler(Thread):
                 # Dump the file straight away.
                 del_file(file_path)
             elif command.startswith("FILE_MOVE:"):
-                # syntax = FILE_MOVE:old_file_path::new_file_path
+                # Syntax = "FILE_MOVE:old_file_path::new_file_path".
                 if "::" in command[10:]:
                     old_fname, new_fname = command[10:].split("::", 1)
                     move_file(old_fname.decode("utf-8"),
@@ -479,8 +489,10 @@ class Analyzer:
         # Stop the Pipe Servers.
         for x in xrange(self.PIPE_SERVER_COUNT):
             self.pipes[x].stop()
+
         # Dump all the notified files.
         dump_files()
+
         # Hell yeah.
         log.info("Analysis completed")
 
@@ -498,7 +510,7 @@ class Analyzer:
         # one automatically.
         if not self.config.package:
             log.info("No analysis package specified, trying to detect "
-                     "it automagically")
+                     "it automagically.")
             # If the analysis target is a file, we choose the package according
             # to the file format.
             if self.config.category == "file":
@@ -597,6 +609,7 @@ class Analyzer:
         if pids:
             add_pids(pids)
             pid_check = True
+
         # If the package didn't return any process ID (for example in the case
         # where the package isn't enabling any behavioral analysis), we don't
         # enable the process monitor.
@@ -620,8 +633,8 @@ class Analyzer:
                 break
 
             # If the process lock is locked, it means that something is
-            # operating on the list of monitored processes. Therefore we cannot
-            # proceed with the checks until the lock is released.
+            # operating on the list of monitored processes. Therefore we
+            # cannot proceed with the checks until the lock is released.
             if PROCESS_LOCK.locked():
                 KERNEL32.Sleep(1000)
                 continue
@@ -637,9 +650,9 @@ class Analyzer:
 
                     # If none of the monitored processes are still alive, we
                     # can terminate the analysis.
-                    if len(PROCESS_LIST) == 0:
+                    if not PROCESS_LIST:
                         log.info("Process list is empty, "
-                                 "terminating analysis...")
+                                 "terminating analysis.")
                         break
 
                     # Update the list of monitored processes available to the
@@ -666,6 +679,9 @@ class Analyzer:
             finally:
                 # Zzz.
                 KERNEL32.Sleep(1000)
+
+        # Create the shutdown mutex.
+        KERNEL32.CreateMutexA(None, False, SHUTDOWN_MUTEX)
 
         try:
             # Before shutting down the analysis, the package can perform some
@@ -709,15 +725,17 @@ if __name__ == "__main__":
     try:
         # Initialize the main analyzer class.
         analyzer = Analyzer()
+
         # Run it and wait for the response.
         success = analyzer.run()
+
     # This is not likely to happen.
     except KeyboardInterrupt:
         error = "Keyboard Interrupt"
+
     # If the analysis process encountered a critical error, it will raise a
-    # CuckooError exception, which will force the termination of the analysis
-    # weill notify the agent of the failure. Also catched unexpected
-    # exceptions.
+    # CuckooError exception, which will force the termination of the analysis.
+    # Notify the agent of the failure. Also catch unexpected exceptions.
     except Exception as e:
         # Store the error.
         error_exc = traceback.format_exc()
@@ -728,6 +746,7 @@ if __name__ == "__main__":
             log.exception(error_exc)
         else:
             sys.stderr.write("{0}\n".format(error_exc))
+
     # Once the analysis is completed or terminated for any reason, we report
     # back to the agent, notifying that it can report back to the host.
     finally:

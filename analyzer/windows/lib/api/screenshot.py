@@ -9,7 +9,12 @@ try:
     import ImageGrab
     HAVE_PIL = True
 except:
-    HAVE_PIL = False
+    try:
+        from PIL import ImageChops
+        from PIL import ImageGrab
+        HAVE_PIL = True
+    except:
+        HAVE_PIL = False
 
 class Screenshot:
     """Get screenshots."""

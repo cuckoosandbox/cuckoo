@@ -2,31 +2,27 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
-class IE(Package):
-    """Internet Explorer analysis package."""
+class Python(Package):
+    """Python analysis package."""
 
-    def start(self, url):
+    def start(self, path):
         free = self.options.get("free", False)
-        dll = self.options.get("dll", None)
+        arguments = self.options.get("arguments", "")
+        dll = self.options.get("dll")
         suspended = True
         if free:
             suspended = False
 
-        if os.getenv("ProgramFiles(x86)"):
-            iexplore = os.path.join(os.getenv("ProgramFiles(x86)"), "Internet Explorer", "iexplore.exe")
-        else:
-            iexplore = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
-            
         p = Process()
-        if not p.execute(path=iexplore, args="\"%s\"" % url, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial Internet "
-                                     "Explorer process, analysis aborted")
+        if not p.execute(path="C:\\Python27\\python.exe",
+                         args="%s %s" % (path, arguments),
+                         suspended=suspended):
+            raise CuckooPackageError("Unable to execute python, "
+                                     "analysis aborted.")
 
         if not free and suspended:
             p.inject(dll)

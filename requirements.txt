@@ -7,3 +7,4 @@ bottle
 pefile
 django
 chardet
+nose

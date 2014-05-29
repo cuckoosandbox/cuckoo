@@ -568,6 +568,9 @@ class Database(object):
         except SQLAlchemyError as e:
             log.debug("Database error logging guest stop: {0}".format(e))
             session.rollback()
+        except TypeError:
+            log.warning("Data inconsistency in guests table detected, it might be a crash leftover. Continue")
+            session.rollback()
         finally:
             session.close()
 

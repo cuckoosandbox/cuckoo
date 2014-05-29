@@ -12,12 +12,21 @@ class PDF(Package):
     """PDF analysis package."""
 
     def get_path(self):
-        adobe = os.path.join(os.getenv("ProgramFiles"), "Adobe")
+        if os.getenv("ProgramFiles(x86)"):
+            adobex86 = os.path.join(os.getenv("ProgramFiles(x86)"), "Adobe")
+        else:
+            adobex86 = os.path.join(os.getenv("ProgramFiles"), "Adobe")
+
+        adobe32 = os.path.join(os.getenv("ProgramFiles"), "Adobe")
         paths = [
-            os.path.join(adobe, "Reader 8.0", "Reader", "AcroRd32.exe"),
-            os.path.join(adobe, "Reader 9.0", "Reader", "AcroRd32.exe"),
-            os.path.join(adobe, "Reader 10.0", "Reader", "AcroRd32.exe"),
-            os.path.join(adobe, "Reader 11.0", "Reader", "AcroRd32.exe"),
+            os.path.join(adobe32, "Reader 8.0", "Reader", "AcroRd32.exe"),
+            os.path.join(adobe32, "Reader 9.0", "Reader", "AcroRd32.exe"),
+            os.path.join(adobe32, "Reader 10.0", "Reader", "AcroRd32.exe"),
+            os.path.join(adobe32, "Reader 11.0", "Reader", "AcroRd32.exe"),
+            os.path.join(adobex86, "Reader 8.0", "Reader", "AcroRd32.exe"),
+            os.path.join(adobex86, "Reader 9.0", "Reader", "AcroRd32.exe"),
+            os.path.join(adobex86, "Reader 10.0", "Reader", "AcroRd32.exe"),
+            os.path.join(adobex86, "Reader 11.0", "Reader", "AcroRd32.exe"),
         ]
 
         for path in paths:
