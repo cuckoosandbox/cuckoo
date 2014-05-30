@@ -4,7 +4,11 @@ Cuckoo Sandbox 1.2 (TBD)
 ===============================
 
 * Added Python analysis module
+* Added analysis deletion to web interface
+* Added machine information in reports
+* Added un-hook detection
 * Fixed issue with tcpdump filters
+* Fixed analysis of HTML pages without a proper extension
 * Removed hpfeeds reporting module
 
 Cuckoo Sandbox 1.1 (2014-04-07)
