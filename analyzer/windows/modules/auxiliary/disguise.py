@@ -19,20 +19,21 @@ class Disguise(Auxiliary):
         """Randomizes Windows ProductId, which is occasionally used by malware
         to detect public setups of Cuckoo, e.g. Malwr.com.
         """
-        with OpenKey(
+        key = OpenKey(
             HKEY_LOCAL_MACHINE,
             "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
             0,
             KEY_SET_VALUE
-        ) as key:
-            value = "{0}-{1}-{2}-{3}".format(
-                random_integer(5),
-                random_integer(3),
-                random_integer(7),
-                random_integer(5)
-            )
-            
-            SetValueEx(key, "ProductId", 0, REG_SZ, value)
+        )
+
+        value = "{0}-{1}-{2}-{3}".format(
+            random_integer(5),
+            random_integer(3),
+            random_integer(7),
+            random_integer(5)
+        )
+
+        SetValueEx(key, "ProductId", 0, REG_SZ, value)
 
     def start(self):
         self.change_productid()

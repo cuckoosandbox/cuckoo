@@ -21,8 +21,7 @@ class Debug(Processing):
 
         if os.path.exists(self.log_path):
             try:
-                with codecs.open(self.log_path, "rb", "utf-8") as file:
-                    debug["log"] = file.read()
+                debug["log"] = codecs.open(self.log_path, "rb", "utf-8").read()
             except ValueError as e:
                 raise CuckooProcessingError("Error decoding %s: %s" %
                                             (self.log_path, e))
