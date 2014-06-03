@@ -681,7 +681,7 @@ class Analyzer:
             package_files = pack.package_files()
             if package_files != None:
                 for package in package_files:
-                    upload_to_host(package[0], os.path.join(PATHS["package_files"], package[1]));
+                    upload_to_host(package[0], os.path.join("package_files", package[1]));
         except Exception as e:
             log.warning("The package \"%s\" package_files function raised an "
                         "exception: %s", package_name, e)

@@ -13,7 +13,6 @@ PATHS = {"root"   : ROOT,
          "files"  : os.path.join(ROOT, "files"),
          "shots"  : os.path.join(ROOT, "shots"),
          "memory" : os.path.join(ROOT, "memory"),
-         "drop"   : os.path.join(ROOT, "drop"),
-         "package_files": os.path.join(ROOT, "package_files")}
+         "drop"   : os.path.join(ROOT, "drop")}
 
 PIPE = "\\\\.\\PIPE\\" + random_string(6, 10)
