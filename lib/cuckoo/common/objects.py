@@ -118,9 +118,7 @@ class File:
 
     @property
     def file_data(self):
-        if not self._file_data:
-            with open(self.file_path, "rb") as file:
-                self._file_data = file.read()
+        if not self._file_data: self._file_data = open(self.file_path, "rb").read()
         return self._file_data
 
     def get_size(self):

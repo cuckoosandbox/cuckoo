@@ -83,11 +83,10 @@ def dump_file(file_path):
     """Create a copy of the give file path."""
     try:
         if os.path.exists(file_path):
-            with open(file_path, "rb") as file:
-                sha256 = hashlib.sha256(file.read()).hexdigest()
-                if sha256 in DUMPED_LIST:
-                    # The file was already dumped, just skip.
-                    return
+            sha256 = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
+            if sha256 in DUMPED_LIST:
+                # The file was already dumped, just skip.
+                return
         else:
             log.warning("File at path \"%s\" does not exist, skip", file_path)
             return

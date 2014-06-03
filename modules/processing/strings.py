@@ -23,8 +23,7 @@ class Strings(Processing):
                 raise CuckooProcessingError("Sample file doesn't exist: \"%s\"" % self.file_path)
 
             try:
-                with open(self.file_path, "r") as file:
-                    data = file.read()
+                data = open(self.file_path, "r").read()
             except (IOError, OSError) as e:
                 raise CuckooProcessingError("Error opening file %s" % e)
             strings = re.findall("[\x1f-\x7e]{6,}", data)

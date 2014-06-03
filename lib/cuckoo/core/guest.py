@@ -154,12 +154,13 @@ class GuestManager:
             # If the target of the analysis is a file, upload it to the guest.
             if options["category"] == "file":
                 try:
-                    with open(options["target"], "rb") as file:
-                        data = xmlrpclib.Binary(file.read())
+                    file_data = open(options["target"], "rb").read()
                 except (IOError, OSError) as e:
                     raise CuckooGuestError("Unable to read {0}, error: "
                                            "{1}".format(options["target"], e))
-                    
+
+                data = xmlrpclib.Binary(file_data)
+
                 try:
                     self.server.add_malware(data, options["file_name"])
                 except Exception as e:
