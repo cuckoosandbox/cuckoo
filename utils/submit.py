@@ -138,6 +138,8 @@ def main():
 
         if args.shuffle:
             random.shuffle(files)
+        else:
+            sorted(files)
 
         for file_path in files:
             if not File(file_path).get_size():
