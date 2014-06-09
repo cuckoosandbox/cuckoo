@@ -10,6 +10,7 @@ Cuckoo Sandbox 1.2 (TBD)
 * Fixed issue with tcpdump filters
 * Fixed analysis of HTML pages without a proper extension
 * Removed hpfeeds reporting module
+* Allow Auxiliary modules to run a callback at the very end of an analysis.
 
 Cuckoo Sandbox 1.1 (2014-04-07)
 ===============================
