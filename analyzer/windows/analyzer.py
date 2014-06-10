@@ -570,11 +570,12 @@ class Analyzer:
                             "\"%s\": %s", name, e)
 
         # Walk through the available auxiliary modules.
-        aux_enabled = []
+        aux_enabled, aux_avail = [], []
         for module in Auxiliary.__subclasses__():
             # Try to start the auxiliary module.
             try:
                 aux = module()
+                aux_avail.append(aux)
                 aux.start()
             except (NotImplementedError, AttributeError):
                 log.warning("Auxiliary module %s was not implemented",
@@ -712,6 +713,16 @@ class Analyzer:
                     proc.terminate()
                 except:
                     continue
+
+        # Run the finish callback of every available Auxiliary module.
+        for aux in aux_avail:
+            try:
+                aux.finish()
+            except (NotImplementedError, AttributeError):
+                continue
+            except Exception as e:
+                log.warning("Exception running finish callback of auxiliary "
+                            "module %s: %s", aux.__class__.__name__, e)
 
         # Let's invoke the completion procedure.
         self.complete()
