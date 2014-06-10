@@ -23,7 +23,8 @@ except (CuckooDependencyError, ImportError) as e:
 
 log = logging.getLogger()
 
-def cuckoo_main(quiet=False, debug=False, artwork=False, test=False):
+def cuckoo_main(quiet=False, debug=False, artwork=False, test=False,
+                max_analysis_count=0):
     cur_path = os.getcwd()
     os.chdir(CUCKOO_ROOT)
 
@@ -60,7 +61,7 @@ def cuckoo_main(quiet=False, debug=False, artwork=False, test=False):
     Resultserver()
 
     try:
-        sched = Scheduler()
+        sched = Scheduler(max_analysis_count)
         sched.start()
     except KeyboardInterrupt:
         sched.stop()
@@ -74,11 +75,12 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--version", action="version", version="You are running Cuckoo Sandbox {0}".format(CUCKOO_VERSION))
     parser.add_argument("-a", "--artwork", help="Show artwork", action="store_true", required=False)
     parser.add_argument("-t", "--test", help="Test startup", action="store_true", required=False)
+    parser.add_argument("-m", "--max-analysis-count", help="Maximum number of analyses", type=int, required=False)
     args = parser.parse_args()
 
     try:
         cuckoo_main(quiet=args.quiet, debug=args.debug, artwork=args.artwork,
-                    test=args.test)
+                    test=args.test, max_analysis_count=args.max_analysis_count)
     except CuckooCriticalError as e:
         message = "{0}: {1}".format(e.__class__.__name__, e)
         if len(log.handlers) > 0:
