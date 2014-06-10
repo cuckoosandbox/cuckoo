@@ -308,7 +308,7 @@ def remove(request, task_id):
                 if results_db.analysis.find({"shots": ObjectId(shot)}).count() == 1:
                     fs.delete(ObjectId(shot))
             # Delete network pcap.
-            if results_db.analysis.find({"network.pcap_id": ObjectId(analysis["network"]["pcap_id"])}).count() == 1:
+            if "pcap_id" in analysis["network"] and results_db.analysis.find({"network.pcap_id": ObjectId(analysis["network"]["pcap_id"])}).count() == 1:
                 fs.delete(ObjectId(analysis["network"]["pcap_id"]))
             # Delete dropped.
             for drop in analysis["dropped"]:
