@@ -23,8 +23,7 @@ except (CuckooDependencyError, ImportError) as e:
 
 log = logging.getLogger()
 
-def cuckoo_main(quiet=False, debug=False, artwork=False, test=False,
-                max_analysis_count=0):
+def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     cur_path = os.getcwd()
     os.chdir(CUCKOO_ROOT)
 
@@ -60,6 +59,13 @@ def cuckoo_main(quiet=False, debug=False, artwork=False, test=False,
 
     Resultserver()
 
+    os.chdir(cur_path)
+
+
+def cuckoo_main(max_analysis_count=0):
+    cur_path = os.getcwd()
+    os.chdir(CUCKOO_ROOT)
+
     try:
         sched = Scheduler(max_analysis_count)
         sched.start()
@@ -79,8 +85,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
-        cuckoo_main(quiet=args.quiet, debug=args.debug, artwork=args.artwork,
-                    test=args.test, max_analysis_count=args.max_analysis_count)
+        cuckoo_init(quiet=args.quiet, debug=args.debug, artwork=args.artwork,
+                    test=args.test)
+
+        if not args.artwork and not args.test:
+            cuckoo_main(max_analysis_count=args.max_analysis_count)
     except CuckooCriticalError as e:
         message = "{0}: {1}".format(e.__class__.__name__, e)
         if len(log.handlers) > 0:
