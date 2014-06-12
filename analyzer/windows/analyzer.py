@@ -99,7 +99,7 @@ def dump_file(file_path):
     # 32k is the maximum length for a filename
     path = create_unicode_buffer(32 * 1024)
     name = c_wchar_p()
-    KERNEL32.GetFullPathNameW(file_path, 32 * 1024, path, byref(name))
+    KERNEL32.GetFullPathNameW(unicode(file_path), 32 * 1024, path, byref(name))
     file_path = path.value
 
     # Check if the path has a valid file name, otherwise it's a directory
