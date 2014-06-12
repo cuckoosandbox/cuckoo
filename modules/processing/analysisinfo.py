@@ -38,7 +38,7 @@ class AnalysisInfo(Processing):
         # Fetch sqlalchemy object.
         task = db.view_task(self.task["id"], details=True)
 
-        if task:
+        if task and task.guest:
             # Get machine description ad json.
             machine = task.guest.to_dict()
             # Remove useless task_id.

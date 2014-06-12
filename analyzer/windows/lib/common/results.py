@@ -9,7 +9,7 @@ from lib.core.config import Config
 
 log = logging.getLogger(__name__)
 
-BUFSIZE = 16 * 1024
+BUFSIZE = 1024*1024
 
 def upload_to_host(file_path, dump_path):
     nc = infd = None
