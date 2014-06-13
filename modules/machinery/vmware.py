@@ -83,7 +83,8 @@ class VMware(Machinery):
 
         # Preventive check
         if self._is_running(vmx_path):
-            raise CuckooMachineError("Machine %s is already running" % vmx_path)
+            raise CuckooMachineError("Machine %s is already running" %
+                                     vmx_path)
 
         self._revert(vmx_path, snapshot)
 
@@ -92,7 +93,8 @@ class VMware(Machinery):
         log.debug("Starting vm %s" % vmx_path)
         try:
             p = subprocess.Popen([self.options.vmware.path,
-                                  "start", vmx_path, self.options.vmware.mode],
+                                  "start", vmx_path,
+                                  self.options.vmware.mode],
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             if self.options.vmware.mode.lower() == "gui":
@@ -114,9 +116,7 @@ class VMware(Machinery):
         if self._is_running(vmx_path):
             try:
                 if subprocess.call([self.options.vmware.path,
-                                    "stop",
-                                    vmx_path,
-                                    "hard"],  # Machete never wait.
+                                    "stop", vmx_path, "hard"],
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE):
                     raise CuckooMachineError("Error shutting down "
@@ -125,7 +125,8 @@ class VMware(Machinery):
                 raise CuckooMachineError("Error shutting down machine "
                                          "%s: %s" % (vmx_path, e))
         else:
-            log.warning("Trying to stop an already stopped machine: %s" % vmx_path)
+            log.warning("Trying to stop an already stopped machine: %s",
+                        vmx_path)
 
     def _revert(self, vmx_path, snapshot):
         """Revets machine to snapshot.
