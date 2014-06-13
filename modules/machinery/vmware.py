@@ -29,9 +29,9 @@ class VMware(Machinery):
                                      self.options.vmware.path)
         # Consistency checks.
         for machine in self.machines():
-            host, snapshot = self._get_host_and_snapshot(machine.label)
-            self._check_vmx(host)
-            self._check_snapshot(host, snapshot)
+            snapshot = self._snapshot_from_vmx(machine.label)
+            self._check_vmx(machine.label)
+            self._check_snapshot(machine.label, snapshot)
 
         # Base checks.
         super(VMware, self)._initialize_check()
@@ -74,7 +74,7 @@ class VMware(Machinery):
         @param label: virtual machine identifier: path to vmx file.
         @raise CuckooMachineError: if unable to start.
         """
-        host, snapshot = self._get_host_and_snapshot(label)
+        host, snapshot = label, self._snapshot_from_vmx(label)
 
         # Preventive check
         if self._is_running(host):
@@ -106,7 +106,7 @@ class VMware(Machinery):
             (in older configurations it also includes current snapshot name).
         @raise CuckooMachineError: if unable to stop.
         """
-        host, snapshot = self._get_host_and_snapshot(label)
+        host = label
 
         log.debug("Stopping vm %s" % host)
         if self._is_running(host):
@@ -164,38 +164,9 @@ class VMware(Machinery):
             raise CuckooMachineError("Unable to check running status for %s. "
                                      "Reason: %s" % (host, e))
 
-    def _parse_label(self, label):
-        """Parse configuration file label.
-        @param label: configuration option from config file
-        @return: tuple of host file path and snapshot name
-        """
-        opts = label.strip().split(",")
-        if len(opts) != 2:
-            raise CuckooMachineError("Wrong label syntax for %s in "
-                                     "vmware.conf: %s" % label)
-        label = opts[0].strip()
-        snapshot = opts[1].strip()
-        return label, snapshot
-
-    def _get_host_and_snapshot(self, label):
-        """Get host and snapshot for a given label
-        New configuration files have a specific 'snapshot' option, while
-        older configuration files have a label in the format:
-        'file.vmx,Snapshot'.
+    def _snapshot_from_vmx(self, label):
+        """Get host and snapshot for a given vmx file.
         @param label: configuration option from config file
         """
         vm_info = self.db.view_machine_by_label(label)
-
-        if vm_info.snapshot:
-            host = label.split(",")[0]
-            # Make sure to exclude any snapshot name from older conf files
-            # if you also have the new option parameter
-            snapshot = vm_info.snapshot
-        else:
-            # Keep support for older conf files
-            host, snapshot = self._parse_label(label)
-            log.warning("Deprecation warning: your vmware configuartion "
-                        "file is using old snaphost syntax, please use the "
-                        "option 'snapshot' instead.")
-
-        return host, snapshot
+        return vm_info.snapshot
