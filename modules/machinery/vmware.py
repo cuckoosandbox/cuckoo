@@ -19,7 +19,7 @@ class VMware(Machinery):
     def _initialize_check(self):
         """Check for configuration file and vmware setup.
         @raise CuckooMachineError: if configuration is missing or wrong.
-        """  
+        """
         if not self.options.vmware.path:
             raise CuckooMachineError("VMware vmrun path missing, "
                                      "please add it to vmware.conf")
@@ -32,6 +32,7 @@ class VMware(Machinery):
             host, snapshot = self._get_host_and_snapshot(machine.label)
             self._check_vmx(host)
             self._check_snapshot(host, snapshot)
+
         # Base checks.
         super(VMware, self)._initialize_check()
 
@@ -57,12 +58,9 @@ class VMware(Machinery):
                                   "listSnapshots", host],
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
-            output, error = p.communicate()
+            output, _ = p.communicate()
             if output:
-                if snapshot in output:
-                    return True
-                else:
-                    return False
+                return snapshot in output
             else:
                 raise CuckooMachineError("Unable to get snapshot list for %s. "
                                          "No output from "
@@ -93,7 +91,7 @@ class VMware(Machinery):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             if self.options.vmware.mode.lower() == "gui":
-                output, error = p.communicate()
+                output, _ = p.communicate()
                 if output:
                     raise CuckooMachineError("Unable to start machine "
                                              "%s: %s" % (host, output))
@@ -136,9 +134,7 @@ class VMware(Machinery):
         log.debug("Revert snapshot for vm %s" % host)
         try:
             if subprocess.call([self.options.vmware.path,
-                               "revertToSnapshot",
-                               host,
-                               snapshot],
+                                "revertToSnapshot", host, snapshot],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE):
                 raise CuckooMachineError("Unable to revert snapshot for "
@@ -159,10 +155,7 @@ class VMware(Machinery):
                                  stderr=subprocess.PIPE)
             output, error = p.communicate()
             if output:
-                if host in output:
-                    return True
-                else:
-                    return False
+                return host in output
             else:
                 raise CuckooMachineError("Unable to check running status "
                                          "for %s. No output from "
@@ -183,7 +176,7 @@ class VMware(Machinery):
         label = opts[0].strip()
         snapshot = opts[1].strip()
         return label, snapshot
-    
+
     def _get_host_and_snapshot(self, label):
         """Get host and snapshot for a given label
         New configuration files have a specific 'snapshot' option, while
@@ -192,9 +185,9 @@ class VMware(Machinery):
         @param label: configuration option from config file
         """
         vm_info = self.db.view_machine_by_label(label)
-        
+
         if vm_info.snapshot:
-            host = label.split(',')[0] 
+            host = label.split(",")[0]
             # Make sure to exclude any snapshot name from older conf files
             # if you also have the new option parameter
             snapshot = vm_info.snapshot
