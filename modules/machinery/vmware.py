@@ -15,6 +15,7 @@ log = logging.getLogger(__name__)
 
 class VMware(Machinery):
     """Virtualization layer for VMware Workstation using vmrun utility."""
+    LABEL = "vmx_path"
 
     def _initialize_check(self):
         """Check for configuration file and vmware setup.
@@ -23,15 +24,18 @@ class VMware(Machinery):
         if not self.options.vmware.path:
             raise CuckooMachineError("VMware vmrun path missing, "
                                      "please add it to vmware.conf")
+
         if not os.path.exists(self.options.vmware.path):
             raise CuckooMachineError("VMware vmrun not found in "
                                      "specified path %s" %
                                      self.options.vmware.path)
         # Consistency checks.
         for machine in self.machines():
-            snapshot = self._snapshot_from_vmx(machine.label)
-            self._check_vmx(machine.label)
-            self._check_snapshot(machine.label, snapshot)
+            vmx_path = machine.label
+
+            snapshot = self._snapshot_from_vmx(vmx_path)
+            self._check_vmx(vmx_path)
+            self._check_snapshot(vmx_path, snapshot)
 
         # Base checks.
         super(VMware, self)._initialize_check()
@@ -69,12 +73,12 @@ class VMware(Machinery):
             raise CuckooMachineError("Unable to get snapshot list for %s. "
                                      "Reason: %s" % (host, e))
 
-    def start(self, label):
+    def start(self, vmx_path):
         """Start a virtual machine.
-        @param label: virtual machine identifier: path to vmx file.
+        @param vmx_path: path to vmx file.
         @raise CuckooMachineError: if unable to start.
         """
-        host, snapshot = label, self._snapshot_from_vmx(label)
+        host, snapshot = vmx_path, self._snapshot_from_vmx(vmx_path)
 
         # Preventive check
         if self._is_running(host):
@@ -100,13 +104,12 @@ class VMware(Machinery):
             raise CuckooMachineError("Unable to start machine %s in %s "
                                      "mode: %s" % (host, mode, e))
 
-    def stop(self, label):
+    def stop(self, vmx_path):
         """Stops a virtual machine.
-        @param label: virtual machine identifier: path to vmx file
-            (in older configurations it also includes current snapshot name).
+        @param vmx_path: path to vmx file.
         @raise CuckooMachineError: if unable to stop.
         """
-        host = label
+        host = vmx_path
 
         log.debug("Stopping vm %s" % host)
         if self._is_running(host):
@@ -164,9 +167,9 @@ class VMware(Machinery):
             raise CuckooMachineError("Unable to check running status for %s. "
                                      "Reason: %s" % (host, e))
 
-    def _snapshot_from_vmx(self, label):
-        """Get host and snapshot for a given vmx file.
-        @param label: configuration option from config file
+    def _snapshot_from_vmx(self, vmx_path):
+        """Get snapshot for a given vmx file.
+        @param vmx_path: configuration option from config file
         """
-        vm_info = self.db.view_machine_by_label(label)
+        vm_info = self.db.view_machine_by_label(vmx_path)
         return vm_info.snapshot

@@ -54,6 +54,7 @@ class Auxiliary(object):
 
 class Machinery(object):
     """Base abstract class for machinery modules."""
+    LABEL = "label"
 
     def __init__(self):
         self.module_name = ""
@@ -94,7 +95,7 @@ class Machinery(object):
                 machine_opts = self.options.get(machine_id.strip())
                 machine = Dictionary()
                 machine.id = machine_id.strip()
-                machine.label = machine_opts["label"]
+                machine.label = machine_opts[self.LABEL]
                 machine.platform = machine_opts["platform"]
                 machine.tags = machine_opts.get("tags", None)
                 machine.ip = machine_opts["ip"]
