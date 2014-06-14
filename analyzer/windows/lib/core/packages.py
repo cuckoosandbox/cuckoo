@@ -13,9 +13,9 @@ def choose_package(file_type, file_name):
     file_name = file_name.lower()
 
     if "DLL" in file_type:
-         if file_name.endswith(".cpl"):
+        if file_name.endswith(".cpl"):
             return "cpl"
-         else:
+        else:
             return "dll"
     elif "PE32" in file_type or "MS-DOS" in file_type:
         return "exe"

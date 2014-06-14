@@ -294,7 +294,6 @@ class Task(Base):
 
         # Tags are a relation so no column to iterate.
         d["tags"] = [tag.name for tag in self.tags]
-
         return d
 
     def to_json(self):
@@ -436,7 +435,7 @@ class Database(object):
                           snapshot=snapshot,
                           resultserver_ip=resultserver_ip,
                           resultserver_port=resultserver_port)
-        # Deal with tags format (i.e. foo,bar,baz)
+        # Deal with tags format (i.e., foo,bar,baz)
         if tags:
             for tag in tags.replace(" ", "").split(","):
                 machine.tags.append(self._get_or_create(session, Tag, name=tag))
@@ -582,7 +581,7 @@ class Database(object):
             log.error("You can select machine only by name or by platform.")
             return None
         elif name and tags:
-            # Also wrong usage
+            # Also wrong usage.
             log.error("You can select machine only by name or by tags.")
             return None
 
@@ -598,13 +597,11 @@ class Database(object):
 
             # Check if there are any machines that satisfy the
             # selection requirements.
-            if machines.count() == 0:
-                raise CuckooOperationalError("No machines match selection criteria")
+            if not machines.count():
+                raise CuckooOperationalError("No machines match selection criteria.")
 
-            # Get only free machines.
-            machines = machines.filter(Machine.locked == False)
-            # Get only one.
-            machine = machines.first()
+            # Get the first free machine.
+            machine = machines.filter(Machine.locked == False).first()
         except SQLAlchemyError as e:
             log.debug("Database error locking machine: {0}".format(e))
             session.close()
@@ -788,9 +785,9 @@ class Database(object):
         task.memory = memory
         task.enforce_timeout = enforce_timeout
 
-        # Deal with tags format (i.e. foo,bar,baz)
+        # Deal with tags format (i.e., foo,bar,baz)
         if tags:
-            for tag in tags.replace(" ","").split(","):
+            for tag in tags.replace(" ", "").split(","):
                 task.tags.append(self._get_or_create(session, Tag, name=tag))
 
         if clock:
@@ -798,7 +795,7 @@ class Database(object):
                 try:
                     task.clock = datetime.strptime(clock, "%m-%d-%Y %H:%M:%S")
                 except ValueError:
-                    log.warning("The date you specified has an invalid format, using current timestamp")
+                    log.warning("The date you specified has an invalid format, using current timestamp.")
                     task.clock = datetime.now()
             else:
                 task.clock = clock
@@ -846,7 +843,7 @@ class Database(object):
         """
         if not file_path or not os.path.exists(file_path):
             return None
-        
+
         # Convert empty strings and None values to a valid int
         if not timeout:
             timeout = 0
@@ -893,7 +890,7 @@ class Database(object):
         @param clock: virtual machine clock time
         @return: cursor or None.
         """
-        
+
         # Convert empty strings and None values to a valid int
         if not timeout:
             timeout = 0
@@ -942,7 +939,7 @@ class Database(object):
 
         # Normalize tags.
         if task.tags:
-            tags = ",".join([tag.name for tag in task.tags])
+            tags = ",".join(tag.name for tag in task.tags)
         else:
             tags = task.tags
 

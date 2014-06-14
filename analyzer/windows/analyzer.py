@@ -186,7 +186,7 @@ class PipeHandler(Thread):
 
             if not success and KERNEL32.GetLastError() == ERROR_MORE_DATA:
                 continue
-            #elif not success or bytes_read.value == 0:
+            # elif not success or bytes_read.value == 0:
             #    if KERNEL32.GetLastError() == ERROR_BROKEN_PIPE:
             #        pass
 
@@ -246,7 +246,7 @@ class PipeHandler(Thread):
                 # We parse the process ID.
                 data = command[8:]
                 process_id = thread_id = None
-                if not "," in data:
+                if "," not in data:
                     if data.isdigit():
                         process_id = int(data)
                 elif data.count(",") == 2:
