@@ -16,7 +16,7 @@ class XLS(Package):
         if os.getenv("ProgramFiles(x86)"):
             officex86 = os.path.join(os.getenv("ProgramFiles(x86)"), "Microsoft Office")
         else:
-            officex86 = os.path.join(os.getenv("ProgramFiles"), "Microsoft Office") 
+            officex86 = os.path.join(os.getenv("ProgramFiles"), "Microsoft Office")
         office32 = os.path.join(os.getenv("ProgramFiles"), "Microsoft Office")
         paths = [
             os.path.join(office32, "EXCEL.EXE"),
@@ -41,10 +41,10 @@ class XLS(Package):
         excel = self.get_path()
         if not excel:
             raise CuckooPackageError("Unable to find any Microsoft "
-                                     "Office Excel executable available")
+                                     "Office Excel executable available.")
 
-        dll = self.options.get("dll", None)
-        free = self.options.get("free", False)
+        dll = self.options.get("dll")
+        free = self.options.get("free")
         suspended = True
         if free:
             suspended = False
@@ -52,7 +52,7 @@ class XLS(Package):
         p = Process()
         if not p.execute(path=excel, args="\"%s\"" % path, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Microsoft "
-                                     "Office Excel process, analysis aborted")
+                                     "Office Excel process, analysis aborted.")
 
         if not free and suspended:
             p.inject(dll)

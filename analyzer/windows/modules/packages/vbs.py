@@ -16,7 +16,7 @@ class VBS(Package):
 
     def get_path(self):
         paths = [
-            os.path.join(os.getenv("SystemRoot"), "system32", "wscript.exe")
+            os.path.join(os.getenv("SystemRoot"), "system32", "wscript.exe"),
         ]
 
         for path in paths:
@@ -31,8 +31,8 @@ class VBS(Package):
             raise CuckooPackageError("Unable to find any WScript "
                                      "executable available")
 
-        dll = self.options.get("dll", None)
-        free = self.options.get("free", False)
+        dll = self.options.get("dll")
+        free = self.options.get("free")
         suspended = True
         if free:
             suspended = False
@@ -40,7 +40,7 @@ class VBS(Package):
         p = Process()
         if not p.execute(path=wscript, args="\"{0}\"".format(path), suspended=suspended):
             raise CuckooPackageError("Unable to execute initial WScript "
-                                     "process, analysis aborted")
+                                     "process, analysis aborted.")
 
         if not free and suspended:
             p.inject(dll)

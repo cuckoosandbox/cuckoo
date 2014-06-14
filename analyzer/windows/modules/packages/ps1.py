@@ -17,7 +17,7 @@ class PS1(Package):
         paths = [
             os.path.join(os.getenv("SystemRoot"), "system32", "WindowsPowerShell", "v1.0", "powershell.exe"),
             os.path.join(os.getenv("SystemRoot"), "system32", "WindowsPowerShell", "v2.0", "powershell.exe"),
-            os.path.join(os.getenv("SystemRoot"), "system32", "WindowsPowerShell", "v3.0", "powershell.exe")	    	    
+            os.path.join(os.getenv("SystemRoot"), "system32", "WindowsPowerShell", "v3.0", "powershell.exe"),
         ]
 
         for path in paths:
@@ -29,7 +29,7 @@ class PS1(Package):
     def start(self, path):
         powershell = self.get_path()
         if not powershell:
-            raise CuckooPackageError("Unable to find any PowerShell executable available")
+            raise CuckooPackageError("Unable to find any PowerShell executable available.")
 
         dll = self.options.get("dll", None)
         free = self.options.get("free", False)
@@ -41,7 +41,7 @@ class PS1(Package):
 
         p = Process()
         if not p.execute(path=powershell, args=args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial PowerShell process, analysis aborted")
+            raise CuckooPackageError("Unable to execute initial PowerShell process, analysis aborted.")
 
         if not free and suspended:
             p.inject(dll)

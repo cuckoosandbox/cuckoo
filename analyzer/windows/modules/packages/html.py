@@ -16,8 +16,8 @@ class HTML(Package):
     """HTML file analysis package."""
 
     def start(self, path):
-        free = self.options.get("free", False)
-        dll = self.options.get("dll", None)
+        free = self.options.get("free")
+        dll = self.options.get("dll")
         suspended = True
         if free:
             suspended = False
@@ -28,7 +28,7 @@ class HTML(Package):
             iex86 = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
 
         ie32 = os.path.join(os.getenv("ProgramFiles"), "Internet Explorer", "iexplore.exe")
-        
+
         if os.path.exists(iex86):
             iexplore = iex86
         else:
@@ -37,10 +37,10 @@ class HTML(Package):
         # Travelling inside malware universe you should bring a towel with you.
         # If a file detected as HTML is submitted without a proper extension,
         # or without an extension at all (are you used to name samples with hash?),
-        # IE is going to open it as a text file, so you precious sample will not
+        # IE is going to open it as a text file, so your precious sample will not
         # be executed.
         # We help you sample to execute renaming it with a proper extension.
-        if not path.endswith(".html") or not path.endswith(".htm"):
+        if not path.endswith((".htm", ".html")):
             shutil.copy(path, path + ".html")
             path = path + ".html"
             log.info("Submitted file is missing extension, adding .html")
@@ -48,7 +48,7 @@ class HTML(Package):
         p = Process()
         if not p.execute(path=iexplore, args="\"%s\"" % path, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Internet "
-                                     "Explorer process, analysis aborted")
+                                     "Explorer process, analysis aborted.")
 
         if not free and suspended:
             p.inject(dll)

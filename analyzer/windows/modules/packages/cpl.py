@@ -22,10 +22,10 @@ class CPL(Package):
         control = self.get_path()
         if not control:
             raise CuckooPackageError("Unable to find any control.exe "
-                                     "executable available")
+                                     "executable available.")
 
-        dll = self.options.get("dll", None)
-        free = self.options.get("free", False)
+        dll = self.options.get("dll")
+        free = self.options.get("free")
         suspended = True
         if free:
             suspended = False
@@ -34,7 +34,7 @@ class CPL(Package):
         if not p.execute(path=control, args="\"%s\"" % path,
                          suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Control "
-                                     "process, analysis aborted")
+                                     "process, analysis aborted.")
 
         if not free and suspended:
             p.inject(dll)

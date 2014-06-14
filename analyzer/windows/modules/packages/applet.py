@@ -25,7 +25,7 @@ class Applet(Package):
             os.path.join(prog_files, "Mozilla Firefox", "firefox.exe"),
             os.path.join(prog_files, "Internet Explorer", "iexplore.exe"),
             os.path.join(prog_filesx86, "Mozilla Firefox", "firefox.exe"),
-            os.path.join(prog_filesx86, "Internet Explorer", "iexplore.exe")
+            os.path.join(prog_filesx86, "Internet Explorer", "iexplore.exe"),
         ]
 
         for path in paths:
@@ -35,12 +35,14 @@ class Applet(Package):
         return None
 
     def make_html(self, path, class_name):
-        html = "<html>"
-        html += "<body>"
-        html += "<applet archive=\"%s\" code=\"%s\" width=\"1\" height=\"1\">" % (path, class_name)
-        html += "</applet>"
-        html += "</body>"
-        html += "</html>"
+        html = """
+        <html>
+            <body>
+                <applet archive="%s" code="%s" width="1" height="1">
+                </applet>
+            </body>
+        </html>
+        """ % (path, class_name)
 
         file_name = "".join(random.choice(string.ascii_lowercase) for x in range(6)) + ".html"
         file_path = os.path.join(os.getenv("TEMP"), file_name)
@@ -53,11 +55,11 @@ class Applet(Package):
         browser = self.get_path()
         if not browser:
             raise CuckooPackageError("Unable to find any browser "
-                                     "executable available")
+                                     "executable available.")
 
-        dll = self.options.get("dll", None)
-        free = self.options.get("free", False)
-        class_name = self.options.get("class", None)
+        dll = self.options.get("dll")
+        free = self.options.get("free")
+        class_name = self.options.get("class")
         suspended = True
         if free:
             suspended = False

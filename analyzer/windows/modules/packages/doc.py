@@ -32,7 +32,7 @@ class DOC(Package):
             os.path.join(ms_officex86, "Office14", "WINWORD.EXE"),
             os.path.join(ms_officex86, "Office15", "WINWORD.EXE"),
             os.path.join(ms_officex86, "WORDVIEW.EXE"),
-            os.path.join(ms_officex86, "Office11", "WORDVIEW.EXE")
+            os.path.join(ms_officex86, "Office11", "WORDVIEW.EXE"),
         ]
 
         for path in paths:
@@ -47,8 +47,8 @@ class DOC(Package):
             raise CuckooPackageError("Unable to find any Microsoft "
                                      "Office Word executable available")
 
-        dll = self.options.get("dll", None)
-        free = self.options.get("free", False)
+        dll = self.options.get("dll")
+        free = self.options.get("free")
         suspended = True
         if free:
             suspended = False

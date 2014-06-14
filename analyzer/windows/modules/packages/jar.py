@@ -18,12 +18,12 @@ class Jar(Package):
             javax86 = os.path.join(os.getenv("ProgramFiles"), "Java")
 
         java32 = os.path.join(os.getenv("ProgramFiles"), "Java")
-            
+
         paths = [
             os.path.join(java32, "jre7", "bin", "java.exe"),
             os.path.join(java32, "jre6", "bin", "java.exe"),
             os.path.join(javax86, "jre7", "bin", "java.exe"),
-            os.path.join(javax86, "jre6", "bin", "java.exe")
+            os.path.join(javax86, "jre6", "bin", "java.exe"),
         ]
 
         for path in paths:
@@ -36,11 +36,11 @@ class Jar(Package):
         java = self.get_path()
         if not java:
             raise CuckooPackageError("Unable to find any Java "
-                                     "executable available")
+                                     "executable available.")
 
-        dll = self.options.get("dll", None)
-        free = self.options.get("free", False)
-        class_path = self.options.get("class", None)
+        dll = self.options.get("dll")
+        free = self.options.get("free")
+        class_path = self.options.get("class")
         suspended = True
         if free:
             suspended = False
@@ -53,7 +53,7 @@ class Jar(Package):
         p = Process()
         if not p.execute(path=java, args=args, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial Java "
-                                     "process, analysis aborted")
+                                     "process, analysis aborted.")
 
         if not free and suspended:
             p.inject(dll)

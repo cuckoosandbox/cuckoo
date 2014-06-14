@@ -10,7 +10,7 @@ class Python(Package):
     """Python analysis package."""
 
     def start(self, path):
-        free = self.options.get("free", False)
+        free = self.options.get("free")
         arguments = self.options.get("arguments", "")
         dll = self.options.get("dll")
         suspended = True

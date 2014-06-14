@@ -14,7 +14,7 @@ class Zip(Package):
 
     def start(self, path):
         root = os.environ["TEMP"]
-        password = self.options.get("password", None)
+        password = self.options.get("password")
 
         with ZipFile(path, "r") as archive:
             zipinfos = archive.infolist()
@@ -42,9 +42,9 @@ class Zip(Package):
 
         file_path = os.path.join(root, file_name)
 
-        dll = self.options.get("dll", None)
-        free = self.options.get("free", False)
-        args = self.options.get("arguments", None)
+        dll = self.options.get("dll")
+        free = self.options.get("free")
+        args = self.options.get("arguments")
         suspended = True
         if free:
             suspended = False
@@ -52,7 +52,7 @@ class Zip(Package):
         p = Process()
         if not p.execute(path=file_path, args=args, suspended=suspended):
             raise CuckooPackageError("Unable to execute initial process, "
-                                     "analysis aborted")
+                                     "analysis aborted.")
 
         if not free and suspended:
             p.inject(dll)
