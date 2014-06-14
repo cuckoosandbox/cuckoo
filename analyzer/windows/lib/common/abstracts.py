@@ -2,6 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+from lib.api.process import Process
+
 class Package(object):
     """Base abstact analysis package."""
     
@@ -24,16 +26,19 @@ class Package(object):
         raise NotImplementedError
 
     def check(self):
-        """Check.
-        @raise NotImplementedError: this method is abstract.
-        """
-        raise NotImplementedError
+        """Check."""
+        return True
 
     def finish(self):
         """Finish run.
-        @raise NotImplementedError: this method is abstract.
+        If specified to do so, this method dumps the memory of
+        all running processes.
         """
-        raise NotImplementedError
+        if self.options.get("procmemdump"):
+            for pid in self.pids:
+                p = Process(pid=pid)
+                p.dump_memory()
+        return True
 
 
 class Auxiliary(object):
