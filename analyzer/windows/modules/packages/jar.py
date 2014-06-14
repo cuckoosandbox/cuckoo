@@ -2,42 +2,19 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
 class Jar(Package):
     """Java analysis package."""
-
-    def get_path(self):
-        if os.getenv("ProgramFiles(x86)"):
-            javax86 = os.path.join(os.getenv("ProgramFiles(x86)"), "Java")
-        else:
-            javax86 = os.path.join(os.getenv("ProgramFiles"), "Java")
-
-        java32 = os.path.join(os.getenv("ProgramFiles"), "Java")
-
-        paths = [
-            os.path.join(java32, "jre7", "bin", "java.exe"),
-            os.path.join(java32, "jre6", "bin", "java.exe"),
-            os.path.join(javax86, "jre7", "bin", "java.exe"),
-            os.path.join(javax86, "jre6", "bin", "java.exe"),
-        ]
-
-        for path in paths:
-            if os.path.exists(path):
-                return path
-
-        return None
+    PATHS = [
+        ("ProgramFiles", "Java", "jre7", "bin", "java.exe"),
+        ("ProgramFiles", "Java", "jre6", "bin", "java.exe"),
+    ]
 
     def start(self, path):
-        java = self.get_path()
-        if not java:
-            raise CuckooPackageError("Unable to find any Java "
-                                     "executable available.")
-
+        java = self.get_path("Java")
         dll = self.options.get("dll")
         free = self.options.get("free")
         class_path = self.options.get("class")

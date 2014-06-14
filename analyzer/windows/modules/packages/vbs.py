@@ -2,8 +2,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
@@ -13,24 +11,12 @@ from lib.common.exceptions import CuckooPackageError
 
 class VBS(Package):
     """VBS analysis package."""
-
-    def get_path(self):
-        paths = [
-            os.path.join(os.getenv("SystemRoot"), "system32", "wscript.exe"),
-        ]
-
-        for path in paths:
-            if os.path.exists(path):
-                return path
-
-        return None
+    PATHS = [
+        ("SystemRoot", "system32", "wscript.exe"),
+    ]
 
     def start(self, path):
-        wscript = self.get_path()
-        if not wscript:
-            raise CuckooPackageError("Unable to find any WScript "
-                                     "executable available")
-
+        wscript = self.get_path("WScript")
         dll = self.options.get("dll")
         free = self.options.get("free")
         suspended = True

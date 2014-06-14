@@ -2,11 +2,15 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os
+
 from lib.api.process import Process
+from lib.common.exceptions import CuckooPackageError
 
 class Package(object):
     """Base abstact analysis package."""
-    
+    PATHS = []
+
     def __init__(self, options={}):
         """@param options: options dict."""
         self.options = options
@@ -28,6 +32,27 @@ class Package(object):
     def check(self):
         """Check."""
         return True
+
+    def _enum_paths(self):
+        for path in self.PATHS:
+            basedir = path[0]
+            if basedir == "SystemRoot":
+                yield os.path.join(os.getenv("SystemRoot"), *path[1:])
+            elif basedir == "ProgramFiles":
+                yield os.path.join(os.getenv("ProgramFiles"), *path[1:])
+                if os.getenv("ProgramFiles(x86)"):
+                    yield os.path.join(os.getenv("ProgramFiles(x86)"),
+                                       *path[1:])
+            else:
+                yield os.path.join(*path)
+
+    def get_path(self, application):
+        for path in self._enum_paths():
+            if os.path.exists(path):
+                return path
+
+        raise CuckooPackageError("Unable to find any %s executable." %
+                                 application)
 
     def finish(self):
         """Finish run.

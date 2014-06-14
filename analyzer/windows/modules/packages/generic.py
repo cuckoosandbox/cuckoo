@@ -2,14 +2,15 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
 class Genric(Package):
     """Generic analysis package."""
+    PATHS = [
+        ("SystemRoot", "system32", "cmd.exe"),
+    ]
 
     def start(self, path):
         free = self.options.get("free", False)
@@ -18,7 +19,7 @@ class Genric(Package):
         if free:
             suspended = False
 
-        cmd_path = os.path.join(os.getenv("SystemRoot"), "system32", "cmd.exe")
+        cmd_path = self.get_path("cmd.exe")
         cmd_args = "/c start \"{0}\"".format(path)
 
         p = Process()

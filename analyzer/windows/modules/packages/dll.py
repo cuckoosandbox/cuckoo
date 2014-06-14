@@ -8,8 +8,12 @@ from lib.common.exceptions import CuckooPackageError
 
 class Dll(Package):
     """DLL analysis package."""
+    PATHS = [
+        ("SystemRoot", "system32", "rundll32.exe"),
+    ]
 
     def start(self, path):
+        rundll32 = self.get_path("rundll32.exe")
         free = self.options.get("free")
         function = self.options.get("function", "DllMain")
         arguments = self.options.get("arguments")
@@ -23,7 +27,7 @@ class Dll(Package):
             args += " {0}".format(arguments)
 
         p = Process()
-        if not p.execute(path="C:\\WINDOWS\\system32\\rundll32.exe", args=args, suspended=suspended):
+        if not p.execute(path=rundll32, args=args, suspended=suspended):
             raise CuckooPackageError("Unable to execute rundll32, "
                                      "analysis aborted.")
 

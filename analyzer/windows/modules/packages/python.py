@@ -8,8 +8,12 @@ from lib.common.exceptions import CuckooPackageError
 
 class Python(Package):
     """Python analysis package."""
+    PATHS = [
+        ("C:", "Python27", "python.exe"),
+    ]
 
     def start(self, path):
+        python = self.get_path("Python")
         free = self.options.get("free")
         arguments = self.options.get("arguments", "")
         dll = self.options.get("dll")
@@ -18,7 +22,7 @@ class Python(Package):
             suspended = False
 
         p = Process()
-        if not p.execute(path="C:\\Python27\\python.exe",
+        if not p.execute(path=python,
                          args="%s %s" % (path, arguments),
                          suspended=suspended):
             raise CuckooPackageError("Unable to execute python, "

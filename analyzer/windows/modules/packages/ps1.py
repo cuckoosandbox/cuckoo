@@ -2,8 +2,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
@@ -12,25 +10,14 @@ from lib.common.exceptions import CuckooPackageError
 
 class PS1(Package):
     """PowerShell analysis package."""
-
-    def get_path(self):
-        paths = [
-            os.path.join(os.getenv("SystemRoot"), "system32", "WindowsPowerShell", "v1.0", "powershell.exe"),
-            os.path.join(os.getenv("SystemRoot"), "system32", "WindowsPowerShell", "v2.0", "powershell.exe"),
-            os.path.join(os.getenv("SystemRoot"), "system32", "WindowsPowerShell", "v3.0", "powershell.exe"),
-        ]
-
-        for path in paths:
-            if os.path.exists(path):
-                return path
-
-        return None
+    PATHS = [
+        ("SystemRoot", "system32", "WindowsPowerShell", "v1.0", "powershell.exe"),
+        ("SystemRoot", "system32", "WindowsPowerShell", "v2.0", "powershell.exe"),
+        ("SystemRoot", "system32", "WindowsPowerShell", "v3.0", "powershell.exe"),
+    ]
 
     def start(self, path):
-        powershell = self.get_path()
-        if not powershell:
-            raise CuckooPackageError("Unable to find any PowerShell executable available.")
-
+        powershell = self.get_path("PowerShell")
         dll = self.options.get("dll", None)
         free = self.options.get("free", False)
         suspended = True

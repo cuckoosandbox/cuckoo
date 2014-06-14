@@ -2,45 +2,21 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
 class PDF(Package):
     """PDF analysis package."""
-
-    def get_path(self):
-        if os.getenv("ProgramFiles(x86)"):
-            adobex86 = os.path.join(os.getenv("ProgramFiles(x86)"), "Adobe")
-        else:
-            adobex86 = os.path.join(os.getenv("ProgramFiles"), "Adobe")
-
-        adobe32 = os.path.join(os.getenv("ProgramFiles"), "Adobe")
-        paths = [
-            os.path.join(adobe32, "Reader 8.0", "Reader", "AcroRd32.exe"),
-            os.path.join(adobe32, "Reader 9.0", "Reader", "AcroRd32.exe"),
-            os.path.join(adobe32, "Reader 10.0", "Reader", "AcroRd32.exe"),
-            os.path.join(adobe32, "Reader 11.0", "Reader", "AcroRd32.exe"),
-            os.path.join(adobex86, "Reader 8.0", "Reader", "AcroRd32.exe"),
-            os.path.join(adobex86, "Reader 9.0", "Reader", "AcroRd32.exe"),
-            os.path.join(adobex86, "Reader 10.0", "Reader", "AcroRd32.exe"),
-            os.path.join(adobex86, "Reader 11.0", "Reader", "AcroRd32.exe"),
-        ]
-
-        for path in paths:
-            if os.path.exists(path):
-                return path
-
-        return None
+    PATHS = [
+        ("ProgramFiles", "Adobe", "Reader 8.0", "Reader", "AcroRd32.exe"),
+        ("ProgramFiles", "Adobe", "Reader 9.0", "Reader", "AcroRd32.exe"),
+        ("ProgramFiles", "Adobe", "Reader 10.0", "Reader", "AcroRd32.exe"),
+        ("ProgramFiles", "Adobe", "Reader 11.0", "Reader", "AcroRd32.exe"),
+    ]
 
     def start(self, path):
-        reader = self.get_path()
-        if not reader:
-            raise CuckooPackageError("Unable to find any Adobe Reader "
-                                     "executable available.")
-
+        reader = self.get_path("Adobe Reader")
         dll = self.options.get("dll", None)
         free = self.options.get("free", False)
         suspended = True

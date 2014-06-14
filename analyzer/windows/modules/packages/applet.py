@@ -12,27 +12,10 @@ from lib.common.exceptions import CuckooPackageError
 
 class Applet(Package):
     """Java Applet analysis package."""
-
-    def get_path(self):
-        if os.getenv("ProgramFiles(x86"):
-            prog_filesx86 = os.getenv("ProgramFiles(x86)")
-        else:
-            prog_files = os.getenv("ProgramFiles")
-
-        prog_files = os.getenv("ProgramFiles")
-
-        paths = [
-            os.path.join(prog_files, "Mozilla Firefox", "firefox.exe"),
-            os.path.join(prog_files, "Internet Explorer", "iexplore.exe"),
-            os.path.join(prog_filesx86, "Mozilla Firefox", "firefox.exe"),
-            os.path.join(prog_filesx86, "Internet Explorer", "iexplore.exe"),
-        ]
-
-        for path in paths:
-            if os.path.exists(path):
-                return path
-
-        return None
+    PATHS = [
+        ("ProgramFiles", "Mozilla Firefox", "firefox.exe"),
+        ("ProgramFiles", "Internet Explorer", "iexplore.exe"),
+    ]
 
     def make_html(self, path, class_name):
         html = """
@@ -52,11 +35,7 @@ class Applet(Package):
         return file_path
 
     def start(self, path):
-        browser = self.get_path()
-        if not browser:
-            raise CuckooPackageError("Unable to find any browser "
-                                     "executable available.")
-
+        browser = self.get_path("browser")
         dll = self.options.get("dll")
         free = self.options.get("free")
         class_name = self.options.get("class")

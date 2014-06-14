@@ -2,8 +2,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
@@ -11,38 +9,16 @@ from lib.common.exceptions import CuckooPackageError
 
 class XLS(Package):
     """Excel analysis package."""
-
-    def get_path(self):
-        if os.getenv("ProgramFiles(x86)"):
-            officex86 = os.path.join(os.getenv("ProgramFiles(x86)"), "Microsoft Office")
-        else:
-            officex86 = os.path.join(os.getenv("ProgramFiles"), "Microsoft Office")
-        office32 = os.path.join(os.getenv("ProgramFiles"), "Microsoft Office")
-        paths = [
-            os.path.join(office32, "EXCEL.EXE"),
-            os.path.join(office32, "Office11", "EXCEL.EXE"),
-            os.path.join(office32, "Office12", "EXCEL.EXE"),
-            os.path.join(office32, "Office14", "EXCEL.EXE"),
-            os.path.join(office32, "Office15", "EXCEL.EXE"),
-            os.path.join(officex86, "EXCEL.EXE"),
-            os.path.join(officex86, "Office11", "EXCEL.EXE"),
-            os.path.join(officex86, "Office12", "EXCEL.EXE"),
-            os.path.join(officex86, "Office14", "EXCEL.EXE"),
-            os.path.join(officex86, "Office15", "EXCEL.EXE"),
-        ]
-
-        for path in paths:
-            if os.path.exists(path):
-                return path
-
-        return None
+    PATHS = [
+        ("ProgramFiles", "Microsoft Office", "EXCEL.EXE"),
+        ("ProgramFiles", "Microsoft Office", "Office11", "EXCEL.EXE"),
+        ("ProgramFiles", "Microsoft Office", "Office12", "EXCEL.EXE"),
+        ("ProgramFiles", "Microsoft Office", "Office14", "EXCEL.EXE"),
+        ("ProgramFiles", "Microsoft Office", "Office15", "EXCEL.EXE"),
+    ]
 
     def start(self, path):
-        excel = self.get_path()
-        if not excel:
-            raise CuckooPackageError("Unable to find any Microsoft "
-                                     "Office Excel executable available.")
-
+        excel = self.get_path("Microsoft Office Excel")
         dll = self.options.get("dll")
         free = self.options.get("free")
         suspended = True
