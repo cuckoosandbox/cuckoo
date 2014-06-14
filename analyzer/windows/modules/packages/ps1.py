@@ -18,8 +18,8 @@ class PS1(Package):
 
     def start(self, path):
         powershell = self.get_path("PowerShell")
-        dll = self.options.get("dll", None)
-        free = self.options.get("free", False)
+        dll = self.options.get("dll")
+        free = self.options.get("free")
         suspended = True
         if free:
             suspended = False

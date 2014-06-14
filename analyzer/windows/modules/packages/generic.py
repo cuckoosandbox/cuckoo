@@ -6,15 +6,15 @@ from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
-class Genric(Package):
+class Generic(Package):
     """Generic analysis package."""
     PATHS = [
         ("SystemRoot", "system32", "cmd.exe"),
     ]
 
     def start(self, path):
-        free = self.options.get("free", False)
-        dll = self.options.get("dll", None)
+        free = self.options.get("free")
+        dll = self.options.get("dll")
         suspended = True
         if free:
             suspended = False

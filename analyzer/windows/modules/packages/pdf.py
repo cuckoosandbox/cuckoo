@@ -17,8 +17,8 @@ class PDF(Package):
 
     def start(self, path):
         reader = self.get_path("Adobe Reader")
-        dll = self.options.get("dll", None)
-        free = self.options.get("free", False)
+        dll = self.options.get("dll")
+        free = self.options.get("free")
         suspended = True
         if free:
             suspended = False
