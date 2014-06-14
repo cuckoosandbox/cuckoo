@@ -54,6 +54,24 @@ class Package(object):
         raise CuckooPackageError("Unable to find any %s executable." %
                                  application)
 
+    def execute(self, path, args):
+        dll = self.options.get("dll")
+        free = self.options.get("free")
+        suspended = True
+        if free:
+            suspended = False
+
+        p = Process()
+        if not p.execute(path=path, args=args, suspended=suspended):
+            raise CuckooPackageError("Unable to execute the initial process, "
+                                     "analysis aborted.")
+
+        if not free and suspended:
+            p.inject(dll)
+            p.resume()
+            p.close()
+            return p.pid
+
     def finish(self):
         """Finish run.
         If specified to do so, this method dumps the memory of

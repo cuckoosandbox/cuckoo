@@ -3,8 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 from lib.common.abstracts import Package
-from lib.api.process import Process
-from lib.common.exceptions import CuckooPackageError
 
 # Originally proposed by David Maciejak.
 
@@ -18,21 +16,5 @@ class PS1(Package):
 
     def start(self, path):
         powershell = self.get_path("PowerShell")
-        dll = self.options.get("dll")
-        free = self.options.get("free")
-        suspended = True
-        if free:
-            suspended = False
-
         args = "-NoProfile -ExecutionPolicy unrestricted -File \"{0}\"".format(path)
-
-        p = Process()
-        if not p.execute(path=powershell, args=args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial PowerShell process, analysis aborted.")
-
-        if not free and suspended:
-            p.inject(dll)
-            p.resume()
-            return p.pid
-        else:
-            return None
+        return self.execute(powershell, args)

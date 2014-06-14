@@ -3,8 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 from lib.common.abstracts import Package
-from lib.api.process import Process
-from lib.common.exceptions import CuckooPackageError
 
 class Dll(Package):
     """DLL analysis package."""
@@ -14,26 +12,11 @@ class Dll(Package):
 
     def start(self, path):
         rundll32 = self.get_path("rundll32.exe")
-        free = self.options.get("free")
         function = self.options.get("function", "DllMain")
         arguments = self.options.get("arguments")
-        dll = self.options.get("dll")
-        suspended = True
-        if free:
-            suspended = False
 
         args = "{0},{1}".format(path, function)
         if arguments:
             args += " {0}".format(arguments)
 
-        p = Process()
-        if not p.execute(path=rundll32, args=args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute rundll32, "
-                                     "analysis aborted.")
-
-        if not free and suspended:
-            p.inject(dll)
-            p.resume()
-            return p.pid
-        else:
-            return None
+        return self.execute(rundll32, args)

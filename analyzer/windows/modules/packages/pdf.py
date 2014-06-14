@@ -3,8 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 from lib.common.abstracts import Package
-from lib.api.process import Process
-from lib.common.exceptions import CuckooPackageError
 
 class PDF(Package):
     """PDF analysis package."""
@@ -17,20 +15,4 @@ class PDF(Package):
 
     def start(self, path):
         reader = self.get_path("Adobe Reader")
-        dll = self.options.get("dll")
-        free = self.options.get("free")
-        suspended = True
-        if free:
-            suspended = False
-
-        p = Process()
-        if not p.execute(path=reader, args="\"%s\"" % path, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial Adobe Reader "
-                                     "process, analysis aborted.")
-
-        if not free and suspended:
-            p.inject(dll)
-            p.resume()
-            return p.pid
-        else:
-            return None
+        return self.execute(reader, "\"%s\"" % path)

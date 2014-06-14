@@ -7,7 +7,6 @@ from zipfile import ZipFile, BadZipfile
 
 from lib.common.abstracts import Package
 from lib.common.exceptions import CuckooPackageError
-from lib.api.process import Process
 
 class Zip(Package):
     """Zip analysis package."""
@@ -40,22 +39,4 @@ class Zip(Package):
                 raise CuckooPackageError("Empty ZIP archive")
 
         file_path = os.path.join(root, file_name)
-
-        dll = self.options.get("dll")
-        free = self.options.get("free")
-        args = self.options.get("arguments")
-        suspended = True
-        if free:
-            suspended = False
-
-        p = Process()
-        if not p.execute(path=file_path, args=args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial process, "
-                                     "analysis aborted.")
-
-        if not free and suspended:
-            p.inject(dll)
-            p.resume()
-            return p.pid
-        else:
-            return None
+        return self.execute(file_path, self.options.get("arguments"))

@@ -3,8 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 from lib.common.abstracts import Package
-from lib.api.process import Process
-from lib.common.exceptions import CuckooPackageError
 
 class CPL(Package):
     """Control Panel Applet analysis package."""
@@ -14,21 +12,4 @@ class CPL(Package):
 
     def start(self, path):
         control = self.get_path("control.exe")
-        dll = self.options.get("dll")
-        free = self.options.get("free")
-        suspended = True
-        if free:
-            suspended = False
-
-        p = Process()
-        if not p.execute(path=control, args="\"%s\"" % path,
-                         suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial Control "
-                                     "process, analysis aborted.")
-
-        if not free and suspended:
-            p.inject(dll)
-            p.resume()
-            return p.pid
-        else:
-            return None
+        return self.execute(control, "\"%s\"" % path)

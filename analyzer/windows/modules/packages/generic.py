@@ -3,8 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 from lib.common.abstracts import Package
-from lib.api.process import Process
-from lib.common.exceptions import CuckooPackageError
 
 class Generic(Package):
     """Generic analysis package."""
@@ -13,24 +11,6 @@ class Generic(Package):
     ]
 
     def start(self, path):
-        free = self.options.get("free")
-        dll = self.options.get("dll")
-        suspended = True
-        if free:
-            suspended = False
-
         cmd_path = self.get_path("cmd.exe")
         cmd_args = "/c start \"{0}\"".format(path)
-
-        p = Process()
-        if not p.execute(path=cmd_path, args=cmd_args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial process, "
-                                     "analysis aborted.")
-
-        if not free and suspended:
-            p.inject(dll)
-            p.resume()
-            p.close()
-            return p.pid
-        else:
-            return None
+        return self.execute(cmd_path, cmd_args)

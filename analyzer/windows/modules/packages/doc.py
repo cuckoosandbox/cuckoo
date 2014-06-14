@@ -3,8 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 from lib.common.abstracts import Package
-from lib.api.process import Process
-from lib.common.exceptions import CuckooPackageError
 
 class DOC(Package):
     """Word analysis package."""
@@ -19,20 +17,4 @@ class DOC(Package):
 
     def start(self, path):
         word = self.get_path("Microsoft Office Word")
-        dll = self.options.get("dll")
-        free = self.options.get("free")
-        suspended = True
-        if free:
-            suspended = False
-
-        p = Process()
-        if not p.execute(path=word, args="\"%s\"" % path, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial Microsoft "
-                                     "Office Word process, analysis aborted")
-
-        if not free and suspended:
-            p.inject(dll)
-            p.resume()
-            return p.pid
-        else:
-            return None
+        return self.execute(word, "\"%s\"" % path)

@@ -6,8 +6,6 @@ import shutil
 import logging
 
 from lib.common.abstracts import Package
-from lib.api.process import Process
-from lib.common.exceptions import CuckooPackageError
 
 log = logging.getLogger(__name__)
 
@@ -19,11 +17,6 @@ class HTML(Package):
 
     def start(self, path):
         iexplore = self.get_path("browser")
-        free = self.options.get("free")
-        dll = self.options.get("dll")
-        suspended = True
-        if free:
-            suspended = False
 
         # Travelling inside malware universe you should bring a towel with you.
         # If a file detected as HTML is submitted without a proper extension,
@@ -36,14 +29,4 @@ class HTML(Package):
             path = path + ".html"
             log.info("Submitted file is missing extension, adding .html")
 
-        p = Process()
-        if not p.execute(path=iexplore, args="\"%s\"" % path, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial Internet "
-                                     "Explorer process, analysis aborted.")
-
-        if not free and suspended:
-            p.inject(dll)
-            p.resume()
-            return p.pid
-        else:
-            return None
+        return self.execute(iexplore, "\"%s\"" % path)

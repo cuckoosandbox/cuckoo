@@ -7,8 +7,6 @@ import string
 import random
 
 from lib.common.abstracts import Package
-from lib.api.process import Process
-from lib.common.exceptions import CuckooPackageError
 
 class Applet(Package):
     """Java Applet analysis package."""
@@ -36,23 +34,6 @@ class Applet(Package):
 
     def start(self, path):
         browser = self.get_path("browser")
-        dll = self.options.get("dll")
-        free = self.options.get("free")
         class_name = self.options.get("class")
-        suspended = True
-        if free:
-            suspended = False
-
         html_path = self.make_html(path, class_name)
-
-        p = Process()
-        if not p.execute(path=browser, args="\"%s\"" % html_path, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial Internet "
-                                     "Explorer process, analysis aborted")
-
-        if not free and suspended:
-            p.inject(dll)
-            p.resume()
-            return p.pid
-        else:
-            return None
+        return self.execute(browser, "\"%s\"" % html_path)
