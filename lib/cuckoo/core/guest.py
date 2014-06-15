@@ -136,6 +136,13 @@ class GuestManager:
         if options["category"] == "file":
             options["file_name"] = sanitize_filename(options["file_name"])
 
+        # If the analysis timeout is higher than the critical timeout,
+        # automatically increase the critical timeout by one minute.
+        if options["timeout"] > self.timeout:
+            log.debug("Automatically increased critical timeout to %s",
+                      self.timeout)
+            self.timeout = options["timeout"] + 60
+
         try:
             # Wait for the agent to respond. This is done to check the
             # availability of the agent and verify that it's ready to receive
