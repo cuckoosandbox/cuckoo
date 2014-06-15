@@ -97,16 +97,16 @@ class Machinery(object):
                 machine.id = machine_id.strip()
                 machine.label = machine_opts[self.LABEL]
                 machine.platform = machine_opts["platform"]
-                machine.tags = machine_opts.get("tags", None)
+                machine.tags = machine_opts.get("tags")
                 machine.ip = machine_opts["ip"]
 
                 # If configured, use specific network interface for this
                 # machine, else use the default value.
-                machine.interface = machine_opts.get("interface", None)
+                machine.interface = machine_opts.get("interface")
 
                 # If configured, use specific snapshot name, else leave it
                 # empty and use default behaviour.
-                machine.snapshot = machine_opts.get("snapshot", None)
+                machine.snapshot = machine_opts.get("snapshot")
 
                 # If configured, use specific resultserver IP and port,
                 # else use the default value.
@@ -117,12 +117,10 @@ class Machinery(object):
                 machine.resultserver_ip = ip
                 machine.resultserver_port = port
 
-                # Strip params.
-                for key in machine.keys():
-                    if machine[key]:
-                        # Only strip strings
-                        if isinstance(machine[key], (str, unicode)):
-                            machine[key] = machine[key].strip()
+                # Strip parameters.
+                for key, value in machine.items():
+                    if value and isinstance(value, basestring):
+                        machine[key] = value.strip()
 
                 self.db.add_machine(name=machine.id,
                                     label=machine.label,
@@ -171,7 +169,7 @@ class Machinery(object):
         if not self.options_globals.timeouts.vm_state:
             raise CuckooCriticalError("Virtual machine state change timeout "
                                       "setting not found, please add it to "
-                                      "the config file")
+                                      "the config file.")
 
     def machines(self):
         """List virtual machines.

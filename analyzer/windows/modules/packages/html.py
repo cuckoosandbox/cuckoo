@@ -26,7 +26,7 @@ class HTML(Package):
         # We help you sample to execute renaming it with a proper extension.
         if not path.endswith((".htm", ".html")):
             shutil.copy(path, path + ".html")
-            path = path + ".html"
+            path += ".html"
             log.info("Submitted file is missing extension, adding .html")
 
         return self.execute(iexplore, "\"%s\"" % path)

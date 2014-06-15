@@ -2,9 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-import string
-import random
+import tempfile
 
 from lib.common.abstracts import Package
 
@@ -25,8 +23,7 @@ class Applet(Package):
         </html>
         """ % (path, class_name)
 
-        file_name = "".join(random.choice(string.ascii_lowercase) for x in range(6)) + ".html"
-        file_path = os.path.join(os.getenv("TEMP"), file_name)
+        file_path = tempfile.mkstemp(suffix=".html")
         with open(file_path, "w") as file_handle:
             file_handle.write(html)
 

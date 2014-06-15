@@ -32,7 +32,7 @@ class Zip(Package):
         # If no file name is provided via option, take the first file.
         if not file_name:
             # No name provided try to find a better name.
-            if len(zipinfos) > 0:
+            if len(zipinfos):
                 # Take the first one.
                 file_name = zipinfos[0].filename
             else:
