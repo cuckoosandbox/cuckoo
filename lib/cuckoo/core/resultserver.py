@@ -212,10 +212,8 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             # Initialize the protocol handler class for this connection.
             self.negotiate_protocol()
 
-            while True:
-                r = self.protocol.read_next_message()
-                if not r:
-                    break
+            while self.protocol.read_next_message():
+                pass
         except CuckooResultError as e:
             log.warning("Resultserver connection stopping because of "
                         "CuckooResultError: %s.", str(e))

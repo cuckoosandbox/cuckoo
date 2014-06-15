@@ -406,16 +406,8 @@ class Database(object):
         finally:
             session.close()
 
-    def add_machine(self,
-                    name,
-                    label,
-                    ip,
-                    platform,
-                    tags,
-                    interface,
-                    snapshot,
-                    resultserver_ip,
-                    resultserver_port):
+    def add_machine(self, name, label, ip, platform, tags, interface,
+                    snapshot, resultserver_ip, resultserver_port):
         """Add a guest machine.
         @param name: machine id
         @param label: machine label
@@ -688,19 +680,9 @@ class Database(object):
 
     # The following functions are mostly used by external utils.
 
-    def add(self,
-            obj,
-            timeout=0,
-            package="",
-            options="",
-            priority=1,
-            custom="",
-            machine="",
-            platform="",
-            tags=None,
-            memory=False,
-            enforce_timeout=False,
-            clock=None):
+    def add(self, obj, timeout=0, package="", options="", priority=1,
+            custom="", machine="", platform="", tags=None,
+            memory=False, enforce_timeout=False, clock=None):
         """Add a task to database.
         @param obj: object to add (File or URL).
         @param timeout: selected timeout.
@@ -793,19 +775,9 @@ class Database(object):
 
         return task_id
 
-    def add_path(self,
-                 file_path,
-                 timeout=0,
-                 package="",
-                 options="",
-                 priority=1,
-                 custom="",
-                 machine="",
-                 platform="",
-                 tags=None,
-                 memory=False,
-                 enforce_timeout=False,
-                 clock=None):
+    def add_path(self, file_path, timeout=0, package="", options="",
+                 priority=1, custom="", machine="", platform="", tags=None,
+                 memory=False, enforce_timeout=False, clock=None):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -829,32 +801,13 @@ class Database(object):
         if not priority:
             priority = 1
 
-        return self.add(File(file_path),
-                        timeout,
-                        package,
-                        options,
-                        priority,
-                        custom,
-                        machine,
-                        platform,
-                        tags,
-                        memory,
-                        enforce_timeout,
-                        clock)
+        return self.add(File(file_path), timeout, package, options, priority,
+                        custom, machine, platform, tags, memory,
+                        enforce_timeout, clock)
 
-    def add_url(self,
-                url,
-                timeout=0,
-                package="",
-                options="",
-                priority=1,
-                custom="",
-                machine="",
-                platform="",
-                tags=None,
-                memory=False,
-                enforce_timeout=False,
-                clock=None):
+    def add_url(self, url, timeout=0, package="", options="", priority=1,
+                custom="", machine="", platform="", tags=None, memory=False,
+                enforce_timeout=False, clock=None):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
@@ -875,19 +828,10 @@ class Database(object):
             timeout = 0
         if not priority:
             priority = 1
-        
-        return self.add(URL(url),
-                        timeout,
-                        package,
-                        options,
-                        priority,
-                        custom,
-                        machine,
-                        platform,
-                        tags,
-                        memory,
-                        enforce_timeout,
-                        clock)
+
+        return self.add(URL(url), timeout, package, options, priority,
+                        custom, machine, platform, tags, memory,
+                        enforce_timeout, clock)
 
     def reschedule(self, task_id):
         """Reschedule a task.
@@ -922,20 +866,12 @@ class Database(object):
         else:
             tags = task.tags
 
-        return add(task.target,
-                   task.timeout,
-                   task.package,
-                   task.options,
-                   task.priority,
-                   task.custom,
-                   task.machine,
-                   task.platform,
-                   tags,
-                   task.memory,
-                   task.enforce_timeout,
-                   task.clock)
+        return add(task.target, task.timeout, task.package, task.options,
+                   task.priority, task.custom, task.machine, task.platform,
+                   tags, task.memory, task.enforce_timeout, task.clock)
 
-    def list_tasks(self, limit=None, details=False, category=None, offset=None, status=None, not_status=None):
+    def list_tasks(self, limit=None, details=False, category=None,
+                   offset=None, status=None, not_status=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included

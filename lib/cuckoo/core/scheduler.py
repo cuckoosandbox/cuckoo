@@ -522,8 +522,6 @@ class Scheduler:
 
             # Deal with errors.
             try:
-                error = errors.get(block=False)
+                raise errors.get(block=False)
             except Queue.Empty:
                 pass
-            else:
-                raise error
