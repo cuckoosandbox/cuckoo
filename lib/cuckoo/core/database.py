@@ -192,8 +192,7 @@ class Sample(Base):
         """
         d = {}
         for column in self.__table__.columns:
-            value = getattr(self, column.name)
-            d[column.name] = value
+            d[column.name] = getattr(self, column.name)
         return d
 
     def to_json(self):
@@ -229,8 +228,7 @@ class Error(Base):
         """
         d = {}
         for column in self.__table__.columns:
-            value = getattr(self, column.name)
-            d[column.name] = value
+            d[column.name] = getattr(self, column.name)
         return d
 
     def to_json(self):
@@ -629,28 +627,7 @@ class Database(object):
         @param label: virtual machine label
         @return: unlocked machine
         """
-        session = self.Session()
-        try:
-            machine = session.query(Machine).filter(Machine.label == label).first()
-        except SQLAlchemyError as e:
-            log.debug("Database error unlocking machine: {0}".format(e))
-            session.close()
-            return None
-
-        if machine:
-            machine.locked = False
-            machine.locked_changed_on = datetime.now()
-            try:
-                session.commit()
-                session.refresh(machine)
-            except SQLAlchemyError as e:
-                log.debug("Database error locking machine: {0}".format(e))
-                session.rollback()
-                return None
-            finally:
-                session.close()
-
-        return machine
+        return self.set_machine_status(label, False)
 
     def count_machines_available(self):
         """How many virtual machines are ready for analysis.
