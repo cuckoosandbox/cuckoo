@@ -40,13 +40,15 @@ TASK_FAILED_ANALYSIS = "failed_analysis"
 TASK_FAILED_PROCESSING = "failed_processing"
 
 # Secondary table used in association Machine - Tag.
-machines_tags = Table("machines_tags", Base.metadata,
+machines_tags = Table(
+    "machines_tags", Base.metadata,
     Column("machine_id", Integer, ForeignKey("machines.id")),
     Column("tag_id", Integer, ForeignKey("tags.id"))
 )
 
 # Secondary table used in association Task - Tag.
-tasks_tags = Table("tasks_tags", Base.metadata,
+tasks_tags = Table(
+    "tasks_tags", Base.metadata,
     Column("task_id", Integer, ForeignKey("tasks.id")),
     Column("tag_id", Integer, ForeignKey("tags.id"))
 )
@@ -556,7 +558,7 @@ class Database(object):
         session = self.Session()
         try:
             if locked:
-                machines = session.query(Machine).options(joinedload("tags")).filter(Machine.locked == True).all()
+                machines = session.query(Machine).options(joinedload("tags")).filter_by(locked=True).all()
             else:
                 machines = session.query(Machine).options(joinedload("tags")).all()
         except SQLAlchemyError as e:
@@ -601,7 +603,7 @@ class Database(object):
                 raise CuckooOperationalError("No machines match selection criteria.")
 
             # Get the first free machine.
-            machine = machines.filter(Machine.locked == False).first()
+            machine = machines.filter_by(locked=False).first()
         except SQLAlchemyError as e:
             log.debug("Database error locking machine: {0}".format(e))
             session.close()
@@ -656,7 +658,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machines_count = session.query(Machine).filter(Machine.locked == False).count()
+            machines_count = session.query(Machine).filter_by(locked=False).count()
         except SQLAlchemyError as e:
             log.debug("Database error counting machines: {0}".format(e))
             return 0
