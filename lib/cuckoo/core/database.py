@@ -619,7 +619,28 @@ class Database(object):
         @param label: virtual machine label
         @return: unlocked machine
         """
-        return self.set_machine_status(label, False)
+        session = self.Session()
+        try:
+            machine = session.query(Machine).filter(Machine.label == label).first()
+        except SQLAlchemyError as e:
+            log.debug("Database error unlocking machine: {0}".format(e))
+            session.close()
+            return None
+
+        if machine:
+            machine.locked = False
+            machine.locked_changed_on = datetime.now()
+            try:
+                session.commit()
+                session.refresh(machine)
+            except SQLAlchemyError as e:
+                log.debug("Database error locking machine: {0}".format(e))
+                session.rollback()
+                return None
+            finally:
+                session.close()
+
+        return machine
 
     def count_machines_available(self):
         """How many virtual machines are ready for analysis.
