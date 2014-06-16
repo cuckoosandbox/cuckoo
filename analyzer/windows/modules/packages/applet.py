@@ -23,7 +23,7 @@ class Applet(Package):
         </html>
         """ % (path, class_name)
 
-        file_path = tempfile.mkstemp(suffix=".html")
+        _, file_path = tempfile.mkstemp(suffix=".html")
         with open(file_path, "w") as file_handle:
             file_handle.write(html)
 
