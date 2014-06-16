@@ -12,11 +12,18 @@ from lib.cuckoo.common.objects import File
 try:
     from pymongo.connection import Connection
     from pymongo.errors import ConnectionFailure
+    from pymongo import MongoClient
     from gridfs import GridFS
     from gridfs.errors import FileExists
     HAVE_MONGO = True
 except ImportError:
     HAVE_MONGO = False
+    Connection = None
+    ConnectionFailure = None
+    InvalidDocument = None
+    MongoClient = None
+    GridFS = None
+    FileExists = None
 
 class MongoDB(Report):
     """Stores report in MongoDB."""
@@ -30,10 +37,13 @@ class MongoDB(Report):
         """
         host = self.options.get("host", "127.0.0.1")
         port = self.options.get("port", 27017)
+        user = self.options.get("user", "cuckoo")
+        pwd = self.options.get("passwd", "cuckoo")
+        dbname = self.options.get("database", "cuckoo")
 
         try:
-            self.conn = Connection(host, port)
-            self.db = self.conn.cuckoo
+            self.conn = MongoClient("mongodb://%s:%s@%s:%d/%s" % (user, pwd, host, port, dbname))
+            self.db = self.conn[dbname]
             self.fs = GridFS(self.db)
         except TypeError:
             raise CuckooReportError("Mongo connection port must be integer")
