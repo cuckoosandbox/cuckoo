@@ -57,7 +57,11 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
                                                          *args,
                                                          **kwargs)
             except Exception as e:
-                if e.errno == 98:
+                # In Linux /usr/include/asm-generic/errno-base.h.
+                # EADDRINUSE  98 (Address already in use)
+                # In Mac OS X or FreeBSD:
+                # EADDRINUSE 48 (Address already in use)
+                if e.errno == 98 or e.errno == 48:
                     log.warning("Cannot bind  ResultServer on port {0}, "
                                 "trying another one...".format(port))
                     port += 1
@@ -208,10 +212,8 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             # Initialize the protocol handler class for this connection.
             self.negotiate_protocol()
 
-            while True:
-                r = self.protocol.read_next_message()
-                if not r:
-                    break
+            while self.protocol.read_next_message():
+                pass
         except CuckooResultError as e:
             log.warning("Resultserver connection stopping because of "
                         "CuckooResultError: %s.", str(e))

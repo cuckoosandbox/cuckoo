@@ -144,8 +144,8 @@ class VirtualBox(Machinery):
             try:
                 label = line.split('"')[1]
                 if label == "<inaccessible>":
-                    log.warning("Found an inaccessible virtual machine: "
-                                "please check his state")
+                    log.warning("Found an inaccessible virtual machine, "
+                                "please check its state.")
                 else:
                     machines.append(label)
             except IndexError:

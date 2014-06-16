@@ -27,7 +27,6 @@ log = logging.getLogger(__name__)
 machinery = None
 machine_lock = Lock()
 
-total_analysis_count = 0
 active_analysis_count = 0
 
 
@@ -408,11 +407,12 @@ class Scheduler:
     take care of running the full analysis process and operating with the
     assigned analysis machine.
     """
-
-    def __init__(self):
+    def __init__(self, maxcount=None):
         self.running = True
         self.cfg = Config()
         self.db = Database()
+        self.maxcount = maxcount
+        self.total_analysis_count = 0
 
     def initialize(self):
         """Initialize the machine manager."""
@@ -462,7 +462,6 @@ class Scheduler:
 
     def start(self):
         """Start scheduler."""
-        global total_analysis_count
         self.initialize()
 
         log.info("Waiting for analysis tasks...")
@@ -470,7 +469,9 @@ class Scheduler:
         # Message queue with threads to transmit exceptions (used as IPC).
         errors = Queue.Queue()
 
-        maxcount = self.cfg.cuckoo.max_analysis_count
+        # Command-line overrides the configuration file.
+        if self.maxcount is None:
+            self.maxcount = self.cfg.cuckoo.max_analysis_count
 
         # This loop runs forever.
         while self.running:
@@ -504,7 +505,7 @@ class Scheduler:
 
             # Exits if max_analysis_count is defined in the configuration
             # file and has been reached.
-            if maxcount and total_analysis_count >= maxcount:
+            if self.maxcount and self.total_analysis_count >= self.maxcount:
                 if active_analysis_count <= 0:
                     self.stop()
             else:
@@ -513,7 +514,7 @@ class Scheduler:
 
                 if task:
                     log.debug("Processing task #%s", task.id)
-                    total_analysis_count += 1
+                    self.total_analysis_count += 1
 
                     # Initialize and start the analysis manager.
                     analysis = AnalysisManager(task, errors)
@@ -521,8 +522,6 @@ class Scheduler:
 
             # Deal with errors.
             try:
-                error = errors.get(block=False)
+                raise errors.get(block=False)
             except Queue.Empty:
                 pass
-            else:
-                raise error

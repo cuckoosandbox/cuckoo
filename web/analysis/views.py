@@ -308,11 +308,11 @@ def remove(request, task_id):
                 if results_db.analysis.find({"shots": ObjectId(shot)}).count() == 1:
                     fs.delete(ObjectId(shot))
             # Delete network pcap.
-            if results_db.analysis.find({"network.pcap_id": ObjectId(analysis["network"]["pcap_id"])}).count() == 1:
+            if "pcap_id" in analysis["network"] and results_db.analysis.find({"network.pcap_id": ObjectId(analysis["network"]["pcap_id"])}).count() == 1:
                 fs.delete(ObjectId(analysis["network"]["pcap_id"]))
             # Delete dropped.
             for drop in analysis["dropped"]:
-                if results_db.analysis.find({"dropped.object_id": ObjectId(drop["object_id"])}).count() == 1:
+                if "object_id" in drop and results_db.analysis.find({"dropped.object_id": ObjectId(drop["object_id"])}).count() == 1:
                     fs.delete(ObjectId(drop["object_id"]))
             # Delete calls.
             for process in analysis["behavior"]["processes"]:
