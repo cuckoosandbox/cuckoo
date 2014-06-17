@@ -36,12 +36,12 @@ def index(request):
 
         if request.POST.get("free"):
             if options:
-                options += "&"
+                options += ","
             options += "free=yes"
 
         if request.POST.get("process_memory"):
             if options:
-                options += "&"
+                options += ","
             options += "procmemdump=yes"
 
         db = Database()
