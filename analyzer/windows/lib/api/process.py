@@ -217,7 +217,7 @@ class Process:
             self.thread_id = process_info.dwThreadId
             self.h_thread = process_info.hThread
             log.info("Successfully executed process from path \"%s\" with "
-                     "arguments \"%s\" with pid %d", path, args, self.pid)
+                     "arguments \"%s\" with pid %d", path, args or "", self.pid)
             return True
         else:
             log.error("Failed to execute process from path \"%s\" with "
