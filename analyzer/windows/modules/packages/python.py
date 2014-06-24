@@ -7,7 +7,7 @@ from lib.common.abstracts import Package
 class Python(Package):
     """Python analysis package."""
     PATHS = [
-        ("C:", "Python27", "python.exe"),
+        ("HomeDrive", "Python27", "python.exe"),
     ]
 
     def start(self, path):

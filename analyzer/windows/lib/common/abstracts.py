@@ -43,6 +43,11 @@ class Package(object):
                 if os.getenv("ProgramFiles(x86)"):
                     yield os.path.join(os.getenv("ProgramFiles(x86)"),
                                        *path[1:])
+            elif basedir == "HomeDrive":
+                # os.path.join() does not work well when giving just C:
+                # instead of C:\\, so we manually add the backslash.
+                homedrive = os.getenv("HomeDrive") + "\\"
+                yield os.path.join(homedrive, *path[1:])
             else:
                 yield os.path.join(*path)
 
