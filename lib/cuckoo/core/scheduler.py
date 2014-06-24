@@ -20,7 +20,7 @@ from lib.cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED
 from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
 from lib.cuckoo.core.plugins import RunSignatures, RunReporting
-from lib.cuckoo.core.resultserver import Resultserver
+from lib.cuckoo.core.resultserver import ResultServer
 
 log = logging.getLogger(__name__)
 
@@ -202,7 +202,7 @@ class AnalysisManager(Thread):
         log.info("Starting analysis of %s \"%s\" (task=%d)",
                  self.task.category.upper(), self.task.target, self.task.id)
 
-        # Initialize the the analysis folders.
+        # Initialize the analysis folders.
         if not self.init_storage():
             return False
 
@@ -226,9 +226,9 @@ class AnalysisManager(Thread):
         # Generate the analysis configuration file.
         options = self.build_options()
 
-        # At this point we can tell the Resultserver about it.
+        # At this point we can tell the ResultServer about it.
         try:
-            Resultserver().add_task(self.task, self.machine)
+            ResultServer().add_task(self.task, self.machine)
         except Exception as e:
             machinery.release(self.machine.label)
             self.errors.put(e)
@@ -271,11 +271,11 @@ class AnalysisManager(Thread):
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:
                 try:
-                    machinery.dump_memory(self.machine.label,
-                                          os.path.join(self.storage, "memory.dmp"))
+                    dump_path = os.path.join(self.storage, "memory.dmp")
+                    machinery.dump_memory(self.machine.label, dump_path)
                 except NotImplementedError:
                     log.error("The memory dump functionality is not available "
-                              "for the current machine manager")
+                              "for the current machine manager.")
                 except CuckooMachineError as e:
                     log.error(e)
 
@@ -291,9 +291,9 @@ class AnalysisManager(Thread):
             # database so it'll not be used later on in this session.
             Database().guest_stop(guest_log)
 
-            # After all this, we can make the Resultserver forget about the
+            # After all this, we can make the ResultServer forget about the
             # internal state for this analysis task.
-            Resultserver().del_task(self.task, self.machine)
+            ResultServer().del_task(self.task, self.machine)
 
             if dead_machine:
                 # Remove the guest from the database, so that we can assign a
@@ -316,7 +316,7 @@ class AnalysisManager(Thread):
                 machinery.release(self.machine.label)
             except CuckooMachineError as e:
                 log.error("Unable to release machine %s, reason %s. "
-                          "You might need to restore it manually",
+                          "You might need to restore it manually.",
                           self.machine.label, e)
 
         return succeeded
@@ -332,7 +332,7 @@ class AnalysisManager(Thread):
         if self.task.category == "file" and self.cfg.cuckoo.delete_original:
             if not os.path.exists(self.task.target):
                 log.warning("Original file does not exist anymore: \"%s\": "
-                            "File not found", self.task.target)
+                            "File not found.", self.task.target)
             else:
                 try:
                     os.remove(self.task.target)
@@ -450,7 +450,7 @@ class Scheduler:
         # and added to the list. If none were found, Cuckoo needs to abort the
         # execution.
         if not len(machinery.machines()):
-            raise CuckooCriticalError("No machines available")
+            raise CuckooCriticalError("No machines available.")
         else:
             log.info("Loaded %s machine/s", len(machinery.machines()))
 
@@ -464,7 +464,7 @@ class Scheduler:
         """Start scheduler."""
         self.initialize()
 
-        log.info("Waiting for analysis tasks...")
+        log.info("Waiting for analysis tasks.")
 
         # Message queue with threads to transmit exceptions (used as IPC).
         errors = Queue.Queue()

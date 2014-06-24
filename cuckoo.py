@@ -17,7 +17,7 @@ try:
     from lib.cuckoo.core.startup import check_version, create_structure
     from lib.cuckoo.core.startup import init_logging, init_modules, init_tasks
     from lib.cuckoo.core.scheduler import Scheduler
-    from lib.cuckoo.core.resultserver import Resultserver
+    from lib.cuckoo.core.resultserver import ResultServer
 except (CuckooDependencyError, ImportError) as e:
     sys.exit("ERROR: Missing dependency: {0}".format(e))
 
@@ -57,7 +57,7 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     if test:
         return
 
-    Resultserver()
+    ResultServer()
 
     os.chdir(cur_path)
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
             cuckoo_main(max_analysis_count=args.max_analysis_count)
     except CuckooCriticalError as e:
         message = "{0}: {1}".format(e.__class__.__name__, e)
-        if len(log.handlers) > 0:
+        if len(log.handlers):
             log.critical(message)
         else:
             sys.stderr.write("{0}\n".format(message))

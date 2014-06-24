@@ -30,7 +30,7 @@ class Disconnect(Exception):
     pass
 
 
-class Resultserver(SocketServer.ThreadingTCPServer, object):
+class ResultServer(SocketServer.ThreadingTCPServer, object):
     """Result server. Singleton!
 
     This class handles results coming back from the analysis machines.
@@ -53,7 +53,7 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
                 server_addr = ip, port
                 SocketServer.ThreadingTCPServer.__init__(self,
                                                          server_addr,
-                                                         Resulthandler,
+                                                         ResultHandler,
                                                          *args,
                                                          **kwargs)
             except Exception as e:
@@ -62,32 +62,30 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
                 # In Mac OS X or FreeBSD:
                 # EADDRINUSE 48 (Address already in use)
                 if e.errno == 98 or e.errno == 48:
-                    log.warning("Cannot bind  ResultServer on port {0}, "
-                                "trying another one...".format(port))
+                    log.warning("Cannot bind ResultServer on port {0}, "
+                                "trying another port.".format(port))
                     port += 1
                 else:
                     raise CuckooCriticalError("Unable to bind ResultServer on "
                                               "{0}:{1}: {2}".format(
-                                                  ip,
-                                                  port,
-                                                  str(e)))
+                                                  ip, port, str(e)))
             else:
-                log.debug("ResultServer running on {0}:{1}".format(ip, port))
+                log.debug("ResultServer running on {0}:{1}.".format(ip, port))
                 self.servethread = Thread(target=self.serve_forever)
                 self.servethread.setDaemon(True)
                 self.servethread.start()
                 break
 
     def add_task(self, task, machine):
-        """Register a task/machine with the Resultserver."""
-        self.analysistasks[machine.ip] = (task, machine)
+        """Register a task/machine with the ResultServer."""
+        self.analysistasks[machine.ip] = task, machine
         self.analysishandlers[task.id] = []
 
     def del_task(self, task, machine):
-        """Delete Resultserver state and wait for pending RequestHandlers."""
+        """Delete ResultServer state and wait for pending RequestHandlers."""
         x = self.analysistasks.pop(machine.ip, None)
         if not x:
-            log.warning("Resultserver did not have {0} in its task "
+            log.warning("ResultServer did not have {0} in its task "
                         "info.".format(machine.ip))
         handlers = self.analysishandlers.pop(task.id, None)
         for h in handlers:
@@ -99,13 +97,14 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         task, machine = self.get_ctx_for_ip(handler.client_address[0])
         if not task or not machine:
             return False
+
         self.analysishandlers[task.id].append(handler)
 
     def get_ctx_for_ip(self, ip):
         """Return state for this IP's task."""
-        x = self.analysistasks.get(ip, None)
+        x = self.analysistasks.get(ip)
         if not x:
-            log.critical("Resultserver unable to map ip to "
+            log.critical("ResultServer unable to map ip to "
                          "context: {0}.".format(ip))
             return None, None
 
@@ -115,14 +114,12 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         """Initialize analysis storage folder."""
         task, machine = self.get_ctx_for_ip(ip)
         if not task or not machine:
-            return False
+            return
 
-        storagepath = os.path.join(CUCKOO_ROOT, "storage",
-                                   "analyses", str(task.id))
-        return storagepath
+        return os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task.id))
 
 
-class Resulthandler(SocketServer.BaseRequestHandler):
+class ResultHandler(SocketServer.BaseRequestHandler):
     """Result handler.
 
     This handler speaks our analysis log network protocol.
@@ -135,7 +132,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         self.startbuf = ""
         self.end_request = Event()
         self.done_event = Event()
-        self.pid, self.ppid, self.procname = (None, None, None)
+        self.pid, self.ppid, self.procname = None, None, None
         self.server.register_handler(self)
 
     def finish(self):
@@ -215,7 +212,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
             while self.protocol.read_next_message():
                 pass
         except CuckooResultError as e:
-            log.warning("Resultserver connection stopping because of "
+            log.warning("ResultServer connection stopping because of "
                         "CuckooResultError: %s.", str(e))
         except Disconnect:
             pass
@@ -235,22 +232,22 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         log.debug("Connection closed: {0}:{1}".format(ip, port))
 
     def log_process(self, ctx, timestring, pid, ppid, modulepath, procname):
-        if not self.pid is None:
-            log.debug("Resultserver got a new process message but already "
+        if self.pid is not None:
+            log.debug("ResultServer got a new process message but already "
                       "has pid %d ppid %s procname %s.",
                       pid, str(ppid), procname)
-            raise CuckooResultError("Resultserver connection state "
-                                    "incosistent.")
+            raise CuckooResultError("ResultServer connection state "
+                                    "inconsistent.")
 
         log.debug("New process (pid={0}, ppid={1}, name={2}, "
                   "path={3})".format(pid, ppid, procname, modulepath))
 
-        # CSV format files are optional
+        # CSV format files are optional.
         if self.server.cfg.resultserver.store_csvs:
-            path = os.path.join(self.storagepath, "logs", str(pid) + ".csv")
+            path = os.path.join(self.storagepath, "logs", "%d.csv" % pid)
             self.logfd = open(path, "wb")
 
-        # Raw Bson or Netlog extension
+        # Raw Bson or Netlog extension.
         ext = EXTENSIONS.get(type(self.protocol), ".raw")
         path = os.path.join(self.storagepath, "logs", str(pid) + ext)
         self.rawlogfd = open(path, "wb")
@@ -272,10 +269,10 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         apiindex, status, returnval, tid, timediff = context
 
-        #log.debug("log_call> tid:{0} apiname:{1}".format(tid, apiname))
+        # log.debug("log_call> tid:{0} apiname:{1}".format(tid, apiname))
 
-        current_time = self.connect_time + datetime.timedelta(0, 0,
-                                                              timediff*1000)
+        current_time = \
+            self.connect_time + datetime.timedelta(0, 0, timediff*1000)
         timestring = logtime(current_time)
 
         argumentstrings = ["{0}->{1}".format(argname, repr(str(r))[1:-1])
@@ -287,12 +284,12 @@ class Resulthandler(SocketServer.BaseRequestHandler):
                 modulename, apiname, status, returnval] + argumentstrings)
 
     def log_error(self, emsg):
-        log.warning("Resultserver error condition on connection %s "
+        log.warning("ResultServer error condition on connection %s "
                     "(pid %s procname %s): %s", str(self.client_address),
                     str(self.pid), str(self.procname), emsg)
 
     def create_folders(self):
-        folders = ["shots", "files", "logs"]
+        folders = "shots", "files", "logs"
 
         for folder in folders:
             try:
@@ -303,7 +300,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
 
 class FileUpload(object):
-    RESTRICTED_DIRECTORIES = 'reports/',
+    RESTRICTED_DIRECTORIES = "reports/",
 
     def __init__(self, handler):
         self.handler = handler

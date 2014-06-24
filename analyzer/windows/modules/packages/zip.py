@@ -16,10 +16,10 @@ class Zip(Package):
         password = self.options.get("password")
 
         with ZipFile(path, "r") as archive:
-            zipinfos = archive.infolist()
             try:
+                zipinfos = archive.infolist()
                 archive.extractall(path=root, pwd=password)
-            except BadZipfile as e:
+            except BadZipfile:
                 raise CuckooPackageError("Invalid Zip file")
             except RuntimeError:
                 try:

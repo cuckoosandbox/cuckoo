@@ -90,7 +90,6 @@ class Machine(Base):
 
         # Tags are a relation so no column to iterate.
         d["tags"] = [tag.name for tag in self.tags]
-
         return d
 
     def to_json(self):

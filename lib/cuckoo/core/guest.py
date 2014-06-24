@@ -20,7 +20,7 @@ from lib.cuckoo.common.utils import TimeoutServer, sanitize_filename
 log = logging.getLogger(__name__)
 
 class GuestManager:
-    """Guest Mananager.
+    """Guest Manager.
 
     This class handles the communications with the agents running in the
     machines.
@@ -137,8 +137,10 @@ class GuestManager:
             # availability of the agent and verify that it's ready to receive
             # data.
             self.wait(CUCKOO_GUEST_INIT)
+
             # Invoke the upload of the analyzer to the guest.
             self.upload_analyzer()
+
             # Give the analysis options to the guest, so it can generate the
             # analysis.conf inside the guest.
             try:

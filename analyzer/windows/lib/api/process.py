@@ -254,10 +254,10 @@ class Process:
             self.open()
 
         if KERNEL32.TerminateProcess(self.h_process, 1):
-            log.info("Successfully terminated process with pid %d", self.pid)
+            log.info("Successfully terminated process with pid %d.", self.pid)
             return True
         else:
-            log.error("Failed to terminate process with pid %d", self.pid)
+            log.error("Failed to terminate process with pid %d.", self.pid)
             return False
 
     def inject(self, dll=None, apc=False):
@@ -333,7 +333,7 @@ class Process:
             Process.first_process = False
 
         if apc or self.suspended:
-            log.info("Using QueueUserAPC injection")
+            log.info("Using QueueUserAPC injection.")
             if not self.h_thread:
                 log.info("No valid thread handle specified for injecting "
                          "process with pid %d, injection aborted.", self.pid)
@@ -409,7 +409,7 @@ class Process:
             os.makedirs(root)
 
         # Now upload to host from the StringIO.
-        nf = NetlogFile("memory/%s.dmp" % str(self.pid))
+        nf = NetlogFile(os.path.join("memory", "%s.dmp" % str(self.pid)))
 
         while mem < max_addr:
             mbi = MEMORY_BASIC_INFORMATION()

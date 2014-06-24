@@ -435,7 +435,7 @@ class Analyzer:
         os.system("echo:|time {0}".format(clock.strftime("%H:%M:%S")))
 
         # Set the default DLL to be used by the PipeHandler.
-        DEFAULT_DLL = self.get_options().get("dll", None)
+        DEFAULT_DLL = self.get_options().get("dll")
 
         # Initialize and start the Pipe Servers. This is going to be used for
         # communicating with the injected and monitored processes.
@@ -467,14 +467,14 @@ class Analyzer:
         if self.config.options:
             try:
                 # Split the options by comma.
-                fields = self.config.options.strip().split(",")
+                fields = self.config.options.split(",")
             except ValueError as e:
                 log.warning("Failed parsing the options: %s", e)
             else:
                 for field in fields:
                     # Split the name and the value of the option.
                     try:
-                        key, value = field.strip().split("=")
+                        key, value = field.split("=", 1)
                     except ValueError as e:
                         log.warning("Failed parsing option (%s): %s", field, e)
                     else:
@@ -494,7 +494,7 @@ class Analyzer:
         dump_files()
 
         # Hell yeah.
-        log.info("Analysis completed")
+        log.info("Analysis completed.")
 
     def run(self):
         """Run analysis.
@@ -511,6 +511,7 @@ class Analyzer:
         if not self.config.package:
             log.info("No analysis package specified, trying to detect "
                      "it automagically.")
+
             # If the analysis target is a file, we choose the package according
             # to the file format.
             if self.config.category == "file":
@@ -545,7 +546,7 @@ class Analyzer:
         # Initialize the package parent abstract.
         Package()
 
-        # Enumerate the abstract's subclasses.
+        # Enumerate the abstract subclasses.
         try:
             package_class = Package.__subclasses__()[0]
         except IndexError as e:
@@ -616,13 +617,13 @@ class Analyzer:
         # enable the process monitor.
         else:
             log.info("No process IDs returned by the package, running "
-                     "for the full timeout")
+                     "for the full timeout.")
             pid_check = False
 
         # Check in the options if the user toggled the timeout enforce. If so,
         # we need to override pid_check and disable process monitor.
         if self.config.enforce_timeout:
-            log.info("Enabled timeout enforce, running for the full timeout")
+            log.info("Enabled timeout enforce, running for the full timeout.")
             pid_check = False
 
         time_counter = 0
@@ -630,7 +631,7 @@ class Analyzer:
         while True:
             time_counter += 1
             if time_counter == int(self.config.timeout):
-                log.info("Analysis timeout hit, terminating analysis")
+                log.info("Analysis timeout hit, terminating analysis.")
                 break
 
             # If the process lock is locked, it means that something is
@@ -668,7 +669,7 @@ class Analyzer:
                     # to be terminate.
                     if not pack.check():
                         log.info("The analysis package requested the "
-                                 "termination of the analysis...")
+                                 "termination of the analysis.")
                         break
 
                 # If the check() function of the package raised some exception
@@ -704,7 +705,7 @@ class Analyzer:
 
         # Try to terminate remaining active processes. We do this to make sure
         # that we clean up remaining open handles (sockets, files, etc.).
-        log.info("Terminating remaining processes before shutdown...")
+        log.info("Terminating remaining processes before shutdown.")
 
         for pid in PROCESS_LIST:
             proc = Process(pid=pid)
@@ -753,7 +754,7 @@ if __name__ == "__main__":
         error = str(e)
 
         # Just to be paranoid.
-        if len(log.handlers) > 0:
+        if len(log.handlers):
             log.exception(error_exc)
         else:
             sys.stderr.write("{0}\n".format(error_exc))
