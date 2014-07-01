@@ -3,12 +3,12 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-import sys
-import random
+import argparse
 import fnmatch
 import logging
-import argparse
+import os
+import random
+import sys
 
 try:
     import requests
@@ -112,7 +112,7 @@ def main():
             if not args.quiet:
                 print(bold(green("Success")) + u": URL \"{0}\" added as task with ID {1}".format(target, task_id))
         else:
-            print(bold(red("Error")) + ": adding task to database")	
+            print(bold(red("Error")) + ": adding task to database")
     else:
         # Get absolute path to deal with relative.
         path = to_unicode(os.path.abspath(target))
@@ -138,6 +138,8 @@ def main():
 
         if args.shuffle:
             random.shuffle(files)
+        else:
+            files = sorted(files)
 
         for file_path in files:
             if not File(file_path).get_size():

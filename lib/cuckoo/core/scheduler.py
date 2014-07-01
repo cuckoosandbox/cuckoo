@@ -20,14 +20,13 @@ from lib.cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED
 from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
 from lib.cuckoo.core.plugins import RunSignatures, RunReporting
-from lib.cuckoo.core.resultserver import Resultserver
+from lib.cuckoo.core.resultserver import ResultServer
 
 log = logging.getLogger(__name__)
 
 machinery = None
 machine_lock = Lock()
 
-total_analysis_count = 0
 active_analysis_count = 0
 
 
@@ -203,7 +202,7 @@ class AnalysisManager(Thread):
         log.info("Starting analysis of %s \"%s\" (task=%d)",
                  self.task.category.upper(), self.task.target, self.task.id)
 
-        # Initialize the the analysis folders.
+        # Initialize the analysis folders.
         if not self.init_storage():
             return False
 
@@ -227,9 +226,9 @@ class AnalysisManager(Thread):
         # Generate the analysis configuration file.
         options = self.build_options()
 
-        # At this point we can tell the Resultserver about it.
+        # At this point we can tell the ResultServer about it.
         try:
-            Resultserver().add_task(self.task, self.machine)
+            ResultServer().add_task(self.task, self.machine)
         except Exception as e:
             machinery.release(self.machine.label)
             self.errors.put(e)
@@ -272,11 +271,11 @@ class AnalysisManager(Thread):
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:
                 try:
-                    machinery.dump_memory(self.machine.label,
-                                          os.path.join(self.storage, "memory.dmp"))
+                    dump_path = os.path.join(self.storage, "memory.dmp")
+                    machinery.dump_memory(self.machine.label, dump_path)
                 except NotImplementedError:
                     log.error("The memory dump functionality is not available "
-                              "for the current machine manager")
+                              "for the current machine manager.")
                 except CuckooMachineError as e:
                     log.error(e)
 
@@ -292,9 +291,9 @@ class AnalysisManager(Thread):
             # database so it'll not be used later on in this session.
             Database().guest_stop(guest_log)
 
-            # After all this, we can make the Resultserver forget about the
+            # After all this, we can make the ResultServer forget about the
             # internal state for this analysis task.
-            Resultserver().del_task(self.task, self.machine)
+            ResultServer().del_task(self.task, self.machine)
 
             if dead_machine:
                 # Remove the guest from the database, so that we can assign a
@@ -317,7 +316,7 @@ class AnalysisManager(Thread):
                 machinery.release(self.machine.label)
             except CuckooMachineError as e:
                 log.error("Unable to release machine %s, reason %s. "
-                          "You might need to restore it manually",
+                          "You might need to restore it manually.",
                           self.machine.label, e)
 
         return succeeded
@@ -333,7 +332,7 @@ class AnalysisManager(Thread):
         if self.task.category == "file" and self.cfg.cuckoo.delete_original:
             if not os.path.exists(self.task.target):
                 log.warning("Original file does not exist anymore: \"%s\": "
-                            "File not found", self.task.target)
+                            "File not found.", self.task.target)
             else:
                 try:
                     os.remove(self.task.target)
@@ -379,6 +378,19 @@ class AnalysisManager(Thread):
                 self.process_results()
                 Database().set_status(self.task.id, TASK_REPORTED)
 
+            # We make a symbolic link ("latest") which links to the latest
+            # analysis - this is useful for debugging purposes. This is only
+            # supported under systems that support symbolic links.
+            if hasattr(os, "symlink"):
+                latest = os.path.join(CUCKOO_ROOT, "storage",
+                                      "analyses", "latest")
+
+                # First we have to remove the existing symbolic link.
+                if os.path.exists(latest):
+                    os.remove(latest)
+
+                os.symlink(self.storage, latest)
+
             log.info("Task #%d: analysis procedure completed", self.task.id)
         except:
             log.exception("Failure in AnalysisManager.run")
@@ -395,11 +407,12 @@ class Scheduler:
     take care of running the full analysis process and operating with the
     assigned analysis machine.
     """
-
-    def __init__(self):
+    def __init__(self, maxcount=None):
         self.running = True
         self.cfg = Config()
         self.db = Database()
+        self.maxcount = maxcount
+        self.total_analysis_count = 0
 
     def initialize(self):
         """Initialize the machine manager."""
@@ -426,6 +439,7 @@ class Scheduler:
         # Provide a dictionary with the configuration options to the
         # machine manager instance.
         machinery.set_options(Config(conf))
+
         # Initialize the machine manager.
         try:
             machinery.initialize(machinery_name)
@@ -435,8 +449,8 @@ class Scheduler:
         # At this point all the available machines should have been identified
         # and added to the list. If none were found, Cuckoo needs to abort the
         # execution.
-        if len(machinery.machines()) == 0:
-            raise CuckooCriticalError("No machines available")
+        if not len(machinery.machines()):
+            raise CuckooCriticalError("No machines available.")
         else:
             log.info("Loaded %s machine/s", len(machinery.machines()))
 
@@ -448,49 +462,50 @@ class Scheduler:
 
     def start(self):
         """Start scheduler."""
-        global total_analysis_count
         self.initialize()
 
-        log.info("Waiting for analysis tasks...")
+        log.info("Waiting for analysis tasks.")
 
         # Message queue with threads to transmit exceptions (used as IPC).
         errors = Queue.Queue()
 
-        maxcount = self.cfg.cuckoo.max_analysis_count
+        # Command-line overrides the configuration file.
+        if self.maxcount is None:
+            self.maxcount = self.cfg.cuckoo.max_analysis_count
 
         # This loop runs forever.
         while self.running:
             time.sleep(1)
 
-            # If not enough free diskspace is available, then we print an
+            # If not enough free disk space is available, then we print an
             # error message and wait another round (this check is ignored
-            # when freespace is set to zero).
+            # when the freespace configuration variable is set to zero).
             if self.cfg.cuckoo.freespace:
                 # Resolve the full base path to the analysis folder, just in
-                # case somebody decides to make a symlink out of it.
+                # case somebody decides to make a symbolic link out of it.
                 dir_path = os.path.join(CUCKOO_ROOT, "storage", "analyses")
 
                 # TODO: Windows support
                 if hasattr(os, "statvfs"):
                     dir_stats = os.statvfs(dir_path)
 
-                    # Free diskspace in megabytes.
+                    # Calculate the free disk space in megabytes.
                     space_available = dir_stats.f_bavail * dir_stats.f_frsize
                     space_available /= 1024 * 1024
 
                     if space_available < self.cfg.cuckoo.freespace:
-                        log.error("Not enough free diskspace! (Only %d MB!)",
+                        log.error("Not enough free disk space! (Only %d MB!)",
                                   space_available)
                         continue
 
             # If no machines are available, it's pointless to fetch for
             # pending tasks. Loop over.
-            if machinery.availables() == 0:
+            if not machinery.availables():
                 continue
 
-            # Exits if max_analysis_count is defined in config file and
-            # is reached.
-            if maxcount and total_analysis_count >= maxcount:
+            # Exits if max_analysis_count is defined in the configuration
+            # file and has been reached.
+            if self.maxcount and self.total_analysis_count >= self.maxcount:
                 if active_analysis_count <= 0:
                     self.stop()
             else:
@@ -499,17 +514,14 @@ class Scheduler:
 
                 if task:
                     log.debug("Processing task #%s", task.id)
-                    total_analysis_count += 1
+                    self.total_analysis_count += 1
 
-                    # Initialize the analysis manager.
+                    # Initialize and start the analysis manager.
                     analysis = AnalysisManager(task, errors)
-                    # Start.
                     analysis.start()
 
             # Deal with errors.
             try:
-                error = errors.get(block=False)
+                raise errors.get(block=False)
             except Queue.Empty:
                 pass
-            else:
-                raise error

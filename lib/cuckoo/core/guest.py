@@ -7,7 +7,6 @@ import time
 import socket
 import logging
 import xmlrpclib
-from threading import Timer, Event
 from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
 
@@ -21,7 +20,7 @@ from lib.cuckoo.common.utils import TimeoutServer, sanitize_filename
 log = logging.getLogger(__name__)
 
 class GuestManager:
-    """Guest Mananager.
+    """Guest Manager.
 
     This class handles the communications with the agents running in the
     machines.
@@ -49,25 +48,15 @@ class GuestManager:
         """
         log.debug("%s: waiting for status 0x%.04x", self.id, status)
 
-        # Create an event that will invoke a function to stop the loop when
-        # the critical timeout is h it.
-        abort = Event()
-        abort.clear()
-
-        def die():
-            abort.set()
-
-        # Initialize the timer.
-        timer = Timer(self.timeout, die)
-        timer.start()
+        end = time.time() + self.timeout
         self.server._set_timeout(self.timeout)
 
         while True:
-            # Check if the timer was hit and the abort event was set.
-            if abort.is_set():
+            # Check if we've passed the timeout.
+            if time.time() > end:
                 raise CuckooGuestError("{0}: the guest initialization hit the "
                                        "critical timeout, analysis "
-                                       "aborted".format(self.id))
+                                       "aborted.".format(self.id))
 
             try:
                 # If the server returns the given status, break the loop
@@ -136,13 +125,22 @@ class GuestManager:
         if options["category"] == "file":
             options["file_name"] = sanitize_filename(options["file_name"])
 
+        # If the analysis timeout is higher than the critical timeout,
+        # automatically increase the critical timeout by one minute.
+        if options["timeout"] > self.timeout:
+            log.debug("Automatically increased critical timeout to %s",
+                      self.timeout)
+            self.timeout = options["timeout"] + 60
+
         try:
             # Wait for the agent to respond. This is done to check the
             # availability of the agent and verify that it's ready to receive
             # data.
             self.wait(CUCKOO_GUEST_INIT)
+
             # Invoke the upload of the analyzer to the guest.
             self.upload_analyzer()
+
             # Give the analysis options to the guest, so it can generate the
             # analysis.conf inside the guest.
             try:
@@ -183,26 +181,16 @@ class GuestManager:
         """
         log.debug("%s: waiting for completion", self.id)
 
-        # Same procedure as in self.wait(). Just look at the comments there.
-        abort = Event()
-        abort.clear()
-
-        def die():
-            abort.set()
-
-        timer = Timer(self.timeout, die)
-        timer.start()
+        end = time.time() + self.timeout
         self.server._set_timeout(self.timeout)
 
         while True:
             time.sleep(1)
 
             # If the analysis hits the critical timeout, just return straight
-            # straight away and try to recover the analysis results from the
-            # guest.
-            if abort.is_set():
-                raise CuckooGuestError("The analysis hit the critical timeout,"
-                                       " terminating")
+            # away and try to recover the analysis results from the guest.
+            if time.time() > end:
+                raise CuckooGuestError("The analysis hit the critical timeout, terminating.")
 
             try:
                 status = self.server.get_status()

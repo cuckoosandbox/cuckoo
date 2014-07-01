@@ -2,23 +2,16 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-
 from lib.common.abstracts import Package
-from lib.api.process import Process
-from lib.common.exceptions import CuckooPackageError
 
 class CPL(Package):
     """Control Panel Applet analysis package."""
-
-    def get_path(self):
-        path = os.path.join(os.getenv("SystemRoot"), "system32", "control.exe")
-        if os.path.exists(path):
-            return path
-
-        return
+    PATHS = [
+        ("SystemRoot", "system32", "control.exe"),
+    ]
 
     def start(self, path):
+<<<<<<< HEAD
         control = self.get_path()
         if not control:
             raise CuckooPackageError("Unable to find any control.exe "
@@ -60,3 +53,7 @@ class CPL(Package):
                 p.dump_memory()
 
         return True
+=======
+        control = self.get_path("control.exe")
+        return self.execute(control, "\"%s\"" % path)
+>>>>>>> upstream/master

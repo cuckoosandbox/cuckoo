@@ -115,7 +115,9 @@ def check_version():
 
 
 class DatabaseHandler(logging.Handler):
-    """Logging to database handler."""
+    """Logging to database handler.
+    Used to log errors related to tasks in database.
+    """
 
     def emit(self, record):
         if hasattr(record, "task_id"):

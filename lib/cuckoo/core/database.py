@@ -40,13 +40,15 @@ TASK_FAILED_ANALYSIS = "failed_analysis"
 TASK_FAILED_PROCESSING = "failed_processing"
 
 # Secondary table used in association Machine - Tag.
-machines_tags = Table("machines_tags", Base.metadata,
+machines_tags = Table(
+    "machines_tags", Base.metadata,
     Column("machine_id", Integer, ForeignKey("machines.id")),
     Column("tag_id", Integer, ForeignKey("tags.id"))
 )
 
 # Secondary table used in association Task - Tag.
-tasks_tags = Table("tasks_tags", Base.metadata,
+tasks_tags = Table(
+    "tasks_tags", Base.metadata,
     Column("task_id", Integer, ForeignKey("tasks.id")),
     Column("tag_id", Integer, ForeignKey("tags.id"))
 )
@@ -88,7 +90,6 @@ class Machine(Base):
 
         # Tags are a relation so no column to iterate.
         d["tags"] = [tag.name for tag in self.tags]
-
         return d
 
     def to_json(self):
@@ -97,15 +98,8 @@ class Machine(Base):
         """
         return json.dumps(self.to_dict())
 
-    def __init__(self,
-                 name,
-                 label,
-                 ip,
-                 platform,
-                 interface,
-                 snapshot,
-                 resultserver_ip,
-                 resultserver_port):
+    def __init__(self, name, label, ip, platform, interface, snapshot,
+                 resultserver_ip, resultserver_port):
         self.name = name
         self.label = label
         self.ip = ip
@@ -125,8 +119,7 @@ class Tag(Base):
     def __repr__(self):
         return "<Tag('{0}','{1}')>".format(self.id, self.name)
 
-    def __init__(self,
-                 name):
+    def __init__(self, name):
         self.name = name
 
 class Guest(Base):
@@ -186,13 +179,8 @@ class Sample(Base):
     sha256 = Column(String(64), nullable=False)
     sha512 = Column(String(128), nullable=False)
     ssdeep = Column(String(255), nullable=True)
-    __table_args__ = (Index("hash_index",
-                            "md5",
-                            "crc32",
-                            "sha1",
-                            "sha256",
-                            "sha512",
-                            unique=True), )
+    __table_args__ = Index("hash_index", "md5", "crc32", "sha1",
+                           "sha256", "sha512", unique=True),
 
     def __repr__(self):
         return "<Sample('{0}','{1}')>".format(self.id, self.sha256)
@@ -203,8 +191,7 @@ class Sample(Base):
         """
         d = {}
         for column in self.__table__.columns:
-            value = getattr(self, column.name)
-            d[column.name] = value
+            d[column.name] = getattr(self, column.name)
         return d
 
     def to_json(self):
@@ -213,15 +200,8 @@ class Sample(Base):
         """
         return json.dumps(self.to_dict())
 
-    def __init__(self,
-                 md5,
-                 crc32,
-                 sha1,
-                 sha256,
-                 sha512,
-                 file_size,
-                 file_type=None,
-                 ssdeep=None):
+    def __init__(self, md5, crc32, sha1, sha256, sha512,
+                 file_size, file_type=None, ssdeep=None):
         self.md5 = md5
         self.sha1 = sha1
         self.crc32 = crc32
@@ -247,8 +227,7 @@ class Error(Base):
         """
         d = {}
         for column in self.__table__.columns:
-            value = getattr(self, column.name)
-            d[column.name] = value
+            d[column.name] = getattr(self, column.name)
         return d
 
     def to_json(self):
@@ -291,14 +270,10 @@ class Task(Base):
                       nullable=False)
     started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(Enum(TASK_PENDING,
-                         TASK_RUNNING,
-                         TASK_COMPLETED,
-                         TASK_REPORTED,
-                         TASK_RECOVERED,
-                         name="status_type"),
-                         server_default=TASK_PENDING,
-                         nullable=False)
+    status = Column(Enum(TASK_PENDING, TASK_RUNNING, TASK_COMPLETED,
+                         TASK_REPORTED, TASK_RECOVERED, name="status_type"),
+                    server_default=TASK_PENDING,
+                    nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     sample = relationship("Sample", backref="tasks")
     guest = relationship("Guest", uselist=False, backref="tasks", cascade="save-update, delete")
@@ -318,7 +293,6 @@ class Task(Base):
 
         # Tags are a relation so no column to iterate.
         d["tags"] = [tag.name for tag in self.tags]
-
         return d
 
     def to_json(self):
@@ -386,7 +360,7 @@ class Database(object):
         # Set database schema version.
         # TODO: it's a little bit dirty, needs refactoring.
         tmp_session = self.Session()
-        if tmp_session.query(AlembicVersion).count() == 0:
+        if not tmp_session.query(AlembicVersion).count():
             tmp_session.add(AlembicVersion(version_num=SCHEMA_VERSION))
             try:
                 tmp_session.commit()
@@ -431,16 +405,8 @@ class Database(object):
         finally:
             session.close()
 
-    def add_machine(self,
-                    name,
-                    label,
-                    ip,
-                    platform,
-                    tags,
-                    interface,
-                    snapshot,
-                    resultserver_ip,
-                    resultserver_port):
+    def add_machine(self, name, label, ip, platform, tags, interface,
+                    snapshot, resultserver_ip, resultserver_port):
         """Add a guest machine.
         @param name: machine id
         @param label: machine label
@@ -460,7 +426,7 @@ class Database(object):
                           snapshot=snapshot,
                           resultserver_ip=resultserver_ip,
                           resultserver_port=resultserver_port)
-        # Deal with tags format (i.e. foo,bar,baz)
+        # Deal with tags format (i.e., foo,bar,baz)
         if tags:
             for tag in tags.replace(" ", "").split(","):
                 machine.tags.append(self._get_or_create(session, Tag, name=tag))
@@ -581,7 +547,7 @@ class Database(object):
         session = self.Session()
         try:
             if locked:
-                machines = session.query(Machine).options(joinedload("tags")).filter(Machine.locked == True).all()
+                machines = session.query(Machine).options(joinedload("tags")).filter_by(locked=True).all()
             else:
                 machines = session.query(Machine).options(joinedload("tags")).all()
         except SQLAlchemyError as e:
@@ -606,7 +572,7 @@ class Database(object):
             log.error("You can select machine only by name or by platform.")
             return None
         elif name and tags:
-            # Also wrong usage
+            # Also wrong usage.
             log.error("You can select machine only by name or by tags.")
             return None
 
@@ -622,13 +588,11 @@ class Database(object):
 
             # Check if there are any machines that satisfy the
             # selection requirements.
-            if machines.count() == 0:
-                raise CuckooOperationalError("No machines match selection criteria")
+            if not machines.count():
+                raise CuckooOperationalError("No machines match selection criteria.")
 
-            # Get only free machines.
-            machines = machines.filter(Machine.locked == False)
-            # Get only one.
-            machine = machines.first()
+            # Get the first free machine.
+            machine = machines.filter_by(locked=False).first()
         except SQLAlchemyError as e:
             log.debug("Database error locking machine: {0}".format(e))
             session.close()
@@ -683,7 +647,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machines_count = session.query(Machine).filter(Machine.locked == False).count()
+            machines_count = session.query(Machine).filter_by(locked=False).count()
         except SQLAlchemyError as e:
             log.debug("Database error counting machines: {0}".format(e))
             return 0
@@ -736,19 +700,9 @@ class Database(object):
 
     # The following functions are mostly used by external utils.
 
-    def add(self,
-            obj,
-            timeout=0,
-            package="",
-            options="",
-            priority=1,
-            custom="",
-            machine="",
-            platform="",
-            tags=None,
-            memory=False,
-            enforce_timeout=False,
-            clock=None):
+    def add(self, obj, timeout=0, package="", options="", priority=1,
+            custom="", machine="", platform="", tags=None,
+            memory=False, enforce_timeout=False, clock=None):
         """Add a task to database.
         @param obj: object to add (File or URL).
         @param timeout: selected timeout.
@@ -812,9 +766,9 @@ class Database(object):
         task.memory = memory
         task.enforce_timeout = enforce_timeout
 
-        # Deal with tags format (i.e. foo,bar,baz)
+        # Deal with tags format (i.e., foo,bar,baz)
         if tags:
-            for tag in tags.replace(" ","").split(","):
+            for tag in tags.replace(" ", "").split(","):
                 task.tags.append(self._get_or_create(session, Tag, name=tag))
 
         if clock:
@@ -822,7 +776,7 @@ class Database(object):
                 try:
                     task.clock = datetime.strptime(clock, "%m-%d-%Y %H:%M:%S")
                 except ValueError:
-                    log.warning("The date you specified has an invalid format, using current timestamp")
+                    log.warning("The date you specified has an invalid format, using current timestamp.")
                     task.clock = datetime.now()
             else:
                 task.clock = clock
@@ -841,19 +795,9 @@ class Database(object):
 
         return task_id
 
-    def add_path(self,
-                 file_path,
-                 timeout=0,
-                 package="",
-                 options="",
-                 priority=1,
-                 custom="",
-                 machine="",
-                 platform="",
-                 tags=None,
-                 memory=False,
-                 enforce_timeout=False,
-                 clock=None):
+    def add_path(self, file_path, timeout=0, package="", options="",
+                 priority=1, custom="", machine="", platform="", tags=None,
+                 memory=False, enforce_timeout=False, clock=None):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -870,39 +814,20 @@ class Database(object):
         """
         if not file_path or not os.path.exists(file_path):
             return None
-        
+
         # Convert empty strings and None values to a valid int
         if not timeout:
             timeout = 0
         if not priority:
             priority = 1
 
-        return self.add(File(file_path),
-                        timeout,
-                        package,
-                        options,
-                        priority,
-                        custom,
-                        machine,
-                        platform,
-                        tags,
-                        memory,
-                        enforce_timeout,
-                        clock)
+        return self.add(File(file_path), timeout, package, options, priority,
+                        custom, machine, platform, tags, memory,
+                        enforce_timeout, clock)
 
-    def add_url(self,
-                url,
-                timeout=0,
-                package="",
-                options="",
-                priority=1,
-                custom="",
-                machine="",
-                platform="",
-                tags=None,
-                memory=False,
-                enforce_timeout=False,
-                clock=None):
+    def add_url(self, url, timeout=0, package="", options="", priority=1,
+                custom="", machine="", platform="", tags=None, memory=False,
+                enforce_timeout=False, clock=None):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
@@ -917,25 +842,16 @@ class Database(object):
         @param clock: virtual machine clock time
         @return: cursor or None.
         """
-        
+
         # Convert empty strings and None values to a valid int
         if not timeout:
             timeout = 0
         if not priority:
             priority = 1
-        
-        return self.add(URL(url),
-                        timeout,
-                        package,
-                        options,
-                        priority,
-                        custom,
-                        machine,
-                        platform,
-                        tags,
-                        memory,
-                        enforce_timeout,
-                        clock)
+
+        return self.add(URL(url), timeout, package, options, priority,
+                        custom, machine, platform, tags, memory,
+                        enforce_timeout, clock)
 
     def reschedule(self, task_id):
         """Reschedule a task.
@@ -966,24 +882,16 @@ class Database(object):
 
         # Normalize tags.
         if task.tags:
-            tags = ",".join([tag.name for tag in task.tags])
+            tags = ",".join(tag.name for tag in task.tags)
         else:
             tags = task.tags
 
-        return add(task.target,
-                   task.timeout,
-                   task.package,
-                   task.options,
-                   task.priority,
-                   task.custom,
-                   task.machine,
-                   task.platform,
-                   tags,
-                   task.memory,
-                   task.enforce_timeout,
-                   task.clock)
+        return add(task.target, task.timeout, task.package, task.options,
+                   task.priority, task.custom, task.machine, task.platform,
+                   tags, task.memory, task.enforce_timeout, task.clock)
 
-    def list_tasks(self, limit=None, details=False, category=None, offset=None, status=None, not_status=None):
+    def list_tasks(self, limit=None, details=False, category=None,
+                   offset=None, status=None, not_status=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
