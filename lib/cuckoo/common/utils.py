@@ -15,6 +15,7 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 
+
 try:
     import chardet
     HAVE_CHARDET = True
@@ -106,10 +107,11 @@ def get_filename_from_path(path):
     dirpath, filename = ntpath.split(path)
     return filename if filename else ntpath.basename(dirpath)
 
-def store_temp_file(filedata, filename):
+def store_temp_file(filedata, filename, path=None):
     """Store a temporary file.
     @param filedata: content of the original file.
     @param filename: name of the original file.
+    @param path: optional path for temp directory.
     @return: path to the temporary file.
     """
     filename = get_filename_from_path(filename)
@@ -118,8 +120,12 @@ def store_temp_file(filedata, filename):
     filename = filename[:100]
 
     options = Config(os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"))
-    tmppath = options.cuckoo.tmppath
-    targetpath = os.path.join(tmppath, "cuckoo-tmp")
+    # Create temporary directory path.
+    if path:
+        targetpath = path
+    else:
+        tmp_path = options.cuckoo.tmppath
+        targetpath = os.path.join(tmp_path, "cuckoo-tmp")
     if not os.path.exists(targetpath):
         os.mkdir(targetpath)
 
@@ -166,17 +172,6 @@ class TimeoutTransport(xmlrpclib.Transport):
         if self.timeout is not None:
             conn.timeout = self.timeout
         return conn
-
-class Singleton(type):
-    """Singleton.
-    @see: http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
-    """
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
 
 def logtime(dt):
     """Formats time like a logger does, for the csv output
