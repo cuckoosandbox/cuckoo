@@ -15,7 +15,6 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 
-
 try:
     import chardet
     HAVE_CHARDET = True
@@ -172,6 +171,17 @@ class TimeoutTransport(xmlrpclib.Transport):
         if self.timeout is not None:
             conn.timeout = self.timeout
         return conn
+
+class Singleton(type):
+    """Singleton.
+    @see: http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+    """
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 def logtime(dt):
     """Formats time like a logger does, for the csv output
