@@ -122,14 +122,14 @@ def store_temp_file(filedata, filename, path=None):
     options = Config(os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"))
     # Create temporary directory path.
     if path:
-        targetpath = path
+        target_path = path
     else:
         tmp_path = options.cuckoo.tmppath
-        targetpath = os.path.join(tmp_path, "cuckoo-tmp")
-    if not os.path.exists(targetpath):
-        os.mkdir(targetpath)
+        target_path = os.path.join(tmp_path, "cuckoo-tmp")
+    if not os.path.exists(target_path):
+        os.mkdir(target_path)
 
-    tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=targetpath)
+    tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=target_path)
     tmp_file_path = os.path.join(tmp_dir, filename)
     with open(tmp_file_path, "wb") as tmp_file:
         # If filedata is file object, do chunked copy.
