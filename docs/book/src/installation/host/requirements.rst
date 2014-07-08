@@ -15,6 +15,10 @@ Install Python on Ubuntu::
 
     $ sudo apt-get install python
 
+If you want to use the Django-based web interface, you'll have to install MongoDB too:
+
+    $ sudo apt-get install mongodb
+
 In order to properly function, Cuckoo requires SQLAlchemy and Python BSON to be installed.
 
 Install with ``apt-get``::
