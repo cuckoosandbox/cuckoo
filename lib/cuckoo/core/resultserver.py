@@ -342,7 +342,10 @@ class FileUpload(object):
                 self.fd.write("... (truncated)")
                 break
 
-            chunk = self.handler.read_any()
+            try:
+                chunk = self.handler.read_any()
+            except:
+                break
 
         log.debug("Uploaded file length: {0}".format(self.fd.tell()))
 
