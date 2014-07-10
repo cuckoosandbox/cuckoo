@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+from datetime import datetime
 
 try:
     import magic
@@ -21,7 +22,6 @@ from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import convert_to_printable
-
 
 # Partially taken from
 # http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
@@ -236,7 +236,7 @@ class PortableExecutable:
         except AttributeError:
             return None
 
-        return datetime.fromtimestamp(pe_timestamp)
+        return datetime.fromtimestamp(pe_timestamp).strftime("%Y-%m-%d %H:%M:%S")
 
     def run(self):
         """Run analysis.
