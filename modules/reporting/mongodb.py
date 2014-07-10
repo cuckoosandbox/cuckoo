@@ -10,7 +10,7 @@ from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.objects import File
 
 try:
-    from pymongo.connection import Connection
+    from pymongo import MongoClient
     from pymongo.errors import ConnectionFailure
     from gridfs import GridFS
     from gridfs.errors import FileExists
@@ -32,8 +32,8 @@ class MongoDB(Report):
         port = self.options.get("port", 27017)
 
         try:
-            self.conn = Connection(host, port)
-            self.db = self.conn.cuckoo
+            self.conn = MongoClient(host, port)
+            self.db = self.conn['cuckoo']
             self.fs = GridFS(self.db)
         except TypeError:
             raise CuckooReportError("Mongo connection port must be integer")
