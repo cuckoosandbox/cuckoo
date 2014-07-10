@@ -33,7 +33,7 @@ class MongoDB(Report):
 
         try:
             self.conn = MongoClient(host, port)
-            self.db = self.conn['cuckoo']
+            self.db = self.conn.cuckoo
             self.fs = GridFS(self.db)
         except TypeError:
             raise CuckooReportError("Mongo connection port must be integer")
