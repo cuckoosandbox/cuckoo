@@ -372,6 +372,10 @@ class Database(object):
         else:
             tmp_session.close()
 
+        # maximum number of concurrent analysis vms
+        # used when determining how many analysis machines are available
+        self.max_concurrent_analysis_count = cfg.cuckoo.max_concurrent_analysis_count
+
     def __del__(self):
         """Disconnects pool."""
         self.engine.dispose()
@@ -647,6 +651,11 @@ class Database(object):
         """
         session = self.Session()
         try:
+            if self.max_concurrent_analysis_count > 0:
+                # Are we executing too many analysis machines?
+                active_count = session.query(Machine).filter(Machine.locked == True).count()
+                if active_count >= self.max_concurrent_analysis_count:
+                    return 0
             machines_count = session.query(Machine).filter_by(locked=False).count()
         except SQLAlchemyError as e:
             log.debug("Database error counting machines: {0}".format(e))
