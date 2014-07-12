@@ -89,7 +89,7 @@ class PortableExecutable:
                         symbols.append(symbol)
 
                     imports_section = {}
-                    imports_section["dll"] = entry.dll
+                    imports_section["dll"] = convert_to_printable(entry.dll)
                     imports_section["imports"] = symbols
                     imports.append(imports_section)
                 except:
