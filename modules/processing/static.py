@@ -51,6 +51,11 @@ class PortableExecutable:
                 file_type = magic.from_buffer(data)
             except Exception:
                 return None
+        finally:
+            try:
+                ms.close()
+            except:
+                pass
 
         return file_type
 
