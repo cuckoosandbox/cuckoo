@@ -98,6 +98,7 @@ class Machinery(object):
                 machine.label = machine_opts[self.LABEL]
                 machine.platform = machine_opts["platform"]
                 machine.tags = machine_opts.get("tags")
+                machine.versions_cpe = machine_opts.get("versions_cpe", None)
                 machine.ip = machine_opts["ip"]
 
                 # If configured, use specific network interface for this
@@ -130,7 +131,8 @@ class Machinery(object):
                                     interface=machine.interface,
                                     snapshot=machine.snapshot,
                                     resultserver_ip=ip,
-                                    resultserver_port=port)
+                                    resultserver_port=port,
+                                    versions_cpe=machine.versions_cpe)
             except (AttributeError, CuckooOperationalError) as e:
                 log.warning("Configuration details about machine %s "
                             "are missing: %s", machine_id, e)

@@ -5,13 +5,15 @@
 import math
 
 try:
-    import ImageChops
-    import ImageGrab
+    from PIL import Image
+    from PIL import ImageChops
+    from PIL import ImageGrab
     HAVE_PIL = True
 except:
     try:
-        from PIL import ImageChops
-        from PIL import ImageGrab
+        import Image
+        import ImageGrab
+        import ImageChops
         HAVE_PIL = True
     except:
         HAVE_PIL = False
