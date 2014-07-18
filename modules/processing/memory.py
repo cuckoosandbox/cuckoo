@@ -404,6 +404,10 @@ class VolatilityAPI(object):
 
         command = self.plugins["apihooks"](self.config)
         for process, module, hook in command.calculate():
+            if command.whitelist(hook.hook_mode | hook.hook_type, str(process.ImageFileName) if process else '',
+                hook.VictimModule, hook.HookModule, hook.Function):
+                continue
+
             new = {
                 "hook_mode": str(hook.Mode),
                 "hook_type": str(hook.Type),
