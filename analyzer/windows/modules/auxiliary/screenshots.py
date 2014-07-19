@@ -13,6 +13,10 @@ from lib.api.screenshot import Screenshot
 
 log = logging.getLogger(__name__)
 SHOT_DELAY = 1
+# Skip the following area when comparing screen shots.
+# Example for 800x600 screen resolution.
+# SKIP_AREA = ((735, 575), (790, 595))
+SKIP_AREA = None
 
 class Screenshots(Auxiliary, Thread):
     """Take screenshots."""
@@ -47,7 +51,7 @@ class Screenshots(Auxiliary, Thread):
                 continue
 
             if img_last:
-                if Screenshot().equal(img_last, img_current):
+                if Screenshot().equal(img_last, img_current, SKIP_AREA):
                     continue
 
             img_counter += 1
