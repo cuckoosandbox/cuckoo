@@ -21,6 +21,8 @@ try:
     import volatility.win32.tasks as tasks
     import volatility.obj as obj
     HAVE_VOLATILITY = True
+    logging.getLogger("volatility.obj").setLevel(logging.INFO)
+    logging.getLogger("volatility.utils").setLevel(logging.INFO)
 except ImportError:
     HAVE_VOLATILITY = False
 
