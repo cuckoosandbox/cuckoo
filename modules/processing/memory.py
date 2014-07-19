@@ -15,6 +15,7 @@ try:
     import volatility.commands as commands
     import volatility.utils as utils
     import volatility.plugins.malware.devicetree as devicetree
+    import volatility.plugins.malware.apihooks as apihooks
     import volatility.plugins.getsids as sidm
     import volatility.plugins.privileges as privm
     import volatility.plugins.taskmods as taskmods
@@ -197,6 +198,81 @@ class VolatilityAPI(object):
                 "section": sect_name,
             }
             results.append(new)
+
+        return dict(config={}, data=results)
+
+    def ssdt(self):
+        """Volatility ssdt plugin.
+        @see volatility/plugins/malware/ssdt.py
+        """
+        log.debug("Executing Volatility ssdt plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["ssdt"](self.config)
+
+        # Comment: this code is pretty much ripped from render_text in volatility.
+        addr_space = utils.load_as(self.config)
+        syscalls = addr_space.profile.syscalls
+        bits32 = addr_space.profile.metadata.get('memory_model', '32bit') == '32bit'
+
+        for idx, table, n, vm, mods, mod_addrs in command.calculate():
+            for i in range(n):
+                if bits32:
+                    # These are absolute function addresses in kernel memory. 
+                    syscall_addr = obj.Object('address', table + (i * 4), vm).v()
+                else:
+                    # These must be signed long for x64 because they are RVAs relative
+                    # to the base of the table and can be negative. 
+                    offset = obj.Object('long', table + (i * 4), vm).v()
+                    # The offset is the top 20 bits of the 32 bit number. 
+                    syscall_addr = table + (offset >> 4)
+
+                try:
+                    syscall_name = syscalls[idx][i]
+                except IndexError:
+                    syscall_name = "UNKNOWN"
+
+                syscall_mod = tasks.find_module(mods, mod_addrs, addr_space.address_mask(syscall_addr))
+                if syscall_mod:
+                    syscall_modname = "{0}".format(syscall_mod.BaseDllName)
+                else:
+                    syscall_modname = "UNKNOWN"
+
+                new = {
+                    "index": int(idx),
+                    "table": hex(int(table)),
+                    "num_entries": int(n),
+                    "entry": "{0:#06x}".format(idx * 0x1000 + i),
+                    "syscall_name": syscall_name,
+                    "syscall_addr": syscall_addr,
+                    "syscall_modname": syscall_modname,
+                }
+
+                if bits32 and syscall_mod is not None:
+                    ret = apihooks.ApiHooks.check_inline(va = syscall_addr, addr_space = vm, 
+                                            mem_start = syscall_mod.DllBase, 
+                                            mem_end = syscall_mod.DllBase + syscall_mod.SizeOfImage)
+                    ## could not analyze the memory
+                    if ret != None:
+                        (hooked, data, dest_addr) = ret
+                        if hooked:
+                            ## we found a hook, try to resolve the hooker. no mask required because
+                            ## we currently only work on x86 anyway
+                            hook_mod = tasks.find_module(mods, mod_addrs, dest_addr)
+                            if hook_mod: 
+                                hook_name = "{0}".format(hook_mod.BaseDllName)
+                            else:
+                                hook_name = "UNKNOWN"
+                            ## report it now
+                            new.update({
+                                "hook_dest_addr": "{0:#x}".format(dest_addr),
+                                "hook_name": hook_name,
+                            })
+
+                results.append(new)
 
         return dict(config={}, data=results)
 
@@ -392,6 +468,47 @@ class VolatilityAPI(object):
                 if dump_dir:
                     filename = os.path.join(dump_dir, "process.{0:#x}.{1:#x}.dmp".format(task.obj_offset, vad.Start))
                     command.dump_vad(filename, vad, address_space)
+
+        return dict(config={}, data=results)
+
+    def yarascan(self):
+        """Volatility yarascan plugin.
+        @see volatility/plugins/malware/malfind.py
+        """
+        log.debug("Executing Volatility yarascan plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        ypath = os.path.join(CUCKOO_ROOT, "data", "yara", "index_memory.yar")
+        if not os.path.exists(ypath):
+            return dict(config={}, data=[])
+
+        self.config.update("YARA_FILE", ypath)
+
+        command = self.plugins["yarascan"](self.config)
+        for o, addr, hit, content in command.calculate():
+            # Comment: this code is pretty much ripped from render_text in volatility.
+            # Find out if the hit is from user or kernel mode 
+            if o == None:
+                owner = "Unknown Kernel Memory"
+            elif o.obj_name == "_EPROCESS":
+                owner = "Process {0} Pid {1}".format(o.ImageFileName, o.UniqueProcessId)
+            else:
+                owner = "{0}".format(o.BaseDllName)
+
+            hexdump = "".join(
+                ["{0:#010x}  {1:<48}  {2}\n".format(addr + o, h, ''.join(c))
+                for o, h, c in utils.Hexdump(content[0:64])
+                ])
+
+            new = {
+                "rule": hit.rule,
+                "owner": owner,
+                "hexdump": hexdump,
+            }
+            results.append(new)
 
         return dict(config={}, data=results)
 
@@ -754,6 +871,8 @@ class VolatilityManager(object):
             results["callbacks"] = vol.callbacks()
         if self.voptions.idt.enabled:
             results["idt"] = vol.idt()
+        if self.voptions.ssdt.enabled:
+            results["ssdt"] = vol.ssdt()
         if self.voptions.timers.enabled:
             results["timers"] = vol.timers()
         if self.voptions.messagehooks.enabled:
@@ -780,6 +899,8 @@ class VolatilityManager(object):
             results["svcscan"] = vol.svcscan()
         if self.voptions.modscan.enabled:
             results["modscan"] = vol.modscan()
+        if self.voptions.yarascan.enabled:
+            results["yarascan"] = vol.yarascan()
 
         self.find_taint(results)
         self.cleanup()
