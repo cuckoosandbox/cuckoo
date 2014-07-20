@@ -329,6 +329,7 @@ class Process:
             config.write("first-process={0}\n".format(Process.first_process))
             config.write("startup-time={0}\n".format(Process.startup_time))
             config.write("shutdown-mutex={0}\n".format(SHUTDOWN_MUTEX))
+            config.write("force-sleepskip={0}\n".format(cfg.force_sleepskip))
 
             Process.first_process = False
 
