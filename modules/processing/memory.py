@@ -296,7 +296,6 @@ class VolatilityAPI(object):
                 new = {
                     "index": int(idx),
                     "table": hex(int(table)),
-                    "num_entries": int(n),
                     "entry": "{0:#06x}".format(idx * 0x1000 + i),
                     "syscall_name": syscall_name,
                     "syscall_addr": syscall_addr,
