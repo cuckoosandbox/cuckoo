@@ -201,6 +201,58 @@ class VolatilityAPI(object):
 
         return dict(config={}, data=results)
 
+    def gdt(self):
+        """Volatility gdt plugin.
+        @see volatility/plugins/malware/idt.py
+        """
+        log.debug("Executing Volatility gdt plugin on "
+                  "{0}".format(self.memdump))
+
+        self.__config()
+        results = []
+
+        command = self.plugins["gdt"](self.config)
+        # Comment: this code is pretty much ripped from render_text in volatility.
+        for n, entry in command.calculate():
+            selector = n * 8
+
+            # Is the entry present? This applies to all types of GDT entries
+            if entry.Present:
+                present = "P"
+            else:
+                present = "Np"
+
+            # The base, limit, and granularity is calculated differently
+            # for 32bit call gates than they are for all other types. 
+            if entry.Type == 'CallGate32':
+                base = entry.CallGate
+                limit = 0
+                granularity = '-'
+            else:
+                base = entry.Base
+                limit = entry.Limit
+                if entry.Granularity:
+                    granularity = "Pg"
+                else:
+                    granularity = "By"
+
+            # The parent is GDT. The grand-parent is _KPCR
+            cpu_number = entry.obj_parent.obj_parent.ProcessorBlock.Number
+
+            new = {
+                "cpu_number": int(cpu_number),
+                "selector": hex(selector),
+                "base": hex(int(base)),
+                "limit": hex(int(limit)),
+                "type": str(entry.Type),
+                "dpl": str(entry.Dpl),
+                "granularity": granularity,
+                "present": present,
+            }
+            results.append(new)
+
+        return dict(config={}, data=results)
+
     def ssdt(self):
         """Volatility ssdt plugin.
         @see volatility/plugins/malware/ssdt.py
@@ -873,6 +925,8 @@ class VolatilityManager(object):
             results["idt"] = vol.idt()
         if self.voptions.ssdt.enabled:
             results["ssdt"] = vol.ssdt()
+        if self.voptions.gdt.enabled:
+            results["gdt"] = vol.gdt()
         if self.voptions.timers.enabled:
             results["timers"] = vol.timers()
         if self.voptions.messagehooks.enabled:
