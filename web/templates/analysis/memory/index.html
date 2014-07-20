@@ -6,6 +6,7 @@
         <li><a href="#memory_devicetree" data-toggle="tab">Device Tree</a></li>
         <li><a href="#memory_malfind" data-toggle="tab">Code Injection</a></li>
         <li><a href="#memory_timers" data-toggle="tab">Timers</a></li>
+        <li><a href="#memory_messagehooks" data-toggle="tab">Messagehooks</a></li>
         <li><a href="#memory_apihooks" data-toggle="tab">API Hooks</a></li>
         <li><a href="#memory_ssdt" data-toggle="tab">SSDT</a></li>
         <li><a href="#memory_idt" data-toggle="tab">IDT</a></li>
@@ -41,6 +42,9 @@
         </div>
         <div class="tab-pane fade in" id="memory_timers">
             {% include "analysis/memory/_timers.html" %}
+        </div>
+        <div class="tab-pane fade in" id="memory_messagehooks">
+            {% include "analysis/memory/_messagehooks.html" %}
         </div>
     </div>
 </div>
