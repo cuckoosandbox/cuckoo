@@ -313,6 +313,7 @@ class Process:
         config_path = os.path.join(os.getenv("TEMP"), "%s.ini" % self.pid)
         with open(config_path, "w") as config:
             cfg = Config("analysis.conf")
+            cfgoptions = cfg.get_options()
 
             # The first time we come up with a random startup-time.
             if Process.first_process:
@@ -326,10 +327,10 @@ class Process:
             config.write("pipe={0}\n".format(PIPE))
             config.write("results={0}\n".format(PATHS["root"]))
             config.write("analyzer={0}\n".format(os.getcwd()))
-            config.write("first-process={0}\n".format(Process.first_process))
+            config.write("first-process={0}\n".format("1" if Process.first_process else "0"))
             config.write("startup-time={0}\n".format(Process.startup_time))
             config.write("shutdown-mutex={0}\n".format(SHUTDOWN_MUTEX))
-            config.write("force-sleepskip={0}\n".format(cfg.force_sleepskip))
+            config.write("force-sleepskip={0}\n".format(cfgoptions.get("force-sleepskip", "0")))
 
             Process.first_process = False
 
