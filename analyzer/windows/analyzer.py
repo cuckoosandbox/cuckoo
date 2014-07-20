@@ -435,7 +435,7 @@ class Analyzer:
         os.system("echo:|time {0}".format(clock.strftime("%H:%M:%S")))
 
         # Set the default DLL to be used by the PipeHandler.
-        DEFAULT_DLL = self.get_options().get("dll")
+        DEFAULT_DLL = self.config.get_options().get("dll")
 
         # Initialize and start the Pipe Servers. This is going to be used for
         # communicating with the injected and monitored processes.
@@ -452,37 +452,6 @@ class Analyzer:
         # If it's a URL, well.. we store the URL.
         else:
             self.target = self.config.target
-
-    def get_options(self):
-        """Get analysis options.
-        @return: options dict.
-        """
-        # The analysis package can be provided with some options in the
-        # following format:
-        #   option1=value1,option2=value2,option3=value3
-        #
-        # Here we parse such options and provide a dictionary that will be made
-        # accessible to the analysis package.
-        options = {}
-        if self.config.options:
-            try:
-                # Split the options by comma.
-                fields = self.config.options.split(",")
-            except ValueError as e:
-                log.warning("Failed parsing the options: %s", e)
-            else:
-                for field in fields:
-                    # Split the name and the value of the option.
-                    try:
-                        key, value = field.split("=", 1)
-                    except ValueError as e:
-                        log.warning("Failed parsing option (%s): %s", field, e)
-                    else:
-                        # If the parsing went good, we add the option to the
-                        # dictionary.
-                        options[key.strip()] = value.strip()
-
-        return options
 
     def complete(self):
         """End analysis."""
@@ -554,7 +523,7 @@ class Analyzer:
                               "(package={0}): {1}".format(package_name, e))
 
         # Initialize the analysis package.
-        pack = package_class(self.get_options())
+        pack = package_class(self.config.get_options())
 
         # Initialize Auxiliary modules
         Auxiliary()
