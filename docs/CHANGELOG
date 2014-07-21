@@ -8,9 +8,14 @@ Cuckoo Sandbox 1.2 (TBD)
 * Added machine information in reports
 * Added un-hook detection
 * Added Microsoft Crypto API hooks
-* Replaced diStorm3 disassembler by Capstone disassembler
+* Added process memory processing module
+* Added support for more Volatility plugins
+* Replaced diStorm3 disassembler with Capstone disassembler
+* Refactored analysis packages
 * Fixed issue with tcpdump filters
 * Fixed analysis of HTML pages without a proper extension
+* Fixed bug in the sleep skipping mechanism
+* Fixed logic bug in mouse activity emulator
 * Removed hpfeeds reporting module
 * Allow Auxiliary modules to run a callback at the very end of an analysis
 
