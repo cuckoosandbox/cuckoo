@@ -21,7 +21,7 @@ from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
 from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from lib.cuckoo.core.startup import init_modules
 
-def do(aid, report=False):
+def process(aid, report=False):
     results = RunProcessing(task_id=aid).run()
     RunSignatures(results=results).run()
 
@@ -44,10 +44,10 @@ def autoprocess(parallel=1):
         for ar, tid in list(pending_results):
             if ar.ready():
                 if ar.successful():
-                    print "subtask success", tid, "returnvalue", ar.get()
                     log.info("Task #%d: reports generation completed", tid)
                 else:
-                    try: ar.get()
+                    try:
+                        ar.get()
                     except:
                         log.exception("Exception when processing task ID %u.", tid)
                         db.set_status(tid, TASK_FAILED_PROCESSING)
@@ -70,7 +70,7 @@ def autoprocess(parallel=1):
 
             log.info("Processing analysis data for Task #%d", task.id)
 
-            result = pool.apply_async(do, (task.id,), {"report": True})                
+            result = pool.apply_async(process, (task.id,), {"report": True})
             pending_results.append((result, task.id))
 
             count += 1
@@ -96,9 +96,11 @@ def main():
     if args.id == "auto":
         autoprocess(parallel=args.parallel)
     else:
-        do(args.id, report=args.report)
+        process(args.id, report=args.report)
 
 
 if __name__ == "__main__":
-    try: main()
-    except KeyboardInterrupt: pass
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
