@@ -16,12 +16,13 @@ log = logging.getLogger()
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.database import Database, TASK_REPORTED, TASK_COMPLETED
 from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
 from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from lib.cuckoo.core.startup import init_modules
 
-def process(aid, report=False):
+def process(aid, target=None, copy_path=None, report=False, auto=False):
     results = RunProcessing(task_id=aid).run()
     RunSignatures(results=results).run()
 
@@ -29,8 +30,14 @@ def process(aid, report=False):
         RunReporting(task_id=aid, results=results).run()
         Database().set_status(aid, TASK_REPORTED)
 
+        if auto:
+            if cfg.cuckoo.delete_original and os.path.exists(target):
+                os.unlink(target)
+
+            if cfg.cuckoo.delete_bin_copy and os.path.exists(copy_path):
+                os.unlink(copy_path)
+
 def autoprocess(parallel=1):
-    cfg = Config()
     maxcount = cfg.cuckoo.max_analysis_count
     count = 0
     db = Database()
@@ -41,7 +48,7 @@ def autoprocess(parallel=1):
     while count < maxcount or not maxcount:
 
         # pending_results maintenance
-        for ar, tid in list(pending_results):
+        for ar, tid, target, copy_path in list(pending_results):
             if ar.ready():
                 if ar.successful():
                     log.info("Task #%d: reports generation completed", tid)
@@ -52,7 +59,7 @@ def autoprocess(parallel=1):
                         log.exception("Exception when processing task ID %u.", tid)
                         db.set_status(tid, TASK_FAILED_PROCESSING)
 
-                pending_results.remove((ar, tid))
+                pending_results.remove((ar, tid, target, copy_path))
 
         # if still full, don't add more (necessary despite pool)
         if len(pending_results) >= parallel:
@@ -65,13 +72,20 @@ def autoprocess(parallel=1):
         # for loop to add only one, nice
         for task in tasks:
             # not-so-efficient lock
-            if task.id in [tid for ar, tid in pending_results]:
+            if task.id in [tid for ar, tid, target, copy_path
+                           in pending_results]:
                 continue
 
             log.info("Processing analysis data for Task #%d", task.id)
 
-            result = pool.apply_async(process, (task.id,), {"report": True})
-            pending_results.append((result, task.id))
+            copy_path = os.path.join(CUCKOO_ROOT, "storage", "binaries",
+                                     task.sample.sha256)
+
+            args = task.id, task.target, copy_path
+            kwargs = dict(report=True, auto=True)
+            result = pool.apply_async(process, args, kwargs)
+
+            pending_results.append((result, task.id, task.target, copy_path))
 
             count += 1
             break
@@ -100,6 +114,8 @@ def main():
 
 
 if __name__ == "__main__":
+    cfg = Config()
+
     try:
         main()
     except KeyboardInterrupt:
