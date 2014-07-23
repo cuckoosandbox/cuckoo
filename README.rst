@@ -7,7 +7,8 @@ The tool package and report module allow a user to specify a tool, required file
 Using the tools package
 ===============
 
-Generic format ::
+Generic format::
+
    submit.py --tool [path] --tool_dir [path] --timeout -1 --options tool_options=[options for tool],sample_options=[options for sample] [sample_path]
 
 In order to use the tools package, the '--tool' argument is required. Following are a description of the arguments shown above: ::
@@ -32,10 +33,12 @@ In order to use the tools package, the '--tool' argument is required. Following 
 		[sample_path]
 			The path to the sample on the host machine
 		
-If everything runs correctly output files will be located in ::
+If everything runs correctly output files will be located in::
+
 	../storage/analyses/{task_#}/files/
 
-Files that are returned ::
+Files that are returned::
+
 	pkg.log - stdout/stderr of command that is run
 	command.log - the command that is run on the guest machine
 	any other files that the tool creates should also be returned
@@ -48,7 +51,8 @@ Notes:
 		o If one of the options needs to be the sample, simply enter "$sample" without quotes in the location it needs to be in the options
 		i.e. … tool_options=”/F /O output.dll $sample”
 
-Examples ::
+Examples::
+
 	submit.py --tool ~/unpacker.exe --options tool_options=”$sample” ~/malicious.dll
 
 	submit.py --tool ~/pin.exe --tool_dir ~/pin_files --options tool_options="-t veratrace.dll -- $sample" ~/Malware/us.exe
