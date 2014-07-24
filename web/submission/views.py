@@ -55,33 +55,34 @@ def index(request):
             task_machines.append(machine)
 
         if "sample" in request.FILES:
-            if request.FILES["sample"].size == 0:
-                return render_to_response("error.html",
-                                          {"error": "You uploaded an empty file."},
-                                          context_instance=RequestContext(request))
-            elif request.FILES["sample"].size > settings.MAX_UPLOAD_SIZE:
-                return render_to_response("error.html",
-                                          {"error": "You uploaded a file that exceeds that maximum allowed upload size."},
-                                          context_instance=RequestContext(request))
-
-            # Moving sample from django temporary file to Cuckoo temporary storage to
-            # let it persist between reboot (if user like to configure it in that way).
-            path = store_temp_file(request.FILES["sample"].read(),
-                                   request.FILES["sample"].name)
-
-            for entry in task_machines:
-                task_id = db.add_path(file_path=path,
-                                      package=package,
-                                      timeout=timeout,
-                                      options=options,
-                                      priority=priority,
-                                      machine=entry,
-                                      custom=custom,
-                                      memory=memory,
-                                      enforce_timeout=enforce_timeout,
-                                      tags=tags)
-                if task_id:
-                    task_ids.append(task_id)
+            for sample in request.FILES.getlist('sample'):
+                if request.FILES["sample"].size == 0:
+                    return render_to_response("error.html",
+                                              {"error": "You uploaded an empty file."},
+                                              context_instance=RequestContext(request))
+                elif request.FILES["sample"].size > settings.MAX_UPLOAD_SIZE:
+                    return render_to_response("error.html",
+                                              {"error": "You uploaded a file that exceeds that maximum allowed upload size."},
+                                              context_instance=RequestContext(request))
+    
+                # Moving sample from django temporary file to Cuckoo temporary storage to
+                # let it persist between reboot (if user like to configure it in that way).
+                path = store_temp_file(request.FILES["sample"].read(),
+                                       request.FILES["sample"].name)
+    
+                for entry in task_machines:
+                    task_id = db.add_path(file_path=path,
+                                          package=package,
+                                          timeout=timeout,
+                                          options=options,
+                                          priority=priority,
+                                          machine=entry,
+                                          custom=custom,
+                                          memory=memory,
+                                          enforce_timeout=enforce_timeout,
+                                          tags=tags)
+                    if task_id:
+                        task_ids.append(task_id)
         elif "url" in request.POST:
             url = request.POST.get("url").strip()
             if not url:
