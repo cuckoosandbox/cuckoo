@@ -84,7 +84,7 @@ class NetlogParser(object):
     def read_next_message(self):
         apiindex, status = struct.unpack("BB", self.handler.read(2))
         returnval, tid, timediff = struct.unpack("III", self.handler.read(12))
-        context = (apiindex, status, returnval, tid, timediff)
+        context = apiindex, status, returnval, tid, timediff
 
         if apiindex == 0:
             # new process message
@@ -285,7 +285,6 @@ class BsonParser(object):
         tid = dec.get("T", 0)
         time = dec.get("t", 0)
 
-        #context = (apiindex, status, returnval, tid, timediff)
         context = [index, 1, 0, tid, time]
 
         if mtype == "info":
@@ -323,7 +322,7 @@ class BsonParser(object):
 
         else:
             # regular api call
-            if not index in self.infomap:
+            if index not in self.infomap:
                 log.warning("Got API with unknown index - monitor needs "
                             "to explain first: {0}".format(dec))
                 return True

@@ -54,17 +54,17 @@ class Sniffer(Auxiliary):
         pargs.extend(["-w", file_path])
         pargs.extend(["host", host])
         # Do not capture XMLRPC agent traffic.
-        pargs.extend(["and", "not", "(","dst", "host", host, "and", "dst", "port", 
+        pargs.extend(["and", "not", "(", "dst", "host", host, "and", "dst", "port",
                       str(CUCKOO_GUEST_PORT), ")", "and", "not", "(", "src", "host",
-                      host, "and", "src", "port", str(CUCKOO_GUEST_PORT),")"])
+                      host, "and", "src", "port", str(CUCKOO_GUEST_PORT), ")"])
 
         # Do not capture ResultServer traffic.
         # TODO: Now that the ResultServer port can change dynamically,
         # we need to instruct sniffer.py of the change.
         pargs.extend(["and", "not", "(", "dst", "host", str(Config().resultserver.ip),
                       "and", "dst", "port", str(Config().resultserver.port), ")", "and",
-                      "not", "(", "src", "host", str(Config().resultserver.ip), "and", 
-                      "src", "port", str(Config().resultserver.port),")"])
+                      "not", "(", "src", "host", str(Config().resultserver.ip), "and",
+                      "src", "port", str(Config().resultserver.port), ")"])
 
         if bpf:
             pargs.extend(["and", bpf])

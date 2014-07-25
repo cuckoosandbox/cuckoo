@@ -78,8 +78,10 @@ def autoprocess(parallel=1):
 
             log.info("Processing analysis data for Task #%d", task.id)
 
-            copy_path = os.path.join(CUCKOO_ROOT, "storage", "binaries",
-                                     task.sample.sha256)
+            sample = db.view_sample(task.sample_id)
+
+            copy_path = os.path.join(CUCKOO_ROOT, "storage",
+                                     "binaries", sample.sha256)
 
             args = task.id, task.target, copy_path
             kwargs = dict(report=True, auto=True)

@@ -148,7 +148,7 @@ def main():
 
                 continue
 
-            if not args.max is None:
+            if args.max is not None:
                 # Break if the maximum number of samples has been reached.
                 if not args.max:
                     break
