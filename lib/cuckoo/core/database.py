@@ -891,13 +891,14 @@ class Database(object):
                    tags, task.memory, task.enforce_timeout, task.clock)
 
     def list_tasks(self, limit=None, details=False, category=None,
-                   offset=None, status=None, not_status=None):
+                   offset=None, status=None, sample_id=None, not_status=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
         @param category: filter by category
         @param offset: list offset
         @param status: filter by task status
+        @param sample_id: all tasks for a sample
         @param not_status: exclude this task status from filter
         @return: list of tasks.
         """
@@ -913,6 +914,8 @@ class Database(object):
                 search = search.filter(Task.category == category)
             if details:
                 search = search.options(joinedload("guest"), joinedload("errors"), joinedload("tags"))
+            if sample_id is not None:
+                search = search.filter(Task.sample_id == sample_id)
 
             tasks = search.order_by("added_on desc").limit(limit).offset(offset).all()
         except SQLAlchemyError as e:
