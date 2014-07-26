@@ -44,10 +44,10 @@ def autoprocess(parallel=1):
     pool = multiprocessing.Pool(parallel)
     pending_results = []
 
-    # CAUTION - big ugly loop ahead
+    # CAUTION - big ugly loop ahead.
     while count < maxcount or not maxcount:
 
-        # pending_results maintenance
+        # Pending_results maintenance.
         for ar, tid, target, copy_path in list(pending_results):
             if ar.ready():
                 if ar.successful():
@@ -61,17 +61,17 @@ def autoprocess(parallel=1):
 
                 pending_results.remove((ar, tid, target, copy_path))
 
-        # if still full, don't add more (necessary despite pool)
+        # If still full, don't add more (necessary despite pool).
         if len(pending_results) >= parallel:
             time.sleep(1)
             continue
 
-        # if we're here, getting #parallel tasks should at least have one we don't know
+        # If we're here, getting #parallel tasks should at least have one we don't know.
         tasks = db.list_tasks(status=TASK_COMPLETED, limit=parallel)
 
-        # for loop to add only one, nice
+        # For loop to add only one, nice.
         for task in tasks:
-            # not-so-efficient lock
+            # Not-so-efficient lock.
             if task.id in [tid for ar, tid, target, copy_path
                            in pending_results]:
                 continue
@@ -92,7 +92,7 @@ def autoprocess(parallel=1):
             count += 1
             break
 
-        # if there wasn't anything to add, sleep tight
+        # If there wasn't anything to add, sleep tight.
         if not tasks:
             time.sleep(5)
 
