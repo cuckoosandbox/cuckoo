@@ -38,7 +38,7 @@ log = logging.getLogger(__name__)
 def expand_format(fs):
     out = ""
     i = 0
-    while i<len(fs):
+    while i < len(fs):
         x = fs[i]
         if x in string.digits:
             out += fs[i+1] * int(x)
