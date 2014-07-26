@@ -52,6 +52,10 @@ class Screenshot:
         # run the comparison.
         # NOTE: the coordinates are changing with VM screen resolution.
         if skip_area:
+            # Copying objects to draw in another object.
+            img1 = img1.copy()
+            img2 = img2.copy()
+            # Draw a rectangle to cover windows clock.
             for img in (img1, img2):
                 self._draw_rectangle(img, skip_area)
 
