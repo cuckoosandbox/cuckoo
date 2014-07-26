@@ -12,8 +12,7 @@ try:
     HAVE_BSON = True
 except ImportError:
     HAVE_BSON = False
-
-if HAVE_BSON:
+else:
     # The BSON module provided by pymongo works through its "BSON" class.
     if hasattr(bson, "BSON"):
         bson_decode = lambda d: bson.BSON(d).decode()
