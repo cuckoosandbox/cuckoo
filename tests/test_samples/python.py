@@ -1,5 +1,4 @@
 from ctypes import *
-import time 
 import socket
 import _winreg
 
@@ -16,4 +15,3 @@ msvcrt =  cdll.msvcrt
 # edit registry 
 key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "Software\\Cuckoo\\ReleaseTest", 1, _winreg.KEY_ALL_ACCESS)
 
-time.sleep(3)
