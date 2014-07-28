@@ -35,9 +35,14 @@ class TestRelease(unittest.TestCase):
         except Exception as e:
             print ("Error running analysis..", e)
 
-        report = os.path.join(CUCKOO_ROOT, "storage", "analyses",
+        report_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                               "latest", "reports", "report.json")
-        return json.load(open(report, "rb"))
+
+        report = json.load(open(report_path, "rb")) 
+
+        # verify that a process has been injected at all
+        self.assertTrue(report.get("behavior").get("processes") != [], "No injected process found.")
+        return report
 
     # collect and verify loaded DLLs via LdrLoadDLL in report
     def check_loaded_dlls(self, report, dlls):
@@ -95,9 +100,6 @@ class TestRelease(unittest.TestCase):
     def test_python(self):
         report = self.run_analysis(os.path.abspath("test_samples/python.py"), "python")
 
-        # verify that a process has been injected at all
-        self.assertTrue(report.get("behavior").get("processes") != [], "No injected process found.")
-
         # check for loaded dlls
         self.check_loaded_dlls(report, ["kernel32","msvcrt"])
 
@@ -127,9 +129,6 @@ class TestRelease(unittest.TestCase):
         report = self.run_analysis("", "ie", "http://%s:%d/tests/test_samples/ie_exploit.html" %(host_ip, host_port))
         httpd.shutdown()
 
-        # verify that a process has been injected at all
-        self.assertTrue(report.get("behavior").get("processes") != [], "No injected process found.")
-
         self.assertTrue(False, "Not yet implemented")
 
     # analysis test for the exe analysis package
@@ -148,9 +147,6 @@ class TestRelease(unittest.TestCase):
 
         report = self.run_analysis(os.path.abspath("test_samples/dl_exe.pdf"), "pdf")
         httpd.shutdown()
-
-        # verify that a process has been injected at all
-        self.assertTrue(report.get("behavior").get("processes") != [], "No injected process found.")
 
         self.check_network(report, [
                 {"InternetConnectA":{"ServerName":"192.168.56.1"}}, 
