@@ -179,7 +179,7 @@ class VMware(Machinery):
     def dump_memory(self, vmx_path, path):
         """Take a memory dump of the machine."""
         if not os.path.exists(vmx_path):
-            raise CuckooMachineError("Can't find .vmx file {0}. Ensure to configure a fully qualified path in vmware.conf (key = label)".format(vmx_path))
+            raise CuckooMachineError("Can't find .vmx file {0}. Ensure to configure a fully qualified path in vmware.conf (key = vmx_path)".format(vmx_path))
 
         try:
             subprocess.call([self.options.vmware.path, "snapshot",
