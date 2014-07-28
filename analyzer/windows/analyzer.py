@@ -249,7 +249,7 @@ class PipeHandler(Thread):
                 if "," not in data:
                     if data.isdigit():
                         process_id = int(data)
-                elif data.count(",") == 2:
+                elif data.count(",") == 1:
                     process_id, param = data.split(",")
                     thread_id = None
                     if process_id.isdigit():
