@@ -96,6 +96,27 @@ class TestRelease(unittest.TestCase):
         for r in reg_keys:
             self.assertTrue(r in report["behavior"]["summary"]["keys"], "Key not listed: %s" %(r))
 
+    def check_processes(self, report, proc_list):   
+        for p in report["behavior"]["processes"]:
+            try:
+                proc_list.remove(p["process_name"])
+            except:
+                pass
+
+        self.assertFalse(proc_list, "Not all processes found. Not found: %s" %(proc_list))
+
+    def serve_http(self):
+        # start http server serving the exploit
+        host_ip = "192.168.56.1"
+        host_port = 8089
+        handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+        httpd = SocketServer.TCPServer(("", host_port), handler)
+        server_thread = threading.Thread(target=httpd.serve_forever)
+        server_thread.daemon = True
+        server_thread.start()
+        return httpd
+
+
     # analysis test for the python analysis package
     def test_python(self):
         report = self.run_analysis(os.path.abspath("test_samples/python.py"), "python")
@@ -116,47 +137,45 @@ class TestRelease(unittest.TestCase):
 
     # analysis test for the Internet Explorer analysis package
     def test_ie(self):
-        # start http server serving the exploit
-        host_ip = "192.168.56.1"
-        host_port = 8089
-        handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-        httpd = SocketServer.TCPServer(("", host_port), handler)
-        server_thread = threading.Thread(target=httpd.serve_forever)
-        server_thread.daemon = True
-        server_thread.start()
-
+        httpd = self.serve_http()
         # start analysis
-        report = self.run_analysis("", "ie", "http://%s:%d/tests/test_samples/ie_exploit.html" %(host_ip, host_port))
+        report = self.run_analysis("", "ie", "http://192.168.56.1:8089/tests/test_samples/ie_exploit.html")
         httpd.shutdown()
 
-        self.assertTrue(False, "Not yet implemented")
+        # check for spawned sub processes
+        self.check_processes(report,["calc.exe"])
 
     # analysis test for the exe analysis package
     def test_exe(self):
         self.assertTrue(False, "Not yet implemented")
 
     # analysis test for the pdf analysis package
+    # requires Adobe <= 9.x
     def test_pdf(self):
-        host_ip = "192.168.56.1"
-        host_port = 8089
-        handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-        httpd = SocketServer.TCPServer(("", host_port), handler)
-        server_thread = threading.Thread(target=httpd.serve_forever)
-        server_thread.daemon = True
-        server_thread.start()
-
+        httpd = self.serve_http()
         report = self.run_analysis(os.path.abspath("test_samples/dl_exe.pdf"), "pdf")
         httpd.shutdown()
 
         self.check_network(report, [
                 {"InternetConnectA":{"ServerName":"192.168.56.1"}}, 
-                {"InternetConnectA":{"ServerPort":"8089"}}
+                {"InternetConnectA":{"ServerPort":"8089"}},
+                {"HttpOpenRequestA":{"Path":"/tests/test_samples/dl.exe"}}
             ])
 
 
     # analysis test for the doc analysis package
     def test_doc(self):
-        self.assertTrue(False, "Not yet implemented")
+        httpd = self.serve_http()
+        report = self.run_analysis(os.path.abspath("test_samples/doc.rtf"), "doc")
+        httpd.shutdown()
+
+        self.check_network(report, [
+                {"InternetConnectA":{"ServerName":"192.168.56.1"}}, 
+                {"InternetConnectA":{"ServerPort":"8089"}},
+                {"HttpOpenRequestA":{"Path":"/tests/test_samples/dl.exe"}}
+            ])
+
+
 
     # analysis test for the xls analysis package
     def test_xls(self):
@@ -171,10 +190,10 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--clean", action="store_true", help="Clean storage before tests.")
     args = parser.parse_args()
 
+    # clean db if requested
     if args.clean:
         subprocess.Popen([os.path.join(CUCKOO_ROOT, 'utils', 'clean.sh')],
             cwd=CUCKOO_ROOT).wait()
-
 
     # init cuckoo
     cuckoo_init(quiet=True if args.verbosity == 0 else False)
