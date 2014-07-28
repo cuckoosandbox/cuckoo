@@ -166,7 +166,7 @@ class TestRelease(unittest.TestCase):
     # analysis test for the doc analysis package
     def test_doc(self):
         httpd = self.serve_http()
-        report = self.run_analysis(os.path.abspath("test_samples/doc.rtf"), "doc")
+        report = self.run_analysis(os.path.abspath("test_samples/doc.doc"), "doc")
         httpd.shutdown()
 
         self.check_network(report, [
