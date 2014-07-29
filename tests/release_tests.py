@@ -56,6 +56,21 @@ class TestRelease(unittest.TestCase):
         for d in dlls:                    
             self.assertTrue(d in dlls_loaded, "DLL %s not loaded" %(d))
 
+    # collect and verify loaded DLLs via LdrLoadDLL in report
+    def check_files(self, report, files):
+        for p in report["behavior"]["processes"]:
+            for c in p.get("calls"):
+                if c["category"] == "filesystem" and c["api"] == "NtCreateFile":
+                    for a in c["arguments"]:
+                        if a["name"]=="FileName":
+                            try:
+                                fname = a["value"].split("\\")
+                                files.remove(fname[len(fname)-1:][0])
+                            except:
+                                pass
+
+        self.assertFalse(files, "Files have note been written: %s" %(files))
+
     # verify dns requests in report
     def check_dns_requests(self, report, hosts):
         host_lookups = []
@@ -77,6 +92,15 @@ class TestRelease(unittest.TestCase):
                             pass
         self.assertFalse(network_items, "Not all network items found. Not found: %s" %(network_items))
 
+    # check for network connections in report
+    def check_http(self, report, urls):
+        for h in report["network"]["http"]:
+            try: 
+                urls.remove(h["uri"])
+            except: 
+                pass
+        self.assertFalse(urls, "Not all URLs found. Not found: %s" %(urls))
+
 
     # verify dns requests in report
     def check_registry(self, report, reg_items, reg_keys):
@@ -96,13 +120,12 @@ class TestRelease(unittest.TestCase):
         for r in reg_keys:
             self.assertTrue(r in report["behavior"]["summary"]["keys"], "Key not listed: %s" %(r))
 
-    def check_processes(self, report, proc_list):   
+    def check_processes(self, report, proc_list): 
         for p in report["behavior"]["processes"]:
             try:
                 proc_list.remove(p["process_name"])
             except:
                 pass
-
         self.assertFalse(proc_list, "Not all processes found. Not found: %s" %(proc_list))
 
     def serve_http(self):
@@ -119,7 +142,9 @@ class TestRelease(unittest.TestCase):
 
     # analysis test for the python analysis package
     def test_python(self):
+        httpd = self.serve_http()
         report = self.run_analysis(os.path.abspath("test_samples/python.py"), "python")
+        httpd.shutdown()
 
         # check for loaded dlls
         self.check_loaded_dlls(report, ["kernel32","msvcrt"])
@@ -130,10 +155,20 @@ class TestRelease(unittest.TestCase):
         # check for registry entries / changes
         # dict: {"api-value":{"name-value":"value-value"}}
         self.check_registry(report,[ 
-                    {u"RegOpenKeyExA":{u"SubKey":u"Software\\Cuckoo\\ReleaseTest"}},
+                    {u"RegCreateKeyExA":{u"SubKey":u"Software\\Cuckoo\\ReleaseTest"}},
                 ], 
                 ["HKEY_LOCAL_MACHINE\\Software\\Cuckoo\\ReleaseTest"]
             )
+
+        # check for downloaded executable via http
+        self.check_http(report,["http://192.168.56.1:8089/tests/test_samples/dl.exe"])
+
+        # check if file "test.exe" has been created
+        self.check_files(report, ["test.exe"])
+ 
+        # check if downloaded executable is detected executed
+        self.check_processes(report,["test.exe"])
+
 
     # analysis test for the Internet Explorer analysis package
     def test_ie(self):
