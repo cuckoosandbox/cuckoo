@@ -15,8 +15,8 @@ from lib.cuckoo.common.exceptions import CuckooCriticalError
 log = logging.getLogger(__name__)
 
 
-class Fog(MachineManager):
-    """Manage physical sandboxes with Fog."""
+class Physical(MachineManager):
+    """Manage physical sandboxes."""
 
     # physical machine states
     RUNNING = 'running'
@@ -27,12 +27,12 @@ class Fog(MachineManager):
         """Ensures that credentials have been entered into the config file.
         @raise CuckooMachineError: if VBoxManage is not found.
         """
-        if not self.options.fog.user or not self.options.fog.password:
-            raise CuckooCriticalError("FOG machine credentials are missing, please add it to the config file")
+        if not self.options.physical.user or not self.options.physical.password:
+            raise CuckooCriticalError("Physical machine credentials are missing, please add it to the config file")
 
         for machine in self.machines():
             if self._status(machine.label) != self.RUNNING:
-                raise CuckooCriticalError("FOG machine is currently offline")
+                raise CuckooCriticalError("Physical machine is currently offline")
 
     def _get_machine(self, label):
         """Retreive all machine info given a machine's name.
@@ -71,8 +71,8 @@ class Fog(MachineManager):
         """
         # Since we are 'stopping' a physical machine, it must
         # actually be rebooted to kick off the reimaging process
-        n = self.options.fog.user
-        p = self.options.fog.password
+        n = self.options.physical.user
+        p = self.options.physical.password
         creds = str(n) + '%' + str(p)
         status = self._status(label)
         
@@ -117,7 +117,7 @@ class Fog(MachineManager):
 
         else:
             try:
-                status = guest.get_status()
+                status = guest.server.get_status()
 
             except xmlrpclib.Fault as e:
                 # Contacted Agent, but it threw an error
