@@ -8,14 +8,14 @@ import xmlrpclib
 import subprocess
 
 from lib.cuckoo.core.guest import GuestManager
-from lib.cuckoo.common.abstracts import MachineManager
+from lib.cuckoo.common.abstracts import Machinery
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 
 log = logging.getLogger(__name__)
 
 
-class Physical(MachineManager):
+class Physical(Machinery):
     """Manage physical sandboxes."""
 
     # physical machine states
