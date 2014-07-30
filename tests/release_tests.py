@@ -56,7 +56,7 @@ class TestRelease(unittest.TestCase):
         for d in dlls:                    
             self.assertTrue(d in dlls_loaded, "DLL %s not loaded" %(d))
 
-    # collect and verify loaded DLLs via LdrLoadDLL in report
+    # check if files have been created
     def check_files(self, report, files):
         for p in report["behavior"]["processes"]:
             for c in p.get("calls"):
@@ -70,6 +70,16 @@ class TestRelease(unittest.TestCase):
                                 pass
 
         self.assertFalse(files, "Files have note been written: %s" %(files))
+
+    # check for dropped files
+    def check_dropped_files(self, report, files):
+        for d in report["dropped"]:
+            try:
+                files.remove(d["name"])
+            except:
+                pass
+
+        self.assertFalse(files, "Files have note been seen as dropped: %s" %(files))
 
     # verify dns requests in report
     def check_dns_requests(self, report, hosts):
@@ -128,23 +138,10 @@ class TestRelease(unittest.TestCase):
                 pass
         self.assertFalse(proc_list, "Not all processes found. Not found: %s" %(proc_list))
 
-    def serve_http(self):
-        # start http server serving the exploit
-        host_ip = "192.168.56.1"
-        host_port = 8089
-        handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-        httpd = SocketServer.TCPServer(("", host_port), handler)
-        server_thread = threading.Thread(target=httpd.serve_forever)
-        server_thread.daemon = True
-        server_thread.start()
-        return httpd
-
 
     # analysis test for the python analysis package
     def test_python(self):
-        httpd = self.serve_http()
         report = self.run_analysis(os.path.abspath("test_samples/python.py"), "python")
-        httpd.shutdown()
 
         # check for loaded dlls
         self.check_loaded_dlls(report, ["kernel32","msvcrt"])
@@ -165,6 +162,9 @@ class TestRelease(unittest.TestCase):
 
         # check if file "test.exe" has been created
         self.check_files(report, ["test.exe"])
+
+        # check if file as dropped file
+        self.check_dropped_files(report, ["test.exe"])
  
         # check if downloaded executable is detected executed
         self.check_processes(report,["test.exe"])
@@ -172,10 +172,8 @@ class TestRelease(unittest.TestCase):
 
     # analysis test for the Internet Explorer analysis package
     def test_ie(self):
-        httpd = self.serve_http()
         # start analysis
         report = self.run_analysis("", "ie", "http://192.168.56.1:8089/tests/test_samples/ie_exploit.html")
-        httpd.shutdown()
 
         # check for spawned sub processes
         self.check_processes(report,["calc.exe"])
@@ -187,10 +185,7 @@ class TestRelease(unittest.TestCase):
     # analysis test for the pdf analysis package
     # requires Adobe <= 9.x
     def test_pdf(self):
-        httpd = self.serve_http()
         report = self.run_analysis(os.path.abspath("test_samples/dl_exe.pdf"), "pdf")
-        httpd.shutdown()
-
         self.check_network(report, [
                 {"InternetConnectA":{"ServerName":"192.168.56.1"}}, 
                 {"InternetConnectA":{"ServerPort":"8089"}},
@@ -200,10 +195,7 @@ class TestRelease(unittest.TestCase):
 
     # analysis test for the doc analysis package
     def test_doc(self):
-        httpd = self.serve_http()
         report = self.run_analysis(os.path.abspath("test_samples/doc.doc"), "doc")
-        httpd.shutdown()
-
         self.check_network(report, [
                 {"InternetConnectA":{"ServerName":"192.168.56.1"}}, 
                 {"InternetConnectA":{"ServerPort":"8089"}},
@@ -234,6 +226,16 @@ if __name__ == "__main__":
     cuckoo_init(quiet=True if args.verbosity == 0 else False)
     db = Database()
 
+    
+    # start http server serving the exploit
+    host_ip = "192.168.56.1"
+    host_port = 8089
+    handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+    httpd = SocketServer.TCPServer(("", host_port), handler)
+    server_thread = threading.Thread(target=httpd.serve_forever)
+    server_thread.daemon = True
+    server_thread.start()
+
     # run test suite
     if (args.packages):
         suite = unittest.TestSuite()
@@ -243,3 +245,6 @@ if __name__ == "__main__":
     else:
         suite = unittest.TestLoader().loadTestsFromTestCase(TestRelease)    
         unittest.TextTestRunner(verbosity=args.verbosity).run(suite)
+
+    # shutdown http server
+    httpd.shutdown()
