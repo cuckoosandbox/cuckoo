@@ -520,14 +520,18 @@ class Enhanced(object):
 
         # Generic handles
         def _add_handle(handles, handle, filename):
-            handles[handle] = filename
+            handles[self.current_pid][handle] = filename
 
         def _remove_handle(handles, handle):
-            if handle in handles:
-                handles.pop(handle)
+            if handle in handles[self.current_pid]:
+                handles[self.current_pid].pop(handle)
 
         def _get_handle(handles, handle):
-            return handles.get(handle)
+            return handles[self.current_pid].get(handle)
+
+        def _init_handle(handle):
+            if not self.current_pid in handle:
+                handle[self.current_pid] = {}
 
         def _get_service_action(control_code):
             """@see: http://msdn.microsoft.com/en-us/library/windows/desktop/ms682108%28v=vs.85%29.aspx"""
@@ -553,6 +557,8 @@ class Enhanced(object):
 
         self.current_pid = process["process_id"]
         _init_keyhandles()
+        _init_handle(self.filehandles)
+        _init_handle(self.servicehandles)
 
         event = None
 
@@ -779,7 +785,7 @@ class Enhanced(object):
                 event["data"]["file"] = _get_handle(self.filehandles, args["FileHandle"])
 
             elif call["api"] in ["RegDeleteKeyA", "RegDeleteKeyW"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("SubKey", ""))
+                event["data"]["regkey"] = "{0}\\{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("SubKey", ""))
 
             elif call["api"] in ["RegSetValueExA", "RegSetValueExW"]:
                 event["data"]["regkey"] = "{0}\\{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("ValueName", ""))
@@ -788,7 +794,7 @@ class Enhanced(object):
                 event["data"]["regkey"] = "{0}\\{1}".format(self._get_keyhandle(args.get("Handle", "UNKNOWN")), args.get("ValueName", ""))
 
             elif call["api"] in ["NtQueryValueKey", "NtDeleteValueKey"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("KeyHandle", "UNKNOWN")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}\\{1}".format(self._get_keyhandle(args.get("KeyHandle", "UNKNOWN")), args.get("ValueName", ""))
 
             elif call["api"] in ["LoadLibraryA", "LoadLibraryW", "LoadLibraryExA", "LoadLibraryExW", "LdrGetDllHandle"] and call["status"]:
                 self._add_loaded_module(args.get("FileName", ""), args.get("ModuleHandle", ""))
