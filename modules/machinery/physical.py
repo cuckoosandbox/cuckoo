@@ -79,7 +79,7 @@ class Physical(Machinery):
         if status == self.RUNNING:
             log.debug("Rebooting machine: %s." % label)
             machine = self._get_machine(label)
-            shutdown = subprocess.Popen(['net', 'rpc', 'shutdown', '-I', label, '-U', creds, '-r', '-f', '--timeout=5'], stdout=subprocess.PIPE)
+            shutdown = subprocess.Popen(['net', 'rpc', 'shutdown', '-I', machine.ip, '-U', creds, '-r', '-f', '--timeout=5'], stdout=subprocess.PIPE)
             output = shutdown.communicate()[0]
             
             if not "Shutdown of remote machine succeeded" in output:
