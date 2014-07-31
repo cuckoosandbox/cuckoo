@@ -91,7 +91,7 @@ class TestRelease(unittest.TestCase):
             host_lookups.append(p["request"])
 
         for d in hosts:                    
-            self.assertTrue(d in host_lookups, "Host %s not listen in DNS requests" %(d))
+            self.assertTrue(d in host_lookups, "Host %s not listed in DNS requests" %(d))
 
 
     # check for network connections in report
@@ -163,7 +163,7 @@ class TestRelease(unittest.TestCase):
         self.check_loaded_dlls(report, ["kernel32","msvcrt"])
 
         # check for dns requests
-        self.check_dns_requests(report, ["google.com","reddit.com","twitter.com"])
+        self.check_dns_requests(report, ["google.com","reddit.com","twitter.com","facebook.com"])
 
         # check for network items
         self.check_network(report, [{"getaddrinfo":{"NodeName":"google.com"}},{"getaddrinfo":{"NodeName":"reddit.com"}},{"getaddrinfo":{"NodeName":"twitter.com"}}])
@@ -187,7 +187,6 @@ class TestRelease(unittest.TestCase):
  
         # check if downloaded executable is detected executed
         self.check_processes(report,["test.exe"])
-
 
     # analysis test for the Internet Explorer analysis package
     def test_ie(self):
@@ -242,7 +241,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--packages", type=str, nargs="+", help="Test against specific packages only.")
     parser.add_argument("-v", "--verbosity", type=int, default=0, help="Set test-verbosity.")
-    parser.add_argument("-t", "--timeout", type=int, default=30, help="Sets the analysis timeout.")
+    parser.add_argument("-t", "--timeout", type=int, default=50, help="Sets the analysis timeout.")
     parser.add_argument("-c", "--clean", action="store_true", help="Clean storage before tests.")
     args = parser.parse_args()
 

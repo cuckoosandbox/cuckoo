@@ -7,11 +7,14 @@ import subprocess
 # resolv hostnames
 hostnames = ["google.com","twitter.com","reddit.com"]
 for h in hostnames:
-	addr = socket.gethostbyname(h)
+	try:
+		addr = socket.gethostbyname(h)
+	except:
+		pass
 
 # load some librarires
 kernel32 = windll.kernel32 
-msvcrt =  cdll.msvcrt 
+msvcrt = cdll.msvcrt 
 
 # edit registry 
 key = _winreg.CreateKey(_winreg.HKEY_LOCAL_MACHINE, "Software\\Cuckoo\\ReleaseTest")
