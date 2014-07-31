@@ -843,6 +843,20 @@ class Enhanced(object):
         elif call["api"] in ["RegCloseKey"]:
             self._remove_keyhandle(args.get("Handle", ""))
 
+        if call["api"] in ["RegCreateKeyExA", "RegCreateKeyExW"]:
+            specific_gendata = [{
+                "event": "write",
+                "object": "registry",
+                "apis": [
+                    "RegCreateKeyExA",
+                    "RegCreateKeyExW"
+                ],
+                "args": [
+                ]
+            }]
+            event = _generic_handle(self, specific_gendata, call)
+            event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), "")
+
         return event
 
     def event_apicall(self, call, process):
