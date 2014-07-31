@@ -15,6 +15,8 @@ import SimpleHTTPServer
 import SocketServer
 import threading
 
+#todo: getaddrinfo e.g. task 72 /  77
+
 
 CUCKOO_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..")
 sys.path.append(CUCKOO_ROOT)
@@ -84,11 +86,13 @@ class TestRelease(unittest.TestCase):
     # verify dns requests in report
     def check_dns_requests(self, report, hosts):
         host_lookups = []
+        addr_infos = []
         for p in report["network"]["dns"]:
             host_lookups.append(p["request"])
 
         for d in hosts:                    
-            self.assertTrue(d in host_lookups, "Host %s not looked up" %(d))
+            self.assertTrue(d in host_lookups, "Host %s not listen in DNS requests" %(d))
+
 
     # check for network connections in report
     def check_network(self, report, network_items):
@@ -101,6 +105,18 @@ class TestRelease(unittest.TestCase):
                         except:
                             pass
         self.assertFalse(network_items, "Not all network items found. Not found: %s" %(network_items))
+
+    # check for network connections in report
+    def check_socket(self, report, socket_items):
+        for p in report["behavior"]["processes"]:
+            for c in p.get("calls"):
+                if c["category"] == "socket":
+                    for a in c["arguments"]:
+                        try:
+                            socket_items.remove({c["api"]:{a["name"]:a["value"]}})
+                        except:
+                            pass
+        self.assertFalse(socket_items, "Not all socket items found. Not found: %s" %(socket_items))
 
     # check for network connections in report
     def check_http(self, report, urls):
@@ -149,6 +165,9 @@ class TestRelease(unittest.TestCase):
         # check for dns requests
         self.check_dns_requests(report, ["google.com","reddit.com","twitter.com"])
 
+        # check for network items
+        self.check_network(report, [{"getaddrinfo":{"NodeName":"google.com"}},{"getaddrinfo":{"NodeName":"reddit.com"}},{"getaddrinfo":{"NodeName":"twitter.com"}}])
+
         # check for registry entries / changes
         # dict: {"api-value":{"name-value":"value-value"}}
         self.check_registry(report,[ 
@@ -180,7 +199,17 @@ class TestRelease(unittest.TestCase):
 
     # analysis test for the exe analysis package
     def test_exe(self):
-        self.assertTrue(False, "Not yet implemented")
+        report = self.run_analysis(os.path.abspath("test_samples/dl.exe"), "exe")
+
+        # check for processes
+        self.check_processes(report,["dl.exe"])
+
+        # check for dns requests
+        self.check_dns_requests(report, ["facebook.com"])
+
+        # check for network items
+        self.check_socket(report, [{"gethostbyname":{"Name":"facebook.com"}}])
+
 
     # analysis test for the pdf analysis package
     # requires Adobe <= 9.x
