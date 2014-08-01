@@ -4,6 +4,7 @@
 
 import sys
 import re
+import os
 
 from django.conf import settings
 from django.template import RequestContext
@@ -36,6 +37,10 @@ def index(request):
         for task in tasks_files:
             new = task.to_dict()
             new["sample"] = db.view_sample(new["sample_id"]).to_dict()
+
+        filename = os.path.basename(new["target"])
+        new.update({"filename": filename})
+
             if db.view_errors(task.id):
                 new["errors"] = True
 
