@@ -217,6 +217,7 @@ class AnalysisManager(Thread):
             if not self.store_file():
                 return False
 
+        aux = None
         # Acquire analysis machine.
         try:
             self.acquire_machine()
@@ -234,9 +235,6 @@ class AnalysisManager(Thread):
             machinery.release(self.machine.label)
             self.errors.put(e)
 
-        aux = RunAuxiliary(task=self.task, machine=self.machine)
-        aux.start()
-
         try:
             # Mark the selected analysis machine in the database as started.
             guest_log = Database().guest_start(self.task.id,
@@ -250,6 +248,9 @@ class AnalysisManager(Thread):
             dead_machine = True
         else:
             try:
+                # Run auxiliary modules.
+                aux = RunAuxiliary(task=self.task, machine=self.machine)
+                aux.start()
                 # Initialize the guest manager.
                 guest = GuestManager(self.machine.name, self.machine.ip, self.machine.platform)
                 # Start the analysis.
@@ -267,7 +268,8 @@ class AnalysisManager(Thread):
 
         finally:
             # Stop Auxiliary modules.
-            aux.stop()
+            if aux:
+                aux.stop()
 
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:
