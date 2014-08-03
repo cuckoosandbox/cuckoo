@@ -18,14 +18,15 @@ class ProcessMemory(Processing):
         self.key = "procmemory"
         results = []
 
-        for dmp in os.listdir(self.pmemory_path):
-            dmp_path = os.path.join(self.pmemory_path, dmp)
-            dmp_file = File(dmp_path)
+        if os.path.exists(self.pmemory_path):
+            for dmp in os.listdir(self.pmemory_path):
+                dmp_path = os.path.join(self.pmemory_path, dmp)
+                dmp_file = File(dmp_path)
 
-            proc = dict(
-                yara=dmp_file.get_yara(os.path.join(CUCKOO_ROOT, "data", "yara", "index_memory.yar"))
-            )
+                proc = dict(
+                    yara=dmp_file.get_yara(os.path.join(CUCKOO_ROOT, "data", "yara", "index_memory.yar"))
+                )
 
-            results.append(proc)
+                results.append(proc)
 
         return results
