@@ -198,6 +198,8 @@ class TestRelease(unittest.TestCase):
 
     # analysis test for the exe analysis package
     def test_exe(self):
+        self.assertTrue(os.path.isfile("test_samples/dl.exe"), "Test sample \"test_samples/dl.exe\" does not exist. Maybe not compiled dl.c?")
+
         report = self.run_analysis(os.path.abspath("test_samples/dl.exe"), "exe")
 
         # check for processes
@@ -208,6 +210,14 @@ class TestRelease(unittest.TestCase):
 
         # check for network items
         self.check_socket(report, [{"gethostbyname":{"Name":"facebook.com"}}])
+
+        # check for registry entries / changes
+        # dict: {"api-value":{"name-value":"value-value"}}
+        self.check_registry(report,[ 
+                    {u"RegCreateKeyExA":{u"SubKey":u"Software\\Cuckoo\\DL.exe"}},
+                ], 
+                ["HKEY_LOCAL_MACHINE\\Software\\Cuckoo\\DL.exe"]
+            )        
 
 
     # analysis test for the pdf analysis package
