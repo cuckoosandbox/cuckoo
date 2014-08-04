@@ -217,7 +217,16 @@ class TestRelease(unittest.TestCase):
                     {u"RegCreateKeyExA":{u"SubKey":u"Software\\Cuckoo\\DL.exe"}},
                 ], 
                 ["HKEY_LOCAL_MACHINE\\Software\\Cuckoo\\DL.exe"]
-            )        
+            )     
+
+        # check for downloaded executable 
+        self.check_dropped_files(report, ["downloaded.exe"])  
+
+        # check if file "test.exe" has been created
+        self.check_files(report, ["downloaded.exe"])
+
+        # check for downloaded executable via http
+        self.check_http(report,["http://192.168.56.1:8089/tests/test_samples/dl.exe"])
 
 
     # analysis test for the pdf analysis package
