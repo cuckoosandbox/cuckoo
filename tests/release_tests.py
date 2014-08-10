@@ -191,10 +191,10 @@ class TestRelease(unittest.TestCase):
     # analysis test for the Internet Explorer analysis package
     def test_ie(self):
         # start analysis
-        report = self.run_analysis("", "ie", "http://192.168.56.1:8089/tests/test_samples/ie_exploit.html")
+        report = self.run_analysis("", "ie", "http://192.168.56.1:8089/tests/test_samples/ie2.html")
 
         # check for spawned sub processes
-        self.check_processes(report,["calc.exe"])
+        self.check_processes(report,["dl.exe"])
 
     # analysis test for the exe analysis package
     def test_exe(self):
