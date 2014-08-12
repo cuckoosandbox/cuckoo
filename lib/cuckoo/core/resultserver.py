@@ -214,10 +214,8 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         except CuckooResultError as e:
             log.warning("ResultServer connection stopping because of "
                         "CuckooResultError: %s.", str(e))
-        except Disconnect:
+        except (Disconnect, socket.error):
             pass
-        except socket.error as e:
-            log.debug("socket.error: {0}".format(e))
         except:
             log.exception("FIXME - exception in resultserver connection %s",
                           str(self.client_address))
