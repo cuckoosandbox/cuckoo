@@ -160,15 +160,16 @@ class VMware(Machinery):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             output, error = p.communicate()
+        except OSError as e:
+            raise CuckooMachineError("Unable to check running status for %s. "
+                                     "Reason: %s" % (vmx_path, e))
+        else:
             if output:
                 return vmx_path in output
             else:
                 raise CuckooMachineError("Unable to check running status "
                                          "for %s. No output from "
                                          "`vmrun list`" % vmx_path)
-        except OSError as e:
-            raise CuckooMachineError("Unable to check running status for %s. "
-                                     "Reason: %s" % (vmx_path, e))
 
     def _snapshot_from_vmx(self, vmx_path):
         """Get snapshot for a given vmx file.
