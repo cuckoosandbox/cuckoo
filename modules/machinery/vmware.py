@@ -66,15 +66,16 @@ class VMware(Machinery):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             output, _ = p.communicate()
+        except OSError as e:
+            raise CuckooMachineError("Unable to get snapshot list for %s. "
+                                     "Reason: %s" % (vmx_path, e))
+        else:
             if output:
                 return snapshot in output
             else:
                 raise CuckooMachineError("Unable to get snapshot list for %s. "
                                          "No output from "
                                          "`vmrun listSnapshots`" % vmx_path)
-        except OSError as e:
-            raise CuckooMachineError("Unable to get snapshot list for %s. "
-                                     "Reason: %s" % (vmx_path, e))
 
     def start(self, vmx_path):
         """Start a virtual machine.
