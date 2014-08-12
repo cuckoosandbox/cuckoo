@@ -195,7 +195,7 @@ class VMware(Machinery):
         latestvmem = max(glob.iglob(os.path.join(vmwarepath, "*.vmem")),
                          key=os.path.getctime)
 
-        # We need to copy the snapshot to the current analysis directory as
+        # We need to move the snapshot to the current analysis directory as
         # vmware doesn't support an option for the destination path :-/
         shutil.move(latestvmem, path)
 
