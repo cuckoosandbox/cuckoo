@@ -192,7 +192,7 @@ class VMware(Machinery):
             raise CuckooMachineError("vmrun failed to take a memory dump of the machine with label %s: %s" % (vmx_path, e))
 
         vmwarepath, _ = os.path.split(vmx_path)
-        latestvmem = max(glob.iglob(os.path.join(vmwarepath, '*.vmem')),
+        latestvmem = max(glob.iglob(os.path.join(vmwarepath, "*.vmem")),
                          key=os.path.getctime)
 
         # We need to copy the snapshot to the current analysis directory as
