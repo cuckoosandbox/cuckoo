@@ -113,7 +113,8 @@ class RunAuxiliary(object):
                     log.warning("Unable to start auxiliary module %s: %s",
                                 module_name, e)
                 else:
-                    log.debug("Started auxiliary module: %s", module_name)
+                    log.debug("Started auxiliary module: %s",
+                              current.__class__.__name__)
                     self.enabled.append(current)
 
     def stop(self):
@@ -125,7 +126,8 @@ class RunAuxiliary(object):
             except Exception as e:
                 log.warning("Unable to stop auxiliary module: %s", e)
             else:
-                log.debug("Stopped auxiliary module: %s", module)
+                log.debug("Stopped auxiliary module: %s",
+                          module.__class__.__name__)
 
 class RunProcessing(object):
     """Analysis Results Processing Engine.
