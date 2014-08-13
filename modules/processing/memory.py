@@ -181,13 +181,13 @@ class VolatilityAPI(object):
         command = self.plugins["idt"](self.config)
         for n, entry, addr, module in command.calculate():
             if module:
-                module_name = str(module.BaseDllName or '')
+                module_name = str(module.BaseDllName or "")
                 sect_name = command.get_section_name(module, addr)
             else:
                 module_name = "UNKNOWN"
                 sect_name = ''
 
-            # The parent is IDT. The grand-parent is _KPCR. 
+            # The parent is IDT. The grand-parent is _KPCR.
             cpu_number = entry.obj_parent.obj_parent.ProcessorBlock.Number
             new = {
                 "cpu_number": int(cpu_number),
@@ -224,10 +224,10 @@ class VolatilityAPI(object):
 
             # The base, limit, and granularity is calculated differently
             # for 32bit call gates than they are for all other types. 
-            if entry.Type == 'CallGate32':
+            if entry.Type == "CallGate32":
                 base = entry.CallGate
                 limit = 0
-                granularity = '-'
+                granularity = "-"
             else:
                 base = entry.Base
                 limit = entry.Limit
@@ -268,17 +268,17 @@ class VolatilityAPI(object):
         # Comment: this code is pretty much ripped from render_text in volatility.
         addr_space = utils.load_as(self.config)
         syscalls = addr_space.profile.syscalls
-        bits32 = addr_space.profile.metadata.get('memory_model', '32bit') == '32bit'
+        bits32 = addr_space.profile.metadata.get("memory_model", "32bit") == "32bit"
 
         for idx, table, n, vm, mods, mod_addrs in command.calculate():
             for i in range(n):
                 if bits32:
                     # These are absolute function addresses in kernel memory. 
-                    syscall_addr = obj.Object('address', table + (i * 4), vm).v()
+                    syscall_addr = obj.Object("address", table + (i * 4), vm).v()
                 else:
                     # These must be signed long for x64 because they are RVAs relative
                     # to the base of the table and can be negative. 
-                    offset = obj.Object('long', table + (i * 4), vm).v()
+                    offset = obj.Object("long", table + (i * 4), vm).v()
                     # The offset is the top 20 bits of the 32 bit number. 
                     syscall_addr = table + (offset >> 4)
 
@@ -345,7 +345,7 @@ class VolatilityAPI(object):
                 signaled = "-"
 
             if module:
-                module_name = str(module.BaseDllName or '')
+                module_name = str(module.BaseDllName or "")
             else:
                 module_name = "UNKNOWN"
 
