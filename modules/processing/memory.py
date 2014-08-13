@@ -524,7 +524,7 @@ class VolatilityAPI(object):
 
     def yarascan(self):
         """Volatility yarascan plugin.
-        @see volatility/plugins/malware/malfind.py
+        @see volatility/plugins/malware/yarascan.py
         """
         log.debug("Executing Volatility yarascan plugin on "
                   "{0}".format(self.memdump))
