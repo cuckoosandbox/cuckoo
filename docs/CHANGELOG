@@ -10,7 +10,9 @@ Cuckoo Sandbox 1.2 (TBD)
 * Added Microsoft Crypto API hooks
 * Added process memory processing module
 * Added support for more Volatility plugins
-* Added more memory analysis information to web/
+* Added more memory analysis information to web interface
+* Added memory dump to vmware workstation module
+* Added terminate_processes option to terminate processes before vm shutdown
 * Replaced diStorm3 disassembler with Capstone disassembler
 * Refactored analysis packages
 * Fixed issue with tcpdump filters
