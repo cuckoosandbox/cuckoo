@@ -46,6 +46,10 @@ MEM_DECOMMIT              = 0x00004000
 MEM_RELEASE               = 0x00008000
 MEM_RESET                 = 0x00080000
 
+MEM_IMAGE                 = 0x01000000
+MEM_MAPPED                = 0x00040000
+MEM_PRIVATE               = 0x00020000
+
 PAGE_NOACCESS             = 0x00000001
 PAGE_READONLY             = 0x00000002
 PAGE_READWRITE            = 0x00000004

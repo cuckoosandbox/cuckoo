@@ -16,6 +16,7 @@ from lib.common.defines import STARTUPINFO, PROCESS_INFORMATION
 from lib.common.defines import CREATE_NEW_CONSOLE, CREATE_SUSPENDED
 from lib.common.defines import MEM_RESERVE, MEM_COMMIT, PAGE_READWRITE
 from lib.common.defines import MEMORY_BASIC_INFORMATION
+from lib.common.defines import MEM_IMAGE, MEM_MAPPED, MEM_PRIVATE
 from lib.common.errors import get_error_string
 from lib.common.rand import random_string
 from lib.common.results import NetlogFile
@@ -424,7 +425,8 @@ class Process:
                 mem += page_size
                 continue
 
-            if mbi.State == 0x1000 and mbi.Type == 0x20000:
+            if mbi.State & MEM_COMMIT and \
+                    mbi.Type & (MEM_IMAGE | MEM_MAPPED | MEM_PRIVATE):
                 buf = create_string_buffer(mbi.RegionSize)
                 if KERNEL32.ReadProcessMemory(self.h_process,
                                               mem,
