@@ -555,7 +555,7 @@ class Database(object):
                 machines = session.query(Machine).options(joinedload("tags")).all()
         except SQLAlchemyError as e:
             log.debug("Database error listing machines: {0}".format(e))
-            return None
+            return []
         finally:
             session.close()
         return machines
@@ -923,7 +923,7 @@ class Database(object):
             tasks = search.order_by("added_on desc").limit(limit).offset(offset).all()
         except SQLAlchemyError as e:
             log.debug("Database error listing tasks: {0}".format(e))
-            return None
+            return []
         finally:
             session.close()
         return tasks
@@ -1085,7 +1085,7 @@ class Database(object):
             errors = session.query(Error).filter(Error.task_id == task_id).all()
         except SQLAlchemyError as e:
             log.debug("Database error viewing errors: {0}".format(e))
-            return None
+            return []
         finally:
             session.close()
         return errors
