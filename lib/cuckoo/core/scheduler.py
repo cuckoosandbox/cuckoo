@@ -386,11 +386,16 @@ class AnalysisManager(Thread):
                 latest = os.path.join(CUCKOO_ROOT, "storage",
                                       "analyses", "latest")
 
-                # First we have to remove the existing symbolic link.
-                if os.path.exists(latest):
-                    os.remove(latest)
+                # First we have to remove the existing symbolic link, then we
+                # have to create the new one. Wrap an exception handler around
+                # this logic because race conditions tend to happen.
+                try:
+                    if os.path.exists(latest):
+                        os.remove(latest)
 
-                os.symlink(self.storage, latest)
+                    os.symlink(self.storage, latest)
+                except OSError:
+                    pass
 
             log.info("Task #%d: analysis procedure completed", self.task.id)
         except:
