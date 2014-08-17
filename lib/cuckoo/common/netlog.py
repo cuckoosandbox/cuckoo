@@ -341,16 +341,16 @@ class BsonParser(object):
 
             if apiname == "__process__":
                 # Special new process message from cuckoomon.
-                timelow = argdict["TimeLow"]
-                timehigh = argdict["TimeHigh"]
+                timelow = argdict["time_low"]
+                timehigh = argdict["time_high"]
                 # FILETIME is 100-nanoseconds from 1601 :/
                 vmtimeunix = (timelow + (timehigh << 32))
                 vmtimeunix = vmtimeunix / 10000000.0 - 11644473600
                 vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
 
-                pid = argdict["ProcessIdentifier"]
-                ppid = argdict["ParentProcessIdentifier"]
-                modulepath = argdict["ModulePath"]
+                pid = argdict["process_identifier"]
+                ppid = argdict["parent_process_identifier"]
+                modulepath = argdict["module_path"]
                 procname = get_filename_from_path(modulepath)
 
                 self.handler.log_process(context, vmtime, pid, ppid,
@@ -358,7 +358,7 @@ class BsonParser(object):
                 return True
 
             elif apiname == "__thread__":
-                pid = argdict["ProcessIdentifier"]
+                pid = argdict["process_identifier"]
                 self.handler.log_thread(context, pid)
                 return True
 
