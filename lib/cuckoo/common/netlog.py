@@ -283,6 +283,7 @@ class BsonParser(object):
         index = dec.get("I", -1)
         tid = dec.get("T", 0)
         time = dec.get("t", 0)
+        stacktrace = dec.get("s", [])
 
         context = [index, 1, 0, tid, time]
 
@@ -370,6 +371,7 @@ class BsonParser(object):
 
             context[1] = argdict.pop("is_success", 1)
             context[2] = argdict.pop("retval", 0)
+            context.append(stacktrace)
             arguments = argdict.items()
             arguments += dec.get("aux", {}).items()
 
