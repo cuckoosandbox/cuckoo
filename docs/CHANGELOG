@@ -13,15 +13,15 @@ Cuckoo Sandbox 1.2 (TBD)
 * Added more memory analysis information to web interface
 * Added memory dump to vmware workstation module
 * Added terminate_processes option to terminate processes before vm shutdown
+* Added optional aggressive sleep skipping mode
+* Allow Auxiliary modules to run a callback at the very end of an analysis
 * Replaced diStorm3 disassembler with Capstone disassembler
 * Refactored analysis packages
 * Fixed issue with tcpdump filters
 * Fixed analysis of HTML pages without a proper extension
 * Fixed logic bug in mouse activity emulator
 * Fixed bug in the sleep skipping mechanism
-* Added optional aggressive sleep skipping mode
 * Removed hpfeeds reporting module
-* Allow Auxiliary modules to run a callback at the very end of an analysis
 
 Cuckoo Sandbox 1.1 (2014-04-07)
 ===============================
