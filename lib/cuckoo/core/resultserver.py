@@ -267,7 +267,7 @@ class ResultHandler(SocketServer.BaseRequestHandler):
             raise CuckooOperationalError("Netlog failure, call "
                                          "before process.")
 
-        apiindex, status, returnval, tid, timediff = context
+        apiindex, status, returnval, tid, timediff, _ = context
 
         # log.debug("log_call> tid:{0} apiname:{1}".format(tid, apiname))
 
