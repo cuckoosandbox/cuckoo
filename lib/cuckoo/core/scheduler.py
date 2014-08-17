@@ -245,26 +245,21 @@ class AnalysisManager(Thread):
                                                machinery.__class__.__name__)
             # Start the machine.
             machinery.start(self.machine.label)
+
+            # Initialize the guest manager.
+            guest = GuestManager(self.machine.name, self.machine.ip,
+                                 self.machine.platform)
+
+            # Start the analysis.
+            guest.start_analysis(options)
+
+            guest.wait_for_completion()
+            succeeded = True
         except CuckooMachineError as e:
             log.error(str(e), extra={"task_id": self.task.id})
             dead_machine = True
-        else:
-            try:
-                # Initialize the guest manager.
-                guest = GuestManager(self.machine.name, self.machine.ip, self.machine.platform)
-                # Start the analysis.
-                guest.start_analysis(options)
-            except CuckooGuestError as e:
-                log.error(str(e), extra={"task_id": self.task.id})
-            else:
-                # Wait for analysis completion.
-                try:
-                    guest.wait_for_completion()
-                    succeeded = True
-                except CuckooGuestError as e:
-                    log.error(str(e), extra={"task_id": self.task.id})
-                    succeeded = False
-
+        except CuckooGuestError as e:
+            log.error(str(e), extra={"task_id": self.task.id})
         finally:
             # Stop Auxiliary modules.
             aux.stop()
