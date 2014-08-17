@@ -276,7 +276,7 @@ class Process:
             return False
 
         if not dll:
-            dll = "cuckoomon.dll"
+            dll = "monitor-x86.dll"
 
         dll = randomize_dll(os.path.join("dll", dll))
 
