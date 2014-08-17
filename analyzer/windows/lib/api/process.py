@@ -335,7 +335,7 @@ class Process:
             Process.first_process = False
 
         if apc or self.suspended:
-            log.info("Using QueueUserAPC injection.")
+            log.debug("Using QueueUserAPC injection.")
             if not self.h_thread:
                 log.info("No valid thread handle specified for injecting "
                          "process with pid %d, injection aborted.", self.pid)
@@ -357,7 +357,7 @@ class Process:
                 log.warning("Unable to create notify event..")
                 return False
 
-            log.info("Using CreateRemoteThread injection.")
+            log.debug("Using CreateRemoteThread injection.")
             new_thread_id = c_ulong(0)
             thread_handle = KERNEL32.CreateRemoteThread(self.h_process,
                                                         None,
