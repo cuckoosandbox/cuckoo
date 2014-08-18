@@ -54,6 +54,10 @@ class Auxiliary(object):
 
 class Machinery(object):
     """Base abstract class for machinery modules."""
+
+    # Default label used in machinery configuration file to supply virtual
+    # machine name/label/vmx path. Override it if you dubbed it in another
+    # way.
     LABEL = "label"
 
     def __init__(self):
