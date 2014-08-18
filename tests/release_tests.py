@@ -128,7 +128,7 @@ class TestRelease(unittest.TestCase):
         self.assertFalse(urls, "Not all URLs found. Not found: %s" %(urls))
 
 
-    # verify dns requests in report
+    # verify registry changes/queries in report
     def check_registry(self, report, reg_items, reg_keys):
         for p in report["behavior"]["processes"]:
             for c in p.get("calls"):
@@ -214,7 +214,7 @@ class TestRelease(unittest.TestCase):
         # check for registry entries / changes
         # dict: {"api-value":{"name-value":"value-value"}}
         self.check_registry(report,[ 
-                    {u"RegCreateKeyExA":{u"SubKey":u"Software\\Cuckoo\\DL.exe"}},
+                    {"RegCreateKeyExA":{"SubKey":"Software\\Cuckoo\\DL.exe"}},{"NtCreateKey":{"ObjectAttributes":"\\Registry\\Machine\\Software\\CuckooTest"}},
                 ], 
                 ["HKEY_LOCAL_MACHINE\\Software\\Cuckoo\\DL.exe"]
             )     
