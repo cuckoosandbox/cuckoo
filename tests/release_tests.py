@@ -53,7 +53,7 @@ class TestRelease(unittest.TestCase):
             for c in p.get("calls"):
                 if c["category"] == "system" and (c["api"] == "LdrLoadDll" or c["api"] == "LdrGetDllHandle"):
                     for a in c["arguments"]:
-                        if a["name"] in "FileName":
+                        if a["name"] == "FileName":
                             dlls_loaded.append(a["value"])
         for d in dlls:                    
             self.assertTrue(d in dlls_loaded, "DLL %s not loaded" %(d))
@@ -160,7 +160,7 @@ class TestRelease(unittest.TestCase):
         report = self.run_analysis(os.path.abspath("test_samples/python.py"), "python")
 
         # check for loaded dlls
-        self.check_loaded_dlls(report, ["kernel32","msvcrt"])
+        self.check_loaded_dlls(report, ["kernel32","msvcrt","ntdll.dll"])
 
         # check for dns requests
         self.check_dns_requests(report, ["google.com","reddit.com","twitter.com","facebook.com"])
@@ -171,7 +171,9 @@ class TestRelease(unittest.TestCase):
         # check for registry entries / changes
         # dict: {"api-value":{"name-value":"value-value"}}
         self.check_registry(report,[ 
-                    {u"RegCreateKeyExA":{u"SubKey":u"Software\\Cuckoo\\ReleaseTest"}},
+                    {"RegCreateKeyExA":{"SubKey":"Software\\Cuckoo\\ReleaseTest"}},
+                    {"NtCreateKey":{"ObjectAttributes":"\\Registry\\Machine\\Software\\CuckooTest"}},
+                    {"NtQueryKey":{"KeyInformationClass":"2"}},
                 ], 
                 ["HKEY_LOCAL_MACHINE\\Software\\Cuckoo\\ReleaseTest"]
             )

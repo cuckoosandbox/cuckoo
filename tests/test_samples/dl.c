@@ -85,11 +85,8 @@ int main(int argc, char **argv){
     NTSTATUS m_NtStatus;
 
 
-	printf("This is dl.exe.");
+	printf("This is dl.exe.\n");
 
-	// make dns request
-    gethostbyname("facebook.com");
-    
     // create / read registry key
     SA.nLength             = sizeof(SA);
     SA.lpSecurityDescriptor = &SD;
@@ -110,26 +107,13 @@ int main(int argc, char **argv){
         hKey = (HKEY)NULL;
     }    
 
-    // download file
-    curl = curl_easy_init();
-    if (curl) {
-        fp = fopen(outfilename,"wb");
-        curl_easy_setopt(curl, CURLOPT_URL, url);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        curl_easy_perform(curl);
-        curl_easy_cleanup(curl);
-        fclose(fp);
-    }
 
+    printf("Loading ntdll\n");
     // create a key via native api
     hinstStub = GetModuleHandle("ntdll.dll");
     RtlInitAnsiString = (LPRTLINITANSISTRING)GetProcAddress(hinstStub, "RtlInitAnsiString");
     RtlAnsiStringToUnicodeString = (LPRTLANSISTRINGTOUNICODESTRING)GetProcAddress(hinstStub, "RtlAnsiStringToUnicodeString");
     NtCreateKey = (LPNTCREATEKEY)GetProcAddress(hinstStub, "NtCreateKey");
-    if (!NtCreateKey) {
-      return FALSE;
-    }
     NtClose = (LPNTCLOSE)GetProcAddress(hinstStub, "NtClose");
     NtQueryKey = (LPNTQUERYKEY)GetProcAddress(hinstStub, "NtQueryKey");
 
@@ -146,6 +130,7 @@ int main(int argc, char **argv){
                              NULL,NULL);
 
     // create key
+    printf("Calling NtCreateKey\n");
     m_NtStatus = NtCreateKey(&hKey2,
                            KEY_ALL_ACCESS,
                            &ObjectAttributes,
@@ -156,12 +141,12 @@ int main(int argc, char **argv){
 
     if (!NT_SUCCESS(m_NtStatus)) {
       printf("failed: %d!\n",m_NtStatus);
-      return FALSE;
     }
     else {
       NtClose(hKey2);
     }
 
+    printf("Calling NtQueryKey\n");
     WCHAR buffer[256];
     KEY_FULL_INFORMATION *info = (KEY_FULL_INFORMATION *)buffer;
     DWORD dwResultLength;
@@ -172,6 +157,25 @@ int main(int argc, char **argv){
                             &dwResultLength);
     printf("Query: %s",buffer);
 
+    // make dns request
+    printf("Resolving host\n");
+
+    gethostbyname("facebook.com");
+
+
+    printf("Download file\n");
+    // download file
+    curl = curl_easy_init();
+    if (curl) {
+        fp = fopen(outfilename,"wb");
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
+        fclose(fp);
+    }
+    printf("Finished\n");
     return 0;
 
 }
