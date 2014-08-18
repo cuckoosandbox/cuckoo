@@ -51,9 +51,9 @@ class TestRelease(unittest.TestCase):
         dlls_loaded = []
         for p in report["behavior"]["processes"]:
             for c in p.get("calls"):
-                if c["category"] == "system" and c["api"] == "LdrLoadDll":
+                if c["category"] == "system" and (c["api"] == "LdrLoadDll" or c["api"] == "LdrGetDllHandle"):
                     for a in c["arguments"]:
-                        if a["name"] == "FileName":
+                        if a["name"] in "FileName":
                             dlls_loaded.append(a["value"])
         for d in dlls:                    
             self.assertTrue(d in dlls_loaded, "DLL %s not loaded" %(d))
@@ -214,7 +214,9 @@ class TestRelease(unittest.TestCase):
         # check for registry entries / changes
         # dict: {"api-value":{"name-value":"value-value"}}
         self.check_registry(report,[ 
-                    {"RegCreateKeyExA":{"SubKey":"Software\\Cuckoo\\DL.exe"}},{"NtCreateKey":{"ObjectAttributes":"\\Registry\\Machine\\Software\\CuckooTest"}},
+                    {"RegCreateKeyExA":{"SubKey":"Software\\Cuckoo\\DL.exe"}},
+                    {"NtCreateKey":{"ObjectAttributes":"\\Registry\\Machine\\Software\\CuckooTest"}},
+                    {"NtQueryKey":{"KeyInformationClass":"2"}},
                 ], 
                 ["HKEY_LOCAL_MACHINE\\Software\\Cuckoo\\DL.exe"]
             )     
@@ -228,6 +230,8 @@ class TestRelease(unittest.TestCase):
         # check for downloaded executable via http
         self.check_http(report,["http://192.168.56.1:8089/tests/test_samples/dl.exe"])
 
+        # check for loaded dlls
+        self.check_loaded_dlls(report, ["ntdll.dll"])
 
     # analysis test for the pdf analysis package
     # requires Adobe <= 9.x

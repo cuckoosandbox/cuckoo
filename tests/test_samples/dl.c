@@ -4,6 +4,7 @@
 #include <curl/curl.h>
 #include <string.h>
 #include <ntdef.h>
+#include <ddk/ntifs.h>
 
 size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) {
     size_t written = fwrite(ptr, size, nmemb, stream);
@@ -46,6 +47,15 @@ typedef NTSTATUS (STDAPICALLTYPE NTCLOSE)
 );
 typedef NTCLOSE FAR * LPNTCLOSE;
 
+typedef NTSTATUS (STDAPICALLTYPE NTQUERYKEY)
+(
+    IN HANDLE   KeyHandle,
+    IN KEY_INFORMATION_CLASS KeyInformationClass,
+    OUT PVOID   KeyInformation,
+    IN ULONG    KeyInformationLength,
+    OUT PULONG  ResultLength
+   );
+typedef NTQUERYKEY FAR * LPNTQUERYKEY;
 
 int main(int argc, char **argv){
     // registry variables
@@ -71,6 +81,8 @@ int main(int argc, char **argv){
     LPRTLANSISTRINGTOUNICODESTRING RtlAnsiStringToUnicodeString;
     HANDLE hKey2 = NULL;
     DWORD m_dwDisposition;
+    LPNTQUERYKEY NtQueryKey;
+    NTSTATUS m_NtStatus;
 
 
 	printf("This is dl.exe.");
@@ -119,6 +131,7 @@ int main(int argc, char **argv){
       return FALSE;
     }
     NtClose = (LPNTCLOSE)GetProcAddress(hinstStub, "NtClose");
+    NtQueryKey = (LPNTQUERYKEY)GetProcAddress(hinstStub, "NtQueryKey");
 
     // Ansi2Unicode
     RtlZeroMemory(&asName,sizeof(asName));
@@ -133,7 +146,7 @@ int main(int argc, char **argv){
                              NULL,NULL);
 
     // create key
-    NTSTATUS m_NtStatus = NtCreateKey(&hKey2,
+    m_NtStatus = NtCreateKey(&hKey2,
                            KEY_ALL_ACCESS,
                            &ObjectAttributes,
                            0,
@@ -149,6 +162,15 @@ int main(int argc, char **argv){
       NtClose(hKey2);
     }
 
+    WCHAR buffer[256];
+    KEY_FULL_INFORMATION *info = (KEY_FULL_INFORMATION *)buffer;
+    DWORD dwResultLength;
+    m_NtStatus = NtQueryKey(hKey,
+                            KeyFullInformation,
+                            buffer,
+                            sizeof(buffer),
+                            &dwResultLength);
+    printf("Query: %s",buffer);
 
     return 0;
 
