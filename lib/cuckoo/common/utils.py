@@ -118,7 +118,7 @@ def store_temp_file(filedata, filename, path=None):
     # Reduce length (100 is arbitrary).
     filename = filename[:100]
 
-    options = Config(os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"))
+    options = Config()
     # Create temporary directory path.
     if path:
         target_path = path

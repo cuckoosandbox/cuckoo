@@ -73,7 +73,7 @@ class RunAuxiliary(object):
     def __init__(self, task, machine):
         self.task = task
         self.machine = machine
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "auxiliary.conf"))
+        self.cfg = Config("auxiliary")
         self.enabled = []
 
     def start(self):
@@ -141,7 +141,7 @@ class RunProcessing(object):
         """@param task_id: ID of the analyses to process."""
         self.task = Database().view_task(task_id).to_dict()
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "processing.conf"))
+        self.cfg = Config("processing")
 
     def process(self, module):
         """Run a processing module.
@@ -459,7 +459,7 @@ class RunReporting:
         self.task = Database().view_task(task_id).to_dict()
         self.results = results
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "reporting.conf"))
+        self.cfg = Config("reporting")
 
     def process(self, module):
         """Run a single reporting module.
@@ -495,7 +495,7 @@ class RunReporting:
         # Give it the the relevant reporting.conf section.
         current.set_options(options)
         # Load the content of the analysis.conf file.
-        current.cfg = Config(current.conf_path)
+        current.cfg = Config(cfg=current.conf_path)
 
         try:
             current.run(self.results)

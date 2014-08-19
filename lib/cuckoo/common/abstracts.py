@@ -59,7 +59,7 @@ class Machinery(object):
     def __init__(self):
         self.module_name = ""
         self.options = None
-        self.options_globals = Config(os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"))
+        self.options_globals = Config()
         # Database pointer.
         self.db = Database()
 
