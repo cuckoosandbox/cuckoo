@@ -459,7 +459,7 @@ class Scheduler:
         else:
             log.info("Loaded %s machine/s", len(machinery.machines()))
 
-        if len(machinery.machines()) > 1 and self.db.is_sqlite:
+        if len(machinery.machines()) > 1 and self.db.engine.name == "sqlite":
             log.critical("The SQLite database is not compatible with "
                          "multi-threaded use-cases such as running multiple "
                          "virtual machine in parallel. Please upgrade to "

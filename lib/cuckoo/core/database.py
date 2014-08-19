@@ -327,10 +327,8 @@ class Database(object):
 
         if dsn:
             self.engine = create_engine(dsn, poolclass=NullPool)
-            self.is_sqlite = dsn.startswith("sqlite://")
         elif cfg.database.connection:
             self.engine = create_engine(cfg.database.connection, poolclass=NullPool)
-            self.is_sqlite = cfg.database.connection.startswith("sqlite://")
         else:
             db_file = os.path.join(CUCKOO_ROOT, "db", "cuckoo.db")
             if not os.path.exists(db_file):
@@ -342,7 +340,6 @@ class Database(object):
                         raise CuckooDatabaseError("Unable to create database directory: {0}".format(e))
 
             self.engine = create_engine("sqlite:///{0}".format(db_file), poolclass=NullPool)
-            self.is_sqlite = True
 
         # Disable SQL logging. Turn it on for debugging.
         self.engine.echo = False
