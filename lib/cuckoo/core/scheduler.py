@@ -466,10 +466,10 @@ class Scheduler:
                          "PostgreSQL or MySQL when running multiple VMs.")
 
         if len(machinery.machines()) > 3 and self.cfg.cuckoo.process_results:
-            log.warning("When running multiple virtual machines it is "
-                        "recommended to process the results in a separate "
-                        "process to increase throughput and stability. Please "
-                        "read the documentation on ./utils/process.py.")
+            log.warning("When running many virtual machines it is recommended "
+                        "to process the results in a separate process.py to "
+                        "increase throughput and stability. Please read the "
+                        "documentation about the `Processing Utility`.")
 
     def stop(self):
         """Stop scheduler."""
