@@ -460,10 +460,10 @@ class Scheduler:
             log.info("Loaded %s machine/s", len(machinery.machines()))
 
         if len(machinery.machines()) > 1 and self.db.engine.name == "sqlite":
-            log.critical("The SQLite database is not compatible with "
-                         "multi-threaded use-cases such as running multiple "
-                         "virtual machine in parallel. Please upgrade to "
-                         "PostgreSQL or MySQL when running multiple VMs.")
+            log.warning("The SQLite database is not compatible with "
+                        "multi-threaded use-cases such as running multiple "
+                        "virtual machine in parallel. Please upgrade to "
+                        "PostgreSQL or MySQL when running multiple VMs.")
 
         if len(machinery.machines()) > 3 and self.cfg.cuckoo.process_results:
             log.warning("When running many virtual machines it is recommended "
