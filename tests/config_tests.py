@@ -2,7 +2,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import tempfile
 from nose.tools import assert_equals, raises
 
@@ -24,15 +23,15 @@ interface = vboxnet0
 """
 
     def setUp(self):
-        self.file = tempfile.mkstemp()[1]
+        self.path = tempfile.mkstemp()[1]
         self._load_conf(self.CONF_EXAMPLE)
-        self.c = Config(self.file)
+        self.c = Config(cfg=self.path)
 
     def _load_conf(self, conf):
         """Loads a configuration from a string.
         @param conf: configuration string.
         """
-        f = open(self.file, "w")
+        f = open(self.path, "w")
         f.write(conf)
         f.close()
 

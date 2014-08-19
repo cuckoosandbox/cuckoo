@@ -439,7 +439,7 @@ class Scheduler:
 
         # Provide a dictionary with the configuration options to the
         # machine manager instance.
-        machinery.set_options(Config(conf))
+        machinery.set_options(Config(machinery_name))
 
         # Initialize the machine manager.
         try:

@@ -11,7 +11,7 @@ sys.path.append(settings.CUCKOO_PATH)
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
 
-cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "reporting.conf")).mongodb
+cfg = Config("reporting").mongodb
 
 # Checks if mongo reporting is enabled in Cuckoo.
 if not cfg.get("enabled"):
