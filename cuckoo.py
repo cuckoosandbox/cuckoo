@@ -9,6 +9,7 @@ import logging
 import argparse
 
 try:
+    import bson
     from lib.cuckoo.common.logo import logo
     from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
     from lib.cuckoo.common.exceptions import CuckooCriticalError
@@ -16,7 +17,7 @@ try:
     from lib.cuckoo.core.startup import check_working_directory, check_configs
     from lib.cuckoo.core.startup import check_version, create_structure
     from lib.cuckoo.core.startup import init_logging, init_modules
-    from lib.cuckoo.core.startup import init_tasks, init_yara, sanity_checks
+    from lib.cuckoo.core.startup import init_tasks, init_yara
     from lib.cuckoo.core.scheduler import Scheduler
     from lib.cuckoo.core.resultserver import ResultServer
 except (CuckooDependencyError, ImportError) as e:
@@ -53,8 +54,6 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     init_modules()
     init_tasks()
     init_yara()
-
-    sanity_checks()
 
     # This is just a temporary hack, we need an actual test suite to integrate
     # with Travis-CI.

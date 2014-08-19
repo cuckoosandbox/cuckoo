@@ -21,7 +21,6 @@ from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooStartupError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.netlog import HAVE_BSON
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.core.database import Database, TASK_RUNNING
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
@@ -252,9 +251,3 @@ def init_yara():
             log.debug("\t `-- %s", entry)
         else:
             log.debug("\t |-- %s", entry)
-
-def sanity_checks():
-    """Performs various sanity checks to inform the user about
-    best practices."""
-    if not HAVE_BSON:
-        log.critical("Bson module not found. Since Cuckoo 0.6 this is required to process results from the monitor. Without it you'll likely not have any behavior results.")
