@@ -26,6 +26,7 @@ log = logging.getLogger(__name__)
 
 machinery = None
 machine_lock = Lock()
+latest_symlink_lock = Lock()
 
 active_analysis_count = 0
 
@@ -382,15 +383,18 @@ class AnalysisManager(Thread):
                                       "analyses", "latest")
 
                 # First we have to remove the existing symbolic link, then we
-                # have to create the new one. Wrap an exception handler around
-                # this logic because race conditions tend to happen.
+                # have to create the new one.
+                # Deal with race conditions using a lock.
+                latest_symlink_lock.acquire()
                 try:
                     if os.path.exists(latest):
                         os.remove(latest)
 
                     os.symlink(self.storage, latest)
-                except OSError:
-                    pass
+                except OSError as e:
+                    log.warning("Error pointing latest analysis symlink: %s" % e)
+                finally:
+                    latest_symlink_lock.release()
 
             log.info("Task #%d: analysis procedure completed", self.task.id)
         except:
