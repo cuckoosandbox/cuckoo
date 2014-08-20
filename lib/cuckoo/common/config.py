@@ -21,6 +21,9 @@ class Config:
             setattr(self, section, Dictionary())
             for name, raw_value in config.items(section):
                 try:
+                    if config.get(section, name) in ["0", "1"]:
+                        raise ValueError
+
                     value = config.getboolean(section, name)
                 except ValueError:
                     try:
