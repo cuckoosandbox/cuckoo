@@ -743,6 +743,7 @@ class Database(object):
                 try:
                     sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
                 except SQLAlchemyError:
+                    log.debug("Error querying sample for hash.")
                     session.close()
                     return None
             except SQLAlchemyError as e:
@@ -813,6 +814,7 @@ class Database(object):
         @return: cursor or None.
         """
         if not file_path or not os.path.exists(file_path):
+            log.debug("File does not exist: %s.", file_path)
             return None
 
         # Convert empty strings and None values to a valid int
