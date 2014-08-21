@@ -16,8 +16,6 @@ try:
 except ImportError:
     HAVE_REQUESTS = False
 
-logging.basicConfig()
-
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.colors import bold, green, red, yellow
@@ -28,6 +26,7 @@ from lib.cuckoo.core.database import Database
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("target", type=str, help="URL, path to the file or folder to analyze")
+    parser.add_argument("-d", "--debug", action="store_true", help="Enable debug logging")
     parser.add_argument("--remote", type=str, action="store", default=None, help="Specify IP:port to a Cuckoo API server to submit remotely", required=False)
     parser.add_argument("--url", action="store_true", default=False, help="Specify whether the target is an URL", required=False)
     parser.add_argument("--package", type=str, action="store", default="", help="Specify an analysis package", required=False)
@@ -57,6 +56,11 @@ def main():
     # level of the logging module. (E.g., when pydeep has not been installed,
     # there will be a warning message, because Cuckoo can't resolve the
     # ssdeep hash of this particular sample.)
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig()
+
     if args.quiet:
         logging.disable(logging.WARNING)
 
