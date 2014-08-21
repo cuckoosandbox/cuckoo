@@ -1,3 +1,4 @@
+
 #include <winsock2.h>
 #include <stdio.h>
 #include <windows.h>
@@ -5,6 +6,8 @@
 #include <string.h>
 #include <ntdef.h>
 #include <ddk/ntifs.h>
+#include <wininet.h>
+#define _countof(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
 size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) {
     size_t written = fwrite(ptr, size, nmemb, stream);
@@ -47,6 +50,7 @@ typedef NTSTATUS (STDAPICALLTYPE NTCLOSE)
 );
 typedef NTCLOSE FAR * LPNTCLOSE;
 
+// NtQueryKey
 typedef NTSTATUS (STDAPICALLTYPE NTQUERYKEY)
 (
     IN HANDLE   KeyHandle,
@@ -56,6 +60,8 @@ typedef NTSTATUS (STDAPICALLTYPE NTQUERYKEY)
     OUT PULONG  ResultLength
    );
 typedef NTQUERYKEY FAR * LPNTQUERYKEY;
+
+
 
 int main(int argc, char **argv){
     // registry variables
@@ -84,8 +90,16 @@ int main(int argc, char **argv){
     LPNTQUERYKEY NtQueryKey;
     NTSTATUS m_NtStatus;
 
+    /// Vars for WinINet     
+    HINTERNET hOpen = NULL;
+    HINTERNET hFile = NULL;
+    HANDLE hOut = NULL;
+    char* data = NULL;
+    DWORD dataSize = 0;
+    DWORD dwBytesRead = 0;
+    DWORD dwBytesWritten = 0;
 
-	printf("This is dl.exe.\n");
+	  printf("This is dl.exe.\n");
 
     // create / read registry key
     SA.nLength             = sizeof(SA);
@@ -175,6 +189,27 @@ int main(int argc, char **argv){
         curl_easy_cleanup(curl);
         fclose(fp);
     }
+
+
+    // WinINnet test: InternetOpen/ReadFile 
+    hOpen = InternetOpenW(L"MyAgent", NULL, NULL, NULL, NULL);
+    if(!hOpen) return NULL;
+
+    hFile = InternetOpenUrlW(hOpen, L"http://192.168.56.1:8089/tests/test_samples/dl.c", NULL, NULL, INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, NULL);
+    do {
+      char buffer[5000];
+      InternetReadFile(hFile, (LPVOID)buffer, _countof(buffer), &dwBytesRead);
+      char *tempData = new char[dataSize + dwBytesRead];
+      memcpy(tempData, data, dataSize);
+      memcpy(tempData + dataSize, buffer, dwBytesRead);
+      delete[] data;
+      data = tempData;
+      dataSize += dwBytesRead;
+    } while (dwBytesRead);
+    InternetCloseHandle(hFile);
+    InternetCloseHandle(hOpen);
+
+    Sleep(1000);
     printf("Finished\n");
     return 0;
 

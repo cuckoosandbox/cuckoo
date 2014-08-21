@@ -101,7 +101,10 @@ class TestRelease(unittest.TestCase):
                 if c["category"] == "network":
                     for a in c["arguments"]:
                         try:
-                            network_items.remove({c["api"]:{a["name"]:a["value"]}})
+                            if(c["api"]=="InternetReadFile"):
+                                network_items.remove({"InternetReadFile":{}})
+                            else:
+                                network_items.remove({c["api"]:{a["name"]:a["value"]}})
                         except:
                             pass
         self.assertFalse(network_items, "Not all network items found. Not found: %s" %(network_items))
@@ -166,17 +169,17 @@ class TestRelease(unittest.TestCase):
         self.check_dns_requests(report, ["google.com","reddit.com","twitter.com","facebook.com"])
 
         # check for network items
-        self.check_network(report, [{"getaddrinfo":{"NodeName":"google.com"}},{"getaddrinfo":{"NodeName":"reddit.com"}},{"getaddrinfo":{"NodeName":"twitter.com"}}])
+        self.check_network(report, [{"getaddrinfo":{"NodeName":"google.com"}},
+            {"getaddrinfo":{"NodeName":"reddit.com"}},
+            {"getaddrinfo":{"NodeName":"twitter.com"}}])
 
         # check for registry entries / changes
         # dict: {"api-value":{"name-value":"value-value"}}
         self.check_registry(report,[ 
-                    {"RegCreateKeyExA":{"SubKey":"Software\\Cuckoo\\ReleaseTest"}},
-                    {"NtCreateKey":{"ObjectAttributes":"\\Registry\\Machine\\Software\\CuckooTest"}},
-                    {"NtQueryKey":{"KeyInformationClass":"2"}},
-                ], 
-                ["HKEY_LOCAL_MACHINE\\Software\\Cuckoo\\ReleaseTest"]
-            )
+            {"RegCreateKeyExA":{"SubKey":"Software\\Cuckoo\\ReleaseTest"}},
+            {"NtCreateKey":{"ObjectAttributes":"\\Registry\\Machine\\Software\\CuckooTest"}},
+            {"NtQueryKey":{"KeyInformationClass":"2"}}],
+            ["HKEY_LOCAL_MACHINE\\Software\\Cuckoo\\ReleaseTest"])
 
         # check for downloaded executable via http
         self.check_http(report,["http://192.168.56.1:8089/tests/test_samples/dl.exe"])
@@ -206,6 +209,11 @@ class TestRelease(unittest.TestCase):
 
         # check for processes
         self.check_processes(report,["dl.exe"])
+
+        # check for network items
+        self.check_network(report, [
+            {"InternetOpenUrlW":{"URL":"http://192.168.56.1:8089/tests/test_samples/dl.c"}},
+            {"InternetReadFile":{}},])
 
         # check for dns requests
         self.check_dns_requests(report, ["facebook.com"])
