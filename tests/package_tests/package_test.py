@@ -103,7 +103,10 @@ class TestPackage(object):
                 if c["category"] == "registry":
                     for a in c["arguments"]:
                         try:
-                            reg_items.remove({c["api"]:{a["name"]:a["value"]}})
+                            if(c["api"]=="NtDeleteKey"):
+                                reg_items.remove({"NtDeleteKey":{}})
+                            else :
+                                reg_items.remove({c["api"]:{a["name"]:a["value"]}})
                         except:
                             pass
 

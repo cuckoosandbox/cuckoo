@@ -61,6 +61,25 @@ typedef NTSTATUS (STDAPICALLTYPE NTQUERYKEY)
    );
 typedef NTQUERYKEY FAR * LPNTQUERYKEY;
 
+// NtEnumerateKey
+typedef NTSTATUS (STDAPICALLTYPE NTENUMERATEKEY)
+(
+    IN HANDLE KeyHandle,
+    IN ULONG  Index,
+    IN KEY_INFORMATION_CLASS KeyInformationClass,
+    OUT PVOID KeyInformation,
+    IN ULONG  KeyInformationLength,
+    OUT PULONG  ResultLength
+   );
+typedef NTENUMERATEKEY FAR * LPNTENUMERATEKEY;
+
+
+// NtDeleteKey
+typedef NTSTATUS (STDAPICALLTYPE NTDELETEKEY)
+(
+  IN HANDLE KeyHandle
+);
+typedef NTDELETEKEY FAR * LPNTDELETEKEY;
 
 
 int main(int argc, char **argv){
@@ -75,7 +94,7 @@ int main(int argc, char **argv){
     CURL *curl;
     FILE *fp;
     char *url = "http://192.168.56.1:8089/tests/test_samples/dl.exe";
-    char outfilename[FILENAME_MAX] = "C:\\downloaded.exe";
+    char outfilename[FILENAME_MAX] = "C:downloaded.exe";
 
     // Vars for native api registry access
     HINSTANCE hinstStub;
@@ -88,6 +107,8 @@ int main(int argc, char **argv){
     HANDLE hKey2 = NULL;
     DWORD m_dwDisposition;
     LPNTQUERYKEY NtQueryKey;
+    LPNTENUMERATEKEY NtEnumerateKey;
+    LPNTDELETEKEY NtDeleteKey;
     NTSTATUS m_NtStatus;
 
     /// Vars for WinINet     
@@ -130,6 +151,8 @@ int main(int argc, char **argv){
     NtCreateKey = (LPNTCREATEKEY)GetProcAddress(hinstStub, "NtCreateKey");
     NtClose = (LPNTCLOSE)GetProcAddress(hinstStub, "NtClose");
     NtQueryKey = (LPNTQUERYKEY)GetProcAddress(hinstStub, "NtQueryKey");
+    NtEnumerateKey = (LPNTENUMERATEKEY)GetProcAddress(hinstStub, "NtEnumerateKey");
+    NtDeleteKey = (LPNTDELETEKEY)GetProcAddress(hinstStub, "NtDeleteKey");
 
     // Ansi2Unicode
     RtlZeroMemory(&asName,sizeof(asName));
@@ -157,6 +180,24 @@ int main(int argc, char **argv){
       printf("failed: %d!\n",m_NtStatus);
     }
     else {
+
+      printf("EnumerateKey\n");
+      WCHAR buffer[256];
+      KEY_FULL_INFORMATION *info = (KEY_FULL_INFORMATION *)buffer;
+      DWORD dwResultLength;
+      m_NtStatus = NtEnumerateKey(&hKey2,
+                           0,
+                           KeyFullInformation,
+                           info,
+                           sizeof(buffer),
+                           &dwResultLength);
+
+      printf("Enumerate Result: %s\n",buffer);
+      printf("Deleting the key again.\n");
+      m_NtStatus = NtDeleteKey(hKey2);
+      if(!NT_SUCCESS(m_NtStatus)) {
+        printf("Failed to delete Key\n");
+      }
       NtClose(hKey2);
     }
 
@@ -169,7 +210,7 @@ int main(int argc, char **argv){
                             buffer,
                             sizeof(buffer),
                             &dwResultLength);
-    printf("Query: %s",buffer);
+    printf("Query: %s\n",buffer);
 
     // make dns request
     printf("Resolving host\n");
@@ -177,7 +218,7 @@ int main(int argc, char **argv){
     gethostbyname("facebook.com");
 
 
-    printf("Download file\n");
+    printf("Downloading file\n");
     // download file
     curl = curl_easy_init();
     if (curl) {

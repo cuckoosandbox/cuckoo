@@ -55,8 +55,9 @@ class TestExePackage(unittest.TestCase, TestPackage):
                     {"RegCreateKeyExA":{"SubKey":"Software\\Cuckoo\\DL.exe"}},
                     {"NtCreateKey":{"ObjectAttributes":"\\Registry\\Machine\\Software\\CuckooTest"}},
                     {"NtQueryKey":{"KeyInformationClass":"2"}},
-                ], 
-                ["HKEY_LOCAL_MACHINE\\Software\\Cuckoo\\DL.exe"]
+                    {"NtEnumerateKey":{"Index":"0"}},
+                    {"NtDeleteKey":{}}], 
+                    ["HKEY_LOCAL_MACHINE\\Software\\Cuckoo\\DL.exe"]
             )     
 
 
