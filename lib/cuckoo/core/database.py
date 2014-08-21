@@ -814,7 +814,7 @@ class Database(object):
         @return: cursor or None.
         """
         if not file_path or not os.path.exists(file_path):
-            log.debug("File does not exist: %s.", file_path)
+            log.warning("File does not exist: %s.", file_path)
             return None
 
         # Convert empty strings and None values to a valid int
