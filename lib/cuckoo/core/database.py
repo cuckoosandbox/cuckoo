@@ -742,8 +742,8 @@ class Database(object):
                 session.rollback()
                 try:
                     sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
-                except SQLAlchemyError:
-                    log.debug("Error querying sample for hash.")
+                except SQLAlchemyError as e:
+                    log.debug("Error querying sample for hash: {0}".format(e))
                     session.close()
                     return None
             except SQLAlchemyError as e:
