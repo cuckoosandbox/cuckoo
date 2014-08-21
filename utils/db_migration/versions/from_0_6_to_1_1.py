@@ -19,8 +19,14 @@ import os
 import sys
 import sqlalchemy as sa
 
-from dateutil.parser import parse
 from datetime import datetime
+
+try:
+    from dateutil.parser import parse
+except ImportError:
+    print "Unable to import dateutil.parser",
+    print "(install with `pip install python-dateutil`)"
+    sys.exit()
 
 try:
     from alembic import op
