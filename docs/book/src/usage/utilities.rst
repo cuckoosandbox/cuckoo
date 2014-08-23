@@ -120,3 +120,23 @@ migration for both SQL database and Mongo database.
 This tool is already described in :doc:`../installation/upgrade`.
 
 .. _`Alembic`: http://alembic.readthedocs.org/en/latest/
+
+Stats utility
+=============
+
+This is a really simple utility which prints some statistics about processed
+samples::
+
+    $ utils/stats.py
+
+    1 samples in db
+    1 tasks in db
+    pending 0 tasks
+    running 0 tasks
+    completed 0 tasks
+    recovered 0 tasks
+    reported 1 tasks
+    failed_analysis 0 tasks
+    failed_processing 0 tasks
+    roughly 32 tasks an hour
+    roughly 778 tasks a day
