@@ -11,6 +11,7 @@ from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
 
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT
 from lib.cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
 from lib.cuckoo.common.constants import CUCKOO_GUEST_FAILED
@@ -82,7 +83,7 @@ class GuestManager:
 
         # Select the proper analyzer's folder according to the operating
         # system associated with the current machine.
-        root = os.path.join("analyzer", self.platform)
+        root = os.path.join(CUCKOO_ROOT, "analyzer", self.platform)
         root_len = len(os.path.abspath(root))
 
         if not os.path.exists(root):
