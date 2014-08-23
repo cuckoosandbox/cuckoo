@@ -326,9 +326,9 @@ class Database(object):
         cfg = Config()
 
         if dsn:
-            self.engine = create_engine(dsn, poolclass=NullPool)
+            self._connect_database(dsn)
         elif cfg.database.connection:
-            self.engine = create_engine(cfg.database.connection, poolclass=NullPool)
+            self._connect_database(cfg.database.connection)
         else:
             db_file = os.path.join(CUCKOO_ROOT, "db", "cuckoo.db")
             if not os.path.exists(db_file):
@@ -339,7 +339,7 @@ class Database(object):
                     except CuckooOperationalError as e:
                         raise CuckooDatabaseError("Unable to create database directory: {0}".format(e))
 
-            self.engine = create_engine("sqlite:///{0}".format(db_file), poolclass=NullPool)
+            self._connect_database("sqlite:///%s" % db_file)
 
         # Disable SQL logging. Turn it on for debugging.
         self.engine.echo = False
@@ -375,6 +375,17 @@ class Database(object):
     def __del__(self):
         """Disconnects pool."""
         self.engine.dispose()
+
+    def _connect_database(self, connection_string):
+        """Connect to a Database.
+        @param connection_string: Connection string specifying the database
+        """
+        try:
+            self.engine = create_engine(connection_string, poolclass=NullPool)
+        except ImportError as e:
+            lib = e.message.split()[-1]
+            raise CuckooDatabaseError("Unable to import %s (install with "
+                                      "`pip install %s`)" % (lib, lib))
 
     def _get_or_create(self, session, model, **kwargs):
         """Get an ORM instance or create it if not exist.
