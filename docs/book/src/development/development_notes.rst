@@ -7,7 +7,7 @@ Git branches
 
 Cuckoo Sandbox source code is available in our `official git repository`_.
 
-.. _`official git repository`_: https://github.com/cuckoobox/cuckoo
+.. _`official git repository`: https://github.com/cuckoobox/cuckoo
 
 Up until version 1.0 we used to coordinate all ongoing development in a
 dedicated "development" branch and we've been exclusively merging pull requests
