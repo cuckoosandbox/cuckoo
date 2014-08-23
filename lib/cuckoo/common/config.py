@@ -12,10 +12,17 @@ from lib.cuckoo.common.objects import Dictionary
 class Config:
     """Configuration file parser."""
 
-    def __init__(self, cfg=os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf")):
-        """@param cfg: configuration file path."""
+    def __init__(self, file_name="cuckoo", cfg=None):
+        """
+        @param file_name: file name without extension.
+        @param cfg: configuration file path.
+        """
         config = ConfigParser.ConfigParser()
-        config.read(cfg)
+
+        if cfg:
+            config.read(cfg)
+        else:
+            config.read(os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % file_name))
 
         for section in config.sections():
             setattr(self, section, Dictionary())

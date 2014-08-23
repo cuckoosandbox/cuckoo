@@ -264,7 +264,7 @@ def upgrade():
 def mongo_upgrade():
     """Migrate mongodb schema and data."""
     # Read reporting.conf to fetch mongo configuration.
-    config = Config(os.path.join("..", "..", "conf", "reporting.conf"))
+    config = Config(cfg=os.path.join("..", "..", "conf", "reporting.conf"))
     # Run migration only if mongo is enabled as reporting module.
     if config.mongodb.enabled:
         host = config.mongodb.get("host", "127.0.0.1")

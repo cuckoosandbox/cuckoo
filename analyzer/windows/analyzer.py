@@ -471,15 +471,15 @@ class Analyzer:
         """
         self.prepare()
 
-        log.info("Starting analyzer from: %s", os.getcwd())
-        log.info("Storing results at: %s", PATHS["root"])
-        log.info("Pipe server name: %s", PIPE)
+        log.debug("Starting analyzer from: %s", os.getcwd())
+        log.debug("Storing results at: %s", PATHS["root"])
+        log.debug("Pipe server name: %s", PIPE)
 
         # If no analysis package was specified at submission, we try to select
         # one automatically.
         if not self.config.package:
-            log.info("No analysis package specified, trying to detect "
-                     "it automagically.")
+            log.debug("No analysis package specified, trying to detect "
+                      "it automagically.")
 
             # If the analysis target is a file, we choose the package according
             # to the file format.
@@ -556,8 +556,8 @@ class Analyzer:
                             aux.__class__.__name__, e)
                 continue
             finally:
-                log.info("Started auxiliary module %s",
-                         aux.__class__.__name__)
+                log.debug("Started auxiliary module %s",
+                          aux.__class__.__name__)
                 aux_enabled.append(aux)
 
         # Start analysis package. If for any reason, the execution of the

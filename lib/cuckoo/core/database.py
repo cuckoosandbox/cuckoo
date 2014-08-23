@@ -471,7 +471,7 @@ class Database(object):
         row = None
 
         try:
-            row = session.query(Task).filter(Task.status == TASK_PENDING).order_by("priority desc, added_on").first()
+            row = session.query(Task).filter_by(status=TASK_PENDING).order_by("priority desc, added_on").first()
 
             if not row:
                 return None
@@ -552,7 +552,7 @@ class Database(object):
                 machines = session.query(Machine).options(joinedload("tags")).all()
         except SQLAlchemyError as e:
             log.debug("Database error listing machines: {0}".format(e))
-            return None
+            return []
         finally:
             session.close()
         return machines
@@ -579,9 +579,9 @@ class Database(object):
         try:
             machines = session.query(Machine)
             if name:
-                machines = machines.filter(Machine.name == name)
+                machines = machines.filter_by(name=name)
             if platform:
-                machines = machines.filter(Machine.platform == platform)
+                machines = machines.filter_by(platform=platform)
             if tags:
                 for tag in tags:
                     machines = machines.filter(Machine.tags.any(name=tag.name))
@@ -620,7 +620,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).filter(Machine.label == label).first()
+            machine = session.query(Machine).filter_by(label=label).first()
         except SQLAlchemyError as e:
             log.debug("Database error unlocking machine: {0}".format(e))
             session.close()
@@ -662,7 +662,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).filter(Machine.label == label).first()
+            machine = session.query(Machine).filter_by(label=label).first()
         except SQLAlchemyError as e:
             log.debug("Database error setting machine status: {0}".format(e))
             session.close()
@@ -741,7 +741,7 @@ class Database(object):
             except IntegrityError:
                 session.rollback()
                 try:
-                    sample = session.query(Sample).filter(Sample.md5 == obj.get_md5()).first()
+                    sample = session.query(Sample).filter_by(md5=obj.get_md5()).first()
                 except SQLAlchemyError as e:
                     log.debug("Error querying sample for hash: {0}".format(e))
                     session.close()
@@ -909,20 +909,20 @@ class Database(object):
             search = session.query(Task)
 
             if status:
-                search = search.filter(Task.status == status)
+                search = search.filter_by(status=status)
             if not_status:
                 search = search.filter(Task.status != not_status)
             if category:
-                search = search.filter(Task.category == category)
-            if sample_id:
-                search = search.filter(Task.sample_id == sample_id)
+                search = search.filter_by(category=category)
             if details:
                 search = search.options(joinedload("guest"), joinedload("errors"), joinedload("tags"))
+            if sample_id is not None:
+                search = search.filter_by(sample_id=sample_id)
 
             tasks = search.order_by("added_on desc").limit(limit).offset(offset).all()
         except SQLAlchemyError as e:
             log.debug("Database error listing tasks: {0}".format(e))
-            return None
+            return []
         finally:
             session.close()
         return tasks
@@ -935,7 +935,7 @@ class Database(object):
         session = self.Session()
         try:
             if status:
-                tasks_count = session.query(Task).filter(Task.status == status).count()
+                tasks_count = session.query(Task).filter_by(status=status).count()
             else:
                 tasks_count = session.query(Task).count()
         except SQLAlchemyError as e:
@@ -1013,9 +1013,9 @@ class Database(object):
         session = self.Session()
         try:
             if md5:
-                sample = session.query(Sample).filter(Sample.md5 == md5).first()
+                sample = session.query(Sample).filter_by(md5=md5).first()
             elif sha256:
-                sample = session.query(Sample).filter(Sample.sha256 == sha256).first()
+                sample = session.query(Sample).filter_by(sha256=sha256).first()
         except SQLAlchemyError as e:
             log.debug("Database error searching sample: {0}".format(e))
             return None
@@ -1081,10 +1081,10 @@ class Database(object):
         """
         session = self.Session()
         try:
-            errors = session.query(Error).filter(Error.task_id == task_id).all()
+            errors = session.query(Error).filter_by(task_id=task_id).all()
         except SQLAlchemyError as e:
             log.debug("Database error viewing errors: {0}".format(e))
-            return None
+            return []
         finally:
             session.close()
         return errors

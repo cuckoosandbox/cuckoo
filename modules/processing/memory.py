@@ -893,7 +893,7 @@ class VolatilityManager(object):
             self.voptions = False
             return
 
-        self.voptions = Config(conf_path)
+        self.voptions = Config("memory")
 
         for pid in self.voptions.mask.pid_generic.split(","):
             pid = pid.strip()
