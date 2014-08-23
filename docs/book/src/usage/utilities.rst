@@ -54,6 +54,32 @@ If you want to re-generate the reports::
 
     $ ./utils/process.py --report 1
 
+Following are the usage options::
+
+    $ ./utils/process.py
+
+    usage: process.py [-h] [-d] [-r] [-p PARALLEL] id
+
+    positional arguments:
+      id                    ID of the analysis to process (auto for continuous
+                            processing of unprocessed tasks).
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -d, --debug           Display debug messages
+      -r, --report          Re-generate report
+      -p PARALLEL, --parallel PARALLEL
+                            Number of parallel threads to use (auto mode only).
+
+As best practive we suggest to adopt the following configuration if you are
+running Cuckoo with many virtual machines:
+
+    * Run a stand alone process.py in auto mode (you choose the number of parallel threads)
+    * Disable Cuckoo reporting in cuckoo.conf (set process_results to off)
+
+This could increase the performance of your system because the reporting is not
+yet demanded to Cuckoo.
+
 Community Download Utility
 ==========================
 
