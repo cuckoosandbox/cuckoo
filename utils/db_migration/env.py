@@ -2,12 +2,13 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os.path
+import sys
+
 from __future__ import with_statement
 from alembic import context
 from sqlalchemy import create_engine, pool
 from logging.config import fileConfig
-import os.path
-import sys
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
