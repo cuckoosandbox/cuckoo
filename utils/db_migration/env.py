@@ -4,8 +4,10 @@
 
 from __future__ import with_statement
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import create_engine, pool
 from logging.config import fileConfig
+import os.path
+import sys
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -15,7 +17,13 @@ config = context.config
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
 
-target_metadata = None
+curdir = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(os.path.join(curdir, "..", ".."))
+
+from lib.cuckoo.common.config import Config
+from lib.cuckoo.core.database import Base
+
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -34,8 +42,8 @@ def run_migrations_offline():
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
-    context.configure(url=url)
+    cuckoo = Config()
+    context.configure(url=cuckoo.database.connection)
 
     with context.begin_transaction():
         context.run_migrations()
@@ -47,10 +55,9 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    engine = engine_from_config(
-                config.get_section(config.config_ini_section),
-                prefix='sqlalchemy.',
-                poolclass=pool.NullPool)
+    cuckoo = Config()
+    engine = create_engine(cuckoo.database.connection,
+                           poolclass=pool.NullPool)
 
     connection = engine.connect()
     context.configure(
@@ -68,4 +75,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-
