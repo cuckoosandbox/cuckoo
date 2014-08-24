@@ -123,7 +123,7 @@ def store_temp_file(filedata, filename, path=None):
     if path:
         target_path = path
     else:
-        tmp_path = options.cuckoo.tmppath
+        tmp_path = options.cuckoo.get("tmppath", "/tmp")
         target_path = os.path.join(tmp_path, "cuckoo-tmp")
     if not os.path.exists(target_path):
         os.mkdir(target_path)
