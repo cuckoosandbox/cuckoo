@@ -384,8 +384,8 @@ class Database(object):
             self.engine = create_engine(connection_string, poolclass=NullPool)
         except ImportError as e:
             lib = e.message.split()[-1]
-            raise CuckooDatabaseError("Unable to import %s (install with "
-                                      "`pip install %s`)" % (lib, lib))
+            raise CuckooDependencyError("Unable to import %s (install with "
+                                        "`pip install %s`)" % (lib, lib))
 
     def _get_or_create(self, session, model, **kwargs):
         """Get an ORM instance or create it if not exist.
