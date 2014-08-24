@@ -45,7 +45,8 @@ def _perform(upgrade):
         })
 
     # First drop the foreign key.
-    op.drop_constraint("tasks_sample_id_fkey", "tasks")
+    if db.Database().engine.name != "sqlite":
+        op.drop_constraint("tasks_sample_id_fkey", "tasks")
 
     # Rename original table.
     op.rename_table("samples", "old_samples")
@@ -89,8 +90,9 @@ def _perform(upgrade):
                     unique=True)
 
     # Create the foreign key.
-    op.create_foreign_key("tasks_sample_id_fkey", "tasks", "samples",
-                          ["sample_id"], ["id"])
+    if db.Database().engine.name != "sqlite":
+        op.create_foreign_key("tasks_sample_id_fkey", "tasks", "samples",
+                              ["sample_id"], ["id"])
 
 def upgrade():
     _perform(upgrade=True)

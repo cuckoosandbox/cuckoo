@@ -20,9 +20,9 @@ fileConfig(config.config_file_name)
 curdir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(curdir, "..", ".."))
 
-from lib.cuckoo.common.config import Config
-from lib.cuckoo.core.database import Base
+from lib.cuckoo.core.database import Base, Database
 
+url = Database().engine.url.__to_string__(hide_password=False)
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -42,8 +42,7 @@ def run_migrations_offline():
     script output.
 
     """
-    cuckoo = Config()
-    context.configure(url=cuckoo.database.connection)
+    context.configure(url=url)
 
     with context.begin_transaction():
         context.run_migrations()
@@ -55,15 +54,10 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    cuckoo = Config()
-    engine = create_engine(cuckoo.database.connection,
-                           poolclass=pool.NullPool)
+    engine = create_engine(url, poolclass=pool.NullPool)
 
     connection = engine.connect()
-    context.configure(
-                connection=connection,
-                target_metadata=target_metadata
-                )
+    context.configure(connection=connection, target_metadata=target_metadata)
 
     try:
         with context.begin_transaction():
