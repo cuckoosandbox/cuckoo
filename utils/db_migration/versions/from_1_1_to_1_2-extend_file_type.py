@@ -44,9 +44,19 @@ def _perform(upgrade):
             "ssdeep": sample[8],
         })
 
+    # PostgreSQL and MySQL have different names for the foreign key of
+    # Task.sample_id -> Sample.id; for SQLite we don't drop/recreate the
+    # foreign key.
+    fkey_name = {
+        "mysql": "tasks_ibfk_1",
+        "postgres": "tasks_sample_id_fkey",
+    }
+
+    fkey = fkey_name.get(db.Database().engine.name)
+
     # First drop the foreign key.
-    if db.Database().engine.name != "sqlite":
-        op.drop_constraint("tasks_sample_id_fkey", "tasks")
+    if fkey:
+        op.drop_constraint(fkey, "tasks", type_="foreignkey")
 
     # Rename original table.
     op.rename_table("samples", "old_samples")
@@ -90,9 +100,8 @@ def _perform(upgrade):
                     unique=True)
 
     # Create the foreign key.
-    if db.Database().engine.name != "sqlite":
-        op.create_foreign_key("tasks_sample_id_fkey", "tasks", "samples",
-                              ["sample_id"], ["id"])
+    if fkey:
+        op.create_foreign_key(fkey, "tasks", "samples", ["sample_id"], ["id"])
 
 def upgrade():
     _perform(upgrade=True)
