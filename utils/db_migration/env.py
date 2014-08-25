@@ -2,10 +2,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+from __future__ import with_statement
+
 import os.path
 import sys
 
-from __future__ import with_statement
 from alembic import context
 from sqlalchemy import create_engine, pool
 from logging.config import fileConfig
