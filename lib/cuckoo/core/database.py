@@ -209,7 +209,7 @@ class Sample(Base):
         self.sha512 = sha512
         self.file_size = file_size
         if file_type:
-            self.file_type = file_type[:255]
+            self.file_type = file_type
         if ssdeep:
             self.ssdeep = ssdeep
 
