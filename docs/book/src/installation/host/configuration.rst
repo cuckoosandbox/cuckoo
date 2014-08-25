@@ -287,6 +287,9 @@ You will find a section for each processing module::
     [network]
     enabled = yes
 
+    [procmemory]
+    enabled = yes
+
     [static]
     enabled = yes
 

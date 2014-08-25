@@ -66,15 +66,16 @@ class VMware(Machinery):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             output, _ = p.communicate()
+        except OSError as e:
+            raise CuckooMachineError("Unable to get snapshot list for %s. "
+                                     "Reason: %s" % (vmx_path, e))
+        else:
             if output:
                 return snapshot in output
             else:
                 raise CuckooMachineError("Unable to get snapshot list for %s. "
                                          "No output from "
                                          "`vmrun listSnapshots`" % vmx_path)
-        except OSError as e:
-            raise CuckooMachineError("Unable to get snapshot list for %s. "
-                                     "Reason: %s" % (vmx_path, e))
 
     def start(self, vmx_path):
         """Start a virtual machine.
@@ -159,15 +160,16 @@ class VMware(Machinery):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             output, error = p.communicate()
+        except OSError as e:
+            raise CuckooMachineError("Unable to check running status for %s. "
+                                     "Reason: %s" % (vmx_path, e))
+        else:
             if output:
                 return vmx_path in output
             else:
                 raise CuckooMachineError("Unable to check running status "
                                          "for %s. No output from "
                                          "`vmrun list`" % vmx_path)
-        except OSError as e:
-            raise CuckooMachineError("Unable to check running status for %s. "
-                                     "Reason: %s" % (vmx_path, e))
 
     def _snapshot_from_vmx(self, vmx_path):
         """Get snapshot for a given vmx file.
@@ -190,10 +192,10 @@ class VMware(Machinery):
             raise CuckooMachineError("vmrun failed to take a memory dump of the machine with label %s: %s" % (vmx_path, e))
 
         vmwarepath, _ = os.path.split(vmx_path)
-        latestvmem = max(glob.iglob(os.path.join(vmwarepath, '*.vmem')),
+        latestvmem = max(glob.iglob(os.path.join(vmwarepath, "*.vmem")),
                          key=os.path.getctime)
 
-        # We need to copy the snapshot to the current analysis directory as
+        # We need to move the snapshot to the current analysis directory as
         # vmware doesn't support an option for the destination path :-/
         shutil.move(latestvmem, path)
 

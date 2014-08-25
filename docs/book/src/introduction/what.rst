@@ -97,6 +97,7 @@ It can be used to analyze:
     * Visual Basic (VB) scripts
     * ZIP files
     * Java JAR
+    * Python files
     * *Almost anything else*
 
 Thanks to its modularity and powerful scripting capabilities, there's not limit

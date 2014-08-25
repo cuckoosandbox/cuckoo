@@ -209,7 +209,7 @@ class Sample(Base):
         self.sha512 = sha512
         self.file_size = file_size
         if file_type:
-            self.file_type = file_type
+            self.file_type = file_type[:255]
         if ssdeep:
             self.ssdeep = ssdeep
 
@@ -754,7 +754,8 @@ class Database(object):
                 session.rollback()
                 try:
                     sample = session.query(Sample).filter_by(md5=obj.get_md5()).first()
-                except SQLAlchemyError:
+                except SQLAlchemyError as e:
+                    log.debug("Error querying sample for hash: {0}".format(e))
                     session.close()
                     return None
             except SQLAlchemyError as e:
@@ -825,6 +826,7 @@ class Database(object):
         @return: cursor or None.
         """
         if not file_path or not os.path.exists(file_path):
+            log.warning("File does not exist: %s.", file_path)
             return None
 
         # Convert empty strings and None values to a valid int
@@ -910,7 +912,7 @@ class Database(object):
         @param category: filter by category
         @param offset: list offset
         @param status: filter by task status
-        @param sample_id: all tasks for a sample
+        @param sample_id: filter tasks for a sample
         @param not_status: exclude this task status from filter
         @return: list of tasks.
         """

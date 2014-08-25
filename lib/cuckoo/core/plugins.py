@@ -254,7 +254,7 @@ class RunSignatures(object):
                 return odata
         except IOError:
             pass
-        
+
         return {}
 
     def _apply_overlay(self, signature, overlay):
@@ -403,7 +403,7 @@ class RunSignatures(object):
                             matched.append(sig.as_result())
                             if sig in complete_list:
                                 complete_list.remove(sig)
-                        
+
                         # Either True or False, we don't need to check this sig anymore.
                         evented_list.remove(sig)
                         del sig

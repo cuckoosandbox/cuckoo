@@ -36,5 +36,5 @@ def choose_package(file_type, file_name):
         return "zip"
     elif file_name.endswith((".py", ".pyc")) or "Python script" in file_type:
         return "python"
-
-    return "generic"
+    else:
+        return "generic"

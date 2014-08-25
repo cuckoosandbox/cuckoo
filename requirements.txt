@@ -2,9 +2,10 @@ sqlalchemy
 bson
 jinja2
 pymongo
-pydeep
 bottle
 pefile
 django
 chardet
 nose
+cybox==2.0.1.4
+maec==4.0.1.0
