@@ -9,7 +9,6 @@ import logging
 import argparse
 
 try:
-    import bson
     from lib.cuckoo.common.logo import logo
     from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
     from lib.cuckoo.common.exceptions import CuckooCriticalError
@@ -20,6 +19,10 @@ try:
     from lib.cuckoo.core.startup import init_tasks, init_yara
     from lib.cuckoo.core.scheduler import Scheduler
     from lib.cuckoo.core.resultserver import ResultServer
+
+    import bson
+
+    bson  # Pretend like it's actually being used (for static checkers.)
 except (CuckooDependencyError, ImportError) as e:
     sys.exit("ERROR: Missing dependency: {0}".format(e))
 
