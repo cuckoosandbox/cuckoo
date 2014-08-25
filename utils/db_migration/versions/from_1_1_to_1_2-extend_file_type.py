@@ -49,7 +49,7 @@ def _perform(upgrade):
     # foreign key.
     fkey_name = {
         "mysql": "tasks_ibfk_1",
-        "postgres": "tasks_sample_id_fkey",
+        "postgresql": "tasks_sample_id_fkey",
     }
 
     fkey = fkey_name.get(db.Database().engine.name)
