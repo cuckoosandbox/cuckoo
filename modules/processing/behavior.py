@@ -50,6 +50,17 @@ class ParseProcessLog(list):
         if os.path.exists(log_path) and os.stat(log_path).st_size > 0:
             self.parse_first_and_reset()
 
+        self.api_call_cache = []
+        self.api_pointer = 0
+
+        try:
+            while True:
+                i = self.real_next()
+                self.api_call_cache.append(i)
+        except StopIteration:
+            pass
+        self.api_call_cache.append(None)
+
     def parse_first_and_reset(self):
         self.fd = open(self._log_path, "rb")
 
@@ -91,6 +102,7 @@ class ParseProcessLog(list):
     def reset(self):
         self.fd.seek(0)
         self.lastcall = None
+        self.api_pointer = 0
 
     def compare_calls(self, a, b):
         """Compare two calls for equality. Same implementation as before netlog.
@@ -106,6 +118,11 @@ class ParseProcessLog(list):
         return False
 
     def wait_for_lastcall(self):
+        """ If there is no lastcall, iterate through messages till a call is found or EOF.
+        To get the next call, set self.lastcall to None before calling this function
+
+        @return: True if there is a call, False on EOF
+        """
         while not self.lastcall:
             try:
                 if not self.parser.read_next_message():
@@ -115,7 +132,7 @@ class ParseProcessLog(list):
 
         return True
 
-    def next(self):
+    def real_next(self):
         if not self.fd:
             raise StopIteration()
 
@@ -132,6 +149,16 @@ class ParseProcessLog(list):
             self.wait_for_lastcall()
 
         return nextcall
+
+    def next(self):
+        """ Just accessing the cache
+        """
+
+        res = self.api_call_cache[self.api_pointer]
+        if res is None:
+            raise StopIteration()
+        self.api_pointer += 1
+        return res
 
     def log_process(self, context, timestring, pid, ppid, modulepath, procname):
         self.process_id, self.parent_id, self.process_name = pid, ppid, procname
