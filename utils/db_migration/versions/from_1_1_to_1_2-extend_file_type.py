@@ -2,7 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-"""extend file-type
+"""Database migration from Cuckoo 0.6 to Cuckoo 1.1.
+Extend sample's file-type field.
 
 Revision ID: 18eee46c6f81
 Revises: 263a45963c72
@@ -10,9 +11,9 @@ Create Date: 2014-08-21 12:41:30.863956
 
 """
 
-# revision identifiers, used by Alembic.
-revision = '18eee46c6f81'
-down_revision = '263a45963c72'
+# Revision identifiers, used by Alembic.
+revision = "18eee46c6f81"
+down_revision = "263a45963c72"
 
 from alembic import op
 import os.path
