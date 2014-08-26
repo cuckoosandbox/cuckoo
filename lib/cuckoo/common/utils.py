@@ -94,7 +94,7 @@ def convert_to_printable(s, cache=None):
     if cache is None:
         return "".join(convert_char(c) for c in s)
     elif not s in cache:
-            cache[s] = "".join(convert_char(c) for c in s)
+        cache[s] = "".join(convert_char(c) for c in s)
     return cache[s]
 
 def datetime_to_iso(timestamp):
