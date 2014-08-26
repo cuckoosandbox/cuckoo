@@ -30,7 +30,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "263a45963c72"
+SCHEMA_VERSION = "18eee46c6f81"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -172,7 +172,7 @@ class Sample(Base):
 
     id = Column(Integer(), primary_key=True)
     file_size = Column(Integer(), nullable=False)
-    file_type = Column(String(255), nullable=False)
+    file_type = Column(Text(), nullable=False)
     md5 = Column(String(32), nullable=False)
     crc32 = Column(String(8), nullable=False)
     sha1 = Column(String(40), nullable=False)
