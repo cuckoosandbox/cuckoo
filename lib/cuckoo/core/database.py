@@ -321,8 +321,10 @@ class Database(object):
     """
     __metaclass__ = Singleton
 
-    def __init__(self, dsn=None):
-        """@param dsn: database connection string."""
+    def __init__(self, dsn=None, schema_check=True):
+        """@param dsn: database connection string.
+        @param schema_check: disable or enable the db schema version check
+        """
         cfg = Config()
 
         if dsn:
@@ -357,10 +359,11 @@ class Database(object):
         # Get db session.
         self.Session = sessionmaker(bind=self.engine)
 
-        # Set database schema version.
+        # Deal with schema versioning.
         # TODO: it's a little bit dirty, needs refactoring.
         tmp_session = self.Session()
         if not tmp_session.query(AlembicVersion).count():
+            # Set database schema version.
             tmp_session.add(AlembicVersion(version_num=SCHEMA_VERSION))
             try:
                 tmp_session.commit()
@@ -370,7 +373,14 @@ class Database(object):
             finally:
                 tmp_session.close()
         else:
+            # Check if db version is the expected one.
+            last = tmp_session.query(AlembicVersion).first()
             tmp_session.close()
+            if last.version_num != SCHEMA_VERSION and schema_check:
+                raise CuckooDatabaseError("DB schema version mismatch: found "
+                                          "{0}, expected {1}. Try to apply all "
+                                          "migrations.".format(last.version_num,
+                                          SCHEMA_VERSION))
 
     def __del__(self):
         """Disconnects pool."""

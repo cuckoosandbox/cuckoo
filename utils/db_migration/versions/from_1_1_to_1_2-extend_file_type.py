@@ -53,7 +53,7 @@ def _perform(upgrade):
         "postgresql": "tasks_sample_id_fkey",
     }
 
-    fkey = fkey_name.get(db.Database().engine.name)
+    fkey = fkey_name.get(db.Database(schema_check=False).engine.name)
 
     # First drop the foreign key.
     if fkey:

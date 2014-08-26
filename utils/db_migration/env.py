@@ -26,7 +26,7 @@ sys.path.append(os.path.join(curdir, "..", ".."))
 from lib.cuckoo.core.database import Base, Database
 
 # Get database connection string from cuckoo configuration.
-url = Database().engine.url.__to_string__(hide_password=False)
+url = Database(schema_check=False).engine.url.__to_string__(hide_password=False)
 target_metadata = Base.metadata
 
 def run_migrations_offline():
