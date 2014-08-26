@@ -22,7 +22,7 @@ cuckoo.conf
 The first file to edit is *conf/cuckoo.conf*, it contains the generic configuration
 options that you might want to verify before launching Cuckoo.
 
-The file is largely commented and self-explainatory, but some of the options you might
+The file is largely commented and self-explaining, but some of the options you might
 want to pay more attention to are:
 
     * ``machinery`` in ``[cuckoo]``: this defines which Machinery module you want Cuckoo to use to interact with your analysis machines. The value must be the name of the module without extension.
@@ -240,7 +240,7 @@ After that every plugin has an own section for configuration::
     enabled = off
     filter = on
 
-The filter configuration helps you to remove known clean data from the resulting report. It can be configured seperately for every plugin.
+The filter configuration helps you to remove known clean data from the resulting report. It can be configured separately for every plugin.
 
 The filter itself is configured in the [mask] section.
 You can enter a list of pids in pid_generic to filter out processes::

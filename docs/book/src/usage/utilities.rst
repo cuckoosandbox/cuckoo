@@ -71,7 +71,7 @@ Following are the usage options::
       -p PARALLEL, --parallel PARALLEL
                             Number of parallel threads to use (auto mode only).
 
-As best practive we suggest to adopt the following configuration if you are
+As best practice we suggest to adopt the following configuration if you are
 running Cuckoo with many virtual machines:
 
     * Run a stand alone process.py in auto mode (you choose the number of parallel threads)

@@ -74,7 +74,7 @@ location) edit "alembic.ini" and change "sqlalchemy.url" to point your database.
 Before starting the migration script you must set your database connection in
 "cuckoo.conf" if you are using a custom one.
 
-Again, please remeber to backup before launching migration tool! A wrong
+Again, please remember to backup before launching migration tool! A wrong
 configuration may corrupt your data, backup should save kittens!
 
 Run the database migrations with::

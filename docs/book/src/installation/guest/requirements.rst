@@ -3,7 +3,7 @@ Requirements
 ============
 
 In order to make Cuckoo run properly in your virtualized Windows system, you
-will have to install some required softwares and libraries.
+will have to install some required software and libraries.
 
 Install Python
 ==============
@@ -33,9 +33,9 @@ At this point you should have installed everything needed by Cuckoo to run
 properly.
 
 Depending on what kind of files you want to analyze and what kind of sandboxed
-Windows environment you want to run the malwares in, you might want to install
+Windows environment you want to run the malware samples in, you might want to install
 additional software such as browsers, PDF readers, office suites etc.
-Remeber to disable the "auto update" or "check for updates" feature of 
+Remember to disable the "auto update" or "check for updates" feature of
 any additional software.
 
 This is completely up to you and to what your needs are. You can get some hints

@@ -30,7 +30,7 @@ Windows executables (located at *analyzer/windows/packages/exe.py*):
                 return self.execute(path, args)
 
 It seems really easy, thanks to all method inherited by Package object.
-Let's have a look as some of the main methods an anlysis packeage inherits from
+Let's have a look as some of the main methods an analysis package inherits from
 Package object:
 
     .. code-block:: python
@@ -282,7 +282,7 @@ Methods
 
 .. function:: Process.terminate()
 
-    Terminates the opened process. Returns ``True`` or ``False`` in case of success or failure of the operaton.
+    Terminates the opened process. Returns ``True`` or ``False`` in case of success or failure of the operation.
 
     :rtype: boolean
 
@@ -303,7 +303,7 @@ Methods
 
     :param dll: path to the DLL to inject into the process
     :type dll: string
-    :param apc: enable to use ``QueueUserAPC()`` injection istead of ``CreateRemoteThread()``, beware that if the process is in suspended mode, Cuckoo will always use ``QueueUserAPC()``
+    :param apc: enable to use ``QueueUserAPC()`` injection instead of ``CreateRemoteThread()``, beware that if the process is in suspended mode, Cuckoo will always use ``QueueUserAPC()``
     :type apc: boolean
     :rtype: boolean
 

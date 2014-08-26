@@ -164,7 +164,7 @@ own Python submission script, you can also use the ``add_path()`` and ``add_url(
     :type platform: string or None
     :param memory: set to ``True`` to generate a full memory dump of the analysis machine
     :type memory: True or False
-    :param enforce_timeout: set to ``True`` to force the executuion for the full timeout
+    :param enforce_timeout: set to ``True`` to force the execution for the full timeout
     :type enforce_timeout: True or False
     :param clock: provide a custom clock time to set in the analysis machine
     :type clock: string or None
@@ -203,7 +203,7 @@ own Python submission script, you can also use the ``add_path()`` and ``add_url(
     :type platform: string or None
     :param memory: set to ``True`` to generate a full memory dump of the analysis machine
     :type memory: True or False
-    :param enforce_timeout: set to ``True`` to force the executuion for the full timeout
+    :param enforce_timeout: set to ``True`` to force the execution for the full timeout
     :type enforce_timeout: True or False
     :param clock: provide a custom clock time to set in the analysis machine
     :type clock: string or None

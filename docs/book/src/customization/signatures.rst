@@ -8,7 +8,7 @@ represent a particular malicious behavior or an indicator you're interested in.
 
 These signatures are very useful to give a context to the analyses: both because they
 simplify the interpretation of the results as well as for automatically identifying
-malwares of interest.
+malware samples of interest.
 
 Some examples of what you can use Cuckoo's signatures for:
     * Identify a particular malware family you're interested in by isolating some unique behaviors (like file names or mutexes).
@@ -194,7 +194,7 @@ you could translate the previous signature in the following way:
 Evented Signatures
 ==================
 
-Since version 1.0, Cuckoo provides a way to write more performant signatures.
+Since version 1.0, Cuckoo provides a way to write more high-performance signatures.
 In the past every signature was required to loop through the whole collection of API calls
 collected during the analysis. This was necessarily causing some performance issues when such
 collection would be of a large size.
@@ -256,7 +256,7 @@ An example signature using this technique is the following:
                 # continue
                 return None
 
-The inline comments are already self-explainatory.
+The inline comments are already self-explanatory.
 You can find many more example of both evented and traditional signatures in our `community repository`_.
 
 .. _`community repository`: https://github.com/cuckoobox/community
@@ -265,7 +265,7 @@ Helpers
 =======
 
 As anticipated, from version 0.5 the ``Signature`` base class also provides
-some helper methods that simplify the creation of signatures and aboid the need
+some helper methods that simplify the creation of signatures and avoid the need
 for you having to access the global container directly (at least most of the times).
 
 Following is a list of available methods.
