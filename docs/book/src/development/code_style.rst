@@ -55,7 +55,7 @@ Methods definitions inside a class are separated by a single blank line::
             pass
 
 Use blank lines in functions, sparingly, to isolate logic sections.
-Import blocks are separated by a single blank line, import blocks are separeted
+Import blocks are separated by a single blank line, import blocks are separated
 from classes by one blank line.
 
 Imports
