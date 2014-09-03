@@ -19,7 +19,9 @@ Cuckoo Sandbox 1.2 (TBD)
 * Added display of PE compilation time
 * Added support for Pillow (PIL fork)
 * Added search by string to web interface
+* Added various sanity warnings to move from sqlite to a real database
 * Allow Auxiliary modules to run a callback at the very end of an analysis
+* Deprecated ./utils/clean.sh with ./cuckoo.py --clean
 * Replaced diStorm3 disassembler with Capstone disassembler
 * Refactored analysis packages
 * Fixed process.py to use delete_original and delete_bin_copy when used in auto mode
