@@ -13,4 +13,5 @@ This chapter explains how to use Cuckoo.
     api
     packages
     results
+    clean
     utilities

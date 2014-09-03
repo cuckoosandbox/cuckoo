@@ -405,6 +405,30 @@ class Database(object):
         finally:
             session.close()
 
+    def drop_samples(self):
+        """Drop all samples and their associated information."""
+        session = self.Session()
+        try:
+            session.query(Sample).delete()
+        except SQLAlchemyError as e:
+            log.debug("Database error dropping all samples: %s", e)
+            return False
+        finally:
+            session.rollback()
+        return True
+
+    def drop_tasks(self):
+        """Drop all tasks and their associated information."""
+        session = self.Session()
+        try:
+            session.query(Task).delete()
+        except SQLAlchemyError as e:
+            log.debug("Database error dropping all tasks: %s", e)
+            return False
+        finally:
+            session.rollback()
+        return True
+
     def add_machine(self, name, label, ip, platform, tags, interface,
                     snapshot, resultserver_ip, resultserver_port):
         """Add a guest machine.
