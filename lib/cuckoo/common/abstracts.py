@@ -553,38 +553,26 @@ class LibVirtMachinery(Machinery):
         @raise CuckooMachineError: if cannot find current snapshot or
                                    when there are too many snapshots available
         """
-        # Checks for current snapshots.
+        snapshot = None
         conn = self._connect()
         try:
             vm = self.vms[label]
-            snap = vm.hasCurrentSnapshot(flags=0)
+
+            if vm.hasCurrentSnapshot(flags=0):
+                snapshot = vm.snapshotCurrent(flags=0)
+            else:
+                # No current snapshot, try to get the last one
+                snapshots = vm.listAllSnapshots(flags=0)
+                snapshots.sort(key=lambda x: ET.fromstring(x.getXMLDesc(flags=0)).findtext("./creationTime"), reverse=True)
+                snapshot = snapshots[0]
+                log.debug("No current snapshot, using latest snapshot")
         except libvirt.libvirtError:
-            self._disconnect(conn)
-            raise CuckooMachineError("Unable to get current snapshot for "
+            raise CuckooMachineError("Unable to get snapshot for "
                                      "virtual machine {0}".format(label))
         finally:
             self._disconnect(conn)
 
-        if snap:
-            return vm.snapshotCurrent(flags=0)
-
-        # If no current snapshot, get the last one.
-        conn = self._connect()
-        try:
-            snaps = vm[label].snapshotListNames(flags=0)
-
-            def get_create(sn):
-                xml_desc = sn.getXMLDesc(flags=0)
-                return ET.fromstring(xml_desc).findtext("./creationTime")
-
-            return max(get_create(vm.snapshotLookupByName(name, flags=0))
-                       for name in snaps)
-        except libvirt.libvirtError:
-            return None
-        except ValueError:
-            return None
-        finally:
-            self._disconnect(conn)
+        return snapshot
 
 class Processing(object):
     """Base abstract class for processing module."""
