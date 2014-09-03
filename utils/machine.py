@@ -79,10 +79,6 @@ def main():
 
     if args.resultserver:
         resultserver_ip, resultserver_port = args.resultserver.split(":")
-    else:
-        conf = Config(os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"))
-        resultserver_ip = conf.resultserver.ip
-        resultserver_port = conf.resultserver.port
 
     if args.add:
         db.add_machine(args.vmname, args.vmname, args.ip, args.platform,
