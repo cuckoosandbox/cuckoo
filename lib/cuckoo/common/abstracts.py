@@ -553,6 +553,10 @@ class LibVirtMachinery(Machinery):
         @raise CuckooMachineError: if cannot find current snapshot or
                                    when there are too many snapshots available
         """
+        def _extract_creation_time(node):
+            xml = ET.fromstring(node.getXMLDesc(flags=0))
+            return xml.findtext("./creationTime")
+
         snapshot = None
         conn = self._connect()
         try:
@@ -561,11 +565,12 @@ class LibVirtMachinery(Machinery):
             if vm.hasCurrentSnapshot(flags=0):
                 snapshot = vm.snapshotCurrent(flags=0)
             else:
-                # No current snapshot, try to get the last one
-                snapshots = vm.listAllSnapshots(flags=0)
-                snapshots.sort(key=lambda x: ET.fromstring(x.getXMLDesc(flags=0)).findtext("./creationTime"), reverse=True)
-                snapshot = snapshots[0]
                 log.debug("No current snapshot, using latest snapshot")
+
+                # No current snapshot, try to get the last one.
+                snapshot = sorted(vm.listAllSnapshots(flags=0),
+                                  key=_extract_creation_time,
+                                  reverse=True)[0]
         except libvirt.libvirtError:
             raise CuckooMachineError("Unable to get snapshot for "
                                      "virtual machine {0}".format(label))
