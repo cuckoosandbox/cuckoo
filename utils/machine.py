@@ -23,7 +23,12 @@ def update_conf(machinery, args):
         line = line.strip()
 
         if line.split("=")[0].strip() == "machines":
-            line += ", %s" % args.vmname
+            # If there are already one or more labels then append the new
+            # label to the list, otherwise make a new list.
+            if line.split("=", 1)[1].strip():
+                line += ", %s" % args.vmname
+            else:
+                line += args.vmname
 
         lines.append(line)
 
