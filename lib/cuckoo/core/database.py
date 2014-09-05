@@ -343,11 +343,13 @@ class Database(object):
 
         # Disable SQL logging. Turn it on for debugging.
         self.engine.echo = False
+
         # Connection timeout.
         if cfg.database.timeout:
             self.engine.pool_timeout = cfg.database.timeout
         else:
             self.engine.pool_timeout = 60
+
         # Create schema.
         try:
             Base.metadata.create_all(self.engine)
@@ -383,11 +385,7 @@ class Database(object):
         @return: row instance
         """
         instance = session.query(model).filter_by(**kwargs).first()
-        if instance:
-            return instance
-        else:
-            instance = model(**kwargs)
-            return instance
+        return instance or model(**kwargs)
 
     def clean_machines(self):
         """Clean old stored machines and related tables."""
@@ -426,6 +424,7 @@ class Database(object):
                           snapshot=snapshot,
                           resultserver_ip=resultserver_ip,
                           resultserver_port=resultserver_port)
+
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
             for tag in tags.replace(" ", "").split(","):
