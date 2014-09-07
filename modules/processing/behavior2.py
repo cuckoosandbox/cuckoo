@@ -33,7 +33,9 @@ class BehaviorReconstructor(object):
         if arg and kwargs:
             raise Exception("Can't have both args and kwargs!")
 
-        self.behavior[category].append(arg or kwargs)
+        value = arg or kwargs
+        if value not in self.behavior[category]:
+            self.behavior[category].append(value)
 
     def finish(self):
         for f in self.files.values():
