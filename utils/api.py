@@ -3,12 +3,12 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-import sys
-import json
 import argparse
-import tarfile
+import json
+import os
 import socket
+import sys
+import tarfile
 from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
 
@@ -30,7 +30,7 @@ def jsonize(data):
     """Converts data dict to JSON.
     @param data: data dict
     @return: JSON formatted data
-    """ 
+    """
     response.content_type = "application/json; charset=UTF-8"
     return json.dumps(data, sort_keys=False, indent=4)
 
@@ -224,7 +224,7 @@ def tasks_report(task_id, report_format="json"):
         "gz": "w:gz",
         "tar": "w",
     }
-  
+
     if report_format.lower() in formats:
         report_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                                    task_id, "reports",
@@ -284,7 +284,7 @@ def files_get(sha256):
         return open(file_path, "rb").read()
     else:
         return HTTPError(404, "File not found")
-        
+
 @route("/pcap/get/<task_id>", method="GET")
 def pcap_get(task_id):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "dump.pcap")
