@@ -46,6 +46,7 @@ def custom_headers():
     response.headers["Expires"] = "0"
 
 @route("/tasks/create/file", method="POST")
+@route("/v1/tasks/create/file", method="POST")
 def tasks_create_file():
     response = {}
 
@@ -86,6 +87,7 @@ def tasks_create_file():
     return jsonize(response)
 
 @route("/tasks/create/url", method="POST")
+@route("/v1/tasks/create/url", method="POST")
 def tasks_create_url():
     response = {}
 
@@ -125,8 +127,11 @@ def tasks_create_url():
     return jsonize(response)
 
 @route("/tasks/list", method="GET")
+@route("/v1/tasks/list", method="GET")
 @route("/tasks/list/<limit:int>", method="GET")
+@route("/v1/tasks/list/<limit:int>", method="GET")
 @route("/tasks/list/<limit:int>/<offset:int>", method="GET")
+@route("/v1/tasks/list/<limit:int>/<offset:int>", method="GET")
 def tasks_list(limit=None, offset=None):
     response = {}
 
@@ -147,6 +152,7 @@ def tasks_list(limit=None, offset=None):
     return jsonize(response)
 
 @route("/tasks/view/<task_id>", method="GET")
+@route("/v1/tasks/view/<task_id>", method="GET")
 def tasks_view(task_id):
     response = {}
 
@@ -168,6 +174,7 @@ def tasks_view(task_id):
     return jsonize(response)
 
 @route("/tasks/reschedule/<task_id>", method="GET")
+@route("/v1/tasks/reschedule/<task_id>", method="GET")
 def tasks_reschedule(task_id):
     response = {}
 
@@ -183,6 +190,7 @@ def tasks_reschedule(task_id):
     return jsonize(response)
 
 @route("/tasks/delete/<task_id>", method="GET")
+@route("/v1/tasks/delete/<task_id>", method="GET")
 def tasks_delete(task_id):
     response = {}
 
@@ -205,7 +213,9 @@ def tasks_delete(task_id):
     return jsonize(response)
 
 @route("/tasks/report/<task_id>", method="GET")
+@route("/v1/tasks/report/<task_id>", method="GET")
 @route("/tasks/report/<task_id>/<report_format>", method="GET")
+@route("/v1/tasks/report/<task_id>/<report_format>", method="GET")
 def tasks_report(task_id, report_format="json"):
     formats = {
         "json": "report.json",
@@ -255,8 +265,11 @@ def tasks_report(task_id, report_format="json"):
         return HTTPError(404, "Report not found")
 
 @route("/files/view/md5/<md5>", method="GET")
+@route("/v1/files/view/md5/<md5>", method="GET")
 @route("/files/view/sha256/<sha256>", method="GET")
+@route("/v1/files/view/sha256/<sha256>", method="GET")
 @route("/files/view/id/<sample_id>", method="GET")
+@route("/v1/files/view/id/<sample_id>", method="GET")
 def files_view(md5=None, sha256=None, sample_id=None):
     response = {}
 
@@ -277,6 +290,7 @@ def files_view(md5=None, sha256=None, sample_id=None):
     return jsonize(response)
 
 @route("/files/get/<sha256>", method="GET")
+@route("/v1/files/get/<sha256>", method="GET")
 def files_get(sha256):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", sha256)
     if os.path.exists(file_path):
@@ -286,6 +300,7 @@ def files_get(sha256):
         return HTTPError(404, "File not found")
 
 @route("/pcap/get/<task_id>", method="GET")
+@route("/v1/pcap/get/<task_id>", method="GET")
 def pcap_get(task_id):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "dump.pcap")
     if os.path.exists(file_path):
@@ -298,6 +313,7 @@ def pcap_get(task_id):
         return HTTPError(404, "File not found")
 
 @route("/machines/list", method="GET")
+@route("/v1/machines/list", method="GET")
 def machines_list():
     response = {}
 
@@ -310,6 +326,7 @@ def machines_list():
     return jsonize(response)
 
 @route("/cuckoo/status", method="GET")
+@route("/v1/cuckoo/status", method="GET")
 def cuckoo_status():
     response = dict(
         version=CUCKOO_VERSION,
@@ -330,6 +347,7 @@ def cuckoo_status():
     return jsonize(response)
 
 @route("/machines/view/<name>", method="GET")
+@route("/v1/machines/view/<name>", method="GET")
 def machines_view(name=None):
     response = {}
 
@@ -342,7 +360,9 @@ def machines_view(name=None):
     return jsonize(response)
 
 @route("/tasks/screenshots/<task:int>", method="GET")
+@route("/v1/tasks/screenshots/<task:int>", method="GET")
 @route("/tasks/screenshots/<task:int>/<screenshot>", method="GET")
+@route("/v1/tasks/screenshots/<task:int>/<screenshot>", method="GET")
 def task_screenshots(task=0, screenshot=None):
     folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "shots")
 
