@@ -3,12 +3,12 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import argparse
-import json
 import os
-import socket
 import sys
+import json
+import argparse
 import tarfile
+import socket
 from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
 
