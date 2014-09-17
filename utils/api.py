@@ -151,8 +151,8 @@ def tasks_list(limit=None, offset=None):
 
     return jsonize(response)
 
-@route("/tasks/view/<task_id>", method="GET")
-@route("/v1/tasks/view/<task_id>", method="GET")
+@route("/tasks/view/<task_id:int>", method="GET")
+@route("/v1/tasks/view/<task_id:int>", method="GET")
 def tasks_view(task_id):
     response = {}
 
@@ -173,8 +173,8 @@ def tasks_view(task_id):
 
     return jsonize(response)
 
-@route("/tasks/reschedule/<task_id>", method="GET")
-@route("/v1/tasks/reschedule/<task_id>", method="GET")
+@route("/tasks/reschedule/<task_id:int>", method="GET")
+@route("/v1/tasks/reschedule/<task_id:int>", method="GET")
 def tasks_reschedule(task_id):
     response = {}
 
@@ -189,8 +189,8 @@ def tasks_reschedule(task_id):
 
     return jsonize(response)
 
-@route("/tasks/delete/<task_id>", method="GET")
-@route("/v1/tasks/delete/<task_id>", method="GET")
+@route("/tasks/delete/<task_id:int>", method="GET")
+@route("/v1/tasks/delete/<task_id:int>", method="GET")
 def tasks_delete(task_id):
     response = {}
 
@@ -212,10 +212,10 @@ def tasks_delete(task_id):
 
     return jsonize(response)
 
-@route("/tasks/report/<task_id>", method="GET")
-@route("/v1/tasks/report/<task_id>", method="GET")
-@route("/tasks/report/<task_id>/<report_format>", method="GET")
-@route("/v1/tasks/report/<task_id>/<report_format>", method="GET")
+@route("/tasks/report/<task_id:int>", method="GET")
+@route("/v1/tasks/report/<task_id:int>", method="GET")
+@route("/tasks/report/<task_id:int>/<report_format>", method="GET")
+@route("/v1/tasks/report/<task_id:int>/<report_format>", method="GET")
 def tasks_report(task_id, report_format="json"):
     formats = {
         "json": "report.json",
@@ -268,8 +268,8 @@ def tasks_report(task_id, report_format="json"):
 @route("/v1/files/view/md5/<md5>", method="GET")
 @route("/files/view/sha256/<sha256>", method="GET")
 @route("/v1/files/view/sha256/<sha256>", method="GET")
-@route("/files/view/id/<sample_id>", method="GET")
-@route("/v1/files/view/id/<sample_id>", method="GET")
+@route("/files/view/id/<sample_id:int>", method="GET")
+@route("/v1/files/view/id/<sample_id:int>", method="GET")
 def files_view(md5=None, sha256=None, sample_id=None):
     response = {}
 
@@ -299,8 +299,8 @@ def files_get(sha256):
     else:
         return HTTPError(404, "File not found")
 
-@route("/pcap/get/<task_id>", method="GET")
-@route("/v1/pcap/get/<task_id>", method="GET")
+@route("/pcap/get/<task_id:int>", method="GET")
+@route("/v1/pcap/get/<task_id:int>", method="GET")
 def pcap_get(task_id):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "dump.pcap")
     if os.path.exists(file_path):
