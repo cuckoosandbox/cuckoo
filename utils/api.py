@@ -202,7 +202,7 @@ def tasks_delete(task_id):
 
         if db.delete_task(task_id):
             delete_folder(os.path.join(CUCKOO_ROOT, "storage",
-                                       "analyses", task_id))
+                                       "analyses", "%d" % task_id))
             response["status"] = "OK"
         else:
             return HTTPError(500, "An error occurred while trying to "
@@ -237,11 +237,12 @@ def tasks_report(task_id, report_format="json"):
 
     if report_format.lower() in formats:
         report_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
-                                   task_id, "reports",
+                                   "%d" % task_id, "reports",
                                    formats[report_format.lower()])
     elif report_format.lower() in bz_formats:
             bzf = bz_formats[report_format.lower()]
-            srcdir = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id)
+            srcdir = os.path.join(CUCKOO_ROOT, "storage",
+                                  "analyses", "%d" % task_id)
             s = StringIO()
 
             # By default go for bz2 encoded tar files (for legacy reasons.)
@@ -302,7 +303,8 @@ def files_get(sha256):
 @route("/pcap/get/<task_id:int>", method="GET")
 @route("/v1/pcap/get/<task_id:int>", method="GET")
 def pcap_get(task_id):
-    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "dump.pcap")
+    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                             "%d" % task_id, "dump.pcap")
     if os.path.exists(file_path):
         response.content_type = "application/octet-stream; charset=UTF-8"
         try:
