@@ -114,11 +114,11 @@ class Node(db.Model):
             log.critical("Error submitting task (task #%d, node %s): %s",
                          task.id, self.url, e)
 
-    def get_report(self, task_id):
+    def get_report(self, task_id, fmt):
         try:
             url = os.path.join(self.url, "tasks", "report",
-                               "%d" % task_id, "json")
-            return requests.get(url).content0
+                               "%d" % task_id, fmt)
+            return requests.get(url).content
         except Exception as e:
             log.critical("Error fetching report (task #%d, node %s): %s",
                          task_id, self.url, e)
@@ -353,11 +353,15 @@ class TaskRootApi(TaskBaseApi):
 
 class ReportApi(RestResource):
     def get(self, task_id):
-        # TODO Check whether the anlysis has actually finished.
+        # TODO Check whether the analysis has actually finished.
         task = Task.query.get(task_id)
+        if not task:
+            abort(404, message="Task not found")
+
         node = Node.query.get(task.node_id)
-        r = node.get_report(task.task_id)
-        # TODO Return the raw document to the server.
+        r = node.get_report(task.task_id, "json")
+        # TODO Only json.loads() for the JSON reporting format.
+        return json.loads(r)
 
 
 def create_app(database_connection, debug=False, samples_directory=None,
@@ -374,6 +378,7 @@ def create_app(database_connection, debug=False, samples_directory=None,
     restapi.add_resource(NodeApi, "/node/<string:name>")
     restapi.add_resource(TaskRootApi, "/task")
     restapi.add_resource(TaskApi, "/task/<int:task_id>")
+    restapi.add_resource(ReportApi, "/report/<int:task_id>")
 
     db.init_app(app)
 
@@ -403,16 +408,13 @@ if __name__ == "__main__":
     if args.samples_directory is None:
         args.samples_directory = tempfile.mkdtemp()
 
-    try:
-        RUNNING = True
-        app = create_app(database_connection=args.db, debug=args.debug,
-                         samples_directory=args.samples_directory,
-                         uptime_logfile=args.uptime_logfile)
+    RUNNING = True
+    app = create_app(database_connection=args.db, debug=args.debug,
+                     samples_directory=args.samples_directory,
+                     uptime_logfile=args.uptime_logfile)
 
-        t = StatusThread()
-        t.start()
+    t = StatusThread()
+    t.daemon = True
+    t.start()
 
-        app.run(host=args.host, port=args.port)
-    except KeyboardInterrupt:
-        RUNNING = False
-        t.join()
+    app.run(host=args.host, port=args.port)
