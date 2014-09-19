@@ -319,9 +319,8 @@ class BehaviorAnalysis(Processing):
         @return: results dict.
         """
         behavior = {}
-        behavior["processes"] = []
 
         for path in self._enum_logs():
-            behavior["processes"].append(self._parse_log(path))
+            behavior = self._parse_log(path)
 
         return behavior
