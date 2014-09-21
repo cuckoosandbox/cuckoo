@@ -54,8 +54,7 @@ mkdir -p "$VMTEMP"
 chown -R cuckoo:cuckoo "$CUCKOO" "$VMTEMP"
 
 # Install required packages part two.
-pip install sqlalchemy psycopg2 vmcloak \
-    -r "$CUCKOO/requirements.txt" \
+pip install sqlalchemy psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
 
 # Create a random password.
 PASSWORD="$(tr -dc "[:alnum:]" < /dev/urandom|head -c ${1:-16})"
