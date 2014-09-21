@@ -110,7 +110,7 @@ echo "vm-dir = $VMS" >> /tmp/vmcloak.conf
 echo "data-dir = $VMDATA" >> /tmp/vmcloak.conf
 echo "iso-mount = $MOUNT" >> /tmp/vmcloak.conf
 echo "serial-key = $3" >> /tmp/vmcloak.conf
-echo "deps = dotnet40" >> /tmp/vmcloak.conf
+echo "dependencies = dotnet40" >> /tmp/vmcloak.conf
 echo "temp-dirpath = $VMTEMP" >> /tmp/vmcloak.conf
 
 chown cuckoo:cuckoo /tmp/vmcloak.conf
