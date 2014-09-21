@@ -44,24 +44,18 @@ setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
 useradd cuckoo
 
 CUCKOO="/home/cuckoo/cuckoo/"
-VMCLOAK="/home/cuckoo/vmcloak/"
 VMTEMP="/home/cuckoo/temp/"
 
 # Fetch Cuckoo and VMCloak.
 git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
-git clone git://github.com/jbremer/vmcloak.git "$VMCLOAK"
 
 mkdir -p "$VMTEMP"
 
-chown -R cuckoo:cuckoo "$CUCKOO" "$VMCLOAK" "$VMTEMP"
+chown -R cuckoo:cuckoo "$CUCKOO" "$VMTEMP"
 
 # Install required packages part two.
-pip install sqlalchemy psycopg2 \
+pip install sqlalchemy psycopg2 vmcloak \
     -r "$CUCKOO/requirements.txt" \
-    -r "$VMCLOAK/requirements.txt"
-
-# Setup VMCloak.
-(cd "$VMCLOAK" && python setup.py install)
 
 # Create a random password.
 PASSWORD="$(tr -dc "[:alnum:]" < /dev/urandom|head -c ${1:-16})"
