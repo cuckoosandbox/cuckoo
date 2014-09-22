@@ -39,8 +39,8 @@ try:
 except ImportError:
     HAVE_MAEC = False
 
-class MAEC40Report(Report):
-    """Generates a MAEC 4.0.1 report.
+class MAEC41Report(Report):
+    """Generates a MAEC 4.1.0.7 report.
        --Output modes (set in reporting.conf):
            mode = "full": Output fully mapped Actions (see maec40_mappings), including Windows Handle mapped/substituted objects,
                           along with API call/parameter capture via Action Implementations.
@@ -48,10 +48,10 @@ class MAEC40Report(Report):
            mode = "api": Output only Actions with Action Implementations, but no mapped components.
        --Other configuration parameters:
            processtree = "true" | "false". Output captured ProcessTree as part of dynamic analysis MAEC Bundle. Default = "true".
-           output_handles = "true" | "false". Output the Windows Handles used to  construct the Object-Handle mappings as a 
-                                              separate Object Collection in the dynamic analysis MAEC Bundle. Only applicable 
+           output_handles = "true" | "false". Output the Windows Handles used to  construct the Object-Handle mappings as a
+                                              separate Object Collection in the dynamic analysis MAEC Bundle. Only applicable
                                               for mode = "full" or mode = "overview". Default = "false".
-           static = "true" | "false". Output Cuckoo static analysis (PEfile) output as a separate MAEC Bundle in the document. 
+           static = "true" | "false". Output Cuckoo static analysis (PEfile) output as a separate MAEC Bundle in the document.
                                       Default = "true".
            strings = "true" | "false". Output Cuckoo strings output as a separate MAEC Bundle in the document. Default = "true".
            virustotal = "true" | "false". Output VirusTotal output as a separate MAEC Bundle in the document. Default = "true".
@@ -101,18 +101,18 @@ class MAEC40Report(Report):
         # Add the Subject to the Package.
         self.package.add_malware_subject(self.subject)
         # Generate dynamic analysis bundle.
-        self.dynamic_bundle = Bundle(self.id_generator.generate_bundle_id(), False, "4.0.1", "dynamic analysis tool output")
+        self.dynamic_bundle = Bundle(self.id_generator.generate_bundle_id(), False, "4.1.0.7", "dynamic analysis tool output")
         # Add the Bundle to the Subject.
         self.subject.add_findings_bundle(self.dynamic_bundle)
         # Generate Static Analysis Bundles, if static results exist.
         if self.options["static"] and "static" in self.results and self.results["static"]:
-            self.static_bundle = Bundle(self.id_generator.generate_bundle_id(), False, "4.0.1", "static analysis tool output")
+            self.static_bundle = Bundle(self.id_generator.generate_bundle_id(), False, "4.1.0.7", "static analysis tool output")
             self.subject.add_findings_bundle(self.static_bundle)
         if self.options["strings"] and "strings" in self.results and self.results["strings"]:
-            self.strings_bundle = Bundle(self.id_generator.generate_bundle_id(), False, "4.0.1", "static analysis tool output")
+            self.strings_bundle = Bundle(self.id_generator.generate_bundle_id(), False, '4.1.0.7', "static analysis tool output")
             self.subject.add_findings_bundle(self.strings_bundle)
         if self.options["virustotal"] and "virustotal" in self.results and self.results["virustotal"]:
-            self.virustotal_bundle = Bundle(self.id_generator.generate_bundle_id(), False, "4.0.1", "static analysis tool output")
+            self.virustotal_bundle = Bundle(self.id_generator.generate_bundle_id(), False, "4.1.0.7", "static analysis tool output")
             self.subject.add_findings_bundle(self.virustotal_bundle)
 
     def addActions(self):
@@ -198,7 +198,7 @@ class MAEC40Report(Report):
         if self.options["processtree"] and "behavior" in self.results and "processtree" in self.results["behavior"] and self.results["behavior"]["processtree"]:
             # Process Tree TypedField Fix.
             NS_LIST = cybox.utils.nsparser.NS_LIST + [
-                ("http://maec.mitre.org/XMLSchema/maec-bundle-4", "maecBundle", "http://maec.mitre.org/language/version4.0.1/maec_bundle_schema.xsd"),
+                ("http://maec.mitre.org/language/schema.html#bundle", "maecBundle", "http://maec.mitre.org/language/version4.1/maec_bundle_schema.xsd"),
             ]
             OBJ_LIST = cybox.utils.nsparser.OBJ_LIST + [
                 ("ProcessTreeNodeType", "maec.bundle.process_tree.ProcessTreeNode", "", "http://cybox.mitre.org/objects#ProcessObject-2", ["ProcessObjectType"]),
@@ -323,7 +323,7 @@ class MAEC40Report(Report):
                 arguments_list.append({"argument_value": argument_value,
                                        "argument_name": {"value": parameter_mappings_dict[parameter_name]["associated_argument_name"]}})
         return arguments_list
-        
+
 
     def processActionAssociatedObjects(self, associated_objects_dict, parameter_list):
         """Processes a dictionary of parameters that should be mapped to Associated Objects in the Action
@@ -920,11 +920,11 @@ class MAEC40Report(Report):
     def output(self):
         """Writes report to disk."""
         try:
-            report = open(os.path.join(self.reports_path, "report.maec-4.0.1.xml"), "w")
+            report = open(os.path.join(self.reports_path, "report.maec-4.1.0.7.xml"), "w")
             report.write("<?xml version='1.0' encoding='UTF-8'?>\n")
             report.write("<!DOCTYPE doc [<!ENTITY comma '&#44;'>]>\n")
             report.write("<!--\n")
-            report.write("Cuckoo Sandbox MAEC 4.0.1 malware analysis report\n")
+            report.write("Cuckoo Sandbox MAEC 4.1.0.7 malware analysis report\n")
             report.write("http://www.cuckoosandbox.org\n")
             report.write("-->\n")
             self.package.to_obj().export(report, 0, name_="MAEC_Package", namespacedef_=MAECNamespaceParser(self.package.to_obj()).get_namespace_schemalocation_str())
@@ -932,4 +932,4 @@ class MAEC40Report(Report):
             report.close()
         except (TypeError, IOError) as e:
             traceback.print_exc()
-            raise CuckooReportError("Failed to generate MAEC 4.0.1 report: %s" % e)
+            raise CuckooReportError("Failed to generate MAEC 4.1.0.7 report: %s" % e)
