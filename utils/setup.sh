@@ -51,7 +51,8 @@ git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
 
 mkdir -p "$VMTEMP"
 
-chown -R cuckoo:cuckoo "$CUCKOO" "$VMTEMP"
+chown -R cuckoo:cuckoo "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
+chmod 755 "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
 
 # Install required packages part two.
 pip install sqlalchemy psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
@@ -115,11 +116,11 @@ echo "temp-dirpath = $VMTEMP" >> /tmp/vmcloak.conf
 chown cuckoo:cuckoo /tmp/vmcloak.conf
 
 # Unlock VMCloak just to be sure.
-sudo -u cuckoo vmcloak --unlock
+sudo -u cuckoo -i vmcloak --unlock
 
 # Create a bunch of Virtual Machines.
 for i in $(seq -w 1 "$1"); do
-    sudo -u cuckoo \
+    sudo -u cuckoo -i \
         vmcloak -s /tmp/vmcloak.conf --hostonly-ip 192.168.56.1$i egg$i
 done
 
