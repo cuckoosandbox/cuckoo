@@ -55,7 +55,7 @@ chown -R cuckoo:cuckoo "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
 chmod 755 "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
 
 # Install required packages part two.
-pip install sqlalchemy psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
+pip install psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
 
 # Create a random password.
 PASSWORD="$(tr -dc "[:alnum:]" < /dev/urandom|head -c ${1:-16})"
@@ -112,6 +112,7 @@ echo "iso-mount = $MOUNT" >> /tmp/vmcloak.conf
 echo "serial-key = $3" >> /tmp/vmcloak.conf
 echo "dependencies = dotnet40" >> /tmp/vmcloak.conf
 echo "temp-dirpath = $VMTEMP" >> /tmp/vmcloak.conf
+echo "tags = longterm" >> /tmp/vmcloak.conf
 
 chown cuckoo:cuckoo /tmp/vmcloak.conf
 
