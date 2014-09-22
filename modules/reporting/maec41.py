@@ -11,7 +11,7 @@ import re
 import traceback
 from collections import defaultdict
 
-from lib.maec.maec40 import api_call_mappings, hiveHexToString,\
+from lib.maec.maec41 import api_call_mappings, hiveHexToString,\
     socketTypeToString, socketProtoToString, socketAFToString,\
     regDatatypeToString, intToHex, regStringToKey, regStringToHive
 
