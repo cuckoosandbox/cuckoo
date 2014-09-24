@@ -1,0 +1,24 @@
+<section id="tool_output">
+    <div class="section-title">
+        <h4>Output From Tool</h4>
+    </div>
+    {% if results.tool %}
+        {% set counter = 1 %}
+        {% for tool_output in results.tool %}
+            {% if tool_output == "tool_output.log" %}
+                <div>
+                    <h4><a href="javascript:showHide('tool_output.log');">{{ tool_output }}</a></h4>
+                    <div id="tool_output.log" style="display: none;">
+                        <div><span class="mono"><pre>{{ results.tool[tool_output] }}</pre></span></div>
+                    </div> 
+                </div>
+            {% else %}
+                <div>
+                    <h4><a href="javascript:showHide('tool_counter_{{counter}}');">{{tool_output.name}}</a></h4>
+                </div>
+            {% endif %}            
+        {% endfor %}
+    {% else %}
+        Nothing to display.
+    {% endif %}
+</section>

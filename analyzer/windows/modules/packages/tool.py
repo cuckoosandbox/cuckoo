@@ -39,8 +39,8 @@ class Tool(Package):
             options = options + path
 
         sample_options = self.space_buffer(sample_options)
-        if "sample_options" in options:
-            options = options.replace("sample_options", sample_options)
+        if "$sample_options" in options:
+            options = options.replace("$sample_options", sample_options)
         else:
             options = options + sample_options
 
