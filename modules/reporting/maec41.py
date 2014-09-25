@@ -30,13 +30,12 @@ try:
     from maec.bundle.bundle_reference import BundleReference
     from maec.bundle.process_tree import ProcessTree
     from maec.bundle.av_classification import AVClassification
-    from maec.id_generator import Generator
     from maec.package.malware_subject import MalwareSubject
     from maec.package.package import Package
     from maec.package.analysis import Analysis
-    from maec.utils import MAECNamespaceParser
     HAVE_MAEC = True
-except ImportError:
+except ImportError as e:
+    print "CERROR: import error message: %s" % e
     HAVE_MAEC = False
 
 class MAEC41Report(Report):
