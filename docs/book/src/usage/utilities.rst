@@ -127,7 +127,7 @@ Stats utility
 This is a really simple utility which prints some statistics about processed
 samples::
 
-    $ utils/stats.py
+    $ ./utils/stats.py
 
     1 samples in db
     1 tasks in db
