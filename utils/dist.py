@@ -69,13 +69,15 @@ class StringList(db.TypeDecorator):
 class Node(db.Model):
     """Cuckoo node database model."""
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text, unique=True)
-    url = db.Column(db.Text, unique=True)
+    name = db.Column(db.Text, unique=True, nullable=False)
+    url = db.Column(db.Text, unique=True, nullable=False)
+    enabled = db.Column(db.Boolean, nullable=False)
     machines = db.relationship("Machine", backref="node", lazy="dynamic")
 
-    def __init__(self, name, url):
+    def __init__(self, name, url, enabled=True):
         self.name = name
         self.url = url
+        self.enabled = enabled
 
     def list_machines(self):
         try:
@@ -184,7 +186,7 @@ class StatusThread(threading.Thread):
                 statuses = {}
 
                 # Request a status update on all Cuckoo nodes.
-                for node in Node.query.all():
+                for node in Node.query.filter_by(enabled=True).all():
                     status = node.status()
                     if not status:
                         continue
@@ -286,7 +288,7 @@ class NodeApi(NodeBaseApi):
 
     def delete(self, name):
         node = Node.query.filter_by(name=name).first()
-        db.session.delete(node)
+        node.enabled = False
         db.session.commit()
 
 
