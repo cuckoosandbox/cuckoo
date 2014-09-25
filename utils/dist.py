@@ -69,8 +69,8 @@ class StringList(db.TypeDecorator):
 class Node(db.Model):
     """Cuckoo node database model."""
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text, unique=True, nullable=False)
-    url = db.Column(db.Text, unique=True, nullable=False)
+    name = db.Column(db.Text, nullable=False)
+    url = db.Column(db.Text, nullable=False)
     enabled = db.Column(db.Boolean, nullable=False)
     machines = db.relationship("Machine", backref="node", lazy="dynamic")
 
