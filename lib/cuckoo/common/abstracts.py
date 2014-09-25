@@ -553,6 +553,10 @@ class LibVirtMachinery(Machinery):
                                    when there are too many snapshots available
         """
         def _extract_creation_time(node):
+            """Extracts creation time from a KVM vm config file.
+            @param node: config file node
+            @return: extracted creation time
+            """
             xml = ET.fromstring(node.getXMLDesc(flags=0))
             return xml.findtext("./creationTime")
 
@@ -561,12 +565,14 @@ class LibVirtMachinery(Machinery):
         try:
             vm = self.vms[label]
 
+            # Try to get the currrent snapshot, otherwise fallback on the latest
+            # from config file.
             if vm.hasCurrentSnapshot(flags=0):
                 snapshot = vm.snapshotCurrent(flags=0)
             else:
                 log.debug("No current snapshot, using latest snapshot")
 
-                # No current snapshot, try to get the last one.
+                # No current snapshot, try to get the last one from config file.
                 snapshot = sorted(vm.listAllSnapshots(flags=0),
                                   key=_extract_creation_time,
                                   reverse=True)[0]
