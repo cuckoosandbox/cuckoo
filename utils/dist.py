@@ -435,14 +435,11 @@ class ReportApi(RestResource):
         return json.loads(r.content) if r else None
 
 
-def create_app(database_connection, debug=False, **kwargs):
+def create_app(database_connection, debug=False):
     app = Flask("Distributed Cuckoo")
     app.debug = debug
     app.config["SQLALCHEMY_DATABASE_URI"] = database_connection
     app.config["SECRET_KEY"] = os.urandom(32)
-
-    for key, value in kwargs.items():
-        app.config[key.upper()] = value
 
     restapi = RestApi(app)
     restapi.add_resource(NodeRootApi, "/node")
@@ -489,11 +486,11 @@ if __name__ == "__main__":
         os.makedirs(args.reports_directory)
 
     RUNNING = True
-    app = create_app(database_connection=args.db, debug=args.debug,
-                     samples_directory=args.samples_directory,
-                     uptime_logfile=args.uptime_logfile,
-                     report_formats=report_formats,
-                     reports_directory=args.reports_directory)
+    app = create_app(database_connection=args.db, debug=args.debug)
+    app.config["SAMPLES_DIRECTORY"] = args.samples_directory
+    app.config["UPTIME_LOGFILE"] = args.uptime_logfile
+    app.config["REPORT_FORMATS"] = report_formats
+    app.config["REPORTS_DIRECTORY"] = args.reports_directory
 
     t = StatusThread()
     t.daemon = True
