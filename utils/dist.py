@@ -14,6 +14,8 @@ import tempfile
 import threading
 import time
 
+INTERVAL = 30
+
 
 def required(package):
     sys.exit("The %s package is required: pip install %s" %
@@ -72,6 +74,7 @@ class Node(db.Model):
     name = db.Column(db.Text, nullable=False)
     url = db.Column(db.Text, nullable=False)
     enabled = db.Column(db.Boolean, nullable=False)
+    last_check = db.Column(db.DateTime(timezone=False))
     machines = db.relationship("Machine", backref="node", lazy="dynamic")
 
     def __init__(self, name, url, enabled=True):
@@ -88,14 +91,18 @@ class Node(db.Model):
                               platform=machine["platform"],
                               tags=machine["tags"])
         except Exception as e:
-            abort(404, message="Invalid Cuckoo node (%s): %s" % (self.url, e))
+            abort(404,
+                  message="Invalid Cuckoo node (%s): %s" % (self.name, e))
 
     def status(self):
         try:
             r = requests.get(os.path.join(self.url, "cuckoo", "status"))
             return r.json()["tasks"]
         except Exception as e:
-            log.critical("Possible invalid Cuckoo node (%s): %s", self.url, e)
+            log.critical("Possible invalid Cuckoo node (%s): %s",
+                         self.name, e)
+
+        return {}
 
     def submit_task(self, task):
         try:
@@ -114,16 +121,36 @@ class Node(db.Model):
             task.task_id = r.json()["task_id"]
         except Exception as e:
             log.critical("Error submitting task (task #%d, node %s): %s",
-                         task.id, self.url, e)
+                         task.id, self.name, e)
 
-    def get_report(self, task_id, fmt):
+    def completed_tasks(self, since=None):
+        try:
+            url = os.path.join(self.url, "tasks", "list")
+            params = dict(completed_after=since)
+            r = requests.get(url, params=params)
+            return r.json()["tasks"]
+        except Exception as e:
+            log.critical("Error listing completed tasks (node %s): %s",
+                         self.name, e)
+
+        return []
+
+    def get_report(self, task_id, fmt, stream=False):
         try:
             url = os.path.join(self.url, "tasks", "report",
                                "%d" % task_id, fmt)
-            return requests.get(url).content
+            return requests.get(url, stream=stream)
         except Exception as e:
             log.critical("Error fetching report (task #%d, node %s): %s",
                          task_id, self.url, e)
+
+    def delete_task(self, task_id):
+        try:
+            url = os.path.join(self.url, "tasks", "delete", "%d" % task_id)
+            return requests.get(url).status_code == 200
+        except Exception as e:
+            log.critical("Error deleting task (task #%d, node %s): %s",
+                         task_id, self.name, e)
 
 
 class Machine(db.Model):
@@ -179,6 +206,57 @@ class Task(db.Model):
 
 
 class StatusThread(threading.Thread):
+    def submit_tasks(self, node):
+        # Only get nodes that have not been pushed yet.
+        q = Task.query.filter_by(node_id=None)
+
+        # Order by task ID.
+        q = q.order_by(Task.id)
+
+        # Only handle priority one cases here. TODO Other
+        # priorities are handled right away upon submission.
+        q = q.filter_by(priority=1)
+
+        # TODO Select only the tasks with appropriate tags selection.
+
+        for task in q.limit(500).all():
+            node.submit_task(task)
+
+    def fetch_latest_reports(self, node, last_check):
+        # Fetch the latest reports.
+        for task in node.completed_tasks(since=last_check):
+            q = Task.query.filter_by(node_id=node.id, task_id=task["id"])
+            t = q.first()
+
+            # Update the last_check value of the Node for the next
+            # iteration.
+            completed_on = datetime.datetime.strptime(task["completed_on"],
+                                                      "%Y-%m-%d %H:%M:%S")
+            if not node.last_check or completed_on > node.last_check:
+                node.last_check = completed_on
+
+            dirpath = os.path.join(app.config["REPORTS_DIRECTORY"],
+                                   "%d" % t.id)
+
+            if not os.path.isdir(dirpath):
+                os.makedirs(dirpath)
+
+            # Fetch each requested report.
+            for report_format in app.config["REPORT_FORMATS"]:
+                report = node.get_report(t.task_id, report_format,
+                                         stream=True)
+                if report is None:
+                    continue
+
+                path = os.path.join(dirpath, "report.%s" % report_format)
+                with open(path, "wb") as f:
+                    for chunk in report.iter_content(chunk_size=1024*1024):
+                        f.write(chunk)
+
+            # Delete the task and all its associated files.
+            # (It will still remain in the nodes' database, though.)
+            node.delete_task(t.task_id)
+
     def run(self):
         while RUNNING:
             with app.app_context():
@@ -196,35 +274,23 @@ class StatusThread(threading.Thread):
                     statuses[node.name] = status
 
                     if status["pending"] < 500:
-                        # Only get nodes that have not been pushed yet.
-                        q = Task.query.filter_by(node_id=None)
+                        self.submit_tasks(node)
 
-                        # Order by task ID.
-                        q = q.order_by(Task.id)
-
-                        # Only handle priority one cases here. TODO Other
-                        # priorities are handled right away upon submission.
-                        q = q.filter_by(priority=1)
-
-                        # TODO Select only the tasks with appropriate tags
-                        # selection.
-
-                        for task in q.limit(500).all():
-                            node.submit_task(task)
+                    self.fetch_latest_reports(node, node.last_check or 0)
 
                 db.session.commit()
 
                 # Dump the uptime.
                 if app.config["UPTIME_LOGFILE"] is not None:
                     with open(app.config["UPTIME_LOGFILE"], "ab") as f:
-                        t = int(datetime.datetime.now().strftime("%s"))
+                        t = int(start.strftime("%s"))
                         c = json.dumps(dict(timestamp=t, status=statuses))
                         print>>f, c
 
                 # Sleep until roughly a minute has gone by.
                 diff = (datetime.datetime.now() - start).seconds
-                if diff < 60:
-                    time.sleep(60 - diff)
+                if diff < INTERVAL:
+                    time.sleep(INTERVAL - diff)
 
 
 class NodeBaseApi(RestResource):
@@ -363,17 +429,17 @@ class ReportApi(RestResource):
         node = Node.query.get(task.node_id)
         r = node.get_report(task.task_id, "json")
         # TODO Only json.loads() for the JSON reporting format.
-        return json.loads(r)
+        return json.loads(r.content) if r else None
 
 
-def create_app(database_connection, debug=False, samples_directory=None,
-               uptime_logfile=None):
+def create_app(database_connection, debug=False, **kwargs):
     app = Flask("Distributed Cuckoo")
     app.debug = debug
     app.config["SQLALCHEMY_DATABASE_URI"] = database_connection
-    app.config["SECRET_KEY"] = 'A'*32
-    app.config["SAMPLES_DIRECTORY"] = samples_directory
-    app.config["UPTIME_LOGFILE"] = uptime_logfile
+    app.config["SECRET_KEY"] = os.urandom(32)
+
+    for key, value in kwargs.items():
+        app.config[key.upper()] = value
 
     restapi = RestApi(app)
     restapi.add_resource(NodeRootApi, "/node")
@@ -396,8 +462,10 @@ if __name__ == "__main__":
     p.add_argument("port", nargs="?", type=int, default=9003, help="Port to listen on")
     p.add_argument("-d", "--debug", action="store_true", help="Enable debug logging")
     p.add_argument("--db", type=str, default="sqlite:///dist.db", help="Database connection string")
-    p.add_argument("--samples-directory", type=str, help="Database connection string")
-    p.add_argument("--uptime-logfile", type=str, help="Database connection string")
+    p.add_argument("--samples-directory", type=str, required=True, help="Samples directory")
+    p.add_argument("--uptime-logfile", type=str, help="Uptime logfile path")
+    p.add_argument("--report-formats", type=str, required=True, help="Reporting formats to fetch")
+    p.add_argument("--reports-directory", type=str, required=True, help="Reports directory")
     args = p.parse_args()
 
     if args.debug:
@@ -407,13 +475,22 @@ if __name__ == "__main__":
 
     log = logging.getLogger("cuckoo.distributed")
 
-    if args.samples_directory is None:
-        args.samples_directory = tempfile.mkdtemp()
+    report_formats = []
+    for report_format in args.report_formats.split(","):
+        report_formats.append(report_format.strip())
+
+    if not os.path.isdir(args.samples_directory):
+        os.makedirs(args.samples_directory)
+
+    if not os.path.isdir(args.reports_directory):
+        os.makedirs(args.reports_directory)
 
     RUNNING = True
     app = create_app(database_connection=args.db, debug=args.debug,
                      samples_directory=args.samples_directory,
-                     uptime_logfile=args.uptime_logfile)
+                     uptime_logfile=args.uptime_logfile,
+                     report_formats=report_formats,
+                     reports_directory=args.reports_directory)
 
     t = StatusThread()
     t.daemon = True

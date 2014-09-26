@@ -137,7 +137,10 @@ def tasks_list(limit=None, offset=None):
 
     response["tasks"] = []
 
-    for row in db.list_tasks(limit=limit, details=True, offset=offset):
+    completed_after = request.GET.get("completed_after")
+
+    for row in db.list_tasks(limit=limit, details=True, offset=offset,
+                             completed_after=completed_after):
         task = row.to_dict()
         task["guest"] = {}
         if row.guest:
