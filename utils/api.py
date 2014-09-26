@@ -224,7 +224,7 @@ def tasks_report(task_id, report_format="json"):
         "json": "report.json",
         "html": "report.html",
         "maec": "report.maec-1.1.xml",
-        "metadata": "report.metadata.xml"
+        "metadata": "report.metadata.xml",
     }
 
     bz_formats = {
@@ -253,7 +253,7 @@ def tasks_report(task_id, report_format="json"):
 
             tar = tarfile.open(fileobj=s, mode=tarmode)
             for filedir in os.listdir(srcdir):
-                if bzf["type"] == "-" and not filedir in bzf["files"]:
+                if bzf["type"] == "-" and filedir not in bzf["files"]:
                     tar.add(os.path.join(srcdir, filedir), arcname=filedir)
                 if bzf["type"] == "+" and filedir in bzf["files"]:
                     tar.add(os.path.join(srcdir, filedir), arcname=filedir)
