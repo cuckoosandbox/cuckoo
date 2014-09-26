@@ -15,6 +15,7 @@ import threading
 import time
 
 INTERVAL = 30
+MINIMUMQUEUE = 500
 
 
 def required(package):
@@ -219,7 +220,7 @@ class StatusThread(threading.Thread):
 
         # TODO Select only the tasks with appropriate tags selection.
 
-        for task in q.limit(500).all():
+        for task in q.limit(MINIMUMQUEUE).all():
             node.submit_task(task)
 
     def fetch_latest_reports(self, node, last_check):
@@ -273,11 +274,12 @@ class StatusThread(threading.Thread):
 
                     statuses[node.name] = status
 
-                    if status["pending"] < 500:
+                    if status["pending"] < MINIMUMQUEUE:
                         self.submit_tasks(node)
 
                     self.fetch_latest_reports(node, node.last_check or 0)
 
+                # The last_check field of each node object has been updated.
                 db.session.commit()
 
                 # Dump the uptime.
@@ -287,7 +289,8 @@ class StatusThread(threading.Thread):
                         c = json.dumps(dict(timestamp=t, status=statuses))
                         print>>f, c
 
-                # Sleep until roughly a minute has gone by.
+                # Sleep until roughly half a minute (configurable through
+                # INTERVAL) has gone by.
                 diff = (datetime.datetime.now() - start).seconds
                 if diff < INTERVAL:
                     time.sleep(INTERVAL - diff)
