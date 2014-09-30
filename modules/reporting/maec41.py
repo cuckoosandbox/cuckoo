@@ -123,23 +123,19 @@ class MAEC41Report(Report):
         # Network actions.
         if "network" in self.results and isinstance(self.results["network"], dict) and len(self.results["network"]) > 0:
             if "udp" in self.results["network"] and isinstance(self.results["network"]["udp"], list) and len(self.results["network"]["udp"]) > 0:
-                if not self.dynamic_bundle.collections.action_collections.has_collection("Network Actions"):
-                    self.dynamic_bundle.add_named_action_collection("Network Actions")
+                self.dynamic_bundle.add_named_action_collection("Network Actions")
                 for network_data in self.results["network"]["udp"]:
                     self.createActionNet(network_data, {"value": "connect to socket address", "xsi:type": "maecVocabs:NetworkActionNameVocab-1.0"}, "UDP")
             if "dns" in self.results["network"] and isinstance(self.results["network"]["dns"], list) and len(self.results["network"]["dns"]) > 0:
-                if not self.dynamic_bundle.collections.action_collections.has_collection("Network Actions"):
-                    self.dynamic_bundle.add_named_action_collection("Network Actions")
+                self.dynamic_bundle.add_named_action_collection("Network Actions")
                 for network_data in self.results["network"]["dns"]:
                     self.createActionNet(network_data, {"value": "send dns query", "xsi:type": "maecVocabs:DNSActionNameVocab-1.0"}, "UDP", "DNS")
             if "tcp" in self.results["network"] and isinstance(self.results["network"]["tcp"], list) and len(self.results["network"]["tcp"]) > 0:
-                if not self.dynamic_bundle.collections.action_collections.has_collection("Network Actions"):
-                    self.dynamic_bundle.add_named_action_collection("Network Actions")
+                self.dynamic_bundle.add_named_action_collection("Network Actions")
                 for network_data in self.results["network"]["tcp"]:
                     self.createActionNet(network_data, {"value": "connect to socket address", "xsi:type": "maecVocabs:NetworkActionNameVocab-1.0"}, "TCP")
             if "http" in self.results["network"] and isinstance(self.results["network"]["http"], list) and len(self.results["network"]["http"]) > 0:
-                if not self.dynamic_bundle.collections.action_collections.has_collection("Network Actions"):
-                    self.dynamic_bundle.add_named_action_collection("Network Actions")
+                self.dynamic_bundle.add_named_action_collection("Network Actions")
                 for network_data in self.results["network"]["http"]:
                     self.createActionNet(network_data, {"value": "send http " + str(network_data["method"]).lower() + " request", "xsi:type": "maecVocabs:HTTPActionNameVocab-1.0"}, "TCP", "HTTP")
 
@@ -643,8 +639,7 @@ class MAEC41Report(Report):
         for call in process["calls"]:
             # Generate the action collection name and create a new named action collection if one does not exist.
             action_collection_name = str(call["category"]).capitalize() + " Actions"
-            if not self.dynamic_bundle.collections.action_collections.has_collection(action_collection_name):
-                self.dynamic_bundle.add_named_action_collection(action_collection_name, maec.utils.idgen.create_id(prefix="action"))
+            self.dynamic_bundle.add_named_action_collection(action_collection_name, maec.utils.idgen.create_id(prefix="action"))
 
             # Generate the Action dictionary.
             action_dict = self.apiCallToAction(call, pos)
