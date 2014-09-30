@@ -87,6 +87,10 @@ class MAEC41Report(Report):
 
     def setupMAEC(self):
         """Generates MAEC Package, Malware Subject, and Bundle structure"""
+        # Instantiate the Namespace class for automatic ID generation.
+        NS = Namespace("http://www.cuckoosandbox.org", "Cuckoosandbox")
+        maec.utils.idgen.set_id_namespace(NS)
+        # Setup the MAEC components
         if self.results["target"]["category"] == "file":
             self.tool_id = maec.utils.idgen.create_id(prefix=self.results["target"]["file"]["md5"])
         elif self.results["target"]["category"] == "url":
