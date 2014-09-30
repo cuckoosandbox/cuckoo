@@ -847,7 +847,7 @@ class MAEC41Report(Report):
     def addAnalyses(self):
         """Adds analysis header."""
         # Add the dynamic analysis.
-        dynamic_analysis = Analysis(maec.utils.idgen.create_id(prefix="object"), "dynamic", "triage", BundleReference.from_dict({'bundle_idref': self.dynamic_bundle.id}))
+        dynamic_analysis = Analysis(maec.utils.idgen.create_id(prefix="analysis"), "dynamic", "triage", BundleReference.from_dict({'bundle_idref': self.dynamic_bundle.id}))
         dynamic_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
         dynamic_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
         dynamic_analysis.summary = StructuredText("Cuckoo Sandbox dynamic analysis of the malware instance object.")
@@ -859,7 +859,7 @@ class MAEC41Report(Report):
 
         # Add the static analysis.
         if self.options["static"] and self.results["static"]:
-            static_analysis = Analysis(maec.utils.idgen.create_id(prefix="object"), "static", "triage", BundleReference.from_dict({"bundle_idref": self.static_bundle.id}))
+            static_analysis = Analysis(maec.utils.idgen.create_id(prefix="analysis"), "static", "triage", BundleReference.from_dict({"bundle_idref": self.static_bundle.id}))
             static_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             static_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
             static_analysis.summary = StructuredText("Cuckoo Sandbox static (PE) analysis of the malware instance object.")
@@ -872,7 +872,7 @@ class MAEC41Report(Report):
             self.static_bundle.add_object(self.createWinExecFileObj())
         # Add the strings analysis.
         if self.options["strings"] and self.results["strings"]:
-            strings_analysis = Analysis(maec.utils.idgen.create_id(prefix="object"), "static", "triage", BundleReference.from_dict({"bundle_idref": self.strings_bundle.id}))
+            strings_analysis = Analysis(maec.utils.idgen.create_id(prefix="analysis"), "static", "triage", BundleReference.from_dict({"bundle_idref": self.strings_bundle.id}))
             strings_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             strings_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
             strings_analysis.summary = StructuredText("Cuckoo Sandbox strings analysis of the malware instance object.")
@@ -885,7 +885,7 @@ class MAEC41Report(Report):
             self.strings_bundle.add_object(self.createFileStringsObj())
         # Add the VirusTotal analysis.
         if self.options["virustotal"] and "virustotal" in self.results and self.results["virustotal"]:
-            virustotal_analysis = Analysis(maec.utils.idgen.create_id(prefix="object"), "static", "triage", BundleReference.from_dict({"bundle_idref": self.virustotal_bundle.id}))
+            virustotal_analysis = Analysis(maec.utils.idgen.create_id(prefix="analysis"), "static", "triage", BundleReference.from_dict({"bundle_idref": self.virustotal_bundle.id}))
             virustotal_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             virustotal_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
             virustotal_analysis.summary = StructuredText("Virustotal results for the malware instance object.")
