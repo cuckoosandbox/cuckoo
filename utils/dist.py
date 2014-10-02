@@ -231,6 +231,11 @@ class StatusThread(threading.Thread):
             q = Task.query.filter_by(node_id=node.id, task_id=task["id"])
             t = q.first()
 
+            if t is None:
+                log.debug("Node %s task #%d has not been submitted by us!",
+                          node.name, task["id"])
+                continue
+
             # Update the last_check value of the Node for the next
             # iteration.
             completed_on = datetime.strptime(task["completed_on"],
@@ -263,6 +268,7 @@ class StatusThread(threading.Thread):
             node.delete_task(t.task_id)
 
     def run(self):
+        global STATUSES
         while RUNNING:
             with app.app_context():
                 start = datetime.now()
@@ -294,6 +300,8 @@ class StatusThread(threading.Thread):
                         t = int(start.strftime("%s"))
                         c = json.dumps(dict(timestamp=t, status=statuses))
                         print>>f, c
+
+                STATUSES = statuses
 
                 # Sleep until roughly half a minute (configurable through
                 # INTERVAL) has gone by.
@@ -444,6 +452,21 @@ class ReportApi(RestResource):
         return json.loads(r.content) if r else None
 
 
+class StatusRootApi(RestResource):
+    def get(self):
+        null = None
+
+        processing = Task.query.filter(Task.node_id != null)
+        processing = processing.filter_by(finished=False)
+
+        tasks = dict(
+            processing=processing.count(),
+            processed=Task.query.filter_by(finished=True).count(),
+            pending=Task.query.filter_by(node_id=None).count(),
+        )
+        return dict(nodes=STATUSES, tasks=tasks)
+
+
 def create_app(database_connection, debug=False):
     app = Flask("Distributed Cuckoo")
     app.debug = debug
@@ -456,6 +479,7 @@ def create_app(database_connection, debug=False):
     restapi.add_resource(TaskRootApi, "/task")
     restapi.add_resource(TaskApi, "/task/<int:task_id>")
     restapi.add_resource(ReportApi, "/report/<int:task_id>")
+    restapi.add_resource(StatusRootApi, "/status")
 
     db.init_app(app)
 
@@ -494,7 +518,8 @@ if __name__ == "__main__":
     if not os.path.isdir(args.reports_directory):
         os.makedirs(args.reports_directory)
 
-    RUNNING = True
+    RUNNING, STATUSES = True, {}
+
     app = create_app(database_connection=args.db, debug=args.debug)
     app.config["SAMPLES_DIRECTORY"] = args.samples_directory
     app.config["UPTIME_LOGFILE"] = args.uptime_logfile
