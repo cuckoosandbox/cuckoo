@@ -23,7 +23,7 @@ def required(package):
              (package, package))
 
 try:
-    from flask import Flask, request
+    from flask import Flask, request, make_response
 except ImportError:
     required("flask")
 
@@ -243,8 +243,7 @@ class StatusThread(threading.Thread):
                           node.name, task["id"])
                 continue
 
-            # Update the last_check value of the Node for the next
-            # iteration.
+            # Update the last_check value of the Node for the next iteration.
             completed_on = datetime.strptime(task["completed_on"],
                                              "%Y-%m-%d %H:%M:%S")
             if not node.last_check or completed_on > node.last_check:
@@ -274,6 +273,9 @@ class StatusThread(threading.Thread):
             # (It will still remain in the nodes' database, though.)
             node.delete_task(t.task_id)
 
+            db.session.commit()
+            db.session.refresh(t)
+
     def run(self):
         global STATUSES
         while RUNNING:
@@ -294,12 +296,18 @@ class StatusThread(threading.Thread):
                     if status["pending"] < MINIMUMQUEUE:
                         self.submit_tasks(node)
 
-                    self.fetch_latest_reports(node, node.last_check or 0)
+                    if node.last_check:
+                        last_check = int(node.last_check.strftime("%s"))
+                    else:
+                        last_check = 0
+
+                    self.fetch_latest_reports(node, last_check)
 
                     # The last_check field of each node object has been
                     # updated as well as the finished field for each task that
                     # has been completed.
                     db.session.commit()
+                    db.session.refresh(node)
 
                 # Dump the uptime.
                 if app.config["UPTIME_LOGFILE"] is not None:
@@ -444,8 +452,11 @@ class TaskRootApi(TaskBaseApi):
 
 
 class ReportApi(RestResource):
-    def get(self, task_id):
-        # TODO Check whether the analysis has actually finished.
+    report_formats = {
+        "json": "json",
+    }
+
+    def get(self, task_id, report="json"):
         task = Task.query.get(task_id)
         if not task:
             abort(404, message="Task not found")
@@ -453,10 +464,20 @@ class ReportApi(RestResource):
         if not task.finished:
             abort(404, message="Task not finished yet")
 
-        node = Node.query.get(task.node_id)
-        r = node.get_report(task.task_id, "json")
-        # TODO Only json.loads() for the JSON reporting format.
-        return json.loads(r.content) if r else None
+        path = os.path.join(app.config["REPORTS_DIRECTORY"],
+                            "%d" % task_id, "report.%s" % report)
+        if not os.path.isfile(path):
+            abort(404, message="Report format not found")
+
+        f = open(path, "rb")
+
+        if report == "json":
+            return json.load(f)
+
+        if report == "xml":
+            return f.read()
+
+        abort(404, message="Invalid report format")
 
 
 class StatusRootApi(RestResource):
@@ -473,18 +494,41 @@ class StatusRootApi(RestResource):
         return dict(nodes=STATUSES, tasks=tasks)
 
 
+def output_json(data, code, headers=None):
+    resp = make_response(json.dumps(data), code)
+    resp.headers.extend(headers or {})
+    return resp
+
+
+def output_xml(data, code, headers=None):
+    resp = make_response(data, code)
+    resp.headers.extend(headers or {})
+    return resp
+
+
+class DistRestApi(RestApi):
+    def __init__(self, *args, **kwargs):
+        RestApi.__init__(self, *args, **kwargs)
+        self.representations = {
+            "application/xml": output_xml,
+            "application/json": output_json,
+        }
+
+
 def create_app(database_connection, debug=False):
     app = Flask("Distributed Cuckoo")
     app.debug = debug
     app.config["SQLALCHEMY_DATABASE_URI"] = database_connection
     app.config["SECRET_KEY"] = os.urandom(32)
 
-    restapi = RestApi(app)
+    restapi = DistRestApi(app)
     restapi.add_resource(NodeRootApi, "/node")
     restapi.add_resource(NodeApi, "/node/<string:name>")
     restapi.add_resource(TaskRootApi, "/task")
     restapi.add_resource(TaskApi, "/task/<int:task_id>")
-    restapi.add_resource(ReportApi, "/report/<int:task_id>")
+    restapi.add_resource(ReportApi,
+                         "/report/<int:task_id>",
+                         "/report/<int:task_id>/<string:report>")
     restapi.add_resource(StatusRootApi, "/status")
 
     db.init_app(app)
