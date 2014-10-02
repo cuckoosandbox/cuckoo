@@ -83,18 +83,15 @@ shots/
 This directory contains all the screenshots of the guest's desktop taken during
 the malware execution.
 
-===============
-Returned Files from Tools flag
-===============
+``tool`` package results
+========================
 
+If using the ``--tool`` option to run a user-provided tool on the guest, a
+successful run will create output in the ``files/`` directory. The following
+files are returned:
 
-If everything runs correctly output files will be located in::
+* pkg.log - stdout/stderr of command that is run
+* command.log - the command that is run on the guest machine
 
-    ../storage/analyses/{task_#}/files/
-
-Files that are returned::
-
-    pkg.log - stdout/stderr of command that is run
-    command.log - the command that is run on the guest machine
-    Any other files that the tool creates should also be returned
-        The package will return all files that are within same directory that the tool was run in. (%USERPROFILE%\AppData\Local\tool\)
+Any other files that the tool creates in the current working directory
+(``%USERPROFILE%\AppData\Local\tool\``) will also be returned.
