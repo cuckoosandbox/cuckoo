@@ -120,6 +120,13 @@ class Node(db.Model):
             r = requests.post(url, data=data, files=files)
             task.node_id = self.id
             task.task_id = r.json()["task_id"]
+
+            # We have to refresh() the task object because otherwise we get
+            # the unmodified object back in further sql queries..
+            # TODO Commit once, refresh() all at once. This could potentially
+            # become a bottleneck.
+            db.session.commit()
+            db.session.refresh(task)
         except Exception as e:
             log.critical("Error submitting task (task #%d, node %s): %s",
                          task.id, self.name, e)
