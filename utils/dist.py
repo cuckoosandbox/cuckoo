@@ -289,10 +289,10 @@ class StatusThread(threading.Thread):
 
                     self.fetch_latest_reports(node, node.last_check or 0)
 
-                # The last_check field of each node object has been updated as
-                # well as the finished field for each task that has been
-                # completed.
-                db.session.commit()
+                    # The last_check field of each node object has been
+                    # updated as well as the finished field for each task that
+                    # has been completed.
+                    db.session.commit()
 
                 # Dump the uptime.
                 if app.config["UPTIME_LOGFILE"] is not None:
