@@ -85,7 +85,7 @@ class Agent:
 
         if self.system == "windows":
             root = os.environ["TEMP"]
-            root = os.path.join(root,"tool")
+            root = os.path.join(root, "tool")
             if not os.path.exists(root):
                 try:
                     os.makedirs(root)
@@ -97,7 +97,7 @@ class Agent:
                         return False
         elif self.system == "linux" or self.system == "darwin":
             root = "/tmp"
-            root = os.path.join(root,"tool")
+            root = os.path.join(root, "tool")
             if not os.path.exists(root):
                 try:
                     os.makedirs(root)

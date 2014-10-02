@@ -14,6 +14,7 @@ from lib.common.exceptions import CuckooPackageError
 
 log = logging.getLogger()
 
+
 class Tool(Package):
     """Tool analysis package.
 
@@ -71,7 +72,7 @@ class Tool(Package):
 
     def start(self, path):
         self.temp_dir = os.getenv("Temp")
-        self.tool_dir = os.path.join(self.temp_dir,"tool")
+        self.tool_dir = os.path.join(self.temp_dir, "tool")
 
         start_dir = os.getcwd()
         if os.path.exists(self.tool_dir):
@@ -96,17 +97,17 @@ class Tool(Package):
         cmd_list.append(tool_path)
         cmd_list.extend(options.split())
 
-        # 0x08000000 = CREATE_NO_WINDOW 
-        # Either set creation flag to CREATE_NO_WINDOW 
+        # 0x08000000 = CREATE_NO_WINDOW
+        # Either set creation flag to CREATE_NO_WINDOW
         # or disable the human auxiliary module
         # because the module will interfere with the running tool
-        creation_flag = 0x08000000 
+        creation_flag = 0x08000000
         with open(self.log_file_name, 'w') as output_file:
             self.tool_process = Popen(cmd_list,
-                                  stdout=output_file,
-                                  stderr=output_file,
-                                  creationflags=creation_flag,
-                                  shell=False)
+                                      stdout=output_file,
+                                      stderr=output_file,
+                                      creationflags=creation_flag,
+                                      shell=False)
             self.tool_process.communicate()
         if self.tool_process < 0:
             raise CuckooPackageError("Unable to execute initial process, analysis aborted")

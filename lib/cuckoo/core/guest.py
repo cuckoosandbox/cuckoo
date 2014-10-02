@@ -157,10 +157,10 @@ class GuestManager:
             # If a tool was specified, upload it to the guest.
             tool_specified = False
             if options["tool"] or options["tool_dir"]:
-                # Format path for cuckoobox to send files created by tool and 
+                # Format path for cuckoobox to send files created by tool and
                 # re-generate analysis.conf inside guest
                 task_id = options["id"]
-                upload_path = ',upload_path='+os.path.join(CUCKOO_ROOT, "storage/analyses", str(task_id), "files")
+                upload_path = ',upload_path=' + os.path.join(CUCKOO_ROOT, "storage/analyses", str(task_id), "files")
                 options["options"] = options["options"] + upload_path
                 try:
                     self.server.add_config(options)
@@ -172,12 +172,12 @@ class GuestManager:
                     raise CuckooGuestError("--tool not an actual file")
 
                 index = options["tool"].rfind("/")
-                file_name = options["tool"][index+1:] + ".tool"
+                file_name = options["tool"][index + 1:] + ".tool"
                 try:
                     file_data = open(options["tool"], "rb").read()
                 except (IOError, OSError) as e:
                     raise CuckooGuestError("Unable to read {0}, error: {1}".format(options["tool"], e))
-                
+
                 data = xmlrpclib.Binary(file_data)
                 try:
                     self.server.add_tool(data, file_name)
@@ -185,7 +185,7 @@ class GuestManager:
                     raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
                 tool_specified = True
 
-            # If a directory is specified as the tool, all files in the 
+            # If a directory is specified as the tool, all files in the
             # directory will be added to the guest. It is worth noting
             # that nested directories will likely cause errors
             if options["tool_dir"]:
@@ -199,13 +199,13 @@ class GuestManager:
                         file_data = open(full_path, "rb").read()
                     except (IOError, OSError) as e:
                         raise CuckooGuestError("Unable to read {0}, error: {1}".format(full_path, e))
-                    
+
                     data = xmlrpclib.Binary(file_data)
 
                     try:
                         log.info("Adding tool %s" % fyle)
                         if not tool_specified and fyle[-4:] == '.exe':
-                            fyle = fyle+".tool"
+                            fyle = fyle + ".tool"
                             tool_count = tool_count + 1
                         self.server.add_tool(data, fyle)
                     except MemoryError as e:
@@ -213,8 +213,6 @@ class GuestManager:
 
                     if not tool_specified and tool_count != 1:
                         raise CuckooGuestError("Number of tools (.exe files) specified is 0 or more than 1")
-
-
 
             # If the target of the analysis is a file, upload it to the guest.
             if options["category"] == "file":
