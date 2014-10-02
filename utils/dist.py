@@ -456,12 +456,11 @@ class StatusRootApi(RestResource):
     def get(self):
         null = None
 
-        processing = Task.query.filter(Task.node_id != null)
-        processing = processing.filter_by(finished=False)
+        tasks = Task.query.filter(Task.node_id != null)
 
         tasks = dict(
-            processing=processing.count(),
-            processed=Task.query.filter_by(finished=True).count(),
+            processing=tasks.filter_by(finished=False).count(),
+            processed=tasks.filter_by(finished=True).count(),
             pending=Task.query.filter_by(node_id=None).count(),
         )
         return dict(nodes=STATUSES, tasks=tasks)
