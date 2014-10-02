@@ -187,6 +187,7 @@ class Task(db.Model):
     # Cuckoo node and Task ID this has been submitted to.
     node_id = db.Column(db.Integer, db.ForeignKey("node.id"))
     task_id = db.Column(db.Integer)
+    finished = db.Column(db.Boolean, nullable=False)
 
     def __init__(self, path, package, timeout, priority, options, machine,
                  platform, tags, custom, memory, clock, enforce_timeout):
@@ -204,6 +205,7 @@ class Task(db.Model):
         self.enforce_timeout = enforce_timeout
         self.node_id = None
         self.task_id = None
+        self.finished = False
 
 
 class StatusThread(threading.Thread):
@@ -254,6 +256,8 @@ class StatusThread(threading.Thread):
                     for chunk in report.iter_content(chunk_size=1024*1024):
                         f.write(chunk)
 
+            t.finished = True
+
             # Delete the task and all its associated files.
             # (It will still remain in the nodes' database, though.)
             node.delete_task(t.task_id)
@@ -279,7 +283,9 @@ class StatusThread(threading.Thread):
 
                     self.fetch_latest_reports(node, node.last_check or 0)
 
-                # The last_check field of each node object has been updated.
+                # The last_check field of each node object has been updated as
+                # well as the finished field for each task that has been
+                # completed.
                 db.session.commit()
 
                 # Dump the uptime.
@@ -428,6 +434,9 @@ class ReportApi(RestResource):
         task = Task.query.get(task_id)
         if not task:
             abort(404, message="Task not found")
+
+        if not task.finished:
+            abort(404, message="Task not finished yet")
 
         node = Node.query.get(task.node_id)
         r = node.get_report(task.task_id, "json")
