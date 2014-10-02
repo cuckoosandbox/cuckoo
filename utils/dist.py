@@ -4,7 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import argparse
-import datetime
+from datetime import datetime
 import hashlib
 import json
 import logging
@@ -231,8 +231,8 @@ class StatusThread(threading.Thread):
 
             # Update the last_check value of the Node for the next
             # iteration.
-            completed_on = datetime.datetime.strptime(task["completed_on"],
-                                                      "%Y-%m-%d %H:%M:%S")
+            completed_on = datetime.strptime(task["completed_on"],
+                                             "%Y-%m-%d %H:%M:%S")
             if not node.last_check or completed_on > node.last_check:
                 node.last_check = completed_on
 
@@ -261,7 +261,7 @@ class StatusThread(threading.Thread):
     def run(self):
         while RUNNING:
             with app.app_context():
-                start = datetime.datetime.now()
+                start = datetime.now()
                 statuses = {}
 
                 # Request a status update on all Cuckoo nodes.
@@ -291,7 +291,7 @@ class StatusThread(threading.Thread):
 
                 # Sleep until roughly half a minute (configurable through
                 # INTERVAL) has gone by.
-                diff = (datetime.datetime.now() - start).seconds
+                diff = (datetime.now() - start).seconds
                 if diff < INTERVAL:
                     time.sleep(INTERVAL - diff)
 
