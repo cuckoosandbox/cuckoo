@@ -23,7 +23,7 @@ apt-get install -y sudo git python-dev python-pip postgresql libpq-dev \
 
 # Install the most up-to-date version of VirtualBox available at the moment.
 if [ ! -e "/usr/bin/VirtualBox" ]; then
-    # Update our apt repository with "contrib."
+    # Update our apt repository with "contrib".
     DEBVERSION="$(lsb_release -cs)"
     echo "deb http://download.virtualbox.org/virtualbox/debian " \
         "$DEBVERSION contrib" >> /etc/apt/sources.list
@@ -44,7 +44,7 @@ setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
 useradd cuckoo
 
 CUCKOO="/home/cuckoo/cuckoo/"
-VMTEMP="/home/cuckoo/temp/"
+VMTEMP="$(mktemp -d "/home/cuckoo/XXXXXX")"
 
 # Fetch Cuckoo and VMCloak.
 git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
@@ -104,17 +104,19 @@ fi
 
 chown cuckoo:cuckoo "$VMS" "$VMDATA"
 
-echo "[vmcloak]" > /tmp/vmcloak.conf
-echo "cuckoo = $CUCKOO" >> /tmp/vmcloak.conf
-echo "vm-dir = $VMS" >> /tmp/vmcloak.conf
-echo "data-dir = $VMDATA" >> /tmp/vmcloak.conf
-echo "iso-mount = $MOUNT" >> /tmp/vmcloak.conf
-echo "serial-key = $3" >> /tmp/vmcloak.conf
-echo "dependencies = dotnet40" >> /tmp/vmcloak.conf
-echo "temp-dirpath = $VMTEMP" >> /tmp/vmcloak.conf
-echo "tags = longterm" >> /tmp/vmcloak.conf
+VMCLOAKCONF="$(mktemp)"
 
-chown cuckoo:cuckoo /tmp/vmcloak.conf
+echo "[vmcloak]" > "$VMCLOAKCONF"
+echo "cuckoo = $CUCKOO" >> "$VMCLOAKCONF"
+echo "vm-dir = $VMS" >> "$VMCLOAKCONF"
+echo "data-dir = $VMDATA" >> "$VMCLOAKCONF"
+echo "iso-mount = $MOUNT" >> "$VMCLOAKCONF"
+echo "serial-key = $3" >> "$VMCLOAKCONF"
+echo "dependencies = dotnet40" >> "$VMCLOAKCONF"
+echo "temp-dirpath = $VMTEMP" >> "$VMCLOAKCONF"
+echo "tags = longterm" >> "$VMCLOAKCONF"
+
+chown cuckoo:cuckoo "$VMCLOAKCONF"
 
 # Unlock VMCloak just to be sure.
 sudo -u cuckoo -i vmcloak --unlock
@@ -122,14 +124,16 @@ sudo -u cuckoo -i vmcloak --unlock
 # Create a bunch of Virtual Machines.
 for i in $(seq -w 1 "$1"); do
     sudo -u cuckoo -i \
-        vmcloak -s /tmp/vmcloak.conf --hostonly-ip 192.168.56.1$i egg$i
+        vmcloak -s "$VMCLOAKCONF" --hostonly-ip 192.168.56.1$i egg$i
 done
+
+rm -rf "$VMCLOAKCONF" "$VMTEMP"
 
 # We create a backup of the Virtual Machines in case tmpfs is being used.
 # Because if the machine for some reason does a reboot, all the contents of
 # the tmpfs directory will be gone.
 if [ "$4" -ne 0 ]; then
-    cp -r "$VMS" "$VMSBACKUP"
+    sudo -u cuckoo -i cp -r "$VMS" "$VMSBACKUP"
 fi
 
 echo "PostgreSQL connection string:  " \
