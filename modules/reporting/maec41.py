@@ -918,17 +918,15 @@ class MAEC41Report(Report):
 
     def output(self):
         """Writes report to disk."""
+        header = []
+        header.append("<?xml version='1.0' encoding='UTF-8'?>\n")
+        header.append("<!DOCTYPE doc [<!ENTITY comma '&#44;'>]>\n")
+        header.append("<!--\n")
+        header.append("Cuckoo Sandbox MAEC 4.1.0.7 malware analysis report\n")
+        header.append("http://www.cuckoosandbox.org\n")
+        header.append("-->\n")
         try:
-            report = open(os.path.join(self.reports_path, "report.maec-4.1.0.7.xml"), "w")
-            report.write("<?xml version='1.0' encoding='UTF-8'?>\n")
-            report.write("<!DOCTYPE doc [<!ENTITY comma '&#44;'>]>\n")
-            report.write("<!--\n")
-            report.write("Cuckoo Sandbox MAEC 4.1.0.7 malware analysis report\n")
-            report.write("http://www.cuckoosandbox.org\n")
-            report.write("-->\n")
-            self.package.to_xml_file(os.path.join(self.reports_path, "report.maec-4.1.0.7.xml"), {"http://www.cuckoosandbox.org":"Cuckoosandbox"})
-            report.flush()
-            report.close()
+            self.package.to_xml_file(os.path.join(self.reports_path, "report.maec-4.1.0.7.xml"), {"http://www.cuckoosandbox.org":"Cuckoosandbox"}, header)
         except (TypeError, IOError) as e:
             traceback.print_exc()
             raise CuckooReportError("Failed to generate MAEC 4.1.0.7 report: %s" % e)
