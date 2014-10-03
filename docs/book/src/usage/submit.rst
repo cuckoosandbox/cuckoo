@@ -4,6 +4,7 @@ Submit an Analysis
 
     * :ref:`submitpy`
     * :ref:`apipy`
+    * :ref:`distpy`
     * :ref:`webpy`
     * :ref:`python`
 
@@ -127,6 +128,14 @@ API
 ===
 
 Detailed usage of the REST API interface is described in :doc:`api`.
+
+.. _distpy:
+
+Distributed Cuckoo
+==================
+
+Detailed usage of the Distributed Cuckoo API interface is described in
+:doc:`dist`.
 
 .. _python:
 

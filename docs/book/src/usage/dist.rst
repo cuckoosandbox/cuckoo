@@ -116,6 +116,8 @@ section before going into every resource in detail, though.
 | ``GET`` :ref:`report_get`         + Fetch an analysis report.                                     |
 +-----------------------------------+---------------------------------------------------------------+
 
+.. _quick-usage:
+
 Quick usage
 ===========
 
