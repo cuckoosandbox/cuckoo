@@ -411,6 +411,8 @@ class TaskBaseApi(RestResource):
 class TaskApi(TaskBaseApi):
     def get(self, task_id):
         task = Task.query.get(task_id)
+        if task is None:
+            abort(404, message="Task not found")
 
         return dict(tasks={task.id: dict(
             task_id=task.id, path=task.path, package=task.package,
@@ -420,6 +422,23 @@ class TaskApi(TaskBaseApi):
             custom=task.custom, memory=task.memory,
             clock=task.clock, enforce_timeout=task.enforce_timeout
         )})
+
+    def delete(self, task_id):
+        task = Task.query.get(task_id)
+        if task is None:
+            abort(404, "Task not found")
+
+        # Remove all available reports.
+        dirpath = os.path.join(app.config["REPORTS_DIRECTORY"],
+                               "%d" % task_id)
+        for report_format in app.config["REPORT_FORMATS"]:
+            path = os.path.join(dirpath, "report.%s" % report_format)
+            if os.path.isfile(path):
+                os.unlink(path)
+
+        # Remove the sample related to this task.
+        if os.path.isfile(task.path):
+            os.unlink(task.path)
 
 
 class TaskRootApi(TaskBaseApi):
