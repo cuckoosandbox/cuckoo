@@ -316,7 +316,7 @@ class FileUpload(object):
 
         dir_part, filename = os.path.split(buf)
 
-        if "./" in buf or not dir_part:
+        if "./" in buf or not dir_part or buf.startswith("/"):
             raise CuckooOperationalError("FileUpload failure, banned path.")
 
         for restricted in self.RESTRICTED_DIRECTORIES:
