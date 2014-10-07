@@ -331,6 +331,9 @@ class FileUpload(object):
 
         file_path = os.path.join(self.storagepath, buf.strip())
 
+        if not file_path.startswith(self.storagepath):
+            raise CuckooOperationalError("FileUpload failure, path sanitization failed.")
+
         self.fd = open(file_path, "wb")
         chunk = self.handler.read_any()
         while chunk:
