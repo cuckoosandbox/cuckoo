@@ -22,7 +22,7 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file, delete_folder
-from lib.cuckoo.core.database import Database
+from lib.cuckoo.core.database import Database, TASK_REPORTED
 
 # Global DB pointer.
 db = Database()
@@ -142,7 +142,8 @@ def tasks_list(limit=None, offset=None):
     completed_after = datetime.fromtimestamp(int(completed_after))
 
     for row in db.list_tasks(limit=limit, details=True, offset=offset,
-                             completed_after=completed_after):
+                             completed_after=completed_after,
+                             status=TASK_REPORTED):
         task = row.to_dict()
         task["guest"] = {}
         if row.guest:
