@@ -8,7 +8,7 @@ from datetime import datetime
 import hashlib
 import json
 import logging
-import os.path
+import os
 import sys
 import tempfile
 import threading
@@ -461,8 +461,9 @@ class TaskRootApi(TaskBaseApi):
         args = self._parser.parse_args()
         f = request.files["file"]
 
-        _, path = tempfile.mkstemp(dir=app.config["SAMPLES_DIRECTORY"])
+        fd, path = tempfile.mkstemp(dir=app.config["SAMPLES_DIRECTORY"])
         f.save(path)
+        os.close(fd)
 
         task = Task(path=path, **args)
         db.session.add(task)
