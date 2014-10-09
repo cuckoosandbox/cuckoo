@@ -108,9 +108,15 @@ class BehaviorReconstructor(object):
 
     # Registry stuff.
 
+    def _api_RegOpenKeyExA(self, return_value, arguments):
+        self.report("regkey_opened", arguments["regkey"])
+
+    _api_RegOpenKeyExW = _api_RegOpenKeyExA
+    _api_RegCreateKeyExA = _api_RegOpenKeyExA
+    _api_RegCreateKeyExW = _api_RegOpenKeyExA
+
     def _api_RegDeleteKeyA(self, return_value, arguments):
-        if return_value == ERROR_SUCCESS:
-            self.report("regkey_deleted", arguments["regkey"])
+        self.report("regkey_deleted", arguments["regkey"])
 
     _api_RegDeleteKeyW = _api_RegDeleteKeyA
     _api_RegDeleteValueA = _api_RegDeleteKeyA
@@ -118,15 +124,13 @@ class BehaviorReconstructor(object):
     _api_NtDeleteValueKey = _api_RegDeleteKeyA
 
     def _api_RegQueryValueExA(self, return_value, arguments):
-        if return_value == ERROR_SUCCESS:
-            self.report("regkey_read", arguments["regkey"])
+        self.report("regkey_read", arguments["regkey"])
 
     _api_RegQueryValueExW = _api_RegQueryValueExA
     _api_NtQueryValueKey = _api_RegQueryValueExA
 
     def _api_RegSetValueExA(self, return_value, arguments):
-        if return_value == ERROR_SUCCESS:
-            self.report("regkey_written", arguments["regkey"])
+        self.report("regkey_written", arguments["regkey"])
 
     _api_RegSetValueExW = _api_RegSetValueExA
     _api_NtSetValueKey = _api_RegSetValueExA
