@@ -490,10 +490,10 @@ class ReportApi(RestResource):
 
         f = open(path, "rb")
 
-        if report == "json":
+        if self.report_formats[report] == "json":
             return json.load(f)
 
-        if report == "xml":
+        if self.report_formats[report] == "xml":
             return f.read()
 
         abort(404, message="Invalid report format")
