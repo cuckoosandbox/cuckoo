@@ -25,7 +25,8 @@ class ProcessMemory(Processing):
 
                 proc = dict(
                     file=dmp_path,
-                    pid=os.path.splitext(os.path.basename(dmp_path))[0],
+                    pid=os.path.splitext(os.path.basename(dmp_path))[0].split("_")[1],
+                    name=os.path.splitext(os.path.basename(dmp_path))[0].split("_")[0],
                     yara=dmp_file.get_yara(os.path.join(CUCKOO_ROOT, "data", "yara", "index_memory.yar"))
                 )
 
