@@ -10,10 +10,10 @@ Make sure to run it inside Cuckoo's root directory.
 
 You will get an output similar to this::
 
-      eeee e   e eeee e   e  eeeee eeeee 
-      8  8 8   8 8  8 8   8  8  88 8  88 
-      8e   8e  8 8e   8eee8e 8   8 8   8 
-      88   88  8 88   88   8 8   8 8   8 
+      eeee e   e eeee e   e  eeeee eeeee
+      8  8 8   8 8  8 8   8  8  88 8  88
+      8e   8e  8 8e   8eee8e 8   8 8   8
+      88   88  8 88   88   8 8   8 8   8
       88e8 88ee8 88e8 88   8 8eee8 8eee8
 
      Cuckoo Sandbox 1.2
