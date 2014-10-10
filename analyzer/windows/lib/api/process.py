@@ -41,7 +41,7 @@ class Process:
     """Windows process."""
     first_process = True
 
-    def __init__(self, pid=0, h_process=0, thread_id=0, h_thread=0):
+    def __init__(self, pid=0, h_process=0, thread_id=0, h_thread=0, filename=""):
         """@param pid: PID.
         @param h_process: process handle.
         @param thread_id: thread id.
@@ -53,6 +53,7 @@ class Process:
         self.h_thread = h_thread
         self.suspended = False
         self.event_handle = None
+        self.filename = filename
 
     def __del__(self):
         """Close open handles."""
@@ -412,7 +413,7 @@ class Process:
             os.makedirs(root)
 
         # Now upload to host from the StringIO.
-        nf = NetlogFile(os.path.join("memory", "%s.dmp" % str(self.pid)))
+        nf = NetlogFile(os.path.join("memory", self.filename + "_%s.dmp" % str(self.pid)))
 
         while mem < max_addr:
             mbi = MEMORY_BASIC_INFORMATION()
