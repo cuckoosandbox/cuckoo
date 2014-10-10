@@ -10,6 +10,7 @@ from lib.common.exceptions import CuckooPackageError
 class Package(object):
     """Base abstact analysis package."""
     PATHS = []
+    filename = ""
 
     def __init__(self, options={}):
         """@param options: options dict."""
@@ -81,6 +82,8 @@ class Package(object):
             raise CuckooPackageError("Unable to execute the initial process, "
                                      "analysis aborted.")
 
+        self.filename = os.path.basename(path)
+        
         if not free and suspended:
             p.inject(dll)
             p.resume()
@@ -94,7 +97,7 @@ class Package(object):
         """
         if self.options.get("procmemdump"):
             for pid in self.pids:
-                p = Process(pid=pid)
+                p = Process(pid=pid, filename=self.filename)
                 p.dump_memory()
         return True
 
