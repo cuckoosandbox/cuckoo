@@ -156,6 +156,11 @@ def tasks_list(limit=None, offset=None):
         for error in row.errors:
             task["errors"].append(error.message)
 
+        task["sample"] = {}
+        if row.sample_id:
+            sample = db.view_sample(row.sample_id)
+            task["sample"] = sample.to_dict()
+
         response["tasks"].append(task)
 
     return jsonize(response)
@@ -175,6 +180,11 @@ def tasks_view(task_id):
         entry["errors"] = []
         for error in task.errors:
             entry["errors"].append(error.message)
+
+        entry["sample"] = {}
+        if task.sample_id:
+            sample = db.view_sample(task.sample_id)
+            entry["sample"] = sample.to_dict()
 
         response["task"] = entry
     else:
