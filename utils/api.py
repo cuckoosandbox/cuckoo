@@ -139,7 +139,8 @@ def tasks_list(limit=None, offset=None):
     response["tasks"] = []
 
     completed_after = request.GET.get("completed_after")
-    completed_after = datetime.fromtimestamp(int(completed_after))
+    if completed_after:
+        completed_after = datetime.fromtimestamp(int(completed_after))
 
     for row in db.list_tasks(limit=limit, details=True, offset=offset,
                              completed_after=completed_after,
