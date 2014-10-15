@@ -412,7 +412,7 @@ class Process:
             os.makedirs(root)
 
         # Now upload to host from the StringIO.
-        nf = NetlogFile(os.path.join("memory", os.path.basename(self.get_filepath()) + ":%s" % str(self.pid) + ".dmp"))
+        nf = NetlogFile(os.path.join("memory", os.path.basename(self.get_filepath()) + ":%s.dmp" % str(self.pid)))
 
         while mem < max_addr:
             mbi = MEMORY_BASIC_INFORMATION()
