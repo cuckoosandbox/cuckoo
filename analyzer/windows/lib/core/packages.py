@@ -28,6 +28,8 @@ def choose_package(file_type, file_name):
         return "doc"
     elif "Microsoft Office Excel" in file_type or file_name.endswith((".xls", ".xlsx")):
         return "xls"
+    elif "Microsoft PowerPoint" in file_type or file_name.endswith((".ppt", ".pptx", ".pps", ".ppsx", ".pptm", ".potm", ".potx", ".ppsm")):
+        return "ppt"
     elif "HTML" in file_type or file_name.endswith((".htm", ".html")):
         return "html"
     elif file_name.endswith(".jar"):
