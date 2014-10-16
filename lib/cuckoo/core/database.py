@@ -894,7 +894,7 @@ class Database(object):
 
     def list_tasks(self, limit=None, details=False, category=None,
                    offset=None, status=None, sample_id=None, not_status=None,
-                   completed_after=None):
+                   completed_after=None, order_by=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
@@ -904,6 +904,7 @@ class Database(object):
         @param sample_id: filter tasks for a sample
         @param not_status: exclude this task status from filter
         @param completed_after: only list tasks completed after this timestamp
+        @param order_by: definition which field to sort by
         @return: list of tasks.
         """
         session = self.Session()
@@ -923,7 +924,8 @@ class Database(object):
             if completed_after:
                 search = search.filter(Task.completed_on > completed_after)
 
-            tasks = search.order_by("added_on desc").limit(limit).offset(offset).all()
+            search = search.order_by(order_by or "added_on desc")
+            tasks = search.limit(limit).offset(offset).all()
         except SQLAlchemyError as e:
             log.debug("Database error listing tasks: {0}".format(e))
             return []

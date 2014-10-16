@@ -146,7 +146,7 @@ def tasks_list(limit=None, offset=None):
 
     for row in db.list_tasks(limit=limit, details=True, offset=offset,
                              completed_after=completed_after,
-                             status=status):
+                             status=status, order_by="completed_on asc"):
         task = row.to_dict()
         task["guest"] = {}
         if row.guest:
