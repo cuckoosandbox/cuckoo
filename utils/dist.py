@@ -131,10 +131,10 @@ class Node(db.Model):
             log.critical("Error submitting task (task #%d, node %s): %s",
                          task.id, self.name, e)
 
-    def completed_tasks(self, since=None):
+    def fetch_tasks(self, status, since=None):
         try:
             url = os.path.join(self.url, "tasks", "list")
-            params = dict(completed_after=since)
+            params = dict(completed_after=since, status=status)
             r = requests.get(url, params=params)
             return r.json()["tasks"]
         except Exception as e:
@@ -234,7 +234,7 @@ class StatusThread(threading.Thread):
 
     def fetch_latest_reports(self, node, last_check):
         # Fetch the latest reports.
-        for task in node.completed_tasks(since=last_check):
+        for task in node.fetch_tasks("reported", since=last_check):
             q = Task.query.filter_by(node_id=node.id, task_id=task["id"])
             t = q.first()
 
