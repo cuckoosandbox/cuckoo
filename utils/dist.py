@@ -116,6 +116,15 @@ class Node(db.Model):
                 memory=task.memory, clock=task.clock,
                 enforce_timeout=task.enforce_timeout,
             )
+
+            # If the file does not exist anymore, ignore it and move on
+            # to the next file.
+            if not os.path.isfile(task.path):
+                task.finished = True
+                db.session.commit()
+                db.session.refresh(task)
+                return
+
             files = dict(file=open(task.path, "rb"))
             r = requests.post(url, data=data, files=files)
             task.node_id = self.id
@@ -218,7 +227,7 @@ class Task(db.Model):
 class StatusThread(threading.Thread):
     def submit_tasks(self, node):
         # Only get nodes that have not been pushed yet.
-        q = Task.query.filter_by(node_id=None)
+        q = Task.query.filter_by(node_id=None, finished=False)
 
         # Order by task ID.
         q = q.order_by(Task.id)
