@@ -259,7 +259,9 @@ class StatusThread(threading.Thread):
             for report_format in app.config["REPORT_FORMATS"]:
                 report = node.get_report(t.task_id, report_format,
                                          stream=True)
-                if report is None:
+                if report is None or report.status_code != 200:
+                    log.debug("Error fetching %s report for task #%d",
+                              report_format, t.task_id)
                     continue
 
                 path = os.path.join(dirpath, "report.%s" % report_format)
