@@ -535,9 +535,8 @@ class DistRestApi(RestApi):
         }
 
 
-def create_app(database_connection, debug=False):
+def create_app(database_connection):
     app = Flask("Distributed Cuckoo")
-    app.debug = debug
     app.config["SQLALCHEMY_DATABASE_URI"] = database_connection
     app.config["SECRET_KEY"] = os.urandom(32)
 
@@ -576,6 +575,8 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.INFO)
 
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
     log = logging.getLogger("cuckoo.distributed")
 
     report_formats = []
@@ -590,7 +591,7 @@ if __name__ == "__main__":
 
     RUNNING, STATUSES = True, {}
 
-    app = create_app(database_connection=args.db, debug=args.debug)
+    app = create_app(database_connection=args.db)
     app.config["SAMPLES_DIRECTORY"] = args.samples_directory
     app.config["UPTIME_LOGFILE"] = args.uptime_logfile
     app.config["REPORT_FORMATS"] = report_formats
