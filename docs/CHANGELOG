@@ -33,6 +33,11 @@ Cuckoo Sandbox 1.2 (TBD)
 * Fixed BFP filter to skip agent traffic from PCAP
 * Removed hpfeeds reporting module
 
+Cuckoo Sandbox 1.1.1 (2014-10-07)
+=================================
+
+* Fixed path sanitization vulnerability in resultserver.
+
 Cuckoo Sandbox 1.1 (2014-04-07)
 ===============================
 
