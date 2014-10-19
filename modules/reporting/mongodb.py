@@ -122,17 +122,18 @@ class MongoDB(Report):
 
         # Walk through the dropped files, store them in GridFS and update the
         # report with the ObjectIds.
-        new_dropped = []
-        for dropped in report["dropped"]:
-            new_drop = dict(dropped)
-            drop = File(dropped["path"])
-            if drop.valid():
-                dropped_id = self.store_file(drop, filename=dropped["name"])
-                new_drop["object_id"] = dropped_id
+        if "dropped" in report:
+            new_dropped = []
+            for dropped in report["dropped"]:
+                new_drop = dict(dropped)
+                drop = File(dropped["path"])
+                if drop.valid():
+                    dropped_id = self.store_file(drop, filename=dropped["name"])
+                    new_drop["object_id"] = dropped_id
 
-            new_dropped.append(new_drop)
+                new_dropped.append(new_drop)
 
-        report["dropped"] = new_dropped
+            report["dropped"] = new_dropped
 
         # Add screenshots.
         report["shots"] = []
@@ -156,40 +157,41 @@ class MongoDB(Report):
         # those chunks back in the report. In this way we should defeat the
         # issue with the oversized reports exceeding MongoDB's boundaries.
         # Also allows paging of the reports.
-        new_processes = []
-        for process in report["behavior"]["processes"]:
-            new_process = dict(process)
+        if "behavior" in report and "processed" in report["behavior"]:
+            new_processes = []
+            for process in report["behavior"]["processes"]:
+                new_process = dict(process)
 
-            chunk = []
-            chunks_ids = []
-            # Loop on each process call.
-            for index, call in enumerate(process["calls"]):
-                # If the chunk size is 100 or if the loop is completed then
-                # store the chunk in MongoDB.
-                if len(chunk) == 100:
-                    to_insert = {"pid": process["process_id"],
-                                 "calls": chunk}
+                chunk = []
+                chunks_ids = []
+                # Loop on each process call.
+                for index, call in enumerate(process["calls"]):
+                    # If the chunk size is 100 or if the loop is completed then
+                    # store the chunk in MongoDB.
+                    if len(chunk) == 100:
+                        to_insert = {"pid": process["process_id"],
+                                     "calls": chunk}
+                        chunk_id = self.db.calls.insert(to_insert)
+                        chunks_ids.append(chunk_id)
+                        # Reset the chunk.
+                        chunk = []
+
+                    # Append call to the chunk.
+                    chunk.append(call)
+
+                # Store leftovers.
+                if chunk:
+                    to_insert = {"pid": process["process_id"], "calls": chunk}
                     chunk_id = self.db.calls.insert(to_insert)
                     chunks_ids.append(chunk_id)
-                    # Reset the chunk.
-                    chunk = []
 
-                # Append call to the chunk.
-                chunk.append(call)
+                # Add list of chunks.
+                new_process["calls"] = chunks_ids
+                new_processes.append(new_process)
 
-            # Store leftovers.
-            if chunk:
-                to_insert = {"pid": process["process_id"], "calls": chunk}
-                chunk_id = self.db.calls.insert(to_insert)
-                chunks_ids.append(chunk_id)
-
-            # Add list of chunks.
-            new_process["calls"] = chunks_ids
-            new_processes.append(new_process)
-
-        # Store the results in the report.
-        report["behavior"] = dict(report["behavior"])
-        report["behavior"]["processes"] = new_processes
+            # Store the results in the report.
+            report["behavior"] = dict(report["behavior"])
+            report["behavior"]["processes"] = new_processes
 
         # Store the report and retrieve its object id.
         self.db.analysis.save(report)
