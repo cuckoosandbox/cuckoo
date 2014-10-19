@@ -212,7 +212,7 @@ class RunProcessing(object):
         # module available. Its structure can be observed through the JSON
         # dump in the analysis' reports folder. (If jsondump is enabled.)
         # We friendly call this "fat dict".
-        results = {}
+        results = defaultdict(dict)
 
         # Order modules using the user-defined sequence number.
         # If none is specified for the modules, they are selected in
