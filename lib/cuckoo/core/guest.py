@@ -17,6 +17,7 @@ from lib.cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
 from lib.cuckoo.common.constants import CUCKOO_GUEST_FAILED
 from lib.cuckoo.common.exceptions import CuckooGuestError
 from lib.cuckoo.common.utils import TimeoutServer, sanitize_filename
+from lib.cuckoo.core.resultserver import ResultServer
 
 log = logging.getLogger(__name__)
 
@@ -132,6 +133,9 @@ class GuestManager:
             log.debug("Automatically increased critical timeout to %s",
                       self.timeout)
             self.timeout = options["timeout"] + 60
+
+        # Get and set dynamically generated resultserver port.
+        options["port"] = str(ResultServer().port)
 
         try:
             # Wait for the agent to respond. This is done to check the
