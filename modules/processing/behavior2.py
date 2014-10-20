@@ -179,29 +179,23 @@ class BsonHandler(object):
     """Handler for the BsonParser interface."""
     def __init__(self, path):
         self.f = open(path, "rb")
-        self.processes = {}
-        self.pids = {}
-        self.threads = {}
+        self.proc = {}
+        self.calls = {}
+        self.reconstructor = None
+        self.first_seen = None
 
     def finish(self):
-        for p in self.processes.values():
-            p["reconstructor"].finish()
+        self.reconstructor.finish()
 
     def results(self):
-        ret = {
-            "processes": {},
-            "threads": {},
-        }
-
         self.finish()
 
-        for pid, p in self.processes.items():
-            ret["processes"][pid] = {
-                "calls": p["threads"],
-                "behavior": p["reconstructor"].results(),
-            }
+        self.proc["behavior"] = self.reconstructor.results()
 
-        return ret
+        return {
+            "process": self.proc,
+            "calls": self.calls,
+        }
 
     def read(self, length):
         if not length:
@@ -215,25 +209,24 @@ class BsonHandler(object):
 
     def log_process(self, context, timestring, pid, ppid,
                     modulepath, procname):
-        self.processes[pid] = {
+        self.first_seen = int(timestring.strftime("%s"))
+        self.proc = {
             "process_path": procname,
-            "threads": {},
-            "first_seen": timestring,
-            "reconstructor": BehaviorReconstructor(),
+            "first_seen": self.first_seen,
+            "process_identifier": pid,
+            "parent_process_identifier": ppid,
         }
 
-        self.seen = {}
+        self.reconstructor = BehaviorReconstructor()
 
     def log_thread(self, context, pid):
         _, _, _, tid, _ = context
-        self.threads[tid] = self.processes[pid]["threads"][tid] = []
-        self.pids[tid] = pid
-        self.seen[tid] = int(self.processes[pid]["first_seen"].strftime("%s"))
 
+        self.calls[tid] = []
         log.debug("New thread %d in process %d.", tid, pid)
 
     def log_anomaly(self, category, tid, funcname, msg):
-        self.threads[tid].append({
+        self.calls[tid].append({
             "api": "__anomaly__",
             "category": category,
             "funcname": funcname,
@@ -243,33 +236,24 @@ class BsonHandler(object):
     def log_call(self, context, apiname, category, arguments):
         _, status, return_value, tid, timediff, stacktrace = context
 
-        if tid not in self.seen:
-            log.debug("Unknown thread identifier: %d in %r",
-                      tid, self.seen.keys())
-
-        timeint = self.seen.get(tid, 0)
-
-        if tid not in self.threads:
-            self.threads[tid] = []
+        if tid not in self.calls:
+            self.calls[tid] = []
             log.debug("Thread identifier not found: %d", tid)
 
-        self.threads[tid].append({
+        self.calls[tid].append({
             "api": apiname,
             "status": status,
             "return_value": return_value,
             "arguments": dict(arguments),
-            "time": "%d.%d" % (timeint + timediff / 1000, timediff % 1000),
+            "time": self.first_seen + timediff / 1000.0,
         })
 
         if stacktrace:
-            self.threads[tid][-1]["stacktrace"] = stacktrace
+            self.calls[tid][-1]["stacktrace"] = stacktrace
 
-        r = None
-        if tid in self.pids:
-            r = self.processes[self.pids[tid]]["reconstructor"]
-
-        if r and hasattr(r, "_api_%s" % apiname):
-            getattr(r, "_api_%s" % apiname)(return_value, dict(arguments))
+        fn = getattr(self.reconstructor, "_api_%s" % apiname, None)
+        if fn is not None:
+            fn(return_value, dict(arguments))
 
 class BehaviorAnalysis(Processing):
     """Behavior Analyzer."""
@@ -324,10 +308,18 @@ class BehaviorAnalysis(Processing):
         """Run analysis.
         @return: results dict.
         """
-        behavior = {}
-        behavior["processes"] = []
+        behavior = {
+            "processes": {},
+            "calls": {},
+        }
 
         for path in self._enum_logs():
-            behavior["processes"].append(self._parse_log(path))
+            proc = self._parse_log(path)
+            process = proc["process"]
+            behavior["processes"][process["process_identifier"]] = process
+
+            for tid, calls in proc["calls"].items():
+                pidtid = "%d_%d" % (process["process_identifier"], tid)
+                behavior["calls"][pidtid] = calls
 
         return behavior
