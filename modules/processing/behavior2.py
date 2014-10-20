@@ -221,7 +221,7 @@ class BsonHandler(object):
             "first_seen": self.first_seen,
             "process_identifier": pid,
             "parent_process_identifier": ppid,
-            "threads": []
+            "threads": [],
         }
 
         self.reconstructor = BehaviorReconstructor()
@@ -230,6 +230,7 @@ class BsonHandler(object):
         _, _, _, tid, _ = context
 
         self.calls[tid] = []
+        self.proc["threads"].append(tid)
         log.debug("New thread %d in process %d.", tid, pid)
 
     def log_anomaly(self, category, tid, funcname, msg):
