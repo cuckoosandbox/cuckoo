@@ -94,6 +94,8 @@ class BehaviorReconstructor(object):
                 "filepath": str(arguments["filepath"]),
             }
 
+        self.report("file_opened", arguments["filepath"])
+
     _api_NtOpenFile = _api_NtCreateFile
 
     def _api_NtReadFile(self, return_value, arguments):
