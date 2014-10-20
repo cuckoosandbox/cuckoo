@@ -4,7 +4,6 @@
 
 import os
 import logging
-import datetime
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
@@ -229,7 +228,7 @@ class BsonHandler(object):
         _, _, _, tid, _ = context
         self.threads[tid] = self.processes[pid]["threads"][tid] = []
         self.pids[tid] = pid
-        self.seen[tid] = self.processes[pid]["first_seen"]
+        self.seen[tid] = int(self.processes[pid]["first_seen"].strftime("%s"))
 
         log.debug("New thread %d in process %d.", tid, pid)
 
@@ -248,12 +247,10 @@ class BsonHandler(object):
             log.debug("Unknown thread identifier: %d in %r",
                       tid, self.seen.keys())
 
-        timeint = \
-            self.seen.get(tid, 0) + datetime.timedelta(0, 0, timediff*1000)
+        timeint = self.seen.get(tid, 0)
 
         if tid not in self.threads:
             self.threads[tid] = []
-            # self.pids[tid] = k
             log.debug("Thread identifier not found: %d", tid)
 
         self.threads[tid].append({
@@ -261,7 +258,7 @@ class BsonHandler(object):
             "status": status,
             "return_value": return_value,
             "arguments": dict(arguments),
-            "time": int(timeint.strftime("%s")),
+            "time": "%d.%d" % (timeint + timediff / 1000, timediff % 1000),
         })
 
         if stacktrace:
