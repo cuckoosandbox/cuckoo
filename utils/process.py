@@ -66,8 +66,10 @@ def autoprocess(parallel=1):
             time.sleep(1)
             continue
 
-        # If we're here, getting #parallel tasks should at least have one we don't know.
-        tasks = db.list_tasks(status=TASK_COMPLETED, limit=parallel)
+        # If we're here, getting parallel tasks should at least
+        # have one we don't know.
+        tasks = db.list_tasks(status=TASK_COMPLETED, limit=parallel,
+                              order_by="completed_on asc")
 
         # For loop to add only one, nice.
         for task in tasks:
