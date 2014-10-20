@@ -4,13 +4,11 @@
 
 import os
 import logging
-# import datetime
+import datetime
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.netlog import BsonParser
-# from lib.cuckoo.common.utils import logtime
-# from lib.cuckoo.common.utils import cleanup_value
 
 log = logging.getLogger(__name__)
 
@@ -40,6 +38,9 @@ class BehaviorReconstructor(object):
     def finish(self):
         for f in self.files.values():
             self._report_file(f)
+
+    def results(self):
+        return self.behavior
 
     def _report_file(self, f):
         if f["read"]:
@@ -198,7 +199,7 @@ class BsonHandler(object):
         for pid, p in self.processes.items():
             ret["processes"][pid] = {
                 "calls": p["threads"],
-                "behavior": p["reconstructor"].behavior,
+                "behavior": p["reconstructor"].results(),
             }
 
         return ret
@@ -209,7 +210,7 @@ class BsonHandler(object):
 
         buf = self.f.read(length)
         if not buf or length != len(buf):
-            raise EOFError()
+            raise EOFError
 
         return buf
 
@@ -230,12 +231,12 @@ class BsonHandler(object):
         self.pids[tid] = pid
         self.seen[tid] = self.processes[pid]["first_seen"]
 
-        log.debug("NEW THREAD %d WITH PID %d", tid, pid)
+        log.debug("New thread %d in process %d.", tid, pid)
 
-    def log_anomaly(self, subcategory, tid, funcname, msg):
+    def log_anomaly(self, category, tid, funcname, msg):
         self.threads[tid].append({
             "api": "__anomaly__",
-            "category": subcategory,
+            "category": category,
             "funcname": funcname,
             "message": msg,
         })
@@ -244,21 +245,23 @@ class BsonHandler(object):
         _, status, return_value, tid, timediff, stacktrace = context
 
         if tid not in self.seen:
-            log.debug("INVALID THREAD ID: %d in %r", tid, self.seen.keys())
+            log.debug("Unknown thread identifier: %d in %r",
+                      tid, self.seen.keys())
 
-        # timeint = self.seen.get(tid, 0) + datetime.timedelta(0, 0, timediff*1000)
+        timeint = \
+            self.seen.get(tid, 0) + datetime.timedelta(0, 0, timediff*1000)
 
         if tid not in self.threads:
             self.threads[tid] = []
             # self.pids[tid] = k
-            log.debug("THREAD NOT FOUND: %d", tid)
+            log.debug("Thread identifier not found: %d", tid)
 
         self.threads[tid].append({
             "api": apiname,
             "status": status,
             "return_value": return_value,
             "arguments": dict(arguments),
-            # "time": logtime(timeint),
+            "time": int(timeint.strftime("%s")),
         })
 
         if stacktrace:
@@ -297,7 +300,7 @@ class BehaviorAnalysis(Processing):
                 continue
 
             if not fname.endswith(".bson"):
-                log.critical("Behavioral log file %r is not in bson format, version mismatch!")
+                log.critical("Behavioral log file %r is not in bson format, version mismatch!", fname)
                 continue
 
             # TODO If analysis-size-limit is set to zero then ignore this check.
