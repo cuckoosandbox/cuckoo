@@ -863,7 +863,7 @@ class MAEC40Report(Report):
         self.subject.add_analysis(dynamic_analysis)
 
         # Add the static analysis.
-        if self.options["static"] and self.results["static"]:
+        if self.options["static"] and "static" in self.results and self.results["static"]:
             static_analysis = Analysis(self.id_generator.generate_analysis_id(), "static", "triage", BundleReference.from_dict({"bundle_idref": self.static_bundle.id}))
             static_analysis.start_datetime = datetime_to_iso(self.results["info"]["started"])
             static_analysis.complete_datetime = datetime_to_iso(self.results["info"]["ended"])
