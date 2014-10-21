@@ -37,7 +37,7 @@ The following libraries are not strictly required, but their installation is rec
     * `Magic`_ (Optional): for identifying files' formats (otherwise use "file" command line utility)
     * `Pydeep`_ (Optional): for calculating ssdeep fuzzy hash of files.
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
-    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use release 1.7 or above or the svn version).
+    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use release 1.7.2 or above or the svn version).
     * `Libvirt`_ (Optional): for using the KVM machine manager.
     * `Bottlepy`_ (Optional): for using the ``api.py`` or ``web.py`` utility (use release 0.10 or above).
     * `Django`_ (Optional): for using the web interface (use release 1.5 or above).
