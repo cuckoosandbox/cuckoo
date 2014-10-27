@@ -685,6 +685,18 @@ class Signature(object):
 
         return None
 
+    def get_processes(self, name=None):
+        """ get a list of processes
+
+        :param name: If name is set, only returns the processes with the given name
+        :return: List of processes or empty list
+        """
+
+        for item in self.results["behavior"]["processes"]:
+            if (name is None) or item["process_name"] == name:
+                yield(item)
+        return
+
     def check_file(self, pattern, regex=False):
         """Checks for a file being opened.
         @param pattern: string or expression to check for.
@@ -730,7 +742,7 @@ class Signature(object):
         @return: boolean with the result of the check.
         """
         # Loop through processes.
-        for item in self.results["behavior"]["processes"]:
+        for item in self.get_processes(process):
             # Check if there's a process name filter.
             if process:
                 if item["process_name"] != process:
@@ -806,7 +818,7 @@ class Signature(object):
         @return: boolean with the result of the check.
         """
         # Loop through processes.
-        for item in self.results["behavior"]["processes"]:
+        for item in self.get_processes(name):
             # Check if there's a process name filter.
             if process:
                 if item["process_name"] != process:
