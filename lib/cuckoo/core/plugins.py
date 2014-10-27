@@ -239,6 +239,12 @@ class RunSignatures(object):
 
     def __init__(self, results):
         self.results = results
+        self.matched = []
+
+        complete_list = list_plugins(group="signatures")
+        self.evented_signatures = [sig(self.results)
+                        for sig in complete_list
+                        if sig.enabled and self._check_signature_version(sig)]
 
     def _load_overlay(self):
         """Loads overlay data from a json file.
@@ -337,7 +343,7 @@ class RunSignatures(object):
             if current.run():
                 log.debug("Analysis matched signature \"%s\"", current.name)
                 # Return information on the matched signature.
-                return current.as_result()
+                return current
         except NotImplementedError:
             return None
         except:
@@ -345,9 +351,41 @@ class RunSignatures(object):
 
         return None
 
+    def is_matched(self, sig):
+        """ Return True if siganture already matched
+
+        :param sig: The signature to verify
+        :return:
+        """
+
+        for matched in self.matched:
+            if sig.name == matched["name"]:
+                return True
+        return False
+
+    def append_sig(self, sig):
+        """
+
+        @param sig: The signature, that matched
+
+        @return:
+        """
+
+        self.matched.append(sig.as_result())
+
+        for sig in self.evented_signatures:
+            try:
+                result = sig.on_signature(self.results, sig)
+                if result is True and not self.is_matched(sig):
+                    self.append_sig(sig)
+            except NotImplementedError:
+                self.evented_signatures.remove(sig)
+            except:
+                log.exception("Failed to run signature \"%s\":", sig.name)
+
     def run(self):
         # This will contain all the matched signatures.
-        matched = []
+        self.matched = []
 
         complete_list = list_plugins(group="signatures")
         evented_list = [sig(self.results)
@@ -398,7 +436,7 @@ class RunSignatures(object):
                         # On True, the signature is matched.
                         if result is True:
                             log.debug("Analysis matched signature \"%s\"", sig.name)
-                            matched.append(sig.as_result())
+                            self.append_sig(sig)
                             if sig in complete_list:
                                 complete_list.remove(sig)
                         
@@ -418,12 +456,12 @@ class RunSignatures(object):
                 else:
                     if result is True:
                         log.debug("Analysis matched signature \"%s\"", sig.name)
-                        matched.append(sig.as_result())
+                        self.append_sig(sig)
                         if sig in complete_list:
                             complete_list.remove(sig)
 
         # Link this into the results already at this point, so non-evented signatures can use it
-        self.results["signatures"] = matched
+        self.results["signatures"] = self.matched
 
         # Compat loop for old-style (non evented) signatures.
         if complete_list:
@@ -434,7 +472,7 @@ class RunSignatures(object):
                 match = self.process(signature)
                 # If the signature is matched, add it to the list.
                 if match:
-                    matched.append(match)
+                    self.append_sig(match)
 
                 # Reset the ParseProcessLog instances after each signature
                 if "behavior" in self.results:
@@ -442,7 +480,7 @@ class RunSignatures(object):
                         process["calls"].reset()
 
         # Sort the matched signatures by their severity level.
-        matched.sort(key=lambda key: key["severity"])
+        self.matched.sort(key=lambda key: key["severity"])
 
 class RunReporting:
     """Reporting Engine.

@@ -904,6 +904,16 @@ class Signature(object):
         """
         raise NotImplementedError
 
+    def on_signature(self, result, matched_sig):
+        """ Called if an other signature matched
+
+        @param result: The full result
+        @param matched_sig: The siganture that just matched
+        @return:
+
+        """
+        raise NotImplementedError
+
     def on_complete(self):
         """Evented signature is notified when all API calls are done.
         @return: Match state.
