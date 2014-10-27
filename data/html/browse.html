@@ -16,6 +16,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Category</th>
+                        <th>Platform</th>
                         <th style="width: 40%;">Target</th>
                         <th>Added</th>
                         <th>Status</th>
@@ -26,6 +27,7 @@
                     <tr>
                         <td>{{row.id}}</td>
                         <td>{{row.category|upper}}</td>
+                        <td>{{row.platform}}</td>
                         <td>
                             {% if row.processed %}
                                 <a href="/view/{{row.id}}">

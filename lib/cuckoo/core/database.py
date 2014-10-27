@@ -539,7 +539,7 @@ class Database(object):
             session.rollback()
         finally:
             session.close()
-
+    
     def list_machines(self, locked=False):
         """Lists virtual machines.
         @return: list of virtual machines
@@ -556,6 +556,26 @@ class Database(object):
         finally:
             session.close()
         return machines
+    
+    def list_platforms(self, locked=False):
+        """Lists available platforms.
+        @return: list of available platforms
+        """
+        session = self.Session()
+        platforms = []
+        try:
+            if locked:
+                machines = session.query(Machine).options(joinedload("tags")).filter_by(locked=True).group_by(Machine.platform).all()
+            else:
+                machines = session.query(Machine).options(joinedload("tags")).group_by(Machine.platform).all()
+            for m in machines:
+                platforms.append(m.platform)
+        except SQLAlchemyError as e:
+            log.debug("Database error listing machines: {0}".format(e))
+            return []
+        finally:
+            session.close()
+        return platforms
 
     def lock_machine(self, name=None, platform=None, tags=None):
         """Places a lock on a free virtual machine.
