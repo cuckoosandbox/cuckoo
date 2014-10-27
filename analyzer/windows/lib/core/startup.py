@@ -27,7 +27,7 @@ def init_logging():
     sh = logging.StreamHandler()
     sh.setFormatter(formatter)
     log.addHandler(sh)
-    
+
     nh = NetlogHandler()
     nh.setFormatter(formatter)
     log.addHandler(nh)

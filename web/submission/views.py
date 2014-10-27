@@ -36,12 +36,12 @@ def index(request):
 
         if request.POST.get("free"):
             if options:
-                options += "&"
+                options += ","
             options += "free=yes"
 
         if request.POST.get("process_memory"):
             if options:
-                options += "&"
+                options += ","
             options += "procmemdump=yes"
 
         db = Database()
@@ -135,8 +135,8 @@ def index(request):
             for tag in machine.tags:
                 tags.append(tag.name)
 
-            if len(tags) > 0:
-                label = machine.name + ": " + ", ".join(tags) 
+            if tags:
+                label = machine.name + ": " + ", ".join(tags)
             else:
                 label = machine.name
 

@@ -17,3 +17,6 @@ install:
     - pip install -r requirements.txt
 script:
     - python cuckoo.py --debug --test
+    - nosetests
+notifications:
+  flowdock: 71a8e3b60f92bcb723e7a936eda14413

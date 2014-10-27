@@ -14,7 +14,7 @@ WORD      = c_ushort
 DWORD     = c_ulong
 LONG      = c_ulong
 LPBYTE    = POINTER(c_ubyte)
-LPTSTR    = POINTER(c_char) 
+LPTSTR    = POINTER(c_char)
 HANDLE    = c_void_p
 PVOID     = c_void_p
 LPVOID    = c_void_p
@@ -46,6 +46,10 @@ MEM_DECOMMIT              = 0x00004000
 MEM_RELEASE               = 0x00008000
 MEM_RESET                 = 0x00080000
 
+MEM_IMAGE                 = 0x01000000
+MEM_MAPPED                = 0x00040000
+MEM_PRIVATE               = 0x00020000
+
 PAGE_NOACCESS             = 0x00000001
 PAGE_READONLY             = 0x00000002
 PAGE_READWRITE            = 0x00000004
@@ -76,9 +80,9 @@ BM_CLICK                  = 0x000000F5
 
 class STARTUPINFO(Structure):
     _fields_ = [
-        ("cb",            DWORD),        
-        ("lpReserved",    LPTSTR), 
-        ("lpDesktop",     LPTSTR),  
+        ("cb",            DWORD),
+        ("lpReserved",    LPTSTR),
+        ("lpDesktop",     LPTSTR),
         ("lpTitle",       LPTSTR),
         ("dwX",           DWORD),
         ("dwY",           DWORD),
@@ -94,7 +98,7 @@ class STARTUPINFO(Structure):
         ("hStdInput",     HANDLE),
         ("hStdOutput",    HANDLE),
         ("hStdError",     HANDLE),
-        ]
+    ]
 
 class PROCESS_INFORMATION(Structure):
     _fields_ = [
@@ -102,25 +106,25 @@ class PROCESS_INFORMATION(Structure):
         ("hThread",     HANDLE),
         ("dwProcessId", DWORD),
         ("dwThreadId",  DWORD),
-        ]
+    ]
 
 class LUID(Structure):
     _fields_ = [
         ("LowPart", DWORD),
         ("HighPart", LONG),
-        ]
+    ]
 
 class LUID_AND_ATTRIBUTES(Structure):
     _fields_ = [
         ("Luid", LUID),
         ("Attributes", DWORD),
-        ]
-    
+    ]
+
 class TOKEN_PRIVILEGES(Structure):
     _fields_ = [
         ("PrivilegeCount", DWORD),
         ("Privileges", LUID_AND_ATTRIBUTES),
-        ]
+    ]
 
 class MEMORY_BASIC_INFORMATION(Structure):
     _fields_ = [
@@ -131,19 +135,19 @@ class MEMORY_BASIC_INFORMATION(Structure):
         ("State", DWORD),
         ("Protect", DWORD),
         ("Type", DWORD),
-]
+    ]
 
 class PROC_STRUCT(Structure):
     _fields_ = [
         ("wProcessorArchitecture", WORD),
         ("wReserved", WORD),
-]
+    ]
 
 class SYSTEM_INFO_UNION(Union):
     _fields_ = [
         ("dwOemId", DWORD),
         ("sProcStruc", PROC_STRUCT),
-]
+    ]
 
 class SYSTEM_INFO(Structure):
     _fields_ = [
@@ -157,15 +161,4 @@ class SYSTEM_INFO(Structure):
         ("dwAllocationGranularity", DWORD),
         ("wProcessorLevel", WORD),
         ("wProcessorRevision", WORD),
-]
-
-class MEMORY_BASIC_INFORMATION(Structure):
-    _fields_ = [
-        ("BaseAddress", PVOID),
-        ("AllocationBase", PVOID),
-        ("AllocationProtect", DWORD),
-        ("RegionSize", SIZE_T),
-        ("State", DWORD),
-        ("Protect", DWORD),
-        ("Type", DWORD),
-]
+    ]

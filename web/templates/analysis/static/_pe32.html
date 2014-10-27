@@ -1,5 +1,12 @@
 <section id="static_analysis">
     {% if analysis.static %}
+        {% if analysis.static.pe_timestamp %}
+        <div>
+            <h4>PE Compile Time</h4>
+            <div class="well">{{analysis.static.pe_timestamp}}</div>
+        </div>
+        <hr />
+        {% endif %}
         {% if analysis.static.pe_imphash %}
         <div>
             <h4>PE Imphash</h4>

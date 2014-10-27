@@ -1,0 +1,28 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>CPU</th>
+            <th>Selector</th>
+            <th>Base</th>
+            <th>Limit</th>
+            <th>Type</th>
+            <th>Dpl</th>
+            <th>Granularity</th>
+            <th>Present</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for x in analysis.memory.gdt.data %}
+        <tr>
+            <td>{{x.cpu_number}}</td>
+            <td><span class="mono">{{x.selector}}</span></td>
+            <td><span class="mono">{{x.base}}</span></td>
+            <td><span class="mono">{{x.limit}}</span></td>
+            <td>{{x.type}}</td>
+            <td>{{x.dpl}}</td>
+            <td>{{x.granularity}}</td>
+            <td>{{x.present}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

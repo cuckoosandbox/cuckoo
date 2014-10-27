@@ -11,6 +11,7 @@ import subprocess
 from lib.cuckoo.common.abstracts import Auxiliary
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_GUEST_PORT
+from lib.cuckoo.core.resultserver import ResultServer
 
 log = logging.getLogger(__name__)
 
@@ -25,6 +26,13 @@ class Sniffer(Auxiliary):
             interface = self.machine.interface
         else:
             interface = self.options.get("interface")
+        # Selects per-machine resultserver IP if available.
+        if self.machine.resultserver_ip:
+            resultserver_ip = self.machine.resultserver_ip
+        else:
+            resultserver_ip = str(Config().resultserver.ip)
+        # Get resultserver port from its instance because it could change dynamically.
+        resultserver_port = str(ResultServer().port)
 
         if not os.path.exists(tcpdump):
             log.error("Tcpdump does not exist at path \"%s\", network "
@@ -54,12 +62,15 @@ class Sniffer(Auxiliary):
         pargs.extend(["-w", file_path])
         pargs.extend(["host", host])
         # Do not capture XMLRPC agent traffic.
-        pargs.extend(["and", "not", "(", "dst host", host, "and", "dst port",
-                      str(CUCKOO_GUEST_PORT), ")"])
+        pargs.extend(["and", "not", "(", "dst", "host", host, "and", "dst", "port",
+                      str(CUCKOO_GUEST_PORT), ")", "and", "not", "(", "src", "host",
+                      host, "and", "src", "port", str(CUCKOO_GUEST_PORT), ")"])
+
         # Do not capture ResultServer traffic.
-        pargs.extend(["and", "not", "(", "host",
-                      str(Config().resultserver.ip), "and", "port",
-                      str(Config().resultserver.port), ")"])
+        pargs.extend(["and", "not", "(", "dst", "host", resultserver_ip,
+                      "and", "dst", "port", resultserver_port, ")", "and",
+                      "not", "(", "src", "host", resultserver_ip, "and",
+                      "src", "port", resultserver_port, ")"])
 
         if bpf:
             pargs.extend(["and", bpf])

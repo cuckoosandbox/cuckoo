@@ -142,7 +142,7 @@ automated. In order to automate analysis submission we suggest to use the REST
 API interface described in :doc:`api`, but in case you want to write your
 own Python submission script, you can also use the ``add_path()`` and ``add_url()`` functions.
 
-.. function:: add_path(file_path[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, machine=None[, platform=None[, memory=False[, enforce_timeout=False]]]]]]]]])
+.. function:: add_path(file_path[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, machine=None[, platform=None[, memory=False[, enforce_timeout=False], clock=None[]]]]]]]]])
 
     Add a local file to the list of pending analysis tasks. Returns the ID of the newly generated task.
 
@@ -164,7 +164,7 @@ own Python submission script, you can also use the ``add_path()`` and ``add_url(
     :type platform: string or None
     :param memory: set to ``True`` to generate a full memory dump of the analysis machine
     :type memory: True or False
-    :param enforce_timeout: set to ``True`` to force the executuion for the full timeout
+    :param enforce_timeout: set to ``True`` to force the execution for the full timeout
     :type enforce_timeout: True or False
     :param clock: provide a custom clock time to set in the analysis machine
     :type clock: string or None
@@ -181,7 +181,7 @@ own Python submission script, you can also use the ``add_path()`` and ``add_url(
         1
         >>> 
 
-.. function:: add_url(url[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, machine=None[, platform=None[, memory=False[, enforce_timeout=False]]]]]]]]])
+.. function:: add_url(url[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, machine=None[, platform=None[, memory=False[, enforce_timeout=False], clock=None[]]]]]]]]])
 
     Add a local file to the list of pending analysis tasks. Returns the ID of the newly generated task.
 
@@ -203,7 +203,7 @@ own Python submission script, you can also use the ``add_path()`` and ``add_url(
     :type platform: string or None
     :param memory: set to ``True`` to generate a full memory dump of the analysis machine
     :type memory: True or False
-    :param enforce_timeout: set to ``True`` to force the executuion for the full timeout
+    :param enforce_timeout: set to ``True`` to force the execution for the full timeout
     :type enforce_timeout: True or False
     :param clock: provide a custom clock time to set in the analysis machine
     :type clock: string or None

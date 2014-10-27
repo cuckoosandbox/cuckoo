@@ -15,6 +15,10 @@ Install Python on Ubuntu::
 
     $ sudo apt-get install python
 
+If you want to use the Django-based web interface, you'll have to install MongoDB too:
+
+    $ sudo apt-get install mongodb
+
 In order to properly function, Cuckoo requires SQLAlchemy and Python BSON to be installed.
 
 Install with ``apt-get``::
@@ -33,7 +37,7 @@ The following libraries are not strictly required, but their installation is rec
     * `Magic`_ (Optional): for identifying files' formats (otherwise use "file" command line utility)
     * `Pydeep`_ (Optional): for calculating ssdeep fuzzy hash of files.
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
-    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use release 1.7 or above or the svn version).
+    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use release 1.7.2 or above or the svn version).
     * `Libvirt`_ (Optional): for using the KVM machine manager.
     * `Bottlepy`_ (Optional): for using the ``api.py`` or ``web.py`` utility (use release 0.10 or above).
     * `Django`_ (Optional): for using the web interface (use release 1.5 or above).
@@ -48,7 +52,7 @@ Some of them are already packaged in Debian/Ubuntu and can be installed with the
 
 Except for *python-magic*, *python-dpkt* and *python-libvirt*, the others can be installed through ``pip`` too::
 
-    $ sudo pip install jinja2 pymongo bottle pefile maec==4.0.1.0 django chardet
+    $ sudo pip install jinja2 pymongo bottle pefile cybox==2.0.1.4 maec==4.0.1.0 django chardet
 
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 

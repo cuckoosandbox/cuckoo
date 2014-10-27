@@ -54,6 +54,32 @@ If you want to re-generate the reports::
 
     $ ./utils/process.py --report 1
 
+Following are the usage options::
+
+    $ ./utils/process.py
+
+    usage: process.py [-h] [-d] [-r] [-p PARALLEL] id
+
+    positional arguments:
+      id                    ID of the analysis to process (auto for continuous
+                            processing of unprocessed tasks).
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -d, --debug           Display debug messages
+      -r, --report          Re-generate report
+      -p PARALLEL, --parallel PARALLEL
+                            Number of parallel threads to use (auto mode only).
+
+As best practice we suggest to adopt the following configuration if you are
+running Cuckoo with many virtual machines:
+
+    * Run a stand alone process.py in auto mode (you choose the number of parallel threads)
+    * Disable Cuckoo reporting in cuckoo.conf (set process_results to off)
+
+This could increase the performance of your system because the reporting is not
+yet demanded to Cuckoo.
+
 Community Download Utility
 ==========================
 
@@ -94,3 +120,38 @@ migration for both SQL database and Mongo database.
 This tool is already described in :doc:`../installation/upgrade`.
 
 .. _`Alembic`: http://alembic.readthedocs.org/en/latest/
+
+Stats utility
+=============
+
+This is a really simple utility which prints some statistics about processed
+samples::
+
+    $ ./utils/stats.py
+
+    1 samples in db
+    1 tasks in db
+    pending 0 tasks
+    running 0 tasks
+    completed 0 tasks
+    recovered 0 tasks
+    reported 1 tasks
+    failed_analysis 0 tasks
+    failed_processing 0 tasks
+    roughly 32 tasks an hour
+    roughly 778 tasks a day
+
+Machine utility
+===============
+
+The machine.py utility is desgined to help you automatize the configuration of
+virtual machines in Cuckoo.
+It takes a list of machine details as arguments and write them in the specified
+macheniry configuration file.
+Following are the usage options::
+
+  $ ./utils/machine.py
+  usage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
+                    [--tags TAGS] [--interface INTERFACE] [--snapshot SNAPSHOT]
+                    [--resultserver RESULTSERVER]
+                    vmname

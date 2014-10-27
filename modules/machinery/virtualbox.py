@@ -76,13 +76,16 @@ class VirtualBox(Machinery):
         self._wait_status(label, self.SAVED)
 
         try:
-            subprocess.call([self.options.virtualbox.path,
+            proc = subprocess.Popen([self.options.virtualbox.path,
                              "startvm",
                              label,
                              "--type",
                              self.options.virtualbox.mode],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
+            output, err = proc.communicate()
+            if err:
+                raise OSError(err)
         except OSError as e:
             raise CuckooMachineError("VBoxManage failed starting the machine "
                                      "in %s mode: %s" %
@@ -144,8 +147,8 @@ class VirtualBox(Machinery):
             try:
                 label = line.split('"')[1]
                 if label == "<inaccessible>":
-                    log.warning("Found an inaccessible virtual machine: "
-                                "please check his state")
+                    log.warning("Found an inaccessible virtual machine, "
+                                "please check its state.")
                 else:
                     machines.append(label)
             except IndexError:

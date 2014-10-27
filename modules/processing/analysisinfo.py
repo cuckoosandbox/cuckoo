@@ -35,18 +35,16 @@ class AnalysisInfo(Processing):
 
         db = Database()
 
+        # Fetch sqlalchemy object.
         task = db.view_task(self.task["id"], details=True)
-        if task:
-            entry = task.to_dict()
 
-            machine = db.view_machine(name=entry["machine"])
-            if machine:
-                self.task["machine"] = machine.to_dict()
-                self.task["machine"]["id"] = int(self.task["machine"]["id"])
-            else: 
-                self.task["machine"] = {}
-        else:
-            self.task["machine"] = {}
+        if task and task.guest:
+            # Get machine description ad json.
+            machine = task.guest.to_dict()
+            # Remove useless task_id.
+            del(machine["task_id"])
+            # Save.
+            self.task["machine"] = machine
 
         return dict(
             version=CUCKOO_VERSION,

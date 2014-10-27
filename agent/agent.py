@@ -30,7 +30,7 @@ RESULTS_FOLDER = ""
 
 class Agent:
     """Cuckoo agent, it runs inside guest."""
-    
+
     def __init__(self):
         self.system = platform.system().lower()
         self.analyzer_path = ""
@@ -94,10 +94,10 @@ class Agent:
         file_path = os.path.join(root, name)
 
         try:
-            with open(file_path, "wb") as malware:
-                malware.write(data)
+            with open(file_path, "wb") as sample:
+                sample.write(data)
         except IOError as e:
-            ERROR_MESSAGE = "Unable to write malware to disk: {0}".format(e)
+            ERROR_MESSAGE = "Unable to write sample to disk: {0}".format(e)
             return False
 
         return True
@@ -109,7 +109,7 @@ class Agent:
         """
         global ERROR_MESSAGE
 
-        if type(options) != dict:
+        if not isinstance(options, dict):
             return False
 
         config = ConfigParser.RawConfigParser()
@@ -127,7 +127,7 @@ class Agent:
                 config.set("analysis", key, value)
 
             config_path = os.path.join(ANALYZER_FOLDER, "analysis.conf")
-        
+
             with open(config_path, "wb") as config_file:
                 config.write(config_file)
         except Exception as e:
@@ -185,7 +185,7 @@ class Agent:
         """Complete analysis.
         @param success: success status.
         @param error: error status.
-        """ 
+        """
         global ERROR_MESSAGE
         global CURRENT_STATUS
         global RESULTS_FOLDER
@@ -212,6 +212,7 @@ if __name__ == "__main__":
         # Disable DNS lookup, by Scott D.
         def FakeGetFQDN(name=""):
             return name
+
         socket.getfqdn = FakeGetFQDN
 
         server = SimpleXMLRPCServer((BIND_IP, BIND_PORT), allow_none=True)

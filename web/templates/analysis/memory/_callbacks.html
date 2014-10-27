@@ -1,0 +1,20 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Callback</th>
+            <th>Module</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for x in analysis.memory.callbacks.data %}
+        <tr>
+            <td>{{x.type}}</td>
+            <td><span class="mono">{{x.callback}}</span></td>
+            <td>{{x.module}}</td>
+            <td>{{x.details}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
