@@ -109,7 +109,7 @@ def index():
     context = {}
     template = env.get_template("submit.html")
     return template.render({"context": context, "machines": [m.name for m in db.list_machines()],
-                           "platforms": [p for platform in db.list_platforms()]})
+                           "platforms": [platform for platform in db.list_platforms()]})
     
 @route("/browse")
 def browse():
