@@ -1022,13 +1022,6 @@ class Signature(object):
         """
         raise NotImplementedError
 
-    def run(self):
-        """Start signature processing.
-        @param results: analysis results.
-        @raise NotImplementedError: this method is abstract.
-        """
-        raise NotImplementedError
-
     def as_result(self):
         """Properties as a dict (for results).
         @return: result dictionary.
