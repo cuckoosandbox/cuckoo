@@ -377,10 +377,13 @@ class RunSignatures(object):
         """
 
         self.matched.append(sig.as_result())
+        # Link this into the results already at this point, so other signatures can use it
+        self.matched.sort(key=lambda key: key["severity"])
+        self.results["signatures"] = self.matched
 
         for sig in self.evented_signatures:
             try:
-                result = sig.on_signature(self.results, sig)
+                result = sig.on_signature(sig)
                 if result is True and not self.is_matched(sig):
                     self.append_sig(sig)
             except NotImplementedError:
@@ -394,7 +397,7 @@ class RunSignatures(object):
         self.matched = []
 
         complete_list = list_plugins(group="signatures")
-        evented_list = [sig(self.results)
+        evented_list = [sig(self)
                         for sig in complete_list
                         if sig.enabled and
                         self._check_signature_version(sig)]
@@ -450,12 +453,12 @@ class RunSignatures(object):
                         evented_list.remove(sig)
                         del sig
 
-            evented_list = [sig(self.results)
+            evented_list = [sig(self)
                         for sig in complete_list
                         if sig.enabled and
                         self._check_signature_version(sig)]
 
-            # Call the stop method on all remaining instances.
+            # Call the stop method on all signatures.
             for sig in evented_list:
                 try:
                     result = sig.on_complete()
@@ -470,9 +473,6 @@ class RunSignatures(object):
                         self.append_sig(sig)
                         if sig in complete_list:
                             complete_list.remove(sig)
-
-        # Link this into the results already at this point, so non-evented signatures can use it
-        self.results["signatures"] = self.matched
 
         # Compat loop for old-style (non evented) signatures.
         if complete_list:
@@ -490,8 +490,6 @@ class RunSignatures(object):
                     for process in self.results["behavior"]["processes"]:
                         process["calls"].reset()
 
-        # Sort the matched signatures by their severity level.
-        self.matched.sort(key=lambda key: key["severity"])
 
 class RunReporting:
     """Reporting Engine.
