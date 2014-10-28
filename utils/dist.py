@@ -314,6 +314,15 @@ class StatusThread(threading.Thread):
 
                     self.fetch_latest_reports(node, last_check)
 
+                    # We just fetched all the "latest" tasks. However, it is
+                    # for some reason possible that some reports are never
+                    # fetched, and therefore we reset the "last_check"
+                    # parameter when more than 10 tasks have not been fetched,
+                    # thus preventing running out of diskspace.
+                    status = node.status()
+                    if status and status["reported"] > 10:
+                        node.last_check = None
+
                     # The last_check field of each node object has been
                     # updated as well as the finished field for each task that
                     # has been completed.
