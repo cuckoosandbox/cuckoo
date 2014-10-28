@@ -654,7 +654,8 @@ class SignatureFlags(object):
                 "pid": pid,
                 "tid": tid,
                 "timestamp": timestamp}
-        self.data.append(data)
+        if not data in self.data:
+            self.data.append(data)
 
     def find(self, name=None, pid=None, tid=None, before=None, after=None):
         """ Get a list of flags matching the given criteria
