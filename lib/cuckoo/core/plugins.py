@@ -242,7 +242,7 @@ class RunSignatures(object):
         self.matched = []
 
         complete_list = list_plugins(group="signatures")
-        self.evented_signatures = [sig(self.results)
+        self.evented_signatures = [sig(self)
                         for sig in complete_list
                         if sig.enabled and self._check_signature_version(sig)]
 
