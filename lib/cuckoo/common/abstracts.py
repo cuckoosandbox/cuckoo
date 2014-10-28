@@ -952,6 +952,17 @@ class Signature(object):
 
         return None
 
+    def quickout(self):
+        """ Quickout test. Implement that to do a fast verification if signature should be run
+
+        Can be used for performance optimisation. Check the file type for example to avoid running PDF signatures
+        on PE files.
+
+        @return: True if you want to remove the signature from the list, False if you still want to process it
+        @raise NotImplementedError: this method is abstract.
+        """
+        raise NotImplementedError
+
     def on_call(self, call, pid, tid):
         """Notify signature about API call. Return value determines
         if this signature is done or could still match.
