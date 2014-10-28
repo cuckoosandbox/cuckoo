@@ -403,6 +403,14 @@ class RunSignatures(object):
                         self._check_signature_version(sig)]
         no_on_call_list = []
 
+        # Test quickout
+        for sig in evented_list:
+            try:
+                if sig.quickout():
+                    evented_list.remove(sig)
+            except NotImplementedError:
+                pass
+
         overlay = self._load_overlay()
         log.debug("Applying signature overlays for signatures: %s", ", ".join(overlay.keys()))
         for signature in complete_list + evented_list:
