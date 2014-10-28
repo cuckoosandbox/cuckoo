@@ -477,20 +477,6 @@ class RunSignatures(object):
                         if sig in complete_list:
                             complete_list.remove(sig)
 
-        # Compat loop for old-style (non evented) signatures.
-        if complete_list:
-            log.debug("Running non-evented signatures")
-
-            for signature in complete_list:
-                match = self.process(signature)
-                # If the signature is matched, add it to the list.
-                if match:
-                    self.append_sig(match)
-
-                # Reset the ParseProcessLog instances after each signature
-                if "behavior" in self.results:
-                    for process in self.results["behavior"]["processes"]:
-                        process["calls"].reset()
 
 
 class RunReporting:
