@@ -401,6 +401,7 @@ class RunSignatures(object):
                         for sig in complete_list
                         if sig.enabled and
                         self._check_signature_version(sig)]
+        no_on_call_list = []
 
         overlay = self._load_overlay()
         log.debug("Applying signature overlays for signatures: %s", ", ".join(overlay.keys()))
@@ -450,13 +451,12 @@ class RunSignatures(object):
                                 complete_list.remove(sig)
 
                         # Either True or False, we don't need to check this sig anymore.
+                        # But should keep it for the on_complete event afterwards
+                        no_on_call_list.append(sig)
                         evented_list.remove(sig)
                         del sig
 
-            evented_list = [sig(self)
-                        for sig in complete_list
-                        if sig.enabled and
-                        self._check_signature_version(sig)]
+            evented_list = evented_list + no_on_call_list
 
             # Call the stop method on all signatures.
             for sig in evented_list:
