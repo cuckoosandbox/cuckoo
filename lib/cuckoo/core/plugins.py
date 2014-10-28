@@ -354,8 +354,8 @@ class RunSignatures(object):
     def is_matched(self, sig):
         """ Return True if siganture already matched
 
-        :param sig: The signature to verify
-        :return:
+        @param sig: The signature to verify
+        @return:
         """
 
         for matched in self.matched:
