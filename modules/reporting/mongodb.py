@@ -131,7 +131,7 @@ class MongoDB(Report):
                     dropped_id = self.store_file(drop, filename=dropped["name"])
                     new_drop["object_id"] = dropped_id
 
-            new_dropped.append(new_drop)
+                new_dropped.append(new_drop)
 
         report["dropped"] = new_dropped
 
