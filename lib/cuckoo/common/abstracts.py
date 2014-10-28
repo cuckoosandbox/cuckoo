@@ -758,14 +758,35 @@ class Signature(object):
     def get_processes(self, name=None):
         """ get a list of processes
 
-        :param name: If name is set, only returns the processes with the given name
-        :return: List of processes or empty list
+        @param name: If name is set, only returns the processes with the given name
+        @return: List of processes or empty list
         """
 
-        for item in self.get_results()["behavior"]["processes"]:
+        for item in self.get_results()["behavior2"]["processes"]:
             if (name is None) or item["process_name"] == name:
                 yield(item)
-        return
+
+    def get_processes_by_pid(self, pid):
+        """ get a process by pid
+
+        @param pid: pid to search for
+        @return: List of processes or empty list
+        """
+
+        for item in self.get_results()["behavior2"]["processes"]:
+            if item["process_identifier"] == pid:
+                return item
+
+    def get_threads(self, pid=None):
+        """ get a list of threads for a given process
+
+        @param pid: pid of the process
+        @return: List of processes or empty list
+        """
+
+        proc = self.get_processes_by_pid(pid)
+        for item in proc["threads"]:
+            yield(item)
 
     def check_file(self, pattern, regex=False):
         """Checks for a file being opened.
