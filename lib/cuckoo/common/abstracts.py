@@ -698,9 +698,14 @@ class Signature(object):
     filter_apinames = set()
     filter_categories = set()
 
-    def __init__(self, results=None):
+    def __init__(self, caller):
+        """
+
+        @param caller: calling object. Stores results in caller.results
+        @return:
+        """
         self.data = []
-        self.results = results
+        self._caller = caller
         self._current_call_cache = None
         self._current_call_dict = None
         self.flags = SignatureFlags()
@@ -733,6 +738,9 @@ class Signature(object):
 
         return None
 
+    def get_results(self):
+        return self._caller.results
+
     def get_processes(self, name=None):
         """ get a list of processes
 
@@ -740,7 +748,7 @@ class Signature(object):
         :return: List of processes or empty list
         """
 
-        for item in self.results["behavior"]["processes"]:
+        for item in self.get_results()["behavior"]["processes"]:
             if (name is None) or item["process_name"] == name:
                 yield(item)
         return
@@ -752,7 +760,7 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        subject = self.results["behavior"]["summary"]["files"]
+        subject = self.get_results()["behavior"]["summary"]["files"]
         return self._check_value(pattern=pattern,
                                  subject=subject,
                                  regex=regex)
@@ -764,7 +772,7 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        subject = self.results["behavior"]["summary"]["keys"]
+        subject = self.get_results()["behavior"]["summary"]["keys"]
         return self._check_value(pattern=pattern,
                                  subject=subject,
                                  regex=regex)
@@ -776,7 +784,7 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        subject = self.results["behavior"]["summary"]["mutexes"]
+        subject = self.get_results()["behavior"]["summary"]["mutexes"]
         return self._check_value(pattern=pattern,
                                  subject=subject,
                                  regex=regex)
@@ -889,7 +897,7 @@ class Signature(object):
         @return: boolean with the result of the check.
         """
         return self._check_value(pattern=pattern,
-                                 subject=self.results["network"]["hosts"],
+                                 subject=self.get_results()["network"]["hosts"],
                                  regex=regex)
 
     def check_domain(self, pattern, regex=False):
@@ -899,7 +907,7 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        for item in self.results["network"]["domains"]:
+        for item in self.get_results()["network"]["domains"]:
             if self._check_value(pattern=pattern,
                                  subject=item["domain"],
                                  regex=regex):
@@ -914,7 +922,7 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        for item in self.results["network"]["http"]:
+        for item in self.get_results()["network"]["http"]:
             if self._check_value(pattern=pattern,
                                  subject=item["uri"],
                                  regex=regex):
@@ -943,19 +951,19 @@ class Signature(object):
 
         return None
 
-    def on_call(self, call, process):
+    def on_call(self, call, pid, tid):
         """Notify signature about API call. Return value determines
         if this signature is done or could still match.
         @param call: logged API call.
-        @param process: process doing API call.
+        @param pid: process id doing API call.
+        @param tid: thread id doing API call.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
 
-    def on_signature(self, result, matched_sig):
+    def on_signature(self, matched_sig):
         """ Called if an other signature matched
 
-        @param result: The full result
         @param matched_sig: The siganture that just matched
         @return:
 
