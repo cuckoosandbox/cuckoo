@@ -745,6 +745,16 @@ class Signature(object):
     def get_results(self):
         return self._caller.results
 
+    def list_signatures(self):
+        """ List signatures that matched by name
+
+        @return:
+        """
+        res = []
+        for sig in self.get_results()["signatures"]:
+            res.append(sig["name"])
+        return res
+
     def get_processes(self, name=None):
         """ get a list of processes
 
