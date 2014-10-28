@@ -372,9 +372,8 @@ class BsonParser(object):
             context[1] = argdict.pop("is_success", 1)
             context[2] = argdict.pop("retval", 0)
             context.append(stacktrace)
-            arguments = argdict.items()
-            arguments += dec.get("aux", {}).items()
+            argdict.update(dec.get("aux", {}))
 
-            self.handler.log_call(context, apiname, category, arguments)
+            self.handler.log_call(context, apiname, category, argdict)
 
         return True

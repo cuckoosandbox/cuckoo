@@ -254,7 +254,7 @@ class BsonHandler(object):
             "api": apiname,
             "status": status,
             "return_value": return_value,
-            "arguments": dict(arguments),
+            "arguments": arguments,
             "time": self.first_seen + timediff / 1000.0,
         })
 
@@ -263,7 +263,7 @@ class BsonHandler(object):
 
         fn = getattr(self.reconstructor, "_api_%s" % apiname, None)
         if fn is not None:
-            fn(return_value, dict(arguments))
+            fn(return_value, arguments)
 
 class BehaviorAnalysis(Processing):
     """Behavior Analyzer."""
