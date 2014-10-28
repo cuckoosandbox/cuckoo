@@ -390,7 +390,7 @@ class RunSignatures(object):
         complete_list = list_plugins(group="signatures")
         evented_list = [sig(self.results)
                         for sig in complete_list
-                        if sig.enabled and sig.evented and
+                        if sig.enabled and
                         self._check_signature_version(sig)]
 
         overlay = self._load_overlay()
@@ -443,6 +443,11 @@ class RunSignatures(object):
                         # Either True or False, we don't need to check this sig anymore.
                         evented_list.remove(sig)
                         del sig
+
+            evented_list = [sig(self.results)
+                        for sig in complete_list
+                        if sig.enabled and
+                        self._check_signature_version(sig)]
 
             # Call the stop method on all remaining instances.
             for sig in evented_list:
