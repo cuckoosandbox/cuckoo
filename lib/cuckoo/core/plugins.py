@@ -479,7 +479,6 @@ class RunSignatures(object):
 
         # Compat loop for old-style (non evented) signatures.
         if complete_list:
-            complete_list.sort(key=lambda sig: sig.order)
             log.debug("Running non-evented signatures")
 
             for signature in complete_list:
