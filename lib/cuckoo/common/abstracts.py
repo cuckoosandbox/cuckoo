@@ -989,10 +989,13 @@ class Signature(object):
         """Retrieves the value of a specific argument from an API call.
         @param call: API call object.
         @param name: name of the argument to retrieve.
-        @return: value of the requried argument.
+        @return: value of the argument or None
         """
 
-        return call["arguments"][name]
+        try:
+            return call["arguments"][name]
+        except KeyError:
+            return None
 
 
     def quickout(self):
