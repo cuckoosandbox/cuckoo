@@ -173,6 +173,10 @@ class BehaviorReconstructor(object):
     def _api_connect(self, return_value, arguments):
         self.report("connects_ip", arguments["ip_address"])
 
+    # Mutex stuff
+    def _api_NtCreateMutant(self, return_value, arguments):
+        self.report("mutexes",arguments["mutant_name"])
+
     _api_ConnectEx = _api_connect
 
 class BsonHandler(object):
