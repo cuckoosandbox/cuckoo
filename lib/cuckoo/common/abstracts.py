@@ -766,16 +766,16 @@ class Signature(object):
             if (name is None) or item["process_name"] == name:
                 yield(item)
 
-    def get_processes_by_pid(self, pid):
+    def get_processes_by_pid(self, pid=None):
         """ get a process by pid
 
-        @param pid: pid to search for
+        @param pid: pid to search for. Can be None to get any process
         @return: List of processes or empty list
         """
 
         for item in self.get_results()["behavior2"]["processes"]:
-            if item["process_identifier"] == pid:
-                return item
+            if pid is None or item["process_identifier"] == pid:
+                yield item
 
     def get_threads(self, pid=None):
         """ get a list of threads for a given process
@@ -784,9 +784,9 @@ class Signature(object):
         @return: List of processes or empty list
         """
 
-        proc = self.get_processes_by_pid(pid)
-        for item in proc["threads"]:
-            yield(item)
+        for proc in self.get_processes_by_pid(pid):
+            for item in proc["threads"]:
+                yield(item)
 
     def check_file(self, pattern, regex=False):
         """Checks for a file being opened.
@@ -795,22 +795,36 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        subject = self.get_results()["behavior"]["summary"]["files"]
-        return self._check_value(pattern=pattern,
+        for process in self.get_processes_by_pid():
+            subject = process["summary"]["files"]
+            if self._check_value(pattern=pattern,
                                  subject=subject,
-                                 regex=regex)
+                                 regex=regex):
+                return True
+        return False
 
-    def check_key(self, pattern, regex=False):
+    def check_key(self, pattern, regex=False, actions=["regkey_written", "regkey_opened", "regkey_read"], pid=None):
         """Checks for a registry key being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
+        @param actions: key actions to use. can include: regkey_written, regkey_opened, regkey_read. Default is all
+        @param pid: The process id to check. If it is set to None, all processes will be checked
         @return: boolean with the result of the check.
         """
-        subject = self.get_results()["behavior"]["summary"]["keys"]
-        return self._check_value(pattern=pattern,
-                                 subject=subject,
-                                 regex=regex)
+
+        for proc in self.get_processes_by_pid(pid):
+            for act in actions:
+                try:
+                    subject = proc["summary"][act]
+                except KeyError:
+                    pass
+                else:
+                    if self._check_value(pattern=pattern,
+                                     subject=subject,
+                                     regex=regex):
+                        return True
+        return False
 
     def check_mutex(self, pattern, regex=False):
         """Checks for a mutex being opened.
@@ -819,10 +833,13 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        subject = self.get_results()["behavior"]["summary"]["mutexes"]
-        return self._check_value(pattern=pattern,
+        for process in self.get_processes_by_pid():
+            subject = process["summary"]["mutexes"]
+            if self._check_value(pattern=pattern,
                                  subject=subject,
-                                 regex=regex)
+                                 regex=regex):
+                return True
+        return False
 
     def check_api(self, pattern, process=None, regex=False):
         """Checks for an API being called.
@@ -873,19 +890,19 @@ class Signature(object):
 
         # Check if there's a category filter.
         if category:
-            if call["category"] != category:
+            if self.get_category(call) != category:
                 return False
 
         # Loop through arguments.
         for argument in call["arguments"]:
             # Check if there's an argument name filter.
             if name:
-                if argument["name"] != name:
+                if argument != name:
                     continue
 
             # Check if the argument value matches.
             if self._check_value(pattern=pattern,
-                                 subject=argument["value"],
+                                 subject=call["arguments"][argument],
                                  regex=regex):
                 return argument["value"]
 
@@ -924,6 +941,36 @@ class Signature(object):
 
         return None
 
+    def get_category(self,call):
+        """ Return the category of the call
+
+        @param call:
+        @return:
+        """
+
+        try:
+            return call["category"]
+        except KeyError:
+            return None
+
+    def get_net_hosts(self):
+        """
+        @return:List of hosts
+        """
+        self.get_results()["network"]["hosts"]
+
+    def get_net_domains(self):
+        """
+        @return:List of domains
+        """
+        self.get_results()["network"]["domains"]
+
+    def get_net_http(self):
+        """
+        @return:List of http urls
+        """
+        self.get_results()["network"]["http"]
+
     def check_ip(self, pattern, regex=False):
         """Checks for an IP address being contacted.
         @param pattern: string or expression to check for.
@@ -932,7 +979,7 @@ class Signature(object):
         @return: boolean with the result of the check.
         """
         return self._check_value(pattern=pattern,
-                                 subject=self.get_results()["network"]["hosts"],
+                                 subject=self.get_net_hosts(),
                                  regex=regex)
 
     def check_domain(self, pattern, regex=False):
@@ -942,10 +989,7 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        if "domains" not in self.results["network"]:
-            return None
-
-        for item in self.get_results()["network"]["domains"]:
+        for item in self.get_net_domains():
             if self._check_value(pattern=pattern,
                                  subject=item["domain"],
                                  regex=regex):
@@ -960,7 +1004,7 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        for item in self.get_results()["network"]["http"]:
+        for item in self.get_net_http():
             if self._check_value(pattern=pattern,
                                  subject=item["uri"],
                                  regex=regex):
@@ -974,20 +1018,9 @@ class Signature(object):
         @param name: name of the argument to retrieve.
         @return: value of the required argument.
         """
-        # Check if the call passed to it was cached already.
-        # If not, we can start caching it and store a copy converted to a dict.
-        if call is not self._current_call_cache:
-            self._current_call_cache = call
-            self._current_call_dict = dict()
 
-            for argument in call["arguments"]:
-                self._current_call_dict[argument["name"]] = argument["value"]
+        return call["arguments"][name]
 
-        # Return the required argument.
-        if name in self._current_call_dict:
-            return self._current_call_dict[name]
-
-        return None
 
     def add_match(self, process, type, match):
         """Adds a match to the signature data.
