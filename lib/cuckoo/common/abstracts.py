@@ -826,6 +826,15 @@ class Signature(object):
                         return True
         return False
 
+    def get_mutexes(self):
+        """
+        @return:List of http urls
+        """
+        mutexes = []
+        for process in self.get_processes_by_pid():
+            mutexes += process["summary"]["mutexes"]
+        return mutexes
+
     def check_mutex(self, pattern, regex=False):
         """Checks for a mutex being opened.
         @param pattern: string or expression to check for.
@@ -833,12 +842,11 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        for process in self.get_processes_by_pid():
-            subject = process["summary"]["mutexes"]
-            if self._check_value(pattern=pattern,
-                                 subject=subject,
-                                 regex=regex):
-                return True
+
+        if self._check_value(pattern=pattern,
+                             subject=self.get_mutexes(),
+                             regex=regex):
+            return True
         return False
 
     def check_api(self, pattern, process=None, regex=False):
