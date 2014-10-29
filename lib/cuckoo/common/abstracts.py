@@ -952,6 +952,24 @@ class Signature(object):
         """
         self.get_results()["network"]["udp"]
 
+    def get_net_icmp(self):
+        """
+        @return:List of icmp data
+        """
+        self.get_results()["network"]["icmp"]
+
+    def get_net_irc(self):
+        """
+        @return:List of irc data
+        """
+        self.get_results()["network"]["irc"]
+
+    def get_net_smtp(self):
+        """
+        @return:List of smtp data
+        """
+        self.get_results()["network"]["smtp"]
+
     def check_ip(self, pattern, regex=False):
         """Checks for an IP address being contacted.
         @param pattern: string or expression to check for.
