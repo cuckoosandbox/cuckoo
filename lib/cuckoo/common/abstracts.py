@@ -908,39 +908,6 @@ class Signature(object):
 
         return False
 
-    def check_argument(self,
-                       pattern,
-                       name=None,
-                       api=None,
-                       category=None,
-                       process=None,
-                       regex=False):
-        """Checks for a specific argument of an invoked API.
-        @param pattern: string or expression to check for.
-        @param name: optional filter for the argument name.
-        @param api: optional filter for the API function name.
-        @param category: optional filter for a category name.
-        @param process: optional filter for a specific process name.
-        @param regex: boolean representing if the pattern is a regular
-                      expression or not and therefore should be compiled.
-        @return: boolean with the result of the check.
-        """
-        # Loop through processes.
-        for item in self.get_processes(name):
-            # Check if there's a process name filter.
-            if process:
-                if item["process_name"] != process:
-                    continue
-
-            # Loop through API calls.
-            for call in item["calls"]:
-                r = self.check_argument_call(call, pattern, name,
-                                             api, category, regex)
-                if r:
-                    return r
-
-        return None
-
     def get_category(self,call):
         """ Return the category of the call
 
