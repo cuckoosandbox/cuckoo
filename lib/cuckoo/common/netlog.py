@@ -255,6 +255,7 @@ class BsonParser(object):
     def __init__(self, handler):
         self.handler = handler
         self.infomap = {}
+        self.flags = {}
 
         if not HAVE_BSON:
             log.critical("Starting BsonParser, but bson is not available! (install with `pip install bson`)")
@@ -292,6 +293,7 @@ class BsonParser(object):
             name = dec.get("name", "NONAME")
             arginfo = dec.get("args", [])
             category = dec.get("category")
+            flags = dec.get("flags", {})
 
             # Bson dumps that were generated before cuckoomon exported the
             # "category" field have to get the category using the old method.
@@ -305,6 +307,8 @@ class BsonParser(object):
 
             argnames, converters = check_names_for_typeinfo(arginfo)
             self.infomap[index] = name, arginfo, argnames, converters, category
+
+            self.flags[name] = flags
 
         elif mtype == "debug":
             log.info("Debug message from monitor: "
@@ -374,6 +378,20 @@ class BsonParser(object):
             context.append(stacktrace)
             argdict.update(dec.get("aux", {}))
 
+            if apiname in self.flags:
+                for flag in self.flags[apiname].keys():
+                    argdict[flag + "_s"] = \
+                        self._flag_represent(apiname, flag, argdict[flag])
+
             self.handler.log_call(context, apiname, category, argdict)
 
         return True
+
+    def _flag_represent(self, apiname, flag, value):
+        ret = []
+        for typ, val, r in self.flags[apiname][flag]:
+            if typ == "value" and val == value:
+                return r
+            elif typ == "enum" and (val & value) == val:
+                ret.append(r)
+        return "|".join(ret)
