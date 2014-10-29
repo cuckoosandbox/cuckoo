@@ -156,7 +156,7 @@ class ParseProcessLog(list):
                                      category,
                                      apiname,
                                      status,
-                                     returnval] + arguments)
+                                     returnval] + arguments.items())
 
     def log_error(self, emsg):
         log.warning("ParseProcessLog error condition on log %s: %s", str(self._log_path), emsg)

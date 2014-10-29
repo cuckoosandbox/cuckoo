@@ -271,14 +271,12 @@ class ResultHandler(SocketServer.BaseRequestHandler):
 
         # log.debug("log_call> tid:{0} apiname:{1}".format(tid, apiname))
 
-        current_time = \
-            self.connect_time + datetime.timedelta(0, 0, timediff*1000)
-        timestring = logtime(current_time)
-
-        argumentstrings = ["{0}->{1}".format(argname, repr(str(r))[1:-1])
-                           for argname, r in arguments]
-
         if self.logfd:
+            current_time = \
+                self.connect_time + datetime.timedelta(0, 0, timediff*1000)
+            timestring = logtime(current_time)
+            argumentstrings = ["{0}->{1}".format(argname, repr(str(r))[1:-1])
+                               for argname, r in arguments]
             print >>self.logfd, ",".join("\"{0}\"".format(i) for i in [
                 timestring, self.pid, self.procname, tid, self.ppid,
                 modulename, apiname, status, returnval] + argumentstrings)
