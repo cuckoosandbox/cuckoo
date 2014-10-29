@@ -930,6 +930,12 @@ class Signature(object):
         """
         self.get_results()["network"]["http"]
 
+    def get_net_udp(self):
+        """
+        @return:List of udp data
+        """
+        self.get_results()["network"]["udp"]
+
     def check_ip(self, pattern, regex=False):
         """Checks for an IP address being contacted.
         @param pattern: string or expression to check for.
