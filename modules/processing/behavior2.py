@@ -190,7 +190,7 @@ class BsonHandler(object):
     def results(self):
         self.finish()
 
-        self.proc["behavior"] = self.reconstructor.results()
+        self.proc["summary"] = self.reconstructor.results()
 
         return {
             "process": self.proc,
