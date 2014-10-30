@@ -16,6 +16,7 @@ import time
 
 INTERVAL = 30
 MINIMUMQUEUE = 500
+RESET_LASTCHECK = 500
 
 
 def required(package):
@@ -320,7 +321,7 @@ class StatusThread(threading.Thread):
                     # parameter when more than 10 tasks have not been fetched,
                     # thus preventing running out of diskspace.
                     status = node.status()
-                    if status and status["reported"] > 10:
+                    if status and status["reported"] > RESET_LASTCHECK:
                         node.last_check = None
 
                     # The last_check field of each node object has been
