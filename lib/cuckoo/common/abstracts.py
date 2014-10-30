@@ -780,29 +780,12 @@ class Signature(object):
             for item in proc["threads"]:
                 yield(item)
 
-    def check_file(self, pattern, regex=False):
-        """Checks for a file being opened.
-        @param pattern: string or expression to check for.
-        @param regex: boolean representing if the pattern is a regular
-                      expression or not and therefore should be compiled.
-        @return: boolean with the result of the check.
-        """
-        for process in self.get_processes_by_pid():
-            subject = process["summary"]["files"]
-            if self._check_value(pattern=pattern,
-                                 subject=subject,
-                                 regex=regex):
-                return True
-        return False
+    def _get_summary(self, pid, actions):
+        """ Get generic info from summary
 
-    def check_key(self, pattern, regex=False, actions=["regkey_written", "regkey_opened", "regkey_read"], pid=None):
-        """Checks for a registry key being opened.
-        @param pattern: string or expression to check for.
-        @param regex: boolean representing if the pattern is a regular
-                      expression or not and therefore should be compiled.
-        @param actions: key actions to use. can include: regkey_written, regkey_opened, regkey_read. Default is all
-        @param pid: The process id to check. If it is set to None, all processes will be checked
-        @return: boolean with the result of the check.
+        @param pid: pid of the process. None for all
+        @param actions: A list of actions to get
+        @return:
         """
 
         for proc in self.get_processes_by_pid(pid):
@@ -812,10 +795,68 @@ class Signature(object):
                 except KeyError:
                     pass
                 else:
-                    if self._check_value(pattern=pattern,
-                                     subject=subject,
-                                     regex=regex):
-                        return True
+                    for afile in proc["summary"][act]:
+                        yield afile
+
+    def get_files(self, pid=None, actions=None):
+        """ get files written by a specific process
+        @param pid: the process or None for all
+        @param actions: actions to search for. None is all
+        @return: yields files
+        """
+
+        if actions is None:
+            actions =["file_written", "file_read", "file_deleted", "file_moved", "file_copied"]
+
+        for res in self._get_summary(pid, actions):
+            yield res
+
+    def get_keys(self, pid=None, actions=None):
+        """ Get registry keys
+
+        @param pid: The pid to look in or None for all
+        @param actions: the actions as a list or None for all
+        @return: yields registry keys
+        """
+
+        if actions is None:
+            actions =["regkey_written", "regkey_opened", "regkey_read"]
+
+        for res in self._get_summary(pid, actions):
+            yield res
+
+
+    def check_file(self, pattern, regex=False):
+        """Checks for a file being opened.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        files = list(self.get_files())
+
+        if self._check_value(pattern=pattern,
+                             subject=files,
+                             regex=regex):
+            return True
+        return False
+
+    def check_key(self, pattern, regex=False, actions=["regkey_written", "regkey_opened", "regkey_read"], pid=None):
+        """Checks for a registry key being opened.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @param actions: a list of key actions to use. None is all
+        @param pid: The process id to check. If it is set to None, all processes will be checked
+        @return: boolean with the result of the check.
+        """
+
+        regkeys = list(self.get_keys(pid, actions))
+
+        if self._check_value(pattern=pattern,
+                         subject=regkeys,
+                         regex=regex):
+            return True
         return False
 
     def get_mutexes(self):
