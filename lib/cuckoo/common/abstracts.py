@@ -791,12 +791,10 @@ class Signature(object):
         for proc in self.get_processes_by_pid(pid):
             for act in actions:
                 try:
-                    subject = proc["summary"][act]
-                except KeyError:
-                    pass
-                else:
                     for afile in proc["summary"][act]:
                         yield afile
+                except KeyError:
+                    pass
 
     def get_files(self, pid=None, actions=None):
         """ get files written by a specific process
@@ -806,7 +804,7 @@ class Signature(object):
         """
 
         if actions is None:
-            actions =["file_written", "file_read", "file_deleted", "file_moved", "file_copied"]
+            actions =["file_written", "file_read", "file_deleted"]
 
         for res in self._get_summary(pid, actions):
             yield res
@@ -962,47 +960,58 @@ class Signature(object):
         except KeyError:
             return None
 
+    def get_net_generic(self, subtype):
+        """ generic getting network data
+
+        @param subtype: subtype string to search for
+        @return:
+        """
+        results = self.get_results()
+        if not "network" in results or not subtype in results["network"]:
+            return []
+        return results["network"][subtype]
+
     def get_net_hosts(self):
         """
         @return:List of hosts
         """
-        self.get_results()["network"]["hosts"]
+        return self.get_net_generic("hosts")
 
     def get_net_domains(self):
         """
         @return:List of domains
         """
-        self.get_results()["network"]["domains"]
+        return self.get_net_generic("domains")
 
     def get_net_http(self):
         """
         @return:List of http urls
         """
-        self.get_results()["network"]["http"]
+        return self.get_net_generic("http")
 
     def get_net_udp(self):
         """
         @return:List of udp data
         """
-        self.get_results()["network"]["udp"]
+        return self.get_net_generic("udp")
 
     def get_net_icmp(self):
         """
         @return:List of icmp data
         """
-        self.get_results()["network"]["icmp"]
+        return self.get_net_generic("icmp")
 
     def get_net_irc(self):
         """
         @return:List of irc data
         """
-        self.get_results()["network"]["irc"]
+        return self.get_net_generic("irc")
 
     def get_net_smtp(self):
         """
         @return:List of smtp data
         """
-        self.get_results()["network"]["smtp"]
+        return self.get_net_generic("smtp")
 
     def check_ip(self, pattern, regex=False):
         """Checks for an IP address being contacted.
