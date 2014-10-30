@@ -689,7 +689,6 @@ class Signature(object):
     minimum = None
     maximum = None
 
-    evented = False
     filter_processnames = set()
     filter_apinames = set()
     filter_categories = set()
