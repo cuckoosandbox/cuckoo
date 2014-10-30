@@ -291,7 +291,7 @@ class RunSignatures(object):
                               current.name, current.minimum)
                     return None
                 if StrictVersion("1.2") > StrictVersion(current.minimum.split("-")[0]):
-                    log.debug("Cuckoo signature style has been redesigned in cuckoo 1.2. This signature is not compatible")
+                    log.warn("Cuckoo signature style has been redesigned in cuckoo 1.2. This signature is not compatible: %s", current.name)
                     return None
 
             except ValueError:
@@ -415,6 +415,16 @@ class RunSignatures(object):
             self._apply_overlay(signature, overlay)
 
         if evented_list:
+            # Cleanup code to identify and remove old signatures still depending on run
+            for sig in evented_list:
+                try:
+                    sig.run()
+                except AttributeError:
+                    pass
+                else:
+                    log.warn("This signature is still old-style. Removing it: %s", sig.name)
+                    evented_list.remove(sig)
+
             log.debug("Running %u evented signatures", len(evented_list))
             for sig in evented_list:
                 if sig == evented_list[-1]:
