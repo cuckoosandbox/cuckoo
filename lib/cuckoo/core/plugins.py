@@ -290,6 +290,10 @@ class RunSignatures(object):
                               "minimum version %s",
                               current.name, current.minimum)
                     return None
+                if StrictVersion("1.2") > StrictVersion(current.minimum.split("-")[0]):
+                    log.debug("Cuckoo signature style has been redesigned in cuckoo 1.2. This signature is not compatible")
+                    return None
+
             except ValueError:
                 log.debug("Wrong minor version number in signature %s",
                           current.name)
