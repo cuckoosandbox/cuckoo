@@ -873,7 +873,8 @@ class Signature(object):
         """
         mutexes = []
         for process in self.get_processes_by_pid():
-            mutexes += process["summary"]["mutexes"]
+            if "summary" in process and "mutexes" in process["summary"]:
+                mutexes += process["summary"]["mutexes"]
         return mutexes
 
     def check_mutex(self, pattern, regex=False):
