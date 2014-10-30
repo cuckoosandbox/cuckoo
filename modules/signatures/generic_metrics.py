@@ -10,10 +10,7 @@ class SystemMetrics(Signature):
     severity = 2
     categories = ["generic"]
     authors = ["Cuckoo Developers"]
-    minimum = "1.0"
-
-    # Evented signatures need to implement the "on_call" method
-    evented = True
+    minimum = "1.2"
 
     # Evented signatures can specify filters that reduce the amount of
     # API calls that are streamed in. One can filter Process name, API
@@ -39,7 +36,7 @@ class SystemMetrics(Signature):
     # of this signature. True means the signature matched and False means
     # it can't match anymore. Both of which stop streaming in API calls.
     # Returning None keeps the signature active and will continue.
-    def on_call(self, call, process):
+    def on_call(self, call, pid, tid):
         # This check would in reality not be needed as we already make use
         # of filter_apinames above.
         if call["api"] == "GetSystemMetrics":

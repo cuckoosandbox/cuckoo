@@ -10,7 +10,7 @@ class CreatesExe(Signature):
     severity = 2
     categories = ["generic"]
     authors = ["Cuckoo Developers"]
-    minimum = "0.5"
+    minimum = "1.2"
 
     # This is a signature template. It should be used as a skeleton for
     # creating custom signatures, therefore is disabled by default.
@@ -19,8 +19,8 @@ class CreatesExe(Signature):
     # read and attributes lookup.
     enabled = False
 
-    def run(self):
-        match = self.check_file(pattern=".*\.exe$",
+    def on_complete(self):
+        match = self.check_file(pattern=".*\\.exe$",
                                 regex=True)
         if match:
             self.data.append({"file": match})
