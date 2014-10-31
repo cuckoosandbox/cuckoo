@@ -468,17 +468,33 @@ class TaskApi(TaskBaseApi):
 
 class TaskRootApi(TaskBaseApi):
     def get(self):
-        tasks = Task.query.all()
+        offset = request.args.get("offset")
+        limit = request.args.get("limit")
+        finished = request.args.get("finished")
+
+        q = Task.query
+
+        if finished is not None:
+            q = q.filter_by(finished=int(finished))
+
+        if offset is not None:
+            q = q.offset(int(offset))
+
+        if limit is not None:
+            q = q.limit(int(limit))
+
+        tasks = q.all()
 
         ret = {}
         for task in tasks:
             ret[task.id] = dict(
-                task_id=task.id, path=task.path, package=task.package,
+                id=task.id, path=task.path, package=task.package,
                 timeout=task.timeout, priority=task.priority,
                 options=task.options, machine=task.machine,
                 platform=task.platform, tags=task.tags,
                 custom=task.custom, memory=task.memory,
-                clock=task.clock, enforce_timeout=task.enforce_timeout
+                clock=task.clock, enforce_timeout=task.enforce_timeout,
+                task_id=task.task_id, node_id=task.node_id,
             )
         return dict(tasks=ret)
 
