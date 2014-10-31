@@ -461,6 +461,10 @@ class TaskApi(TaskBaseApi):
         if os.path.isfile(task.path):
             os.unlink(task.path)
 
+        # TODO Don't delete the task, but instead change its state to deleted.
+        db.session.delete(task)
+        db.session.commit()
+
 
 class TaskRootApi(TaskBaseApi):
     def get(self):
