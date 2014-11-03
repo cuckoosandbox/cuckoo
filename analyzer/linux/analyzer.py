@@ -6,9 +6,21 @@ from datetime import datetime
 
 from lib.common.constants import PATHS
 from lib.core.config import Config
-from lib.core.startup import init_logging
+from lib.core.startup import create_folders, init_logging
 
 log = logging.getLogger()
+
+FILES_LIST = []
+DUMPED_LIST = []
+
+def dump_file():
+    """Create a copy of the given file path."""
+    pass
+
+def dump_files():
+    """Dump all the dropped files."""
+    for file_path in FILES_LIST:
+        dump_file(file_path)
 
 class Analyzer(object):
     def __init__(self):
@@ -16,6 +28,9 @@ class Analyzer(object):
         self.target = None
 
     def prepare(self):
+        # Create the folders used for storing the results.
+        create_folders()
+        
         # Initialize logging.
         init_logging()
 
@@ -33,10 +48,19 @@ class Analyzer(object):
         # we store the path.
         if self.config.category == "file":
             self.target = os.path.join("/tmp", str(self.config.file_name))
+            
         # If it's a URL, well.. we store the URL.
         else:
             self.target = self.config.target
-
+    
+    def complete(self):
+        """ End analysis. """
+        # Dump all the notified files
+        dump_files()
+        
+        # We're done!
+        log.info("Analysis completed")
+        
     def run(self):
         self.prepare()
 
@@ -45,7 +69,15 @@ class Analyzer(object):
         log.info("Target is: {0}".format(self.target))
 
         if self.config.category == "file":
-            subprocess.call(["sh", self.target], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if ".sh" in self.config.file_name:
+                subprocess.call(["sh", self.target], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            else:
+                arg = "chmod +x " + str(self.target)
+                os.system(arg)
+                os.system(self.target)
+            
+        # Let's invoke the completion procedure.
+        self.complete()
 
         return True
 
@@ -56,11 +88,14 @@ if __name__ == "__main__":
     try:
         # Initialize the main analyzer class.
         analyzer = Analyzer()
+        
         # Run it and wait for the response.
         success = analyzer.run()
+        
     # This is not likely to happen.
     except KeyboardInterrupt:
         error = "Keyboard Interrupt"
+        
     # If the analysis process encountered a critical error, it will raise a
     # CuckooError exception, which will force the termination of the analysis
     # weill notify the agent of the failure. Also catched unexpected
