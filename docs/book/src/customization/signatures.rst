@@ -14,6 +14,7 @@ Some examples of what you can use Cuckoo's signatures for:
     * Identify a particular malware family you're interested in by isolating some unique behaviors (like file names or mutexes).
     * Spot interesting modifications the malware performs on the system, such as installation of device drivers.
     * Identify particular malware categories, such as Banking Trojans or Ransomware by isolating typical actions commonly performed by those.
+    * Classify samples into the categories malware/unknown (it is not possible to identify clean samples)
 
 You can find signatures created by us and by other Cuckoo users on our `Community`_ repository.
 
@@ -40,20 +41,24 @@ The following is a basic example signature:
             severity = 2
             categories = ["generic"]
             authors = ["Cuckoo Developers"]
-            minimum = "0.5"
+            minimum = "1.2"
 
-            def run(self):
+            def on_complete(self):
                 return self.check_file(pattern=".*\\.exe$",
                                        regex=True)
 
 As you can see the structure is really simple and consistent with the other
 modules. We're going to get into details later, but as you can see at line **12**
-from version 0.5 Cuckoo provides some helper functions that make the process of
+from version 1.2 Cuckoo provides some helper functions that make the process of
 creating signatures much easier.
 
 In this example we just walk through all the accessed files in the summary and check
 if there is anything ending with "*.exe*": in that case it will return ``True``, meaning that
 the signature matched, otherwise return ``False``.
+
+the function ``on_complete`` is called at the end of the cuckoo signature process.
+Other function will be called before on specific events and help you to write 
+more sophisticated and faster signatures.
 
 In case the signature gets matched, a new entry in the "signatures" section will be added to
 the global container as follows::
@@ -73,31 +78,6 @@ the global container as follows::
         }
     ]
 
-We could rewrite the exact same signature by accessing the **global container**
-directly:
-
-    .. code-block:: python
-        :linenos:
-
-        from lib.cuckoo.common.abstracts import Signature
-
-        class CreatesExe(Signature):
-            name = "creates_exe"
-            description = "Creates a Windows executable on the filesystem"
-            severity = 2
-            categories = ["generic"]
-            authors = ["Cuckoo Developers"]
-            minimum = "0.5"
-
-            def run(self):
-                for file_path in self.results["behavior"]["summary"]["files"]:
-                    if file_path.endswith(".exe"):
-                        return True
-
-                return False
-
-This obviously requires you to know the structure of the **global container**,
-which you can observe represented in the JSON report of your analyses.
 
 Creating your new signature
 ===========================
@@ -137,9 +117,9 @@ In our example, we would create the following skeleton:
             categories = ["trojan"] # We add a category
             families = ["badbadmalware"] # We add the name of our fictional malware family
             authors = ["Me"] # We specify the author
-            minimum = "0.5" # We specify that in order to run the signature, the user will need at least Cuckoo 0.5
+            minimum = "1.2" # We specify that in order to run the signature, the user will need at least Cuckoo 0.5
 
-        def run(self):
+        def on_complete(self):
             return
 
 This is a perfectly valid signature. It doesn't really do anything yet,
@@ -159,9 +139,9 @@ As we said, we want to match a particular mutex name, so we proceed as follows:
             categories = ["trojan"]
             families = ["badbadmalware"]
             authors = ["Me"]
-            minimum = "0.5"
+            minimum = "1.2"
 
-        def run(self):
+        def on_complete(self):
             return self.check_mutex("i_am_a_malware")
 
 Simple as that, now our signature will return ``True`` whether the analyzed
@@ -182,24 +162,27 @@ you could translate the previous signature in the following way:
             categories = ["trojan"]
             families = ["badbadmalware"]
             authors = ["Me"]
-            minimum = "0.5"
+            minimum = "1.2"
 
-        def run(self):
-            for mutex in self.results["behavior"]["summary"]["mutexes"]:
-                if mutex == "i_am_a_malware":
-                    return True
+        def on_complete(self):
+            for process in self.get_processes_by_pid():
+                if "summary" in process and "mutexes" in process["summary"]:
+                    for mutex in process["summary"]["mutexes"]:
+                        if mutex == "i_am_a_malware":
+                            return True
 
             return False
 
 Evented Signatures
 ==================
 
-Since version 1.0, Cuckoo provides a way to write more high-performance signatures.
+Since version 1.0, Cuckoo provides a way to write more high performance signatures.
 In the past every signature was required to loop through the whole collection of API calls
 collected during the analysis. This was necessarily causing some performance issues when such
 collection would be of a large size.
 
-Cuckoo now supports both the old model as well as what we call "evented signatures".
+Since 1.2 Cuckoo only supports the so called "evented signatures". The old signatures
+based on the ``run`` function can be ported to using ``on_complete``.
 The main difference is that with this new format, all the signatures will be executed in parallel
 and a callback function called ``on_call()`` will be invoked for each signature within one
 single loop through the collection of API calls.
@@ -217,10 +200,7 @@ An example signature using this technique is the following:
             severity = 2
             categories = ["generic"]
             authors = ["Cuckoo Developers"]
-            minimum = "1.0"
-
-            # Evented signatures need to implement the "on_call" method
-            evented = True
+            minimum = "1.2"
 
             # Evented signatures can specify filters that reduce the amount of
             # API calls that are streamed in. One can filter Process name, API
@@ -235,8 +215,8 @@ An example signature using this technique is the following:
             # These use a more efficient way of processing logged API calls.
             enabled = False
 
-            def stop(self):
-                # In the stop method one can implement any cleanup code and
+            def on_complete(self):
+                # In the on_complete method one can implement any cleanup code and
                 #  decide one last time if this signature matches or not.
                 #  Return True in case it matches.
                 return False
@@ -246,7 +226,7 @@ An example signature using this technique is the following:
             # of this signature. True means the signature matched and False means
             # it can't match anymore. Both of which stop streaming in API calls.
             # Returning None keeps the signature active and will continue.
-            def on_call(self, call, process):
+            def on_call(self, call, pid, tid):
                 # This check would in reality not be needed as we already make use
                 # of filter_apinames above.
                 if call["api"] == "GetSystemMetrics":
@@ -257,7 +237,30 @@ An example signature using this technique is the following:
                 return None
 
 The inline comments are already self-explanatory.
-You can find many more example of both evented and traditional signatures in our `community repository`_.
+
+Another event is triggered when a signature matches. 
+
+    .. code-block:: python
+        :linenos:
+
+        def on_signature(self, matched_sig):
+            required = ["creates_exe","badmalware"]
+            for sig in required:
+                if not sig in self.list_signatures():
+                    return
+            return True
+
+This kind of signature can be used to combine several signatures identifying anomalies into one signature
+classifying the sample (malware alert).
+
+Quickout
+========
+Additionally to the filters you can use a quickout function to determine if the
+signature can be matched at all. For example if a signature is written to identify
+behavior of malicious PDFs you could test for the file type to be PDF. Returning ``True`` will
+remove the signature from the list of potential candidates (reducing False Positives and processing time).
+
+You can find many more example of signatures in our `community repository`_.
 
 .. _`community repository`: https://github.com/cuckoobox/community
 
@@ -327,6 +330,10 @@ As anticipated, from version 0.5 the ``Signature`` base class also provides
 some helper methods that simplify the creation of signatures and avoid the need
 for you having to access the global container directly (at least most of the times).
 
+With Cuckoo 1.2 the amount of information extracted from a sample grew another step and the
+resulting data format got more complex. To avoid having to port your signatures with every extension and to reduce
+errors we strongly suggest to use the helpers to access data.
+
 Following is a list of available methods.
 
 .. function:: Signature.check_file(pattern[, regex=False])
@@ -346,7 +353,7 @@ Following is a list of available methods.
 
         self.check_file(pattern=".*\.exe$", regex=True)
 
-.. function:: Signature.check_key(pattern[, regex=False])
+.. function:: Signature.check_key(pattern[, regex=False[, actions=["regkey_written", "regkey_opened", "regkey_read"][, pid=None]]])
 
     Checks whether the malware opened or created a registry key matching the specified pattern. Returns ``True`` in case it did, otherwise returns ``False``.
 
@@ -354,6 +361,10 @@ Following is a list of available methods.
     :type pattern: string
     :param regex: enable to compile the pattern as a regular expression
     :type regex: boolean
+    :param actions: a list of key-access-actions to search the key in
+    :type actions: list
+    :param pid: process id to filter for
+    :type pid: int
     :rtype: boolean
 
     Example Usage:
@@ -399,10 +410,11 @@ Following is a list of available methods.
 
         self.check_api(pattern="URLDownloadToFileW", process="AcroRd32.exe")
 
-.. function:: Signature.check_argument(pattern[, name=Name[, api=None[, category=None[, process=None[, regex=False]]]])
+.. function:: Signature.check_argument_call(call, pattern[, name=Name[, api=None[, category=None[, regex=False]]])
 
     Checks whether the malware invoked a function with a specific argument value. Returns ``True`` in case it did, otherwise returns ``False``.
 
+    :param call: the call to check to check the argument in
     :param pattern: argument value pattern to be matched
     :type pattern: string
     :param name: name of the argument to be matched
@@ -411,8 +423,6 @@ Following is a list of available methods.
     :type api: string
     :param category: name of the category of the function to be matched
     :type category: string
-    :param process: name of the process performing the associated call
-    :type process: string
     :param regex: enable to compile the pattern as a regular expression
     :type regex: boolean
     :rtype: boolean
@@ -422,7 +432,7 @@ Following is a list of available methods.
     .. code-block:: python
         :linenos:
 
-        self.check_argument(pattern=".*cuckoo.*", category="filesystem", regex=True)
+        self.check_argument_call(call, pattern=".*cuckoo.*", category="filesystem", regex=True)
 
 .. function:: Signature.check_ip(pattern[, regex=False])
 
