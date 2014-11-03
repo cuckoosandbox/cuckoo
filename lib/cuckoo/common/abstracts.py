@@ -864,12 +864,13 @@ class Signature(object):
             return True
         return False
 
-    def get_mutexes(self):
+    def get_mutexes(self, pid=None):
         """
-        @return:List of http urls
+        @param pid: Pid to filter for
+        @return:List of mutexes
         """
         mutexes = []
-        for process in self.get_processes_by_pid():
+        for process in self.get_processes_by_pid(pid):
             if "summary" in process and "mutexes" in process["summary"]:
                 mutexes += process["summary"]["mutexes"]
         return mutexes
