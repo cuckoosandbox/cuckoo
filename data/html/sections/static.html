@@ -117,22 +117,40 @@
         
         {% if results.static.elf_sections %}
             <div>
-                <h4><a href="javascript:showHide('pe_sections');">Sections</a></h4>
-                <div id="pe_sections" style="display: none;">
+                <h4><a href="javascript:showHide('elf_sections');">Sections</a></h4>
+                <div id="elf_sections" style="display: none;">
                     <table class="table table-striped table-bordered">
                         <tr>
                             <th>Name</th>
+                            <th>Type</th>
                             <th>Virtual Address</th>
                             <th>Virtual Size</th>
                         </tr>
                         {% for section in results.static.elf_sections %}
                             <tr>
                                 <td>{{section.name}}</td>
+                                <td>{{section.type}}</td>
                                 <td>{{section.virtual_address}}</td>
                                 <td>{{section.virtual_size}}</td>
                             </tr>
                         {% endfor %}
                     </table>
+                </div>
+            </div>
+        {% endif %}
+        
+        {% if results.static.elf_symbols %}
+            <div>
+                <h4><a href="javascript:showHide('elf_symbols');">Symbols</a></h4>
+                <div id="elf_symbols" style="display: none;">
+                    {% for library in results.static.elf_symbols %}
+                        <div class="well">
+                            <div><strong>Library {{library.lib}}</strong>:</div>
+                            {% for function in library.symbols %}
+                                <div>&bull; <span class="mono">{{function.address}}</span> - {{function.name}}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         {% endif %}

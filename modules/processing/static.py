@@ -277,7 +277,83 @@ class ELF:
     def __init__(self, file_path):
         """@param file_path: file path."""
         self.file_path = file_path
+    
+    def __get_relocations(self):
+        """Gets relocations.
+        @return: relocations dict or None.
+        """
+        relocs = []
         
+        process = subprocess.Popen(["/usr/bin/objdump",self.file_path, "-R"], stdout=subprocess.PIPE)
+        elf = process.communicate()[0]
+        
+        entry = []
+        elf = re.split("\n[ ]{0,}", elf)
+        
+        for i in range(0,len(elf)):
+            if re.search("00", elf[i]):
+                entry.append(filter(None, re.split("\s", elf[i])))
+        
+        relocs = entry
+        
+        return relocs
+    
+    def _get_symbols(self):
+        """Gets symbols.
+        @return: symbols dict or None.
+        """
+        
+        libs = []
+        entry = []
+        
+        # dump dynamic symbols using 'objdump -T'
+        process = subprocess.Popen(["/usr/bin/objdump",self.file_path, "-T"], stdout=subprocess.PIPE)
+        elf = process.communicate()[0]
+        
+        # Format to lines by splitting at '\n'
+        elf = re.split("\n[ ]{0,}", elf)
+            
+        for i in range(0,len(elf)):
+            if re.search("DF \*UND\*", elf[i]):
+                entry.append(filter(None, re.split("\s", elf[i])))
+        
+        # extract library names
+        lib_names = []
+        for e in entry:
+            if len(e) > 5:
+                if e[4] not in lib_names:
+                    lib_names.append(e[4])
+            else:
+                # no library specified :-/
+                e.insert(4,"None")
+        lib_names.append("None")
+        
+        # fetch relocation addresses
+        relocs = self.__get_relocations()
+        
+        # find all symbols for each lib
+        for lib in lib_names:
+            symbols = []
+            for e in entry:
+                if lib == e[4]:
+                    symbol = {}
+                    symbol["address"] = "0x{0}".format(e[0])
+                    symbol["name"] = e[5]
+                    
+                    # fetch the address from relocation sections if possible
+                    for r in relocs:
+                        if symbol["name"] in r:
+                            symbol["address"] = "0x{0}".format(r[0])
+                    symbols.append(symbol)
+                
+            if symbols:
+                symbol_section = {}
+                symbol_section["lib"] = lib
+                symbol_section["symbols"] = symbols
+                libs.append(symbol_section)
+                
+        return libs
+            
     def _get_sections(self):
         """Gets sections.
         @return: sections dict or None.
@@ -286,7 +362,7 @@ class ELF:
         sections = []
         entry = []
         
-        process = subprocess.Popen(["/usr/bin/readelf",self.file_path, "-S", "-W"], stdout=subprocess.PIPE)
+        process = subprocess.Popen(["/usr/bin/readelf", self.file_path, "-S", "-W"], stdout=subprocess.PIPE)
         elf = process.communicate()[0]
         
         # Format to lines by splitting at '\n'
@@ -302,10 +378,10 @@ class ELF:
             try:
                 section = {}
                 section["name"] = e[1]
+                section["type"] = e[2]
                 section["virtual_address"] = "0x{0}".format(e[3])
                 section["virtual_size"] = "0x{0}".format(e[4])
                 sections.append(section)
-                print e[1], e[3], e[4]
                 
             except:
                 continue
@@ -321,6 +397,7 @@ class ELF:
         
         results = {}
         results["elf_sections"] = self._get_sections()
+        results["elf_symbols"] = self._get_symbols()
         return results
         
 class Static(Processing):
