@@ -3,6 +3,9 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import re
+import logging
+import subprocess
 from datetime import datetime
 
 try:
@@ -23,6 +26,8 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import convert_to_printable
 
+log = logging.getLogger()
+
 # Partially taken from
 # http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 
@@ -32,7 +37,7 @@ class PortableExecutable:
     def __init__(self, file_path):
         """@param file_path: file path."""
         self.file_path = file_path
-        self.pe = None
+        self.elf = None
 
     def _get_filetype(self, data):
         """Gets filetype, uses libmagic if available.
@@ -216,7 +221,6 @@ class PortableExecutable:
 
         return infos
 
-
     def _get_imphash(self):
         """Gets imphash.
         @return: imphash string or None.
@@ -267,6 +271,58 @@ class PortableExecutable:
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
         return results
 
+class ELF:
+    """ ELF analysis """
+    
+    def __init__(self, file_path):
+        """@param file_path: file path."""
+        self.file_path = file_path
+        
+    def _get_sections(self):
+        """Gets sections.
+        @return: sections dict or None.
+        """
+
+        sections = []
+        entry = []
+        
+        process = subprocess.Popen(["/usr/bin/readelf",self.file_path, "-S", "-W"], stdout=subprocess.PIPE)
+        elf = process.communicate()[0]
+        
+        # Format to lines by splitting at '\n'
+        tmp = re.split("\n[ ]{0,}", elf)
+        for i in range(0,len(tmp)):
+            # Filter lines containing [xx]
+            if re.search("^\[[ 0-9][1-9]\]", tmp[i]):
+                # Regex: Split all whitespaces '\s' if they are not proceeded '(?<!\[)' by a '['
+                # remove all splitted whitespaces from the list filter()'
+                entry.append(filter(None, re.split("(?<!\[)\s", tmp[i])))
+                
+        for e in entry:
+            try:
+                section = {}
+                section["name"] = e[1]
+                section["virtual_address"] = "0x{0}".format(e[3])
+                section["virtual_size"] = "0x{0}".format(e[4])
+                sections.append(section)
+                print e[1], e[3], e[4]
+                
+            except:
+                continue
+            
+        return sections
+        
+    def run(self):
+        """Run analysis.
+        @return: analysis results dict or None.
+        """
+        if not os.path.exists(self.file_path):
+            return None
+        
+        results = {}
+        results["elf_sections"] = self._get_sections()
+        return results
+        
 class Static(Processing):
     """Static analysis."""
     
@@ -277,9 +333,12 @@ class Static(Processing):
         self.key = "static"
         static = {}
 
-        if HAVE_PEFILE:
-            if self.task["category"] == "file":
-                if "PE32" in File(self.file_path).get_type():
+        if self.task["category"] == "file":
+            if "PE32" in File(self.file_path).get_type():
+                if HAVE_PEFILE:
                     static = PortableExecutable(self.file_path).run()
+                    
+            if "ELF" in File(self.file_path).get_type():
+                static = ELF(self.file_path).run()
 
         return static

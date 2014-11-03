@@ -114,20 +114,43 @@
                 </div>
             </div>
         {% endif %}
-
-        {% if results.strings %}
+        
+        {% if results.static.elf_sections %}
             <div>
-                <h4><a href="javascript:showHide('strings');">Strings</a></h4>
-                <div id="strings" style="display: none;">
-                    {% for str in results.strings %}
-                        <div><span class="mono">{{str}}</span></div>
-                    {% endfor %}
-                </div> 
+                <h4><a href="javascript:showHide('pe_sections');">Sections</a></h4>
+                <div id="pe_sections" style="display: none;">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Name</th>
+                            <th>Virtual Address</th>
+                            <th>Virtual Size</th>
+                        </tr>
+                        {% for section in results.static.elf_sections %}
+                            <tr>
+                                <td>{{section.name}}</td>
+                                <td>{{section.virtual_address}}</td>
+                                <td>{{section.virtual_size}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
         {% endif %}
+        
+    {% endif %}
 
+    {% if results.strings %}
+        <div>
+            <h4><a href="javascript:showHide('strings');">Strings</a></h4>
+            <div id="strings" style="display: none;">
+                {% for str in results.strings %}
+                    <div><span class="mono">{{str}}</span></div>
+                {% endfor %}
+            </div> 
+        </div>
+	{% endif %}
 
-    {% else %}
+    {% if not results.strings and not results.static %}
         Nothing to display.
     {% endif %}
 </section>
