@@ -16,7 +16,7 @@ import time
 
 INTERVAL = 30
 MINIMUMQUEUE = 500
-RESET_LASTCHECK = 500
+RESET_LASTCHECK = 100
 
 
 def required(package):
