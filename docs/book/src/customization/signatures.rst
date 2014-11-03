@@ -244,7 +244,7 @@ Another event is triggered when a signature matches.
         :linenos:
 
         def on_signature(self, matched_sig):
-            required = ["creates_exe","badmalware"]
+            required = ["creates_exe", "badmalware"]
             for sig in required:
                 if not sig in self.list_signatures():
                     return
@@ -375,6 +375,201 @@ Following is a list of available methods.
 
         self.check_argument_call(call, pattern=".*cuckoo.*", category="filesystem", regex=True)
 
+.. function:: Signatures.list_signatures()
+
+    Returns a list of signature names that matched so far. It can be used to write meta-signatures combining several
+    signatures on anomalies into a classification.
+
+    :rtype: list
+
+    Example Usage:
+
+    .. code-block:: python
+        :linenos:
+
+        def on_signature(self, matched_sig):
+            required = ["creates_exe", "badmalware"]
+            for sig in required:
+                if not sig in self.list_signatures():
+                    return
+            return True
+
+.. function:: Signatures.get_processes([name=None])
+
+    An iterator returning the processes monitored. If name is given, they will be filtered for the name
+
+    :param name: Name of the process to filter for
+    :type name: string
+    :rtype: iterator
+
+    Example Usage:
+
+    .. code-block:: python
+        :linenos:
+
+        for process in self.get_processes("foo"):
+            pass
+
+.. function:: Signatures.get_processes_by_pid([pid=None])
+
+    An iterator returning the processes monitored. If pid is given, they will be filtered for the process id
+
+    :param pid: Process ID of the process to filter for
+    :type pid: int
+    :rtype: iterator
+
+    .. code-block:: python
+        :linenos:
+
+        for process in self.get_processes_by_pid(4):
+            pass
+
+.. function:: Signatures.get_threads([pid=None])
+
+    An iterator returning the threads monitored. If pid is given, they will be filtered for the process id.
+
+    :param pid: Name of the process to filter for
+    :type pid: int
+    :rtype: iterator
+
+    .. code-block:: python
+        :linenos:
+
+        for thread in self.get_threads():
+            pass
+
+.. function:: Signatures.get_files([pid=None,[actions=None]])
+
+    Iterates over the files accessed by a process (or all processes). Access type can be a list of "file_written",
+    "file_read", "file_deleted". Default is all.
+
+    :param pid: Name of the process to filter for
+    :type pid: int
+    :param actions: access types of the files to return
+    :type actions: list
+    :rtype: iterator
+
+    .. code-block:: python
+        :linenos:
+
+        for afile in self.get_files():
+            pass
+
+.. function:: Signatures.get_keys([pid=None,[actions=None]])
+
+    Iterates over the registry keys accessed by a process (or all processes). Access type can be a list of "regkey_written",
+    "regkey_opened", "regkey_read". Default is all.
+
+    :param pid: Name of the process to filter for
+    :type pid: int
+    :param actions: access types of the registry keys to return
+    :type actions: list
+    :rtype: iterator
+
+    .. code-block:: python
+        :linenos:
+
+        for akey in self.get_keys():
+            pass
+
+.. function:: Signatures.get_mutexes([pid=None])
+
+    Returns a list of mutexes. Optionally filtered by process id
+
+    :param pid: Name of the process to filter for
+    :type pid: int
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for mutex in self.get_mutexes():
+            pass
+
+.. function:: Signature.get_net_hosts()
+
+    Returns a list of hosts from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for host in self.get_net_hosts():
+            pass
+
+.. function:: Signature.get_net_domains()
+
+    Returns a list of domains from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for domain in self.get_net_domains():
+            pass
+
+.. function:: Signature.get_net_http()
+
+    Returns a list of http information blocks from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for http_data in self.get_net_http():
+            pass
+
+.. function:: Signature.get_net_udp()
+
+    Returns a list of udp information blocks from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for udp_data in self.get_net_udp():
+            pass
+
+.. function:: Signature.get_net_icmp()
+
+    Returns a list of icmp information blocks from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for icmp_data in self.get_net_icmp():
+            pass
+
+.. function:: Signature.get_net_irc()
+
+    Returns a list of irc information blocks from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for irc_data in self.get_net_irc():
+            pass
+
+.. function:: Signature.get_net_smtp()
+
+    Returns a list of smtp information blocks from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for smtp_data in self.get_net_smtp():
+            pass
+
 .. function:: Signature.check_ip(pattern[, regex=False])
 
     Checks whether the malware contacted the specified IP address. Returns ``True`` in case it did, otherwise returns ``False``.
@@ -425,3 +620,48 @@ Following is a list of available methods.
         :linenos:
 
         self.check_url(pattern="^.+\/load\.php\?file=[0-9a-zA-Z]+$", regex=True)
+
+.. function:: Signature.flags.set(name, [pid=None[, tid=None[, timestamp=None]]])
+
+    Flags can be used to collect information in the on_call section of a signature and react (decide to alert) in the
+    on_complete part if all required flags are set. Flags are signature specific. They are identified by their name.
+    PID, TID and timestamp can be later used to identify if a flag was set in a specific process/thread or at a specific
+    time.
+
+    :param name: Name of the flag to set
+    :type name: string
+    :param pid: process id
+    :type pid: int
+    :param tid: thread id
+    :type tid: int
+    :param timestamp: timestamp in the log to mark this flag for
+    :type timestamp: int
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, pid, tid):
+            self.flags.set("foo", 1, 2, 2345)
+
+.. function:: Signature.flags.find([name=None[, pid=None[, tid=None[, before=None[, after=None]]]])
+
+    Returns a list of flags matching the given criteria
+
+    :param name: Name of the flag look for
+    :type name: string
+    :param pid: process id to filter for
+    :type pid: int
+    :param tid: thread id to filter for
+    :type tid: int
+    :param before: flag timestamp must be <= before-timestamp
+    :type before: int
+    :param after: flag timestamp must be >= after-timestamp
+    :type after: int
+
+    .. code-block:: python
+        :linenos:
+
+        def on_complete(self):
+            if self.flags.find("foo"):
+                self.data.append({"Flag found matching name": "foo"})
+                return True
