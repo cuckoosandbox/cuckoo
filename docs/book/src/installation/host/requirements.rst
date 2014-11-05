@@ -120,7 +120,7 @@ you'll have to set specific Linux capabilities to the binary::
 
 You can verify the results of last command with::
 
-    $ getcap /usr/sbin/tcpdump 
+    $ getcap /usr/sbin/tcpdump
     /usr/sbin/tcpdump = cap_net_admin,cap_net_raw+eip
 
 If you don't have `setcap` installed you can get it with::
@@ -136,7 +136,7 @@ Or otherwise (**not recommended**) do::
 Installing Volatility
 =====================
 
-Volatility is an optional tool to do forensic analysis on memory dumps. 
+Volatility is an optional tool to do forensic analysis on memory dumps.
 In combination with Cuckoo, it can automatically provide additional visibility
 into deep modifications in the operating system as well as detect the presence
 of rootkit technology that escaped the monitoring domain of Cuckoo's analyzer.
