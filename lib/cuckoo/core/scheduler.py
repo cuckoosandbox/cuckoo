@@ -515,6 +515,12 @@ class Scheduler:
                                   space_available)
                         continue
 
+            # Have we limited the number of concurrently executing machines?
+            if self.cfg.cuckoo.max_machines_count > 0:
+                # Are too many running?
+                if len(machinery.running()) >= self.cfg.cuckoo.max_machines_count:
+                    continue
+
             # If no machines are available, it's pointless to fetch for
             # pending tasks. Loop over.
             if not machinery.availables():
