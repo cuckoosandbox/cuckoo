@@ -43,44 +43,44 @@ class BehaviorReconstructor(object):
 
     def _report_file(self, f):
         if f["read"]:
-            self.report("file_read", f["filepath"])
+            self.report("file_read", str(f["filepath"]))
 
         if f["written"]:
-            self.report("file_written", f["filepath"])
+            self.report("file_written", str(f["filepath"]))
 
     # Generic file & directory stuff.
 
     def _api_CreateDirectoryW(self, return_value, arguments):
-        self.report("directory_created", arguments["dirpath"])
+        self.report("directory_created", str(arguments["dirpath"]))
 
     _api_CreateDirectoryExW = _api_CreateDirectoryW
 
     def _api_RemoveDirectoryA(self, return_value, arguments):
-        self.report("directory_removed", arguments["dirpath"])
+        self.report("directory_removed", str(arguments["dirpath"]))
 
     _api_RemoveDirectoryW = _api_RemoveDirectoryA
 
     def _api_MoveFileWithProgressW(self, return_value, arguments):
         self.report("file_moved",
-                    src=arguments["oldfilepath"],
-                    dst=arguments["newfilepath"])
+                    src=str(arguments["oldfilepath"]),
+                    dst=str(arguments["newfilepath"]))
 
     def _api_CopyFileA(self, return_value, arguments):
         self.report("file_copied",
-                    src=arguments["oldfilepath"],
-                    dst=arguments["newfilepath"])
+                    src=str(arguments["oldfilepath"]),
+                    dst=str(arguments["newfilepath"]))
 
     _api_CopyFileW = _api_CopyFileA
     _api_CopyFileExW = _api_CopyFileA
 
     def _api_DeleteFileA(self, return_value, arguments):
-        self.report("file_deleted", arguments["filepath"])
+        self.report("file_deleted", str(arguments["filepath"]))
 
     _api_DeleteFileW = _api_DeleteFileA
     _api_NtDeleteFile = _api_DeleteFileA
 
     def _api_FindFirstFileExA(self, return_value, arguments):
-        self.report("directory_enumerated", arguments["filepath"])
+        self.report("directory_enumerated", str(arguments["filepath"]))
 
     _api_FindFirstFileExW = _api_FindFirstFileExA
 
@@ -91,7 +91,7 @@ class BehaviorReconstructor(object):
             self.files[arguments["file_handle"]] = {
                 "read": False,
                 "written": False,
-                "filepath": arguments["filepath"],
+                "filepath": str(arguments["filepath"]),
             }
 
     _api_NtOpenFile = _api_NtCreateFile
@@ -109,14 +109,14 @@ class BehaviorReconstructor(object):
     # Registry stuff.
 
     def _api_RegOpenKeyExA(self, return_value, arguments):
-        self.report("regkey_opened", arguments["regkey"])
+        self.report("regkey_opened", str(arguments["regkey"]))
 
     _api_RegOpenKeyExW = _api_RegOpenKeyExA
     _api_RegCreateKeyExA = _api_RegOpenKeyExA
     _api_RegCreateKeyExW = _api_RegOpenKeyExA
 
     def _api_RegDeleteKeyA(self, return_value, arguments):
-        self.report("regkey_deleted", arguments["regkey"])
+        self.report("regkey_deleted", str(arguments["regkey"]))
 
     _api_RegDeleteKeyW = _api_RegDeleteKeyA
     _api_RegDeleteValueA = _api_RegDeleteKeyA
@@ -124,13 +124,13 @@ class BehaviorReconstructor(object):
     _api_NtDeleteValueKey = _api_RegDeleteKeyA
 
     def _api_RegQueryValueExA(self, return_value, arguments):
-        self.report("regkey_read", arguments["regkey"])
+        self.report("regkey_read", str(arguments["regkey"]))
 
     _api_RegQueryValueExW = _api_RegQueryValueExA
     _api_NtQueryValueKey = _api_RegQueryValueExA
 
     def _api_RegSetValueExA(self, return_value, arguments):
-        self.report("regkey_written", arguments["regkey"])
+        self.report("regkey_written", str(arguments["regkey"]))
 
     _api_RegSetValueExW = _api_RegSetValueExA
     _api_NtSetValueKey = _api_RegSetValueExA
@@ -148,21 +148,21 @@ class BehaviorReconstructor(object):
     # Network stuff.
 
     def _api_URLDownloadToFileW(self, return_value, arguments):
-        self.report("downloads_file", arguments["url"])
-        self.report("file_written", arguments["filepath"])
+        self.report("downloads_file", str(arguments["url"]))
+        self.report("file_written", str(arguments["filepath"]))
 
     def _api_InternetConnectA(self, return_value, arguments):
-        self.report("connects_host", arguments["hostname"])
+        self.report("connects_host", str(arguments["hostname"]))
 
     _api_InternetConnectW = _api_InternetConnectA
 
     def _api_InternetOpenUrlA(self, return_value, arguments):
-        self.report("fetches_url", arguments["url"])
+        self.report("fetches_url", str(arguments["url"]))
 
     _api_InternetOpenUrlW = _api_InternetOpenUrlA
 
     def _api_DnsQuery_A(self, return_value, arguments):
-        self.report("resolves_host", arguments["hostname"])
+        self.report("resolves_host", str(arguments["hostname"]))
 
     _api_DnsQuery_W = _api_DnsQuery_A
     _api_DnsQuery_UTF8 = _api_DnsQuery_A
@@ -171,7 +171,13 @@ class BehaviorReconstructor(object):
     _api_gethostbyname = _api_DnsQuery_A
 
     def _api_connect(self, return_value, arguments):
-        self.report("connects_ip", arguments["ip_address"])
+        self.report("connects_ip", str(arguments["ip_address"]))
+
+    # Mutex stuff
+    def _api_NtCreateMutant(self, return_value, arguments):
+        res = str(arguments["mutant_name"])
+        if type(res) == str and len(res):
+            self.report("mutexes",res)
 
     _api_ConnectEx = _api_connect
 
@@ -190,7 +196,7 @@ class BsonHandler(object):
     def results(self):
         self.finish()
 
-        self.proc["behavior"] = self.reconstructor.results()
+        self.proc["summary"] = self.reconstructor.results()
 
         return {
             "process": self.proc,
@@ -215,6 +221,7 @@ class BsonHandler(object):
             "first_seen": self.first_seen,
             "process_identifier": pid,
             "parent_process_identifier": ppid,
+            "threads": []
         }
 
         self.reconstructor = BehaviorReconstructor()
@@ -309,17 +316,19 @@ class BehaviorAnalysis(Processing):
         @return: results dict.
         """
         behavior = {
-            "processes": {},
+            "processes": [],
             "calls": {},
         }
 
         for path in self._enum_logs():
             proc = self._parse_log(path)
             process = proc["process"]
-            behavior["processes"][process["process_identifier"]] = process
 
             for tid, calls in proc["calls"].items():
-                pidtid = "%d_%d" % (process["process_identifier"], tid)
-                behavior["calls"][pidtid] = calls
+                thread = {"tid": tid,
+                          "calls": calls}
+                process["threads"].append(thread)
+
+            behavior["processes"].append(process)
 
         return behavior

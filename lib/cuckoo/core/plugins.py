@@ -239,6 +239,12 @@ class RunSignatures(object):
 
     def __init__(self, results):
         self.results = results
+        self.matched = []
+
+        complete_list = list_plugins(group="signatures")
+        self.evented_signatures = [sig(self)
+                        for sig in complete_list
+                        if sig.enabled and self._check_signature_version(sig)]
 
     def _load_overlay(self):
         """Loads overlay data from a json file.
@@ -284,6 +290,10 @@ class RunSignatures(object):
                               "minimum version %s",
                               current.name, current.minimum)
                     return None
+                if StrictVersion("1.2") > StrictVersion(current.minimum.split("-")[0]):
+                    log.warn("Cuckoo signature style has been redesigned in cuckoo 1.2. This signature is not compatible: %s", current.name)
+                    return None
+
             except ValueError:
                 log.debug("Wrong minor version number in signature %s",
                           current.name)
@@ -337,7 +347,7 @@ class RunSignatures(object):
             if current.run():
                 log.debug("Analysis matched signature \"%s\"", current.name)
                 # Return information on the matched signature.
-                return current.as_result()
+                return current
         except NotImplementedError:
             return None
         except:
@@ -345,15 +355,59 @@ class RunSignatures(object):
 
         return None
 
+    def is_matched(self, sig):
+        """ Return True if siganture already matched
+
+        @param sig: The signature to verify
+        @return:
+        """
+
+        for matched in self.matched:
+            if sig.name == matched["name"]:
+                return True
+        return False
+
+    def append_sig(self, sig):
+        """
+
+        @param sig: The signature, that matched
+
+        @return:
+        """
+
+        self.matched.append(sig.as_result())
+        # Link this into the results already at this point, so other signatures can use it
+        self.matched.sort(key=lambda key: key["severity"])
+        self.results["signatures"] = self.matched
+
+        for sig in self.evented_signatures:
+            try:
+                result = sig.on_signature(sig)
+                if result is True and not self.is_matched(sig):
+                    self.append_sig(sig)
+            except NotImplementedError:
+                self.evented_signatures.remove(sig)
+            except:
+                log.exception("Failed to run signature \"%s\":", sig.name)
+
     def run(self):
         # This will contain all the matched signatures.
-        matched = []
+        self.matched = []
 
         complete_list = list_plugins(group="signatures")
-        evented_list = [sig(self.results)
+        evented_list = [sig(self)
                         for sig in complete_list
-                        if sig.enabled and sig.evented and
+                        if sig.enabled and
                         self._check_signature_version(sig)]
+        no_on_call_list = []
+
+        # Test quickout
+        for sig in evented_list:
+            try:
+                if sig.quickout():
+                    evented_list.remove(sig)
+            except NotImplementedError:
+                pass
 
         overlay = self._load_overlay()
         log.debug("Applying signature overlays for signatures: %s", ", ".join(overlay.keys()))
@@ -361,6 +415,16 @@ class RunSignatures(object):
             self._apply_overlay(signature, overlay)
 
         if evented_list:
+            # Cleanup code to identify and remove old signatures still depending on run
+            for sig in evented_list:
+                try:
+                    sig.run()
+                except AttributeError:
+                    pass
+                else:
+                    log.warn("This signature is still old-style. Removing it: %s", sig.name)
+                    evented_list.remove(sig)
+
             log.debug("Running %u evented signatures", len(evented_list))
             for sig in evented_list:
                 if sig == evented_list[-1]:
@@ -369,44 +433,49 @@ class RunSignatures(object):
                     log.debug("\t |-- %s", sig.name)
 
             # Iterate calls and tell interested signatures about them
-            for proc in self.results["behavior"]["processes"]:
-                for call in proc["calls"]:
-                    # Loop through active evented signatures.
-                    for sig in evented_list:
-                        # Skip current call if it doesn't match the filters (if any).
-                        if sig.filter_processnames and not proc["process_name"] in sig.filter_processnames:
-                            continue
-                        if sig.filter_apinames and not call["api"] in sig.filter_apinames:
-                            continue
-                        if sig.filter_categories and not call["category"] in sig.filter_categories:
-                            continue
+            for proc in self.results["behavior2"]["processes"]:
+                for thrd in proc["threads"]:
+                    for call in thrd["calls"]:
+                        # Loop through active evented signatures.
+                        for sig in evented_list:
+                            # Skip current call if it doesn't match the filters (if any).
+                            if sig.filter_processnames and not proc["process_name"] in sig.filter_processnames:
+                                continue
+                            if sig.filter_apinames and not call["api"] in sig.filter_apinames:
+                                continue
+                            if sig.filter_categories and not call["category"] in sig.filter_categories:
+                                continue
 
-                        result = None
-                        try:
-                            result = sig.on_call(call, proc)
-                        except NotImplementedError:
-                            result = False
-                        except:
-                            log.exception("Failed to run signature \"%s\":", sig.name)
-                            result = False
+                            result = None
+                            try:
+                                result = sig.on_call(call, proc["process_identifier"], thrd["tid"])
+                            except NotImplementedError:
+                                result = False
+                            except:
+                                log.exception("Failed to run signature \"%s\":", sig.name)
+                                result = False
 
-                        # If the signature returns None we can carry on, the
-                        # condition was not matched.
-                        if result is None:
-                            continue
+                            # If the signature returns None we can carry on, the
+                            # condition was not matched.
+                            if result is None:
+                                continue
 
-                        # On True, the signature is matched.
-                        if result is True:
-                            log.debug("Analysis matched signature \"%s\"", sig.name)
-                            matched.append(sig.as_result())
-                            if sig in complete_list:
-                                complete_list.remove(sig)
-                        
-                        # Either True or False, we don't need to check this sig anymore.
-                        evented_list.remove(sig)
-                        del sig
+                            # On True, the signature is matched.
+                            if result is True:
+                                log.debug("Analysis matched signature \"%s\"", sig.name)
+                                self.append_sig(sig)
+                                if sig in complete_list:
+                                    complete_list.remove(sig)
 
-            # Call the stop method on all remaining instances.
+                            # Either True or False, we don't need to check this sig anymore.
+                            # But should keep it for the on_complete event afterwards
+                            no_on_call_list.append(sig)
+                            evented_list.remove(sig)
+                            del sig
+
+            evented_list = evented_list + no_on_call_list
+
+            # Call the stop method on all signatures.
             for sig in evented_list:
                 try:
                     result = sig.on_complete()
@@ -418,31 +487,11 @@ class RunSignatures(object):
                 else:
                     if result is True:
                         log.debug("Analysis matched signature \"%s\"", sig.name)
-                        matched.append(sig.as_result())
+                        self.append_sig(sig)
                         if sig in complete_list:
                             complete_list.remove(sig)
 
-        # Link this into the results already at this point, so non-evented signatures can use it
-        self.results["signatures"] = matched
 
-        # Compat loop for old-style (non evented) signatures.
-        if complete_list:
-            complete_list.sort(key=lambda sig: sig.order)
-            log.debug("Running non-evented signatures")
-
-            for signature in complete_list:
-                match = self.process(signature)
-                # If the signature is matched, add it to the list.
-                if match:
-                    matched.append(match)
-
-                # Reset the ParseProcessLog instances after each signature
-                if "behavior" in self.results:
-                    for process in self.results["behavior"]["processes"]:
-                        process["calls"].reset()
-
-        # Sort the matched signatures by their severity level.
-        matched.sort(key=lambda key: key["severity"])
 
 class RunReporting:
     """Reporting Engine.
