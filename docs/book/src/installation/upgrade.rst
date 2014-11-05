@@ -69,10 +69,9 @@ Enter the alembic migration directory in "utils/db_migration" with::
 
     cd utils/db_migration
 
-If you are using a custom database (MySQL, PostgreSQL or SQLite in a non-default
-location) edit "alembic.ini" and change "sqlalchemy.url" to point your database.
-Before starting the migration script you must set your database connection in
-"cuckoo.conf" if you are using a custom one.
+Before starting the migration script you must set your database connection in "cuckoo.conf"
+if you are using a custom one. Alembic migration script will use the database
+connection parameters configured in cuckoo.conf.
 
 Again, please remember to backup before launching migration tool! A wrong
 configuration may corrupt your data, backup should save kittens!
