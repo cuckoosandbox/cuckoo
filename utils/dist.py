@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import argparse
+import ConfigParser
 import datetime
 import hashlib
 import json
@@ -331,7 +332,7 @@ class StatusThread(threading.Thread):
                     db.session.refresh(node)
 
                 # Dump the uptime.
-                if app.config["UPTIME_LOGFILE"] is not None:
+                if app.config["UPTIME_LOGFILE"]:
                     with open(app.config["UPTIME_LOGFILE"], "ab") as f:
                         t = int(start.strftime("%s"))
                         c = json.dumps(dict(timestamp=t, status=statuses))
@@ -513,7 +514,7 @@ class TaskRootApi(TaskBaseApi):
 
 
 class ReportApi(RestResource):
-    report_formats = {
+    REPORT_FORMATS = {
         "json": "json",
     }
 
@@ -532,10 +533,10 @@ class ReportApi(RestResource):
 
         f = open(path, "rb")
 
-        if self.report_formats[report] == "json":
+        if self.REPORT_FORMATS[report] == "json":
             return json.load(f)
 
-        if self.report_formats[report] == "xml":
+        if self.REPORT_FORMATS[report] == "xml":
             return f.read()
 
         abort(404, message="Invalid report format")
@@ -603,12 +604,8 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("host", nargs="?", default="0.0.0.0", help="Host to listen on")
     p.add_argument("port", nargs="?", type=int, default=9003, help="Port to listen on")
+    p.add_argument("-s", "--settings", type=str, required=True, help="Settings file.")
     p.add_argument("-d", "--debug", action="store_true", help="Enable debug logging")
-    p.add_argument("--db", type=str, default="sqlite:///dist.db", help="Database connection string")
-    p.add_argument("--samples-directory", type=str, required=True, help="Samples directory")
-    p.add_argument("--uptime-logfile", type=str, help="Uptime logfile path")
-    p.add_argument("--report-formats", type=str, required=True, help="Reporting formats to fetch")
-    p.add_argument("--reports-directory", type=str, required=True, help="Reports directory")
     args = p.parse_args()
 
     if args.debug:
@@ -620,23 +617,30 @@ if __name__ == "__main__":
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     log = logging.getLogger("cuckoo.distributed")
 
+    s = ConfigParser.ConfigParser()
+    s.read(args.settings)
+
+    app = create_app(database_connection=s.get("distributed", "database"))
+
     report_formats = []
-    for report_format in args.report_formats.split(","):
+    for report_format in s.get("distributed", "report_formats").split(","):
         report_formats.append(report_format.strip())
 
-    if not os.path.isdir(args.samples_directory):
-        os.makedirs(args.samples_directory)
+    app.config["REPORT_FORMATS"] = report_formats
 
-    if not os.path.isdir(args.reports_directory):
-        os.makedirs(args.reports_directory)
+    app.config["SAMPLES_DIRECTORY"] = \
+        s.get("distributed", "samples_directory")
+    if not os.path.isdir(app.config["SAMPLES_DIRECTORY"]):
+        os.makedirs(app.config["SAMPLES_DIRECTORY"])
+
+    app.config["REPORTS_DIRECTORY"] = \
+        s.get("distributed", "reports_directory")
+    if not os.path.isdir(app.config["REPORTS_DIRECTORY"]):
+        os.makedirs(app.config["REPORTS_DIRECTORY"])
 
     RUNNING, STATUSES = True, {}
 
-    app = create_app(database_connection=args.db)
-    app.config["SAMPLES_DIRECTORY"] = args.samples_directory
-    app.config["UPTIME_LOGFILE"] = args.uptime_logfile
-    app.config["REPORT_FORMATS"] = report_formats
-    app.config["REPORTS_DIRECTORY"] = args.reports_directory
+    app.config["UPTIME_LOGFILE"] = s.get("distributed", "uptime_logfile")
 
     t = StatusThread()
     t.daemon = True
