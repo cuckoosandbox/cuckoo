@@ -604,7 +604,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("host", nargs="?", default="0.0.0.0", help="Host to listen on")
     p.add_argument("port", nargs="?", type=int, default=9003, help="Port to listen on")
-    p.add_argument("-s", "--settings", type=str, required=True, help="Settings file.")
+    p.add_argument("-s", "--settings", type=str, help="Settings file.")
     p.add_argument("-d", "--debug", action="store_true", help="Enable debug logging")
     args = p.parse_args()
 
@@ -616,6 +616,11 @@ if __name__ == "__main__":
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     log = logging.getLogger("cuckoo.distributed")
+
+    if not args.settings:
+        dirpath = os.path.abspath(os.path.dirname(__file__))
+        conf_path = os.path.join(dirpath, "..", "conf", "distributed.conf")
+        args.settings = conf_path
 
     s = ConfigParser.ConfigParser()
     s.read(args.settings)
