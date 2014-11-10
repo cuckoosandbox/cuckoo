@@ -71,10 +71,7 @@ sql_query "DROP USER cuckoo"
 sql_query "CREATE USER cuckoo WITH PASSWORD '$PASSWORD'"
 
 # Setup the VirtualBox hostonly network.
-if [ -z "$(VBoxManage list hostonlyifs)" ]; then
-    VBoxManage hostonlyif create
-    VBoxManage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1
-fi
+vmcloak-vboxnet0
 
 # Run the magic iptables script that turns hostonly networks into full
 # internet access.
