@@ -438,8 +438,8 @@ class RunSignatures(object):
 
             # Iterate calls and tell interested signatures about them
             for process in self.results["behavior2"]["processes"]:
-                for thread in process["threads"]:
-                    for call in thread["calls"]:
+                for thread in process.get("threads", []):
+                    for call in thread.get("calls", []):
                         # Loop through active evented signatures.
                         for sig in evented_list:
                             # Skip current call if it doesn't match the filters (if any).
