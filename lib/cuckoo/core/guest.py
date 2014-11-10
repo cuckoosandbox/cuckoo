@@ -170,6 +170,23 @@ class GuestManager:
                     raise CuckooGuestError("{0}: unable to upload malware to "
                                            "analysis machine: {1}".format(self.id, e))
 
+            opt = {}
+            for row in options["options"].split(","):
+                if "=" not in row:
+                    continue
+
+                key, value = row.split("=", 1)
+                opt[key.strip()] = value.strip()
+
+            # Add hashes file if any is specified.
+            if opt["hashes-path"]:
+                if not os.path.isfile(opt["hashes-path"]):
+                    raise CuckooGuestError("Non-existing hashing file provided!")
+
+                hashes = open(opt["hashes-path"], "rb").read()
+                hashes = xmlrpclib.Binary(hashes)
+                self.server.add_hashes(hashes)
+
             # Launch the analyzer.
             pid = self.server.execute()
             log.debug("%s: analyzer started with PID %d", self.id, pid)
