@@ -244,7 +244,7 @@ class RunSignatures(object):
         self.evented_signatures = []
         for sig in list_plugins(group="signatures"):
             if sig.enabled and self._check_signature_version(sig):
-                self.evented_signature.append(sig(self))
+                self.evented_signatures.append(sig(self))
 
     def _load_overlay(self):
         """Loads overlay data from a json file.
