@@ -178,9 +178,7 @@ class BehaviorReconstructor(object):
 
     # Mutex stuff
     def _api_NtCreateMutant(self, return_value, arguments):
-        res = str(arguments["mutant_name"])
-        if type(res) == str and len(res):
-            self.report("mutexes",res)
+        self.report("mutex", str(arguments["mutant_name"]))
 
     _api_ConnectEx = _api_connect
 
@@ -336,8 +334,7 @@ class BehaviorAnalysis(Processing):
                 f.write("".join(struct.pack("q", h) for h in hashes))
 
             for tid, calls in proc["calls"].items():
-                thread = {"tid": tid,
-                          "calls": calls}
+                thread = dict(tid=tid, calls=calls)
                 process["threads"].append(thread)
 
             behavior["processes"].append(process)

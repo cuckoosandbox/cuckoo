@@ -243,10 +243,10 @@ class RunSignatures(object):
         self.results = results
         self.matched = []
 
-        complete_list = list_plugins(group="signatures")
-        self.evented_signatures = [sig(self)
-                        for sig in complete_list
-                        if sig.enabled and self._check_signature_version(sig)]
+        self.evented_signatures = []
+        for sig in list_plugins(group="signatures"):
+            if sig.enabled and self._check_signature_version(sig):
+                self.evented_signature.append(sig(self))
 
     def _load_overlay(self):
         """Loads overlay data from a json file.
@@ -292,8 +292,11 @@ class RunSignatures(object):
                               "minimum version %s",
                               current.name, current.minimum)
                     return None
+
                 if StrictVersion("1.2") > StrictVersion(current.minimum.split("-")[0]):
-                    log.warn("Cuckoo signature style has been redesigned in cuckoo 1.2. This signature is not compatible: %s", current.name)
+                    log.warn("Cuckoo signature style has been redesigned in "
+                             "cuckoo 1.2. This signature is not "
+                             "compatible: %s.", current.name)
                     return None
 
             except ValueError:
@@ -361,7 +364,7 @@ class RunSignatures(object):
         return None
 
     def is_matched(self, sig):
-        """ Return True if siganture already matched
+        """Return True if signature already matched
 
         @param sig: The signature to verify
         @return:
@@ -401,10 +404,11 @@ class RunSignatures(object):
         self.matched = []
 
         complete_list = list_plugins(group="signatures")
-        evented_list = [sig(self)
-                        for sig in complete_list
-                        if sig.enabled and
-                        self._check_signature_version(sig)]
+        evented_list = []
+        for sig in complete_list:
+            if sig.enabled and self._check_signature_version(sig):
+                evented_list.append(sig(self))
+
         no_on_call_list = []
 
         # Test quickout
@@ -453,7 +457,7 @@ class RunSignatures(object):
 
                         result = None
                         try:
-                            result = sig.on_call(call, proc)
+                            result = sig.on_call(call, proc["pid"])
                         except NotImplementedError:
                             result = False
                         except:
@@ -495,7 +499,6 @@ class RunSignatures(object):
                         self.append_sig(sig)
                         if sig in complete_list:
                             complete_list.remove(sig)
-
 
 
 class RunReporting:
