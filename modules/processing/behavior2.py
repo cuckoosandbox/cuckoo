@@ -4,6 +4,7 @@
 
 import os
 import logging
+import struct
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
@@ -191,6 +192,7 @@ class BsonHandler(object):
         self.calls = {}
         self.reconstructor = None
         self.first_seen = None
+        self.hashes = []
 
     def finish(self):
         self.reconstructor.finish()
@@ -244,7 +246,7 @@ class BsonHandler(object):
         })
 
     def log_call(self, context, apiname, category, arguments):
-        _, status, return_value, tid, timediff, stacktrace = context
+        _, status, return_value, tid, timediff, stacktrace, uniqhash = context
 
         if tid not in self.calls:
             self.calls[tid] = []
@@ -264,6 +266,8 @@ class BsonHandler(object):
         fn = getattr(self.reconstructor, "_api_%s" % apiname, None)
         if fn is not None:
             fn(return_value, arguments)
+
+        self.hashes.append(uniqhash)
 
 class BehaviorAnalysis(Processing):
     """Behavior Analyzer."""
@@ -312,7 +316,7 @@ class BehaviorAnalysis(Processing):
             except EOFError:
                 break
 
-        return handler.results()
+        return handler.results(), handler.hashes
 
     def run(self):
         """Run analysis.
@@ -324,8 +328,12 @@ class BehaviorAnalysis(Processing):
         }
 
         for path in self._enum_logs():
-            proc = self._parse_log(path)
+            proc, hashes = self._parse_log(path)
             process = proc["process"]
+
+            # Write all hashes to a file.
+            with open(path.replace(".bson", ".hashes"), "wb") as f:
+                f.write("".join(struct.pack("q", h) for h in hashes))
 
             for tid, calls in proc["calls"].items():
                 thread = {"tid": tid,

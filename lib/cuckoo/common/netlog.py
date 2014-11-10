@@ -285,6 +285,7 @@ class BsonParser(object):
         tid = dec.get("T", 0)
         time = dec.get("t", 0)
         stacktrace = dec.get("s", [])
+        uniqhash = dec.get("h", 0)
 
         context = [index, 1, 0, tid, time]
 
@@ -376,6 +377,7 @@ class BsonParser(object):
             context[1] = argdict.pop("is_success", 1)
             context[2] = argdict.pop("retval", 0)
             context.append(stacktrace)
+            context.append(uniqhash)
             argdict.update(dec.get("aux", {}))
 
             if apiname in self.flags:

@@ -136,6 +136,14 @@ class Agent:
 
         return True
 
+    def add_hashes(self, hashes):
+        hashes_path = os.path.join(ANALYZER_FOLDER, "hashes.bin")
+
+        with open(hashes_path, "wb") as f:
+            f.write(hashes.data)
+
+        return True
+
     def add_analyzer(self, data):
         """Add analyzer.
         @param data: analyzer data.

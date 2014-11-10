@@ -323,6 +323,8 @@ class Process:
                 # which check whether the VM has only been up for <10 minutes.
                 Process.startup_time = random.randint(1, 30) * 20 * 60 * 1000
 
+            hashes_path = os.path.join(os.getcwd(), "hashes.bin")
+
             config.write("host-ip={0}\n".format(cfg.ip))
             config.write("host-port={0}\n".format(cfg.port))
             config.write("pipe={0}\n".format(PIPE))
@@ -332,6 +334,7 @@ class Process:
             config.write("startup-time={0}\n".format(Process.startup_time))
             config.write("shutdown-mutex={0}\n".format(SHUTDOWN_MUTEX))
             config.write("force-sleepskip={0}\n".format(cfgoptions.get("force-sleepskip", "0")))
+            config.write("hashes-path={0}\n".format(hashes_path))
 
             Process.first_process = False
 
