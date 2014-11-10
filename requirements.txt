@@ -7,4 +7,3 @@ pefile
 django
 chardet
 nose
-testing3
