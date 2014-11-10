@@ -241,10 +241,10 @@ class RunSignatures(object):
         self.results = results
         self.matched = []
 
-        complete_list = list_plugins(group="signatures")
-        self.evented_signatures = [sig(self)
-                        for sig in complete_list
-                        if sig.enabled and self._check_signature_version(sig)]
+        self.evented_signatures = []
+        for sig in list_plugins(group="signatures"):
+            if sig.enabled and self._check_signature_version(sig):
+                self.evented_signature.append(sig(self))
 
     def _load_overlay(self):
         """Loads overlay data from a json file.
@@ -258,7 +258,7 @@ class RunSignatures(object):
                 return odata
         except IOError:
             pass
-        
+
         return {}
 
     def _apply_overlay(self, signature, overlay):
@@ -290,8 +290,11 @@ class RunSignatures(object):
                               "minimum version %s",
                               current.name, current.minimum)
                     return None
+
                 if StrictVersion("1.2") > StrictVersion(current.minimum.split("-")[0]):
-                    log.warn("Cuckoo signature style has been redesigned in cuckoo 1.2. This signature is not compatible: %s", current.name)
+                    log.warn("Cuckoo signature style has been redesigned in "
+                             "cuckoo 1.2. This signature is not "
+                             "compatible: %s.", current.name)
                     return None
 
             except ValueError:
@@ -356,7 +359,7 @@ class RunSignatures(object):
         return None
 
     def is_matched(self, sig):
-        """ Return True if siganture already matched
+        """Return True if signature already matched
 
         @param sig: The signature to verify
         @return:
@@ -395,10 +398,11 @@ class RunSignatures(object):
         self.matched = []
 
         complete_list = list_plugins(group="signatures")
-        evented_list = [sig(self)
-                        for sig in complete_list
-                        if sig.enabled and
-                        self._check_signature_version(sig)]
+        evented_list = []
+        for sig in complete_list:
+            if sig.enabled and self._check_signature_version(sig):
+                evented_list.append(sig(self))
+
         no_on_call_list = []
 
         # Test quickout
@@ -433,13 +437,13 @@ class RunSignatures(object):
                     log.debug("\t |-- %s", sig.name)
 
             # Iterate calls and tell interested signatures about them
-            for proc in self.results["behavior2"]["processes"]:
-                for thrd in proc["threads"]:
-                    for call in thrd["calls"]:
+            for process in self.results["behavior2"]["processes"]:
+                for thread in process["threads"]:
+                    for call in thread["calls"]:
                         # Loop through active evented signatures.
                         for sig in evented_list:
                             # Skip current call if it doesn't match the filters (if any).
-                            if sig.filter_processnames and not proc["process_name"] in sig.filter_processnames:
+                            if sig.filter_processnames and not process["process_name"] in sig.filter_processnames:
                                 continue
                             if sig.filter_apinames and not call["api"] in sig.filter_apinames:
                                 continue
@@ -448,7 +452,7 @@ class RunSignatures(object):
 
                             result = None
                             try:
-                                result = sig.on_call(call, proc["process_identifier"], thrd["tid"])
+                                result = sig.on_call(call, process["process_identifier"], thread["tid"])
                             except NotImplementedError:
                                 result = False
                             except:
@@ -490,7 +494,6 @@ class RunSignatures(object):
                         self.append_sig(sig)
                         if sig in complete_list:
                             complete_list.remove(sig)
-
 
 
 class RunReporting:
