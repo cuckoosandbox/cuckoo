@@ -174,7 +174,7 @@ class GuestManager:
                 opt[key.strip()] = value.strip()
 
             # Add hashes file if any is specified.
-            if opt["hashes-path"]:
+            if "hashes-path" in opt and opt["hashes-path"]:
                 if not os.path.isfile(opt["hashes-path"]):
                     raise CuckooGuestError("Non-existing hashing file provided!")
 
