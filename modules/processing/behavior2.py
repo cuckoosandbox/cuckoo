@@ -251,6 +251,12 @@ class BsonHandler(object):
             self.calls[tid] = []
             log.debug("Thread identifier not found: %d", tid)
 
+        for ar in arguments:
+            if type(arguments[ar]) not in [int, str, unicode]:
+                arguments[ar] = str(arguments[ar])
+            if type(arguments[ar]) == str:
+                arguments[ar] = arguments[ar].decode("latin-1")
+
         self.calls[tid].append({
             "api": apiname,
             "status": status,
