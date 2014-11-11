@@ -444,7 +444,9 @@ class RunSignatures(object):
 
             # Iterate calls and tell interested signatures about them.
             for proc in self.results["behavior"]["processes"]:
+                ccount = 0
                 for call in proc.get("calls", []):
+                    ccount += 1
                     # Loop through active evented signatures.
                     for sig in evented_list:
                         # Skip current call if it doesn't match the filters (if any).
