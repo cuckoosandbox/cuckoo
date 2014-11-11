@@ -129,7 +129,54 @@
             </div>
         </div>
         {% endfor %}
-    {% else %}
+    {% elif results.behavior2 and results.behavior2.processes %}  <!-- Behavior2 code -->
+        {% for process in results.behavior2.processes %}
+            <div>
+            <h4><a href="javascript:showHide('process_{{process.process_identifier}}');">{{process.process_path}}</a> <small>PID: {{process.process_identifier}}, Parent PID: {{process.parent_process_identifier}}</small></h4>
+            <div id="process_{{process.process_identifier}}" style="display: none;">
+                <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
+                    <tr>
+                        <th>Thread</th>
+                        <th>Timestamp</th>
+                        <th>Function</th>
+                        <th>Arguments</th>
+                        <th>Status</th>
+                        <th>Return</th>
+                        <th>Repeated</th>
+                    </tr>
+
+                    {% for thread in process.threads %}
+                        {% for call in thread.calls %}
+                        <tr class="{{call.category}}">
+                            <td><a name="{{process.process_identifier}}_{{thread.tid}}_{{loop.index}}">{{thread.tid}}</td>
+                            <td>{{call.time}}</td>
+                            <td><span class="mono">{{call.api}}</span></td>
+                            <td style="word-wrap: break-word">
+                            {% for argname in call.arguments %}
+                                {{argname}} => <span class="mono">{{call.arguments[argname]}}</span><br />
+                            {% endfor %}
+                            </td>
+                            <td>{% if call.status %}SUCCESS{% else %}FAILURE{% endif %}</td>
+                            <td>{{call.return_value}}</td>
+                            <td>
+                            {% if call.repeated and call.repeated > 0 %}
+                                {{call.repeated}}
+                                {% if call.repeated == 1 %}
+                                 time
+                                {% elif call.repeated > 1 %}
+                                 times
+                                {% endif %}
+                            {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </table>
+
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}  <!-- End behavior2 -->
         Nothing to display.
     {% endif %}
 </section>
