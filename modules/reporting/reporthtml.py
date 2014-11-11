@@ -59,9 +59,51 @@ class ReportHTML(Report):
         env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT,
                                                    "data", "html"))
 
+        processed = None
+        mapping = [("file_read", "File", "Read"),
+                   ("file_written", "File", "Written"),
+                   ("file_deleted", "File", "Deleted"),
+                   ("file_opened", "File", "Opened"),
+                   ("file_copied", "File", "Copied"),
+                   ("file_moved", "File", "Moved"),
+                   ("connects_ip", "Network", "Connects IP"),
+                   ("resolves_url", "Network", "Resolves URL"),
+                   ("fetches_url", "Network", "Fetches URL"),
+                   ("connects_host", "Network", "Connects Host"),
+                   ("downloads_file_url", "Network", "Downloads File URL"),
+                   ("directory_created", "Directory", "Created"),
+                   ("directory_removed", "Directory", "Removed"),
+                   ("directory_enumerated", "Directory", "Enumerated"),
+                   ("regkey_opened", "Registry Key", "Opened"),
+                   ("regkey_deleted", "Registry Key", "Deleted"),
+                   ("regkey_read", "Registry Key", "Read"),
+                   ("regkey_written", "Registry Key", "Written"),
+                   ("mutex","Mutex", "Accessed")]
+        if "behavior2" in results:
+            processed = {}
+            for proc in results["behavior2"]["processes"]:
+                for orig, cat, subcat in mapping:
+                    if not cat in processed:
+                        processed[cat] = {}
+                    if not subcat in processed[cat]:
+                        processed[cat][subcat] = []
+                    if not orig in ["file_moved", "file_copied"]:
+                        if "summary" in proc and orig in proc["summary"]:
+                            for content in proc["summary"][orig]:
+                                if not content in processed[cat][subcat]:
+                                    processed[cat][subcat].append(content)
+                    else:
+                        # Special handling required
+                        if "summary" in proc and orig in proc["summary"]:
+                            for content in proc["summary"][orig]:
+                                if not content in processed[cat][subcat]:
+                                    processed[cat][subcat].append(content["src"]+" -> "+content["dst"])
+
         try:
             tpl = env.get_template("report.html")
-            html = tpl.render({"results": results})
+            html = tpl.render({"results": results,
+                               "processed": processed,
+                               "mapping": mapping})
         except Exception as e:
             raise CuckooReportError("Failed to generate HTML report: %s" % e)
         

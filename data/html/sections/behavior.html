@@ -55,7 +55,25 @@
                 Nothing to display.
             {% endif %}
         </div>
-    {% endif %}
+    {% elif processed %}   <!-- Behavior 2 section start  -->
+        <div class="section-title">
+            <h4>Behavior Summary</h4>
+        </div>
+            {% for orig, cat, subcat in mapping %}
+            <div class="well well-small">
+                <b>{{cat}}-{{subcat}}</b>
+                {% if processed[cat][subcat] %}
+                    <ul>
+                        {% for anitem in processed[cat][subcat] %}
+                        <li><span class="mono">{{anitem}}</span></li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+            {% endfor %}
+    {% endif %} <!-- Behavior 2 section end  -->
 
     <div class="section-title">
         <h4>Processes</h4>
