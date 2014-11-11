@@ -439,7 +439,9 @@ class RunSignatures(object):
             # Iterate calls and tell interested signatures about them
             for process in self.results["behavior2"]["processes"]:
                 for thread in process.get("threads", []):
+                    ccount = 0
                     for call in thread.get("calls", []):
+                        ccount += 1
                         # Loop through active evented signatures.
                         for sig in evented_list:
                             # Skip current call if it doesn't match the filters (if any).
@@ -452,7 +454,7 @@ class RunSignatures(object):
 
                             result = None
                             try:
-                                result = sig.on_call(call, process["process_identifier"], thread["tid"])
+                                result = sig.goto_on_call(call, process["process_identifier"], thread["tid"], ccount)
                             except NotImplementedError:
                                 result = False
                             except:
