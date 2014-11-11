@@ -293,6 +293,9 @@ class BehaviorAnalysis(Processing):
                 log.warning("Behavior log file %r is not a file.", fname)
                 continue
 
+            if fname.endswith(".hashes"):
+                continue
+
             if not fname.endswith(".bson"):
                 log.critical("Behavioral log file %r is not in bson format, version mismatch!", fname)
                 continue
