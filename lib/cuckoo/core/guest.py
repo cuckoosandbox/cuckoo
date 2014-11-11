@@ -73,7 +73,7 @@ class GuestManager:
         self.server._set_timeout(None)
         return True
 
-    def upload_analyzer(self):
+    def upload_analyzer(self, hashes_path):
         """Upload analyzer to guest.
         @return: operation status.
         """
@@ -97,6 +97,9 @@ class GuestManager:
                 path = os.path.join(root, name)
                 archive_name = os.path.join(archive_root, name)
                 zip_file.write(path, archive_name)
+
+        if hashes_path:
+            zip_file.write(hashes_path, "hashes.bin")
 
         zip_file.close()
         data = xmlrpclib.Binary(zip_data.getvalue())
@@ -132,6 +135,19 @@ class GuestManager:
                       self.timeout)
             self.timeout = options["timeout"] + 60
 
+        opt = {}
+        for row in options["options"].split(","):
+            if "=" not in row:
+                continue
+
+            key, value = row.split("=", 1)
+            opt[key.strip()] = value.strip()
+
+        # Check whether the hashes file exists if it was provided.
+        if "hashes-path" in opt:
+            if not os.path.isfile(opt["hashes-path"]):
+                raise CuckooGuestError("Non-existing hashing file provided!")
+
         try:
             # Wait for the agent to respond. This is done to check the
             # availability of the agent and verify that it's ready to receive
@@ -139,7 +155,7 @@ class GuestManager:
             self.wait(CUCKOO_GUEST_INIT)
 
             # Invoke the upload of the analyzer to the guest.
-            self.upload_analyzer()
+            self.upload_analyzer(opt.get("hashes-path"))
 
             # Give the analysis options to the guest, so it can generate the
             # analysis.conf inside the guest.
@@ -164,23 +180,6 @@ class GuestManager:
                 except Exception as e:
                     raise CuckooGuestError("{0}: unable to upload malware to "
                                            "analysis machine: {1}".format(self.id, e))
-
-            opt = {}
-            for row in options["options"].split(","):
-                if "=" not in row:
-                    continue
-
-                key, value = row.split("=", 1)
-                opt[key.strip()] = value.strip()
-
-            # Add hashes file if any is specified.
-            if "hashes-path" in opt and opt["hashes-path"]:
-                if not os.path.isfile(opt["hashes-path"]):
-                    raise CuckooGuestError("Non-existing hashing file provided!")
-
-                hashes = open(opt["hashes-path"], "rb").read()
-                hashes = xmlrpclib.Binary(hashes)
-                self.server.add_hashes(hashes)
 
             # Launch the analyzer.
             pid = self.server.execute()
