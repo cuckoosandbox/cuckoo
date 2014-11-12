@@ -795,16 +795,16 @@ class Enhanced(object):
                 event["data"]["file"] = _get_handle(self.filehandles, args["FileHandle"])
 
             elif call["api"] in ["RegDeleteKeyA", "RegDeleteKeyW"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("SubKey", ""))
+                event["data"]["regkey"] = "{0}\{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("SubKey", ""))
 
             elif call["api"] in ["RegSetValueExA", "RegSetValueExW"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}\{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("ValueName", ""))
 
             elif call["api"] in ["RegQueryValueExA", "RegQueryValueExW", "RegDeleteValueA", "RegDeleteValueW"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "UNKNOWN")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}\{1}".format(self._get_keyhandle(args.get("Handle", "UNKNOWN")), args.get("ValueName", ""))
 
             elif call["api"] in ["NtQueryValueKey", "NtDeleteValueKey"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("KeyHandle", "UNKNOWN")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}\{1}".format(self._get_keyhandle(args.get("KeyHandle", "UNKNOWN")), args.get("ValueName", ""))
 
             elif call["api"] in ["LoadLibraryA", "LoadLibraryW", "LoadLibraryExA", "LoadLibraryExW", "LdrGetDllHandle"] and call["status"]:
                 self._add_loaded_module(args.get("FileName", ""), args.get("ModuleHandle", ""))
