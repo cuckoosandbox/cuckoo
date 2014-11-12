@@ -253,6 +253,19 @@ Another event is triggered when a signature matches.
 This kind of signature can be used to combine several signatures identifying anomalies into one signature
 classifying the sample (malware alert).
 
+Two more events can be used to write more complex signatures. They are called when new processes are processed or new threads.
+``on_process`` and ``on_thread``. They can be used to reset the state of flags when a new process is entered. Allowing
+to write signatures that take into account if a series of events happened in one thread/process or globally.
+
+.. code-block:: python
+        :linenos:
+
+        def on_process(self, pid):
+            pass
+
+        def on_thread(self, pid, tid):
+            pass
+
 Quickout
 ========
 Additionally to the filters you can use a quickout function to determine if the
