@@ -665,3 +665,37 @@ Following is a list of available methods.
             if self.flags.find("foo"):
                 self.data.append({"Flag found matching name": "foo"})
                 return True
+
+.. function:: Signature.mark_start()
+
+    Mark the start of a api-call region relevant for the signature. This way the report can contain a link to the API call that triggered the signature.
+    As soon as the signature returns ``True`` this mark will be stored in the report. Subsequent start marks will overwrite the old one till it is
+    stored in the results with the triggering of the signature. So you can set a start mark "on suspicion" and overwrite it several times till the signature triggers.
+
+    It is marking the api call. So the only reasonable signatures to use it is in on_call evented ones
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, pid, tid):
+            if self.check_argument_call(call, pattern=".*cuckoo.*", category="filesystem", regex=True):
+                self.mark_start()
+                return True
+
+.. function:: Signature.mark_end()
+
+    A complementary function to mark_start. It is optional and marks the end of a api call range that triggered the signature. It should be
+    called before returning the ``True`` result.
+
+    Without a prior mark_start, the end-mark will not be stored in the result.
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, pid, tid):
+            if self.check_argument_call(call, pattern=".*foo.*", category="filesystem", regex=True):
+                self.mark_start()
+                return None
+            if self.check_argument_call(call, pattern=".*cuckoo.*", category="filesystem", regex=True):
+                self.mark_end()
+                return True
