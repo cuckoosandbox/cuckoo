@@ -424,6 +424,33 @@ class Enhanced(object):
         self.modules = {}
         self.procedures = {}
         self.events = []
+        self.regevents = []
+
+    def _handle_registry_event(self, event):
+        """
+        Adds keys to new data structure for better display in the 
+        web GUI
+        """
+        if event['object'] != 'registry':
+            return
+
+        else:
+            if event['event'] == 'write':
+                reg_event = {
+                                "event": event['event'],
+                                "regkey": event['data']['regkey'],
+                                "content": event['data']['content'].replace('\\x00','')
+                            }
+            else:
+                reg_event = {
+                                "event": event['event'],
+                                "regkey": event['data']['regkey'],
+                                "content": ""
+                            }
+            if reg_event not in self.regevents:
+                self.regevents.append(reg_event)
+
+        return
 
     def _add_procedure(self, mbase, name, base):
         """
@@ -836,12 +863,13 @@ class Enhanced(object):
         event = self._process_call(call)
         if event:
             self.events.append(event)
+            self._handle_registry_event(event)
 
     def run(self):
         """Get registry keys, mutexes and files.
         @return: Summary of keys, mutexes and files.
         """
-        return self.events
+        return {"enhanced_events": self.events, "registry_events": self.regevents}
 
 
 class Anomaly(object):
