@@ -712,3 +712,27 @@ Following is a list of available methods.
             if self.check_argument_call(call, pattern=".*cuckoo.*", category="filesystem", regex=True):
                 self.mark_end()
                 return True
+
+.. function:: Signature.deactivate()
+
+    Deactivate a signature. Deactivated signatures will not be notified in ``on_call`` events. This can be used after a
+    signature triggered (just before the return) to match this signature only once.
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, pid, tid):
+            if call["api"] == "LdrGetProcedureAddress":
+                self.deactivate()
+                return True
+
+
+.. function:: Signature.activate()
+
+    Re-activates a signature after it has been de-activated.
+
+    .. code-block:: python
+        :linenos:
+
+        def on_process(self, pid):
+            self.activate()
