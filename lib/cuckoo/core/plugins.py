@@ -409,8 +409,6 @@ class RunSignatures(object):
             if sig.enabled and self._check_signature_version(sig):
                 evented_list.append(sig(self))
 
-        no_on_call_list = []
-
         # Test quickout
         for sig in evented_list:
             try:
@@ -450,6 +448,8 @@ class RunSignatures(object):
                     # Loop through active evented signatures.
                     for sig in evented_list:
                         # Skip current call if it doesn't match the filters (if any).
+                        if not sig.is_active():
+                            continue
                         if sig.filter_processnames and not proc["process_name"] in sig.filter_processnames:
                             continue
                         if sig.filter_apinames and not call["api"] in sig.filter_apinames:
