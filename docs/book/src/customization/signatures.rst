@@ -223,9 +223,8 @@ An example signature using this technique is the following:
 
             # This method will be called for every logged API call by the loop
             # in the RunSignatures plugin. The return value determines the "state"
-            # of this signature. True means the signature matched and False means
-            # it can't match anymore. Both of which stop streaming in API calls.
-            # Returning None keeps the signature active and will continue.
+            # of this signature. True means the signature matched and False it did not this time.
+            # Use self.deactivate() to stop streaming in API calls.
             def on_call(self, call, pid, tid):
                 # This check would in reality not be needed as we already make use
                 # of filter_apinames above.
