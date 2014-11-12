@@ -45,10 +45,20 @@
         </div>
         <div class="well well-small">
             <b>Registry Keys</b>
-            {% if results.behavior.summary["keys"] %}
-                <ul>
-                    {% for key in results.behavior.summary["keys"] %}
-                    <li><span class="mono">{{key}}</span></li>
+            {% if results.behavior.enhanced.registry_events %}
+                <ul style="list-style: none;">
+                    {% for event in results.behavior.enhanced.registry_events %}
+                        {% if event['event'] == 'read' %}
+                            <li><span class="mono">{{event['regkey']}}</span></li>
+                        {% elif event['event'] == 'delete' %}
+                            <li style=color:red><span class="mono">- {{event['regkey']}}</span></li>
+                        {% elif event['event'] == 'write' %}
+                        <li style=color:green><span class="mono">w+ {{event['regkey']}}
+                            <ul>
+                                <li style=color:green><span class="mono">{{event['content']}}</li>
+                            </ul>
+                        </span></li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             {% else %}
