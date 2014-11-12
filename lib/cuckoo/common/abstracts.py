@@ -709,6 +709,17 @@ class Signature(object):
         self._mark_start = None
         self._mark_end = None
 
+        self._active = True   # Used to de-activate a signature that already matched
+
+    def is_active(self):
+        return self._active
+
+    def deactivate(self):
+        self._active = False
+
+    def activate(self):
+        self._active = True
+
     def _check_value(self, pattern, subject, regex=False):
         """Checks a pattern against a given subject.
         @param pattern: string or expression to check for.
@@ -1135,6 +1146,9 @@ class Signature(object):
     def on_call(self, call, pid, tid):
         """Notify signature about API call. Return value determines
         if this signature is done or could still match.
+
+        Only called if signature is "active"
+
         @param call: logged API call.
         @param pid: process id doing API call.
         @param tid: thread id doing API call.
@@ -1150,6 +1164,25 @@ class Signature(object):
 
         """
         raise NotImplementedError
+
+    def on_process(self, pid):
+        """ Called on process change
+
+        Can be used for cleanup of flags, re-activation of the signature...,
+
+        @param pid: ID of the new process
+        """
+        pass
+
+    def on_thread(self, pid, tid):
+        """ Called on thread change
+
+        Can be used for cleanup of flags, re-activation of the signature...,
+
+        @param pid: id of the new process
+        @param tid: id of the new thread
+        """
+        pass
 
     def on_complete(self):
         """Evented signature is notified when all API calls are done.

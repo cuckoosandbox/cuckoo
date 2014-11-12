@@ -403,8 +403,6 @@ class RunSignatures(object):
             if sig.enabled and self._check_signature_version(sig):
                 evented_list.append(sig(self))
 
-        no_on_call_list = []
-
         # Test quickout
         for sig in evented_list:
             try:
@@ -438,13 +436,19 @@ class RunSignatures(object):
 
             # Iterate calls and tell interested signatures about them
             for process in self.results["behavior2"]["processes"]:
+                for sig in evented_list:
+                    sig.on_process(process["process_identifier"])
                 for thread in process.get("threads", []):
+                    for sig in evented_list:
+                        sig.on_thread(process["process_identifier"], thread["tid"])
                     ccount = 0
                     for call in thread.get("calls", []):
                         ccount += 1
                         # Loop through active evented signatures.
                         for sig in evented_list:
                             # Skip current call if it doesn't match the filters (if any).
+                            if not sig.is_active():
+                                continue
                             if sig.filter_processnames and not process["process_name"] in sig.filter_processnames:
                                 continue
                             if sig.filter_apinames and not call["api"] in sig.filter_apinames:
@@ -470,16 +474,6 @@ class RunSignatures(object):
                             if result is True:
                                 log.debug("Analysis matched signature \"%s\"", sig.name)
                                 self.append_sig(sig)
-                                if sig in complete_list:
-                                    complete_list.remove(sig)
-
-                            # Either True or False, we don't need to check this sig anymore.
-                            # But should keep it for the on_complete event afterwards
-                            no_on_call_list.append(sig)
-                            evented_list.remove(sig)
-                            del sig
-
-            evented_list = evented_list + no_on_call_list
 
             # Call the stop method on all signatures.
             for sig in evented_list:
