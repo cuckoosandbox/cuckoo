@@ -4,12 +4,12 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import argparse
-from datetime import datetime
 import json
 import os
 import socket
 import sys
 import tarfile
+from datetime import datetime
 from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
 
