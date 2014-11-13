@@ -81,7 +81,10 @@ fi
 # internet access.
 vmcloak-iptables
 
-./vmcloak-setup.sh
+if [ "$#" -eq 4 ]; then
+    ./vmcloak-setup.sh "$@"
+fi
+
 
 echo "PostgreSQL connection string:  " \
     "postgresql://cuckoo:$PASSWORD@localhost/cuckoo"
