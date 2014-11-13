@@ -14,6 +14,7 @@ fi
 
 if [ "$(id -u)" -ne 0 ]; then
     echo "You'll probably want to run this script as root."
+    exit 1
 fi
 
 # Update apt repository and install required packages.
