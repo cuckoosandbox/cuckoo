@@ -45,7 +45,7 @@ except ImportError as e:
     HAVE_MAEC = False
 
 class MAEC41Report(Report):
-    """Generates a MAEC 4.1.0.7 report.
+    """Generates a MAEC 4.1.0.8 report.
        --Output modes (set in reporting.conf):
            mode = "full": Output fully mapped Actions (see maec40_mappings), including Windows Handle mapped/substituted objects,
                           along with API call/parameter capture via Action Implementations.
@@ -112,18 +112,18 @@ class MAEC41Report(Report):
         # Add the Subject to the Package.
         self.package.add_malware_subject(self.subject)
         # Generate dynamic analysis bundle.
-        self.dynamic_bundle = Bundle(None, False, "4.1.0.7", "dynamic analysis tool output")
+        self.dynamic_bundle = Bundle(None, False, "4.1.0.8", "dynamic analysis tool output")
         # Add the Bundle to the Subject.
         self.subject.add_findings_bundle(self.dynamic_bundle)
         # Generate Static Analysis Bundles, if static results exist.
         if self.options["static"] and "static" in self.results and self.results["static"]:
-            self.static_bundle = Bundle(None, False, "4.1.0.7", "static analysis tool output")
+            self.static_bundle = Bundle(None, False, "4.1.0.8", "static analysis tool output")
             self.subject.add_findings_bundle(self.static_bundle)
         if self.options["strings"] and "strings" in self.results and self.results["strings"]:
-            self.strings_bundle = Bundle(None, False, '4.1.0.7', "static analysis tool output")
+            self.strings_bundle = Bundle(None, False, '4.1.0.8', "static analysis tool output")
             self.subject.add_findings_bundle(self.strings_bundle)
         if self.options["virustotal"] and "virustotal" in self.results and self.results["virustotal"]:
-            self.virustotal_bundle = Bundle(None, False, "4.1.0.7", "static analysis tool output")
+            self.virustotal_bundle = Bundle(None, False, "4.1.0.8", "static analysis tool output")
             self.subject.add_findings_bundle(self.virustotal_bundle)
 
     def addActions(self):
@@ -929,11 +929,11 @@ class MAEC41Report(Report):
         header.append("<?xml version='1.0' encoding='UTF-8'?>\n")
         header.append("<!DOCTYPE doc [<!ENTITY comma '&#44;'>]>\n")
         header.append("<!--\n")
-        header.append("Cuckoo Sandbox MAEC 4.1.0.7 malware analysis report\n")
+        header.append("Cuckoo Sandbox MAEC 4.1.0.8 malware analysis report\n")
         header.append("http://www.cuckoosandbox.org\n")
         header.append("-->\n")
         try:
-            self.package.to_xml_file(os.path.join(self.reports_path, "report.maec-4.1.0.7.xml"), {"http://www.cuckoosandbox.org":"Cuckoosandbox"}, header)
+            self.package.to_xml_file(os.path.join(self.reports_path, "report.maec-4.1.0.8.xml"), {"http://www.cuckoosandbox.org":"Cuckoosandbox"}, header)
         except (TypeError, IOError) as e:
             traceback.print_exc()
-            raise CuckooReportError("Failed to generate MAEC 4.1.0.7 report: %s" % e)
+            raise CuckooReportError("Failed to generate MAEC 4.1.0.8 report: %s" % e)
