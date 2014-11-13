@@ -26,6 +26,11 @@ try:
     from cybox.core import Object
     from cybox.common import ToolInformation
     from cybox.common import StructuredText
+    HAVE_CYBOX = True
+except ImportError as e:
+    HAVE_CYBOX = False
+
+try:
     from maec.bundle.bundle import Bundle
     from maec.bundle.malware_action import MalwareAction
     from maec.bundle.bundle_reference import BundleReference
@@ -64,7 +69,9 @@ class MAEC41Report(Report):
         """
         # We put the raise here and not at the import because it would
         # otherwise trigger even if the module is not enabled in the config.
-        if not HAVE_MAEC:
+        if not HAVE_CYBOX:
+            raise CuckooDependencyError("Unable to import cybox (install with `pip install cybox`)")
+        elif not HAVE_MAEC:
             raise CuckooDependencyError("Unable to import cybox and maec (install with `pip install maec`)")
 
         self._illegal_xml_chars_RE = re.compile(u"[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]")
