@@ -2,7 +2,7 @@
 Creation of the Physical Machine
 ================================
 
-Once you have :doc:`properly installed <../host/requirements>` your imaging software
+Once you have :doc:`properly installed <../host/requirements>` your imaging
 software, you can proceed on creating all the physical machines you need.
 
 Using and configuring your imaging software is out of the scope of this
