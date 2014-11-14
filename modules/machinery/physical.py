@@ -18,10 +18,10 @@ log = logging.getLogger(__name__)
 class Physical(Machinery):
     """Manage physical sandboxes."""
 
-    # physical machine states
-    RUNNING = 'running'
-    STOPPED = 'stopped'
-    ERROR = 'error'
+    # Physical machine states.
+    RUNNING = "running"
+    STOPPED = "stopped"
+    ERROR = "error"
 
     def _initialize_check(self):
         """Ensures that credentials have been entered into the config file.
@@ -70,20 +70,20 @@ class Physical(Machinery):
         @raise CuckooMachineError: if unable to stop.
         """
         # Since we are 'stopping' a physical machine, it must
-        # actually be rebooted to kick off the reimaging process
+        # actually be rebooted to kick off the re-imaging process
         n = self.options.physical.user
         p = self.options.physical.password
-        creds = str(n) + '%' + str(p)
+        creds = str(n) + "%" + str(p)
         status = self._status(label)
         
         if status == self.RUNNING:
             log.debug("Rebooting machine: %s." % label)
             machine = self._get_machine(label)
-            shutdown = subprocess.Popen(['net', 'rpc', 'shutdown', '-I', machine.ip, '-U', creds, '-r', '-f', '--timeout=5'], stdout=subprocess.PIPE)
+            shutdown = subprocess.Popen(["net", "rpc", "shutdown", "-I", machine.ip, "-U", creds, "-r", "-f", "--timeout=5"], stdout=subprocess.PIPE)
             output = shutdown.communicate()[0]
             
             if not "Shutdown of remote machine succeeded" in output:
-                raise CuckooMachineError('Unable to initiate RPC request')
+                raise CuckooMachineError("Unable to initiate RPC request")
 
             else:
                 log.debug("Reboot success: %s." % label)
@@ -112,7 +112,7 @@ class Physical(Machinery):
         guest = GuestManager(machine.id, machine.ip, machine.platform)
 
         if not guest:
-            raise CuckooMachineError('Unable to get status for machine: %s.'
+            raise CuckooMachineError("Unable to get status for machine: %s."
                                      % label)
 
         else:
