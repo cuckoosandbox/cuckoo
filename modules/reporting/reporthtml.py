@@ -39,8 +39,7 @@ class ReportHTML(Report):
                     continue
 
                 shot_path = os.path.join(shots_path, shot_name)
-
-                if os.path.getsize(shot_path) == 0:
+                if not os.path.getsize(shot_path):
                     continue
 
                 shot = {}
@@ -106,9 +105,10 @@ class ReportHTML(Report):
                                "mapping": mapping})
         except Exception as e:
             raise CuckooReportError("Failed to generate HTML report: %s" % e)
-        
+
         try:
-            with codecs.open(os.path.join(self.reports_path, "report.html"), "w", encoding="utf-8") as report:
+            report_path = os.path.join(self.reports_path, "report.html")
+            with codecs.open(report_path, "w", encoding="utf-8") as report:
                 report.write(html)
         except (TypeError, IOError) as e:
             raise CuckooReportError("Failed to write HTML report: %s" % e)
