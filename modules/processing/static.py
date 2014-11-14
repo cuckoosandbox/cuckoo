@@ -285,16 +285,14 @@ class ELF:
         relocs = []
         
         process = subprocess.Popen(["/usr/bin/objdump",self.file_path, "-R"], stdout=subprocess.PIPE)
-        elf = process.communicate()[0]
+        # take output
+        dump_result = process.communicate()[0]
+        # format output
+        dump_result = re.split("\n[ ]{0,}", dump_result)
         
-        entry = []
-        elf = re.split("\n[ ]{0,}", elf)
-        
-        for i in range(0,len(elf)):
-            if re.search("00", elf[i]):
-                entry.append(filter(None, re.split("\s", elf[i])))
-        
-        relocs = entry
+        for i in range(0,len(dump_result)):
+            if re.search("00", dump_result[i]):
+                relocs.append(filter(None, re.split("\s", dump_result[i])))
         
         return relocs
     
@@ -318,15 +316,13 @@ class ELF:
                 entry.append(filter(None, re.split("\s", elf[i])))
         
         # extract library names
-        lib_names = []
+        lib_names = set()
         for e in entry:
+            # check for existing library name
             if len(e) > 5:
-                if e[4] not in lib_names:
-                    lib_names.append(e[4])
-            else:
-                # no library specified :-/
-                e.insert(4,"None")
-        lib_names.append("None")
+                # add library to set
+                lib_names.add(e[4])
+        lib_names.add("None")
         
         # fetch relocation addresses
         relocs = self.__get_relocations()
