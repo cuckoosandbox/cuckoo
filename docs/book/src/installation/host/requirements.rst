@@ -43,7 +43,7 @@ The following libraries are not strictly required, but their installation is rec
     * `Django`_ (Optional): for using the web interface (use release 1.5 or above).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
     * `Volatility`_ (Optional): used for forensic analysis on memory
-    * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use a release >=4.0, but <4.1).
+    * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use a release >=4.1).
     * `Chardet`_ (Optional): used for detecting string encoding.
 
 Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
@@ -52,7 +52,7 @@ Some of them are already packaged in Debian/Ubuntu and can be installed with the
 
 Except for *python-magic*, *python-dpkt* and *python-libvirt*, the others can be installed through ``pip`` too::
 
-    $ sudo pip install jinja2 pymongo bottle pefile cybox==2.0.1.4 maec==4.0.1.0 django chardet
+    $ sudo pip install jinja2 pymongo bottle pefile cybox==2.0.1.8 maec==4.1.0.8 django chardet
 
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 
@@ -71,7 +71,7 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Django: https://www.djangoproject.com/
 .. _Pefile: http://code.google.com/p/pefile/
 .. _Volatility: http://code.google.com/p/volatility/
-.. _MAEC Python bindings: https://pypi.python.org/pypi/maec/4.0.1.0
+.. _MAEC Python bindings: https://pypi.python.org/pypi/maec/4.0.1.8
 .. _Chardet: https://pypi.python.org/pypi/chardet
 
 Virtualization Software
@@ -120,7 +120,7 @@ you'll have to set specific Linux capabilities to the binary::
 
 You can verify the results of last command with::
 
-    $ getcap /usr/sbin/tcpdump 
+    $ getcap /usr/sbin/tcpdump
     /usr/sbin/tcpdump = cap_net_admin,cap_net_raw+eip
 
 If you don't have `setcap` installed you can get it with::
@@ -136,7 +136,7 @@ Or otherwise (**not recommended**) do::
 Installing Volatility
 =====================
 
-Volatility is an optional tool to do forensic analysis on memory dumps. 
+Volatility is an optional tool to do forensic analysis on memory dumps.
 In combination with Cuckoo, it can automatically provide additional visibility
 into deep modifications in the operating system as well as detect the presence
 of rootkit technology that escaped the monitoring domain of Cuckoo's analyzer.
