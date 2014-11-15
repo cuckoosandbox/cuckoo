@@ -165,7 +165,8 @@ class BehaviorReconstructor(object):
     _api_InternetOpenUrlW = _api_InternetOpenUrlA
 
     def _api_DnsQuery_A(self, return_value, arguments):
-        self.report("resolves_host", str(arguments["hostname"]))
+        if arguments["hostname"]:
+            self.report("resolves_host", str(arguments["hostname"]))
 
     _api_DnsQuery_W = _api_DnsQuery_A
     _api_DnsQuery_UTF8 = _api_DnsQuery_A
@@ -233,7 +234,6 @@ class BsonHandler(object):
         _, _, _, tid, _ = context
 
         self.calls[tid] = []
-        self.proc["tids"].append(tid)
         log.debug("New thread %d in process %d.", tid, pid)
 
     def log_anomaly(self, category, tid, funcname, msg):
