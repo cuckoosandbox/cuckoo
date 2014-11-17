@@ -61,7 +61,7 @@ class Physical(Machinery):
             self._wait_status(label, self.RUNNING)
 
         else:
-            raise CuckooMachineError("Error occured while starting: " \
+            raise CuckooMachineError("Error occured while starting: "
                                      "%s (STATUS=%s)" % (label, status))
 
     def stop(self, label):
@@ -75,14 +75,14 @@ class Physical(Machinery):
         p = self.options.physical.password
         creds = str(n) + "%" + str(p)
         status = self._status(label)
-        
+
         if status == self.RUNNING:
             log.debug("Rebooting machine: %s." % label)
             machine = self._get_machine(label)
             shutdown = subprocess.Popen(["net", "rpc", "shutdown", "-I", machine.ip, "-U", creds, "-r", "-f", "--timeout=5"], stdout=subprocess.PIPE)
             output = shutdown.communicate()[0]
-            
-            if not "Shutdown of remote machine succeeded" in output:
+
+            if "Shutdown of remote machine succeeded" not in output:
                 raise CuckooMachineError("Unable to initiate RPC request")
 
             else:
