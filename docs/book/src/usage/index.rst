@@ -15,4 +15,3 @@ This chapter explains how to use Cuckoo.
     packages
     results
     utilities
-    physical
