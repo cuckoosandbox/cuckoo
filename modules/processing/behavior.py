@@ -46,6 +46,7 @@ class ParseProcessLog(list):
         self.first_seen = None
         self.calls = self
         self.lastcall = None
+        self.conversion_cache = {}
 
         if os.path.exists(log_path) and os.stat(log_path).st_size > 0:
             self.parse_first_and_reset()
@@ -194,7 +195,7 @@ class ParseProcessLog(list):
 
             argument["name"] = arg_name
 
-            argument["value"] = convert_to_printable(cleanup_value(arg_value))
+            argument["value"] = convert_to_printable(cleanup_value(arg_value), self.conversion_cache)
             arguments.append(argument)
 
         call["timestamp"] = timestamp
@@ -206,7 +207,7 @@ class ParseProcessLog(list):
         if isinstance(return_value, int):
             call["return"] = "0x%.08x" % return_value
         else:
-            call["return"] = convert_to_printable(cleanup_value(return_value))
+            call["return"] = convert_to_printable(cleanup_value(return_value), self.conversion_cache)
 
         call["arguments"] = arguments
         call["repeated"] = 0
