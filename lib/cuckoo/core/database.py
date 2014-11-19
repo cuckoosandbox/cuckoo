@@ -485,15 +485,17 @@ class Database(object):
         finally:
             session.close()
 
-    def fetch(self, lock=True):
+    def fetch(self, lock=True, machine=""):
         """Fetches a task waiting to be processed and locks it for running.
         @return: None or task
         """
         session = self.Session()
         row = None
-
         try:
-            row = session.query(Task).filter_by(status=TASK_PENDING).order_by("priority desc, added_on").first()
+            if machine !="":
+                row = session.query(Task).filter_by(status=TASK_PENDING).filter(Machine.name==machine).order_by("priority desc, added_on").first()
+            else:
+                row = session.query(Task).filter_by(status=TASK_PENDING).order_by("priority desc, added_on").first()
 
             if not row:
                 return None
@@ -676,6 +678,20 @@ class Database(object):
         finally:
             session.close()
         return machines_count
+
+    def get_available_machines(self):
+        """  Which machines are available
+        @return: free virtual machines
+        """
+        session = self.Session()
+        try:
+            machines = session.query(Machine).filter_by(locked=False)
+        except SQLAlchemyError as e:
+            log.debug("Database error getting available machines: {0}".format(e))
+            return 0
+        finally:
+            session.close()
+        return machines
 
     def set_machine_status(self, label, status):
         """Set status for a virtual machine.
