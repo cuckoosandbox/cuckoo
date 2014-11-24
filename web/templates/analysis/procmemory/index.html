@@ -2,6 +2,9 @@
     <ul>
     {% for proc in analysis.procmemory %}
         <li><b>{{proc.pid}}</b> ({{proc.file}})
+        {% if proc.procmem_id %}
+                <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "memdump" proc.procmem_id %}">Download</a>
+        {% endif %}
         {% for match in proc.yara %}
             <p>Match: {{match.name}}
             <ul>
