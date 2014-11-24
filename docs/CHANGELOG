@@ -20,6 +20,7 @@ Cuckoo Sandbox 1.2 (TBD)
 * Added support for Pillow (PIL fork)
 * Added search by string to web interface
 * Added machine utility to automatically update machinery configuration
+* Added physical machine analysis
 * Allow Auxiliary modules to run a callback at the very end of an analysis
 * Replaced diStorm3 disassembler with Capstone disassembler
 * Refactored analysis packages
