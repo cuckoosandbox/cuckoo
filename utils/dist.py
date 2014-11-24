@@ -4,7 +4,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import argparse
-from datetime import datetime
 import hashlib
 import json
 import logging
@@ -13,6 +12,7 @@ import sys
 import tempfile
 import threading
 import time
+from datetime import datetime
 
 INTERVAL = 30
 MINIMUMQUEUE = 500
