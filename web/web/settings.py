@@ -9,7 +9,6 @@ import os
 CUCKOO_PATH = os.path.join(os.getcwd(), "..")
 sys.path.append(CUCKOO_PATH)
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
 
 cfg = Config("reporting").mongodb
