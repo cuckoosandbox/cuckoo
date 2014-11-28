@@ -55,6 +55,11 @@ _stop() {
     initctl stop cuckoo
 }
 
+if [ "$#" -eq 0 ]; then
+    echo "Usage: $0 <install|remove|start|stop>"
+    exit 1
+fi
+
 if [ "$(id -u)" -ne 0 ]; then
     echo "This script should be run as root."
     exit 1
