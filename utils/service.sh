@@ -22,7 +22,7 @@ start on started cuckoo
 stop on stopped cuckoo
 setuid cuckoo
 chdir /home/cuckoo/cuckoo
-exec ./utils/api.py > log/api.log
+exec ./utils/api.py 2>> log/api.log
 EOF
 
     cat > /etc/init/cuckoo-process.conf << EOF
@@ -33,7 +33,7 @@ start on started cuckoo
 stop on stopped cuckoo
 setuid cuckoo
 chdir /home/cuckoo/cuckoo
-exec ./utils/process.py auto > log/process.log
+exec ./utils/process.py auto 2>> log/process.log
 EOF
 }
 
@@ -41,6 +41,10 @@ _remove() {
     rm -f /etc/init/cuckoo.conf
     rm -f /etc/init/cuckoo-api.conf
     rm -f /etc/init/cuckoo-process.conf
+}
+
+_reload() {
+    initctl reload-configuration
 }
 
 _start() {
@@ -58,8 +62,10 @@ fi
 
 if [ "$1" = "install" ]; then
     _install
+    _reload
 elif [ "$1" = "remove" ]; then
     _remove
+    _reload
 elif [ "$1" = "start" ]; then
     _start
 elif [ "$1" = "stop" ]; then
