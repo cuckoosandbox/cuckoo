@@ -46,6 +46,7 @@ class ParseProcessLog(list):
         self.first_seen = None
         self.calls = self
         self.lastcall = None
+        self.call_id = 0
 
         if os.path.exists(log_path) and os.stat(log_path).st_size > 0:
             self.parse_first_and_reset()
@@ -91,6 +92,7 @@ class ParseProcessLog(list):
     def reset(self):
         self.fd.seek(0)
         self.lastcall = None
+        self.call_id = 0
 
     def compare_calls(self, a, b):
         """Compare two calls for equality. Same implementation as before netlog.
@@ -130,6 +132,9 @@ class ParseProcessLog(list):
             nextcall["repeated"] += 1
             self.lastcall = None
             self.wait_for_lastcall()
+
+        nextcall["id"] = self.call_id
+        self.call_id += 1
 
         return nextcall
 
