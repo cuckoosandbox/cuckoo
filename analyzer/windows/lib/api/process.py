@@ -315,7 +315,7 @@ class Process:
         kernel32_handle = KERNEL32.GetModuleHandleA("kernel32.dll")
         load_library = KERNEL32.GetProcAddress(kernel32_handle, "LoadLibraryA")
 
-        config_path = os.path.join(os.getenv("TEMP"), "%s.ini" % self.pid)
+        config_path = os.path.join("C:\\", "cuckoo_%s.ini" % self.pid)
         with open(config_path, "w") as config:
             cfg = Config("analysis.conf")
             cfgoptions = cfg.get_options()
