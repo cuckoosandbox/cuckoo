@@ -15,4 +15,3 @@ Now it's time to create such machines and to configure them properly.
     network
     ../guest/agent
     saving
-
