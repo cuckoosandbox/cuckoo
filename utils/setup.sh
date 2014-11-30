@@ -111,20 +111,19 @@ vm-dir = $VMS
 data-dir = $VMDATA
 iso-mount = $MOUNT
 serial-key = $3
-dependencies = dotnet40
+dependencies = dotnet40 acrobat9
 temp-dirpath = $VMTEMP
-tags = longterm
 EOF
 
 chown cuckoo:cuckoo "$VMCLOAKCONF"
 
-# Unlock VMCloak just to be sure.
-sudo -u cuckoo -i vmcloak --unlock
+# Create the Virtual Machine bird.
+sudo -u cuckoo -i vmcloak -s "$VMCLOAKCONF" --bird bird0
 
-# Create a bunch of Virtual Machines.
+# Create various Virtual Machine eggs.
 for i in $(seq -w 1 "$1"); do
     sudo -u cuckoo -i \
-        vmcloak -s "$VMCLOAKCONF" --hostonly-ip 192.168.56.1$i egg$i
+        vmcloak-clone --bird bird0 --hostonly-ip 192.168.56.1$i egg$i
 done
 
 rm -rf "$VMCLOAKCONF" "$VMTEMP"
