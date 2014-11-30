@@ -14,12 +14,13 @@ fi
 
 if [ "$(id -u)" -ne 0 ]; then
     echo "You'll probably want to run this script as root."
+    exit 1
 fi
 
 # Update apt repository and install required packages.
 apt-get update -y
 apt-get install -y sudo git python-dev python-pip postgresql libpq-dev \
-    python-dpkt vim tcpdump libcap2-bin genisoimage
+    python-dpkt vim tcpdump libcap2-bin genisoimage pwgen
 
 # Install the most up-to-date version of VirtualBox available at the moment.
 if [ ! -e "/usr/bin/VirtualBox" ]; then
@@ -41,12 +42,12 @@ fi
 setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
 
 # Setup a Cuckoo user.
-useradd cuckoo
+useradd cuckoo -d "/home/cuckoo/"
 
 CUCKOO="/home/cuckoo/cuckoo/"
 VMTEMP="$(mktemp -d "/home/cuckoo/XXXXXX")"
 
-# Fetch Cuckoo and VMCloak.
+# Fetch Cuckoo.
 git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
 
 mkdir -p "$VMTEMP"
@@ -58,7 +59,7 @@ chmod 755 "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
 pip install psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
 
 # Create a random password.
-PASSWORD="$(tr -dc "[:alnum:]" < /dev/urandom|head -c ${1:-16})"
+PASSWORD="$(pwgen -1 16)"
 
 sql_query() {
     echo "$1"|sudo -u postgres psql
@@ -103,15 +104,17 @@ chown cuckoo:cuckoo "$VMS" "$VMDATA"
 
 VMCLOAKCONF="$(mktemp)"
 
-echo "[vmcloak]" > "$VMCLOAKCONF"
-echo "cuckoo = $CUCKOO" >> "$VMCLOAKCONF"
-echo "vm-dir = $VMS" >> "$VMCLOAKCONF"
-echo "data-dir = $VMDATA" >> "$VMCLOAKCONF"
-echo "iso-mount = $MOUNT" >> "$VMCLOAKCONF"
-echo "serial-key = $3" >> "$VMCLOAKCONF"
-echo "dependencies = dotnet40" >> "$VMCLOAKCONF"
-echo "temp-dirpath = $VMTEMP" >> "$VMCLOAKCONF"
-echo "tags = longterm" >> "$VMCLOAKCONF"
+cat > "$VMCLOAKCONF" <<EOF
+[vmcloak]
+cuckoo = $CUCKOO
+vm-dir = $VMS
+data-dir = $VMDATA
+iso-mount = $MOUNT
+serial-key = $3
+dependencies = dotnet40
+temp-dirpath = $VMTEMP
+tags = longterm
+EOF
 
 chown cuckoo:cuckoo "$VMCLOAKCONF"
 
