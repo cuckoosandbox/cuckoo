@@ -224,6 +224,7 @@ class BsonHandler(object):
             "process_identifier": pid,
             "parent_process_identifier": ppid,
             "threads": [],
+            "tids": [],
         }
 
         self.reconstructor = BehaviorReconstructor()
@@ -232,7 +233,7 @@ class BsonHandler(object):
         _, _, _, tid, _ = context
 
         self.calls[tid] = []
-        self.proc["threads"].append(tid)
+        self.proc["tids"].append(tid)
         log.debug("New thread %d in process %d.", tid, pid)
 
     def log_anomaly(self, category, tid, funcname, msg):
@@ -249,6 +250,12 @@ class BsonHandler(object):
         if tid not in self.calls:
             self.calls[tid] = []
             log.debug("Thread identifier not found: %d", tid)
+
+        for ar in arguments:
+            if type(arguments[ar]) not in [int, str, unicode]:
+                arguments[ar] = str(arguments[ar])
+            if type(arguments[ar]) == str:
+                arguments[ar] = arguments[ar].decode("latin-1")
 
         self.calls[tid].append({
             "api": apiname,
@@ -290,6 +297,9 @@ class BehaviorAnalysis(Processing):
             path = os.path.join(self.logs_path, fname)
             if not os.path.isfile(path):
                 log.warning("Behavior log file %r is not a file.", fname)
+                continue
+
+            if fname.endswith(".hashes"):
                 continue
 
             if not fname.endswith(".bson"):

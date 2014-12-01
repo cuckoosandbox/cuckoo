@@ -4,6 +4,7 @@
     </div>
     {% if results.signatures %}
         {% for sign in results.signatures %}
+        <div>
             {% if sign.severity == 1 %}
                 <div class="alert alert-success signature">
             {% elif sign.severity == 2 %}
@@ -13,8 +14,16 @@
             {% else %}
                 <div class="alert alert-info signature">
             {% endif %}
-            <b>{{sign.description}}</b>
+            <b>{{sign.name}}<a href="javascript:showHide('signature_{{sign.name}}');">  details</a></b>
+            <div id="signature_{{sign.name}}" style="display: none;">
+            {{sign.description}}
+            {% if sign.marker and sign.marker.start %}
+                <a href="#{{sign.marker.start.pid}}_{{sign.marker.start.tid}}_{{sign.marker.start.cid}}">jump</a>
+
+            {% endif %}
             </div>
+            </div>
+        </div>
         {% endfor %}
     {% else %}
         No signatures matched

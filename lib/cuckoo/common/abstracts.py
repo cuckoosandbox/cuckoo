@@ -702,6 +702,23 @@ class Signature(object):
         self._current_call_cache = None
         self._current_call_dict = None
         self.flags = SignatureFlags()
+        self.pid = None
+        self.tid = None
+        self.cid = None
+
+        self._mark_start = None
+        self._mark_end = None
+
+        self._active = True   # Used to de-activate a signature that already matched
+
+    def is_active(self):
+        return self._active
+
+    def deactivate(self):
+        self._active = False
+
+    def activate(self):
+        self._active = True
 
     def _check_value(self, pattern, subject, regex=False):
         """Checks a pattern against a given subject.
@@ -730,6 +747,60 @@ class Signature(object):
                     return subject
 
         return None
+
+    def mark_start(self):
+        """ set a mark for the start of the signature
+        @return:
+        """
+        self._mark_start = {"pid": self.pid,
+                           "tid": self.tid,
+                           "cid": self.cid
+                            }
+
+    def mark_end(self):
+        """ set a mark for the end of the signature
+
+        @return:
+        """
+        self._mark_end = {"pid": self.pid,
+                           "tid": self.tid,
+                           "cid": self.cid
+                            }
+
+    def _get_mark(self):
+        """ Store mark with the signature
+
+        mark_start must be set. mark_end is optional
+
+        @return:
+        """
+        res = {"start":{},
+               "end":{}
+              }
+        if self._mark_start:
+            res["start"] = self._mark_start
+        else:
+            return None
+        if self._mark_end:
+            res["end"] = self._mark_end
+        return res
+
+    def goto_on_call(self, call, pid, tid, cid):
+        """ A wrapper around on_call, Handles some
+
+        @call: Call details
+        @pid: process id
+        @tid: thread id
+        @cid: Number of this call in that pid/tid
+        @return:
+        """
+        self.pid = pid
+        self.tid = tid
+        self.cid = cid
+
+        result = self.on_call(call, pid, tid)
+
+        return result
 
     def get_results(self):
         return self._caller.results
@@ -1075,6 +1146,9 @@ class Signature(object):
     def on_call(self, call, pid, tid):
         """Notify signature about API call. Return value determines
         if this signature is done or could still match.
+
+        Only called if signature is "active"
+
         @param call: logged API call.
         @param pid: process id doing API call.
         @param tid: thread id doing API call.
@@ -1090,6 +1164,25 @@ class Signature(object):
 
         """
         raise NotImplementedError
+
+    def on_process(self, pid):
+        """ Called on process change
+
+        Can be used for cleanup of flags, re-activation of the signature...,
+
+        @param pid: ID of the new process
+        """
+        pass
+
+    def on_thread(self, pid, tid):
+        """ Called on thread change
+
+        Can be used for cleanup of flags, re-activation of the signature...,
+
+        @param pid: id of the new process
+        @param tid: id of the new thread
+        """
+        pass
 
     def on_complete(self):
         """Evented signature is notified when all API calls are done.
@@ -1108,6 +1201,7 @@ class Signature(object):
             severity=self.severity,
             references=self.references,
             data=self.data,
+            marker=self._get_mark(),
             alert=self.alert,
             families=self.families
         )

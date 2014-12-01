@@ -223,9 +223,8 @@ An example signature using this technique is the following:
 
             # This method will be called for every logged API call by the loop
             # in the RunSignatures plugin. The return value determines the "state"
-            # of this signature. True means the signature matched and False means
-            # it can't match anymore. Both of which stop streaming in API calls.
-            # Returning None keeps the signature active and will continue.
+            # of this signature. True means the signature matched and False it did not this time.
+            # Use self.deactivate() to stop streaming in API calls.
             def on_call(self, call, pid, tid):
                 # This check would in reality not be needed as we already make use
                 # of filter_apinames above.
@@ -252,6 +251,19 @@ Another event is triggered when a signature matches.
 
 This kind of signature can be used to combine several signatures identifying anomalies into one signature
 classifying the sample (malware alert).
+
+Two more events can be used to write more complex signatures. They are called when new processes are processed or new threads.
+``on_process`` and ``on_thread``. They can be used to reset the state of flags when a new process is entered. Allowing
+to write signatures that take into account if a series of events happened in one thread/process or globally.
+
+.. code-block:: python
+        :linenos:
+
+        def on_process(self, pid):
+            pass
+
+        def on_thread(self, pid, tid):
+            pass
 
 Quickout
 ========
@@ -665,3 +677,61 @@ Following is a list of available methods.
             if self.flags.find("foo"):
                 self.data.append({"Flag found matching name": "foo"})
                 return True
+
+.. function:: Signature.mark_start()
+
+    Mark the start of a api-call region relevant for the signature. This way the report can contain a link to the API call that triggered the signature.
+    As soon as the signature returns ``True`` this mark will be stored in the report. Subsequent start marks will overwrite the old one till it is
+    stored in the results with the triggering of the signature. So you can set a start mark "on suspicion" and overwrite it several times till the signature triggers.
+
+    It is marking the api call. So the only reasonable signatures to use it is in on_call evented ones
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, pid, tid):
+            if self.check_argument_call(call, pattern=".*cuckoo.*", category="filesystem", regex=True):
+                self.mark_start()
+                return True
+
+.. function:: Signature.mark_end()
+
+    A complementary function to mark_start. It is optional and marks the end of a api call range that triggered the signature. It should be
+    called before returning the ``True`` result.
+
+    Without a prior mark_start, the end-mark will not be stored in the result.
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, pid, tid):
+            if self.check_argument_call(call, pattern=".*foo.*", category="filesystem", regex=True):
+                self.mark_start()
+                return None
+            if self.check_argument_call(call, pattern=".*cuckoo.*", category="filesystem", regex=True):
+                self.mark_end()
+                return True
+
+.. function:: Signature.deactivate()
+
+    Deactivate a signature. Deactivated signatures will not be notified in ``on_call`` events. This can be used after a
+    signature triggered (just before the return) to match this signature only once.
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, pid, tid):
+            if call["api"] == "LdrGetProcedureAddress":
+                self.deactivate()
+                return True
+
+
+.. function:: Signature.activate()
+
+    Re-activates a signature after it has been de-activated.
+
+    .. code-block:: python
+        :linenos:
+
+        def on_process(self, pid):
+            self.activate()
