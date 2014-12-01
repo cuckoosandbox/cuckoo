@@ -56,7 +56,7 @@ _reload_upstart() {
 }
 
 _start_upstart() {
-    initctl start cuckoo
+    initctl start cuckoo "IP=$1"
 }
 
 _stop_upstart() {
@@ -64,7 +64,7 @@ _stop_upstart() {
 }
 
 _restart_upstart() {
-    initctl restart cuckoo
+    initctl restart cuckoo "IP=$1"
 }
 
 _about_systemv() {
@@ -89,8 +89,8 @@ start() {
         python /home/cuckoo/cuckoo/cuckoo.py -d 2>&1 > /dev/null &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
-    if [ "\$#" -eq 2 ]; then
-        IPADDR="\$2"
+    if [ "\$#" -eq 1 ]; then
+        IPADDR="\$1"
     else
         IPADDR="127.0.0.1"
     fi
@@ -124,7 +124,7 @@ stop() {
 
 case "\$1" in
     start)
-        start \$*
+        start \$2
         ;;
 
     stop)
@@ -133,7 +133,7 @@ case "\$1" in
 
     restart|force-reload)
         stop
-        start \$*
+        start \$2
         ;;
 
     *)
@@ -156,7 +156,7 @@ _reload_systemv() {
 }
 
 _start_systemv() {
-    /etc/init.d/cuckoo start $*
+    /etc/init.d/cuckoo start "$1"
 }
 
 _stop_systemv() {
@@ -164,7 +164,7 @@ _stop_systemv() {
 }
 
 _restart_systemv() {
-    /etc/init.d/cuckoo restart $*
+    /etc/init.d/cuckoo restart "$1"
 }
 
 if [ "$(lsb_release -is)" = "Ubuntu" ]; then
@@ -211,7 +211,7 @@ case "$1" in
         ;;
 
     start)
-        _start $*
+        _start "$2"
         ;;
 
     stop)
@@ -219,7 +219,7 @@ case "$1" in
         ;;
 
     restart)
-        _restart $*
+        _restart "$2"
         ;;
 
     *)
