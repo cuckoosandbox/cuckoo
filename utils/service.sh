@@ -196,20 +196,31 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-if [ "$1" = "install" ]; then
-    _about
-    _install
-    _reload
-elif [ "$1" = "remove" ]; then
-    _remove
-    _reload
-elif [ "$1" = "start" ]; then
-    _start $*
-elif [ "$1" = "stop" ]; then
-    _stop
-elif [ "$1" = "restart" ]; then
-    _restart $*
-else
-    echo "Requested invalid action."
-    exit 1
-fi
+case "$1" in
+    install)
+        _about
+        _install
+        _reload
+        ;;
+
+    remove)
+        _remove
+        _reload
+        ;;
+
+    start)
+        _start $*
+        ;;
+
+    stop)
+        _stop
+        ;;
+
+    restart)
+        _restart $*
+        ;;
+
+    *)
+        echo "Requested invalid action."
+        exit 1
+esac
