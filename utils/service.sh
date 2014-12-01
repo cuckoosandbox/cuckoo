@@ -79,7 +79,7 @@ _install_systemv() {
 
 PIDFILE="/var/run/cuckoo.pid"
 
-start() {
+_start() {
     if [ -f "\$PIDFILE" ]; then
         echo "Cuckoo is already running.. please stop it first!"
         exit 1
@@ -111,7 +111,7 @@ start() {
     echo "Cuckoo started.."
 }
 
-stop() {
+_stop() {
     if [ ! -f "\$PIDFILE" ]; then
         echo "Cuckoo isn't running.."
         exit 1
@@ -125,16 +125,16 @@ stop() {
 
 case "\$1" in
     start)
-        start \$2
+        _start \$2
         ;;
 
     stop)
-        stop
+        _stop
         ;;
 
     restart|force-reload)
-        stop
-        start \$2
+        _stop
+        _start \$2
         ;;
 
     *)
