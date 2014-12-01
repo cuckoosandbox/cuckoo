@@ -1,7 +1,12 @@
 #!/bin/sh
+set -e
 
 # TODO Pre-start run vmcloak-vboxnet0.
 # TODO Load Virtual Machines into tmpfs, if enabled.
+
+_about_upstart() {
+    echo "Using Upstart technique.."
+}
 
 _install_upstart() {
     cat > /etc/init/cuckoo.conf << EOF
@@ -35,6 +40,7 @@ setuid cuckoo
 chdir /home/cuckoo/cuckoo
 exec ./utils/process.py auto 2>> log/process.log
 EOF
+    echo "Cuckoo Service scripts installed!"
 }
 
 _remove_upstart() {
@@ -55,13 +61,116 @@ _stop_upstart() {
     initctl stop cuckoo
 }
 
+_about_systemv() {
+    echo "Using SystemV technique.."
+}
+
+_install_systemv() {
+    cat > /etc/init.d/cuckoo << EOF
+#!/bin/sh
+# Cuckoo service.
+
+PIDFILE="/var/run/cuckoo.pid"
+
+start() {
+    if [ -f "\$PIDFILE" ]; then
+        echo "Cuckoo is already running.. please stop it first!"
+        exit 1
+    fi
+
+    echo -n "Starting Cuckoo daemon.. "
+    sudo -u cuckoo -i nohup \
+        python /home/cuckoo/cuckoo/cuckoo.py -d 2>&1 > /dev/null &
+    PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
+
+    if [ "\$#" -eq 2 ]; then
+        IPADDR="\$2"
+    else
+        IPADDR="127.0.0.1"
+    fi
+
+    echo -n "Starting Cuckoo API server.. "
+    sudo -u cuckoo -i nohup \
+        python /home/cuckoo/cuckoo/utils/api.py -H "\$IPADDR" \
+        2>&1 >> /home/cuckoo/cuckoo/log/api.log &
+    PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
+
+    echo -n "Starting Cuckoo results processing.. "
+    sudo -u cuckoo -i nohup \
+        python /home/cuckoo/cuckoo/utils/process.py auto -p 2 \
+        2>&1 >> /home/cuckoo/cuckoo/log/process.log &
+    PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
+
+    echo "Cuckoo started.."
+}
+
+stop() {
+    if [ ! -f "\$PIDFILE" ]; then
+        echo "Cuckoo isn't running.."
+        exit 1
+    fi
+
+    echo "Stopping Cuckoo processes.."
+    kill \$(cat "\$PIDFILE")
+    echo "Cuckoo stopped.."
+    rm -f "\$PIDFILE"
+}
+
+case "\$1" in
+    start)
+        start
+        ;;
+
+    stop)
+        stop
+        ;;
+
+    restart|force-reload)
+        stop
+        start
+        ;;
+
+    *)
+        echo "Usage: \$0 {start|stop|restart|force-reload}" >&2
+        exit 1
+        ;;
+esac
+EOF
+
+    chmod +x /etc/init.d/cuckoo
+    echo "Cuckoo Service script installed!"
+}
+
+_remove_systemv() {
+    rm -f /etc/init.d/cuckoo
+}
+
+_reload_systemv() {
+    : # Nothing to do here.
+}
+
+_start_systemv() {
+    /etc/init.d/cuckoo start "$*"
+}
+
+_stop_systemv() {
+    /etc/init.d/cuckoo stop
+}
+
 if [ "$(lsb_release -is)" = "Ubuntu" ]; then
-    echo "Using Upstart.."
-    _install=_install_upstart
-    _remove=_remove_upstart
-    _reload=_reload_upstart
-    _start=_start_upstart
-    _stop=_stop_upstart
+    alias _about=_about_upstart
+    alias _install=_install_upstart
+    alias _remove=_remove_upstart
+    alias _reload=_reload_upstart
+    alias _start=_start_upstart
+    alias _stop=_stop_upstart
+elif [ "$(lsb_release -is)" = "Debian" ]; then
+    alias _about=_about_systemv
+    alias _install=_install_systemv
+    alias _remove=_remove_systemv
+    alias _reload=_reload_systemv
+    alias _start=_start_systemv
+    alias _stop=_stop_systemv
 else
     echo "Unsupported Linux distribution.."
     exit 1
@@ -78,13 +187,14 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 if [ "$1" = "install" ]; then
+    _about
     _install
     _reload
 elif [ "$1" = "remove" ]; then
     _remove
     _reload
 elif [ "$1" = "start" ]; then
-    _start
+    _start $*
 elif [ "$1" = "stop" ]; then
     _stop
 else
