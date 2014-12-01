@@ -16,13 +16,14 @@ description "cuckoo daemon"
 start on runlevel [2345]
 setuid cuckoo
 chdir /home/cuckoo/cuckoo
+pre-start exec vmcloak-vboxnet0
 exec ./cuckoo.py
 EOF
 
     cat > /etc/init/cuckoo-api.conf << EOF
 # Cuckoo API server service.
 
-env \$IP="127.0.0.1"
+env IP="127.0.0.1"
 
 description "cuckoo api server"
 start on started cuckoo
