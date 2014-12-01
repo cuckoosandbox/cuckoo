@@ -1,7 +1,6 @@
 #!/bin/sh
 set -e
 
-# TODO Pre-start run vmcloak-vboxnet0.
 # TODO Load Virtual Machines into tmpfs, if enabled.
 
 _about_upstart() {
@@ -84,6 +83,8 @@ _start() {
         echo "Cuckoo is already running.. please stop it first!"
         exit 1
     fi
+
+    vmcloak-vboxnet0
 
     echo -n "Starting Cuckoo daemon.. "
     sudo -u cuckoo -i nohup \
