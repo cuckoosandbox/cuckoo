@@ -22,12 +22,14 @@ EOF
     cat > /etc/init/cuckoo-api.conf << EOF
 # Cuckoo API server service.
 
+env \$IP="127.0.0.1"
+
 description "cuckoo api server"
 start on started cuckoo
 stop on stopped cuckoo
 setuid cuckoo
 chdir /home/cuckoo/cuckoo
-exec ./utils/api.py 2>> log/api.log
+exec ./utils/api.py -H "\$IP" 2>> log/api.log
 EOF
 
     cat > /etc/init/cuckoo-process.conf << EOF
