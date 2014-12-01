@@ -602,7 +602,7 @@ def create_app(database_connection):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("host", nargs="?", default="0.0.0.0", help="Host to listen on")
+    p.add_argument("host", nargs="?", default="127.0.0.1", help="Host to listen on")
     p.add_argument("port", nargs="?", type=int, default=9003, help="Port to listen on")
     p.add_argument("-s", "--settings", type=str, help="Settings file.")
     p.add_argument("-d", "--debug", action="store_true", help="Enable debug logging")
