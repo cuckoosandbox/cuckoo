@@ -169,26 +169,31 @@ _restart_systemv() {
     /etc/init.d/cuckoo restart "$1"
 }
 
-if [ "$(lsb_release -is)" = "Ubuntu" ]; then
-    alias _about=_about_upstart
-    alias _install=_install_upstart
-    alias _remove=_remove_upstart
-    alias _reload=_reload_upstart
-    alias _start=_start_upstart
-    alias _stop=_stop_upstart
-    alias _restart=_restart_upstart
-elif [ "$(lsb_release -is)" = "Debian" ]; then
-    alias _about=_about_systemv
-    alias _install=_install_systemv
-    alias _remove=_remove_systemv
-    alias _reload=_reload_systemv
-    alias _start=_start_systemv
-    alias _stop=_stop_systemv
-    alias _restart=_restart_systemv
-else
-    echo "Unsupported Linux distribution.."
-    exit 1
-fi
+case "$(lsb_release -is)" in
+    Ubuntu)
+        alias _about=_about_upstart
+        alias _install=_install_upstart
+        alias _remove=_remove_upstart
+        alias _reload=_reload_upstart
+        alias _start=_start_upstart
+        alias _stop=_stop_upstart
+        alias _restart=_restart_upstart
+        ;;
+
+    Debian)
+        alias _about=_about_systemv
+        alias _install=_install_systemv
+        alias _remove=_remove_systemv
+        alias _reload=_reload_systemv
+        alias _start=_start_systemv
+        alias _stop=_stop_systemv
+        alias _restart=_restart_systemv
+        ;;
+
+    *)
+        echo "Unsupported Linux distribution.."
+        exit 1
+esac
 
 if [ "$#" -eq 0 ]; then
     echo "Usage: $0 <install|remove|start|stop>"
