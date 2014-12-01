@@ -61,6 +61,10 @@ _stop_upstart() {
     initctl stop cuckoo
 }
 
+_restart_upstart() {
+    initctl restart cuckoo
+}
+
 _about_systemv() {
     echo "Using SystemV technique.."
 }
@@ -118,7 +122,7 @@ stop() {
 
 case "\$1" in
     start)
-        start
+        start \$*
         ;;
 
     stop)
@@ -127,7 +131,7 @@ case "\$1" in
 
     restart|force-reload)
         stop
-        start
+        start \$*
         ;;
 
     *)
@@ -150,11 +154,15 @@ _reload_systemv() {
 }
 
 _start_systemv() {
-    /etc/init.d/cuckoo start "$*"
+    /etc/init.d/cuckoo start $*
 }
 
 _stop_systemv() {
     /etc/init.d/cuckoo stop
+}
+
+_restart_systemv() {
+    /etc/init.d/cuckoo restart $*
 }
 
 if [ "$(lsb_release -is)" = "Ubuntu" ]; then
@@ -164,6 +172,7 @@ if [ "$(lsb_release -is)" = "Ubuntu" ]; then
     alias _reload=_reload_upstart
     alias _start=_start_upstart
     alias _stop=_stop_upstart
+    alias _restart=_restart_upstart
 elif [ "$(lsb_release -is)" = "Debian" ]; then
     alias _about=_about_systemv
     alias _install=_install_systemv
@@ -171,6 +180,7 @@ elif [ "$(lsb_release -is)" = "Debian" ]; then
     alias _reload=_reload_systemv
     alias _start=_start_systemv
     alias _stop=_stop_systemv
+    alias _restart=_restart_systemv
 else
     echo "Unsupported Linux distribution.."
     exit 1
@@ -197,6 +207,8 @@ elif [ "$1" = "start" ]; then
     _start $*
 elif [ "$1" = "stop" ]; then
     _stop
+elif [ "$1" = "restart" ]; then
+    _restart $*
 else
     echo "Requested invalid action."
     exit 1
