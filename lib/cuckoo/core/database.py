@@ -377,7 +377,11 @@ class Database(object):
             last = tmp_session.query(AlembicVersion).first()
             tmp_session.close()
             if last.version_num != SCHEMA_VERSION and schema_check:
-                raise CuckooDatabaseError("DB schema version mismatch: found {0}, expected {1}. Try to apply all migrations (cd utils/db_migration/ && alembic upgrade head).".format(last.version_num, SCHEMA_VERSION))
+                raise CuckooDatabaseError(
+                    "DB schema version mismatch: found {0}, expected {1}. "
+                    "Try to apply all migrations (cd utils/db_migration/ && "
+                    "alembic upgrade head).".format(last.version_num,
+                                                    SCHEMA_VERSION))
 
     def __del__(self):
         """Disconnects pool."""
