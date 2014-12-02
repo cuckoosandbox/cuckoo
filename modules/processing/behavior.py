@@ -46,11 +46,16 @@ class ParseProcessLog(list):
         self.first_seen = None
         self.calls = self
         self.lastcall = None
+        self.api_count = 0
+        self.cfg = Config()
+        self.api_limit = self.cfg.processing.analysis_call_limit  # Limit of API calls per process
 
         if os.path.exists(log_path) and os.stat(log_path).st_size > 0:
             self.parse_first_and_reset()
 
     def parse_first_and_reset(self):
+        """ Open file and either init Netlog or Bson Parser. Read till first process
+        """
         self.fd = open(self._log_path, "rb")
 
         if self._log_path.endswith(".bson"):
@@ -70,6 +75,10 @@ class ParseProcessLog(list):
         self.fd.seek(0)
 
     def read(self, length):
+        """ Read data from log file
+
+        @param length: Length in byte to read
+        """
         if not length:
             return ''
         buf = self.fd.read(length)
@@ -89,7 +98,10 @@ class ParseProcessLog(list):
         return self.wait_for_lastcall()
 
     def reset(self):
+        """ Reset fd
+        """
         self.fd.seek(0)
+        self.api_count = 0
         self.lastcall = None
 
     def compare_calls(self, a, b):
@@ -106,6 +118,8 @@ class ParseProcessLog(list):
         return False
 
     def wait_for_lastcall(self):
+        """ Continue reading the data file till the next anomaly or api call
+        """
         while not self.lastcall:
             try:
                 if not self.parser.read_next_message():
@@ -123,6 +137,11 @@ class ParseProcessLog(list):
             self.reset()
             raise StopIteration()
 
+        self.api_count += 1
+        if self.api_limit and self.api_count > self.api_limit:
+            self.reset()
+            raise StopIteration()
+
         nextcall, self.lastcall = self.lastcall, None
 
         self.wait_for_lastcall()
@@ -134,6 +153,15 @@ class ParseProcessLog(list):
         return nextcall
 
     def log_process(self, context, timestring, pid, ppid, modulepath, procname):
+        """ log process information parsed from data file
+
+        @param context: ignored
+        @param timestring: Process first seen time
+        @param pid: PID
+        @param ppid: Parent PID
+        @param modulepath: ignored
+        @param procname: Process name
+        """
         self.process_id, self.parent_id, self.process_name = pid, ppid, procname
         self.first_seen = timestring
 
@@ -141,11 +169,25 @@ class ParseProcessLog(list):
         pass
 
     def log_anomaly(self, subcategory, tid, funcname, msg):
+        """ log an anomaly parsed from data file
+
+        @param subcategory:
+        @param tid: Thread ID
+        @param funcname:
+        @param msg:
+        """
         self.lastcall = dict(thread_id=tid, category="anomaly", api="",
                              subcategory=subcategory, funcname=funcname,
                              msg=msg)
 
     def log_call(self, context, apiname, category, arguments):
+        """ log an api call from data file
+
+        @param context: containing additional api info
+        @param apiname: name of the api
+        @param category: win32 function category
+        @param arguments: arguments to the api call
+        """
         apiindex, status, returnval, tid, timediff = context
 
         current_time = self.first_seen + datetime.timedelta(0, 0, timediff*1000)
@@ -159,6 +201,8 @@ class ParseProcessLog(list):
                                      returnval] + arguments)
 
     def log_error(self, emsg):
+        """ Log an error
+        """
         log.warning("ParseProcessLog error condition on log %s: %s", str(self._log_path), emsg)
 
     def _parse(self, row):
