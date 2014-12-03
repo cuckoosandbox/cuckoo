@@ -15,7 +15,10 @@ description "cuckoo daemon"
 start on runlevel [2345]
 setuid cuckoo
 chdir /home/cuckoo/cuckoo
-pre-start exec vmcloak-vboxnet0
+pre-start script
+    exec vmcloak-vboxnet0
+    exec vmcloak-iptables
+end script
 exec ./cuckoo.py
 EOF
 
@@ -85,6 +88,7 @@ _start() {
     fi
 
     vmcloak-vboxnet0
+    vmcloak-iptables
 
     echo -n "Starting Cuckoo daemon.. "
     sudo -u cuckoo -i nohup \
