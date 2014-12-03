@@ -22,7 +22,7 @@ try:
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
     from sqlalchemy.orm import sessionmaker, relationship, joinedload, backref
-    from sqlalchemy.pool import NullPool
+    from sqlalchemy.pool import QueuePool
     Base = declarative_base()
 except ImportError:
     raise CuckooDependencyError("Unable to import sqlalchemy "
@@ -391,7 +391,7 @@ class Database(object):
         @param connection_string: Connection string specifying the database
         """
         try:
-            self.engine = create_engine(connection_string, poolclass=NullPool)
+            self.engine = create_engine(connection_string, poolclass=QueuePool)
         except ImportError as e:
             lib = e.message.split()[-1]
             raise CuckooDependencyError("Missing database driver, unable to "
