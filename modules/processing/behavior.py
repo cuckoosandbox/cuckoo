@@ -57,7 +57,7 @@ class ParseProcessLog(list):
 
             try:
                 while True:
-                    i = self.real_next()
+                    i = self.cacheless_next()
                     self.api_call_cache.append(i)
             except StopIteration:
                 pass
@@ -134,7 +134,7 @@ class ParseProcessLog(list):
 
         return True
 
-    def real_next(self):
+    def cacheless_next(self):
         if not self.fd:
             raise StopIteration()
 
@@ -163,7 +163,7 @@ class ParseProcessLog(list):
             self.api_pointer += 1
             return res
         else:
-            return self.real_next()
+            return self.cacheless_next()
 
     def log_process(self, context, timestring, pid, ppid, modulepath, procname):
         self.process_id, self.parent_id, self.process_name = pid, ppid, procname
