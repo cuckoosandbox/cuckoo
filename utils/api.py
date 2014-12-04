@@ -146,10 +146,11 @@ def tasks_list(limit=None, offset=None):
     if completed_after:
         completed_after = datetime.fromtimestamp(int(completed_after))
 
+    owner = request.GET.get("owner")
     status = request.GET.get("status")
 
     for row in db.list_tasks(limit=limit, details=True, offset=offset,
-                             completed_after=completed_after,
+                             completed_after=completed_after, owner=owner,
                              status=status, order_by="completed_on asc"):
         task = row.to_dict()
         task["guest"] = {}

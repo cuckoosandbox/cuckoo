@@ -937,13 +937,14 @@ class Database(object):
                    task.platform, tags, task.memory, task.enforce_timeout,
                    task.clock)
 
-    def list_tasks(self, limit=None, details=False, category=None,
+    def list_tasks(self, limit=None, details=False, category=None, owner=None,
                    offset=None, status=None, sample_id=None, not_status=None,
                    completed_after=None, order_by=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
         @param category: filter by category
+        @param owner: task owner
         @param offset: list offset
         @param status: filter by task status
         @param sample_id: filter tasks for a sample
@@ -962,6 +963,8 @@ class Database(object):
                 search = search.filter(Task.status != not_status)
             if category:
                 search = search.filter_by(category=category)
+            if owner:
+                search = search.filter_by(owner=owner)
             if details:
                 search = search.options(joinedload("guest"), joinedload("errors"), joinedload("tags"))
             if sample_id is not None:
