@@ -17,7 +17,8 @@ except ImportError:
     sys.stderr.write("ERROR: Jinja2 library is missing")
     sys.exit(1)
 try:
-    from bottle import route, run, static_file, redirect, request, HTTPError, hook, response
+    from bottle import route, run, static_file, request
+    from bottle import HTTPError, hook, response
 except ImportError:
     sys.stderr.write("ERROR: Bottle library is missing")
     sys.exit(1)
@@ -67,12 +68,12 @@ def get_pagination_limit(new_limit):
     @params new_limit: new pagination limit
     """
     default_limit = 50
-    
+
     limit_cookie = request.get_cookie("pagination_limit")
     logging.info("Got cookie: {0}".format(limit_cookie))
-    
+
     cookie_expires = time.mktime((datetime.now() + timedelta(days=365)).timetuple())
-    
+
     if new_limit <= 0:
         if limit_cookie:
             try:
@@ -89,7 +90,7 @@ def get_pagination_limit(new_limit):
         limit = new_limit
         logging.info("Setting new limit: {0}".format(limit))
         response.set_cookie("pagination_limit", str(limit), path="/", expires=cookie_expires)
-    
+
     return limit
 
 @hook("after_request")
@@ -127,27 +128,29 @@ def browse():
 def browse_page(page_id=1, new_limit=-1):
     if page_id < 1:
         page_id = 1
-    
+
     limit = get_pagination_limit(new_limit)
-    
+
     tot_results = db.count_tasks()
-    tot_pages = (tot_results / limit) + ((tot_results % limit) and 1 or 0) # Add 1 to tot_pages
-                                                                           # if there's some remainder
+
+    # Add 1 to tot_pages if there's some remainder.
+    tot_pages = (tot_results / limit) + ((tot_results % limit) and 1 or 0)
+
     # Check that the user doesn't require an impossible pagination
     if page_id > tot_pages:
         page_id = tot_pages
-    
+
     offset = (page_id - 1) * limit
     rows = db.list_tasks(limit=limit, offset=offset)
-    
+
     tasks = parse_tasks(rows)
-    
+
     if tot_results:
         pagination_start = offset + 1
     else:
         pagination_start = 0
     pagination_end = offset + len(rows)
-    
+
     pagination = {
         "start": pagination_start,
         "end": pagination_end,
@@ -156,9 +159,9 @@ def browse_page(page_id=1, new_limit=-1):
         "tot_results": tot_results,
         "tot_pages": tot_pages
     }
-    
+
     template = env.get_template("browse.html")
-    
+
     return template.render({"rows": tasks, "os": os, "pagination": pagination})
 
 @route("/static/<filename:path>")
@@ -170,12 +173,12 @@ def submit():
     context = {}
     errors = False
 
-    package  = request.forms.get("package", "")
-    options  = request.forms.get("options", "")
+    package = request.forms.get("package", "")
+    options = request.forms.get("options", "")
     priority = request.forms.get("priority", 1)
-    timeout  = request.forms.get("timeout", 0)
-    machine  = request.forms.get("machine", "")
-    memory  = request.forms.get("memory", "")
+    timeout = request.forms.get("timeout", 0)
+    machine = request.forms.get("machine", "")
+    memory = request.forms.get("memory", "")
     data = request.files.file
 
     try:
@@ -185,7 +188,7 @@ def submit():
         context["error_priority"] = "Needs to be a number"
         errors = True
 
-    if data == None or data == "":
+    if not data:
         context["error_toggle"] = True
         context["error_file"] = "Mandatory"
         errors = True
@@ -212,8 +215,7 @@ def submit():
 
     if task_id:
         template = env.get_template("success.html")
-        return template.render({"taskid": task_id,
-                            "submitfile": data.filename.decode("utf-8")})
+        return template.render({"taskid": task_id, "submitfile": data.filename.decode("utf-8")})
     else:
         template = env.get_template("error.html")
         return template.render({"error": "The server encountered an internal error while submitting {0}".format(data.filename.decode("utf-8"))})
