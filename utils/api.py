@@ -60,6 +60,7 @@ def tasks_create_file():
     platform = request.forms.get("platform", "")
     tags = request.forms.get("tags", None)
     custom = request.forms.get("custom", "")
+    owner = request.forms.get("owner", "")
     memory = request.forms.get("memory", False)
     clock = request.forms.get("clock", None)
     if memory:
@@ -79,6 +80,7 @@ def tasks_create_file():
         platform=platform,
         tags=tags,
         custom=custom,
+        owner=owner,
         memory=memory,
         enforce_timeout=enforce_timeout,
         clock=clock
@@ -101,6 +103,7 @@ def tasks_create_url():
     platform = request.forms.get("platform", "")
     tags = request.forms.get("tags", None)
     custom = request.forms.get("custom", "")
+    owner = request.forms.get("owner", "")
     memory = request.forms.get("memory", False)
     if memory:
         memory = True
@@ -119,6 +122,7 @@ def tasks_create_url():
         platform=platform,
         tags=tags,
         custom=custom,
+        owner=owner,
         memory=memory,
         enforce_timeout=enforce_timeout,
         clock=clock

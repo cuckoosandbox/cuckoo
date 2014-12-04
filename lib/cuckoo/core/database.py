@@ -253,6 +253,7 @@ class Task(Base):
     timeout = Column(Integer(), server_default="0", nullable=False)
     priority = Column(Integer(), server_default="1", nullable=False)
     custom = Column(String(255), nullable=True)
+    owner = Column(String(64), nullable=True)
     machine = Column(String(255), nullable=True)
     package = Column(String(255), nullable=True)
     tags = relationship("Tag", secondary=tasks_tags, cascade="all, delete",
@@ -740,7 +741,7 @@ class Database(object):
     # The following functions are mostly used by external utils.
 
     def add(self, obj, timeout=0, package="", options="", priority=1,
-            custom="", machine="", platform="", tags=None,
+            custom="", owner="", machine="", platform="", tags=None,
             memory=False, enforce_timeout=False, clock=None):
         """Add a task to database.
         @param obj: object to add (File or URL).
@@ -748,6 +749,7 @@ class Database(object):
         @param options: analysis options.
         @param priority: analysis priority.
         @param custom: custom options.
+        @param owner: task owner.
         @param machine: selected machine.
         @param platform: platform.
         @param tags: optional tags that must be set for machine selection
@@ -801,6 +803,7 @@ class Database(object):
         task.options = options
         task.priority = priority
         task.custom = custom
+        task.owner = owner
         task.machine = machine
         task.platform = platform
         task.memory = memory
@@ -836,14 +839,15 @@ class Database(object):
         return task_id
 
     def add_path(self, file_path, timeout=0, package="", options="",
-                 priority=1, custom="", machine="", platform="", tags=None,
-                 memory=False, enforce_timeout=False, clock=None):
+                 priority=1, custom="", owner="", machine="", platform="",
+                 tags=None, memory=False, enforce_timeout=False, clock=None):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
         @param options: analysis options.
         @param priority: analysis priority.
         @param custom: custom options.
+        @param owner: task owner.
         @param machine: selected machine.
         @param platform: platform.
         @param tags: Tags required in machine selection
@@ -863,18 +867,19 @@ class Database(object):
             priority = 1
 
         return self.add(File(file_path), timeout, package, options, priority,
-                        custom, machine, platform, tags, memory,
+                        custom, owner, machine, platform, tags, memory,
                         enforce_timeout, clock)
 
     def add_url(self, url, timeout=0, package="", options="", priority=1,
-                custom="", machine="", platform="", tags=None, memory=False,
-                enforce_timeout=False, clock=None):
+                custom="", owner="", machine="", platform="", tags=None,
+                memory=False, enforce_timeout=False, clock=None):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
         @param options: analysis options.
         @param priority: analysis priority.
         @param custom: custom options.
+        @param owner: task owner.
         @param machine: selected machine.
         @param platform: platform.
         @param tags: tags for machine selection
@@ -891,7 +896,7 @@ class Database(object):
             priority = 1
 
         return self.add(URL(url), timeout, package, options, priority,
-                        custom, machine, platform, tags, memory,
+                        custom, owner, machine, platform, tags, memory,
                         enforce_timeout, clock)
 
     def reschedule(self, task_id):
@@ -928,8 +933,9 @@ class Database(object):
             tags = task.tags
 
         return add(task.target, task.timeout, task.package, task.options,
-                   task.priority, task.custom, task.machine, task.platform,
-                   tags, task.memory, task.enforce_timeout, task.clock)
+                   task.priority, task.custom, task.owner, task.machine,
+                   task.platform, tags, task.memory, task.enforce_timeout,
+                   task.clock)
 
     def list_tasks(self, limit=None, details=False, category=None,
                    offset=None, status=None, sample_id=None, not_status=None,

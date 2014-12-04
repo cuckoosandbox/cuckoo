@@ -113,7 +113,7 @@ class Node(db.Model):
                 package=task.package, timeout=task.timeout,
                 priority=task.priority, options=task.options,
                 machine=task.machine, platform=task.platform,
-                tags=task.tags, custom=task.custom,
+                tags=task.tags, custom=task.custom, owner=task.owner,
                 memory=task.memory, clock=task.clock,
                 enforce_timeout=task.enforce_timeout,
             )
@@ -197,6 +197,7 @@ class Task(db.Model):
     platform = db.Column(db.Text)
     tags = db.Column(db.Text)
     custom = db.Column(db.Text)
+    owner = db.Column(db.Text)
     memory = db.Column(db.Text)
     clock = db.Column(db.Integer)
     enforce_timeout = db.Column(db.Text)
@@ -207,7 +208,8 @@ class Task(db.Model):
     finished = db.Column(db.Boolean, nullable=False)
 
     def __init__(self, path, package, timeout, priority, options, machine,
-                 platform, tags, custom, memory, clock, enforce_timeout):
+                 platform, tags, custom, owner, memory, clock,
+                 enforce_timeout):
         self.path = path
         self.package = package
         self.timeout = timeout
@@ -217,6 +219,7 @@ class Task(db.Model):
         self.platform = platform
         self.tags = tags
         self.custom = custom
+        self.owner = owner
         self.memory = memory
         self.clock = clock
         self.enforce_timeout = enforce_timeout
@@ -424,6 +427,7 @@ class TaskBaseApi(RestResource):
         self._parser.add_argument("platform", type=str, default="windows")
         self._parser.add_argument("tags", type=str)
         self._parser.add_argument("custom", type=str)
+        self._parser.add_argument("owner", type=str)
         self._parser.add_argument("memory", type=str)
         self._parser.add_argument("clock", type=int)
         self._parser.add_argument("enforce_timeout", type=bool)
@@ -440,7 +444,7 @@ class TaskApi(TaskBaseApi):
             timeout=task.timeout, priority=task.priority,
             options=task.options, machine=task.machine,
             platform=task.platform, tags=task.tags,
-            custom=task.custom, memory=task.memory,
+            custom=task.custom, owner=task.owner, memory=task.memory,
             clock=task.clock, enforce_timeout=task.enforce_timeout
         )})
 
@@ -492,7 +496,7 @@ class TaskRootApi(TaskBaseApi):
                 timeout=task.timeout, priority=task.priority,
                 options=task.options, machine=task.machine,
                 platform=task.platform, tags=task.tags,
-                custom=task.custom, memory=task.memory,
+                custom=task.custom, owner=task.owner, memory=task.memory,
                 clock=task.clock, enforce_timeout=task.enforce_timeout,
                 task_id=task.task_id, node_id=task.node_id,
             )
