@@ -75,11 +75,38 @@ _about_systemv() {
 }
 
 _install_systemv() {
+    cat > /etc/default/cuckoo << EOF
+# Configuration file for the Cuckoo Sandbox service.
+
+# Username to run Cuckoo under, by default cuckoo.
+# USERNAME="cuckoo"
+
+# Directory for Cuckoo, defaults to the "cuckoo" directory in the
+# home directory of the cuckoo user.
+# CUCKOODIR="/home/cuckoo/cuckoo/"
+
+# Log directory, defaults to the log/ directory in the Cuckoo setup.
+# LOGDIR="/home/cuckoo/cuckoo/log/"
+
+# IP address that the Cuckoo API will bind on.
+# IPADDR="localhost"
+EOF
+
     cat > /etc/init.d/cuckoo << EOF
 #!/bin/sh
 # Cuckoo service.
 
 PIDFILE="/var/run/cuckoo.pid"
+CONFFILE="/etc/default/cuckoo"
+
+# Default configuration values.
+USERNAME="cuckoo"
+CUCKOODIR="/home/cuckoo/cuckoo/"
+LOGDIR="/home/cuckoo/cuckoo/log/"
+IPADDR="localhost"
+
+# Load configuration values.
+[ -f "$CONFFILE" ] && source "$CONFFILE"
 
 _start() {
     if [ -f "\$PIDFILE" ]; then
@@ -91,26 +118,20 @@ _start() {
     vmcloak-iptables
 
     echo -n "Starting Cuckoo daemon.. "
-    sudo -u cuckoo -i nohup \
-        python /home/cuckoo/cuckoo/cuckoo.py -d 2>&1 > /dev/null &
+    sudo -u "\$USERNAME" -i nohup \
+        python "\$CUCKOODIR/cuckoo.py" -d 2>&1 > /dev/null &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
-    if [ "\$#" -eq 1 ]; then
-        IPADDR="\$1"
-    else
-        IPADDR="127.0.0.1"
-    fi
-
     echo -n "Starting Cuckoo API server.. "
-    sudo -u cuckoo -i nohup \
-        python /home/cuckoo/cuckoo/utils/api.py -H "\$IPADDR" \
-        2>&1 >> /home/cuckoo/cuckoo/log/api.log &
+    sudo -u "\$USERNAME" -i nohup \
+        python "\$CUCKOODIR/utils/api.py" -H "\$IPADDR" \
+        2>&1 >> "\$LOGDIR/api.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     echo -n "Starting Cuckoo results processing.. "
-    sudo -u cuckoo -i nohup \
-        python /home/cuckoo/cuckoo/utils/process.py auto -p 2 \
-        2>&1 >> /home/cuckoo/cuckoo/log/process.log &
+    sudo -u "\$USERNAME" -i nohup \
+        python "\$CUCKOODIR/utils/process.py" auto -p 2 \
+        2>&1 >> "\$LOGDIR/process.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     echo "Cuckoo started.."
@@ -162,7 +183,7 @@ _reload_systemv() {
 }
 
 _start_systemv() {
-    /etc/init.d/cuckoo start "$1"
+    /etc/init.d/cuckoo start
 }
 
 _stop_systemv() {
@@ -170,7 +191,7 @@ _stop_systemv() {
 }
 
 _restart_systemv() {
-    /etc/init.d/cuckoo restart "$1"
+    /etc/init.d/cuckoo restart
 }
 
 case "$(lsb_release -is)" in
