@@ -212,6 +212,7 @@ yet to be added)::
             "1": {
                 "clock": null,
                 "custom": null,
+                "owner": "",
                 "enforce_timeout": null,
                 "machine": null,
                 "memory": null,
@@ -252,6 +253,7 @@ Get basic information about a particular task::
             "2": {
                 "clock": null,
                 "custom": null,
+                "owner": "",
                 "enforce_timeout": null,
                 "machine": null,
                 "memory": null,

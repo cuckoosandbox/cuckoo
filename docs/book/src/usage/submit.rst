@@ -16,9 +16,9 @@ Submission Utility
 The easiest way to submit an analysis is to use the provided *submit.py*
 command-line utility. It currently has the following options available::
 
-    usage: submit.py [-h] [--remote REMOTE] [--url] [--package PACKAGE]
-                     [--custom CUSTOM] [--timeout TIMEOUT] [--options OPTIONS]
-                     [--priority PRIORITY] [--machine MACHINE]
+    usage: submit.py [-h] [-d] [--remote REMOTE] [--url] [--package PACKAGE]
+                     [--custom CUSTOM] [--owner OWNER] [--timeout TIMEOUT]
+                     [--options OPTIONS] [--priority PRIORITY] [--machine MACHINE]
                      [--platform PLATFORM] [--memory] [--enforce-timeout]
                      [--clock CLOCK] [--tags TAGS] [--max MAX] [--pattern PATTERN]
                      [--shuffle] [--unique] [--quiet]
@@ -34,6 +34,7 @@ command-line utility. It currently has the following options available::
       --url                Specify whether the target is an URL
       --package PACKAGE    Specify an analysis package
       --custom CUSTOM      Specify any custom value
+      --owner OWNER        Specify the task owner
       --timeout TIMEOUT    Specify an analysis timeout
       --options OPTIONS    Specify options for the analysis package (e.g.
                            "name=value,name2=value2")
@@ -151,7 +152,7 @@ automated. In order to automate analysis submission we suggest to use the REST
 API interface described in :doc:`api`, but in case you want to write your
 own Python submission script, you can also use the ``add_path()`` and ``add_url()`` functions.
 
-.. function:: add_path(file_path[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, machine=None[, platform=None[, memory=False[, enforce_timeout=False], clock=None[]]]]]]]]])
+.. function:: add_path(file_path[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, owner=""[, machine=None[, platform=None[, memory=False[, enforce_timeout=False], clock=None[]]]]]]]]]])
 
     Add a local file to the list of pending analysis tasks. Returns the ID of the newly generated task.
 
@@ -167,6 +168,8 @@ own Python submission script, you can also use the ``add_path()`` and ``add_url(
     :type priority: integer
     :param custom: custom value to be passed over and possibly reused at processing or reporting
     :type custom: string or None
+    :param owner: task owner
+    :type owner: string or None
     :param machine: Cuckoo identifier of the virtual machine you want to use, if none is specified one will be selected automatically
     :type machine: string or None
     :param platform: operating system platform you want to run the analysis one (currently only Windows)
@@ -190,7 +193,7 @@ own Python submission script, you can also use the ``add_path()`` and ``add_url(
         1
         >>>
 
-.. function:: add_url(url[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, machine=None[, platform=None[, memory=False[, enforce_timeout=False], clock=None[]]]]]]]]])
+.. function:: add_url(url[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, owner=""[, machine=None[, platform=None[, memory=False[, enforce_timeout=False], clock=None[]]]]]]]]]])
 
     Add a local file to the list of pending analysis tasks. Returns the ID of the newly generated task.
 
@@ -206,6 +209,8 @@ own Python submission script, you can also use the ``add_path()`` and ``add_url(
     :type priority: integer
     :param custom: custom value to be passed over and possibly reused at processing or reporting
     :type custom: string or None
+    :param owner: task owner
+    :type owner: string or None
     :param machine: Cuckoo identifier of the virtual machine you want to use, if none is specified one will be selected automatically
     :type machine: string or None
     :param platform: operating system platform you want to run the analysis one (currently only Windows)

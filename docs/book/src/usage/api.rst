@@ -95,6 +95,7 @@ Following is a list of currently available resources and a brief description of 
             * ``platform`` *(optional)* - name of the platform to select the analysis machine from (e.g. "windows")
             * ``tags`` *(optional)* - define machine to start by tags. Platform must be set to use that. Tags are comma separated
             * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
+            * ``owner`` *(optional)* - task owner in case multiple users can submit files to the same cuckoo instance
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
             * ``clock`` *(optional)* - set virtual machine clock (format %m-%d-%Y %H:%M:%S)
@@ -131,6 +132,7 @@ Following is a list of currently available resources and a brief description of 
             * ``platform`` *(optional)* - name of the platform to select the analysis machine from (e.g. "windows")
             * ``tags`` *(optional)* - define machine to start by tags. Platform must be set to use that. Tags are comma separated
             * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
+            * ``owner`` *(optional)* - task owner in case multiple users can submit files to the same cuckoo instance
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
             * ``clock`` *(optional)* - set virtual machine clock (format %m-%d-%Y %H:%M:%S)
@@ -164,6 +166,7 @@ Following is a list of currently available resources and a brief description of 
                         "sample_id": null,
                         "guest": {},
                         "custom": null,
+                        "owner": "",
                         "priority": 1,
                         "platform": null,
                         "options": null,
@@ -185,6 +188,7 @@ Following is a list of currently available resources and a brief description of 
                         "sample_id": 1,
                         "guest": {},
                         "custom": null,
+                        "owner": "",
                         "priority": 1,
                         "platform": null,
                         "options": null,
@@ -235,6 +239,7 @@ Following is a list of currently available resources and a brief description of 
                     "sample_id": null,
                     "guest": {},
                     "custom": null,
+                    "owner": "",
                     "priority": 1,
                     "platform": null,
                     "options": null,
