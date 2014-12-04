@@ -70,7 +70,7 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Bottlepy: http://www.bottlepy.org
 .. _Django: https://www.djangoproject.com/
 .. _Pefile: http://code.google.com/p/pefile/
-.. _Volatility: http://code.google.com/p/volatility/
+.. _Volatility: https://github.com/volatilityfoundation/
 .. _MAEC Python bindings: https://pypi.python.org/pypi/maec/4.0.1.0
 .. _Chardet: https://pypi.python.org/pypi/chardet
 
@@ -146,4 +146,4 @@ You can get it from the `official repository`_.
 
 See the volatility documentation for detailed instructions on how to install it.
 
-.. _official repository: http://code.google.com/p/volatility/
+.. _official repository: https://github.com/volatilityfoundation
