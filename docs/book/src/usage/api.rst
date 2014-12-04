@@ -98,6 +98,7 @@ Following is a list of currently available resources and a brief description of 
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
             * ``clock`` *(optional)* - set virtual machine clock (format %m-%d-%Y %H:%M:%S)
+            * ``callback`` *(optional)* - callback url to be called after analysis completed
 
         **Status codes**:
             * ``200`` - no error
@@ -134,6 +135,7 @@ Following is a list of currently available resources and a brief description of 
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
             * ``clock`` *(optional)* - set virtual machine clock (format %m-%d-%Y %H:%M:%S)
+            * ``callback`` *(optional)* - callback url to be called after analysis completed
 
         **Status codes**:
             * ``200`` - no error
