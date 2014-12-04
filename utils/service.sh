@@ -106,7 +106,7 @@ LOGDIR="/home/cuckoo/cuckoo/log/"
 IPADDR="localhost"
 
 # Load configuration values.
-[ -f "$CONFFILE" ] && source "$CONFFILE"
+[ -f "\$CONFFILE" ] && source "\$CONFFILE"
 
 _start() {
     if [ -f "\$PIDFILE" ]; then
