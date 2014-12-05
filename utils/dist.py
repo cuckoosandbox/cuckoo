@@ -127,7 +127,7 @@ class Node(db.Model):
                 db.session.refresh(task)
                 return
 
-            files = dict(file=open(task.path, "rb"))
+            files = {'file': (task.filename, open(task.path, "rb"))}
             r = requests.post(url, data=data, files=files)
             task.node_id = self.id
             task.task_id = r.json()["task_id"]
@@ -190,6 +190,7 @@ class Task(db.Model):
     """Analysis task database model."""
     id = db.Column(db.Integer, primary_key=True)
     path = db.Column(db.Text)
+    filename = db.Column(db.Text)
     package = db.Column(db.Text)
     timeout = db.Column(db.Integer)
     priority = db.Column(db.Integer)
@@ -208,10 +209,11 @@ class Task(db.Model):
     task_id = db.Column(db.Integer)
     finished = db.Column(db.Boolean, nullable=False)
 
-    def __init__(self, path, package, timeout, priority, options, machine,
-                 platform, tags, custom, owner, memory, clock,
+    def __init__(self, path, filename, package, timeout, priority, options,
+                 machine, platform, tags, custom, owner, memory, clock,
                  enforce_timeout):
         self.path = path
+        self.filename = filename
         self.package = package
         self.timeout = timeout
         self.priority = priority
@@ -420,6 +422,7 @@ class TaskBaseApi(RestResource):
         RestResource.__init__(self, *args, **kwargs)
 
         self._parser = reqparse.RequestParser()
+        self._parser.add_argument("filename", type=str)
         self._parser.add_argument("package", type=str)
         self._parser.add_argument("timeout", type=int)
         self._parser.add_argument("priority", type=int, default=1)
@@ -441,10 +444,10 @@ class TaskApi(TaskBaseApi):
             abort(404, message="Task not found")
 
         return dict(tasks={task.id: dict(
-            task_id=task.id, path=task.path, package=task.package,
-            timeout=task.timeout, priority=task.priority,
-            options=task.options, machine=task.machine,
-            platform=task.platform, tags=task.tags,
+            task_id=task.id, path=task.path, filename=task.filename,
+            package=task.package, timeout=task.timeout,
+            priority=task.priority, options=task.options,
+            machine=task.machine, platform=task.platform, tags=task.tags,
             custom=task.custom, owner=task.owner, memory=task.memory,
             clock=task.clock, enforce_timeout=task.enforce_timeout
         )})
@@ -497,10 +500,10 @@ class TaskRootApi(TaskBaseApi):
         ret = {}
         for task in tasks:
             ret[task.id] = dict(
-                id=task.id, path=task.path, package=task.package,
-                timeout=task.timeout, priority=task.priority,
-                options=task.options, machine=task.machine,
-                platform=task.platform, tags=task.tags,
+                id=task.id, path=task.path, filename=task.filename,
+                package=task.package, timeout=task.timeout,
+                priority=task.priority, options=task.options,
+                machine=task.machine, platform=task.platform, tags=task.tags,
                 custom=task.custom, owner=task.owner, memory=task.memory,
                 clock=task.clock, enforce_timeout=task.enforce_timeout,
                 task_id=task.task_id, node_id=task.node_id,
@@ -515,7 +518,7 @@ class TaskRootApi(TaskBaseApi):
         f.save(path)
         os.close(fd)
 
-        task = Task(path=path, **args)
+        task = Task(path=path, filename=os.path.basename(f.filename), **args)
         db.session.add(task)
         db.session.commit()
         return dict(task_id=task.id)
