@@ -660,6 +660,9 @@ if __name__ == "__main__":
     s = ConfigParser.ConfigParser()
     s.read(args.settings)
 
+    if not s.get("distributed", "database"):
+        sys.exit("Please configure a database connection.")
+
     app = create_app(database_connection=s.get("distributed", "database"))
 
     report_formats = []
@@ -670,11 +673,19 @@ if __name__ == "__main__":
 
     app.config["SAMPLES_DIRECTORY"] = \
         s.get("distributed", "samples_directory")
+
+    if not app.config["SAMPLES_DIRECTORY"]:
+        sys.exit("Please configure a samples directory path.")
+
     if not os.path.isdir(app.config["SAMPLES_DIRECTORY"]):
         os.makedirs(app.config["SAMPLES_DIRECTORY"])
 
     app.config["REPORTS_DIRECTORY"] = \
         s.get("distributed", "reports_directory")
+
+    if not app.config["REPORTS_DIRECTORY"]:
+        sys.exit("Please configure a reports directory path.")
+
     if not os.path.isdir(app.config["REPORTS_DIRECTORY"]):
         os.makedirs(app.config["REPORTS_DIRECTORY"])
 
