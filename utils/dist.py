@@ -428,7 +428,6 @@ class TaskBaseApi(RestResource):
         RestResource.__init__(self, *args, **kwargs)
 
         self._parser = reqparse.RequestParser()
-        self._parser.add_argument("filename", type=str)
         self._parser.add_argument("package", type=str)
         self._parser.add_argument("timeout", type=int)
         self._parser.add_argument("priority", type=int, default=1)
