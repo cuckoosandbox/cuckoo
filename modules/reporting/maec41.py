@@ -925,15 +925,13 @@ class MAEC41Report(Report):
 
     def output(self):
         """Writes report to disk."""
-        header = []
-        header.append("<?xml version='1.0' encoding='UTF-8'?>\n")
-        header.append("<!DOCTYPE doc [<!ENTITY comma '&#44;'>]>\n")
-        header.append("<!--\n")
-        header.append("Cuckoo Sandbox MAEC 4.1 malware analysis report\n")
-        header.append("http://www.cuckoosandbox.org\n")
-        header.append("-->\n")
-        try:
-            self.package.to_xml_file(os.path.join(self.reports_path, "report.maec-4.1.xml"), {"http://www.cuckoosandbox.org":"Cuckoosandbox"}, header)
-        except (TypeError, IOError) as e:
-            traceback.print_exc()
-            raise CuckooReportError("Failed to generate MAEC 4.1 report: %s" % e)
+        outfile = open(os.path.join(self.reports_path, "report.maec-4.1.0.8.xml"), 'w')
+        outfile.write("<?xml version='1.0' encoding='UTF-8'?>\n")
+        outfile.write("<!DOCTYPE doc [<!ENTITY comma '&#44;'>]>\n")
+        outfile.write("<!--\n")
+        outfile.write("Cuckoo Sandbox MAEC 4.1 malware analysis report\n")
+        outfile.write("http://www.cuckoosandbox.org\n")
+        outfile.write("-->\n")
+        outfile.write(self.package.to_xml(True, namespace_dict={"http://www.cuckoosandbox.org":"Cuckoosandbox"}))
+        outfile.flush()
+        outfile.close()
