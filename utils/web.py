@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import pwd
 import sys
 import time
 import logging
@@ -264,6 +265,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-H", "--host", help="Host to bind the web server on", default="0.0.0.0", action="store", required=False)
     parser.add_argument("-p", "--port", help="Port to bind the web server on", default=8080, action="store", required=False)
+    parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
     args = parser.parse_args()
+
+    if args.user:
+        try:
+            user = pwd.getpwnam(args.user)
+            os.setgid(user.pw_gid)
+            os.setuid(user.pw_uid)
+        except KeyError:
+            sys.exit("Invalid user specified to drop privileges to: %s" %
+                     args.user)
+        except OSError as e:
+            sys.exit("Failed to drop privileges: %s" % e)
 
     run(host=args.host, port=args.port, reloader=True)

@@ -8,6 +8,7 @@ import hashlib
 import json
 import logging
 import os
+import pwd
 import sys
 import tempfile
 import threading
@@ -604,12 +605,24 @@ if __name__ == "__main__":
     p.add_argument("host", nargs="?", default="0.0.0.0", help="Host to listen on")
     p.add_argument("port", nargs="?", type=int, default=9003, help="Port to listen on")
     p.add_argument("-d", "--debug", action="store_true", help="Enable debug logging")
+    p.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
     p.add_argument("--db", type=str, default="sqlite:///dist.db", help="Database connection string")
     p.add_argument("--samples-directory", type=str, required=True, help="Samples directory")
     p.add_argument("--uptime-logfile", type=str, help="Uptime logfile path")
     p.add_argument("--report-formats", type=str, required=True, help="Reporting formats to fetch")
     p.add_argument("--reports-directory", type=str, required=True, help="Reports directory")
     args = p.parse_args()
+
+    if args.user:
+        try:
+            user = pwd.getpwnam(args.user)
+            os.setgid(user.pw_gid)
+            os.setuid(user.pw_uid)
+        except KeyError:
+            sys.exit("Invalid user specified to drop privileges to: %s" %
+                     args.user)
+        except OSError as e:
+            sys.exit("Failed to drop privileges: %s" % e)
 
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)

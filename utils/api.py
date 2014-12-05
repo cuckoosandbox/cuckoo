@@ -6,6 +6,7 @@
 import argparse
 import json
 import os
+import pwd
 import socket
 import sys
 import tarfile
@@ -413,6 +414,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-H", "--host", help="Host to bind the API server on", default="localhost", action="store", required=False)
     parser.add_argument("-p", "--port", help="Port to bind the API server on", default=8090, action="store", required=False)
+    parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
     args = parser.parse_args()
+
+    if args.user:
+        try:
+            user = pwd.getpwnam(args.user)
+            os.setgid(user.pw_gid)
+            os.setuid(user.pw_uid)
+        except KeyError:
+            sys.exit("Invalid user specified to drop privileges to: %s" %
+                     args.user)
+        except OSError as e:
+            sys.exit("Failed to drop privileges: %s" % e)
 
     run(host=args.host, port=args.port)
