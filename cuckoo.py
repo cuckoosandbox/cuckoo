@@ -93,7 +93,10 @@ def cuckoo_clean():
     # Delete various directories.
     for path in paths:
         if os.path.isdir(path):
-            shutil.rmtree(path)
+            try:
+                shutil.rmtree(path)
+            except (IOError, OSError) as e:
+                log.warning("Error removing directory %s: %s", path, e)
 
     # Delete all compiled Python objects ("*.pyc".)
     for dirpath, dirnames, filenames in os.walk(CUCKOO_ROOT):
@@ -101,11 +104,12 @@ def cuckoo_clean():
             if not fname.endswith(".pyc"):
                 continue
 
+            path = os.path.join(CUCKOO_ROOT, dirpath, fname)
+
             try:
-                os.unlink(os.path.join(dirpath, fname))
-            except IOError as e:
-                log.debug("Error removing file %s: %s",
-                          os.path.join(dirpath, fname), e)
+                os.unlink(path)
+            except (IOError, OSError) as e:
+                log.warning("Error removing file %s: %s", path, e)
 
     # Initialize the database connection.
     db = Database()
