@@ -118,20 +118,18 @@ _start() {
     vmcloak-iptables
 
     echo -n "Starting Cuckoo daemon.. "
-    sudo -u "\$USERNAME" -i nohup \
-        python "\$CUCKOODIR/cuckoo.py" -d 2>&1 > /dev/null &
+    nohup python "\$CUCKOODIR/cuckoo.py" -u "\$USERNAME" \
+        -d 2>&1 > /dev/null &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     echo -n "Starting Cuckoo API server.. "
-    sudo -u "\$USERNAME" -i nohup \
-        python "\$CUCKOODIR/utils/api.py" -H "\$IPADDR" \
-        2>&1 >> "\$LOGDIR/api.log" &
+    nohup python "\$CUCKOODIR/utils/api.py" -u "\$USERNAME" \
+        -H "\$IPADDR" 2>&1 >> "\$LOGDIR/api.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     echo -n "Starting Cuckoo results processing.. "
-    sudo -u "\$USERNAME" -i nohup \
-        python "\$CUCKOODIR/utils/process.py" auto -p 2 \
-        2>&1 >> "\$LOGDIR/process.log" &
+    nohup python "\$CUCKOODIR/utils/process.py" -u "\$USERNAME" \
+        auto -p 2 2>&1 >> "\$LOGDIR/process.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     echo "Cuckoo started.."
