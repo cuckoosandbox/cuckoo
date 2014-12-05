@@ -111,11 +111,17 @@ class Node(db.Model):
         try:
             url = os.path.join(self.url, "tasks", "create", "file")
             data = dict(
-                package=task.package, timeout=task.timeout,
-                priority=task.priority, options=task.options,
-                machine=task.machine, platform=task.platform,
-                tags=task.tags, custom=task.custom, owner=task.owner,
-                memory=task.memory, clock=task.clock,
+                package=task.package,
+                timeout=task.timeout,
+                priority=task.priority,
+                options=task.options,
+                machine=task.machine,
+                platform=task.platform,
+                tags=task.tags,
+                custom=task.custom,
+                owner=task.owner,
+                memory=task.memory,
+                clock=task.clock,
                 enforce_timeout=task.enforce_timeout,
             )
 
@@ -444,12 +450,21 @@ class TaskApi(TaskBaseApi):
             abort(404, message="Task not found")
 
         return dict(tasks={task.id: dict(
-            task_id=task.id, path=task.path, filename=task.filename,
-            package=task.package, timeout=task.timeout,
-            priority=task.priority, options=task.options,
-            machine=task.machine, platform=task.platform, tags=task.tags,
-            custom=task.custom, owner=task.owner, memory=task.memory,
-            clock=task.clock, enforce_timeout=task.enforce_timeout
+            task_id=task.id,
+            path=task.path,
+            filename=task.filename,
+            package=task.package,
+            timeout=task.timeout,
+            priority=task.priority,
+            options=task.options,
+            machine=task.machine,
+            platform=task.platform,
+            tags=task.tags,
+            custom=task.custom,
+            owner=task.owner,
+            memory=task.memory,
+            clock=task.clock,
+            enforce_timeout=task.enforce_timeout,
         )})
 
     def delete(self, task_id):
@@ -500,13 +515,23 @@ class TaskRootApi(TaskBaseApi):
         ret = {}
         for task in tasks:
             ret[task.id] = dict(
-                id=task.id, path=task.path, filename=task.filename,
-                package=task.package, timeout=task.timeout,
-                priority=task.priority, options=task.options,
-                machine=task.machine, platform=task.platform, tags=task.tags,
-                custom=task.custom, owner=task.owner, memory=task.memory,
-                clock=task.clock, enforce_timeout=task.enforce_timeout,
-                task_id=task.task_id, node_id=task.node_id,
+                id=task.id,
+                path=task.path,
+                filename=task.filename,
+                package=task.package,
+                timeout=task.timeout,
+                priority=task.priority,
+                options=task.options,
+                machine=task.machine,
+                platform=task.platform,
+                tags=task.tags,
+                custom=task.custom,
+                owner=task.owner,
+                memory=task.memory,
+                clock=task.clock,
+                enforce_timeout=task.enforce_timeout,
+                task_id=task.task_id,
+                node_id=task.node_id,
             )
         return dict(tasks=ret)
 
