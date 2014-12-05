@@ -3,22 +3,22 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import argparse
+import logging
 import os
 import sys
-import logging
-import argparse
 
 try:
-    from lib.cuckoo.common.logo import logo
     from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
     from lib.cuckoo.common.exceptions import CuckooCriticalError
     from lib.cuckoo.common.exceptions import CuckooDependencyError
+    from lib.cuckoo.common.logo import logo
+    from lib.cuckoo.core.resultserver import ResultServer
+    from lib.cuckoo.core.scheduler import Scheduler
     from lib.cuckoo.core.startup import check_working_directory, check_configs
     from lib.cuckoo.core.startup import check_version, create_structure
     from lib.cuckoo.core.startup import init_logging, init_modules
     from lib.cuckoo.core.startup import init_tasks, init_yara
-    from lib.cuckoo.core.scheduler import Scheduler
-    from lib.cuckoo.core.resultserver import ResultServer
 
     import bson
 
