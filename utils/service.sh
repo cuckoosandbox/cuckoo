@@ -13,13 +13,12 @@ _install_upstart() {
 
 description "cuckoo daemon"
 start on runlevel [2345]
-setuid cuckoo
 chdir /home/cuckoo/cuckoo
 pre-start script
     exec vmcloak-vboxnet0
     exec vmcloak-iptables
 end script
-exec ./cuckoo.py
+exec ./cuckoo.py -u cuckoo -d
 EOF
 
     cat > /etc/init/cuckoo-api.conf << EOF
