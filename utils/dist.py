@@ -616,8 +616,10 @@ if __name__ == "__main__":
     if args.user:
         try:
             user = pwd.getpwnam(args.user)
+            os.setgroups((user.pw_gid,))
             os.setgid(user.pw_gid)
             os.setuid(user.pw_uid)
+            os.putenv("HOME", user.pw_dir)
         except KeyError:
             sys.exit("Invalid user specified to drop privileges to: %s" %
                      args.user)
