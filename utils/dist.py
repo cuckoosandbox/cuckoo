@@ -472,6 +472,7 @@ class TaskRootApi(TaskBaseApi):
         offset = request.args.get("offset")
         limit = request.args.get("limit")
         finished = request.args.get("finished")
+        owner = request.args.get("owner")
 
         q = Task.query
 
@@ -483,6 +484,9 @@ class TaskRootApi(TaskBaseApi):
 
         if limit is not None:
             q = q.limit(int(limit))
+
+        if owner:
+            q = q.filter_by(owner=owner)
 
         tasks = q.all()
 
