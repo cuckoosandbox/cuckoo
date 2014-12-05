@@ -118,12 +118,11 @@ EOF
 chown cuckoo:cuckoo "$VMCLOAKCONF"
 
 # Create the Virtual Machine bird.
-sudo -u cuckoo -i vmcloak -s "$VMCLOAKCONF" --bird bird0
+vmcloak -u cuckoo -s "$VMCLOAKCONF" --bird bird0
 
 # Create various Virtual Machine eggs.
 for i in $(seq -w 1 "$1"); do
-    sudo -u cuckoo -i \
-        vmcloak-clone --bird bird0 --hostonly-ip 192.168.56.1$i egg$i
+    vmcloak-clone -u cuckoo --bird bird0 --hostonly-ip 192.168.56.1$i egg$i
 done
 
 rm -rf "$VMCLOAKCONF" "$VMTEMP"
