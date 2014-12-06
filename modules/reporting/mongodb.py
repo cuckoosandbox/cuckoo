@@ -121,7 +121,7 @@ class MongoDB(Report):
             report["network"].update(results["network"])
 
         # Store the process memory dump file in GridFS and reference it back in the report.
-        if "procmemory" in report:
+        if "procmemory" in report and self.options.get("store_memdump", False):
             for idx, procmem in enumerate(report["procmemory"]):
                 procmem_path = os.path.join(self.analysis_path, "memory", "{0}.dmp".format(procmem["pid"]))
                 procmem_file = File(procmem_path)
