@@ -224,7 +224,7 @@ TYPECONVERTERS = {
     "p": lambda v: "0x%08x" % default_converter(v),
 }
 
-# 1 Mb max message length.
+# 20 Mb max message length.
 MAX_MESSAGE_LENGTH = 20 * 1024 * 1024
 
 def default_converter(v):
