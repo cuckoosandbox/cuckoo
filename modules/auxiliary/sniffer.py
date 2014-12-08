@@ -40,7 +40,7 @@ class Sniffer(Auxiliary):
             return
 
         mode = os.stat(tcpdump)[stat.ST_MODE]
-        if mode and stat.S_ISUID != 2048:
+        if (mode & stat.S_ISUID) == 0:
             log.error("Tcpdump is not accessible from this user, "
                       "network capture aborted")
             return
