@@ -75,13 +75,13 @@
             <div id="process_{{process.process_id}}" style="display: none;">
                 <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
                     <tr>
-                        <th>Timestamp</th>
-                        <th>Thread</th>
-                        <th>Function</th>
-                        <th>Arguments</th>
-                        <th>Status</th>
-                        <th>Return</th>
-                        <th>Repeated</th>
+                        <th width="10%">Timestamp</th>
+                        <th width="5%">Thread</th>
+                        <th width="15%">Function</th>
+                        <th width="50%">Arguments</th>
+                        <th width="5%">Status</th>
+                        <th width="10%">Return</th>
+                        <th width="5%">Repeated</th>
                     </tr>
                     {% for call in process.calls %}
                     <tr class="{{call.category}}">
