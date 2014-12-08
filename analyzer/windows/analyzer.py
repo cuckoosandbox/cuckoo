@@ -300,7 +300,7 @@ class PipeHandler(Thread):
                                          "pid %s", proc.pid)
                     else:
                         log.warning("Received request to inject Cuckoo "
-                                    "processes, skip")
+                                    "process with pid %d, skip", process_id)
 
                 # Once we're done operating on the processes list, we release
                 # the lock.
