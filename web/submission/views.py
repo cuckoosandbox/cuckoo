@@ -55,7 +55,7 @@ def index(request):
             task_machines.append(machine)
 
         if "sample" in request.FILES:
-            for sample in reqeust.FILES.getlist("sample"):
+            for sample in request.FILES.getlist("sample"):
                 if sample.size == 0:
                     return render_to_response("error.html",
                                               {"error": "You uploaded an empty file."},
@@ -106,13 +106,9 @@ def index(request):
 
         tasks_count = len(task_ids)
         if tasks_count > 0:
-            if tasks_count == 1:
-                message = "The analysis task was successfully added with ID {0}.".format(task_ids[0])
-            else:
-                message = "The analysis tasks were successfully added with IDs {0}.".format(", ".join(str(i) for i in task_ids))
-
-            return render_to_response("success.html",
-                                      {"message": message},
+            return render_to_response("submission/complete.html",
+                                      {"tasks" : task_ids,
+                                       "tasks_count" : tasks_count},
                                       context_instance=RequestContext(request))
         else:
             return render_to_response("error.html",
@@ -151,3 +147,20 @@ def index(request):
                                   {"packages": sorted(packages),
                                    "machines": machines},
                                   context_instance=RequestContext(request))
+
+def status(request, task_id):
+    task = Database().view_task(task_id)
+    if not task:
+        return render_to_response("error.html",
+                                  {"error": "The specified task doesn't seem to exist."},
+                                  context_instance=RequestContext(request))
+
+    completed = False
+    if task.status == "reported":
+        completed = True
+
+    return render_to_response("submission/status.html",
+                              {"completed" : completed,
+                               "status" : task.status,
+                               "task_id" : task_id},
+                              context_instance=RequestContext(request))

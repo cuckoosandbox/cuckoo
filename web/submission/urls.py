@@ -6,4 +6,5 @@ from django.conf.urls import patterns, url
 
 urlpatterns = patterns("",
     url(r"^$", "submission.views.index"),
+    url(r"status/(?P<task_id>\d+)/$", "submission.views.status"),
 )
