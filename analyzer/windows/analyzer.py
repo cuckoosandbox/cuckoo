@@ -81,7 +81,7 @@ def add_file(file_path):
         FILES_LIST.append(file_path)
 
 def dump_file(file_path):
-    """Create a copy of the give file path."""
+    """Create a copy of the given file path."""
     try:
         if os.path.exists(file_path):
             sha256 = hash_file(hashlib.sha256, file_path)
