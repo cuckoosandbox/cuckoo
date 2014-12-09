@@ -284,7 +284,7 @@ class ELF:
         """
         relocs = []
         
-        process = subprocess.Popen(["/usr/bin/objdump",self.file_path, "-R"], stdout=subprocess.PIPE)
+        process = subprocess.Popen(["/usr/bin/objdump",self.file_path, "-R"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         # take output
         dump_result = process.communicate()[0]
         # format output
@@ -305,7 +305,7 @@ class ELF:
         entry = []
         
         # dump dynamic symbols using 'objdump -T'
-        process = subprocess.Popen(["/usr/bin/objdump",self.file_path, "-T"], stdout=subprocess.PIPE)
+        process = subprocess.Popen(["/usr/bin/objdump",self.file_path, "-T"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         elf = process.communicate()[0]
         
         # Format to lines by splitting at '\n'
@@ -358,7 +358,7 @@ class ELF:
         sections = []
         entry = []
         
-        process = subprocess.Popen(["/usr/bin/readelf", self.file_path, "-S", "-W"], stdout=subprocess.PIPE)
+        process = subprocess.Popen(["/usr/bin/readelf", self.file_path, "-S", "-W"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         elf = process.communicate()[0]
         
         # Format to lines by splitting at '\n'

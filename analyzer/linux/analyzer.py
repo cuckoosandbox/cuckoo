@@ -7,6 +7,7 @@ from datetime import datetime
 from lib.common.constants import PATHS
 from lib.core.config import Config
 from lib.core.startup import create_folders, init_logging
+from time import sleep
 
 log = logging.getLogger()
 
@@ -69,13 +70,18 @@ class Analyzer(object):
         log.info("Target is: {0}".format(self.target))
 
         if self.config.category == "file":
-            if ".sh" in self.config.file_name:
+            if ".bash" in self.config.file_name:
+                subprocess.call(["bash", self.target], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            elif ".sh" in self.config.file_name:
                 subprocess.call(["sh", self.target], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            elif ".pl" in self.config.file_name:
+                subprocess.call(["perl", self.target], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             else:
                 arg = "chmod +x " + str(self.target)
                 os.system(arg)
                 os.system(self.target)
-            
+
+        sleep(30)
         # Let's invoke the completion procedure.
         self.complete()
 
