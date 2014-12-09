@@ -39,11 +39,12 @@ class Sniffer(Auxiliary):
                       "capture aborted", tcpdump)
             return
 
-        mode = os.stat(tcpdump)[stat.ST_MODE]
-        if (mode & stat.S_ISUID) == 0:
-            log.error("Tcpdump is not accessible from this user, "
-                      "network capture aborted")
-            return
+        # TODO: this isn't working. need to fix.
+        #mode = os.stat(tcpdump)[stat.ST_MODE]
+        #if (mode & stat.S_ISUID) == 0:
+        #    log.error("Tcpdump is not accessible from this user, "
+        #              "network capture aborted")
+        #    return
 
         if not interface:
             log.error("Network interface not defined, network capture aborted")
