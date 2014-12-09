@@ -35,6 +35,7 @@ def foreach_child(hwnd, lparam):
         "enable",
         "don't send",
         "continue",
+        "unzip",
     ]
 
     classname = create_unicode_buffer(50)

@@ -85,7 +85,8 @@ class Package(object):
             p.inject(dll)
             p.resume()
             p.close()
-            return p.pid
+        
+        return p.pid
 
     def finish(self):
         """Finish run.
@@ -96,6 +97,7 @@ class Package(object):
             for pid in self.pids:
                 p = Process(pid=pid)
                 p.dump_memory()
+        
         return True
 
 

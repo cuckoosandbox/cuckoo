@@ -10,7 +10,6 @@ import time
 import xml.etree.ElementTree as ET
 
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -553,38 +552,37 @@ class LibVirtMachinery(Machinery):
         @raise CuckooMachineError: if cannot find current snapshot or
                                    when there are too many snapshots available
         """
-        # Checks for current snapshots.
+        def _extract_creation_time(node):
+            """Extracts creation time from a KVM vm config file.
+            @param node: config file node
+            @return: extracted creation time
+            """
+            xml = ET.fromstring(node.getXMLDesc(flags=0))
+            return xml.findtext("./creationTime")
+
+        snapshot = None
         conn = self._connect()
         try:
             vm = self.vms[label]
-            snap = vm.hasCurrentSnapshot(flags=0)
+
+            # Try to get the currrent snapshot, otherwise fallback on the latest
+            # from config file.
+            if vm.hasCurrentSnapshot(flags=0):
+                snapshot = vm.snapshotCurrent(flags=0)
+            else:
+                log.debug("No current snapshot, using latest snapshot")
+
+                # No current snapshot, try to get the last one from config file.
+                snapshot = sorted(vm.listAllSnapshots(flags=0),
+                                  key=_extract_creation_time,
+                                  reverse=True)[0]
         except libvirt.libvirtError:
-            self._disconnect(conn)
-            raise CuckooMachineError("Unable to get current snapshot for "
+            raise CuckooMachineError("Unable to get snapshot for "
                                      "virtual machine {0}".format(label))
         finally:
             self._disconnect(conn)
 
-        if snap:
-            return vm.snapshotCurrent(flags=0)
-
-        # If no current snapshot, get the last one.
-        conn = self._connect()
-        try:
-            snaps = vm[label].snapshotListNames(flags=0)
-
-            def get_create(sn):
-                xml_desc = sn.getXMLDesc(flags=0)
-                return ET.fromstring(xml_desc).findtext("./creationTime")
-
-            return max(get_create(vm.snapshotLookupByName(name, flags=0))
-                       for name in snaps)
-        except libvirt.libvirtError:
-            return None
-        except ValueError:
-            return None
-        finally:
-            self._disconnect(conn)
+        return snapshot
 
 class Processing(object):
     """Base abstract class for processing module."""

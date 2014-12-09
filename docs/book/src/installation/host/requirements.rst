@@ -37,7 +37,7 @@ The following libraries are not strictly required, but their installation is rec
     * `Magic`_ (Optional): for identifying files' formats (otherwise use "file" command line utility)
     * `Pydeep`_ (Optional): for calculating ssdeep fuzzy hash of files.
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
-    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use release 1.7 or above or the svn version).
+    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use latest 3.x release).
     * `Libvirt`_ (Optional): for using the KVM machine manager.
     * `Bottlepy`_ (Optional): for using the ``api.py`` or ``web.py`` utility (use release 0.10 or above).
     * `Django`_ (Optional): for using the web interface (use release 1.5 or above).
@@ -70,7 +70,7 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Bottlepy: http://www.bottlepy.org
 .. _Django: https://www.djangoproject.com/
 .. _Pefile: http://code.google.com/p/pefile/
-.. _Volatility: http://code.google.com/p/volatility/
+.. _Volatility: https://github.com/volatilityfoundation/
 .. _MAEC Python bindings: https://pypi.python.org/pypi/maec/4.0.1.0
 .. _Chardet: https://pypi.python.org/pypi/chardet
 
@@ -120,7 +120,7 @@ you'll have to set specific Linux capabilities to the binary::
 
 You can verify the results of last command with::
 
-    $ getcap /usr/sbin/tcpdump 
+    $ getcap /usr/sbin/tcpdump
     /usr/sbin/tcpdump = cap_net_admin,cap_net_raw+eip
 
 If you don't have `setcap` installed you can get it with::
@@ -136,7 +136,7 @@ Or otherwise (**not recommended**) do::
 Installing Volatility
 =====================
 
-Volatility is an optional tool to do forensic analysis on memory dumps. 
+Volatility is an optional tool to do forensic analysis on memory dumps.
 In combination with Cuckoo, it can automatically provide additional visibility
 into deep modifications in the operating system as well as detect the presence
 of rootkit technology that escaped the monitoring domain of Cuckoo's analyzer.
@@ -146,4 +146,4 @@ You can get it from the `official repository`_.
 
 See the volatility documentation for detailed instructions on how to install it.
 
-.. _official repository: http://code.google.com/p/volatility/
+.. _official repository: https://github.com/volatilityfoundation

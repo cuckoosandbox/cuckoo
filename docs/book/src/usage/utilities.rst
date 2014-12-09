@@ -135,7 +135,7 @@ Stats utility
 This is a really simple utility which prints some statistics about processed
 samples::
 
-    $ utils/stats.py
+    $ ./utils/stats.py
 
     1 samples in db
     1 tasks in db
@@ -148,3 +148,18 @@ samples::
     failed_processing 0 tasks
     roughly 32 tasks an hour
     roughly 778 tasks a day
+
+Machine utility
+===============
+
+The machine.py utility is desgined to help you automatize the configuration of
+virtual machines in Cuckoo.
+It takes a list of machine details as arguments and write them in the specified
+macheniry configuration file.
+Following are the usage options::
+
+  $ ./utils/machine.py
+  usage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
+                    [--tags TAGS] [--interface INTERFACE] [--snapshot SNAPSHOT]
+                    [--resultserver RESULTSERVER]
+                    vmname
