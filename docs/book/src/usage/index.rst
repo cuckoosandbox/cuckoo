@@ -16,3 +16,4 @@ This chapter explains how to use Cuckoo.
     results
     clean
     utilities
+    performance
