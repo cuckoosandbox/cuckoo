@@ -72,6 +72,24 @@ setuid cuckoo
 chdir /home/cuckoo/cuckoo
 exec ./utils/process.py auto 2>> log/process.log
 EOF
+
+    cat > /etc/init/cuckoo-distributed.conf << EOF
+# Cuckoo distributed API service.
+
+env CONFFILE="/etc/default/cuckoo"
+env IPADDR="127.0.0.1"
+
+pre-start script
+    [ -f "\$CONFFILE" ] && . "\$CONFFILE"
+end-script
+
+description "cuckoo distributed api service"
+start on started cuckoo
+stop on stopped cuckoo
+setuid cuckoo
+chdir /home/cuckoo/cuckoo
+exec ./utils/dist.py "\$IPADDR" 2>> log/process.log
+EOF
     echo "Cuckoo Service scripts installed!"
 }
 
@@ -79,6 +97,7 @@ _remove_upstart() {
     rm -f /etc/init/cuckoo.conf
     rm -f /etc/init/cuckoo-api.conf
     rm -f /etc/init/cuckoo-process.conf
+    rm -f /etc/init/cuckoo-distributed.conf
 }
 
 _reload_upstart() {
@@ -140,6 +159,11 @@ _start() {
     echo -n "Starting Cuckoo results processing.. "
     nohup python "\$CUCKOODIR/utils/process.py" -u "\$USERNAME" \
         auto -p 2 2>&1 >> "\$LOGDIR/process.log" &
+    PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
+
+    echo -n "Starting Cuckoo Distributed API.. "
+    nohup python "\$CUCKOODIR/utils/dist.py" -u "\$USERNAME" \
+        "\$IPADDR" 2>&1 >> "\$LOGDIR/dist.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     echo "Cuckoo started.."
