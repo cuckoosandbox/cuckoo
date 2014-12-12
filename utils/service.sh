@@ -7,6 +7,29 @@ _about_upstart() {
     echo "Using Upstart technique.."
 }
 
+_install_configuration() {
+    cat > /etc/default/cuckoo << EOF
+# Configuration file for the Cuckoo Sandbox service.
+
+# Username to run Cuckoo under, by default cuckoo.
+# USERNAME="cuckoo"
+
+# Directory for Cuckoo, defaults to the "cuckoo" directory in the
+# home directory of the cuckoo user.
+# CUCKOODIR="/home/cuckoo/cuckoo/"
+
+# Log directory, defaults to the log/ directory in the Cuckoo setup.
+# LOGDIR="/home/cuckoo/cuckoo/log/"
+
+# IP address that the Cuckoo API will bind on.
+# IPADDR="localhost"
+EOF
+}
+
+_remove_configuration() {
+    rm -f /etc/default/cuckoo
+}
+
 _install_upstart() {
     cat > /etc/init/cuckoo.conf << EOF
 # Cuckoo daemon service.
@@ -24,14 +47,19 @@ EOF
     cat > /etc/init/cuckoo-api.conf << EOF
 # Cuckoo API server service.
 
-env IP="127.0.0.1"
+env CONFFILE="/etc/default/cuckoo"
+env IPADDR="127.0.0.1"
+
+pre-start script
+    [ -f "\$CONFFILE" ] && . "\$CONFFILE"
+end-script
 
 description "cuckoo api server"
 start on started cuckoo
 stop on stopped cuckoo
 setuid cuckoo
 chdir /home/cuckoo/cuckoo
-exec ./utils/api.py -H "\$IP" 2>> log/api.log
+exec ./utils/api.py -H "\$IPADDR" 2>> log/api.log
 EOF
 
     cat > /etc/init/cuckoo-process.conf << EOF
@@ -74,23 +102,6 @@ _about_systemv() {
 }
 
 _install_systemv() {
-    cat > /etc/default/cuckoo << EOF
-# Configuration file for the Cuckoo Sandbox service.
-
-# Username to run Cuckoo under, by default cuckoo.
-# USERNAME="cuckoo"
-
-# Directory for Cuckoo, defaults to the "cuckoo" directory in the
-# home directory of the cuckoo user.
-# CUCKOODIR="/home/cuckoo/cuckoo/"
-
-# Log directory, defaults to the log/ directory in the Cuckoo setup.
-# LOGDIR="/home/cuckoo/cuckoo/log/"
-
-# IP address that the Cuckoo API will bind on.
-# IPADDR="localhost"
-EOF
-
     cat > /etc/init.d/cuckoo << EOF
 #!/bin/sh
 # Cuckoo service.
@@ -231,11 +242,13 @@ case "$1" in
     install)
         _about
         _install
+        _install_configuration
         _reload
         ;;
 
     remove)
         _remove
+        _remove_configuration
         _reload
         ;;
 
