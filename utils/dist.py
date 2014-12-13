@@ -9,6 +9,7 @@ import datetime
 import hashlib
 import json
 import logging
+import multiprocessing
 import os
 import sys
 import tempfile
@@ -237,7 +238,11 @@ class Task(db.Model):
         self.finished = False
 
 
-class StatusThread(threading.Thread):
+class NodeHandler(object):
+    def __init__(self, node):
+        self.name = node.name
+        self.node = node
+
     def submit_tasks(self, node):
         # Only get nodes that have not been pushed yet.
         q = Task.query.filter_by(node_id=None, finished=False)
@@ -300,62 +305,40 @@ class StatusThread(threading.Thread):
             db.session.commit()
             db.session.refresh(t)
 
-    def run(self):
-        global STATUSES
-        while RUNNING:
-            with app.app_context():
-                start = datetime.datetime.now()
-                statuses = {}
+    def process(self):
+        start = int(datetime.datetime.now().strftime("%s"))
 
-                # Request a status update on all Cuckoo nodes.
-                for node in Node.query.filter_by(enabled=True).all():
-                    status = node.status()
-                    if not status:
-                        continue
+        log.debug("Hoi")
+        status = self.node.status()
+        log.debug("Status %r -> %r", self.name, status)
+        if not status:
+            return start, self.name, None
 
-                    log.debug("Status.. %s -> %s", node.name, status)
+        log.debug("Status.. %s -> %s", self.node.name, status)
 
-                    statuses[node.name] = status
+        if status["pending"] < MINIMUMQUEUE:
+            self.submit_tasks(self.node)
 
-                    if status["pending"] < MINIMUMQUEUE:
-                        self.submit_tasks(node)
+        if self.node.last_check:
+            last_check = int(self.node.last_check.strftime("%s"))
+        else:
+            last_check = 0
 
-                    if node.last_check:
-                        last_check = int(node.last_check.strftime("%s"))
-                    else:
-                        last_check = 0
+        self.fetch_latest_reports(self.node, last_check)
 
-                    self.fetch_latest_reports(node, last_check)
+        # We just fetched all the "latest" tasks. However, it is for some
+        # reason possible that some reports are never fetched, and therefore
+        # we reset the "last_check" parameter when more than 10 tasks have not
+        # been fetched, thus preventing running out of diskspace.
+        status = self.node.status()
+        if status and status["reported"] > RESET_LASTCHECK:
+            self.node.last_check = None
 
-                    # We just fetched all the "latest" tasks. However, it is
-                    # for some reason possible that some reports are never
-                    # fetched, and therefore we reset the "last_check"
-                    # parameter when more than 10 tasks have not been fetched,
-                    # thus preventing running out of diskspace.
-                    status = node.status()
-                    if status and status["reported"] > RESET_LASTCHECK:
-                        node.last_check = None
-
-                    # The last_check field of each node object has been
-                    # updated as well as the finished field for each task that
-                    # has been completed.
-                    db.session.commit()
-                    db.session.refresh(node)
-
-                # Dump the uptime.
-                if app.config["UPTIME_LOGFILE"]:
-                    with open(app.config["UPTIME_LOGFILE"], "ab") as f:
-                        t = int(start.strftime("%s"))
-                        c = json.dumps(dict(timestamp=t, status=statuses))
-                        print>>f, c
-
-                STATUSES = statuses
-
-                # Sleep until roughly half a minute (configurable through
-                # INTERVAL) has gone by.
-                diff = (datetime.datetime.now() - start).seconds
-                if diff < INTERVAL:
-                    time.sleep(INTERVAL - diff)
+        # The last_check field of each node object has been updated as well as
+        # the finished field for each task that has been completed.
+        db.session.commit()
+        db.session.refresh(self.node)
+        return start, self.name, status
 
 
 class NodeBaseApi(RestResource):
@@ -588,7 +571,7 @@ class StatusRootApi(RestResource):
             processed=tasks.filter_by(finished=True).count(),
             pending=Task.query.filter_by(node_id=None).count(),
         )
-        return dict(nodes=STATUSES, tasks=tasks)
+        return dict(nodes=app.config["STATUSES"], tasks=tasks)
 
 
 def output_json(data, code, headers=None):
@@ -610,6 +593,44 @@ class DistRestApi(RestApi):
             "application/xml": output_xml,
             "application/json": output_json,
         }
+
+
+class SchedulerThread(threading.Thread):
+    def _callback(self, (start, name, status)):
+        app.config["STATUSES"][name] = status
+
+        # If available, we'll want to dump the uptime.
+        if app.config["UPTIME_LOGFILE"]:
+            try:
+                with open(app.config["UPTIME_LOGFILE"], "ab") as f:
+                    c = json.dumps(dict(timestamp=start, name=name,
+                                        status=status))
+                    print>>f, c
+            except Exception as e:
+                log.warning("Error dumping uptime for node %r: %s", name, e)
+
+    def run(self):
+        m = multiprocessing.Pool(processes=app.config["WORKER_THREADS"])
+        nodes = {}
+
+        while app.config["RUNNING"]:
+            t = time.time()
+
+            # We resolve the nodes every iteration, that way new nodes may
+            # be added on-the-fly.
+            with app.app_context():
+                for node in Node.query.filter_by(enabled=True).all():
+                    if node.name not in nodes:
+                        nodes[node.name] = NodeHandler(node)
+
+                    log.debug("Processing.. %s", node.name)
+
+                    node = nodes[node.name]
+
+                    m.apply_async(node.process, callback=self._callback)
+
+            if t + INTERVAL > time.time():
+                time.sleep(t + INTERVAL - time.time())
 
 
 def create_app(database_connection):
@@ -689,11 +710,12 @@ if __name__ == "__main__":
     if not os.path.isdir(app.config["REPORTS_DIRECTORY"]):
         os.makedirs(app.config["REPORTS_DIRECTORY"])
 
-    RUNNING, STATUSES = True, {}
-
+    app.config["RUNNING"] = True
+    app.config["STATUSES"] = {}
+    app.config["WORKER_THREADS"] = s.getint("distributed", "worker_threads")
     app.config["UPTIME_LOGFILE"] = s.get("distributed", "uptime_logfile")
 
-    t = StatusThread()
+    t = SchedulerThread()
     t.daemon = True
     t.start()
 
