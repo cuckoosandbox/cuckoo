@@ -16,9 +16,7 @@ import tempfile
 import threading
 import time
 
-INTERVAL = 30
-MINIMUMQUEUE = 500
-RESET_LASTCHECK = 100
+RESET_LASTCHECK = 50
 
 
 def required(package):
@@ -256,7 +254,7 @@ class NodeHandler(object):
 
         # TODO Select only the tasks with appropriate tags selection.
 
-        for task in q.limit(MINIMUMQUEUE).all():
+        for task in q.limit(app.config["BATCH_SIZE"]).all():
             node.submit_task(task)
 
     def fetch_latest_reports(self, node, last_check):
@@ -316,7 +314,7 @@ class NodeHandler(object):
 
         log.debug("Status.. %s -> %s", self.node.name, status)
 
-        if status["pending"] < MINIMUMQUEUE:
+        if status["pending"] < app.config["BATCH_SIZE"]:
             self.submit_tasks(self.node)
 
         if self.node.last_check:
@@ -328,7 +326,7 @@ class NodeHandler(object):
 
         # We just fetched all the "latest" tasks. However, it is for some
         # reason possible that some reports are never fetched, and therefore
-        # we reset the "last_check" parameter when more than 10 tasks have not
+        # we reset the "last_check" parameter when more than 50 tasks have not
         # been fetched, thus preventing running out of diskspace.
         status = self.node.status()
         if status and status["reported"] > RESET_LASTCHECK:
@@ -629,8 +627,8 @@ class SchedulerThread(threading.Thread):
 
                     m.apply_async(node.process, callback=self._callback)
 
-            if t + INTERVAL > time.time():
-                time.sleep(t + INTERVAL - time.time())
+            if t + app.config["INTERVAL"] > time.time():
+                time.sleep(t + app.config["INTERVAL"] - time.time())
 
 
 def create_app(database_connection):
@@ -714,6 +712,8 @@ if __name__ == "__main__":
     app.config["STATUSES"] = {}
     app.config["WORKER_THREADS"] = s.getint("distributed", "worker_threads")
     app.config["UPTIME_LOGFILE"] = s.get("distributed", "uptime_logfile")
+    app.config["INTERVAL"] = s.getint("distributed", "interval")
+    app.config["BATCH_SIZE"] = s.getint("distributed", "batch_size")
 
     t = SchedulerThread()
     t.daemon = True
