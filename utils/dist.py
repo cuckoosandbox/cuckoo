@@ -346,6 +346,7 @@ class NodeBaseApi(RestResource):
         self._parser = reqparse.RequestParser()
         self._parser.add_argument("name", type=str)
         self._parser.add_argument("url", type=str)
+        self._parser.add_argument("ip", type=str)
 
 
 class NodeRootApi(NodeBaseApi):
@@ -369,7 +370,15 @@ class NodeRootApi(NodeBaseApi):
 
     def post(self):
         args = self._parser.parse_args()
-        node = Node(name=args["name"], url=args["url"])
+
+        if "name" not in args:
+            abort(404, "Cuckoo node name not found")
+
+        if "url" not in args and "ip" not in args:
+            abort(404, "Node address not found")
+
+        url = args["url"] if "url" in args else "http://%s:8090/" % args["ip"]
+        node = Node(name=args["name"], url=url)
 
         machines = []
         for machine in node.list_machines():
