@@ -640,10 +640,10 @@ if __name__ == "__main__":
     p.add_argument("host", nargs="?", default="127.0.0.1", help="Host to listen on")
     p.add_argument("port", nargs="?", type=int, default=9003, help="Port to listen on")
     p.add_argument("-s", "--settings", type=str, help="Settings file.")
-    p.add_argument("-d", "--debug", action="store_true", help="Enable debug logging")
+    p.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
     args = p.parse_args()
 
-    if args.debug:
+    if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
