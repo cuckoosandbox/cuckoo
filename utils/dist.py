@@ -629,12 +629,11 @@ class SchedulerThread(threading.Thread):
                 for node in Node.query.filter_by(enabled=True).all():
                     if node.name not in nodes:
                         nodes[node.name] = NodeHandler(node)
+                        log.info("Detected Cuckoo node '%s': %s",
+                                 node.name, node.url)
 
-                    log.debug("Processing.. %s", node.name)
-
-                    node = nodes[node.name]
-
-                    m.apply_async(node.process, callback=self._callback)
+                    m.apply_async(nodes[node.name].process,
+                                  callback=self._callback)
 
             if t + app.config["INTERVAL"] > time.time():
                 time.sleep(t + app.config["INTERVAL"] - time.time())
