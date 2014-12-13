@@ -608,7 +608,7 @@ class SchedulerThread(threading.Thread):
                 log.warning("Error dumping uptime for node %r: %s", name, e)
 
     def run(self):
-        m = multiprocessing.Pool(processes=app.config["WORKER_THREADS"])
+        m = multiprocessing.Pool(processes=app.config["WORKER_PROCESSES"])
         nodes = {}
 
         while app.config["RUNNING"]:
@@ -710,7 +710,8 @@ if __name__ == "__main__":
 
     app.config["RUNNING"] = True
     app.config["STATUSES"] = {}
-    app.config["WORKER_THREADS"] = s.getint("distributed", "worker_threads")
+    app.config["WORKER_PROCESSES"] = \
+        s.getint("distributed", "worker_processes")
     app.config["UPTIME_LOGFILE"] = s.get("distributed", "uptime_logfile")
     app.config["INTERVAL"] = s.getint("distributed", "interval")
     app.config["BATCH_SIZE"] = s.getint("distributed", "batch_size")
