@@ -241,6 +241,14 @@ class NodeHandler(object):
         self.name = node.name
         self.node = node
 
+        multiprocessing.log_to_stderr()
+        self.log = multiprocessing.get_logger()
+
+        if app.config["VERBOSE"]:
+            self.log.setLevel(logging.DEBUG)
+        else:
+            self.log.setLevel(logging.INFO)
+
     def submit_tasks(self, node):
         # Only get nodes that have not been pushed yet.
         q = Task.query.filter_by(node_id=None, finished=False)
@@ -264,8 +272,8 @@ class NodeHandler(object):
             t = q.first()
 
             if t is None:
-                log.debug("Node %s task #%d has not been submitted by us!",
-                          node.name, task["id"])
+                self.log.debug("Node %s task #%d has not been submitted "
+                               "by us!", node.name, task["id"])
                 continue
 
             # Update the last_check value of the Node for the next iteration.
@@ -285,8 +293,8 @@ class NodeHandler(object):
                 report = node.get_report(t.task_id, report_format,
                                          stream=True)
                 if report is None or report.status_code != 200:
-                    log.debug("Error fetching %s report for task #%d",
-                              report_format, t.task_id)
+                    self.log.debug("Error fetching %s report for task #%d",
+                                   report_format, t.task_id)
                     continue
 
                 path = os.path.join(dirpath, "report.%s" % report_format)
@@ -306,13 +314,11 @@ class NodeHandler(object):
     def process(self):
         start = int(datetime.datetime.now().strftime("%s"))
 
-        log.debug("Hoi")
         status = self.node.status()
-        log.debug("Status %r -> %r", self.name, status)
         if not status:
             return start, self.name, None
 
-        log.debug("Status.. %s -> %s", self.node.name, status)
+        self.log.debug("Status.. %s -> %s", self.node.name, status)
 
         if status["pending"] < app.config["BATCH_SIZE"]:
             self.submit_tasks(self.node)
@@ -330,6 +336,8 @@ class NodeHandler(object):
         # been fetched, thus preventing running out of diskspace.
         status = self.node.status()
         if status and status["reported"] > RESET_LASTCHECK:
+            self.log.debug("Reached reset-lastcheck threshold, "
+                           "resetting last-check.")
             self.node.last_check = None
 
         # The last_check field of each node object has been updated as well as
@@ -718,6 +726,7 @@ if __name__ == "__main__":
 
     app.config["RUNNING"] = True
     app.config["STATUSES"] = {}
+    app.config["VERBOSE"] = args.verbose
     app.config["WORKER_PROCESSES"] = \
         s.getint("distributed", "worker_processes")
     app.config["UPTIME_LOGFILE"] = s.get("distributed", "uptime_logfile")
