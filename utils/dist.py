@@ -360,6 +360,15 @@ class NodeBaseApi(RestResource):
         self._parser.add_argument("url", type=str)
         self._parser.add_argument("ip", type=str)
 
+    def _resolve_url(self, args):
+        if "url" not in args and "ip" not in args:
+            abort(404, "Node address not found")
+
+        if "url" not in args:
+            return "http://%s:8090/" % args["ip"]
+
+        return args["url"]
+
 
 class NodeRootApi(NodeBaseApi):
     def get(self):
@@ -386,11 +395,7 @@ class NodeRootApi(NodeBaseApi):
         if "name" not in args:
             abort(404, "Cuckoo node name not found")
 
-        if "url" not in args and "ip" not in args:
-            abort(404, "Node address not found")
-
-        url = args["url"] if "url" in args else "http://%s:8090/" % args["ip"]
-        node = Node(name=args["name"], url=url)
+        node = Node(name=args["name"], url=self._resolve_url(args))
 
         machines = []
         for machine in node.list_machines():
@@ -414,9 +419,9 @@ class NodeApi(NodeBaseApi):
 
     def put(self, name):
         args = self._parser.parse_args()
-        node = Node.query.filter_by(name=name)
+        node = Node.query.filter_by(name=name).first()
         node.name = args["name"]
-        node.url = args["url"]
+        node.url = self._resolve_url(args)
         db.session.commit()
 
     def delete(self, name):
