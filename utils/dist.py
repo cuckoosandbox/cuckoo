@@ -347,6 +347,10 @@ class NodeHandler(object):
         return start, self.name, status
 
 
+def process_node(node):
+    return NodeHandler(node).process()
+
+
 class NodeBaseApi(RestResource):
     def __init__(self, *args, **kwargs):
         RestResource.__init__(self, *args, **kwargs)
@@ -626,7 +630,7 @@ class SchedulerThread(threading.Thread):
 
     def run(self):
         m = multiprocessing.Pool(processes=app.config["WORKER_PROCESSES"])
-        nodes = {}
+        nodes = []
 
         while app.config["RUNNING"]:
             t = time.time()
@@ -636,15 +640,22 @@ class SchedulerThread(threading.Thread):
             with app.app_context():
                 for node in Node.query.filter_by(enabled=True).all():
                     if node.name not in nodes:
-                        nodes[node.name] = NodeHandler(node)
+                        nodes.append(node.name)
                         log.info("Detected Cuckoo node '%s': %s",
                                  node.name, node.url)
 
-                    m.apply_async(nodes[node.name].process,
+                    # Detach the object from the session. Probably required
+                    # for SQLite3 as this object will be used in a
+                    # different process.
+                    db.make_transient(node)
+
+                    m.apply_async(process_node, (node,),
                                   callback=self._callback)
 
             if t + app.config["INTERVAL"] > time.time():
                 time.sleep(t + app.config["INTERVAL"] - time.time())
+
+        m.close()
 
 
 def create_app(database_connection):
