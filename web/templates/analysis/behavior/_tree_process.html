@@ -1,5 +1,5 @@
 <li>
-    <strong>{{process.name}}</strong> {{process.pid}}
+    <strong><a href="javascript:show_tab('process_{{process.pid}}');">{{process.name}}</a></strong> {{process.pid}}
     {% if process.children %}
         <ul>
             {% for child in process.children %}

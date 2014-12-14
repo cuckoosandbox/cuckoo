@@ -482,8 +482,9 @@ class Pcap:
                 self._add_hosts(connection)
 
                 if ip.p == dpkt.ip.IP_PROTO_TCP:
-
                     tcp = ip.data
+                    if not isinstance(tcp, dpkt.tcp.TCP):
+                        tcp = dpkt.tcp.TCP(tcp)
 
                     if len(tcp.data) > 0:
                         connection["sport"] = tcp.sport
@@ -494,6 +495,8 @@ class Pcap:
                         continue
                 elif ip.p == dpkt.ip.IP_PROTO_UDP:
                     udp = ip.data
+                    if not isinstance(udp, dpkt.udp.UDP):
+                        udp = dpkt.udp.UDP(udp)
 
                     if len(udp.data) > 0:
                         connection["sport"] = udp.sport
@@ -502,6 +505,9 @@ class Pcap:
                         self.udp_connections.append(connection)
                 elif ip.p == dpkt.ip.IP_PROTO_ICMP:
                     icmp = ip.data
+                    if not isinstance(icmp, dpkt.icmp.ICMP):
+                        icmp = dpkt.icmp.ICMP(icmp)
+
                     self._icmp_dissect(connection, icmp)
             except AttributeError:
                 continue

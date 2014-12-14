@@ -11,6 +11,7 @@ from django.template import RequestContext
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.views.decorators.http import require_safe
+from django.views.decorators.csrf import csrf_exempt
 
 import pymongo
 from bson.objectid import ObjectId
@@ -147,6 +148,47 @@ def filtered_chunk(request, task_id, pid, category):
 
         return render_to_response("analysis/behavior/_chunk.html",
                                   {"chunk": filtered_process},
+                                  context_instance=RequestContext(request))
+    else:
+        raise PermissionDenied
+
+@csrf_exempt
+def search_behavior(request, task_id):
+    if request.method == 'POST':
+        query = request.POST.get('search')
+        results = []
+
+        # Fetch anaylsis report
+        record = results_db.analysis.find_one(
+            {"info.id": int(task_id)}
+        )
+
+        # Loop through every process
+        for process in record["behavior"]["processes"]:
+            process_results = []
+
+            chunks = results_db.calls.find({
+                "_id": { "$in": process["calls"] }
+            })
+            for chunk in chunks:
+                for call in chunk["calls"]:
+                    query = re.compile(query)
+                    if query.search(call['api']):
+                        process_results.append(call)
+                    else:
+                        for argument in call['arguments']:
+                            if query.search(argument['name']) or query.search(argument['value']):
+                                process_results.append(call)
+                                break
+
+            if len(process_results) > 0:
+                results.append({
+                    'process': process,
+                    'signs': process_results
+                })
+
+        return render_to_response("analysis/behavior/_search_results.html",
+                                  {"results": results},
                                   context_instance=RequestContext(request))
     else:
         raise PermissionDenied
