@@ -125,6 +125,16 @@ _install_systemv() {
 #!/bin/sh
 # Cuckoo service.
 
+### BEGIN INIT INFO
+# Provides:          cuckoo
+# Required-Start:    \$remote_fs \$syslog
+# Required-Stop:     \$remote_fs \$syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Cuckoo Sandbox
+# Description:       Cuckoo Sandbox, Automated Malware Analysis Sandbox
+### END INIT INFO
+
 PIDFILE="/var/run/cuckoo.pid"
 CONFFILE="/etc/default/cuckoo"
 
