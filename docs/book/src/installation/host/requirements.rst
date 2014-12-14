@@ -15,7 +15,7 @@ Install Python on Ubuntu::
 
     $ sudo apt-get install python
 
-If you want to use the Django-based web interface, you'll have to install MongoDB too:
+If you want to use the Django-based web interface, you'll have to install MongoDB too::
 
     $ sudo apt-get install mongodb
 
