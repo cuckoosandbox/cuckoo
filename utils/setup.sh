@@ -134,5 +134,12 @@ if [ "$4" -ne 0 ]; then
     sudo -u cuckoo -i cp -r "$VMS" "$VMSBACKUP"
 fi
 
+# Add "nmi_watchdog=0" to the GRUB commandline and recreate
+# the GRUB configuration.
+echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\$GRUB_CMDLINE_LINUX_DEFAULT " \
+    "nmi_watchdog=0\"" >> /etc/default/grub
+
+grub-mkconfig -o /boot/grub/grub.cfg
+
 echo "PostgreSQL connection string:  " \
     "postgresql://cuckoo:$PASSWORD@localhost/cuckoo"
