@@ -1,16 +1,55 @@
 #!/bin/sh
 
-if [ "$#" -ne 4 ]; then
-    echo "Usage: $0 <vmcount> <winxp.iso> <serial-key> <tmpfs-size>"
-    echo "vmcount: Amount of Virtual Machines to be created"
-    echo "winxp.iso: Path to a Windows XP Installer ISO"
-    echo "serial-key: Serial Key for the given Windows XP version"
-    echo "tmpfs-size: Size, in gigabytes, to create a tmpfs for the "
+# Default values.
+VMCOUNT="40"
+ISOFILE=""
+SERIALKEY=""
+TMPFSSIZE=""
+
+usage() {
+    echo "Usage: $0 [options...]"
+    echo "-c --vmcount: Amount of Virtual Machines to be created."
+    echo "-i --iso: Path to a Windows XP Installer ISO."
+    echo "-s --serial-key: Serial Key for the given Windows XP version."
+    echo "-t --tmpfs-size: Size, in gigabytes, to create a tmpfs for the "
     echo "    relevant VirtualBox files. It is advised to give it roughly"
     echo "    one gigabyte per VM and to have a few spare gigabytes "
     echo "    just in case."
     exit 1
-fi
+}
+
+while [ "$#" -gt 0 ]; do
+    option="$1"
+    shift
+
+    case "$option" in
+        -c|--vmcount)
+            VMCOUNT="$1"
+            shift
+            ;;
+
+        -i|--iso)
+            ISOFILE="$1"
+            shift
+            ;;
+
+        -s|--serial-key)
+            SERIALKEY="$1"
+            shift
+            ;;
+
+        -t|--tmpfs-size)
+            TMPFSSIZE="$1"
+            shift
+            ;;
+
+        *)
+            echo "$0: Invalid argument.. $1" >&2
+            usage
+            exit 1
+            ;;
+    esac
+done
 
 if [ "$(id -u)" -ne 0 ]; then
     echo "You'll probably want to run this script as root."
@@ -82,7 +121,7 @@ MOUNT="/mnt/winxp/"
 
 if [ ! -d "$MOUNT" ] || [ -z "$(ls -A "$MOUNT")" ]; then
     mkdir -p "$MOUNT"
-    mount -o loop,ro "$2" "$MOUNT"
+    mount -o loop,ro "$ISOFILE" "$MOUNT"
 fi
 
 VMS="/home/cuckoo/vms/"
@@ -95,8 +134,8 @@ mkdir -p "$VMDATA"
 if [ ! -d "$VMS" ]; then
     mkdir -p "$VMS"
 
-    if [ "$4" -ne 0 ]; then
-        mount -o size=${4}G -t tmpfs tmpfs "$VMS"
+    if [ "$TMPFSSIZE" -ne 0 ]; then
+        mount -o "size=${TMPFSSIZE}G" -t tmpfs tmpfs "$VMS"
     fi
 fi
 
@@ -110,7 +149,7 @@ cuckoo = $CUCKOO
 vm-dir = $VMS
 data-dir = $VMDATA
 iso-mount = $MOUNT
-serial-key = $3
+serial-key = $SERIALKEY
 dependencies = dotnet40 acrobat9
 temp-dirpath = $VMTEMP
 EOF
@@ -121,8 +160,9 @@ chown cuckoo:cuckoo "$VMCLOAKCONF"
 vmcloak -u cuckoo -s "$VMCLOAKCONF" --bird bird0
 
 # Create various Virtual Machine eggs.
-for i in $(seq -w 1 "$1"); do
-    vmcloak-clone -u cuckoo --bird bird0 --hostonly-ip 192.168.56.1$i egg$i
+for i in $(seq -w 1 "$VMCOUNT"); do
+    vmcloak-clone -u cuckoo --bird bird0 \
+        --hostonly-ip "192.168.56.1$i" "egg$i"
 done
 
 rm -rf "$VMCLOAKCONF" "$VMTEMP"
@@ -130,7 +170,7 @@ rm -rf "$VMCLOAKCONF" "$VMTEMP"
 # We create a backup of the Virtual Machines in case tmpfs is being used.
 # Because if the machine for some reason does a reboot, all the contents of
 # the tmpfs directory will be gone.
-if [ "$4" -ne 0 ]; then
+if [ "$TMPFSSIZE" -ne 0 ]; then
     sudo -u cuckoo -i cp -r "$VMS" "$VMSBACKUP"
 fi
 
