@@ -117,7 +117,7 @@ _reload_upstart() {
 }
 
 _start_upstart() {
-    initctl start cuckoo "IP=$1"
+    initctl start cuckoo
 }
 
 _stop_upstart() {
@@ -125,7 +125,7 @@ _stop_upstart() {
 }
 
 _restart_upstart() {
-    initctl restart cuckoo "IP=$1"
+    initctl restart cuckoo
 }
 
 _about_systemv() {
@@ -300,7 +300,7 @@ case "$1" in
         ;;
 
     start)
-        _start "$2"
+        _start
         ;;
 
     stop)
@@ -308,7 +308,7 @@ case "$1" in
         ;;
 
     restart)
-        _restart "$2"
+        _restart
         ;;
 
     *)
