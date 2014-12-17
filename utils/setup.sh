@@ -4,7 +4,7 @@
 VMCOUNT="40"
 ISOFILE=""
 SERIALKEY=""
-TMPFSSIZE=""
+TMPFSSIZE="0"
 
 usage() {
     echo "Usage: $0 [options...]"
@@ -160,9 +160,9 @@ chown cuckoo:cuckoo "$VMCLOAKCONF"
 vmcloak -u cuckoo -s "$VMCLOAKCONF" --bird bird0
 
 # Create various Virtual Machine eggs.
-for i in $(seq -w 1 "$VMCOUNT"); do
+for i in $(seq 1 "$VMCOUNT"); do
     vmcloak-clone -u cuckoo --bird bird0 \
-        --hostonly-ip "192.168.56.1$i" "egg$i"
+        --hostonly-ip "192.168.56.$((2+$i))" "egg$i"
 done
 
 rm -rf "$VMCLOAKCONF" "$VMTEMP"
