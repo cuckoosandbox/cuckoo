@@ -21,8 +21,12 @@ _install_configuration() {
 # Log directory, defaults to the log/ directory in the Cuckoo setup.
 # LOGDIR="/home/cuckoo/cuckoo/log/"
 
-# IP address that the Cuckoo API will bind on.
-# IPADDR="localhost"
+# IP address the Cuckoo API will bind on.
+# APIADDR="127.0.0.1"
+
+# IP address the Cuckoo Distributed API will bind on. Distributed API is by
+# default turned *OFF*. Enable by uncommenting and setting the value.
+# DISTADDR="127.0.0.1"
 EOF
 }
 
@@ -48,7 +52,7 @@ EOF
 # Cuckoo API server service.
 
 env CONFFILE="/etc/default/cuckoo"
-env IPADDR="127.0.0.1"
+env APIADDR="127.0.0.1"
 
 pre-start script
     [ -f "\$CONFFILE" ] && . "\$CONFFILE"
@@ -59,7 +63,7 @@ start on started cuckoo
 stop on stopped cuckoo
 setuid cuckoo
 chdir /home/cuckoo/cuckoo
-exec ./utils/api.py -H "\$IPADDR" 2>> log/api.log
+exec ./utils/api.py -H "\$APIADDR" 2>> log/api.log
 EOF
 
     cat > /etc/init/cuckoo-process.conf << EOF
@@ -77,7 +81,7 @@ EOF
 # Cuckoo distributed API service.
 
 env CONFFILE="/etc/default/cuckoo"
-env IPADDR="127.0.0.1"
+env DISTADDR="127.0.0.1"
 
 pre-start script
     [ -f "\$CONFFILE" ] && . "\$CONFFILE"
@@ -88,7 +92,7 @@ start on started cuckoo
 stop on stopped cuckoo
 setuid cuckoo
 chdir /home/cuckoo/cuckoo
-exec ./utils/dist.py "\$IPADDR" 2>> log/process.log
+exec ./utils/dist.py "\$DISTADDR" 2>> log/process.log
 EOF
     echo "Cuckoo Service scripts installed!"
 }
@@ -142,7 +146,8 @@ CONFFILE="/etc/default/cuckoo"
 USERNAME="cuckoo"
 CUCKOODIR="/home/cuckoo/cuckoo/"
 LOGDIR="/home/cuckoo/cuckoo/log/"
-IPADDR="localhost"
+APIADDR="127.0.0.1"
+DISTADDR=""
 
 # Load configuration values.
 [ -f "\$CONFFILE" ] && . "\$CONFFILE"
@@ -163,7 +168,7 @@ _start() {
 
     echo -n "Starting Cuckoo API server.. "
     nohup python "\$CUCKOODIR/utils/api.py" -u "\$USERNAME" \
-        -H "\$IPADDR" 2>&1 >> "\$LOGDIR/api.log" &
+        -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     echo -n "Starting Cuckoo results processing.. "
@@ -173,7 +178,7 @@ _start() {
 
     echo -n "Starting Cuckoo Distributed API.. "
     nohup python "\$CUCKOODIR/utils/dist.py" -u "\$USERNAME" \
-        "\$IPADDR" 2>&1 >> "\$LOGDIR/dist.log" &
+        "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     echo "Cuckoo started.."
