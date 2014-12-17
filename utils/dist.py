@@ -566,7 +566,7 @@ class ReportApi(RestResource):
             abort(404, message="Task not found")
 
         if not task.finished:
-            abort(404, message="Task not finished yet")
+            abort(420, message="Task not finished yet")
 
         path = os.path.join(app.config["REPORTS_DIRECTORY"],
                             "%d" % task_id, "report.%s" % report)
