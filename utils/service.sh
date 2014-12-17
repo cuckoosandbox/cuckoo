@@ -100,7 +100,11 @@ start on started cuckoo
 stop on stopped cuckoo
 setuid cuckoo
 chdir /home/cuckoo/cuckoo
-exec ./utils/dist.py "\$DISTADDR" 2>> "\$LOGDIR/process.log"
+script
+    if [ ! -z "\$DISTADDR" ]; then
+        exec ./utils/dist.py "\$DISTADDR" 2>> "\$LOGDIR/process.log"
+    fi
+end script
 EOF
     echo "Cuckoo Service scripts installed!"
 }
@@ -184,10 +188,12 @@ _start() {
         auto -p 2 2>&1 >> "\$LOGDIR/process.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
-    echo -n "Starting Cuckoo Distributed API.. "
-    nohup python "\$CUCKOODIR/utils/dist.py" -u "\$USERNAME" \
-        "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log" &
-    PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
+    if [ ! -z "\$DISTADDR" ]; then
+        echo -n "Starting Cuckoo Distributed API.. "
+        nohup python "\$CUCKOODIR/utils/dist.py" -u "\$USERNAME" \
+            "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log" &
+        PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
+    fi
 
     echo "Cuckoo started.."
 }
