@@ -53,6 +53,7 @@ EOF
 
 env CONFFILE="/etc/default/cuckoo"
 env APIADDR="127.0.0.1"
+env LOGDIR="/home/cuckoo/cuckoo/log/"
 
 pre-start script
     [ -f "\$CONFFILE" ] && . "\$CONFFILE"
@@ -63,18 +64,24 @@ start on started cuckoo
 stop on stopped cuckoo
 setuid cuckoo
 chdir /home/cuckoo/cuckoo
-exec ./utils/api.py -H "\$APIADDR" 2>> log/api.log
+exec ./utils/api.py -H "\$APIADDR" 2>> "\$LOGDIR/api.log"
 EOF
 
     cat > /etc/init/cuckoo-process.conf << EOF
 # Cuckoo results processing service.
+
+env LOGDIR="/home/cuckoo/cuckoo/log/"
+
+pre-start script
+    [ -f "\$CONFFILE" ] && . "\$CONFFILE"
+end-script
 
 description "cuckoo results processing"
 start on started cuckoo
 stop on stopped cuckoo
 setuid cuckoo
 chdir /home/cuckoo/cuckoo
-exec ./utils/process.py auto 2>> log/process.log
+exec ./utils/process.py auto 2>> "\$LOGDIR/process.log"
 EOF
 
     cat > /etc/init/cuckoo-distributed.conf << EOF
@@ -82,6 +89,7 @@ EOF
 
 env CONFFILE="/etc/default/cuckoo"
 env DISTADDR="127.0.0.1"
+env LOGDIR="/home/cuckoo/cuckoo/log/"
 
 pre-start script
     [ -f "\$CONFFILE" ] && . "\$CONFFILE"
@@ -92,7 +100,7 @@ start on started cuckoo
 stop on stopped cuckoo
 setuid cuckoo
 chdir /home/cuckoo/cuckoo
-exec ./utils/dist.py "\$DISTADDR" 2>> log/process.log
+exec ./utils/dist.py "\$DISTADDR" 2>> "\$LOGDIR/process.log"
 EOF
     echo "Cuckoo Service scripts installed!"
 }
