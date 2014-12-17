@@ -156,8 +156,12 @@ EOF
 
 chown cuckoo:cuckoo "$VMCLOAKCONF"
 
-# Create the Virtual Machine bird.
-vmcloak -u cuckoo -s "$VMCLOAKCONF" --bird bird0
+# Check whether the bird "bird0" already exists.
+sudo -u cuckoo -i vmcloak-bird hddpath bird0
+if [ "$?" -ne 0 ]; then
+    # Create the Virtual Machine bird.
+    vmcloak -u cuckoo -s "$VMCLOAKCONF" --bird bird0
+fi
 
 # Create various Virtual Machine eggs.
 for i in $(seq 1 "$VMCOUNT"); do
