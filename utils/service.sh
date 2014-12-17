@@ -12,17 +12,17 @@ _install_configuration() {
 # Configuration file for the Cuckoo Sandbox service.
 
 # Username to run Cuckoo under, by default cuckoo.
-# USERNAME="cuckoo"
+USERNAME="cuckoo"
 
 # Directory for Cuckoo, defaults to the "cuckoo" directory in the
 # home directory of the cuckoo user.
-# CUCKOODIR="/home/cuckoo/cuckoo/"
+CUCKOODIR="/home/cuckoo/cuckoo/"
 
 # Log directory, defaults to the log/ directory in the Cuckoo setup.
-# LOGDIR="/home/cuckoo/cuckoo/log/"
+LOGDIR="/home/cuckoo/cuckoo/log/"
 
 # IP address the Cuckoo API will bind on.
-# APIADDR="127.0.0.1"
+APIADDR="127.0.0.1"
 
 # IP address the Cuckoo Distributed API will bind on. Distributed API is by
 # default turned *OFF*. Enable by uncommenting and setting the value.
