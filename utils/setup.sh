@@ -143,7 +143,7 @@ chown cuckoo:cuckoo "$VMS" "$VMDATA"
 
 VMCLOAKCONF="$(mktemp)"
 
-cat > "$VMCLOAKCONF" <<EOF
+cat > "$VMCLOAKCONF" << EOF
 [vmcloak]
 cuckoo = $CUCKOO
 vm-dir = $VMS
@@ -174,11 +174,15 @@ if [ "$TMPFSSIZE" -ne 0 ]; then
     sudo -u cuckoo -i cp -r "$VMS" "$VMSBACKUP"
 fi
 
-# Add "nmi_watchdog=0" to the GRUB commandline and recreate
-# the GRUB configuration.
-echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\$GRUB_CMDLINE_LINUX_DEFAULT " \
-    "nmi_watchdog=0\"" >> /etc/default/grub
+# Add "nmi_watchdog=0" to the GRUB commandline.
+cat >> /etc/default/grub << EOF
 
+# Add nmi_watchdog=0 to the GRUB commandline to prevent
+# VirtualBox from kernel panicing when the load increases.
+GRUB_CMDLINE_LINUX_DEFAULT="\$GRUB_CMDLINE_LINUX_DEFAULT nmi_watchdog=0"
+EOF
+
+# Recreate the GRUB configuration.
 grub-mkconfig -o /boot/grub/grub.cfg
 
 echo "PostgreSQL connection string:  " \
