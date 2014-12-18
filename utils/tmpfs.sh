@@ -14,7 +14,7 @@ if [ "$#" -lt 2 ]; then
 fi
 
 _create_backup() {
-    if [ -z "$1" ] || [ -z "$2" ]; then
+    if [ ! -d "$1" ] || [ ! -d "$2" ]; then
         echo "Missing parameter(s) for create-backup.."
         exit 1
     fi
@@ -39,7 +39,7 @@ _create_backup() {
 }
 
 _required_size() {
-    if [ -z "$1" ]; then
+    if [ ! -d "$1" ]; then
         echo "Missing path parameter for required-size.."
         exit 1
     fi
@@ -54,7 +54,7 @@ _required_size() {
 }
 
 _initialize_mount() {
-    if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+    if [ ! -d "$1" ] || [ ! -d "$2" ] || [ ! -d "$3" ]; then
         echo "Missing parameter(s) for initialize-mount.."
         exit 1
     fi
