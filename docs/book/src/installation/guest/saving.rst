@@ -126,7 +126,7 @@ To snapshot from the command line interface, run the following command::
 
     $ xe vm-checkpoint vm="vm_uuid_or_name" new-name-label="Snapshot Name/Description"
 
-The snapshot UUID is printed to the sreen once the command completes.
+The snapshot UUID is printed to the screen once the command completes.
 
 Regardless of how the snapshot was created, save the UUID in the virtual
 machine's configuration section. Once the snapshot has been created, you can
@@ -148,4 +148,4 @@ change the disk to reset on boot::
 
 After the disk is set to reset on boot, no permanent changes can be made to the
 virtual machine's disk. Modifications that occur while a virtual machine is
-running wil not persist past shutdown.
+running will not persist past shutdown.
