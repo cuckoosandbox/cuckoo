@@ -162,7 +162,6 @@ done
 
 rm -rf "$VMCLOAKCONF" "$VMTEMP"
 
-# If tmpfs is enabled then we have some work to do.
 if [ "$TMPFS" -ne 0 ]; then
     # Unmount just in case.
     umount "$VMMOUNT"
@@ -186,7 +185,7 @@ cat >> /etc/default/grub << EOF
 
 # Add nmi_watchdog=0 to the GRUB commandline to prevent
 # VirtualBox from kernel panicing when the load increases.
-if [[ ! "$GRUB_CMDLINE_LINUX_DEFAULT" =~ "nmi_watchdog" ]]; then
+if [[ ! "\$GRUB_CMDLINE_LINUX_DEFAULT" =~ "nmi_watchdog" ]]; then
     GRUB_CMDLINE_LINUX_DEFAULT="\$GRUB_CMDLINE_LINUX_DEFAULT nmi_watchdog=0"
 fi
 EOF
