@@ -1,4 +1,4 @@
-Cuckoo Android Extention
+Cuckoo Android Extension
 =========
 Copyright (C) Check Point Software Technologies LTD.
 
