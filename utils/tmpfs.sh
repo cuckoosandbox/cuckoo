@@ -19,7 +19,7 @@ _create_backup() {
         exit 1
     fi
 
-    local vmpath="$1", backuppath="$2"
+    local vmpath="$1" backuppath="$2"
 
     # Stop all running VMs.
     for vmname in $(VBoxManage list runningvms|cut -d'"' -f2); do
@@ -59,7 +59,7 @@ _initialize_mount() {
         exit 1
     fi
 
-    local vmpath="$1", backuppath="$2", vmmount="$3"
+    local vmpath="$1" backuppath="$2" vmmount="$3"
 
     # Copy all files from the backuppath to the vmmount.
     cp -r "$backuppath/." "$vmmount"
