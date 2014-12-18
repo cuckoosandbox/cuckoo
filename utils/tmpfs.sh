@@ -105,4 +105,9 @@ case "$ACTION" in
 
         _initialize_mount "$1" "$2" "$3"
         ;;
+
+    *)
+        echo "Invalid action chosen: $ACTION.."
+        exit 1
+        ;;
 esac
