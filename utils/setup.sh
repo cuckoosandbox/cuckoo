@@ -145,7 +145,7 @@ chown cuckoo:cuckoo "$VMCLOAKCONF"
 # Check whether the bird "bird0" already exists.
 sudo -u cuckoo -i vmcloak-bird hddpath bird0
 if [ "$?" -ne 0 ]; then
-    # Create the Virtual Machine bird.
+    echo "Creating the Virtual Machine bird.."
     vmcloak -u cuckoo -s "$VMCLOAKCONF" --bird bird0
 fi
 
@@ -155,6 +155,7 @@ vmcloak-killvbox
 
 # Create various Virtual Machine eggs.
 for i in $(seq 1 "$VMCOUNT"); do
+    echo "Creating Virtual Machine egg$i.."
     vmcloak-clone -u cuckoo --bird bird0 \
         --hostonly-ip "192.168.56.$((2+$i))" "egg$i"
 done
