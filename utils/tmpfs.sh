@@ -4,18 +4,22 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 if [ "$#" -lt 2 ]; then
-    echo "Usage: $0 <action> <vm-path> <data-path>"
+    echo "Usage: $0 <action> [paths...]"
     echo "action: create-backup, required-size, or create-symlinks."
-    echo "vm-path: Path where all VM related files are stored."
-    echo "data-path: Backup path where to store all files."
+    echo
+    echo "create-backup <vmpath> <backuppath>"
+    echo "required-size <path>"
+    echo "initialize-mount <vmpath> <backuppath> <vmmount>"
     exit 1
 fi
 
 _create_backup() {
-    if [ -z "$VMPATH" ] || [ -z "$DATAPATH" ]; then
+    if [ -z "$1" ] || [ -z "$2" ]; then
         echo "Missing parameter(s) for create-backup.."
         exit 1
     fi
+
+    local vmpath="$1", backuppath="$2"
 
     # Stop all running VMs.
     for vmname in $(VBoxManage list runningvms|cut -d'"' -f2); do
@@ -28,10 +32,10 @@ _create_backup() {
     done
 
     # Copy all files to the backup directory.
-    cp -rf "$VMPATH/." "$DATAPATH"
+    cp -rf "$vmpath/." "$backuppath"
 
     # Remove all logfiles, we're not interested in backing up those.
-    rm -f $(find "$DATAPATH" -type f|grep "\.log")
+    rm -f $(find "$backuppath" -type f|grep "\.log")
 }
 
 _required_size() {
@@ -40,35 +44,55 @@ _required_size() {
         exit 1
     fi
 
+    local path="$1"
+
     # Total size of all the files.
-    local size="$(du -s "$1"|cut -f1)"
+    local size="$(du -s "$path"|cut -f1)"
 
     # Round up by one gigabyte.
     echo "$(($size/1024/1024+1))G"
 }
 
-_create_symlinks() {
-    if [ -z "$VMPATH" ] || [ -z "$DATAPATH" ]; then
-        echo "Missing parameter(s) for create-symlinks.."
+_initialize_mount() {
+    if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+        echo "Missing parameter(s) for initialize-mount.."
         exit 1
     fi
 
-    cp -sr "$DATAPATH/." "$VMPATH"
-}
+    local vmpath="$1", backuppath="$2", vmmount="$3"
 
-VMPATH="$2"
-DATAPATH="$3"
+    # Copy all files from the backuppath to the vmmount.
+    cp -r "$backuppath/." "$vmmount"
+
+    # Make symlinks from the vmmount to the vmpath.
+    cp -srf "$vmmount/." "$vmpath"
+}
 
 case "$1" in
     create-backup)
-        _create_backup
+        if [ "$#" -ne 2 ]; then
+            echo "create-backup <vmpath> <backuppath>"
+            exit 1
+        fi
+
+        _create_backup "$2" "$3"
         ;;
 
     required-size)
+        if [ "$#" -ne 1 ]; then
+            echo "required-size <path>"
+            exit 1
+        fi
+
         _required_size "$2"
         ;;
 
-    create-symlinks)
-        _create_symlinks
+    initialize-mount)
+        if [ "$#" -ne 3 ]; then
+            echo "initialize-mount <vmpath> <backuppath> <vmmount>"
+            exit 1
+        fi
+
+        _initialize_mount "$2" "$3" "$4"
         ;;
 esac
