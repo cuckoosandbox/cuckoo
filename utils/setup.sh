@@ -149,6 +149,10 @@ if [ "$?" -ne 0 ]; then
     vmcloak -u cuckoo -s "$VMCLOAKCONF" --bird bird0
 fi
 
+# Kill all VirtualBox processes as otherwise the listening
+# port for vmcloak-clone might still be in use..
+vmcloak-killvbox
+
 # Create various Virtual Machine eggs.
 for i in $(seq 1 "$VMCOUNT"); do
     vmcloak-clone -u cuckoo --bird bird0 \
