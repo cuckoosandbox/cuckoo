@@ -59,10 +59,12 @@ class XenServerMachinery(Machinery):
 
         for machine in self.machines():
             uuid = machine.label
-            self._check_vm(uuid)
+            (ref, vm) = self._check_vm(uuid)
 
             if machine.snapshot:
                 self._check_snapshot(uuid, machine.snapshot)
+            else:
+                self._check_disks_reset(vm)
 
         super(XenServerMachinery, self)._initialize_check()
 
@@ -100,6 +102,8 @@ class XenServerMachinery(Machinery):
         if vm['is_control_domain']:
             raise CuckooMachineError("Vm is a control domain: %s" % uuid)
 
+        return (ref, vm)
+
     def _check_snapshot(self, vm_uuid, snapshot_uuid):
         """Check snapshot existence and that the snapshot is of the specified
         vm uuid.
@@ -125,6 +129,32 @@ class XenServerMachinery(Machinery):
         if parent_uuid != vm_uuid:
             raise CuckooMachineError("Snapshot does not belong to specified "
                                      "vm: %s" % snapshot_uuid)
+
+    def _check_disks_reset(self, vm):
+        """Check whether each attached disk is set to reset on boot.
+        @param vm: vm record
+        """
+
+        for ref in vm['VBDs']:
+            try:
+                vbd = self.session.xenapi.VBD.get_record(ref)
+            except:
+                log.warning("Invalid VBD for vm %s: %s", vm['uuid'], ref)
+                continue
+            
+            if vbd['type'] == 'Disk':
+                vdi_ref = vbd['VDI']
+                try:
+                    vdi = self.session.xenapi.VDI.get_record(vdi_ref)
+                except:
+                    log.warning("Invalid VDI for vm %s: %s", vm['uuid'], vdi_ref)
+                    continue
+                
+                if vdi['on_boot'] != 'reset' and vdi['read_only'] == False:
+                    raise CuckooMachineError(
+                        "Vm %s contains invalid VDI %s: disk is not reset on "
+                        "boot. Please set the on-boot parameter to 'reset'."
+                        % (vm['uuid'], vdi['uuid']))
 
     def _snapshot_from_vm_uuid(self, uuid):
         """Get the snapshot uuid from a virtual machine.
