@@ -41,6 +41,11 @@ _install_upstart() {
 description "cuckoo daemon"
 start on runlevel [2345]
 chdir /home/cuckoo/cuckoo
+
+# Give Cuckoo time to cleanup.
+kill signal SIGINT
+kill timeout 600
+
 pre-start script
     exec vmcloak-vboxnet0
     exec vmcloak-iptables
@@ -205,7 +210,7 @@ _stop() {
     fi
 
     echo "Stopping Cuckoo processes.."
-    kill \$(cat "\$PIDFILE")
+    kill -SIGINT \$(cat "\$PIDFILE")
     echo "Cuckoo stopped.."
     rm -f "\$PIDFILE"
 }
