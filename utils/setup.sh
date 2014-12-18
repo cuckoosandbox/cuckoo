@@ -156,7 +156,7 @@ vmcloak-killvbox
 # Create various Virtual Machine eggs.
 for i in $(seq 1 "$VMCOUNT"); do
     echo "Creating Virtual Machine egg$i.."
-    vmcloak-clone -u cuckoo --bird bird0 \
+    vmcloak-clone -s "$VMCLOAKCONF" -u cuckoo --bird bird0 \
         --hostonly-ip "192.168.56.$((2+$i))" "egg$i"
 done
 
