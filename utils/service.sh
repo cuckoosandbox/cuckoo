@@ -27,6 +27,9 @@ APIADDR="127.0.0.1"
 # IP address the Cuckoo Distributed API will bind on. Distributed API is by
 # default turned *OFF*. Enable by uncommenting and setting the value.
 # DISTADDR="127.0.0.1"
+
+# Start Cuckoo in verbose mode. Toggle to 1 to enable verbose mode.
+VERBOSE="0"
 EOF
 }
 
@@ -50,7 +53,14 @@ pre-start script
     exec vmcloak-vboxnet0
     exec vmcloak-iptables
 end script
-exec ./cuckoo.py -u cuckoo -d
+
+script
+    if [ "\$VERBOSE" -eq 0 ]; then
+        ./cuckoo.py -u cuckoo
+    else
+        ./cuckoo.py -u cuckoo -d
+    fi
+end-script
 EOF
 
     cat > /etc/init/cuckoo-api.conf << EOF
@@ -179,8 +189,13 @@ _start() {
     vmcloak-iptables
 
     echo -n "Starting Cuckoo daemon.. "
-    nohup python "\$CUCKOODIR/cuckoo.py" -u "\$USERNAME" \
-        -d 2>&1 > /dev/null &
+    if [ "\$VERBOSE" -eq 0 ]; then
+        nohup python "\$CUCKOODIR/cuckoo.py" -u "\$USERNAME" \
+            2>&1 > /dev/null &
+    else
+        nohup python "\$CUCKOODIR/cuckoo.py" -u "\$USERNAME" \
+            -d 2>&1 > /dev/null &
+    fi
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     echo -n "Starting Cuckoo API server.. "
