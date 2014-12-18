@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 Cuckoo Android Extention
 =========
 Copyright (C) Check Point Software Technologies LTD.
@@ -37,6 +36,3 @@ Authors
 =======
 - Idan Revivo idanr@checkpoint.com
 - Ofer Caspi oferc@checkpoint.com
-=======
-[![Build Status](https://travis-ci.org/cuckoobox/cuckoo.png?branch=development)](https://travis-ci.org/cuckoobox/cuckoo)
->>>>>>> FETCH_HEAD
