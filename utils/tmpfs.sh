@@ -68,14 +68,17 @@ _initialize_mount() {
     cp -srf "$vmmount/." "$vmpath"
 }
 
-case "$1" in
+ACTION="$1"
+shift
+
+case "$ACTION" in
     create-backup)
         if [ "$#" -ne 2 ]; then
             echo "create-backup <vmpath> <backuppath>"
             exit 1
         fi
 
-        _create_backup "$2" "$3"
+        _create_backup "$1" "$2"
         ;;
 
     required-size)
@@ -84,7 +87,7 @@ case "$1" in
             exit 1
         fi
 
-        _required_size "$2"
+        _required_size "$1"
         ;;
 
     initialize-mount)
@@ -93,6 +96,6 @@ case "$1" in
             exit 1
         fi
 
-        _initialize_mount "$2" "$3" "$4"
+        _initialize_mount "$1" "$2" "$3"
         ;;
 esac
