@@ -1,10 +1,11 @@
-
+# Copyright (C) 2010-2014 Cuckoo Foundation.
+# This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+# See the file 'docs/LICENSE' for copying permission.
 
 import logging
 from lib.cuckoo.common.abstracts import Machinery
-from lib.cuckoo.common.exceptions import CuckooMachineError, CuckooDependencyError
-
-
+from lib.cuckoo.common.exceptions import CuckooMachineError
+from lib.cuckoo.common.exceptions import CuckooDependencyError
 
 try:
     import XenAPI
@@ -53,8 +54,8 @@ class XenServerMachinery(Machinery):
             )
         except:
             raise CuckooMachineError("Could not connect to XenServer: "
-                                     "incorrect credentials, please ensure the "
-                                     "user and password are correct in "
+                                     "incorrect credentials, please ensure "
+                                     "the user and password are correct in "
                                      "xenserver.conf")
 
         for machine in self.machines():
@@ -93,13 +94,13 @@ class XenServerMachinery(Machinery):
         except XenAPI.Failure as e:
             raise CuckooMachineError("Vm not found: %s: %s" % uuid)
 
-        if vm['is_a_snapshot']:
+        if vm["is_a_snapshot"]:
             raise CuckooMachineError("Vm is a snapshot: %s" % uuid)
 
-        if vm['is_a_template']:
+        if vm["is_a_template"]:
             raise CuckooMachineError("Vm is a template: %s" % uuid)
 
-        if vm['is_control_domain']:
+        if vm["is_control_domain"]:
             raise CuckooMachineError("Vm is a control domain: %s" % uuid)
 
         return (ref, vm)
@@ -117,15 +118,15 @@ class XenServerMachinery(Machinery):
         except:
             raise CuckooMachineError("Snapshot not found: %s" % snapshot_uuid)
 
-        if not snapshot['is_a_snapshot']:
+        if not snapshot["is_a_snapshot"]:
             raise CuckooMachineError("Invalid snapshot: %s" % snapshot_uuid)
 
         try:
-            parent = self._get_vm_record(snapshot['snapshot_of'])
+            parent = self._get_vm_record(snapshot["snapshot_of"])
         except:
             raise CuckooMachineError("Invalid snapshot: %s" % snapshot_uuid)
 
-        parent_uuid = parent['uuid']
+        parent_uuid = parent["uuid"]
         if parent_uuid != vm_uuid:
             raise CuckooMachineError("Snapshot does not belong to specified "
                                      "vm: %s" % snapshot_uuid)
@@ -135,26 +136,27 @@ class XenServerMachinery(Machinery):
         @param vm: vm record
         """
 
-        for ref in vm['VBDs']:
+        for ref in vm["VBDs"]:
             try:
                 vbd = self.session.xenapi.VBD.get_record(ref)
             except:
-                log.warning("Invalid VBD for vm %s: %s", vm['uuid'], ref)
+                log.warning("Invalid VBD for vm %s: %s", vm["uuid"], ref)
                 continue
-            
-            if vbd['type'] == 'Disk':
-                vdi_ref = vbd['VDI']
+
+            if vbd["type"] == "Disk":
+                vdi_ref = vbd["VDI"]
                 try:
                     vdi = self.session.xenapi.VDI.get_record(vdi_ref)
                 except:
-                    log.warning("Invalid VDI for vm %s: %s", vm['uuid'], vdi_ref)
+                    log.warning("Invalid VDI for vm %s: %s", vm["uuid"],
+                                vdi_ref)
                     continue
-                
-                if vdi['on_boot'] != 'reset' and vdi['read_only'] == False:
+
+                if vdi["on_boot"] != "reset" and vdi["read_only"] is False:
                     raise CuckooMachineError(
                         "Vm %s contains invalid VDI %s: disk is not reset on "
                         "boot. Please set the on-boot parameter to 'reset'."
-                        % (vm['uuid'], vdi['uuid']))
+                        % (vm["uuid"], vdi["uuid"]))
 
     def _snapshot_from_vm_uuid(self, uuid):
         """Get the snapshot uuid from a virtual machine.
@@ -169,7 +171,7 @@ class XenServerMachinery(Machinery):
         @param uuid: vm uuid
         """
 
-        return vm['power_state'] == 'Halted'
+        return vm["power_state"] == "Halted"
 
     def start(self, uuid):
         """Start a virtual machine.
@@ -191,7 +193,7 @@ class XenServerMachinery(Machinery):
                 log.debug("Revert completed for vm %s", uuid)
             except XenAPI.Failure as e:
                 raise CuckooMachineError("Unable to revert vm %s: %s"
-                                         % (uuid,e.details[0]))
+                                         % (uuid, e.details[0]))
 
             try:
                 log.debug("Resuming reverted vm %s" % uuid)
@@ -222,6 +224,5 @@ class XenServerMachinery(Machinery):
             try:
                 self.session.xenapi.VM.hard_shutdown(ref)
             except XenAPI.Failure as e:
-                raise CuckooMachineError("Error shutting down virtual machine: "
-                                         "%s: %s" % (uuid, e.details[0]))
-
+                raise CuckooMachineError("Error shutting down virtual machine:"
+                                         " %s: %s" % (uuid, e.details[0]))
