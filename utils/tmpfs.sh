@@ -64,8 +64,15 @@ _initialize_mount() {
     # Copy all files from the backuppath to the vmmount.
     cp -r "$backuppath/." "$vmmount"
 
-    # Make symlinks from the vmmount to the vmpath.
-    cp -srf "$vmmount/." "$vmpath"
+    # Create each directory.
+    for dirname in $(cd "$vmmount" && find . -type d); do
+        mkdir -p "$vmpath/$dirname"
+    done
+
+    # Make symlinks of all files.
+    for filename in $(cd "$vmmount" && find * -type f); do
+        ln -fs "$vmmount/$filename" "$vmpath/$filename"
+    done
 }
 
 ACTION="$1"
