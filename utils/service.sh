@@ -28,6 +28,10 @@ APIADDR="127.0.0.1"
 # default turned *OFF*. Enable by uncommenting and setting the value.
 # DISTADDR="127.0.0.1"
 
+# IP address the Cuckoo Web Interface will bind on. The Cuckoo Web Interface
+# is by default turned *OFF*. Enable by uncommenting and setting the value.
+# WEBADDR="127.0.0.1"
+
 # Start Cuckoo in verbose mode. Toggle to 1 to enable verbose mode.
 VERBOSE="0"
 EOF
@@ -106,7 +110,7 @@ EOF
 # Cuckoo distributed API service.
 
 env CONFFILE="/etc/default/cuckoo"
-env DISTADDR="127.0.0.1"
+env DISTADDR=""
 env LOGDIR="/home/cuckoo/cuckoo/log/"
 
 description "cuckoo distributed api service"
@@ -122,6 +126,30 @@ end script
 script
     if [ ! -z "\$DISTADDR" ]; then
         exec ./utils/dist.py "\$DISTADDR" 2>> "\$LOGDIR/process.log"
+    fi
+end script
+EOF
+
+    cat > /etc/init/cuckoo-web.conf << EOF
+# Cuckoo Web Interface server.
+
+env CONFFILE="/etc/default/cuckoo"
+env WEBADDR=""
+env LOGDIR="/home/cuckoo/cuckoo/log/"
+
+description "cuckoo web interface service"
+start on started cuckoo
+stop on stopped cuckoo
+setuid cuckoo
+chdir /home/cuckoo/cuckoo/web
+
+pre-start script
+    [ -f "\$CONFFILE" ] && . "\$CONFFILE"
+end script
+
+script
+    if [ ! -z "\$WEBADDR" ]; then
+        exec ./manage.py runserver "\$WEBADDR:8000" 2>&1 >> "\$LOGDIR/web.log"
     fi
 end script
 EOF
@@ -179,6 +207,7 @@ CUCKOODIR="/home/cuckoo/cuckoo/"
 LOGDIR="/home/cuckoo/cuckoo/log/"
 APIADDR="127.0.0.1"
 DISTADDR=""
+WEBADDR=""
 
 # Load configuration values.
 [ -f "\$CONFFILE" ] && . "\$CONFFILE"
@@ -217,6 +246,16 @@ _start() {
         nohup python "\$CUCKOODIR/utils/dist.py" -u "\$USERNAME" \
             "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log" &
         PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
+    fi
+
+    if [ ! -z "\$WEBADDR" ]; then
+        echo -n "Starting Cuckoo Web Interface.. "
+        local pwd="$PWD"
+        cd "\$CUCKOODIR/web/"
+        nohup sudo -u cuckoo -i python ./manage.py runserver \
+            "\$WEBADDR:8000" 2>&1 >> "\$LOGDIR/web.log" &
+        PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
+        PWD="$pwd"
     fi
 
     echo "Cuckoo started.."
