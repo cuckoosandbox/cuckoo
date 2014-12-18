@@ -3,7 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-if [ "$#" -ne 3 ]; then
+if [ "$#" -lt 2 ]; then
     echo "Usage: $0 <action> <vm-path> <data-path>"
     echo "action: create-backup, required-size, or create-symlinks."
     echo "vm-path: Path where all VM related files are stored."
@@ -12,6 +12,11 @@ if [ "$#" -ne 3 ]; then
 fi
 
 _create_backup() {
+    if [ -z "$VMPATH" ] || [ -z "$DATAPATH" ]; then
+        echo "Missing parameter(s) for create-backup.."
+        exit 1
+    fi
+
     # Stop all running VMs.
     for vmname in $(VBoxManage list runningvms|cut -d'"' -f2); do
         VBoxManage controlvm "$vmname" poweroff
@@ -30,14 +35,24 @@ _create_backup() {
 }
 
 _required_size() {
+    if [ -z "$1" ]; then
+        echo "Missing path parameter for required-size.."
+        exit 1
+    fi
+
     # Total size of all the files.
-    local size="$(du -s "$DATAPATH"|cut -f1)"
+    local size="$(du -s "$1"|cut -f1)"
 
     # Round up by one gigabyte.
     echo "$(($size/1024/1024+1))G"
 }
 
 _create_symlinks() {
+    if [ -z "$VMPATH" ] || [ -z "$DATAPATH" ]; then
+        echo "Missing parameter(s) for create-symlinks.."
+        exit 1
+    fi
+
     cp -sr "$DATAPATH/." "$VMPATH"
 }
 
@@ -50,7 +65,7 @@ case "$1" in
         ;;
 
     required-size)
-        _required_size
+        _required_size "$2"
         ;;
 
     create-symlinks)
