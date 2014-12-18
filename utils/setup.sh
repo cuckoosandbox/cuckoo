@@ -164,13 +164,16 @@ rm -rf "$VMCLOAKCONF" "$VMTEMP"
 
 # If tmpfs is enabled then we have some work to do.
 if [ "$TMPFS" -ne 0 ]; then
+    # Unmount just in case.
+    umount "$VMMOUNT"
+
     # Copy all Virtual Machine data to the backup folder.
     "$CUCKOO/utils/tmpfs.sh" create-backup "$VMS" "$VMBACKUP"
 
     # Calculate the required size for the tmpfs mount.
     REQSIZE="$("$CUCKOO/utils/tmpfs.sh" required-size "$VMBACKUP")"
 
-    mount -o "size=$REQSIZE" -t tmpfs tmpfs "$VMMOUNT"
+    mount -o "size=$REQSIZE,uid=cuckoo,gid=cuckoo" -t tmpfs tmpfs "$VMMOUNT"
 
     # Copy all files to the mount and create all required symlinks.
     "$CUCKOO/utils/tmpfs.sh" initialize-mount "$VMS" "$VMBACKUP" "$VMMOUNT"
