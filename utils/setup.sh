@@ -163,15 +163,12 @@ if [ "$TMPFS" -ne 0 ]; then
     "$CUCKOO/utils/tmpfs.sh" create-backup "$VMS" "$VMBACKUP"
 
     # Calculate the required size for the tmpfs mount.
-    REQSIZE="$("$CUCKOO/utils/tmpfs.sh" required-size "$VMS" "$VMBACKUP")"
+    REQSIZE="$("$CUCKOO/utils/tmpfs.sh" required-size "$VMBACKUP")"
 
     mount -o "size=$REQSIZE" -t tmpfs tmpfs "$VMMOUNT"
 
-    # Copy all files to the mount.
-    sudo -u cuckoo -i cp -r "$VMBACKUP" "$VMMOUNT"
-
-    # Create all required symlinks.
-    "$CUCKOO/utils/tmpfs.sh" create-symlinks "$VMS" "$VMMOUNT"
+    # Copy all files to the mount and create all required symlinks.
+    "$CUCKOO/utils/tmpfs.sh" initialize-mount "$VMS" "$VMBACKUP" "$VMMOUNT"
 fi
 
 # Add "nmi_watchdog=0" to the GRUB commandline.
