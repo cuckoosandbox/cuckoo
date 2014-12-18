@@ -107,8 +107,8 @@ virtual machine. The recommended method of booting XenServer virtual machines is
 through memory snapshots because they can greatly reduce the boot time of
 virtual machines during analysis. If, however, the option of installing the
 guest tools is not available, the virtual machine can be configured to have its
-disks reset on boot. Resetting the disk ensures that samples cannot permanently
-modify the virtual machine.
+disks reset on boot. Resetting the disk ensures that malware samples cannot
+permanently modify the virtual machine.
 
 Memory Snapshots
 ----------------
@@ -137,7 +137,14 @@ Booting from Disk
 
 If you can't install the Xen guest tools or if you don't need to use memory
 snapshots, you will need to ensure that the virtual machine's disks are reset on
-boot. This can be done with the following commands::
+boot and that the Cuckoo agent is set to run at boot time.
+
+Running the agent at boot time can be configured in Windows by adding a startup
+item for the agent.
+
+To set the attached disks to reset on boot, you'll first need to list all the
+attached disks for the virtual machine. Ignore disks that are already read only
+or CD-ROM drives. To list all attached disks, run the following command::
 
     $ xe vm-disk-list vm="vm_name_or_uuid"
 
