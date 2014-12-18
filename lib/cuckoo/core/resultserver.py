@@ -47,10 +47,10 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
         self.analysishandlers = {}
 
         ip = self.cfg.resultserver.ip
-        port = int(self.cfg.resultserver.port)
+        self.port = int(self.cfg.resultserver.port)
         while True:
             try:
-                server_addr = ip, port
+                server_addr = ip, self.port
                 SocketServer.ThreadingTCPServer.__init__(self,
                                                          server_addr,
                                                          ResultHandler,
@@ -63,14 +63,14 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
                 # EADDRINUSE 48 (Address already in use)
                 if e.errno == 98 or e.errno == 48:
                     log.warning("Cannot bind ResultServer on port {0}, "
-                                "trying another port.".format(port))
-                    port += 1
+                                "trying another port.".format(self.port))
+                    self.port += 1
                 else:
                     raise CuckooCriticalError("Unable to bind ResultServer on "
                                               "{0}:{1}: {2}".format(
-                                                  ip, port, str(e)))
+                                                  ip, self.port, str(e)))
             else:
-                log.debug("ResultServer running on {0}:{1}.".format(ip, port))
+                log.debug("ResultServer running on {0}:{1}.".format(ip, self.port))
                 self.servethread = Thread(target=self.serve_forever)
                 self.servethread.setDaemon(True)
                 self.servethread.start()
@@ -316,7 +316,7 @@ class FileUpload(object):
 
         dir_part, filename = os.path.split(buf)
 
-        if "./" in buf or not dir_part:
+        if "./" in buf or not dir_part or buf.startswith("/"):
             raise CuckooOperationalError("FileUpload failure, banned path.")
 
         for restricted in self.RESTRICTED_DIRECTORIES:
@@ -330,6 +330,9 @@ class FileUpload(object):
             return False
 
         file_path = os.path.join(self.storagepath, buf.strip())
+
+        if not file_path.startswith(self.storagepath):
+            raise CuckooOperationalError("FileUpload failure, path sanitization failed.")
 
         self.fd = open(file_path, "wb")
         chunk = self.handler.read_any()

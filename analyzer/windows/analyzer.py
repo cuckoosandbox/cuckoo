@@ -81,7 +81,7 @@ def add_file(file_path):
         FILES_LIST.append(file_path)
 
 def dump_file(file_path):
-    """Create a copy of the give file path."""
+    """Create a copy of the given file path."""
     try:
         if os.path.exists(file_path):
             sha256 = hash_file(hashlib.sha256, file_path)
@@ -295,12 +295,9 @@ class PipeHandler(Thread):
                                     # no race conditions occur.
                                     proc.inject(dll)
                                     wait = True
-
-                                log.info("Successfully injected process with "
-                                         "pid %s", proc.pid)
                     else:
                         log.warning("Received request to inject Cuckoo "
-                                    "processes, skip")
+                                    "process with pid %d, skip", process_id)
 
                 # Once we're done operating on the processes list, we release
                 # the lock.

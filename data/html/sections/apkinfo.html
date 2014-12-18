@@ -1,0 +1,104 @@
+<section id="apkinfo">
+    <div class="section-title">
+        <h4>Android Application Info</h4>
+    </div>
+    <table class="table table-striped table-bordered">
+        <colgroup>
+            <col width="150" />
+            <col width="*" />
+        </colgroup>
+        <tr>
+            <th>Package</th>
+            <td><span class="mono">{{results.apkinfo.manifest.package}}</span></td>
+        </tr>
+        <tr>
+            <th>Main Activity</th>
+            <td><span class="mono">{{results.apkinfo.manifest.main_activity}}</span></td>
+        </tr>
+    </table>
+    {% if results.apkinfo.manifest.activities %}
+    <div>
+            <h4><a href="javascript:showHide('activities');">Activities</a></h4>
+                <div id="activities" style="display: none;">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Activity Name</th>
+                        </tr>
+                        {% for activity in results.apkinfo.manifest.activities %}
+                        <tr>
+                            <td><span class="mono">{{activity}}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+    </div>
+    {% endif %}
+    {% if results.apkinfo.manifest.services %}
+    <div>
+            <h4><a href="javascript:showHide('services');">Services</a></h4>
+                <div id="services" style="display: none;">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Service Name</th>
+                        </tr>
+                        {% for service in results.apkinfo.manifest.services %}
+                        <tr>
+                            <td><span class="mono">{{service}}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+    </div>
+    {% endif %}
+    {% if results.apkinfo.manifest.receivers_actions %}
+    <div>
+            <h4><a href="javascript:showHide('receivers');">Receivers</a></h4>
+                <div id="receivers" style="display: none;">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Receiver Action</th>
+                        </tr>
+                        {% for receiver_act in results.apkinfo.manifest.receivers_actions %}
+                        <tr>
+                            <td><span class="mono">{{receiver_act}}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+    </div>
+    {% endif %}
+    {% if results.apkinfo.manifest.providers %}
+    <div>
+            <h4><a href="javascript:showHide('providers');">Providers</a></h4>
+                <div id="providers" style="display: none;">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Provider Name</th>
+                        </tr>
+                        {% for provider in results.apkinfo.manifest.providers %}
+                        <tr>
+                            <td><span class="mono">{{provider}}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+    </div>
+    {% endif %}
+
+    {% if results.apkinfo.manifest.permissions %}
+    <h4><a href="javascript:showHide('permissions');">Permissions</a></h4>
+        <div id="permissions" style="display: none;">
+                {% for permission in results.apkinfo.manifest.permissions %}
+                    {% if permission.severity == "normal" %}
+                        <div class="alert alert-success signature">
+                    {% elif permission.severity == "dangerous" %}
+                        <div class="alert alert-error signature">
+                    {% else %}
+                        <div class="alert alert-info signature">
+                    {% endif %}
+                    <b>{{permission.name}}</b>
+                    </div>
+                {% endfor %}
+        </div>
+    {% endif %}
+</section>

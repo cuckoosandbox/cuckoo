@@ -28,7 +28,7 @@ def update_conf(machinery, args):
             if line.split("=", 1)[1].strip():
                 line += ", %s" % args.vmname
             else:
-                line += args.vmname
+                line += " %s" % args.vmname
 
         lines.append(line)
 

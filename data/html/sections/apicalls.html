@@ -1,0 +1,90 @@
+<section id="apicalls">
+    <div class="section-title">
+        <h4>Android Static Analysis</h4>
+    </div>
+    {% if results.apkinfo.static_method_calls.crypto_method_calls %}
+        <div>
+            <h4><a href="javascript:showHide('crypto_path');">Static Crypto Method Calls</a></h4>
+            <div id="crypto_path" style="display: none;">
+                <table class="table table-striped table-bordered">
+                    {% for call in results.apkinfo.static_method_calls.crypto_method_calls %}
+                    <tr>
+                        <td><span class="mono">{{call}}</span></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if results.apkinfo.static_method_calls.is_native_code %}
+        <div>
+            <h4><a href="javascript:showHide('native_path');">Static Native Method Calls</a></h4>
+            <div id="native_path" style="display: none;">
+                <table class="table table-striped table-bordered">
+                    {% for call in results.apkinfo.static_method_calls.native_method_calls  %}
+                    <tr>
+                        <td><span class="mono">{{call}}</span></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if results.apkinfo.static_method_calls.is_dynamic_code %}
+        <div>
+            <h4><a href="javascript:showHide('dynamic_path');">Static Dynamic Method Calls</a></h4>
+            <div id="dynamic_path" style="display: none;">
+                <table class="table table-striped table-bordered">
+                    {% for call in results.apkinfo.static_method_calls.dynamic_method_calls %}
+                    <tr>
+                        <td><span class="mono">{{call}}</span></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if results.apkinfo.static_method_calls.is_reflection_code %}
+        <div>
+            <h4><a href="javascript:showHide('reflection_path');">Static Reflection Method Calls</a></h4>
+            <div id="reflection_path" style="display: none;">
+                <table class="table table-striped table-bordered">
+                    <tr>
+                        <th>Api Call</th>
+                    </tr>
+                    {% for call in results.apkinfo.static_method_calls.reflection_method_calls %}
+                    <tr>
+                        <td><span class="mono">{{call}}</span></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+
+
+    {% if results.apkinfo.static_method_calls.permissions_method_calls %}
+        {% for calls in results.apkinfo.static_method_calls.permissions_method_calls %}
+         <div>
+            <h4><a href="javascript:showHide('{{calls}}');">Static {{calls}} Method Calls</a></h4>
+            <div id="{{calls}}" style="display: none;">
+                <table class="table table-striped table-bordered">
+                    <tr>
+                        <th>Api Call</th>
+                    </tr>
+                    {% for call in results.apkinfo.static_method_calls.permissions_method_calls[calls] %}
+                    <tr>
+                        <td><span class="mono">{{call}}</span></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+</section>

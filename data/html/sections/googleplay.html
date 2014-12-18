@@ -1,0 +1,64 @@
+<section id="googleplay">
+    <div class="section-title">
+        <h4>Google Play</h4>
+    </div>
+    <table class="table table-striped table-bordered">
+        <colgroup>
+            <col width="150" />
+            <col width="*" />
+        </colgroup>
+        {% if results.googleplay.app_category %}
+        <tr>
+            <th>Category</th>
+            <td><span class="mono">{{results.googleplay.app_category[0]}}</span></td>
+        </tr>
+        {% endif %}
+        <tr>
+            <th>Application Type</th>
+            <td><span class="mono">{{results.googleplay.app_type}}</span></td>
+        </tr>
+        <tr>
+            <th>Upload Date</th>
+            <td><span class="mono">{{results.googleplay.upload_date}}</span></td>
+        </tr>
+        <tr>
+            <th>Developer Email</th>
+            <td><span class="mono">{{results.googleplay.developer_email}}</span></td>
+        </tr>
+        <tr>
+            <th>Developer Name</th>
+            <td><span class="mono">{{results.googleplay.developer_name}}</span></td>
+        </tr>
+        <tr>
+            <th>Developer Website</th>
+            <td><span class="mono">{{results.googleplay.developer_website}}</span></td>
+        </tr>
+        <tr>
+            <th>Number Of Downloads</th>
+            <td><span class="mono">{{results.googleplay.num_downloads}}</span></td>
+        </tr>
+        <tr>
+            <th>Installation Size</th>
+            <td><span class="mono">{{results.googleplay.installation_size}}</span></td>
+        </tr>
+        <tr>
+            <th>Content Rating</th>
+            <td><span class="mono">{{results.googleplay.content_rating}}</span></td>
+        </tr>
+    </table>
+    <div>
+            <h4><a href="javascript:showHide('permissions1');">Permissions</a></h4>
+                <div id="permissions1" style="display: none;">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Permission Name</th>
+                        </tr>
+                        {% for permission in results.googleplay.permissions %}
+                        <tr>
+                            <td><span class="mono">{{permission}}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+    </div>
+</section>

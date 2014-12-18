@@ -35,18 +35,18 @@ $(document)
 
 $(document).ready( function() {
     $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
-        
+
         var input = $(this).parents('.input-group').find(':text'),
             log = numFiles > 1 ? numFiles + ' files selected' : label;
-        
+
         if( input.length ) {
             input.val(log);
         } else {
             if( log ) alert(log);
         }
-        
+
     });
-});     
+});
 </script>
 <div class="row">
     <div class="col-md-6 col-md-offset-3 center">
@@ -64,7 +64,7 @@ $(document).ready( function() {
                             <span class="input-group-btn">
                                 <input type="text" class="form-control" readonly>
                                 <span class="btn btn-primary btn-file">
-                                    Select <input type="file" name="sample">
+                                    Select <input type="file" name="sample" multiple="multiple">
                                 </span>
                             </span>
                         </div>

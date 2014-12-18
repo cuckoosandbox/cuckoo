@@ -102,7 +102,16 @@ img.fade:hover {
                         {% elif results.info.category == "url" %}
                         <li><a href="#url">URL</a></li>
                         {% endif %}
+                        {% if results.apkinfo %}
+                        <li><a href="#apkinfo">Android Application Info</a></li>
+                        {% endif %}
+                        {% if results.googleplay %}
+                        <li><a href="#googleplay">Google Play</a></li>
+                        {% endif %}
                         <li><a href="#signatures">Signatures</a></li>
+                        {% if results.apkinfo %}
+                        <li><a href="#apicalls">Android Static Analysis</a></li>
+                        {% endif %}
                         <li><a href="#screenshots">Screenshots</a></li>
                         {% if results.info.category == "file" %}
                         <li><a href="#static">Static</a></li>

@@ -115,23 +115,25 @@ class Pcap:
         try:
             if connection["src"] not in self.hosts:
                 ip = convert_to_printable(connection["src"])
-                if ip in self.hosts:
-                    return
-                else:
-                    self.hosts.append(ip)
 
-                if not self._is_private_ip(ip):
-                    self.unique_hosts.append(ip)
+                # We consider the IP only if it hasn't been seen before.
+                if ip not in self.hosts:
+                    # If the IP is not a local one, this might be a leftover
+                    # packet as described in issue #249.
+                    if self._is_private_ip(ip):
+                        self.hosts.append(ip)
 
             if connection["dst"] not in self.hosts:
                 ip = convert_to_printable(connection["dst"])
-                if ip in self.hosts:
-                    return
-                else:
+
+                if ip not in self.hosts:
                     self.hosts.append(ip)
 
-                if not self._is_private_ip(ip):
-                    self.unique_hosts.append(ip)
+                    # We add external IPs to the list, only the first time
+                    # we see them and if they're the destination of the
+                    # first packet they appear in.
+                    if not self._is_private_ip(ip):
+                        self.unique_hosts.append(ip)
         except:
             pass
 

@@ -5,7 +5,7 @@ Saving the Virtual Machine
 Now you should be ready to save the virtual machine to a snapshot state.
 
 Before doing this **make sure you rebooted it softly and that it's currently
-running, with Cuckoo's agent running and with Windows fully booted**. 
+running, with Cuckoo's agent running and with Windows fully booted**.
 
 Now you can proceed saving the machine. The way to do it obviously depends on
 the virtualization software you decided to use.
@@ -16,7 +16,7 @@ to be used by Cuckoo.
 VirtualBox
 ==========
 
-If you are going for VirtualBox you can take the snapshot from the graphical user 
+If you are going for VirtualBox you can take the snapshot from the graphical user
 interface or from the command line::
 
     $ VBoxManage snapshot "<Name of VM>" take "<Name of snapshot>" --pause
@@ -30,7 +30,7 @@ restore it::
 KVM
 ===
 
-If decided to adopt KVM, you must fist of all be sure to use a disk format for 
+If decided to adopt KVM, you must fist of all be sure to use a disk format for
 your virtual machines which supports snapshots.
 By default libvirt tools create RAW virtual disks, and since we need snapshots
 you'll either have to use QCOW2 or LVM. For the scope of this guide we adopt QCOW2,

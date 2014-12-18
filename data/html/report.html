@@ -7,7 +7,16 @@
     {% elif results.info.category == "url" %}
         {% include "sections/url.html" %}
     {% endif %}
+    {% if  results.apkinfo %}
+        {% include "sections/apkinfo.html" %}
+    {% endif %}
+    {% if results.googleplay %}
+        {% include "sections/googleplay.html" %}
+    {% endif %}
     {% include "sections/signatures.html" %}
+    {% if results.apkinfo %}
+        {% include "sections/apicalls.html" %}
+    {% endif %}
     {% include "sections/screenshots.html" %}
     {% if results.info.category == "file" %}
         {% include "sections/static.html" %}

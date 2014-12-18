@@ -121,7 +121,7 @@ This ``check()`` function will cause Cuckoo to immediately terminate the analysi
 whenever *C:\\config.bin* is created.
 
 ``execute()``
-------------
+-------------
 
 Wraps the malware execution and deal with DLL injection.
 

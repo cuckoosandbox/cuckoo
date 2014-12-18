@@ -60,15 +60,15 @@ the global container as follows::
 
     "signatures": [
         {
-            "severity": 2, 
-            "description": "Creates a Windows executable on the filesystem", 
-            "alert": false, 
-            "references": [], 
+            "severity": 2,
+            "description": "Creates a Windows executable on the filesystem",
+            "alert": false,
+            "references": [],
             "data": [
                 {
                     "file_name": "C:\\d.exe"
                 }
-            ], 
+            ],
             "name": "creates_exe"
         }
     ]

@@ -3,12 +3,13 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-import sys
-import json
 import argparse
-import tarfile
+import json
+import os
 import socket
+import sys
+import tarfile
+from datetime import datetime
 from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
 
@@ -30,7 +31,7 @@ def jsonize(data):
     """Converts data dict to JSON.
     @param data: data dict
     @return: JSON formatted data
-    """ 
+    """
     response.content_type = "application/json; charset=UTF-8"
     return json.dumps(data, sort_keys=False, indent=4)
 
@@ -46,6 +47,7 @@ def custom_headers():
     response.headers["Expires"] = "0"
 
 @route("/tasks/create/file", method="POST")
+@route("/v1/tasks/create/file", method="POST")
 def tasks_create_file():
     response = {}
 
@@ -86,6 +88,7 @@ def tasks_create_file():
     return jsonize(response)
 
 @route("/tasks/create/url", method="POST")
+@route("/v1/tasks/create/url", method="POST")
 def tasks_create_url():
     response = {}
 
@@ -125,14 +128,25 @@ def tasks_create_url():
     return jsonize(response)
 
 @route("/tasks/list", method="GET")
+@route("/v1/tasks/list", method="GET")
 @route("/tasks/list/<limit:int>", method="GET")
+@route("/v1/tasks/list/<limit:int>", method="GET")
 @route("/tasks/list/<limit:int>/<offset:int>", method="GET")
+@route("/v1/tasks/list/<limit:int>/<offset:int>", method="GET")
 def tasks_list(limit=None, offset=None):
     response = {}
 
     response["tasks"] = []
 
-    for row in db.list_tasks(limit=limit, details=True, offset=offset):
+    completed_after = request.GET.get("completed_after")
+    if completed_after:
+        completed_after = datetime.fromtimestamp(int(completed_after))
+
+    status = request.GET.get("status")
+
+    for row in db.list_tasks(limit=limit, details=True, offset=offset,
+                             completed_after=completed_after,
+                             status=status, order_by="completed_on asc"):
         task = row.to_dict()
         task["guest"] = {}
         if row.guest:
@@ -142,11 +156,17 @@ def tasks_list(limit=None, offset=None):
         for error in row.errors:
             task["errors"].append(error.message)
 
+        task["sample"] = {}
+        if row.sample_id:
+            sample = db.view_sample(row.sample_id)
+            task["sample"] = sample.to_dict()
+
         response["tasks"].append(task)
 
     return jsonize(response)
 
-@route("/tasks/view/<task_id>", method="GET")
+@route("/tasks/view/<task_id:int>", method="GET")
+@route("/v1/tasks/view/<task_id:int>", method="GET")
 def tasks_view(task_id):
     response = {}
 
@@ -161,13 +181,19 @@ def tasks_view(task_id):
         for error in task.errors:
             entry["errors"].append(error.message)
 
+        entry["sample"] = {}
+        if task.sample_id:
+            sample = db.view_sample(task.sample_id)
+            entry["sample"] = sample.to_dict()
+
         response["task"] = entry
     else:
         return HTTPError(404, "Task not found")
 
     return jsonize(response)
 
-@route("/tasks/reschedule/<task_id>", method="GET")
+@route("/tasks/reschedule/<task_id:int>", method="GET")
+@route("/v1/tasks/reschedule/<task_id:int>", method="GET")
 def tasks_reschedule(task_id):
     response = {}
 
@@ -182,7 +208,8 @@ def tasks_reschedule(task_id):
 
     return jsonize(response)
 
-@route("/tasks/delete/<task_id>", method="GET")
+@route("/tasks/delete/<task_id:int>", method="GET")
+@route("/v1/tasks/delete/<task_id:int>", method="GET")
 def tasks_delete(task_id):
     response = {}
 
@@ -194,7 +221,7 @@ def tasks_delete(task_id):
 
         if db.delete_task(task_id):
             delete_folder(os.path.join(CUCKOO_ROOT, "storage",
-                                       "analyses", task_id))
+                                       "analyses", "%d" % task_id))
             response["status"] = "OK"
         else:
             return HTTPError(500, "An error occurred while trying to "
@@ -204,14 +231,16 @@ def tasks_delete(task_id):
 
     return jsonize(response)
 
-@route("/tasks/report/<task_id>", method="GET")
-@route("/tasks/report/<task_id>/<report_format>", method="GET")
+@route("/tasks/report/<task_id:int>", method="GET")
+@route("/v1/tasks/report/<task_id:int>", method="GET")
+@route("/tasks/report/<task_id:int>/<report_format>", method="GET")
+@route("/v1/tasks/report/<task_id:int>/<report_format>", method="GET")
 def tasks_report(task_id, report_format="json"):
     formats = {
         "json": "report.json",
         "html": "report.html",
         "maec": "report.maec-1.1.xml",
-        "metadata": "report.metadata.xml"
+        "metadata": "report.metadata.xml",
     }
 
     bz_formats = {
@@ -224,14 +253,15 @@ def tasks_report(task_id, report_format="json"):
         "gz": "w:gz",
         "tar": "w",
     }
-  
+
     if report_format.lower() in formats:
         report_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
-                                   task_id, "reports",
+                                   "%d" % task_id, "reports",
                                    formats[report_format.lower()])
     elif report_format.lower() in bz_formats:
             bzf = bz_formats[report_format.lower()]
-            srcdir = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id)
+            srcdir = os.path.join(CUCKOO_ROOT, "storage",
+                                  "analyses", "%d" % task_id)
             s = StringIO()
 
             # By default go for bz2 encoded tar files (for legacy reasons.)
@@ -239,7 +269,7 @@ def tasks_report(task_id, report_format="json"):
 
             tar = tarfile.open(fileobj=s, mode=tarmode)
             for filedir in os.listdir(srcdir):
-                if bzf["type"] == "-" and not filedir in bzf["files"]:
+                if bzf["type"] == "-" and filedir not in bzf["files"]:
                     tar.add(os.path.join(srcdir, filedir), arcname=filedir)
                 if bzf["type"] == "+" and filedir in bzf["files"]:
                     tar.add(os.path.join(srcdir, filedir), arcname=filedir)
@@ -255,8 +285,11 @@ def tasks_report(task_id, report_format="json"):
         return HTTPError(404, "Report not found")
 
 @route("/files/view/md5/<md5>", method="GET")
+@route("/v1/files/view/md5/<md5>", method="GET")
 @route("/files/view/sha256/<sha256>", method="GET")
-@route("/files/view/id/<sample_id>", method="GET")
+@route("/v1/files/view/sha256/<sha256>", method="GET")
+@route("/files/view/id/<sample_id:int>", method="GET")
+@route("/v1/files/view/id/<sample_id:int>", method="GET")
 def files_view(md5=None, sha256=None, sample_id=None):
     response = {}
 
@@ -277,6 +310,7 @@ def files_view(md5=None, sha256=None, sample_id=None):
     return jsonize(response)
 
 @route("/files/get/<sha256>", method="GET")
+@route("/v1/files/get/<sha256>", method="GET")
 def files_get(sha256):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", sha256)
     if os.path.exists(file_path):
@@ -284,10 +318,12 @@ def files_get(sha256):
         return open(file_path, "rb").read()
     else:
         return HTTPError(404, "File not found")
-        
-@route("/pcap/get/<task_id>", method="GET")
+
+@route("/pcap/get/<task_id:int>", method="GET")
+@route("/v1/pcap/get/<task_id:int>", method="GET")
 def pcap_get(task_id):
-    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "dump.pcap")
+    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                             "%d" % task_id, "dump.pcap")
     if os.path.exists(file_path):
         response.content_type = "application/octet-stream; charset=UTF-8"
         try:
@@ -298,6 +334,7 @@ def pcap_get(task_id):
         return HTTPError(404, "File not found")
 
 @route("/machines/list", method="GET")
+@route("/v1/machines/list", method="GET")
 def machines_list():
     response = {}
 
@@ -310,6 +347,7 @@ def machines_list():
     return jsonize(response)
 
 @route("/cuckoo/status", method="GET")
+@route("/v1/cuckoo/status", method="GET")
 def cuckoo_status():
     response = dict(
         version=CUCKOO_VERSION,
@@ -330,6 +368,7 @@ def cuckoo_status():
     return jsonize(response)
 
 @route("/machines/view/<name>", method="GET")
+@route("/v1/machines/view/<name>", method="GET")
 def machines_view(name=None):
     response = {}
 
@@ -342,7 +381,9 @@ def machines_view(name=None):
     return jsonize(response)
 
 @route("/tasks/screenshots/<task:int>", method="GET")
+@route("/v1/tasks/screenshots/<task:int>", method="GET")
 @route("/tasks/screenshots/<task:int>/<screenshot>", method="GET")
+@route("/v1/tasks/screenshots/<task:int>/<screenshot>", method="GET")
 def task_screenshots(task=0, screenshot=None):
     folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "shots")
 
