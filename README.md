@@ -8,7 +8,6 @@ linux virtual machine for executing apk's and url's inside the emulator.
 Prepare android_on_linux guest Machine
 ======================================
 
-
 Install Ubuntu 12.04
 Install Linux Dependencies:
         - sudo add-apt-repository ppa:nilarimogard/webupd8
@@ -26,12 +25,12 @@ Install Linux Dependencies:
 
 Powered by:
 ===========
-    Androgurad -> https://code.google.com/p/androguard/
-    Google Play Unofficial Python API -> https://github.com/egirault/googleplay-api
+- Androgurad -> https://code.google.com/p/androguard/
+- Google Play Unofficial Python API -> https://github.com/egirault/googleplay-api
 
 Credit 
 ======
-botherder for linux_analyzer_dev -> https://github.com/cuckoobox/cuckoo/tree/linux_analyzer_dev
+- botherder for linux_analyzer_dev -> https://github.com/cuckoobox/cuckoo/tree/linux_analyzer_dev
 
 Authors
 =======
