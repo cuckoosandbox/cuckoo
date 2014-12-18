@@ -4,17 +4,14 @@
 VMCOUNT="40"
 ISOFILE=""
 SERIALKEY=""
-TMPFSSIZE="0"
+TMPFS="0"
 
 usage() {
     echo "Usage: $0 [options...]"
     echo "-c --vmcount: Amount of Virtual Machines to be created."
     echo "-i --iso: Path to a Windows XP Installer ISO."
     echo "-s --serial-key: Serial Key for the given Windows XP version."
-    echo "-t --tmpfs-size: Size, in gigabytes, to create a tmpfs for the "
-    echo "    relevant VirtualBox files. It is advised to give it roughly"
-    echo "    one gigabyte per VM and to have a few spare gigabytes "
-    echo "    just in case."
+    echo "-t --tmpfs: Flag to indicate tmpfs should be used for snapshots."
     exit 1
 }
 
@@ -38,9 +35,8 @@ while [ "$#" -gt 0 ]; do
             shift
             ;;
 
-        -t|--tmpfs-size)
-            TMPFSSIZE="$1"
-            shift
+        -t|--tmpfs)
+            TMPFS="1"
             ;;
 
         *)
@@ -125,21 +121,11 @@ if [ ! -d "$MOUNT" ] || [ -z "$(ls -A "$MOUNT")" ]; then
 fi
 
 VMS="/home/cuckoo/vms/"
-VMSBACKUP="/home/cuckoo/vms-backup/"
-VMDATA="/home/cuckoo/vm-data/"
+VMBACKUP="/home/cuckoo/vmbackup/"
+VMMOUNT="/home/cuckoo/vmmount/"
 
-mkdir -p "$VMDATA"
-
-# Setup tmpfs to store the various Virtual Machines.
-if [ ! -d "$VMS" ]; then
-    mkdir -p "$VMS"
-
-    if [ "$TMPFSSIZE" -ne 0 ]; then
-        mount -o "size=${TMPFSSIZE}G" -t tmpfs tmpfs "$VMS"
-    fi
-fi
-
-chown cuckoo:cuckoo "$VMS" "$VMDATA"
+mkdir -p "$VMS" "$VMBACKUP" "$VMMOUNT"
+chown cuckoo:cuckoo "$VMS" "$VMBACKUP" "$VMMOUNT"
 
 VMCLOAKCONF="$(mktemp)"
 
@@ -147,7 +133,7 @@ cat > "$VMCLOAKCONF" << EOF
 [vmcloak]
 cuckoo = $CUCKOO
 vm-dir = $VMS
-data-dir = $VMDATA
+data-dir = $VMS
 iso-mount = $MOUNT
 serial-key = $SERIALKEY
 dependencies = dotnet40 acrobat9
@@ -171,11 +157,21 @@ done
 
 rm -rf "$VMCLOAKCONF" "$VMTEMP"
 
-# We create a backup of the Virtual Machines in case tmpfs is being used.
-# Because if the machine for some reason does a reboot, all the contents of
-# the tmpfs directory will be gone.
-if [ "$TMPFSSIZE" -ne 0 ]; then
-    sudo -u cuckoo -i cp -r "$VMS" "$VMSBACKUP"
+# If tmpfs is enabled then we have some work to do.
+if [ "$TMPFS" -ne 0 ]; then
+    # Copy all Virtual Machine data to the backup folder.
+    "$CUCKOO/utils/tmpfs.sh" create-backup "$VMS" "$VMBACKUP"
+
+    # Calculate the required size for the tmpfs mount.
+    REQSIZE="$("$CUCKOO/utils/tmpfs.sh" required-size "$VMS" "$VMBACKUP")"
+
+    mount -o "size=$REQSIZE" -t tmpfs tmpfs "$VMMOUNT"
+
+    # Copy all files to the mount.
+    sudo -u cuckoo -i cp -r "$VMBACKUP" "$VMMOUNT"
+
+    # Create all required symlinks.
+    "$CUCKOO/utils/tmpfs.sh" create-symlinks "$VMS" "$VMMOUNT"
 fi
 
 # Add "nmi_watchdog=0" to the GRUB commandline.
