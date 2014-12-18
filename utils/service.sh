@@ -60,7 +60,7 @@ script
     else
         ./cuckoo.py -u cuckoo -d
     fi
-end-script
+end script
 EOF
 
     cat > /etc/init/cuckoo-api.conf << EOF
@@ -78,7 +78,7 @@ chdir /home/cuckoo/cuckoo
 
 pre-start script
     [ -f "\$CONFFILE" ] && . "\$CONFFILE"
-end-script
+end script
 
 exec ./utils/api.py -H "\$APIADDR" 2>> "\$LOGDIR/api.log"
 EOF
@@ -97,7 +97,7 @@ chdir /home/cuckoo/cuckoo
 
 pre-start script
     [ -f "\$CONFFILE" ] && . "\$CONFFILE"
-end-script
+end script
 
 exec ./utils/process.py auto 2>> "\$LOGDIR/process.log"
 EOF
@@ -117,7 +117,7 @@ chdir /home/cuckoo/cuckoo
 
 pre-start script
     [ -f "\$CONFFILE" ] && . "\$CONFFILE"
-end-script
+end script
 
 script
     if [ ! -z "\$DISTADDR" ]; then
