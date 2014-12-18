@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Default values.
 VMCOUNT="40"
@@ -176,12 +176,14 @@ if [ "$TMPFS" -ne 0 ]; then
     "$CUCKOO/utils/tmpfs.sh" initialize-mount "$VMS" "$VMBACKUP" "$VMMOUNT"
 fi
 
-# Add "nmi_watchdog=0" to the GRUB commandline.
+# Add "nmi_watchdog=0" to the GRUB commandline if it's not in there already.
 cat >> /etc/default/grub << EOF
 
 # Add nmi_watchdog=0 to the GRUB commandline to prevent
 # VirtualBox from kernel panicing when the load increases.
-GRUB_CMDLINE_LINUX_DEFAULT="\$GRUB_CMDLINE_LINUX_DEFAULT nmi_watchdog=0"
+if [[ ! "$GRUB_CMDLINE_LINUX_DEFAULT" =~ "nmi_watchdog" ]]; then
+    GRUB_CMDLINE_LINUX_DEFAULT="\$GRUB_CMDLINE_LINUX_DEFAULT nmi_watchdog=0"
+fi
 EOF
 
 # Recreate the GRUB configuration.
