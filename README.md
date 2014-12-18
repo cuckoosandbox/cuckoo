@@ -16,12 +16,12 @@ Prepare android_on_linux guest Machine
       libncurses5:i386 android-tools-adb android-tools-fastboot
 - Setup The Machine
       - Download Android SDK ->  http://developer.android.com/sdk/index.html
-     	- export PATH=$PATH:_path/tool:_path/build-tools/x.x.x.x/
-     	- Create a New AVD of Android  -> https://developer.android.com/tools/devices/index.html
-     	- Start the Android Emulator -> emulator -avd virtual_machine_name
-     	- Copy cuckoo agent (agent.py) Guest Machine
-     	- Start cuckoo's agent.py
-     	- Create Snapshot Named clean_snapshot
+      - export PATH=$PATH:_path/tool:_path/build-tools/x.x.x.x/
+      - Create a New AVD of Android  -> https://developer.android.com/tools/devices/index.html
+      - Start the Android Emulator -> emulator -avd virtual_machine_name
+      - Copy cuckoo agent (agent.py) Guest Machine
+      - Start cuckoo's agent.py
+      - Create Snapshot Named clean_snapshot
 
 Powered by:
 ===========
