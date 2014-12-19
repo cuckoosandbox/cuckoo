@@ -139,7 +139,7 @@ description "cuckoo web interface service"
 start on started cuckoo
 stop on stopped cuckoo
 setuid "$CUCKOO"
-chdir "$CUCKOO/web/"
+chdir "$(readlink -f "$CUCKOO/web/")"
 
 env CONFFILE="$CONFFILE"
 env LOGDIR="$LOGDIR"
@@ -204,7 +204,7 @@ CONFFILE="$CONFFILE"
 
 # Default configuration values.
 USERNAME="$USERNAME"
-CUCKOODIR="$CUCKOO"
+CUCKOO="$CUCKOO"
 LOGDIR="$LOGDIR"
 APIADDR=""
 DISTADDR=""
@@ -222,41 +222,42 @@ _start() {
     vmcloak-vboxnet0
     vmcloak-iptables
 
+    cd "\$CUCKOO"
+
     echo -n "Starting Cuckoo daemon.. "
     if [ "\$VERBOSE" -eq 0 ]; then
-        nohup python "\$CUCKOODIR/cuckoo.py" -u "\$USERNAME" \
+        nohup python ./cuckoo.py -u "\$USERNAME" \
             2>&1 > /dev/null &
     else
-        nohup python "\$CUCKOODIR/cuckoo.py" -u "\$USERNAME" \
+        nohup python ./cuckoo.py -u "\$USERNAME" \
             -d 2>&1 > /dev/null &
     fi
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     echo -n "Starting Cuckoo API server.. "
-    nohup python "\$CUCKOODIR/utils/api.py" -u "\$USERNAME" \
+    nohup python ./utils/api.py -u "\$USERNAME" \
         -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     echo -n "Starting Cuckoo results processing.. "
-    nohup python "\$CUCKOODIR/utils/process.py" -u "\$USERNAME" \
+    nohup python ./utils/process.py -u "\$USERNAME" \
         auto -p 2 2>&1 >> "\$LOGDIR/process.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     if [ ! -z "\$DISTADDR" ]; then
         echo -n "Starting Cuckoo Distributed API.. "
-        nohup python "\$CUCKOODIR/utils/dist.py" -u "\$USERNAME" \
+        nohup python ./utils/dist.py -u "\$USERNAME" \
             "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log" &
         PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
     fi
 
     if [ ! -z "\$WEBADDR" ]; then
         echo -n "Starting Cuckoo Web Interface.. "
-        local pwd="$PWD"
-        cd "\$CUCKOODIR/web/"
-        nohup sudo -u cuckoo -i python ./manage.py runserver \
+        cd web/
+        nohup sudo -u cuckoo python ./manage.py runserver \
             "\$WEBADDR:8000" 2>&1 >> "\$LOGDIR/web.log" &
         PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
-        PWD="$pwd"
+        cd ..
     fi
 
     echo "Cuckoo started.."
