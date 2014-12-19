@@ -8,21 +8,21 @@ _about_upstart() {
 }
 
 _install_configuration() {
+    if [ -f "/etc/default/cuckoo" ]; then
+        # TODO Ask yes/no to force overwrite.
+        echo "Not overwriting existing configuration.."
+        return
+    fi
+
     cat > /etc/default/cuckoo << EOF
 # Configuration file for the Cuckoo Sandbox service.
 
-# Username to run Cuckoo under, by default cuckoo.
-USERNAME="cuckoo"
-
-# Directory for Cuckoo, defaults to the "cuckoo" directory in the
-# home directory of the cuckoo user.
-CUCKOODIR="/home/cuckoo/cuckoo/"
-
 # Log directory, defaults to the log/ directory in the Cuckoo setup.
-LOGDIR="/home/cuckoo/cuckoo/log/"
+LOGDIR="$LOGDIR"
 
-# IP address the Cuckoo API will bind on.
-APIADDR="127.0.0.1"
+# IP address the Cuckoo API will bind on. Cuckoo API is by default
+# turned *OFF*. Enable by uncommenting and setting the value.
+# APIADDR="127.0.0.1"
 
 # IP address the Cuckoo Distributed API will bind on. Distributed API is by
 # default turned *OFF*. Enable by uncommenting and setting the value.
@@ -47,11 +47,13 @@ _install_upstart() {
 
 description "cuckoo daemon"
 start on runlevel [2345]
-chdir /home/cuckoo/cuckoo
+chdir "$CUCKOO"
 
 # Give Cuckoo time to cleanup.
 kill signal SIGINT
 kill timeout 600
+
+env CONFFILE="$CONFFILE"
 
 pre-start script
     exec vmcloak-vboxnet0
@@ -60,9 +62,9 @@ end script
 
 script
     if [ "\$VERBOSE" -eq 0 ]; then
-        ./cuckoo.py -u cuckoo
+        exec ./cuckoo.py -u "$USERNAME"
     else
-        ./cuckoo.py -u cuckoo -d
+        exec ./cuckoo.py -u "$USERNAME" -d
     fi
 end script
 EOF
@@ -70,62 +72,62 @@ EOF
     cat > /etc/init/cuckoo-api.conf << EOF
 # Cuckoo API server service.
 
-env CONFFILE="/etc/default/cuckoo"
-env APIADDR="127.0.0.1"
-env LOGDIR="/home/cuckoo/cuckoo/log/"
-
 description "cuckoo api server"
 start on started cuckoo
 stop on stopped cuckoo
-setuid cuckoo
-chdir /home/cuckoo/cuckoo
+setuid "$USERNAME"
+chdir "$CUCKOO"
 
-pre-start script
-    [ -f "\$CONFFILE" ] && . "\$CONFFILE"
+env CONFFILE="$CONFFILE"
+env LOGDIR="$LOGDIR"
+env APIADDR=""
+
+script
+    . "\$CONFFILE"
+
+    if [ ! -z "\$APIADDR" ]; then
+        exec ./utils/api.py -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log"
+    fi
 end script
-
-exec ./utils/api.py -H "\$APIADDR" 2>> "\$LOGDIR/api.log"
 EOF
 
     cat > /etc/init/cuckoo-process.conf << EOF
 # Cuckoo results processing service.
 
-env CONFFILE="/etc/default/cuckoo"
-env LOGDIR="/home/cuckoo/cuckoo/log/"
-
 description "cuckoo results processing"
 start on started cuckoo
 stop on stopped cuckoo
-setuid cuckoo
-chdir /home/cuckoo/cuckoo
+setuid "$USERNAME"
+chdir "$CUCKOO"
 
-pre-start script
-    [ -f "\$CONFFILE" ] && . "\$CONFFILE"
+env CONFFILE="$CONFFILE"
+env LOGDIR="$LOGDIR"
+
+script
+    . "\$CONFFILE"
+
+    exec ./utils/process.py auto 2>&1 >> "\$LOGDIR/process.log"
 end script
-
-exec ./utils/process.py auto 2>> "\$LOGDIR/process.log"
 EOF
 
     cat > /etc/init/cuckoo-distributed.conf << EOF
 # Cuckoo distributed API service.
 
-env CONFFILE="/etc/default/cuckoo"
-env DISTADDR=""
-env LOGDIR="/home/cuckoo/cuckoo/log/"
-
 description "cuckoo distributed api service"
 start on started cuckoo
 stop on stopped cuckoo
-setuid cuckoo
-chdir /home/cuckoo/cuckoo
+setuid "$USERNAME"
+chdir "$CUCKOO"
 
-pre-start script
-    [ -f "\$CONFFILE" ] && . "\$CONFFILE"
-end script
+env CONFFILE="$CONFFILE"
+env LOGDIR="$LOGDIR"
+env DISTADDR=""
 
 script
+    . "\$CONFFILE"
+
     if [ ! -z "\$DISTADDR" ]; then
-        exec ./utils/dist.py "\$DISTADDR" 2>> "\$LOGDIR/process.log"
+        exec ./utils/dist.py "\$DISTADDR" 2>&1 >> "\$LOGDIR/process.log"
     fi
 end script
 EOF
@@ -133,21 +135,19 @@ EOF
     cat > /etc/init/cuckoo-web.conf << EOF
 # Cuckoo Web Interface server.
 
-env CONFFILE="/etc/default/cuckoo"
-env WEBADDR=""
-env LOGDIR="/home/cuckoo/cuckoo/log/"
-
 description "cuckoo web interface service"
 start on started cuckoo
 stop on stopped cuckoo
-setuid cuckoo
-chdir /home/cuckoo/cuckoo/web
+setuid "$CUCKOO"
+chdir "$CUCKOO/web/"
 
-pre-start script
-    [ -f "\$CONFFILE" ] && . "\$CONFFILE"
-end script
+env CONFFILE="$CONFFILE"
+env LOGDIR="$LOGDIR"
+env WEBADDR=""
 
 script
+    . "\$CONFFILE"
+
     if [ ! -z "\$WEBADDR" ]; then
         exec ./manage.py runserver "\$WEBADDR:8000" 2>&1 >> "\$LOGDIR/web.log"
     fi
@@ -161,6 +161,7 @@ _remove_upstart() {
     rm -f /etc/init/cuckoo-api.conf
     rm -f /etc/init/cuckoo-process.conf
     rm -f /etc/init/cuckoo-distributed.conf
+    rm -f /etc/init/cuckoo-web.conf
 }
 
 _reload_upstart() {
@@ -199,13 +200,13 @@ _install_systemv() {
 ### END INIT INFO
 
 PIDFILE="/var/run/cuckoo.pid"
-CONFFILE="/etc/default/cuckoo"
+CONFFILE="$CONFFILE"
 
 # Default configuration values.
-USERNAME="cuckoo"
-CUCKOODIR="/home/cuckoo/cuckoo/"
-LOGDIR="/home/cuckoo/cuckoo/log/"
-APIADDR="127.0.0.1"
+USERNAME="$USERNAME"
+CUCKOODIR="$CUCKOO"
+LOGDIR="$LOGDIR"
+APIADDR=""
 DISTADDR=""
 WEBADDR=""
 
@@ -354,33 +355,60 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-case "$1" in
-    install)
-        _about
-        _install
-        _install_configuration
-        _reload
-        ;;
+USERNAME="cuckoo"
+CONFFILE="/etc/default/cuckoo"
+CUCKOO="/home/cuckoo/cuckoo/"
+LOGDIR="/home/cuckoo/cuckoo/log/"
 
-    remove)
-        _remove
-        _remove_configuration
-        _reload
-        ;;
+# Note that this way the variables have to be set before the
+# actions are invoked.
+while [ "$#" -ne 0 ]; do
+    ACTION="$1"
+    shift
 
-    start)
-        _start
-        ;;
+    case "$ACTION" in
+        install)
+            _about
+            _install
+            _install_configuration
+            _reload
+            ;;
 
-    stop)
-        _stop
-        ;;
+        remove)
+            _remove
+            _remove_configuration
+            _reload
+            ;;
 
-    restart)
-        _restart
-        ;;
+        start)
+            _start
+            ;;
 
-    *)
-        echo "Requested invalid action."
-        exit 1
-esac
+        stop)
+            _stop
+            ;;
+
+        restart)
+            _restart
+            ;;
+
+        -u|--username)
+            USERNAME="$1"
+            shift
+            ;;
+
+        -c|--cuckoo)
+            CUCKOO="$1"
+            shift
+            ;;
+
+        -l|--logdir)
+            LOGDIR="$1"
+            shift
+            ;;
+
+        *)
+            echo "Requested invalid action."
+            exit 1
+    esac
+done
