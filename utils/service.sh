@@ -69,6 +69,25 @@ script
 end script
 EOF
 
+    cat > /etc/init/cuckoo-process.conf << EOF
+# Cuckoo results processing service.
+
+description "cuckoo results processing"
+start on started cuckoo
+stop on stopped cuckoo
+setuid "$USERNAME"
+chdir "$CUCKOO"
+
+env CONFFILE="$CONFFILE"
+env LOGDIR="$LOGDIR"
+
+script
+    . "\$CONFFILE"
+
+    exec ./utils/process.py auto 2>&1 >> "\$LOGDIR/process.log"
+end script
+EOF
+
     cat > /etc/init/cuckoo-api.conf << EOF
 # Cuckoo API server service.
 
@@ -88,25 +107,6 @@ script
     if [ ! -z "\$APIADDR" ]; then
         exec ./utils/api.py -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log"
     fi
-end script
-EOF
-
-    cat > /etc/init/cuckoo-process.conf << EOF
-# Cuckoo results processing service.
-
-description "cuckoo results processing"
-start on started cuckoo
-stop on stopped cuckoo
-setuid "$USERNAME"
-chdir "$CUCKOO"
-
-env CONFFILE="$CONFFILE"
-env LOGDIR="$LOGDIR"
-
-script
-    . "\$CONFFILE"
-
-    exec ./utils/process.py auto 2>&1 >> "\$LOGDIR/process.log"
 end script
 EOF
 
@@ -234,15 +234,17 @@ _start() {
     fi
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
-    echo -n "Starting Cuckoo API server.. "
-    nohup python ./utils/api.py -u "\$USERNAME" \
-        -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log" &
-    PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
-
     echo -n "Starting Cuckoo results processing.. "
     nohup python ./utils/process.py -u "\$USERNAME" \
         auto -p 2 2>&1 >> "\$LOGDIR/process.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
+
+    if [ ! -z "\$APIADDR" ]; then
+        echo -n "Starting Cuckoo API server.. "
+        nohup python ./utils/api.py -u "\$USERNAME" \
+            -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log" &
+        PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
+    fi
 
     if [ ! -z "\$DISTADDR" ]; then
         echo -n "Starting Cuckoo Distributed API.. "
