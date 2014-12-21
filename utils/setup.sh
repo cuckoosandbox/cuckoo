@@ -20,6 +20,10 @@ while [ "$#" -gt 0 ]; do
     shift
 
     case "$option" in
+        -h|--help)
+            usage
+            ;;
+
         -c|--vmcount)
             VMCOUNT="$1"
             shift
