@@ -56,6 +56,16 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
+if [ -z "$ISOFILE" ]; then
+    echo "Please specify the path to a Windows XP Installer ISO."
+    exit 1
+fi
+
+if [ -z "$SERIALKEY" ]; then
+    echo "Please specify a working serial key."
+    exit 1
+fi
+
 # Update apt repository and install required packages.
 apt-get update -y
 apt-get install -y sudo git python-dev python-pip postgresql libpq-dev \
