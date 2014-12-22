@@ -93,7 +93,7 @@ chown -R cuckoo:cuckoo "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
 chmod 755 "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
 
 # Install required packages part two.
-pip install psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
+pip install --upgrade psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
 
 # Create a random password.
 PASSWORD="$(pwgen -1 16)"
