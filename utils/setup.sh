@@ -81,15 +81,13 @@ fi
 setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
 
 # Setup a Cuckoo user.
-useradd cuckoo -d "/home/cuckoo/"
+useradd cuckoo -d "/home/cuckoo"
 
-CUCKOO="/home/cuckoo/cuckoo/"
-VMTEMP="$(mktemp -d "/home/cuckoo/XXXXXX")"
+CUCKOO="/home/cuckoo/cuckoo"
+VMTEMP="$(mktemp -d "/home/cuckoo/tempXXXXXX")"
 
 # Fetch Cuckoo.
 git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
-
-mkdir -p "$VMTEMP"
 
 chown -R cuckoo:cuckoo "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
 chmod 755 "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
