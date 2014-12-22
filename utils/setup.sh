@@ -117,6 +117,7 @@ vmcloak-iptables
 
 MOUNT="/mnt/winxp/"
 
+# The mount directory must exist and it must not be empty.
 if [ ! -d "$MOUNT" ] || [ -z "$(ls -A "$MOUNT")" ]; then
     mkdir -p "$MOUNT"
     mount -o loop,ro "$ISOFILE" "$MOUNT"
