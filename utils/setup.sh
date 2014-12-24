@@ -194,14 +194,14 @@ if [ "$TMPFS" -ne 0 ]; then
 fi
 
 # Add "nmi_watchdog=0" to the GRUB commandline if it's not in there already.
-cat >> /etc/default/grub << EOF
+if ! grep nmi_watchdog /etc/default/grub; then
+    cat >> /etc/default/grub << EOF
 
 # Add nmi_watchdog=0 to the GRUB commandline to prevent
 # VirtualBox from kernel panicing when the load increases.
-if [[ ! "\$GRUB_CMDLINE_LINUX_DEFAULT" =~ "nmi_watchdog" ]]; then
-    GRUB_CMDLINE_LINUX_DEFAULT="\$GRUB_CMDLINE_LINUX_DEFAULT nmi_watchdog=0"
-fi
+GRUB_CMDLINE_LINUX_DEFAULT="\$GRUB_CMDLINE_LINUX_DEFAULT nmi_watchdog=0"
 EOF
+fi
 
 # Recreate the GRUB configuration.
 grub-mkconfig -o /boot/grub/grub.cfg
