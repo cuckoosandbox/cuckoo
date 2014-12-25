@@ -1,6 +1,6 @@
 Cuckoo Android Extension
 =========
-Copyright (C) Check Point Software Technologies LTD.
+Contributed By Check Point Software Technologies LTD.
 
 This is an a extension for Cuckoo Sandbox to Support Android arm Emulator inside
 linux virtual machine for executing apk's and url's inside the emulator.
