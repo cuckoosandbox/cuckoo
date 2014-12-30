@@ -29,11 +29,6 @@ body:after {
   display: block;
   height: auto;
   max-width: inherit;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
-  border-radius: 3px;
 }
 
 .lightbox a img {
