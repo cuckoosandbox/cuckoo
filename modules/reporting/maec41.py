@@ -271,11 +271,7 @@ class MAEC41Report(Report):
                     action_dict["name"] = {"value": mapping_dict["action_name"], "xsi:type": None}
                 # Handle any Parameters.
                 if "parameter_associated_arguments" in mapping_dict:
-                    actions_args = self.processActionArguments(mapping_dict["parameter_associated_arguments"], parameter_list)
-                    if actions_args:
-                        action_dict["action_arguments"] = actions_args
-                    else:
-                        action_dict["action_arguments"] = []
+                    action_dict["action_arguments"]  = self.processActionArguments(mapping_dict["parameter_associated_arguments"], parameter_list)
                 # Handle any Associated Objects.
                 if "parameter_associated_objects" in mapping_dict:
                     action_dict["associated_objects"] = self.processActionAssociatedObjects(mapping_dict["parameter_associated_objects"], parameter_list)
@@ -330,7 +326,8 @@ class MAEC41Report(Report):
                 arguments_list.append({"argument_value": argument_value,
                                        "argument_name": {"value": parameter_mappings_dict[parameter_name]["associated_argument_name"],
                                                          "xsi:type": None}})
-        return arguments_list
+        if arguments_list:
+            return arguments_list
 
 
     def processActionAssociatedObjects(self, associated_objects_dict, parameter_list):
