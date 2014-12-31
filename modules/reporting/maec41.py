@@ -227,7 +227,7 @@ class MAEC41Report(Report):
         """Creates a single ProcessTreeNode corresponding to a single node in the tree observed cuckoo.
         @param process: process from cuckoo dict.
         """
-        process_node_dict = {"id": maec.utils.idgnen.create_id(prefix="process_tree_node"),
+        process_node_dict = {"id": maec.utils.idgen.create_id(prefix="process_tree_node"),
                              "pid": process["pid"],
                              "name": process["name"],
                              "initiated_actions": self.pidActionMap[process["pid"]],
