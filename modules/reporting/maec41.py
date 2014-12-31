@@ -257,7 +257,7 @@ class MAEC41Report(Report):
             if "action_vocab" in mapping_dict:
                 action_dict["name"] = {"value": mapping_dict["action_name"], "xsi:type": mapping_dict["action_vocab"]}
             else:
-                action_dict["name"] = {"value": mapping_dict["action_name"]}
+                action_dict["name"] = {"value": mapping_dict["action_name"], "xsi:type": None}
         # Try to add the mapped Action Arguments and Associated Objects.
         # Only output in "overview" or "full" modes.
         if self.options["mode"].lower() == "overview" or self.options["mode"].lower() == "full":
@@ -268,7 +268,7 @@ class MAEC41Report(Report):
                 if "action_vocab" in mapping_dict:
                     action_dict["name"] = {"value": mapping_dict["action_name"], "xsi:type": mapping_dict["action_vocab"]}
                 else:
-                    action_dict["name"] = {"value": mapping_dict["action_name"]}
+                    action_dict["name"] = {"value": mapping_dict["action_name"], "xsi:type": None}
                 # Handle any Parameters.
                 if "parameter_associated_arguments" in mapping_dict:
                     actions_args = self.processActionArguments(mapping_dict["parameter_associated_arguments"], parameter_list)
@@ -328,7 +328,8 @@ class MAEC41Report(Report):
                                                          "xsi:type": parameter_mappings_dict[parameter_name]["associated_argument_vocab"]}})
             elif parameter_name in parameter_mappings_dict and "associated_argument_vocab" not in parameter_mappings_dict[parameter_name]:
                 arguments_list.append({"argument_value": argument_value,
-                                       "argument_name": {"value": parameter_mappings_dict[parameter_name]["associated_argument_name"]}})
+                                       "argument_name": {"value": parameter_mappings_dict[parameter_name]["associated_argument_name"],
+                                                         "xsi:type": None}})
         return arguments_list
 
 
