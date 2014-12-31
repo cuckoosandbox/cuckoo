@@ -926,7 +926,7 @@ class MAEC41Report(Report):
 
     def output(self):
         """Writes report to disk."""
-        outfile = open(os.path.join(self.reports_path, "report.maec-4.1.0.8.xml"), 'w')
+        outfile = open(os.path.join(self.reports_path, "report.maec-4.1.xml"), 'w')
         outfile.write("<?xml version='1.0' encoding='UTF-8'?>\n")
         outfile.write("<!DOCTYPE doc [<!ENTITY comma '&#44;'>]>\n")
         outfile.write("<!--\n")
