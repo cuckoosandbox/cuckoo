@@ -386,7 +386,7 @@ class MAEC41Report(Report):
             # Perform Windows Handle Update/Replacement Processing.
             return self.processWinHandles(associated_objects_list)
         else:
-            return []
+            return None
 
     def processWinHandles(self, associated_objects_list):
         """Process any Windows Handles that may be associated with an Action. Replace Handle references with
