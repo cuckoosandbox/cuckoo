@@ -191,10 +191,9 @@ class Process:
         startup_info.cb = sizeof(startup_info)
         process_info = PROCESS_INFORMATION()
 
+        arguments = "\"" + path + "\" "
         if args:
-            arguments = "\"" + path + "\" " + args
-        else:
-            arguments = None
+            arguments += args
 
         creation_flags = CREATE_NEW_CONSOLE
         if suspended:
