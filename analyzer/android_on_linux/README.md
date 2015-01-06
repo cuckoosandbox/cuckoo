@@ -25,7 +25,7 @@ Prepare android_on_linux guest Machine
 
 Powered by:
 ===========
-- Androgurad -> https://code.google.com/p/androguard/
+- Androguard -> https://code.google.com/p/androguard/
 - Google Play Unofficial Python API -> https://github.com/egirault/googleplay-api
 
 Credit 
