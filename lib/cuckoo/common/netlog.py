@@ -12,8 +12,7 @@ try:
     HAVE_BSON = True
 except ImportError:
     HAVE_BSON = False
-
-if HAVE_BSON:
+else:
     # The BSON module provided by pymongo works through its "BSON" class.
     if hasattr(bson, "BSON"):
         bson_decode = lambda d: bson.BSON(d).decode()
@@ -34,11 +33,11 @@ from lib.cuckoo.common.utils import get_filename_from_path
 log = logging.getLogger(__name__)
 
 
-# should probably prettify this
+# TODO: should probably prettify this.
 def expand_format(fs):
     out = ""
     i = 0
-    while i<len(fs):
+    while i < len(fs):
         x = fs[i]
         if x in string.digits:
             out += fs[i+1] * int(x)
@@ -50,8 +49,8 @@ def expand_format(fs):
 
 
 ###############################################################################
-# Custom Cuckoomon "Netlog" protocol - by skier and rep
-# Kind of deprecated, more generic BSON protocol below
+# Custom Cuckoomon "Netlog" protocol - by skier and rep.
+# Kind of deprecated, more generic BSON protocol below.
 ###############################################################################
 
 class NetlogParser(object):
@@ -78,13 +77,16 @@ class NetlogParser(object):
             "R": self.read_registry,
         }
 
+    def close(self):
+        pass
+
     def read_next_message(self):
         apiindex, status = struct.unpack("BB", self.handler.read(2))
         returnval, tid, timediff = struct.unpack("III", self.handler.read(12))
-        context = (apiindex, status, returnval, tid, timediff)
+        context = apiindex, status, returnval, tid, timediff
 
         if apiindex == 0:
-            # new process message
+            # New process message.
             timelow = self.read_int32()
             timehigh = self.read_int32()
             # FILETIME is 100-nanoseconds from 1601 :/
@@ -117,12 +119,12 @@ class NetlogParser(object):
                                      modulepath, procname)
 
         elif apiindex == 1:
-            # new thread message
+            # New thread message.
             pid = self.read_int32()
             self.handler.log_thread(context, pid)
 
         else:
-            # actual API call
+            # Actual API call.
             try:
                 apiname, modulename, parseinfo = LOGTBL[apiindex]
             except IndexError:
@@ -180,8 +182,8 @@ class NetlogParser(object):
     def read_buffer(self):
         """Reads a memory socket from the socket."""
         length, maxlength = struct.unpack("II", self.handler.read(8))
-        # only return the maxlength, as we don't log the actual
-        # buffer right now
+        # Only return the maxlength, as we don't log the actual
+        # buffer right now.
         buf = self.handler.read(length)
         if maxlength > length:
             buf += " ... (truncated)"
@@ -190,7 +192,7 @@ class NetlogParser(object):
     def read_registry(self):
         """Read logged registry data from the socket."""
         typ = struct.unpack("I", self.handler.read(4))[0]
-        # do something depending on type
+        # Do something depending on type.
         if typ == REG_DWORD_BIG_ENDIAN or typ == REG_DWORD_LITTLE_ENDIAN:
             value = self.read_int32()
         elif typ == REG_SZ or typ == REG_EXPAND_SZ:
@@ -215,18 +217,18 @@ class NetlogParser(object):
 ###############################################################################
 # Generic BSON based protocol - by rep
 # Allows all kinds of languages / sources to generate input for Cuckoo,
-# thus we can reuse report generation / signatures for other API trace sources
+# thus we can reuse report generation / signatures for other API trace sources.
 ###############################################################################
 
 TYPECONVERTERS = {
     "p": lambda v: "0x%08x" % default_converter(v),
 }
 
-# 1 Mb max message length
+# 20 Mb max message length.
 MAX_MESSAGE_LENGTH = 20 * 1024 * 1024
 
 def default_converter(v):
-    # fix signed ints (bson is kind of limited there)
+    # Fix signed ints (bson is kind of limited there).
     if type(v) in (int, long) and v < 0:
         return v + 0x100000000
     return v
@@ -257,6 +259,9 @@ class BsonParser(object):
         if not HAVE_BSON:
             log.critical("Starting BsonParser, but bson is not available! (install with `pip install bson`)")
 
+    def close(self):
+        pass
+
     def read_next_message(self):
         data = self.handler.read(4)
         blen = struct.unpack("I", data)[0]
@@ -279,11 +284,10 @@ class BsonParser(object):
         tid = dec.get("T", 0)
         time = dec.get("t", 0)
 
-        #context = (apiindex, status, returnval, tid, timediff)
         context = [index, 1, 0, tid, time]
 
         if mtype == "info":
-            # API call index info message, explaining the argument names, etc
+            # API call index info message, explaining the argument names, etc.
             name = dec.get("name", "NONAME")
             arginfo = dec.get("args", [])
             category = dec.get("category")
@@ -306,7 +310,7 @@ class BsonParser(object):
                      "{0}".format(dec.get("msg", "")))
 
         elif mtype == "new_process":
-            # new_process message from VMI monitor
+            # new_process message from VMI monitor.
             vmtime = datetime.datetime.fromtimestamp(dec.get("starttime", 0))
             procname = dec.get("name", "NONAME")
             ppid = 0
@@ -316,8 +320,8 @@ class BsonParser(object):
                                      modulepath, procname)
 
         else:
-            # regular api call
-            if not index in self.infomap:
+            # Regular api call.
+            if index not in self.infomap:
                 log.warning("Got API with unknown index - monitor needs "
                             "to explain first: {0}".format(dec))
                 return True
@@ -335,7 +339,7 @@ class BsonParser(object):
                            for i in range(len(args)))
 
             if apiname == "__process__":
-                # special new process message from cuckoomon
+                # Special new process message from cuckoomon.
                 timelow = argdict["TimeLow"]
                 timehigh = argdict["TimeHigh"]
                 # FILETIME is 100-nanoseconds from 1601 :/
@@ -356,6 +360,13 @@ class BsonParser(object):
                 pid = argdict["ProcessIdentifier"]
                 self.handler.log_thread(context, pid)
                 return True
+
+            # elif apiname == "__anomaly__":
+                # tid = argdict["ThreadIdentifier"]
+                # subcategory = argdict["Subcategory"]
+                # msg = argdict["Message"]
+                # self.handler.log_anomaly(subcategory, tid, msg)
+                # return True
 
             context[1] = argdict.pop("is_success", 1)
             context[2] = argdict.pop("retval", 0)

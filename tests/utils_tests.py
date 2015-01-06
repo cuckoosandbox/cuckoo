@@ -73,7 +73,7 @@ class TestConvertToPrintable:
         assert_equal(" ", utils.convert_to_printable(" "))
 
     def test_non_printable(self):
-        assert_equal("\x0b", utils.convert_to_printable(chr(11)))
+        assert_equal(r"\x0b", utils.convert_to_printable(chr(11)))
 
 class TestDatetimeToIso:
     def test_convert_date(self):

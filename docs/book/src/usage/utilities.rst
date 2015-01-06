@@ -6,8 +6,16 @@ Cuckoo comes with a set of pre-built utilities to automate several common
 tasks.
 You can find them under the "utils" folder.
 
+.. _cleanup-utility:
+
 Cleanup utility
 ===============
+
+.. deprecated:: 1.2
+
+    Use :ref:`./cuckoo.py --clean <cuckoo-clean>` instead which *also* takes
+    care of cleaning sample and task information from MySQL and PostgreSQL
+    databases.
 
 If you want to delete all history, analysis, data and begin again from the first
 task you need the clean.sh utility.
@@ -26,8 +34,8 @@ not running.
 If you are using a custom database (MySQL, PostgreSQL or SQLite in custom
 location) clean.sh doesn't clean it, you have to take care of that.
 
-If you are using MongoDB reporting module clean.sh doesn't clean your database,
-you have to take care of that.
+If you are using the MongoDB reporting module clean.sh does **not** clean your
+database, you have to take care of that.
 
 Submission Utility
 ==================
@@ -42,7 +50,7 @@ Cuckoo's web interface. This tool is already described in :doc:`submit`.
 Processing Utility
 ==================
 
-Run the results processing engine and optionally the reporting engine (run 
+Run the results processing engine and optionally the reporting engine (run
 all reports) on an already available analysis folder, in order to not re-run
 the analysis if you want to re-generate the reports for it.
 This is used mainly in debugging and developing Cuckoo.
@@ -53,6 +61,32 @@ For example if you want run again the report engine for analysis number 1::
 If you want to re-generate the reports::
 
     $ ./utils/process.py --report 1
+
+Following are the usage options::
+
+    $ ./utils/process.py
+
+    usage: process.py [-h] [-d] [-r] [-p PARALLEL] id
+
+    positional arguments:
+      id                    ID of the analysis to process (auto for continuous
+                            processing of unprocessed tasks).
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -d, --debug           Display debug messages
+      -r, --report          Re-generate report
+      -p PARALLEL, --parallel PARALLEL
+                            Number of parallel threads to use (auto mode only).
+
+As best practice we suggest to adopt the following configuration if you are
+running Cuckoo with many virtual machines:
+
+    * Run a stand alone process.py in auto mode (you choose the number of parallel threads)
+    * Disable Cuckoo reporting in cuckoo.conf (set process_results to off)
+
+This could increase the performance of your system because the reporting is not
+yet demanded to Cuckoo.
 
 Community Download Utility
 ==========================
@@ -94,3 +128,38 @@ migration for both SQL database and Mongo database.
 This tool is already described in :doc:`../installation/upgrade`.
 
 .. _`Alembic`: http://alembic.readthedocs.org/en/latest/
+
+Stats utility
+=============
+
+This is a really simple utility which prints some statistics about processed
+samples::
+
+    $ ./utils/stats.py
+
+    1 samples in db
+    1 tasks in db
+    pending 0 tasks
+    running 0 tasks
+    completed 0 tasks
+    recovered 0 tasks
+    reported 1 tasks
+    failed_analysis 0 tasks
+    failed_processing 0 tasks
+    roughly 32 tasks an hour
+    roughly 778 tasks a day
+
+Machine utility
+===============
+
+The machine.py utility is desgined to help you automatize the configuration of
+virtual machines in Cuckoo.
+It takes a list of machine details as arguments and write them in the specified
+macheniry configuration file.
+Following are the usage options::
+
+  $ ./utils/machine.py
+  usage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
+                    [--tags TAGS] [--interface INTERFACE] [--snapshot SNAPSHOT]
+                    [--resultserver RESULTSERVER]
+                    vmname

@@ -46,7 +46,7 @@
         <tr>
             <th>PEiD</th>
             <td>
-                {% if results.static.peid_signatures %}
+                {% if results.static and results.static.peid_signatures %}
                     {% if results.static.peid_signatures|length == 0 %}
                         None matched
                     {% else %}

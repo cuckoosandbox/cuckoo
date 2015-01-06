@@ -115,7 +115,9 @@ def check_version():
 
 
 class DatabaseHandler(logging.Handler):
-    """Logging to database handler."""
+    """Logging to database handler.
+    Used to log errors related to tasks in database.
+    """
 
     def emit(self, record):
         if hasattr(record, "task_id"):
@@ -173,7 +175,6 @@ def init_tasks():
             log.info("Rescheduled task with ID {0} and "
                      "target {1}".format(task.id, task.target))
 
-
 def init_modules():
     """Initializes plugins."""
     log.debug("Importing modules...")
@@ -198,3 +199,55 @@ def init_modules():
                 log.debug("\t `-- %s", entry.__name__)
             else:
                 log.debug("\t |-- %s", entry.__name__)
+
+def init_yara():
+    """Generates index for yara signatures."""
+
+    def find_signatures(root):
+        signatures = []
+        for entry in os.listdir(root):
+            if entry.endswith(".yara") or entry.endswith(".yar"):
+                signatures.append(os.path.join(root, entry))
+
+        return signatures
+
+    log.debug("Initializing Yara...")
+
+    # Generate root directory for yara rules.
+    yara_root = os.path.join(CUCKOO_ROOT, "data", "yara")
+
+    # We divide yara rules in three categories.
+    categories = ["binaries", "urls", "memory"]
+    generated = []
+    # Loop through all categories.
+    for category in categories:
+        # Check if there is a directory for the given category.
+        category_root = os.path.join(yara_root, category)
+        if not os.path.exists(category_root):
+            continue
+
+        # Check if the directory contains any rules.
+        signatures = []
+        for entry in os.listdir(category_root):
+            if entry.endswith(".yara") or entry.endswith(".yar"):
+                signatures.append(os.path.join(category_root, entry))
+
+        if not signatures:
+            continue
+
+        # Generate path for the category's index file.
+        index_name = "index_{0}.yar".format(category)
+        index_path = os.path.join(yara_root, index_name)
+
+        # Create index file and populate it.
+        with open(index_path, "w") as index_handle:
+            for signature in signatures:
+                index_handle.write("include \"{0}\"\n".format(signature))
+
+        generated.append(index_name)
+
+    for entry in generated:
+        if entry == generated[-1]:
+            log.debug("\t `-- %s", entry)
+        else:
+            log.debug("\t |-- %s", entry)

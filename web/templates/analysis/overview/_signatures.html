@@ -1,8 +1,19 @@
+{% load analysis_tags %}
+
 <style type="text/css">
 .signature {
     padding: 5px;
     padding-left: 10px;
     margin-bottom: 5px;
+}
+
+.signature-process {
+    background-color: #d9edf7;
+    font-weight: bold;
+}
+
+.sign-key {
+    font-weight: bold;
 }
 </style>
 <section id="signatures">
@@ -19,11 +30,39 @@
             {% endif %}
             {{signature.description}}</div></a>
             <div id="signature_{{signature.name}}" class="collapse">
-                {% for sign in signature.data %}
-                    {% for key, value in sign.items %}
-                        <div><b>{{key}}</b>: {{value}}</div>
-                    {% endfor %}
-                {% endfor %}
+                <table class="table table-bordered" style="table-layout: fixed;">
+                    <tbody>
+                        {% for match in signature.data %}
+                            {% if match.process.process_name %}
+                                <tr><td colspan="7" class="signature-process">Process: {{match.process.process_name}} ({{match.process.process_id}})</td></tr>
+                            {% endif %}
+                            {% for sign in match.signs %}
+                                <tr>
+                                    {% if sign.type == 'api' %}
+                                        {% include "analysis/behavior/_api_call.html" with call=sign.value %}
+                                        <td>
+                                            <a href='#' class='call-link' data-pid='{{match.process.process_id}}' data-cid='{{sign.value.id}}'>
+                                                <span class="glyphicon glyphicon-circle-arrow-right"></span>
+                                            </a>
+                                        </td>
+                                    {% else %}
+                                        <td colspan="2">{{sign.type}}</td>
+                                        <td colspan="5">
+                                            {% if sign.value|is_dict %}
+                                                {% for key, value in  sign.value.items %}
+                                                    <span class='sign-key'>{{key}}:</span>
+                                                    <span class='sign-value'>{{value}}</span><br />
+                                                {% endfor %}
+                                            {% else %}
+                                                {{sign.value}}
+                                            {% endif %}
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         {% endfor %}
     {% else %}

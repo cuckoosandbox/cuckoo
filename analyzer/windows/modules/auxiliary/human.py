@@ -35,6 +35,7 @@ def foreach_child(hwnd, lparam):
         "enable",
         "don't send",
         "continue",
+        "unzip",
     ]
 
     classname = create_unicode_buffer(50)
@@ -74,7 +75,7 @@ def move_mouse():
     y = random.randint(0, RESOLUTION["y"])
 
     # Originally was:
-    #USER32.mouse_event(0x8000, x, y, 0, None)
+    # USER32.mouse_event(0x8000, x, y, 0, None)
     # Changed to SetCurorPos, since using GetCursorPos would not detect
     # the mouse events. This actually moves the cursor around which might
     # cause some unintended activity on the desktop. We might want to make
@@ -102,7 +103,7 @@ class Human(Auxiliary, Thread):
 
     def run(self):
         while self.do_run:
-            move_mouse()
             click_mouse()
+            move_mouse()
             USER32.EnumWindows(EnumWindowsProc(foreach_window), 0)
             KERNEL32.Sleep(1000)

@@ -10,7 +10,7 @@ from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.objects import File
 
 try:
-    from pymongo.connection import Connection
+    from pymongo import MongoClient
     from pymongo.errors import ConnectionFailure
     from gridfs import GridFS
     from gridfs.errors import FileExists
@@ -32,7 +32,7 @@ class MongoDB(Report):
         port = self.options.get("port", 27017)
 
         try:
-            self.conn = Connection(host, port)
+            self.conn = MongoClient(host, port)
             self.db = self.conn.cuckoo
             self.fs = GridFS(self.db)
         except TypeError:
@@ -120,17 +120,27 @@ class MongoDB(Report):
             report["network"] = {"pcap_id": pcap_id}
             report["network"].update(results["network"])
 
+        # Store the process memory dump file in GridFS and reference it back in the report.
+        if "procmemory" in report and self.options.get("store_memdump", False):
+            for idx, procmem in enumerate(report["procmemory"]):
+                procmem_path = os.path.join(self.analysis_path, "memory", "{0}.dmp".format(procmem["pid"]))
+                procmem_file = File(procmem_path)
+                if procmem_file.valid():
+                    procmem_id = self.store_file(procmem_file)
+                    report["procmemory"][idx].update({"procmem_id": procmem_id})
+
         # Walk through the dropped files, store them in GridFS and update the
         # report with the ObjectIds.
         new_dropped = []
-        for dropped in report["dropped"]:
-            new_drop = dict(dropped)
-            drop = File(dropped["path"])
-            if drop.valid():
-                dropped_id = self.store_file(drop, filename=dropped["name"])
-                new_drop["object_id"] = dropped_id
+        if "dropped" in report:
+            for dropped in report["dropped"]:
+                new_drop = dict(dropped)
+                drop = File(dropped["path"])
+                if drop.valid():
+                    dropped_id = self.store_file(drop, filename=dropped["name"])
+                    new_drop["object_id"] = dropped_id
 
-            new_dropped.append(new_drop)
+                new_dropped.append(new_drop)
 
         report["dropped"] = new_dropped
 

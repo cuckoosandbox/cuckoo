@@ -2,8 +2,8 @@ sqlalchemy
 bson
 jinja2
 pymongo
-pydeep
 bottle
 pefile
 django
 chardet
+nose

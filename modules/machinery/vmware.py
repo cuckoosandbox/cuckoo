@@ -3,9 +3,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import glob
 import logging
 import subprocess
 import os.path
+import shutil
 import time
 
 from lib.cuckoo.common.abstracts import Machinery
@@ -15,142 +17,142 @@ log = logging.getLogger(__name__)
 
 class VMware(Machinery):
     """Virtualization layer for VMware Workstation using vmrun utility."""
+    LABEL = "vmx_path"
 
     def _initialize_check(self):
         """Check for configuration file and vmware setup.
         @raise CuckooMachineError: if configuration is missing or wrong.
-        """  
+        """
         if not self.options.vmware.path:
             raise CuckooMachineError("VMware vmrun path missing, "
                                      "please add it to vmware.conf")
+
         if not os.path.exists(self.options.vmware.path):
             raise CuckooMachineError("VMware vmrun not found in "
                                      "specified path %s" %
                                      self.options.vmware.path)
         # Consistency checks.
         for machine in self.machines():
-            host, snapshot = self._get_host_and_snapshot(machine.label)
-            self._check_vmx(host)
-            self._check_snapshot(host, snapshot)
+            vmx_path = machine.label
+
+            snapshot = self._snapshot_from_vmx(vmx_path)
+            self._check_vmx(vmx_path)
+            self._check_snapshot(vmx_path, snapshot)
+
         # Base checks.
         super(VMware, self)._initialize_check()
 
-    def _check_vmx(self, host):
-        """Checks a vmx file
-        @param host: file path
+    def _check_vmx(self, vmx_path):
+        """Checks whether a vmx file exists and is valid.
+        @param vmx_path: path to vmx file
         @raise CuckooMachineError: if file not found or not ending with .vmx
         """
-        if not host.endswith(".vmx"):
+        if not vmx_path.endswith(".vmx"):
             raise CuckooMachineError("Wrong configuration: vm path not "
-                                     "ending with .vmx: %s)" % host)
-        if not os.path.exists(self.options.vmware.path):
-            raise CuckooMachineError("Vm file %s not found" % host)
+                                     "ending with .vmx: %s)" % vmx_path)
 
-    def _check_snapshot(self, host, snapshot):
+        if not os.path.exists(vmx_path):
+            raise CuckooMachineError("Vm file %s not found" % vmx_path)
+
+    def _check_snapshot(self, vmx_path, snapshot):
         """Checks snapshot existance.
-        @param host: file path
+        @param vmx_path: path to vmx file
         @param snapshot: snapshot name
         @raise CuckooMachineError: if snapshot not found
         """
         try:
             p = subprocess.Popen([self.options.vmware.path,
-                                  "listSnapshots", host],
+                                  "listSnapshots", vmx_path],
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
-            output, error = p.communicate()
+            output, _ = p.communicate()
+        except OSError as e:
+            raise CuckooMachineError("Unable to get snapshot list for %s. "
+                                     "Reason: %s" % (vmx_path, e))
+        else:
             if output:
-                if snapshot in output:
-                    return True
-                else:
-                    return False
+                return snapshot in output
             else:
                 raise CuckooMachineError("Unable to get snapshot list for %s. "
                                          "No output from "
-                                         "`vmrun listSnapshots`" % host)
-        except OSError as e:
-            raise CuckooMachineError("Unable to get snapshot list for %s. "
-                                     "Reason: %s" % (host, e))
+                                         "`vmrun listSnapshots`" % vmx_path)
 
-    def start(self, label):
+    def start(self, vmx_path):
         """Start a virtual machine.
-        @param label: virtual machine identifier: path to vmx file.
+        @param vmx_path: path to vmx file.
         @raise CuckooMachineError: if unable to start.
         """
-        host, snapshot = self._get_host_and_snapshot(label)
+        snapshot = self._snapshot_from_vmx(vmx_path)
 
         # Preventive check
-        if self._is_running(host):
-            raise CuckooMachineError("Machine %s is already running" % host)
+        if self._is_running(vmx_path):
+            raise CuckooMachineError("Machine %s is already running" %
+                                     vmx_path)
 
-        self._revert(host, snapshot)
+        self._revert(vmx_path, snapshot)
 
         time.sleep(3)
 
-        log.debug("Starting vm %s" % host)
+        log.debug("Starting vm %s" % vmx_path)
         try:
             p = subprocess.Popen([self.options.vmware.path,
-                                  "start", host, self.options.vmware.mode],
+                                  "start", vmx_path,
+                                  self.options.vmware.mode],
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             if self.options.vmware.mode.lower() == "gui":
-                output, error = p.communicate()
+                output, _ = p.communicate()
                 if output:
                     raise CuckooMachineError("Unable to start machine "
-                                             "%s: %s" % (host, output))
+                                             "%s: %s" % (vmx_path, output))
         except OSError as e:
             mode = self.options.vmware.mode.upper()
             raise CuckooMachineError("Unable to start machine %s in %s "
-                                     "mode: %s" % (host, mode, e))
+                                     "mode: %s" % (vmx_path, mode, e))
 
-    def stop(self, label):
+    def stop(self, vmx_path):
         """Stops a virtual machine.
-        @param label: virtual machine identifier: path to vmx file
-            (in older configurations it also includes current snapshot name).
+        @param vmx_path: path to vmx file
         @raise CuckooMachineError: if unable to stop.
         """
-        host, snapshot = self._get_host_and_snapshot(label)
-
-        log.debug("Stopping vm %s" % host)
-        if self._is_running(host):
+        log.debug("Stopping vm %s" % vmx_path)
+        if self._is_running(vmx_path):
             try:
                 if subprocess.call([self.options.vmware.path,
-                                    "stop",
-                                    host,
-                                    "hard"],  # Machete never wait.
+                                    "stop", vmx_path, "hard"],
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE):
                     raise CuckooMachineError("Error shutting down "
-                                             "machine %s" % host)
+                                             "machine %s" % vmx_path)
             except OSError as e:
                 raise CuckooMachineError("Error shutting down machine "
-                                         "%s: %s" % (host, e))
+                                         "%s: %s" % (vmx_path, e))
         else:
-            log.warning("Trying to stop an already stopped machine: %s" % host)
+            log.warning("Trying to stop an already stopped machine: %s",
+                        vmx_path)
 
-    def _revert(self, host, snapshot):
+    def _revert(self, vmx_path, snapshot):
         """Revets machine to snapshot.
-        @param host: file path
+        @param vmx_path: path to vmx file
         @param snapshot: snapshot name
         @raise CuckooMachineError: if unable to revert
         """
-        log.debug("Revert snapshot for vm %s" % host)
+        log.debug("Revert snapshot for vm %s" % vmx_path)
         try:
             if subprocess.call([self.options.vmware.path,
-                               "revertToSnapshot",
-                               host,
-                               snapshot],
+                                "revertToSnapshot", vmx_path, snapshot],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE):
                 raise CuckooMachineError("Unable to revert snapshot for "
                                          "machine %s: vmrun exited with "
-                                         "error" % host)
+                                         "error" % vmx_path)
         except OSError as e:
             raise CuckooMachineError("Unable to revert snapshot for "
-                                     "machine %s: %s" % (host, e))
+                                     "machine %s: %s" % (vmx_path, e))
 
-    def _is_running(self, host):
-        """Checks if host is running.
-        @param host: file path
+    def _is_running(self, vmx_path):
+        """Checks if virtual machine is running.
+        @param vmx_path: path to vmx file
         @return: running status
         """
         try:
@@ -158,51 +160,52 @@ class VMware(Machinery):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             output, error = p.communicate()
+        except OSError as e:
+            raise CuckooMachineError("Unable to check running status for %s. "
+                                     "Reason: %s" % (vmx_path, e))
+        else:
             if output:
-                if host in output:
-                    return True
-                else:
-                    return False
+                return vmx_path in output
             else:
                 raise CuckooMachineError("Unable to check running status "
                                          "for %s. No output from "
-                                         "`vmrun list`" % host)
+                                         "`vmrun list`" % vmx_path)
+
+    def _snapshot_from_vmx(self, vmx_path):
+        """Get snapshot for a given vmx file.
+        @param vmx_path: configuration option from config file
+        """
+        vm_info = self.db.view_machine_by_label(vmx_path)
+        return vm_info.snapshot
+
+    def dump_memory(self, vmx_path, path):
+        """Take a memory dump of the machine."""
+        if not os.path.exists(vmx_path):
+            raise CuckooMachineError("Can't find .vmx file {0}. Ensure to configure a fully qualified path in vmware.conf (key = vmx_path)".format(vmx_path))
+
+        try:
+            subprocess.call([self.options.vmware.path, "snapshot",
+                             vmx_path, "memdump"],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
         except OSError as e:
-            raise CuckooMachineError("Unable to check running status for %s. "
-                                     "Reason: %s" % (host, e))
+            raise CuckooMachineError("vmrun failed to take a memory dump of the machine with label %s: %s" % (vmx_path, e))
 
-    def _parse_label(self, label):
-        """Parse configuration file label.
-        @param label: configuration option from config file
-        @return: tuple of host file path and snapshot name
-        """
-        opts = label.strip().split(",")
-        if len(opts) != 2:
-            raise CuckooMachineError("Wrong label syntax for %s in "
-                                     "vmware.conf: %s" % label)
-        label = opts[0].strip()
-        snapshot = opts[1].strip()
-        return label, snapshot
-    
-    def _get_host_and_snapshot(self, label):
-        """Get host and snapshot for a given label
-        New configuration files have a specific 'snapshot' option, while
-        older configuration files have a label in the format:
-        'file.vmx,Snapshot'.
-        @param label: configuration option from config file
-        """
-        vm_info = self.db.view_machine_by_label(label)
-        
-        if vm_info.snapshot:
-            host = label.split(',')[0] 
-            # Make sure to exclude any snapshot name from older conf files
-            # if you also have the new option parameter
-            snapshot = vm_info.snapshot
-        else:
-            # Keep support for older conf files
-            host, snapshot = self._parse_label(label)
-            log.warning("Deprecation warning: your vmware configuartion "
-                        "file is using old snaphost syntax, please use the "
-                        "option 'snapshot' instead.")
+        vmwarepath, _ = os.path.split(vmx_path)
+        latestvmem = max(glob.iglob(os.path.join(vmwarepath, "*.vmem")),
+                         key=os.path.getctime)
 
-        return host, snapshot
+        # We need to move the snapshot to the current analysis directory as
+        # vmware doesn't support an option for the destination path :-/
+        shutil.move(latestvmem, path)
+
+        # Old snapshot can be deleted, as it isn't needed any longer.
+        try:
+            subprocess.call([self.options.vmware.path, "deleteSnapshot",
+                             vmx_path, "memdump"],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+        except OSError as e:
+            raise CuckooMachineError("vmrun failed to delete the temporary snapshot in %s: %s" % (vmx_path, e))
+
+        log.info("Successfully generated memory dump for virtual machine with label %s ", vmx_path)

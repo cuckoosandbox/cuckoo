@@ -8,7 +8,7 @@ represent a particular malicious behavior or an indicator you're interested in.
 
 These signatures are very useful to give a context to the analyses: both because they
 simplify the interpretation of the results as well as for automatically identifying
-malwares of interest.
+malware samples of interest.
 
 Some examples of what you can use Cuckoo's signatures for:
     * Identify a particular malware family you're interested in by isolating some unique behaviors (like file names or mutexes).
@@ -60,15 +60,15 @@ the global container as follows::
 
     "signatures": [
         {
-            "severity": 2, 
-            "description": "Creates a Windows executable on the filesystem", 
-            "alert": false, 
-            "references": [], 
+            "severity": 2,
+            "description": "Creates a Windows executable on the filesystem",
+            "alert": false,
+            "references": [],
             "data": [
                 {
                     "file_name": "C:\\d.exe"
                 }
-            ], 
+            ],
             "name": "creates_exe"
         }
     ]
@@ -194,7 +194,7 @@ you could translate the previous signature in the following way:
 Evented Signatures
 ==================
 
-Since version 1.0, Cuckoo provides a way to write more performant signatures.
+Since version 1.0, Cuckoo provides a way to write more high-performance signatures.
 In the past every signature was required to loop through the whole collection of API calls
 collected during the analysis. This was necessarily causing some performance issues when such
 collection would be of a large size.
@@ -256,16 +256,75 @@ An example signature using this technique is the following:
                 # continue
                 return None
 
-The inline comments are already self-explainatory.
+The inline comments are already self-explanatory.
 You can find many more example of both evented and traditional signatures in our `community repository`_.
 
 .. _`community repository`: https://github.com/cuckoobox/community
+
+Matches
+=======
+
+Starting from version 1.2, signatures are able to log exactly what triggered
+the signature. This allows users to better understand why this signature is
+present in the log, and to be able to better focus malware analysis.
+
+Two helpers have been included in order to specify matching data.
+
+.. function:: Signature.add_match(process, type, match)
+
+    Adds a match to the signature. Can be called several times for the same signature.
+
+    :param process: process dictionary (same as the ``on_call`` argument). Should be ``None`` except when used in evented signatures.
+    :type process: dict
+    :param type: nature of the matching data. Can be anything (ex: ``'file'``, ``'registry'``, etc.). If match is composed of api calls (when used in evented signatures), should be ``'api'``.
+    :type type: string
+    :param match: matching data. Can be a single element or a list of elements. An element can be a string, a dict or an API call (when used in evented signatures).
+
+    Example Usage, with a single element:
+
+    .. code-block:: python
+        :linenos:
+
+        self.add_match(None, 'url', "http://malicious_url_detected.com")
+
+    Example Usage, with a more complex signature, needing several API calls to be triggered:
+
+    .. code-block:: python
+        :linenos:
+
+        self.signs = []
+        self.signs.append(first_api_call)
+        self.signs.append(second_api_call)
+        self.add_match(process, 'api', self.signs)
+
+.. function:: Signature.has_matches()
+
+    Checks whether the current signature has any matching data registered. Returns ``True`` in case it does, otherwise returns ``False``.
+
+    This can be used to easily add several matches for the same signature. If you want to do so, make sure that all the api calls are scanned by making sure that ``on_call`` never returns ``True``. Then, use ``on_complete`` with ``has_matches`` so that the signature is triggered if any match was previously added.
+
+    :rtype: boolean
+
+    Example Usage, from the `network_tor` signature:
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, process):
+            if self.check_argument_call(call,
+                                        pattern="Tor Win32 Service",
+                                        api="CreateServiceA",
+                                        category="services"):
+                self.add_match(process, 'api', call)
+
+        def on_complete(self):
+            return self.has_matches()
 
 Helpers
 =======
 
 As anticipated, from version 0.5 the ``Signature`` base class also provides
-some helper methods that simplify the creation of signatures and aboid the need
+some helper methods that simplify the creation of signatures and avoid the need
 for you having to access the global container directly (at least most of the times).
 
 Following is a list of available methods.

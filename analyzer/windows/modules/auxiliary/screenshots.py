@@ -13,10 +13,14 @@ from lib.api.screenshot import Screenshot
 
 log = logging.getLogger(__name__)
 SHOT_DELAY = 1
+# Skip the following area when comparing screen shots.
+# Example for 800x600 screen resolution.
+# SKIP_AREA = ((735, 575), (790, 595))
+SKIP_AREA = None
 
 class Screenshots(Auxiliary, Thread):
     """Take screenshots."""
-    
+
     def __init__(self):
         Thread.__init__(self)
         self.do_run = True
@@ -47,7 +51,7 @@ class Screenshots(Auxiliary, Thread):
                 continue
 
             if img_last:
-                if Screenshot().equal(img_last, img_current):
+                if Screenshot().equal(img_last, img_current, SKIP_AREA):
                     continue
 
             img_counter += 1
@@ -59,10 +63,10 @@ class Screenshots(Auxiliary, Thread):
 
             # now upload to host from the StringIO
             nf = NetlogFile("shots/%s.jpg" % str(img_counter).rjust(4, "0"))
-            
+
             for chunk in tmpio:
                 nf.sock.sendall(chunk)
-            
+
             nf.close()
 
             img_last = img_current

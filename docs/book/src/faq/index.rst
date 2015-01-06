@@ -102,7 +102,7 @@ Make sure when you ask for help to:
 Check and restore current snapshot with KVM
 -------------------------------------------
 
-If something goes wrong with virtual machine it's best practice to check curent snapshot
+If something goes wrong with virtual machine it's best practice to check current snapshot
 status.
 You can do that with the following::
 
@@ -115,7 +115,7 @@ snapshot is broken::
     $ virsh snapshot-current "<Name of VM>"
     error: domain '<Name of VM>' has no current snapshot
 
-To fix and create a current snapshot firt list all machine's snapshots::
+To fix and create a current snapshot first list all machine's snapshots::
 
     $ virsh snapshot-list "<Name of VM>"
      Name                 Creation Time             State
@@ -133,7 +133,7 @@ Check and restore current snapshot with VirtualBox
 --------------------------------------------------
 
 If something goes wrong with virtual it's best practice to check the virtual machine
-status and the curent snapshot.
+status and the current snapshot.
 First of all check the virtual machine status with the following::
 
     $ VBoxManage showvminfo "<Name of VM>" | grep State

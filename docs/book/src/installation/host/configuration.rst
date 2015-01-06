@@ -22,7 +22,7 @@ cuckoo.conf
 The first file to edit is *conf/cuckoo.conf*, it contains the generic configuration
 options that you might want to verify before launching Cuckoo.
 
-The file is largely commented and self-explainatory, but some of the options you might
+The file is largely commented and self-explaining, but some of the options you might
 want to pay more attention to are:
 
     * ``machinery`` in ``[cuckoo]``: this defines which Machinery module you want Cuckoo to use to interact with your analysis machines. The value must be the name of the module without extension.
@@ -102,7 +102,7 @@ Following is the default *conf/virtualbox.conf* file::
     [cuckoo1]
     # Specify the label name of the current machine as specified in your
     # VirtualBox configuration.
-    label = cuckoo1 
+    label = cuckoo1
 
     # Specify the operating system platform used by current machine
     # [windows/darwin/linux].
@@ -112,7 +112,7 @@ Following is the default *conf/virtualbox.conf* file::
     # IP address is valid and that the host machine is able to reach it. If not,
     # the analysis will fail.
     ip = 192.168.56.101
-    
+
     # (Optional) Specify the snapshot name to use. If you do not specify a snapshot
     # name, the VirtualBox MachineManager will use the current snapshot.
     # Example (Snapshot1 is the snapshot name):
@@ -123,10 +123,10 @@ Following is the default *conf/virtualbox.conf* file::
     # overrides the default interface specified in cuckoo.conf
     # Example (virbr0 is the interface name):
     # interface = virbr0
-    
+
     # (Optional) Specify the IP of the Result Server, as your virtual machine sees it.
     # The Result Server will always bind to the address and port specified in cuckoo.conf,
-    # however you could set up your virtual network to use NAT/PAT, so you can specify here 
+    # however you could set up your virtual network to use NAT/PAT, so you can specify here
     # the IP address for the Result Server as your machine sees it. If you don't specify an
     # address here, the machine will use the default value from cuckoo.conf.
     # Example:
@@ -171,7 +171,7 @@ Following is the default *conf/kvm.conf* file::
     # the analysis will fail. You may want to configure your network settings in
     # /etc/libvirt/<hypervisor>/networks/
     ip = 192.168.122.105
-    
+
     # (Optional) Specify the snapshot name to use. If you do not specify a snapshot
     # name, the KVM MachineManager will use the current snapshot.
     # Example (Snapshot1 is the snapshot name):
@@ -185,7 +185,7 @@ Following is the default *conf/kvm.conf* file::
 
     # (Optional) Specify the IP of the Result Server, as your virtual machine sees it.
     # The Result Server will always bind to the address and port specified in cuckoo.conf,
-    # however you could set up your virtual network to use NAT/PAT, so you can specify here 
+    # however you could set up your virtual network to use NAT/PAT, so you can specify here
     # the IP address for the Result Server as your machine sees it. If you don't specify an
     # address here, the machine will use the default value from cuckoo.conf.
     # Example:
@@ -240,7 +240,7 @@ After that every plugin has an own section for configuration::
     enabled = off
     filter = on
 
-The filter configuration helps you to remove known clean data from the resulting report. It can be configured seperately for every plugin.
+The filter configuration helps you to remove known clean data from the resulting report. It can be configured separately for every plugin.
 
 The filter itself is configured in the [mask] section.
 You can enter a list of pids in pid_generic to filter out processes::
@@ -285,6 +285,9 @@ You will find a section for each processing module::
     enabled = no
 
     [network]
+    enabled = yes
+
+    [procmemory]
     enabled = yes
 
     [static]

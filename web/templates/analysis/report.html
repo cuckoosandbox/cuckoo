@@ -7,7 +7,9 @@
     {% if analysis.behavior.processes %}<li><a href="#behavior" data-toggle="tab" id="graph_hook">Behavioral Analysis</a></li>{% endif %}
     <li><a href="#network" data-toggle="tab">Network Analysis</a></li>
     <li><a href="#dropped" data-toggle="tab">Dropped Files</a></li>
+    {% if analysis.procmemory %}<li><a href="#procmemory" data-toggle="tab">Process Memory</a></li>{% endif %}
     {% if analysis.memory %}<li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>{% endif %}
+    <li><a href="#admin" data-toggle="tab">Admin</a></li>
 </ul>
 <div class="tab-content">
     <div class="tab-pane fade in active" id="overview">
@@ -27,10 +29,18 @@
     <div class="tab-pane fade" id="dropped">
         {% include "analysis/dropped/index.html" %}
     </div>
+    {% if analysis.procmemory %}
+    <div class="tab-pane fade" id="procmemory">
+        {% include "analysis/procmemory/index.html" %}
+    </div>
+    {% endif %}
     {% if analysis.memory %}
     <div class="tab-pane fade" id="memory">
         {% include "analysis/memory/index.html" %}
     </div>
     {% endif %}
+    <div class="tab-pane fade" id="admin">
+        {% include "analysis/admin/index.html" %}
+    </div>
 </div>
 {% endblock %}

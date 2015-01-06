@@ -30,7 +30,7 @@ class Disconnect(Exception):
     pass
 
 
-class Resultserver(SocketServer.ThreadingTCPServer, object):
+class ResultServer(SocketServer.ThreadingTCPServer, object):
     """Result server. Singleton!
 
     This class handles results coming back from the analysis machines.
@@ -46,33 +46,46 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         self.analysistasks = {}
         self.analysishandlers = {}
 
-        try:
-            server_addr = self.cfg.resultserver.ip, self.cfg.resultserver.port
-            SocketServer.ThreadingTCPServer.__init__(self,
-                                                     server_addr,
-                                                     Resulthandler,
-                                                     *args,
-                                                     **kwargs)
-        except Exception as e:
-            raise CuckooCriticalError("Unable to bind result server on "
-                                      "{0}:{1}: {2}".format(
-                                          self.cfg.resultserver.ip,
-                                          self.cfg.resultserver.port, str(e)))
-        else:
-            self.servethread = Thread(target=self.serve_forever)
-            self.servethread.setDaemon(True)
-            self.servethread.start()
+        ip = self.cfg.resultserver.ip
+        self.port = int(self.cfg.resultserver.port)
+        while True:
+            try:
+                server_addr = ip, self.port
+                SocketServer.ThreadingTCPServer.__init__(self,
+                                                         server_addr,
+                                                         ResultHandler,
+                                                         *args,
+                                                         **kwargs)
+            except Exception as e:
+                # In Linux /usr/include/asm-generic/errno-base.h.
+                # EADDRINUSE  98 (Address already in use)
+                # In Mac OS X or FreeBSD:
+                # EADDRINUSE 48 (Address already in use)
+                if e.errno == 98 or e.errno == 48:
+                    log.warning("Cannot bind ResultServer on port {0}, "
+                                "trying another port.".format(self.port))
+                    self.port += 1
+                else:
+                    raise CuckooCriticalError("Unable to bind ResultServer on "
+                                              "{0}:{1}: {2}".format(
+                                                  ip, self.port, str(e)))
+            else:
+                log.debug("ResultServer running on {0}:{1}.".format(ip, self.port))
+                self.servethread = Thread(target=self.serve_forever)
+                self.servethread.setDaemon(True)
+                self.servethread.start()
+                break
 
     def add_task(self, task, machine):
-        """Register a task/machine with the Resultserver."""
-        self.analysistasks[machine.ip] = (task, machine)
+        """Register a task/machine with the ResultServer."""
+        self.analysistasks[machine.ip] = task, machine
         self.analysishandlers[task.id] = []
 
     def del_task(self, task, machine):
-        """Delete Resultserver state and wait for pending RequestHandlers."""
+        """Delete ResultServer state and wait for pending RequestHandlers."""
         x = self.analysistasks.pop(machine.ip, None)
         if not x:
-            log.warning("Resultserver did not have {0} in its task "
+            log.warning("ResultServer did not have {0} in its task "
                         "info.".format(machine.ip))
         handlers = self.analysishandlers.pop(task.id, None)
         for h in handlers:
@@ -84,13 +97,14 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         task, machine = self.get_ctx_for_ip(handler.client_address[0])
         if not task or not machine:
             return False
+
         self.analysishandlers[task.id].append(handler)
 
     def get_ctx_for_ip(self, ip):
         """Return state for this IP's task."""
-        x = self.analysistasks.get(ip, None)
+        x = self.analysistasks.get(ip)
         if not x:
-            log.critical("Resultserver unable to map ip to "
+            log.critical("ResultServer unable to map ip to "
                          "context: {0}.".format(ip))
             return None, None
 
@@ -100,14 +114,12 @@ class Resultserver(SocketServer.ThreadingTCPServer, object):
         """Initialize analysis storage folder."""
         task, machine = self.get_ctx_for_ip(ip)
         if not task or not machine:
-            return False
+            return
 
-        storagepath = os.path.join(CUCKOO_ROOT, "storage",
-                                   "analyses", str(task.id))
-        return storagepath
+        return os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task.id))
 
 
-class Resulthandler(SocketServer.BaseRequestHandler):
+class ResultHandler(SocketServer.BaseRequestHandler):
     """Result handler.
 
     This handler speaks our analysis log network protocol.
@@ -120,7 +132,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         self.startbuf = ""
         self.end_request = Event()
         self.done_event = Event()
-        self.pid, self.ppid, self.procname = (None, None, None)
+        self.pid, self.ppid, self.procname = None, None, None
         self.server.register_handler(self)
 
     def finish(self):
@@ -130,7 +142,7 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         while True:
             if self.end_request.isSet():
                 return False
-            rs, ws, xs = select.select([self.request], [], [], 1)
+            rs, _, _ = select.select([self.request], [], [], 1)
             if rs:
                 return True
 
@@ -161,12 +173,12 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
     def read_newline(self):
         buf = ""
-        while not "\n" in buf:
+        while "\n" not in buf:
             buf += self.read(1)
         return buf
 
     def negotiate_protocol(self):
-        # read until newline
+        # Read until newline.
         buf = self.read_newline()
 
         if "NETLOG" in buf:
@@ -190,65 +202,63 @@ class Resulthandler(SocketServer.BaseRequestHandler):
         if not self.storagepath:
             return
 
-        # create all missing folders for this analysis
+        # Create all missing folders for this analysis.
         self.create_folders()
 
         try:
-            # initialize the protocol handler class for this connection
+            # Initialize the protocol handler class for this connection.
             self.negotiate_protocol()
 
-            while True:
-                r = self.protocol.read_next_message()
-                if not r:
-                    break
+            while self.protocol.read_next_message():
+                pass
         except CuckooResultError as e:
-            log.warning("Resultserver connection stopping because of "
+            log.warning("ResultServer connection stopping because of "
                         "CuckooResultError: %s.", str(e))
-        except Disconnect:
+        except (Disconnect, socket.error):
             pass
-        except socket.error, e:
-            log.debug("socket.error: {0}".format(e))
         except:
             log.exception("FIXME - exception in resultserver connection %s",
                           str(self.client_address))
 
-        try:
-            self.protocol.close()
-        except:
-            pass
+        self.protocol.close()
 
         if self.logfd:
             self.logfd.close()
         if self.rawlogfd:
             self.rawlogfd.close()
+
         log.debug("Connection closed: {0}:{1}".format(ip, port))
 
     def log_process(self, ctx, timestring, pid, ppid, modulepath, procname):
-        if not self.pid is None:
-            log.debug("Resultserver got a new process message but already "
-                      "has pid %d ppid %s procname %s",
+        if self.pid is not None:
+            log.debug("ResultServer got a new process message but already "
+                      "has pid %d ppid %s procname %s.",
                       pid, str(ppid), procname)
-            raise CuckooResultError("Resultserver connection state "
-                                    "incosistent.")
+            raise CuckooResultError("ResultServer connection state "
+                                    "inconsistent.")
 
         log.debug("New process (pid={0}, ppid={1}, name={2}, "
                   "path={3})".format(pid, ppid, procname, modulepath))
 
-        # CSV format files are optional
+        # CSV format files are optional.
         if self.server.cfg.resultserver.store_csvs:
-            self.logfd = open(os.path.join(self.storagepath, "logs",
-                                           str(pid) + ".csv"), "wb")
+            path = os.path.join(self.storagepath, "logs", "%d.csv" % pid)
+            self.logfd = open(path, "wb")
 
-        # Raw Bson or Netlog extension
+        # Raw Bson or Netlog extension.
         ext = EXTENSIONS.get(type(self.protocol), ".raw")
-        self.rawlogfd = open(os.path.join(self.storagepath, "logs",
-                                          str(pid) + ext), "wb")
+        path = os.path.join(self.storagepath, "logs", str(pid) + ext)
+        self.rawlogfd = open(path, "wb")
         self.rawlogfd.write(self.startbuf)
 
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
     def log_thread(self, context, pid):
         log.debug("New thread (tid={0}, pid={1})".format(context[3], pid))
+
+    def log_anomaly(self, subcategory, tid, funcname, msg):
+        log.debug("Anomaly (tid=%s, category=%s, funcname=%s): %s",
+                  tid, subcategory, funcname, msg)
 
     def log_call(self, context, apiname, modulename, arguments):
         if not self.rawlogfd:
@@ -257,10 +267,10 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
         apiindex, status, returnval, tid, timediff = context
 
-        #log.debug("log_call> tid:{0} apiname:{1}".format(tid, apiname))
+        # log.debug("log_call> tid:{0} apiname:{1}".format(tid, apiname))
 
-        current_time = self.connect_time + datetime.timedelta(0, 0,
-                                                              timediff*1000)
+        current_time = \
+            self.connect_time + datetime.timedelta(0, 0, timediff*1000)
         timestring = logtime(current_time)
 
         argumentstrings = ["{0}->{1}".format(argname, repr(str(r))[1:-1])
@@ -272,12 +282,12 @@ class Resulthandler(SocketServer.BaseRequestHandler):
                 modulename, apiname, status, returnval] + argumentstrings)
 
     def log_error(self, emsg):
-        log.warning("Resultserver error condition on connection %s "
+        log.warning("ResultServer error condition on connection %s "
                     "(pid %s procname %s): %s", str(self.client_address),
                     str(self.pid), str(self.procname), emsg)
 
     def create_folders(self):
-        folders = ["shots", "files", "logs"]
+        folders = "shots", "files", "logs"
 
         for folder in folders:
             try:
@@ -288,46 +298,61 @@ class Resulthandler(SocketServer.BaseRequestHandler):
 
 
 class FileUpload(object):
+    RESTRICTED_DIRECTORIES = "reports/",
+
     def __init__(self, handler):
         self.handler = handler
         self.upload_max_size = \
             self.handler.server.cfg.resultserver.upload_max_size
         self.storagepath = self.handler.storagepath
+        self.fd = None
 
     def read_next_message(self):
-        # read until newline for file path
-        # e.g. shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
+        # Read until newline for file path, e.g.,
+        # shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
 
         buf = self.handler.read_newline().strip().replace("\\", "/")
         log.debug("File upload request for {0}".format(buf))
 
-        if "../" in buf:
-            raise CuckooOperationalError("FileUpload failure, banned path.")
-
         dir_part, filename = os.path.split(buf)
 
-        if dir_part:
-            try:
-                create_folder(self.storagepath, dir_part)
-            except CuckooOperationalError:
-                log.error("Unable to create folder %s" % dir_part)
-                return False
+        if "./" in buf or not dir_part or buf.startswith("/"):
+            raise CuckooOperationalError("FileUpload failure, banned path.")
+
+        for restricted in self.RESTRICTED_DIRECTORIES:
+            if restricted in dir_part:
+                raise CuckooOperationalError("FileUpload failure, banned path.")
+
+        try:
+            create_folder(self.storagepath, dir_part)
+        except CuckooOperationalError:
+            log.error("Unable to create folder %s" % dir_part)
+            return False
 
         file_path = os.path.join(self.storagepath, buf.strip())
 
-        fd = open(file_path, "wb")
+        if not file_path.startswith(self.storagepath):
+            raise CuckooOperationalError("FileUpload failure, path sanitization failed.")
+
+        self.fd = open(file_path, "wb")
         chunk = self.handler.read_any()
         while chunk:
-            fd.write(chunk)
+            self.fd.write(chunk)
 
-            if fd.tell() >= self.upload_max_size:
-                fd.write("... (truncated)")
+            if self.fd.tell() >= self.upload_max_size:
+                self.fd.write("... (truncated)")
                 break
 
-            chunk = self.handler.read_any()
+            try:
+                chunk = self.handler.read_any()
+            except:
+                break
 
-        log.debug("Uploaded file length: {0}".format(fd.tell()))
-        fd.close()
+        log.debug("Uploaded file length: {0}".format(self.fd.tell()))
+
+    def close(self):
+        if self.fd:
+            self.fd.close()
 
 
 class LogHandler(object):
@@ -338,6 +363,9 @@ class LogHandler(object):
         log.debug("LogHandler for live analysis.log initialized.")
 
     def read_next_message(self):
+        if not self.fd:
+            return False
+
         buf = self.handler.read_newline()
         if not buf:
             return False
@@ -346,9 +374,9 @@ class LogHandler(object):
         return True
 
     def close(self):
-        self.fd.close()
+        if self.fd:
+            self.fd.close()
 
     def _open(self):
-        if os.path.exists(self.logpath):
-            return open(self.logpath, "ab")
-        return open(self.logpath, "wb")
+        if not os.path.exists(self.logpath):
+            return open(self.logpath, "wb")

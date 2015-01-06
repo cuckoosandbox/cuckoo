@@ -156,48 +156,48 @@ Following is a list of currently available resources and a brief description of 
             {
                 "tasks": [
                     {
-                        "category": "url", 
-                        "machine": null, 
-                        "errors": [], 
-                        "target": "http://www.malicious.site", 
-                        "package": null, 
-                        "sample_id": null, 
-                        "guest": {}, 
-                        "custom": null, 
-                        "priority": 1, 
-                        "platform": null, 
-                        "options": null, 
-                        "status": "pending", 
-                        "enforce_timeout": false, 
-                        "timeout": 0, 
+                        "category": "url",
+                        "machine": null,
+                        "errors": [],
+                        "target": "http://www.malicious.site",
+                        "package": null,
+                        "sample_id": null,
+                        "guest": {},
+                        "custom": null,
+                        "priority": 1,
+                        "platform": null,
+                        "options": null,
+                        "status": "pending",
+                        "enforce_timeout": false,
+                        "timeout": 0,
                         "memory": false,
                         "tags": []
-                        "id": 1, 
-                        "added_on": "2012-12-19 14:18:25", 
+                        "id": 1,
+                        "added_on": "2012-12-19 14:18:25",
                         "completed_on": null
-                    }, 
+                    },
                     {
-                        "category": "file", 
-                        "machine": null, 
-                        "errors": [], 
-                        "target": "/tmp/malware.exe", 
-                        "package": null, 
-                        "sample_id": 1, 
-                        "guest": {}, 
-                        "custom": null, 
-                        "priority": 1, 
-                        "platform": null, 
-                        "options": null, 
-                        "status": "pending", 
-                        "enforce_timeout": false, 
-                        "timeout": 0, 
+                        "category": "file",
+                        "machine": null,
+                        "errors": [],
+                        "target": "/tmp/malware.exe",
+                        "package": null,
+                        "sample_id": 1,
+                        "guest": {},
+                        "custom": null,
+                        "priority": 1,
+                        "platform": null,
+                        "options": null,
+                        "status": "pending",
+                        "enforce_timeout": false,
+                        "timeout": 0,
                         "memory": false,
                         "tags": [
                                     "32bit",
                                     "acrobat_6",
                                 ],
-                        "id": 2, 
-                        "added_on": "2012-12-19 14:18:25", 
+                        "id": 2,
+                        "added_on": "2012-12-19 14:18:25",
                         "completed_on": null
                     }
                 ]
@@ -343,14 +343,14 @@ Following is a list of currently available resources and a brief description of 
 
             {
                 "sample": {
-                    "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709", 
-                    "file_type": "empty", 
-                    "file_size": 0, 
-                    "crc32": "00000000", 
-                    "ssdeep": "3::", 
-                    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", 
-                    "sha512": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e", 
-                    "id": 1, 
+                    "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+                    "file_type": "empty",
+                    "file_size": 0,
+                    "crc32": "00000000",
+                    "ssdeep": "3::",
+                    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                    "sha512": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+                    "id": 1,
                     "md5": "d41d8cd98f00b204e9800998ecf8427e"
                 }
             }
@@ -370,13 +370,13 @@ Following is a list of currently available resources and a brief description of 
 /files/get
 ----------
 
-    **GET /files/get/** *(str: id)*
+    **GET /files/get/** *(str: sha256)*
 
-        Returns the content of the PCAP associated with the given task.
+         Returns the binary content of the file matching the specified SHA256 hash.
 
         **Example request**::
 
-            curl http://localhost:8090/pcap/get/1 > dump.pcap
+            curl http://localhost:8090/files/get/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 > sample.exe
 
         **Status codes**:
             * ``200`` - no error
@@ -389,11 +389,11 @@ Following is a list of currently available resources and a brief description of 
 
     **GET /pcap/get/** *(int: task)*
 
-        Returns the binary content of the file matching the specified SHA256 hash.
+        Returns the content of the PCAP associated with the given task.
 
         **Example request**::
 
-            curl http://localhost:8090/files/get/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 > sample.exe
+            curl http://localhost:8090/pcap/get/1 > dump.pcap
 
         **Status codes**:
             * ``200`` - no error
@@ -418,21 +418,21 @@ Following is a list of currently available resources and a brief description of 
             {
                 "machines": [
                     {
-                        "status": null, 
-                        "locked": false, 
-                        "name": "cuckoo1", 
+                        "status": null,
+                        "locked": false,
+                        "name": "cuckoo1",
                         "resultserver_ip": "192.168.56.1",
                         "ip": "192.168.56.101",
                         "tags": [
                                     "32bit",
                                     "acrobat_6",
                                 ],
-                        "label": "cuckoo1", 
-                        "locked_changed_on": null, 
-                        "platform": "windows", 
+                        "label": "cuckoo1",
+                        "locked_changed_on": null,
+                        "platform": "windows",
                         "snapshot": null,
                         "interface": null,
-                        "status_changed_on": null, 
+                        "status_changed_on": null,
                         "id": 1,
                         "resultserver_port": "2042"
                     }
@@ -500,22 +500,22 @@ Following is a list of currently available resources and a brief description of 
 
             {
                 "tasks": {
-                    "reported": 165, 
-                    "running": 2, 
-                    "total": 167, 
-                    "completed": 0, 
+                    "reported": 165,
+                    "running": 2,
+                    "total": 167,
+                    "completed": 0,
                     "pending": 0
-                }, 
+                },
                 "version": "1.0",
                 "protocol_version": 1,
-                "hostname": "Patient0", 
+                "hostname": "Patient0",
                 "machines": {
-                    "available": 4, 
+                    "available": 4,
                     "total": 5
                 }
                 "tools":["vanilla"]
             }
-            
+
         **Status codes**:
             * ``200`` - no error
             * ``404`` - machine not found

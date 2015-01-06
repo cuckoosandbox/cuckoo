@@ -2,13 +2,27 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import sys
 import os
-
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 # Cuckoo path.
 CUCKOO_PATH = os.path.join(os.getcwd(), "..")
+sys.path.append(CUCKOO_PATH)
+
+from lib.cuckoo.common.config import Config
+
+cfg = Config("reporting").mongodb
+
+# Checks if mongo reporting is enabled in Cuckoo.
+if not cfg.get("enabled"):
+    raise Exception("Mongo reporting module is not enabled in cuckoo, aborting!")
+
+# Get connection options from reporting.conf.
+MONGO_HOST = cfg.get("host", "127.0.0.1")
+MONGO_PORT = cfg.get("port", 27017)
+
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
 
 # Database settings. We don't need it.
 DATABASES = {}
@@ -100,7 +114,7 @@ ROOT_URLCONF = 'web.urls'
 WSGI_APPLICATION = 'web.wsgi.application'
 
 TEMPLATE_DIRS = (
-    "templates"
+    "templates",
 )
 
 INSTALLED_APPS = (

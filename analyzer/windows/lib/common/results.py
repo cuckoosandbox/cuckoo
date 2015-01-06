@@ -9,7 +9,7 @@ from lib.core.config import Config
 
 log = logging.getLogger(__name__)
 
-BUFSIZE = 16 * 1024
+BUFSIZE = 1024*1024
 
 def upload_to_host(file_path, dump_path):
     nc = infd = None
@@ -17,10 +17,10 @@ def upload_to_host(file_path, dump_path):
         nc = NetlogFile(dump_path)
 
         infd = open(file_path, "rb")
-        tmp = infd.read(BUFSIZE)
-        while tmp:
-            nc.send(tmp)
-            tmp = infd.read(BUFSIZE)
+        buf = infd.read(BUFSIZE)
+        while buf:
+            nc.send(buf)
+            buf = infd.read(BUFSIZE)
     except Exception as e:
         log.error("Exception uploading file to host: %s", e)
     finally:

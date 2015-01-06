@@ -36,12 +36,12 @@ def index(request):
 
         if request.POST.get("free"):
             if options:
-                options += "&"
+                options += ","
             options += "free=yes"
 
         if request.POST.get("process_memory"):
             if options:
-                options += "&"
+                options += ","
             options += "procmemdump=yes"
 
         db = Database()
@@ -55,33 +55,34 @@ def index(request):
             task_machines.append(machine)
 
         if "sample" in request.FILES:
-            if request.FILES["sample"].size == 0:
-                return render_to_response("error.html",
-                                          {"error": "You uploaded an empty file."},
-                                          context_instance=RequestContext(request))
-            elif request.FILES["sample"].size > settings.MAX_UPLOAD_SIZE:
-                return render_to_response("error.html",
-                                          {"error": "You uploaded a file that exceeds that maximum allowed upload size."},
-                                          context_instance=RequestContext(request))
+            for sample in request.FILES.getlist("sample"):
+                if sample.size == 0:
+                    return render_to_response("error.html",
+                                              {"error": "You uploaded an empty file."},
+                                              context_instance=RequestContext(request))
+                elif sample.size > settings.MAX_UPLOAD_SIZE:
+                    return render_to_response("error.html",
+                                              {"error": "You uploaded a file that exceeds that maximum allowed upload size."},
+                                              context_instance=RequestContext(request))
 
-            # Moving sample from django temporary file to Cuckoo temporary storage to
-            # let it persist between reboot (if user like to configure it in that way).
-            path = store_temp_file(request.FILES["sample"].read(),
-                                   request.FILES["sample"].name)
+                # Moving sample from django temporary file to Cuckoo temporary storage to
+                # let it persist between reboot (if user like to configure it in that way).
+                path = store_temp_file(sample.read(),
+                                       sample.name)
 
-            for entry in task_machines:
-                task_id = db.add_path(file_path=path,
-                                      package=package,
-                                      timeout=timeout,
-                                      options=options,
-                                      priority=priority,
-                                      machine=entry,
-                                      custom=custom,
-                                      memory=memory,
-                                      enforce_timeout=enforce_timeout,
-                                      tags=tags)
-                if task_id:
-                    task_ids.append(task_id)
+                for entry in task_machines:
+                    task_id = db.add_path(file_path=path,
+                                          package=package,
+                                          timeout=timeout,
+                                          options=options,
+                                          priority=priority,
+                                          machine=entry,
+                                          custom=custom,
+                                          memory=memory,
+                                          enforce_timeout=enforce_timeout,
+                                          tags=tags)
+                    if task_id:
+                        task_ids.append(task_id)
         elif "url" in request.POST:
             url = request.POST.get("url").strip()
             if not url:
@@ -105,13 +106,9 @@ def index(request):
 
         tasks_count = len(task_ids)
         if tasks_count > 0:
-            if tasks_count == 1:
-                message = "The analysis task was successfully added with ID {0}.".format(task_ids[0])
-            else:
-                message = "The analysis task were successfully added with IDs {0}.".format(", ".join(str(i) for i in task_ids))
-
-            return render_to_response("success.html",
-                                      {"message": message},
+            return render_to_response("submission/complete.html",
+                                      {"tasks" : task_ids,
+                                       "tasks_count" : tasks_count},
                                       context_instance=RequestContext(request))
         else:
             return render_to_response("error.html",
@@ -135,8 +132,8 @@ def index(request):
             for tag in machine.tags:
                 tags.append(tag.name)
 
-            if len(tags) > 0:
-                label = machine.name + ": " + ", ".join(tags) 
+            if tags:
+                label = machine.name + ": " + ", ".join(tags)
             else:
                 label = machine.name
 
@@ -150,3 +147,20 @@ def index(request):
                                   {"packages": sorted(packages),
                                    "machines": machines},
                                   context_instance=RequestContext(request))
+
+def status(request, task_id):
+    task = Database().view_task(task_id)
+    if not task:
+        return render_to_response("error.html",
+                                  {"error": "The specified task doesn't seem to exist."},
+                                  context_instance=RequestContext(request))
+
+    completed = False
+    if task.status == "reported":
+        completed = True
+
+    return render_to_response("submission/status.html",
+                              {"completed" : completed,
+                               "status" : task.status,
+                               "task_id" : task_id},
+                              context_instance=RequestContext(request))

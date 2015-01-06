@@ -73,7 +73,7 @@ class RunAuxiliary(object):
     def __init__(self, task, machine):
         self.task = task
         self.machine = machine
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "auxiliary.conf"))
+        self.cfg = Config("auxiliary")
         self.enabled = []
 
     def start(self):
@@ -113,7 +113,8 @@ class RunAuxiliary(object):
                     log.warning("Unable to start auxiliary module %s: %s",
                                 module_name, e)
                 else:
-                    log.debug("Started auxiliary module: %s", module_name)
+                    log.debug("Started auxiliary module: %s",
+                              current.__class__.__name__)
                     self.enabled.append(current)
 
     def stop(self):
@@ -125,7 +126,8 @@ class RunAuxiliary(object):
             except Exception as e:
                 log.warning("Unable to stop auxiliary module: %s", e)
             else:
-                log.debug("Stopped auxiliary module: %s", module)
+                log.debug("Stopped auxiliary module: %s",
+                          module.__class__.__name__)
 
 class RunProcessing(object):
     """Analysis Results Processing Engine.
@@ -139,7 +141,7 @@ class RunProcessing(object):
         """@param task_id: ID of the analyses to process."""
         self.task = Database().view_task(task_id).to_dict()
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "processing.conf"))
+        self.cfg = Config("processing")
 
     def process(self, module):
         """Run a processing module.
@@ -252,7 +254,7 @@ class RunSignatures(object):
                 return odata
         except IOError:
             pass
-        
+
         return {}
 
     def _apply_overlay(self, signature, overlay):
@@ -401,7 +403,7 @@ class RunSignatures(object):
                             matched.append(sig.as_result())
                             if sig in complete_list:
                                 complete_list.remove(sig)
-                        
+
                         # Either True or False, we don't need to check this sig anymore.
                         evented_list.remove(sig)
                         del sig
@@ -457,7 +459,7 @@ class RunReporting:
         self.task = Database().view_task(task_id).to_dict()
         self.results = results
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "reporting.conf"))
+        self.cfg = Config("reporting")
 
     def process(self, module):
         """Run a single reporting module.
@@ -493,7 +495,7 @@ class RunReporting:
         # Give it the the relevant reporting.conf section.
         current.set_options(options)
         # Load the content of the analysis.conf file.
-        current.cfg = Config(current.conf_path)
+        current.cfg = Config(cfg=current.conf_path)
 
         try:
             current.run(self.results)

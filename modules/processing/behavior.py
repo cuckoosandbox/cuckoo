@@ -46,6 +46,7 @@ class ParseProcessLog(list):
         self.first_seen = None
         self.calls = self
         self.lastcall = None
+        self.call_id = 0
 
         if os.path.exists(log_path) and os.stat(log_path).st_size > 0:
             self.parse_first_and_reset()
@@ -62,8 +63,8 @@ class ParseProcessLog(list):
             self.fd = None
             return
 
-        # get the process information from file to determine
-        # process id (file names)
+        # Get the process information from file to determine
+        # process id (file names.)
         while not self.process_id:
             self.parser.read_next_message()
 
@@ -91,6 +92,7 @@ class ParseProcessLog(list):
     def reset(self):
         self.fd.seek(0)
         self.lastcall = None
+        self.call_id = 0
 
     def compare_calls(self, a, b):
         """Compare two calls for equality. Same implementation as before netlog.
@@ -107,14 +109,12 @@ class ParseProcessLog(list):
 
     def wait_for_lastcall(self):
         while not self.lastcall:
-            r = None
             try:
-                r = self.parser.read_next_message()
+                if not self.parser.read_next_message():
+                    return False
             except EOFError:
                 return False
 
-            if not r:
-                return False
         return True
 
     def next(self):
@@ -133,6 +133,9 @@ class ParseProcessLog(list):
             self.lastcall = None
             self.wait_for_lastcall()
 
+        nextcall["id"] = self.call_id
+        self.call_id += 1
+
         return nextcall
 
     def log_process(self, context, timestring, pid, ppid, modulepath, procname):
@@ -141,6 +144,11 @@ class ParseProcessLog(list):
 
     def log_thread(self, context, pid):
         pass
+
+    def log_anomaly(self, subcategory, tid, funcname, msg):
+        self.lastcall = dict(thread_id=tid, category="anomaly", api="",
+                             subcategory=subcategory, funcname=funcname,
+                             msg=msg)
 
     def log_call(self, context, apiname, category, arguments):
         apiindex, status, returnval, tid, timediff = context
@@ -151,7 +159,7 @@ class ParseProcessLog(list):
         self.lastcall = self._parse([timestring,
                                      tid,
                                      category,
-                                     apiname, 
+                                     apiname,
                                      status,
                                      returnval] + arguments)
 
@@ -840,6 +848,47 @@ class Enhanced(object):
         """
         return self.events
 
+
+class Anomaly(object):
+    """Anomaly detected during analysis.
+    For example: a malware tried to remove Cuckoo's hooks.
+    """
+
+    key = "anomaly"
+
+    def __init__(self):
+        self.anomalies = []
+
+    def event_apicall(self, call, process):
+        """Process API calls.
+        @param call: API call object
+        @param process: process object
+        """
+        if call["category"] != "anomaly":
+            return
+
+        category, funcname, message = None, None, None
+        for row in call["arguments"]:
+            if row["name"] == "Subcategory":
+                category = row["value"]
+            if row["name"] == "FunctionName":
+                funcname = row["value"]
+            if row["name"] == "Message":
+                message = row["value"]
+
+        self.anomalies.append(dict(
+            name=process["process_name"],
+            pid=process["process_id"],
+            category=category,
+            funcname=funcname,
+            message=message,
+        ))
+
+    def run(self):
+        """Fetch all anomalies."""
+        return self.anomalies
+
+
 class ProcessTree:
     """Generates process tree."""
 
@@ -916,6 +965,7 @@ class BehaviorAnalysis(Processing):
         behavior["processes"] = Processes(self.logs_path).run()
 
         instances = [
+            Anomaly(),
             ProcessTree(),
             Summary(),
             Enhanced(),
