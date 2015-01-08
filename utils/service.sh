@@ -15,7 +15,7 @@ _install_configuration() {
     fi
 
     cat > /etc/default/cuckoo << EOF
-# Configuration file for the Cuckoo Sandbox service.
+# Configuration file for the Cuckoo Sandbox service(s).
 
 # Log directory, defaults to the log/ directory in the Cuckoo setup.
 LOGDIR="$LOGDIR"
@@ -61,6 +61,8 @@ pre-start script
 end script
 
 script
+    . "\$CONFFILE"
+
     if [ "\$VERBOSE" -eq 0 ]; then
         exec ./cuckoo.py -u "$USERNAME"
     else
@@ -138,7 +140,7 @@ EOF
 description "cuckoo web interface service"
 start on started cuckoo
 stop on stopped cuckoo
-setuid "$CUCKOO"
+setuid "$USERNAME"
 chdir "$(readlink -f "$CUCKOO/web/")"
 
 env CONFFILE="$CONFFILE"
