@@ -26,6 +26,12 @@ class XenServerMachinery(Machinery):
 
     LABEL = "uuid"
 
+    # Power States
+    RUNNING = "Running"
+    PAUSED = "Paused"
+    POWEROFF = "Halted"
+    ABORTED = "Suspended"
+
     def _initialize_check(self):
         """Check XenServer configuration, initialize a Xen API connection, and
         verify machine validity.
@@ -87,6 +93,13 @@ class XenServerMachinery(Machinery):
         """
 
         return self.session.xenapi.VM.get_record(ref)
+
+    def _get_vm_power_state(self, ref):
+        """Get the virtual machine power state.
+        @param ref: vm reference
+        """
+
+        return self.session.xenapi.VM.get_power_state(ref)
 
     def _check_vm(self, uuid):
         """Check vm existence and validity.
@@ -231,3 +244,30 @@ class XenServerMachinery(Machinery):
             except XenAPI.Failure as e:
                 raise CuckooMachineError("Error shutting down virtual machine:"
                                          " %s: %s" % (label, e.details[0]))
+
+    def _list(self):
+        """List available virtual machines.
+        @raise CuckooMachineError: if unable to list virtual machines.
+        """
+
+        try:
+            vm_list = []
+            for ref in self.session.xenapi.VM.get_all():
+                vm = self._get_vm_record(ref)
+                vm_list.append(vm['uuid'])
+        except:
+            raise CuckooMachineError("Cannot list domains")
+        else:
+            return vm_list
+
+    def _status(self, label):
+        """Gets current status of a vm.
+        @param label: virtual machine uuid
+        @return: status string.
+        """
+
+        ref = self._get_vm_ref(label)
+        state = self._get_vm_power_state(ref)
+
+        return state
+
