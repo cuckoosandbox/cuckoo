@@ -2,6 +2,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+"""
+XenServer machinery.
+"""
+
 import logging
 from lib.cuckoo.common.abstracts import Machinery
 from lib.cuckoo.common.exceptions import CuckooMachineError
@@ -18,6 +22,7 @@ log = logging.getLogger(__name__)
 
 
 class XenServerMachinery(Machinery):
+    """Virtualization layer for XenServer using the XenAPI XML-RPC interface."""
 
     LABEL = "uuid"
 
@@ -91,7 +96,7 @@ class XenServerMachinery(Machinery):
         try:
             ref = self._get_vm_ref(uuid)
             vm = self._get_vm_record(ref)
-        except XenAPI.Failure as e:
+        except XenAPI.Failure:
             raise CuckooMachineError("Vm not found: %s: %s" % uuid)
 
         if vm["is_a_snapshot"]:
@@ -173,56 +178,56 @@ class XenServerMachinery(Machinery):
 
         return vm["power_state"] == "Halted"
 
-    def start(self, uuid):
+    def start(self, label):
         """Start a virtual machine.
         @param uuid: vm uuid
         """
 
-        vm_ref = self._get_vm_ref(uuid)
+        vm_ref = self._get_vm_ref(label)
         vm = self._get_vm_record(vm_ref)
 
         if not self._is_halted(vm):
-            raise CuckooMachineError("Vm is already running: %s" % uuid)
+            raise CuckooMachineError("Vm is already running: %s", label)
 
-        snapshot = self._snapshot_from_vm_uuid(uuid)
+        snapshot = self._snapshot_from_vm_uuid(label)
         if snapshot:
             snapshot_ref = self._get_vm_ref(snapshot)
             try:
-                log.debug("Reverting vm %s to snapshot %s", uuid, snapshot)
+                log.debug("Reverting vm %s to snapshot %s", label, snapshot)
                 self.session.xenapi.VM.revert(snapshot_ref)
-                log.debug("Revert completed for vm %s", uuid)
+                log.debug("Revert completed for vm %s", label)
             except XenAPI.Failure as e:
                 raise CuckooMachineError("Unable to revert vm %s: %s"
-                                         % (uuid, e.details[0]))
+                                         % (label, e.details[0]))
 
             try:
-                log.debug("Resuming reverted vm %s" % uuid)
+                log.debug("Resuming reverted vm %s", label)
                 self.session.xenapi.VM.resume(vm_ref, False, False)
             except XenAPI.Failure as e:
                 raise CuckooMachineError("Unable to resume vm %s: %s"
-                                         % (uuid, e.details[0]))
+                                         % (label, e.details[0]))
         else:
-            log.debug("No snapshot found for vm, booting: %s" % uuid)
+            log.debug("No snapshot found for vm, booting: %s", label)
             try:
                 self.session.xenapi.VM.start(vm_ref, False, False)
             except XenAPI.Failure as e:
                 raise CuckooMachineError("Unable to start vm %s: %s"
-                                         % (uuid, e.details[0]))
+                                         % (label, e.details[0]))
 
-        log.debug("Started vm: %s", uuid)
+        log.debug("Started vm: %s", label)
 
-    def stop(self, uuid):
+    def stop(self, label=None):
         """Stop a virtual machine.
         @param uuid: vm uuid
         """
 
-        ref = self._get_vm_ref(uuid)
+        ref = self._get_vm_ref(label)
         vm = self._get_vm_record(ref)
         if self._is_halted(vm):
-            log.warning("Trying to stop an already stopped machine: %s", uuid)
+            log.warning("Trying to stop an already stopped machine: %s", label)
         else:
             try:
                 self.session.xenapi.VM.hard_shutdown(ref)
             except XenAPI.Failure as e:
                 raise CuckooMachineError("Error shutting down virtual machine:"
-                                         " %s: %s" % (uuid, e.details[0]))
+                                         " %s: %s" % (label, e.details[0]))
