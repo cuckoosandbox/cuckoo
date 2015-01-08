@@ -37,12 +37,12 @@ The following libraries are not strictly required, but their installation is rec
     * `Magic`_ (Optional): for identifying files' formats (otherwise use "file" command line utility)
     * `Pydeep`_ (Optional): for calculating ssdeep fuzzy hash of files.
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
-    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use latest 3.x release).
+    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (release >=3.0).
     * `Libvirt`_ (Optional): for using the KVM machine manager.
-    * `Bottlepy`_ (Optional): for using the ``api.py`` or ``web.py`` utility (use release 0.10 or above).
-    * `Django`_ (Optional): for using the web interface (use release 1.5 or above).
+    * `Bottlepy`_ (Optional): for using the ``api.py`` or ``web.py`` utility (release >=0.10).
+    * `Django`_ (Optional): for using the web interface (release >=1.5).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
-    * `Volatility`_ (Optional): used for forensic analysis on memory
+    * `Volatility`_ (Optional): used for forensic analysis on memory (release >=2.4)
     * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use a release >=4.0, but <4.1).
     * `Chardet`_ (Optional): used for detecting string encoding.
 

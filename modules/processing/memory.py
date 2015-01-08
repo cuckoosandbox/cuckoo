@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -150,7 +150,7 @@ class VolatilityAPI(object):
 
         command = self.plugins["callbacks"](self.config)
         for (sym, cb, detail), mods, mod_addrs in command.calculate():
-            module = tasks.find_module(mods, mod_addrs, command.kern_space.address_mask(cb))
+            module = tasks.find_module(mods, mod_addrs, self.addr_space.address_mask(cb))
 
             if module:
                 module_name = module.BaseDllName or module.FullDllName
@@ -725,7 +725,8 @@ class VolatilityAPI(object):
         results = []
 
         command = self.plugins["mutantscan"](self.config)
-        for object_obj, mutant in command.calculate():
+        for mutant in command.calculate():
+            header = mutant.get_object_header()
             tid = 0
             pid = 0
             if mutant.OwnerThread > 0x80000000:
@@ -735,10 +736,10 @@ class VolatilityAPI(object):
 
             new = {
                 "mutant_offset": "{0:#x}".format(mutant.obj_offset),
-                "num_pointer": int(object_obj.PointerCount),
-                "num_handles": int(object_obj.HandleCount),
+                "num_pointer": int(header.PointerCount),
+                "num_handles": int(header.HandleCount),
                 "mutant_signal_state": str(mutant.Header.SignalState),
-                "mutant_name": str(object_obj.NameInfo.Name or ""),
+                "mutant_name": str(header.NameInfo.Name or ""),
                 "process_id": int(pid),
                 "thread_id": int(tid)
             }
@@ -757,7 +758,7 @@ class VolatilityAPI(object):
         results = []
 
         command = self.plugins["devicetree"](self.config)
-        for _object_obj, driver_obj, _ in command.calculate():
+        for driver_obj in command.calculate():
             new = {
                 "driver_offset": "0x{0:08x}".format(driver_obj.obj_offset),
                 "driver_name": str(driver_obj.DriverName or ""),
