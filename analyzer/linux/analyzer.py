@@ -7,6 +7,7 @@ from datetime import datetime
 from lib.common.constants import PATHS
 from lib.core.config import Config
 from lib.core.startup import create_folders, init_logging
+from lib.api.tracer import SyscallTracer, FilesystemTracer
 from time import sleep
 
 log = logging.getLogger()
@@ -69,6 +70,15 @@ class Analyzer(object):
         log.info("Storing results at: {0}".format(PATHS["root"]))
         log.info("Target is: {0}".format(self.target))
 
+        # Make target file executable
+        os.system("chmod +x " + str(self.target))
+        # Start file system tracer thread
+        fstrace = FilesystemTracer()
+        fstrace.start()
+        # Start system call tracer thread
+        proctrace = SyscallTracer([self.target,''])
+        proctrace.start()
+        '''
         if self.config.category == "file":
             if ".bash" in self.config.file_name:
                 subprocess.call(["bash", self.target], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -80,8 +90,9 @@ class Analyzer(object):
                 arg = "chmod +x " + str(self.target)
                 os.system(arg)
                 os.system(self.target)
+        '''
 
-        sleep(30)
+        sleep(300)
         # Let's invoke the completion procedure.
         self.complete()
 
@@ -115,9 +126,11 @@ if __name__ == "__main__":
             log.critical(error)
         else:
             sys.stderr.write("{0}\n".format(e))
+            
     # Once the analysis is completed or terminated for any reason, we report
     # back to the agent, notifying that it can report back to the host.
     finally:
         # Establish connection with the agent XMLRPC server.
         server = xmlrpclib.Server("http://127.0.0.1:8000")
         server.complete(success, error, PATHS["root"])
+        
