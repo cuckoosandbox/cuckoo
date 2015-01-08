@@ -53,6 +53,9 @@ chdir "$CUCKOO"
 kill signal SIGINT
 kill timeout 600
 
+# Restart Cuckoo if it exits.
+respawn
+
 env CONFFILE="$CONFFILE"
 
 pre-start script
