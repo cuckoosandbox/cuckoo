@@ -394,7 +394,7 @@ class Database(object):
         @param connection_string: Connection string specifying the database
         """
         try:
-            self.engine = create_engine(connection_string, poolclass=NullPool)
+            self.engine = create_engine(connection_string, connect_args={'check_same_thread':False}, poolclass=NullPool)
         except ImportError as e:
             lib = e.message.split()[-1]
             raise CuckooDependencyError("Missing database driver, unable to "
