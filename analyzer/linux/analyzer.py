@@ -3,8 +3,10 @@ import logging
 import xmlrpclib
 import subprocess
 from datetime import datetime
+from tempfile import gettempdir
 
 from lib.common.constants import PATHS
+from lib.common.exceptions import CuckooError
 from lib.core.config import Config
 from lib.core.startup import create_folders, init_logging
 from lib.api.tracer import SyscallTracer, FilesystemTracer
@@ -25,11 +27,18 @@ def dump_files():
         dump_file(file_path)
 
 class Analyzer(object):
+    """Cuckoo Linux Analyzer.
+    
+    This class handles the initialization and execution of the analysis
+    procedure.
+    """
+    
     def __init__(self):
         self.config = None
         self.target = None
 
     def prepare(self):
+        """Prepare env for analysis."""
         # Create the folders used for storing the results.
         create_folders()
         
@@ -49,14 +58,14 @@ class Analyzer(object):
         # We update the target according to its category. If it's a file, then
         # we store the path.
         if self.config.category == "file":
-            self.target = os.path.join("/tmp", str(self.config.file_name))
+            self.target = os.path.join(gettempdir(), str(self.config.file_name))
             
         # If it's a URL, well.. we store the URL.
         else:
             self.target = self.config.target
     
     def complete(self):
-        """ End analysis. """
+        """End analysis."""
         # Dump all the notified files
         dump_files()
         
@@ -64,33 +73,42 @@ class Analyzer(object):
         log.info("Analysis completed")
         
     def run(self):
+        """Run analysis.
+        @return: operation status.
+        """
         self.prepare()
 
-        log.info("Starting analyzer from: {0}".format(os.getcwd()))
-        log.info("Storing results at: {0}".format(PATHS["root"]))
-        log.info("Target is: {0}".format(self.target))
+        log.debug("Starting analyzer from: %s", os.getcwd())
+        log.debug("Storing results at: %s", PATHS["root"])
+        log.debug("Target is: %s", self.target)
 
-        # Make target file executable
-        os.system("chmod +x " + str(self.target))
+        # If the analysis target is a file, we choose the package according
+            # to the file format.
+        if self.config.category == "file":
+            if ".bash" in self.config.file_name:
+                arguments = ["/bin/bash", self.target]
+            elif ".sh" in self.config.file_name:
+                arguments = ["/bin/sh", self.target]
+            elif ".pl" in self.config.file_name:
+                arguments = ["/bin/perl", self.target]
+            else:
+                arguments = [self.target, '']
+                os.system("chmod +x " + str(self.target))
+                
+            if self.config.options:
+                if len(arguments) < 2:
+                    arguments.pop()
+                arguments.append(self.config.options)
+        else:
+            raise CuckooError("No browser support yet")
+        
         # Start file system tracer thread
         fstrace = FilesystemTracer()
         fstrace.start()
+        
         # Start system call tracer thread
-        proctrace = SyscallTracer([self.target,''])
+        proctrace = SyscallTracer(arguments)
         proctrace.start()
-        '''
-        if self.config.category == "file":
-            if ".bash" in self.config.file_name:
-                subprocess.call(["bash", self.target], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            elif ".sh" in self.config.file_name:
-                subprocess.call(["sh", self.target], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            elif ".pl" in self.config.file_name:
-                subprocess.call(["perl", self.target], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            else:
-                arg = "chmod +x " + str(self.target)
-                os.system(arg)
-                os.system(self.target)
-        '''
 
         sleep(300)
         # Let's invoke the completion procedure.

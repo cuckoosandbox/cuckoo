@@ -42,7 +42,7 @@ class MyHandler(FileSystemEventHandler):
 
 
 class FilesystemTracer(Thread):
-    """ File system tracer.
+    """ FilesystemTracer.
     
         File system tracer observes specific directories for several activities
         (create, delete, modify and move).
@@ -173,21 +173,28 @@ class SyscallTracer(Thread):
         
         try:
             return self.debugger.addProcess(pid, is_attached)
-        except (ProcessExit, PtraceError) as err:
+        except (ProcessExit, PtraceError) as e:
             if isinstance(err, PtraceError) \
-            and err.errno == EPERM:
-                print "ERROR: You are not allowed to trace process %s (permission denied or process already traced)" % pid
+            and e.errno == EPERM:
+                log.error("You are not allowed to trace process %s (permission denied or process already traced)", pid)
             else:
-                print "ERROR: Process can no be attached! %s" % err
+                log.error("Process can no be attached! %s", e)
         return None
     
     def createChild(self, program, env=None):
         ''' Fork a new child process '''
         pid = createChild(program, self.no_stdout, env)
-        print "execve(%s, %s, [/* 40 vars */]) = %s" % (
-            program[0], program, pid)
+        log.debug("execve(%s, %s, [/* 40 vars */]) = %s", 
+                  program[0], program, pid)
         return pid
     
+    def hideMe(self, syscall, process):
+        ''' Prevent tracer detection '''
+        # Identify ptrace syscall
+        if "ptrace" in syscall.name:
+            # change return value of ptrace syscall to 0
+            process.setreg('rax',0)
+            
     def run(self):
         ''' init and run debugger '''
         self.debugger = PtraceDebugger()
@@ -195,12 +202,12 @@ class SyscallTracer(Thread):
             self.runDebugger()
         except ProcessExit, event:
             self.processExited(event)
-        except PtraceError, e:
-            print "ptrace() error:", e
+        except PtraceError as e:
+            log.debug("ptrace() error: %s", e)
         except KeyboardInterrupt:
-            print "Interrupted."
-        except PTRACE_ERRORS, e:
-            print "Debugger error:", e
+            log.debug("Interrupted.")
+        except PTRACE_ERRORS as e:
+            log.debug("Debugger error: %s", e)
         self.debugger.quit()
 
     def get_syscall_str(self, process):
@@ -213,15 +220,24 @@ class SyscallTracer(Thread):
             prefix = []
             prefix.append("[%s]" % process.pid)
             text = ''.join(prefix) + ' ' + text
-            print text
-        #else:
-        #    return "" 
-
+            print(text)
+            
+            self.hideMe(syscall, process)
 
 if __name__ == "__main__":
     try:      
-        tracer = SyscallTracer(['test/fork',''])
-        tracer.start()
+        if len(sys.argv) < 2:
+            print "Usage: tracer.py <program> [<args>]"
+            sys.exit(1)
+        if len(sys.argv) < 3:
+            sys.argv.append('')
+            
+        if os.path.exists(str(sys.argv[1])):
+            tracer = SyscallTracer([sys.argv[1],sys.argv[2]])
+            tracer.start()
+        else:
+            print "Program not found"
+            sys.exit(1)
             
     except KeyboardInterrupt:
         tracer.received_kill = True        
