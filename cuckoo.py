@@ -69,20 +69,6 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
 
     os.chdir(cur_path)
 
-
-def cuckoo_main(max_analysis_count=0):
-    cur_path = os.getcwd()
-    os.chdir(CUCKOO_ROOT)
-
-    try:
-        sched = Scheduler(max_analysis_count)
-        sched.start()
-    except KeyboardInterrupt:
-        sched.stop()
-
-    os.chdir(cur_path)
-
-
 def cuckoo_clean():
     paths = [
         os.path.join(CUCKOO_ROOT, "db"),
@@ -120,6 +106,17 @@ def cuckoo_clean():
     # Drop all samples.
     db.drop_samples()
 
+def cuckoo_main(max_analysis_count=0):
+    cur_path = os.getcwd()
+    os.chdir(CUCKOO_ROOT)
+
+    try:
+        sched = Scheduler(max_analysis_count)
+        sched.start()
+    except KeyboardInterrupt:
+        sched.stop()
+
+    os.chdir(cur_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
