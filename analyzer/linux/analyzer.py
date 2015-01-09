@@ -109,8 +109,21 @@ class Analyzer(object):
         # Start system call tracer thread
         proctrace = SyscallTracer(arguments)
         proctrace.start()
+        
+        if self.config.enforce_timeout:
+            log.info("Enabled timeout enforce, running for the full timeout.")
+            
+        time_counter = 0
+        
+        while True:
+            time_counter += 1
+            if time_counter == int(self.config.timeout):
+                log.info("Analysis timeout hit, terminating analysis.")
+                break
+            
+            # For timeout calculation
+            sleep(1)
 
-        sleep(300)
         # Let's invoke the completion procedure.
         self.complete()
 
