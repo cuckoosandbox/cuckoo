@@ -5,6 +5,7 @@
 import os
 import json
 import logging
+import threading
 from datetime import datetime
 
 from lib.cuckoo.common.config import Config
@@ -13,7 +14,7 @@ from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.objects import File, URL
-from lib.cuckoo.common.utils import create_folder, Singleton
+from lib.cuckoo.common.utils import create_folder, Singleton, classlock
 
 try:
     from sqlalchemy import create_engine, Column
@@ -325,6 +326,7 @@ class Database(object):
         """@param dsn: database connection string.
         @param schema_check: disable or enable the db schema version check
         """
+        self._lock = threading.RLock()
         cfg = Config()
 
         if dsn:
@@ -412,6 +414,7 @@ class Database(object):
             instance = model(**kwargs)
             return instance
 
+    @classlock
     def clean_machines(self):
         """Clean old stored machines and related tables."""
         # Secondary table.
@@ -428,6 +431,7 @@ class Database(object):
         finally:
             session.close()
 
+    @classlock
     def drop_samples(self):
         """Drop all samples and their associated information."""
         session = self.Session()
@@ -440,6 +444,7 @@ class Database(object):
             session.rollback()
         return True
 
+    @classlock
     def drop_tasks(self):
         """Drop all tasks and their associated information."""
         session = self.Session()
@@ -452,6 +457,7 @@ class Database(object):
             session.rollback()
         return True
 
+    @classlock
     def add_machine(self, name, label, ip, platform, tags, interface,
                     snapshot, resultserver_ip, resultserver_port):
         """Add a guest machine.
@@ -487,6 +493,7 @@ class Database(object):
         finally:
             session.close()        
 
+    @classlock
     def set_status(self, task_id, status):
         """Set task status.
         @param task_id: task identifier
@@ -510,6 +517,7 @@ class Database(object):
         finally:
             session.close()
 
+    @classlock
     def fetch(self, lock=True, machine=""):
         """Fetches a task waiting to be processed and locks it for running.
         @return: None or task
@@ -536,6 +544,7 @@ class Database(object):
 
         return row
 
+    @classlock
     def guest_start(self, task_id, name, label, manager):
         """Logs guest start.
         @param task_id: task identifier
@@ -558,6 +567,7 @@ class Database(object):
             session.close()
         return guest.id
 
+    @classlock
     def guest_remove(self, guest_id):
         """Removes a guest start entry."""
         session = self.Session()
@@ -572,6 +582,7 @@ class Database(object):
         finally:
             session.close()
 
+    @classlock
     def guest_stop(self, guest_id):
         """Logs guest stop.
         @param guest_id: guest log entry id
@@ -589,6 +600,7 @@ class Database(object):
         finally:
             session.close()
 
+    @classlock
     def list_machines(self, locked=False):
         """Lists virtual machines.
         @return: list of virtual machines
@@ -606,6 +618,7 @@ class Database(object):
             session.close()
         return machines
 
+    @classlock
     def lock_machine(self, name=None, platform=None, tags=None):
         """Places a lock on a free virtual machine.
         @param name: optional virtual machine name
@@ -662,6 +675,7 @@ class Database(object):
 
         return machine
 
+    @classlock
     def unlock_machine(self, label):
         """Remove lock form a virtual machine.
         @param label: virtual machine label
@@ -690,6 +704,7 @@ class Database(object):
 
         return machine
 
+    @classlock
     def count_machines_available(self):
         """How many virtual machines are ready for analysis.
         @return: free virtual machines count
@@ -704,6 +719,7 @@ class Database(object):
             session.close()
         return machines_count
 
+    @classlock
     def get_available_machines(self):
         """  Which machines are available
         @return: free virtual machines
@@ -718,6 +734,7 @@ class Database(object):
             session.close()
         return machines
 
+    @classlock
     def set_machine_status(self, label, status):
         """Set status for a virtual machine.
         @param label: virtual machine label
@@ -745,6 +762,7 @@ class Database(object):
         else:
             session.close()
 
+    @classlock
     def add_error(self, message, task_id):
         """Add an error related to a task.
         @param message: error message
@@ -763,6 +781,7 @@ class Database(object):
 
     # The following functions are mostly used by external utils.
 
+    @classlock
     def add(self, obj, timeout=0, package="", options="", priority=1,
             custom="", machine="", platform="", tags=None,
             memory=False, enforce_timeout=False, clock=None):
@@ -859,6 +878,7 @@ class Database(object):
 
         return task_id
 
+    @classlock
     def add_path(self, file_path, timeout=0, package="", options="",
                  priority=1, custom="", machine="", platform="", tags=None,
                  memory=False, enforce_timeout=False, clock=None):
@@ -890,6 +910,7 @@ class Database(object):
                         custom, machine, platform, tags, memory,
                         enforce_timeout, clock)
 
+    @classlock
     def add_url(self, url, timeout=0, package="", options="", priority=1,
                 custom="", machine="", platform="", tags=None, memory=False,
                 enforce_timeout=False, clock=None):
@@ -918,6 +939,7 @@ class Database(object):
                         custom, machine, platform, tags, memory,
                         enforce_timeout, clock)
 
+    @classlock
     def reschedule(self, task_id):
         """Reschedule a task.
         @param task_id: ID of the task to reschedule.
@@ -955,6 +977,7 @@ class Database(object):
                    task.priority, task.custom, task.machine, task.platform,
                    tags, task.memory, task.enforce_timeout, task.clock)
 
+    @classlock
     def list_tasks(self, limit=None, details=False, category=None,
                    offset=None, status=None, sample_id=None, not_status=None,
                    completed_after=None, order_by=None):
@@ -996,6 +1019,7 @@ class Database(object):
             session.close()
         return tasks
 
+    @classlock
     def count_tasks(self, status=None):
         """Count tasks in the database
         @param status: apply a filter according to the task status
@@ -1014,6 +1038,7 @@ class Database(object):
             session.close()
         return tasks_count
 
+    @classlock
     def view_task(self, task_id, details=False):
         """Retrieve information on a task.
         @param task_id: ID of the task to query.
@@ -1035,6 +1060,7 @@ class Database(object):
             session.close()
         return task
 
+    @classlock
     def delete_task(self, task_id):
         """Delete information on a task.
         @param task_id: ID of the task to query.
@@ -1053,6 +1079,7 @@ class Database(object):
             session.close()
         return True
 
+    @classlock
     def view_sample(self, sample_id):
         """Retrieve information on a sample given a sample id.
         @param sample_id: ID of the sample to query.
@@ -1074,6 +1101,7 @@ class Database(object):
 
         return sample
 
+    @classlock
     def find_sample(self, md5=None, sha256=None):
         """Search samples by MD5.
         @param md5: md5 string
@@ -1095,6 +1123,7 @@ class Database(object):
             session.close()
         return sample
 
+    @classlock
     def count_samples(self):
         """Counts the amount of samples in the database."""
         session = self.Session()
@@ -1107,6 +1136,7 @@ class Database(object):
             session.close()
         return sample_count
 
+    @classlock
     def view_machine(self, name):
         """Show virtual machine.
         @params name: virtual machine name
@@ -1125,6 +1155,7 @@ class Database(object):
             session.close()
         return machine
 
+    @classlock
     def view_machine_by_label(self, label):
         """Show virtual machine.
         @params label: virtual machine label
@@ -1143,6 +1174,7 @@ class Database(object):
             session.close()
         return machine
 
+    @classlock
     def view_errors(self, task_id):
         """Get all errors related to a task.
         @param task_id: ID of task associated to the errors
