@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,6 +9,7 @@ import time
 import logging
 import argparse
 from datetime import datetime, timedelta
+import zipfile
 
 try:
     from jinja2.loaders import FileSystemLoader
@@ -259,20 +260,33 @@ def get_pcap(task_id):
     response.set_header("Content-Disposition", "attachment; filename=cuckoo_task_{0}.pcap".format(task_id))
 
     return open(pcap_path, "rb").read()
-    
+
 @route("/files/<task_id>")  
 def get_files(task_id):  
     if not task_id.isdigit():  
         return HTTPError(code=404, output="The specified ID is invalid")  
    
-    files_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "files.zip")  
+    files_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "files")  
+    zip_file = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "files.zip") 
+    dropped_files = []
+        
+    zip = zipfile.ZipFile(zip_file, 'w', compression=zipfile.ZIP_DEFLATED)
+    root_len = len(os.path.abspath(files_path))
+    for root, dirs, files in os.walk(files_path):
+        archive_root = os.path.abspath(root)[root_len:]
+        for f in files:
+            fullpath = os.path.join(root, f)
+            archive_name = os.path.join(archive_root, f)
+            print f
+            zip.write(fullpath, archive_name, zipfile.ZIP_DEFLATED)
+    zip.close()
    
     if not os.path.exists(files_path):  
         return HTTPError(code=404, output="Files not found")  
    
     response.content_type = 'application/zip'  
-    response.set_header('Content-Disposition', "attachment; filename=cuckoo_task_%s(not_encrypted).zip" % (task_id,))  
-    return open(files_path, "rb").read()   
+    response.set_header('Content-Disposition', "attachment; filename=cuckoo_task_%s(not_encrypted).zip" % (task_id))  
+    return open(zip_file, "rb").read()   
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
