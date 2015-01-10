@@ -24,6 +24,7 @@ Cuckoo Sandbox 1.2 (TBD)
 * Added physical machine analysis
 * Added distributed analysis
 * Adedd memory dump to mongo db
+* Added loader option to DLL package
 * Allow Auxiliary modules to run a callback at the very end of an analysis
 * Deprecated ./utils/clean.sh with ./cuckoo.py --clean
 * Replaced diStorm3 disassembler with Capstone disassembler
