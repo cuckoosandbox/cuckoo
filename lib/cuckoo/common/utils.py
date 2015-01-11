@@ -262,3 +262,10 @@ def sanitize_filename(x):
             out += "_"
 
     return out
+
+# classlock decorator (created for database.Database)
+def classlock(f):
+    def inner(self, *args, **kwargs):
+        with self._lock:
+            return f(self, *args, **kwargs)
+    return inner
