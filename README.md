@@ -18,6 +18,16 @@ Prepare android_on_linux guest Machine
       - Download Android SDK ->  http://developer.android.com/sdk/index.html
       - export PATH=$PATH:_path/tool:_path/build-tools/x.x.x.x/
       - Create a New AVD of Android  -> https://developer.android.com/tools/devices/index.html
+      - Recommended AVD Configuration:
+            AVD Name - aosx
+            Device - Nexus One 
+            Target - android 4.1.2
+            Cpu/Abi - arm
+            Ram - 512mb 
+            Vm Heap - 32 
+            Internal Storage - 512mb
+            Sdcard size - 512 mib
+            Emualtion options - use host GPU      
       - Start the Android Emulator -> emulator -avd virtual_machine_name
       - Copy cuckoo agent (agent.py) Guest Machine
       - Start cuckoo's agent.py
