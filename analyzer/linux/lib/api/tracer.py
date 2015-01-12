@@ -94,16 +94,16 @@ class SyscallTracer(Thread):
         Thread.__init__(self)
         self.program = program
         self.no_stdout = False
-        self.received_kill = False
+        self.do_run = True
         
-    def runDebugger(self):
+    def run_debugger(self):
         ''' init and run debugger '''
         # Set Options to trace fork and exec calls
         self.debugger.traceFork()
         self.debugger.traceExec()
         
         # Create traced process
-        process = self.createProcess()
+        process = self.create_process()
         if not process:
             return
         
@@ -118,9 +118,9 @@ class SyscallTracer(Thread):
         )
         
         # Start process tracing
-        self.syscallTrace(process)
+        self.trace_syscall(process)
     
-    def syscallTrace(self, process):
+    def trace_syscall(self, process):
         ''' Main process trace method '''
         # Break at first syscall
         # (https://github.com/qikon/python-ptrace/blob/master/ptrace/debugger/process.py)
@@ -146,7 +146,7 @@ class SyscallTracer(Thread):
                 event.process.syscall(event.signum)
                 continue
             except NewProcessEvent, event:
-                self.newProcess(event)
+                self.new_process(event)
                 continue
             except ProcessExecution, event:
                 print("*** Process %s execution ***" % event.process.pid)
@@ -157,7 +157,7 @@ class SyscallTracer(Thread):
             # Break at next syscall
             process.syscall()
     
-    def newProcess(self, event):
+    def new_process(self, event):
         ''' Event handler.
             Used to trace new child processes
         '''
@@ -165,10 +165,10 @@ class SyscallTracer(Thread):
         event.process.syscall()
         event.process.parent.syscall()
         
-    def createProcess(self):
+    def create_process(self):
         ''' create a process and add it to debugger '''
         print self.program
-        pid = self.createChild(self.program)
+        pid = self.create_child(self.program)
         is_attached = True
         
         try:
@@ -181,14 +181,14 @@ class SyscallTracer(Thread):
                 log.error("Process can no be attached! %s", e)
         return None
     
-    def createChild(self, program, env=None):
+    def create_child(self, program, env=None):
         ''' Fork a new child process '''
         pid = createChild(program, self.no_stdout, env)
         log.debug("execve(%s, %s, [/* 40 vars */]) = %s", 
                   program[0], program, pid)
         return pid
     
-    def hideMe(self, syscall, process):
+    def hide_me(self, syscall, process):
         ''' Prevent tracer detection '''
         # Identify ptrace syscall
         if "ptrace" in syscall.name:
@@ -199,12 +199,13 @@ class SyscallTracer(Thread):
         ''' init and run debugger '''
         self.debugger = PtraceDebugger()
         try:
-            self.runDebugger()
+            self.run_debugger()
         except ProcessExit, event:
             self.processExited(event)
         except PtraceError as e:
             log.debug("ptrace() error: %s", e)
         except KeyboardInterrupt:
+            self.do_run = False
             log.debug("Interrupted.")
         except PTRACE_ERRORS as e:
             log.debug("Debugger error: %s", e)
@@ -222,7 +223,7 @@ class SyscallTracer(Thread):
             text = ''.join(prefix) + ' ' + text
             print(text)
             
-            self.hideMe(syscall, process)
+            self.hide_me(syscall, process)
 
 if __name__ == "__main__":
     try:      
@@ -240,4 +241,4 @@ if __name__ == "__main__":
             sys.exit(1)
             
     except KeyboardInterrupt:
-        tracer.received_kill = True        
+        tracer.do_run = False        
