@@ -225,6 +225,17 @@ class RunProcessing(object):
 
             # Run every loaded processing module.
             for module in processing_list:
+                module_name = inspect.getmodule(module).__name__
+                if "." in module_name:
+                    module_name = module_name.rsplit(".", 1)[1]
+
+                if module_name == "behavior":
+                    if self.task["platform"] == "linux":
+                        continue
+                if module_name == "behavior_linux":
+                    if self.task["platform"] == "windows" or self.task["platform"] == "":
+                        continue
+
                 result = self.process(module)
                 # If it provided some results, append it to the big results
                 # container.

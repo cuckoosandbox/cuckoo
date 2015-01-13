@@ -19,3 +19,5 @@ PATHS = {
     "memory" : os.path.join(ROOT, "memory"),
     "drop"   : os.path.join(ROOT, "drop")
 }
+
+PIPE = os.pipe()

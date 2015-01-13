@@ -1,3 +1,4 @@
+import os
 import logging
 from ptrace.debugger.debugger import PtraceDebugger
 from ptrace.debugger import (ProcessExit, ProcessSignal, NewProcessEvent, ProcessExecution)
@@ -10,6 +11,7 @@ from errno import EPERM
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from threading import Thread
+from lib.common.constants import PATHS, PIPE
 
 log = logging.getLogger()
 
@@ -110,7 +112,7 @@ class SyscallTracer(Thread):
         # Set syscall options (print options)
         self.syscall_options = FunctionCallOptions(
             write_types=False,
-            write_argname=False,
+            write_argname=True,
             string_max_length=8192,
             replace_socketcall=True,
             write_address=False,
@@ -126,7 +128,7 @@ class SyscallTracer(Thread):
         # (https://github.com/qikon/python-ptrace/blob/master/ptrace/debugger/process.py)
         process.syscall()
         
-        while not self.received_kill:
+        while self.do_run:
             # No process?
             if not self.debugger:
                 break;
@@ -137,11 +139,11 @@ class SyscallTracer(Thread):
             except ProcessExit, event:
                 state = event.process.syscall_state
                 if (state.next_event == "exit") and state.syscall:
-                    print("[%d] exit() : exit process" % event.process.pid)
+                    log.debug("[%d] exit() : exit process", event.process.pid)
                     self.debugger.deleteProcess(pid=event.process.pid)
                 continue
             except ProcessSignal, event:
-                print("*** SIGNAL pid=%s ***" % event.process.pid)
+                log.debug("*** SIGNAL pid=%s ***", event.process.pid)
                 event.display()
                 event.process.syscall(event.signum)
                 continue
@@ -149,7 +151,7 @@ class SyscallTracer(Thread):
                 self.new_process(event)
                 continue
             except ProcessExecution, event:
-                print("*** Process %s execution ***" % event.process.pid)
+                log.debug("*** Process %s execution ***", event.process.pid)
                 event.process.syscall()
                 continue
             
@@ -161,7 +163,7 @@ class SyscallTracer(Thread):
         ''' Event handler.
             Used to trace new child processes
         '''
-        print("*** New process %s ***" % event.process.pid)
+        log.info("*** New process %s ***" % event.process.pid)
         event.process.syscall()
         event.process.parent.syscall()
         
@@ -184,8 +186,7 @@ class SyscallTracer(Thread):
     def create_child(self, program, env=None):
         ''' Fork a new child process '''
         pid = createChild(program, self.no_stdout, env)
-        log.debug("execve(%s, %s, [/* 40 vars */]) = %s", 
-                  program[0], program, pid)
+        log.debug("execve(%s, %s, [/* 40 vars */]) = %s", program[0], program, pid)
         return pid
     
     def hide_me(self, syscall, process):
@@ -210,6 +211,17 @@ class SyscallTracer(Thread):
         except PTRACE_ERRORS as e:
             log.debug("Debugger error: %s", e)
         self.debugger.quit()
+        self.do_run = False
+
+    def stop(self):
+        """Stop syscall tracer."""
+        self.do_run = False
+
+    def is_running(self):
+        """Check tracer status
+        @return: run status.
+        """
+        return self.do_run
 
     def get_syscall_str(self, process):
         ''' Print catched syscalls '''
@@ -222,7 +234,6 @@ class SyscallTracer(Thread):
             prefix.append("[%s]" % process.pid)
             text = ''.join(prefix) + ' ' + text
             print(text)
-            
             self.hide_me(syscall, process)
 
 if __name__ == "__main__":
@@ -241,4 +252,4 @@ if __name__ == "__main__":
             sys.exit(1)
             
     except KeyboardInterrupt:
-        tracer.do_run = False        
+        tracer.stop()
