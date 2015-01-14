@@ -16,6 +16,7 @@ from lib.common.defines import STARTUPINFO, PROCESS_INFORMATION
 from lib.common.defines import CREATE_NEW_CONSOLE, CREATE_SUSPENDED
 from lib.common.defines import MEM_RESERVE, MEM_COMMIT, PAGE_READWRITE
 from lib.common.defines import MEMORY_BASIC_INFORMATION
+from lib.common.defines import WAIT_TIMEOUT
 from lib.common.defines import MEM_IMAGE, MEM_MAPPED, MEM_PRIVATE
 from lib.common.errors import get_error_string
 from lib.common.rand import random_string
