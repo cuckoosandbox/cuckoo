@@ -277,7 +277,7 @@ class PipeHandler(Thread):
                             filepath = proc.get_filepath()
                             filename = os.path.basename(filepath)
 
-                            log.info("Announced process name: %s", filename)
+                            log.info("Announced process name: %s pid: %d", filename, process_id)
 
                             if not protected_filename(filename):
                                 # If we have both pid and tid, then we can use
