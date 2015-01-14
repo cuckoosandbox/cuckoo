@@ -84,6 +84,7 @@ class Package(object):
         if not free and suspended:
             p.inject(dll)
             p.resume()
+            p.wait()
             p.close()
         
         return p.pid

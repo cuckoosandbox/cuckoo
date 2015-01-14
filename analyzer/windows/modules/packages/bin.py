@@ -14,4 +14,5 @@ class Shellcode(Package):
         p.execute(path="bin/execsc.exe", args=path, suspended=True)
         p.inject(dll)
         p.resume()
+        p.wait()
         return p.pid
