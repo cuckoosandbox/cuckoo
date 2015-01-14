@@ -318,6 +318,11 @@ class Pcap:
             if entry["domain"] == domain:
                 return
 
+        if Config().processing.ignored_domains:
+            for ignored in Config().processing.ignored_domains.split(','):
+                if domain.endswith(ignored):
+                    return
+
         self.unique_domains.append({"domain": domain,
                                     "ip": self._dns_gethostbyname(domain)})
 
