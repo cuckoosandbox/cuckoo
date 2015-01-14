@@ -40,8 +40,8 @@ def index(request):
             new = task.to_dict()
             new["sample"] = db.view_sample(new["sample_id"]).to_dict()
 
-        filename = os.path.basename(new["target"])
-        new.update({"filename": filename})
+            filename = os.path.basename(new["target"])
+            new.update({"filename": filename})
 
             if db.view_errors(task.id):
                 new["errors"] = True
