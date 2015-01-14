@@ -338,28 +338,27 @@ class Process:
 
             Process.first_process = False
 
+        event_name = "CuckooEvent%d" % self.pid
+        self.event_handle = KERNEL32.CreateEventA(None, False, False, event_name)
+        if not self.event_handle:
+            log.warning("Unable to create notify event..")
+            return False
+
         if apc or self.suspended:
             log.debug("Using QueueUserAPC injection.")
             if not self.h_thread:
                 log.info("No valid thread handle specified for injecting "
                          "process with pid %d, injection aborted.", self.pid)
+                self.event_handle = None
                 return False
 
             if not KERNEL32.QueueUserAPC(load_library, self.h_thread, arg):
                 log.error("QueueUserAPC failed when injecting process with "
                           "pid %d (Error: %s)",
                           self.pid, get_error_string(KERNEL32.GetLastError()))
+                self.event_handle = None
                 return False
         else:
-            event_name = "CuckooEvent%d" % self.pid
-            self.event_handle = KERNEL32.CreateEventA(None,
-                                                      False,
-                                                      False,
-                                                      event_name)
-            if not self.event_handle:
-                log.warning("Unable to create notify event..")
-                return False
-
             log.debug("Using CreateRemoteThread injection.")
             new_thread_id = c_ulong(0)
             thread_handle = KERNEL32.CreateRemoteThread(self.h_process,
