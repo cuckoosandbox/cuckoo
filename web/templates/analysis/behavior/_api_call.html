@@ -1,0 +1,48 @@
+<td>{{call.timestamp}}</td>
+<td><strong>{{call.api}}</strong></td>
+<td style="word-wrap: break-word;">
+    {% for argument in call.arguments %}
+        <span class="gray">{{argument.name}}:</span>
+        <span class="mono">
+            {% if argument.name == "Registry" and call.category == "registry" %}
+                {% if argument.value == "0x80000000" %}
+                    HKEY_CLASSES_ROOT
+                {% elif argument.value == "0x80000001" %}
+                    HKEY_CURRENT_USER
+                {% elif argument.value == "0x80000002" %}
+                    HKEY_LOCAL_MACHINE
+                {% elif argument.value == "0x80000003" %}
+                    HKEY_USERS
+                {% elif argument.value == "0x80000004" %}
+                    HKEY_PERFORMANCE_DATA
+                {% elif argument.value == "0x80000005" %}
+                    HKEY_CURRENT_CONFIG
+                {% elif argument.value == "0x80000006" %}
+                    HKEY_DYN_DATA
+                {% else %}
+                    {{argument.value}}
+                {% endif %}
+            {% else %}
+                {{argument.value}}
+            {% endif %}
+        </span><br />
+    {% endfor %}
+</td>
+<td>
+    {% if call.status %}
+        success
+    {% else %}
+        failed
+    {% endif %}
+</td>
+<td><span class="mono">{{call.return}}</span></td>
+<td>
+    {% if call.repeated > 0 %}
+        {{call.repeated}}
+        {% if call.repeated > 1 %}
+            times
+        {% else %}
+            time
+        {% endif %}
+    {% endif %}
+</td>

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -66,8 +66,10 @@ def autoprocess(parallel=1):
             time.sleep(1)
             continue
 
-        # If we're here, getting #parallel tasks should at least have one we don't know.
-        tasks = db.list_tasks(status=TASK_COMPLETED, limit=parallel)
+        # If we're here, getting parallel tasks should at least
+        # have one we don't know.
+        tasks = db.list_tasks(status=TASK_COMPLETED, limit=parallel,
+                              order_by="completed_on asc")
 
         # For loop to add only one, nice.
         for task in tasks:

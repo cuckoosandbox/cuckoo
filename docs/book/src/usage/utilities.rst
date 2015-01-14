@@ -6,8 +6,16 @@ Cuckoo comes with a set of pre-built utilities to automate several common
 tasks.
 You can find them under the "utils" folder.
 
+.. _cleanup-utility:
+
 Cleanup utility
 ===============
+
+.. deprecated:: 1.2
+
+    Use :ref:`./cuckoo.py --clean <cuckoo-clean>` instead which *also* takes
+    care of cleaning sample and task information from MySQL and PostgreSQL
+    databases.
 
 If you want to delete all history, analysis, data and begin again from the first
 task you need the clean.sh utility.
@@ -26,8 +34,8 @@ not running.
 If you are using a custom database (MySQL, PostgreSQL or SQLite in custom
 location) clean.sh doesn't clean it, you have to take care of that.
 
-If you are using MongoDB reporting module clean.sh doesn't clean your database,
-you have to take care of that.
+If you are using the MongoDB reporting module clean.sh does **not** clean your
+database, you have to take care of that.
 
 Submission Utility
 ==================
@@ -42,7 +50,7 @@ Cuckoo's web interface. This tool is already described in :doc:`submit`.
 Processing Utility
 ==================
 
-Run the results processing engine and optionally the reporting engine (run 
+Run the results processing engine and optionally the reporting engine (run
 all reports) on an already available analysis folder, in order to not re-run
 the analysis if you want to re-generate the reports for it.
 This is used mainly in debugging and developing Cuckoo.

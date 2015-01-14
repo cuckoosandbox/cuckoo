@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -115,23 +115,25 @@ class Pcap:
         try:
             if connection["src"] not in self.hosts:
                 ip = convert_to_printable(connection["src"])
-                if ip in self.hosts:
-                    return
-                else:
-                    self.hosts.append(ip)
 
-                if not self._is_private_ip(ip):
-                    self.unique_hosts.append(ip)
+                # We consider the IP only if it hasn't been seen before.
+                if ip not in self.hosts:
+                    # If the IP is not a local one, this might be a leftover
+                    # packet as described in issue #249.
+                    if self._is_private_ip(ip):
+                        self.hosts.append(ip)
 
             if connection["dst"] not in self.hosts:
                 ip = convert_to_printable(connection["dst"])
-                if ip in self.hosts:
-                    return
-                else:
+
+                if ip not in self.hosts:
                     self.hosts.append(ip)
 
-                if not self._is_private_ip(ip):
-                    self.unique_hosts.append(ip)
+                    # We add external IPs to the list, only the first time
+                    # we see them and if they're the destination of the
+                    # first packet they appear in.
+                    if not self._is_private_ip(ip):
+                        self.unique_hosts.append(ip)
         except:
             pass
 
@@ -480,8 +482,9 @@ class Pcap:
                 self._add_hosts(connection)
 
                 if ip.p == dpkt.ip.IP_PROTO_TCP:
-
                     tcp = ip.data
+                    if not isinstance(tcp, dpkt.tcp.TCP):
+                        tcp = dpkt.tcp.TCP(tcp)
 
                     if len(tcp.data) > 0:
                         connection["sport"] = tcp.sport
@@ -492,6 +495,8 @@ class Pcap:
                         continue
                 elif ip.p == dpkt.ip.IP_PROTO_UDP:
                     udp = ip.data
+                    if not isinstance(udp, dpkt.udp.UDP):
+                        udp = dpkt.udp.UDP(udp)
 
                     if len(udp.data) > 0:
                         connection["sport"] = udp.sport
@@ -500,6 +505,9 @@ class Pcap:
                         self.udp_connections.append(connection)
                 elif ip.p == dpkt.ip.IP_PROTO_ICMP:
                     icmp = ip.data
+                    if not isinstance(icmp, dpkt.icmp.ICMP):
+                        icmp = dpkt.icmp.ICMP(icmp)
+
                     self._icmp_dissect(connection, icmp)
             except AttributeError:
                 continue

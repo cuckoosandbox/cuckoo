@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -189,12 +189,15 @@ class Process:
 
         startup_info = STARTUPINFO()
         startup_info.cb = sizeof(startup_info)
+        # STARTF_USESHOWWINDOW
+        startup_info.dwFlags = 1
+        # SW_SHOWNORMAL
+        startup_info.wShowWindow = 1
         process_info = PROCESS_INFORMATION()
 
+        arguments = "\"" + path + "\" "
         if args:
-            arguments = "\"" + path + "\" " + args
-        else:
-            arguments = None
+            arguments += args
 
         creation_flags = CREATE_NEW_CONSOLE
         if suspended:
@@ -347,7 +350,6 @@ class Process:
                           "pid %d (Error: %s)",
                           self.pid, get_error_string(KERNEL32.GetLastError()))
                 return False
-            log.info("Successfully injected process with pid %d." % self.pid)
         else:
             event_name = "CuckooEvent%d" % self.pid
             self.event_handle = KERNEL32.CreateEventA(None,
@@ -376,6 +378,8 @@ class Process:
                 return False
             else:
                 KERNEL32.CloseHandle(thread_handle)
+
+        log.info("Successfully injected process with pid %d." % self.pid)
 
         return True
 

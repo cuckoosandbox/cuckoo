@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -120,6 +120,15 @@ class MongoDB(Report):
             report["network"] = {"pcap_id": pcap_id}
             report["network"].update(results["network"])
 
+        # Store the process memory dump file in GridFS and reference it back in the report.
+        if "procmemory" in report and self.options.get("store_memdump", False):
+            for idx, procmem in enumerate(report["procmemory"]):
+                procmem_path = os.path.join(self.analysis_path, "memory", "{0}.dmp".format(procmem["pid"]))
+                procmem_file = File(procmem_path)
+                if procmem_file.valid():
+                    procmem_id = self.store_file(procmem_file)
+                    report["procmemory"][idx].update({"procmem_id": procmem_id})
+
         # Walk through the dropped files, store them in GridFS and update the
         # report with the ObjectIds.
         new_dropped = []
@@ -131,7 +140,7 @@ class MongoDB(Report):
                     dropped_id = self.store_file(drop, filename=dropped["name"])
                     new_drop["object_id"] = dropped_id
 
-            new_dropped.append(new_drop)
+                new_dropped.append(new_drop)
 
         report["dropped"] = new_dropped
 

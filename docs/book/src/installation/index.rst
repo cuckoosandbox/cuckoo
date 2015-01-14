@@ -15,5 +15,6 @@ This chapter explains how to install Cuckoo.
 
     host/index
     guest/index
+    guest_physical/index
     upgrade
 

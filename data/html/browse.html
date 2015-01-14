@@ -18,6 +18,7 @@
                         <th>Category</th>
                         <th>Platform</th>
                         <th style="width: 40%;">Target</th>
+                        <th>MD5</th>
                         <th>Added</th>
                         <th>Status</th>
                     </tr>
@@ -34,7 +35,7 @@
                             {% endif %}
                             <span class="mono">
                                 {% if row.category == "file" %}
-                                    {{row.md5}}
+                                    {{os.path.basename(row.target)}}
                                 {% elif row.category == "url" %}
                                     {{row.target}}
                                 {% endif %}
@@ -42,6 +43,11 @@
                             {% if row.processed %}
                                 </a>
                             {% endif %}
+                        </td>
+                        <td>
+                        {% if row.category == "file" %}
+                            {{row.md5}}
+                        {% endif %}
                         </td>
                         <td>{{row.added_on}}</td>
                         <td>{{row.status}}</td>

@@ -4,6 +4,7 @@ Submit an Analysis
 
     * :ref:`submitpy`
     * :ref:`apipy`
+    * :ref:`distpy`
     * :ref:`webpy`
     * :ref:`python`
 
@@ -79,7 +80,7 @@ The concept of analysis packages will be dealt later in this documentation (at
 
     $ ./utils/submit.py --package <name of package> /path/to/binary
 
-*Example*: submit a local binary and specify a custom analysis package and 
+*Example*: submit a local binary and specify a custom analysis package and
 some options (in this case a command line argument for the malware)::
 
     $ ./utils/submit.py --package exe --options arguments=--dosomething /path/to/binary.exe
@@ -113,7 +114,7 @@ some options (in this case a command line argument for the malware)::
 web.py
 ======
 
-Cuckoo provides a very small utility under ``utils/web.py``, which will bind a simple 
+Cuckoo provides a very small utility under ``utils/web.py``, which will bind a simple
 webserver on localhost port 8080, through which you will be able to browse through
 existing reports as well as submit new files.
 
@@ -127,6 +128,14 @@ API
 ===
 
 Detailed usage of the REST API interface is described in :doc:`api`.
+
+.. _distpy:
+
+Distributed Cuckoo
+==================
+
+Detailed usage of the Distributed Cuckoo API interface is described in
+:doc:`dist`.
 
 .. _python:
 
@@ -179,7 +188,7 @@ own Python submission script, you can also use the ``add_path()`` and ``add_url(
         >>> db = Database()
         >>> db.add_path("/tmp/malware.exe")
         1
-        >>> 
+        >>>
 
 .. function:: add_url(url[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, machine=None[, platform=None[, memory=False[, enforce_timeout=False], clock=None[]]]]]]]]])
 
@@ -218,6 +227,6 @@ Example Usage:
     >>> db = Database()
     >>> db.add_url("http://www.cuckoosandbox.org")
     2
-    >>> 
+    >>>
 
 .. _`SQLAlchemy`: http://www.sqlalchemy.org

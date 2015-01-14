@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -262,3 +262,10 @@ def sanitize_filename(x):
             out += "_"
 
     return out
+
+# classlock decorator (created for database.Database)
+def classlock(f):
+    def inner(self, *args, **kwargs):
+        with self._lock:
+            return f(self, *args, **kwargs)
+    return inner

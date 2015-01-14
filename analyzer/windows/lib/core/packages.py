@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -38,5 +38,7 @@ def choose_package(file_type, file_name):
         return "zip"
     elif file_name.endswith((".py", ".pyc")) or "Python script" in file_type:
         return "python"
+    elif file_name.endswith(".vbs"):
+        return "vbs"
     else:
         return "generic"
