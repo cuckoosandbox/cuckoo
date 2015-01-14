@@ -662,7 +662,17 @@ class Analyzer:
         except Exception as e:
             log.warning("The package \"%s\" finish function raised an "
                         "exception: %s", package_name, e)
-
+            
+        try:
+            # Upload files the package created to package_files in the results folder
+            package_files = pack.package_files()
+            if package_files != None:
+                for package in package_files:
+                    upload_to_host(package[0], os.path.join("package_files", package[1]));
+        except Exception as e:
+            log.warning("The package \"%s\" package_files function raised an "
+                        "exception: %s", package_name, e)
+            
         # Terminate the Auxiliary modules.
         for aux in aux_enabled:
             try:
