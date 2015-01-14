@@ -911,8 +911,6 @@ class MAEC40Report(Report):
         """Adds Dropped files as Objects."""
         if "dropped" in self.results:
             objs = self.results["dropped"]
-            if self.results["target"]["category"] == "file":
-                objs.append(self.results["target"]["file"])
             # Add the named object collection.
             self.dynamic_bundle.add_named_object_collection("Dropped Files", self.id_generator.generate_object_collection_id())
             for file in objs:
