@@ -142,11 +142,18 @@ class ConsoleHandler(logging.StreamHandler):
 
         logging.StreamHandler.emit(self, colored)
 
-def init_logging():
-    """Initializes logging."""
+def init_logging(logfile=None, dbhandler=True):
+    """Initializes logging.
+
+    @param logfile: An optional log file path
+    @param dbhandler: Add database handler to logging
+    """
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 
-    fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log"))
+    if logfile is None:
+        fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log"))
+    else:
+        fh = logging.handlers.WatchedFileHandler(logfile)
     fh.setFormatter(formatter)
     log.addHandler(fh)
 
@@ -154,9 +161,10 @@ def init_logging():
     ch.setFormatter(formatter)
     log.addHandler(ch)
 
-    dh = DatabaseHandler()
-    dh.setLevel(logging.ERROR)
-    log.addHandler(dh)
+    if dbhandler:
+        dh = DatabaseHandler()
+        dh.setLevel(logging.ERROR)
+        log.addHandler(dh)
 
     log.setLevel(logging.INFO)
 

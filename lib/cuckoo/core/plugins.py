@@ -139,6 +139,7 @@ class RunProcessing(object):
 
     def __init__(self, task_id):
         """@param task_id: ID of the analyses to process."""
+        self.task_id = task_id
         self.task = Database().view_task(task_id).to_dict()
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
         self.cfg = Config("processing")
@@ -212,6 +213,7 @@ class RunProcessing(object):
         # module available. Its structure can be observed through the JSON
         # dump in the analysis' reports folder. (If jsondump is enabled.)
         # We friendly call this "fat dict".
+        log.debug("profiling:start:process::taskid %s" % self.task_id)
         results = {}
 
         # Order modules using the user-defined sequence number.
@@ -225,7 +227,9 @@ class RunProcessing(object):
 
             # Run every loaded processing module.
             for module in processing_list:
+                log.debug("profiling:start:process:%s:taskid %s" % (str(module)[8:-2], self.task_id))
                 result = self.process(module)
+                log.debug("profiling:stop:process:%s:taskid %s" % (str(module)[8:-2], self.task_id))
                 # If it provided some results, append it to the big results
                 # container.
                 if result:
@@ -234,12 +238,18 @@ class RunProcessing(object):
             log.info("No processing modules loaded")
 
         # Return the fat dict.
+        log.debug("profiling:stop:process::taskid %s" % self.task_id)
         return results
 
 class RunSignatures(object):
     """Run Signatures."""
 
-    def __init__(self, results):
+    def __init__(self, results, task_id="?"):
+        """
+        @param results: Results from processing to run signatures on
+        @param task_id: Optional task_id for logging
+        """
+        self.task_id = task_id
         self.results = results
 
     def _load_overlay(self):
@@ -348,6 +358,7 @@ class RunSignatures(object):
         return None
 
     def run(self):
+        log.debug("profiling:start:signatures::taskid %s" % self.task_id)
         # This will contain all the matched signatures.
         matched = []
 
@@ -433,7 +444,9 @@ class RunSignatures(object):
             log.debug("Running non-evented signatures")
 
             for signature in complete_list:
+                log.debug("profiling:start:signatures:%s:taskid %s" % (signature.name, self.task_id))
                 match = self.process(signature)
+                log.debug("profiling:stop:signatures:%s:taskid %s" % (signature.name, self.task_id))
                 # If the signature is matched, add it to the list.
                 if match:
                     matched.append(match)
@@ -445,6 +458,7 @@ class RunSignatures(object):
 
         # Sort the matched signatures by their severity level.
         matched.sort(key=lambda key: key["severity"])
+        log.debug("profiling:stop:signatures::taskid %s" % self.task_id)
 
 class RunReporting:
     """Reporting Engine.
@@ -456,6 +470,7 @@ class RunReporting:
 
     def __init__(self, task_id, results):
         """@param analysis_path: analysis folder path."""
+        self.task_id = task_id
         self.task = Database().view_task(task_id).to_dict()
         self.results = results
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
@@ -515,6 +530,7 @@ class RunReporting:
         # represents at which position that module should be executed among
         # all the available ones. It can be used in the case where a
         # module requires another one to be already executed beforehand.
+        log.debug("profiling:start:reporting::taskid %s" % self.task_id)
         reporting_list = list_plugins(group="reporting")
 
         # Return if no reporting modules are loaded.
@@ -523,6 +539,9 @@ class RunReporting:
 
             # Run every loaded reporting module.
             for module in reporting_list:
+                log.debug("profiling:start:reporting:%s:taskid %s" % (str(module)[8:-2], self.task_id))
                 self.process(module)
+                log.debug("profiling:stop:reporting:%s:taskid %s" % (str(module)[8:-2], self.task_id))
         else:
             log.info("No reporting modules loaded")
+        log.debug("profiling:stop:reporting::taskid %s" % self.task_id)

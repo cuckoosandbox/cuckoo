@@ -3,12 +3,16 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import argparse
 import os.path
 import sys
 import time
+import datetime
+import operator
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_RUNNING
 from lib.cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED
 from lib.cuckoo.core.database import TASK_REPORTED, TASK_FAILED_ANALYSIS
@@ -18,7 +22,10 @@ def timestamp(dt):
     """Returns the timestamp of a datetime object."""
     return time.mktime(dt.timetuple())
 
-def main():
+def main(profile=False):
+    """
+    @param profile: Show profiling information
+    """
     db = Database()
 
     print("%d samples in db" % db.count_samples())
@@ -64,5 +71,34 @@ def main():
         print("roughly %d tasks an hour" % int(hourly))
         print("roughly %d tasks a day" % int(24 * hourly))
 
+    if profile:
+        started = {}
+        total = {}
+        print ("Profiling:")
+        with open(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log")) as fh:
+            for line in fh.readlines():
+                if " DEBUG: profiling:" in line:
+                    edate, etime, mod, dbg, message = line.split(" ", 4)
+                    prof, pos, section, module, tid = message.split(":")
+                    if pos == "start":
+                        started[section+":"+module+":"+tid] = edate + " " + etime
+                    elif pos == "stop":
+                        starttime = started[section+":"+module+":"+tid]
+                        endtime = edate + " " + etime
+                        start = datetime.datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S,%f")
+                        end = datetime.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S,%f")
+                        diff = end-start
+                        name = section + ":" + module
+                        if not name in total:
+                            total[name] = 0.0
+                        total[name] += diff.total_seconds()
+        sorted_total = sorted(total.iteritems(), key=operator.itemgetter(1))
+        for name, val in sorted_total:
+            print "%s: %0.4f" % (name, val)
+
+
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--profile", help="Profile usign debug logs", action="store_true", required=False)
+    args = parser.parse_args()
+    main(profile=args.profile)
