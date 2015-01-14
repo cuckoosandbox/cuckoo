@@ -294,7 +294,8 @@ class PipeHandler(Thread):
                                     # needs the waiting in order to make sure
                                     # no race conditions occur.
                                     proc.inject(dll)
-                                    wait = True
+                                
+                                wait = True
                     else:
                         log.warning("Received request to inject Cuckoo "
                                     "process with pid %d, skip", process_id)
