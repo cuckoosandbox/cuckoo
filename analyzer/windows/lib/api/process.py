@@ -383,11 +383,20 @@ class Process:
         return True
 
     def wait(self):
+        ret = True
+
         if self.event_handle:
-            KERNEL32.WaitForSingleObject(self.event_handle, 10000)
+            retval = KERNEL32.WaitForSingleObject(self.event_handle, 10000)
+            if retval == WAIT_TIMEOUT:
+                log.error("Timeout waiting for cuckoomon to initialize in pid %d", self.pid)
+                ret = False
+            else:
+                log.info("Successfully injected process with pid %d", self.pid)
+
             KERNEL32.CloseHandle(self.event_handle)
             self.event_handle = None
-        return True
+
+        return ret
 
     def dump_memory(self):
         """Dump process memory.

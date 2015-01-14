@@ -168,7 +168,6 @@ class PipeHandler(Thread):
         """
         data = ""
         response = "OK"
-        wait = False
         proc = None
 
         # Read the data submitted to the Pipe Server.
@@ -281,10 +280,6 @@ class PipeHandler(Thread):
                             log.info("Announced process name: %s", filename)
 
                             if not protected_filename(filename):
-                                # Add the new process ID to the list of
-                                # monitored processes.
-                                add_pids(process_id)
-
                                 # If we have both pid and tid, then we can use
                                 # apc to inject.
                                 if process_id and thread_id:
@@ -295,7 +290,12 @@ class PipeHandler(Thread):
                                     # no race conditions occur.
                                     proc.inject(dll)
                                 
-                                wait = True
+                                # We wait until cuckoomon reports back.
+                                res = proc.wait()
+                                if res:
+                                    # Add the new process ID to the list of
+                                    # monitored processes.
+                                    add_pids(process_id)
                     else:
                         log.warning("Received request to inject Cuckoo "
                                     "process with pid %d, skip", process_id)
@@ -332,10 +332,6 @@ class PipeHandler(Thread):
                            None)
 
         KERNEL32.CloseHandle(self.h_pipe)
-
-        # We wait until cuckoomon reports back.
-        if wait:
-            proc.wait()
 
         if proc:
             proc.close()
