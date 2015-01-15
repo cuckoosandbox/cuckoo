@@ -49,6 +49,7 @@ The physical machine manager uses RPC requests to reboot physical machines.
   from the samba-common-bin package.  
 
 On Debian/Ubuntu:
+
     $ sudo apt-get install samba-common-bin
 
 In order for the physical machine manager to work, you must have a way

@@ -1,6 +1,6 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 1.2 (TBD)
+Cuckoo Sandbox 1.2 (2015-01-XX)
 ===============================
 
 * Added Python analysis module
@@ -19,16 +19,18 @@ Cuckoo Sandbox 1.2 (TBD)
 * Added display of PE compilation time
 * Added support for Pillow (PIL fork)
 * Added search by string to web interface
-* Added various sanity warnings to move from sqlite to a real database
+* Added dynamic search of API call logs to web interface
+* Added fix for SQLite database locks
 * Added machine utility to automatically update machinery configuration
 * Added physical machine analysis
 * Added distributed analysis
 * Adedd memory dump to mongo db
 * Added loader option to DLL package
+* Added additional signatures helper functions
 * Allow Auxiliary modules to run a callback at the very end of an analysis
-* Deprecated ./utils/clean.sh with ./cuckoo.py --clean
+* Replaced ./utils/clean.sh with ./cuckoo.py --clean
 * Replaced diStorm3 disassembler with Capstone disassembler
-* Refactored analysis packages
+* Refactored analysis packages and simplified syntax
 * Fixed process.py to use delete_original and delete_bin_copy when used in auto mode
 * Fixed issue with tcpdump filters
 * Fixed analysis of HTML pages without a proper extension
@@ -37,6 +39,8 @@ Cuckoo Sandbox 1.2 (TBD)
 * Fixed memory leak if using a old version of python-magic
 * Fixed out of memory exceptions when calculating hash of big files
 * Fixed BFP filter to skip agent traffic from PCAP
+* Fixed a variety of bugs in Windows analyzer
+* Fixed a number of anti-sandbox tricks
 * Removed hpfeeds reporting module
 
 Cuckoo Sandbox 1.1.1 (2014-10-07)

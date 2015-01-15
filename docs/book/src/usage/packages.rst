@@ -43,6 +43,8 @@ Following is the list of existing packages in alphabetical order:
         **Options**:
             * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
             * ``function``: specify the function to be executed. If none is specified, Cuckoo will try to run ``DllMain``.
+            * ``arguments``: specify arguments to pass to the DLL through commandline.
+            * ``loader``: specify a process name to use to fake the DLL launcher name instead of rundll32.exe (this is used to fool possible anti-sandboxing tricks of certain malware)
             * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
             * ``dll``: specify the name of an optional DLL to be used as a replacement for cuckoomon.dll.
 
@@ -150,4 +152,4 @@ specify the package name whenever possible.
 
 For example, to launch a malware and specify some options you can do::
 
-    $ ./utils/submit.py --package dll --options function=FunctionName /path/to/malware.dll
+    $ ./utils/submit.py --package dll --options function=FunctionName,loader=explorer.exe /path/to/malware.dll

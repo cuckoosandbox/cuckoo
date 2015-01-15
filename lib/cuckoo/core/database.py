@@ -23,7 +23,6 @@ try:
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
     from sqlalchemy.orm import sessionmaker, relationship, joinedload, backref
-    from sqlalchemy.pool import NullPool
     Base = declarative_base()
 except ImportError:
     raise CuckooDependencyError("Unable to import sqlalchemy "
@@ -394,8 +393,12 @@ class Database(object):
         @param connection_string: Connection string specifying the database
         """
         try:
-            # Using "check_same_thread" to disable sqlite safety check on multiple threads.
-            self.engine = create_engine(connection_string, connect_args={"check_same_thread": False}, poolclass=NullPool)
+            # TODO: this is quite ugly, should improve.
+            if connection_string.startswith("sqlite"):
+                # Using "check_same_thread" to disable sqlite safety check on multiple threads.
+                self.engine = create_engine(connection_string, connect_args={"check_same_thread": False})
+            else:
+                self.engine = create_engine(connection_string)
         except ImportError as e:
             lib = e.message.split()[-1]
             raise CuckooDependencyError("Missing database driver, unable to "
