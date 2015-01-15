@@ -385,7 +385,7 @@ Following is a list of currently available resources and a brief description of 
 .. _pcap_get:
 
 /pcap/get
-----------
+---------
 
     **GET /pcap/get/** *(int: task)*
 
