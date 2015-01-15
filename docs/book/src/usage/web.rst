@@ -74,4 +74,4 @@ You can serve Cuckoo's web interface using WSGI interface with common web server
 Apache, Nginx, Unicorn and so on.
 Please refer both to the documentation of the web server of your choice as well as `Django documentation`_.
 
-.. _`Django documentation`: https://docs.djangoproject.com/en/1.6/
+.. _`Django documentation`: https://docs.djangoproject.com/
