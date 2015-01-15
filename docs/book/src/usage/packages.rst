@@ -99,6 +99,13 @@ Following is the list of existing packages in alphabetical order:
             * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
             * ``dll``: specify the name of an optional DLL to be used as a replacement for cuckoomon.dll.
 
+    * ``ppt``: used to run and analyze **Microsoft PowerPoint documents**.
+
+        **Options**:
+            * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
+            * ``dll``: specify the name of an optional DLL to be used as a replacement for cuckoomon.dll.
+
     * ``ps1``: used to run and analyze **PowerShell scripts**.
 
         **Options**:
