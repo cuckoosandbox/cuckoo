@@ -1,3 +1,7 @@
+# Copyright (C) 2010-2015 Cuckoo Foundation.
+# This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+# See the file 'docs/LICENSE' for copying permission.
+
 import os
 import logging
 from ptrace.debugger.debugger import PtraceDebugger
@@ -12,6 +16,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from threading import Thread
 from lib.common.constants import PATHS, PIPE
+from lib.core.netlog import ResultLogger
 
 log = logging.getLogger()
 
@@ -97,6 +102,14 @@ class SyscallTracer(Thread):
         self.program = program
         self.no_stdout = False
         self.do_run = True
+        self.remote_log = None
+        
+        self.prepare()
+        
+    def prepare(self):
+        '''Establish connection to resultserver.'''
+        self.remote_log = ResultLogger()
+        self.remote_log.log_init()
         
     def run_debugger(self):
         ''' init and run debugger '''
