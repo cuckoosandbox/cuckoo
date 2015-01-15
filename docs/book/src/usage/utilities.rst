@@ -158,7 +158,8 @@ It takes a list of machine details as arguments and write them in the specified
 configuration file of the machinery module enabled in *cuckoo.conf*.
 Following are the available options::
 
-  $ ./utils/machine.py -husage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
+  $ ./utils/machine.py -h
+  usage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
                   [--tags TAGS] [--interface INTERFACE] [--snapshot SNAPSHOT]
                   [--resultserver RESULTSERVER]
                   vmname
