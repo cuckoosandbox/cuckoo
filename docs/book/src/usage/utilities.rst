@@ -64,7 +64,7 @@ If you want to re-generate the reports::
 
 Following are the usage options::
 
-    $ ./utils/process.py
+    $ ./utils/process.py -h
 
     usage: process.py [-h] [-d] [-r] [-p PARALLEL] id
 
@@ -96,7 +96,7 @@ specific additional modules in your local setup and for example update id with
 all the latest available signatures.
 Following are the usage options::
 
-    $ ./utils/community.py
+    $ ./utils/community.py -h
 
     usage: community.py [-h] [-a] [-s] [-p] [-m] [-r] [-f] [-w] [-b BRANCH]
 
@@ -152,14 +152,29 @@ samples::
 Machine utility
 ===============
 
-The machine.py utility is desgined to help you automatize the configuration of
+The machine.py utility is designed to help you automatize the configuration of
 virtual machines in Cuckoo.
 It takes a list of machine details as arguments and write them in the specified
 configuration file of the machinery module enabled in *cuckoo.conf*.
 Following are the available options::
 
-  $ ./utils/machine.py
-  usage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
-                    [--tags TAGS] [--interface INTERFACE] [--snapshot SNAPSHOT]
-                    [--resultserver RESULTSERVER]
-                    vmname
+  $ ./utils/machine.py -husage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
+                  [--tags TAGS] [--interface INTERFACE] [--snapshot SNAPSHOT]
+                  [--resultserver RESULTSERVER]
+                  vmname
+
+  positional arguments:
+    vmname                Name of the Virtual Machine.
+
+  optional arguments:
+    -h, --help            show this help message and exit
+    --debug               Debug log in case of errors.
+    --add                 Add a Virtual Machine.
+    --ip IP               Static IP Address.
+    --platform PLATFORM   Guest Operating System.
+    --tags TAGS           Tags for this Virtual Machine.
+    --interface INTERFACE
+                          Sniffer interface for this machine.
+    --snapshot SNAPSHOT   Specific Virtual Machine Snapshot to use.
+    --resultserver RESULTSERVER
+                          IP:Port of the Result Server.
