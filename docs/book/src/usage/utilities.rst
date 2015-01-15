@@ -155,8 +155,8 @@ Machine utility
 The machine.py utility is desgined to help you automatize the configuration of
 virtual machines in Cuckoo.
 It takes a list of machine details as arguments and write them in the specified
-macheniry configuration file.
-Following are the usage options::
+configuration file of the machinery module enabled in *cuckoo.conf*.
+Following are the available options::
 
   $ ./utils/machine.py
   usage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
