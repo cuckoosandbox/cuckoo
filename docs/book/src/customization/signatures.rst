@@ -285,7 +285,7 @@ Two helpers have been included in order to specify matching data.
     .. code-block:: python
         :linenos:
 
-        self.add_match(None, 'url', "http://malicious_url_detected.com")
+        self.add_match(None, "url", "http://malicious_url_detected.com")
 
     Example Usage, with a more complex signature, needing several API calls to be triggered:
 
@@ -315,7 +315,7 @@ Two helpers have been included in order to specify matching data.
                                         pattern="Tor Win32 Service",
                                         api="CreateServiceA",
                                         category="services"):
-                self.add_match(process, 'api', call)
+                self.add_match(process, "api", call)
 
         def on_complete(self):
             return self.has_matches()
