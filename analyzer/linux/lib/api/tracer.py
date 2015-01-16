@@ -122,6 +122,11 @@ class SyscallTracer(Thread):
         if not process:
             return
         
+        if not process.parent:
+            self.remote_log.log_new_process(process.pid, os.getpid(), self.program[0])
+        else:
+            self.remote_log.log_new_process(process.pid, process.parent.pid, self.program[0])
+
         # Set syscall options (print options)
         self.syscall_options = FunctionCallOptions(
             write_types=False,
@@ -243,6 +248,13 @@ class SyscallTracer(Thread):
         if syscall and (syscall.result is not None):
             name = syscall.name
             text = syscall.format()
+            print syscall.name, syscall.restype, syscall.resvalue
+            arg_list = []
+            for arg in syscall.arguments:
+                txt = arg.getText()
+                arg_list.append(txt)
+            print arg_list
+
             prefix = []
             prefix.append("[%s]" % process.pid)
             text = ''.join(prefix) + ' ' + text

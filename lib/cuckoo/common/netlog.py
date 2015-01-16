@@ -339,12 +339,17 @@ class BsonParser(object):
                            for i in range(len(args)))
 
             if apiname == "__process__":
-                # Special new process message from cuckoomon.
-                timelow = argdict["TimeLow"]
-                timehigh = argdict["TimeHigh"]
-                # FILETIME is 100-nanoseconds from 1601 :/
-                vmtimeunix = (timelow + (timehigh << 32))
-                vmtimeunix = vmtimeunix / 10000000.0 - 11644473600
+                log.debug(dec)
+                # Special new process message from cuckoomon
+                if "TimeLow" in argdict:
+                    timelow = argdict["TimeLow"]
+                    timehigh = argdict["TimeHigh"]
+                    # FILETIME is 100-nanoseconds from 1601 :/
+                    vmtimeunix = (timelow + (timehigh << 32))
+                    vmtimeunix = vmtimeunix / 10000000.0 - 11644473600
+                # Special new process message from linux system.
+                else:
+                    vmtimeunix = argdict["TimeStamp"] / 1000.0
                 vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
 
                 pid = argdict["ProcessIdentifier"]
