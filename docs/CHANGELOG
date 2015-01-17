@@ -27,6 +27,7 @@ Cuckoo Sandbox 1.2 (2015-01-XX)
 * Adedd memory dump to mongo db
 * Added loader option to DLL package
 * Added additional signatures helper functions
+* Added analysis package for Microsoft PowerPoint
 * Allow Auxiliary modules to run a callback at the very end of an analysis
 * Replaced ./utils/clean.sh with ./cuckoo.py --clean
 * Replaced diStorm3 disassembler with Capstone disassembler
