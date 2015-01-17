@@ -119,7 +119,7 @@ Following are all RESTful resources. Also make sure to check out the
 .. _node_root_get:
 
 GET /node
-----------
+---------
 
 Returns all enabled nodes. For each node its associated name, API url, and
 machines are returned::
@@ -242,7 +242,7 @@ Submit a new file or URL to be analyzed::
 .. _task_get:
 
 GET /task/<id>
--------------------
+--------------
 
 Get basic information about a particular task::
 
