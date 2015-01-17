@@ -390,6 +390,9 @@ class BsonParser(object):
         return True
 
     def _flag_represent(self, apiname, flag, value):
+        if isinstance(value, str) and value.startswith("0x"):
+            value = int(value, 16)
+
         ret = []
         for typ, val, r in self.flags[apiname][flag]:
             if typ == "value" and val == value:
