@@ -133,6 +133,10 @@ INSTALLED_APPS = (
 
 LOGIN_REDIRECT_URL = "/"
 
+# Fix to avoid migration warning in django 1.7 about test runner (1_6.W001).
+# In future it could be removed: https://code.djangoproject.com/ticket/23469
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
