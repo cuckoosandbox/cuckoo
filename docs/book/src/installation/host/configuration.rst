@@ -206,7 +206,7 @@ Following is the default *conf/kvm.conf* file::
 .. _memory_conf:
 
 memory.conf
-===============
+===========
 
 The Volatility tool offers a large set of plugins for memory dump analysis. Some of them are quite slow.
 In volatility.conf lets you to enable or disable the plugins of your choice.
