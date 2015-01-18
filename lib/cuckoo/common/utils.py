@@ -44,7 +44,6 @@ def create_folder(root=".", folder=None):
             raise CuckooOperationalError("Unable to create folder: %s" %
                                          folder_path)
 
-
 def delete_folder(folder):
     """Delete a folder and all its subdirectories.
     @param folder: path to delete.
@@ -57,12 +56,10 @@ def delete_folder(folder):
             raise CuckooOperationalError("Unable to delete folder: "
                                          "{0}".format(folder))
 
-
 # Don't allow all characters in "string.printable", as newlines, carriage
 # returns, tabs, \x0b, and \x0c may mess up reports.
 PRINTABLE_CHARACTERS = \
     string.letters + string.digits + string.punctuation + " \t\r\n"
-
 
 def convert_char(c):
     """Escapes characters.
@@ -73,7 +70,6 @@ def convert_char(c):
         return c
     else:
         return "\\x%02x" % ord(c)
-
 
 def is_printable(s):
     """ Test if a string is printable."""
@@ -263,8 +259,10 @@ def sanitize_filename(x):
 
     return out
 
-# classlock decorator (created for database.Database)
 def classlock(f):
+    """Classlock decorator (created for database.Database).
+    Used to put a lock to avoid sqlite errors.
+    """
     def inner(self, *args, **kwargs):
         with self._lock:
             return f(self, *args, **kwargs)
