@@ -23,7 +23,7 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file, delete_folder
-from lib.cuckoo.core.database import Database
+from lib.cuckoo.core.database import Database, TASK_RUNNING
 
 # Global DB pointer.
 db = Database()
@@ -216,7 +216,7 @@ def tasks_delete(task_id):
 
     task = db.view_task(task_id)
     if task:
-        if task.status == "processing":
+        if task.status == TASK_RUNNING:
             return HTTPError(500, "The task is currently being "
                                   "processed, cannot delete")
 
