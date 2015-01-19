@@ -13,7 +13,6 @@ from datetime import datetime
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 try:
     import chardet
