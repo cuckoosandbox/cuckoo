@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+from subprocess import Popen
 
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
@@ -71,7 +72,43 @@ class Package(object):
         """
         dll = self.options.get("dll")
         free = self.options.get("free")
+        tool = self.options.get("tool")
+
         suspended = True
+        if free:
+            suspended = False
+
+        p = Process()
+        if not p.execute(path=path, args=args, suspended=suspended):
+            raise CuckooPackageError("Unable to execute the initial process, "
+                                     "analysis aborted.")
+
+        if tool:
+            tool_path = os.path.join(os.path.join(os.getenv("Temp"), "tool"), "tool")
+            tool_args = self.options.get('tool_options') 
+            cmd_list = [tool_path, tool_args, path, args]
+            cwd = os.getcwd()
+            os.chdir(os.getenv("Temp"))
+            with open("out.log", 'w') as log:
+                log.write(str(cmd_list))
+                log.write("Test")
+                log.write(cwd)
+                log.write(os.getcwd())
+            # 0x08000000 = CREATE_NO_WINDOW
+            # Either set creation flag to CREATE_NO_WINDOW
+            # or disable the human auxiliary module
+            # because the module will interfere with the running tool
+            creation_flag = 0x08000000
+            with open('tool_output.log', 'w') as output_file:
+                self.tool_process = Popen(cmd_list,
+                                          stdout=output_file,
+                                          stderr=output_file,
+                                          creationflags=creation_flag,
+                                          shell=False)
+                self.tool_process.communicate()
+            if self.tool_process < 0:
+                raise CuckooPackageError("Unable to execute initial process, analysis aborted")
+
         if free:
             suspended = False
 

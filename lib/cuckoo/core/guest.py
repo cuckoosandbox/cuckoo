@@ -155,12 +155,9 @@ class GuestManager:
                                        "analysis machine".format(self.id))
 #================================================================================
             # If a tool was specified, upload it to the guest.
-            log.info("1")
-            log.debug("Test")
             tool_specified = False
             
             if options["tool"] or options["tool_dir"]:
-                log.info("2")
                 # Format path for cuckoobox to send files created by tool and 
                 # re-generate analysis.conf inside guest            
                 task_id = options["id"]
@@ -172,11 +169,10 @@ class GuestManager:
                     raise CuckooGuestError("{0}: unable to upload config to analysis machine".format(self.id))
 
             if options["tool"]:
-                log.info("3")
                 if not os.path.isfile(options["tool"]):
                     raise CuckooGuestError("--tool not an actual file")
                 index = options["tool"].rfind("/")
-                file_name = options["tool"][index+1:] + ".tool"
+                file_name = "tool" #options["tool"][index+1:] + ".tool"
                 try:
                     file_data = open(options["tool"], "rb").read()
                 except (IOError, OSError) as e:
@@ -189,13 +185,12 @@ class GuestManager:
                 except MemoryError as e:
                     raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
                 tool_specified = True
-                options["options"] = options["options"] + ",tool=" + file_name[:-5] 
+                options["options"] = options["options"] + ",tool=" + file_name #[:-5] 
 
             # If a directory is specified as the tool, all files in the 
             # directory will be added to the guest. It is worth noting
             # that nested directories will likely cause errors
             if options["tool_dir"]:
-                log.info("4")
                 tool_count = 0
                 if not os.path.isdir(options["tool_dir"]):
                     raise CuckooGuestError("--tool_dir not a directory")
@@ -210,15 +205,14 @@ class GuestManager:
                     try:
                         log.info("Adding tool %s" % fyle)
                         if not tool_specified and fyle[-4:] == '.exe':
-                            fyle = fyle+".tool"
+                            fyle = "tool" #fyle+".tool"
                             tool_count = tool_count + 1
-                            options["options"] = options["options"] + ",tool=" + fyle[:-5]
+                            options["options"] = options["options"] + ",tool=" + fyle #[:-5]
                         self.server.add_malware(data, fyle, "tool")
                     except MemoryError as e:
                         raise CuckooGuestError("{0}: unable to upload {1} to analysis machine, not enough memory".format(self.id, full_path))
                     if not tool_specified and tool_count != 1:
                         raise CuckooGuestError("Number of tools (.exe files) specified is 0 or more than 1")
-            log.info("5")
             log.info("Options: %s" % options["options"])
 #================================================================================
 
@@ -274,7 +268,6 @@ class GuestManager:
             # React according to the returned status.
             if status == CUCKOO_GUEST_COMPLETED:
                 log.info("%s: analysis completed successfully", self.id)
-                time.sleep(200)
                 break
             elif status == CUCKOO_GUEST_FAILED:
                 error = self.server.get_error()
