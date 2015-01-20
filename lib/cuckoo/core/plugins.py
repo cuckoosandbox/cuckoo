@@ -316,6 +316,9 @@ class RunSignatures(object):
         @param signs: signature results dict.
         @return: matched signature.
         """
+        # If signature has not been correctly processed, don't try to run it.
+        if not self.results:
+            return
         # Initialize the current signature.
         try:
             current = signature(self.results)
