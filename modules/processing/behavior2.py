@@ -44,44 +44,44 @@ class BehaviorReconstructor(object):
 
     def _report_file(self, f):
         if f["read"]:
-            self.report("file_read", str(f["filepath"]))
+            self.report("file_read", f["filepath"])
 
         if f["written"]:
-            self.report("file_written", str(f["filepath"]))
+            self.report("file_written", f["filepath"])
 
     # Generic file & directory stuff.
 
     def _api_CreateDirectoryW(self, return_value, arguments):
-        self.report("directory_created", str(arguments["dirpath"]))
+        self.report("directory_created", arguments["dirpath"])
 
     _api_CreateDirectoryExW = _api_CreateDirectoryW
 
     def _api_RemoveDirectoryA(self, return_value, arguments):
-        self.report("directory_removed", str(arguments["dirpath"]))
+        self.report("directory_removed", arguments["dirpath"])
 
     _api_RemoveDirectoryW = _api_RemoveDirectoryA
 
     def _api_MoveFileWithProgressW(self, return_value, arguments):
         self.report("file_moved",
-                    src=str(arguments["oldfilepath"]),
-                    dst=str(arguments["newfilepath"]))
+                    src=arguments["oldfilepath"],
+                    dst=arguments["newfilepath"])
 
     def _api_CopyFileA(self, return_value, arguments):
         self.report("file_copied",
-                    src=str(arguments["oldfilepath"]),
-                    dst=str(arguments["newfilepath"]))
+                    src=arguments["oldfilepath"],
+                    dst=arguments["newfilepath"])
 
     _api_CopyFileW = _api_CopyFileA
     _api_CopyFileExW = _api_CopyFileA
 
     def _api_DeleteFileA(self, return_value, arguments):
-        self.report("file_deleted", str(arguments["filepath"]))
+        self.report("file_deleted", arguments["filepath"])
 
     _api_DeleteFileW = _api_DeleteFileA
     _api_NtDeleteFile = _api_DeleteFileA
 
     def _api_FindFirstFileExA(self, return_value, arguments):
-        self.report("directory_enumerated", str(arguments["filepath"]))
+        self.report("directory_enumerated", arguments["filepath"])
 
     _api_FindFirstFileExW = _api_FindFirstFileExA
 
@@ -92,7 +92,7 @@ class BehaviorReconstructor(object):
             self.files[arguments["file_handle"]] = {
                 "read": False,
                 "written": False,
-                "filepath": str(arguments["filepath"]),
+                "filepath": arguments["filepath"],
             }
 
         self.report("file_opened", arguments["filepath"])
@@ -112,14 +112,14 @@ class BehaviorReconstructor(object):
     # Registry stuff.
 
     def _api_RegOpenKeyExA(self, return_value, arguments):
-        self.report("regkey_opened", str(arguments["regkey"]))
+        self.report("regkey_opened", arguments["regkey"])
 
     _api_RegOpenKeyExW = _api_RegOpenKeyExA
     _api_RegCreateKeyExA = _api_RegOpenKeyExA
     _api_RegCreateKeyExW = _api_RegOpenKeyExA
 
     def _api_RegDeleteKeyA(self, return_value, arguments):
-        self.report("regkey_deleted", str(arguments["regkey"]))
+        self.report("regkey_deleted", arguments["regkey"])
 
     _api_RegDeleteKeyW = _api_RegDeleteKeyA
     _api_RegDeleteValueA = _api_RegDeleteKeyA
@@ -127,13 +127,13 @@ class BehaviorReconstructor(object):
     _api_NtDeleteValueKey = _api_RegDeleteKeyA
 
     def _api_RegQueryValueExA(self, return_value, arguments):
-        self.report("regkey_read", str(arguments["regkey"]))
+        self.report("regkey_read", arguments["regkey"])
 
     _api_RegQueryValueExW = _api_RegQueryValueExA
     _api_NtQueryValueKey = _api_RegQueryValueExA
 
     def _api_RegSetValueExA(self, return_value, arguments):
-        self.report("regkey_written", str(arguments["regkey"]))
+        self.report("regkey_written", arguments["regkey"])
 
     _api_RegSetValueExW = _api_RegSetValueExA
     _api_NtSetValueKey = _api_RegSetValueExA
@@ -151,22 +151,22 @@ class BehaviorReconstructor(object):
     # Network stuff.
 
     def _api_URLDownloadToFileW(self, return_value, arguments):
-        self.report("downloads_file", str(arguments["url"]))
-        self.report("file_written", str(arguments["filepath"]))
+        self.report("downloads_file", arguments["url"])
+        self.report("file_written", arguments["filepath"])
 
     def _api_InternetConnectA(self, return_value, arguments):
-        self.report("connects_host", str(arguments["hostname"]))
+        self.report("connects_host", arguments["hostname"])
 
     _api_InternetConnectW = _api_InternetConnectA
 
     def _api_InternetOpenUrlA(self, return_value, arguments):
-        self.report("fetches_url", str(arguments["url"]))
+        self.report("fetches_url", arguments["url"])
 
     _api_InternetOpenUrlW = _api_InternetOpenUrlA
 
     def _api_DnsQuery_A(self, return_value, arguments):
         if arguments["hostname"]:
-            self.report("resolves_host", str(arguments["hostname"]))
+            self.report("resolves_host", arguments["hostname"])
 
     _api_DnsQuery_W = _api_DnsQuery_A
     _api_DnsQuery_UTF8 = _api_DnsQuery_A
@@ -175,11 +175,11 @@ class BehaviorReconstructor(object):
     _api_gethostbyname = _api_DnsQuery_A
 
     def _api_connect(self, return_value, arguments):
-        self.report("connects_ip", str(arguments["ip_address"]))
+        self.report("connects_ip", arguments["ip_address"])
 
     # Mutex stuff
     def _api_NtCreateMutant(self, return_value, arguments):
-        self.report("mutex", str(arguments["mutant_name"]))
+        self.report("mutex", arguments["mutant_name"])
 
     _api_ConnectEx = _api_connect
 
@@ -251,11 +251,9 @@ class BsonHandler(object):
             self.calls[tid] = []
             log.debug("Thread identifier not found: %d", tid)
 
-        for ar in arguments:
-            if type(arguments[ar]) not in [int, str, unicode]:
-                arguments[ar] = str(arguments[ar])
-            if type(arguments[ar]) == str:
-                arguments[ar] = arguments[ar].decode("latin-1")
+        for key, value in arguments.items():
+            if isinstance(value, basestring):
+                arguments[key] = str(value)
 
         self.calls[tid].append({
             "api": apiname,
