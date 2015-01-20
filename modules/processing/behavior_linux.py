@@ -958,7 +958,6 @@ class BehaviorAnalysis(Processing):
         """
         behavior = {}
         behavior["processes"] = Processes(self.logs_path).run()
-        return behavior
 
         instances = [
             Anomaly(),
@@ -967,6 +966,7 @@ class BehaviorAnalysis(Processing):
             Enhanced(),
         ]
 
+        # print behavior
         # Iterate calls and tell interested signatures about them
         for process in behavior["processes"]:
             for call in process["calls"]:
@@ -986,4 +986,5 @@ class BehaviorAnalysis(Processing):
             for process in behavior["processes"]:
                 process["calls"].reset()
 
+        # print behavior
         return behavior

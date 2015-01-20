@@ -339,7 +339,6 @@ class BsonParser(object):
                            for i in range(len(args)))
 
             if apiname == "__process__":
-                log.debug(dec)
                 # Special new process message from cuckoomon
                 if "TimeLow" in argdict:
                     timelow = argdict["TimeLow"]
@@ -377,7 +376,6 @@ class BsonParser(object):
             context[2] = argdict.pop("retval", 0)
             arguments = argdict.items()
             arguments += dec.get("aux", {}).items()
-
             self.handler.log_call(context, apiname, category, arguments)
 
         return True

@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import time
 import logging
 from ptrace.debugger.debugger import PtraceDebugger
 from ptrace.debugger import (ProcessExit, ProcessSignal, NewProcessEvent, ProcessExecution)
@@ -102,14 +103,14 @@ class SyscallTracer(Thread):
         self.program = program
         self.no_stdout = False
         self.do_run = True
-        self.remote_log = None
+        self.remote_log = dict()
         
-        self.prepare()
+        #self.prepare()
         
     def prepare(self):
         '''Establish connection to resultserver.'''
         self.remote_log = ResultLogger()
-        self.remote_log.log_init()
+        self.remote_log.log_init(time.time())
         
     def run_debugger(self):
         ''' init and run debugger '''
@@ -121,11 +122,11 @@ class SyscallTracer(Thread):
         process = self.create_process()
         if not process:
             return
-        
-        if not process.parent:
-            self.remote_log.log_new_process(process.pid, os.getpid(), self.program[0])
-        else:
-            self.remote_log.log_new_process(process.pid, process.parent.pid, self.program[0])
+
+        self.remote_log[process.pid] = ResultLogger()
+        self.remote_log[process.pid].log_init(time.time())
+        self.remote_log[process.pid].log_new_process(process.pid, os.getpid(), self.program[0])
+        log.debug("Logging for %d started.", process.pid)
 
         # Set syscall options (print options)
         self.syscall_options = FunctionCallOptions(
@@ -173,15 +174,22 @@ class SyscallTracer(Thread):
                 event.process.syscall()
                 continue
             
+            # Process syscall enter or exit
             self.get_syscall_str(process)
             # Break at next syscall
             process.syscall()
     
     def new_process(self, event):
         ''' Event handler.
-            Used to trace new child processes
+            Used to trace new child processes.
         '''
-        log.info("*** New process %s ***" % event.process.pid)
+        process = event.process
+        log.info("\n\n*** New process %s ***" % event.process.pid)
+
+        self.remote_log[process.pid] = ResultLogger()
+        self.remote_log[process.pid].log_init(time.time())
+        self.remote_log[process.pid].log_new_process(process.pid, process.parent.pid, None)
+
         event.process.syscall()
         event.process.parent.syscall()
         
@@ -200,13 +208,13 @@ class SyscallTracer(Thread):
             else:
                 log.error("Process can no be attached! %s", e)
         return None
-    
+
     def create_child(self, program, env=None):
         ''' Fork a new child process '''
         pid = createChild(program, self.no_stdout, env)
         log.debug("execve(%s, %s, [/* 40 vars */]) = %s", program[0], program, pid)
         return pid
-    
+
     def hide_me(self, syscall, process):
         ''' Prevent tracer detection '''
         # Identify ptrace syscall
@@ -214,6 +222,13 @@ class SyscallTracer(Thread):
             # change return value of ptrace syscall to 0
             process.setreg('rax',0)
             
+    def return_value(self, syscall, process):
+        '''Read return value from register rax.'''
+        if "clone" in syscall.name:
+            return long(process.getreg('rax'))
+        else:
+            return None
+
     def run(self):
         ''' init and run debugger '''
         self.debugger = PtraceDebugger()
@@ -248,18 +263,25 @@ class SyscallTracer(Thread):
         if syscall and (syscall.result is not None):
             name = syscall.name
             text = syscall.format()
-            print syscall.name, syscall.restype, syscall.resvalue
+            # print syscall.name, syscall.restype, syscall.resvalue, self.remote_log[process.pid].log_resolve_index(syscall.name)
             arg_list = []
             for arg in syscall.arguments:
-                txt = arg.getText()
-                arg_list.append(txt)
-            print arg_list
+                arg_list.append(arg.name)
+                arg_list.append(arg.getText())
+            # print arg_list
 
             prefix = []
             prefix.append("[%s]" % process.pid)
             text = ''.join(prefix) + ' ' + text
             print(text)
             self.hide_me(syscall, process)
+
+            index = self.remote_log[process.pid].log_resolve_index(syscall.name)
+            fmt = self.remote_log[process.pid].log_convert_types(arg_list)
+            success = 0 if self.return_value(syscall, process) < 0 else 1
+            self.remote_log[process.pid].loq(index, syscall.name,
+                                             success, self.return_value(syscall, process),
+                                             fmt, arg_list)
 
 if __name__ == "__main__":
     try:      
