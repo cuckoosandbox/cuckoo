@@ -225,7 +225,6 @@ class BsonHandler(object):
             "process_identifier": pid,
             "parent_process_identifier": ppid,
             "threads": [],
-            "tids": [],
         }
 
         self.reconstructor = BehaviorReconstructor()
@@ -330,7 +329,6 @@ class BehaviorAnalysis(Processing):
         """
         behavior = {
             "processes": [],
-            "calls": {},
         }
 
         for path in self._enum_logs():
