@@ -841,6 +841,9 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
+        if not 'domains' in self.results['network']:
+            return None
+
         for item in self.results["network"]["domains"]:
             if self._check_value(pattern=pattern,
                                  subject=item["domain"],
