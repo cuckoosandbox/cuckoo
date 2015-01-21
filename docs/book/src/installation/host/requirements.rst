@@ -52,7 +52,12 @@ Some of them are already packaged in Debian/Ubuntu and can be installed with the
 
 Except for *python-magic*, *python-dpkt* and *python-libvirt*, the others can be installed through ``pip`` too::
 
-    $ sudo pip install jinja2 pymongo bottle pefile cybox==2.0.1.4 maec==4.0.1.0 django chardet
+    $ sudo pip install jinja2 pymongo bottle pefile django chardet
+
+To have MAEC support, you need to first install the Cybox and then the MAEC libraries::
+
+    $ sudo pip install cybox==2.0.1.4
+    $ sudo pip install maec==4.0.1.0
 
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 
