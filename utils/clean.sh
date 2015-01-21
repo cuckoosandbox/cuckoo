@@ -4,7 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 echo "$PWD/clean.sh has been deprecated!" >&2
-echo "Please start using ./cuckoo.py --clean which also drops database tables"
+echo "Please start using ./cuckoo.py --clean which also drops database tables."
 
 # I'm sure this can be done easier, but I'm not very familiar with bash
 # scripting.. So, here we go. Also, this only works from "./cuckoo" and
