@@ -20,6 +20,12 @@ _install_configuration() {
 # Log directory, defaults to the log/ directory in the Cuckoo setup.
 LOGDIR="$LOGDIR"
 
+# It is possible to allow the virtual machines to connect to the entire
+# internet through the vmcloak-iptables script. Enable by uncommenting and
+# setting the following value. Give the network interface(s) that can allow
+# internet access to the virtual machines.
+# VMINTERNET="eth0 wlan0"
+
 # IP address the Cuckoo API will bind on. Cuckoo API is by default
 # turned *OFF*. Enable by uncommenting and setting the value.
 # APIADDR="127.0.0.1"
@@ -57,10 +63,16 @@ kill timeout 600
 respawn
 
 env CONFFILE="$CONFFILE"
+env VMINTERNET=""
 
 pre-start script
+    . "\$CONFFILE"
+
     vmcloak-vboxnet0
-    vmcloak-iptables
+
+    if [ ! -z "\$VMINTERNET" ]; then
+        vmcloak-iptables "\$VMINTERNET"
+    fi
 end script
 
 script
