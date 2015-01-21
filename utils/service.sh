@@ -59,8 +59,8 @@ respawn
 env CONFFILE="$CONFFILE"
 
 pre-start script
-    exec vmcloak-vboxnet0
-    exec vmcloak-iptables
+    vmcloak-vboxnet0
+    vmcloak-iptables
 end script
 
 script
