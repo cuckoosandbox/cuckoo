@@ -70,7 +70,7 @@ pre-start script
 
     vmcloak-vboxnet0
 
-    if [ ! -z "\$VMINTERNET" ]; then
+    if [ -n "\$VMINTERNET" ]; then
         vmcloak-iptables "\$VMINTERNET"
     fi
 end script
@@ -121,7 +121,7 @@ env APIADDR=""
 script
     . "\$CONFFILE"
 
-    if [ ! -z "\$APIADDR" ]; then
+    if [ -n "\$APIADDR" ]; then
         exec ./utils/api.py -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log"
     fi
 end script
@@ -143,7 +143,7 @@ env DISTADDR=""
 script
     . "\$CONFFILE"
 
-    if [ ! -z "\$DISTADDR" ]; then
+    if [ -n "\$DISTADDR" ]; then
         exec ./utils/dist.py "\$DISTADDR" 2>&1 >> "\$LOGDIR/process.log"
     fi
 end script
@@ -165,7 +165,7 @@ env WEBADDR=""
 script
     . "\$CONFFILE"
 
-    if [ ! -z "\$WEBADDR" ]; then
+    if [ -n "\$WEBADDR" ]; then
         exec ./manage.py runserver "\$WEBADDR:8000" 2>&1 >> "\$LOGDIR/web.log"
     fi
 end script
@@ -256,21 +256,21 @@ _start() {
         auto -p 2 2>&1 >> "\$LOGDIR/process.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
-    if [ ! -z "\$APIADDR" ]; then
+    if [ -n "\$APIADDR" ]; then
         echo -n "Starting Cuckoo API server.. "
         nohup python ./utils/api.py -u "\$USERNAME" \
             -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log" &
         PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
     fi
 
-    if [ ! -z "\$DISTADDR" ]; then
+    if [ -n "\$DISTADDR" ]; then
         echo -n "Starting Cuckoo Distributed API.. "
         nohup python ./utils/dist.py -u "\$USERNAME" \
             "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log" &
         PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
     fi
 
-    if [ ! -z "\$WEBADDR" ]; then
+    if [ -n "\$WEBADDR" ]; then
         echo -n "Starting Cuckoo Web Interface.. "
         cd web/
         nohup sudo -u cuckoo python ./manage.py runserver \
