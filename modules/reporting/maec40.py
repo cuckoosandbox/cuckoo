@@ -65,7 +65,7 @@ class MAEC40Report(Report):
         # We put the raise here and not at the import because it would
         # otherwise trigger even if the module is not enabled in the config.
         if not HAVE_MAEC:
-            raise CuckooDependencyError("Unable to import cybox and maec (install with `pip install maec`)")
+            raise CuckooDependencyError("Unable to import cybox and maec (install with `pip install cybox==2.0.1.4` then `pip install maec==4.0.1.0`)")
 
         self._illegal_xml_chars_RE = re.compile(u"[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]")
         # Map of PIDs to the Actions that they spawned.
