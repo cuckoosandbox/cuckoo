@@ -364,7 +364,7 @@ class NodeBaseApi(RestResource):
         if "url" not in args and "ip" not in args:
             abort(404, "Node address not found")
 
-        if "url" not in args:
+        if "ip" in args:
             return "http://%s:8090/" % args["ip"]
 
         return args["url"]
