@@ -505,7 +505,7 @@ class TaskRootApi(TaskBaseApi):
         q = Task.query
 
         if finished is not None:
-            q = q.filter_by(finished=int(finished))
+            q = q.filter_by(finished=bool(int(finished)))
 
         if offset is not None:
             q = q.offset(int(offset))
