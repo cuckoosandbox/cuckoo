@@ -18,11 +18,12 @@ class TargetInfo(Processing):
 
         target_info = {"category": self.task["category"]}
 
+        # We have to deal with file or URL targets.
         if self.task["category"] == "file":
             target_info["file"] = {}
 
-            # let's try to get as much information as possible, i.e., the
-            # filename if the file is not available anymore
+            # et's try to get as much information as possible, i.e., the
+            # filename if the file is not available anymore.
             if os.path.exists(self.file_path):
                 target_info["file"] = File(self.file_path).get_all()
 
