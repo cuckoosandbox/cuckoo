@@ -87,12 +87,12 @@ class MAEC40Report(Report):
 
     def setupMAEC(self):
         """Generates MAEC Package, Malware Subject, and Bundle structure"""
-        if self.results["target"]["category"] == "file":
+        if "target" in self.results and self.results["target"]["category"] == "file":
             self.id_generator = Generator(self.results["target"]["file"]["md5"])
-        elif self.results["target"]["category"] == "url":
+        elif "target" in self.results and self.results["target"]["category"] == "url":
             self.id_generator = Generator(hashlib.md5(self.results["target"]["url"]).hexdigest())
         else:
-            raise CuckooReportError("Unknown target type")
+            raise CuckooReportError("Unknown target type or targetinfo module disabled")
 
         # Generate Package.
         self.package = Package(self.id_generator.generate_package_id())
