@@ -730,7 +730,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machines = session.query(Machine).filter_by(locked=False)
+            machines = session.query(Machine).filter_by(locked=False).all()
         except SQLAlchemyError as e:
             log.debug("Database error getting available machines: {0}".format(e))
             return 0
