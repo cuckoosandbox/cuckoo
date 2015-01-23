@@ -8,7 +8,7 @@ from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
 class Package(object):
-    """Base abstact analysis package."""
+    """Base abstract analysis package."""
     PATHS = []
 
     def __init__(self, options={}):
@@ -24,7 +24,6 @@ class Package(object):
 
     def start(self):
         """Run analysis package.
-        @param path: sample path.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
@@ -90,8 +89,7 @@ class Package(object):
         return p.pid
 
     def package_files(self):
-        """
-        A list of files to upload to host.
+        """A list of files to upload to host.
         The list should be a list of tuples (<path on guest>, <name of file in package_files folder>).
         (package_files is a folder that will be created in analysis folder). 
         """
@@ -108,7 +106,6 @@ class Package(object):
                 p.dump_memory()
         
         return True
-
 
 class Auxiliary(object):
     pass
