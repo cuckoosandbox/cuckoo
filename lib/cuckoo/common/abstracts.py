@@ -871,7 +871,7 @@ class Signature(object):
         """Retrieves the value of a specific argument from an API call.
         @param call: API call object.
         @param name: name of the argument to retrieve.
-        @return: value of the requried argument.
+        @return: value of the required argument.
         """
         # Check if the call passed to it was cached already.
         # If not, we can start caching it and store a copy converted to a dict.
