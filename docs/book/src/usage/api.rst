@@ -79,28 +79,24 @@ Following is a list of currently available resources and a brief description of 
 
             curl -F file=@/path/to/file http://localhost:8090/tasks/create/file
             
-        **Example request**::
+        **Example request using Python**::
 
             import requests
             import json
             
-            REST_URL = "http://localhost:1337/tasks/create/file"
+            REST_URL = "http://localhost:8090/tasks/create/file"
+            SAMPLE_FILE = "/path/to/malwr.exe"
+
+            with open(SAMPLE_FILE, "rb") as sample:
+                multipart_file = {"file": ("temp_file_name", sample)}
+                request = requests.post(REST_URL, files=multipart_file)
             
-            SAMPLE_FILE = open("/path/to/malwr.exe", "rb")
-            
-            multipart_file = {"file": ("temp_file_name", SAMPLE_FILE)}
-            
-            request = requests.post(REST_URL, files=multipart_file)
-            
-            SMAPLE_FILE.close()
-            
-            # add error checking for request.status_code
+            # Add your code to error checking for request.status_code.
             
             json_decoder = json.JSONDecoder()
-            
             task_id = json_decoder.decode(request.text)["task_id"]
             
-            # add error checking if task_id is None
+            # Add your code for error checking if task_id is None.
 
         **Example response**::
 
@@ -138,26 +134,23 @@ Following is a list of currently available resources and a brief description of 
 
             curl -F url="http://www.malicious.site" http://localhost:8090/tasks/create/url
         
-        **Example request**::
+        **Example request using Python**::
 
             import requests
             import json
             
-            REST_URL = "http://localhost:1337/tasks/create/url"
-            
+            REST_URL = "http://localhost:8090/tasks/create/url"
             SAMPLE_URL = "http://example.org/malwr.exe"
             
             multipart_url = {"url": ("", SAMPLE_URL)}
-            
             request = requests.post(REST_URL, files=multipart_url)
             
-            # add error checking for request.status_code
+            # Add your code to error checking for request.status_code.
             
             json_decoder = json.JSONDecoder()
-            
             task_id = json_decoder.decode(request.text)["task_id"]
             
-            # add error checking if task_id is None
+            # Add your code toerror checking if task_id is None.
             
         **Example response**::
 
