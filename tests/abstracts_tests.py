@@ -26,6 +26,11 @@ class TestSignature(object):
     def test_not_implemented_run(self):
         self.s.run()
 
+    def test_missing_key_domain(self):
+        """Test with domain key missing."""
+        self.s.results = {"network": {}}
+        assert_equals(None, self.s.check_domain("*"))
+
 class TestReport:
     def setUp(self):
         self.r = abstracts.Report()
