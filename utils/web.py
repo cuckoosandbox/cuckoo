@@ -277,7 +277,6 @@ def get_files(task_id):
         for f in files:
             fullpath = os.path.join(root, f)
             archive_name = os.path.join(archive_root, f)
-            print f
             zip.write(fullpath, archive_name, zipfile.ZIP_DEFLATED)
     zip.close()
    
