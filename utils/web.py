@@ -68,12 +68,12 @@ def get_pagination_limit(new_limit):
     @params new_limit: new pagination limit
     """
     default_limit = 50
-    
+
     limit_cookie = request.get_cookie("pagination_limit")
     logging.info("Got cookie: {0}".format(limit_cookie))
-    
+
     cookie_expires = time.mktime((datetime.now() + timedelta(days=365)).timetuple())
-    
+
     if new_limit <= 0:
         if limit_cookie:
             try:
@@ -90,7 +90,7 @@ def get_pagination_limit(new_limit):
         limit = new_limit
         logging.info("Setting new limit: {0}".format(limit))
         response.set_cookie("pagination_limit", str(limit), path="/", expires=cookie_expires)
-    
+
     return limit
 
 @hook("after_request")
@@ -128,27 +128,29 @@ def browse():
 def browse_page(page_id=1, new_limit=-1):
     if page_id < 1:
         page_id = 1
-    
+
     limit = get_pagination_limit(new_limit)
-    
+
     tot_results = db.count_tasks()
-    tot_pages = (tot_results / limit) + ((tot_results % limit) and 1 or 0) # Add 1 to tot_pages
-                                                                           # if there's some remainder
-    # Check that the user doesn't require an impossible pagination
+
+     # Add 1 to tot_pages, if there's some remainder.
+    tot_pages = (tot_results / limit) + ((tot_results % limit) and 1 or 0)
+
+    # Check that the user doesn't require an impossible pagination.
     if page_id > tot_pages:
         page_id = tot_pages
-    
+
     offset = (page_id - 1) * limit
     rows = db.list_tasks(limit=limit, offset=offset)
-    
+
     tasks = parse_tasks(rows)
-    
+
     if tot_results:
         pagination_start = offset + 1
     else:
         pagination_start = 0
     pagination_end = offset + len(rows)
-    
+
     pagination = {
         "start": pagination_start,
         "end": pagination_end,
@@ -157,9 +159,9 @@ def browse_page(page_id=1, new_limit=-1):
         "tot_results": tot_results,
         "tot_pages": tot_pages
     }
-    
+
     template = env.get_template("browse.html")
-    
+
     return template.render({"rows": tasks, "os": os, "pagination": pagination})
 
 @route("/static/<filename:path>")
