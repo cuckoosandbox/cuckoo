@@ -598,25 +598,25 @@ class StatusRootApi(RestResource):
         return dict(nodes=app.config["STATUSES"], tasks=tasks)
 
 
-def output_json(data, code, headers=None):
-    resp = make_response(json.dumps(data), code)
-    resp.headers.extend(headers or {})
-    return resp
-
-
-def output_xml(data, code, headers=None):
-    resp = make_response(data, code)
-    resp.headers.extend(headers or {})
-    return resp
-
-
 class DistRestApi(RestApi):
     def __init__(self, *args, **kwargs):
         RestApi.__init__(self, *args, **kwargs)
         self.representations = {
-            "application/xml": output_xml,
-            "application/json": output_json,
+            "application/xml": self.output_xml,
+            "application/json": self.output_json,
         }
+
+    @staticmethod
+    def output_json(data, code, headers=None):
+        resp = make_response(json.dumps(data), code)
+        resp.headers.extend(headers or {})
+        return resp
+
+    @staticmethod
+    def output_xml(data, code, headers=None):
+        resp = make_response(data, code)
+        resp.headers.extend(headers or {})
+        return resp
 
 
 class SchedulerThread(threading.Thread):
