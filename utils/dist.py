@@ -249,7 +249,7 @@ class NodeHandler(object):
         else:
             self.log.setLevel(logging.INFO)
 
-    def submit_tasks(self, node):
+    def submit_tasks(self, node, batch_size):
         # Only get nodes that have not been pushed yet.
         q = Task.query.filter_by(node_id=None, finished=False)
 
@@ -261,8 +261,7 @@ class NodeHandler(object):
         q = q.filter_by(priority=1)
 
         # TODO Select only the tasks with appropriate tags selection.
-
-        for task in q.limit(app.config["BATCH_SIZE"]).all():
+        for task in q.limit(batch_size).all():
             node.submit_task(task)
 
     def fetch_latest_reports(self, node, last_check):
@@ -311,7 +310,7 @@ class NodeHandler(object):
             db.session.commit()
             db.session.refresh(t)
 
-    def process(self):
+    def process(self, batch_size):
         start = int(datetime.datetime.now().strftime("%s"))
 
         status = self.node.status()
@@ -320,8 +319,8 @@ class NodeHandler(object):
 
         self.log.debug("Status.. %s -> %s", self.node.name, status)
 
-        if status["pending"] < app.config["BATCH_SIZE"]:
-            self.submit_tasks(self.node)
+        if status["pending"] < batch_size:
+            self.submit_tasks(self.node, batch_size)
 
         if self.node.last_check:
             last_check = int(self.node.last_check.strftime("%s"))
@@ -347,8 +346,9 @@ class NodeHandler(object):
         return start, self.name, status
 
 
-def process_node(node):
-    return NodeHandler(node).process()
+def process_node(node, dbconn, **kwargs):
+    with create_app(dbconn, worker=True).app_context():
+        return NodeHandler(node).process(**kwargs)
 
 
 class NodeBaseApi(RestResource):
@@ -364,7 +364,7 @@ class NodeBaseApi(RestResource):
         if "url" not in args and "ip" not in args:
             abort(404, "Node address not found")
 
-        if "ip" in args:
+        if args.get("ip"):
             return "http://%s:8090/" % args["ip"]
 
         return args["url"]
@@ -620,6 +620,11 @@ class DistRestApi(RestApi):
 
 
 class SchedulerThread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+        self.available = {}
+
     def _callback(self, (start, name, status)):
         app.config["STATUSES"][name] = status
 
@@ -633,19 +638,19 @@ class SchedulerThread(threading.Thread):
             except Exception as e:
                 log.warning("Error dumping uptime for node %r: %s", name, e)
 
+        # Mark this node as available again.
+        self.available[name] = app.config["INTERVAL"]
+
     def run(self):
         m = multiprocessing.Pool(processes=app.config["WORKER_PROCESSES"])
-        nodes = []
 
         while app.config["RUNNING"]:
-            t = time.time()
-
             # We resolve the nodes every iteration, that way new nodes may
             # be added on-the-fly.
             with app.app_context():
                 for node in Node.query.filter_by(enabled=True).all():
-                    if node.name not in nodes:
-                        nodes.append(node.name)
+                    if node.name not in self.available:
+                        self.available[node.name] = 1
                         log.info("Detected Cuckoo node '%s': %s",
                                  node.name, node.url)
 
@@ -654,37 +659,50 @@ class SchedulerThread(threading.Thread):
                     # different process.
                     db.make_transient(node)
 
-                    m.apply_async(process_node, (node,),
-                                  callback=self._callback)
+                    # This node is currently being processed.
+                    if not self.available[node.name]:
+                        log.debug("Skipping node %s", node.name)
+                        continue
 
-            if t + app.config["INTERVAL"] > time.time():
-                time.sleep(t + app.config["INTERVAL"] - time.time())
+                    kw = dict(dbconn=app.config["SQLALCHEMY_DATABASE_URI"],
+                              batch_size=app.config["BATCH_SIZE"])
+
+                    # Decrease by one second.
+                    self.available[node.name] -= 1
+
+                    # If available returns 0 for this node then it's time to
+                    # schedule this node again.
+                    if not self.available[node.name]:
+                        m.apply_async(process_node, args=(node,), kwds=kw,
+                                      callback=self._callback)
+
+            time.sleep(1)
 
         m.close()
 
 
-def create_app(database_connection):
+def create_app(database_connection, worker=False):
     app = Flask("Distributed Cuckoo")
     app.config["SQLALCHEMY_DATABASE_URI"] = database_connection
-    app.config["SECRET_KEY"] = os.urandom(32)
-
-    restapi = DistRestApi(app)
-    restapi.add_resource(NodeRootApi, "/node")
-    restapi.add_resource(NodeApi, "/node/<string:name>")
-    restapi.add_resource(TaskRootApi, "/task")
-    restapi.add_resource(TaskApi, "/task/<int:task_id>")
-    restapi.add_resource(ReportApi,
-                         "/report/<int:task_id>",
-                         "/report/<int:task_id>/<string:report>")
-    restapi.add_resource(StatusRootApi, "/status")
-
     db.init_app(app)
 
-    with app.app_context():
-        db.create_all()
+    if not worker:
+        app.config["SECRET_KEY"] = os.urandom(32)
+
+        restapi = DistRestApi(app)
+        restapi.add_resource(NodeRootApi, "/node")
+        restapi.add_resource(NodeApi, "/node/<string:name>")
+        restapi.add_resource(TaskRootApi, "/task")
+        restapi.add_resource(TaskApi, "/task/<int:task_id>")
+        restapi.add_resource(ReportApi,
+                             "/report/<int:task_id>",
+                             "/report/<int:task_id>/<string:report>")
+        restapi.add_resource(StatusRootApi, "/status")
+
+        with app.app_context():
+            db.create_all()
 
     return app
-
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
