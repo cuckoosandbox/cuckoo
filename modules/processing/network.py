@@ -357,9 +357,12 @@ class Pcap:
                 entry["host"] = ""
 
             entry["port"] = dport
+            netloc = entry["host"]
+            if dport != 80 and ":" not in netloc:
+                netloc += ":" + str(entry["port"])
             entry["data"] = convert_to_printable(tcpdata)
             entry["uri"] = convert_to_printable(urlunparse(("http",
-                                                            entry["host"],
+                                                            netloc,
                                                             http.uri, None,
                                                             None, None)))
             entry["body"] = convert_to_printable(http.body)
