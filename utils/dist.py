@@ -256,9 +256,16 @@ class NodeHandler(object):
 
         task_lock.acquire()
 
-        # Select batch_size tasks.
-        tasks = Task.query.filter_by(node_id=None, finished=False, priority=1)
-        tasks = tasks.order_by(Task.id).limit(batch_size).all()
+        # Select batch_size tasks. First select tasks that have already been
+        # selected for this node, but have not been submitted due to an
+        # unexpected exit of the program or similar.
+        tasks = Task.query.filter_by(node_id=node.id, task_id=None).all()
+
+        # Select regular tasks.
+        if not tasks:
+            tasks = Task.query.filter_by(node_id=None, finished=False)
+            tasks = tasks.filter_by(priority=1)
+            tasks = tasks.order_by(Task.id).limit(batch_size).all()
 
         # Update all tasks to use our node id.
         for task in tasks:
