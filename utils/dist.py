@@ -18,6 +18,8 @@ import time
 
 RESET_LASTCHECK = 50
 
+task_lock = multiprocessing.Lock()
+
 
 def required(package):
     sys.exit("The %s package is required: pip install %s" %
@@ -238,7 +240,6 @@ class Task(db.Model):
 
 class NodeHandler(object):
     def __init__(self, node):
-        self.name = node.name
         self.node = node
 
         multiprocessing.log_to_stderr()
@@ -250,18 +251,25 @@ class NodeHandler(object):
             self.log.setLevel(logging.INFO)
 
     def submit_tasks(self, node, batch_size):
-        # Only get nodes that have not been pushed yet.
-        q = Task.query.filter_by(node_id=None, finished=False)
-
-        # Order by task ID.
-        q = q.order_by(Task.id)
-
-        # Only handle priority one cases here. TODO Other
-        # priorities are handled right away upon submission.
-        q = q.filter_by(priority=1)
-
+        # TODO Handle priority other than 1.
         # TODO Select only the tasks with appropriate tags selection.
-        for task in q.limit(batch_size).all():
+
+        task_lock.acquire()
+
+        # Select batch_size tasks.
+        tasks = Task.query.filter_by(node_id=None, finished=False, priority=1)
+        tasks = tasks.order_by(Task.id).limit(batch_size).all()
+
+        # Update all tasks to use our node id.
+        for task in tasks:
+            task.node_id = node.id
+
+        # Commit these changes.
+        db.session.commit()
+
+        task_lock.release()
+
+        for task in tasks:
             node.submit_task(task)
 
     def fetch_latest_reports(self, node, last_check):
@@ -315,9 +323,7 @@ class NodeHandler(object):
 
         status = self.node.status()
         if not status:
-            return start, self.name, None
-
-        self.log.debug("Status.. %s -> %s", self.node.name, status)
+            return start, self.node.name, None
 
         if status["pending"] < batch_size:
             self.submit_tasks(self.node, batch_size)
@@ -333,17 +339,14 @@ class NodeHandler(object):
         # reason possible that some reports are never fetched, and therefore
         # we reset the "last_check" parameter when more than 50 tasks have not
         # been fetched, thus preventing running out of diskspace.
-        status = self.node.status()
-        if status and status["reported"] > RESET_LASTCHECK:
-            self.log.debug("Reached reset-lastcheck threshold, "
-                           "resetting last-check.")
-            self.node.last_check = None
+        # status = self.node.status()
+        # if status and status["reported"] > RESET_LASTCHECK:
+        #     self.log.debug("Reached reset-lastcheck threshold, "
+        #                    "resetting last-check.")
+        #     self.node.last_check = None
 
-        # The last_check field of each node object has been updated as well as
-        # the finished field for each task that has been completed.
         db.session.commit()
-        db.session.refresh(self.node)
-        return start, self.name, status
+        return start, self.node.name, status
 
 
 def process_node(node, dbconn, **kwargs):
@@ -625,7 +628,7 @@ class SchedulerThread(threading.Thread):
 
         self.available = {}
 
-    def _callback(self, (start, name, status)):
+    def _status_update(self, start, name, status):
         app.config["STATUSES"][name] = status
 
         # If available, we'll want to dump the uptime.
@@ -643,6 +646,7 @@ class SchedulerThread(threading.Thread):
 
     def run(self):
         m = multiprocessing.Pool(processes=app.config["WORKER_PROCESSES"])
+        results = []
 
         while app.config["RUNNING"]:
             # We resolve the nodes every iteration, that way new nodes may
@@ -654,14 +658,10 @@ class SchedulerThread(threading.Thread):
                         log.info("Detected Cuckoo node '%s': %s",
                                  node.name, node.url)
 
-                    # Detach the object from the session. Probably required
-                    # for SQLite3 as this object will be used in a
-                    # different process.
-                    db.make_transient(node)
-
                     # This node is currently being processed.
                     if not self.available[node.name]:
-                        log.debug("Skipping node %s", node.name)
+                        log.debug("Node is currently processing: %s",
+                                  node.name)
                         continue
 
                     kw = dict(dbconn=app.config["SQLALCHEMY_DATABASE_URI"],
@@ -673,8 +673,22 @@ class SchedulerThread(threading.Thread):
                     # If available returns 0 for this node then it's time to
                     # schedule this node again.
                     if not self.available[node.name]:
-                        m.apply_async(process_node, args=(node,), kwds=kw,
-                                      callback=self._callback)
+                        # Detach the object from the session. Probably
+                        # required for SQLite3 as this object will be used in
+                        # a different process.
+                        db.make_transient(node)
+
+                        r = m.apply_async(process_node, args=(node,), kwds=kw)
+                        results.append(r)
+                    else:
+                        log.debug("Node waiting (%d): %s..",
+                                  self.available[node.name], node.name)
+
+                # Check if results are available - if so, process them.
+                for idx, result in enumerate(results):
+                    if result.ready():
+                        self._status_update(*result.get())
+                        del results[idx]
 
             time.sleep(1)
 
