@@ -281,6 +281,7 @@ class NodeHandler(object):
             if t is None:
                 self.log.debug("Node %s task #%d has not been submitted "
                                "by us!", node.name, task["id"])
+                node.delete_task(task["id"])
                 continue
 
             # Update the last_check value of the Node for the next iteration.
