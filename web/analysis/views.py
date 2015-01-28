@@ -224,6 +224,7 @@ def file(request, category, object_id):
             content_type = "application/vnd.tcpdump.pcap"
         elif category == "screenshot":
             file_name += ".jpg"
+            content_type = "image/jpeg"
         elif category == 'memdump':
             file_name += ".dmp"
         else:
