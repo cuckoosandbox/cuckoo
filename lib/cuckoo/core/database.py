@@ -469,6 +469,7 @@ class Database(object):
         @param label: machine label
         @param ip: machine IP address
         @param platform: machine supported platform
+        @param tags: list of comma separated tags
         @param interface: sniffing interface for this machine
         @param snapshot: snapshot name to use instead of the current one, if configured
         @param resultserver_ip: IP address of the Result Server
