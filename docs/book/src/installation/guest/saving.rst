@@ -142,14 +142,16 @@ boot and that the Cuckoo agent is set to run at boot time.
 Running the agent at boot time can be configured in Windows by adding a startup
 item for the agent.
 
-To set the attached disks to reset on boot, you'll first need to list all the
-attached disks for the virtual machine. Ignore disks that are already read only
-or CD-ROM drives. To list all attached disks, run the following command::
+The following commands must be run while the virtual machine is powered off.
+
+To set the virtual machine's disks to reset on boot, you'll first need to list
+all the attached disks for the virtual machine. To list all attached disks, run
+the following command::
 
     $ xe vm-disk-list vm="vm_name_or_uuid"
 
-For all the VDI's listed for the virtual machine, run the following command to
-change the disk to reset on boot::
+Ignoring all CD-ROM and read-only disks, run the following command for each
+remaining disk to change it's behavior to reset on boot::
 
     $ xe vdi-param-set uuid="vdi_uuid" on-boot=reset
 
