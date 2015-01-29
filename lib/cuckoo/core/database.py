@@ -443,9 +443,10 @@ class Database(object):
             session.query(Sample).delete()
         except SQLAlchemyError as e:
             log.debug("Database error dropping all samples: %s", e)
+            session.rollback()
             return False
         finally:
-            session.rollback()
+            session.close()
         return True
 
     @classlock
