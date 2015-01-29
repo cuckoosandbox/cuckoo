@@ -10,6 +10,7 @@ import logging
 from lib.cuckoo.common.abstracts import Machinery
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
+import threading
 
 try:
     import XenAPI
@@ -37,6 +38,8 @@ class XenServerMachinery(Machinery):
         verify machine validity.
         """
 
+        self._sessions = {}
+
         if not HAVE_XENAPI:
             raise CuckooDependencyError("Unable to import XenAPI")
 
@@ -52,22 +55,7 @@ class XenServerMachinery(Machinery):
             raise CuckooMachineError("XenServer url missing, please add it to "
                                      "xenserver.conf")
 
-        try:
-            self.session = XenAPI.Session(self.options.xenserver.url)
-        except:
-            raise CuckooMachineError("Could not connect to XenServer: invalid "
-                                     "or incorrect urlm please ensure the url "
-                                     "is correct in xenserver.conf")
-
-        try:
-            self.session.xenapi.login_with_password(
-                self.options.xenserver.user, self.options.xenserver.password
-            )
-        except:
-            raise CuckooMachineError("Could not connect to XenServer: "
-                                     "incorrect credentials, please ensure "
-                                     "the user and password are correct in "
-                                     "xenserver.conf")
+        self._make_xenapi_session()
 
         for machine in self.machines():
             uuid = machine.label
@@ -80,12 +68,41 @@ class XenServerMachinery(Machinery):
 
         super(XenServerMachinery, self)._initialize_check()
 
+    @property
+    def session(self):
+        tid = threading.current_thread().ident
+        sess = self._sessions.get(tid, None)
+        if sess is None:
+            sess = self._make_xenapi_session(tid)
+        return sess
+
+    def _make_xenapi_session(self, tid=None):
+        tid = tid or threading.current_thread().ident
+        try:
+            sess = XenAPI.Session(self.options.xenserver.url)
+        except:
+            raise CuckooMachineError("Could not connect to XenServer: invalid "
+                                     "or incorrect url, please ensure the url "
+                                     "is correct in xenserver.conf")
+
+        try:
+            sess.xenapi.login_with_password(
+                self.options.xenserver.user, self.options.xenserver.password
+            )
+        except:
+            raise CuckooMachineError("Could not connect to XenServer: "
+                                     "incorrect credentials, please ensure "
+                                     "the user and password are correct in "
+                                     "xenserver.conf")
+        self._sessions[tid] = sess
+        return sess
+
     def _get_vm_ref(self, uuid):
         """Get a virtual machine reference.
         @param uuid: vm uuid
         """
 
-        return self.session.xenapi.VM.get_by_uuid(uuid)
+        return self.session.xenapi.VM.get_by_uuid(uuid.lower())
 
     def _get_vm_record(self, ref):
         """Get the virtual machine record.
@@ -109,8 +126,9 @@ class XenServerMachinery(Machinery):
         try:
             ref = self._get_vm_ref(uuid)
             vm = self._get_vm_record(ref)
-        except XenAPI.Failure:
-            raise CuckooMachineError("Vm not found: %s: %s" % uuid)
+        except XenAPI.Failure as e:
+            raise CuckooMachineError("Vm not found: %s: %s"
+                                     % (uuid, e.details[0]))
 
         if vm["is_a_snapshot"]:
             raise CuckooMachineError("Vm is a snapshot: %s" % uuid)
@@ -193,7 +211,7 @@ class XenServerMachinery(Machinery):
 
     def start(self, label):
         """Start a virtual machine.
-        @param uuid: vm uuid
+        @param label: vm uuid
         """
 
         vm_ref = self._get_vm_ref(label)
@@ -231,7 +249,7 @@ class XenServerMachinery(Machinery):
 
     def stop(self, label=None):
         """Stop a virtual machine.
-        @param uuid: vm uuid
+        @param label: vm uuid
         """
 
         ref = self._get_vm_ref(label)
