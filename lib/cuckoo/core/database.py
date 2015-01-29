@@ -456,9 +456,10 @@ class Database(object):
             session.query(Task).delete()
         except SQLAlchemyError as e:
             log.debug("Database error dropping all tasks: %s", e)
+            session.rollback()
             return False
         finally:
-            session.rollback()
+            session.close()
         return True
 
     @classlock
