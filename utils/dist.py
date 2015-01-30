@@ -16,8 +16,6 @@ import tempfile
 import threading
 import time
 
-RESET_LASTCHECK = 50
-
 task_lock = multiprocessing.Lock()
 
 
@@ -78,7 +76,6 @@ class Node(db.Model):
     name = db.Column(db.Text, nullable=False)
     url = db.Column(db.Text, nullable=False)
     enabled = db.Column(db.Boolean, nullable=False)
-    last_check = db.Column(db.DateTime(timezone=False))
     machines = db.relationship("Machine", backref="node", lazy="dynamic")
 
     def __init__(self, name, url, enabled=True):
@@ -149,11 +146,10 @@ class Node(db.Model):
             log.critical("Error submitting task (task #%d, node %s): %s",
                          task.id, self.name, e)
 
-    def fetch_tasks(self, status, since=None):
+    def fetch_tasks(self, status):
         try:
             url = os.path.join(self.url, "tasks", "list")
-            params = dict(completed_after=since, status=status)
-            r = requests.get(url, params=params)
+            r = requests.get(url, params=dict(status=status))
             return r.json()["tasks"]
         except Exception as e:
             log.critical("Error listing completed tasks (node %s): %s",
@@ -279,9 +275,9 @@ class NodeHandler(object):
         for task in tasks:
             node.submit_task(task)
 
-    def fetch_latest_reports(self, node, last_check):
+    def fetch_latest_reports(self, node):
         # Fetch the latest reports.
-        for task in node.fetch_tasks("reported", since=last_check):
+        for task in node.fetch_tasks("reported"):
             q = Task.query.filter_by(node_id=node.id, task_id=task["id"])
             t = q.first()
 
@@ -290,12 +286,6 @@ class NodeHandler(object):
                                "by us!", node.name, task["id"])
                 node.delete_task(task["id"])
                 continue
-
-            # Update the last_check value of the Node for the next iteration.
-            completed_on = datetime.datetime.strptime(task["completed_on"],
-                                                      "%Y-%m-%d %H:%M:%S")
-            if not node.last_check or completed_on > node.last_check:
-                node.last_check = completed_on
 
             dirpath = os.path.join(app.config["REPORTS_DIRECTORY"],
                                    "%d" % t.id)
@@ -336,22 +326,7 @@ class NodeHandler(object):
         if status["pending"] < batch_size:
             self.submit_tasks(self.node, batch_size)
 
-        if self.node.last_check:
-            last_check = int(self.node.last_check.strftime("%s"))
-        else:
-            last_check = 0
-
-        self.fetch_latest_reports(self.node, last_check)
-
-        # We just fetched all the "latest" tasks. However, it is for some
-        # reason possible that some reports are never fetched, and therefore
-        # we reset the "last_check" parameter when more than 50 tasks have not
-        # been fetched, thus preventing running out of diskspace.
-        # status = self.node.status()
-        # if status and status["reported"] > RESET_LASTCHECK:
-        #     self.log.debug("Reached reset-lastcheck threshold, "
-        #                    "resetting last-check.")
-        #     self.node.last_check = None
+        self.fetch_latest_reports(self.node)
 
         db.session.commit()
         return start, self.node.name, status
