@@ -2,6 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+from random import randint
+
 from lib.common.abstracts import Package
 
 class Generic(Package):
@@ -12,5 +14,6 @@ class Generic(Package):
 
     def start(self, path):
         cmd_path = self.get_path("cmd.exe")
-        cmd_args = "/c start "Title" \"{0}\"".format(path)
+        rand_title = "".join( [chr(randint(0, 128)) for i in xrange(0, randint(1, 10))])
+        cmd_args = "/c start /wait it'\"{0}\" \"{1}\"".format(rand_title, path)
         return self.execute(cmd_path, cmd_args)
