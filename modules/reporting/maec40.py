@@ -118,8 +118,9 @@ class MAEC40Report(Report):
     def addActions(self):
         """Add Actions section."""
         # Process-initiated Actions.
-        for process in self.results["behavior"]["processes"]:
-            self.createProcessActions(process)
+        if "behavior" in self.results and "processes" in self.results["behavior"]:
+            for process in self.results["behavior"]["processes"]:
+                self.createProcessActions(process)
         # Network actions.
         if "network" in self.results and isinstance(self.results["network"], dict) and len(self.results["network"]) > 0:
             if "udp" in self.results["network"] and isinstance(self.results["network"]["udp"], list) and len(self.results["network"]["udp"]) > 0:
