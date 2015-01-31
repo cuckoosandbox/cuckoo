@@ -5,7 +5,8 @@
 def choose_package(file_type, file_name):
     """Choose analysis package due to file type and file extension.
     @param file_type: file type.
-    @return: package or None.
+    @param file_name: file name.
+    @return: package name or None.
     """
     if not file_type:
         return None
