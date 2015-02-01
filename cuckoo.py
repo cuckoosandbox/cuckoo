@@ -100,6 +100,12 @@ def cuckoo_clean():
     # Initialize the database connection.
     db = Database()
 
+    # Drop machines and machines_tags.
+    db.clean_machines()
+    
+    # Drop all guests.
+    db.drop_guests()
+    
     # Drop all tasks.
     db.drop_tasks()
 
