@@ -436,11 +436,27 @@ class Database(object):
             session.close()
 
     @classlock
+    def drop_guests(self):
+        """Drop all guests and their associated information."""
+        session = self.Session()
+        try:
+            session.query(Guest).delete()
+            session.commit()
+        except SQLAlchemyError as e:
+            log.warning("Database error dropping all guests: %s", e)
+            session.rollback()
+            return False
+        finally:
+            session.close()
+        return True
+
+    @classlock
     def drop_samples(self):
         """Drop all samples and their associated information."""
         session = self.Session()
         try:
             session.query(Sample).delete()
+            session.commit()
         except SQLAlchemyError as e:
             log.debug("Database error dropping all samples: %s", e)
             session.rollback()
@@ -455,6 +471,7 @@ class Database(object):
         session = self.Session()
         try:
             session.query(Task).delete()
+            session.commit()
         except SQLAlchemyError as e:
             log.debug("Database error dropping all tasks: %s", e)
             session.rollback()
