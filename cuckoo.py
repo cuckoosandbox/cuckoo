@@ -79,11 +79,8 @@ def cuckoo_clean():
     # Initialize the database connection.
     db = Database()
 
-    # Drop all tasks.
-    db.drop_tasks()
-
-    # Drop all samples.
-    db.drop_samples()
+    # Drop all tables.
+    db.drop()
 
     # Paths to clean
     paths = [
@@ -100,7 +97,7 @@ def cuckoo_clean():
             except (IOError, OSError) as e:
                 log.warning("Error removing directory %s: %s", path, e)
 
-    # Delete all compiled Python objects ("*.pyc".)
+    # Delete all compiled Python objects ("*.pyc").
     for dirpath, dirnames, filenames in os.walk(CUCKOO_ROOT):
         for fname in filenames:
             if not fname.endswith(".pyc"):

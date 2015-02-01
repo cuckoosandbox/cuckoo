@@ -419,6 +419,14 @@ class Database(object):
             return instance
 
     @classlock
+    def drop(self):
+        """Drop all tables."""
+        try:
+            Base.metadata.drop_all(self.engine)
+        except SQLAlchemyError as e:
+            raise CuckooDatabaseError("Unable to create or connect to database: {0}".format(e))
+
+    @classlock
     def clean_machines(self):
         """Clean old stored machines and related tables."""
         # Secondary table.
