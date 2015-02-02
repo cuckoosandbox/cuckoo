@@ -22,6 +22,7 @@ class JsonDump(Report):
 
         try:
             path = os.path.join(self.reports_path, "report.json")
+
             with codecs.open(path, "w", "utf-8") as report:
                 json.dump(results, report, sort_keys=False,
                           indent=int(indent), encoding=encoding)
