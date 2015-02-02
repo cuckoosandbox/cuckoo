@@ -17,7 +17,7 @@ try:
     from lib.cuckoo.core.database import Database
     from lib.cuckoo.core.startup import check_working_directory, check_configs
     from lib.cuckoo.core.startup import check_version, create_structure
-    from lib.cuckoo.core.startup import init_logging, init_modules
+    from lib.cuckoo.core.startup import init_logging, init_modules, init_console_logging
     from lib.cuckoo.core.startup import init_tasks, init_yara
     from lib.cuckoo.core.scheduler import Scheduler
     from lib.cuckoo.core.resultserver import ResultServer
@@ -70,6 +70,19 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     os.chdir(cur_path)
 
 def cuckoo_clean():
+    # Init logging.
+    # This need to init a console logger handler, because the standard
+    # logger (init_logging()) logs to a file which will be deleted.
+    create_structure()
+    init_console_logging()
+
+    # Initialize the database connection.
+    db = Database()
+
+    # Drop all tables.
+    db.drop()
+
+    # Paths to clean
     paths = [
         os.path.join(CUCKOO_ROOT, "db"),
         os.path.join(CUCKOO_ROOT, "log"),
@@ -84,7 +97,7 @@ def cuckoo_clean():
             except (IOError, OSError) as e:
                 log.warning("Error removing directory %s: %s", path, e)
 
-    # Delete all compiled Python objects ("*.pyc".)
+    # Delete all compiled Python objects ("*.pyc").
     for dirpath, dirnames, filenames in os.walk(CUCKOO_ROOT):
         for fname in filenames:
             if not fname.endswith(".pyc"):
@@ -96,15 +109,6 @@ def cuckoo_clean():
                 os.unlink(path)
             except (IOError, OSError) as e:
                 log.warning("Error removing file %s: %s", path, e)
-
-    # Initialize the database connection.
-    db = Database()
-
-    # Drop all tasks.
-    db.drop_tasks()
-
-    # Drop all samples.
-    db.drop_samples()
 
 def cuckoo_main(max_analysis_count=0):
     cur_path = os.getcwd()

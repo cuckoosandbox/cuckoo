@@ -419,6 +419,14 @@ class Database(object):
             return instance
 
     @classlock
+    def drop(self):
+        """Drop all tables."""
+        try:
+            Base.metadata.drop_all(self.engine)
+        except SQLAlchemyError as e:
+            raise CuckooDatabaseError("Unable to create or connect to database: {0}".format(e))
+
+    @classlock
     def clean_machines(self):
         """Clean old stored machines and related tables."""
         # Secondary table.
@@ -443,9 +451,10 @@ class Database(object):
             session.query(Sample).delete()
         except SQLAlchemyError as e:
             log.debug("Database error dropping all samples: %s", e)
+            session.rollback()
             return False
         finally:
-            session.rollback()
+            session.close()
         return True
 
     @classlock
@@ -456,9 +465,10 @@ class Database(object):
             session.query(Task).delete()
         except SQLAlchemyError as e:
             log.debug("Database error dropping all tasks: %s", e)
+            session.rollback()
             return False
         finally:
-            session.rollback()
+            session.close()
         return True
 
     @classlock
@@ -469,6 +479,7 @@ class Database(object):
         @param label: machine label
         @param ip: machine IP address
         @param platform: machine supported platform
+        @param tags: list of comma separated tags
         @param interface: sniffing interface for this machine
         @param snapshot: snapshot name to use instead of the current one, if configured
         @param resultserver_ip: IP address of the Result Server

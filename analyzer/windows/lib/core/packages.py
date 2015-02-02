@@ -5,7 +5,8 @@
 def choose_package(file_type, file_name):
     """Choose analysis package due to file type and file extension.
     @param file_type: file type.
-    @return: package or None.
+    @param file_name: file name.
+    @return: package name or None.
     """
     if not file_type:
         return None
@@ -26,9 +27,12 @@ def choose_package(file_type, file_name):
             "Microsoft Office Word" in file_type or \
             file_name.endswith((".doc", ".docx", ".rtf")):
         return "doc"
-    elif "Microsoft Office Excel" in file_type or file_name.endswith((".xls", ".xlsx")):
+    elif "Microsoft Office Excel" in file_type or \
+            "Microsoft Excel" in file_type or \
+            file_name.endswith((".xls", ".xlsx")):
         return "xls"
-    elif "Microsoft PowerPoint" in file_type or file_name.endswith((".ppt", ".pptx", ".pps", ".ppsx", ".pptm", ".potm", ".potx", ".ppsm")):
+    elif "Microsoft PowerPoint" in file_type or \
+            file_name.endswith((".ppt", ".pptx", ".pps", ".ppsx", ".pptm", ".potm", ".potx", ".ppsm")):
         return "ppt"
     elif "HTML" in file_type or file_name.endswith((".htm", ".html")):
         return "html"
