@@ -92,6 +92,13 @@ Following is the list of existing packages in alphabetical order:
             * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
             * ``dll``: specify the name of an optional DLL to be used as a replacement for cuckoomon.dll.
 
+    * ``msi``: used to run and analyze **MSI windows installer**.
+
+        **Options**:
+            * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+            * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
+            * ``dll``: specify the name of an optional DLL to be used as a replacement for cuckoomon.dll.
+
     * ``pdf``: used to run and analyze **PDF documents**.
 
         **Options**:
