@@ -22,13 +22,13 @@ from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
 from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from lib.cuckoo.core.startup import init_modules
 
-def process(aid, target=None, copy_path=None, report=False, auto=False):
-    results = RunProcessing(task_id=aid).run()
+def process(task_id, target=None, copy_path=None, report=False, auto=False):
+    results = RunProcessing(task_id=task_id).run()
     RunSignatures(results=results).run()
 
     if report:
-        RunReporting(task_id=aid, results=results).run()
-        Database().set_status(aid, TASK_REPORTED)
+        RunReporting(task_id=task_id, results=results).run()
+        Database().set_status(task_id)
 
         if auto:
             if cfg.cuckoo.delete_original and os.path.exists(target):
