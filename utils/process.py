@@ -23,12 +23,14 @@ from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from lib.cuckoo.core.startup import init_modules
 
 def process(task_id, target=None, copy_path=None, report=False, auto=False):
+    assert isinstance(task_id, int)
+
     results = RunProcessing(task_id=task_id).run()
     RunSignatures(results=results).run()
 
     if report:
         RunReporting(task_id=task_id, results=results).run()
-        Database().set_status(task_id)
+        Database().set_status(task_id, TASK_REPORTED)
 
         if auto:
             if cfg.cuckoo.delete_original and os.path.exists(target):
@@ -80,10 +82,13 @@ def autoprocess(parallel=1):
 
             log.info("Processing analysis data for Task #%d", task.id)
 
-            sample = db.view_sample(task.sample_id)
+            if task.category == "file":
+                sample = db.view_sample(task.sample_id)
 
-            copy_path = os.path.join(CUCKOO_ROOT, "storage",
-                                     "binaries", sample.sha256)
+                copy_path = os.path.join(CUCKOO_ROOT, "storage",
+                                         "binaries", sample.sha256)
+            else:
+                copy_path = None
 
             args = task.id, task.target, copy_path
             kwargs = dict(report=True, auto=True)
