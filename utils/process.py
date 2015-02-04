@@ -119,7 +119,7 @@ def main():
     if args.id == "auto":
         autoprocess(parallel=args.parallel)
     else:
-        process(args.id, report=args.report)
+        process(int(args.id), report=args.report)
 
 
 if __name__ == "__main__":
