@@ -38,6 +38,9 @@ class VirusTotal(Processing):
         elif self.task["category"] == "url":
             resource = self.task["target"]
             url = VIRUSTOTAL_URL_URL
+        else:
+            # Not supported type, exit.
+            return virustotal
 
         data = urllib.urlencode({"resource": resource, "apikey": key})
 
