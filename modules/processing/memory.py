@@ -46,10 +46,11 @@ class VolatilityAPI(object):
         self.__config()
 
     def _get_dtb(self):
+        """Use psscan to get system dtb and apply it."""
         ps = filescan.PSScan(self.config)
         for ep in ps.calculate():
-            if str(ep.ImageFileName) == 'System':
-                 self.config.update('dtb',ep.Pcb.DirectoryTableBase)
+            if str(ep.ImageFileName) == "System":
+                 self.config.update("dtb",ep.Pcb.DirectoryTableBase)
                  return True
         return False
 
