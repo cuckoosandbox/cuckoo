@@ -24,7 +24,6 @@ try:
     import volatility.exceptions as exc
     import volatility.plugins.filescan as filescan
 
-
     HAVE_VOLATILITY = True
     logging.getLogger("volatility.obj").setLevel(logging.INFO)
     logging.getLogger("volatility.utils").setLevel(logging.INFO)
@@ -90,16 +89,16 @@ class VolatilityAPI(object):
         for key, value in base_conf.items():
             self.config.update(key, value)
 
-
+	# Deal with Volatility support for KVM/qemu memory dump.
+	# See: #464.
         try:
           self.addr_space = utils.load_as(self.config)
         except exc.AddrSpaceError as e:
-          if not self._get_dtb():
-             raise exc.AddrSpaceError(e)
-          self.addr_space = utils.load_as(self.config)
+          if self._get_dtb():
+              self.addr_space = utils.load_as(self.config)
+          else:
+              raise exc.AddrSpaceError(e)
 
-
-        self.addr_space = utils.load_as(self.config)
         self.plugins = registry.get_plugin_classes(commands.Command,
                                                    lower=True)
 
