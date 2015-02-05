@@ -21,6 +21,10 @@ try:
     import volatility.plugins.taskmods as taskmods
     import volatility.win32.tasks as tasks
     import volatility.obj as obj
+    import volatility.exceptions as exc
+    import volatility.plugins.filescan as filescan
+
+
     HAVE_VOLATILITY = True
     logging.getLogger("volatility.obj").setLevel(logging.INFO)
     logging.getLogger("volatility.utils").setLevel(logging.INFO)
@@ -41,6 +45,15 @@ class VolatilityAPI(object):
         self.osprofile = osprofile
         self.config = None
         self.__config()
+
+    def _get_dtb(self):
+        ps = filescan.PSScan(self.config)
+        for ep in ps.calculate():
+            if str(ep.ImageFileName) == 'System':
+                 self.config.update('dtb',ep.Pcb.DirectoryTableBase)
+                 return True
+        return False
+
 
     def __config(self):
         """Creates a volatility configuration."""
@@ -76,6 +89,15 @@ class VolatilityAPI(object):
 
         for key, value in base_conf.items():
             self.config.update(key, value)
+
+
+        try:
+          self.addr_space = utils.load_as(self.config)
+        except exc.AddrSpaceError as e:
+          if not self._get_dtb():
+             raise exc.AddrSpaceError(e)
+          self.addr_space = utils.load_as(self.config)
+
 
         self.addr_space = utils.load_as(self.config)
         self.plugins = registry.get_plugin_classes(commands.Command,
