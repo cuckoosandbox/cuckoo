@@ -25,6 +25,8 @@ class VirusTotal(Processing):
         virustotal = []
 
         key = self.options.get("key", None)
+        timeout = self.options.get("timeout", 60)
+
         if not key:
             raise CuckooProcessingError("VirusTotal API key not "
                                         "configured, skip")
@@ -46,7 +48,7 @@ class VirusTotal(Processing):
 
         try:
             request = urllib2.Request(url, data)
-            response = urllib2.urlopen(request)
+            response = urllib2.urlopen(request, timeout=int(timeout))
             response_data = response.read()
         except urllib2.URLError as e:
             raise CuckooProcessingError("Unable to establish connection "
