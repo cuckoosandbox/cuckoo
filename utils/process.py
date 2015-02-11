@@ -126,6 +126,8 @@ def main():
     parser.add_argument("-r", "--report", help="Re-generate report", action="store_true", required=False)
     parser.add_argument("-p", "--parallel", help="Number of parallel threads to use (auto mode only).", type=int, required=False, default=1)
     parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
+    parser.add_argument("-m", "--modules", help="Path to signature and reporting modules - overrides default modules path.", type=str, required=False)
+
     args = parser.parse_args()
 
     if args.user:
@@ -133,6 +135,9 @@ def main():
 
     if args.debug:
         log.setLevel(logging.DEBUG)
+
+    if args.modules:
+        sys.path.insert(0, args.modules)
 
     init_modules()
 
