@@ -11,11 +11,6 @@ import urllib2
 import logging
 import logging.handlers
 
-import modules.auxiliary
-import modules.processing
-import modules.signatures
-import modules.reporting
-
 from lib.cuckoo.common.colors import red, green, yellow, cyan
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
@@ -180,12 +175,19 @@ def init_modules():
     log.debug("Importing modules...")
 
     # Import all auxiliary modules.
+    import modules.auxiliary
     import_package(modules.auxiliary)
+
     # Import all processing modules.
+    import modules.processing
     import_package(modules.processing)
+
     # Import all signatures.
+    import modules.signatures
     import_package(modules.signatures)
+
     # Import all reporting modules.
+    import modules.reporting
     import_package(modules.reporting)
 
     # Import machine manager.
