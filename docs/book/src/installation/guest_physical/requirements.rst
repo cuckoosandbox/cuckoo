@@ -54,6 +54,8 @@ On Debian/Ubuntu:
 
 In order for the physical machine manager to work, you must have a way
 for physical machines to be returned to a clean state.  In development/testing
-Fog (http://www.fogproject.org/) was used as a platform to handle re-imaging
+Fog (`http://www.fogproject.org/`_) was used as a platform to handle re-imaging
 the physical machines.  However, any re-imaging platform can be used
 (Clonezilla, Deepfreeze, etc) to accomplish this.
+
+.. _`http://www.fogproject.org/`: http://www.fogproject.org/
