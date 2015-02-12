@@ -15,7 +15,7 @@ sys.path.append(settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_RUNNING
 from lib.cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED
-from lib.cuckoo.core.database import TASK_REPORTED, TASK_FAILED_ANALYSIS
+from lib.cuckoo.core.database import TASK_REPORTED
 from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
 
 def timestamp(dt):
@@ -41,7 +41,6 @@ def index(request):
         TASK_COMPLETED,
         TASK_RECOVERED,
         TASK_REPORTED,
-        TASK_FAILED_ANALYSIS,
         TASK_FAILED_PROCESSING,
     )
 
