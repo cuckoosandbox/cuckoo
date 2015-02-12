@@ -36,7 +36,6 @@ TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
 TASK_RECOVERED = "recovered"
 TASK_REPORTED = "reported"
-TASK_FAILED_PROCESSING = "failed_processing"
 
 # Secondary table used in association Machine - Tag.
 machines_tags = Table(
