@@ -23,7 +23,7 @@ from lib.cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
 
-_modules = defaultdict(dict)
+_modules = defaultdict(list)
 
 def import_plugin(name):
     try:
