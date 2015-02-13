@@ -58,7 +58,7 @@ def autoprocess(parallel=1):
                         ar.get()
                     except:
                         log.exception("Exception when processing task ID %u.", tid)
-                        db.set_status(tid)
+                        # TODO: kick off failed tasks.
 
                 pending_results.remove((ar, tid, target, copy_path))
 
