@@ -61,7 +61,7 @@ To have MAEC support, you need to first install the Cybox and then the MAEC libr
 
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 
-If want to use KVM it's packaged too and you can install it with the following command::
+If you want to use KVM it's packaged too and you can install it with the following command::
 
     $ sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
 
@@ -78,6 +78,10 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Volatility: https://github.com/volatilityfoundation/
 .. _MAEC Python bindings: https://pypi.python.org/pypi/maec/4.0.1.0
 .. _Chardet: https://pypi.python.org/pypi/chardet
+
+If you want to use XenServer you'll have to install the *XenAPI* Python package::
+
+    $ sudo pip install XenAPI
 
 Virtualization Software
 =======================
