@@ -28,7 +28,7 @@ class XenServerMachinery(Machinery):
 
     LABEL = "uuid"
 
-    # Power States
+    # Power States.
     RUNNING = "Running"
     PAUSED = "Paused"
     POWEROFF = "Halted"
@@ -289,4 +289,3 @@ class XenServerMachinery(Machinery):
         state = self._get_vm_power_state(ref)
 
         return state
-
