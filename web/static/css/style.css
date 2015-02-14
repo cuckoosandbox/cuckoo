@@ -109,7 +109,12 @@ a.tag-label {
 .synchronization {
     background-color: #f9c5ff;
 }
-
+.system {
+    background-color: #fffcc5;
+}
+.windows {
+    background-color: #ffc5ee;
+}
 .page-header {
     margin-bottom: 10px;
 }

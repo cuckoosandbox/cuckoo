@@ -12,6 +12,8 @@ $(function () {
     <div class="col-md-6" style="border-right: 1px dashed #ddd;">
         <h2 style="text-align: center;">Analysis 1</h2>
 
+        {% include "compare/_info.html" with record=left %}
+
         <div class="col-md-8">
             <h4>Execution Graph</h4>
 
@@ -20,18 +22,20 @@ $(function () {
             <p>Following are the colored categories:</p>
 
             <p style="text-align: center;">
-                <span class="badge network" style="color:black;">network</span>
-                <span class="badge filesystem" style="color:black;">filesystem</span>
                 <span class="badge registry" style="color:black;">registry</span>
+                <span class="badge filesystem" style="color:black;">filesystem</span>
+                <span class="badge system" style="color:black;">system</span>
+                <span class="badge network" style="color:black;">network</span>                
                 <span class="badge process" style="color:black;">process</span>
                 <span class="badge services" style="color:black;">services</span>
                 <span class="badge synchronization" style="color:black;">synchronization</span>
+                <span class="badge windows" style="color:black;">windows</span>
             </p>
         </div>
 
         <div class="col-md-4">
             <div style="height: 300px;border: 2px solid #666;">
-                {% for cat, count in left.items %}
+                {% for cat, count in left_counts.items %}
                 <div style="height: {{count}}%" class="{{cat}}" data-toggle="tooltip" data-placement="top" title="{{count}}% {{cat}}"></div>
                 {% endfor %}
             </div>
@@ -40,9 +44,11 @@ $(function () {
     <div class="col-md-6">
         <h2 style="text-align: center;">Analysis 2</h2>
 
+        {% include "compare/_info.html" with record=right %}
+
         <div class="col-md-4">
             <div style="height: 300px;border: 2px solid #666;">
-                {% for cat, count in right.items %}
+                {% for cat, count in right_counts.items %}
                 <div style="height: {{count}}%" class="{{cat}}" data-toggle="tooltip" data-placement="top" title="{{count}}% {{cat}}"></div>
                 {% endfor %}
             </div>
