@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+
+<script>
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+</script>
+
+<div class="row">
+    <div class="col-md-6" style="border-right: 1px dashed #ddd;">
+        <h2 style="text-align: center;">Analysis 1</h2>
+
+        You selected analysis with ID {{original.info.id}}
+    </div>
+    <div class="col-md-6">
+        Select second analysis
+
+        <ul>
+        {% for record in records %}
+            <li><a href="{% url "compare.views.hash" record.info.id %}">{{record.info.id}}</a></li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
