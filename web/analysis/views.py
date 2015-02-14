@@ -22,6 +22,7 @@ sys.path.append(settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING
 from lib.cuckoo.common.constants import CUCKOO_ROOT
+import modules.processing.network as network
 
 results_db = pymongo.connection.Connection(settings.MONGO_HOST, settings.MONGO_PORT).cuckoo
 fs = GridFS(results_db)
@@ -411,4 +412,31 @@ def remove(request, task_id):
 
     return render_to_response("success.html",
                               {"message": "Task deleted, thanks for all the fish."},
+                              context_instance=RequestContext(request))
+
+@require_safe
+def pcapstream(request, task_id, conntuple):
+    import dpkt
+    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id), "dump_sorted.pcap")
+    fd = open(file_path, "rb")
+
+    # dpkt is kinda meh
+    pcap = dpkt.pcap.Reader(fd)
+    pcapiter = iter(pcap)
+    ts, raw = pcapiter.next()
+
+    src, sport, dst, dport = conntuple.split(",")
+    sport, dport = int(sport), int(dport)
+
+    conndata = results_db.analysis.find_one({ "info.id": int(task_id) }, { "network.tcp": 1 }, sort=[("_id", pymongo.DESCENDING)])
+    if conndata:
+        conn = [i for i in conndata["network"]["tcp"] if i["sport"] == sport and i["dport"] == dport and i["src"] == src and i["dst"] == dst][0]
+        offset = conn["offset"]
+        fd.seek(offset)
+    
+    packets = list(network.next_connection_packets(pcapiter))
+    for p in packets:
+        print p
+    return render_to_response("analysis/network/_pcapstream.html",
+                              {"packets": packets},
                               context_instance=RequestContext(request))

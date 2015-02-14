@@ -1,6 +1,7 @@
 <section id="tcp">
     <h4>TCP</h4>
     {% if analysis.network.tcp %}
+        <div class="stream"></div>
         <table class="table table-striped table-bordered">
             <tr>
                 <th>Source</th>
@@ -9,7 +10,8 @@
                 <th>Destination Port</th>
             </tr>
             {% for p in analysis.network.tcp %}
-            <tr>
+            <tr class="connrow">
+                <input type="hidden" name="conn" value="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}}" />
                 <td>{{p.src}}</td>
                 <td>{{p.sport}}</td>
                 <td>{{p.dst}} {{ iplookups|get_item:p.dst }}</td>
@@ -21,3 +23,18 @@
         <p>No TCP connections recorded.</p>
     {% endif %}
 </section>
+<script>
+$(function () {
+    $("section#tcp table tr.connrow").click(function(e) {
+        var $choice = $(this).find("input[name='conn']");
+
+        $("section#tcp div.stream").load("/analysis/{{analysis.info.id}}/pcapstream/"+$choice.val()+"/", function(data, status, xhr){
+            if (status == "error") {
+                $("section#tcp div.stream").html("Error loading data. Please reload the page and if the error persists contact us.");
+            }
+        });
+    });
+    // autoload first one
+    var $row = $("section#tcp table tr.connrow").first().click();
+})
+</script>

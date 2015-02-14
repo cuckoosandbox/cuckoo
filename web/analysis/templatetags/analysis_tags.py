@@ -1,3 +1,5 @@
+import hexdump as hexdump
+
 from django.template.defaultfilters import register
 
 @register.filter("mongo_id")
@@ -14,9 +16,20 @@ def mongo_id(value):
 
 @register.filter("is_dict")
 def is_dict(value):
-	"""Checks if value is an instance of dict"""
-	return isinstance(value, dict)
+    """Checks if value is an instance of dict"""
+    return isinstance(value, dict)
 
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key, "")
+
+@register.filter("hdformat")
+def hdformat(x, indent):
+    lines = []
+    prefix = ""
+    if indent: prefix == "        "
+
+    for line in hexdump.hexdump(x, result="generator"):
+        lines.append(prefix + line)
+
+    return "\n".join(lines)

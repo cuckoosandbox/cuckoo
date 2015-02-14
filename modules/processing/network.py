@@ -692,3 +692,46 @@ def sort_pcap(inpath, outpath):
     inc = SortCap(inpath)
     batch_sort(inc, outpath)
     return 0
+
+def flowtuple_from_raw(raw):
+    pkt = dpkt.ethernet.Ethernet(raw)
+    ip = pkt.data
+
+    if isinstance(ip, dpkt.ip.IP):
+        sip, dip = socket.inet_ntoa(ip.src), socket.inet_ntoa(ip.dst)
+        proto = ip.p
+
+        if proto == dpkt.ip.IP_PROTO_TCP or proto == dpkt.ip.IP_PROTO_UDP:
+            l3 = ip.data
+            sport, dport = l3.sport, l3.dport
+        else:
+            sport, dport = 0, 0
+
+    else:
+        sip, dip, proto = 0, 0, -1
+        sport, dport = 0, 0
+
+    flowtuple = (sip, dip, sport, dport, proto)
+    return flowtuple
+
+def payload_from_raw(raw):
+    pkt = dpkt.ethernet.Ethernet(raw)
+    try: return pkt.data.data.data
+    except:
+        return ""
+
+def next_connection_packets(piter):
+    first_ft = None
+
+    for ts, raw in piter:
+        ft = flowtuple_from_raw(raw)
+        if not first_ft: first_ft = ft
+
+        sip, dip, sport, dport, proto = ft
+        if not (first_ft == ft or first_ft == (dip, sip, dport, sport, proto)):
+            break
+
+        yield {
+            "src": sip, "dst": dip, "sport": sport, "dport": dport,
+            "raw": payload_from_raw(raw), "direction": first_ft == ft,
+        }
