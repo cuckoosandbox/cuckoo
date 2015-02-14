@@ -218,7 +218,7 @@ def file(request, category, object_id):
         content_type = file_object.get("contentType", "application/octet-stream")
         file_item = fs.get(ObjectId(file_object["_id"]))
 
-        file_name = file_item.sha256
+        file_name = file_item.sha256 + "_" + file_item.filename
         if category == "pcap":
             file_name += ".pcap"
             content_type = "application/vnd.tcpdump.pcap"
