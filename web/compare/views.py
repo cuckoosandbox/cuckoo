@@ -19,15 +19,22 @@ results_db = pymongo.connection.Connection(settings.MONGO_HOST, settings.MONGO_P
 
 @require_safe
 def left(request, left_id):
-    # Select all analyses with same file hash.
     left = results_db.analysis.find_one({"info.id" : int(left_id)}, {"target" : 1, "info" : 1})
-
     if not left:
         return render_to_response("error.html",
                                   {"error" : "No analysis found with specified ID"},
                                   context_instance=RequestContext(request))
-
-    records = results_db.analysis.find({"target.file.md5" : left["target"]["file"]["md5"]}, {"target" : 1, "info" : 1})
+    
+    # Select all analyses with same file hash.
+    records = results_db.analysis.find(
+        {
+            "$and" : [
+                {"target.file.md5" : left["target"]["file"]["md5"]},
+                {"info.id" : {"$ne" : int(left_id)}}
+            ]
+        },
+        {"target" : 1, "info" : 1}
+    )
 
     return render_to_response("compare/left.html",
                               {"left" : left, "records" : records},
@@ -35,8 +42,26 @@ def left(request, left_id):
 
 @require_safe
 def hash(request, left_id, right_hash):
+    left = results_db.analysis.find_one({"info.id" : int(left_id)}, {"target" : 1, "info" : 1})
+    if not left:
+        return render_to_response("error.html",
+                                  {"error" : "No analysis found with specified ID"},
+                                  context_instance=RequestContext(request))
+
+    # Select all analyses with same file hash.
+    records = results_db.analysis.find(
+        {
+            "$and" : [
+                {"target.file.md5" : right_hash},
+                {"info.id" : {"$ne" : int(left_id)}}
+            ]
+        },
+        {"target" : 1, "info" : 1}
+    )
+
     # Select all analyses with specified file hash.
     return render_to_response("compare/hash.html",
+                              {"left" : left, "records" : records, "hash" : right_hash},
                               context_instance=RequestContext(request))
 @require_safe
 def both(request, left_id, right_id):
