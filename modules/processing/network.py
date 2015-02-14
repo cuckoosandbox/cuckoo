@@ -9,6 +9,19 @@ import socket
 import logging
 from urlparse import urlunparse
 
+# imports for the batch sort
+## http://stackoverflow.com/questions/10665925/how-to-sort-huge-files-with-python
+## ( http://code.activestate.com/recipes/576755/ )
+from tempfile import gettempdir
+from itertools import islice, cycle
+from collections import namedtuple
+import heapq
+
+TMPD = gettempdir()
+Keyed = namedtuple("Keyed", ["key", "obj"])
+Packet = namedtuple("Packet", ["raw", "ts"])
+#
+
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.dns import resolve
@@ -39,14 +52,17 @@ class Pcap:
         self.unique_domains = []
         # List containing all TCP packets.
         self.tcp_connections = []
+        self.tcp_connections_seen = set()
         # List containing all UDP packets.
         self.udp_connections = []
+        self.udp_connections_seen = set()
         # List containing all ICMP requests.
         self.icmp_requests = []
         # List containing all HTTP requests.
-        self.http_requests = []
+        self.http_requests = {}
         # List containing all DNS requests.
-        self.dns_requests = []
+        self.dns_requests = {}
+        self.dns_answers = set()
         # List containing all SMTP requests.
         self.smtp_requests = []
         # Reconstruncted SMTP flow.
@@ -149,7 +165,7 @@ class Pcap:
             self._reassemble_smtp(conn, data)
         # IRC.
         if conn["dport"] != 21 and self._check_irc(data):
-            self._add_irc(data)
+            self._add_irc(data) 
 
     def _udp_dissect(self, conn, data):
         """Runs all UDP dissectors.
@@ -296,7 +312,13 @@ class Pcap:
                 query["answers"].append(ans)
 
             self._add_domain(query["request"])
-            self.dns_requests.append(query)
+
+            reqtuple = (query["type"], query["request"])
+            if not reqtuple in self.dns_requests:
+                self.dns_requests[reqtuple] = query
+            else:
+                new_answers = set((i["type"], i["data"]) for i in query["answers"]) - self.dns_answers
+                self.dns_requests[reqtuple]["answers"] += [dict(type=i[0], data=i[1]) for i in new_answers]
 
         return True
 
@@ -342,6 +364,10 @@ class Pcap:
         @param tcpdata: TCP data flow.
         @param dport: destination port.
         """
+        if tcpdata in self.http_requests:
+            self.http_requests[tcpdata]["count"] += 1
+            return True
+
         try:
             http = dpkt.http.Request()
             http.unpack(tcpdata)
@@ -349,7 +375,7 @@ class Pcap:
             pass
 
         try:
-            entry = {}
+            entry = {"count": 1}
 
             if "host" in http.headers:
                 entry["host"] = convert_to_printable(http.headers["host"])
@@ -379,7 +405,7 @@ class Pcap:
             entry["version"] = convert_to_printable(http.version)
             entry["method"] = convert_to_printable(http.method)
 
-            self.http_requests.append(entry)
+            self.http_requests[tcpdata] = entry
         except Exception:
             return False
 
@@ -469,7 +495,11 @@ class Pcap:
                       "corrupted or wrong format." % self.filepath)
             return self.results
 
+        offset = file.tell()
+        first_ts = None
         for ts, buf in pcap:
+            if not first_ts: first_ts = ts
+
             try:
                 eth = dpkt.ethernet.Ethernet(buf)
                 ip = eth.data
@@ -484,6 +514,7 @@ class Pcap:
                     connection["dst"] = socket.inet_ntop(socket.AF_INET6,
                                                          ip.dst)
                 else:
+                    offset = file.tell()
                     continue
 
                 self._add_hosts(connection)
@@ -497,9 +528,12 @@ class Pcap:
                         connection["sport"] = tcp.sport
                         connection["dport"] = tcp.dport
                         self._tcp_dissect(connection, tcp.data)
-                        self.tcp_connections.append(connection)
-                    else:
-                        continue
+
+                        src, sport, dst, dport = (connection["src"], connection["sport"], connection["dst"], connection["dport"])
+                        if not ((dst, dport, src, sport) in self.tcp_connections_seen or (src, sport, dst, dport) in self.tcp_connections_seen):
+                            self.tcp_connections.append((src, sport, dst, dport, offset, ts-first_ts))
+                            self.tcp_connections_seen.add((src, sport, dst, dport))
+
                 elif ip.p == dpkt.ip.IP_PROTO_UDP:
                     udp = ip.data
                     if not isinstance(udp, dpkt.udp.UDP):
@@ -509,13 +543,20 @@ class Pcap:
                         connection["sport"] = udp.sport
                         connection["dport"] = udp.dport
                         self._udp_dissect(connection, udp.data)
-                        self.udp_connections.append(connection)
+
+                        src, sport, dst, dport = (connection["src"], connection["sport"], connection["dst"], connection["dport"])
+                        if not ((dst, dport, src, sport) in self.udp_connections_seen or (src, sport, dst, dport) in self.udp_connections_seen):
+                            self.udp_connections.append((src, sport, dst, dport, offset, ts-first_ts))
+                            self.udp_connections_seen.add((src, sport, dst, dport))
+
                 elif ip.p == dpkt.ip.IP_PROTO_ICMP:
                     icmp = ip.data
                     if not isinstance(icmp, dpkt.icmp.ICMP):
                         icmp = dpkt.icmp.ICMP(icmp)
 
                     self._icmp_dissect(connection, icmp)
+
+                offset = file.tell()
             except AttributeError:
                 continue
             except dpkt.dpkt.NeedData:
@@ -531,11 +572,11 @@ class Pcap:
         # Build results dict.
         self.results["hosts"] = self.unique_hosts
         self.results["domains"] = self.unique_domains
-        self.results["tcp"] = self.tcp_connections
-        self.results["udp"] = self.udp_connections
+        self.results["tcp"] = [conn_from_flowtuple(i) for i in self.tcp_connections]
+        self.results["udp"] = [conn_from_flowtuple(i) for i in self.udp_connections]
         self.results["icmp"] = self.icmp_requests
-        self.results["http"] = self.http_requests
-        self.results["dns"] = self.dns_requests
+        self.results["http"] = self.http_requests.values()
+        self.results["dns"] = self.dns_requests.values()
         self.results["smtp"] = self.smtp_requests
         self.results["irc"] = self.irc_requests
 
@@ -547,10 +588,107 @@ class NetworkAnalysis(Processing):
     def run(self):
         self.key = "network"
 
-        results = Pcap(self.pcap_path).run()
+        sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
+        sort_pcap(self.pcap_path, sorted_path)
+
+        results = Pcap(sorted_path).run()
 
         # Save PCAP file hash.
         if os.path.exists(self.pcap_path):
             results["pcap_sha256"] = File(self.pcap_path).get_sha256()
 
         return results
+
+def conn_from_flowtuple(ft):
+    sip, sport, dip, dport, offset, relts = ft
+    return { "src": sip, "sport": sport, "dst": dip, "dport": dport, "offset": offset, "time": relts }
+
+# input_iterator should be a class that als supports writing so we can use it for the temp files
+def batch_sort(input_iterator, output_path, buffer_size=32000):
+    output_class = input_iterator.__class__
+    chunks = []
+    try:
+        while True:
+            current_chunk = list(islice(input_iterator,buffer_size))
+            if not current_chunk:
+                break
+            current_chunk.sort()
+            output_chunk = output_class(os.path.join(TMPD,'%06i'%len(chunks)))
+            chunks.append(output_chunk)
+
+            for elem in current_chunk:
+                output_chunk.write(elem.obj)
+            output_chunk.close()
+
+        output_file = output_class(output_path)
+        for elem in heapq.merge(*chunks):
+            output_file.write(elem.obj)
+        output_file.close()
+    finally:
+        for chunk in chunks:
+            try:
+                chunk.close()
+                os.remove(chunk.name)
+            except Exception:
+                pass
+
+# magic
+class SortCap(object):
+    def __init__(self, path):
+        self.name = path
+        self.fd = None
+        self.ctr = 0 # counter to pass through packets without flow info (non-IP)
+        self.conns = set()
+
+    def write(self, p):
+        if not self.fd:
+            self.fd = dpkt.pcap.Writer(open(self.name, "wb"), linktype=1)
+        self.fd.writepkt(p.raw, p.ts)
+
+    def __iter__(self):
+        if not self.fd:
+            self.fd = dpkt.pcap.Reader(open(self.name, "rb"))
+            self.fditer = iter(self.fd)
+        return self
+
+    def close(self):
+        self.fd.close()
+        self.fd = None
+
+    def next(self):
+        rp = next(self.fditer)
+        if rp is None: return None
+        self.ctr += 1
+
+        ts, raw = rp
+        rpkt = Packet(raw, ts)
+
+        pkt = dpkt.ethernet.Ethernet(raw)
+        ip = pkt.data
+
+        if isinstance(ip, dpkt.ip.IP):
+            sip, dip = ip.src, ip.dst
+            proto = ip.p
+
+            if proto == dpkt.ip.IP_PROTO_TCP or proto == dpkt.ip.IP_PROTO_UDP:
+                l3 = ip.data
+                sport, dport = l3.sport, l3.dport
+            else:
+                sport, dport = 0, 0
+
+        else:
+            sip, dip, proto = 0, 0, -1
+            sport, dport = 0, 0
+
+        if (dip, sip, dport, sport, proto) in self.conns:
+            flowtuple = (dip, sip, dport, sport, proto)
+        else:
+            flowtuple = (sip, dip, sport, dport, proto)
+        self.conns.add(flowtuple)
+
+        return Keyed((flowtuple, ts, self.ctr), rpkt)
+
+def sort_pcap(inpath, outpath):
+    inc = SortCap(inpath)
+    batch_sort(inc, outpath)
+    return 0
