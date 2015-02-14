@@ -12,14 +12,18 @@ $(function () {
     <div class="col-md-6" style="border-right: 1px dashed #ddd;">
         <h2 style="text-align: center;">Analysis 1</h2>
 
-        You selected analysis with ID {{original.info.id}}
+        {% include "compare/_info.html" with record=left %}
     </div>
     <div class="col-md-6">
-        Select second analysis
+        <h2 style="text-align: center;">Analysis 2</h2>
+
+        <p>You need to select the second analysis. Following are all the other analyses of the same file:</p>
 
         <ul>
         {% for record in records %}
-            <li><a href="{% url "compare.views.both" original.info.id record.info.id %}">{{record.info.id}}</a></li>
+            {% if record.info.id != left.info.id %}
+                <li><a href="{% url "compare.views.both" left.info.id record.info.id %}">Analysis with ID {{record.info.id}}</a></li>
+            {% endif %}
         {% endfor %}
         </ul>
     </div>

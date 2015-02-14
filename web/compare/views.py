@@ -20,17 +20,17 @@ results_db = pymongo.connection.Connection(settings.MONGO_HOST, settings.MONGO_P
 @require_safe
 def left(request, left_id):
     # Select all analyses with same file hash.
-    original = results_db.analysis.find_one({"info.id" : int(left_id)}, {"target" : 1, "info" : 1})
+    left = results_db.analysis.find_one({"info.id" : int(left_id)}, {"target" : 1, "info" : 1})
 
-    if not original:
+    if not left:
         return render_to_response("error.html",
                                   {"error" : "No analysis found with specified ID"},
                                   context_instance=RequestContext(request))
 
-    records = results_db.analysis.find({"target.file.md5" : original["target"]["file"]["md5"]}, {"target" : 1, "info" : 1})
+    records = results_db.analysis.find({"target.file.md5" : left["target"]["file"]["md5"]}, {"target" : 1, "info" : 1})
 
     return render_to_response("compare/left.html",
-                              {"original" : original, "records" : records},
+                              {"left" : left, "records" : records},
                               context_instance=RequestContext(request))
 
 @require_safe
@@ -40,11 +40,13 @@ def hash(request, left_id, right_hash):
                               context_instance=RequestContext(request))
 @require_safe
 def both(request, left_id, right_id):
+    left = results_db.analysis.find_one({"info.id" : int(left_id)}, {"target" : 1, "info" : 1})
+    right = results_db.analysis.find_one({"info.id" : int(right_id)}, {"target" : 1, "info" : 1})
     # Execute comparison.
     counts = compare.helper_percentages_mongo(results_db, left_id, right_id)
 
     return render_to_response("compare/both.html",
-                              {"left": counts[left_id], "right": counts[right_id]},
+                              {"left" : left, "right" : right, "left_counts": counts[left_id], "right_counts": counts[right_id]},
                               context_instance=RequestContext(request)) 
 
 @require_safe

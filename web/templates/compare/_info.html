@@ -1,0 +1,20 @@
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>MD5</th>
+            <th>Machine</th>
+            <th>Completed On</th>
+            <th>Duration</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{record.info.category|upper}}</td>
+            <td><a href="{% url "analysis.views.report" record.info.id %}">{{record.target.file.md5}}</a></td>
+            <td>{{record.info.machine.name}}</td>
+            <td>{{record.info.ended}}</td>
+            <td>{{record.info.duration}} seconds</td>
+        </tr>
+    </tbody>
+</table>
