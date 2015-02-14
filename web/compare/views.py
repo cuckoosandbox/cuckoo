@@ -13,6 +13,8 @@ import pymongo
 
 sys.path.append(settings.CUCKOO_PATH)
 
+import lib.cuckoo.common.compare as compare
+
 results_db = pymongo.connection.Connection(settings.MONGO_HOST, settings.MONGO_PORT).cuckoo
 
 @require_safe
@@ -39,7 +41,10 @@ def hash(request, left_id, right_hash):
 @require_safe
 def both(request, left_id, right_id):
     # Execute comparison.
+    counts = compare.helper_percentages_mongo(results_db, left_id, right_id)
+
     return render_to_response("compare/both.html",
+                              {"left": counts[left_id], "right": counts[right_id]},
                               context_instance=RequestContext(request)) 
 
 @require_safe

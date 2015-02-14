@@ -31,12 +31,9 @@ $(function () {
 
         <div class="col-md-4">
             <div style="height: 300px;border: 2px solid #666;">
-                <div style="height: 10%" class="network" data-toggle="tooltip" data-placement="top" title="10% network"></div>
-                <div style="height: 5%" class="filesystem" data-toggle="tooltip" data-placement="top" title="5% filesystem"></div>
-                <div style="height: 5%" class="registry" data-toggle="tooltip" data-placement="top" title="5% registry"></div>
-                <div style="height: 50%" class="process" data-toggle="tooltip" data-placement="top" title="10% process"></div>
-                <div style="height: 20%" class="services" data-toggle="tooltip" data-placement="top" title="20% services"></div>
-                <div style="height: 10%" class="synchronization" data-toggle="tooltip" data-placement="top" title="10% synchronizatoin"></div>
+                {% for cat, count in left.items %}
+                <div style="height: {{count}}%" class="{{cat}}" data-toggle="tooltip" data-placement="top" title="{{count}}% {{cat}}"></div>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -45,10 +42,9 @@ $(function () {
 
         <div class="col-md-4">
             <div style="height: 300px;border: 2px solid #666;">
-                <div style="height: 5%" class="filesystem" data-toggle="tooltip" data-placement="top" title="5% filesystem"></div>
-                <div style="height: 5%" class="registry" data-toggle="tooltip" data-placement="top" title="5% registry"></div>
-                <div style="height: 10%" class="network" data-toggle="tooltip" data-placement="top" title="10% network"></div>
-                <div style="height: 80%" class="process" data-toggle="tooltip" data-placement="top" title="10% process"></div>
+                {% for cat, count in right.items %}
+                <div style="height: {{count}}%" class="{{cat}}" data-toggle="tooltip" data-placement="top" title="{{count}}% {{cat}}"></div>
+                {% endfor %}
             </div>
         </div>
 
