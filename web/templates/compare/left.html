@@ -19,7 +19,7 @@ $(function () {
 
         <ul>
         {% for record in records %}
-            <li><a href="{% url "compare.views.hash" record.info.id %}">{{record.info.id}}</a></li>
+            <li><a href="{% url "compare.views.both" original.info.id record.info.id %}">{{record.info.id}}</a></li>
         {% endfor %}
         </ul>
     </div>
