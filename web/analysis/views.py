@@ -206,8 +206,14 @@ def report(request, task_id):
                                   {"error": "The specified analysis does not exist"},
                                   context_instance=RequestContext(request))
 
+    domainlookups = dict((i["domain"], i["ip"]) for i in report["network"]["domains"])
+    iplookups = dict((i["ip"], i["domain"]) for i in report["network"]["domains"])
+    for i in report["network"]["dns"]:
+        for a in i["answers"]:
+            iplookups[a["data"]] = i["request"]
+
     return render_to_response("analysis/report.html",
-                              {"analysis": report},
+                              {"analysis": report, "domainlookups": domainlookups, "iplookups": iplookups},
                               context_instance=RequestContext(request))
 
 @require_safe
