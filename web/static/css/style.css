@@ -129,3 +129,11 @@ td {
 .tab-content {
     margin-top: 25px;
 }
+
+section#tcp table {
+    width: 50%;
+}
+section#tcp div.stream {
+    float: right;
+    width: 49%;
+}

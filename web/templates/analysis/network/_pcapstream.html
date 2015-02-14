@@ -1,0 +1,8 @@
+{% load analysis_tags %}
+
+<pre>
+{% for p in packets %}{% if not p.direction %}        {% endif %}{{p.src}}:{{p.sport}} -> {{p.dst}}:{{p.dport}}
+{{ p.raw|hdformat:p.direction }}
+
+{% endfor %}
+</pre>
