@@ -212,23 +212,17 @@ def report(request, task_id):
 
 @require_safe
 def file(request, category, object_id):
-    file_object = results_db.fs.files.find_one({"_id": ObjectId(object_id)})
+    file_item = fs.get(ObjectId(object_id))
 
-    if file_object:
-        content_type = file_object.get("contentType", "application/octet-stream")
-        file_item = fs.get(ObjectId(file_object["_id"]))
-
+    if file_item:
+        # Composing file name in format sha256_originalfilename.
         file_name = file_item.sha256 + "_" + file_item.filename
-        if category == "pcap":
-            file_name += ".pcap"
-            content_type = "application/vnd.tcpdump.pcap"
-        elif category == "screenshot":
-            file_name += ".jpg"
-            content_type = "image/jpeg"
-        elif category == 'memdump':
-            file_name += ".dmp"
-        else:
-            file_name += ".bin"
+
+        # Managing gridfs error if field contentType is missing.
+        try:
+            content_type = file_item.contentType
+        except AttributeError:
+            content_type = "application/octet-stream"
 
         response = HttpResponse(file_item.read(), content_type=content_type)
         response["Content-Disposition"] = "attachment; filename={0}".format(file_name)
