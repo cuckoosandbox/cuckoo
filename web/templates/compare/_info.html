@@ -1,3 +1,5 @@
+{% load compare_tags %}
+
 <table class="table table-striped table-bordered">
     <thead>
         <tr>
@@ -9,6 +11,17 @@
         </tr>
     </thead>
     <tbody>
+        {% if record|is_list %}
+            {% for entry in record %}
+            <tr>
+                <td>{{entry.info.category|upper}}</td>
+                <td><a href="{% url "analysis.views.report" entry.info.id %}">{{entry.target.file.md5}}</a></td>
+                <td>{{entry.info.machine.name}}</td>
+                <td>{{entry.info.ended}}</td>
+                <td>{{entry.info.duration}} seconds</td>
+            </tr>
+            {% endfor %}
+        {% else %}
         <tr>
             <td>{{record.info.category|upper}}</td>
             <td><a href="{% url "analysis.views.report" record.info.id %}">{{record.target.file.md5}}</a></td>
@@ -16,5 +29,6 @@
             <td>{{record.info.ended}}</td>
             <td>{{record.info.duration}} seconds</td>
         </tr>
+        {% endif %}
     </tbody>
 </table>
