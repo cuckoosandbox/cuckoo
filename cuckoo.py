@@ -71,6 +71,10 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     os.chdir(cur_path)
 
 def cuckoo_clean():
+    """Clean up cuckoo setup.
+    It deletes logs, all stored data from file system and configured databases (SQL
+    and MongoDB.
+    """
     # Init logging.
     # This need to init a console logger handler, because the standard
     # logger (init_logging()) logs to a file which will be deleted.
@@ -97,7 +101,7 @@ def cuckoo_clean():
         except:
             log.warning("Unable to drop MongoDB database: %s", mdb)
 
-    # Paths to clean
+    # Paths to clean.
     paths = [
         os.path.join(CUCKOO_ROOT, "db"),
         os.path.join(CUCKOO_ROOT, "log"),
