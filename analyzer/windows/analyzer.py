@@ -254,9 +254,7 @@ class PipeHandler(Thread):
         """Run handler.
         @return: operation status.
         """
-        data = ""
-        response = "OK"
-        proc = None
+        data, response = "", "OK"
 
         # Read the data submitted to the Pipe Server.
         while True:
@@ -294,10 +292,6 @@ class PipeHandler(Thread):
                            None)
 
         KERNEL32.CloseHandle(self.h_pipe)
-
-        if proc:
-            proc.close()
-
         return True
 
 class PipeServer(Thread):
