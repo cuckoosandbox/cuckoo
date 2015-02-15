@@ -435,7 +435,7 @@ class RunSignatures(object):
                     log.debug("\t |-- %s", sig.name)
 
             # Iterate calls and tell interested signatures about them
-            for process in self.results["behavior2"]["processes"]:
+            for process in self.results.get("behavior2", {}).get("processes", []):
                 for sig in evented_list:
                     sig.on_process(process["process_identifier"])
                 for thread in process.get("threads", []):
