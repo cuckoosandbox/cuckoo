@@ -6,7 +6,6 @@
 import argparse
 import logging
 import os
-import shutil
 import sys
 
 try:
@@ -16,7 +15,7 @@ try:
     from lib.cuckoo.common.exceptions import CuckooCriticalError
     from lib.cuckoo.common.exceptions import CuckooDependencyError
     from lib.cuckoo.core.database import Database
-    from lib.cuckoo.core.startup import check_working_directory, check_configs
+    from lib.cuckoo.core.startup import check_working_directory, check_configs, cuckoo_clean
     from lib.cuckoo.core.startup import check_version, create_structure
     from lib.cuckoo.core.startup import init_logging, init_modules, init_console_logging
     from lib.cuckoo.core.startup import init_tasks, init_yara
@@ -69,65 +68,6 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     ResultServer()
 
     os.chdir(cur_path)
-
-def cuckoo_clean():
-    """Clean up cuckoo setup.
-    It deletes logs, all stored data from file system and configured databases (SQL
-    and MongoDB.
-    """
-    # Init logging.
-    # This need to init a console logger handler, because the standard
-    # logger (init_logging()) logs to a file which will be deleted.
-    create_structure()
-    init_console_logging()
-
-    # Initialize the database connection.
-    db = Database()
-
-    # Drop all tables.
-    db.drop()
-
-    # Check if MongoDB reporting is enabled and drop that if it is.
-    cfg = Config("reporting")
-    if cfg.mongodb and cfg.mongodb.enabled:
-        from pymongo import MongoClient
-        host = cfg.mongodb.get("host", "127.0.0.1")
-        port = cfg.mongodb.get("port", 27017)
-        mdb = cfg.mongodb.get("db", "cuckoo")
-        try:
-            conn = MongoClient(host, port)
-            conn.drop_database(mdb)
-            conn.disconnect()
-        except:
-            log.warning("Unable to drop MongoDB database: %s", mdb)
-
-    # Paths to clean.
-    paths = [
-        os.path.join(CUCKOO_ROOT, "db"),
-        os.path.join(CUCKOO_ROOT, "log"),
-        os.path.join(CUCKOO_ROOT, "storage"),
-    ]
-
-    # Delete various directories.
-    for path in paths:
-        if os.path.isdir(path):
-            try:
-                shutil.rmtree(path)
-            except (IOError, OSError) as e:
-                log.warning("Error removing directory %s: %s", path, e)
-
-    # Delete all compiled Python objects ("*.pyc").
-    for dirpath, dirnames, filenames in os.walk(CUCKOO_ROOT):
-        for fname in filenames:
-            if not fname.endswith(".pyc"):
-                continue
-
-            path = os.path.join(CUCKOO_ROOT, dirpath, fname)
-
-            try:
-                os.unlink(path)
-            except (IOError, OSError) as e:
-                log.warning("Error removing file %s: %s", path, e)
 
 def cuckoo_main(max_analysis_count=0):
     cur_path = os.getcwd()
