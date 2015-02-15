@@ -14,10 +14,10 @@ class SystemMetrics(Signature):
 
     # Evented signatures can specify filters that reduce the amount of
     # API calls that are streamed in. One can filter Process name, API
-    # name/identifier and category. These should be sets for faster lookup.
-    filter_processnames = set()
-    filter_apinames = set(["GetSystemMetrics"])
-    filter_categories = set()
+    # name/identifier and category.
+    filter_processnames = ()
+    filter_apinames = "GetSystemMetrics",
+    filter_categories = ()
 
     # This is a signature template. It should be used as a skeleton for
     # creating custom signatures, therefore is disabled by default.

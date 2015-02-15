@@ -701,9 +701,7 @@ class Signature(object):
 
     def __init__(self, caller):
         """
-
         @param caller: calling object. Stores results in caller.results
-        @return:
         """
         self.data = []
         self._caller = caller
@@ -717,7 +715,8 @@ class Signature(object):
         self._mark_start = None
         self._mark_end = None
 
-        self._active = True   # Used to de-activate a signature that already matched
+        # Used to de-activate a signature that already matched.
+        self._active = True
 
     def is_active(self):
         return self._active
@@ -757,80 +756,61 @@ class Signature(object):
         return None
 
     def mark_start(self):
-        """ set a mark for the start of the signature
-        @return:
-        """
-        self._mark_start = {"pid": self.pid,
-                           "tid": self.tid,
-                           "cid": self.cid
-                            }
+        """Set a mark for the start of the signature."""
+        self._mark_start = dict(pid=self, pid, tid=self.tid, cid=self.cid)
 
     def mark_end(self):
-        """ set a mark for the end of the signature
-
-        @return:
-        """
-        self._mark_end = {"pid": self.pid,
-                           "tid": self.tid,
-                           "cid": self.cid
-                            }
+        """Set a mark for the end of the signature."""
+        self._mark_end = dict(pid=self.pid, tid=self.tid, cid=self.cid)
 
     def _get_mark(self):
-        """ Store mark with the signature
+        """Store mark with the signature.
 
         mark_start must be set. mark_end is optional
-
-        @return:
         """
-        res = {"start":{},
-               "end":{}
-              }
-        if self._mark_start:
-            res["start"] = self._mark_start
-        else:
-            return None
-        if self._mark_end:
-            res["end"] = self._mark_end
+        res = dict(start={}, end={})
+
+        if not self._mark_start:
+            return
+
+        res["start"] = self._mark_start
+        res["end"] = self._mark_end
         return res
 
     def goto_on_call(self, call, pid, tid, cid):
-        """ A wrapper around on_call, Handles some
+        """A wrapper around on_call, Handles some
 
         @call: Call details
         @pid: process id
         @tid: thread id
         @cid: Number of this call in that pid/tid
-        @return:
         """
         self.pid = pid
         self.tid = tid
         self.cid = cid
 
-        result = self.on_call(call, pid, tid)
+        return self.on_call(call, pid, tid)
 
-        return result
+    def get_results(self, key=None, default=None):
+        if key:
+            return self._caller.results.get(key, default)
 
-    def get_results(self):
         return self._caller.results
 
     def list_signatures(self):
-        """ List signatures that matched by name
-
-        @return:
-        """
+        """List signatures that matched by name."""
         res = []
-        for sig in self.get_results()["signatures"]:
+        for sig in self.get_results("signatures", []):
             res.append(sig["name"])
         return res
 
     def get_processes(self, name=None):
         """Get a list of processes.
 
-        @param name: If name is set, only returns the processes with the given name
+        @param name: If set only return processes with that name.
         @return: List of processes or empty list
         """
-
-        for item in self.get_results()["behavior2"]["processes"]:
+        for item in self.get_results("behavior2", {}).get("processes", []):
             if name is None or item["process_name"] == name:
                 yield item
 
@@ -840,8 +820,7 @@ class Signature(object):
         @param pid: pid to search for. Can be None to get any process
         @return: List of processes or empty list
         """
-
-        for item in self.get_results()["behavior2"]["processes"]:
+        for item in self.get_results("behavior2", {}).get("processes", []):
             if pid is None or item["process_identifier"] == pid:
                 yield item
 
@@ -851,7 +830,6 @@ class Signature(object):
         @param pid: pid of the process
         @return: List of processes or empty list
         """
-
         for proc in self.get_processes_by_pid(pid):
             for item in proc["threads"]:
                 yield item
@@ -861,8 +839,6 @@ class Signature(object):
 
         @param pid: pid of the process. None for all
         @param actions: A list of actions to get
-        @return:
-
         """
         ret = []
         for process in self.get_processes_by_pid(pid):
@@ -891,8 +867,8 @@ class Signature(object):
     def get_keys(self, pid=None, actions=None):
         """Get registry keys.
 
-        @param pid: The pid to look in or None for all
-        @param actions: the actions as a list or None for all
+        @param pid: The pid to look in or None for all.
+        @param actions: the actions as a list.
         @return: yields registry keys
 
         """
@@ -911,21 +887,22 @@ class Signature(object):
         """
         files = list(self.get_files())
 
-        if self._check_value(pattern=pattern,
-                             subject=files,
-                             regex=regex):
+        if self._check_value(pattern=pattern, subject=files, regex=regex):
             return True
         return False
 
-    def check_key(self, pattern, regex=False, actions=["regkey_written", "regkey_opened", "regkey_read"], pid=None):
-        """Checks for a registry key being opened.
+    def check_key(self, pattern, regex=False, actions=None, pid=None):
+        """Checks for a registry key being accessed.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
-        @param actions: a list of key actions to use. None is all
-        @param pid: The process id to check. If it is set to None, all processes will be checked
+        @param actions: a list of key actions to use.
+        @param pid: The process id to check. If it is set to None, all
+                    processes will be checked.
         @return: boolean with the result of the check.
         """
+        if actions is None:
+            actions = "regkey_written", "regkey_opened", "regkey_read"
 
         regkeys = list(self.get_keys(pid, actions))
 
@@ -951,7 +928,6 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-
         return self._check_value(pattern=pattern,
                                  subject=self.get_mutexes(),
                                  regex=regex)
@@ -981,13 +957,8 @@ class Signature(object):
 
         return None
 
-    def check_argument_call(self,
-                            call,
-                            pattern,
-                            name=None,
-                            api=None,
-                            category=None,
-                            regex=False):
+    def check_argument_call(self, call, pattern, name=None, api=None,
+                            category=None, regex=False):
         """Checks for a specific argument of an invoked API.
         @param call: API call information.
         @param pattern: string or expression to check for.
@@ -1024,66 +995,42 @@ class Signature(object):
         return False
 
     def get_category(self, call):
-        """Return the category of the call.
-
-        @param call:
-        @return:
-
-        """
+        """Return the category of the call."""
         return call.get("category")
 
     def get_net_generic(self, subtype):
         """Generic getting network data.
 
-        @param subtype: subtype string to search for
-        @return:
-
+        @param subtype: subtype string to search for.
         """
-        results = self.get_results()
-        if "network" not in results or subtype not in results["network"]:
-            return []
-        return results["network"][subtype]
+        return self.get_results("network", {}).get(subtype, [])
 
     def get_net_hosts(self):
-        """
-        @return:List of hosts
-        """
+        """Returns a list of all hosts."""
         return self.get_net_generic("hosts")
 
     def get_net_domains(self):
-        """
-        @return:List of domains
-        """
+        """Returns a list of all domains."""
         return self.get_net_generic("domains")
 
     def get_net_http(self):
-        """
-        @return:List of http urls
-        """
+        """Returns a list of all http data."""
         return self.get_net_generic("http")
 
     def get_net_udp(self):
-        """
-        @return:List of udp data
-        """
+        """Returns a list of all udp data."""
         return self.get_net_generic("udp")
 
     def get_net_icmp(self):
-        """
-        @return:List of icmp data
-        """
+        """Returns a list of all icmp data."""
         return self.get_net_generic("icmp")
 
     def get_net_irc(self):
-        """
-        @return:List of irc data
-        """
+        """Returns a list of all irc data."""
         return self.get_net_generic("irc")
 
     def get_net_smtp(self):
-        """
-        @return:List of smtp data
-        """
+        """Returns a list of all smtp data."""
         return self.get_net_generic("smtp")
 
     def check_ip(self, pattern, regex=False):
@@ -1133,7 +1080,6 @@ class Signature(object):
         @param call: API call object.
         @param name: name of the argument to retrieve.
         @return: value of the argument or None
-
         """
         return call.get("arguments", {}).get(name)
 
@@ -1169,12 +1115,10 @@ class Signature(object):
         signature should be run.
 
         Can be used for performance optimisation. Check the file type for
-        example to avoid running PDF signatures
-        on PE files.
+        example to avoid running PDF signatures on PE files.
 
         @return: True if you want to remove the signature from the list,
-        False if you still want to process it
-        @raise NotImplementedError: this method is abstract.
+                 False if you still want to process it.
         """
         raise NotImplementedError
 
@@ -1182,37 +1126,34 @@ class Signature(object):
         """Notify signature about API call. Return value determines
         if this signature is done or could still match.
 
-        Only called if signature is "active"
+        Only called if signature is "active".
 
         @param call: logged API call.
         @param pid: process id doing API call.
         @param tid: thread id doing API call.
-        @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
 
     def on_signature(self, matched_sig):
-        """ Called if an other signature matched
+        """Called if another signature matched.
 
         @param matched_sig: The siganture that just matched
-        @return:
-
         """
         raise NotImplementedError
 
     def on_process(self, pid):
-        """ Called on process change
+        """Called on process change.
 
-        Can be used for cleanup of flags, re-activation of the signature...,
+        Can be used for cleanup of flags, re-activation of the signature, etc.
 
         @param pid: ID of the new process
         """
         pass
 
     def on_thread(self, pid, tid):
-        """ Called on thread change
+        """Called on thread change.
 
-        Can be used for cleanup of flags, re-activation of the signature...,
+        Can be used for cleanup of flags, re-activation of the signature, etc.
 
         @param pid: id of the new process
         @param tid: id of the new thread
@@ -1220,10 +1161,7 @@ class Signature(object):
         pass
 
     def on_complete(self):
-        """Evented signature is notified when all API calls are done.
-        @return: Match state.
-        @raise NotImplementedError: this method is abstract.
-        """
+        """Evented signature is notified when all API calls are done."""
         raise NotImplementedError
 
     def as_result(self):

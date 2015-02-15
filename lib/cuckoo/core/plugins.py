@@ -255,9 +255,7 @@ class RunSignatures(object):
         filename = os.path.join(CUCKOO_ROOT, "data", "signature_overlay.json")
 
         try:
-            with open(filename) as fh:
-                odata = json.load(fh)
-                return odata
+            return json.load(open(filename, "rb"))
         except IOError:
             pass
 
@@ -369,7 +367,6 @@ class RunSignatures(object):
         @param sig: The signature to verify
         @return:
         """
-
         for matched in self.matched:
             if sig.name == matched["name"]:
                 return True
@@ -377,14 +374,13 @@ class RunSignatures(object):
 
     def append_sig(self, sig):
         """
-
         @param sig: The signature, that matched
-
         @return:
         """
-
         self.matched.append(sig.as_result())
-        # Link this into the results already at this point, so other signatures can use it
+
+        # Link this into the results already at this point, so other
+        # signatures can use it.
         self.matched.sort(key=lambda key: key["severity"])
         self.results["signatures"] = self.matched
 
@@ -408,6 +404,11 @@ class RunSignatures(object):
         for sig in complete_list:
             if sig.enabled and self._check_signature_version(sig):
                 evented_list.append(sig(self))
+
+                # Transform the filter_ things into set()'s for faster lookup.
+                sig.filter_processnames = set(sig.filter_processnames)
+                sig.filter_apinames = set(sig.filter_apinames)
+                sig.filter_categories = set(sig.filter_categories)
 
         # Test quickout
         for sig in evented_list:
@@ -442,18 +443,24 @@ class RunSignatures(object):
 
             # Iterate calls and tell interested signatures about them.
             for proc in self.results.get("behavior", {}).get("processes", []):
-                ccount = 0
+                call_count = 0
+
                 for call in proc.get("calls", []):
-                    ccount += 1
+                    call_count += 1
+
                     # Loop through active evented signatures.
                     for sig in evented_list:
+
                         # Skip current call if it doesn't match the filters (if any).
                         if not sig.is_active():
                             continue
+
                         if sig.filter_processnames and not proc["process_name"] in sig.filter_processnames:
                             continue
+
                         if sig.filter_apinames and not call["api"] in sig.filter_apinames:
                             continue
+
                         if sig.filter_categories and not call["category"] in sig.filter_categories:
                             continue
 
@@ -475,16 +482,6 @@ class RunSignatures(object):
                         if result is True:
                             log.debug("Analysis matched signature \"%s\"", sig.name)
                             self.append_sig(sig)
-                            if sig in complete_list:
-                                complete_list.remove(sig)
-
-                        # Either True or False, we don't need to check this sig anymore.
-                        # But should keep it for the on_complete event afterwards
-                        no_on_call_list.append(sig)
-                        evented_list.remove(sig)
-                        del sig
-
-            evented_list = evented_list + no_on_call_list
 
             # Call the stop method on all signatures.
             for sig in evented_list:
@@ -495,13 +492,12 @@ class RunSignatures(object):
                 except:
                     log.exception("Failed run on_complete() method for signature \"%s\":", sig.name)
                     continue
-                else:
-                    if result is True:
-                        log.debug("Analysis matched signature \"%s\"", sig.name)
-                        self.append_sig(sig)
-                        if sig in complete_list:
-                            complete_list.remove(sig)
 
+                if result is True:
+                    log.debug("Analysis matched signature \"%s\"", sig.name)
+                    self.append_sig(sig)
+                    if sig in complete_list:
+                        complete_list.remove(sig)
 
 class RunReporting:
     """Reporting Engine.
