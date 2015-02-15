@@ -1,24 +1,28 @@
 <section id="tcp">
     <h4>TCP</h4>
     {% if analysis.network.tcp %}
-        <div class="stream"></div>
-        <table class="table table-striped table-bordered">
-            <tr>
-                <th>Source</th>
-                <th>Source Port</th>
-                <th>Destination</th>
-                <th>Destination Port</th>
-            </tr>
-            {% for p in analysis.network.tcp %}
-            <tr class="connrow">
-                <input type="hidden" name="conn" value="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}}" />
-                <td>{{p.src}}</td>
-                <td>{{p.sport}}</td>
-                <td>{{p.dst}} {{ iplookups|get_item:p.dst }}</td>
-                <td>{{p.dport}}</td>
-            </tr>
-            {% endfor %}
-        </table>
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Source</th>
+                        <th>Source Port</th>
+                        <th>Destination</th>
+                        <th>Destination Port</th>
+                    </tr>
+                    {% for p in analysis.network.tcp %}
+                    <tr class="connrow">
+                        <input type="hidden" name="conn" value="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}}" />
+                        <td>{{p.src}}</td>
+                        <td>{{p.sport}}</td>
+                        <td>{{p.dst}} {{ iplookups|get_item:p.dst }}</td>
+                        <td>{{p.dport}}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="stream col-md-6"></div>
+        </div>
     {% else %}
         <p>No TCP connections recorded.</p>
     {% endif %}
@@ -26,6 +30,9 @@
 <script>
 $(function () {
     $("section#tcp table tr.connrow").click(function(e) {
+        $("section#tcp table tr.connrow").removeClass("row-active");
+        $(this).addClass("row-active"); 
+
         var $choice = $(this).find("input[name='conn']");
 
         $("section#tcp div.stream").load("/analysis/{{analysis.info.id}}/pcapstream/"+$choice.val()+"/", function(data, status, xhr){
