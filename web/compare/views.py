@@ -3,13 +3,12 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import sys
+import pymongo
 
 from django.conf import settings
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.views.decorators.http import require_safe
-
-import pymongo
 
 sys.path.append(settings.CUCKOO_PATH)
 
