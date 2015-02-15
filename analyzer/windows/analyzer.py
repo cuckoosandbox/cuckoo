@@ -147,13 +147,115 @@ class PipeHandler(Thread):
         Thread.__init__(self)
         self.h_pipe = h_pipe
 
+    def _handle_debug(self, data):
+        """Debug message from the monitor."""
+        log.debug(data)
+
+    def _handle_info(self, data):
+        """Regular message from the monitor."""
+        log.info(data)
+
+    def _handle_critical(self, data):
+        """Critical message from the monitor."""
+        log.critical(data)
+
+    def _handle_getpids(self, data):
+        """Return the process identifiers of the agent and its parent
+        process."""
+        return struct.pack("II", PID, PPID)
+
+    def _inject_process(self, process_id, thread_id):
+        """Helper function for injecting the monitor into a process."""
+        # We acquire the process lock in order to prevent the analyzer to 
+        # terminate the analysis while we are operating on the new process.
+        PROCESS_LOCK.acquire()
+
+        # Set the current DLL to the default one provided at submission.
+        dll = DEFAULT_DLL
+
+        if process_id in (PID, PPID):
+            log.warning("Received request to inject Cuckoo processes, "
+                        "skipping it.")
+            return
+
+        # We inject the process only if it's not being monitored already,
+        # otherwise we would generated polluted logs (if it wouldn't crash
+        # horribly to start with).
+        if process_id not in PROCESS_LIST:
+            # Open the process and inject the DLL. Hope it enjoys it.
+            proc = Process(pid=process_id)
+
+            filename = os.path.basename(proc.get_filepath())
+            log.info("Announced process name: %s", filename)
+
+            if not protected_filename(filename):
+                # Add the new process ID to the list of monitored processes.
+                add_pid(process_id)
+
+                # If we have both pid and tid, then we can use APC to inject.
+                if process_id and thread_id:
+                    proc.inject(dll, apc=True)
+                else:
+                    proc.inject(dll)
+
+                log.info("Successfully injected process with "
+                         "pid %s", proc.pid)
+
+        # We're done operating on the processes list, release the lock.
+        PROCESS_LOCK.release()
+
+    def _handle_process(self, data):
+        """Request for injection into a process."""
+        # Parse the process identifier.
+        if not data or not data.isdigit():
+            log.warning("Received PROCESS command from monitor with an "
+                        "incorrect argument.")
+            return
+
+        return self._inject_process(int(data), None)
+
+    def _handle_process2(self, data):
+        """Request for injection into a process using APC."""
+        # Parse the process and thread identifier.
+        if not data or data.count(",") != 1:
+            log.warning("Received PROCESS command from monitor with an "
+                        "incorrect argument.")
+            return
+
+        pid, tid = data.split(",")
+        if not pid.isdigit() or not tid.isdigit():
+            log.warning("Received PROCESS command from monitor with an "
+                        "incorrect argument.")
+            return
+
+        return self._inject_process(int(pid), int(tid))
+
+    def _handle_file_new(self, data):
+        """Notification of a new dropped file."""
+        # Extract the file path and add it to the list.
+        add_file(data.decode("utf8"))
+
+    def _handle_file_del(self, data):
+        """Notification of a file being removed - we have to dump it before
+        it's being removed."""
+        del_file(data.decode("utf8"))
+
+    def _handle_file_move(self, data):
+        """A file is being moved - track these changes."""
+        if "::" not in data:
+            log.warning("Received FILE_MOVE command from monitor with an "
+                        "incorrect argument.")
+            return
+
+        old_filepath, new_filepath = data.split("::", 1)
+        move_file(old_filepath.decode("utf8"), new_filepath.decode("utf8"))
+
     def run(self):
         """Run handler.
         @return: operation status.
         """
         data = ""
         response = "OK"
-        wait = False
         proc = None
 
         # Read the data submitted to the Pipe Server.
@@ -171,120 +273,19 @@ class PipeHandler(Thread):
 
             if not success and KERNEL32.GetLastError() == ERROR_MORE_DATA:
                 continue
-            # elif not success or bytes_read.value == 0:
-            #    if KERNEL32.GetLastError() == ERROR_BROKEN_PIPE:
-            #        pass
 
             break
 
-        if data:
-            command = data.strip()
+        if data and ":" in data:
+            command, arguments = data.strip().split(":", 1)
 
-            # Debug, Regular, or Critical information from CuckooMon.
-            if command.startswith("DEBUG:"):
-                log.debug(command[6:])
-            elif command.startswith("INFO:"):
-                log.info(command[5:])
-            elif command.startswith("CRITICAL:"):
-                log.critical(command[9:])
+            if not hasattr(self, "_handle_%s" % command.lower()):
+                log.critical("Unknown command received from the monitor: %r",
+                             data.strip())
+                return True
 
-            # Parse the prefix for the received notification.
-            # In case of GETPIDS we're gonna return the current process ID
-            # and the process ID of our parent process (agent.py).
-            elif command == "GETPIDS":
-                response = struct.pack("II", PID, PPID)
-
-            # In case of PID, the client is trying to notify the creation of
-            # a new process to be injected and monitored.
-            elif command.startswith("PROCESS:"):
-                # We acquire the process lock in order to prevent the analyzer
-                # to terminate the analysis while we are operating on the new
-                # process.
-                PROCESS_LOCK.acquire()
-
-                # Set the current DLL to the default one provided
-                # at submission.
-                dll = DEFAULT_DLL
-
-                # We parse the process ID.
-                data = command[8:]
-                process_id = thread_id = None
-                if "," not in data:
-                    if data.isdigit():
-                        process_id = int(data)
-                elif data.count(",") == 1:
-                    process_id, param = data.split(",")
-                    thread_id = None
-                    if process_id.isdigit():
-                        process_id = int(process_id)
-                    else:
-                        process_id = None
-
-                    if param.isdigit():
-                        thread_id = int(param)
-                    else:
-                        # XXX: Expect a new DLL as a message parameter?
-                        if isinstance(param, str):
-                            dll = param
-
-                if process_id:
-                    if process_id not in (PID, PPID):
-                        # We inject the process only if it's not being
-                        # monitored already, otherwise we would generated
-                        # polluted logs.
-                        if process_id not in PROCESS_LIST:
-                            # Open the process and inject the DLL.
-                            # Hope it enjoys it.
-                            proc = Process(pid=process_id,
-                                           thread_id=thread_id)
-
-                            filepath = proc.get_filepath()
-                            filename = os.path.basename(filepath)
-
-                            log.info("Announced process name: %s pid: %d", filename, process_id)
-
-                            if not protected_filename(filename):
-                                # If we have both pid and tid, then we can use
-                                # apc to inject.
-                                if process_id and thread_id:
-                                    res = proc.inject(dll, apc=True)
-                                else:
-                                    # We inject using CreateRemoteThread, this
-                                    # needs the waiting in order to make sure
-                                    # no race conditions occur.
-                                    res = proc.inject(dll)
-                                
-                                if res:
-                                    wait = True
-                    else:
-                        log.warning("Received request to inject Cuckoo "
-                                    "process with pid %d, skip", process_id)
-
-                # Once we're done operating on the processes list, we release
-                # the lock.
-                if wait == False:
-                    PROCESS_LOCK.release()
-            # In case of FILE_NEW, the client is trying to notify the creation
-            # of a new file.
-            elif command.startswith("FILE_NEW:"):
-                # We extract the file path.
-                file_path = command[9:].decode("utf-8")
-                # We add the file to the list.
-                add_file(file_path)
-            # In case of FILE_DEL, the client is trying to notify an ongoing
-            # deletion of an existing file, therefore we need to dump it
-            # straight away.
-            elif command.startswith("FILE_DEL:"):
-                # Extract the file path.
-                file_path = command[9:].decode("utf-8")
-                # Dump the file straight away.
-                del_file(file_path)
-            elif command.startswith("FILE_MOVE:"):
-                # Syntax = "FILE_MOVE:old_file_path::new_file_path".
-                if "::" in command[10:]:
-                    old_fname, new_fname = command[10:].split("::", 1)
-                    move_file(old_fname.decode("utf-8"),
-                              new_fname.decode("utf-8"))
+            fn = getattr(self, "_handle_%s" % command.lower())
+            response = fn(arguments) or ""
 
         KERNEL32.WriteFile(self.h_pipe,
                            create_string_buffer(response),
@@ -293,15 +294,6 @@ class PipeHandler(Thread):
                            None)
 
         KERNEL32.CloseHandle(self.h_pipe)
-
-        if wait:
-            # We wait until cuckoomon reports back.
-            res = proc.wait()
-            if res:
-                # Add the new process ID to the list of
-                # monitored processes.
-                add_pids(process_id)
-            PROCESS_LOCK.release()
 
         if proc:
             proc.close()
@@ -539,8 +531,8 @@ class Analyzer:
                               "an unhandled exception: "
                               "{1}".format(package_name, e))
 
-        # If the analysis package returned a list of process IDs, we add them
-        # to the list of monitored processes and enable the process monitor.
+        # If the analysis package returned a list of process identifiers, we
+        # add them to the list of monitored processes and enable the process monitor.
         if pids:
             add_pids(pids)
             pid_check = True
