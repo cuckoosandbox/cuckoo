@@ -441,7 +441,7 @@ class RunSignatures(object):
                     log.debug("\t |-- %s", sig.name)
 
             # Iterate calls and tell interested signatures about them.
-            for proc in self.results["behavior"]["processes"]:
+            for proc in self.results.get("behavior", {}).get("processes", []):
                 ccount = 0
                 for call in proc.get("calls", []):
                     ccount += 1
