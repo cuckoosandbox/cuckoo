@@ -384,8 +384,6 @@ class RunSignatures(object):
                 result = sig.on_signature(sig)
                 if result is True and not self.is_matched(sig):
                     self.append_sig(sig)
-            except NotImplementedError:
-                self.evented_signatures.remove(sig)
             except:
                 log.exception("Failed to run signature \"%s\":", sig.name)
 
@@ -406,11 +404,8 @@ class RunSignatures(object):
 
         # Test quickout
         for sig in evented_list:
-            try:
-                if sig.quickout():
-                    evented_list.remove(sig)
-            except NotImplementedError:
-                pass
+            if sig.quickout():
+                evented_list.remove(sig)
 
         overlay = self._load_overlay()
         log.debug("Applying signature overlays for signatures: %s", ", ".join(overlay.keys()))
@@ -467,14 +462,12 @@ class RunSignatures(object):
                             result = None
                             try:
                                 result = sig.goto_on_call(call, process["process_identifier"], thread["tid"], call_count)
-                            except NotImplementedError:
-                                result = False
                             except:
                                 log.exception("Failed to run signature \"%s\":", sig.name)
                                 result = False
 
-                            # If the signature returns None we can carry on, the
-                            # condition was not matched.
+                            # If the signature returns None we can carry on,
+                            # the condition was not matched.
                             if result is None:
                                 continue
 
@@ -487,8 +480,6 @@ class RunSignatures(object):
             for sig in evented_list:
                 try:
                     result = sig.on_complete()
-                except NotImplementedError:
-                    continue
                 except:
                     log.exception("Failed run on_complete() method for signature \"%s\":", sig.name)
                     continue

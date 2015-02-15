@@ -1085,7 +1085,7 @@ class Signature(object):
         @return: True if you want to remove the signature from the list,
                  False if you still want to process it.
         """
-        raise NotImplementedError
+        pass
 
     def on_call(self, call, pid, tid):
         """Notify signature about API call. Return value determines
@@ -1097,14 +1097,14 @@ class Signature(object):
         @param pid: process id doing API call.
         @param tid: thread id doing API call.
         """
-        raise NotImplementedError
+        pass
 
     def on_signature(self, matched_sig):
         """Called if another signature matched.
 
         @param matched_sig: The siganture that just matched
         """
-        raise NotImplementedError
+        pass
 
     def on_process(self, pid):
         """Called on process change.
@@ -1127,7 +1127,7 @@ class Signature(object):
 
     def on_complete(self):
         """Evented signature is notified when all API calls are done."""
-        raise NotImplementedError
+        pass
 
     def as_result(self):
         """Properties as a dict (for results).
