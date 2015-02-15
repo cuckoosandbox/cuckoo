@@ -184,7 +184,7 @@ def init_tasks():
             db.set_status(task.id, TASK_FAILED_ANALYSIS)
             log.info("Updated running task ID {0} status to failed_analysis".format(task.id))
 
-def init_modules():
+def init_modules(machinery=True):
     """Initializes plugins."""
     log.debug("Importing modules...")
 
@@ -205,7 +205,8 @@ def init_modules():
     import_package(modules.reporting)
 
     # Import machine manager.
-    import_plugin("modules.machinery." + Config().cuckoo.machinery)
+    if machinery:
+        import_plugin("modules.machinery." + Config().cuckoo.machinery)
 
     for category, entries in list_plugins().items():
         log.debug("Imported \"%s\" modules:", category)
