@@ -12,8 +12,7 @@ import logging
 import hashlib
 import xmlrpclib
 import traceback
-from ctypes import create_unicode_buffer, create_string_buffer
-from ctypes import c_wchar_p, byref, c_int, sizeof
+from ctypes import create_string_buffer, byref, c_int, sizeof
 from threading import Lock, Thread
 from datetime import datetime
 
@@ -194,28 +193,6 @@ class PipeHandler(Thread):
             # and the process ID of our parent process (agent.py).
             elif command == "GETPIDS":
                 response = struct.pack("II", PID, PPID)
-
-            # When analyzing we don't want to hook all functions, as we're
-            # having some stability issues with regards to webbrowsers.
-            elif command == "HOOKDLLS":
-                is_url = Config(cfg="analysis.conf").category != "file"
-
-                url_dlls = "ntdll", "kernel32"
-
-                def hookdll_encode(names):
-                    # We have to encode each dll name as unicode string
-                    # with length 16.
-                    names = [name + "\x00" * (16-len(name)) for name in names]
-                    f = lambda s: "".join(ch + "\x00" for ch in s)
-                    return "".join(f(name) for name in names)
-
-                # If this sample is not a URL, then we don't want to limit
-                # any API hooks (at least for now), so we write a null-byte
-                # which indicates that all DLLs should be hooked.
-                if not is_url:
-                    response = "\x00"
-                else:
-                    response = hookdll_encode(url_dlls)
 
             # In case of PID, the client is trying to notify the creation of
             # a new process to be injected and monitored.
