@@ -111,7 +111,7 @@ def main():
     if args.modules:
         sys.path.insert(0, args.modules)
 
-    init_modules()
+    init_modules(machinery=False)
 
     if args.id == "auto":
         autoprocess(parallel=args.parallel)
