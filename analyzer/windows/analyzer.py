@@ -83,7 +83,7 @@ def add_file(file_path):
 def dump_file(file_path):
     """Create a copy of the give file path."""
     try:
-        if os.path.exists(file_path):
+        if os.path.isfile(file_path):
             sha256 = hash_file(hashlib.sha256, file_path)
             if sha256 in DUMPED_LIST:
                 # The file was already dumped, just skip.
@@ -94,20 +94,6 @@ def dump_file(file_path):
             return
     except IOError as e:
         log.warning("Unable to access file at path \"%s\": %s", file_path, e)
-        return
-
-    # 32k is the maximum length for a filename
-    path = create_unicode_buffer(32 * 1024)
-    name = c_wchar_p()
-    KERNEL32.GetFullPathNameW(unicode(file_path), 32 * 1024, path, byref(name))
-    file_path = path.value
-
-    # Check if the path has a valid file name, otherwise it's a directory
-    # and we should abort the dump.
-    if name.value:
-        # Should be able to extract Alternate Data Streams names too.
-        file_name = name.value[name.value.find(":")+1:]
-    else:
         return
 
     upload_path = os.path.join("files",
