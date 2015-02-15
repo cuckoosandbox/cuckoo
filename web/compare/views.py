@@ -3,76 +3,78 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import sys
+import pymongo
 
 from django.conf import settings
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.views.decorators.http import require_safe
 
-import pymongo
-
 sys.path.append(settings.CUCKOO_PATH)
 
 import lib.cuckoo.common.compare as compare
 
-results_db = pymongo.connection.Connection(settings.MONGO_HOST, settings.MONGO_PORT).cuckoo
+results_db = pymongo.MongoClient(settings.MONGO_HOST, settings.MONGO_PORT).cuckoo
 
 @require_safe
 def left(request, left_id):
-    left = results_db.analysis.find_one({"info.id" : int(left_id)}, {"target" : 1, "info" : 1})
+    left = results_db.analysis.find_one({"info.id": int(left_id)}, {"target": 1, "info": 1})
     if not left:
         return render_to_response("error.html",
-                                  {"error" : "No analysis found with specified ID"},
+                                  {"error": "No analysis found with specified ID"},
                                   context_instance=RequestContext(request))
-    
+
     # Select all analyses with same file hash.
     records = results_db.analysis.find(
         {
-            "$and" : [
-                {"target.file.md5" : left["target"]["file"]["md5"]},
-                {"info.id" : {"$ne" : int(left_id)}}
+            "$and": [
+                {"target.file.md5": left["target"]["file"]["md5"]},
+                {"info.id": {"$ne": int(left_id)}}
             ]
         },
-        {"target" : 1, "info" : 1}
+        {"target": 1, "info": 1}
     )
 
     return render_to_response("compare/left.html",
-                              {"left" : left, "records" : records},
+                              {"left": left, "records": records},
                               context_instance=RequestContext(request))
 
 @require_safe
 def hash(request, left_id, right_hash):
-    left = results_db.analysis.find_one({"info.id" : int(left_id)}, {"target" : 1, "info" : 1})
+    left = results_db.analysis.find_one({"info.id": int(left_id)}, {"target": 1, "info": 1})
     if not left:
         return render_to_response("error.html",
-                                  {"error" : "No analysis found with specified ID"},
+                                  {"error": "No analysis found with specified ID"},
                                   context_instance=RequestContext(request))
 
     # Select all analyses with same file hash.
     records = results_db.analysis.find(
         {
-            "$and" : [
-                {"target.file.md5" : right_hash},
-                {"info.id" : {"$ne" : int(left_id)}}
+            "$and": [
+                {"target.file.md5": right_hash},
+                {"info.id": {"$ne": int(left_id)}}
             ]
         },
-        {"target" : 1, "info" : 1}
+        {"target": 1, "info": 1}
     )
 
     # Select all analyses with specified file hash.
     return render_to_response("compare/hash.html",
-                              {"left" : left, "records" : records, "hash" : right_hash},
+                              {"left": left, "records": records, "hash": right_hash},
                               context_instance=RequestContext(request))
+
 @require_safe
 def both(request, left_id, right_id):
-    left = results_db.analysis.find_one({"info.id" : int(left_id)}, {"target" : 1, "info" : 1})
-    right = results_db.analysis.find_one({"info.id" : int(right_id)}, {"target" : 1, "info" : 1})
+    left = results_db.analysis.find_one({"info.id": int(left_id)}, {"target": 1, "info": 1})
+    right = results_db.analysis.find_one({"info.id": int(right_id)}, {"target": 1, "info": 1})
+
     # Execute comparison.
     counts = compare.helper_percentages_mongo(results_db, left_id, right_id)
 
     return render_to_response("compare/both.html",
-                              {"left" : left, "right" : right, "left_counts": counts[left_id], "right_counts": counts[right_id]},
-                              context_instance=RequestContext(request)) 
+                              {"left": left, "right": right, "left_counts": counts[left_id],
+                               "right_counts": counts[right_id]},
+                               context_instance=RequestContext(request))
 
 @require_safe
 def index(request):
