@@ -56,6 +56,7 @@ class MongoDB(Report):
             return existing["_id"]
         else:
             new = self.fs.new_file(filename=filename,
+                                   contentType=file_obj.get_content_type(),
                                    sha256=file_obj.get_sha256())
             for chunk in file_obj.get_chunks():
                 new.write(chunk)

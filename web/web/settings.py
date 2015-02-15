@@ -20,6 +20,7 @@ if not cfg.get("enabled"):
 # Get connection options from reporting.conf.
 MONGO_HOST = cfg.get("host", "127.0.0.1")
 MONGO_PORT = cfg.get("port", 27017)
+MONGO_DB = cfg.get("db", "cuckoo")
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

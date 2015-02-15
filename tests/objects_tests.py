@@ -62,6 +62,9 @@ class TestFile:
     def test_get_type(self):
         assert_equal("empty", self.file.get_type())
 
+    def test_get_content_type(self):
+        assert_equal("inode/x-empty", self.file.get_content_type())
+
     def test_get_all_type(self):
         assert isinstance(self.file.get_all(), dict)
 
