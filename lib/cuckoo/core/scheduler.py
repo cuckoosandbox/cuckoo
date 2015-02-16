@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -460,12 +460,12 @@ class Scheduler:
             log.info("Loaded %s machine/s", len(machinery.machines()))
 
         if len(machinery.machines()) > 1 and self.db.engine.name == "sqlite":
-            log.warning("The SQLite database is not compatible with "
-                        "multi-threaded use-cases such as running multiple "
-                        "virtual machine in parallel. Please upgrade to "
-                        "PostgreSQL or MySQL when running multiple VMs.")
+            log.warning("As you've configured Cuckoo to execute parallel "
+                        "analyses, we recommend you to switch to a MySQL " 
+                        "a PostgreSQL database as SQLite might cause some "
+                        "issues.")
 
-        if len(machinery.machines()) > 3 and self.cfg.cuckoo.process_results:
+        if len(machinery.machines()) > 4 and self.cfg.cuckoo.process_results:
             log.warning("When running many virtual machines it is recommended "
                         "to process the results in a separate process.py to "
                         "increase throughput and stability. Please read the "
@@ -515,6 +515,12 @@ class Scheduler:
                                   space_available)
                         continue
 
+            # Have we limited the number of concurrently executing machines?
+            if self.cfg.cuckoo.max_machines_count > 0:
+                # Are too many running?
+                if len(machinery.running()) >= self.cfg.cuckoo.max_machines_count:
+                    continue
+
             # If no machines are available, it's pointless to fetch for
             # pending tasks. Loop over.
             if not machinery.availables():
@@ -527,15 +533,17 @@ class Scheduler:
                     self.stop()
             else:
                 # Fetch a pending analysis task.
-                task = self.db.fetch()
+                #TODO: this fixes only submissions by --machine, need to add other attributes (tags etc.)
+                for machine in self.db.get_available_machines():
 
-                if task:
-                    log.debug("Processing task #%s", task.id)
-                    self.total_analysis_count += 1
+                    task = self.db.fetch(machine=machine.name)
+                    if task:
+                        log.debug("Processing task #%s", task.id)
+                        self.total_analysis_count += 1
 
-                    # Initialize and start the analysis manager.
-                    analysis = AnalysisManager(task, errors)
-                    analysis.start()
+                        # Initialize and start the analysis manager.
+                        analysis = AnalysisManager(task, errors)
+                        analysis.start()
 
             # Deal with errors.
             try:

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
@@ -30,12 +30,12 @@ class MMDef(Report):
 
     def addMetadata(self):
         """Generates header for MAEC xml and root components."""
-        if self.results["target"]["category"] == "file":
+        if "target" in self.results and self.results["target"]["category"] == "file":
             id = "cuckoo:%s" % self.results["target"]["file"]["md5"]
-        elif self.results["target"]["category"] == "url":
+        elif "target" in self.results and self.results["target"]["category"] == "url":
             id = "cuckoo:%s" % hashlib.md5(self.results["target"]["url"]).hexdigest()
         else:
-            raise CuckooReportError("Unknown target type")
+            raise CuckooReportError("Unknown target type or targetinfo module disabled")
 
         self.m = maec.malwareMetaData(
             version="1.1",

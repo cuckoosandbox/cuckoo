@@ -48,6 +48,10 @@
                     {% endif %}
                     </td>
                 </tr>
+                <tr>
+                    <th>VirusTotal</th>
+                    <td><a href="https://www.virustotal.com/en/file/{{file.sha256}}/analysis/">Search for analysis</a></td>
+                </tr>
                 {% if file.object_id %}
                 <tr>
                     <th></th>

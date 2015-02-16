@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -224,7 +224,7 @@ TYPECONVERTERS = {
     "p": lambda v: "0x%08x" % default_converter(v),
 }
 
-# 1 Mb max message length.
+# 20 Mb max message length.
 MAX_MESSAGE_LENGTH = 20 * 1024 * 1024
 
 def default_converter(v):

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -202,6 +202,37 @@ class File:
         if file_type is None:
             try:
                 p = subprocess.Popen(["file", "-b", self.file_path],
+                                     stdout=subprocess.PIPE)
+                file_type = p.stdout.read().strip()
+            except:
+                pass
+
+        return file_type
+
+    def get_content_type(self):
+        """Get MIME content file type (example: image/jpeg).
+        @return: file content type.
+        """
+        file_type = None
+        if HAVE_MAGIC:
+            try:
+                ms = magic.open(magic.MAGIC_MIME)
+                ms.load()
+                file_type = ms.file(self.file_path)
+            except:
+                try:
+                    file_type = magic.from_file(self.file_path, mime=True)
+                except:
+                    pass
+            finally:
+                try:
+                    ms.close()
+                except:
+                    pass
+
+        if file_type is None:
+            try:
+                p = subprocess.Popen(["file", "-b", "--mime-type", self.file_path],
                                      stdout=subprocess.PIPE)
                 file_type = p.stdout.read().strip()
             except:

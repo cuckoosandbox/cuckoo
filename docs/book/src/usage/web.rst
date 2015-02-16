@@ -18,9 +18,6 @@ The interface can be configured by editing ``local_settings.py`` under ``web/web
     # If you want to customize your cuckoo path set it here.
     # CUCKOO_PATH = "/where/cuckoo/is/placed/"
 
-    # If you want to customize your cuckoo temporary upload path set it here.
-    # CUCKOO_FILE_UPLOAD_TEMP_DIR = "/where/web/tmp/is/placed/"
-
     # Maximum upload size.
     MAX_UPLOAD_SIZE = 26214400
 
@@ -77,4 +74,4 @@ You can serve Cuckoo's web interface using WSGI interface with common web server
 Apache, Nginx, Unicorn and so on.
 Please refer both to the documentation of the web server of your choice as well as `Django documentation`_.
 
-.. _`Django documentation`: https://docs.djangoproject.com/en/1.6/
+.. _`Django documentation`: https://docs.djangoproject.com/

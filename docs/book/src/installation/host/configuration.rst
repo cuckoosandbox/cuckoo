@@ -102,7 +102,7 @@ Following is the default *conf/virtualbox.conf* file::
     [cuckoo1]
     # Specify the label name of the current machine as specified in your
     # VirtualBox configuration.
-    label = cuckoo1 
+    label = cuckoo1
 
     # Specify the operating system platform used by current machine
     # [windows/darwin/linux].
@@ -112,7 +112,7 @@ Following is the default *conf/virtualbox.conf* file::
     # IP address is valid and that the host machine is able to reach it. If not,
     # the analysis will fail.
     ip = 192.168.56.101
-    
+
     # (Optional) Specify the snapshot name to use. If you do not specify a snapshot
     # name, the VirtualBox MachineManager will use the current snapshot.
     # Example (Snapshot1 is the snapshot name):
@@ -123,10 +123,10 @@ Following is the default *conf/virtualbox.conf* file::
     # overrides the default interface specified in cuckoo.conf
     # Example (virbr0 is the interface name):
     # interface = virbr0
-    
+
     # (Optional) Specify the IP of the Result Server, as your virtual machine sees it.
     # The Result Server will always bind to the address and port specified in cuckoo.conf,
-    # however you could set up your virtual network to use NAT/PAT, so you can specify here 
+    # however you could set up your virtual network to use NAT/PAT, so you can specify here
     # the IP address for the Result Server as your machine sees it. If you don't specify an
     # address here, the machine will use the default value from cuckoo.conf.
     # Example:
@@ -171,7 +171,7 @@ Following is the default *conf/kvm.conf* file::
     # the analysis will fail. You may want to configure your network settings in
     # /etc/libvirt/<hypervisor>/networks/
     ip = 192.168.122.105
-    
+
     # (Optional) Specify the snapshot name to use. If you do not specify a snapshot
     # name, the KVM MachineManager will use the current snapshot.
     # Example (Snapshot1 is the snapshot name):
@@ -185,7 +185,7 @@ Following is the default *conf/kvm.conf* file::
 
     # (Optional) Specify the IP of the Result Server, as your virtual machine sees it.
     # The Result Server will always bind to the address and port specified in cuckoo.conf,
-    # however you could set up your virtual network to use NAT/PAT, so you can specify here 
+    # however you could set up your virtual network to use NAT/PAT, so you can specify here
     # the IP address for the Result Server as your machine sees it. If you don't specify an
     # address here, the machine will use the default value from cuckoo.conf.
     # Example:
@@ -206,7 +206,7 @@ Following is the default *conf/kvm.conf* file::
 .. _memory_conf:
 
 memory.conf
-===============
+===========
 
 The Volatility tool offers a large set of plugins for memory dump analysis. Some of them are quite slow.
 In volatility.conf lets you to enable or disable the plugins of your choice.

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -76,13 +76,16 @@ class VirtualBox(Machinery):
         self._wait_status(label, self.SAVED)
 
         try:
-            subprocess.call([self.options.virtualbox.path,
+            proc = subprocess.Popen([self.options.virtualbox.path,
                              "startvm",
                              label,
                              "--type",
                              self.options.virtualbox.mode],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
+            output, err = proc.communicate()
+            if err:
+                raise OSError(err)
         except OSError as e:
             raise CuckooMachineError("VBoxManage failed starting the machine "
                                      "in %s mode: %s" %

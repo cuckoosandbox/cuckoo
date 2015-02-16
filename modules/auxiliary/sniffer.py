@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -11,6 +11,7 @@ import subprocess
 from lib.cuckoo.common.abstracts import Auxiliary
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_GUEST_PORT
+from lib.cuckoo.core.resultserver import ResultServer
 
 log = logging.getLogger(__name__)
 
@@ -25,17 +26,25 @@ class Sniffer(Auxiliary):
             interface = self.machine.interface
         else:
             interface = self.options.get("interface")
+        # Selects per-machine resultserver IP if available.
+        if self.machine.resultserver_ip:
+            resultserver_ip = self.machine.resultserver_ip
+        else:
+            resultserver_ip = str(Config().resultserver.ip)
+        # Get resultserver port from its instance because it could change dynamically.
+        resultserver_port = str(ResultServer().port)
 
         if not os.path.exists(tcpdump):
             log.error("Tcpdump does not exist at path \"%s\", network "
                       "capture aborted", tcpdump)
             return
 
-        mode = os.stat(tcpdump)[stat.ST_MODE]
-        if mode and stat.S_ISUID != 2048:
-            log.error("Tcpdump is not accessible from this user, "
-                      "network capture aborted")
-            return
+        # TODO: this isn't working. need to fix.
+        #mode = os.stat(tcpdump)[stat.ST_MODE]
+        #if (mode & stat.S_ISUID) == 0:
+        #    log.error("Tcpdump is not accessible from this user, "
+        #              "network capture aborted")
+        #    return
 
         if not interface:
             log.error("Network interface not defined, network capture aborted")
@@ -59,12 +68,10 @@ class Sniffer(Auxiliary):
                       host, "and", "src", "port", str(CUCKOO_GUEST_PORT), ")"])
 
         # Do not capture ResultServer traffic.
-        # TODO: Now that the ResultServer port can change dynamically,
-        # we need to instruct sniffer.py of the change.
-        pargs.extend(["and", "not", "(", "dst", "host", str(Config().resultserver.ip),
-                      "and", "dst", "port", str(Config().resultserver.port), ")", "and",
-                      "not", "(", "src", "host", str(Config().resultserver.ip), "and",
-                      "src", "port", str(Config().resultserver.port), ")"])
+        pargs.extend(["and", "not", "(", "dst", "host", resultserver_ip,
+                      "and", "dst", "port", resultserver_port, ")", "and",
+                      "not", "(", "src", "host", resultserver_ip, "and",
+                      "src", "port", resultserver_port, ")"])
 
         if bpf:
             pargs.extend(["and", bpf])

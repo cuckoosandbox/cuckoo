@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -16,6 +16,7 @@ from lib.common.defines import STARTUPINFO, PROCESS_INFORMATION
 from lib.common.defines import CREATE_NEW_CONSOLE, CREATE_SUSPENDED
 from lib.common.defines import MEM_RESERVE, MEM_COMMIT, PAGE_READWRITE
 from lib.common.defines import MEMORY_BASIC_INFORMATION
+from lib.common.defines import WAIT_TIMEOUT
 from lib.common.defines import MEM_IMAGE, MEM_MAPPED, MEM_PRIVATE
 from lib.common.errors import get_error_string
 from lib.common.rand import random_string
@@ -189,12 +190,15 @@ class Process:
 
         startup_info = STARTUPINFO()
         startup_info.cb = sizeof(startup_info)
+        # STARTF_USESHOWWINDOW
+        startup_info.dwFlags = 1
+        # SW_SHOWNORMAL
+        startup_info.wShowWindow = 1
         process_info = PROCESS_INFORMATION()
 
+        arguments = "\"" + path + "\" "
         if args:
-            arguments = "\"" + path + "\" " + args
-        else:
-            arguments = None
+            arguments += args
 
         creation_flags = CREATE_NEW_CONSOLE
         if suspended:
@@ -335,29 +339,27 @@ class Process:
 
             Process.first_process = False
 
+        event_name = "CuckooEvent%d" % self.pid
+        self.event_handle = KERNEL32.CreateEventA(None, False, False, event_name)
+        if not self.event_handle:
+            log.warning("Unable to create notify event..")
+            return False
+
         if apc or self.suspended:
             log.debug("Using QueueUserAPC injection.")
             if not self.h_thread:
                 log.info("No valid thread handle specified for injecting "
                          "process with pid %d, injection aborted.", self.pid)
+                self.event_handle = None
                 return False
 
             if not KERNEL32.QueueUserAPC(load_library, self.h_thread, arg):
                 log.error("QueueUserAPC failed when injecting process with "
                           "pid %d (Error: %s)",
                           self.pid, get_error_string(KERNEL32.GetLastError()))
+                self.event_handle = None
                 return False
-            log.info("Successfully injected process with pid %d." % self.pid)
         else:
-            event_name = "CuckooEvent%d" % self.pid
-            self.event_handle = KERNEL32.CreateEventA(None,
-                                                      False,
-                                                      False,
-                                                      event_name)
-            if not self.event_handle:
-                log.warning("Unable to create notify event..")
-                return False
-
             log.debug("Using CreateRemoteThread injection.")
             new_thread_id = c_ulong(0)
             thread_handle = KERNEL32.CreateRemoteThread(self.h_process,
@@ -377,14 +379,25 @@ class Process:
             else:
                 KERNEL32.CloseHandle(thread_handle)
 
+        log.info("Successfully injected process with pid %d." % self.pid)
+
         return True
 
     def wait(self):
+        ret = True
+
         if self.event_handle:
-            KERNEL32.WaitForSingleObject(self.event_handle, 10000)
+            retval = KERNEL32.WaitForSingleObject(self.event_handle, 10000)
+            if retval == WAIT_TIMEOUT:
+                log.error("Timeout waiting for cuckoomon to initialize in pid %d", self.pid)
+                ret = False
+            else:
+                log.info("Successfully injected process with pid %d", self.pid)
+
             KERNEL32.CloseHandle(self.event_handle)
             self.event_handle = None
-        return True
+
+        return ret
 
     def dump_memory(self):
         """Dump process memory.

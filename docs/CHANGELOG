@@ -1,36 +1,53 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 1.2 (TBD)
+Cuckoo Sandbox 1.2 (2015-02-XX)
 ===============================
-
-* Added Python analysis module
-* Added analysis deletion to web interface
-* Added machine information in reports
-* Added un-hook (if malware removes cuckoo's hooks) detection
-* Added Microsoft Crypto API hooks
+* Added support for baremetal analysis (physical machinery module)
+* Added XenServer machinery module
 * Added process memory processing module
-* Added support for more Volatility plugins
+* Added support for Volatility 2.4 and additional modules
 * Added more memory analysis information to web interface
-* Added memory dump to vmware workstation module
-* Added terminate_processes option to terminate processes before vm shutdown
-* Added optional aggressive sleep skipping mode
-* Added option to skip an area when comparing screenshots, avoiding duplicates
-* Added automatic generation of yara rules indexes
-* Added display of PE compilation time
-* Added support for Pillow (PIL fork)
+* Added memory dump to VMWare workstation module
+* Added machine information in reports
+* Added possibility to delete analysis from web interface
 * Added search by string to web interface
+* Added dynamic search of API call logs to web interface
+* Added display of PE compilation time to web interface
+* Added memory dump download to web interfaceo
+* Refactored analysis packages and simplified syntax
+* Added analysis package for Microsoft PowerPoint
+* Added analysis package for MSI (Windows installer package)
+* Added analysis package for Python scripts
+* Added loader option to DLL analysis package (fake parent process)
+* Added additional signatures helper functions
+* Added terminate_processes option to terminate processes before virtual machine shutdown
+* Added option to skip an area when comparing screenshots, avoiding duplicates
+* Added automatic generation of Yara rules indexes
+* Added support for Pillow (PIL fork)
+* Added machine utility to automatically update machinery configuration
+* Added utility to distribute analysis across Cuckoo instances
+* Added un-hook detection (if malware removes Cuckoo's hooks) 
+* Added Microsoft Crypto API hooks
+* Added optional aggressive sleep skipping mode
 * Allow Auxiliary modules to run a callback at the very end of an analysis
+* Replaced ./utils/clean.sh with ./cuckoo.py --clean
 * Replaced diStorm3 disassembler with Capstone disassembler
-* Refactored analysis packages
 * Fixed process.py to use delete_original and delete_bin_copy when used in auto mode
-* Fixed issue with tcpdump filters
 * Fixed analysis of HTML pages without a proper extension
 * Fixed logic bug in mouse activity emulator
 * Fixed bug in the sleep skipping mechanism
 * Fixed memory leak if using a old version of python-magic
 * Fixed out of memory exceptions when calculating hash of big files
-* Fixed BFP filter to skip agent traffic from PCAP
+* Fixed BPF filter to skip agent traffic from PCAP
+* Fixed a variety of bugs in Windows analyzer
+* Fixed a number of anti-sandbox tricks
+* Fixed locking issues with SQLite database
 * Removed hpfeeds reporting module
+
+Cuckoo Sandbox 1.1.1 (2014-10-07)
+=================================
+
+* Fixed path sanitization vulnerability in resultserver.
 
 Cuckoo Sandbox 1.1 (2014-04-07)
 ===============================

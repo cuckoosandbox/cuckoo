@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -25,6 +25,8 @@ class VirusTotal(Processing):
         virustotal = []
 
         key = self.options.get("key", None)
+        timeout = self.options.get("timeout", 60)
+
         if not key:
             raise CuckooProcessingError("VirusTotal API key not "
                                         "configured, skip")
@@ -38,12 +40,15 @@ class VirusTotal(Processing):
         elif self.task["category"] == "url":
             resource = self.task["target"]
             url = VIRUSTOTAL_URL_URL
+        else:
+            # Not supported type, exit.
+            return virustotal
 
         data = urllib.urlencode({"resource": resource, "apikey": key})
 
         try:
             request = urllib2.Request(url, data)
-            response = urllib2.urlopen(request)
+            response = urllib2.urlopen(request, timeout=int(timeout))
             response_data = response.read()
         except urllib2.URLError as e:
             raise CuckooProcessingError("Unable to establish connection "

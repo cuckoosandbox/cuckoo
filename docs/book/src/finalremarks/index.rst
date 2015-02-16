@@ -92,52 +92,73 @@ It's hard at this point to keep track of all individual contributions.
 Following is the list of people who contributed code to our GitHub repository::
 
     $ git shortlog -s -n
-       907  Nex
-       684  jekil
-       191  rep
-       184  nex
-       130  Jurriaan Bremer
+      1026  Nex
+       840  jekil
+       284  Jurriaan Bremer
+       209  rep
+       185  nex
         72  Ivan Kirillov
-        68  Thorsten Sick
+        70  Thorsten Sick
+        27  Alessandro Tanasi
         24  Pietro Delsante
-        24  Alessandro Tanasi
         24  Mark Schloesser
         22  David Maciejak
+        14  Justin Roberts
         13  Greg Back
+        11  r3comp1le
          9  Script Kiddie
          9  Christopher Schmitt
          7  Hugh Pearse
          7  SpoonBoy
          6  init99
-         4  Adam Pridgen
+         6  Tal Jerome
+         5  jamu
+         5  lehmz
          4  Ben Small
-         3  Espen Fjellvær Olsen
-         3  jamu
-         3  wzr
+         4  Adam Pridgen
          3  z0mbiehunt3r
+         3  Espen Fjellvær Olsen
+         3  Stephen DiCato
+         3  wzr
+         3  Allen Swackhamer
+         3  robertsjw
+         3  Jerome Marty
+         3  Nagy Ferenc László
          2  Richard Harman
+         2  Max Taube
+         2  Neriberto C.Prado
+         2  Gael Muller
+         2  Mario Vilas
+         2  Roberto Abdelkader Martínez Pérez
+         2  Claudio Guarnieri
+         2  Thomas Penteker
+         2  Will Metcalf
+         2  bcyrill
+         2  kholbrook1303
          2  mak
          2  mt00at
-         2  Mario Vilas
-         2  Thomas Penteker
-         2  Claudio Guarnieri
-         2  Neriberto C.Prado
-         2  Max Taube
-         2  bcyrill
-         1  vacmf
-         1  jvoisin
-         1  Ben Lyon
-         1  Allen Swackhamer
-         1  sabri
-         1  Mark Woan
-         1  Justin Roberts
-         1  Stephen DiCato
-         1  =
-         1  Valter Santos
+         2  upsidedwn
          1  bladeswords
          1  chort
          1  chrestme
+         1  SnakeByte Lab
+         1  =
+         1  Ben Lyon
+         1  jvoisin
+         1  John Davison
+         1  Ryan Peck
+         1  vacmf
+         1  Mark Woan
+         1  Nitzan Carmel
+         1  Aitor Gómez
          1  Crashman1983
+         1  Henrique Menezes
+         1  Micha Lenk
+         1  Benjamin Vanheuverzwijn
+         1  Valter Santos
+         1  sabri
+         1  shendo
+         1  chimerhapsody
 
 There is a number of friends who provided feedback, ideas and support during the years
 of development of this project, including:

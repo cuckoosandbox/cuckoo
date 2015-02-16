@@ -6,6 +6,7 @@ Frequently Asked Questions:
 
     * :ref:`analyze_urls`
     * :ref:`general_volatility`
+    * :ref:`esxi_reqs`
     * :ref:`troubles_upgrade`
     * :ref:`troubles_problem`
 
@@ -34,6 +35,18 @@ some rootkit-like technologies to perform its operations, the results of a foren
 analysis would be polluted by the sandbox's components.
 
 .. _`Volatility`: http://code.google.com/p/volatility/
+
+.. _esxi_reqs:
+
+What I need to use Cuckoo with VMware ESXi?
+-------------------------------------------
+
+To run with VMware vSphere Hypervisor (or ESXi) Cuckoo levareges on libvirt.
+Libivirt is currently using VMware API to take control over virtual machines,
+althogh these API are available ony in licensed version.
+In VMware vSphere free edition, these API are read only, so you are unable
+to use Cuckoo with it.
+For the minimum license needed, please have a look at VMware website.
 
 Troubleshooting
 ===============

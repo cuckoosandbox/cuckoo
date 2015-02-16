@@ -1,5 +1,5 @@
 # Copyright (c) 2013, The MITRE Corporation
-# Copyright (c) 2010-2014, Cuckoo Developers
+# Copyright (c) 2010-2015, Cuckoo Developers
 # All rights reserved.
 
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
@@ -74,7 +74,6 @@ class MAEC41Report(Report):
             raise CuckooDependencyError("Unable to import cybox (install with `pip install cybox`)")
         elif not HAVE_MAEC:
             raise CuckooDependencyError("Unable to import cybox and maec (install with `pip install maec`)")
-
         self._illegal_xml_chars_RE = re.compile(u"[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]")
         # Map of PIDs to the Actions that they spawned.
         self.pidActionMap = {}
@@ -99,12 +98,12 @@ class MAEC41Report(Report):
         NS = Namespace("http://www.cuckoosandbox.org", "Cuckoosandbox")
         maec.utils.idgen.set_id_namespace(NS)
         # Setup the MAEC components
-        if self.results["target"]["category"] == "file":
+        if "target" in self.results and self.results["target"]["category"] == "file":
             self.tool_id = maec.utils.idgen.create_id(prefix=self.results["target"]["file"]["md5"])
-        elif self.results["target"]["category"] == "url":
+        elif "target" in self.results and self.results["target"]["category"] == "url":
             self.tool_id = maec.utils.idgen.create_id(prefix=hashlib.md5(self.results["target"]["file"]).hexdigest())
         else:
-            raise CuckooReportError("Unknown target type")
+            raise CuckooReportError("Unknown target type or targetinfo module disabled")
 
         # Generate Package.
         self.package = Package()
@@ -130,8 +129,9 @@ class MAEC41Report(Report):
     def addActions(self):
         """Add Actions section."""
         # Process-initiated Actions.
-        for process in self.results["behavior"]["processes"]:
-            self.createProcessActions(process)
+        if "behavior" in self.results and "processes" in self.results["behavior"]:
+            for process in self.results["behavior"]["processes"]:
+                self.createProcessActions(process)
         # Network actions.
         if "network" in self.results and isinstance(self.results["network"], dict) and len(self.results["network"]) > 0:
             if "udp" in self.results["network"] and isinstance(self.results["network"]["udp"], list) and len(self.results["network"]["udp"]) > 0:

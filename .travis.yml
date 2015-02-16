@@ -7,9 +7,9 @@ python:
 before_install:
     - sudo apt-get update -qq
     - sudo apt-get install python-magic python-dpkt python-libvirt
-    - wget http://downloads.sourceforge.net/project/ssdeep/ssdeep-2.10/ssdeep-2.10.tar.gz
-    - tar -zxvf ssdeep-2.10.tar.gz
-    - cd ssdeep-2.10
+    - wget http://downloads.sourceforge.net/project/ssdeep/ssdeep-2.12/ssdeep-2.12.tar.gz
+    - tar -zxvf ssdeep-2.12.tar.gz
+    - cd ssdeep-2.12
     - ./configure && make
     - sudo make install
     - cd ..
@@ -18,5 +18,3 @@ install:
 script:
     - python cuckoo.py --debug --test
     - nosetests
-notifications:
-  flowdock: 71a8e3b60f92bcb723e7a936eda14413

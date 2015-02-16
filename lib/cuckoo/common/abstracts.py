@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -553,6 +553,10 @@ class LibVirtMachinery(Machinery):
                                    when there are too many snapshots available
         """
         def _extract_creation_time(node):
+            """Extracts creation time from a KVM vm config file.
+            @param node: config file node
+            @return: extracted creation time
+            """
             xml = ET.fromstring(node.getXMLDesc(flags=0))
             return xml.findtext("./creationTime")
 
@@ -561,12 +565,14 @@ class LibVirtMachinery(Machinery):
         try:
             vm = self.vms[label]
 
+            # Try to get the currrent snapshot, otherwise fallback on the latest
+            # from config file.
             if vm.hasCurrentSnapshot(flags=0):
                 snapshot = vm.snapshotCurrent(flags=0)
             else:
                 log.debug("No current snapshot, using latest snapshot")
 
-                # No current snapshot, try to get the last one.
+                # No current snapshot, try to get the last one from config file.
                 snapshot = sorted(vm.listAllSnapshots(flags=0),
                                   key=_extract_creation_time,
                                   reverse=True)[0]
@@ -835,6 +841,9 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
+        if "domains" not in self.results["network"]:
+            return None
+
         for item in self.results["network"]["domains"]:
             if self._check_value(pattern=pattern,
                                  subject=item["domain"],
@@ -862,7 +871,7 @@ class Signature(object):
         """Retrieves the value of a specific argument from an API call.
         @param call: API call object.
         @param name: name of the argument to retrieve.
-        @return: value of the requried argument.
+        @return: value of the required argument.
         """
         # Check if the call passed to it was cached already.
         # If not, we can start caching it and store a copy converted to a dict.
@@ -878,6 +887,33 @@ class Signature(object):
             return self._current_call_dict[name]
 
         return None
+
+    def add_match(self, process, type, match):
+        """Adds a match to the signature data.
+        @param process: The process triggering the match.
+        @param type: The type of matching data (ex: 'api', 'mutex', 'file', etc.)
+        @param match: Value or array of values triggering the match.
+        """
+        signs = []
+        if isinstance(match, list):
+            for item in match:
+                signs.append({ 'type': type, 'value': item })
+        else:
+            signs.append({ 'type': type, 'value': match })
+
+        process_summary = None
+        if process:
+            process_summary = {}
+            process_summary['process_name'] = process['process_name']
+            process_summary['process_id'] = process['process_id']
+
+        self.data.append({ 'process': process_summary, 'signs': signs })
+
+    def has_matches(self):
+        """Returns true if there is matches (data is not empty)
+        @return: boolean indicating if there is any match registered
+        """
+        return len(self.data) > 0
 
     def on_call(self, call, process):
         """Notify signature about API call. Return value determines

@@ -106,7 +106,7 @@ the example below:
             dsn = "my:///connection"
 
 
-This works for all the virtualization technologies supported by LibVirt. Just remember to 
+This works for all the virtualization technologies supported by LibVirt. Just remember to
 check if your LibVirt package (if you are using one, for example from your Linux
 distribution) is compiled with the support for the technology you need.
 
