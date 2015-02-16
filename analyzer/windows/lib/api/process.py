@@ -10,7 +10,7 @@ from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
 from shutil import copy
 import subprocess
 
-from lib.common.constants import PIPE, PATHS, SHUTDOWN_MUTEX, ROOT
+from lib.common.constants import PIPE, PATHS, SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
 from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
 from lib.common.defines import STARTUPINFO, PROCESS_INFORMATION
@@ -30,7 +30,7 @@ def randomize_dll(dll_path):
     @return: new DLL path.
     """
     new_dll_name = random_string(6)
-    new_dll_path = os.path.join(os.getcwd(), "dll", "{0}.dll".format(new_dll_name))
+    new_dll_path = os.path.join(os.getcwd(), "bin", "{0}.dll".format(new_dll_name))
 
     try:
         copy(dll_path, new_dll_path)
@@ -154,7 +154,7 @@ class Process(object):
         if not dll:
             dll = "monitor-x86.dll"
 
-        dll = randomize_dll(os.path.join("dll", dll))
+        dll = randomize_dll(os.path.join("bin", dll))
 
         if not dll or not os.path.exists(dll):
             log.warning("No valid DLL specified to be injected, "
@@ -166,8 +166,10 @@ class Process(object):
         else:
             arguments = None
 
-        inject_exe = os.path.join(ROOT, "inject-x86.exe")
-        args = [inject_exe, "--crt", "--dll", dll, "--app", path]
+        inject_exe = os.path.join("bin", "inject-x86.exe")
+        args = [
+            inject_exe, "--crt", "--dll", dll, "--app", path
+        ]
         if arguments:
             args += ["--cmdline", arguments]
 
@@ -220,7 +222,7 @@ class Process(object):
         if not dll:
             dll = "monitor-x86.dll"
 
-        dll = randomize_dll(os.path.join("dll", dll))
+        dll = randomize_dll(os.path.join("bin", dll))
 
         if not dll or not os.path.exists(dll):
             log.warning("No valid DLL specified to be injected in process "
@@ -229,7 +231,7 @@ class Process(object):
 
         config_path = self.drop_config()
 
-        inject_exe = os.path.join(ROOT, "inject-x86.exe")
+        inject_exe = os.path.join("bin", "inject-x86.exe")
         args = [
             inject_exe, "--pid", "%s" % self.pid, "--dll", dll,
             "--config", config_path,
