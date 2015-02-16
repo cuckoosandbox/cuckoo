@@ -60,6 +60,7 @@ class MAEC41Report(Report):
                                       Default = "true".
            strings = "true" | "false". Output Cuckoo strings output as a separate MAEC Bundle in the document. Default = "true".
            virustotal = "true" | "false". Output VirusTotal output as a separate MAEC Bundle in the document. Default = "true".
+           deduplicate = "true" | "false". Deduplicate the CybOX Objects in the generated dynamic analysis MAEC Bundle. Default = "true".
     """
 
     def run(self, results):
@@ -149,6 +150,9 @@ class MAEC41Report(Report):
                 self.dynamic_bundle.add_named_action_collection("Network Actions")
                 for network_data in self.results["network"]["http"]:
                     self.createActionNet(network_data, {"value": "send http " + str(network_data["method"]).lower() + " request", "xsi:type": "maecVocabs:HTTPActionNameVocab-1.0"}, "TCP", "HTTP")
+        # Deduplicate the Bundle.
+        if self.options["deduplicate"]:
+            self.dynamic_bundle.deduplicate()
 
     def createActionNet(self, network_data, action_name, layer4_protocol=None, layer7_protocol=None):
         """Create a network Action.
