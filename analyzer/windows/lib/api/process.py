@@ -144,7 +144,8 @@ class Process(object):
         @param path: sample path.
         @param args: process args.
         @param dll: dll path.
-        @param from: process identifier which will become the parent process.
+        @param from: process identifier or process name which will
+                     become the parent process for the new process.
         @return: operation status.
         """
         if not os.access(path, os.X_OK):
@@ -174,7 +175,10 @@ class Process(object):
             args += ["--cmdline", arguments]
 
         if from:
-            args += ["--from", "%s" % from]
+            if isinstance(from, (int, long)) or from.isdigit():
+                args += ["--from", "%s" % from]
+            else:
+                args += ["--from-process", from]
 
         try:
             self.pid = int(subprocess.check_output(args))
