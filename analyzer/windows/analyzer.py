@@ -105,7 +105,6 @@ def dump_file(file_path):
         log.error("Unable to upload dropped file at path \"%s\": %s",
                   file_path, e)
 
-
 def del_file(fname):
     dump_file(fname)
 
@@ -183,7 +182,7 @@ class PipeHandler(Thread):
         # horribly to start with).
         if process_id not in PROCESS_LIST:
             # Open the process and inject the DLL. Hope it enjoys it.
-            proc = Process(pid=process_id)
+            proc = Process(pid=process_id, tid=thread_id)
 
             filename = os.path.basename(proc.get_filepath())
             log.info("Announced process name: %s", filename)
@@ -196,7 +195,7 @@ class PipeHandler(Thread):
                 if process_id and thread_id:
                     proc.inject(dll, apc=True)
                 else:
-                    proc.inject(dll)
+                    proc.inject(dll, apc=False)
 
                 log.info("Successfully injected process with "
                          "pid %s", proc.pid)

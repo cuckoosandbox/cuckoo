@@ -71,21 +71,12 @@ class Package(object):
         """
         dll = self.options.get("dll")
         free = self.options.get("free")
-        suspended = True
-        if free:
-            suspended = False
 
         p = Process()
-        if not p.execute(path=path, args=args, suspended=suspended):
+        if not p.execute(path=path, args=args, dll=dll):
             raise CuckooPackageError("Unable to execute the initial process, "
                                      "analysis aborted.")
 
-        if not free and suspended:
-            p.inject(dll)
-            p.resume()
-            p.wait()
-            p.close()
-        
         return p.pid
 
     def package_files(self):
