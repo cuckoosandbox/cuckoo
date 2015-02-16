@@ -36,101 +36,93 @@ from modules import auxiliary
 log = logging.getLogger()
 
 BUFSIZE = 4096
-FILES_LIST = []
-DUMPED_LIST = []
-PROCESS_LIST = []
 PROCESS_LOCK = Lock()
 DEFAULT_DLL = None
 
 PID = os.getpid()
 PPID = Process(pid=PID).get_parent_pid()
 
-# This is still in preparation status - needs finalizing.
-def protected_filename(fname):
-    """Checks file name against some protected names."""
-    if not fname:
-        return False
+class Files(object):
+    PROTECTED_NAMES = ()
 
-    protected_names = []
-    for name in protected_names:
-        if name in fname:
-            return True
+    def __init__(self):
+        self.files = []
+        self.dumped = []
 
-    return False
+    def is_protected_filename(self, file_name):
+        """Do we want to inject into a process with this name?"""
+        return file_name.lower() not in self.PROTECTED_NAMES:
 
-def add_pid(pid):
-    """Add a process to process list."""
-    if isinstance(pid, (int, long, str)):
-        log.info("Added new process to list with pid: %s", pid)
-        PROCESS_LIST.append(int(pid))
+    def add_file(self, filepath):
+        """Add filepath to the list of files."""
+        if filepath not in self.files:
+            log.info("Added new file to list with path: %s", filepath)
+            self.files.append(filepath.lower())
 
-def add_pids(pids):
-    """Add PID."""
-    if isinstance(pids, (tuple, list)):
-        for pid in pids:
-            add_pid(pid)
-    else:
-        add_pid(pids)
+    def dump_file(self, filepath):
+        """Dump a file to the host."""
+        if not os.path.isfile(filepath):
+            log.warning("File at path \"%s\" does not exist, skip.", filepath)
+            return False
 
-def add_file(file_path):
-    """Add a file to file list."""
-    if file_path not in FILES_LIST:
-        log.info("Added new file to list with path: %s",
-                 unicode(file_path).encode("utf-8", "replace"))
-        FILES_LIST.append(file_path)
-
-def dump_file(file_path):
-    """Create a copy of the given file path."""
-    try:
-        if os.path.isfile(file_path):
-            sha256 = hash_file(hashlib.sha256, file_path)
-            if sha256 in DUMPED_LIST:
-                # The file was already dumped, just skip.
-                return
-        else:
-            log.warning("File at path \"%s\" does not exist, skip.",
-                        file_path)
+        # Check whether we've already dumped this file - in that case skip it.
+        sha256 = hash_file(hashlib.sha256, filepath)
+        if sha256 in self.dumped:
             return
-    except IOError as e:
-        log.warning("Unable to access file at path \"%s\": %s", file_path, e)
-        return
 
-    upload_path = os.path.join("files", "%s_%s" % (sha256[:16], file_name))
-    try:
-        upload_to_host(file_path, upload_path)
-        DUMPED_LIST.append(sha256)
-    except (IOError, socket.error) as e:
-        log.error("Unable to upload dropped file at path \"%s\": %s",
-                  file_path, e)
+        filename = "%s_%s" % (sha256[:16], os.path.basename(filepath))
+        upload_path = os.path.join("files", filename)
 
-def del_file(fname):
-    dump_file(fname)
+        try:
+            upload_to_host(filepath, upload_path)
+            self.dumped.append(sha256)
+        except (IOError, socket.error) as e:
+            log.error("Unable to upload dropped file at path \"%s\": %s",
+                      filepath, e)
 
-    # Filenames are case-insensitive in windows.
-    fnames = [x.lower() for x in FILES_LIST]
+    def delete_file(self, filepath):
+        """A file is about to removed and thus should be dumped right away."""
+        self.dump_file(filepath)
 
-    # If this filename exists in the FILES_LIST, then delete it, because it
-    # doesn't exist anymore anyway.
-    if fname.lower() in fnames:
-        FILES_LIST.pop(fnames.index(fname.lower()))
+        # Remove the filepath from the files list.
+        if filepath.lower() in self.files:
+            self.files.pop(self.files.index(filepath.lower()))
 
-def move_file(old_fname, new_fname):
-    # Filenames are case-insensitive in windows.
-    fnames = [x.lower() for x in FILES_LIST]
+    def move_file(self, oldfilepath, newfilepath):
+        """A file will be moved - track this change."""
+        if oldfilepath.lower() in self.files:
+            # Replace the entry with the new filepath.
+            index = self.files.index(oldfilepath.lower())
+            self.files[index] = newfilepath.lower()
 
-    # Check whether the old filename is in the FILES_LIST.
-    if old_fname.lower() in fnames:
+    def dump_files(self):
+        """Dump all pending files."""
+        for filepath in self.files:
+            self.dump_file(filepath)
 
-        # Get the index of the old filename.
-        idx = fnames.index(old_fname.lower())
+class ProcessList(object):
+    def __init__(self):
+        self.pids = []
 
-        # Replace the old filename by the new filename.
-        FILES_LIST[idx] = new_fname
+    def add_pid(self, pid):
+        """Add a process identifier to the process list."""
+        log.info("Added new process to list with pid: %s", pid)
+        self.pids.append(int(pid))
 
-def dump_files():
-    """Dump all the dropped files."""
-    for file_path in FILES_LIST:
-        dump_file(file_path)
+    def add_pids(self, pids):
+        """Add one or more process identifiers to the process list."""
+        if isinstance(pids, (tuple, list)):
+            for pid in pids:
+                self.add_pid(pid)
+        else:
+            self.add_pid(pids)
+
+    def has_pid(self, pid):
+        """Is this process identifier being tracked?"""
+        return int(pid) in self.pids
+
+FILES = Files()
+PROCESS_LIST = ProcessList()
 
 class PipeHandler(Thread):
     """Pipe Handler.
@@ -163,7 +155,7 @@ class PipeHandler(Thread):
 
     def _inject_process(self, process_id, thread_id):
         """Helper function for injecting the monitor into a process."""
-        # We acquire the process lock in order to prevent the analyzer to 
+        # We acquire the process lock in order to prevent the analyzer to
         # terminate the analysis while we are operating on the new process.
         PROCESS_LOCK.acquire()
 
@@ -178,16 +170,16 @@ class PipeHandler(Thread):
         # We inject the process only if it's not being monitored already,
         # otherwise we would generated polluted logs (if it wouldn't crash
         # horribly to start with).
-        if process_id not in PROCESS_LIST:
+        if not PROCESS_LIST.has_pid(process_id):
             # Open the process and inject the DLL. Hope it enjoys it.
             proc = Process(pid=process_id, tid=thread_id)
 
             filename = os.path.basename(proc.get_filepath())
             log.info("Announced process name: %s", filename)
 
-            if not protected_filename(filename):
+            if not FILES.is_protected_filename(filename):
                 # Add the new process ID to the list of monitored processes.
-                add_pid(process_id)
+                PROCESS_LIST.add_pid(process_id)
 
                 # If we have both pid and tid, then we can use APC to inject.
                 if process_id and thread_id:
@@ -230,12 +222,12 @@ class PipeHandler(Thread):
     def _handle_file_new(self, data):
         """Notification of a new dropped file."""
         # Extract the file path and add it to the list.
-        add_file(data.decode("utf8"))
+        FILES.add_file(data.decode("utf8"))
 
     def _handle_file_del(self, data):
         """Notification of a file being removed - we have to dump it before
         it's being removed."""
-        del_file(data.decode("utf8"))
+        FILES.delete_file(data.decode("utf8"))
 
     def _handle_file_move(self, data):
         """A file is being moved - track these changes."""
@@ -245,7 +237,8 @@ class PipeHandler(Thread):
             return
 
         old_filepath, new_filepath = data.split("::", 1)
-        move_file(old_filepath.decode("utf8"), new_filepath.decode("utf8"))
+        FILES.move_file(old_filepath.decode("utf8"),
+                        new_filepath.decode("utf8"))
 
     def run(self):
         """Run handler.
@@ -411,7 +404,7 @@ class Analyzer:
             self.pipes[x].stop()
 
         # Dump all the notified files.
-        dump_files()
+        FILES.dump_files()
 
         # Hell yeah.
         log.info("Analysis completed.")
@@ -529,7 +522,7 @@ class Analyzer:
         # If the analysis package returned a list of process identifiers, we
         # add them to the list of monitored processes and enable the process monitor.
         if pids:
-            add_pids(pids)
+            PROCESS_LIST.add_pids(pids)
             pid_check = True
 
         # If the package didn't return any process ID (for example in the case
@@ -565,14 +558,14 @@ class Analyzer:
                 # If the process monitor is enabled we start checking whether
                 # the monitored processes are still alive.
                 if pid_check:
-                    for pid in PROCESS_LIST:
+                    for pid in PROCESS_LIST.pids:
                         if not Process(pid=pid).is_alive():
                             log.info("Process with pid %s has terminated", pid)
                             PROCESS_LIST.remove(pid)
 
                     # If none of the monitored processes are still alive, we
                     # can terminate the analysis.
-                    if not PROCESS_LIST:
+                    if not PROCESS_LIST.pids:
                         log.info("Process list is empty, "
                                  "terminating analysis.")
                         break
@@ -580,7 +573,7 @@ class Analyzer:
                     # Update the list of monitored processes available to the
                     # analysis package. It could be used for internal
                     # operations within the module.
-                    pack.set_pids(PROCESS_LIST)
+                    pack.set_pids(PROCESS_LIST.pids)
 
                 try:
                     # The analysis packages are provided with a function that
@@ -638,7 +631,7 @@ class Analyzer:
             # that we clean up remaining open handles (sockets, files, etc.).
             log.info("Terminating remaining processes before shutdown.")
 
-            for pid in PROCESS_LIST:
+            for pid in PROCESS_LIST.pids:
                 proc = Process(pid=pid)
                 if proc.is_alive():
                     try:
