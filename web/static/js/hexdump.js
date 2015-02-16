@@ -1,4 +1,9 @@
 
+/*
+ * hexy js - https://github.com/a2800276/hexy.js
+ *  modified for cuckoo/web
+*/
+
 var hexy = function (buffer, config) {
   var h = new Hexy(buffer, config)
   return h.toString()
@@ -178,6 +183,16 @@ var Hexy = function (buffer, config) {
   
 
 }
+
+/**
+ * the following code is hacked up from the jquery base64 codec plugin
+ *  removed 80% of its guts though...
+ * jQuery Plugin - base64 codec
+ * @lisence MIT License https://github.com/yatt/jquery.base64/blob/master/license.txt
+ * @author yatt/brainfs http://d.hatena.ne.jp/yatt http://twitter.com/brainfs
+ * @version 0.0.1
+ * @info
+ */
 
 var base64 = new function()
 // 
