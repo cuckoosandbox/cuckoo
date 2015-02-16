@@ -589,13 +589,16 @@ class NetworkAnalysis(Processing):
         self.key = "network"
 
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
-        sort_pcap(self.pcap_path, sorted_path)
+        if Config().processing.sort_pcap:
+            sort_pcap(self.pcap_path, sorted_path)
 
         results = Pcap(sorted_path).run()
 
         # Save PCAP file hash.
         if os.path.exists(self.pcap_path):
             results["pcap_sha256"] = File(self.pcap_path).get_sha256()
+        if os.path.exists(sorted_path):
+            results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
 
         return results
 
@@ -733,5 +736,14 @@ def next_connection_packets(piter):
 
         yield {
             "src": sip, "dst": dip, "sport": sport, "dport": dport,
-            "raw": payload_from_raw(raw), "direction": first_ft == ft,
+            "raw": payload_from_raw(raw).encode("base64"), "direction": first_ft == ft,
         }
+
+def packets_for_stream(fobj, offset):
+    pcap = dpkt.pcap.Reader(fobj)
+    pcapiter = iter(pcap)
+    ts, raw = pcapiter.next()
+
+    fobj.seek(offset)
+    for p in next_connection_packets(pcapiter):
+        yield p
