@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -18,11 +18,12 @@ class TargetInfo(Processing):
 
         target_info = {"category": self.task["category"]}
 
+        # We have to deal with file or URL targets.
         if self.task["category"] == "file":
             target_info["file"] = {}
 
-            # let's try to get as much information as possible, i.e., the
-            # filename if the file is not available anymore
+            # et's try to get as much information as possible, i.e., the
+            # filename if the file is not available anymore.
             if os.path.exists(self.file_path):
                 target_info["file"] = File(self.file_path).get_all()
 

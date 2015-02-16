@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -25,6 +25,11 @@ class TestSignature(object):
     @raises(NotImplementedError)
     def test_not_implemented_run(self):
         self.s.run()
+
+    def test_missing_key_domain(self):
+        """Test with domain key missing."""
+        self.s.results = {"network": {}}
+        assert_equals(None, self.s.check_domain("*"))
 
 class TestReport:
     def setUp(self):

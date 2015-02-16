@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -46,6 +46,7 @@ class ParseProcessLog(list):
         self.first_seen = None
         self.calls = self
         self.lastcall = None
+        self.call_id = 0
 
         if os.path.exists(log_path) and os.stat(log_path).st_size > 0:
             self.parse_first_and_reset()
@@ -91,6 +92,7 @@ class ParseProcessLog(list):
     def reset(self):
         self.fd.seek(0)
         self.lastcall = None
+        self.call_id = 0
 
     def compare_calls(self, a, b):
         """Compare two calls for equality. Same implementation as before netlog.
@@ -130,6 +132,9 @@ class ParseProcessLog(list):
             nextcall["repeated"] += 1
             self.lastcall = None
             self.wait_for_lastcall()
+
+        nextcall["id"] = self.call_id
+        self.call_id += 1
 
         return nextcall
 
@@ -231,8 +236,10 @@ class Processes:
             log.warning("Analysis results folder does not exist at path \"%s\".", self._logs_path)
             return results
 
+        # TODO: this should check the current analysis configuration and raise a warning
+        # if injection is enabled and there is no logs folder.
         if len(os.listdir(self._logs_path)) == 0:
-            log.warning("Analysis results folder does not contain any file.")
+            log.info("Analysis results folder does not contain any file or injection was disabled.")
             return results
 
         for file_name in os.listdir(self._logs_path):

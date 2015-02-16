@@ -6,8 +6,16 @@ Cuckoo comes with a set of pre-built utilities to automate several common
 tasks.
 You can find them under the "utils" folder.
 
+.. _cleanup-utility:
+
 Cleanup utility
 ===============
+
+.. deprecated:: 1.2
+
+    Use :ref:`./cuckoo.py --clean <cuckoo-clean>` instead which *also* takes
+    care of cleaning sample and task information from MySQL and PostgreSQL
+    databases.
 
 If you want to delete all history, analysis, data and begin again from the first
 task you need the clean.sh utility.
@@ -26,8 +34,8 @@ not running.
 If you are using a custom database (MySQL, PostgreSQL or SQLite in custom
 location) clean.sh doesn't clean it, you have to take care of that.
 
-If you are using MongoDB reporting module clean.sh doesn't clean your database,
-you have to take care of that.
+If you are using the MongoDB reporting module clean.sh does **not** clean your
+database, you have to take care of that.
 
 Submission Utility
 ==================
@@ -42,7 +50,7 @@ Cuckoo's web interface. This tool is already described in :doc:`submit`.
 Processing Utility
 ==================
 
-Run the results processing engine and optionally the reporting engine (run 
+Run the results processing engine and optionally the reporting engine (run
 all reports) on an already available analysis folder, in order to not re-run
 the analysis if you want to re-generate the reports for it.
 This is used mainly in debugging and developing Cuckoo.
@@ -56,7 +64,7 @@ If you want to re-generate the reports::
 
 Following are the usage options::
 
-    $ ./utils/process.py
+    $ ./utils/process.py -h
 
     usage: process.py [-h] [-d] [-r] [-p PARALLEL] id
 
@@ -88,7 +96,7 @@ specific additional modules in your local setup and for example update id with
 all the latest available signatures.
 Following are the usage options::
 
-    $ ./utils/community.py
+    $ ./utils/community.py -h
 
     usage: community.py [-h] [-a] [-s] [-p] [-m] [-r] [-f] [-w] [-b BRANCH]
 
@@ -127,7 +135,7 @@ Stats utility
 This is a really simple utility which prints some statistics about processed
 samples::
 
-    $ utils/stats.py
+    $ ./utils/stats.py
 
     1 samples in db
     1 tasks in db
@@ -140,3 +148,34 @@ samples::
     failed_processing 0 tasks
     roughly 32 tasks an hour
     roughly 778 tasks a day
+
+Machine utility
+===============
+
+The machine.py utility is designed to help you automatize the configuration of
+virtual machines in Cuckoo.
+It takes a list of machine details as arguments and write them in the specified
+configuration file of the machinery module enabled in *cuckoo.conf*.
+Following are the available options::
+
+  $ ./utils/machine.py -h
+  usage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
+                  [--tags TAGS] [--interface INTERFACE] [--snapshot SNAPSHOT]
+                  [--resultserver RESULTSERVER]
+                  vmname
+
+  positional arguments:
+    vmname                Name of the Virtual Machine.
+
+  optional arguments:
+    -h, --help            show this help message and exit
+    --debug               Debug log in case of errors.
+    --add                 Add a Virtual Machine.
+    --ip IP               Static IP Address.
+    --platform PLATFORM   Guest Operating System.
+    --tags TAGS           Tags for this Virtual Machine.
+    --interface INTERFACE
+                          Sniffer interface for this machine.
+    --snapshot SNAPSHOT   Specific Virtual Machine Snapshot to use.
+    --resultserver RESULTSERVER
+                          IP:Port of the Result Server.

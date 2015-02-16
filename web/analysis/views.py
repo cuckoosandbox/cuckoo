@@ -1,15 +1,17 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import sys
 import re
+import os
 
 from django.conf import settings
 from django.template import RequestContext
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.views.decorators.http import require_safe
+from django.views.decorators.csrf import csrf_exempt
 
 import pymongo
 from bson.objectid import ObjectId
@@ -19,8 +21,9 @@ from gridfs import GridFS
 sys.path.append(settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 
-results_db = pymongo.connection.Connection(settings.MONGO_HOST, settings.MONGO_PORT).cuckoo
+results_db = pymongo.MongoClient(settings.MONGO_HOST, settings.MONGO_PORT)[settings.MONGO_DB]
 fs = GridFS(results_db)
 
 @require_safe
@@ -36,6 +39,10 @@ def index(request):
         for task in tasks_files:
             new = task.to_dict()
             new["sample"] = db.view_sample(new["sample_id"]).to_dict()
+
+            filename = os.path.basename(new["target"])
+            new.update({"filename": filename})
+
             if db.view_errors(task.id):
                 new["errors"] = True
 
@@ -105,8 +112,8 @@ def chunk(request, task_id, pid, pagenum):
                                   context_instance=RequestContext(request))
     else:
         raise PermissionDenied
-        
-        
+
+
 @require_safe
 def filtered_chunk(request, task_id, pid, category):
     """Filters calls for call category.
@@ -149,6 +156,47 @@ def filtered_chunk(request, task_id, pid, category):
     else:
         raise PermissionDenied
 
+@csrf_exempt
+def search_behavior(request, task_id):
+    if request.method == 'POST':
+        query = request.POST.get('search')
+        results = []
+
+        # Fetch anaylsis report
+        record = results_db.analysis.find_one(
+            {"info.id": int(task_id)}
+        )
+
+        # Loop through every process
+        for process in record["behavior"]["processes"]:
+            process_results = []
+
+            chunks = results_db.calls.find({
+                "_id": { "$in": process["calls"] }
+            })
+            for chunk in chunks:
+                for call in chunk["calls"]:
+                    query = re.compile(query)
+                    if query.search(call['api']):
+                        process_results.append(call)
+                    else:
+                        for argument in call['arguments']:
+                            if query.search(argument['name']) or query.search(argument['value']):
+                                process_results.append(call)
+                                break
+
+            if len(process_results) > 0:
+                results.append({
+                    'process': process,
+                    'signs': process_results
+                })
+
+        return render_to_response("analysis/behavior/_search_results.html",
+                                  {"results": results},
+                                  context_instance=RequestContext(request))
+    else:
+        raise PermissionDenied
+
 @require_safe
 def report(request, task_id):
     report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
@@ -164,20 +212,17 @@ def report(request, task_id):
 
 @require_safe
 def file(request, category, object_id):
-    file_object = results_db.fs.files.find_one({"_id": ObjectId(object_id)})
+    file_item = fs.get(ObjectId(object_id))
 
-    if file_object:
-        content_type = file_object.get("contentType", "application/octet-stream")
-        file_item = fs.get(ObjectId(file_object["_id"]))
+    if file_item:
+        # Composing file name in format sha256_originalfilename.
+        file_name = file_item.sha256 + "_" + file_item.filename
 
-        file_name = file_item.sha256
-        if category == "pcap":
-            file_name += ".pcap"
-            content_type = "application/vnd.tcpdump.pcap"
-        elif category == "screenshot":
-            file_name += ".jpg"
-        else:
-            file_name += ".bin"
+        # Managing gridfs error if field contentType is missing.
+        try:
+            content_type = file_item.contentType
+        except AttributeError:
+            content_type = "application/octet-stream"
 
         response = HttpResponse(file_item.read(), content_type=content_type)
         response["Content-Disposition"] = "attachment; filename={0}".format(file_name)
@@ -187,6 +232,22 @@ def file(request, category, object_id):
         return render_to_response("error.html",
                                   {"error": "File not found"},
                                   context_instance=RequestContext(request))
+
+
+@require_safe
+def full_memory_dump_file(request, analysis_number):
+    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(analysis_number), "memory.dmp")
+    if os.path.exists(file_path):
+        content_type = "application/octet-stream"
+        response = HttpResponse(open(file_path, "rb").read(), content_type=content_type)
+        response["Content-Disposition"] = "attachment; filename=memory.dmp"
+
+        return response
+    else:
+        return render_to_response("error.html",
+                                  {"error": "File not found"},
+                                  context_instance=RequestContext(request))
+
 
 def search(request):
     if "search" in request.POST:
@@ -243,6 +304,8 @@ def search(request):
                                            "error": "Invalid search term: %s" % term},
                                           context_instance=RequestContext(request))
         else:
+            value = value.lower()
+
             if re.match(r"^([a-fA-F\d]{32})$", value):
                 records = results_db.analysis.find({"target.file.md5": value}).sort([["_id", -1]])
             elif re.match(r"^([a-fA-F\d]{40})$", value):

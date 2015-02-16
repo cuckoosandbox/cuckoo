@@ -1,7 +1,10 @@
 #!/bin/bash
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+
+echo "$PWD/clean.sh has been deprecated!" >&2
+echo "Please start using ./cuckoo.py --clean which also drops database tables."
 
 # I'm sure this can be done easier, but I'm not very familiar with bash
 # scripting.. So, here we go. Also, this only works from "./cuckoo" and

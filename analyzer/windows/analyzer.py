@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -81,7 +81,7 @@ def add_file(file_path):
         FILES_LIST.append(file_path)
 
 def dump_file(file_path):
-    """Create a copy of the give file path."""
+    """Create a copy of the given file path."""
     try:
         if os.path.exists(file_path):
             sha256 = hash_file(hashlib.sha256, file_path)
@@ -278,33 +278,29 @@ class PipeHandler(Thread):
                             filepath = proc.get_filepath()
                             filename = os.path.basename(filepath)
 
-                            log.info("Announced process name: %s", filename)
+                            log.info("Announced process name: %s pid: %d", filename, process_id)
 
                             if not protected_filename(filename):
-                                # Add the new process ID to the list of
-                                # monitored processes.
-                                add_pids(process_id)
-
                                 # If we have both pid and tid, then we can use
                                 # apc to inject.
                                 if process_id and thread_id:
-                                    proc.inject(dll, apc=True)
+                                    res = proc.inject(dll, apc=True)
                                 else:
                                     # We inject using CreateRemoteThread, this
                                     # needs the waiting in order to make sure
                                     # no race conditions occur.
-                                    proc.inject(dll)
+                                    res = proc.inject(dll)
+                                
+                                if res:
                                     wait = True
-
-                                log.info("Successfully injected process with "
-                                         "pid %s", proc.pid)
                     else:
                         log.warning("Received request to inject Cuckoo "
-                                    "processes, skip")
+                                    "process with pid %d, skip", process_id)
 
                 # Once we're done operating on the processes list, we release
                 # the lock.
-                PROCESS_LOCK.release()
+                if wait == False:
+                    PROCESS_LOCK.release()
             # In case of FILE_NEW, the client is trying to notify the creation
             # of a new file.
             elif command.startswith("FILE_NEW:"):
@@ -335,9 +331,14 @@ class PipeHandler(Thread):
 
         KERNEL32.CloseHandle(self.h_pipe)
 
-        # We wait until cuckoomon reports back.
         if wait:
-            proc.wait()
+            # We wait until cuckoomon reports back.
+            res = proc.wait()
+            if res:
+                # Add the new process ID to the list of
+                # monitored processes.
+                add_pids(process_id)
+            PROCESS_LOCK.release()
 
         if proc:
             proc.close()
@@ -661,7 +662,17 @@ class Analyzer:
         except Exception as e:
             log.warning("The package \"%s\" finish function raised an "
                         "exception: %s", package_name, e)
-
+            
+        try:
+            # Upload files the package created to package_files in the results folder
+            package_files = pack.package_files()
+            if package_files != None:
+                for package in package_files:
+                    upload_to_host(package[0], os.path.join("package_files", package[1]));
+        except Exception as e:
+            log.warning("The package \"%s\" package_files function raised an "
+                        "exception: %s", package_name, e)
+            
         # Terminate the Auxiliary modules.
         for aux in aux_enabled:
             try:

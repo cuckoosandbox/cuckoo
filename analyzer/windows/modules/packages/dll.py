@@ -1,8 +1,9 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import shutil
 
 from lib.common.abstracts import Package
 
@@ -16,6 +17,7 @@ class Dll(Package):
         rundll32 = self.get_path("rundll32.exe")
         function = self.options.get("function", "DllMain")
         arguments = self.options.get("arguments")
+        loader_name = self.options.get("loader")
 
         # Check file extension.
         ext = os.path.splitext(path)[-1].lower()
@@ -30,5 +32,10 @@ class Dll(Package):
         args = "{0},{1}".format(path, function)
         if arguments:
             args += " {0}".format(arguments)
+
+        if loader_name:
+            loader = os.path.join(os.path.dirname(rundll32), loader_name)
+            shutil.copy(rundll32, loader)
+            rundll32 = loader
 
         return self.execute(rundll32, args)

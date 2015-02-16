@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+<div class="alert alert-success"><h4>Submission complete!</h4>
+The following tasks were added successfully:
+{% for task in tasks %}
+    <a href="{% url "submission.views.status" task %}">{{task}}</a>
+{% endfor %}.
+Click on the links to monitor the status of the submission.
+</div>
+{% endblock %}

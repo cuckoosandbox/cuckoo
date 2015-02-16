@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -22,9 +22,8 @@ class JsonDump(Report):
 
         try:
             path = os.path.join(self.reports_path, "report.json")
-            report = codecs.open(path, "w", "utf-8")
-            json.dump(results, report, sort_keys=False,
-                      indent=int(indent), encoding=encoding)
-            report.close()
+            with codecs.open(path, "w", "utf-8") as report:
+                json.dump(results, report, sort_keys=False,
+                          indent=int(indent), encoding=encoding)
         except (UnicodeError, TypeError, IOError) as e:
             raise CuckooReportError("Failed to generate JSON report: %s" % e)

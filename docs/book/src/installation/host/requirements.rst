@@ -15,7 +15,7 @@ Install Python on Ubuntu::
 
     $ sudo apt-get install python
 
-If you want to use the Django-based web interface, you'll have to install MongoDB too:
+If you want to use the Django-based web interface, you'll have to install MongoDB too::
 
     $ sudo apt-get install mongodb
 
@@ -37,13 +37,13 @@ The following libraries are not strictly required, but their installation is rec
     * `Magic`_ (Optional): for identifying files' formats (otherwise use "file" command line utility)
     * `Pydeep`_ (Optional): for calculating ssdeep fuzzy hash of files.
     * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
-    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use release 1.7 or above or the svn version).
+    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (release >=3.0).
     * `Libvirt`_ (Optional): for using the KVM machine manager.
-    * `Bottlepy`_ (Optional): for using the ``api.py`` or ``web.py`` utility (use release 0.10 or above).
-    * `Django`_ (Optional): for using the web interface (use release 1.5 or above).
+    * `Bottlepy`_ (Optional): for using the ``api.py`` or ``web.py`` utility (release >=0.10).
+    * `Django`_ (Optional): for using the web interface (release >=1.5).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
-    * `Volatility`_ (Optional): used for forensic analysis on memory
-    * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use a release >=4.1.0.8).
+    * `Volatility`_ (Optional): used for forensic analysis on memory (release >=2.4)
+    * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use a release >=4.1.0.11, but <5.x).
     * `Chardet`_ (Optional): used for detecting string encoding.
 
 Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
@@ -52,11 +52,16 @@ Some of them are already packaged in Debian/Ubuntu and can be installed with the
 
 Except for *python-magic*, *python-dpkt* and *python-libvirt*, the others can be installed through ``pip`` too::
 
-    $ sudo pip install jinja2 pymongo bottle pefile cybox==2.1.0.8 maec==4.1.0.8 django chardet
+    $ sudo pip install jinja2 pymongo bottle pefile django chardet
 
+To have MAEC support, you need to first install the Cybox and then the MAEC libraries::
+
+    $ sudo pip install cybox==2.1.0.9
+    $ sudo pip install maec==4.1.0.11
+	
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 
-If want to use KVM it's packaged too and you can install it with the following command::
+If you want to use KVM it's packaged too and you can install it with the following command::
 
     $ sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
 
@@ -70,9 +75,13 @@ If want to use KVM it's packaged too and you can install it with the following c
 .. _Bottlepy: http://www.bottlepy.org
 .. _Django: https://www.djangoproject.com/
 .. _Pefile: http://code.google.com/p/pefile/
-.. _Volatility: http://code.google.com/p/volatility/
-.. _MAEC Python bindings: https://pypi.python.org/pypi/maec/4.1.0.8
+.. _Volatility: https://github.com/volatilityfoundation/
+.. _MAEC Python bindings: https://pypi.python.org/pypi/maec/4.1.0.11
 .. _Chardet: https://pypi.python.org/pypi/chardet
+
+If you want to use XenServer you'll have to install the *XenAPI* Python package::
+
+    $ sudo pip install XenAPI
 
 Virtualization Software
 =======================
@@ -146,4 +155,4 @@ You can get it from the `official repository`_.
 
 See the volatility documentation for detailed instructions on how to install it.
 
-.. _official repository: http://code.google.com/p/volatility/
+.. _official repository: https://github.com/volatilityfoundation

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,9 +7,6 @@ from settings import *
 
 # If you want to customize your cuckoo path set it here.
 # CUCKOO_PATH = "/where/cuckoo/is/placed/"
-
-# If you want to customize your cuckoo temporary upload path set it here.
-# CUCKOO_FILE_UPLOAD_TEMP_DIR = "/where/web/tmp/is/placed/"
 
 # Maximum upload size.
 MAX_UPLOAD_SIZE = 26214400

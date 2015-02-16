@@ -18,6 +18,7 @@
                 <thead>
                 <tr>
                     <th>Timestamp</th>
+                    <th>Filename</th>
                     <th>MD5</th>
                     <th>Status</th>
                 </tr>
@@ -31,6 +32,9 @@
                         {% else %}
                             <span class="muted">{{analysis.added_on}} (added on)</span>
                         {% endif %}
+                        </td>
+                        <td>
+                            {{analysis.filename}}
                         </td>
                         <td style="word-wrap: break-word;">
                             {% if analysis.status == "reported" %}

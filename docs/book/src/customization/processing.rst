@@ -45,6 +45,7 @@ The currently available default processing modules are:
     * **Dropped** *(modules/processing/dropped.py)* - includes information on the files dropped by the malware and dumped by Cuckoo.
     * **Memory** *(modules/processing/memory.py)* - executes Volatility on a full memory dump.
     * **NetworkAnalysis** *(modules/processing/network.py)* - parses the PCAP file and extracts some network information, such as DNS traffic, domains, IPs, HTTP requests, IRC and SMTP traffic.
+    * **ProcMemory** *(modules/processing/procmemory.py)* - performs analysis of proccess memory dump.
     * **StaticAnalysis** *(modules/processing/static.py)* - performs some static analysis of PE32 files.
     * **Strings** *(modules/processing/strings.py)* - extracts strings from the analyzed binary.
     * **TargetInfo** *(modules/processing/targetinfo.py)* - includes information on the analyzed file, such as hashes.

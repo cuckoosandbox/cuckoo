@@ -21,13 +21,13 @@ Create a new user::
 If you're using VirtualBox, make sure the new user belongs to the "vboxusers"
 group (or the group you used to run VirtualBox)::
 
-    $ sudo usermod -G vboxusers cuckoo
+    $ sudo usermod -a -G vboxusers cuckoo
 
 If you're using KVM or any other libvirt based module, make sure the new user
 belongs to the "libvirtd" group (or the group your Linux distribution uses to
 run libvirt)::
 
-    $ sudo usermod -G libvirtd cuckoo
+    $ sudo usermod -a -G libvirtd cuckoo
 
 Install Cuckoo
 ==============

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -14,9 +14,7 @@ from django.views.decorators.http import require_safe
 sys.path.append(settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_RUNNING
-from lib.cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED
-from lib.cuckoo.core.database import TASK_REPORTED, TASK_FAILED_ANALYSIS
-from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
+from lib.cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED, TASK_REPORTED
 
 def timestamp(dt):
     """Returns the timestamp of a datetime object."""
@@ -40,9 +38,7 @@ def index(request):
         TASK_RUNNING,
         TASK_COMPLETED,
         TASK_RECOVERED,
-        TASK_REPORTED,
-        TASK_FAILED_ANALYSIS,
-        TASK_FAILED_PROCESSING,
+        TASK_REPORTED
     )
 
     for state in states:
