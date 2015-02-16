@@ -95,9 +95,7 @@ def dump_file(file_path):
         log.warning("Unable to access file at path \"%s\": %s", file_path, e)
         return
 
-    upload_path = os.path.join("files",
-                               str(random.randint(100000000, 9999999999)),
-                               file_name)
+    upload_path = os.path.join("files", "%s_%s" % (sha256[:16], file_name))
     try:
         upload_to_host(file_path, upload_path)
         DUMPED_LIST.append(sha256)
