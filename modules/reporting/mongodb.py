@@ -103,6 +103,8 @@ class MongoDB(Report):
         # the original dictionary and possibly compromise the following
         # reporting modules.
         report = dict(results)
+        if not "network" in report:
+            report["network"] = {}
 
         # Store the sample in GridFS.
         if results["info"]["category"] == "file" and "target" in results:
@@ -118,15 +120,13 @@ class MongoDB(Report):
         pcap = File(pcap_path)
         if pcap.valid():
             pcap_id = self.store_file(pcap)
-            report["network"] = {"pcap_id": pcap_id}
-            report["network"].update(results["network"])
+            report["network"]["pcap_id"] = pcap_id
 
         sorted_pcap_path = os.path.join(self.analysis_path, "dump_sorted.pcap")
         spcap = File(sorted_pcap_path)
         if spcap.valid():
             spcap_id = self.store_file(spcap)
-            report["network"] = {"sorted_pcap_id": spcap_id}
-            report["network"].update(results["network"])
+            report["network"]["sorted_pcap_id"] = spcap_id
 
         # Store the process memory dump file in GridFS and reference it back in the report.
         if "procmemory" in report and self.options.get("store_memdump", False):
