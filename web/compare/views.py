@@ -75,8 +75,3 @@ def both(request, left_id, right_id):
                               {"left": left, "right": right, "left_counts": counts[left_id],
                                "right_counts": counts[right_id]},
                                context_instance=RequestContext(request))
-
-@require_safe
-def index(request):
-    return render_to_response("compare/index.html",
-                              context_instance=RequestContext(request))
