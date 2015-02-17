@@ -208,11 +208,16 @@ def report(request, task_id):
                                   {"error": "The specified analysis does not exist"},
                                   context_instance=RequestContext(request))
 
-    domainlookups = dict((i["domain"], i["ip"]) for i in report["network"]["domains"])
-    iplookups = dict((i["ip"], i["domain"]) for i in report["network"]["domains"])
-    for i in report["network"]["dns"]:
-        for a in i["answers"]:
-            iplookups[a["data"]] = i["request"]
+    # Creating dns information dicts by domain and ip.
+    if "network" in report and "domains" in report["network"]:
+        domainlookups = dict((i["domain"], i["ip"]) for i in report["network"]["domains"])
+        iplookups = dict((i["ip"], i["domain"]) for i in report["network"]["domains"])
+        for i in report["network"]["dns"]:
+            for a in i["answers"]:
+                iplookups[a["data"]] = i["request"]
+    else:
+        domainlookups = dict()
+        iplookups = dict()
 
     return render_to_response("analysis/report.html",
                               {"analysis": report, "domainlookups": domainlookups, "iplookups": iplookups},
