@@ -14,7 +14,7 @@ sys.path.append(settings.CUCKOO_PATH)
 
 import lib.cuckoo.common.compare as compare
 
-results_db = pymongo.MongoClient(settings.MONGO_HOST, settings.MONGO_PORT).cuckoo
+results_db = pymongo.MongoClient(settings.MONGO_HOST, settings.MONGO_PORT)[settings.MONGO_DB]
 
 @require_safe
 def left(request, left_id):
