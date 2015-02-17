@@ -5,6 +5,7 @@
 import sys
 import re
 import os
+import json
 
 from django.conf import settings
 from django.template import RequestContext
@@ -22,6 +23,7 @@ sys.path.append(settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING
 from lib.cuckoo.common.constants import CUCKOO_ROOT
+import modules.processing.network as network
 
 results_db = pymongo.MongoClient(settings.MONGO_HOST, settings.MONGO_PORT)[settings.MONGO_DB]
 fs = GridFS(results_db)
@@ -206,8 +208,14 @@ def report(request, task_id):
                                   {"error": "The specified analysis does not exist"},
                                   context_instance=RequestContext(request))
 
+    domainlookups = dict((i["domain"], i["ip"]) for i in report["network"]["domains"])
+    iplookups = dict((i["ip"], i["domain"]) for i in report["network"]["domains"])
+    for i in report["network"]["dns"]:
+        for a in i["answers"]:
+            iplookups[a["data"]] = i["request"]
+
     return render_to_response("analysis/report.html",
-                              {"analysis": report},
+                              {"analysis": report, "domainlookups": domainlookups, "iplookups": iplookups},
                               context_instance=RequestContext(request))
 
 @require_safe
@@ -400,3 +408,42 @@ def remove(request, task_id):
     return render_to_response("success.html",
                               {"message": "Task deleted, thanks for all the fish."},
                               context_instance=RequestContext(request))
+
+@require_safe
+def pcapstream(request, task_id, conntuple):
+    src, sport, dst, dport, proto = conntuple.split(",")
+    sport, dport = int(sport), int(dport)
+
+    conndata = results_db.analysis.find_one({ "info.id": int(task_id) },
+        { "network.tcp": 1, "network.udp": 1, "network.sorted_pcap_id": 1 },
+        sort=[("_id", pymongo.DESCENDING)])
+
+    if not conndata:
+        return render_to_response("standalone_error.html",
+            {"error": "The specified analysis does not exist"},
+            context_instance=RequestContext(request))
+
+    try:
+        if proto == "udp": connlist = conndata["network"]["udp"]
+        else: connlist = conndata["network"]["tcp"]
+
+        conns = filter(lambda i: (i["sport"],i["dport"],i["src"],i["dst"]) == (sport,dport,src,dst),
+            connlist)
+        stream = conns[0]
+        offset = stream["offset"]
+    except:
+        return render_to_response("standalone_error.html",
+            {"error": "Could not find the requested stream"},
+            context_instance=RequestContext(request))
+
+    try:
+        fobj = fs.get(conndata["network"]["sorted_pcap_id"])
+        # gridfs gridout has no fileno(), which is needed by dpkt pcap reader for NOTHING
+        setattr(fobj, "fileno", lambda: -1)
+    except:
+        return render_to_response("standalone_error.html",
+            {"error": "The required sorted PCAP does not exist"},
+            context_instance=RequestContext(request))
+
+    packets = list(network.packets_for_stream(fobj, offset))
+    return HttpResponse(json.dumps(packets), content_type="application/json")
