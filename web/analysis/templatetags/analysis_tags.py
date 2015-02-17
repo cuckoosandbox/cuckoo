@@ -1,5 +1,3 @@
-import hexdump as hexdump
-
 from django.template.defaultfilters import register
 
 @register.filter("mongo_id")
@@ -22,14 +20,3 @@ def is_dict(value):
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key, "")
-
-@register.filter("hdformat")
-def hdformat(x, indent):
-    lines = []
-    prefix = ""
-    if indent: prefix == "        "
-
-    for line in hexdump.hexdump(x, result="generator"):
-        lines.append(prefix + line)
-
-    return "\n".join(lines)
