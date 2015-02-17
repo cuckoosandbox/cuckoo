@@ -36,7 +36,7 @@ $(function () {
         <div class="col-md-4">
             <div style="height: 300px;border: 2px solid #666;">
                 {% for cat, count in left_counts.items %}
-                <div style="height: {{count}}%" class="{{cat}}" data-toggle="tooltip" data-placement="top" title="{{count}}% {{cat}}"></div>
+                    <div style="height: {{count}}%" class="{{cat}}" data-toggle="tooltip" data-placement="top" title="{{count}}% {{cat}}"></div>
                 {% endfor %}
             </div>
         </div>
@@ -49,7 +49,7 @@ $(function () {
         <div class="col-md-4">
             <div style="height: 300px;border: 2px solid #666;">
                 {% for cat, count in right_counts.items %}
-                <div style="height: {{count}}%" class="{{cat}}" data-toggle="tooltip" data-placement="top" title="{{count}}% {{cat}}"></div>
+                    <div style="height: {{count}}%" class="{{cat}}" data-toggle="tooltip" data-placement="top" title="{{count}}% {{cat}}"></div>
                 {% endfor %}
             </div>
         </div>
