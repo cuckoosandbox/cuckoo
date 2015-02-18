@@ -164,7 +164,7 @@ class Pcap:
             self._reassemble_smtp(conn, data)
         # IRC.
         if conn["dport"] != 21 and self._check_irc(data):
-            self._add_irc(data) 
+            self._add_irc(data)
 
     def _udp_dissect(self, conn, data):
         """Runs all UDP dissectors.
