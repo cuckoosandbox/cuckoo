@@ -163,56 +163,59 @@ class GuestManager:
                 task_id = options["id"]
                 upload_path = ',upload_path='+os.path.join(CUCKOO_ROOT, "storage/analyses", str(task_id), "tool_output")
                 options["options"] = options["options"] + upload_path
+                
+
+                if options["tool"]:
+                    if not os.path.isfile(options["tool"]):
+                        raise CuckooGuestError("--tool not an actual file")
+                    index = options["tool"].rfind("/")
+                    file_name = "tool" #options["tool"][index+1:] + ".tool"
+                    try:
+                        file_data = open(options["tool"], "rb").read()
+                    except (IOError, OSError) as e:
+                        raise CuckooGuestError("Unable to read {0}, error: {1}".format(options["tool"], e))
+                    
+                    data = xmlrpclib.Binary(file_data)
+                    try:
+                        self.server.add_malware(data, file_name, "tool")
+                        log.info("Adding file: %s" % file_name)
+                    except MemoryError as e:
+                        raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
+                    tool_specified = True
+                    tool_option = ",tool=" + file_name #[:-5]
+                    options["options"] = options["options"] + tool_option
+
+                # If a directory is specified as the tool, all files in the 
+                # directory will be added to the guest. It is worth noting
+                # that nested directories will likely cause errors
+                if options["tool_dir"]:
+                    tool_count = 0
+                    if not os.path.isdir(options["tool_dir"]):
+                        raise CuckooGuestError("--tool_dir not a directory")
+                    for fyle in os.listdir(options["tool_dir"]):
+                        full_path = os.path.join(options["tool_dir"], fyle)
+                        try:
+                            file_data = open(full_path, "rb").read()
+                        except (IOError, OSError) as e:
+                            raise CuckooGuestError("Unable to read {0}, error: {1}".format(full_path, e))
+                        
+                        data = xmlrpclib.Binary(file_data)
+                        try:
+                            log.info("Adding tool %s" % fyle)
+                            if not tool_specified and fyle[-4:] == '.exe':
+                                fyle = "tool" #fyle+".tool"
+                                tool_count = tool_count + 1
+                                tool_option = ",tool=" + file_name #[:-5]
+                                options["options"] = options["options"] + tool_option
+                            self.server.add_malware(data, fyle, "tool")
+                        except MemoryError as e:
+                            raise CuckooGuestError("{0}: unable to upload {1} to analysis machine, not enough memory".format(self.id, full_path))
+                        if not tool_specified and tool_count != 1:
+                            raise CuckooGuestError("Number of tools (.exe files) specified is 0 or more than 1")
                 try:
                     self.server.add_config(options)
                 except:
                     raise CuckooGuestError("{0}: unable to upload config to analysis machine".format(self.id))
-
-            if options["tool"]:
-                if not os.path.isfile(options["tool"]):
-                    raise CuckooGuestError("--tool not an actual file")
-                index = options["tool"].rfind("/")
-                file_name = "tool" #options["tool"][index+1:] + ".tool"
-                try:
-                    file_data = open(options["tool"], "rb").read()
-                except (IOError, OSError) as e:
-                    raise CuckooGuestError("Unable to read {0}, error: {1}".format(options["tool"], e))
-                
-                data = xmlrpclib.Binary(file_data)
-                try:
-                    self.server.add_malware(data, file_name, "tool")
-                    log.info("Adding file: %s" % file_name)
-                except MemoryError as e:
-                    raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
-                tool_specified = True
-                options["options"] = options["options"] + ",tool=" + file_name #[:-5] 
-
-            # If a directory is specified as the tool, all files in the 
-            # directory will be added to the guest. It is worth noting
-            # that nested directories will likely cause errors
-            if options["tool_dir"]:
-                tool_count = 0
-                if not os.path.isdir(options["tool_dir"]):
-                    raise CuckooGuestError("--tool_dir not a directory")
-                for fyle in os.listdir(options["tool_dir"]):
-                    full_path = os.path.join(options["tool_dir"], fyle)
-                    try:
-                        file_data = open(full_path, "rb").read()
-                    except (IOError, OSError) as e:
-                        raise CuckooGuestError("Unable to read {0}, error: {1}".format(full_path, e))
-                    
-                    data = xmlrpclib.Binary(file_data)
-                    try:
-                        log.info("Adding tool %s" % fyle)
-                        if not tool_specified and fyle[-4:] == '.exe':
-                            fyle = "tool" #fyle+".tool"
-                            tool_count = tool_count + 1
-                            options["options"] = options["options"] + ",tool=" + fyle #[:-5]
-                        self.server.add_malware(data, fyle, "tool")
-                    except MemoryError as e:
-                        raise CuckooGuestError("{0}: unable to upload {1} to analysis machine, not enough memory".format(self.id, full_path))
-                    if not tool_specified and tool_count != 1:
-                        raise CuckooGuestError("Number of tools (.exe files) specified is 0 or more than 1")
             log.info("Options: %s" % options["options"])
 #================================================================================
 

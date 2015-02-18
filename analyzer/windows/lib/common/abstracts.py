@@ -6,6 +6,7 @@ import os
 from subprocess import Popen
 
 from lib.api.process import Process
+from lib.common.results import upload_to_host
 from lib.common.exceptions import CuckooPackageError
 
 class Package(object):
@@ -74,56 +75,50 @@ class Package(object):
         free = self.options.get("free")
         tool = self.options.get("tool")
 
+        print("wubba:" + str(self.options))
+
         suspended = True
         if free:
             suspended = False
-
-        p = Process()
-        if not p.execute(path=path, args=args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute the initial process, "
-                                     "analysis aborted.")
 
         if tool:
             tool_path = os.path.join(os.path.join(os.getenv("Temp"), "tool"), "tool")
             tool_args = self.options.get('tool_options') 
             cmd_list = [tool_path, tool_args, path, args]
+            cmd_list = [val for val in cmd_list if val != "" and val != None]
             cwd = os.getcwd()
             os.chdir(os.getenv("Temp"))
-            with open("out.log", 'w') as log:
-                log.write(str(cmd_list))
-                log.write("Test")
-                log.write(cwd)
-                log.write(os.getcwd())
+            
             # 0x08000000 = CREATE_NO_WINDOW
             # Either set creation flag to CREATE_NO_WINDOW
             # or disable the human auxiliary module
             # because the module will interfere with the running tool
             creation_flag = 0x08000000
-            with open('tool_output.log', 'w') as output_file:
+            print("command: " + str(cmd_list))
+            with open('tool_output.log', 'w+') as output_file:
+                output_file.write(str(cmd_list) + "\n")
                 self.tool_process = Popen(cmd_list,
                                           stdout=output_file,
                                           stderr=output_file,
                                           creationflags=creation_flag,
                                           shell=False)
                 self.tool_process.communicate()
+
+            os.chdir(cwd)
             if self.tool_process < 0:
                 raise CuckooPackageError("Unable to execute initial process, analysis aborted")
+            return self.tool_process.pid
+        else:
+            p = Process()
+            if not p.execute(path=path, args=args, suspended=suspended):
+                raise CuckooPackageError("Unable to execute the initial process, "
+                                         "analysis aborted.")
 
-        if free:
-            suspended = False
-
-        p = Process()
-        if not p.execute(path=path, args=args, suspended=suspended):
-            raise CuckooPackageError("Unable to execute the initial process, "
-                                     "analysis aborted.")
-
-        if not free and suspended:
-            p.inject(dll)
-            p.resume()
-            p.wait()
-            p.close()
-        
-        return p.pid
+            if not free and suspended:
+                p.inject(dll)
+                p.resume()
+                p.close()
+                return p.pid
 
     def package_files(self):
         """A list of files to upload to host.
@@ -141,7 +136,17 @@ class Package(object):
             for pid in self.pids:
                 p = Process(pid=pid)
                 p.dump_memory()
-        
+
+        if self.options.get("tool"):
+            upload_path = self.options.get("upload_path", "/tmp/upload")
+            temp_dir = os.getenv("Temp")
+            tool_dir = os.path.join(temp_dir, "tool")
+            output_file = os.path.join(temp_dir, "tool_output.log")
+            try:
+                upload_to_host(output_file, os.path.join("tool_output", "tool_output.log"))
+            except (IOError) as e:
+                CuckooPackageError("Unable to upload dropped file at path \"%s\": %s", file_path, e)
+
         return True
 
 class Auxiliary(object):
