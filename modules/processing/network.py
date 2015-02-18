@@ -9,19 +9,6 @@ import socket
 import logging
 from urlparse import urlunparse
 
-# imports for the batch sort
-## http://stackoverflow.com/questions/10665925/how-to-sort-huge-files-with-python
-## ( http://code.activestate.com/recipes/576755/ )
-from tempfile import gettempdir
-from itertools import islice, cycle
-from collections import namedtuple
-import heapq
-
-TMPD = gettempdir()
-Keyed = namedtuple("Keyed", ["key", "obj"])
-Packet = namedtuple("Packet", ["raw", "ts"])
-#
-
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.dns import resolve
@@ -34,6 +21,18 @@ try:
     IS_DPKT = True
 except ImportError:
     IS_DPKT = False
+
+# Imports for the batch sort.
+## http://stackoverflow.com/questions/10665925/how-to-sort-huge-files-with-python
+## ( http://code.activestate.com/recipes/576755/ )
+import heapq
+from tempfile import gettempdir
+from itertools import islice
+from collections import namedtuple
+
+TMPD = gettempdir()
+Keyed = namedtuple("Keyed", ["key", "obj"])
+Packet = namedtuple("Packet", ["raw", "ts"])
 
 class Pcap:
     """Reads network data from PCAP file."""
@@ -165,7 +164,7 @@ class Pcap:
             self._reassemble_smtp(conn, data)
         # IRC.
         if conn["dport"] != 21 and self._check_irc(data):
-            self._add_irc(data) 
+            self._add_irc(data)
 
     def _udp_dissect(self, conn, data):
         """Runs all UDP dissectors.

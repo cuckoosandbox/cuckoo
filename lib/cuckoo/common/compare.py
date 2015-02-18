@@ -6,8 +6,6 @@ import os
 import collections
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.config import Config
 from modules.processing.behavior import ParseProcessLog
 
 ANALYSIS_ROOT = os.path.join(CUCKOO_ROOT, "storage", "analyses")
