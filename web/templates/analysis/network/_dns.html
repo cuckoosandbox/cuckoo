@@ -8,11 +8,15 @@
                 <th>Post-Analysis Lookup</th>
             </tr>
             {% for p in analysis.network.dns %}
-            <tr>
-                <td>{{p.request}}</td>
-                <td>{% for a in p.answers %}{{a.type}} {{a.data}}{% endfor %}</td>
-                <td>{{ domainlookups|get_item:p.request }}</td>
-            </tr>
+                <tr>
+                    <td>{{p.request}}</td>
+                    <td>
+                        {% for a in p.answers %}
+                            {{a.type}} {{a.data|linebreaksbr}}{% if not forloop.last %}<br/>{% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>{{ domainlookups|get_item:p.request }}</td>
+                </tr>
             {% endfor %}
         </table>
     {% else %}
