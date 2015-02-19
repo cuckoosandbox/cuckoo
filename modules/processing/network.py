@@ -15,6 +15,7 @@ from lib.cuckoo.common.dns import resolve
 from lib.cuckoo.common.irc import ircMessage
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import convert_to_printable
+from lib.cuckoo.common.exceptions import CuckooProcessingError
 
 try:
     import dpkt
@@ -500,8 +501,7 @@ class Pcap:
             if not first_ts: first_ts = ts
 
             try:
-                eth = dpkt.ethernet.Ethernet(buf)
-                ip = eth.data
+                ip = iplayer_from_raw(buf, pcap.datalink())
 
                 connection = {}
                 if isinstance(ip, dpkt.ip.IP):
@@ -590,8 +590,9 @@ class NetworkAnalysis(Processing):
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
         if Config().processing.sort_pcap:
             sort_pcap(self.pcap_path, sorted_path)
-
-        results = Pcap(sorted_path).run()
+            results = Pcap(sorted_path).run()
+        else:
+            results = Pcap(pcap_path).run()
 
         # Save PCAP file hash.
         if os.path.exists(self.pcap_path):
@@ -601,13 +602,25 @@ class NetworkAnalysis(Processing):
 
         return results
 
+def iplayer_from_raw(raw, linktype=1):
+    if linktype == 1: # ethernet
+        pkt = dpkt.ethernet.Ethernet(raw)
+        ip = pkt.data
+    elif linktype == 101: # raw
+        ip = dpkt.ip.IP(raw)
+    else:
+        raise CuckooProcessingError("unknown PCAP linktype")
+    return ip
+
 def conn_from_flowtuple(ft):
     sip, sport, dip, dport, offset, relts = ft
     return { "src": sip, "sport": sport, "dst": dip, "dport": dport, "offset": offset, "time": relts }
 
 # input_iterator should be a class that als supports writing so we can use it for the temp files
-def batch_sort(input_iterator, output_path, buffer_size=32000):
-    output_class = input_iterator.__class__
+def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None):
+    if not output_class:
+        output_class = input_iterator.__class__
+
     chunks = []
     try:
         while True:
@@ -636,21 +649,23 @@ def batch_sort(input_iterator, output_path, buffer_size=32000):
 
 # magic
 class SortCap(object):
-    def __init__(self, path):
+    def __init__(self, path, linktype=1):
         self.name = path
+        self.linktype = linktype
         self.fd = None
         self.ctr = 0 # counter to pass through packets without flow info (non-IP)
         self.conns = set()
 
     def write(self, p):
         if not self.fd:
-            self.fd = dpkt.pcap.Writer(open(self.name, "wb"), linktype=1)
+            self.fd = dpkt.pcap.Writer(open(self.name, "wb"), linktype=self.linktype)
         self.fd.writepkt(p.raw, p.ts)
 
     def __iter__(self):
         if not self.fd:
             self.fd = dpkt.pcap.Reader(open(self.name, "rb"))
             self.fditer = iter(self.fd)
+            self.linktype = self.fd.datalink()
         return self
 
     def close(self):
@@ -665,39 +680,24 @@ class SortCap(object):
         ts, raw = rp
         rpkt = Packet(raw, ts)
 
-        pkt = dpkt.ethernet.Ethernet(raw)
-        ip = pkt.data
+        sip, dip, sport, dport, proto = flowtuple_from_raw(raw, self.linktype)
 
-        if isinstance(ip, dpkt.ip.IP):
-            sip, dip = ip.src, ip.dst
-            proto = ip.p
-
-            if proto == dpkt.ip.IP_PROTO_TCP or proto == dpkt.ip.IP_PROTO_UDP:
-                l3 = ip.data
-                sport, dport = l3.sport, l3.dport
-            else:
-                sport, dport = 0, 0
-
-        else:
-            sip, dip, proto = 0, 0, -1
-            sport, dport = 0, 0
-
+        # check other direction of same flow
         if (dip, sip, dport, sport, proto) in self.conns:
             flowtuple = (dip, sip, dport, sport, proto)
         else:
             flowtuple = (sip, dip, sport, dport, proto)
-        self.conns.add(flowtuple)
 
+        self.conns.add(flowtuple)
         return Keyed((flowtuple, ts, self.ctr), rpkt)
 
 def sort_pcap(inpath, outpath):
     inc = SortCap(inpath)
-    batch_sort(inc, outpath)
+    batch_sort(inc, outpath, output_class=lambda path: SortCap(path, linktype=inc.linktype))
     return 0
 
-def flowtuple_from_raw(raw):
-    pkt = dpkt.ethernet.Ethernet(raw)
-    ip = pkt.data
+def flowtuple_from_raw(raw, linktype=1):
+    ip = iplayer_from_raw(raw, linktype)
 
     if isinstance(ip, dpkt.ip.IP):
         sip, dip = socket.inet_ntoa(ip.src), socket.inet_ntoa(ip.dst)
@@ -716,17 +716,17 @@ def flowtuple_from_raw(raw):
     flowtuple = (sip, dip, sport, dport, proto)
     return flowtuple
 
-def payload_from_raw(raw):
-    pkt = dpkt.ethernet.Ethernet(raw)
-    try: return pkt.data.data.data
+def payload_from_raw(raw, linktype=1):
+    ip = iplayer_from_raw(raw, linktype)
+    try: return ip.data.data
     except:
         return ""
 
-def next_connection_packets(piter):
+def next_connection_packets(piter, linktype=1):
     first_ft = None
 
     for ts, raw in piter:
-        ft = flowtuple_from_raw(raw)
+        ft = flowtuple_from_raw(raw, linktype)
         if not first_ft: first_ft = ft
 
         sip, dip, sport, dport, proto = ft
@@ -735,7 +735,7 @@ def next_connection_packets(piter):
 
         yield {
             "src": sip, "dst": dip, "sport": sport, "dport": dport,
-            "raw": payload_from_raw(raw).encode("base64"), "direction": first_ft == ft,
+            "raw": payload_from_raw(raw, linktype).encode("base64"), "direction": first_ft == ft,
         }
 
 def packets_for_stream(fobj, offset):
@@ -744,5 +744,5 @@ def packets_for_stream(fobj, offset):
     ts, raw = pcapiter.next()
 
     fobj.seek(offset)
-    for p in next_connection_packets(pcapiter):
+    for p in next_connection_packets(pcapiter, linktype=pcap.datalink()):
         yield p
