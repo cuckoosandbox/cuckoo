@@ -172,7 +172,7 @@ class Pcap:
         @param conn: connection.
         @param data: payload data.
         """
-        if conn["dport"] == 53 or conn["sport"] == 53:
+        if conn["dport"] == 53 or conn["sport"] == 53 or conn["dport"] == 5353 or conn["sport"] == 5353:
             if self._check_dns(data):
                 self._add_dns(data)
 
