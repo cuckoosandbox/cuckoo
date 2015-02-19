@@ -85,7 +85,7 @@ class Files(object):
 
         # Remove the filepath from the files list.
         if filepath.lower() in self.files:
-            self.files.pop(self.files.index(filepath.lower()))
+            self.files.remove(filepath.lower())
 
     def move_file(self, oldfilepath, newfilepath):
         """A file will be moved - track this change."""
@@ -119,6 +119,10 @@ class ProcessList(object):
     def has_pid(self, pid):
         """Is this process identifier being tracked?"""
         return int(pid) in self.pids
+
+    def remove_pid(self, pid):
+        """Remove a process identifier from being tracked."""
+        self.pids.remove(pid)
 
 FILES = Files()
 PROCESS_LIST = ProcessList()
@@ -560,7 +564,7 @@ class Analyzer:
                     for pid in PROCESS_LIST.pids:
                         if not Process(pid=pid).is_alive():
                             log.info("Process with pid %s has terminated", pid)
-                            PROCESS_LIST.remove(pid)
+                            PROCESS_LIST.remove_pid(pid)
 
                     # If none of the monitored processes are still alive, we
                     # can terminate the analysis.
