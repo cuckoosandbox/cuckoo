@@ -749,7 +749,7 @@ class Signature(object):
 
     def mark_start(self):
         """Set a mark for the start of the signature."""
-        self._mark_start = dict(pid=self, pid, tid=self.tid, cid=self.cid)
+        self._mark_start = dict(pid=self.pid, tid=self.tid, cid=self.cid)
 
     def mark_end(self):
         """Set a mark for the end of the signature."""

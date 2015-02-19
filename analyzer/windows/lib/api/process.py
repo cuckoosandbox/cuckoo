@@ -9,6 +9,7 @@ from time import time
 from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
 from shutil import copy
 import subprocess
+import tempfile
 
 from lib.common.constants import PIPE, PATHS, SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
@@ -138,13 +139,13 @@ class Process(object):
 
         return None
 
-    def execute(self, path, args=None, dll=None, from=None):
+    def execute(self, path, args=None, dll=None, source=None):
         """Execute sample process.
         @param path: sample path.
         @param args: process args.
         @param dll: dll path.
-        @param from: process identifier or process name which will
-                     become the parent process for the new process.
+        @param source: process identifier or process name which will
+                       become the parent process for the new process.
         @return: operation status.
         """
         if not os.access(path, os.X_OK):
@@ -167,18 +168,22 @@ class Process(object):
         else:
             arguments = None
 
+        config_path = self.drop_config()
+
         inject_exe = os.path.join("bin", "inject-x86.exe")
         args = [
-            inject_exe, "--crt", "--dll", dll, "--app", path
+            inject_exe, "--crt", "--dll", dll, "--app", path,
+            "--config", config_path,
         ]
+
         if arguments:
             args += ["--cmdline", arguments]
 
-        if from:
-            if isinstance(from, (int, long)) or from.isdigit():
-                args += ["--from", "%s" % from]
+        if source:
+            if isinstance(source, (int, long)) or source.isdigit():
+                args += ["--from", "%s" % source]
             else:
-                args += ["--from-process", from]
+                args += ["--from-process", source]
 
         try:
             self.pid = int(subprocess.check_output(args))
