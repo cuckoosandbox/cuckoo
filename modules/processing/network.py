@@ -172,6 +172,7 @@ class Pcap:
         @param conn: connection.
         @param data: payload data.
         """
+        # Select DNS and MDNS traffic.
         if conn["dport"] == 53 or conn["sport"] == 53 or conn["dport"] == 5353 or conn["sport"] == 5353:
             if self._check_dns(data):
                 self._add_dns(data)
@@ -603,6 +604,10 @@ class NetworkAnalysis(Processing):
         return results
 
 def iplayer_from_raw(raw, linktype=1):
+    """Converts a raw packet to a dpkt packet regarding of link type.
+    @param raw: raw packet
+    @param linktype: integer describing link type as expected by dpkt
+    """
     if linktype == 1: # ethernet
         pkt = dpkt.ethernet.Ethernet(raw)
         ip = pkt.data
