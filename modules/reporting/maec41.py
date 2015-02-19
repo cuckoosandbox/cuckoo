@@ -31,14 +31,9 @@ except ImportError as e:
     HAVE_CYBOX = False
 
 try:
-    from maec.bundle.bundle import Bundle
-    from maec.bundle.malware_action import MalwareAction
-    from maec.bundle.bundle_reference import BundleReference
-    from maec.bundle.process_tree import ProcessTree
-    from maec.bundle.av_classification import AVClassification
-    from maec.package.malware_subject import MalwareSubject
-    from maec.package.package import Package
-    from maec.package.analysis import Analysis
+    from maec.bundle import (Bundle, MalwareAction, BundleReference, 
+                             ProcessTree, AVClassification)
+    from maec.package import MalwareSubject, Package, Analysis
     import maec.utils
     HAVE_MAEC = True
 except ImportError as e:
