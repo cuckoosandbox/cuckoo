@@ -6,7 +6,6 @@ import os
 import sys
 import socket
 import struct
-import random
 import pkgutil
 import logging
 import hashlib
