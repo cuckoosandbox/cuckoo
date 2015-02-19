@@ -170,7 +170,7 @@ class Process(object):
 
         inject_exe = os.path.join("bin", "inject-x86.exe")
         args = [
-            inject_exe, "--crt", "--dll", dll, "--app", path,
+            inject_exe, "--apc", "--dll", dll, "--app", path,
             "--config", config_path,
         ]
 
