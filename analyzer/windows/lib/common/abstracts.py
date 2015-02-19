@@ -61,7 +61,8 @@ class Package(object):
 
     def execute(self, path, args):
         dll = self.options.get("dll")
-        free = self.options.get("free")
+        # TODO Re-introduce free (execute without monitor).
+        # free = self.options.get("free")
 
         p = Process()
         if not p.execute(path=path, args=args, dll=dll):

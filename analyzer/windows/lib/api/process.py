@@ -5,18 +5,16 @@
 import os
 import logging
 import random
-from time import time
-from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
-from shutil import copy
+import shutil
 import subprocess
 import tempfile
+import time
+from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
 
 from lib.common.constants import PIPE, PATHS, SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
 from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
-from lib.common.defines import STARTUPINFO, PROCESS_INFORMATION
-from lib.common.defines import CREATE_NEW_CONSOLE, CREATE_SUSPENDED
-from lib.common.defines import MEM_RESERVE, MEM_COMMIT, PAGE_READWRITE
+from lib.common.defines import MEM_COMMIT
 from lib.common.defines import MEMORY_BASIC_INFORMATION
 from lib.common.defines import MEM_IMAGE, MEM_MAPPED, MEM_PRIVATE
 from lib.common.errors import get_error_string
@@ -34,7 +32,7 @@ def randomize_dll(dll_path):
     new_dll_path = os.path.join(os.getcwd(), "bin", "{0}.dll".format(new_dll_name))
 
     try:
-        copy(dll_path, new_dll_path)
+        shutil.copy(dll_path, new_dll_path)
         return new_dll_path
     except:
         return dll_path
@@ -306,7 +304,7 @@ class Process(object):
         max_addr = self.system_info.lpMaximumApplicationAddress
         mem = min_addr
 
-        root = os.path.join(PATHS["memory"], str(int(time())))
+        root = os.path.join(PATHS["memory"], str(int(time.time())))
 
         if not os.path.exists(root):
             os.makedirs(root)
