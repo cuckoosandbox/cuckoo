@@ -137,11 +137,12 @@ class Process(object):
 
         return None
 
-    def execute(self, path, args=None, dll=None, source=None):
+    def execute(self, path, args=None, dll=None, free=False, source=None):
         """Execute sample process.
         @param path: sample path.
         @param args: process args.
         @param dll: dll path.
+        @param free: do not inject our monitor.
         @param source: process identifier or process name which will
                        become the parent process for the new process.
         @return: operation status.
@@ -166,16 +167,16 @@ class Process(object):
         else:
             arguments = None
 
-        config_path = self.drop_config()
-
         inject_exe = os.path.join("bin", "inject-x86.exe")
-        args = [
-            inject_exe, "--apc", "--dll", dll, "--app", path,
-            "--config", config_path,
-        ]
+        args = [inject_exe, "--app", path]
 
         if arguments:
             args += ["--cmdline", arguments]
+
+        if free:
+            args += ["--free"]
+        else:
+            args += ["--apc", "--dll", dll, "--config", self.drop_config()]
 
         if source:
             if isinstance(source, (int, long)) or source.isdigit():
