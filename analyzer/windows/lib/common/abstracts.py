@@ -62,9 +62,11 @@ class Package(object):
     def execute(self, path, args):
         dll = self.options.get("dll")
         free = self.options.get("free")
+        source = self.options.get("from")
 
         p = Process()
-        if not p.execute(path=path, args=args, dll=dll, free=free):
+        if not p.execute(path=path, args=args, dll=dll,
+                         free=free, source=source):
             raise CuckooPackageError("Unable to execute the initial process, "
                                      "analysis aborted.")
         return p.pid
