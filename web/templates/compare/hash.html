@@ -14,30 +14,7 @@
         <p>You need to select the second analysis.</p>
         {% if records.count > 0 %}
             <p>Following are all the analyses of the file with provided MD5 <b>{{hash}}</b>:</p>
-            <table class="table table-striped table-bordered">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Machine</th>
-                        <th>Completed On</th>
-                        <th>Duration</th>
-                        <th>Select</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for record in records %}
-                        <tr>
-                            <td>{{record.info.id}}</td>
-                            <td>{{record.target.file.name}}</td>
-                            <td>{{record.info.machine.name}}</td>
-                            <td>{{record.info.ended}}</td>
-                            <td>{{record.info.duration}} seconds</td>
-                            <td><a class="btn btn-primary btn-small" href="{% url "compare.views.both" left.info.id record.info.id %}">Select</a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            {% include "compare/_summary_table.html" %}
         {% else %}
             <p><b>There is no analysis for the specified file or you selected the same selected analysis.</b></p>
         {% endif %}
