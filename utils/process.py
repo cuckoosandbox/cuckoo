@@ -89,7 +89,7 @@ def autoprocess(parallel=1):
             else:
                 copy_path = None
 
-            args = task.id, task.target, copy_path
+            args = int(task.id), task.target, copy_path
             kwargs = dict(report=True, auto=True)
             result = pool.apply_async(process, args, kwargs)
 
