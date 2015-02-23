@@ -90,15 +90,15 @@ class VolatilityAPI(object):
         for key, value in base_conf.items():
             self.config.update(key, value)
 
-	# Deal with Volatility support for KVM/qemu memory dump.
-	# See: #464.
+        # Deal with Volatility support for KVM/qemu memory dump.
+        # See: #464.
         try:
           self.addr_space = utils.load_as(self.config)
         except exc.AddrSpaceError as e:
           if self._get_dtb():
               self.addr_space = utils.load_as(self.config)
           else:
-              raise exc.AddrSpaceError(e)
+              raise
 
         self.plugins = registry.get_plugin_classes(commands.Command,
                                                    lower=True)
