@@ -334,12 +334,17 @@ class FileUpload(object):
         if not file_path.startswith(self.storagepath):
             raise CuckooOperationalError("FileUpload failure, path sanitization failed.")
 
+        if os.path.exists(file_path):
+            log.warning("Analyzer tried to overwrite an existing file, closing connection.")
+            return False
+
         self.fd = open(file_path, "wb")
         chunk = self.handler.read_any()
         while chunk:
             self.fd.write(chunk)
 
             if self.fd.tell() >= self.upload_max_size:
+                log.warning("Uploaded file length larger than upload_max_size, stopping upload.")
                 self.fd.write("... (truncated)")
                 break
 
@@ -380,3 +385,16 @@ class LogHandler(object):
     def _open(self):
         if not os.path.exists(self.logpath):
             return open(self.logpath, "wb")
+
+        log.debug("Log analysis.log already existing, appending data.")
+        fd = open(self.logpath, "ab")
+
+        # add a fake log entry, saying this had to be re-opened
+        #  use the same format as the default logger, in case anyone wants to parse this
+        #  2015-02-23 12:05:05,092 [lib.api.process] DEBUG: Using QueueUserAPC injection.
+        now = datetime.datetime.now()
+        print >>fd, "\n%s,%03.0f [lib.core.resultserver] WARNING: This log file was re-opened, log entries will be appended." % (
+            now.strftime("%Y-%m-%d %H:%M:%S"), now.microsecond / 1000.0
+        )
+
+        return fd
