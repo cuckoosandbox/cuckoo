@@ -18,6 +18,7 @@ from lib.common.defines import MEM_COMMIT
 from lib.common.defines import MEMORY_BASIC_INFORMATION
 from lib.common.defines import MEM_IMAGE, MEM_MAPPED, MEM_PRIVATE
 from lib.common.errors import get_error_string
+from lib.common.exceptions import CuckooError
 from lib.common.rand import random_string
 from lib.common.results import NetlogFile
 from lib.core.config import Config
@@ -137,6 +138,31 @@ class Process(object):
 
         return None
 
+    def is32bit(self, pid=None, path=None):
+        """Is a PE file 32-bit or does a process identifier belong to a
+        32-bit process.
+        @param pid: process identifier.
+        @param path: path to a PE file.
+        @return: boolean or exception.
+        """
+        if pid is None and path is None or \
+                pid is not None and path is not None:
+            raise CuckooError("Invalid usage of is32bit")
+
+        is32bit_exe = os.path.join("bin", "is32bit.exe")
+
+        if pid:
+            args = [is32bit_exe, "-p", "%s" % pid]
+        else:
+            args = [is32bit_exe, "-f", path]
+
+        try:
+            bitsize = int(subprocess.check_output(args))
+        except subprocess.CalledProcessError as e:
+            raise CuckooError("Error returned by is32bit: %s" % e)
+
+        return bitsize == 32
+
     def execute(self, path, args=None, dll=None, free=False, source=None):
         """Execute sample process.
         @param path: sample path.
@@ -152,8 +178,13 @@ class Process(object):
                       "execution aborted", path)
             return False
 
+        is32bit = self.is32bit(path=path)
+
         if not dll:
-            dll = "monitor-x86.dll"
+            if is32bit:
+                dll = "monitor-x86.dll"
+            else:
+                dll = "monitor-x64.dll"
 
         dll = randomize_dll(os.path.join("bin", dll))
 
@@ -167,7 +198,11 @@ class Process(object):
         else:
             arguments = None
 
-        inject_exe = os.path.join("bin", "inject-x86.exe")
+        if is32bit:
+            inject_exe = os.path.join("bin", "inject-x86.exe")
+        else:
+            inject_exe = os.path.join("bin", "inject-x64.exe")
+
         args = [inject_exe, "--app", path]
 
         if arguments:
@@ -227,8 +262,13 @@ class Process(object):
                         "injection aborted", self.pid)
             return False
 
+        is32bit = self.is32bit(pid=self.pid)
+
         if not dll:
-            dll = "monitor-x86.dll"
+            if is32bit:
+                dll = "monitor-x86.dll"
+            else:
+                dll = "monitor-x64.dll"
 
         dll = randomize_dll(os.path.join("bin", dll))
 
@@ -239,7 +279,11 @@ class Process(object):
 
         config_path = self.drop_config()
 
-        inject_exe = os.path.join("bin", "inject-x86.exe")
+        if is32bit:
+            inject_exe = os.path.join("bin", "inject-x86.exe")
+        else:
+            inject_exe = os.path.join("bin", "inject-x64.exe")
+
         args = [
             inject_exe, "--pid", "%s" % self.pid, "--dll", dll,
             "--config", config_path,
