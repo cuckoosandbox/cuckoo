@@ -416,6 +416,9 @@ def remove(request, task_id):
 
 @require_safe
 def pcapstream(request, task_id, conntuple):
+    """Get packets from the task PCAP related to a certain connection.
+    This is possible because we sort the PCAP during processing and remember offsets for each stream.
+    """
     src, sport, dst, dport, proto = conntuple.split(",")
     sport, dport = int(sport), int(dport)
 

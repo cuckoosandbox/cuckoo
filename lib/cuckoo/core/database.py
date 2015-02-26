@@ -323,7 +323,7 @@ class Database(object):
         """@param dsn: database connection string.
         @param schema_check: disable or enable the db schema version check
         """
-        self._lock = threading.RLock()
+        self._lock = threading.Lock()
         cfg = Config()
 
         if dsn:
@@ -863,7 +863,6 @@ class Database(object):
 
         return task_id
 
-    @classlock
     def add_path(self, file_path, timeout=0, package="", options="",
                  priority=1, custom="", machine="", platform="", tags=None,
                  memory=False, enforce_timeout=False, clock=None):
