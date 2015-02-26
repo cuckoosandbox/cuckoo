@@ -19,6 +19,7 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.database import Database, TASK_REPORTED, TASK_COMPLETED
+from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
 from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from lib.cuckoo.core.startup import init_modules
 
@@ -63,7 +64,7 @@ def autoprocess(parallel=1):
                             ar.get()
                         except:
                             log.exception("Exception when processing task ID %u.", tid)
-                            # TODO: kick off failed tasks.
+                            db.set_status(tid, TASK_FAILED_PROCESSING)
 
                     pending_results.remove((ar, tid, target, copy_path))
 
