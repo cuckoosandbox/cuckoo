@@ -618,11 +618,14 @@ def iplayer_from_raw(raw, linktype=1):
     return ip
 
 def conn_from_flowtuple(ft):
+    """Convert the flow tuple into a dictionary (suitable for JSON)"""
     sip, sport, dip, dport, offset, relts = ft
     return {"src": sip, "sport": sport, "dst": dip, "dport": dport, "offset": offset, "time": relts}
 
 # input_iterator should be a class that als supports writing so we can use it for the temp files
+# this code is mostly taken from some SO post, can't remember the url though
 def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None):
+    """batch sort helper with temporary files, supports sorting large stuff"""
     if not output_class:
         output_class = input_iterator.__class__
 
@@ -654,6 +657,9 @@ def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None
 
 # magic
 class SortCap(object):
+    """SortCap is a wrapper around the packet lib (dpkt) that allows us to sort pcaps
+    together with the batch_sort function above."""
+
     def __init__(self, path, linktype=1):
         self.name = path
         self.linktype = linktype
@@ -697,11 +703,13 @@ class SortCap(object):
         return Keyed((flowtuple, ts, self.ctr), rpkt)
 
 def sort_pcap(inpath, outpath):
+    """Use SortCap class together with batch_sort to sort a pcap"""
     inc = SortCap(inpath)
     batch_sort(inc, outpath, output_class=lambda path: SortCap(path, linktype=inc.linktype))
     return 0
 
 def flowtuple_from_raw(raw, linktype=1):
+    """Parse a packet from a pcap just enough to gain a flow description tuple"""
     ip = iplayer_from_raw(raw, linktype)
 
     if isinstance(ip, dpkt.ip.IP):
@@ -722,12 +730,14 @@ def flowtuple_from_raw(raw, linktype=1):
     return flowtuple
 
 def payload_from_raw(raw, linktype=1):
+    """Get the payload from a packet, the data below TCP/UDP basically"""
     ip = iplayer_from_raw(raw, linktype)
     try: return ip.data.data
     except:
         return ""
 
 def next_connection_packets(piter, linktype=1):
+    """Extract all packets belonging to the same flow from a pcap packet iterator"""
     first_ft = None
 
     for ts, raw in piter:
@@ -744,6 +754,7 @@ def next_connection_packets(piter, linktype=1):
         }
 
 def packets_for_stream(fobj, offset):
+    """Open a PCAP, seek to a packet offset, then get all packets belonging to the same connection"""
     pcap = dpkt.pcap.Reader(fobj)
     pcapiter = iter(pcap)
     ts, raw = pcapiter.next()
