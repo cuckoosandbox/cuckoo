@@ -37,6 +37,7 @@ TASK_COMPLETED = "completed"
 TASK_RECOVERED = "recovered"
 TASK_REPORTED = "reported"
 TASK_FAILED_PROCESSING = "failed_processing"
+TASK_FAILED_REPORTING = "failed_reporting"
 
 # Secondary table used in association Machine - Tag.
 machines_tags = Table(
@@ -270,7 +271,8 @@ class Task(Base):
     started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(Enum(TASK_PENDING, TASK_RUNNING, TASK_COMPLETED,
-                         TASK_REPORTED, TASK_RECOVERED, name="status_type"),
+                         TASK_REPORTED, TASK_RECOVERED,
+                         TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING, name="status_type"),
                     server_default=TASK_PENDING,
                     nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
