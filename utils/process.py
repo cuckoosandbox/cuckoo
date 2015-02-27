@@ -78,7 +78,8 @@ def autoprocess(parallel=1):
             tasks = db.list_tasks(status=TASK_COMPLETED, limit=parallel,
                                   order_by="completed_on asc")
 
-            # For loop to add only one, nice.
+            added = False
+            # For loop to add only one, nice. (reason is that we shouldn't overshoot maxcount)
             for task in tasks:
                 # Not-so-efficient lock.
                 if task.id in [tid for ar, tid, target, copy_path
@@ -102,13 +103,21 @@ def autoprocess(parallel=1):
                 pending_results.append((result, task.id, task.target, copy_path))
 
                 count += 1
+                added = True
                 break
 
-            # don't hog cpu
-            time.sleep(5)
+            if not added:
+                # don't hog cpu
+                time.sleep(5)
+
     except KeyboardInterrupt:
         pool.terminate()
         raise
+    except:
+        import traceback
+        traceback.print_exc()
+    finally:
+        pool.join()
 
 def main():
     parser = argparse.ArgumentParser()
