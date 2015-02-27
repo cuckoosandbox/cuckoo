@@ -521,13 +521,13 @@ class Database(object):
             if lock:
                 self.set_status(task_id=row.id, status=TASK_RUNNING)
                 session.refresh(row)
+
+            return row
         except SQLAlchemyError as e:
             log.debug("Database error fetching task: {0}".format(e))
             session.rollback()
         finally:
             session.close()
-
-        return row
 
     @classlock
     def guest_start(self, task_id, name, label, manager):
@@ -544,13 +544,13 @@ class Database(object):
             session.query(Task).get(task_id).guest = guest
             session.commit()
             session.refresh(guest)
+            return guest.id
         except SQLAlchemyError as e:
             log.debug("Database error logging guest start: {0}".format(e))
             session.rollback()
             return None
         finally:
             session.close()
-        return guest.id
 
     @classlock
     def guest_remove(self, guest_id):
@@ -596,12 +596,12 @@ class Database(object):
                 machines = session.query(Machine).options(joinedload("tags")).filter_by(locked=True).all()
             else:
                 machines = session.query(Machine).options(joinedload("tags")).all()
+            return machines
         except SQLAlchemyError as e:
             log.debug("Database error listing machines: {0}".format(e))
             return []
         finally:
             session.close()
-        return machines
 
     @classlock
     def lock_machine(self, name=None, platform=None, tags=None):
@@ -697,12 +697,12 @@ class Database(object):
         session = self.Session()
         try:
             machines_count = session.query(Machine).filter_by(locked=False).count()
+            return machines_count
         except SQLAlchemyError as e:
             log.debug("Database error counting machines: {0}".format(e))
             return 0
         finally:
             session.close()
-        return machines_count
 
     @classlock
     def get_available_machines(self):
@@ -712,12 +712,12 @@ class Database(object):
         session = self.Session()
         try:
             machines = session.query(Machine).filter_by(locked=False).all()
+            return machines
         except SQLAlchemyError as e:
             log.debug("Database error getting available machines: {0}".format(e))
             return 0
         finally:
             session.close()
-        return machines
 
     @classlock
     def set_machine_status(self, label, status):
@@ -996,12 +996,12 @@ class Database(object):
 
             search = search.order_by(order_by or "added_on desc")
             tasks = search.limit(limit).offset(offset).all()
+            return tasks
         except SQLAlchemyError as e:
             log.debug("Database error listing tasks: {0}".format(e))
             return []
         finally:
             session.close()
-        return tasks
 
     @classlock
     def count_tasks(self, status=None):
@@ -1015,12 +1015,12 @@ class Database(object):
                 tasks_count = session.query(Task).filter_by(status=status).count()
             else:
                 tasks_count = session.query(Task).count()
+            return tasks_count
         except SQLAlchemyError as e:
             log.debug("Database error counting tasks: {0}".format(e))
             return 0
         finally:
             session.close()
-        return tasks_count
 
     @classlock
     def view_task(self, task_id, details=False):
@@ -1040,9 +1040,9 @@ class Database(object):
         else:
             if task:
                 session.expunge(task)
+            return task
         finally:
             session.close()
-        return task
 
     @classlock
     def delete_task(self, task_id):
