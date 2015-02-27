@@ -5,7 +5,6 @@
 import os
 import json
 import logging
-import threading
 from datetime import datetime
 
 from lib.cuckoo.common.config import Config
@@ -14,7 +13,7 @@ from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.objects import File, URL
-from lib.cuckoo.common.utils import create_folder, Singleton, classlock
+from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock
 
 try:
     from sqlalchemy import create_engine, Column
@@ -326,7 +325,7 @@ class Database(object):
         """@param dsn: database connection string.
         @param schema_check: disable or enable the db schema version check
         """
-        self._lock = threading.Lock()
+        self._lock = SuperLock()
         cfg = Config()
 
         if dsn:
