@@ -397,6 +397,10 @@ class Database(object):
             if connection_string.startswith("sqlite"):
                 # Using "check_same_thread" to disable sqlite safety check on multiple threads.
                 self.engine = create_engine(connection_string, connect_args={"check_same_thread": False})
+            elif connection_string.startswith("postgres"):
+                # Disabling SSL mode to avoid some errors using sqlalchemy and multiprocesing.
+                # See: http://www.postgresql.org/docs/9.0/static/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS
+                self.engine = create_engine(connection_string, connect_args={"sslmode": "disable"})
             else:
                 self.engine = create_engine(connection_string)
         except ImportError as e:
