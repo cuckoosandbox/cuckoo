@@ -478,7 +478,7 @@ class Database(object):
             log.debug("Database error adding machine: {0}".format(e))
             session.rollback()
         finally:
-            session.close()        
+            session.close()
 
     @classlock
     def set_status(self, task_id, status):
