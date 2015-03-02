@@ -140,6 +140,11 @@ Or otherwise (**not recommended**) do::
 
     $ sudo chmod +s /usr/sbin/tcpdump
 
+Please keep in mind that even the `setcap` method is definitely not perfectly safe
+if the system has other users which are potentially untrusted. We recommend to run
+Cuckoo on a dedicated system or a trusted environment where the privileged tcpdump
+execution is contained otherwise.
+
 .. _tcpdump: http://www.tcpdump.org
 
 Installing Volatility
