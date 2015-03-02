@@ -35,6 +35,7 @@ TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
 TASK_RECOVERED = "recovered"
 TASK_REPORTED = "reported"
+TASK_FAILED_ANALYSIS = "failed_analysis"
 TASK_FAILED_PROCESSING = "failed_processing"
 TASK_FAILED_REPORTING = "failed_reporting"
 
@@ -270,7 +271,7 @@ class Task(Base):
     started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(Enum(TASK_PENDING, TASK_RUNNING, TASK_COMPLETED,
-                         TASK_REPORTED, TASK_RECOVERED,
+                         TASK_REPORTED, TASK_RECOVERED, TASK_FAILED_ANALYSIS,
                          TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING, name="status_type"),
                     server_default=TASK_PENDING,
                     nullable=False)
@@ -397,10 +398,6 @@ class Database(object):
             if connection_string.startswith("sqlite"):
                 # Using "check_same_thread" to disable sqlite safety check on multiple threads.
                 self.engine = create_engine(connection_string, connect_args={"check_same_thread": False})
-            elif connection_string.startswith("postgres"):
-                # Disabling SSL mode to avoid some errors using sqlalchemy and multiprocesing.
-                # See: http://www.postgresql.org/docs/9.0/static/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS
-                self.engine = create_engine(connection_string, connect_args={"sslmode": "disable"})
             else:
                 self.engine = create_engine(connection_string)
         except ImportError as e:
