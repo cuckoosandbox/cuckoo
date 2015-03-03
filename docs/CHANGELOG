@@ -1,6 +1,6 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 1.2 (2015-02-XX)
+Cuckoo Sandbox 1.2 (2015-03-04)
 ===============================
 * Added support for baremetal analysis (physical machinery module)
 * Added XenServer machinery module
