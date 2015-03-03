@@ -34,7 +34,18 @@
         </div>
         <hr />
         {% endif %}
-
+        {% if analysis.static.peid_signatures%}
+        <div>
+            <h4>PEiD Signatures</h4>
+            <div id="peid_signatures">
+                <table class="table table-striped table-bordered">
+                {% for sig in analysis.static.peid_signatures %}
+                    <tr><td>{{sig}}</td></tr>
+                {% endfor %}
+                </table>
+            </div>
+        <hr />
+        {% endif %}
         {% if analysis.static.pe_sections %}
         <div>
             <h4>Sections</h4>
