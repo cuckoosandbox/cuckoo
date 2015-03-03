@@ -15,7 +15,7 @@ Cuckoo Sandbox 1.2 (2015-02-XX)
 * Added search by string to web interface
 * Added dynamic search of API call logs to web interface
 * Added display of PE compilation time to web interface
-* Added memory dump download to web interfaceo
+* Added memory dump download to web interface
 * Refactored analysis packages and simplified syntax
 * Added analysis package for Microsoft PowerPoint
 * Added analysis package for MSI (Windows installer package)
