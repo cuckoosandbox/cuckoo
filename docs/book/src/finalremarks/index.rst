@@ -92,73 +92,80 @@ It's hard at this point to keep track of all individual contributions.
 Following is the list of people who contributed code to our GitHub repository::
 
     $ git shortlog -s -n
-      1026  Nex
-       840  jekil
-       284  Jurriaan Bremer
-       209  rep
+      1058  Nex
+       960  jekil
+       286  Jurriaan Bremer
+       242  rep
        185  nex
         72  Ivan Kirillov
         70  Thorsten Sick
-        27  Alessandro Tanasi
-        24  Pietro Delsante
+        35  Alessandro Tanasi
         24  Mark Schloesser
+        24  Pietro Delsante
         22  David Maciejak
+        15  Adam Meily
         14  Justin Roberts
         13  Greg Back
         11  r3comp1le
-         9  Script Kiddie
          9  Christopher Schmitt
+         9  Script Kiddie
          7  Hugh Pearse
          7  SpoonBoy
-         6  init99
          6  Tal Jerome
+         6  init99
+         5  David Francos
          5  jamu
          5  lehmz
-         4  Ben Small
          4  Adam Pridgen
-         3  z0mbiehunt3r
-         3  Espen Fjellvær Olsen
-         3  Stephen DiCato
-         3  wzr
+         4  Ben Small
          3  Allen Swackhamer
-         3  robertsjw
+         3  Espen Fjellvær Olsen
          3  Jerome Marty
+         3  KillerInstinct
          3  Nagy Ferenc László
-         2  Richard Harman
-         2  Max Taube
-         2  Neriberto C.Prado
+         3  Stephen DiCato
+         3  mak
+         3  robertsjw
+         3  wzr
+         3  z0mbiehunt3r
+         2  Claudio Guarnieri
          2  Gael Muller
          2  Mario Vilas
+         2  Max Taube
+         2  Neriberto C.Prado
+         2  Richard Harman
          2  Roberto Abdelkader Martínez Pérez
-         2  Claudio Guarnieri
+         2  SecTecRes
          2  Thomas Penteker
          2  Will Metcalf
          2  bcyrill
          2  kholbrook1303
-         2  mak
+         2  mcpacosy
          2  mt00at
          2  upsidedwn
-         1  bladeswords
-         1  chort
-         1  chrestme
-         1  SnakeByte Lab
          1  =
-         1  Ben Lyon
-         1  jvoisin
-         1  John Davison
-         1  Ryan Peck
-         1  vacmf
-         1  Mark Woan
-         1  Nitzan Carmel
          1  Aitor Gómez
+         1  Alexander J
+         1  Andrea De Pasquale
+         1  Ben Lyon
+         1  Benjamin Vanheuverzwijn
          1  Crashman1983
          1  Henrique Menezes
+         1  John Davison
+         1  Mark Woan
          1  Micha Lenk
-         1  Benjamin Vanheuverzwijn
+         1  Nitzan Carmel
+         1  Ryan Peck
+         1  SnakeByte Lab
          1  Valter Santos
+         1  bladeswords
+         1  chimerhapsody
+         1  chort
+         1  chrestme
+         1  jvoisin
          1  sabri
          1  shendo
-         1  chimerhapsody
+         1  vacmf
 
 There is a number of friends who provided feedback, ideas and support during the years
 of development of this project, including:
