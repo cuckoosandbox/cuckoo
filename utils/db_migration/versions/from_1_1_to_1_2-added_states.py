@@ -71,22 +71,35 @@ def _perform(upgrade):
             d["platform"] = item[9]
             d["memory"] = item[10]
             d["enforce_timeout"] = item[11]
+
             if isinstance(item[12], datetime):
                 d["clock"] = item[12]
-            else:
+            elif item[12]:
                 d["clock"] = parse(item[12])
+            else:
+                d["clock"] = None
+
             if isinstance(item[13], datetime):
                 d["added_on"] = item[13]
-            else:
+            elif item[13]:
                 d["added_on"] = parse(item[13])
+            else:
+                d["added_on"] = None
+
             if isinstance(item[14], datetime):
                 d["started_on"] = item[14]
-            else:
+            elif item[14]:
                 d["started_on"] = parse(item[14])
+            else:
+                d["started_on"] = None
+
             if isinstance(item[15], datetime):
                 d["completed_on"] = item[15]
-            else:
+            elif item[15]:
                 d["completed_on"] = parse(item[15])
+            else:
+                d["completed_on"] = None
+
             d["status"] = item[16]
             d["sample_id"] = item[17]
 
