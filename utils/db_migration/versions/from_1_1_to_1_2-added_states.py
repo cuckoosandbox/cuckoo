@@ -10,7 +10,7 @@ Revises: 18eee46c6f81
 Create Date: 2015-02-28 19:08:29.284111
 
 """
-## Spaghetti as a way of life. ##
+# Spaghetti as a way of life.
 
 # Revision identifiers, used by Alembic.
 revision = "495d5a6edef3"
@@ -34,17 +34,18 @@ import lib.cuckoo.core.database as db
 
 def _perform(upgrade):
     conn = op.get_bind()
-    
+
     # Deal with Alembic shit.
     # Alembic is so ORMish that it was impossible to write code which works on different DBMS.
     if conn.engine.driver == "psycopg2":
-       # Altering status ENUM.
-       # This shit of raw SQL is here because alembic doesn't deal well with alter_colum of ENUM type.
-       op.execute('COMMIT') # Commit because SQLAlchemy doesn't support ALTER TYPE in a transaction.
-       if upgrade:  
-           conn.execute("ALTER TYPE status_type ADD VALUE 'failed_reporting'")
-       else:
-           conn.execute("ALTER TYPE status_type DROP ATTRIBUTE IF EXISTS failed_reporting")
+        # Altering status ENUM.
+        # This shit of raw SQL is here because alembic doesn't deal well with alter_colum of ENUM type.
+        # Commit because SQLAlchemy doesn't support ALTER TYPE in a transaction.
+        op.execute('COMMIT')
+        if upgrade:
+            conn.execute("ALTER TYPE status_type ADD VALUE 'failed_reporting'")
+        else:
+            conn.execute("ALTER TYPE status_type DROP ATTRIBUTE IF EXISTS failed_reporting")
     else:
         # Read data.
         tasks_data = []
@@ -140,7 +141,7 @@ def _perform(upgrade):
                     sa.PrimaryKeyConstraint("id")
                 )
             op.execute('COMMIT')
-            
+
             # Insert data.
             op.bulk_insert(db.Task.__table__, tasks_data)
             # Enable foreign key.
