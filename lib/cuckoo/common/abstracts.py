@@ -18,6 +18,7 @@ from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.objects import Dictionary
 from lib.cuckoo.common.utils import create_folder
 from lib.cuckoo.core.database import Database
+from lib.cuckoo.core.resultserver import ResultServer
 
 try:
     import libvirt
@@ -114,6 +115,11 @@ class Machinery(object):
                 # If configured, use specific resultserver IP and port,
                 # else use the default value.
                 opt_resultserver = self.options_globals.resultserver
+
+                # the resultserver port might have been dynamically changed
+                #  -> get the current one from the resultserver singelton
+                opt_resultserver.port = ResultServer().port
+
                 ip = machine_opts.get("resultserver_ip", opt_resultserver.ip)
                 port = machine_opts.get("resultserver_port", opt_resultserver.port)
 
