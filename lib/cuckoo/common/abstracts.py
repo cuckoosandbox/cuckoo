@@ -200,7 +200,7 @@ class Machinery(object):
         @return: machine or None.
         """
         if machine_id:
-            return self.db.lock_machine(name=machine_id)
+            return self.db.lock_machine(label=machine_id)
         elif platform:
             return self.db.lock_machine(platform=platform, tags=tags)
         else:

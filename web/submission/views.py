@@ -133,11 +133,11 @@ def index(request):
                 tags.append(tag.name)
 
             if tags:
-                label = machine.name + ": " + ", ".join(tags)
+                label = machine.label + ": " + ", ".join(tags)
             else:
-                label = machine.name
+                label = machine.label
 
-            machines.append((machine.name, label))
+            machines.append((machine.label, label))
 
         # Prepend ALL/ANY options.
         machines.insert(0, ("", "First available"))

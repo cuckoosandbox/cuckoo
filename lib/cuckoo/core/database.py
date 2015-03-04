@@ -611,9 +611,9 @@ class Database(object):
             session.close()
 
     @classlock
-    def lock_machine(self, name=None, platform=None, tags=None):
+    def lock_machine(self, label=None, platform=None, tags=None):
         """Places a lock on a free virtual machine.
-        @param name: optional virtual machine name
+        @param label: optional virtual machine label
         @param platform: optional virtual machine platform
         @param tags: optional tags required (list)
         @return: locked machine
@@ -621,19 +621,19 @@ class Database(object):
         session = self.Session()
 
         # Preventive checks.
-        if name and platform:
+        if label and platform:
             # Wrong usage.
-            log.error("You can select machine only by name or by platform.")
+            log.error("You can select machine only by label or by platform.")
             return None
-        elif name and tags:
+        elif label and tags:
             # Also wrong usage.
-            log.error("You can select machine only by name or by tags.")
+            log.error("You can select machine only by label or by tags.")
             return None
 
         try:
             machines = session.query(Machine)
-            if name:
-                machines = machines.filter_by(name=name)
+            if label:
+                machines = machines.filter_by(label=label)
             if platform:
                 machines = machines.filter_by(platform=platform)
             if tags:
