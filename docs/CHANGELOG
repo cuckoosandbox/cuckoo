@@ -1,6 +1,6 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 1.2 (2015-02-XX)
+Cuckoo Sandbox 1.2 (2015-03-04)
 ===============================
 * Added support for baremetal analysis (physical machinery module)
 * Added XenServer machinery module
@@ -9,11 +9,13 @@ Cuckoo Sandbox 1.2 (2015-02-XX)
 * Added more memory analysis information to web interface
 * Added memory dump to VMWare workstation module
 * Added machine information in reports
+* Added skeleton for comparative analysis of two reports
+* Added TCP and UDP streams hexdump view
 * Added possibility to delete analysis from web interface
 * Added search by string to web interface
 * Added dynamic search of API call logs to web interface
 * Added display of PE compilation time to web interface
-* Added memory dump download to web interfaceo
+* Added memory dump download to web interface
 * Refactored analysis packages and simplified syntax
 * Added analysis package for Microsoft PowerPoint
 * Added analysis package for MSI (Windows installer package)

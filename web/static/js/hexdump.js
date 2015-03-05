@@ -111,8 +111,7 @@ var Hexy = function (buffer, config) {
       if (self.annotate === "ascii") {
         str+=" "
         var ascii = raw.replace(/[\000-\040\177-\377]/g, ".")
-        if (self.html) {str += escape(ascii)}
-        else { str += ascii }
+        str += escape(ascii)
       }
       if (self.html) {
         str += "</div>\n"

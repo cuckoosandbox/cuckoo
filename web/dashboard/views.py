@@ -15,6 +15,7 @@ sys.path.append(settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_RUNNING
 from lib.cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED, TASK_REPORTED
+from lib.cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING
 
 def timestamp(dt):
     """Returns the timestamp of a datetime object."""
@@ -38,7 +39,10 @@ def index(request):
         TASK_RUNNING,
         TASK_COMPLETED,
         TASK_RECOVERED,
-        TASK_REPORTED
+        TASK_REPORTED,
+        TASK_FAILED_ANALYSIS,
+        TASK_FAILED_PROCESSING,
+        TASK_FAILED_REPORTING
     )
 
     for state in states:

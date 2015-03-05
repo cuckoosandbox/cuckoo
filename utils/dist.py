@@ -61,7 +61,7 @@ def sha256(path):
 
 class StringList(db.TypeDecorator):
     """List of comma-separated strings as field."""
-    impl = db.String
+    impl = db.Text
 
     def process_bind_param(self, value, dialect):
         return ", ".join(value)

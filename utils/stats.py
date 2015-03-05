@@ -11,6 +11,7 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_RUNNING
 from lib.cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED, TASK_REPORTED
+from lib.cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING
 
 def timestamp(dt):
     """Returns the timestamp of a datetime object."""
@@ -24,7 +25,8 @@ def main():
 
     states = (
         TASK_PENDING, TASK_RUNNING,
-        TASK_COMPLETED, TASK_RECOVERED, TASK_REPORTED
+        TASK_COMPLETED, TASK_RECOVERED, TASK_REPORTED,
+        TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING
     )
 
     for state in states:

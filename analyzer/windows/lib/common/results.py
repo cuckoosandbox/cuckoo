@@ -4,6 +4,7 @@
 
 import logging
 import socket
+import time
 
 from lib.core.config import Config
 
@@ -19,10 +20,10 @@ def upload_to_host(file_path, dump_path):
         infd = open(file_path, "rb")
         buf = infd.read(BUFSIZE)
         while buf:
-            nc.send(buf)
+            nc.send(buf, retry=False)
             buf = infd.read(BUFSIZE)
     except Exception as e:
-        log.error("Exception uploading file to host: %s", e)
+        log.error("Exception uploading file %s to host: %s", file_path, e)
     finally:
         if infd:
             infd.close()
@@ -37,24 +38,34 @@ class NetlogConnection(object):
         self.proto = proto
 
     def connect(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            s.connect((self.hostip, self.hostport))
-            s.sendall(self.proto)
-        except:
-            pass
-        else:
-            self.sock = s
-            self.file = s.makefile()
+        i = 1
+        # this can loop forever, if we can't connect the whole analysis is useless anyways
+        while True:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                s.connect((self.hostip, self.hostport))
+                s.sendall(self.proto)
+            except:
+                time.sleep(i)
+                i = min(i + 1, 60)
+            else:
+                self.sock = s
+                self.file = s.makefile()
+                break
 
     def send(self, data, retry=True):
+        if not self.sock: self.connect()
+
         try:
             self.sock.sendall(data)
-        except socket.error:
-            self.connect()
+        except socket.error as e:
             if retry:
+                self.connect()
                 self.send(data, retry=False)
-        except:
+            else:
+                raise
+        except Exception as e:
+            log.error("Unhandled exception in NetlogConnection: %s", str(e))
             # We really have nowhere to log this, if the netlog connection
             # does not work, we can assume that any logging won't work either.
             # So we just fail silently.

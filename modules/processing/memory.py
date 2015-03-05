@@ -25,8 +25,10 @@ try:
     import volatility.plugins.filescan as filescan
 
     HAVE_VOLATILITY = True
-    logging.getLogger("volatility.obj").setLevel(logging.INFO)
-    logging.getLogger("volatility.utils").setLevel(logging.INFO)
+    rootlogger = logging.getLogger()
+    # re-use the rootlogger level (so if we want to debug, it works for volatility)
+    logging.getLogger("volatility.obj").setLevel(rootlogger.level)
+    logging.getLogger("volatility.utils").setLevel(rootlogger.level)
 except ImportError:
     HAVE_VOLATILITY = False
 
@@ -43,6 +45,7 @@ class VolatilityAPI(object):
         self.memdump = memdump
         self.osprofile = osprofile
         self.config = None
+        self.addr_space = None
         self.__config()
 
     def _get_dtb(self):
@@ -57,6 +60,9 @@ class VolatilityAPI(object):
 
     def __config(self):
         """Creates a volatility configuration."""
+        if self.config != None and self.addr_space != None:
+            return self.config
+
         self.config = conf.ConfObject()
         self.config.optparser.set_conflict_handler("resolve")
         registry.register_global_options(self.config, commands.Command)
@@ -90,15 +96,15 @@ class VolatilityAPI(object):
         for key, value in base_conf.items():
             self.config.update(key, value)
 
-	# Deal with Volatility support for KVM/qemu memory dump.
-	# See: #464.
+        # Deal with Volatility support for KVM/qemu memory dump.
+        # See: #464.
         try:
           self.addr_space = utils.load_as(self.config)
         except exc.AddrSpaceError as e:
           if self._get_dtb():
               self.addr_space = utils.load_as(self.config)
           else:
-              raise exc.AddrSpaceError(e)
+              raise
 
         self.plugins = registry.get_plugin_classes(commands.Command,
                                                    lower=True)
@@ -288,7 +294,7 @@ class VolatilityAPI(object):
         command = self.plugins["ssdt"](self.config)
 
         # Comment: this code is pretty much ripped from render_text in volatility.
-        addr_space = utils.load_as(self.config)
+        addr_space = self.addr_space
         syscalls = addr_space.profile.syscalls
         bits32 = addr_space.profile.metadata.get("memory_model", "32bit") == "32bit"
 

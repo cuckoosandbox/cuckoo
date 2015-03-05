@@ -1,3 +1,4 @@
+<script src="{{ STATIC_URL }}js/hexdump.js"></script>
 <section id="tcp" class="tcpudp">
     <h4>TCP</h4>
     {% if analysis.network.tcp %}
@@ -41,18 +42,23 @@ $(function () {
             if (status == "error") {
                 $section.find("div.stream").html("Error loading data. Please reload the page and if the error persists contact us.");
             } else {
-                var out = $("<ul>");
+                var out = $("<ul class=\"tcp-flow\">");
                 var first = undefined;
                 console.log("get result", data, status, xhr);
                 for (var i in data) {
                     var p = data[i];
-                    var tuple = p.src + ":" + p.sport + " -> " + p.dst + ":" + p.dport;
+                    var tuple = p.src + ":" + p.sport + " &rarr; " + p.dst + ":" + p.dport;
 
                     if (first == undefined) first = tuple;
-                    if (first != tuple) indent = 4;
-                    else indent = 0;
+                    if (first != tuple) { 
+                        tcpclass = "tcp-in";
+                        icon = "<i class=\"glyphicon glyphicon-chevron-down\" title=\"Inbound\"></i>";
+                    } else {
+                        tcpclass = "tcp-out";
+                        icon = "<i class=\"glyphicon glyphicon-chevron-up\" title=\"Outbound\"></i>";
+                    }
 
-                    var li = $("<li>" + tuple + "</li>").append("<pre>" + hexy(base64.decode(p.raw), {"indent": indent}) + "</pre>");
+                    var li = $("<li class=\"" + tcpclass + "\">" + icon + tuple + "</li>").append("<pre>" + hexy(base64.decode(p.raw)) + "</pre>");
                     out.append(li);
                 }
                 $section.find("div.stream").html(out);

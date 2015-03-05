@@ -133,3 +133,27 @@ td {
 .row-active {
     background-color: #d9edf7;
 }
+
+.tcp-flow {
+    list-style-type: none;
+}
+.tcp-flow li {
+    margin-bottom: 20px;
+}
+.tcp-out {
+}
+.tcp-out pre {
+    padding: 0;
+    border: 0;
+    background-color: white;
+    color: #d9534f;
+}
+.tcp-in {
+    padding-left: 100px;
+}
+.tcp-in pre {
+    padding: 0;
+    border: 0;
+    background-color: white;
+    color: #5bc0de;
+}
