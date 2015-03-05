@@ -17,22 +17,15 @@
             <table class="table table-striped" style="table-layout: fixed;">
                 <thead>
                 <tr>
-                    <th>id</th>
                     <th>Timestamp</th>
-                    <th>File name</th>
-                    <th>File type</th>
-                    <th>Windows</th>
+                    <th>Filename</th>
                     <th>MD5</th>
                     <th>Status</th>
-
                 </tr>
                 </thead>
                 <tbody>
                 {% for analysis in files %}
                     <tr>
-                        <td>
-                            {{analysis.target.info.id}}
-                        </td>
                         <td>
                         {% if analysis.status == "reported" %}
                             {{analysis.completed_on}}
@@ -41,13 +34,7 @@
                         {% endif %}
                         </td>
                         <td>
-                            {{analysis.target.target.file.name}}
-                        </td>
-                        <td>
-                            {{analysis.target.target.file.type}}
-                        </td>
-                        <td>
-                            {{analysis.target.info.machine.name}}
+                            {{analysis.filename}}
                         </td>
                         <td style="word-wrap: break-word;">
                             {% if analysis.status == "reported" %}
