@@ -58,7 +58,7 @@ To have MAEC support, you need to first install the Cybox and then the MAEC libr
 
     $ sudo pip install cybox==2.1.0.9
     $ sudo pip install maec==4.1.0.11
-	
+
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 
 If you want to use KVM it's packaged too and you can install it with the following command::
