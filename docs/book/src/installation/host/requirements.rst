@@ -43,7 +43,7 @@ The following libraries are not strictly required, but their installation is rec
     * `Django`_ (Optional): for using the web interface (release >=1.5).
     * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
     * `Volatility`_ (Optional): used for forensic analysis on memory (release >=2.4)
-    * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use a release >=4.0, but <4.1).
+    * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use a release >=4.1.0.11, but <5.x).
     * `Chardet`_ (Optional): used for detecting string encoding.
 
 Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
@@ -56,9 +56,9 @@ Except for *python-magic*, *python-dpkt* and *python-libvirt*, the others can be
 
 To have MAEC support, you need to first install the Cybox and then the MAEC libraries::
 
-    $ sudo pip install cybox==2.0.1.4
-    $ sudo pip install maec==4.0.1.0
-
+    $ sudo pip install cybox==2.1.0.9
+    $ sudo pip install maec==4.1.0.11
+	
 *Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
 
 If you want to use KVM it's packaged too and you can install it with the following command::
@@ -76,7 +76,7 @@ If you want to use KVM it's packaged too and you can install it with the followi
 .. _Django: https://www.djangoproject.com/
 .. _Pefile: http://code.google.com/p/pefile/
 .. _Volatility: https://github.com/volatilityfoundation/
-.. _MAEC Python bindings: https://pypi.python.org/pypi/maec/4.0.1.0
+.. _MAEC Python bindings: https://pypi.python.org/pypi/maec/4.1.0.11
 .. _Chardet: https://pypi.python.org/pypi/chardet
 
 If you want to use XenServer you'll have to install the *XenAPI* Python package::
