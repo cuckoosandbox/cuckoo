@@ -5,7 +5,7 @@
 import os
 import hashlib
 
-import lib.maec.maec41 as maec
+import lib.maec.maec11 as maec
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.utils import datetime_to_iso
