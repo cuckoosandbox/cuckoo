@@ -36,30 +36,30 @@
         {% endif %}
 
         {% if analysis.static.pe_sections %}
-        <div>
-            <h4>Sections</h4>
-            <div id="pe_sections">
-                <table class="table table-striped table-bordered">
-                    <tr>
-                        <th>Name</th>
-                        <th>Virtual Address</th>
-                        <th>Virtual Size</th>
-                        <th>Size of Raw Data</th>
-                        <th>Entropy</th>
-                    </tr>
-                    {% for section in analysis.static.pe_sections %}
-                    <tr>
-                        <td>{{section.name}}</td>
-                        <td>{{section.virtual_address}}</td>
-                        <td>{{section.virtual_size}}</td>
-                        <td>{{section.size_of_data}}</td>
-                        <td>{{section.entropy}}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
+            <div>
+                <h4>Sections</h4>
+                <div id="pe_sections">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Name</th>
+                            <th>Virtual Address</th>
+                            <th>Virtual Size</th>
+                            <th>Size of Raw Data</th>
+                            <th>Entropy</th>
+                        </tr>
+                        {% for section in analysis.static.pe_sections %}
+                            <tr>
+                                <td>{{section.name}}</td>
+                                <td>{{section.virtual_address}}</td>
+                                <td>{{section.virtual_size}}</td>
+                                <td>{{section.size_of_data}}</td>
+                                <td>{{section.entropy}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
-        </div>
-        <hr />
+            <hr />
         {% endif %}
 
         {% if analysis.static.pe_resources %}
