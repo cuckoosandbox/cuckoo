@@ -593,7 +593,7 @@ class NetworkAnalysis(Processing):
             sort_pcap(self.pcap_path, sorted_path)
             results = Pcap(sorted_path).run()
         else:
-            results = Pcap(pcap_path).run()
+            results = Pcap(self.pcap_path).run()
 
         # Save PCAP file hash.
         if os.path.exists(self.pcap_path):
