@@ -24,6 +24,7 @@ RESOLUTION = {
 }
 
 def foreach_child(hwnd, lparam):
+    # List of buttons labels to click.
     buttons = [
         "yes",
         "ok",
@@ -38,11 +39,12 @@ def foreach_child(hwnd, lparam):
         "unzip",
         "open",
     ]
-    
+
+    # List of buttons labels to not click.
     dontclick = [
         "don't run",
     ]
-    
+
     classname = create_unicode_buffer(50)
     USER32.GetClassNameW(hwnd, classname, 50)
 
@@ -53,7 +55,7 @@ def foreach_child(hwnd, lparam):
         text = create_unicode_buffer(length + 1)
         USER32.SendMessageW(hwnd, WM_GETTEXT, length + 1, text)
 
-        # Check if the button is "positive".
+        # Check if the button is set as "clickable" and click it.
         for button in buttons:
             if button in text.value.lower():
                 for btn in dontclick:
