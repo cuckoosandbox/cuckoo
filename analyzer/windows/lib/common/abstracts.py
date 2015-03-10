@@ -65,6 +65,38 @@ class Package(object):
         raise CuckooPackageError("Unable to find any %s executable." %
                                  application)
 
+    def get_tool_path(self):
+        
+        tool_dir = os.path.join(os.getenv("Temp"), "tool")
+        for item in os.listdir(tool_dir):
+            if item[-5:].lower() == ".tool":
+                tool_name = item[:-5].lower()
+                os.remove(os.path.join(tool_dir, tool_name))
+                os.rename(os.path.join(tool_dir, item), os.path.join(tool_dir, tool_name))
+                break
+
+        tool_path = os.path.join(tool_dir, tool_name)
+        return tool_path
+
+    def format_user_options(self, options, sample_options, path):
+
+        if not options:
+            options = ""
+        if not sample_options:
+            sample_options = ""
+        if "$sample" in options:
+            options = options.replace("$sample", path)
+        else:
+            options = options + " " + path
+
+        if "$sample_options" in options:
+            options = options.replace("$sample_options", sample_options)
+        else:
+            options = options + " " + sample_options
+
+        print("options: " + str(options))
+        return options.split()
+
     def execute(self, path, args):
         """Starts an executable for analysis.
         @param path: executable path
@@ -75,26 +107,25 @@ class Package(object):
         free = self.options.get("free")
         tool = self.options.get("tool")
 
-        print("wubba:" + str(self.options))
-
         suspended = True
         if free:
             suspended = False
 
         if tool:
-            tool_path = os.path.join(os.path.join(os.getenv("Temp"), "tool"), "tool")
-            tool_args = self.options.get('tool_options') 
-            cmd_list = [tool_path, tool_args, path, args]
-            cmd_list = [val for val in cmd_list if val != "" and val != None]
             cwd = os.getcwd()
-            os.chdir(os.getenv("Temp"))
-            
+            os.chdir(os.path.join(os.getenv("Temp"), 'tool'))
+            tool_path = self.get_tool_path()
+            tool_args = self.options.get('tool_options') 
+            arg_list = self.format_user_options(tool_args, args, path)
+            cmd_list = [tool_path]
+            cmd_list.extend(arg_list)
+            cmd_list = [val for val in cmd_list if val != "" and val != None]
+
             # 0x08000000 = CREATE_NO_WINDOW
             # Either set creation flag to CREATE_NO_WINDOW
             # or disable the human auxiliary module
             # because the module will interfere with the running tool
             creation_flag = 0x08000000
-            print("command: " + str(cmd_list))
             with open('tool_output.log', 'w+') as output_file:
                 output_file.write(str(cmd_list) + "\n")
                 self.tool_process = Popen(cmd_list,
@@ -139,13 +170,15 @@ class Package(object):
 
         if self.options.get("tool"):
             upload_path = self.options.get("upload_path", "/tmp/upload")
+            uploaded_tools = self.options.get("uploaded_tools").split('|')
             temp_dir = os.getenv("Temp")
             tool_dir = os.path.join(temp_dir, "tool")
-            output_file = os.path.join(temp_dir, "tool_output.log")
-            try:
-                upload_to_host(output_file, os.path.join("tool_output", "tool_output.log"))
-            except (IOError) as e:
-                CuckooPackageError("Unable to upload dropped file at path \"%s\": %s", file_path, e)
+            for item in os.listdir(tool_dir):
+                if item not in uploaded_tools:
+                    try:
+                        upload_to_host(os.path.join(tool_dir, item), os.path.join("tool_output", item))
+                    except (IOError) as e:
+                        CuckooPackageError("Unable to upload dropped file at path \"%s\": %s", file_path, e)
 
         return True
 
