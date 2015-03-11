@@ -265,6 +265,8 @@ class Task(Base):
     clock = Column(DateTime(timezone=False),
                    default=datetime.now,
                    nullable=False)
+
+    callback = Column(String(255), nullable=True)
     added_on = Column(DateTime(timezone=False),
                       default=datetime.now,
                       nullable=False)
@@ -776,7 +778,7 @@ class Database(object):
     @classlock
     def add(self, obj, timeout=0, package="", options="", priority=1,
             custom="", machine="", platform="", tags=None,
-            memory=False, enforce_timeout=False, clock=None):
+            memory=False, enforce_timeout=False, clock=None, callback=""):
         """Add a task to database.
         @param obj: object to add (File or URL).
         @param timeout: selected timeout.
@@ -789,6 +791,7 @@ class Database(object):
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
         @param clock: virtual machine clock time
+        @param callback: callback url.
         @return: cursor or None.
         """
         session = self.Session()
@@ -840,6 +843,7 @@ class Database(object):
         task.platform = platform
         task.memory = memory
         task.enforce_timeout = enforce_timeout
+        task.callback = callback
 
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
@@ -872,7 +876,7 @@ class Database(object):
 
     def add_path(self, file_path, timeout=0, package="", options="",
                  priority=1, custom="", machine="", platform="", tags=None,
-                 memory=False, enforce_timeout=False, clock=None):
+                 memory=False, enforce_timeout=False, clock=None, callback=""):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -884,7 +888,8 @@ class Database(object):
         @param tags: Tags required in machine selection
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
-        @param clock: virtual machine clock time
+        @param clock: virtual machine clock time.
+        @param callback: url callback.
         @return: cursor or None.
         """
         if not file_path or not os.path.exists(file_path):
@@ -899,12 +904,12 @@ class Database(object):
 
         return self.add(File(file_path), timeout, package, options, priority,
                         custom, machine, platform, tags, memory,
-                        enforce_timeout, clock)
+                        enforce_timeout, clock, callback)
 
     @classlock
     def add_url(self, url, timeout=0, package="", options="", priority=1,
                 custom="", machine="", platform="", tags=None, memory=False,
-                enforce_timeout=False, clock=None):
+                enforce_timeout=False, clock=None, callback=""):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
@@ -928,7 +933,7 @@ class Database(object):
 
         return self.add(URL(url), timeout, package, options, priority,
                         custom, machine, platform, tags, memory,
-                        enforce_timeout, clock)
+                        enforce_timeout, clock, callback)
 
     @classlock
     def reschedule(self, task_id):

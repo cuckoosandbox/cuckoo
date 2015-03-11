@@ -63,6 +63,7 @@ def tasks_create_file():
     custom = request.forms.get("custom", "")
     memory = request.forms.get("memory", False)
     clock = request.forms.get("clock", None)
+    callback = request.forms.get("callback", "")
     if memory:
         memory = True
     enforce_timeout = request.forms.get("enforce_timeout", False)
@@ -82,7 +83,8 @@ def tasks_create_file():
         custom=custom,
         memory=memory,
         enforce_timeout=enforce_timeout,
-        clock=clock
+        clock=clock,
+        callback=callback
     )
 
     response["task_id"] = task_id
@@ -103,6 +105,7 @@ def tasks_create_url():
     tags = request.forms.get("tags", None)
     custom = request.forms.get("custom", "")
     memory = request.forms.get("memory", False)
+    callback = request.forms.get("callback", "")    
     if memory:
         memory = True
     enforce_timeout = request.forms.get("enforce_timeout", False)
@@ -122,7 +125,8 @@ def tasks_create_url():
         custom=custom,
         memory=memory,
         enforce_timeout=enforce_timeout,
-        clock=clock
+        clock=clock,
+        callback=callback
     )
 
     response["task_id"] = task_id
