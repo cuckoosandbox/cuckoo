@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import stat
 import getpass
 import logging
 import subprocess

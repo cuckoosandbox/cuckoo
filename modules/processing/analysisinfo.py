@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import time
-import json
 import logging
 from datetime import datetime
 
