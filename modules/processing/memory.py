@@ -53,8 +53,8 @@ class VolatilityAPI(object):
         ps = filescan.PSScan(self.config)
         for ep in ps.calculate():
             if str(ep.ImageFileName) == "System":
-                 self.config.update("dtb",ep.Pcb.DirectoryTableBase)
-                 return True
+                self.config.update("dtb",ep.Pcb.DirectoryTableBase)
+                return True
         return False
 
 
@@ -99,12 +99,12 @@ class VolatilityAPI(object):
         # Deal with Volatility support for KVM/qemu memory dump.
         # See: #464.
         try:
-          self.addr_space = utils.load_as(self.config)
+            self.addr_space = utils.load_as(self.config)
         except exc.AddrSpaceError as e:
-          if self._get_dtb():
-              self.addr_space = utils.load_as(self.config)
-          else:
-              raise
+            if self._get_dtb():
+                self.addr_space = utils.load_as(self.config)
+            else:
+                raise
 
         self.plugins = registry.get_plugin_classes(commands.Command,
                                                    lower=True)
