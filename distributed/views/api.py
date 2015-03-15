@@ -5,21 +5,21 @@
 import os
 import tempfile
 
-from flask import Blueprint, current_app, abort, jsonify, request, send_file
-from werkzeug.exceptions import HTTPException
+from flask import Blueprint, current_app, jsonify, request, send_file
 
 from lib.db import db, Node, Task
 from lib.api import list_machines
 
 blueprint = Blueprint("api", __name__)
 
-def node_url(ip=None, url=None):
-    if ip is None and url is None:
-        abort(404, "Node address not found")
+def json_error(status_code, message, *args):
+    r = jsonify(success=False, message=message % args if args else message)
+    r.status_code = status_code
+    return r
 
+def node_url(ip=None, url=None):
     if ip is not None:
         return "http://%s:8090/" % ip
-
     return url
 
 @blueprint.route("/node")
@@ -39,15 +39,18 @@ def node_get():
             url=node.url,
             machines=machines,
         )
-    return jsonify(nodes=nodes)
+    return jsonify(success=True, nodes=nodes)
 
 @blueprint.route("/node", methods=["POST"])
 def node_post():
     if "name" not in request.form:
-        abort(404, "Missing node name")
+        return json_error(404, "Missing node name")
+
+    if "ip" not in request.form and "url" not in request.form:
+        return json_error(404, "Missing IP address or direct URL")
 
     if Node.query.filter_by(name=request.form["name"]).first():
-        abort(409, "There is already a node with this name")
+        return json_error(409, "There is already a node with this name")
 
     url = node_url(ip=request.form.get("ip"), url=request.form.get("url"))
     node = Node(name=request.form["name"], url=url)
@@ -55,7 +58,7 @@ def node_post():
     try:
         machines = list_machines(url)
     except Exception as e:
-        abort(404, "Error connecting to Cuckoo node: %s" % e)
+        return json_error(404, "Error connecting to Cuckoo node: %s", e)
 
     machines = []
     for machine in machines:
@@ -113,12 +116,12 @@ def task_list():
             task_id=task.task_id,
             node_id=task.node_id,
         )
-    return jsonify(tasks=tasks)
+    return jsonify(success=True, tasks=tasks)
 
 @blueprint.route("/task", methods=["POST"])
 def task_post():
     if "file" not in request.files:
-        abort(404, "No file has been provided")
+        return json_error(404, "No file has been provided")
 
     args = dict(
         package=request.form.get("package"),
@@ -144,15 +147,15 @@ def task_post():
     task = Task(path=path, filename=os.path.basename(f.filename), **args)
     db.session.add(task)
     db.session.commit()
-    return jsonify(task_id=task.id)
+    return jsonify(success=True, task_id=task.id)
 
 @blueprint.route("/task/<int:task_id>")
 def task_get(task_id):
     task = Task.query.get(task_id)
     if task is None:
-        abort(404, "Task not found")
+        return json_error(404, "Task not found")
 
-    return jsonify(tasks={task.id: dict(
+    return jsonify(success=True, tasks={task.id: dict(
         task_id=task.id,
         path=task.path,
         filename=task.filename,
@@ -174,7 +177,7 @@ def task_get(task_id):
 def task_delete(task_id):
     task = Task.query.get(task_id)
     if task is None:
-        abort(404, "Task not found")
+        return json_error(404, "Task not found")
 
     # Remove all available reports.
     dirpath = os.path.join(current_app.config["REPORTS_DIRECTORY"],
@@ -193,23 +196,19 @@ def task_delete(task_id):
     db.session.commit()
     return jsonify(success=True)
 
-class ReportNotFinished(HTTPException):
-    code = 420
-    description = 'Task not finished yet'
-
 @blueprint.route("/report/<int:task_id>")
 @blueprint.route("/report/<int:task_id>/<string:report_format>")
 def report_get(task_id, report_format="json"):
     task = Task.query.get(task_id)
     if not task:
-        abort(404, message="Task not found")
+        return json_error(404, "Task not found")
 
     if not task.finished:
-        raise ReportNotFinished
+        return json_error(420, "Task not finished yet")
 
     report_path = os.path.join(current_app.config["REPORTS_DIRECTORY"],
                                "%d" % task_id, "report.%s" % report_format)
     if not os.path.isfile(report_path):
-        abort(404, message="Report format not found")
+        return json_error(404, "Report format not found")
 
     return send_file(report_path)
