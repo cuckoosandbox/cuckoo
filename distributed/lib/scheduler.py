@@ -33,6 +33,10 @@ class SchedulerThread(threading.Thread):
         log.debug("Logging node %s as available..", name)
 
     def _node_status(self, (name, status)):
+        if status is None:
+            self._mark_available(name)
+            return
+
         self.app.config["STATUSES"][name] = status
 
         with self.app.app_context():

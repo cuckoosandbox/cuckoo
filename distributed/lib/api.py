@@ -5,7 +5,7 @@
 import os.path
 import requests
 
-from lib.exception import DeadNode, InvalidReport
+from lib.exception import InvalidReport
 
 def list_machines(url):
     r = requests.get(os.path.join(url, "machines", "list"))
@@ -15,8 +15,8 @@ def node_status(name, url):
     try:
         r = requests.get(os.path.join(url, "cuckoo", "status"), timeout=120)
         return name, r.json()["tasks"]
-    except Exception:
-        raise DeadNode
+    except:
+        return name, None
 
 def submit_task(name, url, task):
     url = os.path.join(url, "tasks", "create", "file")
