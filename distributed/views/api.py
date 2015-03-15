@@ -23,9 +23,13 @@ def node_url(ip=None, url=None):
     return url
 
 @blueprint.route("/node")
-def node_get():
+@blueprint.route("/node/<string:name>")
+def node_get(name=None):
     nodes = {}
     for node in Node.query.all():
+        if name and node.name != name:
+            continue
+
         machines = []
         for machine in node.machines.all():
             machines.append(dict(
@@ -71,6 +75,35 @@ def node_post():
         db.session.add(machine)
 
     db.session.add(node)
+    db.session.commit()
+    return jsonify(success=True)
+
+@blueprint.route("/node/<string:name>", methods=["PUT"])
+def node_put(name):
+    node = Node.query.filter_by(name=name).first()
+    if not node:
+        return json_error(404, "No such node")
+
+    if "name" in request.form:
+        node.name = request.form["name"]
+
+    if "ip" in request.form or "url" in request.form:
+        node.url = \
+            node_url(ip=request.form.get("ip"), url=request.form.get("url"))
+
+    if "enabled" in request.form:
+        node.enabled = bool(int(request.form["enabled"]))
+
+    db.session.commit()
+    return jsonify(success=True)
+
+@blueprint.route("/node/<string:name>", methods=["DELETE"])
+def node_delete(name):
+    node = Node.query.filter_by(name=name).first()
+    if not node:
+        return json_error(404, "No such node")
+
+    node.enabled = False
     db.session.commit()
     return jsonify(success=True)
 
@@ -156,7 +189,7 @@ def task_get(task_id):
         return json_error(404, "Task not found")
 
     return jsonify(success=True, tasks={task.id: dict(
-        task_id=task.id,
+        id=task.id,
         path=task.path,
         filename=task.filename,
         package=task.package,
@@ -171,6 +204,9 @@ def task_get(task_id):
         memory=task.memory,
         clock=task.clock,
         enforce_timeout=task.enforce_timeout,
+        node_id=task.node_id,
+        task_id=task.task_id,
+        finished=task.finished,
     )})
 
 @blueprint.route("/task/<int:task_id>", methods=["DELETE"])
