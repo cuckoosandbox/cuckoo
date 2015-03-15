@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -19,7 +20,6 @@ log = logging.getLogger(__name__)
 def create_app(database_connection):
     app = Flask("Distributed Cuckoo")
     app.config["SQLALCHEMY_DATABASE_URI"] = database_connection
-    # app.config["SQLALCHEMY_ECHO"] = True
     app.config["SECRET_KEY"] = os.urandom(32)
 
     app.register_blueprint(ApiBlueprint, url_prefix="/api")
