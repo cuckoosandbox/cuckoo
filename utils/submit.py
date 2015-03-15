@@ -31,6 +31,7 @@ def main():
     parser.add_argument("--url", action="store_true", default=False, help="Specify whether the target is an URL", required=False)
     parser.add_argument("--package", type=str, action="store", default="", help="Specify an analysis package", required=False)
     parser.add_argument("--custom", type=str, action="store", default="", help="Specify any custom value", required=False)
+    parser.add_argument("--owner", type=str, action="store", default="", help="Specify the task owner", required=False)
     parser.add_argument("--timeout", type=int, action="store", default=0, help="Specify an analysis timeout", required=False)
     parser.add_argument("--options", type=str, action="store", default="", help="Specify options for the analysis package (e.g. \"name=value,name2=value2\")", required=False)
     parser.add_argument("--priority", type=int, action="store", default=1, help="Specify a priority for the analysis represented by an integer", required=False)
@@ -87,6 +88,7 @@ def main():
                 memory=args.memory,
                 enforce_timeout=args.enforce_timeout,
                 custom=args.custom,
+                owner=args.owner,
                 tags=args.tags
             )
 
@@ -107,6 +109,7 @@ def main():
                                  machine=args.machine,
                                  platform=args.platform,
                                  custom=args.custom,
+                                 owner=args.owner,
                                  memory=args.memory,
                                  enforce_timeout=args.enforce_timeout,
                                  clock=args.clock,
@@ -181,6 +184,7 @@ def main():
                     memory=args.memory,
                     enforce_timeout=args.enforce_timeout,
                     custom=args.custom,
+                    owner=args.owner,
                     tags=args.tags
                 )
 
@@ -209,6 +213,7 @@ def main():
                                       machine=args.machine,
                                       platform=args.platform,
                                       custom=args.custom,
+                                      owner=args.owner,
                                       memory=args.memory,
                                       enforce_timeout=args.enforce_timeout,
                                       clock=args.clock,

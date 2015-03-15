@@ -18,7 +18,8 @@ except ImportError:
     sys.stderr.write("ERROR: Jinja2 library is missing")
     sys.exit(1)
 try:
-    from bottle import route, run, static_file, redirect, request, HTTPError, hook, response
+    from bottle import route, run, static_file, request
+    from bottle import HTTPError, hook, response
 except ImportError:
     sys.stderr.write("ERROR: Bottle library is missing")
     sys.exit(1)
@@ -133,10 +134,10 @@ def browse_page(page_id=1, new_limit=-1):
 
     tot_results = db.count_tasks()
 
-     # Add 1 to tot_pages, if there's some remainder.
+    # Add 1 to tot_pages if there's some remainder.
     tot_pages = (tot_results / limit) + ((tot_results % limit) and 1 or 0)
 
-    # Check that the user doesn't require an impossible pagination.
+    # Check that the user doesn't require an impossible pagination
     if page_id > tot_pages:
         page_id = tot_pages
 
@@ -173,12 +174,12 @@ def submit():
     context = {}
     errors = False
 
-    package  = request.forms.get("package", "")
-    options  = request.forms.get("options", "")
+    package = request.forms.get("package", "")
+    options = request.forms.get("options", "")
     priority = request.forms.get("priority", 1)
-    timeout  = request.forms.get("timeout", 0)
-    machine  = request.forms.get("machine", "")
-    memory  = request.forms.get("memory", "")
+    timeout = request.forms.get("timeout", 0)
+    machine = request.forms.get("machine", "")
+    memory = request.forms.get("memory", "")
     data = request.files.file
 
     try:
@@ -188,7 +189,7 @@ def submit():
         context["error_priority"] = "Needs to be a number"
         errors = True
 
-    if data == None or data == "":
+    if not data:
         context["error_toggle"] = True
         context["error_file"] = "Mandatory"
         errors = True
@@ -215,8 +216,7 @@ def submit():
 
     if task_id:
         template = env.get_template("success.html")
-        return template.render({"taskid": task_id,
-                            "submitfile": data.filename.decode("utf-8")})
+        return template.render({"taskid": task_id, "submitfile": data.filename.decode("utf-8")})
     else:
         template = env.get_template("error.html")
         return template.render({"error": "The server encountered an internal error while submitting {0}".format(data.filename.decode("utf-8"))})
@@ -270,7 +270,7 @@ def get_files(task_id):
 
     files_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "files")
     zip_file = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "files.zip")
-        
+
     with zipfile.ZipFile(zip_file, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         root_len = len(os.path.abspath(files_path))
         for root, dirs, files in os.walk(files_path):
