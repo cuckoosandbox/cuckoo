@@ -110,7 +110,7 @@ Following are all RESTful resources. Also make sure to check out the
 .. _node_root_get:
 
 GET /api/node
-----------
+-------------
 
 Returns all enabled nodes. For each node its associated name, API url, and
 machines are returned::
@@ -136,7 +136,7 @@ machines are returned::
 .. _node_root_post:
 
 POST /api/node
-----------
+--------------
 
 Register a new Cuckoo node by providing the name and the URL::
 
@@ -149,7 +149,7 @@ Register a new Cuckoo node by providing the name and the URL::
 .. _node_get:
 
 GET /api/node/<name>
-----------------
+--------------------
 
 Get basic information about a particular Cuckoo node::
 
@@ -174,7 +174,7 @@ Get basic information about a particular Cuckoo node::
 .. _node_put:
 
 PUT /api/node/<name>
-----------------
+--------------------
 
 Update basic information of a Cuckoo node::
 
@@ -186,8 +186,8 @@ Update basic information of a Cuckoo node::
 
 .. _node_delete:
 
-DELETE /node/<name>
--------------------
+DELETE /api/node/<name>
+-----------------------
 
 Disable a Cuckoo node, therefore not having it process any new tasks, but
 keeping its history in the Distributed's database::
@@ -199,8 +199,8 @@ keeping its history in the Distributed's database::
 
 .. _task_root_get:
 
-GET /task
----------
+GET /api/task
+-------------
 
 Get a list of all tasks in the database. In order to limit the amount of
 results, there's an ``offset``, ``limit``, ``finished``, and ``owner`` field
@@ -231,8 +231,8 @@ available::
 
 .. _task_root_post:
 
-POST /task
-----------
+POST /api/task
+--------------
 
 Submit a new file or URL to be analyzed::
 
@@ -244,8 +244,8 @@ Submit a new file or URL to be analyzed::
 
 .. _task_get:
 
-GET /task/<id>
--------------------
+GET /api/task/<id>
+------------------
 
 Get basic information about a particular task::
 
@@ -277,8 +277,8 @@ Get basic information about a particular task::
 
 .. _task_delete:
 
-DELETE /task/<id>
------------------
+DELETE /api/task/<id>
+---------------------
 
 Delete all associated data of a task, namely the binary and the reports::
 
@@ -289,8 +289,8 @@ Delete all associated data of a task, namely the binary and the reports::
 
 .. _report_get:
 
-GET /report/<id>/<format>
--------------------------
+GET /api/report/<id>/<format>
+-----------------------------
 
 Fetch a report for the given task in the specified format::
 
