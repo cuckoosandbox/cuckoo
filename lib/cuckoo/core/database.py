@@ -905,7 +905,6 @@ class Database(object):
                         custom, owner, machine, platform, tags, memory,
                         enforce_timeout, clock)
 
-    @classlock
     def add_url(self, url, timeout=0, package="", options="", priority=1,
                 custom="", owner="", machine="", platform="", tags=None,
                 memory=False, enforce_timeout=False, clock=None):
@@ -974,7 +973,7 @@ class Database(object):
                    task.platform, tags, task.memory, task.enforce_timeout,
                    task.clock)
 
-    def list_tasks(self, limit=None, details=False, category=None, owner=owner,
+    def list_tasks(self, limit=None, details=False, category=None, owner=None,
                    offset=None, status=None, sample_id=None, not_status=None,
                    completed_after=None, order_by=None):
         """Retrieve list of task.
