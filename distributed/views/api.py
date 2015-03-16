@@ -247,3 +247,14 @@ def report_get(task_id, report_format="json"):
         return json_error(404, "Report format not found")
 
     return send_file(report_path)
+
+@blueprint.route("/status")
+def status_get():
+    null = None
+    tasks = Task.query.filter(Task.node_id != null)
+    tasks = dict(
+        pending=Task.query.filter_by(node_id=None).count(),
+        processing=tasks.filter_by(finished=False).count(),
+        processed=tasks.filter_by(finished=True).count(),
+    )
+    return jsonify(success=True, nodes=g.statuses, tasks=tasks)
