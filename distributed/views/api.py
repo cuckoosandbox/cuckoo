@@ -5,7 +5,7 @@
 import os
 import tempfile
 
-from flask import Blueprint, current_app, jsonify, request, send_file
+from flask import Blueprint, g, jsonify, request, send_file
 
 from lib.db import db, Node, Task
 from lib.api import list_machines
@@ -173,7 +173,7 @@ def task_post():
 
     f = request.files["file"]
 
-    fd, path = tempfile.mkstemp(dir=current_app.config["SAMPLES_DIRECTORY"])
+    fd, path = tempfile.mkstemp(dir=g.samples_directory)
     f.save(path)
     os.close(fd)
 
@@ -216,9 +216,8 @@ def task_delete(task_id):
         return json_error(404, "Task not found")
 
     # Remove all available reports.
-    dirpath = os.path.join(current_app.config["REPORTS_DIRECTORY"],
-                           "%d" % task_id)
-    for report_format in current_app.config["REPORT_FORMATS"]:
+    dirpath = os.path.join(g.reports_directory, "%d" % task_id)
+    for report_format in g.report_formats:
         path = os.path.join(dirpath, "report.%s" % report_format)
         if os.path.isfile(path):
             os.unlink(path)
@@ -242,7 +241,7 @@ def report_get(task_id, report_format="json"):
     if not task.finished:
         return json_error(420, "Task not finished yet")
 
-    report_path = os.path.join(current_app.config["REPORTS_DIRECTORY"],
+    report_path = os.path.join(g.reports_directory,
                                "%d" % task_id, "report.%s" % report_format)
     if not os.path.isfile(report_path):
         return json_error(404, "Report format not found")

@@ -9,7 +9,7 @@ import os.path
 import threading
 import time
 
-from flask import json
+from flask import json, g
 from lib.api import node_status, submit_task, fetch_tasks
 from lib.api import store_report, delete_task
 from lib.db import db, Node, Task
@@ -20,15 +20,15 @@ def nullcallback(arg):
     return arg
 
 class SchedulerThread(threading.Thread):
-    def __init__(self, app):
+    def __init__(self, app_context):
         threading.Thread.__init__(self)
 
-        self.app = app
+        self.app_context = app_context
         self.available = {}
 
     def _mark_available(self, name):
         """Mark a node as available for scheduling."""
-        self.available[name] = self.app.config["INTERVAL"]
+        self.available[name] = g.interval
 
         log.debug("Logging node %s as available..", name)
 
@@ -42,15 +42,14 @@ class SchedulerThread(threading.Thread):
             self._mark_available(name)
             return
 
-        self.app.config["STATUSES"][name] = status
+        g.statuses[name] = status
 
-        with self.app.app_context():
-            node = Node.query.filter_by(name=name).first()
+        node = Node.query.filter_by(name=name).first()
 
         # If available, we'll want to dump the uptime.
-        if self.app.config["UPTIME_LOGFILE"]:
+        if g.uptime_logfile:
             try:
-                with open(self.app.config["UPTIME_LOGFILE"], "ab") as f:
+                with open(g.uptime_logfile, "ab") as f:
                     timestamp = datetime.datetime.now().strftime("%s")
                     d = dict(timestamp=timestamp, name=name, status=status)
                     f.write(json.dumps(d) + "\n")
@@ -63,68 +62,62 @@ class SchedulerThread(threading.Thread):
             self._mark_available(name)
             return
 
-        if status["pending"] < self.app.config["BATCH_SIZE"]:
-            with self.app.app_context():
-                self.submit_tasks(name, self.app.config["BATCH_SIZE"])
+        if status["pending"] < g.batch_size:
+            self.submit_tasks(name, g.batch_size)
 
         args = node.name, node.url, "reported"
         self.m.apply_async(fetch_tasks, args=args,
                            callback=self._fetch_reports_and_mark_available)
 
     def _task_identifier(self, (task_id, api_task_id)):
-        with self.app.app_context():
-            t = Task.query.get(task_id)
-            t.task_id = api_task_id
-            db.session.commit()
+        t = Task.query.get(task_id)
+        t.task_id = api_task_id
+        db.session.commit()
 
-            log.debug("Node %s task %d -> %d", t.node_id, t.task_id, t.id)
+        log.debug("Node %s task %d -> %d", t.node_id, t.task_id, t.id)
 
     def _fetch_reports_and_mark_available(self, (name, tasks)):
-        with self.app.app_context():
-            node = Node.query.filter_by(name=name).first()
+        node = Node.query.filter_by(name=name).first()
 
-            for task in tasks:
-                print "task", task
-                q = Task.query.filter_by(node_id=node.id, task_id=task["id"])
-                t = q.first()
+        for task in tasks:
+            q = Task.query.filter_by(node_id=node.id, task_id=task["id"])
+            t = q.first()
 
-                if t is None:
-                    log.debug("Node %s task #%d has not been submitted "
-                              "by us!", name, task["id"])
-                    args = node.name, node.url, task["id"]
-                    self.m.apply_async(delete_task, args=args)
-                    continue
+            if t is None:
+                log.debug("Node %s task #%d has not been submitted "
+                          "by us!", name, task["id"])
+                args = node.name, node.url, task["id"]
+                self.m.apply_async(delete_task, args=args)
+                continue
 
-                dirpath = os.path.join(self.app.config["REPORTS_DIRECTORY"],
-                                       "%d" % t.id)
+            dirpath = os.path.join(g.reports_directory, "%d" % t.id)
 
-                if not os.path.isdir(dirpath):
-                    os.makedirs(dirpath)
+            if not os.path.isdir(dirpath):
+                os.makedirs(dirpath)
 
-                # Fetch each requested report format, request this report.
-                for report_format in self.app.config["REPORT_FORMATS"]:
-                    args = [
-                        node.name, node.url, t.task_id,
-                        report_format, dirpath,
-                    ]
-                    self.m.apply_async(store_report, args=args,
-                                       callback=self._store_report)
+            # Fetch each requested report format, request this report.
+            for report_format in g.report_formats:
+                args = [
+                    node.name, node.url, t.task_id,
+                    report_format, dirpath,
+                ]
+                self.m.apply_async(store_report, args=args,
+                                   callback=self._store_report)
 
-                t.finished = True
+            t.finished = True
 
-            db.session.commit()
+        db.session.commit()
 
-            # Mark as available after all stuff has happened.
-            self.m.apply_async(nullcallback, args=(name,),
-                               callback=self._mark_available_layer)
+        # Mark as available after all stuff has happened.
+        self.m.apply_async(nullcallback, args=(name,),
+                           callback=self._mark_available_layer)
 
     def _store_report(self, (name, task_id, report_format)):
-        with self.app.app_context():
-            node = Node.query.filter_by(name=name).first()
+        node = Node.query.filter_by(name=name).first()
 
-            # Delete the task and all its associated files.
-            args = node.name, node.url, task_id
-            self.m.apply_async(delete_task, args=args)
+        # Delete the task and all its associated files.
+        args = node.name, node.url, task_id
+        self.m.apply_async(delete_task, args=args)
 
     def submit_tasks(self, name, count):
         """Submit count tasks to a Cuckoo node."""
@@ -176,17 +169,28 @@ class SchedulerThread(threading.Thread):
             log.debug("Node waiting (%d): %s..",
                       self.available[node.name], node.name)
 
-    def run(self):
-        self.m = multiprocessing.Pool(
-            processes=self.app.config["WORKER_PROCESSES"])
+    def _enter_app_context(self, arg):
+        """The asynchronous callback calling thread also has to initialize
+        the app context."""
+        self.app_context.push()
 
-        while self.app.config["RUNNING"]:
+    def run(self):
+        self.app_context.push()
+        self.m = multiprocessing.Pool(processes=g.worker_processes)
+
+        # Enter app context in the asynchronous callback calling thread.
+        r = self.m.apply_async(nullcallback, args=(None,),
+                               callback=self._enter_app_context)
+        r.wait()
+
+        while g.running:
             # We resolve the nodes every iteration, that way new nodes may
             # be added on-the-fly.
-            with self.app.app_context():
-                for node in Node.query.filter_by(enabled=True).all():
-                    self.handle_node(node)
+            for node in Node.query.filter_by(enabled=True).all():
+                self.handle_node(node)
 
             time.sleep(1)
 
         self.m.close()
+        self.m.join()
+        self.app_context.pop()

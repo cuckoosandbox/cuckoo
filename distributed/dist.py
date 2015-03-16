@@ -9,7 +9,7 @@ import logging
 import os.path
 import sys
 
-from flask import Flask
+from flask import Flask, g
 
 from lib.db import db
 from lib.scheduler import SchedulerThread
@@ -25,8 +25,7 @@ def create_app(database_connection):
     app.register_blueprint(ApiBlueprint, url_prefix="/api")
 
     db.init_app(app)
-    with app.app_context():
-        db.create_all()
+    db.create_all(app=app)
 
     return app
 
@@ -60,43 +59,43 @@ if __name__ == "__main__":
 
     app = create_app(database_connection=s.get("distributed", "database"))
 
-    report_formats = []
-    for report_format in s.get("distributed", "report_formats").split(","):
-        report_formats.append(report_format.strip())
+    # Note that we don't pop this app_context as that would result in losing
+    # our variables in g.
+    app_context = app.app_context()
+    app_context.push()
 
-    if not report_formats:
+    g.report_formats = []
+    for report_format in s.get("distributed", "report_formats").split(","):
+        g.report_formats.append(report_format.strip())
+
+    if not g.report_formats:
         sys.exit("Please configure one or more reporting formats.")
 
-    app.config["REPORT_FORMATS"] = report_formats
+    g.samples_directory = s.get("distributed", "samples_directory")
 
-    app.config["SAMPLES_DIRECTORY"] = \
-        s.get("distributed", "samples_directory")
-
-    if not app.config["SAMPLES_DIRECTORY"]:
+    if not g.samples_directory:
         sys.exit("Please configure a samples directory path.")
 
-    if not os.path.isdir(app.config["SAMPLES_DIRECTORY"]):
-        os.makedirs(app.config["SAMPLES_DIRECTORY"])
+    if not os.path.isdir(g.samples_directory):
+        os.makedirs(g.samples_directory)
 
-    app.config["REPORTS_DIRECTORY"] = \
-        s.get("distributed", "reports_directory")
+    g.reports_directory = s.get("distributed", "reports_directory")
 
-    if not app.config["REPORTS_DIRECTORY"]:
+    if not g.reports_directory:
         sys.exit("Please configure a reports directory path.")
 
-    if not os.path.isdir(app.config["REPORTS_DIRECTORY"]):
-        os.makedirs(app.config["REPORTS_DIRECTORY"])
+    if not os.path.isdir(g.reports_directory):
+        os.makedirs(g.reports_directory)
 
-    app.config["RUNNING"] = True
-    app.config["STATUSES"] = {}
-    app.config["VERBOSE"] = args.verbose
-    app.config["WORKER_PROCESSES"] = \
-        s.getint("distributed", "worker_processes")
-    app.config["UPTIME_LOGFILE"] = s.get("distributed", "uptime_logfile")
-    app.config["INTERVAL"] = s.getint("distributed", "interval")
-    app.config["BATCH_SIZE"] = s.getint("distributed", "batch_size")
+    g.running = True
+    g.statuses = {}
+    g.verbose = args.verbose
+    g.worker_processes = s.getint("distributed", "worker_processes")
+    g.uptime_logfile = s.get("distributed", "uptime_logfile")
+    g.interval = s.getint("distributed", "interval")
+    g.batch_size = s.getint("distributed", "batch_size")
 
-    t = SchedulerThread(app)
+    t = SchedulerThread(app_context)
     t.daemon = True
     t.start()
 
