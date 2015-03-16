@@ -66,7 +66,6 @@ class Package(object):
                                  application)
 
     def get_tool_path(self):
-        
         tool_dir = os.path.join(os.getenv("Temp"), "tool")
         for item in os.listdir(tool_dir):
             if item[-5:].lower() == ".tool":
@@ -115,12 +114,11 @@ class Package(object):
             cwd = os.getcwd()
             os.chdir(os.path.join(os.getenv("Temp"), 'tool'))
             tool_path = self.get_tool_path()
-            tool_args = self.options.get('tool_options') 
+            tool_args = self.options.get('tool_options')
             arg_list = self.format_user_options(tool_args, args, path)
             cmd_list = [tool_path]
             cmd_list.extend(arg_list)
-            cmd_list = [val for val in cmd_list if val != "" and val != None]
-
+            cmd_list = [val for val in cmd_list if val]
             # 0x08000000 = CREATE_NO_WINDOW
             # Either set creation flag to CREATE_NO_WINDOW
             # or disable the human auxiliary module
@@ -154,10 +152,10 @@ class Package(object):
     def package_files(self):
         """A list of files to upload to host.
         The list should be a list of tuples (<path on guest>, <name of file in package_files folder>).
-        (package_files is a folder that will be created in analysis folder). 
+        (package_files is a folder that will be created in analysis folder).
         """
         return None
-    
+
     def finish(self):
         """Finish run.
         If specified to do so, this method dumps the memory of
@@ -181,6 +179,7 @@ class Package(object):
                         CuckooPackageError("Unable to upload dropped file at path \"%s\": %s", file_path, e)
 
         return True
+
 
 class Auxiliary(object):
     def __init__(self, options={}):
