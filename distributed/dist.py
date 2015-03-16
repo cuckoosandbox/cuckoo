@@ -23,6 +23,7 @@ def create_app(database_connection):
     app.config["SECRET_KEY"] = os.urandom(32)
 
     app.register_blueprint(ApiBlueprint, url_prefix="/api")
+    app.register_blueprint(ApiBlueprint, url_prefix="/api/v1")
 
     db.init_app(app)
     db.create_all(app=app)
