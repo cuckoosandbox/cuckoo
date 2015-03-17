@@ -8,7 +8,6 @@
 import os
 import hashlib
 import re
-import traceback
 from collections import defaultdict
 
 from lib.maec.maec41 import api_call_mappings, hiveHexToString,\
