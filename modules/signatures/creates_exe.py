@@ -20,7 +20,7 @@ class CreatesExe(Signature):
     enabled = False
 
     def run(self):
-        match = self.check_file(pattern=".*\\.exe$",
+        match = self.check_file(pattern=".*\.exe$",
                                 regex=True)
         if match:
             self.data.append({"file": match})
