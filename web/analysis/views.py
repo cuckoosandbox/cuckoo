@@ -422,8 +422,8 @@ def pcapstream(request, task_id, conntuple):
     src, sport, dst, dport, proto = conntuple.split(",")
     sport, dport = int(sport), int(dport)
 
-    conndata = results_db.analysis.find_one({ "info.id": int(task_id) },
-        { "network.tcp": 1, "network.udp": 1, "network.sorted_pcap_id": 1 },
+    conndata = results_db.analysis.find_one({"info.id": int(task_id)},
+        {"network.tcp": 1, "network.udp": 1, "network.sorted_pcap_id": 1},
         sort=[("_id", pymongo.DESCENDING)])
 
     if not conndata:
@@ -435,7 +435,7 @@ def pcapstream(request, task_id, conntuple):
         if proto == "udp": connlist = conndata["network"]["udp"]
         else: connlist = conndata["network"]["tcp"]
 
-        conns = filter(lambda i: (i["sport"],i["dport"],i["src"],i["dst"]) == (sport,dport,src,dst),
+        conns = filter(lambda i: (i["sport"], i["dport"], i["src"], i["dst"]) == (sport, dport, src, dst),
             connlist)
         stream = conns[0]
         offset = stream["offset"]
@@ -446,7 +446,7 @@ def pcapstream(request, task_id, conntuple):
 
     try:
         fobj = fs.get(conndata["network"]["sorted_pcap_id"])
-        # gridfs gridout has no fileno(), which is needed by dpkt pcap reader for NOTHING
+        # Gridfs gridout has no fileno(), which is needed by dpkt pcap reader for NOTHING.
         setattr(fobj, "fileno", lambda: -1)
     except:
         return render_to_response("standalone_error.html",
@@ -454,4 +454,5 @@ def pcapstream(request, task_id, conntuple):
             context_instance=RequestContext(request))
 
     packets = list(network.packets_for_stream(fobj, offset))
+    # TODO: starting from django 1.7 we should use JsonResponse.
     return HttpResponse(json.dumps(packets), content_type="application/json")
