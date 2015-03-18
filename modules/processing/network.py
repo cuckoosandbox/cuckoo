@@ -464,20 +464,7 @@ class Pcap:
         """Process PCAP.
         @return: dict with network analysis data.
         """
-        log = logging.getLogger("Processing.Pcap")
-
-        if not IS_DPKT:
-            log.error("Python DPKT is not installed, aborting PCAP analysis.")
-            return self.results
-
-        if not os.path.exists(self.filepath):
-            log.warning("The PCAP file does not exist at path \"%s\".",
-                        self.filepath)
-            return self.results
-
-        if os.path.getsize(self.filepath) == 0:
-            log.error("The PCAP file at path \"%s\" is empty." % self.filepath)
-            return self.results
+        log = logging.getLogger(__name__)
 
         try:
             file = open(self.filepath, "rb")
@@ -587,6 +574,21 @@ class NetworkAnalysis(Processing):
 
     def run(self):
         self.key = "network"
+
+        log = logging.getLogger(__name__)
+
+        if not IS_DPKT:
+            log.error("Python DPKT is not installed, aborting PCAP analysis.")
+            return {}
+
+        if not os.path.exists(self.pcap_path):
+            log.warning("The PCAP file does not exist at path \"%s\".",
+                        self.pcap_path)
+            return {}
+
+        if os.path.getsize(self.pcap_path) == 0:
+            log.error("The PCAP file at path \"%s\" is empty." % self.pcap_path)
+            return {}
 
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
         if Config().processing.sort_pcap:
