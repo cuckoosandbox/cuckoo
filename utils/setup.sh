@@ -159,7 +159,7 @@ chown cuckoo:cuckoo "$VMCLOAKCONF"
 sudo -u cuckoo -i vmcloak-bird hddpath bird0
 if [ "$?" -ne 0 ]; then
     echo "Creating the Virtual Machine bird.."
-    vmcloak -u cuckoo -s "$VMCLOAKCONF" --bird bird0
+    vmcloak -u cuckoo -s "$VMCLOAKCONF" --bird bird0 --winxp
 fi
 
 # Kill all VirtualBox processes as otherwise the listening
