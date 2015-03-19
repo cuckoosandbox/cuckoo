@@ -39,6 +39,7 @@ class SchedulerThread(threading.Thread):
 
     def _node_status(self, (name, status)):
         if status is None:
+            log.warning("It appears node %s is unreachable!", name)
             self._mark_available(name)
             return
 
