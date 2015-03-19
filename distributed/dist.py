@@ -9,7 +9,11 @@ import logging
 import os.path
 import sys
 
-from flask import Flask, g
+try:
+    from flask import Flask, g
+except ImportError:
+    print "Error: you need to install flask (`pip install flask`)"
+    sys.exit(1)
 
 from distributed.db import db
 from distributed.scheduler import SchedulerThread
