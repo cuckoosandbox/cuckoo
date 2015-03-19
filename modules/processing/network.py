@@ -24,8 +24,8 @@ except ImportError:
     IS_DPKT = False
 
 # Imports for the batch sort.
-## http://stackoverflow.com/questions/10665925/how-to-sort-huge-files-with-python
-## ( http://code.activestate.com/recipes/576755/ )
+# http://stackoverflow.com/questions/10665925/how-to-sort-huge-files-with-python
+# http://code.activestate.com/recipes/576755/
 import heapq
 from tempfile import gettempdir
 from itertools import islice
@@ -34,6 +34,8 @@ from collections import namedtuple
 TMPD = gettempdir()
 Keyed = namedtuple("Keyed", ["key", "obj"])
 Packet = namedtuple("Packet", ["raw", "ts"])
+
+log = logging.getLogger(__name__)
 
 class Pcap:
     """Reads network data from PCAP file."""
@@ -205,9 +207,9 @@ class Pcap:
             entry["type"] = data.type
 
             # Extract data from dpkg.icmp.ICMP.
-            try: 
+            try:
                 entry["data"] = convert_to_printable(data.data.data)
-            except: 
+            except:
                 entry["data"] = ""
 
             self.icmp_requests.append(entry)
@@ -314,8 +316,8 @@ class Pcap:
 
             self._add_domain(query["request"])
 
-            reqtuple = (query["type"], query["request"])
-            if not reqtuple in self.dns_requests:
+            reqtuple = query["type"], query["request"]
+            if reqtuple not in self.dns_requests:
                 self.dns_requests[reqtuple] = query
             else:
                 new_answers = set((i["type"], i["data"]) for i in query["answers"]) - self.dns_answers
@@ -353,8 +355,8 @@ class Pcap:
             r.method, r.version, r.uri = None, None, None
             r.unpack(tcpdata)
         except dpkt.dpkt.UnpackError:
-            if not r.method is None or not r.version is None or \
-                    not r.uri is None:
+            if r.method is not None or r.version is not None or \
+                    r.uri is not None:
                 return True
             return False
 
@@ -426,7 +428,7 @@ class Pcap:
         """Process SMTP flow."""
         for conn, data in self.smtp_flow.iteritems():
             # Detect new SMTP flow.
-            if data.startswith("EHLO") or data.startswith("HELO"):
+            if data.startswith(("EHLO", "HELO")):
                 self.smtp_requests.append({"dst": conn, "raw": data})
 
     def _check_irc(self, tcpdata):
@@ -464,7 +466,6 @@ class Pcap:
         """Process PCAP.
         @return: dict with network analysis data.
         """
-        log = logging.getLogger(__name__)
 
         try:
             file = open(self.filepath, "rb")
@@ -486,7 +487,8 @@ class Pcap:
         offset = file.tell()
         first_ts = None
         for ts, buf in pcap:
-            if not first_ts: first_ts = ts
+            if not first_ts:
+                first_ts = ts
 
             try:
                 ip = iplayer_from_raw(buf, pcap.datalink())
@@ -575,8 +577,6 @@ class NetworkAnalysis(Processing):
     def run(self):
         self.key = "network"
 
-        log = logging.getLogger(__name__)
-
         if not IS_DPKT:
             log.error("Python DPKT is not installed, aborting PCAP analysis.")
             return {}
@@ -610,10 +610,10 @@ def iplayer_from_raw(raw, linktype=1):
     @param raw: raw packet
     @param linktype: integer describing link type as expected by dpkt
     """
-    if linktype == 1: # ethernet
+    if linktype == 1:  # ethernet
         pkt = dpkt.ethernet.Ethernet(raw)
         ip = pkt.data
-    elif linktype == 101: # raw
+    elif linktype == 101:  # raw
         ip = dpkt.ip.IP(raw)
     else:
         raise CuckooProcessingError("unknown PCAP linktype")
@@ -622,9 +622,12 @@ def iplayer_from_raw(raw, linktype=1):
 def conn_from_flowtuple(ft):
     """Convert the flow tuple into a dictionary (suitable for JSON)"""
     sip, sport, dip, dport, offset, relts = ft
-    return {"src": sip, "sport": sport, "dst": dip, "dport": dport, "offset": offset, "time": relts}
+    return {"src": sip, "sport": sport,
+            "dst": dip, "dport": dport,
+            "offset": offset, "time": relts}
 
-# input_iterator should be a class that als supports writing so we can use it for the temp files
+# input_iterator should be a class that also supports writing so we can use
+# it for the temp files
 # this code is mostly taken from some SO post, can't remember the url though
 def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None):
     """batch sort helper with temporary files, supports sorting large stuff"""
@@ -634,7 +637,7 @@ def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None
     chunks = []
     try:
         while True:
-            current_chunk = list(islice(input_iterator,buffer_size))
+            current_chunk = list(islice(input_iterator, buffer_size))
             if not current_chunk:
                 break
             current_chunk.sort()
@@ -666,7 +669,7 @@ class SortCap(object):
         self.name = path
         self.linktype = linktype
         self.fd = None
-        self.ctr = 0 # counter to pass through packets without flow info (non-IP)
+        self.ctr = 0  # counter to pass through packets without flow info (non-IP)
         self.conns = set()
 
     def write(self, p):
@@ -687,7 +690,8 @@ class SortCap(object):
 
     def next(self):
         rp = next(self.fditer)
-        if rp is None: return None
+        if rp is None:
+            return None
         self.ctr += 1
 
         ts, raw = rp
@@ -734,7 +738,8 @@ def flowtuple_from_raw(raw, linktype=1):
 def payload_from_raw(raw, linktype=1):
     """Get the payload from a packet, the data below TCP/UDP basically"""
     ip = iplayer_from_raw(raw, linktype)
-    try: return ip.data.data
+    try:
+        return ip.data.data
     except:
         return ""
 
@@ -744,7 +749,8 @@ def next_connection_packets(piter, linktype=1):
 
     for ts, raw in piter:
         ft = flowtuple_from_raw(raw, linktype)
-        if not first_ft: first_ft = ft
+        if not first_ft:
+            first_ft = ft
 
         sip, dip, sport, dport, proto = ft
         if not (first_ft == ft or first_ft == (dip, sip, dport, sport, proto)):
@@ -752,7 +758,8 @@ def next_connection_packets(piter, linktype=1):
 
         yield {
             "src": sip, "dst": dip, "sport": sport, "dport": dport,
-            "raw": payload_from_raw(raw, linktype).encode("base64"), "direction": first_ft == ft,
+            "raw": payload_from_raw(raw, linktype).encode("base64"),
+            "direction": first_ft == ft,
         }
 
 def packets_for_stream(fobj, offset):
