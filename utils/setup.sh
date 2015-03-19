@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo "### NOTICE ###" >&2
+echo "This script is a work-in-progress, has not been yet documented, " >&2
+echo "and may not work as expected." >&2
+echo "### END OF NOTICE ###" >&2
+
 # Default values.
 VMCOUNT="40"
 ISOFILE=""

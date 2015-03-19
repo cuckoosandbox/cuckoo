@@ -3,6 +3,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+echo "### NOTICE ###" >&2
+echo "This script is a work-in-progress, has not been yet documented, " >&2
+echo "and may not work as expected." >&2
+echo "### END OF NOTICE ###" >&2
+
 if [ "$#" -lt 2 ]; then
     echo "Usage: $0 <action> [paths...]"
     echo "action: create-backup, required-size, or create-symlinks."
