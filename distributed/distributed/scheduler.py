@@ -10,9 +10,9 @@ import threading
 import time
 
 from flask import json, g
-from lib.api import node_status, submit_task, fetch_tasks
-from lib.api import store_report, delete_task
-from lib.db import db, Node, Task
+from distributed.api import node_status, submit_task, fetch_tasks
+from distributed.api import store_report, delete_task
+from distributed.db import db, Node, Task
 
 log = logging.getLogger(__name__)
 

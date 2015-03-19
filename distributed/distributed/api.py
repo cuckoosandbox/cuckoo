@@ -5,7 +5,7 @@
 import os.path
 import requests
 
-from lib.exception import InvalidReport
+from distributed.exception import InvalidReport
 
 def list_machines(url):
     r = requests.get(os.path.join(url, "machines", "list"))

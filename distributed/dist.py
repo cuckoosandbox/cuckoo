@@ -11,8 +11,8 @@ import sys
 
 from flask import Flask, g
 
-from lib.db import db
-from lib.scheduler import SchedulerThread
+from distributed.db import db
+from distributed.scheduler import SchedulerThread
 from views.api import blueprint as ApiBlueprint
 
 log = logging.getLogger(__name__)

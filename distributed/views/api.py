@@ -7,8 +7,8 @@ import tempfile
 
 from flask import Blueprint, g, jsonify, request, send_file
 
-from lib.db import db, Node, Task
-from lib.api import list_machines
+from distributed.db import db, Node, Task
+from distributed.api import list_machines
 
 blueprint = Blueprint("api", __name__)
 
