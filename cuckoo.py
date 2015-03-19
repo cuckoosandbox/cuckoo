@@ -6,21 +6,21 @@
 import argparse
 import logging
 import os
+import pwd
 import sys
 
 try:
-    from lib.cuckoo.common.logo import logo
-    from lib.cuckoo.common.config import Config
     from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
     from lib.cuckoo.common.exceptions import CuckooCriticalError
     from lib.cuckoo.common.exceptions import CuckooDependencyError
-    from lib.cuckoo.core.database import Database
-    from lib.cuckoo.core.startup import check_working_directory, check_configs, cuckoo_clean
-    from lib.cuckoo.core.startup import check_version, create_structure
-    from lib.cuckoo.core.startup import init_logging, init_modules, init_console_logging
-    from lib.cuckoo.core.startup import init_tasks, init_yara
-    from lib.cuckoo.core.scheduler import Scheduler
+    from lib.cuckoo.common.logo import logo
     from lib.cuckoo.core.resultserver import ResultServer
+    from lib.cuckoo.core.scheduler import Scheduler
+    from lib.cuckoo.core.startup import check_working_directory, check_configs
+    from lib.cuckoo.core.startup import check_version, create_structure
+    from lib.cuckoo.core.startup import cuckoo_clean
+    from lib.cuckoo.core.startup import init_logging, init_modules
+    from lib.cuckoo.core.startup import init_tasks, init_yara
 
     import bson
 
@@ -89,8 +89,22 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--artwork", help="Show artwork", action="store_true", required=False)
     parser.add_argument("-t", "--test", help="Test startup", action="store_true", required=False)
     parser.add_argument("-m", "--max-analysis-count", help="Maximum number of analyses", type=int, required=False)
+    parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
     parser.add_argument("--clean", help="Remove all tasks and samples and their associated data", action='store_true', required=False)
     args = parser.parse_args()
+
+    if args.user:
+        try:
+            user = pwd.getpwnam(args.user)
+            os.setgroups((user.pw_gid,))
+            os.setgid(user.pw_gid)
+            os.setuid(user.pw_uid)
+            os.putenv("HOME", user.pw_dir)
+        except KeyError:
+            sys.exit("Invalid user specified to drop privileges to: %s" %
+                     args.user)
+        except OSError as e:
+            sys.exit("Failed to drop privileges: %s" % e)
 
     if args.clean:
         cuckoo_clean()

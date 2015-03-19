@@ -10,6 +10,7 @@ import logging
 import argparse
 import signal
 import multiprocessing
+import pwd
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -125,7 +126,21 @@ def main():
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
     parser.add_argument("-r", "--report", help="Re-generate report", action="store_true", required=False)
     parser.add_argument("-p", "--parallel", help="Number of parallel threads to use (auto mode only).", type=int, required=False, default=1)
+    parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
     args = parser.parse_args()
+
+    if args.user:
+        try:
+            user = pwd.getpwnam(args.user)
+            os.setgroups((user.pw_gid,))
+            os.setgid(user.pw_gid)
+            os.setuid(user.pw_uid)
+            os.putenv("HOME", user.pw_dir)
+        except KeyError:
+            sys.exit("Invalid user specified to drop privileges to: %s" %
+                     args.user)
+        except OSError as e:
+            sys.exit("Failed to drop privileges: %s" % e)
 
     if args.debug:
         log.setLevel(logging.DEBUG)
