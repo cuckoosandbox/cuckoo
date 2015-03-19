@@ -327,6 +327,9 @@ def cuckoo_clean():
                 log.warning("Error removing file %s: %s", path, e)
 
 def drop_privileges(username):
+    """Drops privileges to selected user.
+    @param username: drop privileges to this username
+    """
     try:
         user = pwd.getpwnam(username)
         os.setgroups((user.pw_gid,))
