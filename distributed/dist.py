@@ -15,6 +15,10 @@ from distributed.db import db
 from distributed.scheduler import SchedulerThread
 from views.api import blueprint as ApiBlueprint
 
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
+
+from lib.cuckoo.core.startup import drop_privileges
+
 log = logging.getLogger(__name__)
 
 def create_app(database_connection):
@@ -34,9 +38,13 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("host", nargs="?", default="127.0.0.1", help="Host to listen on.")
     p.add_argument("port", nargs="?", type=int, default=9003, help="Port to listen on.")
+    p.add_argument("-u", "--user", type=str, help="Drop user privileges to this user.")
     p.add_argument("-s", "--settings", type=str, help="Settings file.")
     p.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging.")
     args = p.parse_args()
+
+    if args.user:
+        drop_privileges(args.user)
 
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)

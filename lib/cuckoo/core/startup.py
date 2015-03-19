@@ -11,6 +11,7 @@ import urllib
 import urllib2
 import logging
 import logging.handlers
+import pwd
 
 import modules.auxiliary
 import modules.processing
@@ -324,3 +325,15 @@ def cuckoo_clean():
                 os.unlink(path)
             except (IOError, OSError) as e:
                 log.warning("Error removing file %s: %s", path, e)
+
+def drop_privileges(username):
+    try:
+        user = pwd.getpwnam(username)
+        os.setgroups((user.pw_gid,))
+        os.setgid(user.pw_gid)
+        os.setuid(user.pw_uid)
+        os.putenv("HOME", user.pw_dir)
+    except KeyError:
+        sys.exit("Invalid user specified to drop privileges to: %s" % user)
+    except OSError as e:
+        sys.exit("Failed to drop privileges to %s: %s" % (username, e))

@@ -4,7 +4,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import pwd
 import sys
 import time
 import logging
@@ -28,9 +27,10 @@ except ImportError:
 logging.basicConfig()
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file
+from lib.cuckoo.core.database import Database
+from lib.cuckoo.core.startup import drop_privileges
 
 # Templating engine.
 env = Environment()
@@ -296,16 +296,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.user:
-        try:
-            user = pwd.getpwnam(args.user)
-            os.setgroups((user.pw_gid,))
-            os.setgid(user.pw_gid)
-            os.setuid(user.pw_uid)
-            os.putenv("HOME", user.pw_dir)
-        except KeyError:
-            sys.exit("Invalid user specified to drop privileges to: %s" %
-                     args.user)
-        except OSError as e:
-            sys.exit("Failed to drop privileges: %s" % e)
+        drop_privileges(args.user)
 
     run(host=args.host, port=args.port, reloader=True)

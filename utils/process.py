@@ -10,7 +10,6 @@ import logging
 import argparse
 import signal
 import multiprocessing
-import pwd
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -22,7 +21,7 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.database import Database, TASK_REPORTED, TASK_COMPLETED
 from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
 from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
-from lib.cuckoo.core.startup import init_modules
+from lib.cuckoo.core.startup import init_modules, drop_privileges
 
 def process(task_id, target=None, copy_path=None, report=False, auto=False):
     assert isinstance(task_id, int)
@@ -130,17 +129,7 @@ def main():
     args = parser.parse_args()
 
     if args.user:
-        try:
-            user = pwd.getpwnam(args.user)
-            os.setgroups((user.pw_gid,))
-            os.setgid(user.pw_gid)
-            os.setuid(user.pw_uid)
-            os.putenv("HOME", user.pw_dir)
-        except KeyError:
-            sys.exit("Invalid user specified to drop privileges to: %s" %
-                     args.user)
-        except OSError as e:
-            sys.exit("Failed to drop privileges: %s" % e)
+        drop_privileges(args.user)
 
     if args.debug:
         log.setLevel(logging.DEBUG)

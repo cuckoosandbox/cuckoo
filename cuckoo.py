@@ -6,7 +6,6 @@
 import argparse
 import logging
 import os
-import pwd
 import sys
 
 try:
@@ -18,7 +17,7 @@ try:
     from lib.cuckoo.core.scheduler import Scheduler
     from lib.cuckoo.core.startup import check_working_directory, check_configs
     from lib.cuckoo.core.startup import check_version, create_structure
-    from lib.cuckoo.core.startup import cuckoo_clean
+    from lib.cuckoo.core.startup import cuckoo_clean, drop_privileges
     from lib.cuckoo.core.startup import init_logging, init_modules
     from lib.cuckoo.core.startup import init_tasks, init_yara
 
@@ -94,17 +93,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.user:
-        try:
-            user = pwd.getpwnam(args.user)
-            os.setgroups((user.pw_gid,))
-            os.setgid(user.pw_gid)
-            os.setuid(user.pw_uid)
-            os.putenv("HOME", user.pw_dir)
-        except KeyError:
-            sys.exit("Invalid user specified to drop privileges to: %s" %
-                     args.user)
-        except OSError as e:
-            sys.exit("Failed to drop privileges: %s" % e)
+        drop_privileges(args.user)
 
     if args.clean:
         cuckoo_clean()
