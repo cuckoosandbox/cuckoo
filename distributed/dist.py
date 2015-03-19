@@ -7,6 +7,7 @@ import argparse
 import ConfigParser
 import logging
 import os.path
+import signal
 import sys
 
 try:
@@ -113,3 +114,12 @@ if __name__ == "__main__":
     t.start()
 
     app.run(host=args.host, port=args.port)
+
+    # If we reach here then the webserver has been killed - propagate this
+    # to our scheduler, but wait for it to finish.
+    log.info("Exited the webserver, waiting for the scheduler to finish.")
+    g.running = False
+
+    # Please, kill it more often ;-)
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    t.join()

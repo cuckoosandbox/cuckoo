@@ -6,6 +6,8 @@ import datetime
 import logging
 import multiprocessing
 import os.path
+import signal
+import sys
 import threading
 import time
 
@@ -18,6 +20,10 @@ log = logging.getLogger(__name__)
 
 def nullcallback(arg):
     return arg
+
+def init_worker():
+    """Have the workers ignore interrupt signals from the parent."""
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 class SchedulerThread(threading.Thread):
     def __init__(self, app_context):
@@ -79,6 +85,13 @@ class SchedulerThread(threading.Thread):
 
     def _fetch_reports_and_mark_available(self, (name, tasks)):
         node = Node.query.filter_by(name=name).first()
+
+        # Only fetch reports and mark the node as available if the
+        # scheduler is still running.
+        if not g.running:
+            log.debug("Not fetching reports from node %s as we're exiting.",
+                      name)
+            return
 
         for task in tasks:
             q = Task.query.filter_by(node_id=node.id, task_id=task["id"])
@@ -177,7 +190,9 @@ class SchedulerThread(threading.Thread):
 
     def run(self):
         self.app_context.push()
-        self.m = multiprocessing.Pool(processes=g.worker_processes)
+        self.m = multiprocessing.Pool(processes=g.worker_processes,
+                                      initializer=init_worker,
+                                      maxtasksperchild=1000)
 
         # Enter app context in the asynchronous callback calling thread.
         r = self.m.apply_async(nullcallback, args=(None,),
@@ -191,6 +206,14 @@ class SchedulerThread(threading.Thread):
                 self.handle_node(node)
 
             time.sleep(1)
+
+        # Print status update so the user gets an approximate of the
+        # remaining work (shouldn't be much more than a few dozen seconds).
+        while self.m._taskqueue.qsize():
+            print "\rWaiting for worker threads,",
+            print "%d remaining tasks.." % self.m._taskqueue.qsize(),
+            sys.stdout.flush()
+            time.sleep(0.1)
 
         self.m.close()
         self.m.join()
