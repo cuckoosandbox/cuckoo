@@ -8,12 +8,11 @@ Added task owner used by dist.py.
 Revision ID: 3aa42d870199
 Revises: 18eee46c6f81
 Create Date: 2014-12-04 11:19:49.388410
-
 """
 
 # Revision identifiers, used by Alembic.
 revision = "3aa42d870199"
-down_revision = "18eee46c6f81"
+down_revision = "495d5a6edef3"
 
 from alembic import op
 import sqlalchemy as sa
