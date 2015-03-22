@@ -149,7 +149,7 @@ script
     . "\$CONFFILE"
 
     if [ -n "\$DISTADDR" ]; then
-        exec ./distributed/dist.py "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log"
+        exec ./distributed/app.py "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log"
     fi
 end script
 EOF
@@ -270,7 +270,7 @@ _start() {
 
     if [ -n "\$DISTADDR" ]; then
         echo -n "Starting Cuckoo Distributed API.. "
-        nohup python ./distributed/dist.py -u "\$USERNAME" \
+        nohup python ./distributed/app.py -u "\$USERNAME" \
             "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log" &
         PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
     fi
