@@ -106,7 +106,7 @@ env LOGDIR="$LOGDIR"
 script
     . "\$CONFFILE"
 
-    exec ./utils/process.py auto 2>&1 >> "\$LOGDIR/process.log"
+    exec ./utils/process.py auto -p 4 2>&1 >> "\$LOGDIR/process.log"
 end script
 EOF
 
@@ -258,7 +258,7 @@ _start() {
 
     echo -n "Starting Cuckoo results processing.. "
     nohup python ./utils/process.py -u "\$USERNAME" \
-        auto -p 2 2>&1 >> "\$LOGDIR/process.log" &
+        auto -p 4 2>&1 >> "\$LOGDIR/process.log" &
     PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
 
     if [ -n "\$APIADDR" ]; then
