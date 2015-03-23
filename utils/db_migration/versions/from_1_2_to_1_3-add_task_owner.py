@@ -3,7 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 """Database migration from Cuckoo 1.2 to Cuckoo 1.3.
-Added task owner used by dist.py.
+Added task owner used by the Distributed API.
 
 Revision ID: 3aa42d870199
 Revises: 18eee46c6f81

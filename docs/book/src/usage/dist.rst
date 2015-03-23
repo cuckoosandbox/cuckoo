@@ -33,9 +33,9 @@ Starting the Distributed REST API
 The Distributed REST API requires a few commandline options in order to run.
 Following is a listing of all available commandline options::
 
-    $ ./utils/dist.py -h
+    $ ./distributed/app.py -h
 
-    usage: dist.py [-h] [-s SETTINGS] [-v] [host] [port]
+    usage: app.py [-h] [-s SETTINGS] [-v] [host] [port]
 
     positional arguments:
         host                  Host to listen on.
@@ -404,7 +404,7 @@ On the first machine start a separate ``screen(1)`` session for the
 Distributed Cuckoo script with all the required parameters (see the rest of
 the documentation on the parameters for this script)::
 
-    $ screen -S distributed ./utils/dist.py
+    $ screen -S distributed ./distributed/app.py
 
 Register Cuckoo nodes
 ---------------------
