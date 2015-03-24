@@ -372,8 +372,14 @@ def remove(request, task_id):
     @todo: remove folder from storage.
     """
     anals = results_db.analysis.find({"info.id": int(task_id)})
-    # Only one analysis found, proceed.
-    if anals.count() == 1:
+
+    # Checks if more analysis found with the same ID, like if process.py was run manually.
+    if anals.count() > 1:
+        message = "Multiple tasks with this ID deleted, thanks for all the fish. (The specified analysis was duplicated in mongo)"
+    elif anals.count() == 1:
+        message = "Task deleted, thanks for all the fish."
+
+    if anals.count() > 0:
         # Delete dups too.
         for analysis in anals:
             # Delete sample if not used.
@@ -396,14 +402,9 @@ def remove(request, task_id):
                     results_db.calls.remove({"_id": ObjectId(call)})
             # Delete analysis data.
             results_db.analysis.remove({"_id": ObjectId(analysis["_id"])})
-    elif anals.count() == 0:
-        return render_to_response("error.html",
-                                  {"error": "The specified analysis does not exist"},
-                                  context_instance=RequestContext(request))
-    # More analysis found with the same ID, like if process.py was run manually.
     else:
         return render_to_response("error.html",
-                                  {"error": "The specified analysis is duplicated in mongo, please check manually"},
+                                  {"error": "The specified analysis does not exist"},
                                   context_instance=RequestContext(request))
 
     # Delete from SQL db.
@@ -411,7 +412,7 @@ def remove(request, task_id):
     db.delete_task(task_id)
 
     return render_to_response("success.html",
-                              {"message": "Task deleted, thanks for all the fish."},
+                              {"message": message},
                               context_instance=RequestContext(request))
 
 @require_safe
