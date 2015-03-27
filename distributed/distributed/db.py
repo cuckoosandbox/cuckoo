@@ -2,7 +2,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-from flask import json
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 
@@ -15,9 +14,6 @@ class Serializer(object):
         for key in inspect(self).attrs.keys():
             ret[key] = getattr(self, key)
         return ret
-
-    def to_json(self):
-        return json.dumps(self.to_dict())
 
 class StringList(db.TypeDecorator):
     """List of comma-separated strings as field."""
