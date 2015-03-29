@@ -54,8 +54,8 @@ _required_size() {
     # Total size of all the files.
     local size="$(du -s "$path"|cut -f1)"
 
-    # Round up by one gigabyte.
-    echo "$(($size/1024/1024+1))G"
+    # Round up by one megabyte.
+    echo "$(($size/1024+1))M"
 }
 
 _initialize_mount() {
