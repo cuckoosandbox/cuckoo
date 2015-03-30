@@ -356,6 +356,29 @@ def machines_list():
 @route("/cuckoo/status", method="GET")
 @route("/v1/cuckoo/status", method="GET")
 def cuckoo_status():
+    # In order to keep track of the diskspace statistics of the temporary
+    # directory we create a temporary file so we can statvfs() on that.
+    temp_file = store_temp_file("", "status")
+
+    paths = dict(
+        binaries=os.path.join(CUCKOO_ROOT, "storage", "binaries"),
+        analyses=os.path.join(CUCKOO_ROOT, "storage", "analyses"),
+        temporary=temp_file,
+    )
+
+    diskspace = {}
+    for key, path in paths.items():
+        stats = os.statvfs(path)
+        diskspace[key] = dict(
+            free=stats.f_bavail * stats.f_frsize,
+            total=stats.f_blocks * stats.f_frsize,
+            used=(stats.f_blocks - stats.f_bavail) * stats.f_frsize,
+        )
+
+    # Now we remove the temporary file and its parent directory.
+    os.unlink(temp_file)
+    os.rmdir(os.path.dirname(temp_file))
+
     response = dict(
         version=CUCKOO_VERSION,
         hostname=socket.gethostname(),
@@ -370,6 +393,7 @@ def cuckoo_status():
             completed=db.count_tasks("completed"),
             reported=db.count_tasks("reported")
         ),
+        diskspace=diskspace,
     )
 
     return jsonize(response)

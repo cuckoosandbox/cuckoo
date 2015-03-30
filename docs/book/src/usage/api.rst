@@ -532,7 +532,18 @@ Following is a list of currently available resources and a brief description of 
 
     **GET /cuckoo/status/**
 
-        Returns status of the cuckoo server.
+        Returns status of the cuckoo server. In version 1.3 the diskspace
+        entry was added. The diskspace entry shows the used, free, and total
+        diskspace at the disk where the respective directories can be found.
+        The diskspace entry allows monitoring of a Cuckoo node through the
+        Cuckoo API. Note that each directory is checked separately as one
+        may create a symlink for $CUCKOO/storage/analyses to a separate
+        harddisk, but keep $CUCKOO/storage/binaries as-is.
+
+        **Diskspace directories**:
+            * ``analyses`` - $CUCKOO/storage/analyses/
+            * ``binaries`` - $CUCKOO/storage/binaries/
+            * ``temporary`` - ``tmppath`` as specified in ``conf/cuckoo.conf``
 
         **Example request**::
 
@@ -548,6 +559,23 @@ Following is a list of currently available resources and a brief description of 
                     "completed": 0,
                     "pending": 0
                 },
+                "diskspace": {
+                    "analyses": {
+                        "total": 491271233536,
+                        "free": 71403470848,
+                        "used": 419867762688
+                    },
+                    "binaries": {
+                        "total": 491271233536,
+                        "free": 71403470848,
+                        "used": 419867762688
+                    },
+                    "temporary": {
+                        "total": 491271233536,
+                        "free": 71403470848,
+                        "used": 419867762688
+                    }
+                },
                 "version": "1.0",
                 "protocol_version": 1,
                 "hostname": "Patient0",
@@ -555,7 +583,6 @@ Following is a list of currently available resources and a brief description of 
                     "available": 4,
                     "total": 5
                 }
-                "tools":["vanilla"]
             }
 
         **Status codes**:
