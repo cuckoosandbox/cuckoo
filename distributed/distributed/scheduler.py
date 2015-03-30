@@ -14,7 +14,7 @@ import time
 from flask import json, g
 from distributed.api import node_status, submit_task, fetch_tasks
 from distributed.api import store_report, delete_task
-from distributed.db import db, Node, Task
+from distributed.db import db, Node, Task, NodeStatus
 
 log = logging.getLogger(__name__)
 
@@ -53,15 +53,10 @@ class SchedulerThread(threading.Thread):
 
         node = Node.query.filter_by(name=name).first()
 
-        # If available, we'll want to dump the uptime.
-        if g.uptime_logfile:
-            try:
-                with open(g.uptime_logfile, "ab") as f:
-                    timestamp = datetime.datetime.now().strftime("%s")
-                    d = dict(timestamp=timestamp, name=name, status=status)
-                    f.write(json.dumps(d) + "\n")
-            except Exception as e:
-                log.warning("Error dumping uptime for node %r: %s", name, e)
+        # Add this node status to the database for monitoring purposes.
+        ns = NodeStatus(node.id, datetime.datetime.now(), json.dumps(status))
+        db.session.add(ns)
+        db.session.commit()
 
         log.debug("Node %s status %s", name, status)
 
@@ -69,7 +64,7 @@ class SchedulerThread(threading.Thread):
             self._mark_available(name)
             return
 
-        if status["pending"] < g.batch_size:
+        if status["tasks"]["pending"] < g.batch_size:
             self.submit_tasks(name, g.batch_size)
 
         args = node.name, node.url, "reported"

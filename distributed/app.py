@@ -105,7 +105,6 @@ if __name__ == "__main__":
     g.statuses = {}
     g.verbose = args.verbose
     g.worker_processes = s.getint("distributed", "worker_processes")
-    g.uptime_logfile = s.get("distributed", "uptime_logfile")
     g.interval = s.getint("distributed", "interval")
     g.batch_size = s.getint("distributed", "batch_size")
 

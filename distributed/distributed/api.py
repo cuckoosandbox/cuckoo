@@ -14,7 +14,7 @@ def list_machines(url):
 def node_status(name, url):
     try:
         r = requests.get(os.path.join(url, "cuckoo", "status"), timeout=120)
-        return name, r.json()["tasks"]
+        return name, r.json()
     except:
         return name, None
 

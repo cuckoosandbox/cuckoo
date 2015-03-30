@@ -94,3 +94,15 @@ class Task(db.Model, Serializer):
         self.node_id = None
         self.task_id = None
         self.finished = False
+
+class NodeStatus(db.Model):
+    """Node status monitoring database model."""
+    id = db.Column(db.Integer, primary_key=True)
+    node_id = db.Column(db.Integer, db.ForeignKey("node.id"))
+    timestamp = db.Column(db.DateTime(timezone=False), nullable=False)
+    status = db.Column(db.Text, nullable=False)
+
+    def __init__(self, node_id, timestamp, status):
+        self.node_id = node_id
+        self.timestamp = timestamp
+        self.status = status
