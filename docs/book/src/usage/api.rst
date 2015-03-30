@@ -538,7 +538,8 @@ Following is a list of currently available resources and a brief description of 
         The diskspace entry allows monitoring of a Cuckoo node through the
         Cuckoo API. Note that each directory is checked separately as one
         may create a symlink for $CUCKOO/storage/analyses to a separate
-        harddisk, but keep $CUCKOO/storage/binaries as-is.
+        harddisk, but keep $CUCKOO/storage/binaries as-is. (This feature is
+        only available under Unix!)
 
         **Diskspace directories**:
             * ``analyses`` - $CUCKOO/storage/analyses/

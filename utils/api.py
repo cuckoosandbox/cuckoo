@@ -368,12 +368,13 @@ def cuckoo_status():
 
     diskspace = {}
     for key, path in paths.items():
-        stats = os.statvfs(path)
-        diskspace[key] = dict(
-            free=stats.f_bavail * stats.f_frsize,
-            total=stats.f_blocks * stats.f_frsize,
-            used=(stats.f_blocks - stats.f_bavail) * stats.f_frsize,
-        )
+        if hasattr(os, "statvfs"):
+            stats = os.statvfs(path)
+            diskspace[key] = dict(
+                free=stats.f_bavail * stats.f_frsize,
+                total=stats.f_blocks * stats.f_frsize,
+                used=(stats.f_blocks - stats.f_bavail) * stats.f_frsize,
+            )
 
     # Now we remove the temporary file and its parent directory.
     os.unlink(temp_file)
