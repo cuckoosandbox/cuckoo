@@ -380,6 +380,12 @@ def cuckoo_status():
     os.unlink(temp_file)
     os.rmdir(os.path.dirname(temp_file))
 
+    # Get the CPU load.
+    if hasattr(os, "getloadavg"):
+        cpuload = os.getloadavg()
+    else:
+        cpuload = []
+
     response = dict(
         version=CUCKOO_VERSION,
         hostname=socket.gethostname(),
@@ -395,6 +401,7 @@ def cuckoo_status():
             reported=db.count_tasks("reported")
         ),
         diskspace=diskspace,
+        cpuload=cpuload,
     )
 
     return jsonize(response)

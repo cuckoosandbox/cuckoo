@@ -541,6 +541,11 @@ Following is a list of currently available resources and a brief description of 
         harddisk, but keep $CUCKOO/storage/binaries as-is. (This feature is
         only available under Unix!)
 
+        In version 1.3 the cpuload entry was also added - the cpuload entry
+        shows the CPU load for the past minute, the past 5 minutes, and the
+        past 15 minutes, respectively. (This feature is only available under
+        Unix!)
+
         **Diskspace directories**:
             * ``analyses`` - $CUCKOO/storage/analyses/
             * ``binaries`` - $CUCKOO/storage/binaries/
