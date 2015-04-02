@@ -7,7 +7,7 @@ import tempfile
 
 from flask import Blueprint, g, jsonify, request, send_file
 
-from distributed.db import db, Node, Task
+from distributed.db import db, Node, Task, Machine
 from distributed.api import list_machines
 
 blueprint = Blueprint("api", __name__)
@@ -64,19 +64,15 @@ def node_post():
     except Exception as e:
         return json_error(404, "Error connecting to Cuckoo node: %s", e)
 
-    machines = []
     for machine in machines:
-        machines.append(dict(
-            name=machine.name,
-            platform=machine.platform,
-            tags=machine.tags,
-        ))
-        node.machines.append(machine)
-        db.session.add(machine)
+        m = Machine(name=machine["name"], platform=machine["platform"],
+                    tags=machine["tags"])
+        node.machines.append(m)
+        db.session.add(m)
 
     db.session.add(node)
     db.session.commit()
-    return jsonify(success=True)
+    return jsonify(success=True, machines=machines)
 
 @blueprint.route("/node/<string:name>", methods=["PUT"])
 def node_put(name):
