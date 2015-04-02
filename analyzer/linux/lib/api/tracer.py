@@ -221,13 +221,6 @@ class SyscallTracer(Thread):
         if "ptrace" in syscall.name:
             # change return value of ptrace syscall to 0
             process.setreg('rax',0)
-            
-    def return_value(self, syscall, process):
-        '''Read return value from register rax.'''
-        if "clone" in syscall.name:
-            return long(process.getreg('rax'))
-        else:
-            return None
 
     def run(self):
         ''' init and run debugger '''
@@ -278,9 +271,12 @@ class SyscallTracer(Thread):
 
             index = self.remote_log[process.pid].log_resolve_index(syscall.name)
             fmt = self.remote_log[process.pid].log_convert_types(arg_list)
-            success = 0 if self.return_value(syscall, process) < 0 else 1
+
+            tmp = syscall.result_text.split()
+            success = 0 if int(tmp[0],16) < 0 else 1
+
             self.remote_log[process.pid].loq(index, syscall.name,
-                                             success, self.return_value(syscall, process),
+                                             success, syscall.result_text,
                                              fmt, arg_list)
 
 if __name__ == "__main__":
