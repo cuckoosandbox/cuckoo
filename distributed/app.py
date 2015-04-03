@@ -18,7 +18,7 @@ except ImportError:
 
 from distributed.db import db
 from distributed.scheduler import SchedulerThread
-from views.api import blueprint as ApiBlueprint
+from views import blueprints
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
@@ -31,8 +31,9 @@ def create_app(database_connection):
     app.config["SQLALCHEMY_DATABASE_URI"] = database_connection
     app.config["SECRET_KEY"] = os.urandom(32)
 
-    app.register_blueprint(ApiBlueprint, url_prefix="/api")
-    app.register_blueprint(ApiBlueprint, url_prefix="/api/v1")
+    for blueprint, routes in blueprints:
+        for route in routes:
+            app.register_blueprint(blueprint, url_prefix=route)
 
     db.init_app(app)
     db.create_all(app=app)

@@ -11,6 +11,7 @@ from distributed.db import db, Node, Task, Machine
 from distributed.api import list_machines
 
 blueprint = Blueprint("api", __name__)
+routes = ["/api", "/api/v1"]
 
 def json_error(status_code, message, *args):
     r = jsonify(success=False, message=message % args if args else message)
