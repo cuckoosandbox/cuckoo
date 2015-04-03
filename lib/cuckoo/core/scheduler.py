@@ -530,10 +530,12 @@ class Scheduler:
             # file and has been reached.
             if self.maxcount and self.total_analysis_count >= self.maxcount:
                 if active_analysis_count <= 0:
+                    log.debug("Reached max analysis count, exiting.")
                     self.stop()
             else:
                 # Fetch a pending analysis task.
-                #TODO: this fixes only submissions by --machine, need to add other attributes (tags etc.)
+                # TODO This fixes only submissions by --machine, need to add
+                # other attributes (tags etc).
                 for machine in self.db.get_available_machines():
 
                     task = self.db.fetch(machine=machine.name)
@@ -550,3 +552,5 @@ class Scheduler:
                 raise errors.get(block=False)
             except Queue.Empty:
                 pass
+
+        log.debug("End of analyses.")
