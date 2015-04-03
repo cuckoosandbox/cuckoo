@@ -100,6 +100,9 @@ stop on stopped cuckoo
 setuid "$USERNAME"
 chdir "$CUCKOO"
 
+# Restart Cuckoo report processing if it exits unexpectedly.
+respawn
+
 env CONFFILE="$CONFFILE"
 env LOGDIR="$LOGDIR"
 
