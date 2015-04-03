@@ -149,6 +149,7 @@ class SchedulerThread(threading.Thread):
         # Update all tasks to use our node id.
         for task in tasks.all():
             task.node_id = node.id
+            task.status = Task.PROCESSING
             args = node.name, node.url, task.to_dict()
             self.m.apply_async(submit_task, args=args,
                                callback=self._task_identifier)
