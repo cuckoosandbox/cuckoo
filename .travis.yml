@@ -6,7 +6,7 @@ python:
     - 2.7
 before_install:
     - sudo apt-get update -qq
-    - sudo apt-get install python-magic python-dpkt python-libvirt
+    - sudo apt-get install python-libvirt
     - wget http://downloads.sourceforge.net/project/ssdeep/ssdeep-2.12/ssdeep-2.12.tar.gz
     - tar -zxvf ssdeep-2.12.tar.gz
     - cd ssdeep-2.12
