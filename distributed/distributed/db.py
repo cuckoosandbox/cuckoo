@@ -6,6 +6,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 
 db = SQLAlchemy(session_options=dict(autoflush=True))
+ALEMBIC_VERSION = "3cc1509b7fdc"
 
 class Serializer(object):
     """Serialize a query result object."""
@@ -106,3 +107,11 @@ class NodeStatus(db.Model):
         self.node_id = node_id
         self.timestamp = timestamp
         self.status = status
+
+class AlembicVersion(db.Model):
+    """Support model for keeping track of the alembic revision identifier."""
+    VERSION = ALEMBIC_VERSION
+    version_num = db.Column(db.String, nullable=False, primary_key=True)
+
+    def __init__(self, version_num):
+        self.version_num = version_num

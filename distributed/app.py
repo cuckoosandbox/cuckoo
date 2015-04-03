@@ -16,7 +16,7 @@ except ImportError:
     print "Error: you need to install flask (`pip install flask`)"
     sys.exit(1)
 
-from distributed.db import db
+from distributed.db import db, AlembicVersion
 from distributed.scheduler import SchedulerThread
 from views import blueprints
 
@@ -37,6 +37,17 @@ def create_app(database_connection):
 
     db.init_app(app)
     db.create_all(app=app)
+
+    # Check whether an alembic version is present and whether
+    # we're up-to-date.
+    with app.app_context():
+        row = AlembicVersion.query.first()
+        if not row:
+            db.session.add(AlembicVersion(AlembicVersion.VERSION))
+            db.session.commit()
+        elif row.version_num != AlembicVersion.VERSION:
+            sys.exit("Your database is not up-to-date. Please upgrade it "
+                     "using alembic (run `alembic upgrade head`).")
 
     return app
 
