@@ -109,12 +109,23 @@ def task_list():
     offset = request.args.get("offset")
     limit = request.args.get("limit")
     finished = request.args.get("finished")
+    status = request.args.get("status")
     owner = request.args.get("owner")
+
+    if finished is not None and status is not None:
+        return json_error(400, "Do not combine finished and status. "
+                               "Finished has been deprecated.")
 
     q = Task.query
 
     if finished is not None:
-        q = q.filter_by(finished=bool(int(finished)))
+        if bool(int(finished)):
+            q = q.filter_by(status=Task.FINISHED)
+        else:
+            q = q.filter(Task.status.in_([Task.PENDING, Task.PROCESSING]))
+
+    if status is not None:
+        q = q.filter_by(status=status)
 
     if offset is not None:
         q = q.offset(int(offset))
@@ -203,7 +214,7 @@ def task_get(task_id):
         enforce_timeout=task.enforce_timeout,
         node_id=task.node_id,
         task_id=task.task_id,
-        finished=task.finished,
+        status=task.status,
     )})
 
 @blueprint.route("/task/<int:task_id>", methods=["DELETE"])
@@ -223,8 +234,7 @@ def task_delete(task_id):
     if os.path.isfile(task.path):
         os.unlink(task.path)
 
-    # TODO Don't delete the task, but instead change its state to deleted.
-    db.session.delete(task)
+    task.status = Task.DELETED
     db.session.commit()
     return jsonify(success=True)
 
@@ -235,7 +245,10 @@ def report_get(task_id, report_format="json"):
     if not task:
         return json_error(404, "Task not found")
 
-    if not task.finished:
+    if task.status == Task.DELETED:
+        return json_error(404, "Task report has been deleted")
+
+    if task.status != Task.FINISHED:
         return json_error(420, "Task not finished yet")
 
     report_path = os.path.join(g.reports_directory,
@@ -247,11 +260,10 @@ def report_get(task_id, report_format="json"):
 
 @blueprint.route("/status")
 def status_get():
-    null = None
-    tasks = Task.query.filter(Task.node_id != null)
     tasks = dict(
-        pending=Task.query.filter_by(node_id=None).count(),
-        processing=tasks.filter_by(finished=False).count(),
-        processed=tasks.filter_by(finished=True).count(),
+        pending=Task.query.filter_by(status=Task.PENDING).count(),
+        processing=Task.query.filter_by(status=Task.PROCESSING).count(),
+        finished=Task.query.filter_by(status=Task.FINISHED).count(),
+        deleted=Task.query.filter_by(status=Task.DELETED).count(),
     )
     return jsonify(success=True, nodes=g.statuses, tasks=tasks)

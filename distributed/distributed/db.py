@@ -6,7 +6,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 
 db = SQLAlchemy(session_options=dict(autoflush=True))
-ALEMBIC_VERSION = "3cc1509b7fdc"
+ALEMBIC_VERSION = "69ecf07a99b"
 
 class Serializer(object):
     """Serialize a query result object."""
@@ -54,6 +54,13 @@ class Machine(db.Model):
 
 class Task(db.Model, Serializer):
     """Analysis task database model."""
+    PENDING = "pending"
+    PROCESSING = "processing"
+    FINISHED = "finished"
+    DELETED = "deleted"
+    task_status = db.Enum(PENDING, PROCESSING, FINISHED, DELETED,
+                          name="task_status_type")
+
     id = db.Column(db.Integer, primary_key=True)
     path = db.Column(db.Text)
     filename = db.Column(db.Text)
@@ -73,7 +80,7 @@ class Task(db.Model, Serializer):
     # Cuckoo node and Task ID this has been submitted to.
     node_id = db.Column(db.Integer, db.ForeignKey("node.id"))
     task_id = db.Column(db.Integer)
-    finished = db.Column(db.Boolean, nullable=False)
+    status = db.Column(task_status, server_default=PENDING, nullable=False)
 
     def __init__(self, path, filename, package, timeout, priority, options,
                  machine, platform, tags, custom, owner, memory, clock,
@@ -94,7 +101,7 @@ class Task(db.Model, Serializer):
         self.enforce_timeout = enforce_timeout
         self.node_id = None
         self.task_id = None
-        self.finished = False
+        self.status = Task.PENDING
 
 class NodeStatus(db.Model):
     """Node status monitoring database model."""

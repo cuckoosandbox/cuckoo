@@ -113,7 +113,7 @@ class SchedulerThread(threading.Thread):
                 self.m.apply_async(store_report, args=args,
                                    callback=self._store_report)
 
-            t.finished = True
+            t.status = Task.FINISHED
 
         db.session.commit()
 
@@ -142,7 +142,7 @@ class SchedulerThread(threading.Thread):
         node = Node.query.filter_by(name=name).first()
 
         # Select regular tasks.
-        tasks = Task.query.filter_by(node_id=None, finished=False)
+        tasks = Task.query.filter_by(status=Task.PENDING)
         tasks = tasks.filter_by(priority=1)
         tasks = tasks.order_by(Task.id).limit(count)
 
