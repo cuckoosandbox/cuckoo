@@ -15,14 +15,13 @@ try:
     from jinja2.loaders import FileSystemLoader
     from jinja2.environment import Environment
 except ImportError:
-    print >> sys.stderr, "ERROR: Jinja2 library is missing"
-    sys.exit(1)
+    sys.exit("ERROR: Jinja2 library is missing (run `pip install jinja2`)")
+
 try:
-    from bottle import route, run, static_file, request
-    from bottle import Bottle, HTTPError, hook, response
+    from bottle import run, static_file, request
+    from bottle import Bottle, HTTPError, response
 except ImportError:
-    print >> sys.stderr, "ERROR: Bottle library is missing"
-    sys.exit(1)
+    sys.exit("ERROR: Bottle library is missing (run `pip install bottle`)")
 
 logging.basicConfig()
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
