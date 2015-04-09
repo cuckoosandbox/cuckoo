@@ -66,11 +66,13 @@ class Package(object):
                                  application)
 
     def get_tool_path(self):
+        tool_name = ""
         tool_dir = os.path.join(os.getenv("Temp"), "tool")
         for item in os.listdir(tool_dir):
             if item[-5:].lower() == ".tool":
                 tool_name = item[:-5].lower()
-                os.remove(os.path.join(tool_dir, tool_name))
+                if tool_name in os.listdir(tool_dir):
+                    os.remove(os.path.join(tool_dir, tool_name))
                 os.rename(os.path.join(tool_dir, item), os.path.join(tool_dir, tool_name))
                 break
 
@@ -171,12 +173,13 @@ class Package(object):
             uploaded_tools = self.options.get("uploaded_tools").split('|')
             temp_dir = os.getenv("Temp")
             tool_dir = os.path.join(temp_dir, "tool")
-            for item in os.listdir(tool_dir):
-                if item not in uploaded_tools:
-                    try:
-                        upload_to_host(os.path.join(tool_dir, item), os.path.join("tool_output", item))
-                    except (IOError) as e:
-                        CuckooPackageError("Unable to upload dropped file at path \"%s\": %s", file_path, e)
+            for root, subdirs, files in os.walk(tool_dir):
+                for item in files:
+                    if item not in uploaded_tools:
+                        try:
+                            upload_to_host(os.path.join(root, item), os.path.join("tool_output", item))
+                        except (IOError) as e:
+                            CuckooPackageError("Unable to upload dropped file at path \"%s\": %s", file_path, e)
 
         return True
 
