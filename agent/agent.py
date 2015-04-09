@@ -82,7 +82,6 @@ class Agent:
         @return: operation status.
         """
         global ERROR_MESSAGE
-        data = data.data
 
         if self.system == "windows":
             root = os.environ["TEMP"]
@@ -105,8 +104,12 @@ class Agent:
                         ERROR_MESSAGE = "Unable to create directory: %s" % e
                         return False        
 
-        file_path = os.path.join(root, name)
+        if not name or not data:
+            # creating only Directory
+            return True
 
+        file_path = os.path.join(root, name)
+        data = data.data
         try:
             with open(file_path, "wb") as sample:
                 sample.write(data)
