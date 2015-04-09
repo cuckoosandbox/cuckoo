@@ -1,0 +1,28 @@
+<section id="tool_output">
+    <script type="text/javascript">
+        function showHide(element) {
+            document.getElementById(element.style.display = (document.getElementById(element).style.display == "none") ? "block" : "none";
+        }
+    </script>
+    <div class="section-title">
+        <h4>Output From Tool</h4>
+    </div>
+    {% if analysis.tool %}
+        {% for tool_output in analysis.tool %}
+            {% if tool_output.name == "tool_output.log" %}
+                <div>
+                    <h4><a href="javascript:showHide('contents');">{{ tool_output.name }}</a></h4>
+                    <div id="contents" style="display: block;">
+                        <span class="mono"><pre>{{ tool_output.contents }}</pre></span>
+                    </div> 
+                </div>
+            {% else %}
+                <div>
+                    <h4>{{ tool_output.name }}</h4>
+                </div>
+            {% endif %}            
+        {% endfor %}
+    {% else %}
+        Nothing to display.
+    {% endif %}
+</section>
