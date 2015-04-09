@@ -116,6 +116,55 @@ class GuestManager:
                                    "to upload agent, check networking or try "
                                    "to increase timeout".format(self.id))
 
+    def send_tool(self, tool_path, is_tool=False, base_dir="tool"):
+        if os.path.isfile(tool_path):
+            if '/' in tool_path:
+                index = tool_path.rfind("/")
+                file_name = tool_path[index+1:]
+            if is_tool:
+                file_name = file_name + ".tool"
+            try: 
+                file_data = open(tool_path, 'rb').read()
+            except (IOError, OSError) as e:
+                raise CuckooGuestError("{0: unable to upload tool to analysis machine, no enough memory".format(self.id))
+
+            data = xmlrpclib.Binary(file_data)
+
+            try:
+                self.server.add_malware(data, file_name, base_dir)
+            except MemoryError as e:
+                raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
+        
+            return file_name
+        else:
+            raise CuckooGuestError("%s not a valid file/path(send_tool)." % tool_path)
+
+    def send_dir(self, dir_path, base_dir):
+        uploaded_tools = ""
+        depth = 0
+        for root, subdirs, files in os.walk(dir_path):
+            if depth == 0:
+                dest_dir = base_dir
+                src_dir = src_root = root
+            else:
+                src_dir = root.replace(src_root, '', 1).lstrip('/')
+                dest_dir = os.path.join(base_dir, src_dir)
+            
+            for item in files:
+                self.send_tool(os.path.join(root, item), False, dest_dir)
+                uploaded_tools = uploaded_tools + item + "|"
+            
+            for subdir in subdirs:
+                try:
+                    self.server.add_malware('', '', os.path.join(dest_dir, subdir))
+                    uploaded_tools = uploaded_tools + subdir + "|"
+                except MemoryError as e:
+                    raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
+            
+            depth = depth + 1
+
+        return uploaded_tools
+
     def start_analysis(self, options):
         """Start analysis.
         @param options: options.
@@ -158,62 +207,29 @@ class GuestManager:
             tool_specified = False
 
             if options["tool"] or options["tool_dir"]:
-                # Format path for cuckoobox to send files created by tool and
-                # re-generate analysis.conf inside guest
                 task_id = options["id"]
                 upload_path = ',upload_path=' + os.path.join(CUCKOO_ROOT, "storage/analyses", str(task_id), "tool_output")
                 options["options"] = options["options"] + upload_path
                 uploaded_tools = ",uploaded_tools="
 
                 if options["tool"]:
-                    if not os.path.isfile(options["tool"]):
-                        raise CuckooGuestError("--tool not an actual file")
-                    index = options["tool"].rfind("/")
-                    file_name = options["tool"][index + 1:] + ".tool"
-                    try:
-                        file_data = open(options["tool"], "rb").read()
-                    except (IOError, OSError) as e:
-                        raise CuckooGuestError("Unable to read {0}, error: {1}".format(options["tool"], e))
-
-                    data = xmlrpclib.Binary(file_data)
-                    try:
-                        self.server.add_malware(data, file_name, "tool")
-                        uploaded_tools = uploaded_tools + file_name + "|"
-                    except MemoryError as e:
-                        raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
                     tool_specified = True
-                    tool_option = ",tool=" + file_name[:-5]
+                    uploaded_file_name = self.send_tool(options["tool"], True)
+                    uploaded_tools = uploaded_tools + uploaded_file_name[:-5] + "|"
+                    tool_option = ",tool=" + uploaded_file_name[:-5]
                     options["options"] = options["options"] + tool_option
 
-                # If a directory is specified as the tool, all files in the
-                # directory will be added to the guest. It is worth noting
-                # that nested directories will likely cause errors
                 if options["tool_dir"]:
-                    tool_count = 0
+                    if not tool_specified:
+                        raise CuckooGuestError("--tool must be specified if you are using --tool_dir")
+
                     if not os.path.isdir(options["tool_dir"]):
-                        raise CuckooGuestError("--tool_dir not a directory")
-                    for fyle in os.listdir(options["tool_dir"]):
-                        full_path = os.path.join(options["tool_dir"], fyle)
-                        try:
-                            file_data = open(full_path, "rb").read()
-                        except (IOError, OSError) as e:
-                            raise CuckooGuestError("Unable to read {0}, error: {1}".format(full_path, e))
+                        raise CuckooGuestError("--tool_dir must be a directory")
 
-                        data = xmlrpclib.Binary(file_data)
-                        try:
-                            uploaded_tools = uploaded_tools + fyle + "|"
-                            if not tool_specified and fyle[-4:] == '.exe':
-                                fyle = fyle + ".tool"
-                                tool_count = tool_count + 1
-                                tool_option = ",tool=" + file_name[:-5]
-                                options["options"] = options["options"] + tool_option
-                            self.server.add_malware(data, fyle, "tool")
-                        except MemoryError as e:
-                            raise CuckooGuestError("{0}: unable to upload {1} to analysis machine, not enough memory".format(self.id, full_path))
-                        if not tool_specified and tool_count != 1:
-                            raise CuckooGuestError("Number of tools (.exe files) specified is 0 or more than 1")
+                    uploaded_tools = uploaded_tools + self.send_dir(options["tool_dir"], 'tool')
+
+                log.info(str(uploaded_tools))
                 options["options"] = options["options"] + ",uploaded_tools=" + uploaded_tools
-
                 try:
                     self.server.add_config(options)
                 except:
