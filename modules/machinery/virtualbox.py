@@ -185,7 +185,7 @@ class VirtualBox(Machinery):
             status = self.ERROR
         if not status:
             for line in output.split("\n"):
-                state = re.match(r"VMState=\"(\w+)\"", line, re.M|re.I)
+                state = re.match(r'VMState="(\w+)"', line, re.M | re.I)
                 if state:
                     status = state.group(1)
                     log.debug("Machine %s status %s" % (label, status))

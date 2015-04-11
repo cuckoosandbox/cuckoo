@@ -255,6 +255,7 @@ class BsonParser(object):
     def __init__(self, handler):
         self.handler = handler
         self.infomap = {}
+        self.flags = {}
 
         if not HAVE_BSON:
             log.critical("Starting BsonParser, but bson is not available! (install with `pip install bson`)")
@@ -283,6 +284,8 @@ class BsonParser(object):
         index = dec.get("I", -1)
         tid = dec.get("T", 0)
         time = dec.get("t", 0)
+        stacktrace = dec.get("s", [])
+        uniqhash = dec.get("h", 0)
 
         context = [index, 1, 0, tid, time]
 
@@ -291,6 +294,7 @@ class BsonParser(object):
             name = dec.get("name", "NONAME")
             arginfo = dec.get("args", [])
             category = dec.get("category")
+            flags = dec.get("flags", {})
 
             # Bson dumps that were generated before cuckoomon exported the
             # "category" field have to get the category using the old method.
@@ -304,6 +308,8 @@ class BsonParser(object):
 
             argnames, converters = check_names_for_typeinfo(arginfo)
             self.infomap[index] = name, arginfo, argnames, converters, category
+
+            self.flags[name] = flags
 
         elif mtype == "debug":
             log.info("Debug message from monitor: "
@@ -340,16 +346,16 @@ class BsonParser(object):
 
             if apiname == "__process__":
                 # Special new process message from cuckoomon.
-                timelow = argdict["TimeLow"]
-                timehigh = argdict["TimeHigh"]
+                timelow = argdict["time_low"]
+                timehigh = argdict["time_high"]
                 # FILETIME is 100-nanoseconds from 1601 :/
                 vmtimeunix = (timelow + (timehigh << 32))
                 vmtimeunix = vmtimeunix / 10000000.0 - 11644473600
                 vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
 
-                pid = argdict["ProcessIdentifier"]
-                ppid = argdict["ParentProcessIdentifier"]
-                modulepath = argdict["ModulePath"]
+                pid = argdict["process_identifier"]
+                ppid = argdict["parent_process_identifier"]
+                modulepath = argdict["module_path"]
                 procname = get_filename_from_path(modulepath)
 
                 self.handler.log_process(context, vmtime, pid, ppid,
@@ -357,7 +363,7 @@ class BsonParser(object):
                 return True
 
             elif apiname == "__thread__":
-                pid = argdict["ProcessIdentifier"]
+                pid = argdict["process_identifier"]
                 self.handler.log_thread(context, pid)
                 return True
 
@@ -370,9 +376,27 @@ class BsonParser(object):
 
             context[1] = argdict.pop("is_success", 1)
             context[2] = argdict.pop("retval", 0)
-            arguments = argdict.items()
-            arguments += dec.get("aux", {}).items()
+            context.append(stacktrace)
+            context.append(uniqhash)
+            argdict.update(dec.get("aux", {}))
 
-            self.handler.log_call(context, apiname, category, arguments)
+            if apiname in self.flags:
+                for flag in self.flags[apiname].keys():
+                    argdict[flag + "_s"] = \
+                        self._flag_represent(apiname, flag, argdict[flag])
+
+            self.handler.log_call(context, apiname, category, argdict)
 
         return True
+
+    def _flag_represent(self, apiname, flag, value):
+        if isinstance(value, str) and value.startswith("0x"):
+            value = int(value, 16)
+
+        ret = []
+        for typ, val, r in self.flags[apiname][flag]:
+            if typ == "value" and val == value:
+                return r
+            elif typ == "enum" and (val & value) == val:
+                ret.append(r)
+        return "|".join(ret)

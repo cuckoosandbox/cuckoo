@@ -151,7 +151,7 @@ class ParseProcessLog(list):
                              msg=msg)
 
     def log_call(self, context, apiname, category, arguments):
-        apiindex, status, returnval, tid, timediff = context
+        apiindex, status, returnval, tid, timediff, _, _ = context
 
         current_time = self.first_seen + datetime.timedelta(0, 0, timediff*1000)
         timestring = logtime(current_time)
@@ -161,7 +161,7 @@ class ParseProcessLog(list):
                                      category,
                                      apiname,
                                      status,
-                                     returnval] + arguments)
+                                     returnval] + arguments.items())
 
     def log_error(self, emsg):
         log.warning("ParseProcessLog error condition on log %s: %s", str(self._log_path), emsg)
