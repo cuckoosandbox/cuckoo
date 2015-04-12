@@ -57,7 +57,7 @@ if there is anything ending with "*.exe*": in that case it will return ``True``,
 the signature matched, otherwise return ``False``.
 
 the function ``on_complete`` is called at the end of the cuckoo signature process.
-Other function will be called before on specific events and help you to write 
+Other function will be called before on specific events and help you to write
 more sophisticated and faster signatures.
 
 In case the signature gets matched, a new entry in the "signatures" section will be added to
@@ -176,7 +176,7 @@ you could translate the previous signature in the following way:
 Evented Signatures
 ==================
 
-Since version 1.3, Cuckoo provides a way to write more high performance signatures.
+Since version 1.0, Cuckoo provides a way to write more high performance signatures.
 In the past every signature was required to loop through the whole collection of API calls
 collected during the analysis. This was necessarily causing some performance issues when such
 collection would be of a large size.
