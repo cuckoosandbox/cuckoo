@@ -57,7 +57,7 @@ if there is anything ending with "*.exe*": in that case it will return ``True``,
 the signature matched, otherwise return ``False``.
 
 the function ``on_complete`` is called at the end of the cuckoo signature process.
-Other function will be called before on specific events and help you to write 
+Other function will be called before on specific events and help you to write
 more sophisticated and faster signatures.
 
 In case the signature gets matched, a new entry in the "signatures" section will be added to
