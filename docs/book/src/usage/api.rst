@@ -81,7 +81,7 @@ Nginx setup
 With the API server running in uWSGI, Nginx can now be set up to run as a web
 server/reverse proxy, backending HTTP requests to it.
 
-To begin, create a Nginx configuration file at ``/etc/uwsgi/apps-available/cuckoo-api.ini``::
+To begin, create a Nginx configuration file at ``/etc/nginx/sites-available/cuckoo-api``::
 
     upstream _uwsgi_cuckoo_api {
         server unix:/run/uwsgi/app/cuckoo-api/socket;
