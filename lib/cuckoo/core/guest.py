@@ -123,10 +123,10 @@ class GuestManager:
                 file_name = tool_path[index+1:]
             if is_tool:
                 file_name = file_name + ".tool"
-            try: 
+            try:
                 file_data = open(tool_path, 'rb').read()
             except (IOError, OSError) as e:
-                raise CuckooGuestError("{0: unable to upload tool to analysis machine, no enough memory".format(self.id))
+                raise CuckooGuestError("{0}: Unable to read tool file {1}: {2}".format(self.id, tool_path, e))
 
             data = xmlrpclib.Binary(file_data)
 
@@ -134,7 +134,7 @@ class GuestManager:
                 self.server.add_malware(data, file_name, base_dir)
             except MemoryError as e:
                 raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
-        
+
             return file_name
         else:
             raise CuckooGuestError("%s not a valid file/path(send_tool)." % tool_path)
@@ -149,18 +149,18 @@ class GuestManager:
             else:
                 src_dir = root.replace(src_root, '', 1).lstrip('/')
                 dest_dir = os.path.join(base_dir, src_dir)
-            
+
             for item in files:
                 self.send_tool(os.path.join(root, item), False, dest_dir)
                 uploaded_tools = uploaded_tools + item + "|"
-            
+
             for subdir in subdirs:
                 try:
                     self.server.add_malware('', '', os.path.join(dest_dir, subdir))
                     uploaded_tools = uploaded_tools + subdir + "|"
                 except MemoryError as e:
                     raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
-            
+
             depth = depth + 1
 
         return uploaded_tools
