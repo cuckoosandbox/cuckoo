@@ -111,6 +111,7 @@ def task_list():
     finished = request.args.get("finished")
     status = request.args.get("status")
     owner = request.args.get("owner")
+    priority = request.args.get("priority")
 
     if finished is not None and status is not None:
         return json_error(400, "Do not combine finished and status. "
@@ -135,6 +136,9 @@ def task_list():
 
     if owner:
         q = q.filter_by(owner=owner)
+
+    if priority:
+        q = q.filter_by(priority=int(priority))
 
     tasks = {}
     for task in q.all():
