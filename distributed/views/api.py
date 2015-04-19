@@ -264,10 +264,15 @@ def report_get(task_id, report_format="json"):
 
 @blueprint.route("/status")
 def status_get():
+    tasks = Task.query
+
+    if "priority" in request.args:
+        tasks = tasks.filter_by(priority=request.args["priority"])
+
     tasks = dict(
-        pending=Task.query.filter_by(status=Task.PENDING).count(),
-        processing=Task.query.filter_by(status=Task.PROCESSING).count(),
-        finished=Task.query.filter_by(status=Task.FINISHED).count(),
-        deleted=Task.query.filter_by(status=Task.DELETED).count(),
+        pending=tasks.filter_by(status=Task.PENDING).count(),
+        processing=tasks.filter_by(status=Task.PROCESSING).count(),
+        finished=tasks.filter_by(status=Task.FINISHED).count(),
+        deleted=tasks.filter_by(status=Task.DELETED).count(),
     )
     return jsonify(success=True, nodes=g.statuses, tasks=tasks)
