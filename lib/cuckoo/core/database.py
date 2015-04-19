@@ -474,8 +474,10 @@ class Database(object):
                           resultserver_port=resultserver_port)
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
-            for tag in tags.replace(" ", "").split(","):
-                machine.tags.append(self._get_or_create(session, Tag, name=tag))
+            for tag in tags.split(","):
+                if tag.strip():
+                    tag = self._get_or_create(session, Tag, name=tag.strip())
+                    machine.tags.append(tag)
         session.add(machine)
 
         try:
@@ -846,8 +848,9 @@ class Database(object):
 
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
-            for tag in tags.replace(" ", "").split(","):
-                task.tags.append(self._get_or_create(session, Tag, name=tag))
+            for tag in tags.split(","):
+                tag = self._get_or_create(session, Tag, name=tag.strip())
+                task.tags.append(tag)
 
         if clock:
             if isinstance(clock, str) or isinstance(clock, unicode):
