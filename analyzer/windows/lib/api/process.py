@@ -194,42 +194,37 @@ class Process(object):
                         "injection aborted.")
             return False
 
-        arguments = "\"" + path + "\" "
-        if args:
-            arguments += args
-
         if is32bit:
             inject_exe = os.path.join("bin", "inject-x86.exe")
         else:
             inject_exe = os.path.join("bin", "inject-x64.exe")
 
-        args = [inject_exe, "--app", path]
+        argv = [inject_exe, "--app", path]
 
-        if arguments:
-            args += ["--cmdline", arguments]
+        if args:
+            argv += ["--args", args]
 
         if free:
-            args += ["--free"]
+            argv += ["--free"]
         else:
-            args += ["--apc", "--dll", dll, "--config", self.drop_config()]
+            argv += ["--apc", "--dll", dll, "--config", self.drop_config()]
 
         if source:
             if isinstance(source, (int, long)) or source.isdigit():
-                args += ["--from", "%s" % source]
+                argv += ["--from", "%s" % source]
             else:
-                args += ["--from-process", source]
+                argv += ["--from-process", source]
 
         try:
-            self.pid = int(subprocess.check_output(args))
+            self.pid = int(subprocess.check_output(argv))
         except Exception:
             log.error("Failed to execute process from path \"%s\" with "
-                      "arguments \"%s\" (Error: %s)", path, args,
+                      "arguments \"%s\" (Error: %s)", path, argv,
                       get_error_string(KERNEL32.GetLastError()))
             return False
 
         log.info("Successfully executed process from path \"%s\" with "
-                 "arguments \"%s\" with pid %d", path, arguments or "",
-                 self.pid)
+                 "arguments \"%s\" with pid %d", path, args or "", self.pid)
         return True
 
     def terminate(self):
