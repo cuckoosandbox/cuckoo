@@ -210,13 +210,13 @@ class PipeHandler(Thread):
         """Request for injection into a process using APC."""
         # Parse the process and thread identifier.
         if not data or data.count(",") != 1:
-            log.warning("Received PROCESS command from monitor with an "
+            log.warning("Received PROCESS2 command from monitor with an "
                         "incorrect argument.")
             return
 
         pid, tid = data.split(",")
         if not pid.isdigit() or not tid.isdigit():
-            log.warning("Received PROCESS command from monitor with an "
+            log.warning("Received PROCESS2 command from monitor with an "
                         "incorrect argument.")
             return
 

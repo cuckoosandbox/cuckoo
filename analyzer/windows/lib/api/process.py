@@ -14,9 +14,7 @@ from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
 from lib.common.constants import PIPE, PATHS, SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
 from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
-from lib.common.defines import MEM_COMMIT
-from lib.common.defines import MEMORY_BASIC_INFORMATION
-from lib.common.defines import WAIT_TIMEOUT
+from lib.common.defines import MEM_COMMIT, MEMORY_BASIC_INFORMATION
 from lib.common.defines import MEM_IMAGE, MEM_MAPPED, MEM_PRIVATE
 from lib.common.errors import get_error_string
 from lib.common.exceptions import CuckooError
@@ -272,8 +270,6 @@ class Process(object):
                         "with pid %d, injection aborted.", self.pid)
             return False
 
-        config_path = self.drop_config()
-
         if is32bit:
             inject_exe = os.path.join("bin", "inject-x86.exe")
         else:
@@ -281,7 +277,7 @@ class Process(object):
 
         args = [
             inject_exe, "--pid", "%s" % self.pid, "--dll", dll,
-            "--config", config_path,
+            "--config", self.drop_config(),
         ]
 
         if apc:
@@ -289,7 +285,14 @@ class Process(object):
         else:
             args += ["--crt"]
 
-        subprocess.check_output(args)
+        try:
+            subprocess.check_call(args)
+        except Exception:
+            log.error("Failed to inject process with pid %d", self.pid)
+            return False
+
+        log.info("Successfully injected process with pid %d", self.pid)
+        return True
 
     def drop_config(self):
         """Helper function to drop the configuration for a new process."""
