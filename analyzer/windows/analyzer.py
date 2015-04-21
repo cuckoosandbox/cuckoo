@@ -270,16 +270,15 @@ class PipeHandler(Thread):
         if not data or ":" not in data:
             log.critical("Unknown command received from the monitor: %r",
                          data.strip())
-            return True
-
-        command, arguments = data.strip().split(":", 1)
-
-        if not hasattr(self, "_handle_%s" % command.lower()):
-            log.critical("Unknown command received from the monitor: %r",
-                         data.strip())
         else:
-            fn = getattr(self, "_handle_%s" % command.lower())
-            response = fn(arguments) or ""
+            command, arguments = data.strip().split(":", 1)
+
+            if not hasattr(self, "_handle_%s" % command.lower()):
+                log.critical("Unknown command received from the monitor: %r",
+                             data.strip())
+            else:
+                fn = getattr(self, "_handle_%s" % command.lower())
+                response = fn(arguments) or ""
 
         KERNEL32.WriteFile(self.h_pipe,
                            create_string_buffer(response),
