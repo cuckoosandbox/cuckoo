@@ -277,10 +277,9 @@ class PipeHandler(Thread):
         if not hasattr(self, "_handle_%s" % command.lower()):
             log.critical("Unknown command received from the monitor: %r",
                          data.strip())
-            return True
-
-        fn = getattr(self, "_handle_%s" % command.lower())
-        response = fn(arguments) or ""
+        else:
+            fn = getattr(self, "_handle_%s" % command.lower())
+            response = fn(arguments) or ""
 
         KERNEL32.WriteFile(self.h_pipe,
                            create_string_buffer(response),
