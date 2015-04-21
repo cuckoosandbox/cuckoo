@@ -50,7 +50,7 @@ class Files(object):
 
     def is_protected_filename(self, file_name):
         """Do we want to inject into a process with this name?"""
-        return file_name.lower() not in self.PROTECTED_NAMES
+        return file_name.lower() in self.PROTECTED_NAMES
 
     def add_file(self, filepath):
         """Add filepath to the list of files."""
