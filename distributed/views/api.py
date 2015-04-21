@@ -117,7 +117,7 @@ def task_list():
         return json_error(400, "Do not combine finished and status. "
                                "Finished has been deprecated.")
 
-    q = Task.query
+    q = Task.query.order_by(Task.id)
 
     if finished is not None:
         if bool(int(finished)):
