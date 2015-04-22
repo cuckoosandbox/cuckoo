@@ -222,10 +222,10 @@ class GuestManager:
 
                 if options["tool_dir"]:
                     if not tool_specified:
-                        raise CuckooGuestError("--tool must be specified if you are using --tool_dir")
+                        raise CuckooGuestError("--tool must be specified if you are using --tool-dir")
 
                     if not os.path.isdir(options["tool_dir"]):
-                        raise CuckooGuestError("--tool_dir must be a directory")
+                        raise CuckooGuestError("--tool-dir must be a directory")
 
                     uploaded_tools.extend(self.send_dir(options["tool_dir"], 'tool'))
 

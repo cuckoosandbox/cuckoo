@@ -47,7 +47,7 @@ def main():
     parser.add_argument("--unique", action="store_true", default=False, help="Only submit new samples, ignore duplicates", required=False)
     parser.add_argument("--quiet", action="store_true", default=False, help="Only print text on failure", required=False)
     parser.add_argument("--tool", type=str, action="store", default=None, help="Specify tool to run on target", required=False)
-    parser.add_argument("--tool_dir", type=str, action="store", default=None, help="Specify directory of files to put on guest", required=False)
+    parser.add_argument("--tool-dir", type=str, action="store", default=None, help="Specify directory of files to put on guest", required=False)
 
     try:
         args = parser.parse_args()
@@ -141,7 +141,7 @@ def main():
                 return False
         else:
             if args.tool_dir:
-                print(bold(red("Error")) + u": --tool must be specified to use --tool_dir option")
+                print(bold(red("Error")) + u": --tool must be specified to use --tool-dir option")
                 return False
 
         files = []
