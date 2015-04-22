@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import pickle
 from subprocess import Popen
 
 from lib.api.process import Process
@@ -95,7 +96,6 @@ class Package(object):
         else:
             options = options + " " + sample_options
 
-        print("options: " + str(options))
         return options.split()
 
     def execute(self, path, args):
@@ -170,7 +170,7 @@ class Package(object):
 
         if self.options.get("tool"):
             upload_path = self.options.get("upload_path", "/tmp/upload")
-            uploaded_tools = self.options.get("uploaded_tools").split('|')
+            uploaded_tools = pickle.loads(self.options.get("uploaded_tools"))
             temp_dir = os.getenv("Temp")
             tool_dir = os.path.join(temp_dir, "tool")
             for root, subdirs, files in os.walk(tool_dir):

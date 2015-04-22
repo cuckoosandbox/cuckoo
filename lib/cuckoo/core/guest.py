@@ -4,6 +4,7 @@
 
 import os
 import time
+import pickle
 import socket
 import logging
 import xmlrpclib
@@ -140,7 +141,7 @@ class GuestManager:
             raise CuckooGuestError("%s not a valid file/path(send_tool)." % tool_path)
 
     def send_dir(self, dir_path, base_dir):
-        uploaded_tools = ""
+        uploaded_tools = []
         depth = 0
         for root, subdirs, files in os.walk(dir_path):
             if depth == 0:
@@ -152,12 +153,12 @@ class GuestManager:
 
             for item in files:
                 self.send_tool(os.path.join(root, item), False, dest_dir)
-                uploaded_tools = uploaded_tools + item + "|"
+                uploaded_tools.append(item)
 
             for subdir in subdirs:
                 try:
                     self.server.add_malware('', '', os.path.join(dest_dir, subdir))
-                    uploaded_tools = uploaded_tools + subdir + "|"
+                    uploaded_tools.append(subdir)
                 except MemoryError as e:
                     raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
 
@@ -210,12 +211,12 @@ class GuestManager:
                 task_id = options["id"]
                 upload_path = ',upload_path=' + os.path.join(CUCKOO_ROOT, "storage/analyses", str(task_id), "tool_output")
                 options["options"] = options["options"] + upload_path
-                uploaded_tools = ",uploaded_tools="
+                uploaded_tools = []
 
                 if options["tool"]:
                     tool_specified = True
                     uploaded_file_name = self.send_tool(options["tool"], True)
-                    uploaded_tools = uploaded_tools + uploaded_file_name[:-5] + "|"
+                    uploaded_tools.append(uploaded_file_name[:-5])
                     tool_option = ",tool=" + uploaded_file_name[:-5]
                     options["options"] = options["options"] + tool_option
 
@@ -226,10 +227,9 @@ class GuestManager:
                     if not os.path.isdir(options["tool_dir"]):
                         raise CuckooGuestError("--tool_dir must be a directory")
 
-                    uploaded_tools = uploaded_tools + self.send_dir(options["tool_dir"], 'tool')
+                    uploaded_tools.extend(self.send_dir(options["tool_dir"], 'tool'))
 
-                log.info(str(uploaded_tools))
-                options["options"] = options["options"] + ",uploaded_tools=" + uploaded_tools
+                options["options"] = options["options"] + ",uploaded_tools=" + pickle.dumps(uploaded_tools)
                 try:
                     self.server.add_config(options)
                 except:
