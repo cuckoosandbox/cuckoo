@@ -1,6 +1,6 @@
 ![Cuckoo](http://cuckoosandbox.org/graphic/cuckoo.png)
 
---Portuguese translation for below--
+--ABAIXO HÁ UMA TRADUÇÃO PARA O PORTUGUÊS--
 
 In three words, [Cuckoo Sandbox](http://www.cuckoosandbox.org) is a malware analysis system.
 
