@@ -141,14 +141,15 @@ class SchedulerThread(threading.Thread):
 
         node = Node.query.filter_by(name=name).first()
 
-        # Select regular tasks.
+        # Select tasks, order by priority.
         tasks = Task.query.filter_by(status=Task.PENDING)
-        tasks = tasks.filter_by(priority=1)
+        tasks = tasks.order_by(Task.priority.desc())
         tasks = tasks.order_by(Task.id).limit(count)
 
         # Update all tasks to use our node id.
         for task in tasks.all():
             task.node_id = node.id
+            task.status = Task.PROCESSING
             args = node.name, node.url, task.to_dict()
             self.m.apply_async(submit_task, args=args,
                                callback=self._task_identifier)
