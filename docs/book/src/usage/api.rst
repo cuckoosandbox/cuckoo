@@ -50,12 +50,12 @@ To begin, create a uWSGI configuration file at ``/etc/uwsgi/apps-available/cucko
     [uwsgi]
     plugins = python
     chdir = /home/cuckoo/cuckoo
-    file = utils/web.py
+    file = utils/api.py
     uid = cuckoo
     gid = cuckoo
 
 This configuration inherits a number of settings from the distribution's 
-default uWSGI configuration, loading ``web.py`` from the Cuckoo installation 
+default uWSGI configuration, loading ``api.py`` from the Cuckoo installation 
 directory. If Cuckoo is installed in a different path, adjust the configuration 
 (the *chdir* setting, and perhaps the *uid* and *gid* settings) accordingly.
 
