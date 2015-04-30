@@ -5,7 +5,6 @@
 import os
 import logging
 import random
-import shutil
 import subprocess
 import tempfile
 import time
@@ -18,24 +17,10 @@ from lib.common.defines import MEM_COMMIT, MEMORY_BASIC_INFORMATION
 from lib.common.defines import MEM_IMAGE, MEM_MAPPED, MEM_PRIVATE
 from lib.common.errors import get_error_string
 from lib.common.exceptions import CuckooError
-from lib.common.rand import random_string
 from lib.common.results import NetlogFile
 from lib.core.config import Config
 
 log = logging.getLogger(__name__)
-
-def randomize_dll(dll_path):
-    """Randomize DLL name.
-    @return: new DLL path.
-    """
-    new_dll_name = random_string(6)
-    new_dll_path = os.path.join(os.getcwd(), "bin", "{0}.dll".format(new_dll_name))
-
-    try:
-        shutil.copy(dll_path, new_dll_path)
-        return new_dll_path
-    except:
-        return dll_path
 
 class Process(object):
     """Windows process."""
@@ -185,9 +170,9 @@ class Process(object):
             else:
                 dll = "monitor-x64.dll"
 
-        dll = randomize_dll(os.path.join("bin", dll))
+        dllpath = os.path.abspath(os.path.join("bin", dll))
 
-        if not dll or not os.path.exists(dll):
+        if not os.path.exists(dllpath):
             log.warning("No valid DLL specified to be injected, "
                         "injection aborted.")
             return False
@@ -205,7 +190,8 @@ class Process(object):
         if free:
             argv += ["--free"]
         else:
-            argv += ["--apc", "--dll", dll, "--config", self.drop_config()]
+            argv += ["--apc", "--dll", dllpath,
+                     "--config", self.drop_config()]
 
         if source:
             if isinstance(source, (int, long)) or source.isdigit():
@@ -263,9 +249,9 @@ class Process(object):
             else:
                 dll = "monitor-x64.dll"
 
-        dll = randomize_dll(os.path.join("bin", dll))
+        dllpath = os.path.abspath(os.path.join("bin", dll))
 
-        if not dll or not os.path.exists(dll):
+        if not os.path.exists(dllpath):
             log.warning("No valid DLL specified to be injected in process "
                         "with pid %d, injection aborted.", self.pid)
             return False
@@ -276,7 +262,7 @@ class Process(object):
             inject_exe = os.path.join("bin", "inject-x64.exe")
 
         args = [
-            inject_exe, "--pid", "%s" % self.pid, "--dll", dll,
+            inject_exe, "--pid", "%s" % self.pid, "--dll", dllpath,
             "--config", self.drop_config(),
         ]
 
