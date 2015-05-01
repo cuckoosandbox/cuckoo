@@ -87,14 +87,10 @@ class Package(object):
         if not sample_options:
             sample_options = ""
         if "$sample" in options:
-            options = options.replace("$sample", path)
+            options = options.replace("$sample", path + " " + sample_options)
         else:
-            options = options + " " + path
+            options = options + " " + path + " " + sample_options
 
-        if "$sample_options" in options:
-            options = options.replace("$sample_options", sample_options)
-        else:
-            options = options + " " + sample_options
 
         return options.split()
 
@@ -116,7 +112,7 @@ class Package(object):
             cwd = os.getcwd()
             os.chdir(os.path.join(os.getenv("Temp"), 'tool'))
             tool_path = self.get_tool_path()
-            tool_args = self.options.get('tool_options')
+            tool_args = self.options.get('tool-options')
             arg_list = self.format_user_options(tool_args, args, path)
             cmd_list = [tool_path]
             cmd_list.extend(arg_list)
