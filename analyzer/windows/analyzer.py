@@ -168,6 +168,7 @@ class PipeHandler(Thread):
         if process_id in (PID, PPID):
             log.warning("Received request to inject Cuckoo processes, "
                         "skipping it.")
+            PROCESS_LOCK.release()
             return
 
         # We inject the process only if it's not being monitored already,
@@ -184,6 +185,10 @@ class PipeHandler(Thread):
                 # Add the new process ID to the list of monitored processes.
                 PROCESS_LIST.add_pid(process_id)
 
+                # We're done operating on the processes list,
+                # release the lock. Let the injection do its thing.
+                PROCESS_LOCK.release()
+
                 # If we have both pid and tid, then we can use APC to inject.
                 if process_id and thread_id:
                     proc.inject(dll, apc=True)
@@ -192,9 +197,10 @@ class PipeHandler(Thread):
 
                 log.info("Successfully injected process with "
                          "pid %s", proc.pid)
-
-        # We're done operating on the processes list, release the lock.
-        PROCESS_LOCK.release()
+            else:
+                # We're done operating on the processes list,
+                # release the lock.
+                PROCESS_LOCK.release()
 
     def _handle_process(self, data):
         """Request for injection into a process."""
