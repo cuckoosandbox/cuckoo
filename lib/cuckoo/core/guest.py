@@ -135,8 +135,8 @@ class GuestManager:
                 self.server.add_malware(data, file_name, base_dir)
             except MemoryError as e:
                 raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
-
             return file_name
+
         else:
             raise CuckooGuestError("%s not a valid file/path(send_tool)." % tool_path)
 
@@ -163,7 +163,6 @@ class GuestManager:
                     raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
 
             depth = depth + 1
-
         return uploaded_tools
 
     def start_analysis(self, options):
@@ -183,6 +182,24 @@ class GuestManager:
             log.debug("Automatically increased critical timeout to %s",
                       self.timeout)
             self.timeout = options["timeout"] + 60
+
+        # If tool is specified, you need to send certain options
+        # upload_path, tool, uploaded_tools
+        if options["tool"]:
+            task_id = options["id"]
+            upload_path = ',upload-path=' + os.path.join(CUCKOO_ROOT, "storage/analyses", str(task_id), "tool_output")
+            options["options"] = options["options"] + upload_path
+
+            index = options["tool"].rfind("/")
+            tool_option = ",tool=" + options["tool"][index+1:]
+            options["options"] = options["options"] + tool_option
+            
+            uploaded_tools = []
+            if options["tool_dir"]:
+                for root, subdirs, files in os.walk(options["tool_dir"]):
+                    uploaded_tools.extend(files)
+                    uploaded_tools.extend(subdirs)
+                options["options"] = options["options"] + ",uploaded_tools=" + pickle.dumps(uploaded_tools)
 
         # Get and set dynamically generated resultserver port.
         options["port"] = str(ResultServer().port)
@@ -205,35 +222,14 @@ class GuestManager:
                                        "analysis machine".format(self.id))
 
             # If a tool was specified, upload it to the guest.
-            tool_specified = False
-
-            if options["tool"] or options["tool_dir"]:
-                task_id = options["id"]
-                upload_path = ',upload_path=' + os.path.join(CUCKOO_ROOT, "storage/analyses", str(task_id), "tool_output")
-                options["options"] = options["options"] + upload_path
-                uploaded_tools = []
-
+            if options["tool"]:
                 if options["tool"]:
-                    tool_specified = True
-                    uploaded_file_name = self.send_tool(options["tool"], True)
-                    uploaded_tools.append(uploaded_file_name[:-5])
-                    tool_option = ",tool=" + uploaded_file_name[:-5]
-                    options["options"] = options["options"] + tool_option
+                    self.send_tool(options["tool"], True)
 
                 if options["tool_dir"]:
-                    if not tool_specified:
-                        raise CuckooGuestError("--tool must be specified if you are using --tool-dir")
-
                     if not os.path.isdir(options["tool_dir"]):
                         raise CuckooGuestError("--tool-dir must be a directory")
-
-                    uploaded_tools.extend(self.send_dir(options["tool_dir"], 'tool'))
-
-                options["options"] = options["options"] + ",uploaded_tools=" + pickle.dumps(uploaded_tools)
-                try:
-                    self.server.add_config(options)
-                except:
-                    raise CuckooGuestError("{0}: unable to upload config to analysis machine".format(self.id))
+                    self.send_dir(options["tool_dir"], 'tool')
 
             # If the target of the analysis is a file, upload it to the guest.
             if options["category"] == "file":
