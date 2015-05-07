@@ -45,7 +45,7 @@ class Macalyser:
 	def setup_loggin(self):
 		pass
 
-	def parse_config(self, config):
+	def parse_config(self, config_name):
 		pass
 
 	def analysis_package_for_current_target(self):
