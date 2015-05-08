@@ -2,12 +2,12 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import os
 import re
-import struct
 import socket
-import logging
-from urlparse import urlunparse
+import struct
+import urlparse
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
@@ -387,17 +387,16 @@ class Pcap:
 
             entry["port"] = dport
 
-            # Manually deal with cases when destination port is not the default one,
-            # and it is  not included in host header.
+            # Manually deal with cases when destination port is not the
+            # default one and it is not included in host header.
             netloc = entry["host"]
             if dport != 80 and ":" not in netloc:
                 netloc += ":" + str(entry["port"])
 
             entry["data"] = convert_to_printable(tcpdata)
-            entry["uri"] = convert_to_printable(urlunparse(("http",
-                                                            netloc,
-                                                            http.uri, None,
-                                                            None, None)))
+            url = urlparse.urlunparse(("http", netloc, http.uri,
+                                       None, None, None))
+            entry["uri"] = convert_to_printable(url)
             entry["body"] = convert_to_printable(http.body)
             entry["path"] = convert_to_printable(http.uri)
 
