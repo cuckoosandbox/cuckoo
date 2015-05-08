@@ -6,7 +6,7 @@ My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc
 
 ### Usage
 
-Just move/copy/symlink the `analyzer/darwin` directory into your Cuckoo Sandbox’s `analyzer` directory. Then you can start submit your OS X jobs:  
+Just move/copy/symlink the `analyzer/darwin` directory from this repository into your [Cuckoo Sandbox](https://github.com/cuckoobox/cuckoo/) copy. Then you can start submit your OS X jobs:  
 
 ```bash
 $ /utils/submit.py --platform darwin ~/bin/sample
