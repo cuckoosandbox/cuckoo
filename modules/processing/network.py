@@ -7,6 +7,7 @@ import os
 import re
 import socket
 import struct
+import tempfile
 import urlparse
 
 from lib.cuckoo.common.abstracts import Processing
@@ -27,11 +28,9 @@ except ImportError:
 # http://stackoverflow.com/questions/10665925/how-to-sort-huge-files-with-python
 # http://code.activestate.com/recipes/576755/
 import heapq
-from tempfile import gettempdir
 from itertools import islice
 from collections import namedtuple
 
-TMPD = gettempdir()
 Keyed = namedtuple("Keyed", ["key", "obj"])
 Packet = namedtuple("Packet", ["raw", "ts"])
 
@@ -640,7 +639,9 @@ def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None
             if not current_chunk:
                 break
             current_chunk.sort()
-            output_chunk = output_class(os.path.join(TMPD, "%06i" % len(chunks)))
+            fd, filepath = tempfile.mkstemp()
+            os.close(fd)
+            output_chunk = output_class(filepath)
             chunks.append(output_chunk)
 
             for elem in current_chunk:
