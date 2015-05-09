@@ -64,6 +64,38 @@
             </div>
         </div>
 
+        <!-- Yarascan -->
+        <div class="well well-small">
+            <a href="javascript:showHide('volatility_yarascan');"><b>Yarascan</b></a>
+            <small>
+                Scanning for rule matches
+                (<a href="https://code.google.com/p/volatility/wiki/CommandReferenceMal23#yarascan" target="_blank">help</a>)
+            </small>
+            <div id="volatility_yarascan" style="display: none;">
+                {% if results.memory.yarascan and results.memory.yarascan.config.filter == True %}
+                    <small>Filtered</small>
+                {% endif %}
+                {% if results.memory.yarascan %}
+                    <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;white-space:pre-wrap;table-layout: fixed;">
+                        <tr>
+                            <th>Rule</th>
+                            <th>Owner</th>
+                            <th style="width: 60%">Hexdump</th>
+                        </tr>
+                        {% for match in results.memory.yarascan.data %}
+                            <tr>
+                                <td>{{match.rule}}</td>
+                                <td>{{match.owner}}</td>
+                                <td><span class="mono"><pre>{match.hexdump}}</pre></span></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Nothing to display.
+                {% endif %}
+            </div>
+        </div>
+
         <!-- APIHooks -->
         <div class="well well-small">
             <a href="javascript:showHide('volatility_apihooks');"><b>Apihooks</b></a>
