@@ -151,6 +151,19 @@ class PipeHandler(Thread):
         """Critical message from the monitor."""
         log.critical(data)
 
+    def _handle_loaded(self, data):
+        """The monitor has loaded into a particular process."""
+        if not data or not data.isdigit():
+            log.warning("Received loaded command with incorrect process "
+                        "identifier, skipping it.")
+            return
+
+        PROCESS_LOCK.acquire()
+        PROCESS_LIST.add_pid(int(data))
+        PROCESS_LOCK.release()
+
+        log.debug("Loaded monitor into process with pid %s", data)
+
     def _handle_getpids(self, data):
         """Return the process identifiers of the agent and its parent
         process."""
