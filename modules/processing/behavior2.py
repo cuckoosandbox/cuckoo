@@ -32,7 +32,7 @@ class BehaviorReconstructor(object):
             raise Exception("Can't have both args and kwargs!")
 
         value = arg or kwargs
-        if value not in self.behavior[category]:
+        if value and value not in self.behavior[category]:
             self.behavior[category].append(value)
 
     def finish(self):
