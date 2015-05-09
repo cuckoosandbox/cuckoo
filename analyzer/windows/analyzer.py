@@ -187,33 +187,37 @@ class PipeHandler(Thread):
         # We inject the process only if it's not being monitored already,
         # otherwise we would generated polluted logs (if it wouldn't crash
         # horribly to start with).
-        if not PROCESS_LIST.has_pid(process_id):
-            # Open the process and inject the DLL. Hope it enjoys it.
-            proc = Process(pid=process_id, tid=thread_id)
+        if PROCESS_LIST.has_pid(process_id):
+            log.warning("Received request to inject into process that we "
+                        "are already monitoring, ignoring it.")
+            # We're done operating on the processes list,
+            # release the lock.
+            PROCESS_LOCK.release()
+            return
 
-            filename = os.path.basename(proc.get_filepath())
-            log.info("Announced process name: %s", filename)
+        # Open the process and inject the DLL. Hope it enjoys it.
+        proc = Process(pid=process_id, tid=thread_id)
 
-            if not FILES.is_protected_filename(filename):
-                # Add the new process ID to the list of monitored processes.
-                PROCESS_LIST.add_pid(process_id)
+        filename = os.path.basename(proc.get_filepath())
+        log.info("Announced process name: %s", filename)
 
-                # We're done operating on the processes list,
-                # release the lock. Let the injection do its thing.
-                PROCESS_LOCK.release()
+        if not FILES.is_protected_filename(filename):
+            # Add the new process ID to the list of monitored processes.
+            PROCESS_LIST.add_pid(process_id)
 
-                # If we have both pid and tid, then we can use APC to inject.
-                if process_id and thread_id:
-                    proc.inject(dll, apc=True)
-                else:
-                    proc.inject(dll, apc=False)
+            # We're done operating on the processes list,
+            # release the lock. Let the injection do its thing.
+            PROCESS_LOCK.release()
 
-                log.info("Successfully injected process with "
-                         "pid %s", proc.pid)
+            log.debug("Injecting into process with pid %d", proc.pid)
+
+            # If we have both pid and tid, then we can use APC to inject.
+            if process_id and thread_id:
+                proc.inject(dll, apc=True)
             else:
-                # We're done operating on the processes list,
-                # release the lock.
-                PROCESS_LOCK.release()
+                proc.inject(dll, apc=False)
+
+            log.info("Successfully injected process with pid %s", proc.pid)
 
     def _handle_process(self, data):
         """Request for injection into a process."""
