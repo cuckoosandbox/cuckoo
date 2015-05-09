@@ -188,8 +188,6 @@ class PipeHandler(Thread):
         # otherwise we would generated polluted logs (if it wouldn't crash
         # horribly to start with).
         if PROCESS_LIST.has_pid(process_id):
-            log.warning("Received request to inject into process that we "
-                        "are already monitoring, ignoring it.")
             # We're done operating on the processes list,
             # release the lock.
             PROCESS_LOCK.release()
