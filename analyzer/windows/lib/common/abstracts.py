@@ -108,4 +108,5 @@ class Package(object):
         return True
 
 class Auxiliary(object):
-    pass
+    def __init__(self, options={}):
+        self.options = options

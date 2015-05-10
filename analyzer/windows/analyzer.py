@@ -545,7 +545,7 @@ class Analyzer:
         for module in Auxiliary.__subclasses__():
             # Try to start the auxiliary module.
             try:
-                aux = module()
+                aux = module(self.config.get_options())
                 aux_avail.append(aux)
                 aux.start()
             except (NotImplementedError, AttributeError):
