@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import time
 from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
+from ctypes import c_uint, c_wchar_p, create_unicode_buffer
 
 from lib.common.constants import PIPE, PATHS, SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
@@ -122,6 +123,20 @@ class Process(object):
 
         return None
 
+    def shortpath(self, path):
+        """Returns the shortpath for a file.
+
+        As Python 2.7 does not support passing along unicode strings in
+        subprocess.Popen() and alike this will have to do. See also:
+        http://stackoverflow.com/questions/2595448/unicode-filename-to-python-subprocess-call
+        """
+        KERNEL32.GetShortPathNameW.restype = c_uint
+        KERNEL32.GetShortPathNameW.argtypes = c_wchar_p, c_wchar_p, c_uint
+
+        buf = create_unicode_buffer(0x8000)
+        KERNEL32.GetShortPathNameW(path, buf, len(buf))
+        return buf.value
+
     def is32bit(self, pid=None, path=None):
         """Is a PE file 32-bit or does a process identifier belong to a
         32-bit process.
@@ -138,7 +153,7 @@ class Process(object):
         if pid:
             args = [is32bit_exe, "-p", "%s" % pid]
         else:
-            args = [is32bit_exe, "-f", path]
+            args = [is32bit_exe, "-f", self.shortpath(path)]
 
         try:
             bitsize = int(subprocess.check_output(args))
@@ -182,7 +197,7 @@ class Process(object):
         else:
             inject_exe = os.path.join("bin", "inject-x64.exe")
 
-        argv = [inject_exe, "--app", path]
+        argv = [inject_exe, "--app", self.shortpath(path)]
 
         if args:
             argv += ["--args", args]
@@ -207,8 +222,8 @@ class Process(object):
                       get_error_string(KERNEL32.GetLastError()))
             return False
 
-        log.info("Successfully executed process from path \"%s\" with "
-                 "arguments \"%s\" with pid %d", path, args or "", self.pid)
+        log.info("Successfully executed process from path %r with "
+                 "arguments %r with pid %d", path, args or "", self.pid)
         return True
 
     def terminate(self):
