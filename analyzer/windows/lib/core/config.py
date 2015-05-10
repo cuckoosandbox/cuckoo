@@ -39,18 +39,14 @@ class Config:
             try:
                 # Split the options by comma.
                 fields = self.options.split(",")
-            except ValueError as e:
+            except ValueError:
                 pass
             else:
                 for field in fields:
-                    # Split the name and the value of the option.
-                    try:
+                    # Split the name and the value of the option and add the
+                    # entry to the dictionary.
+                    if "=" in field:
                         key, value = field.split("=", 1)
-                    except ValueError as e:
-                        pass
-                    else:
-                        # If the parsing went good, we add the option to the
-                        # dictionary.
                         options[key.strip()] = value.strip()
 
         return options
