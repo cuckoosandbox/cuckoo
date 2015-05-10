@@ -85,6 +85,9 @@ def main():
         resultserver_port = conf.resultserver.port
 
     if args.add:
+        if db.view_machine(args.vmname):
+            sys.exit("A Virtual Machine with this name already exists!")
+
         db.add_machine(args.vmname, args.vmname, args.ip, args.platform,
                        args.tags, args.interface, args.snapshot,
                        resultserver_ip, int(resultserver_port))
