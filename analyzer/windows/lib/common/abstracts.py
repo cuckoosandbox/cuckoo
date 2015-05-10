@@ -17,7 +17,10 @@ class Package(object):
         self.pids = []
 
         # Fetch the current working directory, defaults to $TEMP.
-        self.curdir = options.get("curdir", os.getenv("TEMP"))
+        if "curdir" in options:
+            self.curdir = os.path.expandvars(options["curdir"])
+        else:
+            self.curdir = os.getenv("TEMP")
 
     def set_pids(self, pids):
         """Update list of monitored PIDs in the package context.
