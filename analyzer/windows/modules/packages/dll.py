@@ -19,8 +19,11 @@ class Dll(Package):
         arguments = self.options.get("arguments")
         loader_name = self.options.get("loader")
 
+        path = self.move_curdir(path)
+
         # Check file extension.
         ext = os.path.splitext(path)[-1].lower()
+
         # If the file doesn't have the proper .dll extension force it
         # and rename it. This is needed for rundll32 to execute correctly.
         # See ticket #354 for details.

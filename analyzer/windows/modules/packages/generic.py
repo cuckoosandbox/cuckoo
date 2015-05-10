@@ -16,8 +16,11 @@ class Generic(Package):
 
     def start(self, path):
         cmd_path = self.get_path("cmd.exe")
+        path = self.move_curdir(path)
+
         # Create random cmd.exe window title.
         rand_title = "".join([chr(randint(0, 128)) for i in xrange(0, randint(1, 10))])
+
         # START syntax.
         # See: https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/start.mspx?mfr=true
         # start ["title"] [/dPath] [/i] [/min] [/max] [{/separate | /shared}]
