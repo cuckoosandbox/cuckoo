@@ -137,6 +137,20 @@ class Process(object):
         KERNEL32.GetShortPathNameW(path, buf, len(buf))
         return buf.value
 
+    def _encode_args(self, args):
+        """Convert a list of arguments to a string that can be passed along
+        on the command-line.
+        @param args: list of arguments
+        @return: the command-line equivalent
+        """
+        ret = []
+        for line in args:
+            if " " in line or '"' in line:
+                ret.append("\"%s\"" % line.replace('"', '\\"'))
+            else:
+                ret.append(line)
+        return " ".join(ret)
+
     def is32bit(self, pid=None, path=None):
         """Is a PE file 32-bit or does a process identifier belong to a
         32-bit process.
@@ -202,7 +216,7 @@ class Process(object):
         argv = [inject_exe, "--app", self.shortpath(path)]
 
         if args:
-            argv += ["--args", args]
+            argv += ["--args", self._encode_args(args)]
 
         if free:
             argv += ["--free"]

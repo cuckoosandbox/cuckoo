@@ -91,8 +91,8 @@ class Jar(Package):
         path = self.move_curdir(path)
 
         if class_path:
-            args = "-cp \"%s\" %s" % (path, class_path)
+            args = ["-cp", path, class_path]
         else:
-            args = "-jar \"%s\"" % path
+            args = ["-jar", path]
 
-        return self.execute(java, args)
+        return self.execute(java, args=args)

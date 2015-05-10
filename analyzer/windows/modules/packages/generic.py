@@ -16,7 +16,6 @@ class Generic(Package):
 
     def start(self, path):
         cmd_path = self.get_path("cmd.exe")
-        path = self.move_curdir(path)
 
         # Create random cmd.exe window title.
         rand_title = "".join([chr(randint(0, 128)) for i in xrange(0, randint(1, 10))])
@@ -26,5 +25,5 @@ class Generic(Package):
         # start ["title"] [/dPath] [/i] [/min] [/max] [{/separate | /shared}]
         # [{/low | /normal | /high | /realtime | /abovenormal | belownormal}]
         # [/wait] [/b] [FileName] [parameters]
-        cmd_args = "/c start /wait \"{0}\" \"{1}\"".format(rand_title, path)
-        return self.execute(cmd_path, cmd_args)
+        args = ["/c", "start", "/wait", rand_title, self.move_curdir(path)]
+        return self.execute(cmd_path, args=args)
