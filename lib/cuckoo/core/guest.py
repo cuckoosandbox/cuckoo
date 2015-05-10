@@ -16,7 +16,7 @@ from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT
 from lib.cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
 from lib.cuckoo.common.constants import CUCKOO_GUEST_FAILED
 from lib.cuckoo.common.exceptions import CuckooGuestError
-from lib.cuckoo.common.utils import TimeoutServer, sanitize_filename
+from lib.cuckoo.common.utils import TimeoutServer
 from lib.cuckoo.core.resultserver import ResultServer
 
 log = logging.getLogger(__name__)
@@ -126,9 +126,8 @@ class GuestManager:
         """
         log.info("Starting analysis on guest (id=%s, ip=%s)", self.id, self.ip)
 
-        # TODO: deal with unicode URLs.
-        if options["category"] == "file":
-            options["file_name"] = sanitize_filename(options["file_name"])
+        # TODO Deal with unicode URLs, should probably try URL encoding.
+        # Unicode files are being taken care of.
 
         # If the analysis timeout is higher than the critical timeout,
         # automatically increase the critical timeout by one minute.

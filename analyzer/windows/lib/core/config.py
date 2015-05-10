@@ -13,7 +13,7 @@ class Config:
         for section in config.sections():
             for name, raw_value in config.items(section):
                 if name == "file_name":
-                    value = config.get(section, name)
+                    value = config.get(section, name).decode("utf8")
                 else:
                     try:
                         value = config.getboolean(section, name)
