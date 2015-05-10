@@ -141,9 +141,9 @@ class SchedulerThread(threading.Thread):
 
         node = Node.query.filter_by(name=name).first()
 
-        # Select regular tasks.
+        # Select tasks, order by priority.
         tasks = Task.query.filter_by(status=Task.PENDING)
-        tasks = tasks.filter_by(priority=1)
+        tasks = tasks.order_by(Task.priority.desc())
         tasks = tasks.order_by(Task.id).limit(count)
 
         # Update all tasks to use our node id.

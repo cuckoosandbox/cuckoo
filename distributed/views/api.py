@@ -111,12 +111,13 @@ def task_list():
     finished = request.args.get("finished")
     status = request.args.get("status")
     owner = request.args.get("owner")
+    priority = request.args.get("priority")
 
     if finished is not None and status is not None:
         return json_error(400, "Do not combine finished and status. "
                                "Finished has been deprecated.")
 
-    q = Task.query
+    q = Task.query.order_by(Task.id)
 
     if finished is not None:
         if bool(int(finished)):
@@ -135,6 +136,9 @@ def task_list():
 
     if owner:
         q = q.filter_by(owner=owner)
+
+    if priority:
+        q = q.filter_by(priority=int(priority))
 
     tasks = {}
     for task in q.all():
@@ -260,10 +264,15 @@ def report_get(task_id, report_format="json"):
 
 @blueprint.route("/status")
 def status_get():
+    tasks = Task.query
+
+    if "priority" in request.args:
+        tasks = tasks.filter_by(priority=request.args["priority"])
+
     tasks = dict(
-        pending=Task.query.filter_by(status=Task.PENDING).count(),
-        processing=Task.query.filter_by(status=Task.PROCESSING).count(),
-        finished=Task.query.filter_by(status=Task.FINISHED).count(),
-        deleted=Task.query.filter_by(status=Task.DELETED).count(),
+        pending=tasks.filter_by(status=Task.PENDING).count(),
+        processing=tasks.filter_by(status=Task.PROCESSING).count(),
+        finished=tasks.filter_by(status=Task.FINISHED).count(),
+        deleted=tasks.filter_by(status=Task.DELETED).count(),
     )
     return jsonify(success=True, nodes=g.statuses, tasks=tasks)

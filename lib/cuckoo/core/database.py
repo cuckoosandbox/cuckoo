@@ -473,8 +473,10 @@ class Database(object):
 
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
-            for tag in tags.replace(" ", "").split(","):
-                machine.tags.append(self._get_or_create(session, Tag, name=tag))
+            for tag in tags.split(","):
+                if tag.strip():
+                    tag = self._get_or_create(session, Tag, name=tag.strip())
+                    machine.tags.append(tag)
         session.add(machine)
 
         try:
@@ -518,7 +520,7 @@ class Database(object):
         row = None
         try:
             if machine != "":
-                row = session.query(Task).filter_by(status=TASK_PENDING).filter(Machine.name==machine).order_by(Task.priority.desc(), Task.added_on.asc()).first()
+                row = session.query(Task).filter_by(status=TASK_PENDING).filter(Machine.name == machine).order_by(Task.priority.desc(), Task.added_on.asc()).first()
             else:
                 row = session.query(Task).filter_by(status=TASK_PENDING).order_by(Task.priority.desc(), Task.added_on.asc()).first()
 
@@ -722,7 +724,7 @@ class Database(object):
             return machines
         except SQLAlchemyError as e:
             log.debug("Database error getting available machines: {0}".format(e))
-            return 0
+            return []
         finally:
             session.close()
 
@@ -845,8 +847,9 @@ class Database(object):
 
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
-            for tag in tags.replace(" ", "").split(","):
-                task.tags.append(self._get_or_create(session, Tag, name=tag))
+            for tag in tags.split(","):
+                tag = self._get_or_create(session, Tag, name=tag.strip())
+                task.tags.append(tag)
 
         if clock:
             if isinstance(clock, str) or isinstance(clock, unicode):

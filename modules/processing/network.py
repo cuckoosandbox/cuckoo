@@ -2,12 +2,13 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import os
 import re
-import struct
 import socket
-import logging
-from urlparse import urlunparse
+import struct
+import tempfile
+import urlparse
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
@@ -27,11 +28,9 @@ except ImportError:
 # http://stackoverflow.com/questions/10665925/how-to-sort-huge-files-with-python
 # http://code.activestate.com/recipes/576755/
 import heapq
-from tempfile import gettempdir
 from itertools import islice
 from collections import namedtuple
 
-TMPD = gettempdir()
 Keyed = namedtuple("Keyed", ["key", "obj"])
 Packet = namedtuple("Packet", ["raw", "ts"])
 
@@ -387,17 +386,16 @@ class Pcap:
 
             entry["port"] = dport
 
-            # Manually deal with cases when destination port is not the default one,
-            # and it is  not included in host header.
+            # Manually deal with cases when destination port is not the
+            # default one and it is not included in host header.
             netloc = entry["host"]
             if dport != 80 and ":" not in netloc:
                 netloc += ":" + str(entry["port"])
 
             entry["data"] = convert_to_printable(tcpdata)
-            entry["uri"] = convert_to_printable(urlunparse(("http",
-                                                            netloc,
-                                                            http.uri, None,
-                                                            None, None)))
+            url = urlparse.urlunparse(("http", netloc, http.uri,
+                                       None, None, None))
+            entry["uri"] = convert_to_printable(url)
             entry["body"] = convert_to_printable(http.body)
             entry["path"] = convert_to_printable(http.uri)
 
@@ -641,7 +639,9 @@ def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None
             if not current_chunk:
                 break
             current_chunk.sort()
-            output_chunk = output_class(os.path.join(TMPD, "%06i" % len(chunks)))
+            fd, filepath = tempfile.mkstemp()
+            os.close(fd)
+            output_chunk = output_class(filepath)
             chunks.append(output_chunk)
 
             for elem in current_chunk:
