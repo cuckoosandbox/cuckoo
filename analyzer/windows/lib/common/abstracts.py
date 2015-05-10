@@ -16,6 +16,9 @@ class Package(object):
         self.options = options
         self.pids = []
 
+        # Fetch the current working directory, defaults to $TEMP.
+        self.curdir = options.get("curdir", os.getenv("TEMP"))
+
     def set_pids(self, pids):
         """Update list of monitored PIDs in the package context.
         @param pids: list of pids.
@@ -63,6 +66,16 @@ class Package(object):
         raise CuckooPackageError("Unable to find any %s executable." %
                                  application)
 
+    def move_curdir(self, filepath):
+        """Move a file to the current working directory so it can be executed
+        from there.
+        @param filepath: the file to be moved
+        @return: the new filepath
+        """
+        outpath = os.path.join(self.curdir, os.path.basename(filepath))
+        os.rename(filepath, outpath)
+        return outpath
+
     def execute(self, path, args):
         """Starts an executable for analysis.
         @param path: executable path
@@ -71,12 +84,11 @@ class Package(object):
         """
         dll = self.options.get("dll")
         free = self.options.get("free")
-        curdir = self.options.get("curdir")
         source = self.options.get("from")
 
         p = Process()
         if not p.execute(path=path, args=args, dll=dll,
-                         free=free, curdir=curdir, source=source):
+                         free=free, curdir=self.curdir, source=source):
             raise CuckooPackageError("Unable to execute the initial process, "
                                      "analysis aborted.")
         return p.pid

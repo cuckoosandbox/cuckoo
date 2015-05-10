@@ -212,7 +212,6 @@ class Process(object):
 
         if curdir:
             argv += ["--curdir", self.shortpath(curdir)]
-            path = os.path.join(curdir, os.path.basename(path))
 
         if source:
             if isinstance(source, (int, long)) or source.isdigit():

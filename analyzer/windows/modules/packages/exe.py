@@ -9,4 +9,5 @@ class Exe(Package):
 
     def start(self, path):
         args = self.options.get("arguments")
+        path = self.move_curdir(path)
         return self.execute(path, args)

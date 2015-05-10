@@ -17,4 +17,5 @@ class DOC(Package):
 
     def start(self, path):
         word = self.get_path("Microsoft Office Word")
+        path = self.move_curdir(path)
         return self.execute(word, "\"%s\"" % path)

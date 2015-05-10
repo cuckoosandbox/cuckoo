@@ -20,4 +20,5 @@ class Python(Package):
     def start(self, path):
         python = self.get_path("Python")
         arguments = self.options.get("arguments", "")
+        path = self.move_curdir(path)
         return self.execute(python, "%s %s" % (path, arguments))
