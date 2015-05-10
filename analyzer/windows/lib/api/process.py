@@ -162,12 +162,14 @@ class Process(object):
 
         return bitsize == 32
 
-    def execute(self, path, args=None, dll=None, free=False, source=None):
+    def execute(self, path, args=None, dll=None, free=False, curdir=None,
+                source=None):
         """Execute sample process.
         @param path: sample path.
         @param args: process args.
         @param dll: dll path.
         @param free: do not inject our monitor.
+        @param curdir: current working directory.
         @param source: process identifier or process name which will
                        become the parent process for the new process.
         @return: operation status.
@@ -208,6 +210,10 @@ class Process(object):
             argv += ["--apc", "--dll", dllpath,
                      "--config", self.drop_config()]
 
+        if curdir:
+            argv += ["--curdir", self.shortpath(curdir)]
+            path = os.path.join(curdir, os.path.basename(path))
+
         if source:
             if isinstance(source, (int, long)) or source.isdigit():
                 argv += ["--from", "%s" % source]
@@ -217,8 +223,8 @@ class Process(object):
         try:
             self.pid = int(subprocess.check_output(argv))
         except Exception:
-            log.error("Failed to execute process from path \"%s\" with "
-                      "arguments \"%s\" (Error: %s)", path, argv,
+            log.error("Failed to execute process from path %r with "
+                      "arguments %r (Error: %s)", path, argv,
                       get_error_string(KERNEL32.GetLastError()))
             return False
 
