@@ -12,5 +12,4 @@ class CPL(Package):
 
     def start(self, path):
         control = self.get_path("control.exe")
-        path = self.move_curdir(path)
-        return self.execute(control, "\"%s\"" % path)
+        return self.execute(control, args=[self.move_curdir(path)])

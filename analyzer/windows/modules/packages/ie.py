@@ -12,4 +12,4 @@ class IE(Package):
 
     def start(self, url):
         iexplore = self.get_path("Internet Explorer")
-        return self.execute(iexplore, "\"%s\"" % url)
+        return self.execute(iexplore, args=[url])

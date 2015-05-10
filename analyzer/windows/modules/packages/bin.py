@@ -11,8 +11,8 @@ class Shellcode(Package):
     def start(self, path):
         p = Process()
         dll = self.options.get("dll")
-        path = self.move_curdir(path)
-        p.execute(path="bin/execsc.exe", args=path, suspended=True)
+        p.execute(path="bin/execsc.exe", args=[self.move_curdir(path)],
+                  suspended=True)
         p.inject(dll)
         p.resume()
         p.wait()

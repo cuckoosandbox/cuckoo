@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import shlex
 import shutil
 
 from lib.common.abstracts import Package
@@ -32,13 +33,13 @@ class Dll(Package):
             os.rename(path, new_path)
             path = new_path
 
-        args = "{0},{1}".format(path, function)
+        args = ["%s,%s" % (path, function)]
         if arguments:
-            args += " {0}".format(arguments)
+            args += shlex.split(arguments)
 
         if loader_name:
             loader = os.path.join(os.path.dirname(rundll32), loader_name)
             shutil.copy(rundll32, loader)
             rundll32 = loader
 
-        return self.execute(rundll32, args)
+        return self.execute(rundll32, args=args)

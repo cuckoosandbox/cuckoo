@@ -17,7 +17,6 @@ class HTML(Package):
 
     def start(self, path):
         iexplore = self.get_path("browser")
-        path = self.move_curdir(path)
 
         # Travelling inside malware universe you should bring a towel with you.
         # If a file detected as HTML is submitted without a proper extension,
@@ -30,4 +29,4 @@ class HTML(Package):
             path += ".html"
             log.info("Submitted file is missing extension, adding .html")
 
-        return self.execute(iexplore, "\"%s\"" % path)
+        return self.execute(iexplore, args=[self.move_curdir(path)])
