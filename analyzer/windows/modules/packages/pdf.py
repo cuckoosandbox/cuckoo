@@ -15,4 +15,4 @@ class PDF(Package):
 
     def start(self, path):
         reader = self.get_path("Adobe Reader")
-        return self.execute(reader, args=[self.move_curdir(path)])
+        return self.execute(reader, args=[path])

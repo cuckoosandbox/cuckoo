@@ -421,7 +421,7 @@ class Analyzer:
         self.log_pipe_server.start()
 
         # We update the target according to its category. If it's a file, then
-        # we store the path.
+        # we store the target path.
         if self.config.category == "file":
             self.target = os.path.join(os.environ["TEMP"] + os.sep,
                                        self.config.file_name)
@@ -502,6 +502,12 @@ class Analyzer:
 
         # Initialize the analysis package.
         package = package_class(self.config.options)
+
+        # Move the sample to the current working directory as provided by the
+        # task - one is able to override the starting path of the sample.
+        # E.g., for some samples it might be useful to run from %APPDATA%
+        # instead of %TEMP%.
+        self.target = package.move_curdir(self.target)
 
         # Initialize Auxiliary modules
         Auxiliary()

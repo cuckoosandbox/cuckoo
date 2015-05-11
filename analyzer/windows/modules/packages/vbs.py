@@ -15,4 +15,4 @@ class VBS(Package):
 
     def start(self, path):
         wscript = self.get_path("WScript")
-        return self.execute(wscript, args=[self.move_curdir(path)])
+        return self.execute(wscript, args=[path])

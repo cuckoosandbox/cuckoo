@@ -88,7 +88,6 @@ class Jar(Package):
     def start(self, path):
         java = self.get_path("Java")
         class_path = self.options.get("class")
-        path = self.move_curdir(path)
 
         if class_path:
             args = ["-cp", path, class_path]

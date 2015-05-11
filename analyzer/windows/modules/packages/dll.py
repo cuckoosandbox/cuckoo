@@ -20,8 +20,6 @@ class Dll(Package):
         arguments = self.options.get("arguments")
         loader_name = self.options.get("loader")
 
-        path = self.move_curdir(path)
-
         # Check file extension.
         ext = os.path.splitext(path)[-1].lower()
 

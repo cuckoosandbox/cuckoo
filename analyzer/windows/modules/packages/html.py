@@ -29,4 +29,4 @@ class HTML(Package):
             path += ".html"
             log.info("Submitted file is missing extension, adding .html")
 
-        return self.execute(iexplore, args=[self.move_curdir(path)])
+        return self.execute(iexplore, args=[path])
