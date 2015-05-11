@@ -348,7 +348,8 @@ class PipeServer(Thread):
                 return False
 
             # If we receive a connection to the pipe, we invoke the handler.
-            if KERNEL32.ConnectNamedPipe(h_pipe, None) or KERNEL32.GetLastError() == ERROR_PIPE_CONNECTED:
+            if KERNEL32.ConnectNamedPipe(h_pipe, None) or \
+                    KERNEL32.GetLastError() == ERROR_PIPE_CONNECTED:
                 handler = PipeHandler(h_pipe)
                 handler.daemon = True
                 handler.start()
@@ -629,11 +630,10 @@ class Analyzer:
                         "exception: %s", package_name, e)
 
         try:
-            # Upload files the package created to package_files in the results folder
-            package_files = package.package_files()
-            if package_files is not None:
-                for path, name in package_files:
-                    upload_to_host(path, os.path.join("package_files", name))
+            # Upload files the package created to package_files in the
+            # results folder.
+            for path, name in package.package_files() or []:
+                upload_to_host(path, os.path.join("package_files", name))
         except Exception as e:
             log.warning("The package \"%s\" package_files function raised an "
                         "exception: %s", package_name, e)

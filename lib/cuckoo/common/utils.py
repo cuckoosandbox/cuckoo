@@ -273,6 +273,7 @@ class SuperLock(object):
     def __enter__(self):
         self.tlock.acquire()
         self.mlock.acquire()
+
     def __exit__(self, type, value, traceback):
         self.mlock.release()
         self.tlock.release()
