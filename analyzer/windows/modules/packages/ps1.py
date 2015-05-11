@@ -17,5 +17,5 @@ class PS1(Package):
     def start(self, path):
         powershell = self.get_path("PowerShell")
         args = ["-NoProfile", "-ExecutionPolicy", "unrestricted",
-                "-File", self.move_curdir(path)]
+                "-File", path]
         return self.execute(powershell, args=args)

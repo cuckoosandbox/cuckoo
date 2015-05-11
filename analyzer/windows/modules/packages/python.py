@@ -21,10 +21,7 @@ class Python(Package):
 
     def start(self, path):
         python = self.get_path("Python")
-        arguments = self.options.get("arguments")
+        arguments = self.options.get("arguments", "")
 
-        args = [self.move_curdir(path)]
-        if arguments:
-            args += shlex.split(arguments)
-
+        args = [path] + shlex.split(arguments)
         return self.execute(python, args=args)

@@ -25,5 +25,5 @@ class Generic(Package):
         # start ["title"] [/dPath] [/i] [/min] [/max] [{/separate | /shared}]
         # [{/low | /normal | /high | /realtime | /abovenormal | belownormal}]
         # [/wait] [/b] [FileName] [parameters]
-        args = ["/c", "start", "/wait", rand_title, self.move_curdir(path)]
+        args = ["/c", "start", "/wait", rand_title, path]
         return self.execute(cmd_path, args=args)

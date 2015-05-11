@@ -13,4 +13,4 @@ class Msi(Package):
 
     def start(self, path):
         msi_path = self.get_path("msiexec.exe")
-        return self.execute(msi_path, args=["/I", self.move_curdir(path)])
+        return self.execute(msi_path, args=["/I", path])
