@@ -510,7 +510,6 @@ class Analyzer:
         # instead of %TEMP%.
         if self.config.category == "file":
             self.target = package.move_curdir(self.target)
-            log.debug("Executing sample from %s.", self.target)
 
         # Initialize Auxiliary modules
         Auxiliary()
