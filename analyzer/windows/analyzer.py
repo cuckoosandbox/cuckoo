@@ -402,7 +402,7 @@ class Analyzer:
         os.system("echo:|time {0}".format(clock.strftime("%H:%M:%S")))
 
         # Set the default DLL to be used by the PipeHandler.
-        DEFAULT_DLL = self.config.get_options().get("dll")
+        DEFAULT_DLL = self.config.options.get("dll")
 
         # Initialize and start the Pipe Servers. This is going to be used for
         # communicating with the injected and monitored processes.
@@ -451,7 +451,8 @@ class Analyzer:
             # If the analysis target is a file, we choose the package according
             # to the file format.
             if self.config.category == "file":
-                package = choose_package(self.config.file_type, self.config.file_name)
+                package = choose_package(self.config.file_type,
+                                         self.config.file_name)
             # If it's an URL, we'll just use the default Internet Explorer
             # package.
             else:
@@ -490,7 +491,7 @@ class Analyzer:
                               "(package={0}): {1}".format(package_name, e))
 
         # Initialize the analysis package.
-        package = package_class(self.config.get_options())
+        package = package_class(self.config.options)
 
         # Initialize Auxiliary modules
         Auxiliary()
@@ -511,7 +512,7 @@ class Analyzer:
         for module in Auxiliary.__subclasses__():
             # Try to start the auxiliary module.
             try:
-                aux = module(self.config.get_options())
+                aux = module(self.config.options)
                 aux_avail.append(aux)
                 aux.start()
             except (NotImplementedError, AttributeError):
