@@ -71,6 +71,8 @@ class QEMU(Machinery):
             "-device", "virtio-net-pci,romfile=,netdev=%s" % vm_info.name,
         ]
 
+        log.debug("Executing QEMU %r", qemu_args)
+
         try:
             proc = subprocess.Popen(qemu_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             self.state[vm_info.name] = proc
