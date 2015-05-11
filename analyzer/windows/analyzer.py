@@ -17,7 +17,7 @@ from datetime import datetime
 
 from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
-from lib.common.constants import PATHS, PIPE, SHUTDOWN_MUTEX
+from lib.common.constants import PATHS, LOGPIPE, PIPE, SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32
 from lib.common.defines import ERROR_MORE_DATA, ERROR_PIPE_CONNECTED
 from lib.common.defines import PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE
@@ -27,6 +27,7 @@ from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.hashing import hash_file
 from lib.common.results import upload_to_host
 from lib.core.config import Config
+from lib.core.log import LogPipeServer
 from lib.core.packages import choose_package
 from lib.core.privileges import grant_debug_privilege
 from lib.core.startup import create_folders, init_logging
@@ -411,6 +412,14 @@ class Analyzer:
             self.pipes[x].daemon = True
             self.pipes[x].start()
 
+        # Initialize and start the Log Pipe Server - the log pipe server will
+        # open up a pipe that monitored processes will use to send logs to
+        # before they head off to the host machine.
+        destination = self.config.ip, self.config.port
+        self.log_pipe_server = LogPipeServer(destination, LOGPIPE)
+        self.log_pipe_server.daemon = True
+        self.log_pipe_server.start()
+
         # We update the target according to its category. If it's a file, then
         # we store the path.
         if self.config.category == "file":
@@ -441,6 +450,7 @@ class Analyzer:
         log.debug("Starting analyzer from: %s", os.getcwd())
         log.debug("Storing results at: %s", PATHS["root"])
         log.debug("Pipe server name: %s", PIPE)
+        log.debug("Log pipe server name: %s", LOGPIPE)
 
         # If no analysis package was specified at submission, we try to select
         # one automatically.
