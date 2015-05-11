@@ -11,7 +11,7 @@ import time
 from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
 from ctypes import c_uint, c_wchar_p, create_unicode_buffer
 
-from lib.common.constants import PIPE, PATHS, SHUTDOWN_MUTEX
+from lib.common.constants import LOGPIPE, PIPE, PATHS, SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
 from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
 from lib.common.defines import MEM_COMMIT, MEMORY_BASIC_INFORMATION
@@ -334,6 +334,7 @@ class Process(object):
             config.write("host-ip={0}\n".format(cfg.ip))
             config.write("host-port={0}\n".format(cfg.port))
             config.write("pipe={0}\n".format(PIPE))
+            config.write("logpipe={0}\n".format(LOGPIPE))
             config.write("results={0}\n".format(PATHS["root"]))
             config.write("analyzer={0}\n".format(os.getcwd()))
             config.write("first-process={0}\n".format("1" if Process.first_process else "0"))
