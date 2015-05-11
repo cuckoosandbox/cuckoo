@@ -12,6 +12,7 @@ from lib.common.defines import KERNEL32, PIPE_ACCESS_INBOUND, ERROR_MORE_DATA
 from lib.common.defines import PIPE_TYPE_BYTE, PIPE_WAIT, ERROR_PIPE_CONNECTED
 from lib.common.defines import PIPE_UNLIMITED_INSTANCES, INVALID_HANDLE_VALUE
 from lib.common.defines import FILE_FLAG_WRITE_THROUGH, PIPE_READMODE_BYTE
+from lib.common.defines import ERROR_BROKEN_PIPE
 
 log = logging.getLogger(__name__)
 
@@ -65,6 +66,13 @@ class LogPipeHandler(threading.Thread):
 
             if success or KERNEL32.GetLastError() == ERROR_MORE_DATA:
                 sock.sendall(buf.raw[:bytes_read.value])
+            # If we get the broken pipe error then this pipe connection has
+            # been terminated for one reason or another. So break from the
+            # loop and make the socket "inactive", that is, another pipe
+            # connection can in theory pick it up. (This will only happen in
+            # cases where malware for some reason broke our pipe connection).
+            elif KERNEL32.GetLastError() == ERROR_BROKEN_PIPE:
+                break
             else:
                 log.warning("The log pipe handler has failed, last error %d.",
                             KERNEL32.GetLastError())
