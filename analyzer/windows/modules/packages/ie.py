@@ -9,6 +9,8 @@ from _winreg import KEY_SET_VALUE, REG_DWORD, REG_SZ
 from lib.common.abstracts import Package
 from lib.common.exceptions import CuckooPackageError
 
+IESETTINGS = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Internet Settings"
+
 class IE(Package):
     """Internet Explorer analysis package."""
     PATHS = [
@@ -70,7 +72,21 @@ class IE(Package):
 
             CloseKey(key_handle)
 
+    def setup_proxy(self, proxy_host):
+        """Configure Internet Explorer to route all traffic through a
+        proxy."""
+        key = OpenKey(HKEY_CURRENT_USER, IESETTINGS, 0, KEY_SET_VALUE)
+        SetValueEx(key, "MigrateProxy", 0, REG_DWORD, 1)
+        SetValueEx(key, "ProxyEnable", 0, REG_DWORD, 1)
+        SetValueEx(key, "ProxyHttp1.1", 0, REG_DWORD, 0)
+        SetValueEx(key, "ProxyServer", 0, REG_SZ, "http://%s" % proxy_host)
+        SetValueEx(key, "ProxyOverride", 0, REG_SZ, "<local>")
+        CloseKey(key)
+
     def start(self, url):
+        if "proxy" in self.options:
+            self.setup_proxy(self.options["proxy"])
+
         self.init_iexplore()
 
         iexplore = self.get_path("Internet Explorer")
