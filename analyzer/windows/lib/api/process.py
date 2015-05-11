@@ -317,34 +317,35 @@ class Process(object):
     def drop_config(self):
         """Helper function to drop the configuration for a new process."""
         fd, config_path = tempfile.mkstemp()
+
+        config = Config(cfg="analysis.conf")
+
+        # The first time we come up with a random startup-time.
+        if Process.first_process:
+            # This adds 1 up to 30 times of 20 minutes to the startup
+            # time of the process, therefore bypassing anti-vm checks
+            # which check whether the VM has only been up for <10 minutes.
+            Process.startup_time = random.randint(1, 30) * 20 * 60 * 1000
+
+        lines = {
+            "host-ip": config.ip,
+            "host-port": config.port,
+            "pipe": PIPE,
+            "logpipe": LOGPIPE,
+            "results": PATHS["root"],
+            "analyzer": os.getcwd(),
+            "first-process": "1" if Process.first_process else "0",
+            "startup-time": Process.startup_time,
+            "shutdown-mutex": SHUTDOWN_MUTEX,
+            "force-sleepskip": config.options.get("force-sleepskip", "0"),
+            "hashes-path": os.path.join(os.getcwd(), "hashes.bin"),
+        }
+
+        for key, value in lines.items():
+            os.write(fd, "%s=%s\n" % (key, value))
+
         os.close(fd)
-
-        with open(config_path, "w") as config:
-            cfg = Config(cfg="analysis.conf")
-
-            # The first time we come up with a random startup-time.
-            if Process.first_process:
-                # This adds 1 up to 30 times of 20 minutes to the startup
-                # time of the process, therefore bypassing anti-vm checks
-                # which check whether the VM has only been up for <10 minutes.
-                Process.startup_time = random.randint(1, 30) * 20 * 60 * 1000
-
-            hashes_path = os.path.join(os.getcwd(), "hashes.bin")
-
-            config.write("host-ip={0}\n".format(cfg.ip))
-            config.write("host-port={0}\n".format(cfg.port))
-            config.write("pipe={0}\n".format(PIPE))
-            config.write("logpipe={0}\n".format(LOGPIPE))
-            config.write("results={0}\n".format(PATHS["root"]))
-            config.write("analyzer={0}\n".format(os.getcwd()))
-            config.write("first-process={0}\n".format("1" if Process.first_process else "0"))
-            config.write("startup-time={0}\n".format(Process.startup_time))
-            config.write("shutdown-mutex={0}\n".format(SHUTDOWN_MUTEX))
-            config.write("force-sleepskip={0}\n".format(cfg.options.get("force-sleepskip", "0")))
-            config.write("hashes-path={0}\n".format(hashes_path))
-
-            Process.first_process = False
-
+        Process.first_process = False
         return config_path
 
     def dump_memory(self):
