@@ -10,5 +10,5 @@ class Exe(Package):
     """EXE analysis package."""
 
     def start(self, path):
-        args = self.options.get("arguments")
+        args = self.options.get("arguments", "")
         return self.execute(path, args=shlex.split(args))
