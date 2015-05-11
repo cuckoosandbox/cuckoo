@@ -489,7 +489,7 @@ class Analyzer:
                               "(package={0}): {1}".format(package_name, e))
 
         # Initialize the analysis package.
-        pack = package_class(self.config.get_options())
+        package = package_class(self.config.get_options())
 
         # Initialize Auxiliary modules
         Auxiliary()
@@ -529,7 +529,7 @@ class Analyzer:
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
         try:
-            pids = pack.start(self.target)
+            pids = package.start(self.target)
         except NotImplementedError:
             raise CuckooError("The package \"{0}\" doesn't contain a run "
                               "function.".format(package_name))
@@ -595,14 +595,14 @@ class Analyzer:
                     # Update the list of monitored processes available to the
                     # analysis package. It could be used for internal
                     # operations within the module.
-                    pack.set_pids(PROCESS_LIST.pids)
+                    package.set_pids(PROCESS_LIST.pids)
 
                 try:
                     # The analysis packages are provided with a function that
                     # is executed at every loop's iteration. If such function
                     # returns False, it means that it requested the analysis
                     # to be terminate.
-                    if not pack.check():
+                    if not package.check():
                         log.info("The analysis package requested the "
                                  "termination of the analysis.")
                         break
@@ -623,14 +623,14 @@ class Analyzer:
         try:
             # Before shutting down the analysis, the package can perform some
             # final operations through the finish() function.
-            pack.finish()
+            package.finish()
         except Exception as e:
             log.warning("The package \"%s\" finish function raised an "
                         "exception: %s", package_name, e)
 
         try:
             # Upload files the package created to package_files in the results folder
-            package_files = pack.package_files()
+            package_files = package.package_files()
             if package_files is not None:
                 for path, name in package_files:
                     upload_to_host(path, os.path.join("package_files", name))
