@@ -425,16 +425,15 @@ class Enhanced(object):
         self.procedures = {}
         self.events = []
         self.regevents = []
+        self.fileevents = []
+        self.direvents = []
 
-    def _handle_registry_event(self, event):
+    def _handle_enhanced_event(self, event):
         """
         Adds keys to new data structure for better display in the 
         web GUI
         """
-        if event['object'] != 'registry':
-            return
-
-        else:
+        if event['object'] == 'registry':
             if event['event'] == 'write':
                 reg_event = {
                                 "event": event['event'],
@@ -449,6 +448,31 @@ class Enhanced(object):
                             }
             if reg_event not in self.regevents:
                 self.regevents.append(reg_event)
+
+        if event['object'] == 'file':
+            if event['event'] == 'move':
+                file_event = {
+                                "event": event['event'],
+                                "to": event['data']['to'],
+                                "file": event['data']['to'],
+                                "from": event['data']['from']
+                             }
+
+            else:
+                file_event = {
+                                "event": event['event'],
+                                "file": event['data']['file']
+                             }
+            if file_event not in self.fileevents:
+                self.fileevents.append(file_event)
+
+        if event['object'] == 'dir':
+            dir_event = {
+                            "event": event['event'],
+                            "dir": event['data']['file']
+                        }
+            if dir_event not in self.direvents:
+                self.direvents.append(dir_event)
 
         return
 
@@ -863,13 +887,13 @@ class Enhanced(object):
         event = self._process_call(call)
         if event:
             self.events.append(event)
-            self._handle_registry_event(event)
+            self._handle_enhanced_event(event)
 
     def run(self):
         """Get registry keys, mutexes and files.
         @return: Summary of keys, mutexes and files.
         """
-        return {"enhanced_events": self.events, "registry_events": self.regevents}
+        return {"enhanced_events": self.events, "registry_events": self.regevents, "file_events": self.fileevents, "dir_events": self.direvents}
 
 
 class Anomaly(object):

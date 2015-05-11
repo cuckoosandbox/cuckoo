@@ -9,24 +9,63 @@
         <div class="tab-content">
             <div class="tab-pane fade in active" id="summary_files">
                 <div class="well mono">
-                {% if analysis.behavior.summary.files %}
-                    {% for file in analysis.behavior.summary.files %}
-                        {{file}}<br />
+                {% if analysis.behavior.enhanced.dir_events %}
+                    <ul style="list-style: none; padding-left:0;">
+                    {% for event in analysis.behavior.enhanced.dir_events %}
+                        {% if event.event == 'delete' %}
+                            <li style=color:red>delete dir {{event.dir}}</li>
+                        {% elif event.event == 'create' %}
+                            <li style=color:green>create dir {{event.dir}}</li>
+                        {% else %}
+                            <li>{{event.event}} {{event.dir}}</li>
+                        {% endif %}
                     {% endfor %}
+                    </ul>
                 {% endif %}
+                {% if analysis.behavior.enhanced.file_events %}
+                    <ul style="list-style: none; padding-left:0;">
+                    {% for event in analysis.behavior.enhanced.file_events %}
+                        {% if event.event == 'delete' %}
+                            <li style=color:red>delete {{event.file}}</li>
+                        {% elif event.event == 'write' %}
+                            <li style=color:green>write {{event.file}}</li>
+                        {% elif event.event == 'execute' %}
+                            <li style=color:purple>execute {{event.file}}</li>
+                        {% elif event.event == 'move' %}
+                            <li>move <div style=color:red>{{event.from}}</div> to <div style=color:green>{{event.to}}</div></li>
+                        {% else %}
+                            <li>{{event.event}} {{event.file}}</li>
+                        {% endif %}
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+               
                 </div>
             </div>
             <div class="tab-pane fade" id="summary_keys">
                 <div class="well mono">
-                {% if analysis.behavior.summary.keys %}
-                    {% for key in analysis.behavior.summary.keys %}
-                        {{key}}<br />
-                    {% endfor %}
+                {% if analysis.behavior.enhanced.registry_events %}
+                    <ul style="list-style: none; padding-left:0;">
+                        {% for event in analysis.behavior.enhanced.registry_events %}
+                            {% if event.event == 'read' %}
+                                <li><span class="mono">{{event.regkey}}</span></li>
+                            {% elif event.event == 'delete' %}
+                                <li style=color:red><span class="mono">- {{event.regkey}}</span></li>
+                            {% elif event.event == 'write' %}
+                                <li style=color:green><span class="mono">w+ {{event.regkey}}
+                                    <ul>
+                                        <li style=color:green><span class="mono">{{event.content}}</li>
+                                    </ul>
+                                </span></li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
                 {% endif %}
                 </div>
             </div>
             <div class="tab-pane fade" id="summary_mutexes">
                 <div class="well mono">
+                {{ analysis.behavior.enhanced }} 
                 {% if analysis.behavior.summary.mutexes %}
                     {% for mutex in analysis.behavior.summary.mutexes %}
                         {{mutex}}<br />
