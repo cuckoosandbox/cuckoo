@@ -26,7 +26,7 @@ $ # [sudo] pip install nose
 $ nosetests
 ```
 
-or by calling tests directly:  
+or by calling tests directly (*may not work*):  
 
 ```bash
 $ cd ./cuckoo-osx-analyzer
