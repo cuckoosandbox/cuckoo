@@ -392,6 +392,7 @@ class Analyzer:
 
         # Set virtual machine clock.
         clock = datetime.strptime(self.config.clock, "%Y%m%dT%H:%M:%S")
+
         # Setting date and time.
         # NOTE: Windows system has only localized commands with date format
         # following localization settings, so these commands for english date
