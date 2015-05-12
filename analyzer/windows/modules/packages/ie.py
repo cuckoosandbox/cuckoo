@@ -24,6 +24,9 @@ class IE(Package):
             "values": {
                 # "Would you like Internet Explorer as default browser?"
                 "Check_Associations": "no",
+
+                # "Set Up Windows Internet Explorer 8"
+                "DisableFirstRunCustomize": 1,
             },
         },
         {
