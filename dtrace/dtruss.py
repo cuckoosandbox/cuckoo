@@ -14,6 +14,9 @@ import csv
 def dtruss(target):
 	"""Returns a list of syscalls made by a target.
 
+	Note: dtruss is unable to deal with spaces in paths (even when escaped), so
+	the |target| path must not contain spaces.
+
 	Every syscall is a tuple of the following format:
 		(name, [arg0, arg1, arg2, ...], return_code, errno)
 	Everything in this tuple is a string.
