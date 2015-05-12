@@ -33,7 +33,7 @@ def main():
     parser.add_argument("--custom", type=str, action="store", default="", help="Specify any custom value", required=False)
     parser.add_argument("--owner", type=str, action="store", default="", help="Specify the task owner", required=False)
     parser.add_argument("--timeout", type=int, action="store", default=0, help="Specify an analysis timeout", required=False)
-    parser.add_argument("--options", type=str, action="store", default="", help="Specify options for the analysis package (e.g. \"name=value,name2=value2\")", required=False)
+    parser.add_argument("-o", "--options", type=str, action="store", default="", help="Specify options for the analysis package (e.g. \"name=value,name2=value2\")", required=False)
     parser.add_argument("--priority", type=int, action="store", default=1, help="Specify a priority for the analysis represented by an integer", required=False)
     parser.add_argument("--machine", type=str, action="store", default="", help="Specify the identifier of a machine you want to use", required=False)
     parser.add_argument("--platform", type=str, action="store", default="", help="Specify the operating system platform you want to use (windows/darwin/linux)", required=False)
