@@ -27,7 +27,7 @@ class TestDtrace(unittest.TestCase):
 
 	def test_dtruss_helloworld(self):
 		# given
-		print_hello_world_syscall = ('write_nocancel', ['0x1', 'Hello, world!\\n\\0', '0xE'], '14', '0')
+		print_hello_world_syscall = ('write_nocancel', ['0x1', 'Hello, world!\\n\\0', '0xE'], 14, 0)
 		# when
 		output = dtruss("./tests/assets/"+self.current_target())
 		#then
