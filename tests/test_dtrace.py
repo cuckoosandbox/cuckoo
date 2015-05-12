@@ -14,10 +14,6 @@ from dtrace.dtruss import *
 
 TESTS_DIR = os.path.dirname(os. path.abspath(__file__))
 
-# dtruss is unable to deal with paths with spaces in it,
-# so we use a relative path to a target instead.
-# TODO(rodionovd): we can either have our own (fixed) version of
-# dtruss or just leave it as is.
 class TestDtrace(unittest.TestCase):
 
 	def setUp(self):

@@ -18,7 +18,6 @@ def dtruss(target):
 		(name, [arg0, arg1, arg2, ...], return_code, errno)
 	Everything in this tuple is a string.
 	"""
-	# TODO(rodionovd): catch check_output's exception(s)
 	cmd = ["sudo", "/usr/bin/dtruss", target]
 	output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).splitlines()
 
