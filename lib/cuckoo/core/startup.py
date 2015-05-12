@@ -294,7 +294,7 @@ def cuckoo_clean():
         try:
             conn = MongoClient(host, port)
             conn.drop_database(mdb)
-            conn.disconnect()
+            conn.close()
         except:
             log.warning("Unable to drop MongoDB database: %s", mdb)
 
