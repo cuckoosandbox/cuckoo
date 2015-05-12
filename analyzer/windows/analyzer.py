@@ -537,6 +537,8 @@ class Analyzer(object):
         for module in Auxiliary.__subclasses__():
             # Try to start the auxiliary module.
             try:
+                log.debug("Starting auxiliary module %s", module.__name__)
+
                 aux = module(options=self.config.options, analyzer=self)
                 aux_avail.append(aux)
                 aux.start()
@@ -549,8 +551,6 @@ class Analyzer(object):
                             aux.__class__.__name__, e)
                 continue
             finally:
-                log.debug("Started auxiliary module %s",
-                          aux.__class__.__name__)
                 aux_enabled.append(aux)
 
         # Start analysis package. If for any reason, the execution of the
