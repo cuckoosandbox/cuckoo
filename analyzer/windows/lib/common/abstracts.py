@@ -140,5 +140,6 @@ class Package(object):
         return True
 
 class Auxiliary(object):
-    def __init__(self, options={}):
+    def __init__(self, options={}, analyzer=None):
         self.options = options
+        self.analyzer = analyzer
