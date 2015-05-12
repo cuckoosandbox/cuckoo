@@ -7,9 +7,7 @@
 
 import subprocess
 import csv
-
-# TODO(rodionovd): implement SysCall class (or named tuple?) and use them
-# instead of tuples
+from collections import namedtuple
 
 def dtruss(target):
 	"""Returns a list of syscalls made by a target.
@@ -17,9 +15,8 @@ def dtruss(target):
 	Note: dtruss is unable to deal with spaces in paths (even when escaped), so
 	the |target| path must not contain spaces.
 
-	Every syscall is a tuple of the following format:
-		(name, [arg0, arg1, arg2, ...], return_code, errno)
-	Everything in this tuple is a string.
+	Every syscall is a named tuple with the following properties:
+	name (string), args (list of strings), result (int), errno (int).
 	"""
 	cmd = ["sudo", "/usr/bin/dtruss", target]
 	output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).splitlines()
@@ -41,16 +38,18 @@ def dtruss(target):
 def _parse_dtruss_output(lines):
 	"""Parses dtruss' output into separate syscalls tuples
 	"""
+	syscall = namedtuple("syscall", "name args result errno")
 	# Remove empty lines first
 	lines = filter(None, lines)
 	results = []
 	for cmd in lines:
 		name   = _syscall_name_from_dtruss_output(cmd)
 		args   = _syscall_args_from_dtruss_output(cmd)
-		result = _syscall_result_from_dtruss_output(cmd)
-		errno  = _syscall_errno_from_dtruss_output(cmd)
+		# Result and errno are eigher decimal or hex numbers
+		result = int(_syscall_result_from_dtruss_output(cmd), 0)
+		errno  = int(_syscall_errno_from_dtruss_output(cmd), 0)
 
-		results.append((name, args, result, errno))
+		results.append(syscall(name=name, args=args, result=result, errno=errno))
 
 	return results
 
