@@ -3,6 +3,8 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+from _winreg import OpenKey, SetValueEx, CloseKey
+from _winreg import KEY_SET_VALUE, REG_DWORD, REG_SZ
 
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
@@ -10,6 +12,7 @@ from lib.common.exceptions import CuckooPackageError
 class Package(object):
     """Base abstract analysis package."""
     PATHS = []
+    REGKEYS = []
 
     def __init__(self, options={}):
         """@param options: options dict."""
@@ -79,6 +82,24 @@ class Package(object):
         os.rename(filepath, outpath)
         return outpath
 
+    def init_regkeys(self, regkeys):
+        """Initializes the registry to avoid annoying popups, configure
+        settings, etc.
+        @param regkeys: the root keys, subkeys, and key/value pairs.
+        """
+        for rootkey, subkey, values in regkeys:
+            key_handle = OpenKey(rootkey, subkey, 0, KEY_SET_VALUE)
+
+            for key, value in values.items():
+                if isinstance(value, str):
+                    SetValueEx(key_handle, key, 0, REG_SZ, value)
+                elif isinstance(value, int):
+                    SetValueEx(key_handle, key, 0, REG_DWORD, value)
+                else:
+                    raise CuckooPackageError("Invalid value type: %r" % value)
+
+            CloseKey(key_handle)
+
     def execute(self, path, args):
         """Starts an executable for analysis.
         @param path: executable path
@@ -88,6 +109,9 @@ class Package(object):
         dll = self.options.get("dll")
         free = self.options.get("free")
         source = self.options.get("from")
+
+        # Setup pre-defined registry keys.
+        self.init_regkeys(self.REGKEYS)
 
         p = Process()
         if not p.execute(path=path, args=args, dll=dll,
