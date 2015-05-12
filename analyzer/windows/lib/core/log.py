@@ -22,13 +22,15 @@ active = {}
 class LogPipeHandler(threading.Thread):
     """The Log Pipe Handler forwards all data received from a local pipe to
     the Cuckoo server through a socket."""
+    BUFSIZE = 0x10000
+
     def __init__(self, destination, pipe_handle):
         threading.Thread.__init__(self)
         self.destination = destination
         self.pipe_handle = pipe_handle
 
     def run(self):
-        buf = create_string_buffer(0x10000)
+        buf = create_string_buffer(self.BUFSIZE)
         bytes_read = c_uint()
         pid = c_uint()
 
@@ -94,7 +96,7 @@ class LogPipeServer(threading.Thread):
             pipe_handle = KERNEL32.CreateNamedPipeA(
                 self.pipe_name, PIPE_ACCESS_INBOUND | FILE_FLAG_WRITE_THROUGH,
                 PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
-                PIPE_UNLIMITED_INSTANCES, 0, 0x1000, 0, None)
+                PIPE_UNLIMITED_INSTANCES, 0, self.BUFSIZE, 0, None)
 
             if pipe_handle == INVALID_HANDLE_VALUE:
                 log.warning("Error opening logging pipe server.")
