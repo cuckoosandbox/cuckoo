@@ -189,6 +189,7 @@ class BsonHandler(object):
         self.f = open(path, "rb")
         self.proc = {}
         self.calls = {}
+        self.stats = {}
         self.reconstructor = None
         self.first_seen = None
         self.hashes = []
@@ -204,6 +205,7 @@ class BsonHandler(object):
         return {
             "process": self.proc,
             "calls": self.calls,
+            "apistats": self.stats,
         }
 
     def read(self, length):
@@ -253,6 +255,8 @@ class BsonHandler(object):
         for key, value in arguments.items():
             if isinstance(value, basestring):
                 arguments[key] = str(value)
+
+        self.stats[apiname] = self.stats.get(apiname, 0) + 1
 
         self.calls[tid].append({
             "api": apiname,
@@ -334,6 +338,7 @@ class BehaviorAnalysis(Processing):
         for path in self._enum_logs():
             proc, hashes = self._parse_log(path)
             process = proc["process"]
+            process["apistats"] = proc["apistats"]
 
             # Write all hashes to a file.
             with open(path.replace(".bson", ".hashes"), "wb") as f:
