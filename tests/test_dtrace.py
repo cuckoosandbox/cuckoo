@@ -32,6 +32,8 @@ class TestDtrace(unittest.TestCase):
 		output = dtruss("./tests/assets/"+self.current_target())
 		#then
 		self.assertIn(print_hello_world_syscall, output)
+		self.assertEqual(sum(x.name == "write_nocancel" for x in output), 1)
+
 
 def build_target(target):
 	# clang -arch x86_64 -o $target_name $target_name.c
