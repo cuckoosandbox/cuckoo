@@ -106,9 +106,9 @@ def click_mouse():
 class Human(Auxiliary, Thread):
     """Human after all"""
 
-    def __init__(self, options):
+    def __init__(self, options={}, analyzer=None):
         Thread.__init__(self)
-        Auxiliary.__init__(self, options)
+        Auxiliary.__init__(self, options, analyzer)
         self.do_run = True
 
     def stop(self):

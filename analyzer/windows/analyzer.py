@@ -359,7 +359,7 @@ class PipeServer(Thread):
 
         return True
 
-class Analyzer:
+class Analyzer(object):
     """Cuckoo Windows Analyzer.
 
     This class handles the initialization and execution of the analysis
@@ -372,6 +372,13 @@ class Analyzer:
         self.pipes = [None]*self.PIPE_SERVER_COUNT
         self.config = None
         self.target = None
+
+        self.process_lock = PROCESS_LOCK
+        self.default_dll = DEFAULT_DLL
+        self.pid = PID
+        self.ppid = PPID
+        self.files = FILES
+        self.process_list = PROCESS_LIST
 
     def prepare(self):
         """Prepare env for analysis."""
@@ -404,7 +411,7 @@ class Analyzer:
         os.system("echo:|time {0}".format(clock.strftime("%H:%M:%S")))
 
         # Set the default DLL to be used by the PipeHandler.
-        DEFAULT_DLL = self.config.options.get("dll")
+        self.default_dll = DEFAULT_DLL = self.config.options.get("dll")
 
         # Initialize and start the Pipe Servers. This is going to be used for
         # communicating with the injected and monitored processes.
@@ -530,7 +537,7 @@ class Analyzer:
         for module in Auxiliary.__subclasses__():
             # Try to start the auxiliary module.
             try:
-                aux = module(self.config.options)
+                aux = module(options=self.config.options, analyzer=self)
                 aux_avail.append(aux)
                 aux.start()
             except (NotImplementedError, AttributeError):
