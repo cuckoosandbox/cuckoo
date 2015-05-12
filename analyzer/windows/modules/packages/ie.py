@@ -18,54 +18,54 @@ class IE(Package):
     ]
 
     REGKEYS = [
-        {
-            "key": HKEY_CURRENT_USER,
-            "subkey": "Software\\Microsoft\\Internet Explorer\\Main",
-            "values": {
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Internet Explorer\\Main",
+            {
                 # "Would you like Internet Explorer as default browser?"
                 "Check_Associations": "no",
 
                 # "Set Up Windows Internet Explorer 8"
                 "DisableFirstRunCustomize": 1,
             },
-        },
-        {
-            "key": HKEY_CURRENT_USER,
-            "subkey": "Software\\Microsoft\\Internet Explorer\\Security",
-            "values": {
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Internet Explorer\\Security",
+            {
                 "Safety Warning Level": "Low",
                 "Sending_Security": "Low",
                 "Viewing_Security": "Low",
             },
-        },
-        {
-            "key": HKEY_LOCAL_MACHINE,
-            "subkey": "Software\\Microsoft\\Internet Explorer\\Main",
-            "values": {
+        ],
+        [
+            HKEY_LOCAL_MACHINE,
+            "Software\\Microsoft\\Internet Explorer\\Main",
+            {
                 # Disable Security Settings Check.
                 "DisableSecuritySettingsCheck": 1,
             },
-        },
-        {
-            "key": HKEY_CURRENT_USER,
-            "subkey": "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings",
-            "values": {
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings",
+            {
                 # "You are about to be redirected to a connection that is not secure."
                 "WarnOnHTTPSToHTTPRedirect": 0,
 
                 # "You are about to view pages over a secure connection."
                 "WarnOnZoneCrossing": 0,
             },
-        },
+        ],
     ]
 
     def init_iexplore(self):
         """Sets various Internet Explorer related registry settings in case
         the user has not taken care of it already."""
-        for row in self.REGKEYS:
-            key_handle = OpenKey(row["key"], row["subkey"], 0, KEY_SET_VALUE)
+        for rootkey, subkey, values in self.REGKEYS:
+            key_handle = OpenKey(rootkey, subkey, 0, KEY_SET_VALUE)
 
-            for key, value in row["values"].items():
+            for key, value in values.items():
                 if isinstance(value, str):
                     SetValueEx(key_handle, key, 0, REG_SZ, value)
                 elif isinstance(value, int):
