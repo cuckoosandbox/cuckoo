@@ -16,13 +16,13 @@ from lib.common.defines import ERROR_BROKEN_PIPE
 
 log = logging.getLogger(__name__)
 
+BUFSIZE = 0x10000
 sockets = {}
 active = {}
 
 class LogPipeHandler(threading.Thread):
     """The Log Pipe Handler forwards all data received from a local pipe to
     the Cuckoo server through a socket."""
-    BUFSIZE = 0x10000
 
     def __init__(self, destination, pipe_handle):
         threading.Thread.__init__(self)
@@ -30,7 +30,7 @@ class LogPipeHandler(threading.Thread):
         self.pipe_handle = pipe_handle
 
     def run(self):
-        buf = create_string_buffer(self.BUFSIZE)
+        buf = create_string_buffer(BUFSIZE)
         bytes_read = c_uint()
         pid = c_uint()
 
@@ -96,7 +96,7 @@ class LogPipeServer(threading.Thread):
             pipe_handle = KERNEL32.CreateNamedPipeA(
                 self.pipe_name, PIPE_ACCESS_INBOUND | FILE_FLAG_WRITE_THROUGH,
                 PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
-                PIPE_UNLIMITED_INSTANCES, 0, self.BUFSIZE, 0, None)
+                PIPE_UNLIMITED_INSTANCES, 0, BUFSIZE, 0, None)
 
             if pipe_handle == INVALID_HANDLE_VALUE:
                 log.warning("Error opening logging pipe server.")
