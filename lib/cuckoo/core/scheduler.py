@@ -61,6 +61,23 @@ class AnalysisManager(Thread):
         self.binary = ""
         self.machine = None
 
+        self.task.options = self._parse_options(self.task.options)
+
+    def _parse_options(self, options):
+        """Parse the analysis options field to a dictionary."""
+        ret = {}
+        for field in options.split(","):
+            if "=" not in field:
+                continue
+
+            key, value = field.split("=", 1)
+            ret[key.strip()] = value.strip()
+        return ret
+
+    def _emit_options(self, options):
+        """Emit the analysis options from a dictionary to a string."""
+        return ",".join("%s=%s" % (k, v) for k, v in options.items())
+
     def init_storage(self):
         """Initialize analysis storage folder."""
         self.storage = os.path.join(CUCKOO_ROOT,
@@ -180,7 +197,7 @@ class AnalysisManager(Thread):
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
-        options["options"] = self.task.options
+        options["options"] = self._emit_options(self.task.options)
         options["enforce_timeout"] = self.task.enforce_timeout
         options["clock"] = self.task.clock
         options["terminate_processes"] = self.cfg.cuckoo.terminate_processes
@@ -225,9 +242,6 @@ class AnalysisManager(Thread):
             log.error("Cannot acquire machine: {0}".format(e))
             return False
 
-        # Generate the analysis configuration file.
-        options = self.build_options()
-
         # At this point we can tell the ResultServer about it.
         try:
             ResultServer().add_task(self.task, self.machine)
@@ -237,6 +251,9 @@ class AnalysisManager(Thread):
 
         aux = RunAuxiliary(task=self.task, machine=self.machine)
         aux.start()
+
+        # Generate the analysis configuration file.
+        options = self.build_options()
 
         try:
             # Mark the selected analysis machine in the database as started.
