@@ -5,10 +5,10 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE file for details.
 
-import subprocess
-import csv
+from csv import reader
 from sys import argv
 from collections import namedtuple
+from subprocess import check_output, STDOUT
 
 def dtruss(target, syscall=None):
 	"""Returns a list of syscalls made by a target.
@@ -24,7 +24,7 @@ def dtruss(target, syscall=None):
 	else:
 		cmd = ["sudo", "/usr/bin/dtruss", "-t", syscall, target]
 
-	output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).splitlines()
+	output = check_output(cmd, stderr=STDOUT).splitlines()
 
 	# We're only interested in dtruss' output, not the target's: remove anything
 	# before the dtruss header
@@ -73,7 +73,7 @@ def _syscall_args_from_dtruss_output(output_line):
 	#
 	# But! csv won't handle fields with commas inside them without
 	# skipinitialspace set to True
-	parsed_rows = list(csv.reader([args_string], skipinitialspace=True))
+	parsed_rows = list(reader([args_string], skipinitialspace=True))
 	# We have only one row here
 	args = parsed_rows[0]
 	# Remove trailing zeros from strings
