@@ -7,6 +7,9 @@ import time
 import shutil
 import logging
 import Queue
+import urllib2
+import json
+
 from threading import Thread, Lock
 
 from lib.cuckoo.common.config import Config
@@ -374,6 +377,18 @@ class AnalysisManager(Thread):
             if self.cfg.cuckoo.process_results:
                 self.process_results()
                 Database().set_status(self.task.id, TASK_REPORTED)
+
+            if self.cfg.cuckoo.webhook:
+                try:
+                    data = json.dumps({'task':self.task.id})
+                    req = urllib2.Request(
+                        self.cfg.cuckoo.webhook_url,
+                        data, {'Content-Type': 'application/json'})
+                    f = urllib2.urlopen(req)
+                    response = f.read()
+                    f.close()
+                except:
+                    log.exception("Failure in hook")
 
             # We make a symbolic link ("latest") which links to the latest
             # analysis - this is useful for debugging purposes. This is only
