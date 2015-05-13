@@ -45,7 +45,7 @@ def _parse_dtruss_output(lines):
 	for cmd in lines:
 		name   = _syscall_name_from_dtruss_output(cmd)
 		args   = _syscall_args_from_dtruss_output(cmd)
-		# Result and errno are eigher decimal or hex numbers
+		# Result and errno are either decimal or hex numbers
 		result = int(_syscall_result_from_dtruss_output(cmd), 0)
 		errno  = int(_syscall_errno_from_dtruss_output(cmd), 0)
 
