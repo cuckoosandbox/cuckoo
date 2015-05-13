@@ -372,6 +372,7 @@ class Analyzer(object):
         self.pipes = [None]*self.PIPE_SERVER_COUNT
         self.config = None
         self.target = None
+        self.do_run = True
 
         self.process_lock = PROCESS_LOCK
         self.default_dll = DEFAULT_DLL
@@ -436,6 +437,10 @@ class Analyzer(object):
         # If it's a URL, well.. we store the URL.
         else:
             self.target = self.config.target
+
+    def stop(self):
+        """Allows an auxiliary module to stop the analysis."""
+        self.do_run = False
 
     def complete(self):
         """End analysis."""
@@ -590,7 +595,7 @@ class Analyzer(object):
 
         time_counter = 0
 
-        while True:
+        while self.do_run:
             time_counter += 1
             if time_counter == int(self.config.timeout):
                 log.info("Analysis timeout hit, terminating analysis.")
@@ -643,6 +648,10 @@ class Analyzer(object):
             finally:
                 # Zzz.
                 KERNEL32.Sleep(1000)
+
+        if not self.do_run:
+            log.debug("The analyzer has been stopped on request by an "
+                      "auxiliary module.")
 
         # Create the shutdown mutex.
         KERNEL32.CreateMutexA(None, False, SHUTDOWN_MUTEX)
