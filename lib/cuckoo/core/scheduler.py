@@ -202,7 +202,7 @@ class AnalysisManager(Thread):
         options["clock"] = self.task.clock
         options["terminate_processes"] = self.cfg.cuckoo.terminate_processes
 
-        if not self.task.timeout or self.task.timeout == 0:
+        if not self.task.timeout:
             options["timeout"] = self.cfg.timeouts.default
         else:
             options["timeout"] = self.task.timeout

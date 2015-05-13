@@ -15,6 +15,10 @@ from lib.cuckoo.core.resultserver import ResultServer
 log = logging.getLogger(__name__)
 
 class Sniffer(Auxiliary):
+    def __init__(self):
+        Auxiliary.__init__(self)
+        self.proc = None
+
     def start(self):
         tcpdump = self.options.get("tcpdump", "/usr/sbin/tcpdump")
         bpf = self.options.get("bpf", "")
