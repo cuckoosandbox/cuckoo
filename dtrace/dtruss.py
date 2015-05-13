@@ -7,6 +7,7 @@
 
 import subprocess
 import csv
+from sys import argv
 from collections import namedtuple
 
 def dtruss(target, syscall=None):
@@ -97,4 +98,18 @@ def _syscall_errno_from_dtruss_output(output_line):
 	return errno
 
 if __name__ == "__main__":
-	pass
+	if len(argv) < 2:
+		print "Usage: %s <target> [syscall]" % argv[0]
+		exit(0)
+	target = argv[1]
+	optional_probe = None
+	if len(argv) > 2:
+		optional_probe = argv[2]
+
+	for syscall in dtruss(target, optional_probe):
+		print "%s(%s) -> %#x %s" % (
+			syscall.name,
+			", ".join(syscall.args) if len(syscall.args) > 0 else "",
+			syscall.result,
+			"(errno = %s)" % syscall.errno if syscall.errno != 0 else ""
+		)
