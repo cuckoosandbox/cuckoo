@@ -27,12 +27,21 @@ class TestDtrace(unittest.TestCase):
 
 	def test_dtruss_helloworld(self):
 		# given
-		print_hello_world_syscall = ('write_nocancel', ['0x1', 'Hello, world!\\n\\0', '0xE'], 14, 0)
+		expected_syscall = ('write_nocancel', ['0x1', 'Hello, world!\\n\\0', '0xE'], 14, 0)
 		# when
 		output = dtruss("./tests/assets/"+self.current_target())
 		#then
-		self.assertIn(print_hello_world_syscall, output)
+		self.assertIn(expected_syscall, output)
 		self.assertEqual(sum(x.name == "write_nocancel" for x in output), 1)
+
+	def test_dtruss_specific_syscall(self):
+		# given
+		expected_syscall = ('write_nocancel', ['0x1', 'Hello, dtruss!\\n\\0', '0xF'], 15, 0)
+		# when
+		output = dtruss("./tests/assets/"+self.current_target(), "write_nocancel")
+		# then
+		self.assertIn(expected_syscall, output)
+		self.assertEqual(len(output), 1)
 
 
 def build_target(target):
