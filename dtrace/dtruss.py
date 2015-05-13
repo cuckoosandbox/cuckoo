@@ -101,6 +101,7 @@ if __name__ == "__main__":
 	if len(argv) < 2:
 		print "Usage: %s <target> [syscall]" % argv[0]
 		exit(0)
+
 	target = argv[1]
 	optional_probe = argv[2] if len(argv) > 2 else None
 
