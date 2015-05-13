@@ -9,7 +9,7 @@ import subprocess
 import csv
 from collections import namedtuple
 
-def dtruss(target):
+def dtruss(target, syscall=None):
 	"""Returns a list of syscalls made by a target.
 
 	Note: dtruss is unable to deal with spaces in paths (even when escaped), so
@@ -18,7 +18,11 @@ def dtruss(target):
 	Every syscall is a named tuple with the following properties:
 	name (string), args (list of strings), result (int), errno (int).
 	"""
-	cmd = ["sudo", "/usr/bin/dtruss", target]
+	if syscall is None:
+		cmd = ["sudo", "/usr/bin/dtruss", target]
+	else:
+		cmd = ["sudo", "/usr/bin/dtruss", "-t", syscall, target]
+
 	output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).splitlines()
 
 	# We're only interested in dtruss' output, not the target's: remove anything
