@@ -102,9 +102,7 @@ if __name__ == "__main__":
 		print "Usage: %s <target> [syscall]" % argv[0]
 		exit(0)
 	target = argv[1]
-	optional_probe = None
-	if len(argv) > 2:
-		optional_probe = argv[2]
+	optional_probe = argv[2] if len(argv) > 2 else None
 
 	for syscall in dtruss(target, optional_probe):
 		print "%s(%s) -> %#x %s" % (
