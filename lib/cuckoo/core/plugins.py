@@ -77,45 +77,43 @@ class RunAuxiliary(object):
         self.enabled = []
 
     def start(self):
-        auxiliary_list = list_plugins(group="auxiliary")
-        if auxiliary_list:
-            for module in auxiliary_list:
-                try:
-                    current = module()
-                except:
-                    log.exception("Failed to load the auxiliary module "
-                                  "\"{0}\":".format(module))
-                    return
+        for module in list_plugins(group="auxiliary"):
+            try:
+                current = module()
+            except:
+                log.exception("Failed to load the auxiliary module "
+                              "\"{0}\":".format(module))
+                return
 
-                module_name = inspect.getmodule(current).__name__
-                if "." in module_name:
-                    module_name = module_name.rsplit(".", 1)[1]
+            module_name = inspect.getmodule(current).__name__
+            if "." in module_name:
+                module_name = module_name.rsplit(".", 1)[1]
 
-                try:
-                    options = self.cfg.get(module_name)
-                except CuckooOperationalError:
-                    log.debug("Auxiliary module %s not found in "
-                              "configuration file", module_name)
-                    continue
+            try:
+                options = self.cfg.get(module_name)
+            except CuckooOperationalError:
+                log.debug("Auxiliary module %s not found in "
+                          "configuration file", module_name)
+                continue
 
-                if not options.enabled:
-                    continue
+            if not options.enabled:
+                continue
 
-                current.set_task(self.task)
-                current.set_machine(self.machine)
-                current.set_options(options)
+            current.set_task(self.task)
+            current.set_machine(self.machine)
+            current.set_options(options)
 
-                try:
-                    current.start()
-                except NotImplementedError:
-                    pass
-                except Exception as e:
-                    log.warning("Unable to start auxiliary module %s: %s",
-                                module_name, e)
-                else:
-                    log.debug("Started auxiliary module: %s",
-                              current.__class__.__name__)
-                    self.enabled.append(current)
+            try:
+                current.start()
+            except NotImplementedError:
+                pass
+            except Exception as e:
+                log.warning("Unable to start auxiliary module %s: %s",
+                            module_name, e)
+            else:
+                log.debug("Started auxiliary module: %s",
+                          current.__class__.__name__)
+                self.enabled.append(current)
 
     def stop(self):
         for module in self.enabled:
