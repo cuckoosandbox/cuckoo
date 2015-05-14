@@ -33,6 +33,7 @@ class LKM(Auxiliary):
         elif os.path.exists("probelkm.ko"):
             path = "probelkm.ko"
         else:
+            log.warning("Could not find probelkm :(")
             return False
 
         os.system("insmod %s trace_descendants=1 target_pid=%u" % (path, os.getpid()))
