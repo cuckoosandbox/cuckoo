@@ -52,6 +52,14 @@ class IE(Package):
                 "WarnOnZoneCrossing": 0,
             },
         ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Internet Explorer\\Document Windows",
+            {
+                # Maximize the window by default.
+                "Maximized": "yes",
+            },
+        ],
     ]
 
     def setup_proxy(self, proxy_host):
