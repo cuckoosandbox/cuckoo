@@ -22,6 +22,7 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file, delete_folder
 from lib.cuckoo.core.database import Database, TASK_RUNNING, Task
+from lib.cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
 from lib.cuckoo.core.startup import drop_privileges
 
 # Global Database object.
@@ -294,45 +295,23 @@ def tasks_report(task_id, report_format="json"):
     if os.path.exists(report_path):
         return open(report_path, "rb").read()
     else:
-        return json_error(404, "Report not found")
+        return HTTPError(404, "Report not found")
 
-@app.route("/tasks/screenshots/<int:task_id>")
-@app.route("/v1/tasks/screenshots/<int:task_id>")
-@app.route("/tasks/screenshots/<int:task_id>/<screenshot>")
-@app.route("/v1/tasks/screenshots/<int:task_id>/<screenshot>")
-def task_screenshots(task_id=0, screenshot=None):
-    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id), "shots")
-
-    if os.path.exists(folder_path):
-        if screenshot:
-            screenshot_name = "{0}.jpg".format(screenshot)
-            screenshot_path = os.path.join(folder_path, screenshot_name)
-            if os.path.exists(screenshot_path):
-                # TODO: Add content disposition.
-                response = make_response(open(screenshot_path, "rb").read())
-                response.headers["Content-Type"] = "image/jpeg"
-                return response
-            else:
-                return json_error(404, "Screenshot not found!")
-        else:
-            zip_data = StringIO()
-            with ZipFile(zip_data, "w", ZIP_STORED) as zip_file:
-                for shot_name in os.listdir(folder_path):
-                    zip_file.write(os.path.join(folder_path, shot_name), shot_name)
-
-            # TODO: Add content disposition.
-            response = make_response(zip_data.getvalue())
-            response.headers["Content-Type"] = "application/zip"
-            return response
+@route("/tasks/rereport/<task_id:int>", method="GET")
+def rereport(task_id):
+    task = db.view_task(task_id)
+    if task and task.status == TASK_REPORTED:
+        db.set_status(task_id, TASK_COMPLETED)
+        return jsonize(dict(success=True))
     else:
-        return json_error(404, folder_path)
+        return HTTPError(404, "Task not found")
 
-@app.route("/files/view/md5/<md5>")
-@app.route("/v1/files/view/md5/<md5>")
-@app.route("/files/view/sha256/<sha256>")
-@app.route("/v1/files/view/sha256/<sha256>")
-@app.route("/files/view/id/<int:sample_id>")
-@app.route("/v1/files/view/id/<int:sample_id>")
+@route("/files/view/md5/<md5>", method="GET")
+@route("/v1/files/view/md5/<md5>", method="GET")
+@route("/files/view/sha256/<sha256>", method="GET")
+@route("/v1/files/view/sha256/<sha256>", method="GET")
+@route("/files/view/id/<sample_id:int>", method="GET")
+@route("/v1/files/view/id/<sample_id:int>", method="GET")
 def files_view(md5=None, sha256=None, sample_id=None):
     response = {}
 
