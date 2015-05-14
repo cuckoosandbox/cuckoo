@@ -194,12 +194,12 @@ class GuestManager:
             tool_option = ",tool=" + options["tool"][index+1:]
             options["options"] = options["options"] + tool_option
             
-            uploaded_tools = []
+            uploaded_tools = [options["tool"][index+1:].lower()]
             if options["tool_dir"]:
                 for root, subdirs, files in os.walk(options["tool_dir"]):
                     uploaded_tools.extend(files)
                     uploaded_tools.extend(subdirs)
-                options["options"] = options["options"] + ",uploaded_tools=" + pickle.dumps(uploaded_tools)
+            options["options"] = options["options"] + ",uploaded_tools=" + pickle.dumps(uploaded_tools)
 
         # Get and set dynamically generated resultserver port.
         options["port"] = str(ResultServer().port)
