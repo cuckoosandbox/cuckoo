@@ -373,6 +373,7 @@ class Analyzer(object):
         self.config = None
         self.target = None
         self.do_run = True
+        self.time_counter = 0
 
         self.process_lock = PROCESS_LOCK
         self.default_dll = DEFAULT_DLL
@@ -593,11 +594,9 @@ class Analyzer(object):
             log.info("Enabled timeout enforce, running for the full timeout.")
             pid_check = False
 
-        time_counter = 0
-
         while self.do_run:
-            time_counter += 1
-            if time_counter == int(self.config.timeout):
+            self.time_counter += 1
+            if self.time_counter == int(self.config.timeout):
                 log.info("Analysis timeout hit, terminating analysis.")
                 break
 
