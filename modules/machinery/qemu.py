@@ -31,7 +31,7 @@ QEMU_ARGS = {
         "kernel": "vmlinux-3.2.0-4-4kc-malta",
         "args": {
             "-M": "malta",
-            "-smp": "cpus=1"
+            "-smp": "cpus=1",
             "-append": "root=/dev/sda1 console=tty0",
             "-device": "e1000,netdev=net1", # virtio-net-pci doesn't work here
             "-kernel": "{imagepath}/{kernel}", # we assume the kernel is in the same place as the hdd image
