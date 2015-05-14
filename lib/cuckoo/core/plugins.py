@@ -141,7 +141,7 @@ class RunProcessing(object):
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
         self.cfg = Config("processing")
 
-    def process(self, module):
+    def process(self, module, results):
         """Run a processing module.
         @param module: processing module to run.
         @param results: results dict.
@@ -177,6 +177,8 @@ class RunProcessing(object):
         current.set_task(self.task)
         # Give it the options from the relevant processing.conf section.
         current.set_options(options)
+        # Give the results that we have obtained so far.
+        current.set_results(results)
 
         try:
             # Run the processing module and retrieve the generated data to be
@@ -223,7 +225,7 @@ class RunProcessing(object):
 
             # Run every loaded processing module.
             for module in processing_list:
-                result = self.process(module)
+                result = self.process(module, results)
                 # If it provided some results, append it to the big results
                 # container.
                 if result:
