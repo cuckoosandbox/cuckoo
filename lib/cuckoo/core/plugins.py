@@ -188,9 +188,8 @@ class RunProcessing(object):
             log.debug("Executed processing module \"%s\" on analysis at "
                       "\"%s\"", current.__class__.__name__, self.analysis_path)
 
-            # If succeeded, return they module's key name and the data to be
-            # appended to it.
-            return {current.key: data}
+            # If succeeded, return they module's key name and the data.
+            return current.key, data
         except CuckooDependencyError as e:
             log.warning("The processing module \"%s\" has missing dependencies: %s", current.__class__.__name__, e)
         except CuckooProcessingError as e:
@@ -225,11 +224,11 @@ class RunProcessing(object):
 
             # Run every loaded processing module.
             for module in processing_list:
-                result = self.process(module, results)
-                # If it provided some results, append it to the big results
-                # container.
-                if result:
-                    results.update(result)
+                key, result = self.process(module, results)
+
+                # If the module provided results, append it to the fat dict.
+                if key and result:
+                    results[key] = result
         else:
             log.info("No processing modules loaded")
 
