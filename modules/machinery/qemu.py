@@ -103,6 +103,9 @@ class QEMU(Machinery):
         if vm_options.kernel:
             qemu_args_config["args"]["-kernel"] = vm_options.kernel.format(**format_params)
 
+        if vm_options.mac:
+            qemu_args_config["args"]["-device"] += ",mac=%s" % vm_options.mac
+
         if "binary" in qemu_args_config:
             qemu_binary = os.path.join(self.qemu_dir, qemu_args_config["binary"])
         else:
