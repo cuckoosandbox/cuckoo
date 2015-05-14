@@ -300,9 +300,12 @@ def tasks_report(task_id, report_format="json"):
 @route("/tasks/rereport/<task_id:int>", method="GET")
 def rereport(task_id):
     task = db.view_task(task_id)
-    if task and task.status == TASK_REPORTED:
-        db.set_status(task_id, TASK_COMPLETED)
-        return jsonize(dict(success=True))
+    if task:
+        if task.status == TASK_REPORTED:
+            db.set_status(task_id, TASK_COMPLETED)
+            return jsonize(dict(success=True))
+
+        return jsonize(dict(success=False))
     else:
         return HTTPError(404, "Task not found")
 
