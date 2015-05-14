@@ -106,6 +106,10 @@ class QEMU(Machinery):
         if vm_options.mac:
             qemu_args_config["args"]["-device"] += ",mac=%s" % vm_options.mac
 
+        # replace net1 with the vm name, there's something funky when qemu runs several vms with the same id there
+        qemu_args_config["args"]["-netdev"] = qemu_args_config["args"]["-netdev"].replace("id=net1", "id=%s" % vm_info.name)
+        qemu_args_config["args"]["-device"] = qemu_args_config["args"]["-device"].replace("netdev=net1", "netdev=%s" % vm_info.name)
+
         if "binary" in qemu_args_config:
             qemu_binary = os.path.join(self.qemu_dir, qemu_args_config["binary"])
         else:
