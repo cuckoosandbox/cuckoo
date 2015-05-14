@@ -10,6 +10,8 @@ from sys import argv
 from collections import namedtuple
 from subprocess import check_output, STDOUT
 
+syscall = namedtuple("syscall", "name args result errno")
+
 def dtruss(target, syscall=None):
 	"""Returns a list of syscalls made by a target.
 
@@ -43,20 +45,19 @@ def dtruss(target, syscall=None):
 def _parse_dtruss_output(lines):
 	"""Parses dtruss' output into separate syscalls tuples
 	"""
-	syscall = namedtuple("syscall", "name args result errno")
 	# Remove empty lines first
 	lines = filter(None, lines)
-	results = []
-	for cmd in lines:
-		name   = _syscall_name_from_dtruss_output(cmd)
-		args   = _syscall_args_from_dtruss_output(cmd)
-		# Result and errno are either decimal or hex numbers
-		result = int(_syscall_result_from_dtruss_output(cmd), 0)
-		errno  = int(_syscall_errno_from_dtruss_output(cmd), 0)
-
-		results.append(syscall(name=name, args=args, result=result, errno=errno))
-
+	results = map(_parse_syscall, lines)
 	return results
+
+def _parse_syscall(string):
+	name   = _syscall_name_from_dtruss_output(string)
+	args   = _syscall_args_from_dtruss_output(string)
+	# Result and errno are either decimal or hex numbers
+	result = int(_syscall_result_from_dtruss_output(string), 0)
+	errno  = int(_syscall_errno_from_dtruss_output(string), 0)
+
+	return syscall(name=name, args=args, result=result, errno=errno)
 
 def _syscall_name_from_dtruss_output(output_line):
 	length = output_line.index('(')
@@ -77,9 +78,7 @@ def _syscall_args_from_dtruss_output(output_line):
 	# We have only one row here
 	args = parsed_rows[0]
 	# Remove trailing zeros from strings
-	for item in args:
-		item = item.replace('\0', '')
-	return args
+	return list(x.replace('\0', '') for x in args)
 
 def _syscall_result_from_dtruss_output(output_line):
 	result_errno_tag = "\t\t = "
