@@ -153,7 +153,7 @@ class RunProcessing(object):
         except:
             log.exception("Failed to load the processing module "
                           "\"{0}\":".format(module))
-            return
+            return None, None
 
         # Extract the module name.
         module_name = inspect.getmodule(current).__name__
@@ -165,11 +165,11 @@ class RunProcessing(object):
         except CuckooOperationalError:
             log.debug("Processing module %s not found in configuration file",
                       module_name)
-            return None
+            return None, None
 
         # If the processing module is disabled in the config, skip it.
         if not options.enabled:
-            return None
+            return None, None
 
         # Give it path to the analysis results.
         current.set_path(self.analysis_path)
@@ -199,7 +199,7 @@ class RunProcessing(object):
             log.exception("Failed to run the processing module \"%s\":",
                           current.__class__.__name__)
 
-        return None
+        return None, None
 
     def run(self):
         """Run all processing modules and all signatures.
