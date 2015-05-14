@@ -24,6 +24,7 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file, delete_folder
 from lib.cuckoo.core.database import Database, TASK_RUNNING, Task
+from lib.cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
 from lib.cuckoo.core.startup import drop_privileges
 
 # Global DB pointer.
@@ -290,6 +291,15 @@ def tasks_report(task_id, report_format="json"):
         return open(report_path, "rb").read()
     else:
         return HTTPError(404, "Report not found")
+
+@route("/tasks/rereport/<task_id:int>", method="GET")
+def rereport(task_id):
+    task = db.view_task(task_id)
+    if task and task.status == TASK_REPORTED:
+        db.set_status(task_id, TASK_COMPLETED)
+        return jsonize(dict(success=True))
+    else:
+        return HTTPError(404, "Task not found")
 
 @route("/files/view/md5/<md5>", method="GET")
 @route("/v1/files/view/md5/<md5>", method="GET")
