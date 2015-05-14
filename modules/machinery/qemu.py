@@ -15,6 +15,29 @@ from lib.cuckoo.common.exceptions import CuckooMachineError
 
 log = logging.getLogger(__name__)
 
+QEMU_ARGS = {
+    "default": {
+        "args": {
+            "-display": "none",
+            "-m": "1024M",
+            "-smp": "cpus=2",
+            "-hda": "{snapshot_path}", # will be replaced with the real thing
+            "-netdev": "bridge,id=net1,br=qemubr",
+            "-device": "virtio-net-pci,romfile=,netdev=net1",
+        }
+    },
+    "mipsel": {
+        "binary": "qemu-system-mipsel",
+        "kernel": "vmlinux-3.2.0-4-4kc-malta",
+        "args": {
+            "-M": "malta",
+            "-append": "root=/dev/sda1 console=tty0",
+            "-device": "e1000,netdev=net1", # virtio-net-pci doesn't work here
+            "-kernel": "{imagepath}/{kernel}", # we assume the kernel is in the same place as the hdd image
+        }
+    }
+}
+
 class QEMU(Machinery):
     """Virtualization layer for QEMU (non-KVM)."""
 
@@ -40,7 +63,8 @@ class QEMU(Machinery):
                                       "specified path \"%s\"" %
                                       self.options.qemu.path)
 
-        self.qemu_img = os.path.join(os.path.dirname(self.options.qemu.path), "qemu-img")
+        self.qemu_dir = os.path.dirname(self.options.qemu.path)
+        self.qemu_img = os.path.join(self.qemu_dir, "qemu-img")
 
     def start(self, label):
         """Start a virtual machine.
@@ -65,11 +89,27 @@ class QEMU(Machinery):
         except OSError as e:
             raise CuckooMachineError("QEMU failed starting the machine: %s" % e)
 
-        qemu_args = [
-            self.options.qemu.path, "-display", "none", "-m", "1024M", "-smp", "cpus=2", "-hda", snapshot_path,
-            "-netdev", "bridge,id=%s,br=qemubr" % vm_info.name,
-            "-device", "virtio-net-pci,romfile=,netdev=%s" % vm_info.name,
-        ]
+        vm_arch = getattr(vm_options, "arch", "default")
+        qemu_args_config = dict(QEMU_ARGS[vm_arch])
+        qemu_args_config["args"] = dict(QEMU_ARGS["default"]["args"])
+        qemu_args_config["args"].update(QEMU_ARGS[vm_arch]["args"])
+
+        format_params = {
+            "imagepath": os.path.dirname(vm_options.image),
+            "kernel": qemu_args_config.get("kernel", ""),
+            "snapshot_path": snapshot_path,
+        }
+
+        if vm_options.kernel:
+            qemu_args_config["args"]["-kernel"] = vm_options.kernel.format(**format_params)
+
+        if "binary" in qemu_args_config:
+            qemu_binary = os.path.join(self.qemu_dir, qemu_args_config["binary"])
+        else:
+            qemu_binary = self.options.qemu.path
+
+        # magic arg building
+        qemu_args = [qemu_binary,] + reduce(lambda x,y: x + [y[0], y[1].format(**format_params)], qemu_args_config["args"].iteritems(), [])
 
         log.debug("Executing QEMU %r", qemu_args)
 
