@@ -600,6 +600,8 @@ class Processing(object):
         self.logs_path = ""
         self.task = None
         self.options = None
+        self.key = None
+        self.results = {}
 
     def set_options(self, options):
         """Set report options.
@@ -627,6 +629,10 @@ class Processing(object):
         self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
         self.pmemory_path = os.path.join(self.analysis_path, "memory")
         self.memory_path = os.path.join(self.analysis_path, "memory.dmp")
+
+    def set_results(self, results):
+        """Set the results - the fat dictionary."""
+        self.results = results
 
     def run(self):
         """Start processing.
