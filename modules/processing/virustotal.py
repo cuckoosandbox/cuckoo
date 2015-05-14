@@ -24,12 +24,13 @@ class VirusTotal(Processing):
         self.key = "virustotal"
         virustotal = []
 
-        key = self.options.get("key", None)
+        key = self.options.get("key")
         timeout = self.options.get("timeout", 60)
 
         if not key:
             raise CuckooProcessingError("VirusTotal API key not "
-                                        "configured, skip")
+                                        "configured, skipping VirusTotal "
+                                        "processing module.")
 
         if self.task["category"] == "file":
             if not os.path.exists(self.file_path):
