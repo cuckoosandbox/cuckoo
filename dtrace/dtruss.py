@@ -43,12 +43,9 @@ def dtruss(target, syscall=None):
 #
 
 def _parse_dtruss_output(lines):
-	"""Parses dtruss' output into separate syscalls tuples
+	"""Turns non-empty strings from dtruss output into syscall tuples
 	"""
-	# Remove empty lines first
-	lines = filter(None, lines)
-	results = map(_parse_syscall, lines)
-	return results
+	return map(_parse_syscall, filter(None, lines))
 
 def _parse_syscall(string):
 	name   = _syscall_name_from_dtruss_output(string)
