@@ -11,7 +11,7 @@ import time
 from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
 from ctypes import c_uint, c_wchar_p, create_unicode_buffer
 
-from lib.common.constants import LOGPIPE, PIPE, PATHS, SHUTDOWN_MUTEX
+from lib.common.constants import PATHS, SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
 from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
 from lib.common.defines import MEM_COMMIT, MEMORY_BASIC_INFORMATION
@@ -19,13 +19,13 @@ from lib.common.defines import MEM_IMAGE, MEM_MAPPED, MEM_PRIVATE
 from lib.common.errors import get_error_string
 from lib.common.exceptions import CuckooError
 from lib.common.results import NetlogFile
-from lib.core.config import Config
 
 log = logging.getLogger(__name__)
 
 class Process(object):
     """Windows process."""
     first_process = True
+    config = None
 
     def __init__(self, pid=0, tid=0):
         """
@@ -34,6 +34,11 @@ class Process(object):
         """
         self.pid = pid
         self.tid = tid
+
+    @staticmethod
+    def set_config(config):
+        """Sets the analyzer configuration once."""
+        Process.config = config
 
     def get_system_info(self):
         """Get system information."""
@@ -318,8 +323,6 @@ class Process(object):
         """Helper function to drop the configuration for a new process."""
         fd, config_path = tempfile.mkstemp()
 
-        config = Config(cfg="analysis.conf")
-
         # The first time we come up with a random startup-time.
         if Process.first_process:
             # This adds 1 up to 30 times of 20 minutes to the startup
@@ -328,16 +331,16 @@ class Process(object):
             Process.startup_time = random.randint(1, 30) * 20 * 60 * 1000
 
         lines = {
-            "host-ip": config.ip,
-            "host-port": config.port,
-            "pipe": PIPE,
-            "logpipe": LOGPIPE,
+            "host-ip": self.config.ip,
+            "host-port": self.config.port,
+            "pipe": self.config.pipe,
+            "logpipe": self.config.logpipe,
             "results": PATHS["root"],
             "analyzer": os.getcwd(),
             "first-process": "1" if Process.first_process else "0",
             "startup-time": Process.startup_time,
             "shutdown-mutex": SHUTDOWN_MUTEX,
-            "force-sleepskip": config.options.get("force-sleepskip", "0"),
+            "force-sleepskip": self.config.options.get("force-sleepskip", "0"),
             "hashes-path": os.path.join(os.getcwd(), "hashes.bin"),
         }
 
