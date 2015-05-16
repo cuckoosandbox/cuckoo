@@ -67,8 +67,13 @@ class Files(object):
             return False
 
         # Check whether we've already dumped this file - in that case skip it.
-        sha256 = hash_file(hashlib.sha256, filepath)
-        if sha256 in self.dumped:
+        try:
+            sha256 = hash_file(hashlib.sha256, filepath)
+            if sha256 in self.dumped:
+                return
+        except IOError as e:
+            log.info("Error dumping file from path \"%s\": %s",
+                     filepath, e.message)
             return
 
         filename = "%s_%s" % (sha256[:16], os.path.basename(filepath))
