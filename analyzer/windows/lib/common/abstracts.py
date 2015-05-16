@@ -3,8 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-from _winreg import OpenKey, SetValueEx, CloseKey
-from _winreg import KEY_SET_VALUE, REG_DWORD, REG_SZ
+from _winreg import CreateKey, SetValueEx, CloseKey, REG_DWORD, REG_SZ
 
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
@@ -88,7 +87,7 @@ class Package(object):
         @param regkeys: the root keys, subkeys, and key/value pairs.
         """
         for rootkey, subkey, values in regkeys:
-            key_handle = OpenKey(rootkey, subkey, 0, KEY_SET_VALUE)
+            key_handle = CreateKey(rootkey, subkey)
 
             for key, value in values.items():
                 if isinstance(value, str):
