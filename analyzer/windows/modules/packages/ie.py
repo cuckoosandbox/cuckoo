@@ -60,6 +60,15 @@ class IE(Package):
                 "Maximized": "yes",
             },
         ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Internet Explorer\\Download",
+            {
+                # "Internet Explorer - Security Warning"
+                # "The publisher could not be verified."
+                "CheckExeSignatures": "no",
+            },
+        ],
     ]
 
     def setup_proxy(self, proxy_host):
