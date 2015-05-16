@@ -254,7 +254,7 @@ class BsonHandler(object):
 
         for key, value in arguments.items():
             if isinstance(value, basestring):
-                arguments[key] = str(value)
+                arguments[key] = unicode(value)
 
         self.stats[apiname] = self.stats.get(apiname, 0) + 1
 

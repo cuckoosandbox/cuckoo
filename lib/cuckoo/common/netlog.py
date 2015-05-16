@@ -231,6 +231,8 @@ def default_converter(v):
     # Fix signed ints (bson is kind of limited there).
     if type(v) in (int, long) and v < 0:
         return v + 0x100000000
+    if isinstance(v, str):
+        return v.decode("latin-1")
     return v
 
 def check_names_for_typeinfo(arginfo):
