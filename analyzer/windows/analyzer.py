@@ -194,8 +194,7 @@ class PipeHandler(Thread):
         # otherwise we would generated polluted logs (if it wouldn't crash
         # horribly to start with).
         if PROCESS_LIST.has_pid(process_id):
-            # We're done operating on the processes list,
-            # release the lock.
+            # We're done operating on the processes list, release the lock.
             PROCESS_LOCK.release()
             return
 
@@ -274,7 +273,7 @@ class PipeHandler(Thread):
         """Run handler.
         @return: operation status.
         """
-        data, response = "", "OK"
+        data = ""
 
         # Read the data submitted to the Pipe Server.
         while True:
@@ -297,6 +296,7 @@ class PipeHandler(Thread):
         if not data or ":" not in data:
             log.critical("Unknown command received from the monitor: %r",
                          data.strip())
+            response = "NOPE"
         else:
             command, arguments = data.strip().split(":", 1)
 
@@ -305,7 +305,7 @@ class PipeHandler(Thread):
                              data.strip())
             else:
                 fn = getattr(self, "_handle_%s" % command.lower())
-                response = fn(arguments) or ""
+                response = fn(arguments) or "OK"
 
         KERNEL32.WriteFile(self.h_pipe,
                            create_string_buffer(response),
