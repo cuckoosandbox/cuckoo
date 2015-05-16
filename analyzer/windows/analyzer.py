@@ -56,7 +56,7 @@ class Files(object):
 
     def add_file(self, filepath):
         """Add filepath to the list of files."""
-        if filepath not in self.files:
+        if filepath.lower() not in self.files:
             log.info("Added new file to list with path: %s", filepath)
             self.files.append(filepath.lower())
 
