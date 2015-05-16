@@ -72,8 +72,7 @@ class Files(object):
             if sha256 in self.dumped:
                 return
         except IOError as e:
-            log.info("Error dumping file from path \"%s\": %s",
-                     filepath, e.message)
+            log.info("Error dumping file from path \"%s\": %s", filepath, e)
             return
 
         filename = "%s_%s" % (sha256[:16], os.path.basename(filepath))
