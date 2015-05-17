@@ -139,6 +139,7 @@ class PipeHandler(Thread):
     This class handles the notifications received through the Pipe Server and
     decides what to do with them.
     """
+    ignore_list = dict(pid=[])
 
     def __init__(self, h_pipe):
         """@param h_pipe: PIPE to read."""
@@ -185,8 +186,10 @@ class PipeHandler(Thread):
         dll = DEFAULT_DLL
 
         if process_id in (PID, PPID):
-            log.warning("Received request to inject Cuckoo processes, "
-                        "skipping it.")
+            if process_id not in PipeHandler.ignore_list["pid"]:
+                log.warning("Received request to inject Cuckoo processes, "
+                            "skipping it.")
+                PipeHandler.ignore_list["pid"].append(process_id)
             PROCESS_LOCK.release()
             return
 
@@ -194,6 +197,11 @@ class PipeHandler(Thread):
         # otherwise we would generated polluted logs (if it wouldn't crash
         # horribly to start with).
         if PROCESS_LIST.has_pid(process_id):
+            if process_id not in PipeHandler.ignore_list["pid"]:
+                log.debug("Received request to inject pid=%d, but we are "
+                          "already injected there.", process_id)
+                PipeHandler.ignore_list["pid"].append(process_id)
+
             # We're done operating on the processes list, release the lock.
             PROCESS_LOCK.release()
             return
