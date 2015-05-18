@@ -118,10 +118,20 @@ class GuestManager:
                                    "to increase timeout".format(self.id))
 
     def send_tool(self, tool_path, is_tool=False, base_dir="tool"):
+        """Upload a file to the guest. 
+
+        @param tool_path: path to tool/file on host
+        @param is_tool: specifies whether file is the tool or a supporting file
+        @param base_dir: path to place file on guest. path is appended to 
+            guest temporary directory i.e. (%TEMP%).
+        """
         if os.path.isfile(tool_path):
             if '/' in tool_path:
                 index = tool_path.rfind("/")
                 file_name = tool_path[index+1:]
+                
+            #The tool will have '.tool' appended to it in order to distinguish
+            #it from any other 'exe' files in the same directory on the guest.
             if is_tool:
                 file_name = file_name + ".tool"
             try:
@@ -141,6 +151,12 @@ class GuestManager:
             raise CuckooGuestError("%s not a valid file/path(send_tool)." % tool_path)
 
     def send_dir(self, dir_path, base_dir):
+        """Upload a directory and all it contains to the guest
+
+        @param dir_path: path to directory on the host
+        @param base_dir: path to place directory on guest. path is appended to 
+            guest temporary directory i.e. (%TEMP%). 
+        """
         uploaded_tools = []
         depth = 0
         for root, subdirs, files in os.walk(dir_path):
