@@ -12,7 +12,8 @@ from lib.common.defines import KERNEL32, PIPE_ACCESS_INBOUND, ERROR_MORE_DATA
 from lib.common.defines import PIPE_TYPE_BYTE, PIPE_WAIT, ERROR_PIPE_CONNECTED
 from lib.common.defines import PIPE_UNLIMITED_INSTANCES, INVALID_HANDLE_VALUE
 from lib.common.defines import FILE_FLAG_WRITE_THROUGH, PIPE_READMODE_BYTE
-from lib.common.defines import ERROR_BROKEN_PIPE
+from lib.common.defines import ERROR_BROKEN_PIPE, PIPE_TYPE_MESSAGE
+from lib.common.defines import PIPE_ACCESS_DUPLEX, PIPE_READMODE_MESSAGE
 
 log = logging.getLogger(__name__)
 
@@ -24,10 +25,10 @@ class LogPipeHandler(threading.Thread):
     """The Log Pipe Handler forwards all data received from a local pipe to
     the Cuckoo server through a socket."""
 
-    def __init__(self, destination, pipe_handle):
+    def __init__(self, pipe_handle, destination):
         threading.Thread.__init__(self)
-        self.destination = destination
         self.pipe_handle = pipe_handle
+        self.destination = destination
 
     def run(self):
         buf = create_string_buffer(BUFSIZE)
@@ -82,21 +83,30 @@ class LogPipeHandler(threading.Thread):
 
         active[pid.value] = False
 
-class LogPipeServer(threading.Thread):
-    """The Log Pipe Server accepts incoming log pipe handlers and initializes
+class PipeServer(threading.Thread):
+    """The Pipe Server accepts incoming pipe handlers and initializes
     them in a new thread."""
-    def __init__(self, destination, pipe_name):
+    def __init__(self, pipe_handler, pipe_name, message=False, **kwargs):
         threading.Thread.__init__(self)
-        self.destination = destination
+        self.pipe_handler = pipe_handler
         self.pipe_name = pipe_name
+        self.message = message
+        self.kwargs = kwargs
         self.do_run = True
 
     def run(self):
         while self.do_run:
-            pipe_handle = KERNEL32.CreateNamedPipeA(
-                self.pipe_name, PIPE_ACCESS_INBOUND | FILE_FLAG_WRITE_THROUGH,
-                PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
-                PIPE_UNLIMITED_INSTANCES, 0, BUFSIZE, 0, None)
+            flags = FILE_FLAG_WRITE_THROUGH
+            if self.message:
+                pipe_handle = KERNEL32.CreateNamedPipeA(
+                    self.pipe_name, PIPE_ACCESS_DUPLEX | flags,
+                    PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+                    PIPE_UNLIMITED_INSTANCES, BUFSIZE, BUFSIZE, 0, None)
+            else:
+                pipe_handle = KERNEL32.CreateNamedPipeA(
+                    self.pipe_name, PIPE_ACCESS_INBOUND | flags,
+                    PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
+                    PIPE_UNLIMITED_INSTANCES, 0, BUFSIZE, 0, None)
 
             if pipe_handle == INVALID_HANDLE_VALUE:
                 log.warning("Error opening logging pipe server.")
@@ -104,8 +114,11 @@ class LogPipeServer(threading.Thread):
 
             if KERNEL32.ConnectNamedPipe(pipe_handle, None) or \
                     KERNEL32.GetLastError() == ERROR_PIPE_CONNECTED:
-                handler = LogPipeHandler(self.destination, pipe_handle)
+                handler = self.pipe_handler(pipe_handle, **self.kwargs)
                 handler.daemon = True
                 handler.start()
             else:
                 KERNEL32.CloseHandle(pipe_handle)
+
+    def stop(self):
+        self.do_run = False
