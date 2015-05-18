@@ -28,7 +28,7 @@ from lib.common.hashing import hash_file
 from lib.common.rand import random_string
 from lib.common.results import upload_to_host
 from lib.core.config import Config
-from lib.core.log import LogPipeServer
+from lib.core.log import PipeServer, LogPipeHandler
 from lib.core.packages import choose_package
 from lib.core.privileges import grant_debug_privilege
 from lib.core.startup import create_folders, init_logging
@@ -133,7 +133,7 @@ class ProcessList(object):
 FILES = Files()
 PROCESS_LIST = ProcessList()
 
-class PipeHandler(Thread):
+class CommandPipeHandler(Thread):
     """Pipe Handler.
 
     This class handles the notifications received through the Pipe Server and
@@ -186,10 +186,10 @@ class PipeHandler(Thread):
         dll = DEFAULT_DLL
 
         if process_id in (PID, PPID):
-            if process_id not in PipeHandler.ignore_list["pid"]:
+            if process_id not in CommandPipeHandler.ignore_list["pid"]:
                 log.warning("Received request to inject Cuckoo processes, "
                             "skipping it.")
-                PipeHandler.ignore_list["pid"].append(process_id)
+                CommandPipeHandler.ignore_list["pid"].append(process_id)
             PROCESS_LOCK.release()
             return
 
@@ -197,10 +197,10 @@ class PipeHandler(Thread):
         # otherwise we would generated polluted logs (if it wouldn't crash
         # horribly to start with).
         if PROCESS_LIST.has_pid(process_id):
-            if process_id not in PipeHandler.ignore_list["pid"]:
+            if process_id not in CommandPipeHandler.ignore_list["pid"]:
                 log.debug("Received request to inject pid=%d, but we are "
                           "already injected there.", process_id)
-                PipeHandler.ignore_list["pid"].append(process_id)
+                CommandPipeHandler.ignore_list["pid"].append(process_id)
 
             # We're done operating on the processes list, release the lock.
             PROCESS_LOCK.release()
@@ -324,54 +324,6 @@ class PipeHandler(Thread):
         KERNEL32.CloseHandle(self.h_pipe)
         return True
 
-class PipeServer(Thread):
-    """Cuckoo PIPE server.
-
-    This Pipe Server receives notifications from the injected processes for
-    new processes being spawned and for files being created or deleted.
-    """
-
-    def __init__(self, pipe_name):
-        """@param pipe_name: Cuckoo PIPE server name."""
-        Thread.__init__(self)
-        self.pipe_name = pipe_name
-        self.do_run = True
-
-    def stop(self):
-        """Stop PIPE server."""
-        self.do_run = False
-
-    def run(self):
-        """Create and run PIPE server.
-        @return: operation status.
-        """
-        while self.do_run:
-            # Create the Named Pipe.
-            h_pipe = KERNEL32.CreateNamedPipeA(self.pipe_name,
-                                               PIPE_ACCESS_DUPLEX,
-                                               PIPE_TYPE_MESSAGE |
-                                               PIPE_READMODE_MESSAGE |
-                                               PIPE_WAIT,
-                                               PIPE_UNLIMITED_INSTANCES,
-                                               BUFSIZE,
-                                               BUFSIZE,
-                                               0,
-                                               None)
-
-            if h_pipe == INVALID_HANDLE_VALUE:
-                return False
-
-            # If we receive a connection to the pipe, we invoke the handler.
-            if KERNEL32.ConnectNamedPipe(h_pipe, None) or \
-                    KERNEL32.GetLastError() == ERROR_PIPE_CONNECTED:
-                handler = PipeHandler(h_pipe)
-                handler.daemon = True
-                handler.start()
-            else:
-                KERNEL32.CloseHandle(h_pipe)
-
-        return True
-
 class Analyzer(object):
     """Cuckoo Windows Analyzer.
 
@@ -428,7 +380,7 @@ class Analyzer(object):
         os.system("echo:|date {0}".format(clock.strftime("%m-%d-%y")))
         os.system("echo:|time {0}".format(clock.strftime("%H:%M:%S")))
 
-        # Set the default DLL to be used by the PipeHandler.
+        # Set the default DLL to be used for this analysis.
         self.default_dll = DEFAULT_DLL = self.config.options.get("dll")
 
         # If a pipe name has not set, then generate a random one.
@@ -443,7 +395,8 @@ class Analyzer(object):
         # Initialize and start the Pipe Servers. This is going to be used for
         # communicating with the injected and monitored processes.
         for x in xrange(self.PIPE_SERVER_COUNT):
-            self.pipes[x] = PipeServer(self.config.pipe)
+            self.pipes[x] = PipeServer(CommandPipeHandler, self.config.pipe,
+                                       message=True)
             self.pipes[x].daemon = True
             self.pipes[x].start()
 
@@ -451,7 +404,8 @@ class Analyzer(object):
         # open up a pipe that monitored processes will use to send logs to
         # before they head off to the host machine.
         destination = self.config.ip, self.config.port
-        self.log_pipe_server = LogPipeServer(destination, self.config.logpipe)
+        self.log_pipe_server = PipeServer(LogPipeHandler, self.config.logpipe,
+                                          destination=destination)
         self.log_pipe_server.daemon = True
         self.log_pipe_server.start()
 
