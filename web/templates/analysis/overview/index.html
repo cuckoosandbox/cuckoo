@@ -15,7 +15,7 @@
     <div class="col-xs-6">{% include "analysis/network/_dns.html" %}</div>
 </div>
 <hr />
-{% if not results.tool %}
+{% if analysis.tool %}
    	{% include "analysis/overview/_tool_output.html" %}
 {% endif %}
 <hr />

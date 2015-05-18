@@ -13,7 +13,7 @@
         {% include "sections/static.html" %}
     {% endif %}
     {% include "sections/dropped.html" %}
-    {% if results.tool != {} %}
+    {% if results.tool %}
     	{% include "sections/tool_output.html" %}
     {% endif %}
     {% include "sections/network.html" %}

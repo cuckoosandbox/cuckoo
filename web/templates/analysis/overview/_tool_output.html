@@ -5,10 +5,10 @@
         }
     </script>
     <div class="section-title">
-        <h4>Output From Tool</h4>
+        <h4>Output From {{ analysis.tool.tool }}</h4>
     </div>
     {% if analysis.tool %}
-        {% for tool_output in analysis.tool %}
+        {% for tool_output in analysis.tool.output %}
             {% if tool_output.name == "tool_output.log" %}
                 <div>
                     <h4><a href="javascript:showHide('contents');">{{ tool_output.name }}</a></h4>
