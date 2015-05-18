@@ -133,17 +133,19 @@ class Package(object):
             if self.tool_process < 0:
                 raise CuckooPackageError("Unable to execute initial process, analysis aborted")
             return self.tool_process.pid
-        else:
-            p = Process()
-            if not p.execute(path=path, args=args, suspended=suspended):
-                raise CuckooPackageError("Unable to execute the initial process, "
-                                         "analysis aborted.")
 
-            if not free and suspended:
-                p.inject(dll)
-                p.resume()
-                p.close()
-                return p.pid
+        p = Process()
+        if not p.execute(path=path, args=args, suspended=suspended):
+            raise CuckooPackageError("Unable to execute the initial process, "
+                                     "analysis aborted.")
+
+        if not free and suspended:
+            p.inject(dll)
+            p.resume()
+            p.wait()
+            p.close()
+
+        return p.pid
 
     def package_files(self):
         """A list of files to upload to host.
