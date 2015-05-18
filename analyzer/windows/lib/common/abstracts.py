@@ -10,6 +10,32 @@ from lib.api.process import Process
 from lib.common.results import upload_to_host
 from lib.common.exceptions import CuckooPackageError
 
+def get_tool_path():
+    tool_name = ""
+    tool_dir = os.path.join(os.getenv("Temp"), "tool")
+    for item in os.listdir(tool_dir):
+        if item[-5:].lower() == ".tool":
+            tool_name = item[:-5].lower()
+            if tool_name in os.listdir(tool_dir):
+                os.remove(os.path.join(tool_dir, tool_name))
+            os.rename(os.path.join(tool_dir, item), os.path.join(tool_dir, tool_name))
+            break
+
+    tool_path = os.path.join(tool_dir, tool_name)
+    return tool_path
+
+def format_user_options(options, sample_options, path):
+    if not options:
+        options = ""
+    if not sample_options:
+        sample_options = ""
+    if "$sample" in options:
+        options = options.replace("$sample", path + " " + sample_options)
+    else:
+        options = options + " " + path + " " + sample_options
+
+    return options.split()
+
 class Package(object):
     """Base abstract analysis package."""
     PATHS = []
@@ -66,34 +92,6 @@ class Package(object):
         raise CuckooPackageError("Unable to find any %s executable." %
                                  application)
 
-    def get_tool_path(self):
-        tool_name = ""
-        tool_dir = os.path.join(os.getenv("Temp"), "tool")
-        for item in os.listdir(tool_dir):
-            if item[-5:].lower() == ".tool":
-                tool_name = item[:-5].lower()
-                if tool_name in os.listdir(tool_dir):
-                    os.remove(os.path.join(tool_dir, tool_name))
-                os.rename(os.path.join(tool_dir, item), os.path.join(tool_dir, tool_name))
-                break
-
-        tool_path = os.path.join(tool_dir, tool_name)
-        return tool_path
-
-    def format_user_options(self, options, sample_options, path):
-
-        if not options:
-            options = ""
-        if not sample_options:
-            sample_options = ""
-        if "$sample" in options:
-            options = options.replace("$sample", path + " " + sample_options)
-        else:
-            options = options + " " + path + " " + sample_options
-
-
-        return options.split()
-
     def execute(self, path, args):
         """Starts an executable for analysis.
         @param path: executable path
@@ -111,9 +109,9 @@ class Package(object):
         if tool:
             cwd = os.getcwd()
             os.chdir(os.path.join(os.getenv("Temp"), 'tool'))
-            tool_path = self.get_tool_path()
+            tool_path = get_tool_path()
             tool_args = self.options.get('tool-options')
-            arg_list = self.format_user_options(tool_args, args, path)
+            arg_list = format_user_options(tool_args, args, path)
             cmd_list = [tool_path]
             cmd_list.extend(arg_list)
             cmd_list = [val for val in cmd_list if val]
