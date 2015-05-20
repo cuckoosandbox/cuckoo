@@ -34,7 +34,7 @@ class Process:
             status_values = dict((i[0], i[1]) for i in [j.strip().split(None, 1) for j in status])
             return status_values
         except:
-            log.exception("could not get process status for pid %u", self.pid)
+            log.critical("could not get process status for pid %u", self.pid)
         return {}
 
     def execute(self, cmd):
