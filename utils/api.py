@@ -272,7 +272,7 @@ def tasks_report(task_id, report_format="json"):
             s = StringIO()
 
             # By default go for bz2 encoded tar files (for legacy reasons.)
-            tarmode = tar_formats.get(request.get("tar"), "w:bz2")
+            tarmode = tar_formats.get(request.GET.get("tar"), "w:bz2")
 
             tar = tarfile.open(fileobj=s, mode=tarmode)
             for filedir in os.listdir(srcdir):
