@@ -10,25 +10,21 @@ import pkgutil
 import logging
 import hashlib
 import xmlrpclib
+import threading
 import traceback
 from ctypes import create_string_buffer, byref, c_int, sizeof
-from threading import Lock, Thread
 from datetime import datetime
 
 from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
 from lib.common.constants import PATHS, SHUTDOWN_MUTEX
-from lib.common.defines import KERNEL32
-from lib.common.defines import ERROR_MORE_DATA, ERROR_PIPE_CONNECTED
-from lib.common.defines import PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE
-from lib.common.defines import PIPE_READMODE_MESSAGE, PIPE_WAIT
-from lib.common.defines import PIPE_UNLIMITED_INSTANCES, INVALID_HANDLE_VALUE
+from lib.common.defines import KERNEL32, ERROR_MORE_DATA
 from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.hashing import hash_file
 from lib.common.rand import random_string
 from lib.common.results import upload_to_host
 from lib.core.config import Config
-from lib.core.log import PipeServer, LogPipeHandler
+from lib.core.log import PipeServer, PipeForwarder
 from lib.core.packages import choose_package
 from lib.core.privileges import grant_debug_privilege
 from lib.core.startup import create_folders, init_logging
@@ -37,7 +33,7 @@ from modules import auxiliary
 log = logging.getLogger()
 
 BUFSIZE = 4096
-PROCESS_LOCK = Lock()
+PROCESS_LOCK = threading.Lock()
 DEFAULT_DLL = None
 
 PID = os.getpid()
@@ -133,7 +129,7 @@ class ProcessList(object):
 FILES = Files()
 PROCESS_LIST = ProcessList()
 
-class CommandPipeHandler(Thread):
+class CommandPipeHandler(threading.Thread):
     """Pipe Handler.
 
     This class handles the notifications received through the Pipe Server and
@@ -143,7 +139,7 @@ class CommandPipeHandler(Thread):
 
     def __init__(self, h_pipe):
         """@param h_pipe: PIPE to read."""
-        Thread.__init__(self)
+        threading.Thread.__init__(self)
         self.h_pipe = h_pipe
 
     def _handle_debug(self, data):
@@ -404,7 +400,7 @@ class Analyzer(object):
         # open up a pipe that monitored processes will use to send logs to
         # before they head off to the host machine.
         destination = self.config.ip, self.config.port
-        self.log_pipe_server = PipeServer(LogPipeHandler, self.config.logpipe,
+        self.log_pipe_server = PipeServer(PipeForwarder, self.config.logpipe,
                                           destination=destination)
         self.log_pipe_server.daemon = True
         self.log_pipe_server.start()

@@ -18,12 +18,12 @@ from lib.common.defines import PIPE_ACCESS_DUPLEX, PIPE_READMODE_MESSAGE
 log = logging.getLogger(__name__)
 
 BUFSIZE = 0x10000
-sockets = {}
-active = {}
 
-class LogPipeHandler(threading.Thread):
-    """The Log Pipe Handler forwards all data received from a local pipe to
+class PipeForwarder(threading.Thread):
+    """The Pipe Forwarder forwards all data received from a local pipe to
     the Cuckoo server through a socket."""
+    sockets = {}
+    active = {}
 
     def __init__(self, pipe_handle, destination):
         threading.Thread.__init__(self)
@@ -50,17 +50,18 @@ class LogPipeHandler(threading.Thread):
             KERNEL32.CloseHandle(self.pipe_handle)
             return
 
-        if active.get(pid.value):
+        if self.active.get(pid.value):
             log.warning("A second log pipe handler for an active process is "
                         "being requested, denying request.")
             KERNEL32.CloseHandle(self.pipe_handle)
             return
 
-        if pid.value not in sockets:
-            sockets[pid.value] = socket.create_connection(self.destination)
+        if pid.value not in self.sockets:
+            self.sockets[pid.value] = \
+                socket.create_connection(self.destination)
 
-        sock = sockets[pid.value]
-        active[pid.value] = True
+        sock = self.sockets[pid.value]
+        self.active[pid.value] = True
 
         while True:
             success = KERNEL32.ReadFile(self.pipe_handle,
@@ -81,7 +82,7 @@ class LogPipeHandler(threading.Thread):
                             KERNEL32.GetLastError())
                 break
 
-        active[pid.value] = False
+        self.active[pid.value] = False
 
 class PipeServer(threading.Thread):
     """The Pipe Server accepts incoming pipe handlers and initializes
