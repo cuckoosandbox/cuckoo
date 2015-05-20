@@ -15,6 +15,8 @@ class TargetInfo(Processing):
         @return: information dict.
         """
         self.key = "target"
+        if not self.task:
+            return {"category": "unknown", "file": {"name": "unknown"}}
 
         target_info = {"category": self.task["category"]}
 
