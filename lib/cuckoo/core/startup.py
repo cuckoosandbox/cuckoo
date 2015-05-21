@@ -12,6 +12,7 @@ import urllib2
 import logging
 import logging.handlers
 import pwd
+import re
 
 import modules.auxiliary
 import modules.processing
@@ -226,6 +227,24 @@ def init_yara():
         return signatures
 
     log.debug("Initializing Yara...")
+
+    # Find the latest rules available on the http://yararules.com/rules/
+    # i did not include library like BeautifulSoup to parse HTML as it would create a new dependency
+    # used some RE do to it instead
+    root_url = "http://yararules.com/rules/"
+    yara_files = re.findall("\w+.yar", urllib2.urlopen(root_url).read())
+
+    # remove duplicate entries as it appear in the href and between the link anchor
+    yara_file_names = set(yara_files)
+    yara_file_names = list(yara_files)
+
+    # download the rules inside the "binaries" folder
+    yara_binaries = os.path.join(CUCKOO_ROOT, "data", "yara", "binaries")
+    for rule_name in yara_file_names:
+        url = root_url + rule_name
+        file = open( yara_binaries + "/" + rule_name, "w+")
+        file.write( urllib2.urlopen(url).read() )
+        file.close()
 
     # Generate root directory for yara rules.
     yara_root = os.path.join(CUCKOO_ROOT, "data", "yara")
