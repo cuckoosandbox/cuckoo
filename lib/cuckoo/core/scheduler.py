@@ -320,7 +320,7 @@ class AnalysisManager(Thread):
 
     def process_results(self):
         """Process the analysis results and generate the enabled reports."""
-        results = RunProcessing(task_id=self.task.id).run()
+        results = RunProcessing(task_id=self.task.id, machine=self.machine).run()
         RunSignatures(results=results).run()
         RunReporting(task_id=self.task.id, results=results).run()
 

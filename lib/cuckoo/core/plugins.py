@@ -137,9 +137,10 @@ class RunProcessing(object):
     is then passed over the reporting engine.
     """
 
-    def __init__(self, task_id):
+    def __init__(self, task_id, machine):
         """@param task_id: ID of the analyses to process."""
         self.task = Database().view_task(task_id).to_dict()
+        self.machine = machine
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
         self.cfg = Config("processing")
 
@@ -179,6 +180,8 @@ class RunProcessing(object):
         current.set_task(self.task)
         # Give it the options from the relevant processing.conf section.
         current.set_options(options)
+        
+        current.set_machine(self.machine)
 
         try:
             # Run the processing module and retrieve the generated data to be
