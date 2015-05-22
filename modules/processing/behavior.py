@@ -5,6 +5,8 @@
 import os
 import logging
 import datetime
+import dateutil.parser
+import re
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
@@ -246,6 +248,10 @@ class Processes:
             file_path = os.path.join(self._logs_path, file_name)
 
             if os.path.isdir(file_path):
+                continue
+
+            # ignore these
+            if file_name in ("all.stap", "all.lkm"):
                 continue
 
             # Skipping the current log file if it's too big.
@@ -963,6 +969,11 @@ class BehaviorAnalysis(Processing):
         """Run analysis.
         @return: results dict.
         """
+
+        # the LinuxPreprocessor converts the system call traces and kernel module logs
+        #  into ParseProcessLog compatible files
+        LinuxPreprocessor(self.logs_path).run()
+
         behavior = {}
         behavior["processes"] = Processes(self.logs_path).run()
 
@@ -993,3 +1004,77 @@ class BehaviorAnalysis(Processing):
                 process["calls"].reset()
 
         return behavior
+
+def stap_logfile_parsedlines(stap_input):
+    for line in stap_input:
+        # 'Thu May  7 14:58:43 2015.390178 python@7f798cb95240[2114] close(6) = 0\n'
+        # datetime is 31 characters
+        datetimepart, rest = line[:31], line[32:]
+
+        # incredibly sophisticated date time handling
+        dtms = datetime.timedelta(0, 0, int(datetimepart.split(".", 1)[1]))
+        dt = dateutil.parser.parse(datetimepart.split(".", 1)[0]) + dtms
+
+        parts = re.match("^(.+)@([a-f0-9]+)\[(\d+)\] (\w+)\((.*)\) = (\S+){0,1}\s{0,1}(\(\w+\)){0,1}$", rest)
+        if not parts:
+            log.warning("Could not parse syscall trace line: %s", line)
+            continue
+
+        pname, ip, pid, fn, arguments, retval, ecode = parts.groups()
+        yield line, (dt, pname, ip, pid, fn, arguments, retval, ecode)
+
+class STAPParser(object):
+    def __init__(self, handler):
+        self.handler = handler
+        self.pidcache = set()
+
+        # ugly :(
+        self.fditer = stap_logfile_parsedlines(handler.fd)
+
+    def close(self):
+        pass
+
+    def read_next_message(self):
+        line, x = next(self.fditer)
+        dt, pname, ip, pid, fn, arguments, retval, ecode
+
+        return
+
+        if not pid in self.pidcache:
+            self.pidcache.add(pid)
+            self.handler.log_process(None, dt, pid, )
+
+
+                        # self.handler.log_process(context, vmtime, pid, ppid,
+                        #              modulepath, procname)
+        # apiindex, status = struct.unpack("BB", self.handler.read(2))
+        # returnval, tid, timediff = struct.unpack("III", self.handler.read(12))
+        # context = apiindex, status, returnval, tid, timediff
+
+
+class LinuxPreprocessor(object):
+    def __init__(self, logs_path):
+        self.logs_path = logs_path
+
+    def run(self):
+        path_lkm = os.path.join(self.logs_path, "all.lkm")
+        path_stap = os.path.join(self.logs_path, "all.stap")
+
+        # we could also get the forkmap from the syscall trace
+        if os.path.exists(path_lkm):
+            lines = open(path_lkm).readlines()
+
+            forks = [re.findall("task (\d+)@0x[0-9a-f]+ forked to (\d+)@0x[0-9a-f]+", line) for line in lines]
+            forkmap = dict((j,i) for i,j in reduce(lambda x,y: x+y, forks, []))
+
+        if os.path.exists(path_stap):
+            pidfiles = {}
+            for line, parsed in stap_logfile_parsedlines(open(path_stap)):
+                pid = parsed[3]
+                if not pid in pidfiles:
+                    pidfiles[pid] = open(os.path.join(self.logs_path, "%s.stap" % pid), "w")
+
+                pidfiles[pid].write(line)
+
+            for fd in pidfiles.values():
+                fd.close()

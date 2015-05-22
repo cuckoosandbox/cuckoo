@@ -8,3 +8,4 @@ pefile
 django
 chardet
 nose
+dateutil
