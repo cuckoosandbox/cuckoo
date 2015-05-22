@@ -4,7 +4,6 @@
 
 import os
 import logging
-
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -16,6 +15,7 @@ try:
     import volatility.utils as utils
     import volatility.plugins.malware.devicetree as devicetree
     import volatility.plugins.malware.apihooks as apihooks
+    import volatility.plugins.malware.idt as idt
     import volatility.plugins.getsids as sidm
     import volatility.plugins.privileges as privm
     import volatility.plugins.taskmods as taskmods
@@ -34,9 +34,12 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+def tohex(val, nbits):
+    return hex((val + (1 << nbits)) % (1 << nbits))
+
 class VolatilityAPI(object):
     """ Volatility API interface."""
-
+      
     def __init__(self, memdump, osprofile=None):
         """@param memdump: the memdump file path
         @param osprofile: the profile (OS type)
@@ -53,8 +56,8 @@ class VolatilityAPI(object):
         ps = filescan.PSScan(self.config)
         for ep in ps.calculate():
             if str(ep.ImageFileName) == "System":
-                self.config.update("dtb",ep.Pcb.DirectoryTableBase)
-                return True
+                 self.config.update("dtb",ep.Pcb.DirectoryTableBase)
+                 return True
         return False
 
 
@@ -99,12 +102,12 @@ class VolatilityAPI(object):
         # Deal with Volatility support for KVM/qemu memory dump.
         # See: #464.
         try:
-            self.addr_space = utils.load_as(self.config)
+          self.addr_space = utils.load_as(self.config)
         except exc.AddrSpaceError as e:
-            if self._get_dtb():
-                self.addr_space = utils.load_as(self.config)
-            else:
-                raise
+          if self._get_dtb():
+              self.addr_space = utils.load_as(self.config)
+          else:
+              raise
 
         self.plugins = registry.get_plugin_classes(commands.Command,
                                                    lower=True)
@@ -202,7 +205,12 @@ class VolatilityAPI(object):
         """
         log.debug("Executing Volatility idt plugin on "
                   "{0}".format(self.memdump))
-
+                  
+        #IDT fails and sys exits if profile is 32-bit             
+        if not idt.IDT.is_valid_profile(self.addr_space.profile):
+            log.debug("Volatilty IDT Exit: invalid profile")
+            return dict(config={}, data=[])
+            
         self.__config()
         results = []
 
@@ -235,7 +243,12 @@ class VolatilityAPI(object):
         """
         log.debug("Executing Volatility gdt plugin on "
                   "{0}".format(self.memdump))
-
+                  
+        #GDT fails and sys exits if profile is 32-bit          
+        if not idt.GDT.is_valid_profile(self.addr_space.profile):
+            log.debug("Volatilty GDT Exit: invalid profile")
+            return dict(config={}, data=[])
+            
         self.__config()
         results = []
 
@@ -297,7 +310,7 @@ class VolatilityAPI(object):
         addr_space = self.addr_space
         syscalls = addr_space.profile.syscalls
         bits32 = addr_space.profile.metadata.get("memory_model", "32bit") == "32bit"
-
+        nbits = 32
         for idx, table, n, vm, mods, mod_addrs in command.calculate():
             for i in range(n):
                 if bits32:
@@ -309,6 +322,7 @@ class VolatilityAPI(object):
                     offset = obj.Object("long", table + (i * 4), vm).v()
                     # The offset is the top 20 bits of the 32 bit number.
                     syscall_addr = table + (offset >> 4)
+                    nbits = 64
 
                 try:
                     syscall_name = syscalls[idx][i]
@@ -320,13 +334,13 @@ class VolatilityAPI(object):
                     syscall_modname = "{0}".format(syscall_mod.BaseDllName)
                 else:
                     syscall_modname = "UNKNOWN"
-
+                #changed syscall_addr to string due to length in 64bit
                 new = {
                     "index": int(idx),
                     "table": hex(int(table)),
                     "entry": "{0:#06x}".format(idx * 0x1000 + i),
                     "syscall_name": syscall_name,
-                    "syscall_addr": syscall_addr,
+                    "syscall_addr": str(tohex(int(syscall_addr), nbits)),
                     "syscall_modname": syscall_modname,
                 }
 
@@ -930,7 +944,11 @@ class VolatilityManager(object):
                 self.mask_pid.append(int(pid))
 
         self.no_filter = not self.voptions.mask.enabled
-        if self.voptions.basic.guest_profile:
+        
+
+        if osprofile:
+            self.osprofile = osprofile
+        elif self.voptions.basic.guest_profile:
             self.osprofile = self.voptions.basic.guest_profile
         else:
             self.osprofile = osprofile or self.get_osprofile()
@@ -945,7 +963,7 @@ class VolatilityManager(object):
         # Exit if options were not loaded.
         if not self.voptions:
             return
-
+        
         vol = VolatilityAPI(self.memfile, self.osprofile)
 
         # TODO: improve the load of volatility functions.
@@ -1038,12 +1056,12 @@ class Memory(Processing):
         @return: volatility results dict.
         """
         self.key = "memory"
-
+                
         results = {}
         if HAVE_VOLATILITY:
             if self.memory_path and os.path.exists(self.memory_path):
                 try:
-                    vol = VolatilityManager(self.memory_path)
+                    vol = VolatilityManager(self.memory_path, self.machine.volatility_profile)
                     results = vol.run()
                 except Exception:
                     log.exception("Generic error executing volatility")
@@ -1051,5 +1069,5 @@ class Memory(Processing):
                 log.error("Memory dump not found: to run volatility you have to enable memory_dump")
         else:
             log.error("Cannot run volatility module: volatility library not available")
-
+            
         return results

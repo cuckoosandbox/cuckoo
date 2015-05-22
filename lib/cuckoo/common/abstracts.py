@@ -112,6 +112,10 @@ class Machinery(object):
                 # empty and use default behaviour.
                 machine.snapshot = machine_opts.get("snapshot")
 
+                #If available, get OS based volatiliy profile
+                machine.volatility_profile = machine_opts.get("volatility_profile")
+                
+                
                 # If configured, use specific resultserver IP and port,
                 # else use the default value.
                 opt_resultserver = self.options_globals.resultserver
@@ -139,7 +143,8 @@ class Machinery(object):
                                     interface=machine.interface,
                                     snapshot=machine.snapshot,
                                     resultserver_ip=ip,
-                                    resultserver_port=port)
+                                    resultserver_port=port,
+                                    volatility_profile=machine.volatility_profile)
             except (AttributeError, CuckooOperationalError) as e:
                 log.warning("Configuration details about machine %s "
                             "are missing: %s", machine_id, e)
@@ -600,6 +605,7 @@ class Processing(object):
         self.logs_path = ""
         self.task = None
         self.options = None
+        self.machine = None
 
     def set_options(self, options):
         """Set report options.
@@ -627,6 +633,9 @@ class Processing(object):
         self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
         self.pmemory_path = os.path.join(self.analysis_path, "memory")
         self.memory_path = os.path.join(self.analysis_path, "memory.dmp")
+
+    def set_machine(self, machine):
+        self.machine = machine
 
     def run(self):
         """Start processing.
