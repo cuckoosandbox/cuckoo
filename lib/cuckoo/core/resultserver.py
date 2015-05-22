@@ -138,6 +138,13 @@ class ResultHandler(SocketServer.BaseRequestHandler):
     def finish(self):
         self.done_event.set()
 
+        if self.protocol:
+            self.protocol.close()
+        if self.logfd:
+            self.logfd.close()
+        if self.rawlogfd:
+            self.rawlogfd.close()
+
     def wait_sock_or_end(self):
         while True:
             if self.end_request.isSet():
@@ -219,13 +226,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         except:
             log.exception("FIXME - exception in resultserver connection %s",
                           str(self.client_address))
-
-        self.protocol.close()
-
-        if self.logfd:
-            self.logfd.close()
-        if self.rawlogfd:
-            self.rawlogfd.close()
 
         log.debug("Connection closed: {0}:{1}".format(ip, port))
 
