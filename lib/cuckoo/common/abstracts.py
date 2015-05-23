@@ -1095,6 +1095,34 @@ class Signature(object):
         """
         pass
 
+    def add_match(self, process, type_, match):
+        """Adds a match to the signature data.
+        @param process: The process triggering the match.
+        @param type: The type of matching data (e.g., "api", "mutex", etc).
+        @param match: Value or array of values triggering the match.
+        """
+        signs = []
+        if isinstance(match, list):
+            for item in match:
+                signs.append({"type": type_, "value": item})
+        else:
+            signs.append({"type": type_, "value": match})
+
+        process_summary = None
+        if process:
+            process_summary = {
+                "process_name": process["process_name"],
+                "process_id": process["process_id"],
+            }
+
+        self.data.append({"process": process_summary, "signs": signs})
+
+    def has_matches(self):
+        """Returns true if there is matches.
+        @return: boolean indicating if there is any match registered
+        """
+        return len(self.data) > 0
+
     def on_call(self, call, pid, tid):
         """Notify signature about API call. Return value determines
         if this signature is done or could still match.
