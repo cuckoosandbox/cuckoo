@@ -7,6 +7,7 @@ import logging
 import datetime
 import dateutil.parser
 import re
+import threading
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
@@ -15,6 +16,7 @@ from lib.cuckoo.common.utils import convert_to_printable, logtime
 from lib.cuckoo.common.utils import cleanup_value
 
 log = logging.getLogger(__name__)
+threadlocal = threading.local()
 
 def fix_key(key):
     """Fix a registry key to have it normalized.
@@ -969,6 +971,8 @@ class BehaviorAnalysis(Processing):
         """Run analysis.
         @return: results dict.
         """
+        threadlocal.behavioranalysis = self
+        self.state = {}
 
         # the LinuxPreprocessor converts the system call traces and kernel module logs
         #  into ParseProcessLog compatible files
@@ -1003,6 +1007,7 @@ class BehaviorAnalysis(Processing):
             for process in behavior["processes"]:
                 process["calls"].reset()
 
+        del threadlocal.behavioranalysis
         return behavior
 
 def stap_logfile_parsedlines(stap_input):
@@ -1028,8 +1033,11 @@ class STAPParser(object):
         self.handler = handler
         self.pidcache = set()
 
-        # ugly :(
+        # a bit ugly :(
         self.fditer = stap_logfile_parsedlines(handler.fd)
+
+        # grab the global state for use during parsing
+        self.gstate = threadlocal.behavioranalysis.state
 
     def close(self):
         pass
@@ -1038,15 +1046,11 @@ class STAPParser(object):
         line, x = next(self.fditer)
         dt, pname, ip, pid, fn, arguments, retval, ecode
 
-        return
-
         if not pid in self.pidcache:
             self.pidcache.add(pid)
-            self.handler.log_process(None, dt, pid, )
+            ppid = self.gstate["ppids"].get(pid, -1)
+            self.handler.log_process(None, dt, pid, ppid, None, pname)
 
-
-                        # self.handler.log_process(context, vmtime, pid, ppid,
-                        #              modulepath, procname)
         # apiindex, status = struct.unpack("BB", self.handler.read(2))
         # returnval, tid, timediff = struct.unpack("III", self.handler.read(12))
         # context = apiindex, status, returnval, tid, timediff
@@ -1066,6 +1070,9 @@ class LinuxPreprocessor(object):
 
             forks = [re.findall("task (\d+)@0x[0-9a-f]+ forked to (\d+)@0x[0-9a-f]+", line) for line in lines]
             forkmap = dict((j,i) for i,j in reduce(lambda x,y: x+y, forks, []))
+
+            # save it in the current analysis state
+            threadlocal.behavioranalysis.state["ppids"] = forkmap
 
         if os.path.exists(path_stap):
             pidfiles = {}
