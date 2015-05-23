@@ -17,19 +17,19 @@ TESTS_DIR = os.path.dirname(os. path.abspath(__file__))
 class TestDtrace(unittest.TestCase):
 
 	def setUp(self):
-		build_target(self.current_target())
+		build_target(self._testMethodName)
 
 	def tearDown(self):
-		cleanup_target(self.current_target())
+		cleanup_target(self._testMethodName)
 
 	def current_target(self):
-		return self._testMethodName
+		return TESTS_DIR + "/assets/" + self._testMethodName
 
 	def test_dtruss_helloworld(self):
 		# given
 		expected_syscall = ('write_nocancel', ['0x1', 'Hello, world!\\n\\0', '0xE'], 14, 0)
 		# when
-		output = dtruss("./tests/assets/"+self.current_target())
+		output = dtruss(self.current_target())
 		#then
 		self.assertIn(expected_syscall, output)
 		self.assertEqual(sum(x.name == "write_nocancel" for x in output), 1)
@@ -38,7 +38,7 @@ class TestDtrace(unittest.TestCase):
 		# given
 		expected_syscall = ('write_nocancel', ['0x1', 'Hello, dtruss!\\n\\0', '0xF'], 15, 0)
 		# when
-		output = dtruss("./tests/assets/"+self.current_target(), "write_nocancel")
+		output = dtruss(self.current_target(), "write_nocancel")
 		# then
 		self.assertIn(expected_syscall, output)
 		self.assertEqual(len(output), 1)

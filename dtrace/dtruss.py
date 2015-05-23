@@ -15,16 +15,13 @@ syscall = namedtuple("syscall", "name args result errno")
 def dtruss(target, syscall=None):
 	"""Returns a list of syscalls made by a target.
 
-	Note: dtruss is unable to deal with spaces in paths (even when escaped), so
-	the |target| path must not contain spaces.
-
 	Every syscall is a named tuple with the following properties:
 	name (string), args (list of strings), result (int), errno (int).
 	"""
 	if syscall is None:
-		cmd = ["sudo", "/usr/bin/dtruss", target]
+		cmd = ["sudo", "/usr/bin/dtruss", _sanitize_target_path(target)]
 	else:
-		cmd = ["sudo", "/usr/bin/dtruss", "-t", syscall, target]
+		cmd = ["sudo", "/usr/bin/dtruss", "-t", syscall, _sanitize_target_path(target)]
 
 	output = check_output(cmd, stderr=STDOUT).splitlines()
 
@@ -34,6 +31,10 @@ def dtruss(target, syscall=None):
 	del output[:dtruss_header_idx+1]
 
 	return _parse_dtruss_output(output)
+
+
+def _sanitize_target_path(path):
+    return path.replace(" ", "\\ ")
 
 #
 # Parsing implementation details
