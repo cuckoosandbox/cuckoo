@@ -11,6 +11,7 @@ import unittest
 import subprocess
 
 from dtrace.dtruss import *
+from dtrace.ipconnections import *
 
 TESTS_DIR = os.path.dirname(os. path.abspath(__file__))
 
@@ -42,6 +43,32 @@ class TestDtrace(unittest.TestCase):
 		# then
 		self.assertIn(expected_syscall, output)
 		self.assertEqual(len(output), 1)
+
+	def test_ipconnections_udp(self):
+		# given
+		expected = ('127.0.0.1', # host
+		            53,          # port
+		            1,           # number of connections made to host:port
+		            'UDP')       # protocol
+		# when
+		output = ipconnections(self.current_target())
+		# then
+		matched = [x for x in output if
+			(x.remote, x.remote_port, x.num, x.protocol) == expected]
+		self.assertEqual(len(matched), 1)
+
+	def test_ipconnections_tcp(self):
+		# given
+		expected = ('127.0.0.1', # host
+		            80,          # port
+		            1,           # number of connections made to host:port
+		            'TCP')       # protocol
+		# when
+		output = ipconnections(self.current_target())
+		# then
+		matched = [x for x in output if
+			(x.remote, x.remote_port, x.num, x.protocol) == expected]
+		self.assertEqual(len(matched), 1)
 
 
 def build_target(target):
