@@ -47,10 +47,7 @@ class Package(object):
             if basedir == "SystemRoot":
                 yield os.path.join(os.getenv("SystemRoot"), *path[1:])
             elif basedir == "ProgramFiles":
-                program_files = os.getenv("ProgramFiles")
-                yield os.path.join(program_files, *path[1:])
-                if program_files.lower().endswith(' (x86)'):
-                    yield os.path.join(program_files[:-6], *path[1:])
+                yield os.path.join(os.getenv("ProgramFiles").replace(" (x86)", ""), *path[1:])
                 if os.getenv("ProgramFiles(x86)"):
                     yield os.path.join(os.getenv("ProgramFiles(x86)"),
                                        *path[1:])
