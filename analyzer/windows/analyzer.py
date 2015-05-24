@@ -12,19 +12,18 @@ import hashlib
 import xmlrpclib
 import threading
 import traceback
-from ctypes import create_string_buffer, byref, c_int, sizeof
 from datetime import datetime
 
 from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
 from lib.common.constants import PATHS, SHUTDOWN_MUTEX
-from lib.common.defines import KERNEL32, ERROR_MORE_DATA
+from lib.common.defines import KERNEL32
 from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.hashing import hash_file
 from lib.common.rand import random_string
 from lib.common.results import upload_to_host
 from lib.core.config import Config
-from lib.core.log import PipeServer, PipeForwarder
+from lib.core.log import PipeServer, PipeForwarder, PipeDispatcher
 from lib.core.packages import choose_package
 from lib.core.privileges import grant_debug_privilege
 from lib.core.startup import create_folders, init_logging
@@ -129,18 +128,13 @@ class ProcessList(object):
 FILES = Files()
 PROCESS_LIST = ProcessList()
 
-class CommandPipeHandler(threading.Thread):
+class CommandPipeHandler(object):
     """Pipe Handler.
 
     This class handles the notifications received through the Pipe Server and
     decides what to do with them.
     """
     ignore_list = dict(pid=[])
-
-    def __init__(self, h_pipe):
-        """@param h_pipe: PIPE to read."""
-        threading.Thread.__init__(self)
-        self.h_pipe = h_pipe
 
     def _handle_debug(self, data):
         """Debug message from the monitor."""
@@ -273,34 +267,12 @@ class CommandPipeHandler(threading.Thread):
         FILES.move_file(old_filepath.decode("utf8"),
                         new_filepath.decode("utf8"))
 
-    def run(self):
-        """Run handler.
-        @return: operation status.
-        """
-        data = ""
-
-        # Read the data submitted to the Pipe Server.
-        while True:
-            bytes_read = c_int(0)
-
-            buf = create_string_buffer(BUFSIZE)
-            success = KERNEL32.ReadFile(self.h_pipe,
-                                        buf,
-                                        sizeof(buf),
-                                        byref(bytes_read),
-                                        None)
-
-            data += buf.value
-
-            if not success and KERNEL32.GetLastError() == ERROR_MORE_DATA:
-                continue
-
-            break
+    def dispatch(self, data):
+        response = "NOPE"
 
         if not data or ":" not in data:
             log.critical("Unknown command received from the monitor: %r",
                          data.strip())
-            response = "NOPE"
         else:
             command, arguments = data.strip().split(":", 1)
 
@@ -309,16 +281,9 @@ class CommandPipeHandler(threading.Thread):
                              data.strip())
             else:
                 fn = getattr(self, "_handle_%s" % command.lower())
-                response = fn(arguments) or "OK"
+                response = fn(arguments)
 
-        KERNEL32.WriteFile(self.h_pipe,
-                           create_string_buffer(response),
-                           len(response),
-                           byref(bytes_read),
-                           None)
-
-        KERNEL32.CloseHandle(self.h_pipe)
-        return True
+        return response
 
 class Analyzer(object):
     """Cuckoo Windows Analyzer.
@@ -327,10 +292,8 @@ class Analyzer(object):
     procedure, including handling of the pipe server, the auxiliary modules and
     the analysis packages.
     """
-    PIPE_SERVER_COUNT = 4
 
     def __init__(self):
-        self.pipes = [None]*self.PIPE_SERVER_COUNT
         self.config = None
         self.target = None
         self.do_run = True
@@ -388,13 +351,13 @@ class Analyzer(object):
         # Generate a random name for the logging pipe server.
         self.config.logpipe = "\\\\.\\PIPE\\%s" % random_string(16, 32)
 
-        # Initialize and start the Pipe Servers. This is going to be used for
-        # communicating with the injected and monitored processes.
-        for x in xrange(self.PIPE_SERVER_COUNT):
-            self.pipes[x] = PipeServer(CommandPipeHandler, self.config.pipe,
-                                       message=True)
-            self.pipes[x].daemon = True
-            self.pipes[x].start()
+        # Initialize and start the Command Handler pipe server. This is going
+        # to be used for communicating with the monitored processes.
+        self.command_pipe = PipeServer(PipeDispatcher, self.config.pipe,
+                                       message=True,
+                                       dispatcher=CommandPipeHandler())
+        self.command_pipe.daemon = True
+        self.command_pipe.start()
 
         # Initialize and start the Log Pipe Server - the log pipe server will
         # open up a pipe that monitored processes will use to send logs to
@@ -421,8 +384,8 @@ class Analyzer(object):
     def complete(self):
         """End analysis."""
         # Stop the Pipe Servers.
-        for x in xrange(self.PIPE_SERVER_COUNT):
-            self.pipes[x].stop()
+        self.command_pipe.stop()
+        self.log_pipe_server.stop()
 
         # Dump all the notified files.
         FILES.dump_files()

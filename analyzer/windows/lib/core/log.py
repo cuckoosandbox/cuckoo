@@ -84,6 +84,49 @@ class PipeForwarder(threading.Thread):
 
         self.active[pid.value] = False
 
+class PipeDispatcher(threading.Thread):
+    """Receives commands through a local pipe, forwards them to the
+    dispatcher, and returns the response."""
+    def __init__(self, pipe_handle, dispatcher):
+        threading.Thread.__init__(self)
+        self.pipe_handle = pipe_handle
+        self.dispatcher = dispatcher
+        self.do_run = True
+
+    def _read_message(self, buf):
+        """Reads a message."""
+        bytes_read = c_uint()
+        ret = ""
+
+        while True:
+            success = KERNEL32.ReadFile(self.pipe_handle,
+                                        byref(buf), sizeof(buf),
+                                        byref(bytes_read), None)
+
+            if KERNEL32.GetLastError() == ERROR_MORE_DATA:
+                ret += buf.raw[:bytes_read.value]
+            elif success:
+                return ret + buf.raw[:bytes_read.value]
+            else:
+                return
+
+    def run(self):
+        """Run the pipe dispatcher."""
+        buf = create_string_buffer(BUFSIZE)
+        bytes_written = c_uint()
+
+        while self.do_run:
+            message = self._read_message(buf)
+            if not message:
+                break
+
+            response = self.dispatcher.dispatch(message) or "OK"
+
+            KERNEL32.WriteFile(self.pipe_handle, response, len(response),
+                               byref(bytes_written), None)
+
+        KERNEL32.CloseHandle(self.pipe_handle)
+
 class PipeServer(threading.Thread):
     """The Pipe Server accepts incoming pipe handlers and initializes
     them in a new thread."""
