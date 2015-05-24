@@ -106,8 +106,9 @@ class ProcessList(object):
 
     def add_pid(self, pid):
         """Add a process identifier to the process list."""
-        log.info("Added new process to list with pid: %s", pid)
-        self.pids.append(int(pid))
+        if int(pid) not in self.pids:
+            log.info("Added new process to list with pid: %s", pid)
+            self.pids.append(int(pid))
 
     def add_pids(self, pids):
         """Add one or more process identifiers to the process list."""
