@@ -23,11 +23,16 @@ def dtruss(target, timeout=None, syscall=None):
 	file = NamedTemporaryFile()
 	timeout_value = timeout if timeout != None else -1
 	if syscall is None:
-		cmd = ["sudo", _dtruss_script_path(), "-W", file.name,
-		       "-K", str(timeout_value), _sanitize_target_path(target)]
+		cmd = ["sudo", _dtruss_script_path(),
+		       "-W", file.name,
+		       "-K", str(timeout_value),
+		       _sanitize_target_path(target)]
 	else:
-		cmd = ["sudo", _dtruss_script_path(), "-W", file.name, "-t", syscall,
-		       "-K", str(timeout_value), _sanitize_target_path(target)]
+		cmd = ["sudo", _dtruss_script_path(),
+		       "-W", file.name,
+		       "-t", syscall,
+		       "-K", str(timeout_value),
+		       _sanitize_target_path(target)]
 
 	with open(os.devnull, "w") as f:
 		check_call(cmd, stdout=f, stderr=f)
