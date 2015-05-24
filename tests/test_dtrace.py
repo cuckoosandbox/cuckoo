@@ -96,7 +96,7 @@ def build_target(target):
 	# clang -arch x86_64 -o $target_name $target_name.c
 	output = executable_name_for_target(target)
 	source = sourcefile_name_for_target(target)
-	subprocess.check_call(["clang", "-arch", "x86_64", "-o", output, source])
+	subprocess.check_call(["clang", "-arch", "x86_64", "-O0", "-o", output, source])
 
 def cleanup_target(target):
 	os.remove(executable_name_for_target(target))
