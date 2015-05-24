@@ -48,26 +48,26 @@ class TestDtrace(unittest.TestCase):
 		# given
 		expected = ('127.0.0.1', # host
 		            53,          # port
-		            1,           # number of connections made to host:port
 		            'UDP')       # protocol
 		# when
 		output = ipconnections(self.current_target())
 		# then
+		self.assertEqual(len(output), 1)
 		matched = [x for x in output if
-			(x.remote, x.remote_port, x.num, x.protocol) == expected]
+			(x.remote, x.remote_port, x.protocol) == expected]
 		self.assertEqual(len(matched), 1)
 
 	def test_ipconnections_tcp(self):
 		# given
 		expected = ('127.0.0.1', # host
 		            80,          # port
-		            1,           # number of connections made to host:port
 		            'TCP')       # protocol
 		# when
 		output = ipconnections(self.current_target())
 		# then
+		self.assertEqual(len(output), 1)
 		matched = [x for x in output if
-			(x.remote, x.remote_port, x.num, x.protocol) == expected]
+			(x.remote, x.remote_port, x.protocol) == expected]
 		self.assertEqual(len(matched), 1)
 
 

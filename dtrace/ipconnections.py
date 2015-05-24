@@ -11,14 +11,14 @@ from collections import namedtuple
 from subprocess import check_output, STDOUT
 
 connection = namedtuple("connection",
-                        "host host_port remote remote_port protocol num")
+                        "host host_port remote remote_port protocol timestamp")
 
 def ipconnections(target, foo=None):
     """Returns a list of ip connections made by the target.
 
     A connection is a named tuple with the following properties:
     host (string), host_port (int), remote_port (string), protocol (string),
-    num(int).
+    timestamp(int).
     """
     cmd = ["sudo", "/usr/sbin/dtrace",
            "-s", _ipconnections_path(),
@@ -51,8 +51,8 @@ def _parse_single_entry(entry):
     remote      = parsed['remote']
     remote_port = parsed['remote_port']
     protocol    = parsed['protocol']
-    num         = parsed['num']
-    return connection(host, host_port, remote, remote_port, protocol, num)
+    timestamp   = parsed['timestamp']
+    return connection(host, host_port, remote, remote_port, protocol, timestamp)
 
 if __name__ == "__main__":
     pass
