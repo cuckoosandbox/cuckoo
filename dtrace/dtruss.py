@@ -5,25 +5,34 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE file for details.
 
+import os
 from csv import reader
 from sys import argv
 from collections import namedtuple
-from subprocess import check_output, STDOUT
+from subprocess import check_call
+from tempfile import NamedTemporaryFile
 
 syscall = namedtuple("syscall", "name args result errno")
 
-def dtruss(target, syscall=None):
+def dtruss(target, timeout=None, syscall=None):
 	"""Returns a list of syscalls made by a target.
 
 	Every syscall is a named tuple with the following properties:
 	name (string), args (list of strings), result (int), errno (int).
 	"""
+	file = NamedTemporaryFile()
+	timeout_value = timeout if timeout != None else -1
 	if syscall is None:
-		cmd = ["sudo", "/usr/bin/dtruss", _sanitize_target_path(target)]
+		cmd = ["sudo", _dtruss_script_path(), "-W", file.name,
+		       "-K", str(timeout_value), _sanitize_target_path(target)]
 	else:
-		cmd = ["sudo", "/usr/bin/dtruss", "-t", syscall, _sanitize_target_path(target)]
+		cmd = ["sudo", _dtruss_script_path(), "-W", file.name, "-t", syscall,
+		       "-K", str(timeout_value), _sanitize_target_path(target)]
 
-	output = check_output(cmd, stderr=STDOUT).splitlines()
+	with open(os.devnull, "w") as f:
+		check_call(cmd, stdout=f, stderr=f)
+	output = file.read().splitlines()
+	file.close()
 
 	# We're only interested in dtruss' output, not the target's: remove anything
 	# before the dtruss header
@@ -36,6 +45,8 @@ def dtruss(target, syscall=None):
 def _sanitize_target_path(path):
     return path.replace(" ", "\\ ")
 
+def _dtruss_script_path():
+    return os.path.dirname(os.path.abspath(__file__)) + "/dtruss.sh"
 #
 # Parsing implementation details
 #
