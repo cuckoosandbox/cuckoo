@@ -39,10 +39,19 @@ class TestDtrace(unittest.TestCase):
 		# given
 		expected_syscall = ('write_nocancel', ['0x1', 'Hello, dtruss!\\n\\0', '0xF'], 15, 0)
 		# when
-		output = dtruss(self.current_target(), "write_nocancel")
+		output = dtruss(self.current_target(), None, "write_nocancel")
 		# then
 		self.assertIn(expected_syscall, output)
 		self.assertEqual(len(output), 1)
+
+	def test_dtruss_timeout(self):
+		# given
+		expected_syscall = ('write', ['0x1', 'Hello, world!\\n\\0', '0xE'], 14, 0)
+		# when
+		output = dtruss(self.current_target(), 1)
+		#then
+		self.assertIn(expected_syscall, output)
+		self.assertEqual(sum(x.name == "write" for x in output), 1)
 
 	def test_ipconnections_udp(self):
 		# given
