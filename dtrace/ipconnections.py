@@ -13,7 +13,7 @@ from subprocess import check_output, STDOUT
 connection = namedtuple("connection",
                         "host host_port remote remote_port protocol timestamp")
 
-def ipconnections(target, foo=None):
+def ipconnections(target):
     """Returns a list of ip connections made by the target.
 
     A connection is a named tuple with the following properties:
