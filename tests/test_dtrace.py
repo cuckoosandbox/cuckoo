@@ -92,6 +92,13 @@ class TestDtrace(unittest.TestCase):
 			(x.remote, x.remote_port, x.protocol) == expected]
 		self.assertEqual(len(matched), 1)
 
+
+	def test_ipconnections_empty(self):
+		# when
+		output = ipconnections(self.current_target())
+		# then
+		self.assertEqual(len(output), 0)
+
 def build_target(target):
 	# clang -arch x86_64 -o $target_name $target_name.c
 	output = executable_name_for_target(target)
