@@ -696,9 +696,7 @@ dtrace='
 #	/usr/sbin/dtrace -x dynvarsize=$buf -n "$dtrace" >&2
 #fi
 
-### Run DTrace (Mac OS X)
-# Redirect the output to stderr so that it doesn't mingle with
-# data going to the target's stdout
+### Run DTrace (Mac OS X,)
 if [ $opt_command -eq 1 ]; then
     /usr/sbin/dtrace -x dynvarsize=$buf -x evaltime=exec -n "$dtrace" \
         -c "$command" -o "$output_file"
