@@ -8,7 +8,8 @@
 import os
 import json
 from collections import namedtuple
-from subprocess import check_output, STDOUT
+from tempfile import NamedTemporaryFile
+from subprocess import check_call
 
 connection = namedtuple("connection",
                         "host host_port remote remote_port protocol timestamp")
@@ -20,12 +21,18 @@ def ipconnections(target, timeout=None):
     host (string), host_port (int), remote_port (string), protocol (string),
     timestamp(int).
     """
+    file = NamedTemporaryFile()
     cmd = ["sudo", "/usr/sbin/dtrace",
            "-C", "-DANALYSIS_TIMEOUT=%d" % (timeout if timeout != None else -1),
            "-s", _ipconnections_path(),
-           "-c", _sanitize_path(target)]
+           "-c", _sanitize_path(target),
+           "-o", file.name]
 
-    output = check_output(cmd, stderr=STDOUT).splitlines()
+    with open(os.devnull, "w") as f:
+        check_call(cmd, stdout=f, stderr=f)
+    output = file.read().splitlines()
+    file.close()
+
     # Skip everything above the ipconnections.d's header
     header_idx = output.index("## ipconnections.d ##")
     del output[:header_idx+1]
