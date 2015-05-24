@@ -13,7 +13,7 @@ from subprocess import check_output, STDOUT
 connection = namedtuple("connection",
                         "host host_port remote remote_port protocol timestamp")
 
-def ipconnections(target):
+def ipconnections(target, timeout=None):
     """Returns a list of ip connections made by the target.
 
     A connection is a named tuple with the following properties:
@@ -21,6 +21,7 @@ def ipconnections(target):
     timestamp(int).
     """
     cmd = ["sudo", "/usr/sbin/dtrace",
+           "-C", "-DANALYSIS_TIMEOUT=%d" % (timeout if timeout != None else -1),
            "-s", _ipconnections_path(),
            "-c", _sanitize_path(target)]
 

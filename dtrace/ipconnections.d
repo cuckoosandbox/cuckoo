@@ -4,6 +4,7 @@
 dtrace:::BEGIN
 {
     printf("## ipconnections.d ##\n");
+    countdown = ANALYSIS_TIMEOUT;
 }
 
 ip:::receive
@@ -48,4 +49,16 @@ ip:::send
 
     printf("{\"host\":\"%s\", \"host_port\":%d, \"remote\":\"%s\", \"remote_port\":%d, \"protocol\":\"%s\", \"timestamp\": %d}\n",
         this->host, this->host_port, this->remote, this->remote_port, this->protocol, this->timestamp);
+}
+
+profile:::tick-1sec
+/countdown > 0/
+{
+    --countdown;
+}
+
+profile:::tick-1sec
+/ countdown == 0 /
+{
+    exit(0);
 }

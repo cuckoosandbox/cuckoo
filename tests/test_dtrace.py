@@ -70,6 +70,18 @@ class TestDtrace(unittest.TestCase):
 			(x.remote, x.remote_port, x.protocol) == expected]
 		self.assertEqual(len(matched), 1)
 
+	def test_ipconnections_tcp_with_timeout(self):
+		# given
+		expected = ('127.0.0.1', # host
+		            80,          # port
+		            'TCP')       # protocol
+		# when
+		output = ipconnections(self.current_target(), 1)
+		# then
+		self.assertEqual(len(output), 1)
+		matched = [x for x in output if
+			(x.remote, x.remote_port, x.protocol) == expected]
+		self.assertEqual(len(matched), 1)
 
 def build_target(target):
 	# clang -arch x86_64 -o $target_name $target_name.c
