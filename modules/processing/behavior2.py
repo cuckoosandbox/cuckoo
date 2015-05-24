@@ -231,12 +231,6 @@ class BsonHandler(object):
 
         self.reconstructor = BehaviorReconstructor()
 
-    def log_thread(self, context, pid):
-        _, _, _, tid, _ = context
-
-        self.calls[tid] = []
-        log.debug("New thread %d in process %d.", tid, pid)
-
     def log_anomaly(self, category, tid, funcname, msg):
         self.calls[tid].append({
             "api": "__anomaly__",
@@ -250,7 +244,6 @@ class BsonHandler(object):
 
         if tid not in self.calls:
             self.calls[tid] = []
-            log.debug("Thread identifier not found: %d", tid)
 
         for key, value in arguments.items():
             if isinstance(value, basestring):
