@@ -8,7 +8,7 @@
 # This script consist of commands for seting a target VirtualBox VM network properties.
 # In more details it creates a host-only network interface, assigns it to the VM and then
 # enables traffic forwarding for this interface.
-# 
+#
 # Important notes:
 # 	1. The target VirtualBox VM must actually exist.
 # 	2. This script does handle only OS X at the moment.
@@ -54,9 +54,9 @@ sudo sysctl -w net.inet.ip.forwarding=1 &> /dev/null
 # Apply the folowing rules for forwarding traffic
 # from and to the host-only interface
 rules="nat on en1 from vboxnet0:network to any -> (en1)
-#pass inet proto icmp all
-#pass in on vboxnet0 proto udp from any to any port domain keep state
-#pass quick on en1 proto udp from any to any port domain keep state"
+pass inet proto icmp all
+pass in on vboxnet0 proto udp from any to any port domain keep state
+pass quick on en1 proto udp from any to any port domain keep state"
 echo "$rules" > ./pfrules
 sudo pfctl -e -f ./pfrules
 rm -f ./pfrules
