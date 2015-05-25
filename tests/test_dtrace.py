@@ -10,8 +10,8 @@ import sys
 import unittest
 import subprocess
 
-from dtrace.dtruss import *
-from dtrace.ipconnections import *
+from analyzer.darwin.lib.dtrace.dtruss import *
+from analyzer.darwin.lib.dtrace.ipconnections import *
 
 TESTS_DIR = os.path.dirname(os. path.abspath(__file__))
 
