@@ -13,10 +13,10 @@ TMPFS="0"
 
 usage() {
     echo "Usage: $0 [options...]"
-    echo "-c --vmcount: Amount of Virtual Machines to be created."
-    echo "-i --iso: Path to a Windows XP Installer ISO."
+    echo "-c --vmcount:    Amount of Virtual Machines to be created."
+    echo "-i --iso:        Path to a Windows XP Installer ISO."
     echo "-s --serial-key: Serial Key for the given Windows XP version."
-    echo "-t --tmpfs: Indicate tmpfs should be used for snapshots."
+    echo "-t --tmpfs:      Indicate tmpfs should be used for snapshots."
     exit 1
 }
 
