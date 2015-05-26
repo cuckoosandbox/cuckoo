@@ -6,6 +6,7 @@ echo "and may not work as expected." >&2
 echo "### END OF NOTICE ###" >&2
 
 # Default values.
+WIN7="0"
 VMCOUNT="40"
 ISOFILE=""
 SERIALKEY=""
@@ -13,12 +14,17 @@ TMPFS="0"
 
 usage() {
     echo "Usage: $0 [options...]"
+    echo "-7 --win7:       Create Windows 7 x64 Virtual Machines."
+    echo "   --win7x86:    Create Windows 7 x86 Virtual Machines."
     echo "-c --vmcount:    Amount of Virtual Machines to be created."
     echo "-i --iso:        Path to a Windows XP Installer ISO."
     echo "-s --serial-key: Serial Key for the given Windows XP version."
     echo "-t --tmpfs:      Indicate tmpfs should be used for snapshots."
     exit 1
 }
+
+MOUNTOS="winxp"
+WINOS="--winxp"
 
 while [ "$#" -gt 0 ]; do
     option="$1"
@@ -27,6 +33,18 @@ while [ "$#" -gt 0 ]; do
     case "$option" in
         -h|--help)
             usage
+            ;;
+
+        -7|--win7)
+            WIN7="1"
+            MOUNTOS="win7"
+            WINOS="--win7x64"
+            ;;
+
+        --win7x86)
+            WIN7="1"
+            MOUNTOS="win7"
+            WINOS="--win7"
             ;;
 
         -c|--vmcount)
@@ -66,7 +84,7 @@ if [ -z "$ISOFILE" ]; then
     exit 1
 fi
 
-if [ -z "$SERIALKEY" ]; then
+if [ "$WIN7" -eq 0 ] && [ -z "$SERIALKEY" ]; then
     echo "Please specify a working serial key."
     exit 1
 fi
@@ -130,7 +148,7 @@ vmcloak-vboxnet0
 # internet access.
 vmcloak-iptables
 
-MOUNT="/mnt/winxp/"
+MOUNT="/mnt/$MOUNTOS/"
 
 # The mount directory must exist and it must not be empty.
 if [ ! -d "$MOUNT" ] || [ -z "$(ls -A "$MOUNT")" ]; then
@@ -163,7 +181,7 @@ chown cuckoo:cuckoo "$VMCLOAKCONF"
 sudo -u cuckoo -i vmcloak-bird hddpath bird0
 if [ "$?" -ne 0 ]; then
     echo "Creating the Virtual Machine bird.."
-    vmcloak -u cuckoo -s "$VMCLOAKCONF" -r --bird bird0 --winxp
+    vmcloak -u cuckoo -s "$VMCLOAKCONF" -r --bird bird0 "$WINOS"
 fi
 
 # Kill all VirtualBox processes as otherwise the listening
