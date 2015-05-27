@@ -11,6 +11,7 @@ VMCOUNT="40"
 ISOFILE=""
 SERIALKEY=""
 TMPFS="0"
+TAGS=""
 
 usage() {
     echo "Usage: $0 [options...]"
@@ -20,6 +21,7 @@ usage() {
     echo "-i --iso:        Path to a Windows XP Installer ISO."
     echo "-s --serial-key: Serial Key for the given Windows XP version."
     echo "-t --tmpfs:      Indicate tmpfs should be used for snapshots."
+    echo "-T --tags:       Tags for the Virtual Machines."
     exit 1
 }
 
@@ -64,6 +66,11 @@ while [ "$#" -gt 0 ]; do
 
         -t|--tmpfs)
             TMPFS="1"
+            ;;
+
+        -T|--tags)
+            TAGS="$1"
+            shift
             ;;
 
         *)
@@ -173,6 +180,7 @@ data-dir = $VMS
 iso-mount = $MOUNT
 serial-key = $SERIALKEY
 temp-dirpath = $VMTEMP
+tags = $TAGS
 EOF
 
 chown cuckoo:cuckoo "$VMCLOAKCONF"
