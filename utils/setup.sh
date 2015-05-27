@@ -97,9 +97,9 @@ if [ "$WIN7" -eq 0 ] && [ -z "$SERIALKEY" ]; then
 fi
 
 # Update apt repository and install required packages.
-apt-get update -y
-apt-get install -y sudo git python-dev python-pip postgresql libpq-dev \
-    python-dpkt vim tcpdump libcap2-bin genisoimage pwgen
+apt-get update -y --force-yes
+apt-get install -y --force-yes sudo git python-dev python-pip postgresql \
+    libpq-dev python-dpkt vim tcpdump libcap2-bin genisoimage pwgen
 
 # Install the most up-to-date version of VirtualBox available at the moment.
 if [ ! -e "/usr/bin/VirtualBox" ]; then
