@@ -7,57 +7,58 @@
 
 import os
 import sys
+import pkgutil
 import logging
 import traceback
 
+from time import sleep
 from datetime import datetime
 from lib.common.config import Config
-from lib.core.constants import PATHS
 from lib.common.results import NetlogHandler
+from lib.core.constants import PATHS
+from lib.core.packages import choose_package, Package, Auxiliary
+from modules import auxiliary
 
 class Macalyzer:
 	"""Cuckoo OS X analyser.
 	"""
 
 	log = logging.getLogger()
-	target_artefacts = []
 
 	def __init__(self, aConfig=None):
 		self.config = aConfig
 
-	def bootstrap(self):
-		self.create_result_folders();
-		self.setup_logging()
-		self.detect_target()
+	def _bootstrap(self):
+		self._create_result_folders();
+		self._setup_logging()
+		self._detect_target()
 
 	def run(self):
 		"""
 		"""
-		self.bootstrap()
+		self._bootstrap()
 
 		self.log.debug("Starting analyzer from %s", os.getcwd())
 		self.log.debug("Storing results at: %s", "FOOBAR")
 
-		package = self.setup_analysis_package()
-		aux = self.setup_auxiliary_modules()
+		aux_enabled, aux_all = self._setup_auxiliary_modules()
+		package = self._setup_analysis_package()
 
-		self.setup_machine_time(self.config.clock)
-		results = analysis(package)
-		#
-		# shutdown_auxiliary_modules(aux)
-		# shutdown_spawned_modules(results.procs_still_alive)
-		# complete()
+		self._setup_machine_time(self.config.clock)
+		self.results = self._analysis(package)
 
-	def complete(self):
-		# upload_artefacts()
-		# cleanup()
-		pass
+		self._shutdown_auxiliary_modules(aux_enabled, aux_all)
+		self._complete()
+
+	def _complete(self):
+		self._upload_results()
+		self._cleanup()
 
 	#
 	# Implementation details
 	#
 
-	def create_result_folders(self):
+	def _create_result_folders(self):
 		for name, folder in PATHS.items():
 			if os.path.exists(folder):
 				continue
@@ -66,7 +67,8 @@ class Macalyzer:
 			except OSError:
 				pass
 
-	def setup_logging(self):
+
+	def _setup_logging(self):
 		""" Initialize logger. """
 		formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 		# Setup a stream handler
@@ -79,14 +81,16 @@ class Macalyzer:
 		self.log.addHandler(nh)
 		self.log.setLevel(loggin.DEBUG)
 
-	def detect_target(self):
+
+	def _detect_target(self):
 		if self.config.category == "file":
 			self.target = os.path.join(os.environ["TEMP"] + os.sep,
 			                           str(self.config.file_name))
 		else: # It's not a file, but a URL
 			self.target = self.config.target
 
-	def setup_analysis_package(self):
+
+	def _setup_analysis_package(self):
 		# Figuring out what package to use
 		pkg = None
 		if self.config.package:
@@ -97,7 +101,6 @@ class Macalyzer:
 			if self.config.category != "file":
 				pkg = "safari"
 			else:
-				# TODO(rodionovd): implement choose_package()
 				pkg = choose_package(FILE_TYPE, FILE_NAME)
 		if not pkg:
 			raise Exception("No valid package available for file type: "
@@ -109,7 +112,6 @@ class Macalyzer:
 		except ImportError:
 			raise Exception("Unable to import package \"{0}\": it does not "
 			                "exist.".format(package_name))
-		# TODO(rodionovd): implement base Package class
 		Package()
 		try:
 			package_class = Package.__subclasses__()[0]
@@ -118,10 +120,43 @@ class Macalyzer:
 		return package_class(self.config.get_options())
 
 
-	def setup_auxiliary_modules(self):
-		pass
+	def _setup_auxiliary_modules(self):
+		# Initialize Auxiliary modules
+		Auxiliary()
+		prefix = auxiliary.__nam__name__ + "."
+		for loader, name, ispkg in pkgutil.iter_modules(auxiliary.__path__, prefix):
+			if ispkg:
+				continue
+			# Import auxiliary modules
+			try:
+				__import__(name, globals(), locals(), ["dummy"], -1)
+			except ImportError:
+				self.log.warning("Unable to import the auxiliary module "
+				                 "\"{0}\": {1}".format(name, e))
+		# Walk through the available auxiliary modules
+		aux_enabled, aux_available = [], []
+		for module in Auxiliary.__subclasses__():
+			try:
+				aux = module(self.config.get_options())
+				aux_available.append(aux)
+				aux.start()
+			except (NotImplementedError, AttributeError):
+                log.warning("Auxiliary module %s was not implemented",
+                            aux.__class__.__name__)
+                continue
+            except Exception as e:
+                log.warning("Cannot execute auxiliary module %s: %s",
+                            aux.__class__.__name__, e)
+                continue
+            finally:
+                log.debug("Started auxiliary module %s",
+                          aux.__class__.__name__)
+                aux_enabled.append(aux)
 
-	def setup_machine_time(self, clock_str, actually_change_time=True):
+		return (aux_enabled, aux_available)
+
+
+	def _setup_machine_time(self, clock_str, actually_change_time=True):
 		clock = datetime.strptime(clock_str, "%Y%m%dT%H:%M:%S")
 		# NOTE: On OS X there's `date` utility that accepts
 		# new date/time as a string of the folowing format:
@@ -132,21 +167,43 @@ class Macalyzer:
 			os.system(cmd)
 		return cmd
 
-	def analysis(self, package):
+
+	def _analysis(self, package):
+		package.start(self.target)
+		timer = 0
+		while timer <= int(self.config.timeout):
+			sleep(1)
+			timer += 1
+			if not package.check():
+				break
+		return package.finish()
+
+
+	def _shutdown_auxiliary_modules(self, aux_enabled, aux_all):
+		for a in aux_enabled:
+			try:
+				a.stop()
+		except (NotImplementedError, AttributeError):
+			continue
+		except Exception as e:
+			log.warning("Cannot terminate auxiliary module %s: %s",
+						aux.__class__.__name__, e)
+		for a in aux_all:
+			try:
+                aux.finish()
+            except (NotImplementedError, AttributeError):
+                continue
+            except Exception as e:
+                log.warning("Exception running finish callback of auxiliary "
+                            "module %s: %s", aux.__class__.__name__, e)
+
+
+	def _upload_results(self):
 		pass
 
-	def shutdown_auxiliary_modules(self, aux):
-		pass
 
-	def shutdown_spawned_processes(self, procs):
+	def _cleanup(self):
 		pass
-
-	def upload_artefacts(self):
-		pass
-
-	def cleanup(self):
-		pass
-
 
 if __name__ == "__main__":
 	success = False
