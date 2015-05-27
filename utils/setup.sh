@@ -99,7 +99,8 @@ fi
 # Update apt repository and install required packages.
 apt-get update -y --force-yes
 apt-get install -y --force-yes sudo git python-dev python-pip postgresql \
-    libpq-dev python-dpkt vim tcpdump libcap2-bin genisoimage pwgen
+    libpq-dev python-dpkt vim tcpdump libcap2-bin genisoimage pwgen \
+    htop tig mosh
 
 # Install the most up-to-date version of VirtualBox available at the moment.
 if [ ! -e "/usr/bin/VirtualBox" ]; then
