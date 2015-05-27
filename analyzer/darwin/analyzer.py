@@ -12,7 +12,7 @@ import traceback
 
 from datetime import datetime
 from lib.common.config import Config
-from lib.common.constants import PATHS
+from lib.core.constants import PATHS
 from lib.common.results import NetlogHandler
 
 class Macalyzer:
