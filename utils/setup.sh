@@ -223,6 +223,9 @@ if [ "$TMPFS" -ne 0 ]; then
         initialize-mount "$VMS" "$VMBACKUP" "$VMMOUNT"
 fi
 
+# Install the Upstart/SystemV scripts.
+./utils/service.sh install
+
 # Add "nmi_watchdog=0" to the GRUB commandline if it's not in there already.
 if ! grep nmi_watchdog /etc/default/grub; then
     cat >> /etc/default/grub << EOF
