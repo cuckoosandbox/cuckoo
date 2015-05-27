@@ -186,6 +186,10 @@ EOF
 
 chown cuckoo:cuckoo "$VMCLOAKCONF"
 
+# Delete the cuckoo1 machine that is included in the VirtualBox configuration
+# by default.
+./utils/machine.py --delete cuckoo1
+
 # Check whether the bird "bird0" already exists.
 sudo -u cuckoo -i vmcloak-bird hddpath bird0
 if [ "$?" -ne 0 ]; then
