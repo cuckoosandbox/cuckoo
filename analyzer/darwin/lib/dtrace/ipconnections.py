@@ -10,7 +10,7 @@ import json
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
 from subprocess import Popen
-from .fileutils import filecontents_generator
+from .fileutils import filelines
 
 connection = namedtuple("connection",
                         "host host_port remote remote_port protocol timestamp")
@@ -34,7 +34,7 @@ def ipconnections(target, timeout=None):
     with open(os.devnull, "w") as f:
         handler = Popen(cmd, stdout=f, stderr=f)
 
-    for entry in filecontents_generator(file):
+    for entry in filelines(file):
     	if "## ipconnections.d done ##" in entry.strip():
     		break
     	yield _parse_single_entry(entry.strip())

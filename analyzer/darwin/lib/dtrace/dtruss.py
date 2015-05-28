@@ -11,7 +11,7 @@ from sys import argv
 from collections import namedtuple
 from subprocess import Popen
 from tempfile import NamedTemporaryFile
-from .fileutils import filecontents_generator
+from .fileutils import filelines
 
 syscall = namedtuple("syscall", "name args result errno")
 
@@ -38,7 +38,7 @@ def dtruss(target, timeout=None, syscall=None):
 	with open(os.devnull, "w") as f:
 		handle = Popen(cmd, stdout=f, stderr=f)
 
-	for entry in filecontents_generator(file):
+	for entry in filelines(file):
 		if "## dtruss.sh done ##" in entry.strip():
 			break
 		yield _parse_syscall(entry.strip())
