@@ -9,7 +9,8 @@ import os
 import json
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
-from subprocess import check_call
+from subprocess import Popen
+from .fileutils import filecontents_generator
 
 connection = namedtuple("connection",
                         "host host_port remote remote_port protocol timestamp")
@@ -28,15 +29,16 @@ def ipconnections(target, timeout=None):
            "-c", _sanitize_path(target),
            "-o", file.name]
 
+    # The dtrace script will take care of timeout itself, so we just launch
+    # it asynchronously
     with open(os.devnull, "w") as f:
-        check_call(cmd, stdout=f, stderr=f)
-    output = file.read().splitlines()
-    file.close()
+        handler = Popen(cmd, stdout=f, stderr=f)
 
-    # Skip everything above the ipconnections.d's header
-    header_idx = output.index("## ipconnections.d ##")
-    del output[:header_idx+1]
-    return _parse_ipconnections_output(output)
+    for entry in filecontents_generator(file):
+    	if "## ipconnections.d done ##" in entry.strip():
+    		break
+    	yield _parse_single_entry(entry.strip())
+    file.close()
 
 def _sanitize_path(path):
     """ Replace spaces with backslashes+spaces """
@@ -48,9 +50,6 @@ def _ipconnections_path():
 #
 # Parsing implementation details
 #
-
-def _parse_ipconnections_output(output):
-    return map(_parse_single_entry, filter(None, output))
 
 def _parse_single_entry(entry):
     parsed = json.loads(entry)

@@ -29,8 +29,10 @@ class TestDtrace(unittest.TestCase):
 	def test_dtruss_helloworld(self):
 		# given
 		expected_syscall = ('write_nocancel', ['0x1', 'Hello, world!\\n\\0', '0xE'], 14, 0)
+		output = []
 		# when
-		output = dtruss(self.current_target())
+		for call in dtruss(self.current_target()):
+			output.append(call)
 		#then
 		self.assertIn(expected_syscall, output)
 		self.assertEqual(sum(x.name == "write_nocancel" for x in output), 1)
@@ -38,8 +40,10 @@ class TestDtrace(unittest.TestCase):
 	def test_dtruss_specific_syscall(self):
 		# given
 		expected_syscall = ('write_nocancel', ['0x1', 'Hello, dtruss!\\n\\0', '0xF'], 15, 0)
+		output = []
 		# when
-		output = dtruss(self.current_target(), None, "write_nocancel")
+		for call in dtruss(self.current_target(), None, "write_nocancel"):
+			output.append(call)
 		# then
 		self.assertIn(expected_syscall, output)
 		self.assertEqual(len(output), 1)
@@ -47,8 +51,10 @@ class TestDtrace(unittest.TestCase):
 	def test_dtruss_timeout(self):
 		# given
 		expected_syscall = ('write', ['0x1', 'Hello, world!\\n\\0', '0xE'], 14, 0)
+		output = []
 		# when
-		output = dtruss(self.current_target(), 1)
+		for call in dtruss(self.current_target(), 1):
+			output.append(call)
 		#then
 		self.assertIn(expected_syscall, output)
 		self.assertEqual(sum(x.name == "write" for x in output), 1)
@@ -58,8 +64,10 @@ class TestDtrace(unittest.TestCase):
 		expected = ('127.0.0.1', # host
 		            53,          # port
 		            'UDP')       # protocol
+		output = []
 		# when
-		output = ipconnections(self.current_target())
+		for connection in ipconnections(self.current_target()):
+			output.append(connection)
 		# then
 		self.assertEqual(len(output), 1)
 		matched = [x for x in output if
@@ -71,8 +79,10 @@ class TestDtrace(unittest.TestCase):
 		expected = ('127.0.0.1', # host
 		            80,          # port
 		            'TCP')       # protocol
+		output = []
 		# when
-		output = ipconnections(self.current_target())
+		for connection in ipconnections(self.current_target()):
+			output.append(connection)
 		# then
 		self.assertEqual(len(output), 1)
 		matched = [x for x in output if
@@ -84,8 +94,10 @@ class TestDtrace(unittest.TestCase):
 		expected = ('127.0.0.1', # host
 		            80,          # port
 		            'TCP')       # protocol
+		output = []
 		# when
-		output = ipconnections(self.current_target(), 1)
+		for connection in ipconnections(self.current_target(), 1):
+			output.append(connection)
 		# then
 		self.assertEqual(len(output), 1)
 		matched = [x for x in output if
@@ -94,8 +106,11 @@ class TestDtrace(unittest.TestCase):
 
 
 	def test_ipconnections_empty(self):
+		# given
+		output = []
 		# when
-		output = ipconnections(self.current_target())
+		for connection in ipconnections(self.current_target()):
+			output.append(connection)
 		# then
 		self.assertEqual(len(output), 0)
 

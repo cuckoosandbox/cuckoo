@@ -9,8 +9,9 @@ import os
 from csv import reader
 from sys import argv
 from collections import namedtuple
-from subprocess import check_call
+from subprocess import Popen
 from tempfile import NamedTemporaryFile
+from .fileutils import filecontents_generator
 
 syscall = namedtuple("syscall", "name args result errno")
 
@@ -33,19 +34,15 @@ def dtruss(target, timeout=None, syscall=None):
 		       "-t", syscall,
 		       "-K", str(timeout_value),
 		       _sanitize_target_path(target)]
-
+	# The dtrace script will take care of timeout itself, so we just launch it asynchronously
 	with open(os.devnull, "w") as f:
-		check_call(cmd, stdout=f, stderr=f)
-	output = file.read().splitlines()
+		handle = Popen(cmd, stdout=f, stderr=f)
+
+	for entry in filecontents_generator(file):
+		if "## dtruss.sh done ##" in entry.strip():
+			break
+		yield _parse_syscall(entry.strip())
 	file.close()
-
-	# We're only interested in dtruss' output, not the target's: remove anything
-	# before the dtruss header
-	dtruss_header_idx = output.index("SYSCALL(args) \t\t = return")
-	del output[:dtruss_header_idx+1]
-
-	return _parse_dtruss_output(output)
-
 
 def _sanitize_target_path(path):
     return path.replace(" ", "\\ ")
@@ -58,11 +55,6 @@ def _dtruss_script_path():
 # dtruss' output format:
 # SYSCALL(arg0, arg1, arg2, ..) 		 = result, errno
 #
-
-def _parse_dtruss_output(lines):
-	"""Turns non-empty strings from dtruss output into syscall tuples
-	"""
-	return map(_parse_syscall, filter(None, lines))
 
 def _parse_syscall(string):
 	name   = _syscall_name_from_dtruss_output(string)

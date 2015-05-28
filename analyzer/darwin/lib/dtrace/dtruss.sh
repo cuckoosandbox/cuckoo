@@ -180,7 +180,7 @@ dtrace='
 	OPT_relative ? printf("%8s ","RELATIVE") : 1;
 	OPT_elapsed  ? printf("%7s ","ELAPSD") : 1;
 	OPT_cpu      ? printf("%6s ","CPU") : 1;
-	printf("SYSCALL(args) \t\t = return\n");
+	/*printf("SYSCALL(args) \t\t = return\n");*/
 
 	/* globals */
 	trackedpid[pid] = 0;
@@ -675,8 +675,9 @@ dtrace='
  }
 
  profile:::tick-1sec
- / OPT_timeout && TIMEOUT == 0 /
+ /OPT_timeout && TIMEOUT == 0/
  {
+     printf("## dtruss.sh done ##");
      exit(0);
  }
 
@@ -685,6 +686,7 @@ dtrace='
  {
 	OPT_counts == 1 ? printf("\n%-32s %16s\n","CALL","COUNT") : 1;
 	OPT_counts == 1 ? printa("%-32s %@16d\n",@Counts) : 1;
+    printf("## dtruss.sh done ##");
  }
 '
 

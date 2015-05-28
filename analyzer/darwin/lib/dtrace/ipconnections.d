@@ -3,7 +3,6 @@
 
 dtrace:::BEGIN
 {
-    printf("## ipconnections.d ##\n");
     countdown = ANALYSIS_TIMEOUT;
 }
 
@@ -60,5 +59,11 @@ profile:::tick-1sec
 profile:::tick-1sec
 / countdown == 0 /
 {
+    printf("## ipconnections.d done ##");
     exit(0);
+}
+
+dtrace:::END
+{
+    printf("## ipconnections.d done ##");
 }
