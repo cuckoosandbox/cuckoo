@@ -141,20 +141,16 @@ class Macalyzer:
 				aux_available.append(aux)
 				aux.start()
 			except (NotImplementedError, AttributeError):
-                log.warning("Auxiliary module %s was not implemented",
-                            aux.__class__.__name__)
-                continue
-            except Exception as e:
-                log.warning("Cannot execute auxiliary module %s: %s",
-                            aux.__class__.__name__, e)
-                continue
-            finally:
-                log.debug("Started auxiliary module %s",
-                          aux.__class__.__name__)
-                aux_enabled.append(aux)
+				log.warning("Auxiliary module %s was not implemented", aux.__class__.__name__)
+				continue
+			except Exception as e:
+				log.warning("Cannot execute auxiliary module %s: %s", aux.__class__.__name__, e)
+				continue
+			finally:
+				log.debug("Started auxiliary module %s", aux.__class__.__name__)
+				aux_enabled.append(aux)
 
 		return (aux_enabled, aux_available)
-
 
 	def _setup_machine_time(self, clock_str, actually_change_time=True):
 		clock = datetime.strptime(clock_str, "%Y%m%dT%H:%M:%S")
@@ -183,19 +179,17 @@ class Macalyzer:
 		for a in aux_enabled:
 			try:
 				a.stop()
-		except (NotImplementedError, AttributeError):
-			continue
-		except Exception as e:
-			log.warning("Cannot terminate auxiliary module %s: %s",
-						aux.__class__.__name__, e)
-		for a in aux_all:
-			try:
-                aux.finish()
-            except (NotImplementedError, AttributeError):
-                continue
-            except Exception as e:
-                log.warning("Exception running finish callback of auxiliary "
-                            "module %s: %s", aux.__class__.__name__, e)
+			except (NotImplementedError, AttributeError):
+				continue
+			except Exception as e:
+				log.warning("Cannot terminate auxiliary module %s: %s", aux.__class__.__name__, e)
+			for a in aux_all:
+				try:
+					aux.finish()
+				except (NotImplementedError, AttributeError):
+					continue
+				except Exception as e:
+					log.warning("Exception running finish callback of auxiliary module %s: %s", aux.__class__.__name__, e)
 
 
 	def _upload_results(self):
