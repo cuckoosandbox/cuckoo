@@ -188,7 +188,7 @@ chown cuckoo:cuckoo "$VMCLOAKCONF"
 
 # Delete the cuckoo1 machine that is included in the VirtualBox configuration
 # by default.
-./utils/machine.py --delete cuckoo1
+"$CUCKOO/utils/machine.py" --delete cuckoo1
 
 # Check whether the bird "bird0" already exists.
 sudo -u cuckoo -i vmcloak-bird hddpath bird0
@@ -229,7 +229,7 @@ if [ "$TMPFS" -ne 0 ]; then
 fi
 
 # Install the Upstart/SystemV scripts.
-./utils/service.sh install
+"$CUCKOO/utils/service.sh" install
 
 # Add "nmi_watchdog=0" to the GRUB commandline if it's not in there already.
 if ! grep nmi_watchdog /etc/default/grub; then
