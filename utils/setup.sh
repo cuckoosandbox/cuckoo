@@ -247,6 +247,11 @@ vmcloak-killvbox
 
 # Create various Virtual Machine eggs.
 for i in $(seq 1 "$VMCOUNT"); do
+    # Ensure this Virtual Machine has not already been created.
+    if grep '"'egg$i'"' <(sudo -u cuckoo -i VBoxManage list vms); then
+        continue
+    fi
+
     echo "Creating Virtual Machine egg$i.."
     vmcloak-clone -s "$VMCLOAKCONF" -u cuckoo --bird bird0 \
         --hostonly-ip "192.168.56.$((2+$i))" "egg$i"
