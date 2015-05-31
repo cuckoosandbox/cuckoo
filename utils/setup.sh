@@ -14,19 +14,21 @@ TMPFS="0"
 TAGS=""
 INTERFACES="eth0 wlan0"
 CLEAN="0"
+DEPENDENCIES=""
 
 usage() {
     echo "Usage: $0 [options...]"
-    echo "-7 --win7:       Create Windows 7 x64 Virtual Machines."
-    echo "   --win7x86:    Create Windows 7 x86 Virtual Machines."
-    echo "-c --vmcount:    Amount of Virtual Machines to be created."
-    echo "-i --iso:        Path to a Windows XP Installer ISO."
-    echo "-s --serial-key: Serial Key for the given Windows XP version."
-    echo "-t --tmpfs:      Indicate tmpfs should be used for snapshots."
-    echo "-T --tags:       Tags for the Virtual Machines."
-    echo "-I --interfaces: Interfaces to route Virtual Machine internet"
-    echo "                 through. Defaults to eth0 wlan0."
-    echo "-C --clean:      Clean the Cuckoo setup."
+    echo "-7 --win7:         Create Windows 7 x64 Virtual Machines."
+    echo "   --win7x86:      Create Windows 7 x86 Virtual Machines."
+    echo "-c --vmcount:      Amount of Virtual Machines to be created."
+    echo "-i --iso:          Path to a Windows XP Installer ISO."
+    echo "-s --serial-key:   Serial Key for the given Windows XP version."
+    echo "-t --tmpfs:        Indicate tmpfs should be used for snapshots."
+    echo "-T --tags:         Tags for the Virtual Machines."
+    echo "-I --interfaces:   Interfaces to route Virtual Machine internet"
+    echo "                   through. Defaults to eth0 wlan0."
+    echo "-C --clean:        Clean the Cuckoo setup."
+    echo "-d --dependencies: Dependencies to install in the Virtual Machine."
     exit 1
 }
 
@@ -85,6 +87,11 @@ while [ "$#" -gt 0 ]; do
 
         -C|--clean)
             CLEAN="1"
+            ;;
+
+        -d|--dependencies)
+            DEPENDENCIES="$1"
+            shift
             ;;
 
         *)
@@ -204,6 +211,10 @@ serial-key = $SERIALKEY
 temp-dirpath = $VMTEMP
 tags = $TAGS
 EOF
+
+if [ -n "$DEPENDENCIES" ]; then
+    echo "dependencies = $DEPENDENCIES" >> "$VMCLOAKCONF"
+fi
 
 chown cuckoo:cuckoo "$VMCLOAKCONF"
 
