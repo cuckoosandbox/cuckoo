@@ -146,6 +146,13 @@ if [ ! -e "/usr/bin/VirtualBox" ]; then
     apt-get install -y virtualbox-4.3
 fi
 
+# Install the VirtualBox Extension Pack for VRDE support.
+if grep "Extension Packs: 0" <(VBoxManage list extpacks); then
+    VBOXVERSION="$(VBoxManage --version)"
+    wget "http://cuckoo.sh/vmcloak-files/${VBOXVERSION}.vbox-extpack"
+    VBoxManage extpack install "${VBOXVERSION}.vbox-extpack"
+fi
+
 # Allow tcpdump to dump packet captures when executed as a normal user.
 setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
 
@@ -226,7 +233,7 @@ chown cuckoo:cuckoo "$VMCLOAKCONF"
 sudo -u cuckoo -i vmcloak-bird hddpath bird0
 if [ "$?" -ne 0 ]; then
     echo "Creating the Virtual Machine bird.."
-    vmcloak -u cuckoo -s "$VMCLOAKCONF" -r --bird bird0 "$WINOS"
+    vmcloak -u cuckoo -s "$VMCLOAKCONF" -r --bird bird0 "$WINOS" --vrde
 fi
 
 # Kill all VirtualBox processes as otherwise the listening
