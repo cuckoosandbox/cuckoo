@@ -130,6 +130,11 @@ apt-get install -y --force-yes sudo git python-dev python-pip postgresql \
     libpq-dev python-dpkt vim tcpdump libcap2-bin genisoimage pwgen \
     htop tig mosh
 
+# Create the main postgresql cluster. In recent versions of Ubuntu Server
+# 14.04 you have to do this manually. If it already exists this command
+# will simply fail.
+sudo pg_createcluster 9.3 main --start
+
 # Install the most up-to-date version of VirtualBox available at the moment.
 if [ ! -e "/usr/bin/VirtualBox" ]; then
     # Update our apt repository with "contrib".
