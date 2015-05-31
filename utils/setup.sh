@@ -12,6 +12,8 @@ ISOFILE=""
 SERIALKEY=""
 TMPFS="0"
 TAGS=""
+INTERFACES="eth0 wlan0"
+CLEAN="0"
 
 usage() {
     echo "Usage: $0 [options...]"
@@ -22,6 +24,9 @@ usage() {
     echo "-s --serial-key: Serial Key for the given Windows XP version."
     echo "-t --tmpfs:      Indicate tmpfs should be used for snapshots."
     echo "-T --tags:       Tags for the Virtual Machines."
+    echo "-I --interfaces: Interfaces to route Virtual Machine internet"
+    echo "                 through. Defaults to eth0 wlan0."
+    echo "-C --clean:      Clean the Cuckoo setup."
     exit 1
 }
 
@@ -73,6 +78,15 @@ while [ "$#" -gt 0 ]; do
             shift
             ;;
 
+        -I|--interfaces)
+            INTERFACES="$1"
+            shift
+            ;;
+
+        -C|--clean)
+            CLEAN="1"
+            ;;
+
         *)
             echo "$0: Invalid argument.. $1" >&2
             usage
@@ -84,6 +98,13 @@ done
 if [ "$(id -u)" -ne 0 ]; then
     echo "You'll probably want to run this script as root."
     exit 1
+fi
+
+if [ "$CLEAN" -ne 0 ]; then
+    yes|sudo -u cuckoo -i vmcloak-removevms
+    umount /home/cuckoo/vmmount
+    rm -rf /home/cuckoo/{.config,.vmcloak,vmbackup,vmmount,vms}
+    exit 0
 fi
 
 if [ -z "$ISOFILE" ]; then
@@ -154,7 +175,7 @@ vmcloak-vboxnet0
 
 # Run the magic iptables script that turns hostonly networks into full
 # internet access.
-vmcloak-iptables
+vmcloak-iptables 192.168.56.1/24 "$INTERFACES"
 
 MOUNT="/mnt/$MOUNTOS/"
 
