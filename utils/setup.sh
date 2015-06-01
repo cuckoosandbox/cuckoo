@@ -216,8 +216,8 @@ VMCLOAKCONF="$(mktemp)"
 cat > "$VMCLOAKCONF" << EOF
 [vmcloak]
 cuckoo = $CUCKOO
-vm-dir = $VMS
-data-dir = $VMS
+vm-dir = $VMBACKUP
+data-dir = $VMBACKUP
 iso-mount = $MOUNT
 serial-key = $SERIALKEY
 temp-dirpath = $VMTEMP
@@ -259,22 +259,49 @@ done
 
 rm -rf "$VMCLOAKCONF" "$VMTEMP"
 
+# Remove all Virtual Machine related logfiles, we're not interested
+# in keeping those.
+rm -f $(find "$VMBACKUP" -type f|grep "\.log")
+
+_symlink_directory() {
+    # Create directories in the target directory for each directory found in
+    # the source directory. Then create a symlink for every file found.
+    if [ ! -d "$1" ] || [ ! -d "$2" ]; then
+        echo "Missing parameter(s) for symlink-directory.."
+        exit 1
+    fi
+
+    local source="$1" target="$2"
+
+    # Create each directory.
+    for dirname in $(cd "$source" && find * -type d); do
+        sudo -u cuckoo mkdir -p "$target/$dirname"
+    done
+
+    # Make symlinks of all files.
+    for filename in $(cd "$source" && find * -type f); do
+        sudo -u cuckoo ln -fs "$source/$filename" "$target/$filename"
+    done
+}
+
 if [ "$TMPFS" -ne 0 ]; then
-    # Unmount just in case.
+    # Unmount just in case it was mounted.
     umount "$VMMOUNT"
 
-    # Copy all Virtual Machine data to the backup folder.
-    sudo -u cuckoo -i "$CUCKOO/utils/tmpfs.sh" \
-        create-backup "$VMS" "$VMBACKUP"
-
-    # Calculate the required size for the tmpfs mount.
-    REQSIZE="$("$CUCKOO/utils/tmpfs.sh" required-size "$VMBACKUP")"
+    # Calculate the required size for the tmpfs mount. Round up to megabytes.
+    REQSIZE="$(du -s "$VMBACKUP"|cut -f1)"
+    REQSIZE="$(($REQSIZE/1024+1))M"
 
     mount -o "size=$REQSIZE,uid=cuckoo,gid=cuckoo" -t tmpfs tmpfs "$VMMOUNT"
 
-    # Copy all files to the mount and create all required symlinks.
-    sudo -u cuckoo -i "$CUCKOO/utils/tmpfs.sh" \
-        initialize-mount "$VMS" "$VMBACKUP" "$VMMOUNT"
+    # Copy all files from the backup to the mount.
+    sudo -u cuckoo cp -rf "$VMBACKUP/." "$VMMOUNT"
+
+    # Create symlinks from the mount into the vms directory.
+    _symlink_directory "$VMMOUNT" "$VMS"
+else
+    # Create symlinks from the backup into the vms directory.
+    _symlink_directory "$VMBACKUP" "$VMS"
 fi
 
 # Install the Upstart/SystemV scripts.
