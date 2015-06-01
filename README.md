@@ -20,7 +20,6 @@ My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc
  # %users  localhost=/sbin/shutdown -h now
 +
 + username   ALL=(root) NOPASSWD: /usr/sbin/dtrace
-+ username   ALL=(root) NOPASSWD: /usr/bin/dtruss
 ```
 (replace `username` above with an actual name of the user).
 
