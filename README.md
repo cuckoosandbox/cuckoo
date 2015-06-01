@@ -9,6 +9,9 @@ My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc
 
 ##### Guest machine setup
 
+
+ 0. Install `pt_deny_attach` kernel extension suggested by @phretor. That's an optional step, see [this comment](https://github.com/rodionovd/cuckoo-osx-analyzer/issues/6#issuecomment-101322097) for more details.
+
  1. Currently, this analyser uses `dtrace`, so the guest OS user must be able to launch this utility without a password prompt. This may be accomplished by modifying `/etc/sudoers` file:  
 
 ```diff
