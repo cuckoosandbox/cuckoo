@@ -58,7 +58,7 @@ $ ln -s ~/cuckoo-osx-analyzer/analyzer/darwin darwin
  3. Submit an analysis job:
 
 ```bash
-$ /utils/submit.py --platform darwin ~/bin/sample
+$ ./utils/submit.py --platform darwin ~/bin/sample
 ```
 
 ### Roadmap, bugs and whatnot  
