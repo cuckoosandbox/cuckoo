@@ -33,7 +33,7 @@ $ python /Users/Shared/agent.py
 
 3. Take a VM snapshot. It's `cmd+T` for VirtualBox.
 
-#### On the host side
+##### On the host side
 
 
 1. Clone this repository:  
