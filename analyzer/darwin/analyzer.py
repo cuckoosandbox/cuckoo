@@ -7,16 +7,18 @@
 
 import os
 import sys
-import pkgutil
+import socket
 import logging
-import traceback
+import xmlrpclib
 
-from time import sleep
 from datetime import datetime
+from pkgutil import iter_modules
+from traceback import format_exc
 from lib.common.config import Config
 from lib.common.results import NetlogHandler
 from lib.core.constants import PATHS
 from lib.core.packages import choose_package, Package, Auxiliary
+
 from modules import auxiliary
 
 class Macalyzer:
@@ -34,25 +36,25 @@ class Macalyzer:
 		self._detect_target()
 
 	def run(self):
-		"""
+		"""Run analysis.
 		"""
 		self._bootstrap()
 
 		self.log.debug("Starting analyzer from %s", os.getcwd())
-		self.log.debug("Storing results at: %s", "FOOBAR")
+		self.log.debug("Storing results at: %s", PATHS["root"])
 
-		aux_enabled, aux_all = self._setup_auxiliary_modules()
+		aux = _setup_auxiliary_modules(self.log)
 		package = self._setup_analysis_package()
 
-		self._setup_machine_time(self.config.clock)
-		self.results = self._analysis(package)
+		if self.config.clock:
+			self._setup_machine_time(self.config.clock)
+		self._analysis(package)
 
-		self._shutdown_auxiliary_modules(aux_enabled, aux_all)
-		self._complete()
+		_shutdown_auxiliary_modules(aux, self.log)
+		return self._complete()
 
 	def _complete(self):
-		self._upload_results()
-		self._cleanup()
+		return True
 
 	#
 	# Implementation details
@@ -67,41 +69,38 @@ class Macalyzer:
 			except OSError:
 				pass
 
-
 	def _setup_logging(self):
 		""" Initialize logger. """
+		logger = logging.getLogger()
 		formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
-		# Setup a stream handler
 		sh = logging.StreamHandler()
 		sh.setFormatter(formatter)
-		self.log.addHandler(sh)
-		# Setup a netlog handler
+		logger.addHandler(sh)
+
 		nh = NetlogHandler()
 		nh.setFormatter(formatter)
-		self.log.addHandler(nh)
-		self.log.setLevel(loggin.DEBUG)
-
+		logger.addHandler(nh)
+		logger.setLevel(logging.DEBUG)
 
 	def _detect_target(self):
 		if self.config.category == "file":
-			self.target = os.path.join(os.environ["TEMP"] + os.sep,
+			self.target = os.path.join("/tmp/",
 			                           str(self.config.file_name))
 		else: # It's not a file, but a URL
 			self.target = self.config.target
 
-
 	def _setup_analysis_package(self):
-		# Figuring out what package to use
 		pkg = None
 		if self.config.package:
 			pkg = self.config.package
 		else:
-			self.log.debug("No analysis package specified, trying to detect it",
-			               "it automagically.")
+			self.log.debug("No analysis package specified, trying to detect it"
+			               " automagically.")
 			if self.config.category != "file":
-				pkg = "safari"
+				pkg = "url"
 			else:
-				pkg = choose_package(FILE_TYPE, FILE_NAME)
+				pkg = choose_package(self.config.file_type,
+				                     self.config.file_name)
 		if not pkg:
 			raise Exception("No valid package available for file type: "
 			                "{0}".format(self.config.file_type))
@@ -112,45 +111,15 @@ class Macalyzer:
 		except ImportError:
 			raise Exception("Unable to import package \"{0}\": it does not "
 			                "exist.".format(package_name))
-		Package()
 		try:
 			package_class = Package.__subclasses__()[0]
 		except IndexError as e:
-			raise Exception("Unable to select package class (package={0}): {1}".format(package_name, e))
-		return package_class(self.config.get_options())
+			raise Exception("Unable to select package class (package={0}): "
+			                "{1}".format(package_name, e))
 
-
-	def _setup_auxiliary_modules(self):
-		# Initialize Auxiliary modules
-		Auxiliary()
-		prefix = auxiliary.__nam__name__ + "."
-		for loader, name, ispkg in pkgutil.iter_modules(auxiliary.__path__, prefix):
-			if ispkg:
-				continue
-			# Import auxiliary modules
-			try:
-				__import__(name, globals(), locals(), ["dummy"], -1)
-			except ImportError:
-				self.log.warning("Unable to import the auxiliary module "
-				                 "\"{0}\": {1}".format(name, e))
-		# Walk through the available auxiliary modules
-		aux_enabled, aux_available = [], []
-		for module in Auxiliary.__subclasses__():
-			try:
-				aux = module(self.config.get_options())
-				aux_available.append(aux)
-				aux.start()
-			except (NotImplementedError, AttributeError):
-				log.warning("Auxiliary module %s was not implemented", aux.__class__.__name__)
-				continue
-			except Exception as e:
-				log.warning("Cannot execute auxiliary module %s: %s", aux.__class__.__name__, e)
-				continue
-			finally:
-				log.debug("Started auxiliary module %s", aux.__class__.__name__)
-				aux_enabled.append(aux)
-
-		return (aux_enabled, aux_available)
+		options = self.config.get_options()
+		timeout = self.config.timeout
+		return package_class(target=self.target, options=options, timeout=timeout)
 
 	def _setup_machine_time(self, clock_str, actually_change_time=True):
 		clock = datetime.strptime(clock_str, "%Y%m%dT%H:%M:%S")
@@ -158,53 +127,80 @@ class Macalyzer:
 		# new date/time as a string of the folowing format:
 		# {month}{day}{hour}{minute}{year}.{ss}
 		# where every {x} is a 2 digit number.
-		cmd = "date {0}".format(clock.strftime("%m%d%H%M%y.%S"))
-		if actually_change_time:
-			os.system(cmd)
+
+		cmd = "sudo date {0}".format(clock.strftime("%m%d%H%M%y.%S"))
+		# TODO(rodionovd): patch sudoers for nopassword `sudo date`
+		# if actually_change_time:
+		# 	os.system(cmd)
 		return cmd
 
-
 	def _analysis(self, package):
-		package.start(self.target)
-		timer = 0
-		while timer <= int(self.config.timeout):
-			sleep(1)
-			timer += 1
-			if not package.check():
-				break
-		return package.finish()
+		# self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		# self.socket.connect((self.config.ip, self.config.port))
+		# self.socket.sendall("BSON\n")
+
+		log_entries = package.start()
+		for entry in log_entries:
+			self._send_to_host(entry)
+
+	def _send_to_host(self, log_entry):
+		# self.socket.sendall(log_entry)
+		if None:
+			self.log.error("The requested analysis type is not available (yet).")
+		else:
+			self.log.info(log_entry)
 
 
-	def _shutdown_auxiliary_modules(self, aux_enabled, aux_all):
-		for a in aux_enabled:
-			try:
-				a.stop()
-			except (NotImplementedError, AttributeError):
-				continue
-			except Exception as e:
-				log.warning("Cannot terminate auxiliary module %s: %s", aux.__class__.__name__, e)
-			for a in aux_all:
-				try:
-					aux.finish()
-				except (NotImplementedError, AttributeError):
-					continue
-				except Exception as e:
-					log.warning("Exception running finish callback of auxiliary module %s: %s", aux.__class__.__name__, e)
+def _setup_auxiliary_modules(logger):
+	Auxiliary()
+	prefix = auxiliary.__name__ + "."
+	for loader, name, ispkg in iter_modules(auxiliary.__path__, prefix):
+		if ispkg:
+			continue
+		# Import auxiliary modules
+		try:
+			__import__(name, globals(), locals(), ["dummy"], -1)
+		except ImportError:
+			logger.warning("Unable to import the auxiliary module "
+			               "\"{0}\": {1}".format(name, e))
+	# Walk through the available auxiliary modules
+	aux_enabled = []
+	for module in Auxiliary.__subclasses__():
+		try:
+			aux = module(self.config.get_options())
+			aux.start()
+		except (NotImplementedError, AttributeError):
+			logger.warning("Auxiliary module %s was not implemented",
+			               aux.__class__.__name__)
+			continue
+		except Exception as e:
+			logger.warning("Cannot execute auxiliary module %s: %s",
+			               aux.__class__.__name__, e)
+			continue
+		finally:
+			self.log.debug("Started auxiliary module %s", aux.__class__.__name__)
+			aux_enabled.append(aux)
+	return aux_enabled
+
+def _shutdown_auxiliary_modules(aux, logger):
+	for a in aux:
+		try:
+			a.stop()
+		except (NotImplementedError, AttributeError):
+			continue
+		except Exception as e:
+			logger.warning("Cannot terminate auxiliary module %s: %s",
+			               aux.__class__.__name__, e)
 
 
-	def _upload_results(self):
-		pass
 
-
-	def _cleanup(self):
-		pass
 
 if __name__ == "__main__":
 	success = False
 	error = ""
 
 	try:
-		config = Config(cgf="analysis.conf")
+		config = Config(cfg="analysis.conf")
 		analyzer = Macalyzer(config)
 		success = analyzer.run()
 
@@ -212,7 +208,7 @@ if __name__ == "__main__":
 		error = "Keyboard Interrupt"
 
 	except Exception as e:
-		error_exc = traceback.format_exc()
+		error_exc = format_exc()
 		error = str(e)
 		if len(analyzer.log.handlers):
 			analyzer.log.exception(error_exc)

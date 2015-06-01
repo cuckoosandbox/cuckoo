@@ -176,10 +176,10 @@ dtrace='
  {
 	/* print header */
 	/* OPT_printid  ? printf("%-8s  ","PID/LWP") : 1; */
-	OPT_printid  ? printf("\t%-8s  ","PID/THRD") : 1;
+	/*OPT_printid  ? printf("\t%-8s  ","PID/THRD") : 1;
 	OPT_relative ? printf("%8s ","RELATIVE") : 1;
 	OPT_elapsed  ? printf("%7s ","ELAPSD") : 1;
-	OPT_cpu      ? printf("%6s ","CPU") : 1;
+	OPT_cpu      ? printf("%6s ","CPU") : 1;*/
 	/*printf("SYSCALL(args) \t\t = return\n");*/
 
 	/* globals */
@@ -208,8 +208,15 @@ dtrace='
 	OPT_relative ? printf("%8d:  ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d:  ",0) : 1;
 	OPT_cpu      ? printf("%6d ",0) : 1;
-	printf("%s()\t\t = %d %s%d\n","fork",
+
+    /*
+    printf("%s()\t\t = %d %s%d\n","fork",
 	    0,self->code,(int)errno);
+    */
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        "fork", 0, (int)errno, this->timestamp, pid);
  }
 
  /* MacOS X: notice first appearance of child and parent from vfork */
@@ -223,12 +230,22 @@ dtrace='
 	/* print output */
 	self->code = errno == 0 ? "" : "Err#";
 	/* OPT_printid  ? printf("%5d/%d:  ",pid,tid) : 1; */
-	OPT_printid  ? printf("%5d/0x%x:  ",(this->vforking_tid == tid) ? ppid : pid,tid) : 1;
+	/*OPT_printid  ? printf("%5d/0x%x:  ",(this->vforking_tid == tid) ? ppid : pid,tid) : 1;
 	OPT_relative ? printf("%8d:  ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d:  ",0) : 1;
-	OPT_cpu      ? printf("%6d ",0) : 1;
+	OPT_cpu      ? printf("%6d ",0) : 1;*/
+
+    /*
 	printf("%s()\t\t = %d %s%d\n","vfork",
 	    (this->vforking_tid == tid) ? pid : 0,self->code,(int)errno);
+    */
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        "vfork",
+        (this->vforking_tid == tid) ? pid : 0,
+        (int)errno,
+        this->timestamp, pid);
  }
 
  syscall:::entry
@@ -333,15 +350,27 @@ dtrace='
 
 	/* print optional fields */
 	/* OPT_printid  ? printf("%5d/%d:  ",pid,tid) : 1; */
-	OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
+	/*OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
 	OPT_relative ? printf("%8d ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d ",this->elapsed/1000) : 1;
-	OPT_cpu ? printf("%6d ",this->cpu/1000) : 1;
+	OPT_cpu ? printf("%6d ",this->cpu/1000) : 1;*/
 
 	/* print main data */
+
+    /*
 	printf("%s(0x%X, 0x%X, 0x%X)\t\t = 0x%X %s%d\n",probefunc,
 	    (int)self->arg0,self->arg1,self->arg2,(int)arg0,
 	    self->code,(int)errno);
+    */
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[%u, %u, %u], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        probefunc,
+        (int)self->arg0, self->arg1, self->arg2,
+        (int)arg0,
+        (int)errno,
+        this->timestamp, pid);
+
 	OPT_stack ? ustack()    : 1;
 	OPT_stack ? trace("\n") : 1;
 	self->arg0 = 0;
@@ -384,15 +413,26 @@ dtrace='
 
 	/* print optional fields */
 	/* OPT_printid  ? printf("%5d/%d:  ",pid,tid) : 1; */
-	OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
+	/*OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
 	OPT_relative ? printf("%8d ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d ",this->elapsed/1000) : 1;
-	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;
+	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;*/
 
 	/* print main data */
+    /*
 	printf("%s(\"%S\", 0x%X, 0x%X)\t\t = %d %s%d\n",probefunc,
 	    copyinstr(self->arg0),self->arg1,self->arg2,(int)arg0,
 	    self->code,(int)errno);
+    */
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[\"%S\", %u, %u], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        probefunc,
+        copyinstr(self->arg0), self->arg1, self->arg2,
+        (int)arg0,
+        (int)errno,
+        this->timestamp, pid);
+
 	OPT_stack ? ustack()    : 1;
 	OPT_stack ? trace("\n") : 1;
 	self->arg0 = 0;
@@ -416,15 +456,29 @@ dtrace='
 
 	/* print optional fields */
 	/* OPT_printid  ? printf("%5d/%d:  ",pid,tid) : 1; */
-	OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
+	/*OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
 	OPT_relative ? printf("%8d ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d ",this->elapsed/1000) : 1;
-	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;
+	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;*/
 
 	/* print main data */
+
+    /*
 	printf("%s(0x%X, \"%S\", 0x%X)\t\t = %d %s%d\n",probefunc,self->arg0,
 	    arg0 == -1 ? "" : stringof(copyin(self->arg1,arg0)),self->arg2,(int)arg0,
 	    self->code,(int)errno);
+
+    */
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[%u, \"%S\", %u], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        probefunc,
+        self->arg0, arg0 == -1 ? "" : stringof(copyin(self->arg1,arg0)), self->arg2,
+        (int)arg0,
+        (int)errno,
+        this->timestamp, pid);
+
+
 	OPT_stack ? ustack()    : 1;
 	OPT_stack ? trace("\n") : 1;
 	self->arg0 = 0;
@@ -447,15 +501,28 @@ dtrace='
 
 	/* print optional fields */
 	/* OPT_printid  ? printf("%5d/%d:  ",pid,tid) : 1; */
-	OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
+	/*OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
 	OPT_relative ? printf("%8d ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d ",this->elapsed/1000) : 1;
-	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;
+	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;*/
 
 	/* print main data */
-	printf("%s(\"%S\", \"%S\")\t\t = %d %s%d\n",probefunc,
+	/*
+    printf("%s(\"%S\", \"%S\")\t\t = %d %s%d\n",probefunc,
 	    copyinstr(self->arg0), copyinstr(self->arg1),
 	    (int)arg0,self->code,(int)errno);
+    */
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[\"%S\", \"%S\"], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        probefunc,
+        copyinstr(self->arg0), copyinstr(self->arg1),
+        (int)arg0,
+        (int)errno,
+        this->timestamp, pid);
+
+
+
 	OPT_stack ? ustack()    : 1;
 	OPT_stack ? trace("\n") : 1;
 	self->arg0 = 0;
@@ -476,14 +543,26 @@ dtrace='
 
 	/* print optional fields */
 	/* OPT_printid  ? printf("%5d/%d:  ",pid,tid) : 1; */
-	OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
+	/*OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
 	OPT_relative ? printf("%8d ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d ",this->elapsed/1000) : 1;
-	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;
+	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;*/
 
 	/* print main data */
+    /*
 	printf("%s()\t\t = %d %s%d\n",probefunc,
 	    (int)arg0,self->code,(int)errno);
+
+    */
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        probefunc,
+        (int)arg0,
+        (int)errno,
+        this->timestamp, pid);
+
+
 	OPT_stack ? ustack()    : 1;
 	OPT_stack ? trace("\n") : 1;
 	self->arg0 = 0;
@@ -505,14 +584,26 @@ dtrace='
 
 	/* print optional fields */
 	/* OPT_printid  ? printf("%5d/%d:  ",pid,tid) : 1; */
-	OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
+	/*OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
 	OPT_relative ? printf("%8d ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d ",this->elapsed/1000) : 1;
-	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;
+	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;*/
 
 	/* print main data */
+    /*
 	printf("%s(0x%X)\t\t = %d %s%d\n",probefunc,self->arg0,
 	    (int)arg0,self->code,(int)errno);
+    */
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[%u], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        probefunc,
+        self->arg0,
+        (int)arg0,
+        (int)errno,
+        this->timestamp, pid);
+
+
 	OPT_stack ? ustack()    : 1;
 	OPT_stack ? trace("\n") : 1;
 	self->arg0 = 0;
@@ -534,14 +625,26 @@ dtrace='
 
 	/* print optional fields */
 	/* OPT_printid  ? printf("%5d/%d:  ",pid,tid) : 1; */
-	OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
+	/*OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
 	OPT_relative ? printf("%8d ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d ",this->elapsed/1000) : 1;
-	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;
+	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;*/
 
 	/* print main data */
+    /*
 	printf("%s(0x%X, 0x%X)\t\t = %d %s%d\n",probefunc,self->arg0,
 	    self->arg1,(int)arg0,self->code,(int)errno);
+    */
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[%u, %u], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        probefunc,
+        self->arg0, self->arg1,
+        (int)arg0,
+        (int)errno,
+        this->timestamp, pid);
+
+
 	OPT_stack ? ustack()    : 1;
 	OPT_stack ? trace("\n") : 1;
 	self->arg0 = 0;
@@ -563,14 +666,25 @@ dtrace='
 
 	/* print optional fields */
 	/* OPT_printid  ? printf("%5d/%d:  ",pid,tid) : 1; */
-	OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
+	/*OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
 	OPT_relative ? printf("%8d ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d ",this->elapsed/1000) : 1;
-	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;
+	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;*/
 
 	/* print main data */
+    /*
 	printf("%s(0x%X, \"%S\", 0x%X, 0x%X)\t\t = %d %s%d\n",probefunc,self->arg0,
 	    stringof(copyin(self->arg1,self->arg2)),self->arg2,self->arg3,(int)arg0,self->code,(int)errno);
+    */
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[%u, %u, %u, %u], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        probefunc,
+        self->arg0, self->arg1, self->arg2, self->arg3,
+        (int)arg0,
+        (int)errno,
+        this->timestamp, pid);
+
 	OPT_stack ? ustack()    : 1;
 	OPT_stack ? trace("\n") : 1;
 	self->arg0 = 0;
@@ -592,14 +706,26 @@ dtrace='
 
 	/* print optional fields */
 	/* OPT_printid  ? printf("%5d/%d:  ",pid,tid) : 1; */
-	OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
+	/*OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
 	OPT_relative ? printf("%8d ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d ",this->elapsed/1000) : 1;
-	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;
+	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;*/
 
 	/* print main data */
+    /*
 	printf("%s(0x%X, 0x%X, 0x%X, 0x%X, 0x%X)\t\t = %d %s%d\n",probefunc,self->arg0,
 	    self->arg1,self->arg2,self->arg3,self->arg4,(int)arg0,self->code,(int)errno);
+    */
+
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[%u, %u, %u, %u, %u], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        probefunc,
+        self->arg0, self->arg1,self->arg2,self->arg3,self->arg4,
+        (int)arg0,
+        (int)errno,
+        this->timestamp, pid);
+
 	OPT_stack ? ustack()    : 1;
 	OPT_stack ? trace("\n") : 1;
 	self->arg0 = 0;
@@ -622,14 +748,27 @@ dtrace='
 
 	/* print optional fields */
 	/* OPT_printid  ? printf("%5d/%d:  ",pid,tid) : 1; */
-	OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
+	/*OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
 	OPT_relative ? printf("%8d ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d ",this->elapsed/1000) : 1;
-	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;
+	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;*/
 
 	/* print main data */
+    /*
 	printf("%s(0x%X, 0x%X, 0x%X, 0x%X, 0x%X, 0x%X)\t\t = 0x%X %s%d\n",probefunc,self->arg0,
 	    self->arg1,self->arg2,self->arg3,self->arg4,self->arg5, arg0,self->code,(int)errno);
+    */
+
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[%u, %u, %u, %u, %u, %u], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        probefunc,
+        self->arg0, self->arg1, self->arg2, self->arg3, self->arg4, self->arg5,
+        (int)arg0,
+        (int)errno,
+        this->timestamp, pid);
+
+
 	OPT_stack ? ustack()    : 1;
 	OPT_stack ? trace("\n") : 1;
 	self->arg0 = 0;
@@ -653,14 +792,25 @@ dtrace='
 
 	/* print optional fields */
 	/* OPT_printid  ? printf("%5d/%d:  ",pid,tid) : 1; */
-	OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
+	/*OPT_printid  ? printf("%5d/0x%x:  ",pid,tid) : 1;
 	OPT_relative ? printf("%8d ",vtimestamp/1000) : 1;
 	OPT_elapsed  ? printf("%7d ",this->elapsed/1000) : 1;
-	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;
+	OPT_cpu      ? printf("%6d ",this->cpu/1000) : 1;*/
 
 	/* print main data */
+    /*
 	printf("%s(0x%X, 0x%X, 0x%X)\t\t = %d %s%d\n",probefunc,self->arg0,
 	    self->arg1,self->arg2,(int)arg0,self->code,(int)errno);
+    */
+
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"syscall\":\"%s\", \"args\":[%u, %u, %u], \"retval\":%d, \"errno\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        probefunc,
+        self->arg0, self->arg1, self->arg2,
+        (int)arg0,
+        (int)errno,
+        this->timestamp, pid);
+
 	OPT_stack ? ustack()    : 1;
 	OPT_stack ? trace("\n") : 1;
 	self->arg0 = 0;
@@ -700,8 +850,8 @@ dtrace='
 
 ### Run DTrace (Mac OS X)
 if [ $opt_command -eq 1 ]; then
-    /usr/sbin/dtrace -x dynvarsize=$buf -x evaltime=exec -n "$dtrace" \
-        -c "$command" -o "$output_file"
+    sudo /usr/sbin/dtrace -x dynvarsize=$buf -x evaltime=exec -n "$dtrace" \
+    -o "$output_file" -c "$command"
 else
-	/usr/sbin/dtrace -x dynvarsize=$buf -n "$dtrace" >&2 -o "$output_file"
+	sudo /usr/sbin/dtrace -x dynvarsize=$buf -n "$dtrace" >&2 -o "$output_file"
 fi
