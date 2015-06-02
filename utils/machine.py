@@ -30,7 +30,8 @@ def update_conf(machinery, args, action=None):
             if action == "add":
                 labels.append(args.vmname)
             elif action == "delete":
-                labels.remove(args.vmname)
+                if args.vmname in labels:
+                    labels.remove(args.vmname)
 
             line = "machines = %s" % ", ".join(labels)
 
