@@ -375,6 +375,9 @@ esac
 
 if [ "$#" -eq 0 ]; then
     echo "Usage: $0 <install|remove|start|stop>"
+    echo "-u --username: Username from which to run Cuckoo."
+    echo "-c --cuckoo:   Directory where Cuckoo is located."
+    echo "-l --logdir:   Logging directory."
     exit 1
 fi
 
