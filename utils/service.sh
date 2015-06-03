@@ -76,7 +76,7 @@ pre-start script
     vmcloak-vboxnet0
 
     if [ -n "\$VMINTERNET" ]; then
-        vmcloak-iptables "\$VMINTERNET"
+        vmcloak-iptables 192.168.56.1/24 "\$VMINTERNET"
     fi
 end script
 
