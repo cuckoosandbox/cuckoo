@@ -114,6 +114,9 @@ class SchedulerThread(threading.Thread):
                                    callback=self._store_report)
 
             t.status = Task.FINISHED
+            t.started = datetime.datetime.strptime(task["started_on"],
+                                                   "%Y-%m-%d %H:%M:%S")
+            t.completed = datetime.datetime.now()
 
         db.session.commit()
 
@@ -150,6 +153,7 @@ class SchedulerThread(threading.Thread):
         for task in tasks.all():
             task.node_id = node.id
             task.status = Task.PROCESSING
+            task.delegated = datetime.datetime.now()
             args = node.name, node.url, task.to_dict()
             self.m.apply_async(submit_task, args=args,
                                callback=self._task_identifier)
