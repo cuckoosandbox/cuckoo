@@ -153,9 +153,10 @@ fi
 
 # Install the VirtualBox Extension Pack for VRDE support.
 if grep "Extension Packs: 0" <(VBoxManage list extpacks); then
-    VBOXVERSION="$(VBoxManage --version)"
-    wget "http://cuckoo.sh/vmcloak-files/${VBOXVERSION}.vbox-extpack"
-    VBoxManage extpack install "${VBOXVERSION}.vbox-extpack"
+    VBOXVERSION="$(VBoxManage --version|sed s/r/\-/)"
+    PRETTYNAME="Oracle_VM_VirtualBox_Extension_Pack-$VBOXVERSION"
+    wget "http://cuckoo.sh/vmcloak-files/${PRETTYNAME}.vbox-extpack"
+    VBoxManage extpack install --replace "${PRETTYNAME}.vbox-extpack"
 fi
 
 # Allow tcpdump to dump packet captures when executed as a normal user.
