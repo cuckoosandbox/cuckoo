@@ -196,8 +196,8 @@ class RunProcessing(object):
             log.warning("The processing module \"%s\" returned the following "
                         "error: %s", current.__class__.__name__, e)
         except:
-            log.exception("Failed to run the processing module \"%s\":",
-                          current.__class__.__name__)
+            log.exception("Failed to run the processing module \"%s\" for task #%d:",
+                          current.__class__.__name__, self.task["id"])
 
         return None, None
 
