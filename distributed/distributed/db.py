@@ -2,11 +2,12 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+from datetime import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 
 db = SQLAlchemy(session_options=dict(autoflush=True))
-ALEMBIC_VERSION = "69ecf07a99b"
+ALEMBIC_VERSION = "3d1d8fd2cdbb"
 
 class Serializer(object):
     """Serialize a query result object."""
@@ -81,6 +82,14 @@ class Task(db.Model, Serializer):
     node_id = db.Column(db.Integer, db.ForeignKey("node.id"))
     task_id = db.Column(db.Integer)
     status = db.Column(task_status, server_default=PENDING, nullable=False)
+
+    # Timestamps for this task. When it was submitted, when it was delegated
+    # to a Cuckoo node, when the analysis started, and when we retrieved
+    # the report.
+    submitted = db.Column(db.DateTime(timezone=False), default=datetime.now)
+    delegated = db.Column(db.DateTime(timezone=False), nullable=True)
+    started = db.Column(db.DateTime(timezone=False), nullable=True)
+    completed = db.Column(db.DateTime(timezone=False), nullable=True)
 
     def __init__(self, path, filename, package, timeout, priority, options,
                  machine, platform, tags, custom, owner, memory, clock,
