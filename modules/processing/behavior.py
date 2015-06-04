@@ -415,19 +415,12 @@ class Enhanced(object):
         @param details: Also add some (not so relevant) Details to the log
         """
         self.currentdir = "C: "
+        self.current_pid = None
         self.eid = 0
         self.details = details
         self.filehandles = {}
         self.servicehandles = {}
-        self.keyhandles = {
-            "0x80000000": "HKEY_CLASSES_ROOT\\",
-            "0x80000001": "HKEY_CURRENT_USER\\",
-            "0x80000002": "HKEY_LOCAL_MACHINE\\",
-            "0x80000003": "HKEY_USERS\\",
-            "0x80000004": "HKEY_PERFORMANCE_DATA\\",
-            "0x80000005": "HKEY_CURRENT_CONFIG\\",
-            "0x80000006": "HKEY_DYN_DATA\\"
-        }
+        self.keyhandles = {}
         self.modules = {}
         self.procedures = {}
         self.events = []
@@ -457,34 +450,37 @@ class Enhanced(object):
         @handle: handle to base key
         @subkey: subkey to add
         """
-        if handle != 0 and handle in self.keyhandles:
-            return self.keyhandles[handle]
+        if handle != 0 and handle in self.keyhandles[self.current_pid]:
+            return self.keyhandles[self.current_pid][handle]
 
         name = ""
         if registry and registry != "0x00000000" and \
-                registry in self.keyhandles:
-            name = self.keyhandles[registry]
+                registry in self.keyhandles[self.current_pid]:
+            name = self.keyhandles[self.current_pid][registry]
 
         nkey = name + subkey
         nkey = fix_key(nkey)
 
-        self.keyhandles[handle] = nkey
+        self.keyhandles[self.current_pid][handle] = nkey
 
         return nkey
 
     def _remove_keyhandle(self, handle):
         key = self._get_keyhandle(handle)
 
-        if handle in self.keyhandles:
-            self.keyhandles.pop(handle)
+        if handle in self.keyhandles[self.current_pid]:
+            self.keyhandles[self.current_pid].pop(handle)
 
         return key
 
     def _get_keyhandle(self, handle):
-        return self.keyhandles.get(handle, "")
+        return self.keyhandles[self.current_pid].get(handle, "")
 
-    def _process_call(self, call):
+    def _process_call(self, process, call):
         """ Gets files calls
+
+        @param process: The process information
+        @param call: the specific call to handle
         @return: information list
         """
         def _load_args(call):
@@ -531,14 +527,18 @@ class Enhanced(object):
 
         # Generic handles
         def _add_handle(handles, handle, filename):
-            handles[handle] = filename
+            handles[self.current_pid][handle] = filename
 
         def _remove_handle(handles, handle):
-            if handle in handles:
-                handles.pop(handle)
+            if handle in handles[self.current_pid]:
+                handles[self.current_pid].pop(handle)
 
         def _get_handle(handles, handle):
-            return handles.get(handle)
+            return handles[self.current_pid].get(handle)
+
+        def _init_handle(handle):
+            if not self.current_pid in handle:
+                handle[self.current_pid] = {}
 
         def _get_service_action(control_code):
             """@see: http://msdn.microsoft.com/en-us/library/windows/desktop/ms682108%28v=vs.85%29.aspx"""
@@ -549,6 +549,23 @@ class Enhanced(object):
 
             default = "user" if control_code >= 128 else "notify"
             return codes.get(control_code, default)
+
+        def _init_keyhandles():
+            if not self.current_pid in self.keyhandles:
+                self.keyhandles[self.current_pid] = {
+                "0x80000000": "HKEY_CLASSES_ROOT\\",
+                "0x80000001": "HKEY_CURRENT_USER\\",
+                "0x80000002": "HKEY_LOCAL_MACHINE\\",
+                "0x80000003": "HKEY_USERS\\",
+                "0x80000004": "HKEY_PERFORMANCE_DATA\\",
+                "0x80000005": "HKEY_CURRENT_CONFIG\\",
+                "0x80000006": "HKEY_DYN_DATA\\"
+            }
+
+        self.current_pid = process["process_id"]
+        _init_keyhandles()
+        _init_handle(self.filehandles)
+        _init_handle(self.servicehandles)
 
         event = None
 
@@ -775,16 +792,16 @@ class Enhanced(object):
                 event["data"]["file"] = _get_handle(self.filehandles, args["FileHandle"])
 
             elif call["api"] in ["RegDeleteKeyA", "RegDeleteKeyW"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("SubKey", ""))
+                event["data"]["regkey"] = "{0}\\{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("SubKey", ""))
 
             elif call["api"] in ["RegSetValueExA", "RegSetValueExW"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}\\{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("ValueName", ""))
 
             elif call["api"] in ["RegQueryValueExA", "RegQueryValueExW", "RegDeleteValueA", "RegDeleteValueW"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "UNKNOWN")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}\\{1}".format(self._get_keyhandle(args.get("Handle", "UNKNOWN")), args.get("ValueName", ""))
 
             elif call["api"] in ["NtQueryValueKey", "NtDeleteValueKey"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("KeyHandle", "UNKNOWN")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}\\{1}".format(self._get_keyhandle(args.get("KeyHandle", "UNKNOWN")), args.get("ValueName", ""))
 
             elif call["api"] in ["LoadLibraryA", "LoadLibraryW", "LoadLibraryExA", "LoadLibraryExW", "LdrGetDllHandle"] and call["status"]:
                 self._add_loaded_module(args.get("FileName", ""), args.get("ModuleHandle", ""))
@@ -827,12 +844,25 @@ class Enhanced(object):
         # Registry
         elif call["api"] in ["RegOpenKeyExA", "RegOpenKeyExW", "RegCreateKeyExA", "RegCreateKeyExW"]:
             self._add_keyhandle(args.get("Registry", ""), args.get("SubKey", ""), args.get("Handle", ""))
-
         elif call["api"] in ["NtOpenKey"]:
             self._add_keyhandle(None, args.get("ObjectAttributes", ""), args.get("KeyHandle", ""))
 
         elif call["api"] in ["RegCloseKey"]:
             self._remove_keyhandle(args.get("Handle", ""))
+
+        if call["api"] in ["RegCreateKeyExA", "RegCreateKeyExW"]:
+            specific_gendata = [{
+                "event": "write",
+                "object": "registry",
+                "apis": [
+                    "RegCreateKeyExA",
+                    "RegCreateKeyExW"
+                ],
+                "args": [
+                ]
+            }]
+            event = _generic_handle(self, specific_gendata, call)
+            event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), "")
 
         return event
 
@@ -840,7 +870,7 @@ class Enhanced(object):
         """Generate processes list from streamed calls/processes.
         @return: None.
         """
-        event = self._process_call(call)
+        event = self._process_call(process, call)
         if event:
             self.events.append(event)
 
