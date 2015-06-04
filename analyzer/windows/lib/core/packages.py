@@ -46,5 +46,7 @@ def choose_package(file_type, file_name):
         return "vbs"
     elif file_name.endswith(".msi"):
         return "msi"
+    elif file_name.endswith(".ps1"):
+        return "ps1"
     else:
         return "generic"
