@@ -461,7 +461,7 @@ class Scheduler:
 
         if len(machinery.machines()) > 1 and self.db.engine.name == "sqlite":
             log.warning("As you've configured Cuckoo to execute parallel "
-                        "analyses, we recommend you to switch to a MySQL "
+                        "analyses, we recommend you to switch to a MySQL or"
                         "a PostgreSQL database as SQLite might cause some "
                         "issues.")
 
