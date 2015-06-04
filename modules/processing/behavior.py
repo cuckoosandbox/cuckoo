@@ -431,6 +431,57 @@ class Enhanced(object):
         self.modules = {}
         self.procedures = {}
         self.events = []
+        self.regevents = []
+        self.fileevents = []
+        self.direvents = []
+
+    def _handle_enhanced_event(self, event):
+        """
+        Adds keys to new data structure for better display in the 
+        web GUI
+        """
+        if event['object'] == 'registry':
+            if event['event'] == 'write':
+                reg_event = {
+                                "event": event['event'],
+                                "regkey": event['data']['regkey'],
+                                "content": event['data']['content'].replace('\\x00','')
+                            }
+            else:
+                reg_event = {
+                                "event": event['event'],
+                                "regkey": event['data']['regkey'],
+                                "content": ""
+                            }
+            if reg_event not in self.regevents:
+                self.regevents.append(reg_event)
+
+        if event['object'] == 'file':
+            if event['event'] == 'move':
+                file_event = {
+                                "event": event['event'],
+                                "to": event['data']['to'],
+                                "file": event['data']['to'],
+                                "from": event['data']['from']
+                             }
+
+            else:
+                file_event = {
+                                "event": event['event'],
+                                "file": event['data']['file']
+                             }
+            if file_event not in self.fileevents:
+                self.fileevents.append(file_event)
+
+        if event['object'] == 'dir':
+            dir_event = {
+                            "event": event['event'],
+                            "dir": event['data']['file']
+                        }
+            if dir_event not in self.direvents:
+                self.direvents.append(dir_event)
+
+        return
 
     def _add_procedure(self, mbase, name, base):
         """
@@ -775,16 +826,16 @@ class Enhanced(object):
                 event["data"]["file"] = _get_handle(self.filehandles, args["FileHandle"])
 
             elif call["api"] in ["RegDeleteKeyA", "RegDeleteKeyW"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("SubKey", ""))
+                event["data"]["regkey"] = "{0}\{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("SubKey", ""))
 
             elif call["api"] in ["RegSetValueExA", "RegSetValueExW"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}\{1}".format(self._get_keyhandle(args.get("Handle", "")), args.get("ValueName", ""))
 
             elif call["api"] in ["RegQueryValueExA", "RegQueryValueExW", "RegDeleteValueA", "RegDeleteValueW"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("Handle", "UNKNOWN")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}\{1}".format(self._get_keyhandle(args.get("Handle", "UNKNOWN")), args.get("ValueName", ""))
 
             elif call["api"] in ["NtQueryValueKey", "NtDeleteValueKey"]:
-                event["data"]["regkey"] = "{0}{1}".format(self._get_keyhandle(args.get("KeyHandle", "UNKNOWN")), args.get("ValueName", ""))
+                event["data"]["regkey"] = "{0}\{1}".format(self._get_keyhandle(args.get("KeyHandle", "UNKNOWN")), args.get("ValueName", ""))
 
             elif call["api"] in ["LoadLibraryA", "LoadLibraryW", "LoadLibraryExA", "LoadLibraryExW", "LdrGetDllHandle"] and call["status"]:
                 self._add_loaded_module(args.get("FileName", ""), args.get("ModuleHandle", ""))
@@ -843,12 +894,13 @@ class Enhanced(object):
         event = self._process_call(call)
         if event:
             self.events.append(event)
+            self._handle_enhanced_event(event)
 
     def run(self):
         """Get registry keys, mutexes and files.
         @return: Summary of keys, mutexes and files.
         """
-        return self.events
+        return {"enhanced_events": self.events, "registry_events": self.regevents, "file_events": self.fileevents, "dir_events": self.direvents}
 
 
 class Anomaly(object):
