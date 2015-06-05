@@ -10,6 +10,7 @@ import logging
 import argparse
 import signal
 import multiprocessing
+import traceback
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -42,6 +43,13 @@ def process(task_id, target=None, copy_path=None, report=False, auto=False):
                     os.path.exists(copy_path):
                 os.unlink(copy_path)
 
+def process_wrapper(*args, **kwargs):
+    try:
+        process(*args, **kwargs)
+    except Exception as e:
+        e.traceback = traceback.format_exc()
+        raise e
+
 def init_worker():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
@@ -69,8 +77,10 @@ def autoprocess(parallel=1):
                 else:
                     try:
                         ar.get()
-                    except:
-                        log.exception("Task #%d: exception in reports generation", tid)
+                    except Exception as e:
+                        log.critical("Task #%d: exception in reports generation: %s", tid, e)
+                        if hasattr(e, "traceback"):
+                            log.info(e.traceback)
 
                     db.set_status(tid, TASK_FAILED_PROCESSING)
 
@@ -130,7 +140,7 @@ def autoprocess(parallel=1):
 
                 args = int(task.id), task.target, copy_path
                 kwargs = dict(report=True, auto=True)
-                result = pool.apply_async(process, args, kwargs)
+                result = pool.apply_async(process_wrapper, args, kwargs)
                 pending_results[task.id] = result
     except KeyboardInterrupt:
         pool.terminate()
