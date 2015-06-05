@@ -51,7 +51,6 @@ def autoprocess(parallel=1):
     pending_results = []
 
     try:
-        # CAUTION - big ugly loop ahead.
         while count < maxcount or not maxcount:
 
             # Pending_results maintenance.
@@ -63,7 +62,7 @@ def autoprocess(parallel=1):
                         try:
                             ar.get()
                         except:
-                            log.exception("Exception when processing task ID %u.", tid)
+                            log.exception("Task #%d: exception in reports generation", tid)
                             db.set_status(tid, TASK_FAILED_PROCESSING)
 
                     pending_results.remove((ar, tid, target, copy_path))
@@ -78,15 +77,13 @@ def autoprocess(parallel=1):
             tasks = db.list_tasks(status=TASK_COMPLETED, limit=parallel,
                                   order_by="completed_on asc")
 
-            added = False
-            # For loop to add only one, nice. (reason is that we shouldn't overshoot maxcount)
             for task in tasks:
                 # Not-so-efficient lock.
                 if task.id in [tid for ar, tid, target, copy_path
                                in pending_results]:
                     continue
 
-                log.info("Processing analysis data for Task #%d", task.id)
+                log.info("Task #%d: queueing for reporting", task.id)
 
                 if task.category == "file":
                     sample = db.view_sample(task.sample_id)
@@ -99,23 +96,15 @@ def autoprocess(parallel=1):
                 args = int(task.id), task.target, copy_path
                 kwargs = dict(report=True, auto=True)
                 result = pool.apply_async(process, args, kwargs)
-
                 pending_results.append((result, task.id, task.target, copy_path))
-
                 count += 1
-                added = True
                 break
-
-            if not added:
-                # don't hog cpu
-                time.sleep(5)
 
     except KeyboardInterrupt:
         pool.terminate()
         raise
     except:
-        import traceback
-        traceback.print_exc()
+        log.exception("Caught unknown exception")
     finally:
         pool.join()
 
@@ -145,7 +134,6 @@ def main():
         autoprocess(parallel=args.parallel)
     else:
         process(int(args.id), report=args.report)
-
 
 if __name__ == "__main__":
     cfg = Config()
