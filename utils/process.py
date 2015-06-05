@@ -37,7 +37,8 @@ def process(task_id, target=None, copy_path=None, report=False, auto=False):
             if cfg.cuckoo.delete_original and os.path.exists(target):
                 os.unlink(target)
 
-            if cfg.cuckoo.delete_bin_copy and os.path.exists(copy_path):
+            if cfg.cuckoo.delete_bin_copy and copy_path and \
+                    os.path.exists(copy_path):
                 os.unlink(copy_path)
 
 def init_worker():
