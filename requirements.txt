@@ -1,7 +1,6 @@
 sqlalchemy
 dpkt
 python-magic
-jinja2
 pymongo
 bottle
 pefile
