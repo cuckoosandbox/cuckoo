@@ -5,6 +5,7 @@
 import datetime
 import os
 import tempfile
+import time
 
 from flask import Blueprint, g, jsonify, request, send_file
 
@@ -287,4 +288,5 @@ def status_get():
         "today2": fetch_stats(since_yesterday.filter_by(priority=2)),
     }
 
-    return jsonify(success=True, nodes=g.statuses, tasks=tasks)
+    return jsonify(success=True, nodes=g.statuses, tasks=tasks,
+                   timestamp=int(time.time()))

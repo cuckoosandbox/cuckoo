@@ -49,6 +49,9 @@ class SchedulerThread(threading.Thread):
             self._mark_available(name)
             return
 
+        # Include the timestamp of when we retrieved this status.
+        status["timestamp"] = int(time.time())
+
         g.statuses[name] = status
 
         node = Node.query.filter_by(name=name).first()
