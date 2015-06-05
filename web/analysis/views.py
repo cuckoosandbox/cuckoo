@@ -383,8 +383,9 @@ def remove(request, task_id):
         # Delete dups too.
         for analysis in anals:
             # Delete sample if not used.
-            if results_db.analysis.find({"target.file_id": ObjectId(analysis["target"]["file_id"])}).count() == 1:
-                fs.delete(ObjectId(analysis["target"]["file_id"]))
+            if "file_id" in analysis["target"]:
+                if results_db.analysis.find({"target.file_id": ObjectId(analysis["target"]["file_id"])}).count() == 1:
+                    fs.delete(ObjectId(analysis["target"]["file_id"]))
             # Delete screenshots.
             for shot in analysis["shots"]:
                 if results_db.analysis.find({"shots": ObjectId(shot)}).count() == 1:
