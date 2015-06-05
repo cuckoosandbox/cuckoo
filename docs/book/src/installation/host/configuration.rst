@@ -329,9 +329,6 @@ It contains the following sections::
     [jsondump]
     enabled = yes
 
-    [reporthtml]
-    enabled = yes
-
     [mmdef]
     enabled = no
 
