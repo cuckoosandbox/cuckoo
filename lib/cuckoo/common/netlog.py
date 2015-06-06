@@ -80,6 +80,9 @@ class NetlogParser(object):
     def close(self):
         pass
 
+    def reset(self):
+        pass
+
     def read_next_message(self):
         apiindex, status = struct.unpack("BB", self.handler.read(2))
         returnval, tid, timediff = struct.unpack("III", self.handler.read(12))
@@ -263,6 +266,9 @@ class BsonParser(object):
             log.critical("Starting BsonParser, but bson is not available! (install with `pip install bson`)")
 
     def close(self):
+        pass
+
+    def reset(self):
         pass
 
     def read_next_message(self):

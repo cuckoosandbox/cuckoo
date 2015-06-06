@@ -62,6 +62,8 @@ class ParseProcessLog(list):
             self.parser = BsonParser(self)
         elif self._log_path.endswith(".raw"):
             self.parser = NetlogParser(self)
+        elif self._log_path.endswith(".stap"):
+            self.parser = STAPParser(self)
         else:
             self.fd.close()
             self.fd = None
@@ -72,7 +74,7 @@ class ParseProcessLog(list):
         while not self.process_id:
             self.parser.read_next_message()
 
-        self.fd.seek(0)
+        self.reset()
 
     def read(self, length):
         if not length:
@@ -94,9 +96,12 @@ class ParseProcessLog(list):
         return self.wait_for_lastcall()
 
     def reset(self):
-        self.fd.seek(0)
+        self.fd.close()
+        self.fd = open(self._log_path, "rb")
         self.lastcall = None
         self.call_id = 0
+
+        self.parser.reset()
 
     def compare_calls(self, a, b):
         """Compare two calls for equality. Same implementation as before netlog.
@@ -1026,6 +1031,8 @@ def stap_logfile_parsedlines(stap_input):
             continue
 
         pname, ip, pid, fn, arguments, retval, ecode = parts.groups()
+        argsplit = arguments.split(", ")
+        arguments = [("p%u" % pos, argsplit[pos]) for pos in range(len(argsplit))]
         yield line, (dt, pname, ip, pid, fn, arguments, retval, ecode)
 
 class STAPParser(object):
@@ -1038,23 +1045,33 @@ class STAPParser(object):
 
         # grab the global state for use during parsing
         self.gstate = threadlocal.behavioranalysis.state
+        self.first_dt = None
 
     def close(self):
         pass
 
+    def reset(self):
+        self.fditer = stap_logfile_parsedlines(self.handler.fd)
+
     def read_next_message(self):
-        line, x = next(self.fditer)
-        dt, pname, ip, pid, fn, arguments, retval, ecode
+        try:
+            line, x = next(self.fditer)
+        except StopIteration:
+            return False
+
+        dt, pname, ip, pid, fn, arguments, retval, ecode = x
+        if not self.first_dt: self.first_dt = dt
 
         if not pid in self.pidcache:
             self.pidcache.add(pid)
             ppid = self.gstate["ppids"].get(pid, -1)
             self.handler.log_process(None, dt, pid, ppid, None, pname)
 
-        # apiindex, status = struct.unpack("BB", self.handler.read(2))
-        # returnval, tid, timediff = struct.unpack("III", self.handler.read(12))
-        # context = apiindex, status, returnval, tid, timediff
+        timediff = (dt - self.first_dt).seconds * 1000 + (dt - self.first_dt).microseconds / 1000
+        context = -1, -1, retval, -1, timediff
+        self.handler.log_call(context, fn, "nocategory", arguments)
 
+        return True
 
 class LinuxPreprocessor(object):
     def __init__(self, logs_path):
