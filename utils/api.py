@@ -15,7 +15,7 @@ from zipfile import ZipFile, ZIP_STORED
 
 try:
     from bottle import route, run, request, hook, response, HTTPError
-    from bottle import default_app
+    from bottle import default_app, BaseRequest
 except ImportError:
     sys.exit("ERROR: Bottle.py library is missing")
 
@@ -23,11 +23,15 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file, delete_folder
+from lib.cuckoo.common.email_utils import find_attachments_in_email
 from lib.cuckoo.core.database import Database, TASK_RUNNING, Task
 from lib.cuckoo.core.startup import drop_privileges
 
 # Global DB pointer.
 db = Database()
+
+# Increase request size limit
+BaseRequest.MEMFILE_MAX = 1024 * 1024 * 4
 
 def jsonize(data):
     """Converts data dict to JSON.
@@ -89,6 +93,38 @@ def tasks_create_file():
     )
 
     response["task_id"] = task_id
+    return jsonize(response)
+
+@route("/tasks/create/file/email_mime", method="POST")
+def tasks_create_file_email_mime():
+    response = {}
+
+    if request.content_type ==  "text/x-mail":
+        body_text = request.body.read()
+    else:
+        body_param = request.forms.get("_body_param", "body-mime")
+        body_text = request.forms.get(body_param, "")
+    atts = find_attachments_in_email(body_text, True)
+    task_ids = []
+    for att in atts:
+        task_id = db.add_path(
+            file_path=att[0],
+            package="",
+            timeout="",
+            priority=1,
+            options="",
+            machine="",
+            platform="",
+            tags=None,
+            custom="",
+            owner="",
+            memory=False,
+            enforce_timeout=False,
+            clock=None
+        )
+        task_ids.append(task_id)
+
+    response['task_ids'] = task_ids
     return jsonize(response)
 
 @route("/tasks/create/url", method="POST")
