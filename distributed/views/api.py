@@ -288,5 +288,24 @@ def status_get():
         "today2": fetch_stats(since_yesterday.filter_by(priority=2)),
     }
 
+    paths = dict(
+        reports=g.reports_directory,
+        samples=g.samples_directory,
+    )
+
+    diskspace = {}
+    for key, path in paths.items():
+        if hasattr(os, "statvfs"):
+            stats = os.statvfs(path)
+            diskspace[key] = dict(
+                free=stats.f_bavail * stats.f_frsize,
+                total=stats.f_blocks * stats.f_frsize,
+                used=(stats.f_blocks - stats.f_bavail) * stats.f_frsize,
+            )
+
+    status = {
+        "diskspace": diskspace,
+    }
+
     return jsonify(success=True, nodes=g.statuses, tasks=tasks,
-                   timestamp=int(time.time()))
+                   status=status, timestamp=int(time.time()))
