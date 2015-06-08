@@ -14,7 +14,8 @@
  *     remote      : string, // e.g. "8.8.8.8"
  *     remote_port : int,    // e.g. 80
  *     protocol    : string, // e.g. "TCP"
- *     timestamp   : int     // e.g. 1433765405
+ *     timestamp   : int,    // e.g. 1433765405
+ *     pid         : int     // e.g. 9213
  * }
  *
  */
