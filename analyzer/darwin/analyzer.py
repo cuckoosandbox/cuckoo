@@ -129,9 +129,10 @@ class Macalyzer:
 		# where every {x} is a 2 digit number.
 		cmd = "sudo date {0}".format(clock.strftime("%m%d%H%M%y.%S"))
 
-		if "dont_really_make_changes" not in kwargs:
+		if "dont_really_make_changes" in kwargs:
+			return cmd
+		else:
 			os.system(cmd)
-		return cmd
 
 	def _analysis(self, package):
 		# self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
