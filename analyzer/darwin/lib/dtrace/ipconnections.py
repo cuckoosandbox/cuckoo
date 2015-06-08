@@ -13,7 +13,7 @@ from subprocess import Popen
 from .fileutils import filelines
 
 connection = namedtuple("connection",
-                        "host host_port remote remote_port protocol timestamp")
+                        "host host_port remote remote_port protocol timestamp, pid")
 
 def ipconnections(target, **kwargs):
     """Returns a list of ip connections made by the target.
@@ -61,7 +61,6 @@ def _ipconnections_path():
 
 def _parse_single_entry(entry):
     entry = entry.replace("\\0", "")
-    print entry
     parsed = json.loads(entry)
 
     host        = parsed['host']
@@ -70,7 +69,8 @@ def _parse_single_entry(entry):
     remote_port = parsed['remote_port']
     protocol    = parsed['protocol']
     timestamp   = parsed['timestamp']
-    return connection(host, host_port, remote, remote_port, protocol, timestamp)
+    pid         = parsed['pid']
+    return connection(host, host_port, remote, remote_port, protocol, timestamp, pid)
 
 if __name__ == "__main__":
     pass

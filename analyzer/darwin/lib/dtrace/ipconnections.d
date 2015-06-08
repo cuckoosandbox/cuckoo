@@ -54,8 +54,8 @@ ip:::receive
         /* Convert walltimestamp to unix timestamp */
         this->timestamp = walltimestamp / 1000000000;
 
-        printf("{\"host\":\"%s\", \"host_port\":%d, \"remote\":\"%s\", \"remote_port\":%d, \"protocol\":\"%s\", \"timestamp\": %d}\n",
-            this->host, this->host_port, this->remote, this->remote_port, this->protocol, this->timestamp);
+        printf("{\"host\":\"%s\", \"host_port\":%d, \"remote\":\"%s\", \"remote_port\":%d, \"protocol\":\"%s\", \"timestamp\": %d, \"pid\":%d}\n",
+            this->host, this->host_port, this->remote, this->remote_port, this->protocol, this->timestamp, pid);
 }
 ip:::send
 /pid == $target/
@@ -67,8 +67,8 @@ ip:::send
     this->remote_port = ntohs(*(uint16_t *)(arg2 + 22));
     this->timestamp = walltimestamp / 1000000000;
 
-    printf("{\"host\":\"%s\", \"host_port\":%d, \"remote\":\"%s\", \"remote_port\":%d, \"protocol\":\"%s\", \"timestamp\": %d}\n",
-        this->host, this->host_port, this->remote, this->remote_port, this->protocol, this->timestamp);
+    printf("{\"host\":\"%s\", \"host_port\":%d, \"remote\":\"%s\", \"remote_port\":%d, \"protocol\":\"%s\", \"timestamp\": %d, \"pid\":%d}\n",
+        this->host, this->host_port, this->remote, this->remote_port, this->protocol, this->timestamp, pid);
 }
 
 profile:::tick-1sec

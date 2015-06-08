@@ -6,6 +6,7 @@
 # of the MIT license. See the LICENSE file for details.
 
 import unittest
+from sets import Set
 
 from common import DtraceTestCase
 from analyzer.darwin.lib.dtrace.ipconnections import *
@@ -47,11 +48,14 @@ class TestIpconnections(DtraceTestCase):
 		expected = ('127.0.0.1', # host
 		            80,          # port
 		            'TCP')       # protocol
+		pids = Set()
 		output = []
 		# when
 		for connection in ipconnections(self.current_target(), timeout=1):
 			output.append(connection)
+			pids.add(connection.pid)
 		# then
+		assert len(pids) == 1
 		assert len(output) == 1
 		matched = [x for x in output if
 			(x.remote, x.remote_port, x.protocol) == expected]
