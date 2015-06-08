@@ -4,6 +4,7 @@ Submit an Analysis
 
     * :ref:`submitpy`
     * :ref:`apipy`
+    * :ref:`distpy`
     * :ref:`webpy`
     * :ref:`python`
 
@@ -15,9 +16,9 @@ Submission Utility
 The easiest way to submit an analysis is to use the provided *submit.py*
 command-line utility. It currently has the following options available::
 
-    usage: submit.py [-h] [--remote REMOTE] [--url] [--package PACKAGE]
-                     [--custom CUSTOM] [--timeout TIMEOUT] [--options OPTIONS]
-                     [--priority PRIORITY] [--machine MACHINE]
+    usage: submit.py [-h] [-d] [--remote REMOTE] [--url] [--package PACKAGE]
+                     [--custom CUSTOM] [--owner OWNER] [--timeout TIMEOUT]
+                     [--options OPTIONS] [--priority PRIORITY] [--machine MACHINE]
                      [--platform PLATFORM] [--memory] [--enforce-timeout]
                      [--clock CLOCK] [--tags TAGS] [--max MAX] [--pattern PATTERN]
                      [--shuffle] [--unique] [--quiet]
@@ -33,6 +34,7 @@ command-line utility. It currently has the following options available::
       --url                Specify whether the target is an URL
       --package PACKAGE    Specify an analysis package
       --custom CUSTOM      Specify any custom value
+      --owner OWNER        Specify the task owner
       --timeout TIMEOUT    Specify an analysis timeout
       --options OPTIONS    Specify options for the analysis package (e.g.
                            "name=value,name2=value2")
@@ -79,7 +81,7 @@ The concept of analysis packages will be dealt later in this documentation (at
 
     $ ./utils/submit.py --package <name of package> /path/to/binary
 
-*Example*: submit a local binary and specify a custom analysis package and 
+*Example*: submit a local binary and specify a custom analysis package and
 some options (in this case a command line argument for the malware)::
 
     $ ./utils/submit.py --package exe --options arguments=--dosomething /path/to/binary.exe
@@ -113,7 +115,7 @@ some options (in this case a command line argument for the malware)::
 web.py
 ======
 
-Cuckoo provides a very small utility under ``utils/web.py``, which will bind a simple 
+Cuckoo provides a very small utility under ``utils/web.py``, which will bind a simple
 webserver on localhost port 8080, through which you will be able to browse through
 existing reports as well as submit new files.
 
@@ -127,6 +129,14 @@ API
 ===
 
 Detailed usage of the REST API interface is described in :doc:`api`.
+
+.. _distpy:
+
+Distributed Cuckoo
+==================
+
+Detailed usage of the Distributed Cuckoo API interface is described in
+:doc:`dist`.
 
 .. _python:
 
@@ -142,7 +152,7 @@ automated. In order to automate analysis submission we suggest to use the REST
 API interface described in :doc:`api`, but in case you want to write your
 own Python submission script, you can also use the ``add_path()`` and ``add_url()`` functions.
 
-.. function:: add_path(file_path[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, machine=None[, platform=None[, memory=False[, enforce_timeout=False]]]]]]]]])
+.. function:: add_path(file_path[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, owner=""[, machine=None[, platform=None[, memory=False[, enforce_timeout=False], clock=None[]]]]]]]]]])
 
     Add a local file to the list of pending analysis tasks. Returns the ID of the newly generated task.
 
@@ -158,13 +168,15 @@ own Python submission script, you can also use the ``add_path()`` and ``add_url(
     :type priority: integer
     :param custom: custom value to be passed over and possibly reused at processing or reporting
     :type custom: string or None
+    :param owner: task owner
+    :type owner: string or None
     :param machine: Cuckoo identifier of the virtual machine you want to use, if none is specified one will be selected automatically
     :type machine: string or None
     :param platform: operating system platform you want to run the analysis one (currently only Windows)
     :type platform: string or None
     :param memory: set to ``True`` to generate a full memory dump of the analysis machine
     :type memory: True or False
-    :param enforce_timeout: set to ``True`` to force the executuion for the full timeout
+    :param enforce_timeout: set to ``True`` to force the execution for the full timeout
     :type enforce_timeout: True or False
     :param clock: provide a custom clock time to set in the analysis machine
     :type clock: string or None
@@ -179,9 +191,9 @@ own Python submission script, you can also use the ``add_path()`` and ``add_url(
         >>> db = Database()
         >>> db.add_path("/tmp/malware.exe")
         1
-        >>> 
+        >>>
 
-.. function:: add_url(url[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, machine=None[, platform=None[, memory=False[, enforce_timeout=False]]]]]]]]])
+.. function:: add_url(url[, timeout=0[, package=None[, options=None[, priority=1[, custom=None[, owner=""[, machine=None[, platform=None[, memory=False[, enforce_timeout=False], clock=None[]]]]]]]]]])
 
     Add a local file to the list of pending analysis tasks. Returns the ID of the newly generated task.
 
@@ -197,13 +209,15 @@ own Python submission script, you can also use the ``add_path()`` and ``add_url(
     :type priority: integer
     :param custom: custom value to be passed over and possibly reused at processing or reporting
     :type custom: string or None
+    :param owner: task owner
+    :type owner: string or None
     :param machine: Cuckoo identifier of the virtual machine you want to use, if none is specified one will be selected automatically
     :type machine: string or None
     :param platform: operating system platform you want to run the analysis one (currently only Windows)
     :type platform: string or None
     :param memory: set to ``True`` to generate a full memory dump of the analysis machine
     :type memory: True or False
-    :param enforce_timeout: set to ``True`` to force the executuion for the full timeout
+    :param enforce_timeout: set to ``True`` to force the execution for the full timeout
     :type enforce_timeout: True or False
     :param clock: provide a custom clock time to set in the analysis machine
     :type clock: string or None
@@ -218,6 +232,6 @@ Example Usage:
     >>> db = Database()
     >>> db.add_url("http://www.cuckoosandbox.org")
     2
-    >>> 
+    >>>
 
 .. _`SQLAlchemy`: http://www.sqlalchemy.org

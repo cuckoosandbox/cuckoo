@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -19,8 +19,14 @@ import os
 import sys
 import sqlalchemy as sa
 
-from dateutil.parser import parse
 from datetime import datetime
+
+try:
+    from dateutil.parser import parse
+except ImportError:
+    print "Unable to import dateutil.parser",
+    print "(install with `pip install python-dateutil`)"
+    sys.exit()
 
 try:
     from alembic import op
@@ -258,7 +264,7 @@ def upgrade():
 def mongo_upgrade():
     """Migrate mongodb schema and data."""
     # Read reporting.conf to fetch mongo configuration.
-    config = Config(os.path.join("..", "..", "conf", "reporting.conf"))
+    config = Config(cfg=os.path.join("..", "..", "conf", "reporting.conf"))
     # Run migration only if mongo is enabled as reporting module.
     if config.mongodb.enabled:
         host = config.mongodb.get("host", "127.0.0.1")

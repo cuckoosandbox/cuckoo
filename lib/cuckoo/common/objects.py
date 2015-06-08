@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -62,11 +62,11 @@ class File:
 
         # these will be populated when first accessed
         self._file_data = None
-        self._crc32     = None
-        self._md5       = None
-        self._sha1      = None
-        self._sha256    = None
-        self._sha512    = None
+        self._crc32 = None
+        self._md5 = None
+        self._sha1 = None
+        self._sha256 = None
+        self._sha512 = None
 
     def get_name(self):
         """Get file name.
@@ -92,17 +92,18 @@ class File:
         with open(self.file_path, "rb") as fd:
             while True:
                 chunk = fd.read(FILE_CHUNK_SIZE)
-                if not chunk: break
+                if not chunk:
+                    break
                 yield chunk
 
     def calc_hashes(self):
         """Calculate all possible hashes for this file."""
-        crc     = 0
-        md5     = hashlib.md5()
-        sha1    = hashlib.sha1()
-        sha256  = hashlib.sha256()
-        sha512  = hashlib.sha512()
-        
+        crc = 0
+        md5 = hashlib.md5()
+        sha1 = hashlib.sha1()
+        sha256 = hashlib.sha256()
+        sha512 = hashlib.sha512()
+
         for chunk in self.get_chunks():
             crc = binascii.crc32(chunk, crc)
             md5.update(chunk)
@@ -110,15 +111,17 @@ class File:
             sha256.update(chunk)
             sha512.update(chunk)
 
-        self._crc32     = "".join("%02X" % ((crc>>i)&0xff) for i in [24, 16, 8, 0])
-        self._md5       = md5.hexdigest()
-        self._sha1      = sha1.hexdigest()
-        self._sha256    = sha256.hexdigest()
-        self._sha512    = sha512.hexdigest()
+        self._crc32 = "".join("%02X" % ((crc >> i) & 0xff)
+                              for i in [24, 16, 8, 0])
+        self._md5 = md5.hexdigest()
+        self._sha1 = sha1.hexdigest()
+        self._sha256 = sha256.hexdigest()
+        self._sha512 = sha512.hexdigest()
 
     @property
     def file_data(self):
-        if not self._file_data: self._file_data = open(self.file_path, "rb").read()
+        if not self._file_data:
+            self._file_data = open(self.file_path, "rb").read()
         return self._file_data
 
     def get_size(self):
@@ -131,28 +134,32 @@ class File:
         """Get CRC32.
         @return: CRC32.
         """
-        if not self._crc32: self.calc_hashes()
+        if not self._crc32:
+            self.calc_hashes()
         return self._crc32
 
     def get_md5(self):
         """Get MD5.
         @return: MD5.
         """
-        if not self._md5: self.calc_hashes()
+        if not self._md5:
+            self.calc_hashes()
         return self._md5
 
     def get_sha1(self):
         """Get SHA1.
         @return: SHA1.
         """
-        if not self._sha1: self.calc_hashes()
+        if not self._sha1:
+            self.calc_hashes()
         return self._sha1
 
     def get_sha256(self):
         """Get SHA256.
         @return: SHA256.
         """
-        if not self._sha256: self.calc_hashes()
+        if not self._sha256:
+            self.calc_hashes()
         return self._sha256
 
     def get_sha512(self):
@@ -160,7 +167,8 @@ class File:
         Get SHA512.
         @return: SHA512.
         """
-        if not self._sha512: self.calc_hashes()
+        if not self._sha512:
+            self.calc_hashes()
         return self._sha512
 
     def get_ssdeep(self):
@@ -209,6 +217,37 @@ class File:
 
         return file_type
 
+    def get_content_type(self):
+        """Get MIME content file type (example: image/jpeg).
+        @return: file content type.
+        """
+        file_type = None
+        if HAVE_MAGIC:
+            try:
+                ms = magic.open(magic.MAGIC_MIME)
+                ms.load()
+                file_type = ms.file(self.file_path)
+            except:
+                try:
+                    file_type = magic.from_file(self.file_path, mime=True)
+                except:
+                    pass
+            finally:
+                try:
+                    ms.close()
+                except:
+                    pass
+
+        if file_type is None:
+            try:
+                p = subprocess.Popen(["file", "-b", "--mime-type", self.file_path],
+                                     stdout=subprocess.PIPE)
+                file_type = p.stdout.read().strip()
+            except:
+                pass
+
+        return file_type
+
     def get_yara(self, rulepath=os.path.join(CUCKOO_ROOT, "data", "yara", "index_binaries.yar")):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
@@ -223,7 +262,7 @@ class File:
                     return
 
                 try:
-                    rules = yara.compile(rulepath, error_on_warning=True)
+                    rules = yara.compile(rulepath)
 
                     for match in rules.match(self.file_path):
                         strings = []

@@ -13,66 +13,31 @@ have an appropriate version installed. For the current release **Python 2.7** is
 
 Install Python on Ubuntu::
 
-    $ sudo apt-get install python
+    $ sudo apt-get install python python-pip
 
-If you want to use the Django-based web interface, you'll have to install MongoDB too:
+If you want to use the Django-based web interface, you'll have to install MongoDB too::
 
     $ sudo apt-get install mongodb
 
-In order to properly function, Cuckoo requires SQLAlchemy and Python BSON to be installed.
+In order to properly function, Cuckoo requires some dependencies. They can all be installed through PyPI like this:
 
-Install with ``apt-get``::
+    $ sudo pip install -r requirements.txt
 
-    $ sudo apt-get install python-sqlalchemy python-bson
+To have MAEC support, you need to first install the Cybox and then the MAEC libraries::
 
-Install with ``pip``::
+    $ sudo pip install cybox==2.1.0.9
+    $ sudo pip install maec==4.1.0.11
 
-    $ sudo pip install sqlalchemy bson
+[Yara](http://code.google.com/p/yara-project/) and [Pydeep](https://github.com/kbandla/pydeep)
+will have to beinstalled manually, so please refer to their websites.
 
-There are other optional dependencies that are mostly used by modules and utilities.
-The following libraries are not strictly required, but their installation is recommended:
+If you want to use KVM it's packaged too and you can install it with the following command::
 
-    * `Dpkt`_ (Highly Recommended): for extracting relevant information from PCAP files.
-    * `Jinja2`_ (Highly Recommended): for rendering the HTML reports and the web interface.
-    * `Magic`_ (Optional): for identifying files' formats (otherwise use "file" command line utility)
-    * `Pydeep`_ (Optional): for calculating ssdeep fuzzy hash of files.
-    * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
-    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (use release 1.7 or above or the svn version).
-    * `Libvirt`_ (Optional): for using the KVM machine manager.
-    * `Bottlepy`_ (Optional): for using the ``api.py`` or ``web.py`` utility (use release 0.10 or above).
-    * `Django`_ (Optional): for using the web interface (use release 1.5 or above).
-    * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
-    * `Volatility`_ (Optional): used for forensic analysis on memory
-    * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use a release >=4.0, but <4.1).
-    * `Chardet`_ (Optional): used for detecting string encoding.
+    $ sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils python-libvirt
 
-Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
+If you want to use XenServer you'll have to install the *XenAPI* Python package::
 
-    $ sudo apt-get install python-dpkt python-jinja2 python-magic python-pymongo python-gridfs python-libvirt python-bottle python-pefile python-chardet
-
-Except for *python-magic*, *python-dpkt* and *python-libvirt*, the others can be installed through ``pip`` too::
-
-    $ sudo pip install jinja2 pymongo bottle pefile maec==4.0.1.0 django chardet
-
-*Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
-
-If want to use KVM it's packaged too and you can install it with the following command::
-
-    $ sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
-
-.. _Magic: http://www.darwinsys.com/file/
-.. _Dpkt: http://code.google.com/p/dpkt/
-.. _Jinja2: http://jinja.pocoo.org/docs/
-.. _Pydeep: https://github.com/kbandla/pydeep
-.. _Pymongo: http://pypi.python.org/pypi/pymongo/
-.. _Yara: http://code.google.com/p/yara-project/
-.. _Libvirt: http://www.libvirt.org
-.. _Bottlepy: http://www.bottlepy.org
-.. _Django: https://www.djangoproject.com/
-.. _Pefile: http://code.google.com/p/pefile/
-.. _Volatility: http://code.google.com/p/volatility/
-.. _MAEC Python bindings: https://pypi.python.org/pypi/maec/4.0.1.0
-.. _Chardet: https://pypi.python.org/pypi/chardet
+    $ sudo pip install XenAPI
 
 Virtualization Software
 =======================
@@ -120,7 +85,7 @@ you'll have to set specific Linux capabilities to the binary::
 
 You can verify the results of last command with::
 
-    $ getcap /usr/sbin/tcpdump 
+    $ getcap /usr/sbin/tcpdump
     /usr/sbin/tcpdump = cap_net_admin,cap_net_raw+eip
 
 If you don't have `setcap` installed you can get it with::
@@ -131,12 +96,17 @@ Or otherwise (**not recommended**) do::
 
     $ sudo chmod +s /usr/sbin/tcpdump
 
+Please keep in mind that even the `setcap` method is definitely not perfectly safe
+if the system has other users which are potentially untrusted. We recommend to run
+Cuckoo on a dedicated system or a trusted environment where the privileged tcpdump
+execution is contained otherwise.
+
 .. _tcpdump: http://www.tcpdump.org
 
 Installing Volatility
 =====================
 
-Volatility is an optional tool to do forensic analysis on memory dumps. 
+Volatility is an optional tool to do forensic analysis on memory dumps.
 In combination with Cuckoo, it can automatically provide additional visibility
 into deep modifications in the operating system as well as detect the presence
 of rootkit technology that escaped the monitoring domain of Cuckoo's analyzer.
@@ -146,4 +116,4 @@ You can get it from the `official repository`_.
 
 See the volatility documentation for detailed instructions on how to install it.
 
-.. _official repository: http://code.google.com/p/volatility/
+.. _official repository: https://github.com/volatilityfoundation

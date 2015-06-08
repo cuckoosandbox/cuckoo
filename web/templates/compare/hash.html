@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+
+<div class="row">
+    <div class="col-md-6" style="border-right: 1px dashed #ddd;">
+        <h2 style="text-align: center;">Analysis 1</h2>
+
+        {% include "compare/_info.html" with record=left %}
+    </div>
+    <div class="col-md-6">
+        <h2 style="text-align: center;">Analysis 2</h2>
+
+        <p>You need to select the second analysis.</p>
+        {% if records.count > 0 %}
+            <p>Following are all the analyses of the file with provided MD5 <b>{{hash}}</b>:</p>
+            {% include "compare/_summary_table.html" %}
+        {% else %}
+            <p><b>There is no analysis for the specified file or you selected the same selected analysis.</b></p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

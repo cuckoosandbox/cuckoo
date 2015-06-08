@@ -109,7 +109,12 @@ a.tag-label {
 .synchronization {
     background-color: #f9c5ff;
 }
-
+.system {
+    background-color: #fffcc5;
+}
+.windows {
+    background-color: #ffc5ee;
+}
 .page-header {
     margin-bottom: 10px;
 }
@@ -123,4 +128,32 @@ td {
 
 .tab-content {
     margin-top: 25px;
+}
+
+.row-active {
+    background-color: #d9edf7;
+}
+
+.tcp-flow {
+    list-style-type: none;
+}
+.tcp-flow li {
+    margin-bottom: 20px;
+}
+.tcp-out {
+}
+.tcp-out pre {
+    padding: 0;
+    border: 0;
+    background-color: white;
+    color: #d9534f;
+}
+.tcp-in {
+    padding-left: 100px;
+}
+.tcp-in pre {
+    padding: 0;
+    border: 0;
+    background-color: white;
+    color: #5bc0de;
 }

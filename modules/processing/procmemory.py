@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -24,6 +24,8 @@ class ProcessMemory(Processing):
                 dmp_file = File(dmp_path)
 
                 proc = dict(
+                    file=dmp_path,
+                    pid=os.path.splitext(os.path.basename(dmp_path))[0],
                     yara=dmp_file.get_yara(os.path.join(CUCKOO_ROOT, "data", "yara", "index_memory.yar"))
                 )
 

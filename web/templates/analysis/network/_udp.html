@@ -1,0 +1,30 @@
+<script src="{{ STATIC_URL }}js/hexdump.js"></script>
+<section id="udp" class="tcpudp">
+    <h4>UDP</h4>
+    {% if analysis.network.udp %}
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Source</th>
+                        <th>Source Port</th>
+                        <th>Destination</th>
+                        <th>Destination Port</th>
+                    </tr>
+                    {% for p in analysis.network.udp %}
+                        <tr class="connrow">
+                            <input type="hidden" name="conn" value="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}},udp" />
+                            <td>{{p.src}}</td>
+                            <td>{{p.sport}}</td>
+                            <td>{{p.dst}} {{ iplookups|get_item:p.dst }}</td>
+                            <td>{{p.dport}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="stream col-md-6"></div>
+        </div>
+    {% else %}
+        <p>No UDP connections recorded.</p>
+    {% endif %}
+</section>

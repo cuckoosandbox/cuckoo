@@ -1,9 +1,8 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import time
-import json
 import logging
 from datetime import datetime
 
@@ -42,9 +41,9 @@ class AnalysisInfo(Processing):
             # Get machine description ad json.
             machine = task.guest.to_dict()
             # Remove useless task_id.
-            del(machine["task_id"])
-            # Save.
-            self.task["machine"] = machine
+            del machine["task_id"]
+        else:
+            machine = None
 
         return dict(
             version=CUCKOO_VERSION,
@@ -54,6 +53,6 @@ class AnalysisInfo(Processing):
             id=int(self.task["id"]),
             category=self.task["category"],
             custom=self.task["custom"],
-            machine=self.task["machine"],
+            machine=machine,
             package=self.task["package"]
         )

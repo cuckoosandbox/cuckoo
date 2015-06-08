@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -20,8 +20,7 @@ class CreatesExe(Signature):
     enabled = False
 
     def on_complete(self):
-        match = self.check_file(pattern=".*\\.exe$",
-                                regex=True)
+        match = self.check_file(pattern=".*\\.exe$", regex=True)
         if match:
             self.data.append({"file": match})
             return True

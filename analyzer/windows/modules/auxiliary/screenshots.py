@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -21,8 +21,9 @@ SKIP_AREA = None
 class Screenshots(Auxiliary, Thread):
     """Take screenshots."""
 
-    def __init__(self):
+    def __init__(self, options={}, analyzer=None):
         Thread.__init__(self)
+        Auxiliary.__init__(self, options, analyzer)
         self.do_run = True
 
     def stop(self):
@@ -33,6 +34,9 @@ class Screenshots(Auxiliary, Thread):
         """Run screenshotting.
         @return: operation status.
         """
+        if "screenshots" in self.options:
+            self.do_run = int(self.options["screenshots"])
+
         if not Screenshot().have_pil():
             log.warning("Python Image Library is not installed, "
                         "screenshots are disabled")

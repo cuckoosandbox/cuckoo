@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -224,13 +224,15 @@ TYPECONVERTERS = {
     "p": lambda v: "0x%08x" % default_converter(v),
 }
 
-# 1 Mb max message length.
+# 20 Mb max message length.
 MAX_MESSAGE_LENGTH = 20 * 1024 * 1024
 
 def default_converter(v):
     # Fix signed ints (bson is kind of limited there).
     if type(v) in (int, long) and v < 0:
         return v + 0x100000000
+    if isinstance(v, str):
+        return v.decode("latin-1")
     return v
 
 def check_names_for_typeinfo(arginfo):
@@ -390,6 +392,9 @@ class BsonParser(object):
         return True
 
     def _flag_represent(self, apiname, flag, value):
+        if isinstance(value, str) and value.startswith("0x"):
+            value = int(value, 16)
+
         ret = []
         for typ, val, r in self.flags[apiname][flag]:
             if typ == "value" and val == value:

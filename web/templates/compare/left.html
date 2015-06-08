@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+
+<script type='text/javascript'>
+$(function () {
+    $("#hash").submit(function(e) {
+        e.preventDefault();
+        var $choice = $(this).find("input[name='hash']");
+        console.log($choice.val());
+        if ($choice.length)
+            window.location = $choice.val();
+    });
+})
+</script>
+
+<div class="row">
+    <div class="col-md-6" style="border-right: 1px dashed #ddd;">
+        <h2 style="text-align: center;">Analysis 1</h2>
+
+        {% include "compare/_info.html" with record=left %}
+    </div>
+    <div class="col-md-6">
+        <h2 style="text-align: center;">Analysis 2</h2>
+
+        <p>You need to select the second analysis.</p>
+        {% if records.count > 0 %}
+            <p>Following are all the other analyses of the same file:</p>
+            {% include "compare/_summary_table.html" %}
+        {% else %}
+            <p><b>There is no other analysis for the same file.</b></p>
+        {% endif %}
+
+        <p>If you want to compare the analysis to a different file, please provide the MD5 hash:</p>
+        <form class="form-inline" action="#" id="hash">
+            <input class="form-control" type="text" name="hash" /> <button type="submit" class="btn btn-primary btn-small">Search</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

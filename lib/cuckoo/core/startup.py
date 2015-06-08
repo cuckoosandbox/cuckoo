@@ -1,8 +1,9 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import shutil
 import sys
 import copy
 import json
@@ -10,11 +11,7 @@ import urllib
 import urllib2
 import logging
 import logging.handlers
-
-import modules.auxiliary
-import modules.processing
-import modules.signatures
-import modules.reporting
+import pwd
 
 from lib.cuckoo.common.colors import red, green, yellow, cyan
 from lib.cuckoo.common.config import Config
@@ -22,7 +19,7 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooStartupError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.utils import create_folders
-from lib.cuckoo.core.database import Database, TASK_RUNNING
+from lib.cuckoo.core.database import Database, TASK_RUNNING, TASK_FAILED_ANALYSIS
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
 
 log = logging.getLogger()
@@ -160,36 +157,56 @@ def init_logging():
 
     log.setLevel(logging.INFO)
 
+def init_console_logging():
+    """Initializes logging only to console."""
+    formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+
+    ch = ConsoleHandler()
+    ch.setFormatter(formatter)
+    log.addHandler(ch)
+
+    log.setLevel(logging.INFO)
+
 def init_tasks():
     """Check tasks and reschedule uncompleted ones."""
     db = Database()
     cfg = Config()
 
-    if cfg.cuckoo.reschedule:
-        log.debug("Checking for locked tasks...")
+    log.debug("Checking for locked tasks...")
+    tasks = db.list_tasks(status=TASK_RUNNING)
 
-        tasks = db.list_tasks(status=TASK_RUNNING)
-
-        for task in tasks:
+    for task in tasks:
+        if cfg.cuckoo.reschedule:
             db.reschedule(task.id)
             log.info("Rescheduled task with ID {0} and "
                      "target {1}".format(task.id, task.target))
+        else:
+            db.set_status(task.id, TASK_FAILED_ANALYSIS)
+            log.info("Updated running task ID {0} status to failed_analysis".format(task.id))
 
-def init_modules():
+def init_modules(machinery=True):
     """Initializes plugins."""
     log.debug("Importing modules...")
 
     # Import all auxiliary modules.
+    import modules.auxiliary
     import_package(modules.auxiliary)
+
     # Import all processing modules.
+    import modules.processing
     import_package(modules.processing)
+
     # Import all signatures.
+    import modules.signatures
     import_package(modules.signatures)
+
     # Import all reporting modules.
+    import modules.reporting
     import_package(modules.reporting)
 
     # Import machine manager.
-    import_plugin("modules.machinery." + Config().cuckoo.machinery)
+    if machinery:
+        import_plugin("modules.machinery." + Config().cuckoo.machinery)
 
     for category, entries in list_plugins().items():
         log.debug("Imported \"%s\" modules:", category)
@@ -251,3 +268,78 @@ def init_yara():
             log.debug("\t `-- %s", entry)
         else:
             log.debug("\t |-- %s", entry)
+
+
+def cuckoo_clean():
+    """Clean up cuckoo setup.
+    It deletes logs, all stored data from file system and configured databases (SQL
+    and MongoDB.
+    """
+    # Init logging.
+    # This need to init a console logger handler, because the standard
+    # logger (init_logging()) logs to a file which will be deleted.
+    create_structure()
+    init_console_logging()
+
+    # Initialize the database connection.
+    db = Database()
+
+    # Drop all tables.
+    db.drop()
+
+    # Check if MongoDB reporting is enabled and drop that if it is.
+    cfg = Config("reporting")
+    if cfg.mongodb and cfg.mongodb.enabled:
+        from pymongo import MongoClient
+        host = cfg.mongodb.get("host", "127.0.0.1")
+        port = cfg.mongodb.get("port", 27017)
+        mdb = cfg.mongodb.get("db", "cuckoo")
+        try:
+            conn = MongoClient(host, port)
+            conn.drop_database(mdb)
+            conn.close()
+        except:
+            log.warning("Unable to drop MongoDB database: %s", mdb)
+
+    # Paths to clean.
+    paths = [
+        os.path.join(CUCKOO_ROOT, "db"),
+        os.path.join(CUCKOO_ROOT, "log"),
+        os.path.join(CUCKOO_ROOT, "storage"),
+    ]
+
+    # Delete various directories.
+    for path in paths:
+        if os.path.isdir(path):
+            try:
+                shutil.rmtree(path)
+            except (IOError, OSError) as e:
+                log.warning("Error removing directory %s: %s", path, e)
+
+    # Delete all compiled Python objects ("*.pyc").
+    for dirpath, dirnames, filenames in os.walk(CUCKOO_ROOT):
+        for fname in filenames:
+            if not fname.endswith(".pyc"):
+                continue
+
+            path = os.path.join(CUCKOO_ROOT, dirpath, fname)
+
+            try:
+                os.unlink(path)
+            except (IOError, OSError) as e:
+                log.warning("Error removing file %s: %s", path, e)
+
+def drop_privileges(username):
+    """Drops privileges to selected user.
+    @param username: drop privileges to this username
+    """
+    try:
+        user = pwd.getpwnam(username)
+        os.setgroups((user.pw_gid,))
+        os.setgid(user.pw_gid)
+        os.setuid(user.pw_uid)
+        os.putenv("HOME", user.pw_dir)
+    except KeyError:
+        sys.exit("Invalid user specified to drop privileges to: %s" % user)
+    except OSError as e:
+        sys.exit("Failed to drop privileges to %s: %s" % (username, e))

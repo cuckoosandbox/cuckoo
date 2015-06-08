@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -29,4 +29,4 @@ class HTML(Package):
             path += ".html"
             log.info("Submitted file is missing extension, adding .html")
 
-        return self.execute(iexplore, "\"%s\"" % path)
+        return self.execute(iexplore, args=[path])

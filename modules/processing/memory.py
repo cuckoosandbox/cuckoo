@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -21,9 +21,14 @@ try:
     import volatility.plugins.taskmods as taskmods
     import volatility.win32.tasks as tasks
     import volatility.obj as obj
+    import volatility.exceptions as exc
+    import volatility.plugins.filescan as filescan
+
     HAVE_VOLATILITY = True
-    logging.getLogger("volatility.obj").setLevel(logging.INFO)
-    logging.getLogger("volatility.utils").setLevel(logging.INFO)
+    rootlogger = logging.getLogger()
+    # re-use the rootlogger level (so if we want to debug, it works for volatility)
+    logging.getLogger("volatility.obj").setLevel(rootlogger.level)
+    logging.getLogger("volatility.utils").setLevel(rootlogger.level)
 except ImportError:
     HAVE_VOLATILITY = False
 
@@ -40,10 +45,24 @@ class VolatilityAPI(object):
         self.memdump = memdump
         self.osprofile = osprofile
         self.config = None
+        self.addr_space = None
         self.__config()
+
+    def _get_dtb(self):
+        """Use psscan to get system dtb and apply it."""
+        ps = filescan.PSScan(self.config)
+        for ep in ps.calculate():
+            if str(ep.ImageFileName) == "System":
+                self.config.update("dtb",ep.Pcb.DirectoryTableBase)
+                return True
+        return False
+
 
     def __config(self):
         """Creates a volatility configuration."""
+        if self.config != None and self.addr_space != None:
+            return self.config
+
         self.config = conf.ConfObject()
         self.config.optparser.set_conflict_handler("resolve")
         registry.register_global_options(self.config, commands.Command)
@@ -77,7 +96,16 @@ class VolatilityAPI(object):
         for key, value in base_conf.items():
             self.config.update(key, value)
 
-        self.addr_space = utils.load_as(self.config)
+        # Deal with Volatility support for KVM/qemu memory dump.
+        # See: #464.
+        try:
+            self.addr_space = utils.load_as(self.config)
+        except exc.AddrSpaceError as e:
+            if self._get_dtb():
+                self.addr_space = utils.load_as(self.config)
+            else:
+                raise
+
         self.plugins = registry.get_plugin_classes(commands.Command,
                                                    lower=True)
 
@@ -150,7 +178,7 @@ class VolatilityAPI(object):
 
         command = self.plugins["callbacks"](self.config)
         for (sym, cb, detail), mods, mod_addrs in command.calculate():
-            module = tasks.find_module(mods, mod_addrs, command.kern_space.address_mask(cb))
+            module = tasks.find_module(mods, mod_addrs, self.addr_space.address_mask(cb))
 
             if module:
                 module_name = module.BaseDllName or module.FullDllName
@@ -181,13 +209,13 @@ class VolatilityAPI(object):
         command = self.plugins["idt"](self.config)
         for n, entry, addr, module in command.calculate():
             if module:
-                module_name = str(module.BaseDllName or '')
+                module_name = str(module.BaseDllName or "")
                 sect_name = command.get_section_name(module, addr)
             else:
                 module_name = "UNKNOWN"
                 sect_name = ''
 
-            # The parent is IDT. The grand-parent is _KPCR. 
+            # The parent is IDT. The grand-parent is _KPCR.
             cpu_number = entry.obj_parent.obj_parent.ProcessorBlock.Number
             new = {
                 "cpu_number": int(cpu_number),
@@ -223,11 +251,11 @@ class VolatilityAPI(object):
                 present = "Np"
 
             # The base, limit, and granularity is calculated differently
-            # for 32bit call gates than they are for all other types. 
-            if entry.Type == 'CallGate32':
+            # for 32bit call gates than they are for all other types.
+            if entry.Type == "CallGate32":
                 base = entry.CallGate
                 limit = 0
-                granularity = '-'
+                granularity = "-"
             else:
                 base = entry.Base
                 limit = entry.Limit
@@ -236,7 +264,7 @@ class VolatilityAPI(object):
                 else:
                     granularity = "By"
 
-            # The parent is GDT. The grand-parent is _KPCR
+            # The parent is GDT. The grand-parent is _KPCR.
             cpu_number = entry.obj_parent.obj_parent.ProcessorBlock.Number
 
             new = {
@@ -266,20 +294,20 @@ class VolatilityAPI(object):
         command = self.plugins["ssdt"](self.config)
 
         # Comment: this code is pretty much ripped from render_text in volatility.
-        addr_space = utils.load_as(self.config)
+        addr_space = self.addr_space
         syscalls = addr_space.profile.syscalls
-        bits32 = addr_space.profile.metadata.get('memory_model', '32bit') == '32bit'
+        bits32 = addr_space.profile.metadata.get("memory_model", "32bit") == "32bit"
 
         for idx, table, n, vm, mods, mod_addrs in command.calculate():
             for i in range(n):
                 if bits32:
-                    # These are absolute function addresses in kernel memory. 
-                    syscall_addr = obj.Object('address', table + (i * 4), vm).v()
+                    # These are absolute function addresses in kernel memory.
+                    syscall_addr = obj.Object("address", table + (i * 4), vm).v()
                 else:
                     # These must be signed long for x64 because they are RVAs relative
-                    # to the base of the table and can be negative. 
-                    offset = obj.Object('long', table + (i * 4), vm).v()
-                    # The offset is the top 20 bits of the 32 bit number. 
+                    # to the base of the table and can be negative.
+                    offset = obj.Object("long", table + (i * 4), vm).v()
+                    # The offset is the top 20 bits of the 32 bit number.
                     syscall_addr = table + (offset >> 4)
 
                 try:
@@ -303,21 +331,26 @@ class VolatilityAPI(object):
                 }
 
                 if bits32 and syscall_mod is not None:
-                    ret = apihooks.ApiHooks.check_inline(va = syscall_addr, addr_space = vm, 
-                                            mem_start = syscall_mod.DllBase, 
-                                            mem_end = syscall_mod.DllBase + syscall_mod.SizeOfImage)
-                    ## could not analyze the memory
-                    if ret != None:
-                        (hooked, data, dest_addr) = ret
+                    ret = apihooks.ApiHooks.check_inline(
+                        va=syscall_addr, addr_space=vm,
+                        mem_start=syscall_mod.DllBase,
+                        mem_end=syscall_mod.DllBase + syscall_mod.SizeOfImage)
+
+                    # Could not analyze the memory.
+                    if ret is not None:
+                        hooked, data, dest_addr = ret
                         if hooked:
-                            ## we found a hook, try to resolve the hooker. no mask required because
-                            ## we currently only work on x86 anyway
-                            hook_mod = tasks.find_module(mods, mod_addrs, dest_addr)
-                            if hook_mod: 
+                            # We found a hook, try to resolve the hooker.
+                            # No mask required because we currently only work
+                            # on x86 anyway.
+                            hook_mod = tasks.find_module(mods, mod_addrs,
+                                                         dest_addr)
+                            if hook_mod:
                                 hook_name = "{0}".format(hook_mod.BaseDllName)
                             else:
                                 hook_name = "UNKNOWN"
-                            ## report it now
+
+                            # Report it now.
                             new.update({
                                 "hook_dest_addr": "{0:#x}".format(dest_addr),
                                 "hook_name": hook_name,
@@ -345,7 +378,7 @@ class VolatilityAPI(object):
                 signaled = "-"
 
             if module:
-                module_name = str(module.BaseDllName or '')
+                module_name = str(module.BaseDllName or "")
             else:
                 module_name = "UNKNOWN"
 
@@ -469,7 +502,7 @@ class VolatilityAPI(object):
                 try:
                     name, desc = privm.PRIVILEGE_INFO[int(value)]
                 except KeyError:
-                    continue 
+                    continue
 
                 attributes = []
                 if present:
@@ -524,7 +557,7 @@ class VolatilityAPI(object):
 
     def yarascan(self):
         """Volatility yarascan plugin.
-        @see volatility/plugins/malware/malfind.py
+        @see volatility/plugins/malware/yarascan.py
         """
         log.debug("Executing Volatility yarascan plugin on "
                   "{0}".format(self.memdump))
@@ -541,8 +574,8 @@ class VolatilityAPI(object):
         command = self.plugins["yarascan"](self.config)
         for o, addr, hit, content in command.calculate():
             # Comment: this code is pretty much ripped from render_text in volatility.
-            # Find out if the hit is from user or kernel mode 
-            if o == None:
+            # Find out if the hit is from user or kernel mode
+            if o is None:
                 owner = "Unknown Kernel Memory"
             elif o.obj_name == "_EPROCESS":
                 owner = "Process {0} Pid {1}".format(o.ImageFileName, o.UniqueProcessId)
@@ -550,9 +583,8 @@ class VolatilityAPI(object):
                 owner = "{0}".format(o.BaseDllName)
 
             hexdump = "".join(
-                ["{0:#010x}  {1:<48}  {2}\n".format(addr + o, h, ''.join(c))
-                for o, h, c in utils.Hexdump(content[0:64])
-                ])
+                "{0:#010x}  {1:<48}  {2}\n".format(addr + o, h, ''.join(c))
+                for o, h, c in utils.Hexdump(content[0:64]))
 
             new = {
                 "rule": hit.rule,
@@ -574,8 +606,10 @@ class VolatilityAPI(object):
 
         command = self.plugins["apihooks"](self.config)
         for process, module, hook in command.calculate():
-            if command.whitelist(hook.hook_mode | hook.hook_type, str(process.ImageFileName) if process else '',
-                hook.VictimModule, hook.HookModule, hook.Function):
+            proc_name = str(process.ImageFileName) if process else ''
+            if command.whitelist(hook.hook_mode | hook.hook_type,
+                                 proc_name, hook.VictimModule,
+                                 hook.HookModule, hook.Function):
                 continue
 
             new = {
@@ -687,9 +721,9 @@ class VolatilityAPI(object):
                     "process_id": int(task.UniqueProcessId),
                     "process_name": str(task.ImageFileName),
                     "dll_base": "{0:#x}".format(base),
-                    "dll_in_load": not load_mod is None,
-                    "dll_in_init": not init_mod is None,
-                    "dll_in_mem": not mem_mod is None,
+                    "dll_in_load": load_mod is not None,
+                    "dll_in_init": init_mod is not None,
+                    "dll_in_mem": mem_mod is not None,
                     "dll_mapped_path": str(mapped_files[base]),
                     "load_full_dll_name": "",
                     "init_full_dll_name": "",
@@ -719,7 +753,8 @@ class VolatilityAPI(object):
         results = []
 
         command = self.plugins["mutantscan"](self.config)
-        for object_obj, mutant in command.calculate():
+        for mutant in command.calculate():
+            header = mutant.get_object_header()
             tid = 0
             pid = 0
             if mutant.OwnerThread > 0x80000000:
@@ -729,10 +764,10 @@ class VolatilityAPI(object):
 
             new = {
                 "mutant_offset": "{0:#x}".format(mutant.obj_offset),
-                "num_pointer": int(object_obj.PointerCount),
-                "num_handles": int(object_obj.HandleCount),
+                "num_pointer": int(header.PointerCount),
+                "num_handles": int(header.HandleCount),
                 "mutant_signal_state": str(mutant.Header.SignalState),
-                "mutant_name": str(object_obj.NameInfo.Name or ""),
+                "mutant_name": str(header.NameInfo.Name or ""),
                 "process_id": int(pid),
                 "thread_id": int(tid)
             }
@@ -751,7 +786,7 @@ class VolatilityAPI(object):
         results = []
 
         command = self.plugins["devicetree"](self.config)
-        for _object_obj, driver_obj, _ in command.calculate():
+        for driver_obj in command.calculate():
             new = {
                 "driver_offset": "0x{0:08x}".format(driver_obj.obj_offset),
                 "driver_name": str(driver_obj.DriverName or ""),
@@ -808,10 +843,10 @@ class VolatilityAPI(object):
         @see volatility/plugins/malware/svcscan.py
         """
         log.debug("Executing Volatility svcscan plugin on {0}".format(self.memdump))
-        
+
         self.__config()
         results = []
-        
+
         command = self.plugins["svcscan"](self.config)
         for rec in command.calculate():
             new = {
@@ -887,7 +922,7 @@ class VolatilityManager(object):
             self.voptions = False
             return
 
-        self.voptions = Config(conf_path)
+        self.voptions = Config("memory")
 
         for pid in self.voptions.mask.pid_generic.split(","):
             pid = pid.strip()
@@ -901,8 +936,8 @@ class VolatilityManager(object):
             self.osprofile = osprofile or self.get_osprofile()
 
     def get_osprofile(self):
-        """Get the OS profile"""        
-        return VolatilityAPI(self.memfile).imageinfo()["data"][0]["osprofile"] 
+        """Get the OS profile"""
+        return VolatilityAPI(self.memfile).imageinfo()["data"][0]["osprofile"]
 
     def run(self):
         results = {}
@@ -972,7 +1007,9 @@ class VolatilityManager(object):
                 # TODO: need to improve this logic.
                 if not conf.filter:
                     new[akey]["data"].append(item)
-                elif ("process_id" in item and item["process_id"] in self.mask_pid and not item["process_id"] in self.taint_pid):
+                elif "process_id" in item and \
+                        item["process_id"] in self.mask_pid and \
+                        item["process_id"] not in self.taint_pid:
                     pass
                 else:
                     new[akey]["data"].append(item)

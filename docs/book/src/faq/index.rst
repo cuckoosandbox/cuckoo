@@ -6,6 +6,7 @@ Frequently Asked Questions:
 
     * :ref:`analyze_urls`
     * :ref:`general_volatility`
+    * :ref:`esxi_reqs`
     * :ref:`troubles_upgrade`
     * :ref:`troubles_problem`
 
@@ -34,6 +35,18 @@ some rootkit-like technologies to perform its operations, the results of a foren
 analysis would be polluted by the sandbox's components.
 
 .. _`Volatility`: http://code.google.com/p/volatility/
+
+.. _esxi_reqs:
+
+What I need to use Cuckoo with VMware ESXi?
+-------------------------------------------
+
+To run with VMware vSphere Hypervisor (or ESXi) Cuckoo levareges on libvirt.
+Libivirt is currently using VMware API to take control over virtual machines,
+althogh these API are available ony in licensed version.
+In VMware vSphere free edition, these API are read only, so you are unable
+to use Cuckoo with it.
+For the minimum license needed, please have a look at VMware website.
 
 Troubleshooting
 ===============
@@ -102,7 +115,7 @@ Make sure when you ask for help to:
 Check and restore current snapshot with KVM
 -------------------------------------------
 
-If something goes wrong with virtual machine it's best practice to check curent snapshot
+If something goes wrong with virtual machine it's best practice to check current snapshot
 status.
 You can do that with the following::
 
@@ -115,7 +128,7 @@ snapshot is broken::
     $ virsh snapshot-current "<Name of VM>"
     error: domain '<Name of VM>' has no current snapshot
 
-To fix and create a current snapshot firt list all machine's snapshots::
+To fix and create a current snapshot first list all machine's snapshots::
 
     $ virsh snapshot-list "<Name of VM>"
      Name                 Creation Time             State
@@ -133,7 +146,7 @@ Check and restore current snapshot with VirtualBox
 --------------------------------------------------
 
 If something goes wrong with virtual it's best practice to check the virtual machine
-status and the curent snapshot.
+status and the current snapshot.
 First of all check the virtual machine status with the following::
 
     $ VBoxManage showvminfo "<Name of VM>" | grep State

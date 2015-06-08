@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -22,6 +22,7 @@ class Debug(Processing):
         if os.path.exists(self.log_path):
             try:
                 debug["log"] = codecs.open(self.log_path, "rb", "utf-8").read()
+                debug["log"] = debug["log"].split("\n")
             except ValueError as e:
                 raise CuckooProcessingError("Error decoding %s: %s" %
                                             (self.log_path, e))

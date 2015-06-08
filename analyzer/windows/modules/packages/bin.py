@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -11,7 +11,8 @@ class Shellcode(Package):
     def start(self, path):
         p = Process()
         dll = self.options.get("dll")
-        p.execute(path="bin/execsc.exe", args=path, suspended=True)
+        p.execute(path="bin/execsc.exe", args=[path], suspended=True)
         p.inject(dll)
         p.resume()
+        p.wait()
         return p.pid

@@ -1,8 +1,8 @@
 sqlalchemy
-bson
+dpkt
+python-magic
 jinja2
 pymongo
-pydeep
 bottle
 pefile
 django

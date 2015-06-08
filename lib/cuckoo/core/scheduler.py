@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -26,6 +26,7 @@ log = logging.getLogger(__name__)
 
 machinery = None
 machine_lock = Lock()
+latest_symlink_lock = Lock()
 
 active_analysis_count = 0
 
@@ -59,6 +60,23 @@ class AnalysisManager(Thread):
         self.storage = ""
         self.binary = ""
         self.machine = None
+
+        self.task.options = self._parse_options(self.task.options)
+
+    def _parse_options(self, options):
+        """Parse the analysis options field to a dictionary."""
+        ret = {}
+        for field in options.split(","):
+            if "=" not in field:
+                continue
+
+            key, value = field.split("=", 1)
+            ret[key.strip()] = value.strip()
+        return ret
+
+    def _emit_options(self, options):
+        """Emit the analysis options from a dictionary to a string."""
+        return ",".join("%s=%s" % (k, v) for k, v in options.items())
 
     def init_storage(self):
         """Initialize analysis storage folder."""
@@ -179,12 +197,12 @@ class AnalysisManager(Thread):
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
-        options["options"] = self.task.options
+        options["options"] = self._emit_options(self.task.options)
         options["enforce_timeout"] = self.task.enforce_timeout
         options["clock"] = self.task.clock
         options["terminate_processes"] = self.cfg.cuckoo.terminate_processes
 
-        if not self.task.timeout or self.task.timeout == 0:
+        if not self.task.timeout:
             options["timeout"] = self.cfg.timeouts.default
         else:
             options["timeout"] = self.task.timeout
@@ -224,9 +242,6 @@ class AnalysisManager(Thread):
             log.error("Cannot acquire machine: {0}".format(e))
             return False
 
-        # Generate the analysis configuration file.
-        options = self.build_options()
-
         # At this point we can tell the ResultServer about it.
         try:
             ResultServer().add_task(self.task, self.machine)
@@ -237,6 +252,9 @@ class AnalysisManager(Thread):
         aux = RunAuxiliary(task=self.task, machine=self.machine)
         aux.start()
 
+        # Generate the analysis configuration file.
+        options = self.build_options()
+
         try:
             # Mark the selected analysis machine in the database as started.
             guest_log = Database().guest_start(self.task.id,
@@ -245,26 +263,21 @@ class AnalysisManager(Thread):
                                                machinery.__class__.__name__)
             # Start the machine.
             machinery.start(self.machine.label)
+
+            # Initialize the guest manager.
+            guest = GuestManager(self.machine.name, self.machine.ip,
+                                 self.machine.platform)
+
+            # Start the analysis.
+            guest.start_analysis(options)
+
+            guest.wait_for_completion()
+            succeeded = True
         except CuckooMachineError as e:
             log.error(str(e), extra={"task_id": self.task.id})
             dead_machine = True
-        else:
-            try:
-                # Initialize the guest manager.
-                guest = GuestManager(self.machine.name, self.machine.ip, self.machine.platform)
-                # Start the analysis.
-                guest.start_analysis(options)
-            except CuckooGuestError as e:
-                log.error(str(e), extra={"task_id": self.task.id})
-            else:
-                # Wait for analysis completion.
-                try:
-                    guest.wait_for_completion()
-                    succeeded = True
-                except CuckooGuestError as e:
-                    log.error(str(e), extra={"task_id": self.task.id})
-                    succeeded = False
-
+        except CuckooGuestError as e:
+            log.error(str(e), extra={"task_id": self.task.id})
         finally:
             # Stop Auxiliary modules.
             aux.stop()
@@ -386,11 +399,19 @@ class AnalysisManager(Thread):
                 latest = os.path.join(CUCKOO_ROOT, "storage",
                                       "analyses", "latest")
 
-                # First we have to remove the existing symbolic link.
-                if os.path.exists(latest):
-                    os.remove(latest)
+                # First we have to remove the existing symbolic link, then we
+                # have to create the new one.
+                # Deal with race conditions using a lock.
+                latest_symlink_lock.acquire()
+                try:
+                    if os.path.exists(latest):
+                        os.remove(latest)
 
-                os.symlink(self.storage, latest)
+                    os.symlink(self.storage, latest)
+                except OSError as e:
+                    log.warning("Error pointing latest analysis symlink: %s" % e)
+                finally:
+                    latest_symlink_lock.release()
 
             log.info("Task #%d: analysis procedure completed", self.task.id)
         except:
@@ -439,7 +460,7 @@ class Scheduler:
 
         # Provide a dictionary with the configuration options to the
         # machine manager instance.
-        machinery.set_options(Config(conf))
+        machinery.set_options(Config(machinery_name))
 
         # Initialize the machine manager.
         try:
@@ -454,6 +475,18 @@ class Scheduler:
             raise CuckooCriticalError("No machines available.")
         else:
             log.info("Loaded %s machine/s", len(machinery.machines()))
+
+        if len(machinery.machines()) > 1 and self.db.engine.name == "sqlite":
+            log.warning("As you've configured Cuckoo to execute parallel "
+                        "analyses, we recommend you to switch to a MySQL "
+                        "a PostgreSQL database as SQLite might cause some "
+                        "issues.")
+
+        if len(machinery.machines()) > 4 and self.cfg.cuckoo.process_results:
+            log.warning("When running many virtual machines it is recommended "
+                        "to process the results in a separate process.py to "
+                        "increase throughput and stability. Please read the "
+                        "documentation about the `Processing Utility`.")
 
     def stop(self):
         """Stop scheduler."""
@@ -499,6 +532,12 @@ class Scheduler:
                                   space_available)
                         continue
 
+            # Have we limited the number of concurrently executing machines?
+            if self.cfg.cuckoo.max_machines_count > 0:
+                # Are too many running?
+                if len(machinery.running()) >= self.cfg.cuckoo.max_machines_count:
+                    continue
+
             # If no machines are available, it's pointless to fetch for
             # pending tasks. Loop over.
             if not machinery.availables():
@@ -508,21 +547,27 @@ class Scheduler:
             # file and has been reached.
             if self.maxcount and self.total_analysis_count >= self.maxcount:
                 if active_analysis_count <= 0:
+                    log.debug("Reached max analysis count, exiting.")
                     self.stop()
             else:
                 # Fetch a pending analysis task.
-                task = self.db.fetch()
+                # TODO This fixes only submissions by --machine, need to add
+                # other attributes (tags etc).
+                for machine in self.db.get_available_machines():
 
-                if task:
-                    log.debug("Processing task #%s", task.id)
-                    self.total_analysis_count += 1
+                    task = self.db.fetch(machine=machine.name)
+                    if task:
+                        log.debug("Processing task #%s", task.id)
+                        self.total_analysis_count += 1
 
-                    # Initialize and start the analysis manager.
-                    analysis = AnalysisManager(task, errors)
-                    analysis.start()
+                        # Initialize and start the analysis manager.
+                        analysis = AnalysisManager(task, errors)
+                        analysis.start()
 
             # Deal with errors.
             try:
                 raise errors.get(block=False)
             except Queue.Empty:
                 pass
+
+        log.debug("End of analyses.")

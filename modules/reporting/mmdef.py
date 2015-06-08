@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
@@ -30,12 +30,12 @@ class MMDef(Report):
 
     def addMetadata(self):
         """Generates header for MAEC xml and root components."""
-        if self.results["target"]["category"] == "file":
+        if "target" in self.results and self.results["target"]["category"] == "file":
             id = "cuckoo:%s" % self.results["target"]["file"]["md5"]
-        elif self.results["target"]["category"] == "url":
+        elif "target" in self.results and self.results["target"]["category"] == "url":
             id = "cuckoo:%s" % hashlib.md5(self.results["target"]["url"]).hexdigest()
         else:
-            raise CuckooReportError("Unknown target type")
+            raise CuckooReportError("Unknown target type or targetinfo module disabled")
 
         self.m = maec.malwareMetaData(
             version="1.1",
@@ -75,11 +75,11 @@ class MMDef(Report):
                 for exist in self.objects.get_file():
                     if exist.get_md5() == f["md5"]:
                         found = True
-                if not found:        
+                if not found:
                     self.objects.add_file(self.createFileObject(f))
         # URI objects
         if "network" in self.results and isinstance(self.results["network"], dict):
-            if "http" in self.results["network"] and isinstance(self.results["network"]["http"], list): 
+            if "http" in self.results["network"] and isinstance(self.results["network"]["http"], list):
                 for req in self.results["network"]["http"]:
                     found = False
                     for exist in self.objects.get_uri():
@@ -114,7 +114,7 @@ class MMDef(Report):
                             maec.reference(
                                            valueOf_="file[@id='%s']" % f["md5"]
                                            )
-                            ) 
+                            )
         self.properties.add_objectProperty(prop)
         return file
 
@@ -134,7 +134,7 @@ class MMDef(Report):
             src = "file[@id='%s']" % self.results["target"]["file"]["md5"]
         elif self.results["target"]["category"] == "url":
             src = "url[@id='%s']" % hashlib.md5(self.results["target"]["url"]).hexdigest()
-        
+
         # Dropped files
         for file in self.results["dropped"]:
             self.relationships.add_relationship(self.createRelation(
@@ -149,7 +149,7 @@ class MMDef(Report):
             for req in self.objects.get_uri():
                 # Get IP
                 if "domains" in self.results["network"] and isinstance(self.results["network"]["domains"], list):
-                    for res in self.results["network"]["domains"]: 
+                    for res in self.results["network"]["domains"]:
                         if res["domain"] == req.get_hostname():
                             ip = res["ip"]
                             # Check if obj exist

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -23,7 +23,7 @@ from lib.cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
 
-_modules = defaultdict(dict)
+_modules = defaultdict(list)
 
 def import_plugin(name):
     try:
@@ -73,48 +73,47 @@ class RunAuxiliary(object):
     def __init__(self, task, machine):
         self.task = task
         self.machine = machine
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "auxiliary.conf"))
+        self.cfg = Config("auxiliary")
         self.enabled = []
 
     def start(self):
-        auxiliary_list = list_plugins(group="auxiliary")
-        if auxiliary_list:
-            for module in auxiliary_list:
-                try:
-                    current = module()
-                except:
-                    log.exception("Failed to load the auxiliary module "
-                                  "\"{0}\":".format(module))
-                    return
+        for module in list_plugins(group="auxiliary"):
+            try:
+                current = module()
+            except:
+                log.exception("Failed to load the auxiliary module "
+                              "\"{0}\":".format(module))
+                return
 
-                module_name = inspect.getmodule(current).__name__
-                if "." in module_name:
-                    module_name = module_name.rsplit(".", 1)[1]
+            module_name = inspect.getmodule(current).__name__
+            if "." in module_name:
+                module_name = module_name.rsplit(".", 1)[1]
 
-                try:
-                    options = self.cfg.get(module_name)
-                except CuckooOperationalError:
-                    log.debug("Auxiliary module %s not found in "
-                              "configuration file", module_name)
-                    continue
+            try:
+                options = self.cfg.get(module_name)
+            except CuckooOperationalError:
+                log.debug("Auxiliary module %s not found in "
+                          "configuration file", module_name)
+                continue
 
-                if not options.enabled:
-                    continue
+            if not options.enabled:
+                continue
 
-                current.set_task(self.task)
-                current.set_machine(self.machine)
-                current.set_options(options)
+            current.set_task(self.task)
+            current.set_machine(self.machine)
+            current.set_options(options)
 
-                try:
-                    current.start()
-                except NotImplementedError:
-                    pass
-                except Exception as e:
-                    log.warning("Unable to start auxiliary module %s: %s",
-                                module_name, e)
-                else:
-                    log.debug("Started auxiliary module: %s", module_name)
-                    self.enabled.append(current)
+            try:
+                current.start()
+            except NotImplementedError:
+                pass
+            except Exception as e:
+                log.warning("Unable to start auxiliary module %s: %s",
+                            module_name, e)
+            else:
+                log.debug("Started auxiliary module: %s",
+                          current.__class__.__name__)
+                self.enabled.append(current)
 
     def stop(self):
         for module in self.enabled:
@@ -125,7 +124,8 @@ class RunAuxiliary(object):
             except Exception as e:
                 log.warning("Unable to stop auxiliary module: %s", e)
             else:
-                log.debug("Stopped auxiliary module: %s", module)
+                log.debug("Stopped auxiliary module: %s",
+                          module.__class__.__name__)
 
 class RunProcessing(object):
     """Analysis Results Processing Engine.
@@ -139,9 +139,9 @@ class RunProcessing(object):
         """@param task_id: ID of the analyses to process."""
         self.task = Database().view_task(task_id).to_dict()
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "processing.conf"))
+        self.cfg = Config("processing")
 
-    def process(self, module):
+    def process(self, module, results):
         """Run a processing module.
         @param module: processing module to run.
         @param results: results dict.
@@ -153,7 +153,7 @@ class RunProcessing(object):
         except:
             log.exception("Failed to load the processing module "
                           "\"{0}\":".format(module))
-            return
+            return None, None
 
         # Extract the module name.
         module_name = inspect.getmodule(current).__name__
@@ -165,11 +165,11 @@ class RunProcessing(object):
         except CuckooOperationalError:
             log.debug("Processing module %s not found in configuration file",
                       module_name)
-            return None
+            return None, None
 
         # If the processing module is disabled in the config, skip it.
         if not options.enabled:
-            return None
+            return None, None
 
         # Give it path to the analysis results.
         current.set_path(self.analysis_path)
@@ -177,6 +177,8 @@ class RunProcessing(object):
         current.set_task(self.task)
         # Give it the options from the relevant processing.conf section.
         current.set_options(options)
+        # Give the results that we have obtained so far.
+        current.set_results(results)
 
         try:
             # Run the processing module and retrieve the generated data to be
@@ -186,19 +188,18 @@ class RunProcessing(object):
             log.debug("Executed processing module \"%s\" on analysis at "
                       "\"%s\"", current.__class__.__name__, self.analysis_path)
 
-            # If succeeded, return they module's key name and the data to be
-            # appended to it.
-            return {current.key: data}
+            # If succeeded, return they module's key name and the data.
+            return current.key, data
         except CuckooDependencyError as e:
             log.warning("The processing module \"%s\" has missing dependencies: %s", current.__class__.__name__, e)
         except CuckooProcessingError as e:
             log.warning("The processing module \"%s\" returned the following "
                         "error: %s", current.__class__.__name__, e)
         except:
-            log.exception("Failed to run the processing module \"%s\":",
-                          current.__class__.__name__)
+            log.exception("Failed to run the processing module \"%s\" for task #%d:",
+                          current.__class__.__name__, self.task["id"])
 
-        return None
+        return None, None
 
     def run(self):
         """Run all processing modules and all signatures.
@@ -223,11 +224,11 @@ class RunProcessing(object):
 
             # Run every loaded processing module.
             for module in processing_list:
-                result = self.process(module)
-                # If it provided some results, append it to the big results
-                # container.
-                if result:
-                    results.update(result)
+                key, result = self.process(module, results)
+
+                # If the module provided results, append it to the fat dict.
+                if key and result:
+                    results[key] = result
         else:
             log.info("No processing modules loaded")
 
@@ -253,9 +254,7 @@ class RunSignatures(object):
         filename = os.path.join(CUCKOO_ROOT, "data", "signature_overlay.json")
 
         try:
-            with open(filename) as fh:
-                odata = json.load(fh)
-                return odata
+            return json.load(open(filename, "rb"))
         except IOError:
             pass
 
@@ -324,9 +323,12 @@ class RunSignatures(object):
     def process(self, signature):
         """Run a signature.
         @param signature: signature to run.
-        @param signs: signature results dict.
         @return: matched signature.
         """
+        # Skip signature processing if there are no results.
+        if not self.results:
+            return
+
         # Initialize the current signature.
         try:
             current = signature(self.results)
@@ -364,7 +366,6 @@ class RunSignatures(object):
         @param sig: The signature to verify
         @return:
         """
-
         for matched in self.matched:
             if sig.name == matched["name"]:
                 return True
@@ -372,14 +373,13 @@ class RunSignatures(object):
 
     def append_sig(self, sig):
         """
-
         @param sig: The signature, that matched
-
         @return:
         """
-
         self.matched.append(sig.as_result())
-        # Link this into the results already at this point, so other signatures can use it
+
+        # Link this into the results already at this point, so other
+        # signatures can use it.
         self.matched.sort(key=lambda key: key["severity"])
         self.results["signatures"] = self.matched
 
@@ -388,12 +388,11 @@ class RunSignatures(object):
                 result = sig.on_signature(sig)
                 if result is True and not self.is_matched(sig):
                     self.append_sig(sig)
-            except NotImplementedError:
-                self.evented_signatures.remove(sig)
             except:
                 log.exception("Failed to run signature \"%s\":", sig.name)
 
     def run(self):
+        """Run evented signatures."""
         # This will contain all the matched signatures.
         self.matched = []
 
@@ -403,13 +402,15 @@ class RunSignatures(object):
             if sig.enabled and self._check_signature_version(sig):
                 evented_list.append(sig(self))
 
+                # Transform the filter_ things into set()'s for faster lookup.
+                sig.filter_processnames = set(sig.filter_processnames)
+                sig.filter_apinames = set(sig.filter_apinames)
+                sig.filter_categories = set(sig.filter_categories)
+
         # Test quickout
         for sig in evented_list:
-            try:
-                if sig.quickout():
-                    evented_list.remove(sig)
-            except NotImplementedError:
-                pass
+            if sig.quickout():
+                evented_list.remove(sig)
 
         overlay = self._load_overlay()
         log.debug("Applying signature overlays for signatures: %s", ", ".join(overlay.keys()))
@@ -435,38 +436,43 @@ class RunSignatures(object):
                     log.debug("\t |-- %s", sig.name)
 
             # Iterate calls and tell interested signatures about them
-            for process in self.results["behavior2"]["processes"]:
+            for process in self.results.get("behavior2", {}).get("processes", []):
                 for sig in evented_list:
                     sig.on_process(process["process_identifier"])
+
                 for thread in process.get("threads", []):
+                    call_count = 0
+
                     for sig in evented_list:
                         sig.on_thread(process["process_identifier"], thread["tid"])
-                    ccount = 0
+
                     for call in thread.get("calls", []):
-                        ccount += 1
+                        call_count += 1
+
                         # Loop through active evented signatures.
                         for sig in evented_list:
                             # Skip current call if it doesn't match the filters (if any).
                             if not sig.is_active():
                                 continue
+
                             if sig.filter_processnames and not process["process_name"] in sig.filter_processnames:
                                 continue
+
                             if sig.filter_apinames and not call["api"] in sig.filter_apinames:
                                 continue
+
                             if sig.filter_categories and not call["category"] in sig.filter_categories:
                                 continue
 
                             result = None
                             try:
-                                result = sig.goto_on_call(call, process["process_identifier"], thread["tid"], ccount)
-                            except NotImplementedError:
-                                result = False
+                                result = sig.goto_on_call(call, process["process_identifier"], thread["tid"], call_count)
                             except:
                                 log.exception("Failed to run signature \"%s\":", sig.name)
                                 result = False
 
-                            # If the signature returns None we can carry on, the
-                            # condition was not matched.
+                            # If the signature returns None we can carry on,
+                            # the condition was not matched.
                             if result is None:
                                 continue
 
@@ -479,18 +485,15 @@ class RunSignatures(object):
             for sig in evented_list:
                 try:
                     result = sig.on_complete()
-                except NotImplementedError:
-                    continue
                 except:
                     log.exception("Failed run on_complete() method for signature \"%s\":", sig.name)
                     continue
-                else:
-                    if result is True:
-                        log.debug("Analysis matched signature \"%s\"", sig.name)
-                        self.append_sig(sig)
-                        if sig in complete_list:
-                            complete_list.remove(sig)
 
+                if result is True:
+                    log.debug("Analysis matched signature \"%s\"", sig.name)
+                    self.append_sig(sig)
+                    if sig in complete_list:
+                        complete_list.remove(sig)
 
 class RunReporting:
     """Reporting Engine.
@@ -505,7 +508,7 @@ class RunReporting:
         self.task = Database().view_task(task_id).to_dict()
         self.results = results
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "reporting.conf"))
+        self.cfg = Config("reporting")
 
     def process(self, module):
         """Run a single reporting module.
@@ -541,7 +544,7 @@ class RunReporting:
         # Give it the the relevant reporting.conf section.
         current.set_options(options)
         # Load the content of the analysis.conf file.
-        current.cfg = Config(current.conf_path)
+        current.cfg = Config(cfg=current.conf_path)
 
         try:
             current.run(self.results)

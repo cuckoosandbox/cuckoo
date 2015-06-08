@@ -1,0 +1,73 @@
+<script src="{{ STATIC_URL }}js/hexdump.js"></script>
+<section id="tcp" class="tcpudp">
+    <h4>TCP</h4>
+    {% if analysis.network.tcp %}
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Source</th>
+                        <th>Source Port</th>
+                        <th>Destination</th>
+                        <th>Destination Port</th>
+                    </tr>
+                    {% for p in analysis.network.tcp %}
+                        <tr class="connrow">
+                            <input type="hidden" name="conn" value="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}},tcp" />
+                            <td>{{p.src}}</td>
+                            <td>{{p.sport}}</td>
+                            <td>{{p.dst}} {{ iplookups|get_item:p.dst }}</td>
+                            <td>{{p.dport}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="stream col-md-6"></div>
+        </div>
+    {% else %}
+        <p>No TCP connections recorded.</p>
+    {% endif %}
+</section>
+<script type='text/javascript'>
+$(function () {
+    $("section.tcpudp table tr.connrow").click(function(e) {
+        var $section = $(this).closest("section");
+
+        $section.find("table tr.connrow").removeClass("row-active");
+        $(this).addClass("row-active"); 
+
+        var $choice = $(this).find("input[name='conn']");
+
+        $.get("/analysis/{{analysis.info.id}}/pcapstream/"+$choice.val()+"/", function(data, status, xhr) {
+            if (status == "error") {
+                $section.find("div.stream").html("Error loading data. Please reload the page and if the error persists contact us.");
+            } else {
+                var out = $("<ul class=\"tcp-flow\">");
+                var first = undefined;
+                console.log("get result", data, status, xhr);
+                for (var i in data) {
+                    var p = data[i];
+                    var tuple = p.src + ":" + p.sport + " &rarr; " + p.dst + ":" + p.dport;
+
+                    if (first == undefined) first = tuple;
+                    if (first != tuple) { 
+                        tcpclass = "tcp-in";
+                        icon = "<i class=\"glyphicon glyphicon-chevron-down\" title=\"Inbound\"></i>";
+                    } else {
+                        tcpclass = "tcp-out";
+                        icon = "<i class=\"glyphicon glyphicon-chevron-up\" title=\"Outbound\"></i>";
+                    }
+
+                    var li = $("<li class=\"" + tcpclass + "\">" + icon + tuple + "</li>").append("<pre>" + hexy(base64.decode(p.raw)) + "</pre>");
+                    out.append(li);
+                }
+                $section.find("div.stream").html(out);
+                console.log(out);
+            }
+        });
+    });
+    // autoload first one
+    var $row = $("section#tcp table tr.connrow").first().click();
+    var $row = $("section#udp table tr.connrow").first().click();
+})
+</script>

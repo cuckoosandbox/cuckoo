@@ -1,0 +1,39 @@
+
+<style type="text/css">
+.search-process {
+    background-color: #d9edf7;
+    font-weight: bold;
+}
+</style>
+<section id="search-results-section">
+    <h4>Results</h4>
+    <p style="text-align: center;">
+        <span class="badge network" style="color:black;">network</span>
+        <span class="badge filesystem" style="color:black;">filesystem</span>
+        <span class="badge registry" style="color:black;">registry</span>
+        <span class="badge process" style="color:black;">process</span>
+        <span class="badge services" style="color:black;">services</span>
+        <span class="badge synchronization" style="color:black;">synchronization</span>
+    </p>
+    {% if results %}
+        <table class="table table-bordered" style="table-layout: fixed;">
+            <tbody>
+                {% for match in results %}
+                    <tr><td colspan="7" class="search-process">Process: {{match.process.process_name}} ({{match.process.process_id}})</td></tr>
+                    {% for sign in match.signs %}
+                        <tr class="{{sign.category}}" id="call_{{sign.id}}">
+                            {% include "analysis/behavior/_api_call.html" with call=sign %}
+                            <td>
+                                <a href='#' class='call-link' data-pid='{{match.process.process_id}}' data-cid='{{sign.id}}'>
+                                    <span class="glyphicon glyphicon-circle-arrow-right"></span>
+                                </a>
+                            </td>
+                        <tr>             
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No results</p>
+    {% endif %}
+</section>

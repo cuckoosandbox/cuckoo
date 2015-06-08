@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+
+<script type='text/javascript'>
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+</script>
+
+<div class="row">
+    <div class="col-md-6" style="border-right: 1px dashed #ddd;">
+        <h2 style="text-align: center;">Analysis 1</h2>
+
+        {% include "compare/_info.html" with record=left %}
+
+        <div class="col-md-8">
+            <h4>Execution Graph</h4>
+
+            <p>This graph gives you an abstracted overview of the execution of the analyzer file. More specifically it represents the percentage of occurrences of behavioral events classified by category: the bigger the colored block, the higher is the count of events for the respective category performed by the analyzed malware</p>
+            <p>Comparing two graphs from different analyses can give you help estimate how much the behavior of the two files differ.</p>
+            <p>Following are the colored categories:</p>
+
+            <p style="text-align: center;">
+                <span class="badge registry" style="color:black;">registry</span>
+                <span class="badge filesystem" style="color:black;">filesystem</span>
+                <span class="badge system" style="color:black;">system</span>
+                <span class="badge network" style="color:black;">network</span>                
+                <span class="badge process" style="color:black;">process</span>
+                <span class="badge services" style="color:black;">services</span>
+                <span class="badge synchronization" style="color:black;">synchronization</span>
+                <span class="badge windows" style="color:black;">windows</span>
+            </p>
+        </div>
+
+        <div class="col-md-4">
+            <div style="height: 300px;border: 2px solid #666;">
+                {% for cat, count in left_counts.items %}
+                    <div style="height: {{count}}%" class="{{cat}}" data-toggle="tooltip" data-placement="top" title="{{count}}% {{cat}}"></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <h2 style="text-align: center;">Analysis 2</h2>
+
+        {% include "compare/_info.html" with record=right %}
+
+        <div class="col-md-4">
+            <div style="height: 300px;border: 2px solid #666;">
+                {% for cat, count in right_counts.items %}
+                    <div style="height: {{count}}%" class="{{cat}}" data-toggle="tooltip" data-placement="top" title="{{count}}% {{cat}}"></div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-md-8">
+        </div>
+    </div>
+</div>
+{% endblock %}

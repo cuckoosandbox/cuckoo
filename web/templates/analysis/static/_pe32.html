@@ -1,65 +1,77 @@
 <section id="static_analysis">
     {% if analysis.static %}
         {% if analysis.static.pe_timestamp %}
-        <div>
-            <h4>PE Compile Time</h4>
-            <div class="well">{{analysis.static.pe_timestamp}}</div>
-        </div>
-        <hr />
+            <div>
+                <h4>PE Compile Time</h4>
+                <div class="well">{{analysis.static.pe_timestamp}}</div>
+            </div>
+            <hr />
         {% endif %}
         {% if analysis.static.pe_imphash %}
-        <div>
-            <h4>PE Imphash</h4>
-            <div class="well">{{analysis.static.pe_imphash}}</div>
-        </div>
-        <hr />
+            <div>
+                <h4>PE Imphash</h4>
+                <div class="well">{{analysis.static.pe_imphash}}</div>
+            </div>
+            <hr />
         {% endif %}
         {% if analysis.static.pe_versioninfo %}
-        <div>
-            <h4>Version Infos</h4>
-            <div id="pe_versioninfo">
-                <table class="table table-striped table-bordered">
-                    <colgroup>
-                        <col width="150" />
-                        <col width="*" />
-                    </colgroup>
-                    {% for info in analysis.static.pe_versioninfo %}
-                    <tr>
-                        <th>{{info.name}}</th>
-                        <td><span class="mono">{{info.value}}</span></td>
-                    </tr>
-                    {% endfor %}
-                </table>
+            <div>
+                <h4>Version Infos</h4>
+                <div id="pe_versioninfo">
+                    <table class="table table-striped table-bordered">
+                        <colgroup>
+                            <col width="150" />
+                            <col width="*" />
+                        </colgroup>
+                        {% for info in analysis.static.pe_versioninfo %}
+                            <tr>
+                                <th>{{info.name}}</th>
+                                <td><span class="mono">{{info.value}}</span></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
-        </div>
-        <hr />
+            <hr />
         {% endif %}
-
-        {% if analysis.static.pe_sections %}
-        <div>
-            <h4>Sections</h4>
-            <div id="pe_sections">
-                <table class="table table-striped table-bordered">
-                    <tr>
-                        <th>Name</th>
-                        <th>Virtual Address</th>
-                        <th>Virtual Size</th>
-                        <th>Size of Raw Data</th>
-                        <th>Entropy</th>
-                    </tr>
-                    {% for section in analysis.static.pe_sections %}
-                    <tr>
-                        <td>{{section.name}}</td>
-                        <td>{{section.virtual_address}}</td>
-                        <td>{{section.virtual_size}}</td>
-                        <td>{{section.size_of_data}}</td>
-                        <td>{{section.entropy}}</td>
-                    </tr>
+        {% if analysis.static.peid_signatures %}
+            <div>
+                <h4>PEiD Signatures</h4>
+                <div id="peid_signatures">
+                    <table class="table table-striped table-bordered">
+                    {% for sig in analysis.static.peid_signatures %}
+                        <tr><td>{{sig}}</td></tr>
                     {% endfor %}
-                </table>
+                    </table>
+                </div>
             </div>
-        </div>
-        <hr />
+            <hr />
+        {% endif %}
+        {% if analysis.static.pe_sections %}
+            <div>
+                <h4>Sections</h4>
+                <div id="pe_sections">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Name</th>
+                            <th>Virtual Address</th>
+                            <th>Virtual Size</th>
+                            <th>Size of Raw Data</th>
+                            <th>Entropy</th>
+                        </tr>
+                        {% for section in analysis.static.pe_sections %}
+                            <tr>
+                                <td>{{section.name}}</td>
+                                <td>{{section.virtual_address}}</td>
+                                <td>{{section.virtual_size}}</td>
+                                <td>{{section.size_of_data}}</td>
+                                <td>{{section.entropy}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+            <hr />
         {% endif %}
 
         {% if analysis.static.pe_resources %}
@@ -76,14 +88,14 @@
                         <th>File type</th>
                     </tr>
                     {% for section in analysis.static.pe_resources %}
-                    <tr>
-                        <td>{{section.name}}</td>
-                        <td>{{section.offset}}</td>
-                        <td>{{section.size}}</td>
-                        <td>{{section.language}}</td>
-                        <td>{{section.sublanguage}}</td>
-                        <td>{{section.filetype}}</td>
-                    </tr>
+                        <tr>
+                            <td>{{section.name}}</td>
+                            <td>{{section.offset}}</td>
+                            <td>{{section.size}}</td>
+                            <td>{{section.language}}</td>
+                            <td>{{section.sublanguage}}</td>
+                            <td>{{section.filetype}}</td>
+                        </tr>
                     {% endfor %}
                 </table>
             </div>
@@ -109,25 +121,25 @@
         {% endif %}
 
         {% if analysis.static.pe_exports %}
-        <div>
-            <h4>Exports</h4>
-            <div id="pe_exports">
-                <table class="table table-striped table-bordered">
-                    <tr>
-                        <th>Ordinal</th>
-                        <th>Address</th>
-                        <th>Name</th>
-                    </tr>
-                    {% for export in analysis.static.pe_exports %}
-                    <tr>
-                        <td>{{export.ordinal}}</td>
-                        <td>{{export.address}}</td>
-                        <td>{{export.name}}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
+            <div>
+                <h4>Exports</h4>
+                <div id="pe_exports">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Ordinal</th>
+                            <th>Address</th>
+                            <th>Name</th>
+                        </tr>
+                        {% for export in analysis.static.pe_exports %}
+                            <tr>
+                                <td>{{export.ordinal}}</td>
+                                <td>{{export.address}}</td>
+                                <td>{{export.name}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
-        </div>
         {% endif %}
     {% else %}
         Nothing to display.

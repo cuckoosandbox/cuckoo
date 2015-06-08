@@ -8,7 +8,7 @@ represent a particular malicious behavior or an indicator you're interested in.
 
 These signatures are very useful to give a context to the analyses: both because they
 simplify the interpretation of the results as well as for automatically identifying
-malwares of interest.
+malware samples of interest.
 
 Some examples of what you can use Cuckoo's signatures for:
     * Identify a particular malware family you're interested in by isolating some unique behaviors (like file names or mutexes).
@@ -57,7 +57,7 @@ if there is anything ending with "*.exe*": in that case it will return ``True``,
 the signature matched, otherwise return ``False``.
 
 the function ``on_complete`` is called at the end of the cuckoo signature process.
-Other function will be called before on specific events and help you to write 
+Other function will be called before on specific events and help you to write
 more sophisticated and faster signatures.
 
 In case the signature gets matched, a new entry in the "signatures" section will be added to
@@ -65,15 +65,15 @@ the global container as follows::
 
     "signatures": [
         {
-            "severity": 2, 
-            "description": "Creates a Windows executable on the filesystem", 
-            "alert": false, 
-            "references": [], 
+            "severity": 2,
+            "description": "Creates a Windows executable on the filesystem",
+            "alert": false,
+            "references": [],
             "data": [
                 {
                     "file_name": "C:\\d.exe"
                 }
-            ], 
+            ],
             "name": "creates_exe"
         }
     ]
@@ -181,7 +181,7 @@ In the past every signature was required to loop through the whole collection of
 collected during the analysis. This was necessarily causing some performance issues when such
 collection would be of a large size.
 
-Since 1.2 Cuckoo only supports the so called "evented signatures". The old signatures
+Since 1.3 Cuckoo only supports the so called "evented signatures". The old signatures
 based on the ``run`` function can be ported to using ``on_complete``.
 The main difference is that with this new format, all the signatures will be executed in parallel
 and a callback function called ``on_call()`` will be invoked for each signature within one
@@ -237,44 +237,57 @@ An example signature using this technique is the following:
 
 The inline comments are already self-explanatory.
 
-Another event is triggered when a signature matches. 
+Two helpers have been included in order to specify matching data.
+
+.. function:: Signature.add_match(process, type, match)
+
+    Adds a match to the signature. Can be called several times for the same signature.
+
+    :param process: process dictionary (same as the ``on_call`` argument). Should be ``None`` except when used in evented signatures.
+    :type process: dict
+    :param type: nature of the matching data. Can be anything (ex: ``'file'``, ``'registry'``, etc.). If match is composed of api calls (when used in evented signatures), should be ``'api'``.
+    :type type: string
+    :param match: matching data. Can be a single element or a list of elements. An element can be a string, a dict or an API call (when used in evented signatures).
+
+    Example Usage, with a single element:
 
     .. code-block:: python
         :linenos:
 
-        def on_signature(self, matched_sig):
-            required = ["creates_exe", "badmalware"]
-            for sig in required:
-                if not sig in self.list_signatures():
-                    return
-            return True
+        self.add_match(None, "url", "http://malicious_url_detected.com")
 
-This kind of signature can be used to combine several signatures identifying anomalies into one signature
-classifying the sample (malware alert).
+    Example Usage, with a more complex signature, needing several API calls to be triggered:
 
-Two more events can be used to write more complex signatures. They are called when new processes are processed or new threads.
-``on_process`` and ``on_thread``. They can be used to reset the state of flags when a new process is entered. Allowing
-to write signatures that take into account if a series of events happened in one thread/process or globally.
-
-.. code-block:: python
+    .. code-block:: python
         :linenos:
 
-        def on_process(self, pid):
-            pass
+        self.signs = []
+        self.signs.append(first_api_call)
+        self.signs.append(second_api_call)
+        self.add_match(process, 'api', self.signs)
 
-        def on_thread(self, pid, tid):
-            pass
+.. function:: Signature.has_matches()
 
-Quickout
-========
-Additionally to the filters you can use a quickout function to determine if the
-signature can be matched at all. For example if a signature is written to identify
-behavior of malicious PDFs you could test for the file type to be PDF. Returning ``True`` will
-remove the signature from the list of potential candidates (reducing False Positives and processing time).
+    Checks whether the current signature has any matching data registered. Returns ``True`` in case it does, otherwise returns ``False``.
 
-You can find many more example of signatures in our `community repository`_.
+    This can be used to easily add several matches for the same signature. If you want to do so, make sure that all the api calls are scanned by making sure that ``on_call`` never returns ``True``. Then, use ``on_complete`` with ``has_matches`` so that the signature is triggered if any match was previously added.
 
-.. _`community repository`: https://github.com/cuckoobox/community
+    :rtype: boolean
+
+    Example Usage, from the `network_tor` signature:
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, process):
+            if self.check_argument_call(call,
+                                        pattern="Tor Win32 Service",
+                                        api="CreateServiceA",
+                                        category="services"):
+                self.add_match(process, "api", call)
+
+        def on_complete(self):
+            return self.has_matches()
 
 Helpers
 =======
