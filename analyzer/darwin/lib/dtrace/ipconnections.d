@@ -1,5 +1,9 @@
-#!/usr/sbin/dtrace -s
+#!/usr/sbin/dtrace -C -s
 #pragma D option quiet
+
+#ifndef ANALYSIS_TIMEOUT
+    #define ANALYSIS_TIMEOUT -1
+#endif
 
 dtrace:::BEGIN
 {

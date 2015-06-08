@@ -26,11 +26,9 @@ def ipconnections(target, **kwargs):
 		raise Exception("Invalid target for ipconnections()")
 
     file = NamedTemporaryFile()
-    cmd = ["sudo", "/usr/sbin/dtrace"]
+    cmd = ["sudo", "/usr/sbin/dtrace", "-C"]
     if "timeout" in kwargs:
-        cmd += ["-C", "-DANALYSIS_TIMEOUT=%d" % kwargs["timeout"]]
-    else:
-        cmd += ["-C", "-DANALYSIS_TIMEOUT=-1"]
+        cmd += ["-DANALYSIS_TIMEOUT=%d" % kwargs["timeout"]]
     cmd += ["-s", _ipconnections_path()]
     cmd += ["-o", file.name]
     if "args" in kwargs:
