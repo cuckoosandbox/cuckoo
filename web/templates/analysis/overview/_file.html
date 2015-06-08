@@ -54,7 +54,13 @@
             </tr>
             <tr>
                 <th></th>
-                <td><a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "sample" analysis.target.file_id %}">Download</a></td>
+                <td>
+                {% if analysis.target.file_id %}
+                    <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "sample" analysis.target.file_id %}">Download</a>
+                {% else %}
+                    Sample not found
+                {% endif %}
+                </td>
             </tr>
         </table>
     </div>
