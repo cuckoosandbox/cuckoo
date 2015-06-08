@@ -9,34 +9,46 @@ import os
 import json
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
-from subprocess import check_call
+from subprocess import Popen
+from .fileutils import filelines
 
 connection = namedtuple("connection",
                         "host host_port remote remote_port protocol timestamp")
 
-def ipconnections(target, timeout=None):
+def ipconnections(target, **kwargs):
     """Returns a list of ip connections made by the target.
 
     A connection is a named tuple with the following properties:
     host (string), host_port (int), remote_port (string), protocol (string),
     timestamp(int).
     """
+    if not target:
+		raise Exception("Invalid target for ipconnections()")
+
     file = NamedTemporaryFile()
-    cmd = ["sudo", "/usr/sbin/dtrace",
-           "-C", "-DANALYSIS_TIMEOUT=%d" % (timeout if timeout != None else -1),
-           "-s", _ipconnections_path(),
-           "-c", _sanitize_path(target),
-           "-o", file.name]
+    cmd = ["sudo", "/usr/sbin/dtrace"]
+    if "timeout" in kwargs:
+        cmd += ["-C", "-DANALYSIS_TIMEOUT=%d" % kwargs["timeout"]]
+    else:
+        cmd += ["-C", "-DANALYSIS_TIMEOUT=-1"]
+    cmd += ["-s", _ipconnections_path()]
+    cmd += ["-o", file.name]
+    if "args" in kwargs:
+        line = "%s %s" % (_sanitize_path(target), " ".join(kwargs["args"]))
+        cmd += ["-c", line]
+    else:
+        cmd += ["-c", _sanitize_path(target)]
 
+    # The dtrace script will take care of timeout itself, so we just launch
+    # it asynchronously
     with open(os.devnull, "w") as f:
-        check_call(cmd, stdout=f, stderr=f)
-    output = file.read().splitlines()
-    file.close()
+        handler = Popen(cmd, stdout=f, stderr=f)
 
-    # Skip everything above the ipconnections.d's header
-    header_idx = output.index("## ipconnections.d ##")
-    del output[:header_idx+1]
-    return _parse_ipconnections_output(output)
+    for entry in filelines(file):
+    	if "## ipconnections.d done ##" in entry.strip():
+    		break
+    	yield _parse_single_entry(entry.strip())
+    file.close()
 
 def _sanitize_path(path):
     """ Replace spaces with backslashes+spaces """
@@ -49,11 +61,11 @@ def _ipconnections_path():
 # Parsing implementation details
 #
 
-def _parse_ipconnections_output(output):
-    return map(_parse_single_entry, filter(None, output))
-
 def _parse_single_entry(entry):
+    entry = entry.replace("\\0", "")
+    print entry
     parsed = json.loads(entry)
+
     host        = parsed['host']
     host_port   = parsed['host_port']
     remote      = parsed['remote']
