@@ -1,6 +1,23 @@
 #!/usr/sbin/dtrace -C -s
 #pragma D option quiet
-
+/* ipconnections.d
+ *
+ * Copyright (C) 2015 Dmitry Rodionov
+ * This software may be modified and distributed under the terms
+ * of the MIT license. See the LICENSE file for details.
+ *
+ *
+ * This script prints results in JSON format, where each entry is a dictionary:
+ * {
+ *     host        : string, // e.g. "192.168.0.1"
+ *     host_port   : int,    // e.g. 49812
+ *     remote      : string, // e.g. "8.8.8.8"
+ *     remote_port : int,    // e.g. 80
+ *     protocol    : string, // e.g. "TCP"
+ *     timestamp   : int     // e.g. 1433765405
+ * }
+ *
+ */
 #ifndef ANALYSIS_TIMEOUT
     #define ANALYSIS_TIMEOUT -1
 #endif
