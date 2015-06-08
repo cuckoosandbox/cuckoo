@@ -125,7 +125,7 @@ class Macalyzer:
 		clock = datetime.strptime(clock_str, "%Y%m%dT%H:%M:%S")
 		# NOTE: On OS X there's `date` utility that accepts
 		# new date/time as a string of the folowing format:
-		# {month}{day}{hour}{minute}{year}.{ss}
+		# {month}{day}{hour}{minutes}{year}.{seconds}
 		# where every {x} is a 2 digit number.
 		cmd = "sudo date {0}".format(clock.strftime("%m%d%H%M%y.%S"))
 
