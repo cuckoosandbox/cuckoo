@@ -175,9 +175,15 @@ class Process(object):
             args = [is32bit_exe, "-f", self.shortpath(path)]
 
         try:
-            bitsize = int(subprocess.check_output(args))
-        except subprocess.CalledProcessError as e:
-            raise CuckooError("Error returned by is32bit: %s" % e)
+            subproc = subprocess.Popen(args,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE)
+            output, err = subproc.communicate()
+            if err:
+                raise CuckooError("Error by is32bit: %s" % err)
+            bitsize = int(output)
+        except OSError as e:
+            raise CuckooError("Error by is32bit: %s" % e)
 
         return bitsize == 32
 
