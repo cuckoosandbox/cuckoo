@@ -9,6 +9,8 @@ My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc
 
 ##### Guest machine setup
 
+> You can also use [`bootstrap_guest.sh`](./scripts/bootstrap_guest.sh) script for setting your guest machine up.
+
 
  0. Install `pt_deny_attach` kernel extension suggested by @phretor. That's an optional step, see [this comment](https://github.com/rodionovd/cuckoo-osx-analyzer/issues/6#issuecomment-101322097) for more details.
 
