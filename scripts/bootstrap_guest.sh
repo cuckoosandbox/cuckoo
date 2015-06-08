@@ -24,6 +24,7 @@
 #
 
 AGENT_DIR="/Users/Shared"
+AGENT_URL="https://raw.githubusercontent.com/cuckoobox/cuckoo/master/agent/agent.py"
 
 opt_patch_sudoers=false; opt_install_kext=false;
 while getopts ":sk" opt; do
@@ -57,7 +58,7 @@ fi
 
 # [3] Download agent.py into /Users/Shared
 echo "[INFO]: Downloading the Cuckoo guest agent"
-curl -o "$AGENT_DIR"/agent.py https://raw.githubusercontent.com/cuckoobox/cuckoo/master/agent/agent.py
+curl -o "$AGENT_DIR"/agent.py "$AGENT_URL"
 # [4] and run it
 echo "[INFO]: Launching the Cuckoo guest agent"
 python "$AGENT_DIR"/agent.py
