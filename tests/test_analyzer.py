@@ -14,6 +14,6 @@ class TestAnalyzer(unittest.TestCase):
         # given
         clock_str = "20151203T15:23:43"
         # when
-        result = Macalyzer()._setup_machine_time(clock_str, False)
+        result = Macalyzer()._setup_machine_time(clock_str, dont_really_make_changes=True)
         # then
         assert result == "sudo date 1203152315.43"

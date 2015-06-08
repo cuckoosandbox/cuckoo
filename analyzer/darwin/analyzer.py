@@ -121,7 +121,7 @@ class Macalyzer:
 		timeout = self.config.timeout
 		return package_class(target=self.target, options=options, timeout=timeout)
 
-	def _setup_machine_time(self, clock_str, actually_change_time=True):
+	def _setup_machine_time(self, clock_str, **kwargs):
 		clock = datetime.strptime(clock_str, "%Y%m%dT%H:%M:%S")
 		# NOTE: On OS X there's `date` utility that accepts
 		# new date/time as a string of the folowing format:
@@ -130,8 +130,8 @@ class Macalyzer:
 
 		cmd = "sudo date {0}".format(clock.strftime("%m%d%H%M%y.%S"))
 		# TODO(rodionovd): patch sudoers for nopassword `sudo date`
-		# if actually_change_time:
-		# 	os.system(cmd)
+		if "dont_really_make_changes" not in kwargs:
+			os.system(cmd)
 		return cmd
 
 	def _analysis(self, package):
