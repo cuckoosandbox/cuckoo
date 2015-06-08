@@ -9,7 +9,8 @@
 # ---------
 # This is a bootstrap script for an OS X guest machine. It's able to:
 #   1) Install the anti-antitracing kernel module (aka `pt_deny_attach` kext)
-#   2) Patch /etc/sudoers to allow the user to launch dtrace without a password
+#   2) Patch /etc/sudoers to allow the user to launch `dtrace` and `date`
+#      without a password
 #   3) Load and launch the Cuckoo guest agent (agent.py)
 #
 # Usage
@@ -43,7 +44,7 @@ if [ "$opt_install_kext" == true ]; then
     echo "[WARNING]: pt_deny_attach kext loading is not implemented yet."
 fi
 
-# [2] Patch /etc/sudoers to enable passwordless sudo for dtrace
+# [2] Patch /etc/sudoers to enable passwordless sudo for `dtrace` and `date`
 if [ "$opt_patch_sudoers" == true ]; then
     echo "[INFO]: Patching /etc/sudoers to enable passwordless dtrace for current user"
     user=`whoami`
@@ -53,6 +54,7 @@ if [ "$opt_patch_sudoers" == true ]; then
         # Since `>>` redirect is done by the shell itself and it drops all privileges,
         # we must run this command in a subshell.
         sudo sh -c "echo \"$user\tALL=(root) NOPASSWD: /usr/sbin/dtrace\" >> /etc/sudoers"
+        sudo sh -c "echo \"$user\tALL=(root) NOPASSWD: /bin/date\" >> /etc/sudoers"
     fi
 fi
 

@@ -127,9 +127,8 @@ class Macalyzer:
 		# new date/time as a string of the folowing format:
 		# {month}{day}{hour}{minute}{year}.{ss}
 		# where every {x} is a 2 digit number.
-
 		cmd = "sudo date {0}".format(clock.strftime("%m%d%H%M%y.%S"))
-		# TODO(rodionovd): patch sudoers for nopassword `sudo date`
+
 		if "dont_really_make_changes" not in kwargs:
 			os.system(cmd)
 		return cmd
