@@ -59,7 +59,6 @@ profile:::tick-1sec
 profile:::tick-1sec
 / countdown == 0 /
 {
-    printf("## ipconnections.d done ##");
     exit(0);
 }
 

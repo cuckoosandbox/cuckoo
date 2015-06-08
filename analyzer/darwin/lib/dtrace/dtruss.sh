@@ -827,7 +827,6 @@ dtrace='
  profile:::tick-1sec
  /OPT_timeout && TIMEOUT == 0/
  {
-     printf("## dtruss.sh done ##");
      exit(0);
  }
 
