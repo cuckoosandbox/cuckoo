@@ -17,26 +17,38 @@ log = logging.getLogger(__name__)
 
 QEMU_ARGS = {
     "default": {
-        "args": {
-            "-display": "none",
-            "-m": "1024M",
-            "-smp": "cpus=2",
-            "-hda": "{snapshot_path}", # will be replaced with the real thing
-            "-netdev": "bridge,id=net1,br=qemubr",
-            "-device": "virtio-net-pci,romfile=,netdev=net1",
-        }
+        "cmdline": ["qemu-system-x86_64", "-display", "none"],
+        "params": {
+            "memory": "512M",
+            "mac": "52:54:00:12:34:56",
+            "kernel": "vmlinuz",
+            "kernel_path": "{imagepath}/{kernel}"
+        },
     },
     "mipsel": {
-        "binary": "qemu-system-mipsel",
-        "kernel": "vmlinux-3.2.0-4-4kc-malta",
-        "args": {
-            "-M": "malta",
-            "-smp": "cpus=1",
-            "-append": "root=/dev/sda1 console=tty0",
-            "-device": "e1000,netdev=net1", # virtio-net-pci doesn't work here
-            "-kernel": "{imagepath}/{kernel}", # we assume the kernel is in the same place as the hdd image
+        "cmdline": ["qemu-system-mipsel", "-display", "none", "-M", "malta", "-m", "{memory}",
+                    "-kernel", "{kernel_path}",
+                    "-hda","{snapshot_path}",
+                    "-append", "root=/dev/sda1 console=tty0",
+                    "-netdev", "bridge,id=net_{vmname},br={bridge_interface}",
+                    "-device", "e1000,netdev=net_{vmname},mac={mac}", # virtio-net-pci doesn't work here
+        ],
+        "params": {
+            "kernel": "vmlinux-3.2.0-4-4kc-malta",
         }
-    }
+    },
+    "arm": {
+        "cmdline": ["qemu-system-arm", "-display", "none", "-M", "realview-eb-mpcore", "-m", "{memory}",
+                    "-kernel", "{kernel_path}",
+                    "-drive", "if=sd,cache=unsafe,file={snapshot_path}",
+                    "-append", "console=ttyAMA0 root=/dev/mmcblk0 rootwait",
+                    "-net", "tap,ifname=taparm", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+                    "-nographic"
+        ],
+        "params": {
+            "kernel": "openwrt-realview-vmlinux.elf",
+        }
+    },
 }
 
 class QEMU(Machinery):
@@ -91,38 +103,34 @@ class QEMU(Machinery):
             raise CuckooMachineError("QEMU failed starting the machine: %s" % e)
 
         vm_arch = getattr(vm_options, "arch", "default")
-        qemu_args_config = dict(QEMU_ARGS[vm_arch])
-        qemu_args_config["args"] = dict(QEMU_ARGS["default"]["args"])
-        qemu_args_config["args"].update(QEMU_ARGS[vm_arch]["args"])
+        arch_config = dict(QEMU_ARGS[vm_arch])
+        cmdline = arch_config["cmdline"]
+        params = dict(QEMU_ARGS["default"]["params"])
+        params.update(QEMU_ARGS[vm_arch]["params"])
 
-        format_params = {
+        params.update({
             "imagepath": os.path.dirname(vm_options.image),
-            "kernel": qemu_args_config.get("kernel", ""),
             "snapshot_path": snapshot_path,
-        }
+            "bridge_interface": vm_options.bridge_interface or "qemubr",
+            "vmname": vm_info.name,
+        })
 
-        if vm_options.kernel:
-            qemu_args_config["args"]["-kernel"] = vm_options.kernel.format(**format_params)
+        # a bit awkward pre-formatting
+        if vm_options.kernel_path:
+            params["kernel_path"] = vm_options.kernel_path.format(**params)
+        else:
+            params["kernel_path"] = params["kernel_path"].format(**params)
 
         if vm_options.mac:
-            qemu_args_config["args"]["-device"] += ",mac=%s" % vm_options.mac
-
-        # replace net1 with the vm name, there's something funky when qemu runs several vms with the same id there
-        qemu_args_config["args"]["-netdev"] = qemu_args_config["args"]["-netdev"].replace("id=net1", "id=%s" % vm_info.name)
-        qemu_args_config["args"]["-device"] = qemu_args_config["args"]["-device"].replace("netdev=net1", "netdev=%s" % vm_info.name)
-
-        if "binary" in qemu_args_config:
-            qemu_binary = os.path.join(self.qemu_dir, qemu_args_config["binary"])
-        else:
-            qemu_binary = self.options.qemu.path
+            params["mac"] = vm_options.mac
 
         # magic arg building
-        qemu_args = [qemu_binary,] + reduce(lambda x,y: x + [y[0], y[1].format(**format_params)], qemu_args_config["args"].iteritems(), [])
+        final_cmdline = [i.format(**params) for i in cmdline]
 
-        log.debug("Executing QEMU %r", qemu_args)
+        log.debug("Executing QEMU %r", final_cmdline)
 
         try:
-            proc = subprocess.Popen(qemu_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            proc = subprocess.Popen(final_cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             self.state[vm_info.name] = proc
         except OSError as e:
             raise CuckooMachineError("QEMU failed starting the machine: %s" % e)
