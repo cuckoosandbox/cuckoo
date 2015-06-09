@@ -30,7 +30,7 @@ QEMU_ARGS = {
                     "-kernel", "{kernel_path}",
                     "-hda","{snapshot_path}",
                     "-append", "root=/dev/sda1 console=tty0",
-                    "-netdev", "bridge,id=net_{vmname},br={bridge_interface}",
+                    "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname}",
                     "-device", "e1000,netdev=net_{vmname},mac={mac}", # virtio-net-pci doesn't work here
         ],
         "params": {
@@ -42,7 +42,7 @@ QEMU_ARGS = {
                     "-kernel", "{kernel_path}",
                     "-drive", "if=sd,cache=unsafe,file={snapshot_path}",
                     "-append", "console=ttyAMA0 root=/dev/mmcblk0 rootwait",
-                    "-net", "tap,ifname=taparm", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+                    "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
                     "-nographic"
         ],
         "params": {
