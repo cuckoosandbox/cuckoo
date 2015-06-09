@@ -237,6 +237,10 @@ class Analyzer:
                     # ask the package if it knows any new pids
                     add_pids(pack.get_pids())
 
+                    # also ask the auxiliaries
+                    for aux in aux_avail:
+                        add_pids(aux.get_pids())
+
                     # If none of the monitored processes are still alive, we
                     # can terminate the analysis.
                     if not PROCESS_LIST:

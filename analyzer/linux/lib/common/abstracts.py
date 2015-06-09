@@ -64,5 +64,11 @@ class Package(object):
 
         return True
 
+    def get_pids(self):
+        return []
+
 class Auxiliary(object):
     priority = 0
+
+    def get_pids(self):
+        return []

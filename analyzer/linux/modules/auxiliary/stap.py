@@ -20,6 +20,7 @@ class STAP(Auxiliary):
 
     def __init__(self):
         self.config = Config(cfg="analysis.conf")
+        self.fallback_strace = False
 
     def start(self):
         # helper function locating the stap module
@@ -68,7 +69,13 @@ class STAP(Auxiliary):
         except: pass # don't worry
 
         self.proc = subprocess.Popen(["strace", "-ff", "-o", "strace/straced", "-p", str(os.getpid())])
+        self.fallback_strace = True
         return True
+
+    def get_pids(self):
+        if self.fallback_strace:
+            return [self.proc.pid, ]
+        return []
 
     def stop(self):
         try:
@@ -88,12 +95,11 @@ class STAP(Auxiliary):
             nf.close()
 
         # in case we fell back to strace
-        elif os.path.exists("strace"):
-            # we don't need the logs from the analyzer python process itself
-            if os.path.exists("strace/straced.%u" % os.getpid()):
-                os.remove("strace/straced.%u" % os.getpid())
-
+        if os.path.exists("strace"):
             for fn in os.listdir("strace"):
+                # we don't need the logs from the analyzer python process itself
+                if fn == "straced.%u" % os.getpid(): continue
+
                 fp = os.path.join("strace", fn)
 
                 # now upload the logfile
