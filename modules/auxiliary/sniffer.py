@@ -80,6 +80,7 @@ class Sniffer(Auxiliary):
         if bpf:
             pargs.extend(["and", bpf])
 
+        log.debug("Sniffer command line: %r", pargs)
         try:
             self.proc = subprocess.Popen(pargs, stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE)
