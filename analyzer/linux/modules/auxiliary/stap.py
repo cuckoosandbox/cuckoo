@@ -94,7 +94,7 @@ class STAP(Auxiliary):
                 os.remove("strace/straced.%u" % os.getpid())
 
             for fn in os.listdir("strace"):
-                fp = os.path.join("strace", fp)
+                fp = os.path.join("strace", fn)
 
                 # now upload the logfile
                 nf = NetlogFile("logs/%s" % fn)
