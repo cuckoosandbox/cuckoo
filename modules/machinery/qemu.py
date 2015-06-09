@@ -34,7 +34,19 @@ QEMU_ARGS = {
                     "-device", "e1000,netdev=net_{vmname},mac={mac}", # virtio-net-pci doesn't work here
         ],
         "params": {
-            "kernel": "vmlinux-3.2.0-4-4kc-malta",
+            "kernel": "vmlinux-3.2.0-4-4kc-malta-mipsel",
+        }
+    },
+    "mips": {
+        "cmdline": ["qemu-system-mips", "-display", "none", "-M", "malta", "-m", "{memory}",
+                    "-kernel", "{kernel_path}",
+                    "-hda","{snapshot_path}",
+                    "-append", "root=/dev/sda1 console=tty0",
+                    "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname}",
+                    "-device", "e1000,netdev=net_{vmname},mac={mac}", # virtio-net-pci doesn't work here
+        ],
+        "params": {
+            "kernel": "vmlinux-3.2.0-4-4kc-malta-mips",
         }
     },
     "arm": {
