@@ -13,7 +13,8 @@ from sys import argv
 from collections import namedtuple
 from subprocess import Popen
 from tempfile import NamedTemporaryFile
-from .fileutils import filelines
+
+from common import *
 
 syscall = namedtuple("syscall", "name args result errno timestamp pid")
 
@@ -30,7 +31,7 @@ def dtruss(target, **kwargs):
 
 	file = NamedTemporaryFile()
 
-	cmd = ["/bin/bash", _dtruss_script_path(), "-W", file.name, "-f"]
+	cmd = ["/bin/bash", path_for_script("dtruss.sh"), "-W", file.name, "-f"]
 	# Add timeout
 	if ("timeout" in kwargs) and (kwargs["timeout"] is not None):
 		cmd += ["-K", str(kwargs["timeout"])]
@@ -51,7 +52,7 @@ def dtruss(target, **kwargs):
 	if not run_as_root:
 		cmd += ["sudo", "-u", getuser()]
 	# Add target path
-	cmd += [_sanitize_target_path(target)]
+	cmd += [sanitize_path(target)]
 	# Arguments for the target
 	if "args" in kwargs:
 		cmd += kwargs["args"]
@@ -79,12 +80,6 @@ def dtruss(target, **kwargs):
 
 	file.close()
 
-def _sanitize_target_path(path):
-    return path.replace(" ", "\\ ")
-
-def _dtruss_script_path():
-    return os.path.dirname(os.path.abspath(__file__)) + "/dtruss.sh"
-
 #
 # Parsing implementation details
 #
@@ -105,6 +100,11 @@ def _parse_syscall(string):
 
 	return syscall(name=name, args=args, result=result, errno=errno, pid=pid,
 	               timestamp=timestamp)
+
+
+#
+# Standalone app
+#
 
 if __name__ == "__main__":
 	if len(argv) < 2:

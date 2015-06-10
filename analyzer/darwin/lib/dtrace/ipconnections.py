@@ -7,10 +7,11 @@
 
 import os
 import json
+from common import *
+from subprocess import Popen
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
-from subprocess import Popen
-from .fileutils import filelines
+
 
 connection = namedtuple("connection",
                         "host host_port remote remote_port protocol timestamp, pid")
@@ -29,13 +30,13 @@ def ipconnections(target, **kwargs):
     cmd = ["sudo", "/usr/sbin/dtrace", "-C"]
     if "timeout" in kwargs:
         cmd += ["-DANALYSIS_TIMEOUT=%d" % kwargs["timeout"]]
-    cmd += ["-s", _ipconnections_path()]
+    cmd += ["-s", path_for_script("ipconnections.d")]
     cmd += ["-o", file.name]
     if "args" in kwargs:
-        line = "%s %s" % (_sanitize_path(target), " ".join(kwargs["args"]))
+        line = "%s %s" % (sanitize_path(target), " ".join(kwargs["args"]))
         cmd += ["-c", line]
     else:
-        cmd += ["-c", _sanitize_path(target)]
+        cmd += ["-c", sanitize_path(target)]
 
     # The dtrace script will take care of timeout itself, so we just launch
     # it asynchronously
@@ -47,13 +48,6 @@ def ipconnections(target, **kwargs):
     		break
     	yield _parse_single_entry(entry.strip())
     file.close()
-
-def _sanitize_path(path):
-    """ Replace spaces with backslashes+spaces """
-    return path.replace(" ", "\\ ")
-
-def _ipconnections_path():
-    return os.path.dirname(os.path.abspath(__file__)) + "/ipconnections.d"
 
 #
 # Parsing implementation details
@@ -71,6 +65,10 @@ def _parse_single_entry(entry):
     timestamp   = parsed['timestamp']
     pid         = parsed['pid']
     return connection(host, host_port, remote, remote_port, protocol, timestamp, pid)
+
+#
+# Standalone app
+#
 
 if __name__ == "__main__":
     pass
