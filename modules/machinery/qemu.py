@@ -15,6 +15,11 @@ from lib.cuckoo.common.exceptions import CuckooMachineError
 
 log = logging.getLogger(__name__)
 
+# this whole semi-hardcoded commandline thing is not the best
+#  but in the config files we can't do arrays etc so we'd have to parse the
+#  configured commandlines somehow and then fill in some more things
+#  anyways, if someone has a cleaner suggestion for this, let me know
+#  -> for now, just modify this to your needs
 QEMU_ARGS = {
     "default": {
         "cmdline": ["qemu-system-x86_64", "-display", "none"],
@@ -49,7 +54,7 @@ QEMU_ARGS = {
             "kernel": "vmlinux-3.2.0-4-4kc-malta-mips",
         }
     },
-    "arm": {
+    "armwrt": {
         "cmdline": ["qemu-system-arm", "-display", "none", "-M", "realview-eb-mpcore", "-m", "{memory}",
                     "-kernel", "{kernel_path}",
                     "-drive", "if=sd,cache=unsafe,file={snapshot_path}",
@@ -59,6 +64,18 @@ QEMU_ARGS = {
         ],
         "params": {
             "kernel": "openwrt-realview-vmlinux.elf",
+        }
+    },
+    "arm": {
+        "cmdline": ["qemu-system-arm", "-display", "none", "-M", "versatilepb", "-m", "{memory}",
+                    "-kernel", "{kernel_path}", "-initrd", "initrd.img-3.2.0-4-versatile-arm",
+                    "-hda", "{snapshot_path}",
+                    "-append", "console=ttyAMA0 root=/dev/sda1",
+                    "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+                    "-nographic"
+        ],
+        "params": {
+            "kernel": "vmlinuz-3.2.0-4-versatile-arm",
         }
     },
 }
