@@ -112,3 +112,24 @@ class TestDtruss(DtraceTestCase):
 		matched = [x for x in output if x.name == expected_syscall and x.args == expected_args and x.result == expected_result and x.errno == expected_errno]
 
 		assert len(matched) == 1
+
+
+	def test_dtruss_children(self):
+		# given
+		expected_child_syscall  = ("write", [1, "Hello from child!\n", 18], 18)
+		expected_parent_syscall = ("write", [1, "Hello, I'm parent!\n", 19], 19)
+		pids = Set()
+		output = []
+		# when
+		for call in dtruss(self.current_target()):
+			output.append(call)
+			pids.add(call.pid)
+		# then
+		assert len(pids) == 2
+
+		matched_child = [x for x in output if (x.name, x.args, x.result) == expected_child_syscall]
+		matched_parent = [x for x in output if (x.name, x.args, x.result) == expected_parent_syscall]
+
+		assert len(matched_child) == 1
+		assert len(matched_parent) == 1
+		assert (matched_parent[0].pid < matched_child[0].pid)
