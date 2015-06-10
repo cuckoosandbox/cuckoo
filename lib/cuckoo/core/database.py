@@ -114,7 +114,7 @@ class Tag(Base):
     __tablename__ = "tags"
 
     id = Column(Integer(), primary_key=True)
-    name = Column(String(255), nullable=False, unique=True)
+    name = Column(String(255), nullable=False, unique=False)
 
     def __repr__(self):
         return "<Tag('{0}','{1}')>".format(self.id, self.name)
@@ -411,19 +411,6 @@ class Database(object):
                                         "import %s (install with `pip "
                                         "install %s`)" % (lib, lib))
 
-    def _get_or_create(self, session, model, **kwargs):
-        """Get an ORM instance or create it if not exist.
-        @param session: SQLAlchemy session object
-        @param model: model to query
-        @return: row instance
-        """
-        instance = session.query(model).filter_by(**kwargs).first()
-        if instance:
-            return instance
-        else:
-            instance = model(**kwargs)
-            return instance
-
     @classlock
     def drop(self):
         """Drop all tables."""
@@ -476,7 +463,7 @@ class Database(object):
         if tags:
             for tag in tags.split(","):
                 if tag.strip():
-                    tag = self._get_or_create(session, Tag, name=tag.strip())
+                    tag = Tag(name=tag.strip())
                     machine.tags.append(tag)
         session.add(machine)
 
@@ -849,7 +836,7 @@ class Database(object):
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
             for tag in tags.split(","):
-                tag = self._get_or_create(session, Tag, name=tag.strip())
+                tag = Tag(name=tag.strip())
                 task.tags.append(tag)
 
         if clock:
