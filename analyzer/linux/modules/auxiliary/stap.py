@@ -66,9 +66,10 @@ class STAP(Auxiliary):
 
     def start_strace(self):
         try: os.mkdir("strace")
-        except: pass # don't worry
+        except: pass # don't worry, it exists
 
-        self.proc = subprocess.Popen(["strace", "-ff", "-o", "strace/straced", "-p", str(os.getpid())])
+        stderrfd = open("strace/strace.stderr", "wb")
+        self.proc = subprocess.Popen(["strace", "-ff", "-o", "strace/straced", "-p", str(os.getpid())], stderr=stderrfd)
         self.fallback_strace = True
         return True
 
