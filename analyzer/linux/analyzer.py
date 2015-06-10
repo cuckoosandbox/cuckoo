@@ -31,6 +31,7 @@ PID = os.getpid()
 FILES_LIST = set()
 DUMPED_LIST = set()
 PROCESS_LIST = set()
+SEEN_LIST = set()
 PPID = Process(pid=PID).get_parent_pid()
 
 def add_pids(pids):
@@ -40,7 +41,9 @@ def add_pids(pids):
 
     for pid in pids:
         log.info("Added new process to list with pid: %s", pid)
-        PROCESS_LIST.add(int(pid))
+        pid = int(pid)
+        if not pid in SEEN_LIST: PROCESS_LIST.add(pid)
+        SEEN_LIST.add(pid)
 
 def dump_files():
     """Dump all the dropped files."""
