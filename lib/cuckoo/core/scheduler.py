@@ -118,16 +118,22 @@ class AnalysisManager(Thread):
                           "analysis aborted", self.task.target, self.binary)
                 return False
 
-        try:
-            new_binary_path = os.path.join(self.storage, "binary")
-
-            if hasattr(os, "symlink"):
+        new_binary_path = os.path.join(self.storage, "binary")
+        copied = False
+        if hasattr(os, "symlink"):
+            try:
                 os.symlink(self.binary, new_binary_path)
-            else:
+                copied = True
+            except OSError as e:
+                if e.errno != 30:
+                    log.error("Unable to create symlink from \"%s\" to "
+                              "\"%s\": %s", self.binary, self.storage, e)
+        if not copied:
+            try:
                 shutil.copy(self.binary, new_binary_path)
-        except (AttributeError, OSError) as e:
-            log.error("Unable to create symlink/copy from \"%s\" to "
-                      "\"%s\": %s", self.binary, self.storage, e)
+            except (AttributeError, OSError) as e:
+                log.error("Unable to create symlink/copy from \"%s\" to "
+                          "\"%s\": %s", self.binary, self.storage, e)
 
         return True
 
