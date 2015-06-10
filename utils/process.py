@@ -24,16 +24,15 @@ from lib.cuckoo.core.database import Task, TASK_FAILED_PROCESSING
 from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from lib.cuckoo.core.startup import init_modules, drop_privileges
 
+# We keep a reporting queue with at most a few hundred entries.
 QUEUE_THRESHOLD = 128
 
-def process(task_id, target=None, copy_path=None, report=False, auto=False):
-    assert isinstance(task_id, int)
-
-    results = RunProcessing(task_id=task_id).run()
+def process(target=None, copy_path=None, task=None, report=False, auto=False):
+    results = RunProcessing(task=task).run()
     RunSignatures(results=results).run()
 
     if report:
-        RunReporting(task_id=task_id, results=results).run()
+        RunReporting(task=task, results=results).run()
 
         if auto:
             if cfg.cuckoo.delete_original and os.path.exists(target):
@@ -138,8 +137,8 @@ def autoprocess(parallel=1):
                 else:
                     copy_path = None
 
-                args = int(task.id), task.target, copy_path
-                kwargs = dict(report=True, auto=True)
+                args = task.target, copy_path
+                kwargs = dict(report=True, auto=True, task=task.to_dict())
                 result = pool.apply_async(process_wrapper, args, kwargs)
                 pending_results[task.id] = result
     except KeyboardInterrupt:
@@ -175,7 +174,8 @@ def main():
     if args.id == "auto":
         autoprocess(parallel=args.parallel)
     else:
-        process(int(args.id), report=args.report)
+        task = Database().view_task(int(args.id))
+        process(task=task.to_dict(), report=args.report)
 
 if __name__ == "__main__":
     cfg = Config()

@@ -19,7 +19,6 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooProcessingError
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
-from lib.cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
 
@@ -135,10 +134,10 @@ class RunProcessing(object):
     is then passed over the reporting engine.
     """
 
-    def __init__(self, task_id):
-        """@param task_id: ID of the analyses to process."""
-        self.task = Database().view_task(task_id).to_dict()
-        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
+    def __init__(self, task):
+        """@param task: task dictionary of the analysis to process."""
+        self.task = task
+        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]))
         self.cfg = Config("processing")
 
     def process(self, module, results):
@@ -497,11 +496,11 @@ class RunReporting:
     Engine and pass it over to the reporting modules before executing them.
     """
 
-    def __init__(self, task_id, results):
+    def __init__(self, task, results):
         """@param analysis_path: analysis folder path."""
-        self.task = Database().view_task(task_id).to_dict()
+        self.task = task
         self.results = results
-        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
+        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]))
         self.cfg = Config("reporting")
 
     def process(self, module):
