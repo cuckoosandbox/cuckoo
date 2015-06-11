@@ -142,7 +142,7 @@ class Machinery(object):
                                     resultserver_port=port)
             except (AttributeError, CuckooOperationalError) as e:
                 log.warning("Configuration details about machine %s "
-                            "are missing: %s", machine_id, e)
+                            "are missing: %s", machine.id, e)
                 continue
 
     def _initialize_check(self):
