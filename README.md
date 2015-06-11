@@ -1,4 +1,5 @@
 # cuckoo-osx-analyzer
+[![Build Status](https://travis-ci.org/rodionovd/cuckoo-osx-analyzer.svg?branch=master)](https://travis-ci.org/rodionovd/cuckoo-osx-analyzer)  
 My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc2015/rodionovd/5649050225344512) aiming at building an OS X analyzer for [Cuckoo Sandbox](http://www.cuckoosandbox.org/) project.  
 
 :warning: **WIP** :warning:  
