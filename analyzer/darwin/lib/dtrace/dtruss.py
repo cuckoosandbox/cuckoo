@@ -22,7 +22,7 @@ def dtruss(target, **kwargs):
 	"""Returns a list of syscalls made by a target.
 
 	Every syscall is a named tuple with the following properties:
-	name (string), args (list of strings), result (int), errno (int),
+	name (string), args (list), result (int), errno (int),
 	timestamp(int) and pid(int).
 	"""
 
