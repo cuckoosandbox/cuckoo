@@ -11,10 +11,6 @@ from sets import Set
 from common import DtraceTestCase
 from analyzer.darwin.lib.dtrace.apicalls import *
 
-
-# TODO(rodionovd): add assets for these tests
-# TODO(rodionovd): run tests
-
 class TestAPICalls(DtraceTestCase):
 
     def test_apicalls_basic(self):
