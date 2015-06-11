@@ -8,14 +8,14 @@
 
 int main(int argc, char *argv[])
 {
-	write(1, "Hello, I'm parent!\n", 19);
+	write(1, "Hello, I'm parent!", 18);
 
 	pid_t child = fork();
 	assert(child >= 0);
 
 	if (child == 0) {
 		// child
-		write(1, "Hello from child!\n", 18);
+		write(1, "Hello from child!", 17);
 	} else {
 		// parent
 		printf("Hello again from the parent! My child is %d\n", child);

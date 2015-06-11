@@ -96,10 +96,7 @@ class TestDtruss(DtraceTestCase):
 
 	def test_dtruss_non_root(self):
 		# given
-		expected_syscall = 'write_nocancel'
-		expected_args = [1, 'Hello, user!\n', 0xD]
-		expected_result = 0xD
-		expected_errno =  0
+		expected_syscall = ('write_nocancel', [1, 'Hello, user!\n', 0xD], 0xD, 0)
 		pids = Set()
 		output = []
 		# when
@@ -109,15 +106,14 @@ class TestDtruss(DtraceTestCase):
 		# then
 		assert len(pids) == 1
 
-		matched = [x for x in output if x.name == expected_syscall and x.args == expected_args and x.result == expected_result and x.errno == expected_errno]
-
+		matched = [x for x in output if (x.name, x.args, x.result, x.errno) == expected_syscall]
 		assert len(matched) == 1
 
 
 	def test_dtruss_children(self):
 		# given
-		expected_child_syscall  = ("write", [1, "Hello from child!\n", 18], 18)
-		expected_parent_syscall = ("write", [1, "Hello, I'm parent!\n", 19], 19)
+		expected_child_syscall  = ("write", [1, "Hello from child!", 17], 17)
+		expected_parent_syscall = ("write", [1, "Hello, I'm parent!", 18], 18)
 		pids = Set()
 		output = []
 		# when
