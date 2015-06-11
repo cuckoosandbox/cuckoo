@@ -1,0 +1,8 @@
+language:
+- objective-c
+install:
+    - brew install python
+    - brew link --overwrite python
+    - python --version
+    - pip install nose
+script: nosetests
