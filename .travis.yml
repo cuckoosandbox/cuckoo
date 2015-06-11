@@ -1,5 +1,5 @@
 language:
-- objective-c
+- objective-c # make it run on OS X workers *only*
 install:
     - brew install python
     - brew link --overwrite python
