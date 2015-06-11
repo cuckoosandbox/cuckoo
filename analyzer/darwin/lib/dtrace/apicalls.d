@@ -14,50 +14,88 @@
  *     timestamp   : integer,           // e.g. 1433765405
  *     pid         : integer            // e.g. 9213
  * }
+ * TODO(rodionovd): follow children
  *
  */
+
+#define SCRIPT "apicalls.d"
 
 #ifndef ANALYSIS_TIMEOUT
     #define ANALYSIS_TIMEOUT (-1)
 #endif
 
 #pragma mark -
- dtrace:::BEGIN
+
+dtrace:::BEGIN
  {
      countdown = ANALYSIS_TIMEOUT;
 
      self->deeplevel = 0;
-     self->arg0 = (int64_t)0;
-     self->arg1 = (int64_t)0;
-     self->arg2 = (int64_t)0;
-     self->arg3 = (int64_t)0;
-     self->arg4 = (int64_t)0;
-     self->arg5 = (int64_t)0;
-     self->arg6 = (int64_t)0;
-     self->arg7 = (int64_t)0;
+     self->arg0  = (int64_t)0;
+     self->arg1  = (int64_t)0;
+     self->arg2  = (int64_t)0;
+     self->arg3  = (int64_t)0;
+     self->arg4  = (int64_t)0;
+     self->arg5  = (int64_t)0;
+     self->arg6  = (int64_t)0;
+     self->arg7  = (int64_t)0;
+     self->arg8  = (int64_t)0;
+     self->arg9  = (int64_t)0;
+     self->arg10 = (int64_t)0;
+     self->arg11 = (int64_t)0;
  }
 
- profile:::tick-1sec
- /countdown > 0/
+profile:::tick-1sec
+/countdown > 0/
 {
     --countdown;
 }
 
- profile:::tick-1sec
- / countdown == 0 /
- {
-     exit(0);
- }
+profile:::tick-1sec
+/ countdown == 0 /
+{
+    exit(0);
+}
 
- dtrace:::END
- {
-     printf("## apicalls.d done ##");
- }
+dtrace:::END
+{
+    printf("## %s done ##", SCRIPT);
+}
 
 /* ******* **************************** ******* */
 self int64_t arguments_stack[unsigned long, string];
 self deeplevel;
 /* ******* **************************** ******* */
+
+#pragma mark - Probes
+
+#pragma mark Entry probes
+
+/* One argument */
+pid$target::system:entry,
+pid$target::printf:entry,
+pid$target::strlen:entry
+{
+    self->deeplevel++;
+    /* Save the arguments we've already got for our callee */
+    self->arguments_stack[self->deeplevel, "arg0"] = self->arg0;
+    /* And remember our own arguments */
+    self->arg0 = arg0;
+}
+
+/* Two arguments */
+pid$target:libsystem_malloc:malloc:entry,
+pid$target:libdyld:dlopen:entry,
+pid$target:libdyld:dlsym:entry
+{
+    ++self->deeplevel;
+    self->arguments_stack[self->deeplevel, "arg0"] = self->arg0;
+    self->arguments_stack[self->deeplevel, "arg1"] = self->arg1;
+    self->arg0 = arg0;
+    self->arg1 = arg1;
+}
+
+#pragma mark Return probes
 
 /* No arguments, retval: int */
 pid$target::fork:return
@@ -69,19 +107,7 @@ pid$target::fork:return
         this->timestamp, pid);
 }
 
-/* One argument */
-pid$target::system:entry,
-pid$target::printf:entry,
-pid$target::strlen:entry
-{
-    self->deeplevel++;
-    /* Save the arguments we already have for our callee */
-    self->arguments_stack[self->deeplevel, "arg0"] = self->arg0;
-    /* And remember our own arguments */
-    self->arg0 = arg0;
-}
-
-/* One argument: char *, return value: int */
+/* One argument: char *, retval: int */
 pid$target::system:return,
 pid$target::printf:return,
 pid$target::strlen:return
@@ -98,17 +124,6 @@ pid$target::strlen:return
     /* Release the memory for the current level stack */
     self->arguments_stack[self->deeplevel, "arg0"] = 0;
     --self->deeplevel;
-}
-
-pid$target:libsystem_malloc:malloc:entry,
-pid$target:libdyld:dlopen:entry,
-pid$target:libdyld:dlsym:entry
-{
-    ++self->deeplevel;
-    self->arguments_stack[self->deeplevel, "arg0"] = self->arg0;
-    self->arguments_stack[self->deeplevel, "arg1"] = self->arg1;
-    self->arg0 = arg0;
-    self->arg1 = arg1;
 }
 
 /* One argument: [size_t], retval: void* */
@@ -145,7 +160,7 @@ pid$target:libdyld:dlopen:return
     --self->deeplevel;
 }
 
-/* Two argument: [void*, char *], retval: void* */
+/* Two arguments: [void*, char *], retval: void* */
 pid$target::dlsym:return
 {
     this->timestamp = walltimestamp / 1000000000;
