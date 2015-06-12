@@ -63,4 +63,4 @@ class ESX(LibVirtMachinery):
         pass            
         
     def __del__(self):
-        self.global_disconnect()
+        self.global_conn.close()
