@@ -3,21 +3,21 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import argparse
-import json
 import os
-import socket
 import sys
+import socket
 import tarfile
+import argparse
 from datetime import datetime
 from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
 
 try:
-    from bottle import route, run, request, hook, response, HTTPError
-    from bottle import default_app
+    from flask import Flask
+    from flask import render_template as template
+    from flask import request, make_response, jsonify, abort
 except ImportError:
-    sys.exit("ERROR: Bottle.py library is missing")
+    sys.exit("ERROR: Flask library is missing (`pip install flask`)")
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
@@ -26,19 +26,14 @@ from lib.cuckoo.common.utils import store_temp_file, delete_folder
 from lib.cuckoo.core.database import Database, TASK_RUNNING, Task
 from lib.cuckoo.core.startup import drop_privileges
 
-# Global DB pointer.
+# Global Database object.
 db = Database()
 
-def jsonize(data):
-    """Converts data dict to JSON.
-    @param data: data dict
-    @return: JSON formatted data
-    """
-    response.content_type = "application/json; charset=UTF-8"
-    return json.dumps(data, sort_keys=False, indent=4)
+# Initialize Flask app.
+app = Flask(__name__)
 
-@hook("after_request")
-def custom_headers():
+@app.after_request
+def custom_headers(response):
     """Set some custom headers across all HTTP responses."""
     response.headers["Server"] = "Machete Server"
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -48,11 +43,11 @@ def custom_headers():
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Expires"] = "0"
 
-@route("/tasks/create/file", method="POST")
-@route("/v1/tasks/create/file", method="POST")
-def tasks_create_file():
-    response = {}
+    return response
 
+@app.route("/tasks/create/file", methods=["POST",])
+@app.route("/v1/tasks/create/file", methods=["POST",])
+def tasks_create_file():
     data = request.files.file
     package = request.forms.get("package", "")
     timeout = request.forms.get("timeout", "")
@@ -65,6 +60,7 @@ def tasks_create_file():
     owner = request.forms.get("owner", "")
     memory = request.forms.get("memory", False)
     clock = request.forms.get("clock", None)
+
     if memory:
         memory = True
     enforce_timeout = request.forms.get("enforce_timeout", False)
@@ -88,14 +84,11 @@ def tasks_create_file():
         clock=clock
     )
 
-    response["task_id"] = task_id
-    return jsonize(response)
+    return jsonify(task_id=task_id)
 
-@route("/tasks/create/url", method="POST")
-@route("/v1/tasks/create/url", method="POST")
+@app.route("/tasks/create/url", methods=["POST",])
+@app.route("/v1/tasks/create/url", methods=["POST",])
 def tasks_create_url():
-    response = {}
-
     url = request.forms.get("url")
     package = request.forms.get("package", "")
     timeout = request.forms.get("timeout", "")
@@ -106,12 +99,15 @@ def tasks_create_url():
     tags = request.forms.get("tags", None)
     custom = request.forms.get("custom", "")
     owner = request.forms.get("owner", "")
+
     memory = request.forms.get("memory", False)
     if memory:
         memory = True
+
     enforce_timeout = request.forms.get("enforce_timeout", False)
     if enforce_timeout:
         enforce_timeout = True
+
     clock = request.forms.get("clock", None)
 
     task_id = db.add_url(
@@ -130,15 +126,14 @@ def tasks_create_url():
         clock=clock
     )
 
-    response["task_id"] = task_id
-    return jsonize(response)
+    return jsonify(task_id)
 
-@route("/tasks/list", method="GET")
-@route("/v1/tasks/list", method="GET")
-@route("/tasks/list/<limit:int>", method="GET")
-@route("/v1/tasks/list/<limit:int>", method="GET")
-@route("/tasks/list/<limit:int>/<offset:int>", method="GET")
-@route("/v1/tasks/list/<limit:int>/<offset:int>", method="GET")
+@app.route("/tasks/list")
+@app.route("/v1/tasks/list")
+@app.route("/tasks/list/<int:limit>")
+@app.route("/v1/tasks/list/<int:limit>")
+@app.route("/tasks/list/<int:limit>/<int:offset>")
+@app.route("/v1/tasks/list/<int:limit>/<int:offset>")
 def tasks_list(limit=None, offset=None):
     response = {}
 
@@ -170,10 +165,10 @@ def tasks_list(limit=None, offset=None):
 
         response["tasks"].append(task)
 
-    return jsonize(response)
+    return jsonify(response)
 
-@route("/tasks/view/<task_id:int>", method="GET")
-@route("/v1/tasks/view/<task_id:int>", method="GET")
+@app.route("/tasks/view/<int:task_id>")
+@app.route("/v1/tasks/view/<int:task_id>")
 def tasks_view(task_id):
     response = {}
 
@@ -197,10 +192,10 @@ def tasks_view(task_id):
     else:
         return HTTPError(404, "Task not found")
 
-    return jsonize(response)
+    return jsonify(response)
 
-@route("/tasks/reschedule/<task_id:int>", method="GET")
-@route("/v1/tasks/reschedule/<task_id:int>", method="GET")
+@app.route("/tasks/reschedule/<int:task_id>")
+@app.route("/v1/tasks/reschedule/<int:task_id>")
 def tasks_reschedule(task_id):
     response = {}
 
@@ -213,10 +208,10 @@ def tasks_reschedule(task_id):
         return HTTPError(500, "An error occurred while trying to "
                               "reschedule the task")
 
-    return jsonize(response)
+    return jsonify(response)
 
-@route("/tasks/delete/<task_id:int>", method="GET")
-@route("/v1/tasks/delete/<task_id:int>", method="GET")
+@app.route("/tasks/delete/<int:task_id>")
+@app.route("/v1/tasks/delete/<int:task_id>")
 def tasks_delete(task_id):
     response = {}
 
@@ -236,12 +231,12 @@ def tasks_delete(task_id):
     else:
         return HTTPError(404, "Task not found")
 
-    return jsonize(response)
+    return jsonify(response)
 
-@route("/tasks/report/<task_id:int>", method="GET")
-@route("/v1/tasks/report/<task_id:int>", method="GET")
-@route("/tasks/report/<task_id:int>/<report_format>", method="GET")
-@route("/v1/tasks/report/<task_id:int>/<report_format>", method="GET")
+@app.route("/tasks/report/<int:task_id>")
+@app.route("/v1/tasks/report/<int:task_id>")
+@app.route("/tasks/report/<int:task_id>/<report_format>")
+@app.route("/v1/tasks/report/<int:task_id>/<report_format>")
 def tasks_report(task_id, report_format="json"):
     formats = {
         "json": "report.json",
@@ -291,12 +286,41 @@ def tasks_report(task_id, report_format="json"):
     else:
         return HTTPError(404, "Report not found")
 
-@route("/files/view/md5/<md5>", method="GET")
-@route("/v1/files/view/md5/<md5>", method="GET")
-@route("/files/view/sha256/<sha256>", method="GET")
-@route("/v1/files/view/sha256/<sha256>", method="GET")
-@route("/files/view/id/<sample_id:int>", method="GET")
-@route("/v1/files/view/id/<sample_id:int>", method="GET")
+@app.route("/tasks/screenshots/<int:task_id>")
+@app.route("/v1/tasks/screenshots/<int:task_id>")
+@app.route("/tasks/screenshots/<int:task_id>/<screenshot>")
+@app.route("/v1/tasks/screenshots/<int:task_id>/<screenshot>")
+def task_screenshots(task_id=0, screenshot=None):
+    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id), "shots")
+
+    if os.path.exists(folder_path):
+        if screenshot:
+            screenshot_name = "{0}.jpg".format(screenshot)
+            screenshot_path = os.path.join(folder_path, screenshot_name)
+            if os.path.exists(screenshot_path):
+                # TODO: Add content disposition.
+                response.content_type = "image/jpeg"
+                return open(screenshot_path, "rb").read()
+            else:
+                return HTTPError(404, screenshot_path)
+        else:
+            zip_data = StringIO()
+            with ZipFile(zip_data, "w", ZIP_STORED) as zip_file:
+                for shot_name in os.listdir(folder_path):
+                    zip_file.write(os.path.join(folder_path, shot_name), shot_name)
+
+            # TODO: Add content disposition.
+            response.content_type = "application/zip"
+            return zip_data.getvalue()
+    else:
+        return HTTPError(404, folder_path)
+
+@app.route("/files/view/md5/<md5>")
+@app.route("/v1/files/view/md5/<md5>")
+@app.route("/files/view/sha256/<sha256>")
+@app.route("/v1/files/view/sha256/<sha256>")
+@app.route("/files/view/id/<int:sample_id>")
+@app.route("/v1/files/view/id/<int:sample_id>")
 def files_view(md5=None, sha256=None, sample_id=None):
     response = {}
 
@@ -314,10 +338,10 @@ def files_view(md5=None, sha256=None, sample_id=None):
     else:
         return HTTPError(404, "File not found")
 
-    return jsonize(response)
+    return jsonify(response)
 
-@route("/files/get/<sha256>", method="GET")
-@route("/v1/files/get/<sha256>", method="GET")
+@app.route("/files/get/<sha256>")
+@app.route("/v1/files/get/<sha256>")
 def files_get(sha256):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", sha256)
     if os.path.exists(file_path):
@@ -326,8 +350,8 @@ def files_get(sha256):
     else:
         return HTTPError(404, "File not found")
 
-@route("/pcap/get/<task_id:int>", method="GET")
-@route("/v1/pcap/get/<task_id:int>", method="GET")
+@app.route("/pcap/get/<int:task_id>")
+@app.route("/v1/pcap/get/<int:task_id>")
 def pcap_get(task_id):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                              "%d" % task_id, "dump.pcap")
@@ -340,8 +364,8 @@ def pcap_get(task_id):
     else:
         return HTTPError(404, "File not found")
 
-@route("/machines/list", method="GET")
-@route("/v1/machines/list", method="GET")
+@app.route("/machines/list")
+@app.route("/v1/machines/list")
 def machines_list():
     response = {}
 
@@ -351,10 +375,23 @@ def machines_list():
     for row in machines:
         response["machines"].append(row.to_dict())
 
-    return jsonize(response)
+    return jsonify(response)
 
-@route("/cuckoo/status", method="GET")
-@route("/v1/cuckoo/status", method="GET")
+@app.route("/machines/view/<name>")
+@app.route("/v1/machines/view/<name>")
+def machines_view(name=None):
+    response = {}
+
+    machine = db.view_machine(name=name)
+    if machine:
+        response["machine"] = machine.to_dict()
+    else:
+        return HTTPError(404, "Machine not found")
+
+    return jsonify(response)
+
+@app.route("/cuckoo/status")
+@app.route("/v1/cuckoo/status")
 def cuckoo_status():
     # In order to keep track of the diskspace statistics of the temporary
     # directory we create a temporary file so we can statvfs() on that.
@@ -404,60 +441,19 @@ def cuckoo_status():
         cpuload=cpuload,
     )
 
-    return jsonize(response)
-
-@route("/machines/view/<name>", method="GET")
-@route("/v1/machines/view/<name>", method="GET")
-def machines_view(name=None):
-    response = {}
-
-    machine = db.view_machine(name=name)
-    if machine:
-        response["machine"] = machine.to_dict()
-    else:
-        return HTTPError(404, "Machine not found")
-
-    return jsonize(response)
-
-@route("/tasks/screenshots/<task:int>", method="GET")
-@route("/v1/tasks/screenshots/<task:int>", method="GET")
-@route("/tasks/screenshots/<task:int>/<screenshot>", method="GET")
-@route("/v1/tasks/screenshots/<task:int>/<screenshot>", method="GET")
-def task_screenshots(task=0, screenshot=None):
-    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "shots")
-
-    if os.path.exists(folder_path):
-        if screenshot:
-            screenshot_name = "{0}.jpg".format(screenshot)
-            screenshot_path = os.path.join(folder_path, screenshot_name)
-            if os.path.exists(screenshot_path):
-                # TODO: Add content disposition.
-                response.content_type = "image/jpeg"
-                return open(screenshot_path, "rb").read()
-            else:
-                return HTTPError(404, screenshot_path)
-        else:
-            zip_data = StringIO()
-            with ZipFile(zip_data, "w", ZIP_STORED) as zip_file:
-                for shot_name in os.listdir(folder_path):
-                    zip_file.write(os.path.join(folder_path, shot_name), shot_name)
-
-            # TODO: Add content disposition.
-            response.content_type = "application/zip"
-            return zip_data.getvalue()
-    else:
-        return HTTPError(404, folder_path)
-
-application = default_app()
+    return jsonify(response)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-H", "--host", help="Host to bind the API server on", default="localhost", action="store", required=False)
-    parser.add_argument("-p", "--port", help="Port to bind the API server on", default=8090, action="store", required=False)
-    parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
+    parser.add_argument("-H", "--host", help="Host to bind the API server on",
+        default="localhost", action="store", required=False)
+    parser.add_argument("-p", "--port", help="Port to bind the API server on",
+        default=8090, action="store", required=False)
+    parser.add_argument("-u", "--user", type=str,
+        help="Drop user privileges to this user")
     args = parser.parse_args()
 
     if args.user:
         drop_privileges(args.user)
 
-    run(host=args.host, port=args.port)
+    app.run(host=args.host, port=int(args.port))
