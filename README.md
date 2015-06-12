@@ -17,7 +17,7 @@ My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc
 
  1. Currently, this analyser uses `dtrace`, so the guest OS user must be able to launch this utility without a password prompt. This may be accomplished by modifying `/etc/sudoers` file:  
 
-```diff
+  ```diff
 --- a/etc/sudoers
 +++ b/etc/sudoers
 @@ -43,3 +43,5 @@ root  ALL=(ALL) ALL
@@ -26,15 +26,15 @@ My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc
  # %users  localhost=/sbin/shutdown -h now
 +
 + username   ALL=(root) NOPASSWD: /usr/sbin/dtrace
-```
-(replace `username` above with an actual name of the user).
+  ```
+  (replace `username` above with an actual name of the user).
 
  2. Download and launch Cuckoo's `agent.py`:  
 
-```bash
+  ```bash
 $ curl -o /Users/Shared/agent.py https://raw.githubusercontent.com/cuckoobox/cuckoo/master/agent/agent.py
 $ python /Users/Shared/agent.py
-```
+  ```
 
  3. Take a VM snapshot. It's `cmd+T` for VirtualBox.
 
@@ -43,26 +43,26 @@ $ python /Users/Shared/agent.py
 
  1. Clone this repository:  
 
-```shell
+  ```shell
 $ git clone https://github.com/rodionovd/cuckoo-osx-analyzer.git ~/cuckoo-osx-analyzer
 # Or (if you prefer SSH):
 # $ git clone git@github.com:rodionovd/cuckoo-osx-analyzer.git cuckoo-osx-analyzer
-```
+  ```
 
  2. Symlink `analyzer/darwin` directory from this repository to your [Cuckoo Sandbox](https://github.com/cuckoobox/cuckoo/) copy:
 
-```shell
+  ```shell
 $ cd /path/to/cuckoo/sandbox/
 $ cd ./analyzer
 $ ln -s ~/cuckoo-osx-analyzer/analyzer/darwin darwin
 
-```
+  ```
 
  3. Submit an analysis job:
 
-```bash
+  ```bash
 $ ./utils/submit.py --platform darwin ~/bin/sample
-```
+  ```
 
 ### Roadmap, bugs and whatnot  
 
