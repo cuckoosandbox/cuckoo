@@ -5,4 +5,8 @@ install:
     - brew link --overwrite python
     - python --version
     - pip install nose
-script: nosetests
+script:
+    - nosetests ./tests/test_dtruss.py
+    - nosetests ./tests/test_apicalls.py
+    - nosetests ./tests/test_ipconnection.py
+    - nosetests ./tests/test_analyzer.py
