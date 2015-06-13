@@ -72,6 +72,7 @@ QEMU_ARGS = {
                     "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
         ],
         "params": {
+            "memory": "256M", #512 didn't work for some reason
             "kernel": "{imagepath}/vmlinuz-3.2.0-4-versatile-arm",
             "initrd": "{imagepath}/initrd-3.2.0-4-versatile-arm",
         }
