@@ -115,7 +115,7 @@ profile:::tick-1sec
     syscall:::entry
     / self->tracked[pid] == 1
         && ((probefunc == "stat64" && copyinstr(arg0) == "/AppleInternal\0")
-         || (probefunc == "thread_selfid" && arg0 == 0 && arg1 == 0 && arg3 == 0)) /
+         || (probefunc == "bsdthread_register")) /
     {
         self->tracked[pid] == 0;
         /* Stop this child right now. Otherwise it may finish running even before
@@ -202,9 +202,9 @@ pid$target:libsystem_c.dylib:atoi:return
 pid$target:libsystem_malloc:malloc:return
 {
     this->timestamp = walltimestamp / 1000000000;
-    printf("{\"api\":\"%s\", \"args\":[%llu], \"retval\":%lu, \"timestamp\":%d, \"pid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[%llu], \"retval\":%llu, \"timestamp\":%d, \"pid\":%d}\n",
         probefunc,
-        (size_t)self->arg0,
+        (unsigned long long)self->arg0,
         (unsigned long long)arg1,
         this->timestamp, pid);
 
@@ -219,7 +219,7 @@ pid$target:libsystem_malloc:malloc:return
 pid$target:libdyld:dlopen:return
 {
     this->timestamp = walltimestamp / 1000000000;
-    printf("{\"api\":\"%s\", \"args\":[\"%S\", %d], \"retval\":%lu, \"timestamp\":%d, \"pid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[\"%S\", %d], \"retval\":%llu, \"timestamp\":%d, \"pid\":%d}\n",
         probefunc,
         copyinstr(self->arg0), (int)self->arg1,
         (unsigned long long)arg1,
@@ -236,7 +236,7 @@ pid$target:libdyld:dlopen:return
 pid$target::dlsym:return
 {
     this->timestamp = walltimestamp / 1000000000;
-    printf("{\"api\":\"%s\", \"args\":[%lu, \"%S\"], \"retval\":%lu, \"timestamp\":%d, \"pid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[%llu, \"%S\"], \"retval\":%llu, \"timestamp\":%d, \"pid\":%d}\n",
         probefunc,
         (unsigned long long)self->arg0, copyinstr(self->arg1),
         (unsigned long long)arg1,
