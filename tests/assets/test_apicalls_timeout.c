@@ -4,7 +4,7 @@
 int main(int argc, char *argv[])
 {
 	system("whoami");
-	sleep(5);
+	sleep(10);
 	system("whoami");
     return 0;
 }

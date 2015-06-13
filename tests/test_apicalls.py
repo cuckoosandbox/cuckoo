@@ -35,54 +35,29 @@ class TestAPICalls(DtraceTestCase):
         matched = [x for x in output if (x.api, x.args, x.retval) == expected_api]
         self.assertEqual(len(matched), 1)
 
-    def test_apicalls_timeout_root(self):
-        # given
-        expected_api = ("system", ["whoami"])
-        t = 1
-        output = []
-        # when
-        for call in apicalls(self.current_target(), timeout = t, run_as_root=True):
-            output.append(call)
-        # then
-        matched = [x for x in output if (x.api, x.args) == expected_api]
-        self.assertEqual(len(matched), 1)
-
-    def test_apicalls_timeout(self):
-        # given
-        expected_api = ("system", ["whoami"])
-        t = 1
-        output = []
-        # when
-        for call in apicalls(self.current_target(), timeout = t):
-            output.append(call)
-        # then
-        matched = [x for x in output if (x.api, x.args) == expected_api]
-        self.assertEqual(len(matched), 1)
-
     def test_apicalls_with_args_root(self):
         # given
-        expected_api = ("strlen", 5) # strlen(fo1oP) == 5
-        args = ["fo1oP", "-k", "bar"]
+        expected_api = ("atoi", ["666"])
+        args = ["666", "-k", "bar"]
         output = []
         # when
         for call in apicalls(self.current_target(), args=args, run_as_root=True):
             output.append(call)
         # then
-        matched = [x for x in output if (x.api, x.retval) == expected_api]
+        matched = [x for x in output if (x.api, x.args) == expected_api]
         self.assertEqual(len(matched), 1)
 
     def test_apicalls_with_args(self):
         # given
-        expected_api = ("strlen", 5) # strlen(fo1oP) == 5
-        args = ["fo1oP", "-k", "bar"]
+        expected_api = ("atoi", ["666"])
+        args = ["666", "-k", "bar"]
         output = []
         # when
         for call in apicalls(self.current_target(), args=args):
             output.append(call)
         # then
-        matched = [x for x in output if (x.api, x.retval) == expected_api]
+        matched = [x for x in output if (x.api, x.args) == expected_api]
         self.assertEqual(len(matched), 1)
-
 
     def test_apicalls_children(self):
         # given
@@ -96,7 +71,6 @@ class TestAPICalls(DtraceTestCase):
             pids.add(call.pid)
 
         matched_child = [x for x in output if (x.api, x.args, x.retval) == expected_child_api]
-
         matched_parent = [x for x in output if (x.api, x.args, x.retval) == expected_parent_api]
         # then
         self.assertEqual(len(pids), 2)
