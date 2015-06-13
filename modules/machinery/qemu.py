@@ -26,56 +26,56 @@ QEMU_ARGS = {
         "params": {
             "memory": "512M",
             "mac": "52:54:00:12:34:56",
-            "kernel": "vmlinuz",
-            "kernel_path": "{imagepath}/{kernel}"
+            "kernel": "{imagepath}/vmlinuz",
         },
     },
     "mipsel": {
         "cmdline": ["qemu-system-mipsel", "-display", "none", "-M", "malta", "-m", "{memory}",
-                    "-kernel", "{kernel_path}",
+                    "-kernel", "{kernel}",
                     "-hda","{snapshot_path}",
                     "-append", "root=/dev/sda1 console=tty0",
                     "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname}",
                     "-device", "e1000,netdev=net_{vmname},mac={mac}", # virtio-net-pci doesn't work here
         ],
         "params": {
-            "kernel": "vmlinux-3.2.0-4-4kc-malta-mipsel",
+            "kernel": "{imagepath}/vmlinux-3.2.0-4-4kc-malta-mipsel",
         }
     },
     "mips": {
         "cmdline": ["qemu-system-mips", "-display", "none", "-M", "malta", "-m", "{memory}",
-                    "-kernel", "{kernel_path}",
+                    "-kernel", "{kernel}",
                     "-hda","{snapshot_path}",
                     "-append", "root=/dev/sda1 console=tty0",
                     "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname}",
                     "-device", "e1000,netdev=net_{vmname},mac={mac}", # virtio-net-pci doesn't work here
         ],
         "params": {
-            "kernel": "vmlinux-3.2.0-4-4kc-malta-mips",
+            "kernel": "{imagepath}/vmlinux-3.2.0-4-4kc-malta-mips",
         }
     },
     "armwrt": {
         "cmdline": ["qemu-system-arm", "-display", "none", "-M", "realview-eb-mpcore", "-m", "{memory}",
-                    "-kernel", "{kernel_path}",
+                    "-kernel", "{kernel}",
                     "-drive", "if=sd,cache=unsafe,file={snapshot_path}",
                     "-append", "console=ttyAMA0 root=/dev/mmcblk0 rootwait",
                     "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
                     "-nographic"
         ],
         "params": {
-            "kernel": "openwrt-realview-vmlinux.elf",
+            "kernel": "{imagepath}/openwrt-realview-vmlinux.elf",
         }
     },
     "arm": {
         "cmdline": ["qemu-system-arm", "-display", "none", "-M", "versatilepb", "-m", "{memory}",
-                    "-kernel", "{kernel_path}", "-initrd", "initrd.img-3.2.0-4-versatile-arm",
+                    "-kernel", "{kernel}", "-initrd", "{initrd}",
                     "-hda", "{snapshot_path}",
                     "-append", "console=ttyAMA0 root=/dev/sda1",
                     "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
                     "-nographic"
         ],
         "params": {
-            "kernel": "vmlinuz-3.2.0-4-versatile-arm",
+            "kernel": "{imagepath}/vmlinuz-3.2.0-4-versatile-arm",
+            "initrd": "{imagepath}/initrd-3.2.0-4-versatile-arm",
         }
     },
 }
@@ -140,18 +140,14 @@ class QEMU(Machinery):
         params.update({
             "imagepath": os.path.dirname(vm_options.image),
             "snapshot_path": snapshot_path,
-            "bridge_interface": vm_options.bridge_interface or "qemubr",
             "vmname": vm_info.name,
         })
 
-        # a bit awkward pre-formatting
-        if vm_options.kernel_path:
-            params["kernel_path"] = vm_options.kernel_path.format(**params)
-        else:
-            params["kernel_path"] = params["kernel_path"].format(**params)
-
-        if vm_options.mac:
-            params["mac"] = vm_options.mac
+        # allow some overrides from the vm specific options
+        # also do another round of parameter formatting
+        for var in ["mac", "kernel", "initrd"]:
+            val = getattr(vm_options, var, params[var])
+            params[var] = val.format(**params)
 
         # magic arg building
         final_cmdline = [i.format(**params) for i in cmdline]
