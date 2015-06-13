@@ -26,7 +26,9 @@ def apicalls(target, **kwargs):
     if "timeout" in kwargs:
         cmd += ["-DANALYSIS_TIMEOUT=%d" % kwargs["timeout"]]
     cmd += ["-s", path_for_script("apicalls.d")]
+    cmd += ["-DSCRIPT_PATH=\"%s\"" % sanitize_path(path_for_script("apicalls.d"))]
     cmd += ["-o", file.name]
+    cmd += ["-DOUTPUT_FILE=\"%s\"" % file.name]
 
 
     if "run_as_root" in kwargs:
@@ -51,10 +53,20 @@ def apicalls(target, **kwargs):
     with open(os.devnull, "w") as f:
         handler = Popen(cmd, stdout=f, stderr=f)
 
+    # If we use `sudo -u` for dropping root privileges, we also have to
+	# exclude it's output from the results
+	sudo_pid = None
+
     for entry in filelines(file):
     	if "## apicalls.d done ##" in entry.strip():
     		break
-    	yield _parse_entry(entry.strip())
+        if len(entry.strip()) == 0: continue
+
+        call = _parse_entry(entry.strip())
+        if not run_as_root and sudo_pid is None:
+            sudo_pid = call.pid
+        elif call.pid != sudo_pid:
+            yield call
     file.close()
 
 
