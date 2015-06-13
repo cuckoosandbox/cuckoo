@@ -8,5 +8,5 @@ install:
 script:
     - nosetests ./tests/test_dtruss.py
     - nosetests ./tests/test_apicalls.py
-    - nosetests ./tests/test_ipconnection.py
+    - nosetests ./tests/test_ipconnections.py
     - nosetests ./tests/test_analyzer.py
