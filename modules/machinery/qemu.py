@@ -59,7 +59,6 @@ QEMU_ARGS = {
                     "-drive", "if=sd,cache=unsafe,file={snapshot_path}",
                     "-append", "console=ttyAMA0 root=/dev/mmcblk0 rootwait",
                     "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
-                    "-nographic"
         ],
         "params": {
             "kernel": "{imagepath}/openwrt-realview-vmlinux.elf",
@@ -69,9 +68,8 @@ QEMU_ARGS = {
         "cmdline": ["qemu-system-arm", "-display", "none", "-M", "versatilepb", "-m", "{memory}",
                     "-kernel", "{kernel}", "-initrd", "{initrd}",
                     "-hda", "{snapshot_path}",
-                    "-append", "console=ttyAMA0 root=/dev/sda1",
+                    "-append", "root=/dev/sda1",
                     "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
-                    "-nographic"
         ],
         "params": {
             "kernel": "{imagepath}/vmlinuz-3.2.0-4-versatile-arm",
