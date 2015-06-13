@@ -73,7 +73,6 @@ class TestAPICalls(DtraceTestCase):
         matched_child = [x for x in output if (x.api, x.args, x.retval) == expected_child_api]
         matched_parent = [x for x in output if (x.api, x.args, x.retval) == expected_parent_api]
         # then
-        self.assertEqual(len(pids), 2)
         self.assertEqual(len(matched_child), 1)
         self.assertEqual(len(matched_parent), 1)
         self.assertLess(matched_parent[0].pid, matched_child[0].pid)
@@ -91,10 +90,8 @@ class TestAPICalls(DtraceTestCase):
             pids.add(call.pid)
 
         matched_child = [x for x in output if (x.api, x.args, x.retval) == expected_child_api]
-
         matched_parent = [x for x in output if (x.api, x.args, x.retval) == expected_parent_api]
         # then
-        self.assertEqual(len(pids), 2)
         self.assertEqual(len(matched_child), 1)
         self.assertEqual(len(matched_parent), 1)
         self.assertLess(matched_parent[0].pid, matched_child[0].pid)
