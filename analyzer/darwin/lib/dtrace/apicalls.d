@@ -1,4 +1,3 @@
-#!/usr/sbin/dtrace -C -s
 #pragma D option destructive
 #pragma D option quiet
 /* apicalls.d
