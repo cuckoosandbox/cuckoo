@@ -430,5 +430,16 @@ fi
 # Recreate the GRUB configuration.
 grub-mkconfig -o /boot/grub/grub.cfg
 
+# Increase the file descriptor limits. TODO How to set it for just the cuckoo
+# user? Doesn't seem to work when using 'cuckoo' instead of '*'.
+if ! grep "* soft nofile" /etc/security/limits.conf; then
+    cat >> /etc/security/limits.conf << EOF
+
+# Set the file descriptor limit fairly high.
+* soft nofile 40000
+* hard nofile 80000
+EOF
+fi
+
 echo "PostgreSQL connection string:  " \
     "postgresql://cuckoo:$PASSWORD@localhost/cuckoo"
