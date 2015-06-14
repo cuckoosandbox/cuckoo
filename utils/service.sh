@@ -69,6 +69,7 @@ respawn
 
 env CONFFILE="$CONFFILE"
 env VMINTERNET=""
+env CHECKVMS="/etc/default/cuckoo-setup"
 
 pre-start script
     . "\$CONFFILE"
@@ -77,6 +78,11 @@ pre-start script
 
     if [ -n "\$VMINTERNET" ]; then
         vmcloak-iptables 192.168.56.1/24 "\$VMINTERNET"
+    fi
+
+    # Check up on all VMs and fix any if required.
+    if [ -f "\$CHECKVMS" ]; then
+        ./utils/setup.sh -S "\$CHECKVMS" -V
     fi
 end script
 
