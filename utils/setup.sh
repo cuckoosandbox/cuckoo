@@ -332,18 +332,32 @@ _setup_vmmount() {
     sudo -u cuckoo cp -rf "$source/." "$target"
 }
 
+_initialize_from_backup() {
+    # Initialize our setup from our backup, if available.
+
+    if [ "$TMPFS" -ne 0 ]; then
+        # Initialize a mount with all the files from the backup directory.
+        _setup_vmmount "$VMBACKUP" "$VMMOUNT"
+
+        # Initialize vms to point to the mount directory.
+        _setup_vms "$VMMOUNT" "$VMS"
+    else
+        # Initialize vms to point to the backup directory.
+        _setup_vms "$VMBACKUP" "$VMS"
+    fi
+}
+
+# In the case of tmpfs support we first setup the vmmount and all that so to
+# recover any VMs that were not actually broken, but were just missing
+# symbolic links and some files copied over.
+_initialize_from_backup
+
+# We then create new VMs if required.
 _create_virtual_machines
 
-if [ "$TMPFS" -ne 0 ]; then
-    # Initialize a mount with all the files from the backup directory.
-    _setup_vmmount "$VMBACKUP" "$VMMOUNT"
-
-    # Initialize vms to point to the mount directory.
-    _setup_vms "$VMMOUNT" "$VMS"
-else
-    # Initialize vms to point to the backup directory.
-    _setup_vms "$VMBACKUP" "$VMS"
-fi
+# And just in case that resulted in any new VMs, we re-initialize from our
+# backup which now simply contains more VMs.
+_initialize_from_backup
 
 # Install the Upstart/SystemV scripts.
 "$CUCKOO/utils/service.sh" install
