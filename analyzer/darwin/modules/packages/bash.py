@@ -24,5 +24,8 @@ class Bash(Package):
         if "dtruss" in method:
             for x in self._start_dtruss():
                 yield x
+        elif "apicalls" in method:
+            for x in self._start_apicalls():
+                yield x
         else:
             yield "Invalid analysis method \"%S\" for package \"Bash\"" % method
