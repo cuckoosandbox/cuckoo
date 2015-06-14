@@ -6,11 +6,14 @@
 # of the MIT license. See the LICENSE file for details.
 
 from ..dtrace.dtruss import dtruss
+from ..dtrace.apicalls import apicalls
 from ..dtrace.ipconnections import ipconnections
 
 def choose_package(file_type, file_name):
     if "Bourne-Again" in file_type or "bash" in file_type:
         return "bash"
+    elif "Mach-O" in file_type and "executable" in file_type:
+        return "macho"
     else:
         return None
 
@@ -52,6 +55,16 @@ class Package(object):
             yield "[IP]: %s:%d --[%s]--> %s:%d" % (conn.host, conn.host_port,
                                                    conn.protocol,
                                                    conn.remote, conn.remote_port)
+
+    def _start_apicalls(self):
+        if "run_as_root" in self.options:
+            root_mode = True
+        else:
+            root_mode = False
+        for call in apicalls(self.target, args=self.args, timeout=self.timeout, run_as_root=root_mode):
+            yield "[%d @ %d]: %s(%s) -> %s" % (call.pid, call.timestamp,
+                                               call.api, call.args,
+                                               str(call.retval))
 
 class Auxiliary(object):
     def __init__(self, options=[]):
