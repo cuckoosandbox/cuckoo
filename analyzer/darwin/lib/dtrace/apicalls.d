@@ -157,7 +157,6 @@ pid$target:libsystem_c.dylib:atoi:entry
 }
 
 /* Two arguments */
-pid$target:libsystem_malloc:malloc:entry,
 pid$target:libdyld:dlopen:entry,
 pid$target:libdyld:dlsym:entry
 {
@@ -196,23 +195,6 @@ pid$target:libsystem_c.dylib:atoi:return
     self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
     /* Release the memory for the current level stack */
     self->arguments_stack[self->deeplevel, "arg0"] = 0;
-    --self->deeplevel;
-}
-
-/* One argument: [size_t], retval: void* */
-pid$target:libsystem_malloc:malloc:return
-{
-    this->timestamp = walltimestamp / 1000000000;
-    printf("{\"api\":\"%s\", \"args\":[%llu], \"retval\":%llu, \"timestamp\":%d, \"pid\":%d}\n",
-        probefunc,
-        (unsigned long long)self->arg0,
-        (unsigned long long)arg1,
-        this->timestamp, pid);
-
-    self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
-    self->arg1 = self->arguments_stack[self->deeplevel, "arg1"];
-    self->arguments_stack[self->deeplevel, "arg0"] = 0;
-    self->arguments_stack[self->deeplevel, "arg1"] = 0;
     --self->deeplevel;
 }
 
