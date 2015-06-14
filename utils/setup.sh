@@ -307,7 +307,7 @@ _setup_vms() {
 
     # Make symlinks of all files .vdi and .sav files, these are considered
     # readonly files by VirtualBox due to the immutable disk property.
-    for filename in $(cd "$source" && find */*/*.vdi */*/*.sav); do
+    for filename in $(cd "$source" && find bird*.vdi */*/*.vdi */*/*.sav); do
         sudo -u cuckoo ln -fs "$source/$filename" "$target/$filename"
     done
 
