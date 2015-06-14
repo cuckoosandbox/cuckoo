@@ -220,9 +220,12 @@ VMMOUNT="/home/cuckoo/vmmount/"
 mkdir -p "$VMS" "$VMBACKUP" "$VMMOUNT"
 chown cuckoo:cuckoo "$VMS" "$VMBACKUP" "$VMMOUNT"
 
-VMCLOAKCONF="$(mktemp)"
+_create_virtual_machines() {
+    # Prepare the machine for virtual machines and actually create them.
 
-cat > "$VMCLOAKCONF" << EOF
+    VMCLOAKCONF="$(mktemp)"
+
+    cat > "$VMCLOAKCONF" << EOF
 [vmcloak]
 cuckoo = $CUCKOO
 vm-dir = $VMBACKUP
@@ -233,50 +236,56 @@ temp-dirpath = $VMTEMP
 tags = $TAGS
 EOF
 
-if [ -n "$DEPENDENCIES" ]; then
-    echo "dependencies = $DEPENDENCIES" >> "$VMCLOAKCONF"
-fi
-
-chown cuckoo:cuckoo "$VMCLOAKCONF"
-
-# Delete the cuckoo1 machine that is included in the VirtualBox configuration
-# by default.
-"$CUCKOO/utils/machine.py" --delete cuckoo1
-
-# Check whether the bird "bird0" already exists.
-sudo -u cuckoo -i vmcloak-bird hddpath bird0
-if [ "$?" -ne 0 ]; then
-    echo "Creating the Virtual Machine bird.."
-    vmcloak -u cuckoo -s "$VMCLOAKCONF" -r --bird bird0 "$WINOS" --vrde
-fi
-
-# Kill all VirtualBox processes as otherwise the listening
-# port for vmcloak-clone might still be in use..
-vmcloak-killvbox
-
-# Create various Virtual Machine eggs.
-for i in $(seq 1 "$VMCOUNT"); do
-    # Ensure this Virtual Machine has not already been created.
-    if grep '"'egg$i'"' <(sudo -u cuckoo -i VBoxManage list vms); then
-        continue
+    if [ -n "$DEPENDENCIES" ]; then
+        echo "dependencies = $DEPENDENCIES" >> "$VMCLOAKCONF"
     fi
 
-    echo "Creating Virtual Machine egg$i.."
-    vmcloak-clone -s "$VMCLOAKCONF" -u cuckoo --bird bird0 \
-        --hostonly-ip "192.168.56.$((2+$i))" "egg$i"
-done
+    chown cuckoo:cuckoo "$VMCLOAKCONF"
 
-rm -rf "$VMCLOAKCONF" "$VMTEMP"
+    # Delete the cuckoo1 machine that is included in the VirtualBox
+    # configuration by default.
+    "$CUCKOO/utils/machine.py" --delete cuckoo1
 
-# Remove all Virtual Machine related logfiles, we're not interested
-# in keeping those.
-rm -f $(find "$VMBACKUP" -type f|grep "\.log")
+    # Check whether the bird "bird0" already exists.
+    sudo -u cuckoo -i vmcloak-bird hddpath bird0
+    if [ "$?" -ne 0 ]; then
+        echo "Creating the Virtual Machine bird.."
+        vmcloak -u cuckoo -s "$VMCLOAKCONF" -r --bird bird0 "$WINOS" --vrde
+    fi
 
-_symlink_directory() {
+    # Kill all VirtualBox processes as otherwise the listening
+    # port for vmcloak-clone might still be in use..
+    vmcloak-killvbox
+
+    # Create various Virtual Machine eggs.
+    for i in $(seq 1 "$VMCOUNT"); do
+        # Ensure this Virtual Machine has not already been created.
+        if grep '"'egg$i'"' <(sudo -u cuckoo -i VBoxManage list vms); then
+            continue
+        fi
+
+        # As vmcloak-clone will add an entry for this node we remove it just
+        # in case it did already exist.
+        "$CUCKOO/utils/machine.py" --delete "egg$i"
+
+        echo "Creating Virtual Machine egg$i.."
+        vmcloak-clone -s "$VMCLOAKCONF" -u cuckoo --bird bird0 \
+            --hostonly-ip "192.168.56.$((2+$i))" "egg$i"
+    done
+
+    rm -rf "$VMCLOAKCONF" "$VMTEMP"
+
+    # Remove all Virtual Machine related logfiles, we're not interested
+    # in keeping those.
+    rm -f $(find "$VMBACKUP" -type f|grep "\.log")
+}
+
+_setup_vms() {
     # Create directories in the target directory for each directory found in
-    # the source directory. Then create a symlink for every file found.
+    # the source directory. Then create a symlink for all .vdi and .sav files
+    # and copy over all .vbox files.
     if [ ! -d "$1" ] || [ ! -d "$2" ]; then
-        echo "Missing parameter(s) for symlink-directory.."
+        echo "Missing parameter(s) for setup-vms.."
         exit 1
     fi
 
@@ -287,30 +296,53 @@ _symlink_directory() {
         sudo -u cuckoo mkdir -p "$target/$dirname"
     done
 
-    # Make symlinks of all files.
-    for filename in $(cd "$source" && find * -type f); do
+    # Make symlinks of all files .vdi and .sav files, these are considered
+    # readonly files by VirtualBox due to the immutable disk property.
+    for filename in $(cd "$source" && find */*/*.vdi */*/*.sav); do
         sudo -u cuckoo ln -fs "$source/$filename" "$target/$filename"
+    done
+
+    # Copy all .vbox files, these may be modified by VirtualBox. In the case
+    # that somehow we end up with out of diskspace issues and the updated
+    # .vbox files can not be written to disk, then the virtual machine is
+    # essentially bricked. These files are only a couple of kilobytes anyway.
+    for filename in $(cd "$source" && find */*.vbox); do
+        sudo -u cuckoo cp "$source/$filename" "$target/$filename"
     done
 }
 
-if [ "$TMPFS" -ne 0 ]; then
+_setup_vmmount() {
+    if [ ! -d "$1" ] || [ ! -d "$2" ]; then
+        echo "Missing parameter(s) for setup-vmmount.."
+        exit 1
+    fi
+
+    local source="$1" target="$2"
+
     # Unmount just in case it was mounted.
-    umount "$VMMOUNT"
+    umount "$target"
 
     # Calculate the required size for the tmpfs mount. Round up to megabytes.
-    REQSIZE="$(du -s "$VMBACKUP"|cut -f1)"
+    REQSIZE="$(du -s "$source"|cut -f1)"
     REQSIZE="$(($REQSIZE/1024+1))M"
 
-    mount -o "size=$REQSIZE,uid=cuckoo,gid=cuckoo" -t tmpfs tmpfs "$VMMOUNT"
+    mount -o "size=$REQSIZE,uid=cuckoo,gid=cuckoo" -t tmpfs tmpfs "$target"
 
     # Copy all files from the backup to the mount.
-    sudo -u cuckoo cp -rf "$VMBACKUP/." "$VMMOUNT"
+    sudo -u cuckoo cp -rf "$source/." "$target"
+}
 
-    # Create symlinks from the mount into the vms directory.
-    _symlink_directory "$VMMOUNT" "$VMS"
+_create_virtual_machines
+
+if [ "$TMPFS" -ne 0 ]; then
+    # Initialize a mount with all the files from the backup directory.
+    _setup_vmmount "$VMBACKUP" "$VMMOUNT"
+
+    # Initialize vms to point to the mount directory.
+    _setup_vms "$VMMOUNT" "$VMS"
 else
-    # Create symlinks from the backup into the vms directory.
-    _symlink_directory "$VMBACKUP" "$VMS"
+    # Initialize vms to point to the backup directory.
+    _setup_vms "$VMBACKUP" "$VMS"
 fi
 
 # Install the Upstart/SystemV scripts.
