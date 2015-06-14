@@ -16,6 +16,7 @@ INTERFACES="eth0 wlan0"
 CLEAN="0"
 DEPENDENCIES=""
 BASEDIR="/home/cuckoo"
+VMCHECKUP="0"
 
 usage() {
     echo "Usage: $0 [options...]"
@@ -31,6 +32,7 @@ usage() {
     echo "-C --clean:        Clean the Cuckoo setup."
     echo "-d --dependencies: Dependencies to install in the Virtual Machine."
     echo "-b --basedir:      Base directory for Virtual Machine files."
+    echo "-V --vms:          Only check Virtual Machines, don't re-setup."
     exit 1
 }
 
@@ -101,6 +103,10 @@ while [ "$#" -gt 0 ]; do
             shift
             ;;
 
+        -V|--vms)
+            VMCHECKUP="1"
+            ;;
+
         *)
             echo "$0: Invalid argument.. $1" >&2
             usage
@@ -132,93 +138,83 @@ if [ "$WIN7" -eq 0 ] && [ -z "$SERIALKEY" ]; then
     exit 1
 fi
 
-# Update apt repository and install required packages.
-apt-get update -y --force-yes
-apt-get install -y --force-yes sudo git python-dev python-pip postgresql \
-    libpq-dev python-dpkt vim tcpdump libcap2-bin genisoimage pwgen \
-    htop tig mosh
+_setup() {
+    # All functionality related to setting up the machine - this is not
+    # required when doing a Virtual Machine checkup.
 
-# Create the main postgresql cluster. In recent versions of Ubuntu Server
-# 14.04 you have to do this manually. If it already exists this command
-# will simply fail.
-pg_createcluster 9.3 main --start
+    # Update apt repository and install required packages.
+    apt-get update -y --force-yes
+    apt-get install -y --force-yes sudo git python-dev python-pip postgresql \
+        libpq-dev python-dpkt vim tcpdump libcap2-bin genisoimage pwgen \
+        htop tig mosh
 
-# Install the most up-to-date version of VirtualBox available at the moment.
-if [ ! -e "/usr/bin/VirtualBox" ]; then
-    # Update our apt repository with "contrib".
-    DEBVERSION="$(lsb_release -cs)"
-    echo "deb http://download.virtualbox.org/virtualbox/debian " \
-        "$DEBVERSION contrib" >> /etc/apt/sources.list.d/virtualbox.list
+    # Create the main postgresql cluster. In recent versions of Ubuntu Server
+    # 14.04 you have to do this manually. If it already exists this command
+    # will simply fail.
+    pg_createcluster 9.3 main --start
 
-    # Add the VirtualBox public key to our apt repository.
-    wget -q https://www.virtualbox.org/download/oracle_vbox.asc \
-        -O- | apt-key add -
+    # Install the most up-to-date version of VirtualBox available at the moment.
+    if [ ! -e "/usr/bin/VirtualBox" ]; then
+        # Update our apt repository with "contrib".
+        DEBVERSION="$(lsb_release -cs)"
+        echo "deb http://download.virtualbox.org/virtualbox/debian " \
+            "$DEBVERSION contrib" >> /etc/apt/sources.list
 
-    # Install the most recent VirtualBox.
-    apt-get update -y
-    apt-get install -y virtualbox-4.3
-fi
+        # Add the VirtualBox public key to our apt repository.
+        wget -q https://www.virtualbox.org/download/oracle_vbox.asc \
+            -O- | apt-key add -
 
-# Install the VirtualBox Extension Pack for VRDE support.
-if grep "Extension Packs: 0" <(VBoxManage list extpacks); then
-    VBOXVERSION="$(VBoxManage --version|sed s/r/\-/)"
-    PRETTYNAME="Oracle_VM_VirtualBox_Extension_Pack-$VBOXVERSION"
-    wget "http://cuckoo.sh/vmcloak-files/${PRETTYNAME}.vbox-extpack"
-    VBoxManage extpack install --replace "${PRETTYNAME}.vbox-extpack"
-fi
+        # Install the most recent VirtualBox.
+        apt-get update -y
+        apt-get install -y virtualbox-4.3
+    fi
 
-# Allow tcpdump to dump packet captures when executed as a normal user.
-setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
+    # Install the VirtualBox Extension Pack for VRDE support.
+    if grep "Extension Packs: 0" <(VBoxManage list extpacks); then
+        VBOXVERSION="$(VBoxManage --version|sed s/r/\-/)"
+        PRETTYNAME="Oracle_VM_VirtualBox_Extension_Pack-$VBOXVERSION"
+        wget "http://cuckoo.sh/vmcloak-files/${PRETTYNAME}.vbox-extpack"
+        VBoxManage extpack install --replace "${PRETTYNAME}.vbox-extpack"
+    fi
 
-# Setup a Cuckoo user.
-useradd cuckoo -d "/home/cuckoo"
+    # Allow tcpdump to dump packet captures when executed as a normal user.
+    setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
 
-CUCKOO="/home/cuckoo/cuckoo"
-VMTEMP="$(mktemp -d "/home/cuckoo/tempXXXXXX")"
+    # Setup a Cuckoo user.
+    useradd cuckoo -d "/home/cuckoo"
 
-# Fetch Cuckoo.
-git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
+    CUCKOO="/home/cuckoo/cuckoo"
+    VMTEMP="$(mktemp -d "/home/cuckoo/tempXXXXXX")"
 
-chown -R cuckoo:cuckoo "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
-chmod 755 "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
+    # Fetch Cuckoo.
+    git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
 
-# Install required packages part two.
-pip install --upgrade psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
+    chown -R cuckoo:cuckoo "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
+    chmod 755 "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
 
-# Create a random password.
-PASSWORD="$(pwgen -1 16)"
+    # Install required packages part two.
+    pip install --upgrade psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
 
-sql_query() {
-    echo "$1"|sudo -u postgres psql
+    # Create a random password.
+    PASSWORD="$(pwgen -1 16)"
+
+    sql_query() {
+        echo "$1"|sudo -u postgres psql
+    }
+
+    sql_query "DROP DATABASE cuckoo"
+    sql_query "CREATE DATABASE cuckoo"
+
+    sql_query "DROP USER cuckoo"
+    sql_query "CREATE USER cuckoo WITH PASSWORD '$PASSWORD'"
+
+    # Setup the VirtualBox hostonly network.
+    vmcloak-vboxnet0
+
+    # Run the magic iptables script that turns hostonly networks into full
+    # internet access.
+    vmcloak-iptables 192.168.56.1/24 "$INTERFACES"
 }
-
-sql_query "DROP DATABASE cuckoo"
-sql_query "CREATE DATABASE cuckoo"
-
-sql_query "DROP USER cuckoo"
-sql_query "CREATE USER cuckoo WITH PASSWORD '$PASSWORD'"
-
-# Setup the VirtualBox hostonly network.
-vmcloak-vboxnet0
-
-# Run the magic iptables script that turns hostonly networks into full
-# internet access.
-vmcloak-iptables 192.168.56.1/24 "$INTERFACES"
-
-MOUNT="/mnt/$MOUNTOS/"
-
-# The mount directory must exist and it must not be empty.
-if [ ! -d "$MOUNT" ] || [ -z "$(ls -A "$MOUNT")" ]; then
-    mkdir -p "$MOUNT"
-    mount -o loop,ro "$ISOFILE" "$MOUNT"
-fi
-
-VMS="$BASEDIR/vms/"
-VMBACKUP="$BASEDIR/vmbackup/"
-VMMOUNT="/home/cuckoo/vmmount/"
-
-mkdir -p "$VMS" "$VMBACKUP" "$VMMOUNT"
-chown cuckoo:cuckoo "$VMS" "$VMBACKUP" "$VMMOUNT"
 
 _create_virtual_machines() {
     # Prepare the machine for virtual machines and actually create them.
@@ -346,6 +342,31 @@ _initialize_from_backup() {
         _setup_vms "$VMBACKUP" "$VMS"
     fi
 }
+
+# First of all, setup the machine with all required packages etc
+# if asked to do so. (Or, actually, if not asked to not do).
+if [ "$VMCHECKUP" -eq 0 ]; then
+    _setup
+fi
+
+MOUNT="/mnt/$MOUNTOS/"
+
+# The mount directory must exist and it must not be empty.
+if [ ! -d "$MOUNT" ] || [ -z "$(ls -A "$MOUNT")" ]; then
+    mkdir -p "$MOUNT"
+    mount -o loop,ro "$ISOFILE" "$MOUNT"
+fi
+
+VMS="$BASEDIR/vms/"
+VMBACKUP="$BASEDIR/vmbackup/"
+VMMOUNT="/home/cuckoo/vmmount/"
+
+# Remove the vms directory as we don't want broken remainders
+# in there later on such as symbolic links.
+rm -rf "$VMS"
+
+mkdir -p "$VMS" "$VMBACKUP" "$VMMOUNT"
+chown cuckoo:cuckoo "$VMS" "$VMBACKUP" "$VMMOUNT"
 
 # In the case of tmpfs support we first setup the vmmount and all that so to
 # recover any VMs that were not actually broken, but were just missing
