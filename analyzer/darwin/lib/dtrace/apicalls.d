@@ -112,10 +112,11 @@ profile:::tick-1sec
      * process. So instead, we wait until some syscalls which only happen at the
      * end of a process initialization: at this point all the required libraries
      * will be loaded and we'll be able to install probes on them. */
-    syscall:::entry
-    / self->tracked[pid] == 1
-        && ((probefunc == "stat64" && copyinstr(arg0) == "/AppleInternal\0")
-         || (probefunc == "bsdthread_register")) /
+    syscall::stat64:entry,
+    syscall::bsdthread_register:return
+    / self->tracked[pid] == 1 &&
+    	((probefunc == "stat64" && copyinstr(arg0) == "/AppleInternal\0")
+      || (probefunc == "bsdthread_register" && (int)arg0 == -1)) /
     {
         self->tracked[pid] == 0;
         /* Stop this child right now. Otherwise it may finish running even before
