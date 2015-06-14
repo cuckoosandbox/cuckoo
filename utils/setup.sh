@@ -20,6 +20,7 @@ VMCHECKUP="0"
 
 usage() {
     echo "Usage: $0 [options...]"
+    echo "-S --settings:     Load configuration from a file."
     echo "-7 --win7:         Create Windows 7 x64 Virtual Machines."
     echo "   --win7x86:      Create Windows 7 x86 Virtual Machines."
     echo "-c --vmcount:      Amount of Virtual Machines to be created."
@@ -103,6 +104,11 @@ while [ "$#" -gt 0 ]; do
             shift
             ;;
 
+        -S|--settings)
+            SETTINGS="$1"
+            shift
+            ;;
+
         -V|--vms)
             VMCHECKUP="1"
             ;;
@@ -126,6 +132,13 @@ if [ "$CLEAN" -ne 0 ]; then
     rm -rf /home/cuckoo/{.config,.vmcloak,vmmount}
     rm -rf "$BASEDIR/vms" "$BASEDIR/vmbackup"
     exit 0
+fi
+
+# Load configuration settings from a file if one has been provided.
+# Note that any values in the configuration file will overwrite
+# settings provided on the command-line.
+if [ -n "$SETTINGS" ]; then
+    . "$SETTINGS"
 fi
 
 if [ -z "$ISOFILE" ]; then
@@ -347,6 +360,27 @@ _initialize_from_backup() {
 # if asked to do so. (Or, actually, if not asked to not do).
 if [ "$VMCHECKUP" -eq 0 ]; then
     _setup
+
+    # We store this exact configuration so that we can later on recreate
+    # the cluster in case that's required. E.g., when VMs break or after
+    # a reboot when using tmpfs support (which is actually an instance of
+    # VMs breaking).
+    cat > /etc/default/cuckoo-setup << EOF
+# Direct configuration values.
+WIN7="$WIN7"
+VMCOUNT="$VMCOUNT"
+ISOFILE="$ISOFILE"
+SERIALKEY="$SERIALKEY"
+TMPFS="$TMPFS"
+TAGS="$TAGS"
+INTERFACES="$INTERFACES"
+DEPENDENCIES="$DEPENDENCIES"
+BASEDIR="$BASEDIR"
+
+# Values set based on configuration values.
+MOUNTOS="$MOUNTOS"
+WINOS="$WINOS"
+EOF
 fi
 
 MOUNT="/mnt/$MOUNTOS/"
