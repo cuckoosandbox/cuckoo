@@ -196,7 +196,6 @@ _setup() {
     # Setup a Cuckoo user.
     useradd cuckoo -d "/home/cuckoo"
 
-    CUCKOO="/home/cuckoo/cuckoo"
     VMTEMP="$(mktemp -d "/home/cuckoo/tempXXXXXX")"
 
     # Fetch Cuckoo.
@@ -356,6 +355,13 @@ _initialize_from_backup() {
     fi
 }
 
+# Initialize various variables.
+CUCKOO="/home/cuckoo/cuckoo"
+MOUNT="/mnt/$MOUNTOS/"
+VMS="$BASEDIR/vms/"
+VMBACKUP="$BASEDIR/vmbackup/"
+VMMOUNT="/home/cuckoo/vmmount/"
+
 # First of all, setup the machine with all required packages etc
 # if asked to do so. (Or, actually, if not asked to not do).
 if [ "$VMCHECKUP" -eq 0 ]; then
@@ -383,17 +389,11 @@ WINOS="$WINOS"
 EOF
 fi
 
-MOUNT="/mnt/$MOUNTOS/"
-
 # The mount directory must exist and it must not be empty.
 if [ ! -d "$MOUNT" ] || [ -z "$(ls -A "$MOUNT")" ]; then
     mkdir -p "$MOUNT"
     mount -o loop,ro "$ISOFILE" "$MOUNT"
 fi
-
-VMS="$BASEDIR/vms/"
-VMBACKUP="$BASEDIR/vmbackup/"
-VMMOUNT="/home/cuckoo/vmmount/"
 
 # Remove the vms directory as we don't want broken remainders
 # in there later on such as symbolic links.
