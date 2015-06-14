@@ -15,6 +15,7 @@ TAGS=""
 INTERFACES="eth0 wlan0"
 CLEAN="0"
 DEPENDENCIES=""
+BASEDIR="/home/cuckoo"
 
 usage() {
     echo "Usage: $0 [options...]"
@@ -29,6 +30,7 @@ usage() {
     echo "                   through. Defaults to eth0 wlan0."
     echo "-C --clean:        Clean the Cuckoo setup."
     echo "-d --dependencies: Dependencies to install in the Virtual Machine."
+    echo "-b --basedir:      Base directory for Virtual Machine files."
     exit 1
 }
 
@@ -94,6 +96,11 @@ while [ "$#" -gt 0 ]; do
             shift
             ;;
 
+        -b|--basedir)
+            BASEDIR="$1"
+            shift
+            ;;
+
         *)
             echo "$0: Invalid argument.. $1" >&2
             usage
@@ -110,7 +117,8 @@ fi
 if [ "$CLEAN" -ne 0 ]; then
     yes|sudo -u cuckoo -i vmcloak-removevms
     umount /home/cuckoo/vmmount
-    rm -rf /home/cuckoo/{.config,.vmcloak,vmbackup,vmmount,vms}
+    rm -rf /home/cuckoo/{.config,.vmcloak,vmmount}
+    rm -rf "$BASEDIR/vms" "$BASEDIR/vmbackup"
     exit 0
 fi
 
@@ -205,8 +213,8 @@ if [ ! -d "$MOUNT" ] || [ -z "$(ls -A "$MOUNT")" ]; then
     mount -o loop,ro "$ISOFILE" "$MOUNT"
 fi
 
-VMS="/home/cuckoo/vms/"
-VMBACKUP="/home/cuckoo/vmbackup/"
+VMS="$BASEDIR/vms/"
+VMBACKUP="$BASEDIR/vmbackup/"
 VMMOUNT="/home/cuckoo/vmmount/"
 
 mkdir -p "$VMS" "$VMBACKUP" "$VMMOUNT"
