@@ -250,7 +250,7 @@ class AnalysisManager(Thread):
             machinery.release(self.machine.label)
             self.errors.put(e)
 
-        aux = RunAuxiliary(task=self.task.to_dict(), machine=self.machine)
+        aux = RunAuxiliary(task=self.task, machine=self.machine)
         aux.start()
 
         # Generate the analysis configuration file.
