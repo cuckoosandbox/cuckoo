@@ -62,7 +62,16 @@ class MITM(Auxiliary):
             "-p", "%d" % self.port,
             "-w", outpath
         ]
-        self.proc = subprocess.Popen(args, stdout=subprocess.PIPE)
+
+        mitmlog = os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                               "%d" % self.task.id, "mitm.log")
+
+        mitmerr = os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                               "%d" % self.task.id, "mitm.err")
+
+        self.proc = subprocess.Popen(args,
+                                     stdout=open(mitmlog, "wb"),
+                                     stderr=open(mitmerr, "wb"))
 
         if "cert" in self.task.options:
             log.warning("A root certificate has been provided for this task, "
@@ -84,16 +93,10 @@ class MITM(Auxiliary):
                  self.proc.pid, self.machine.resultserver_ip, self.port)
 
     def stop(self):
-        mitmlog = os.path.join(CUCKOO_ROOT, "storage", "analyses",
-                               "%d" % self.task.id, "mitm.log")
-
         if self.proc and not self.proc.poll():
             try:
                 self.proc.terminate()
                 PORTS.remove(self.port)
-
-                with open(mitmlog, "wb") as f:
-                    f.write(self.proc.stdout.read())
             except:
                 try:
                     if not self.proc.poll():
