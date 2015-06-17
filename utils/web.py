@@ -15,20 +15,23 @@ try:
     from jinja2.loaders import FileSystemLoader
     from jinja2.environment import Environment
 except ImportError:
-    sys.stderr.write("ERROR: Jinja2 library is missing")
-    sys.exit(1)
+    sys.exit("ERROR: Jinja2 library is missing (run `pip install jinja2`)")
+
 try:
-    from bottle import route, run, static_file, redirect, request, HTTPError, hook, response
+    from bottle import run, static_file, request
+    from bottle import Bottle, HTTPError, response
 except ImportError:
-    sys.stderr.write("ERROR: Bottle library is missing")
-    sys.exit(1)
+    sys.exit("ERROR: Bottle library is missing (run `pip install bottle`)")
 
 logging.basicConfig()
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file
+from lib.cuckoo.core.database import Database
+from lib.cuckoo.core.startup import drop_privileges
+
+app = application = Bottle()
 
 # Templating engine.
 env = Environment()
@@ -93,7 +96,7 @@ def get_pagination_limit(new_limit):
 
     return limit
 
-@hook("after_request")
+@app.hook("after_request")
 def custom_headers():
     """Set some custom headers across all HTTP responses."""
     response.headers["Server"] = "Machete Server"
@@ -104,13 +107,13 @@ def custom_headers():
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Expires"] = "0"
 
-@route("/")
+@app.route("/")
 def index():
     context = {}
     template = env.get_template("submit.html")
     return template.render({"context": context, "machines": [m.name for m in db.list_machines()]})
 
-@route("/browse")
+@app.route("/browse")
 def browse():
     rows = db.list_tasks()
 
@@ -120,11 +123,11 @@ def browse():
 
     return template.render({"rows": tasks, "os": os})
 
-@route("/browse/page")
-@route("/browse/page/")
-@route("/browse/page/<page_id:int>")
-@route("/browse/page/<page_id:int>/")
-@route("/browse/page/<page_id:int>/<new_limit:int>")
+@app.route("/browse/page")
+@app.route("/browse/page/")
+@app.route("/browse/page/<page_id:int>")
+@app.route("/browse/page/<page_id:int>/")
+@app.route("/browse/page/<page_id:int>/<new_limit:int>")
 def browse_page(page_id=1, new_limit=-1):
     if page_id < 1:
         page_id = 1
@@ -133,10 +136,10 @@ def browse_page(page_id=1, new_limit=-1):
 
     tot_results = db.count_tasks()
 
-     # Add 1 to tot_pages, if there's some remainder.
+    # Add 1 to tot_pages if there's some remainder.
     tot_pages = (tot_results / limit) + ((tot_results % limit) and 1 or 0)
 
-    # Check that the user doesn't require an impossible pagination.
+    # Check that the user doesn't require an impossible pagination
     if page_id > tot_pages:
         page_id = tot_pages
 
@@ -164,21 +167,21 @@ def browse_page(page_id=1, new_limit=-1):
 
     return template.render({"rows": tasks, "os": os, "pagination": pagination})
 
-@route("/static/<filename:path>")
+@app.route("/static/<filename:path>")
 def server_static(filename):
     return static_file(filename, root=os.path.join(CUCKOO_ROOT, "data", "html"))
 
-@route("/submit", method="POST")
+@app.route("/submit", method="POST")
 def submit():
     context = {}
     errors = False
 
-    package  = request.forms.get("package", "")
-    options  = request.forms.get("options", "")
+    package = request.forms.get("package", "")
+    options = request.forms.get("options", "")
     priority = request.forms.get("priority", 1)
-    timeout  = request.forms.get("timeout", 0)
-    machine  = request.forms.get("machine", "")
-    memory  = request.forms.get("memory", "")
+    timeout = request.forms.get("timeout", 0)
+    machine = request.forms.get("machine", "")
+    memory = request.forms.get("memory", "")
     data = request.files.file
 
     try:
@@ -188,7 +191,7 @@ def submit():
         context["error_priority"] = "Needs to be a number"
         errors = True
 
-    if data == None or data == "":
+    if not data:
         context["error_toggle"] = True
         context["error_file"] = "Mandatory"
         errors = True
@@ -215,13 +218,12 @@ def submit():
 
     if task_id:
         template = env.get_template("success.html")
-        return template.render({"taskid": task_id,
-                            "submitfile": data.filename.decode("utf-8")})
+        return template.render({"taskid": task_id, "submitfile": data.filename.decode("utf-8")})
     else:
         template = env.get_template("error.html")
         return template.render({"error": "The server encountered an internal error while submitting {0}".format(data.filename.decode("utf-8"))})
 
-@route("/view/<task_id>/download")
+@app.route("/view/<task_id>/download")
 def downlaod_report(task_id):
     if not task_id.isdigit():
         return HTTPError(code=404, output="The specified ID is invalid")
@@ -236,7 +238,7 @@ def downlaod_report(task_id):
 
     return open(report_path, "rb").read()
 
-@route("/view/<task_id>")
+@app.route("/view/<task_id>")
 def view(task_id):
     if not task_id.isdigit():
         return HTTPError(code=404, output="The specified ID is invalid")
@@ -248,7 +250,7 @@ def view(task_id):
 
     return open(report_path, "rb").read().replace("<!-- BOTTLEREMOVEME", "").replace("BOTTLEREMOVEME --!>", "")
 
-@route("/pcap/<task_id>")
+@app.route("/pcap/<task_id>")
 def get_pcap(task_id):
     if not task_id.isdigit():
         return HTTPError(code=404, output="The specified ID is invalid")
@@ -263,14 +265,14 @@ def get_pcap(task_id):
 
     return open(pcap_path, "rb").read()
 
-@route("/files/<task_id>")
+@app.route("/files/<task_id>")
 def get_files(task_id):
     if not task_id.isdigit():
         return HTTPError(code=404, output="The specified ID is invalid")
 
     files_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "files")
     zip_file = os.path.join(CUCKOO_ROOT, "storage", "analyses", task_id, "files.zip")
-        
+
     with zipfile.ZipFile(zip_file, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         root_len = len(os.path.abspath(files_path))
         for root, dirs, files in os.walk(files_path):
@@ -291,6 +293,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-H", "--host", help="Host to bind the web server on", default="0.0.0.0", action="store", required=False)
     parser.add_argument("-p", "--port", help="Port to bind the web server on", default=8080, action="store", required=False)
+    parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
     args = parser.parse_args()
 
-    run(host=args.host, port=args.port, reloader=True)
+    if args.user:
+        drop_privileges(args.user)
+
+    run(app, host=args.host, port=args.port, reloader=True)

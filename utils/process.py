@@ -21,7 +21,7 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.database import Database, TASK_REPORTED, TASK_COMPLETED
 from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
 from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
-from lib.cuckoo.core.startup import init_modules
+from lib.cuckoo.core.startup import init_modules, drop_privileges
 
 def process(task_id, target=None, copy_path=None, report=False, auto=False):
     assert isinstance(task_id, int)
@@ -125,7 +125,11 @@ def main():
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
     parser.add_argument("-r", "--report", help="Re-generate report", action="store_true", required=False)
     parser.add_argument("-p", "--parallel", help="Number of parallel threads to use (auto mode only).", type=int, required=False, default=1)
+    parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
     args = parser.parse_args()
+
+    if args.user:
+        drop_privileges(args.user)
 
     if args.debug:
         log.setLevel(logging.DEBUG)

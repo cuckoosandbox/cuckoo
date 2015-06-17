@@ -1,7 +1,15 @@
                                   CHANGELOG
 
+
+Cuckoo Sandbox 1.3 (TBD)
+===============================
+
+* Added new Flask based distributed utility
+* Upgraded to MAEC 4.1
+
 Cuckoo Sandbox 1.2 (2015-03-04)
 ===============================
+
 * Added support for baremetal analysis (physical machinery module)
 * Added XenServer machinery module
 * Added process memory processing module

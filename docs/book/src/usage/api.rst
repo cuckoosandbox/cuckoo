@@ -27,6 +27,96 @@ By default it will bind the service on **localhost:8090**. If you want to change
 
     $ ./utils/api.py --host 0.0.0.0 --port 1337
 
+Web deployment
+--------------
+
+While the default method of starting the API server works fine for many cases, 
+some users may wish to deploy the server in a robust manner. This can be done 
+by exposing the API as a WSGI application through a web server. This section shows 
+a simple example of deploying the API via `uWSGI`_ and `Nginx`_. These 
+instructions are written with Ubuntu GNU/Linux in mind, but may be adapted for 
+other platforms.
+
+This solution requires uWSGI, the uWSGI Python plugin, and Nginx. All are available as packages::
+
+    $ sudo apt-get install uwsgi uwsgi-plugin-python nginx
+
+uWSGI setup
+^^^^^^^^^^^
+First, use uWSGI to run the API server as an application.
+
+To begin, create a uWSGI configuration file at ``/etc/uwsgi/apps-available/cuckoo-api.ini``::
+
+    [uwsgi]
+    plugins = python
+    chdir = /home/cuckoo/cuckoo
+    file = utils/api.py
+    uid = cuckoo
+    gid = cuckoo
+
+This configuration inherits a number of settings from the distribution's 
+default uWSGI configuration, loading ``api.py`` from the Cuckoo installation 
+directory. If Cuckoo is installed in a different path, adjust the configuration 
+(the *chdir* setting, and perhaps the *uid* and *gid* settings) accordingly.
+
+Enable the app configuration and start the server::
+
+    $ sudo ln -s /etc/uwsgi/apps-available/cuckoo-api.ini /etc/uwsgi/apps-enabled/
+    $ sudo service uwsgi start cuckoo-api    # or reload, if already running
+
+.. note::
+
+   Logs for the application may be found in the standard directory for distribution
+   app instances, i.e.:
+
+   ``/var/log/uwsgi/app/cuckoo-api.log``
+
+   The UNIX socket is created in a conventional location as well:
+
+   ``/run/uwsgi/app/cuckoo-api/socket``
+
+Nginx setup
+^^^^^^^^^^^
+
+With the API server running in uWSGI, Nginx can now be set up to run as a web
+server/reverse proxy, backending HTTP requests to it.
+
+To begin, create a Nginx configuration file at ``/etc/nginx/sites-available/cuckoo-api``::
+
+    upstream _uwsgi_cuckoo_api {
+        server unix:/run/uwsgi/app/cuckoo-api/socket;
+    }
+
+    # HTTP server
+    #
+    server {
+        listen 8090;
+        listen [::]:8090 ipv6only=on;
+
+        # REST API app
+        location / {
+            uwsgi_pass  _uwsgi_cuckoo_api;
+            include     uwsgi_params;
+        }
+    }
+
+Make sure that Nginx can connect to the uWSGI socket by placing its user in the **cuckoo** group::
+
+    $ sudo adduser www-data cuckoo
+
+Enable the server configuration and start the server::
+
+    $ sudo ln -s /etc/nginx/sites-available/cuckoo-api /etc/nginx/sites-enabled/
+    $ sudo service nginx start    # or reload, if already running
+
+At this point, the API server should be available at port **8090** on the server.
+Various configurations may be applied to extend this configuration, such as to
+tune server performance, add authentication, or to secure communications using
+HTTPS.
+
+.. _`uWSGI`: http://uwsgi-docs.readthedocs.org/en/latest/
+.. _`Nginx`: http://nginx.org/
+
 Resources
 =========
 
@@ -78,24 +168,24 @@ Following is a list of currently available resources and a brief description of 
         **Example request**::
 
             curl -F file=@/path/to/file http://localhost:8090/tasks/create/file
-            
+
         **Example request using Python**::
 
             import requests
             import json
-            
+
             REST_URL = "http://localhost:8090/tasks/create/file"
             SAMPLE_FILE = "/path/to/malwr.exe"
 
             with open(SAMPLE_FILE, "rb") as sample:
                 multipart_file = {"file": ("temp_file_name", sample)}
                 request = requests.post(REST_URL, files=multipart_file)
-            
+
             # Add your code to error checking for request.status_code.
-            
+
             json_decoder = json.JSONDecoder()
             task_id = json_decoder.decode(request.text)["task_id"]
-            
+
             # Add your code for error checking if task_id is None.
 
         **Example response**::
@@ -114,6 +204,7 @@ Following is a list of currently available resources and a brief description of 
             * ``platform`` *(optional)* - name of the platform to select the analysis machine from (e.g. "windows")
             * ``tags`` *(optional)* - define machine to start by tags. Platform must be set to use that. Tags are comma separated
             * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
+            * ``owner`` *(optional)* - task owner in case multiple users can submit files to the same cuckoo instance
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
             * ``clock`` *(optional)* - set virtual machine clock (format %m-%d-%Y %H:%M:%S)
@@ -133,25 +224,25 @@ Following is a list of currently available resources and a brief description of 
         **Example request**::
 
             curl -F url="http://www.malicious.site" http://localhost:8090/tasks/create/url
-        
+
         **Example request using Python**::
 
             import requests
             import json
-            
+
             REST_URL = "http://localhost:8090/tasks/create/url"
             SAMPLE_URL = "http://example.org/malwr.exe"
-            
+
             multipart_url = {"url": ("", SAMPLE_URL)}
             request = requests.post(REST_URL, files=multipart_url)
-            
+
             # Add your code to error checking for request.status_code.
-            
+
             json_decoder = json.JSONDecoder()
             task_id = json_decoder.decode(request.text)["task_id"]
-            
+
             # Add your code toerror checking if task_id is None.
-            
+
         **Example response**::
 
             {
@@ -168,6 +259,7 @@ Following is a list of currently available resources and a brief description of 
             * ``platform`` *(optional)* - name of the platform to select the analysis machine from (e.g. "windows")
             * ``tags`` *(optional)* - define machine to start by tags. Platform must be set to use that. Tags are comma separated
             * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
+            * ``owner`` *(optional)* - task owner in case multiple users can submit files to the same cuckoo instance
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
             * ``clock`` *(optional)* - set virtual machine clock (format %m-%d-%Y %H:%M:%S)
@@ -201,6 +293,7 @@ Following is a list of currently available resources and a brief description of 
                         "sample_id": null,
                         "guest": {},
                         "custom": null,
+                        "owner": "",
                         "priority": 1,
                         "platform": null,
                         "options": null,
@@ -222,6 +315,7 @@ Following is a list of currently available resources and a brief description of 
                         "sample_id": 1,
                         "guest": {},
                         "custom": null,
+                        "owner": "",
                         "priority": 1,
                         "platform": null,
                         "options": null,
@@ -272,6 +366,7 @@ Following is a list of currently available resources and a brief description of 
                     "sample_id": null,
                     "guest": {},
                     "custom": null,
+                    "owner": "",
                     "priority": 1,
                     "platform": null,
                     "options": null,
@@ -527,7 +622,24 @@ Following is a list of currently available resources and a brief description of 
 
     **GET /cuckoo/status/**
 
-        Returns status of the cuckoo server.
+        Returns status of the cuckoo server. In version 1.3 the diskspace
+        entry was added. The diskspace entry shows the used, free, and total
+        diskspace at the disk where the respective directories can be found.
+        The diskspace entry allows monitoring of a Cuckoo node through the
+        Cuckoo API. Note that each directory is checked separately as one
+        may create a symlink for $CUCKOO/storage/analyses to a separate
+        harddisk, but keep $CUCKOO/storage/binaries as-is. (This feature is
+        only available under Unix!)
+
+        In version 1.3 the cpuload entry was also added - the cpuload entry
+        shows the CPU load for the past minute, the past 5 minutes, and the
+        past 15 minutes, respectively. (This feature is only available under
+        Unix!)
+
+        **Diskspace directories**:
+            * ``analyses`` - $CUCKOO/storage/analyses/
+            * ``binaries`` - $CUCKOO/storage/binaries/
+            * ``temporary`` - ``tmppath`` as specified in ``conf/cuckoo.conf``
 
         **Example request**::
 
@@ -543,6 +655,23 @@ Following is a list of currently available resources and a brief description of 
                     "completed": 0,
                     "pending": 0
                 },
+                "diskspace": {
+                    "analyses": {
+                        "total": 491271233536,
+                        "free": 71403470848,
+                        "used": 419867762688
+                    },
+                    "binaries": {
+                        "total": 491271233536,
+                        "free": 71403470848,
+                        "used": 419867762688
+                    },
+                    "temporary": {
+                        "total": 491271233536,
+                        "free": 71403470848,
+                        "used": 419867762688
+                    }
+                },
                 "version": "1.0",
                 "protocol_version": 1,
                 "hostname": "Patient0",
@@ -550,7 +679,6 @@ Following is a list of currently available resources and a brief description of 
                     "available": 4,
                     "total": 5
                 }
-                "tools":["vanilla"]
             }
 
         **Status codes**:

@@ -3,9 +3,9 @@ Distributed Cuckoo
 ==================
 
 As mentioned in :doc:`submit`, Cuckoo provides a REST API for Distributed
-Cuckoo usage. The standalone distributed script allows one to setup a single
-REST API point to which samples and URLs can be submitted which will then, in
-turn, be submitted to one of the configured Cuckoo nodes.
+Cuckoo usage. The distributed script allows one to setup a single REST API
+point to which samples and URLs can be submitted which will then, in turn, be
+submitted to one of the configured Cuckoo nodes.
 
 A typical setup thus includes a machine on which the distributed script is run
 and one or more machines running an instance of the Cuckoo daemon
@@ -25,7 +25,7 @@ Dependencies
 The distributed script uses a few Python libraries which can be installed
 through the following command (on Debian/Ubuntu)::
 
-    $ sudo pip install flask flask-restful flask-sqlalchemy requests
+    $ sudo pip install flask flask-sqlalchemy requests
 
 Starting the Distributed REST API
 =================================
@@ -33,32 +33,24 @@ Starting the Distributed REST API
 The Distributed REST API requires a few commandline options in order to run.
 Following is a listing of all available commandline options::
 
-    $ ./utils/dist.py -h
+    $ ./distributed/app.py -h
 
-    usage: dist.py [-h] [-d] [--db DB] --samples-directory SAMPLES_DIRECTORY
-                [--uptime-logfile UPTIME_LOGFILE] --report-formats
-                REPORT_FORMATS --reports-directory REPORTS_DIRECTORY
-                [host] [port]
+    usage: app.py [-h] [-s SETTINGS] [-v] [host] [port]
 
     positional arguments:
-        host                  Host to listen on
-        port                  Port to listen on
+        host                  Host to listen on.
+        port                  Port to listen on.
 
     optional arguments:
         -h, --help            show this help message and exit
-        -d, --debug           Enable debug logging
-        --db DB               Database connection string
-        --samples-directory SAMPLES_DIRECTORY
-                                Samples directory
-        --uptime-logfile UPTIME_LOGFILE
-                                Uptime logfile path
-        --report-formats REPORT_FORMATS
-                                Reporting formats to fetch
-        --reports-directory REPORTS_DIRECTORY
-                                Reports directory
+        -s SETTINGS, --settings SETTINGS
+                              Settings file.
+        -v, --verbose         Enable verbose logging.
 
-In particular the ``--report-formats``, ``--samples-directory``, and
-``--reports-directory`` are required.
+Settings for the Distributed API are defined in its own configuration
+file, located at ``conf/distributed.conf``. The various configuration options
+are described in the configuration file, but following we have more in-depth
+descriptions as well.
 
 Report Formats
 --------------
@@ -76,8 +68,7 @@ Samples Directory
 -----------------
 
 The samples directory denotes the directory where the submitted samples will
-be stored *temporarily*, until they're passed on to a Cuckoo node and
-processed.
+be stored temporarily, until they're passed on to a Cuckoo node and processed.
 
 Reports Directory
 -----------------
@@ -118,100 +109,111 @@ Following are all RESTful resources. Also make sure to check out the
 
 .. _node_root_get:
 
-GET /node
----------
+GET /api/node
+-------------
 
 Returns all enabled nodes. For each node its associated name, API url, and
 machines are returned::
 
-    $ curl http://localhost:9003/node
+    $ curl http://localhost:9003/api/node
     {
+        "success": true,
         "nodes": {
             "localhost": {
                 "machines": [
                     {
                         "name": "cuckoo1",
                         "platform": "windows",
-                        "tags": [
-                            ""
-                        ]
+                        "tags": []
                     }
                 ],
                 "name": "localhost",
-                "url": "http://0:8090/"
+                "url": "http://localhost:8090/"
             }
         }
     }
 
 .. _node_root_post:
 
-POST /node
-----------
+POST /api/node
+--------------
 
 Register a new Cuckoo node by providing the name and the URL::
 
-    $ curl http://localhost:9003/node -F name=localhost \
+    $ curl http://localhost:9003/api/node -F name=localhost \
         -F url=http://localhost:8090/
     {
-        "machines": [
-            {
-                "name": "cuckoo1",
-                "platform": "windows",
-                "tags": []
-            }
-        ],
-        "name": "localhost"
+        "success": true
     }
 
 .. _node_get:
 
-GET /node/<name>
-----------------
+GET /api/node/<name>
+--------------------
 
 Get basic information about a particular Cuckoo node::
 
-    $ curl http://localhost:9003/node/localhost
+    $ curl http://localhost:9003/api/node/localhost
     {
-        "name": "localhost",
-        "url": "http://localhost:8090/"
+        "success": true,
+        "nodes": [
+            {
+                "name": "localhost",
+                "url": "http://localhost:8090/"
+                "machines": [
+                    {
+                        "name": "cuckoo1",
+                        "platform": "windows",
+                        "tags": []
+                    }
+                ]
+            }
+        ]
     }
 
 .. _node_put:
 
-PUT /node/<name>
-----------------
+PUT /api/node/<name>
+--------------------
 
 Update basic information of a Cuckoo node::
 
-    $ curl -XPUT http://localhost:9003/node/localhost -F name=newhost \
+    $ curl -XPUT http://localhost:9003/api/node/localhost -F name=newhost \
         -F url=http://1.2.3.4:8090/
-    null
+    {
+        "success": true
+    }
 
 .. _node_delete:
 
-DELETE /node/<name>
--------------------
+DELETE /api/node/<name>
+-----------------------
 
 Disable a Cuckoo node, therefore not having it process any new tasks, but
-keep its history in the Distributed's database::
+keeping its history in the Distributed's database::
 
     $ curl -XDELETE http://localhost:9003/node/localhost
-    null
+    {
+        "success": true
+    }
 
 .. _task_root_get:
 
-GET /task
----------
+GET /api/task
+-------------
 
-Get a list of all tasks in the database (an offset and limit parameter have
-yet to be added)::
+Get a list of all tasks in the database. In order to limit the amount of
+results, there's an ``offset``, ``limit``, ``finished``, and ``owner`` field
+available::
 
-    $ curl http://localhost:9003/task
+    $ curl http://localhost:9003/api/task?limit=1
     {
+        "success": true,
         "tasks": {
             "1": {
                 "clock": null,
                 "custom": null,
+                "owner": "",
                 "enforce_timeout": null,
                 "machine": null,
                 "memory": null,
@@ -229,29 +231,33 @@ yet to be added)::
 
 .. _task_root_post:
 
-POST /task
-----------
+POST /api/task
+--------------
 
 Submit a new file or URL to be analyzed::
 
-    $ curl http://localhost:9003/task -F file=@sample.exe
+    $ curl http://localhost:9003/api/task -F file=@sample.exe
     {
+        "success": true,
         "task_id": 2
     }
 
 .. _task_get:
 
-GET /task/<id>
---------------
+GET /api/task/<id>
+------------------
 
 Get basic information about a particular task::
 
-    $ curl http://localhost:9003/task/2
+    $ curl http://localhost:9003/api/task/2
     {
+        "success": true,
         "tasks": {
             "2": {
+                "id": 2,
                 "clock": null,
                 "custom": null,
+                "owner": "",
                 "enforce_timeout": null,
                 "machine": null,
                 "memory": null,
@@ -261,26 +267,30 @@ Get basic information about a particular task::
                 "platform": "windows",
                 "priority": 1,
                 "tags": null,
-                "task_id": 2,
-                "timeout": null
+                "timeout": null,
+                "task_id": 1,
+                "node_id": 2,
+                "finished": false
             }
         }
     }
 
 .. _task_delete:
 
-DELETE /task/<id>
------------------
+DELETE /api/task/<id>
+---------------------
 
 Delete all associated data of a task, namely the binary and the reports::
 
-    $ curl -XDELETE http://localhost:9003/task/2
-    null
+    $ curl -XDELETE http://localhost:9003/api/task/2
+    {
+        "success": true
+    }
 
 .. _report_get:
 
-GET /report/<id>/<format>
--------------------------
+GET /api/report/<id>/<format>
+-----------------------------
 
 Fetch a report for the given task in the specified format::
 
@@ -290,6 +300,7 @@ Fetch a report for the given task in the specified format::
 
     # Get an XML report.
     $ curl http://localhost:9003/report/2/maec -H "Accept: application/xml"
+    ...
 
 .. _quick-usage:
 
@@ -298,27 +309,29 @@ Quick usage
 
 For practical usage the following few commands will be most interesting.
 
-Register a Cuckoo node - a Cuckoo REST API running on the same machine in this
+Register a Cuckoo node - a Cuckoo API running on the same machine in this
 case::
 
-    $ curl http://localhost:9003/node -F name=localhost -F url=http://localhost:8090/
+    $ curl http://localhost:9003/api/node \
+        -F name=localhost -F url=http://localhost:8090/
 
 Disable a Cuckoo node::
 
-    $ curl -XDELETE http://localhost:9003/node/<name>
+    $ curl -XDELETE http://localhost:9003/api/node/localhost
 
 Submit a new analysis task without any special requirements (e.g., using
 Cuckoo ``tags``, a particular machine, etc)::
 
-    $ curl http://localhost:9003/task -F file=@/path/to/sample.exe
+    $ curl http://localhost:9003/api/task -F file=@/path/to/sample.exe
 
 Get the report of a task has been finished (if it hasn't finished you'll get
-a 404 page). Following example will default to the ``JSON`` report::
+an error with code 420). Following example will default to the ``JSON``
+report::
 
-    $ curl http://localhost:9003/report/1
+    $ curl http://localhost:9003/api/report/1
 
 In order to fetch an XML report such as a MAEC report, use the following
-instead::
+instead (this is currently *not* working!)::
 
     $ curl http://localhost:9003/report/1/maec -H 'Accept: application/xml'
 
@@ -391,8 +404,7 @@ On the first machine start a separate ``screen(1)`` session for the
 Distributed Cuckoo script with all the required parameters (see the rest of
 the documentation on the parameters for this script)::
 
-    $ screen -S distributed ./utils/dist.py --samples-directory /a/b/samples \
-        --report-formats json --reports-directory /a/b/reports
+    $ screen -S distributed ./distributed/app.py
 
 Register Cuckoo nodes
 ---------------------
@@ -401,7 +413,7 @@ As outlined in :ref:`quick-usage` the Cuckoo nodes have to be registered with
 the Distributed Cuckoo script::
 
     $ curl http://localhost:9003/node -F name=cuckoo0 -F url=http://localhost:8090/
-    $ curl http://1.2.3.4:9003/node -F name=cuckoo1 -F url=http://1.2.3.4:8090/
+    $ curl http://localhost:9003/node -F name=cuckoo1 -F url=http://1.2.3.4:8090/
 
 Having registered the Cuckoo nodes all that's left to do now is to submit
 tasks and fetch reports once finished. Documentation on these commands can be

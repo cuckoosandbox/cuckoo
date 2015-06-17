@@ -29,7 +29,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "495d5a6edef3"
+SCHEMA_VERSION = "3aa42d870199"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -253,6 +253,7 @@ class Task(Base):
     timeout = Column(Integer(), server_default="0", nullable=False)
     priority = Column(Integer(), server_default="1", nullable=False)
     custom = Column(String(255), nullable=True)
+    owner = Column(String(64), nullable=True)
     machine = Column(String(255), nullable=True)
     package = Column(String(255), nullable=True)
     tags = relationship("Tag", secondary=tasks_tags, cascade="all, delete",
@@ -473,8 +474,10 @@ class Database(object):
                           resultserver_port=resultserver_port)
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
-            for tag in tags.replace(" ", "").split(","):
-                machine.tags.append(self._get_or_create(session, Tag, name=tag))
+            for tag in tags.split(","):
+                if tag.strip():
+                    tag = self._get_or_create(session, Tag, name=tag.strip())
+                    machine.tags.append(tag)
         session.add(machine)
 
         try:
@@ -495,6 +498,10 @@ class Database(object):
         session = self.Session()
         try:
             row = session.query(Task).get(task_id)
+            
+            if not row:
+                return
+            
             row.status = status
 
             if status == TASK_RUNNING:
@@ -518,9 +525,9 @@ class Database(object):
         row = None
         try:
             if machine != "":
-                row = session.query(Task).filter_by(status=TASK_PENDING).filter(Machine.name==machine).order_by("priority desc, added_on").first()
+                row = session.query(Task).filter_by(status=TASK_PENDING).filter(Machine.name == machine).order_by(Task.priority.desc(), Task.added_on.asc()).first()
             else:
-                row = session.query(Task).filter_by(status=TASK_PENDING).order_by("priority desc, added_on").first()
+                row = session.query(Task).filter_by(status=TASK_PENDING).order_by(Task.priority.desc(), Task.added_on.asc()).first()
 
             if not row:
                 return None
@@ -722,7 +729,7 @@ class Database(object):
             return machines
         except SQLAlchemyError as e:
             log.debug("Database error getting available machines: {0}".format(e))
-            return 0
+            return []
         finally:
             session.close()
 
@@ -775,7 +782,7 @@ class Database(object):
 
     @classlock
     def add(self, obj, timeout=0, package="", options="", priority=1,
-            custom="", machine="", platform="", tags=None,
+            custom="", owner="", machine="", platform="", tags=None,
             memory=False, enforce_timeout=False, clock=None):
         """Add a task to database.
         @param obj: object to add (File or URL).
@@ -783,6 +790,7 @@ class Database(object):
         @param options: analysis options.
         @param priority: analysis priority.
         @param custom: custom options.
+        @param owner: task owner.
         @param machine: selected machine.
         @param platform: platform.
         @param tags: optional tags that must be set for machine selection
@@ -836,6 +844,7 @@ class Database(object):
         task.options = options
         task.priority = priority
         task.custom = custom
+        task.owner = owner
         task.machine = machine
         task.platform = platform
         task.memory = memory
@@ -843,8 +852,9 @@ class Database(object):
 
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
-            for tag in tags.replace(" ", "").split(","):
-                task.tags.append(self._get_or_create(session, Tag, name=tag))
+            for tag in tags.split(","):
+                tag = self._get_or_create(session, Tag, name=tag.strip())
+                task.tags.append(tag)
 
         if clock:
             if isinstance(clock, str) or isinstance(clock, unicode):
@@ -871,14 +881,15 @@ class Database(object):
         return task_id
 
     def add_path(self, file_path, timeout=0, package="", options="",
-                 priority=1, custom="", machine="", platform="", tags=None,
-                 memory=False, enforce_timeout=False, clock=None):
+                 priority=1, custom="", owner="", machine="", platform="",
+                 tags=None, memory=False, enforce_timeout=False, clock=None):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
         @param options: analysis options.
         @param priority: analysis priority.
         @param custom: custom options.
+        @param owner: task owner.
         @param machine: selected machine.
         @param platform: platform.
         @param tags: Tags required in machine selection
@@ -898,19 +909,19 @@ class Database(object):
             priority = 1
 
         return self.add(File(file_path), timeout, package, options, priority,
-                        custom, machine, platform, tags, memory,
+                        custom, owner, machine, platform, tags, memory,
                         enforce_timeout, clock)
 
-    @classlock
     def add_url(self, url, timeout=0, package="", options="", priority=1,
-                custom="", machine="", platform="", tags=None, memory=False,
-                enforce_timeout=False, clock=None):
+                custom="", owner="", machine="", platform="", tags=None,
+                memory=False, enforce_timeout=False, clock=None):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
         @param options: analysis options.
         @param priority: analysis priority.
         @param custom: custom options.
+        @param owner: task owner.
         @param machine: selected machine.
         @param platform: platform.
         @param tags: tags for machine selection
@@ -927,7 +938,7 @@ class Database(object):
             priority = 1
 
         return self.add(URL(url), timeout, package, options, priority,
-                        custom, machine, platform, tags, memory,
+                        custom, owner, machine, platform, tags, memory,
                         enforce_timeout, clock)
 
     @classlock
@@ -965,17 +976,18 @@ class Database(object):
             tags = task.tags
 
         return add(task.target, task.timeout, task.package, task.options,
-                   task.priority, task.custom, task.machine, task.platform,
-                   tags, task.memory, task.enforce_timeout, task.clock)
+                   task.priority, task.custom, task.owner, task.machine,
+                   task.platform, tags, task.memory, task.enforce_timeout,
+                   task.clock)
 
-    @classlock
-    def list_tasks(self, limit=None, details=False, category=None,
+    def list_tasks(self, limit=None, details=False, category=None, owner=None,
                    offset=None, status=None, sample_id=None, not_status=None,
                    completed_after=None, order_by=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
         @param category: filter by category
+        @param owner: task owner
         @param offset: list offset
         @param status: filter by task status
         @param sample_id: filter tasks for a sample
@@ -994,6 +1006,8 @@ class Database(object):
                 search = search.filter(Task.status != not_status)
             if category:
                 search = search.filter_by(category=category)
+            if owner:
+                search = search.filter_by(owner=owner)
             if details:
                 search = search.options(joinedload("guest"), joinedload("errors"), joinedload("tags"))
             if sample_id is not None:
@@ -1001,7 +1015,11 @@ class Database(object):
             if completed_after:
                 search = search.filter(Task.completed_on > completed_after)
 
-            search = search.order_by(order_by or "added_on desc")
+            if order_by is not None:
+                search = search.order_by(order_by)
+            else:
+                search = search.order_by(Task.added_on.desc())
+
             tasks = search.limit(limit).offset(offset).all()
             return tasks
         except SQLAlchemyError as e:

@@ -11,6 +11,7 @@ import urllib
 import urllib2
 import logging
 import logging.handlers
+import pwd
 
 import modules.auxiliary
 import modules.processing
@@ -293,7 +294,7 @@ def cuckoo_clean():
         try:
             conn = MongoClient(host, port)
             conn.drop_database(mdb)
-            conn.disconnect()
+            conn.close()
         except:
             log.warning("Unable to drop MongoDB database: %s", mdb)
 
@@ -324,3 +325,18 @@ def cuckoo_clean():
                 os.unlink(path)
             except (IOError, OSError) as e:
                 log.warning("Error removing file %s: %s", path, e)
+
+def drop_privileges(username):
+    """Drops privileges to selected user.
+    @param username: drop privileges to this username
+    """
+    try:
+        user = pwd.getpwnam(username)
+        os.setgroups((user.pw_gid,))
+        os.setgid(user.pw_gid)
+        os.setuid(user.pw_uid)
+        os.putenv("HOME", user.pw_dir)
+    except KeyError:
+        sys.exit("Invalid user specified to drop privileges to: %s" % user)
+    except OSError as e:
+        sys.exit("Failed to drop privileges to %s: %s" % (username, e))

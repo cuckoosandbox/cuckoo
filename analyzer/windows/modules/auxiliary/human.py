@@ -24,6 +24,7 @@ RESOLUTION = {
 }
 
 def foreach_child(hwnd, lparam):
+    # List of buttons labels to click.
     buttons = [
         "yes",
         "ok",
@@ -36,6 +37,12 @@ def foreach_child(hwnd, lparam):
         "don't send",
         "continue",
         "unzip",
+        "open",
+    ]
+
+    # List of buttons labels to not click.
+    dontclick = [
+        "don't run",
     ]
 
     classname = create_unicode_buffer(50)
@@ -48,9 +55,14 @@ def foreach_child(hwnd, lparam):
         text = create_unicode_buffer(length + 1)
         USER32.SendMessageW(hwnd, WM_GETTEXT, length + 1, text)
 
-        # Check if the button is "positive".
+        # Check if the button is set as "clickable" and click it.
+        textval = text.value.replace("&", "").lower()
         for button in buttons:
-            if button in text.value.lower():
+            if button in textval:
+                for btn in dontclick:
+                    if btn in textval:
+                        return False
+
                 log.info("Found button \"%s\", clicking it" % text.value)
                 USER32.SetForegroundWindow(hwnd)
                 KERNEL32.Sleep(1000)
@@ -94,16 +106,43 @@ def click_mouse():
 class Human(Auxiliary, Thread):
     """Human after all"""
 
-    def __init__(self):
+    def __init__(self, options):
         Thread.__init__(self)
+        Auxiliary.__init__(self, options)
         self.do_run = True
 
     def stop(self):
         self.do_run = False
 
     def run(self):
+        # Global disable flag.
+        if "human" in self.options:
+            self.do_move_mouse = int(self.options["human"])
+            self.do_click_mouse = int(self.options["human"])
+            self.do_click_buttons = int(self.options["human"])
+        else:
+            self.do_move_mouse = True
+            self.do_click_mouse = True
+            self.do_click_buttons = True
+
+        # Per-feature enable or disable flag.
+        if "human.move_mouse" in self.options:
+            self.do_move_mouse = int(self.options["human.move_mouse"])
+
+        if "human.click_mouse" in self.options:
+            self.do_click_mouse = int(self.options["human.click_mouse"])
+
+        if "human.click_buttons" in self.options:
+            self.do_click_buttons = int(self.options["human.click_buttons"])
+
         while self.do_run:
-            click_mouse()
-            move_mouse()
-            USER32.EnumWindows(EnumWindowsProc(foreach_window), 0)
+            if self.do_click_mouse:
+                click_mouse()
+
+            if self.do_move_mouse:
+                move_mouse()
+
+            if self.do_click_buttons:
+                USER32.EnumWindows(EnumWindowsProc(foreach_window), 0)
+
             KERNEL32.Sleep(1000)

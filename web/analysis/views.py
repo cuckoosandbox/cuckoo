@@ -160,8 +160,8 @@ def filtered_chunk(request, task_id, pid, category):
 
 @csrf_exempt
 def search_behavior(request, task_id):
-    if request.method == 'POST':
-        query = request.POST.get('search')
+    if request.method == "POST":
+        query = request.POST.get("search")
         results = []
 
         # Fetch anaylsis report
@@ -179,18 +179,18 @@ def search_behavior(request, task_id):
             for chunk in chunks:
                 for call in chunk["calls"]:
                     query = re.compile(query)
-                    if query.search(call['api']):
+                    if query.search(call["api"]):
                         process_results.append(call)
                     else:
-                        for argument in call['arguments']:
-                            if query.search(argument['name']) or query.search(argument['value']):
+                        for argument in call["arguments"]:
+                            if query.search(argument["name"]) or query.search(argument["value"]):
                                 process_results.append(call)
                                 break
 
             if len(process_results) > 0:
                 results.append({
-                    'process': process,
-                    'signs': process_results
+                    "process": process,
+                    "signs": process_results
                 })
 
         return render_to_response("analysis/behavior/_search_results.html",
@@ -372,13 +372,20 @@ def remove(request, task_id):
     @todo: remove folder from storage.
     """
     anals = results_db.analysis.find({"info.id": int(task_id)})
-    # Only one analysis found, proceed.
-    if anals.count() == 1:
+
+    # Checks if more analysis found with the same ID, like if process.py was run manually.
+    if anals.count() > 1:
+        message = "Multiple tasks with this ID deleted, thanks for all the fish. (The specified analysis was duplicated in mongo)"
+    elif anals.count() == 1:
+        message = "Task deleted, thanks for all the fish."
+
+    if anals.count() > 0:
         # Delete dups too.
         for analysis in anals:
             # Delete sample if not used.
-            if results_db.analysis.find({"target.file_id": ObjectId(analysis["target"]["file_id"])}).count() == 1:
-                fs.delete(ObjectId(analysis["target"]["file_id"]))
+            if "file_id" in analysis["target"]:
+                if results_db.analysis.find({"target.file_id": ObjectId(analysis["target"]["file_id"])}).count() == 1:
+                    fs.delete(ObjectId(analysis["target"]["file_id"]))
             # Delete screenshots.
             for shot in analysis["shots"]:
                 if results_db.analysis.find({"shots": ObjectId(shot)}).count() == 1:
@@ -386,6 +393,11 @@ def remove(request, task_id):
             # Delete network pcap.
             if "pcap_id" in analysis["network"] and results_db.analysis.find({"network.pcap_id": ObjectId(analysis["network"]["pcap_id"])}).count() == 1:
                 fs.delete(ObjectId(analysis["network"]["pcap_id"]))
+            
+            # Delete sorted pcap
+            if "sorted_pcap_id" in analysis["network"] and results_db.analysis.find({"network.sorted_pcap_id": ObjectId(analysis["network"]["sorted_pcap_id"])}).count() == 1:
+                fs.delete(ObjectId(analysis["network"]["sorted_pcap_id"]))
+                
             # Delete dropped.
             for drop in analysis["dropped"]:
                 if "object_id" in drop and results_db.analysis.find({"dropped.object_id": ObjectId(drop["object_id"])}).count() == 1:
@@ -396,14 +408,9 @@ def remove(request, task_id):
                     results_db.calls.remove({"_id": ObjectId(call)})
             # Delete analysis data.
             results_db.analysis.remove({"_id": ObjectId(analysis["_id"])})
-    elif anals.count() == 0:
-        return render_to_response("error.html",
-                                  {"error": "The specified analysis does not exist"},
-                                  context_instance=RequestContext(request))
-    # More analysis found with the same ID, like if process.py was run manually.
     else:
         return render_to_response("error.html",
-                                  {"error": "The specified analysis is duplicated in mongo, please check manually"},
+                                  {"error": "The specified analysis does not exist"},
                                   context_instance=RequestContext(request))
 
     # Delete from SQL db.
@@ -411,7 +418,7 @@ def remove(request, task_id):
     db.delete_task(task_id)
 
     return render_to_response("success.html",
-                              {"message": "Task deleted, thanks for all the fish."},
+                              {"message": message},
                               context_instance=RequestContext(request))
 
 @require_safe
@@ -422,8 +429,8 @@ def pcapstream(request, task_id, conntuple):
     src, sport, dst, dport, proto = conntuple.split(",")
     sport, dport = int(sport), int(dport)
 
-    conndata = results_db.analysis.find_one({ "info.id": int(task_id) },
-        { "network.tcp": 1, "network.udp": 1, "network.sorted_pcap_id": 1 },
+    conndata = results_db.analysis.find_one({"info.id": int(task_id)},
+        {"network.tcp": 1, "network.udp": 1, "network.sorted_pcap_id": 1},
         sort=[("_id", pymongo.DESCENDING)])
 
     if not conndata:
@@ -435,7 +442,7 @@ def pcapstream(request, task_id, conntuple):
         if proto == "udp": connlist = conndata["network"]["udp"]
         else: connlist = conndata["network"]["tcp"]
 
-        conns = filter(lambda i: (i["sport"],i["dport"],i["src"],i["dst"]) == (sport,dport,src,dst),
+        conns = filter(lambda i: (i["sport"], i["dport"], i["src"], i["dst"]) == (sport, dport, src, dst),
             connlist)
         stream = conns[0]
         offset = stream["offset"]
@@ -446,7 +453,7 @@ def pcapstream(request, task_id, conntuple):
 
     try:
         fobj = fs.get(conndata["network"]["sorted_pcap_id"])
-        # gridfs gridout has no fileno(), which is needed by dpkt pcap reader for NOTHING
+        # Gridfs gridout has no fileno(), which is needed by dpkt pcap reader for NOTHING.
         setattr(fobj, "fileno", lambda: -1)
     except:
         return render_to_response("standalone_error.html",
@@ -454,4 +461,5 @@ def pcapstream(request, task_id, conntuple):
             context_instance=RequestContext(request))
 
     packets = list(network.packets_for_stream(fobj, offset))
+    # TODO: starting from django 1.7 we should use JsonResponse.
     return HttpResponse(json.dumps(packets), content_type="application/json")

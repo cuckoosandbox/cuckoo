@@ -13,71 +13,27 @@ have an appropriate version installed. For the current release **Python 2.7** is
 
 Install Python on Ubuntu::
 
-    $ sudo apt-get install python
+    $ sudo apt-get install python python-pip
 
 If you want to use the Django-based web interface, you'll have to install MongoDB too::
 
     $ sudo apt-get install mongodb
 
-In order to properly function, Cuckoo requires SQLAlchemy and Python BSON to be installed.
+In order to properly function, Cuckoo requires some dependencies. They can all be installed through PyPI like this:
 
-Install with ``apt-get``::
-
-    $ sudo apt-get install python-sqlalchemy python-bson
-
-Install with ``pip``::
-
-    $ sudo pip install sqlalchemy bson
-
-There are other optional dependencies that are mostly used by modules and utilities.
-The following libraries are not strictly required, but their installation is recommended:
-
-    * `Dpkt`_ (Highly Recommended): for extracting relevant information from PCAP files.
-    * `Jinja2`_ (Highly Recommended): for rendering the HTML reports and the web interface.
-    * `Magic`_ (Optional): for identifying files' formats (otherwise use "file" command line utility)
-    * `Pydeep`_ (Optional): for calculating ssdeep fuzzy hash of files.
-    * `Pymongo`_ (Optional): for storing the results in a MongoDB database.
-    * `Yara`_ and Yara Python (Optional): for matching Yara signatures (release >=3.0).
-    * `Libvirt`_ (Optional): for using the KVM machine manager.
-    * `Bottlepy`_ (Optional): for using the ``api.py`` or ``web.py`` utility (release >=0.10).
-    * `Django`_ (Optional): for using the web interface (release >=1.5).
-    * `Pefile`_ (Optional): used for static analysis of PE32 binaries.
-    * `Volatility`_ (Optional): used for forensic analysis on memory (release >=2.4)
-    * `MAEC Python bindings`_ (Optional): used for MAEC reporting (use a release >=4.0, but <4.1).
-    * `Chardet`_ (Optional): used for detecting string encoding.
-
-Some of them are already packaged in Debian/Ubuntu and can be installed with the following command::
-
-    $ sudo apt-get install python-dpkt python-jinja2 python-magic python-pymongo python-gridfs python-libvirt python-bottle python-pefile python-chardet
-
-Except for *python-magic*, *python-dpkt* and *python-libvirt*, the others can be installed through ``pip`` too::
-
-    $ sudo pip install jinja2 pymongo bottle pefile django chardet
+    $ sudo pip install -r requirements.txt
 
 To have MAEC support, you need to first install the Cybox and then the MAEC libraries::
 
-    $ sudo pip install cybox==2.0.1.4
-    $ sudo pip install maec==4.0.1.0
+    $ sudo pip install cybox==2.1.0.9
+    $ sudo pip install maec==4.1.0.11
 
-*Yara* and *Pydeep* will have to be installed manually, so please refer to their websites.
+[Yara](http://code.google.com/p/yara-project/) and [Pydeep](https://github.com/kbandla/pydeep)
+will have to beinstalled manually, so please refer to their websites.
 
 If you want to use KVM it's packaged too and you can install it with the following command::
 
-    $ sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
-
-.. _Magic: http://www.darwinsys.com/file/
-.. _Dpkt: http://code.google.com/p/dpkt/
-.. _Jinja2: http://jinja.pocoo.org/docs/
-.. _Pydeep: https://github.com/kbandla/pydeep
-.. _Pymongo: http://pypi.python.org/pypi/pymongo/
-.. _Yara: http://code.google.com/p/yara-project/
-.. _Libvirt: http://www.libvirt.org
-.. _Bottlepy: http://www.bottlepy.org
-.. _Django: https://www.djangoproject.com/
-.. _Pefile: http://code.google.com/p/pefile/
-.. _Volatility: https://github.com/volatilityfoundation/
-.. _MAEC Python bindings: https://pypi.python.org/pypi/maec/4.0.1.0
-.. _Chardet: https://pypi.python.org/pypi/chardet
+    $ sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils python-libvirt
 
 If you want to use XenServer you'll have to install the *XenAPI* Python package::
 
