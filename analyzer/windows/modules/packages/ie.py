@@ -86,9 +86,16 @@ class IE(Package):
             },
         ]])
 
-    def start(self, url):
+    def start(self, target):
         if "proxy" in self.options:
             self.setup_proxy(self.options["proxy"])
 
+        # If it's a HTML file, force an extension, or otherwise Internet
+        # Explorer will open it as a text file or something else non-html.
+        if os.path.exists(target) and not target.endswith((".htm", ".html")):
+            os.rename(target, target + ".html")
+            target += ".html"
+            log.info("Submitted file is missing extension, adding .html")
+
         iexplore = self.get_path("Internet Explorer")
-        return self.execute(iexplore, args=[url])
+        return self.execute(iexplore, args=[target])
