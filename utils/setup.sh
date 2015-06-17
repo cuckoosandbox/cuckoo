@@ -194,7 +194,7 @@ _setup() {
     setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
 
     # Setup a Cuckoo user.
-    useradd cuckoo -d "/home/cuckoo"
+    useradd cuckoo -d /home/cuckoo -s /bin/bash
 
     VMTEMP="$(mktemp -d "/home/cuckoo/tempXXXXXX")"
 
