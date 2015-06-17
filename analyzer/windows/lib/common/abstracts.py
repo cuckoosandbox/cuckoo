@@ -95,6 +95,10 @@ class Package(object):
                     SetValueEx(key_handle, key, 0, REG_SZ, value)
                 elif isinstance(value, int):
                     SetValueEx(key_handle, key, 0, REG_DWORD, value)
+                elif isinstance(value, dict):
+                    self.init_regkeys([
+                        [rootkey, "%s\\%s" % (subkey, key), value],
+                    ])
                 else:
                     raise CuckooPackageError("Invalid value type: %r" % value)
 

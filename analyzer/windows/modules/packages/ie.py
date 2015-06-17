@@ -43,6 +43,25 @@ class IE(Package):
         ],
         [
             HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl",
+            {
+                "FEATURE_LOCALMACHINE_LOCKDOWN": {
+                    # "To help protect your security, Internet Explorer has
+                    # restricted this webpage from running scripts or ActiveX
+                    # controls that could access your computer. Click here for
+                    # options..."
+                    "iexplore.exe": 0,
+                },
+                "FEATURE_RESTRICT_FILEDOWNLOAD": {
+                    # "To help protect your security, Windows Internet
+                    # Explorer blocked this site from downloading files to
+                    # your computer. Click here for more options..."
+                    "iexplore.exe": 0,
+                },
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
             "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings",
             {
                 # "You are about to be redirected to a connection that is not secure."
