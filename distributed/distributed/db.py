@@ -2,12 +2,16 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-from datetime import datetime
+import threading
+import time
+
+from datetime import datetime, timedelta
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 
 db = SQLAlchemy(session_options=dict(autoflush=True))
 ALEMBIC_VERSION = "3d1d8fd2cdbb"
+dist_status = {}
 
 class Serializer(object):
     """Serialize a query result object."""
@@ -131,3 +135,35 @@ class AlembicVersion(db.Model):
 
     def __init__(self, version_num):
         self.version_num = version_num
+
+class DistStatus(threading.Thread):
+    def __init__(self, app_context):
+        threading.Thread.__init__(self)
+
+        self.app_context = app_context
+
+    def run(self):
+        self.app_context.push()
+
+        while True:
+            yesterday = datetime.now() - timedelta(1)
+            today = Task.query.filter(Task.started > yesterday)
+
+            dist_status.update({
+                "all": self.fetch_stats(Task.query),
+                "prio1": self.fetch_stats(Task.query.filter_by(priority=1)),
+                "prio2": self.fetch_stats(Task.query.filter_by(priority=2)),
+                "today": self.fetch_stats(today),
+                "today1": self.fetch_stats(today.filter_by(priority=1)),
+                "today2": self.fetch_stats(today.filter_by(priority=2)),
+            })
+
+            time.sleep(30)
+
+    def fetch_stats(self, tasks):
+        return dict(
+            pending=tasks.filter_by(status=Task.PENDING).count(),
+            processing=tasks.filter_by(status=Task.PROCESSING).count(),
+            finished=tasks.filter_by(status=Task.FINISHED).count(),
+            deleted=tasks.filter_by(status=Task.DELETED).count(),
+        )

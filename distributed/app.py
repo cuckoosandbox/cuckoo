@@ -16,7 +16,7 @@ except ImportError:
     print "Error: you need to install flask (`pip install flask`)"
     sys.exit(1)
 
-from distributed.db import db, AlembicVersion
+from distributed.db import db, AlembicVersion, DistStatus
 from distributed.scheduler import SchedulerThread
 from views import blueprints
 
@@ -123,6 +123,10 @@ if __name__ == "__main__":
     t = SchedulerThread(app_context)
     t.daemon = True
     t.start()
+
+    t2 = DistStatus(app_context)
+    t2.daemon = True
+    t2.start()
 
     app.run(host=args.host, port=args.port)
 
