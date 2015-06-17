@@ -145,6 +145,10 @@ class CommandPipeHandler(object):
         """Regular message from the monitor."""
         log.info(data)
 
+    def _handle_warning(self, data):
+        """Warning message from the monitor."""
+        log.warning(data)
+
     def _handle_critical(self, data):
         """Critical message from the monitor."""
         log.critical(data)
