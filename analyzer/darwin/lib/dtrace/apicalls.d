@@ -89,6 +89,16 @@ profile:::tick-1sec
     {
         pidresume($target); /* Let this child go. */
     }
+    #ifndef SUDO
+        /* Our main script will take care of any exec()s, so just stop tracing
+         * the current running process. */
+        proc:::exec
+        / progenyof($target) || pid == $target /
+        {
+                exit(0);
+        }
+    #endif
+
     /* TODO(rodionovd): it looks like there's a bug in Apple dtrace that keeps
      * dtrace tracing even when its target (specified via -p) is already terminated.
      * Maybe I'm doing something wrong, but here's a temporary workaround.
@@ -99,36 +109,58 @@ profile:::tick-1sec
         exit(0);
     }
 #else
-    /* There's a new process spawned which is a progeny of our main target */
-    proc:::start
-    /progenyof($target) && pid != $target/
+
+#pragma mark Following a fork
+
+    proc:::create
+    / progenyof($target) || pid == $target /
     {
-        self->tracked[pid] = 1;
+        tracked[args[0]->pr_pid] = 1;
     }
-    /* If we try to attach dtrace from inside `proc:::start` above,
-     * it'll fail to enable any probes on shared libraries because `proc:::start`
-     * happens when none of these libraries are actually loaded into the newborn
-     * process. So instead, we wait until some syscalls which only happen at the
-     * end of a process initialization: at this point all the required libraries
-     * will be loaded and we'll be able to install probes on them. */
-    syscall::stat64:entry,
-    syscall::bsdthread_register:return
-    / self->tracked[pid] == 1 &&
-    	((probefunc == "stat64" && copyinstr(arg0) == "/AppleInternal\0")
-      || (probefunc == "bsdthread_register" && (int)arg0 == -1)) /
+    proc:::start
+    / tracked[pid] == 1 /
     {
-        self->tracked[pid] == 0;
-        /* Stop this child right now. Otherwise it may finish running even before
-         * we attach dtrace to it. */
+        tracked[pid] == 0;
         stop();
-        /* Attach `dtrace` to the child via it's pid. We specify the same output
-         * file we already have so all the results will be just in one place. */
-        system("sudo dtrace -Z -C -DCHILD_MODE=1 -DANALYSIS_TIMEOUT=%d -s \"%s\" -o \"%s\" -p %d &",
+        system("sudo dtrace -Z -C -DCHILD_MODE=1 -DANALYSIS_TIMEOUT=%d -s \"%s\" -o %s -p %d &",
+               countdown, str(SCRIPT_PATH), str(OUTPUT_FILE), pid);
+    }
+
+#pragma mark Following an exec*
+
+    proc:::exec
+    / progenyof($target) || pid == $target /
+    {
+        self->sudo = (execname == "sudo");
+    }
+
+    proc:::exec-success
+    / progenyof($target)/
+    {
+        tracked[pid] = (self->sudo == 1) ? 3 : 2;
+    }
+
+    syscall::stat64:entry
+    / tracked[pid] == 2 && copyinstr(arg0) == "/AppleInternal\0" /
+    {
+        tracked[pid] = 0;
+        stop();
+        system("sudo dtrace -Z -C -DCHILD_MODE=1 -DANALYSIS_TIMEOUT=%d -s \"%s\" -o %s -p %d",
+               countdown, str(SCRIPT_PATH), str(OUTPUT_FILE), pid);
+    }
+
+    syscall::stat64:entry
+    / tracked[pid] == 3 && copyinstr(arg0) == "/AppleInternal\0" /
+    {
+        tracked[pid] = 0;
+        stop();
+        system("sudo dtrace -Z -C -DCHILD_MODE=1 -DSUDO=1 -DANALYSIS_TIMEOUT=%d -s \"%s\" -o %s -p %d &",
                countdown, str(SCRIPT_PATH), str(OUTPUT_FILE), pid);
     }
 
     dtrace:::END
     {
+        system("sleep 1");
         printf("## %s done ##", SCRIPT_NAME);
     }
 #endif
@@ -157,13 +189,25 @@ pid$target:libsystem_c.dylib:atoi:entry
 
 /* Two arguments */
 pid$target:libdyld:dlopen:entry,
-pid$target:libdyld:dlsym:entry
+pid$target:libdyld:dlsym:entry,
+pid$target::fprintf:entry
 {
     ++self->deeplevel;
     self->arguments_stack[self->deeplevel, "arg0"] = self->arg0;
     self->arguments_stack[self->deeplevel, "arg1"] = self->arg1;
     self->arg0 = arg0;
     self->arg1 = arg1;
+}
+
+/* Three arguments. These may not return, so we just dump them early */
+pid$target::execve:entry
+{
+    this->timestamp = walltimestamp / 1000000000;
+    printf("{\"api\":\"%s\", \"args\":[\"%S\", %llu, %llu], \"retval\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+        probefunc,
+        copyinstr(arg0), (unsigned long long)arg1, (unsigned long long)arg2,
+        (int)0,
+        this->timestamp, pid);
 }
 
 #pragma mark Return probes
@@ -215,7 +259,8 @@ pid$target:libdyld:dlopen:return
 }
 
 /* Two arguments: [void*, char *], retval: void* */
-pid$target::dlsym:return
+pid$target::dlsym:return,
+pid$target::fprintf:return
 {
     this->timestamp = walltimestamp / 1000000000;
     printf("{\"api\":\"%s\", \"args\":[%llu, \"%S\"], \"retval\":%llu, \"timestamp\":%d, \"pid\":%d}\n",

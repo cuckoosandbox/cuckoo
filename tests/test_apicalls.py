@@ -61,27 +61,30 @@ class TestAPICalls(DtraceTestCase):
 
     def test_apicalls_children(self):
         # given
-        expected_child_api  = ("printf", ["child's here\n"], 13)
-        expected_parent_api = ("printf", ["parent's here\n"], 14)
+        expected_grandchild_api  = ("printf", ["grandchild started\n"], 19)
+        expected_child_api  = ("printf", ["child started\n"], 14)
+        expected_parent_api = ("printf", ["parent started\n"], 15)
         pids = Set()
         output = []
         # when
-        for call in apicalls(self.current_target()):
+        for call in apicalls(self.current_target(), run_as_root=False):
             output.append(call)
             pids.add(call.pid)
 
+        matched_grandchild =  [x for x in output if (x.api, x.args, x.retval) == expected_grandchild_api]
         matched_child = [x for x in output if (x.api, x.args, x.retval) == expected_child_api]
         matched_parent = [x for x in output if (x.api, x.args, x.retval) == expected_parent_api]
         # then
+        self.assertEqual(len(matched_grandchild), 1)
         self.assertEqual(len(matched_child), 1)
         self.assertEqual(len(matched_parent), 1)
-        self.assertLess(matched_parent[0].pid, matched_child[0].pid)
 
 
     def test_apicalls_children_root(self):
         # given
-        expected_child_api  = ("printf", ["child's here\n"], 13)
-        expected_parent_api = ("printf", ["parent's here\n"], 14)
+        expected_grandchild_api  = ("printf", ["grandchild started\n"], 19)
+        expected_child_api  = ("printf", ["child started\n"], 14)
+        expected_parent_api = ("printf", ["parent started\n"], 15)
         pids = Set()
         output = []
         # when
@@ -89,9 +92,10 @@ class TestAPICalls(DtraceTestCase):
             output.append(call)
             pids.add(call.pid)
 
+        matched_grandchild =  [x for x in output if (x.api, x.args, x.retval) == expected_grandchild_api]
         matched_child = [x for x in output if (x.api, x.args, x.retval) == expected_child_api]
         matched_parent = [x for x in output if (x.api, x.args, x.retval) == expected_parent_api]
         # then
+        self.assertEqual(len(matched_grandchild), 1)
         self.assertEqual(len(matched_child), 1)
         self.assertEqual(len(matched_parent), 1)
-        self.assertLess(matched_parent[0].pid, matched_child[0].pid)
