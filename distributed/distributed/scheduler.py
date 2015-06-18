@@ -10,6 +10,7 @@ import signal
 import sys
 import threading
 import time
+import traceback
 
 from flask import json, g
 from distributed.api import node_status, submit_task, fetch_tasks
@@ -25,12 +26,27 @@ def init_worker():
     """Have the workers ignore interrupt signals from the parent."""
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+def wrapper(fn, *args, **kwargs):
+    try:
+        return fn(*args, **kwargs)
+    except Exception as e:
+        e.traceback = traceback.format_exc()
+        raise e
+
 class SchedulerThread(threading.Thread):
     def __init__(self, app_context):
         threading.Thread.__init__(self)
 
         self.app_context = app_context
         self.available = {}
+        self.results = []
+
+    def queue(self, fn, args=[], callback=None):
+        """Queue a task and monitor its result for exceptions."""
+        args = [fn] + list(args)
+        r = self.m.apply_async(wrapper, args=args, callback=callback)
+        self.results.append(r)
+        return r
 
     def _mark_available(self, name):
         """Mark a node as available for scheduling."""
@@ -40,8 +56,7 @@ class SchedulerThread(threading.Thread):
 
     def _mark_available_layer(self, name):
         """Extra layer before marking a node available for scheduling."""
-        self.m.apply_async(nullcallback, args=(name,),
-                           callback=self._mark_available)
+        self.queue(nullcallback, args=(name,), callback=self._mark_available)
 
     def _node_status(self, (name, status)):
         if status is None:
@@ -71,8 +86,8 @@ class SchedulerThread(threading.Thread):
             self.submit_tasks(name, g.batch_size)
 
         args = node.name, node.url, "reported"
-        self.m.apply_async(fetch_tasks, args=args,
-                           callback=self._fetch_reports_and_mark_available)
+        self.queue(fetch_tasks, args=args,
+                   callback=self._fetch_reports_and_mark_available)
 
     def _task_identifier(self, (task_id, api_task_id)):
         t = Task.query.get(task_id)
@@ -99,7 +114,7 @@ class SchedulerThread(threading.Thread):
                 log.debug("Node %s task #%d has not been submitted "
                           "by us!", name, task["id"])
                 args = node.name, node.url, task["id"]
-                self.m.apply_async(delete_task, args=args)
+                self.queue(delete_task, args=args)
                 continue
 
             dirpath = os.path.join(g.reports_directory, "%d" % t.id)
@@ -113,8 +128,8 @@ class SchedulerThread(threading.Thread):
                     node.name, node.url, t.task_id,
                     report_format, dirpath,
                 ]
-                self.m.apply_async(store_report, args=args,
-                                   callback=self._store_report)
+                self.queue(store_report, args=args,
+                           callback=self._store_report)
 
             t.status = Task.FINISHED
             t.started = datetime.datetime.strptime(task["started_on"],
@@ -124,15 +139,15 @@ class SchedulerThread(threading.Thread):
         db.session.commit()
 
         # Mark as available after all stuff has happened.
-        self.m.apply_async(nullcallback, args=(name,),
-                           callback=self._mark_available_layer)
+        self.queue(nullcallback, args=(name,),
+                   callback=self._mark_available_layer)
 
     def _store_report(self, (name, task_id, report_format)):
         node = Node.query.filter_by(name=name).first()
 
         # Delete the task and all its associated files.
         args = node.name, node.url, task_id
-        self.m.apply_async(delete_task, args=args)
+        self.queue(delete_task, args=args)
 
     def submit_tasks(self, name, count):
         """Submit count tasks to a Cuckoo node."""
@@ -158,8 +173,7 @@ class SchedulerThread(threading.Thread):
             task.status = Task.PROCESSING
             task.delegated = datetime.datetime.now()
             args = node.name, node.url, task.to_dict()
-            self.m.apply_async(submit_task, args=args,
-                               callback=self._task_identifier)
+            self.queue(submit_task, args=args, callback=self._task_identifier)
 
         # Commit these changes.
         db.session.commit()
@@ -180,8 +194,8 @@ class SchedulerThread(threading.Thread):
         # If available returns 0 for this node then it's time to
         # schedule this node again.
         if not self.available[node.name]:
-            self.m.apply_async(node_status, args=(node.name, node.url),
-                               callback=self._node_status)
+            self.queue(node_status, args=(node.name, node.url),
+                       callback=self._node_status)
         else:
             log.debug("Node waiting (%d): %s..",
                       self.available[node.name], node.name)
@@ -198,8 +212,8 @@ class SchedulerThread(threading.Thread):
                                       maxtasksperchild=1000)
 
         # Enter app context in the asynchronous callback calling thread.
-        r = self.m.apply_async(nullcallback, args=(None,),
-                               callback=self._enter_app_context)
+        r = self.queue(nullcallback, args=(None,),
+                       callback=self._enter_app_context)
         r.wait()
 
         while g.running:
@@ -207,6 +221,23 @@ class SchedulerThread(threading.Thread):
             # be added on-the-fly.
             for node in Node.query.filter_by(enabled=True).all():
                 self.handle_node(node)
+
+            for result in self.results:
+                if not result.ready():
+                    continue
+
+                # Remove the result from the list.
+                self.results.remove(result)
+
+                if result.successful():
+                    continue
+
+                try:
+                    result.get()
+                except Exception as e:
+                    log.critical("Exception while processing node: %e", e)
+                    if hasattr(e, "traceback"):
+                        log.info(e.traceback)
 
             time.sleep(1)
 
