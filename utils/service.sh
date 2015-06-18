@@ -158,7 +158,13 @@ script
     . "\$CONFFILE"
 
     if [ -n "\$DISTADDR" ]; then
-        exec ./distributed/app.py "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log"
+        if [ "\$VERBOSE" -eq 0 ]; then
+            exec ./distributed/app.py "\$DISTADDR" \
+                2>&1 >> "\$LOGDIR/dist.log"
+        else
+            exec ./distributed/app.py "\$DISTADDR" -v \
+                2>&1 >> "\$LOGDIR/dist.log"
+        fi
     fi
 end script
 EOF
