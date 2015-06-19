@@ -894,15 +894,15 @@ class VolatilityManager(object):
 
         vol = VolatilityAPI(self.memfile, self.osprofile)
 
-        for plugin in self.PLUGINS:
-            plugin = self.voptions.get(plugin)
+        for plugin_name in self.PLUGINS:
+            plugin = self.voptions.get(plugin_name)
             if not plugin or not plugin.enabled:
-                log.debug("Skipping %s volatility module", plugin)
+                log.debug("Skipping '%s' volatility module", plugin_name)
                 continue
 
-            if plugin in vol.plugins:
-                log.debug("Executing volatility '%s' module.", plugin)
-                results[plugin] = getattr(vol, plugin)()
+            if plugin_name in vol.plugins:
+                log.debug("Executing volatility '%s' module.", plugin_name)
+                results[plugin_name] = getattr(vol, plugin_name)()
 
         self.find_taint(results)
         self.cleanup()
