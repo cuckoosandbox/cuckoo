@@ -42,21 +42,28 @@ class Package(object):
 
     def _enum_paths(self):
         """Enumerate available paths."""
+        basepaths = {
+            "System32": [
+                os.path.join(os.getenv("SystemRoot"), "Sysnative"),
+                os.path.join(os.getenv("SystemRoot"), "SysWOW64"),
+                os.path.join(os.getenv("SystemRoot"), "System32"),
+            ],
+            "ProgramFiles": [
+                os.getenv("ProgramFiles").replace(" (x86)", ""),
+                os.getenv("ProgramFiles(x86)"),
+            ],
+            "HomeDrive": [
+                # os.path.join() doesn't work well if you give it just "C:"
+                # so manually append a backslash.
+                os.getenv("HomeDrive") + "\\",
+            ],
+        }
+
         for path in self.PATHS:
             basedir = path[0]
-            if basedir == "SystemRoot":
-                yield os.path.join(os.getenv("SystemRoot"), *path[1:])
-            elif basedir == "ProgramFiles":
-                progfiles = os.getenv("ProgramFiles")
-                yield os.path.join(progfiles.replace(" (x86)", ""), *path[1:])
-                if os.getenv("ProgramFiles(x86)"):
-                    yield os.path.join(os.getenv("ProgramFiles(x86)"),
-                                       *path[1:])
-            elif basedir == "HomeDrive":
-                # os.path.join() does not work well when giving just C:
-                # instead of C:\\, so we manually add the backslash.
-                homedrive = os.getenv("HomeDrive") + "\\"
-                yield os.path.join(homedrive, *path[1:])
+            if basedir in basepaths:
+                for basepath in basepaths[basedir]:
+                    yield os.path.join(basepath, *path[1:])
             else:
                 yield os.path.join(*path)
 
