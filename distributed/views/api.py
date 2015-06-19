@@ -129,17 +129,17 @@ def task_list():
     if status is not None:
         q = q.filter_by(status=status)
 
-    if offset is not None:
-        q = q.offset(int(offset))
-
-    if limit is not None:
-        q = q.limit(int(limit))
-
     if owner:
         q = q.filter_by(owner=owner)
 
     if priority:
         q = q.filter_by(priority=int(priority))
+
+    if offset is not None:
+        q = q.offset(int(offset))
+
+    if limit is not None:
+        q = q.limit(int(limit))
 
     tasks = {}
     for task in q.all():
