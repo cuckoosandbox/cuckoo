@@ -48,26 +48,28 @@ def custom_headers(response):
 @app.route("/tasks/create/file", methods=["POST",])
 @app.route("/v1/tasks/create/file", methods=["POST",])
 def tasks_create_file():
-    data = request.files.file
-    package = request.forms.get("package", "")
-    timeout = request.forms.get("timeout", "")
-    priority = request.forms.get("priority", 1)
-    options = request.forms.get("options", "")
-    machine = request.forms.get("machine", "")
-    platform = request.forms.get("platform", "")
-    tags = request.forms.get("tags", None)
-    custom = request.forms.get("custom", "")
-    owner = request.forms.get("owner", "")
-    memory = request.forms.get("memory", False)
-    clock = request.forms.get("clock", None)
+    data = request.files["file"]
+    package = request.form.get("package", "")
+    timeout = request.form.get("timeout", "")
+    priority = request.form.get("priority", 1)
+    options = request.form.get("options", "")
+    machine = request.form.get("machine", "")
+    platform = request.form.get("platform", "")
+    tags = request.form.get("tags", None)
+    custom = request.form.get("custom", "")
+    owner = request.form.get("owner", "")
+    memory = request.form.get("memory", False)
+    clock = request.form.get("clock", None)
 
     if memory:
         memory = True
-    enforce_timeout = request.forms.get("enforce_timeout", False)
+    enforce_timeout = request.form.get("enforce_timeout", False)
+
     if enforce_timeout:
         enforce_timeout = True
 
-    temp_file_path = store_temp_file(data.file.read(), data.filename)
+    temp_file_path = store_temp_file(data.read(), data.filename)
+
     task_id = db.add_path(
         file_path=temp_file_path,
         package=package,
@@ -89,26 +91,26 @@ def tasks_create_file():
 @app.route("/tasks/create/url", methods=["POST",])
 @app.route("/v1/tasks/create/url", methods=["POST",])
 def tasks_create_url():
-    url = request.forms.get("url")
-    package = request.forms.get("package", "")
-    timeout = request.forms.get("timeout", "")
-    priority = request.forms.get("priority", 1)
-    options = request.forms.get("options", "")
-    machine = request.forms.get("machine", "")
-    platform = request.forms.get("platform", "")
-    tags = request.forms.get("tags", None)
-    custom = request.forms.get("custom", "")
-    owner = request.forms.get("owner", "")
+    url = request.form.get("url")
+    package = request.form.get("package", "")
+    timeout = request.form.get("timeout", "")
+    priority = request.form.get("priority", 1)
+    options = request.form.get("options", "")
+    machine = request.form.get("machine", "")
+    platform = request.form.get("platform", "")
+    tags = request.form.get("tags", None)
+    custom = request.form.get("custom", "")
+    owner = request.form.get("owner", "")
 
-    memory = request.forms.get("memory", False)
+    memory = request.form.get("memory", False)
     if memory:
         memory = True
 
-    enforce_timeout = request.forms.get("enforce_timeout", False)
+    enforce_timeout = request.form.get("enforce_timeout", False)
     if enforce_timeout:
         enforce_timeout = True
 
-    clock = request.forms.get("clock", None)
+    clock = request.form.get("clock", None)
 
     task_id = db.add_url(
         url=url,
@@ -139,12 +141,12 @@ def tasks_list(limit=None, offset=None):
 
     response["tasks"] = []
 
-    completed_after = request.GET.get("completed_after")
+    completed_after = request.args.get("completed_after")
     if completed_after:
         completed_after = datetime.fromtimestamp(int(completed_after))
 
-    owner = request.GET.get("owner")
-    status = request.GET.get("status")
+    owner = request.args.get("owner")
+    status = request.args.get("status")
 
     for row in db.list_tasks(limit=limit, details=True, offset=offset,
                              completed_after=completed_after, owner=owner,
@@ -267,7 +269,7 @@ def tasks_report(task_id, report_format="json"):
             s = StringIO()
 
             # By default go for bz2 encoded tar files (for legacy reasons.)
-            tarmode = tar_formats.get(request.GET.get("tar"), "w:bz2")
+            tarmode = tar_formats.get(request.args.get("tar"), "w:bz2")
 
             tar = tarfile.open(fileobj=s, mode=tarmode)
             for filedir in os.listdir(srcdir):
