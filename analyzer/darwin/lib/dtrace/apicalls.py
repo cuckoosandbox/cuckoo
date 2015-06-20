@@ -26,10 +26,9 @@ def apicalls(target, **kwargs):
     if "timeout" in kwargs:
         cmd += ["-DANALYSIS_TIMEOUT=%d" % kwargs["timeout"]]
     cmd += ["-s", path_for_script("apicalls.d")]
-    cmd += ["-DSCRIPT_PATH=%s" % path_for_script("apicalls.d")]
+    cmd += ["-DROOT=1"]
     cmd += ["-o", file.name]
     cmd += ["-DOUTPUT_FILE=\"%s\"" % file.name]
-
 
     if "run_as_root" in kwargs:
         run_as_root = kwargs["run_as_root"]
@@ -51,7 +50,7 @@ def apicalls(target, **kwargs):
     # The dtrace script will take care of timeout itself, so we just launch
     # it asynchronously
     with open(os.devnull, "w") as f:
-        handler = Popen(cmd, stdout=f, stderr=f)
+        handler = Popen(cmd, stdout=f, stderr=f, cwd=current_directory())
 
     # If we use `sudo -u` for dropping root privileges, we also have to
 	# exclude it's output from the results
@@ -84,7 +83,7 @@ def _parse_entry(entry):
 
 #
 # Standalone app
-#
+# TODO(rodionovd): implement a standalone version of this module
 
 if __name__ == "__main__":
     pass

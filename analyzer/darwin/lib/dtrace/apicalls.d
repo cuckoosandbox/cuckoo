@@ -22,20 +22,6 @@
     #define ANALYSIS_TIMEOUT (-1)
 #endif
 
-/* Preprocessor magic: stringification */
-#define str(s) str0(s)
-#define str0(s) #s
-/* Since there's no built-in way to get an output file of the current script,
- * we have to inject it into the source code if the script with a preprocessor
- * directive. */
-#if !defined(CHILD_MODE) && !defined(OUTPUT_FILE)
-    #error Please, specify the output file for this scrip via "-C -DOUTPUT_FILE=./foo.log"
-#endif
-
-#if !defined(CHILD_MODE) && !defined(SCRIPT_PATH)
-    #error Please, specify the full path to the current script
-#endif
-
 dtrace:::BEGIN
  {
      countdown = ANALYSIS_TIMEOUT;
@@ -70,100 +56,85 @@ profile:::tick-1sec
 
 #pragma mark - Following children
 
-/* All probes from `pid` provider are, well, pid-specific. This means that the
- * probes installed for the parent process won't fire for its children (because,
- * you know, their pids are different). Thus, we have to re-install all these
- * probes for children processes manually as they are spawned.
- *
- * To do so we (1) stop the newborn; (2) attach dtrace to it via something like
- * system("dtrace CURRENT_SCRIPT -p CHILD_PID"); (3) as we've loaded our script,
- * resume the child via pidresume() [Note: this function only exists in Apple's
- * implementation of dtrace].
- *
- * Since progenyof() test enables us to catch *every progeny* of our main
- * parent process, we don't duplicate this "watch-my-children" logic in child
- * scripts.
- */
-#ifdef CHILD_MODE
+/* Preprocessor magic: stringification */
+#define str(s) str0(s)
+#define str0(s) #s
+/* Since there's no built-in way to get an output file of the current script,
+ * we have to inject it into the source code with preprocessor. */
+#if !defined(OUTPUT_FILE)
+    #error Please, specify the output file (e.g. "-DOUTPUT_FILE=./foo.log")
+#endif
+
+#ifdef CHILD
     dtrace:::BEGIN
     {
-        pidresume($target); /* Let this child go. */
+        pidresume($target);
     }
-    #ifndef SUDO
-        /* Our main script will take care of any exec()s, so just stop tracing
-         * the current running process. */
-        proc:::exec
-        / progenyof($target) || pid == $target /
+    #ifdef WAS_EXECED
+        dtrace:::BEGIN
         {
-                exit(0);
+            /* Since (1) we have now dtrace scripts attached to both
+             * parent and child processes and (2) they both have *the same* PID,
+             * we'll get the same results from both these scripts.
+             * To fix this, I just stop tracing the child here. */
+            exit(0);
         }
     #endif
-
     /* TODO(rodionovd): it looks like there's a bug in Apple dtrace that keeps
-     * dtrace tracing even when its target (specified via -p) is already terminated.
+     * dtrace running even when its target (specified via -p) was already terminated.
      * Maybe I'm doing something wrong, but here's a temporary workaround.
      */
     syscall::exit:entry
-    /pid == $target/
+    / pid == $target/
     {
         exit(0);
     }
-#else
-
-#pragma mark Following a fork
-
-    proc:::create
-    / progenyof($target) || pid == $target /
-    {
-        tracked[args[0]->pr_pid] = 1;
-    }
-    proc:::start
-    / tracked[pid] == 1 /
-    {
-        tracked[pid] == 0;
-        stop();
-        system("sudo dtrace -Z -C -DCHILD_MODE=1 -DANALYSIS_TIMEOUT=%d -s \"%s\" -o %s -p %d &",
-               countdown, str(SCRIPT_PATH), str(OUTPUT_FILE), pid);
-    }
-
-#pragma mark Following an exec*
-
-    proc:::exec
-    / progenyof($target) || pid == $target /
-    {
-        self->sudo = (execname == "sudo");
-    }
-
-    proc:::exec-success
-    / progenyof($target)/
-    {
-        tracked[pid] = (self->sudo == 1) ? 3 : 2;
-    }
-
-    syscall::stat64:entry
-    / tracked[pid] == 2 && copyinstr(arg0) == "/AppleInternal\0" /
-    {
-        tracked[pid] = 0;
-        stop();
-        system("sudo dtrace -Z -C -DCHILD_MODE=1 -DANALYSIS_TIMEOUT=%d -s \"%s\" -o %s -p %d",
-               countdown, str(SCRIPT_PATH), str(OUTPUT_FILE), pid);
-    }
-
-    syscall::stat64:entry
-    / tracked[pid] == 3 && copyinstr(arg0) == "/AppleInternal\0" /
-    {
-        tracked[pid] = 0;
-        stop();
-        system("sudo dtrace -Z -C -DCHILD_MODE=1 -DSUDO=1 -DANALYSIS_TIMEOUT=%d -s \"%s\" -o %s -p %d &",
-               countdown, str(SCRIPT_PATH), str(OUTPUT_FILE), pid);
-    }
-
-    dtrace:::END
-    {
-        system("sleep 1");
-        printf("## %s done ##", SCRIPT_NAME);
-    }
 #endif
+
+/* FORKs */
+proc:::create
+/ pid == $target /
+{
+    tracked[args[0]->pr_pid] = 1;
+}
+proc:::start
+/ tracked[pid] == 1 /
+{
+    tracked[pid] = 0;
+    stop();
+    system("sudo dtrace -Z -C -DCHILD=1 -DANALYSIS_TIMEOUT=%d -DSCRIPT_PATH=./%s -DOUTPUT_FILE=%s -s ./%s -o %s -p %d &",
+        countdown, SCRIPT_NAME, str(OUTPUT_FILE), SCRIPT_NAME, str(OUTPUT_FILE), pid);
+}
+
+/* EXEC */
+proc:::exec
+/ pid == $target /
+{ /* exec-success probe won't fire without this */ }
+
+proc:::exec-success
+/ ppid == $target /
+{
+    tracked[pid] = 2;
+}
+
+syscall::stat64:entry
+/ tracked[pid] == 2 && copyinstr(arg0) == "/AppleInternal\0" /
+{
+    tracked[pid] = 0;
+    stop();
+    system("sudo dtrace -Z -C -DCHILD=1 -DWAS_EXECED=1 -DANALYSIS_TIMEOUT=%d -DSCRIPT_PATH=./%s -DOUTPUT_FILE=%s -s ./%s -o %s -p %d &",
+        countdown, SCRIPT_NAME, str(OUTPUT_FILE), SCRIPT_NAME, str(OUTPUT_FILE), pid);
+}
+
+dtrace:::END
+{
+#ifdef ROOT
+    /* It takes children scripts some time to write final stuff to the output
+     * file (mainly because of printf() caching). */
+    system("sleep 1.5");
+    printf("## %s done ##", SCRIPT_NAME);
+#endif
+}
 
 
 /* ******* **************************** ******* */
