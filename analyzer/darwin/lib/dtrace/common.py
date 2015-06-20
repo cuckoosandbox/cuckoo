@@ -14,8 +14,10 @@ def sanitize_path(path):
 
 def path_for_script(script):
     """ Return the full path for the given script """
-    return path.join(path.dirname(path.abspath(__file__)), script)
+    return path.join(current_directory(), script)
 
+def current_directory():
+    return path.dirname(path.abspath(__file__))
 
 def filelines(file):
     """ A generator that returns lines of the file.
