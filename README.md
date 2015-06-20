@@ -15,7 +15,7 @@ My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc
 
  0. Install `pt_deny_attach` kernel extension suggested by @phretor. That's an optional step, see [this comment](https://github.com/rodionovd/cuckoo-osx-analyzer/issues/6#issuecomment-101322097) for more details.
 
- 1. Currently, this analyser uses `dtrace`, so the guest OS user must be able to launch this utility without a password prompt. This may be accomplished by modifying `/etc/sudoers` file:  
+ 1. Since this analyser uses some utilities that require additional privileges to run, you may want to enable passwordless `sudo` for them. This may be accomplished by modifying `/etc/sudoers` file:  
 
   ```diff
 --- a/etc/sudoers
@@ -26,6 +26,7 @@ My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc
  # %users  localhost=/sbin/shutdown -h now
 +
 + username   ALL=(root) NOPASSWD: /usr/sbin/dtrace
++ username   ALL=(root) NOPASSWD: /bin/date
   ```
   (replace `username` above with an actual name of the user).
 
