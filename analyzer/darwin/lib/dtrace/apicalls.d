@@ -12,7 +12,8 @@
  *     args        : array,             // e.g. [1489124712123, "Hello\n!"]
  *     retval      : string OR integer, // e.g. "kkk"
  *     timestamp   : integer,           // e.g. 1433765405
- *     pid         : integer            // e.g. 9213
+ *     pid         : integer,           // e.g. 9213
+ *     tid         : integer            // e.g. 269040
  * }
  *
  */
@@ -174,11 +175,11 @@ pid$target::fprintf:entry
 pid$target::execve:entry
 {
     this->timestamp = walltimestamp / 1000000000;
-    printf("{\"api\":\"%s\", \"args\":[\"%S\", %llu, %llu], \"retval\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[\"%S\", %llu, %llu], \"retval\":%d, \"timestamp\":%d, \"pid\":%d, \"tid\":%d}\n",
         probefunc,
         copyinstr(arg0), (unsigned long long)arg1, (unsigned long long)arg2,
         (int)0,
-        this->timestamp, pid);
+        this->timestamp, pid, tid);
 }
 
 #pragma mark Return probes
@@ -187,10 +188,10 @@ pid$target::execve:entry
 pid$target::fork:return
 {
     this->timestamp = walltimestamp / 1000000000;
-    printf("{\"api\":\"%s\", \"args\":[], \"retval\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[], \"retval\":%d, \"timestamp\":%d, \"pid\":%d, \"tid\":%d}\n",
         probefunc,
         (int)arg1,
-        this->timestamp, pid);
+        this->timestamp, pid, tid);
 }
 
 /* One argument: char *, retval: int */
@@ -199,11 +200,11 @@ pid$target::printf:return,
 pid$target:libsystem_c.dylib:atoi:return
 {
     this->timestamp = walltimestamp / 1000000000;
-    printf("{\"api\":\"%s\", \"args\":[\"%S\"], \"retval\":%d, \"timestamp\":%d, \"pid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[\"%S\"], \"retval\":%d, \"timestamp\":%d, \"pid\":%d, \"tid\":%d}\n",
         probefunc,
         copyinstr(self->arg0),
         (int)arg1,
-        this->timestamp, pid);
+        this->timestamp, pid, tid);
 
     /* Restore arguments for our callee */
     self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
@@ -216,11 +217,11 @@ pid$target:libsystem_c.dylib:atoi:return
 pid$target:libdyld:dlopen:return
 {
     this->timestamp = walltimestamp / 1000000000;
-    printf("{\"api\":\"%s\", \"args\":[\"%S\", %d], \"retval\":%llu, \"timestamp\":%d, \"pid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[\"%S\", %d], \"retval\":%llu, \"timestamp\":%d, \"pid\":%d, \"tid\":%d}\n",
         probefunc,
         copyinstr(self->arg0), (int)self->arg1,
         (unsigned long long)arg1,
-        this->timestamp, pid);
+        this->timestamp, pid, tid);
 
     self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
     self->arg1 = self->arguments_stack[self->deeplevel, "arg1"];
@@ -234,11 +235,11 @@ pid$target::dlsym:return,
 pid$target::fprintf:return
 {
     this->timestamp = walltimestamp / 1000000000;
-    printf("{\"api\":\"%s\", \"args\":[%llu, \"%S\"], \"retval\":%llu, \"timestamp\":%d, \"pid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[%llu, \"%S\"], \"retval\":%llu, \"timestamp\":%d, \"pid\":%d, \"tid\":%d}\n",
         probefunc,
         (unsigned long long)self->arg0, copyinstr(self->arg1),
         (unsigned long long)arg1,
-        this->timestamp, pid);
+        this->timestamp, pid, tid);
 
     self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
     self->arg1 = self->arguments_stack[self->deeplevel, "arg1"];
