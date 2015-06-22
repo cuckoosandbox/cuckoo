@@ -276,6 +276,10 @@ EOF
         # in case it did already exist.
         "$CUCKOO/utils/machine.py" --delete "egg$i"
 
+        # Delete any remaining files for this Virtual Machine just in case
+        # they were still present.
+        rm -rf "$VMBACKUP/egg$i"
+
         echo "Creating Virtual Machine egg$i.."
         vmcloak-clone -s "$VMCLOAKCONF" -u cuckoo --bird bird0 \
             --hostonly-ip "192.168.56.$((2+$i))" "egg$i"
@@ -361,6 +365,11 @@ MOUNT="/mnt/$MOUNTOS/"
 VMS="$BASEDIR/vms/"
 VMBACKUP="$BASEDIR/vmbackup/"
 VMMOUNT="/home/cuckoo/vmmount/"
+
+# In Upstart scripts the $HOME variable may not have been set. If so, set it.
+if [ -z "$HOME" ]; then
+    export HOME="/home/cuckoo"
+fi
 
 # First of all, setup the machine with all required packages etc
 # if asked to do so. (Or, actually, if not asked to not do).
