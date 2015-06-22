@@ -159,7 +159,7 @@ _setup() {
     apt-get update -y --force-yes
     apt-get install -y --force-yes sudo git python-dev python-pip postgresql \
         libpq-dev python-dpkt vim tcpdump libcap2-bin genisoimage pwgen \
-        htop tig mosh
+        htop tig mosh mongodb
 
     # Create the main postgresql cluster. In recent versions of Ubuntu Server
     # 14.04 you have to do this manually. If it already exists this command
