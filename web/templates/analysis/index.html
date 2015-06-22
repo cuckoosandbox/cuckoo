@@ -53,11 +53,11 @@
                         </td>
                         <td>
                             {% if analysis.status == "pending" %}
-                                <span class="text-muted">pending</span>
+                                <a href="{% url "submission.views.status" analysis.id %}"><span class="text-muted">pending</span></a>
                             {% elif analysis.status == "running" %}
-                                <a href="{% url "submission.views.status" analysis.id %}"><span class="text-warning">running</span></td>
+                                <a href="{% url "submission.views.status" analysis.id %}"><span class="text-warning">running</span></a>
                             {% elif analysis.status == "completed" %}
-                                <span class="text-info">completed</span>
+                                <a href="{% url "submission.views.status" analysis.id %}"><span class="text-info">completed</span></a>
                             {% elif analysis.status == "reported" %}
                                 {% if analysis.errors %}
                                     <span class="text-danger">
