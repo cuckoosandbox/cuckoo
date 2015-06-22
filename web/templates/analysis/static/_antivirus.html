@@ -15,7 +15,11 @@
             <td>
                 {% if analysis.info.category == "file" %}
                     {% if not values.result %}
-                        <span class="text-muted">Clean</span>
+                        {% if av in "ClamAV,Microsoft,Kaspersky" %}
+                            <a class="text-muted" href="{% url 'analysis.views.share' av analysis.id %}">Clean (submit?)</a>
+                        {% else %}
+                            <span class="text-muted">Clean</span>
+                        {% endif %}
                     {% else %}
                         <span class="text-danger">{{values.result}}</span>
                     {% endif %}

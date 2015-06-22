@@ -463,3 +463,16 @@ def pcapstream(request, task_id, conntuple):
     packets = list(network.packets_for_stream(fobj, offset))
     # TODO: starting from django 1.7 we should use JsonResponse.
     return HttpResponse(json.dumps(packets), content_type="application/json")
+
+@require_safe
+def share(request, av_name, task_id):
+    report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
+
+    if not report:
+        return render_to_response("error.html",
+                                  {"error": "The specified analysis does not exist"},
+                                  context_instance=RequestContext(request))
+
+    return render_to_response("analysis/share.html",
+                              {"analysis": report},
+                              context_instance=RequestContext(request))
