@@ -19,6 +19,8 @@
                 <tr>
                     <th>Timestamp</th>
                     <th>Filename</th>
+                    <th>File type</th>
+                    <th>Platform</th>
                     <th>MD5</th>
                     <th>Status</th>
                 </tr>
@@ -37,17 +39,23 @@
                             {{analysis.filename}}
                         </td>
                         <td style="word-wrap: break-word;">
+                            {{analysis.target.target.file.type}}
+                        </td>
+                        <td>
+                            {{analysis.target.info.machine.name}}
+                        </td>
+                        <td style="word-wrap: break-word;">
                             {% if analysis.status == "reported" %}
                                 <a href="{% url "analysis.views.report" analysis.id %}"><span class="mono">{{analysis.sample.md5}}</span></a>
                             {% else %}
                                 <span class="mono">{{analysis.sample.md5}}</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <a>
                             {% if analysis.status == "pending" %}
                                 <span class="text-muted">pending</span>
                             {% elif analysis.status == "running" %}
-                                <span class="text-warning">running</span>
+                                <a href="{% url "submission.views.status" analysis.id %}"><span class="text-warning">running</span></a>
                             {% elif analysis.status == "completed" %}
                                 <span class="text-info">completed</span>
                             {% elif analysis.status == "reported" %}
