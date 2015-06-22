@@ -51,20 +51,19 @@
                                 <span class="mono">{{analysis.sample.md5}}</span>
                             {% endif %}
                         </td>
-                        <a>
+                        <td>
                             {% if analysis.status == "pending" %}
                                 <span class="text-muted">pending</span>
                             {% elif analysis.status == "running" %}
-                                <a href="{% url "submission.views.status" analysis.id %}"><span class="text-warning">running</span></a>
+                                <a href="{% url "submission.views.status" analysis.id %}"><span class="text-warning">running</span></td>
                             {% elif analysis.status == "completed" %}
                                 <span class="text-info">completed</span>
                             {% elif analysis.status == "reported" %}
                                 {% if analysis.errors %}
-                                    <span class="text-danger">reported</span>
+                                    <span class="text-danger">
                                 {% else %}
-                                    <span class="text-success">reported</span>
+                                    <span class="text-success">
                                 {% endif%}
-
                                 reported</span>
                             {% else %}
                                 <span class="text-danger">{{analysis.status}}</span>
