@@ -183,27 +183,15 @@ class MongoDB(Report):
             new_processes = []
             for process in report["behavior"]["processes"]:
                 new_process = dict(process)
-
-                chunk = []
                 chunks_ids = []
-                # Loop on each process call.
-                for index, call in enumerate(process["calls"]):
-                    # If the chunk size is paginate or if the loop is
-                    # completed then store the chunk in MongoDB.
-                    if len(chunk) == paginate:
-                        to_insert = {"pid": process["process_id"],
-                                     "calls": chunk}
-                        chunk_id = self.db.calls.insert(to_insert)
-                        chunks_ids.append(chunk_id)
-                        # Reset the chunk.
-                        chunk = []
 
-                    # Append call to the chunk.
-                    chunk.append(call)
-
-                # Store leftovers.
-                if chunk:
-                    to_insert = {"pid": process["process_id"], "calls": chunk}
+                # Loop over each pagination rows.
+                for idx in xrange(0, len(process["calls"]), paginate):
+                    chunk = process["calls"][idx:idx+paginate]
+                    to_insert = {
+                        "pid": process["process_id"],
+                        "calls": chunk
+                    }
                     chunk_id = self.db.calls.insert(to_insert)
                     chunks_ids.append(chunk_id)
 
