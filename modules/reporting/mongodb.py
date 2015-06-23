@@ -173,6 +173,8 @@ class MongoDB(Report):
                     shot_id = self.store_file(shot)
                     report["shots"].append(shot_id)
 
+        paginate = self.options.get("paginate", 100)
+
         # Store chunks of API calls in a different collection and reference
         # those chunks back in the report. In this way we should defeat the
         # issue with the oversized reports exceeding MongoDB's boundaries.
@@ -186,9 +188,9 @@ class MongoDB(Report):
                 chunks_ids = []
                 # Loop on each process call.
                 for index, call in enumerate(process["calls"]):
-                    # If the chunk size is 100 or if the loop is completed then
-                    # store the chunk in MongoDB.
-                    if len(chunk) == 100:
+                    # If the chunk size is paginate or if the loop is
+                    # completed then store the chunk in MongoDB.
+                    if len(chunk) == paginate:
                         to_insert = {"pid": process["process_id"],
                                      "calls": chunk}
                         chunk_id = self.db.calls.insert(to_insert)
