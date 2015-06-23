@@ -466,13 +466,15 @@ def pcapstream(request, task_id, conntuple):
 
 @require_safe
 def share(request, av_name, task_id):
-    report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
+    report = results_db.analysis.find_one({"info.id": int(task_id)},
+                                          sort=[("_id", pymongo.DESCENDING)])
 
     if not report:
-        return render_to_response("error.html",
-                                  {"error": "The specified analysis does not exist"},
-                                  context_instance=RequestContext(request))
+        return render_to_response(
+            "error.html",
+            {"error": "The specified analysis does not exist"},
+            context_instance=RequestContext(request))
 
-    return render_to_response("analysis/share.html",
-                              {"analysis": report},
-                              context_instance=RequestContext(request))
+    result = report["target"]["file"]
+    result["url"] = "https://cuckoo.skbkontur.ru/file/sample/%s/" % report["target"]["file_id"]
+    return HttpResponse(json.dumps(result), content_type='application/json')
