@@ -271,7 +271,7 @@ EOF
 
     # Create various Virtual Machine eggs.
     for i in $(seq 1 "$VMCOUNT"); do
-        name="${EGGNAME}_$i"
+        name="${EGGNAME}_egg$i"
 
         # Ensure this Virtual Machine has not already been created.
         if grep '"'$name'"' <(sudo -u cuckoo -i VBoxManage list vms); then
