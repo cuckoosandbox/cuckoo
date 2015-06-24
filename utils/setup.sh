@@ -202,7 +202,7 @@ _setup() {
     VMTEMP="$(mktemp -d "/home/cuckoo/tempXXXXXX")"
 
     # Fetch Cuckoo.
-    git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
+    git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO" -b monitor
 
     chown -R cuckoo:cuckoo "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
     chmod 755 "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
