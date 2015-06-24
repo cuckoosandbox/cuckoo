@@ -37,6 +37,7 @@ usage() {
     exit 1
 }
 
+EGGNAME="winxp"
 MOUNTOS="winxp"
 WINOS="--winxp"
 
@@ -51,12 +52,14 @@ while [ "$#" -gt 0 ]; do
 
         -7|--win7)
             WIN7="1"
+            EGGNAME="win7x64"
             MOUNTOS="win7"
             WINOS="--win7x64"
             ;;
 
         --win7x86)
             WIN7="1"
+            EGNNAME="win7x86"
             MOUNTOS="win7"
             WINOS="--win7"
             ;;
@@ -254,11 +257,12 @@ EOF
     # configuration by default.
     "$CUCKOO/utils/machine.py" --delete cuckoo1
 
-    # Check whether the bird "bird0" already exists.
-    sudo -u cuckoo -i vmcloak-bird hddpath bird0
+    # Check whether the bird image for this Windows version already exists.
+    sudo -u cuckoo -i vmcloak-bird hddpath "${EGGNAME}_bird"
     if [ "$?" -ne 0 ]; then
         echo "Creating the Virtual Machine bird.."
-        vmcloak -u cuckoo -s "$VMCLOAKCONF" -r --bird bird0 "$WINOS" --vrde
+        vmcloak -u cuckoo -s "$VMCLOAKCONF" -r \
+            --bird "${EGGNAME}_bird" "$WINOS" --vrde
     fi
 
     # Kill all VirtualBox processes as otherwise the listening
@@ -267,22 +271,24 @@ EOF
 
     # Create various Virtual Machine eggs.
     for i in $(seq 1 "$VMCOUNT"); do
+        name="${EGGNAME}_$i"
+
         # Ensure this Virtual Machine has not already been created.
-        if grep '"'egg$i'"' <(sudo -u cuckoo -i VBoxManage list vms); then
+        if grep '"'$name'"' <(sudo -u cuckoo -i VBoxManage list vms); then
             continue
         fi
 
         # As vmcloak-clone will add an entry for this node we remove it just
         # in case it did already exist.
-        "$CUCKOO/utils/machine.py" --delete "egg$i"
+        "$CUCKOO/utils/machine.py" --delete "$name"
 
         # Delete any remaining files for this Virtual Machine just in case
         # they were still present.
-        rm -rf "$VMBACKUP/egg$i"
+        rm -rf "$VMBACKUP/$name"
 
-        echo "Creating Virtual Machine egg$i.."
-        vmcloak-clone -s "$VMCLOAKCONF" -u cuckoo --bird bird0 \
-            --hostonly-ip "192.168.56.$((2+$i))" "egg$i"
+        echo "Creating Virtual Machine $name.."
+        vmcloak-clone -s "$VMCLOAKCONF" -u cuckoo --bird "${EGGNAME}_bird" \
+            --hostonly-ip "192.168.56.$((2+$i))" "$name"
     done
 
     rm -rf "$VMCLOAKCONF" "$VMTEMP"
@@ -393,6 +399,7 @@ DEPENDENCIES="$DEPENDENCIES"
 BASEDIR="$BASEDIR"
 
 # Values set based on configuration values.
+EGGNAME="$EGGNAME"
 MOUNTOS="$MOUNTOS"
 WINOS="$WINOS"
 EOF
