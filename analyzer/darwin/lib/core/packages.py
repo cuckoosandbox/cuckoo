@@ -20,51 +20,54 @@ def choose_package(file_type, file_name):
 class Package(object):
     """ Base analysis package """
 
-    def __init__(self, **kwargs):
-        if "target" in kwargs:
-            self.target = kwargs["target"]
-        else:
-            raise Exception("Package(): `target` argument is required")
+    def __init__(self, target, host, **kwargs):
+        if not target or not host:
+            raise Exception("Package(): `target` and `host` arguments are required")
+
+        self.host = host
+        self.target = target
+        # Any analysis options?
         if "options" in kwargs:
             self.options = kwargs["options"]
         else:
             self.options = []
+        # A timeout for analysis
         if "timeout" in kwargs:
             self.timeout = kwargs["timeout"]
-
+        # Command-line arguments for the target.
+        # TODO(rodionovd): add an option to specify arguments
         self.args = []
+        # Choose an analysis method
+        if "method" in self.options:
+            self.method = self.options["method"]
+        else: # fallback
+            self.method = "apicalls"
+        # Should our target be launched as root or not
+        if "run_as_root" in self.options:
+            self.run_as_root = self.options["run_as_root"]
+        else:
+            self.run_as_root = False
+
+    def prepare(self):
+        """ Preparation routine. Do anything you want here. """
+        pass
 
     def start(self):
         """ Runs an analysis process.
-        This function is a generator of log entries to send to the host.
+        This function is a generator.
         """
-        raise NotImplementedError
+        self.prepare()
+        # FIXME(rodionovd): add support for other analysis methods
+        self.apicalls_analysis()
 
-    #
-    # start() demo implementations
-    #
-
-    def _start_dtruss(self):
-        for call in dtruss(self.target, args=self.args, timeout=self.timeout):
-            yield "[%d @ %d]: %s(%s) -> %s" % (call.pid, call.timestamp,
-                                               call.name, call.args,
-                                               call.result)
-
-    def _start_ipconnections(self):
-        for conn in ipconnections(self.target, args=self.args, timeout=self.timeout):
-            yield "[IP]: %s:%d --[%s]--> %s:%d" % (conn.host, conn.host_port,
-                                                   conn.protocol,
-                                                   conn.remote, conn.remote_port)
-
-    def _start_apicalls(self):
-        if "run_as_root" in self.options:
-            root_mode = True
-        else:
-            root_mode = False
-        for call in apicalls(self.target, args=self.args, timeout=self.timeout, run_as_root=root_mode):
-            yield "[%d @ %d]: %s(%s) -> %s" % (call.pid, call.timestamp,
-                                               call.api, call.args,
-                                               str(call.retval))
+    def apicalls_analysis(self):
+        kwargs = {
+            'args' : self.args,
+            'timeout' : self.timeout,
+            'run_as_root' : self.run_as_root
+        }
+        for call in apicalls(self.target, **kwargs):
+            self.host.send_api(call)
 
 class Auxiliary(object):
     def __init__(self, options=[]):

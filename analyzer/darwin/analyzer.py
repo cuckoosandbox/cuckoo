@@ -7,7 +7,6 @@
 
 import os
 import sys
-import socket
 import logging
 import xmlrpclib
 
@@ -20,6 +19,7 @@ from lib.core.constants import PATHS
 from lib.core.packages import choose_package, Package, Auxiliary
 
 from modules import auxiliary
+from lib.core.host import CuckooHost
 
 class Macalyzer:
 	"""Cuckoo OS X analyser.
@@ -89,6 +89,8 @@ class Macalyzer:
 		else: # It's not a file, but a URL
 			self.target = self.config.target
 
+	# TODO(rodionovd): this method is way to long. Consider spliting it
+	# into multiple parts. e.g. (1) search the package, (2) initialize it.
 	def _setup_analysis_package(self):
 		pkg = None
 		if self.config.package:
@@ -117,9 +119,13 @@ class Macalyzer:
 			raise Exception("Unable to select package class (package={0}): "
 			                "{1}".format(package_name, e))
 
-		options = self.config.get_options()
-		timeout = self.config.timeout
-		return package_class(target=self.target, options=options, timeout=timeout)
+		# Package initialization
+		host = CuckooHost(self.config.ip, self.config.port)
+		kwargs = {
+			"options" : self.config.get_options(),
+			"timeout" : self.config.timeout
+		}
+		return package_class(self.target, host, **kwargs)
 
 	def _setup_machine_time(self, clock_str, **kwargs):
 		clock = datetime.strptime(clock_str, "%Y%m%dT%H:%M:%S")
@@ -135,20 +141,7 @@ class Macalyzer:
 			os.system(cmd)
 
 	def _analysis(self, package):
-		# self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		# self.socket.connect((self.config.ip, self.config.port))
-		# self.socket.sendall("BSON\n")
-
-		log_entries = package.start()
-		for entry in log_entries:
-			self._send_to_host(entry)
-
-	def _send_to_host(self, log_entry):
-		# self.socket.sendall(log_entry)
-		if None:
-			self.log.error("The requested analysis type is not available (yet).")
-		else:
-			self.log.info(log_entry)
+		package.start()
 
 
 def _setup_auxiliary_modules(logger):

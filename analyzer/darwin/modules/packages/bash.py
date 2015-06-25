@@ -10,22 +10,6 @@ from lib.core.packages import Package
 class Bash(Package):
     """ Bash shell script analysys package. """
 
-    def start(self):
-        # Some scripts are not executable, so we have to use /bin/bash to
-        # invoke them
+    def prepare(self):
         self.args = [self.target] + self.args
         self.target = "/bin/bash"
-
-        if "method" in self.options:
-            method = self.options["method"]
-        else: # fallback to dtruss
-            method = "dtruss"
-
-        if "dtruss" in method:
-            for x in self._start_dtruss():
-                yield x
-        elif "apicalls" in method:
-            for x in self._start_apicalls():
-                yield x
-        else:
-            yield "Invalid analysis method \"%S\" for package \"Bash\"" % method
