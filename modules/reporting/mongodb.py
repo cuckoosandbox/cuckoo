@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import datetime
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooDependencyError
@@ -104,6 +105,7 @@ class MongoDB(Report):
         # the original dictionary and possibly compromise the following
         # reporting modules.
         report = dict(results)
+        report["info"]["started_datetime"] = datetime.datetime.strptime(results["info"]["started"], "%Y-%m-%d %X")
         if not "network" in report:
             report["network"] = {}
 
