@@ -8,6 +8,7 @@
 import socket
 import datetime
 from bson import BSON
+from subprocess import check_output
 from filetimes import dt_to_filetime
 
 class CuckooHost:
@@ -134,19 +135,25 @@ class CuckooHost:
         # result server expect timestamps to be in this format
         dt = datetime.datetime.fromtimestamp(thing.timestamp)
         filetime = dt_to_filetime(dt)
-
+        # Get process name (aka module path)
+        module = self._proc_name_from_pid(pid)
         self.sockets[pid].sendall(BSON.encode({
             "I"    : 0,
             "T"    : thing.tid,
             "t"    : 0,
             "args" : [
-                # FIXME(rodionovd): replace with real values
                 1,
                 0,
                 # TimeLow (first 32bits) and TimeHigh (last 32bits)
                 (filetime) & 0xffffffff, (filetime) >> 32,
                 thing.pid, thing.ppid,
                 # ModulePath
-                "dummy"
+                module
             ]
         }))
+
+    def _proc_name_from_pid(self, pid):
+        # The first line of an output is reserved for `ps` headers and the
+        # second one contains a process path
+        ps_output = check_output(["/bin/ps", "-p", str(pid), "-o", "comm"])
+        return ps_output.split("\n")[1]
