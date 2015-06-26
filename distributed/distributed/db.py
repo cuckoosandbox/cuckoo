@@ -60,10 +60,12 @@ class Machine(db.Model):
 class Task(db.Model, Serializer):
     """Analysis task database model."""
     PENDING = "pending"
+    ASSIGNED = "assigned"
     PROCESSING = "processing"
     FINISHED = "finished"
     DELETED = "deleted"
-    task_status = db.Enum(PENDING, PROCESSING, FINISHED, DELETED,
+
+    task_status = db.Enum(PENDING, ASSIGNED, PROCESSING, FINISHED, DELETED,
                           name="task_status_type")
 
     id = db.Column(db.Integer, primary_key=True)

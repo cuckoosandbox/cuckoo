@@ -7,7 +7,6 @@ import argparse
 import ConfigParser
 import logging
 import os.path
-import signal
 import sys
 
 try:
@@ -18,7 +17,6 @@ except ImportError:
 
 from distributed.app import create_app
 from distributed.db import DistStatus
-from distributed.scheduler import SchedulerThread
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
@@ -91,13 +89,6 @@ if __name__ == "__main__":
     g.running = True
     g.statuses = {}
     g.verbose = args.verbose
-    g.worker_processes = s.getint("distributed", "worker_processes")
-    g.interval = s.getint("distributed", "interval")
-    g.batch_size = s.getint("distributed", "batch_size")
-
-    t = SchedulerThread(app_context)
-    t.daemon = True
-    t.start()
 
     t2 = DistStatus(app_context)
     t2.daemon = True
@@ -109,7 +100,3 @@ if __name__ == "__main__":
     # to our scheduler, but wait for it to finish.
     log.info("Exited the webserver, waiting for the scheduler to finish.")
     g.running = False
-
-    # Please, kill it more often ;-)
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
-    t.join()
