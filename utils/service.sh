@@ -169,6 +169,28 @@ script
 end script
 EOF
 
+    cat > /etc/init/cuckoo-distributed-instance.conf << EOF
+# Cuckoo distributed API node instance service.
+
+description "cuckoo distributed api node instance service"
+setuid "$USERNAME"
+chdir "$CUCKOO"
+instance \$INSTANCE
+
+env CONFFILE="$CONFFILE"
+env LOGDIR="$LOGDIR"
+
+script
+    . "\$CONFFILE"
+
+    if [ "\$VERBOSE" -eq 0 ]; then
+        exec ./distributed/instance.py "\$INSTANCE"
+    else
+        exec ./distributed/instance.py "\$INSTANCE" -v
+    fi
+end script
+EOF
+
     cat > /etc/init/cuckoo-web.conf << EOF
 # Cuckoo Web Interface server.
 
