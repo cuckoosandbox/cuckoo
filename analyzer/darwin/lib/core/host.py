@@ -38,13 +38,6 @@ class CuckooHost:
             lookup_idx = len(self.descriptions[pid]) - 1
             self._send_api_description(lookup_idx, thing)
 
-        # if api in self.descriptions[pid]:
-        #
-        # else:
-        #     self.descriptions[pid].append(api)
-        #     lookup_idx = len(self.descriptions[pid]) - 1
-        #     self._send_api_description(lookup_idx, thing)
-
         # Here's an api object:
         # {
         #     "I"    : (int)<index in the API lookup table>,
