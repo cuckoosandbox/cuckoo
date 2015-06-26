@@ -6,7 +6,6 @@
 # of the MIT license. See the LICENSE file for details.
 
 import socket
-from time import sleep
 from bson import BSON
 
 class CuckooHost:
