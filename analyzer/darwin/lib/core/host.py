@@ -6,8 +6,8 @@
 # of the MIT license. See the LICENSE file for details.
 
 import socket
-import datetime
 from bson import BSON
+from datetime import datetime
 from subprocess import check_output
 from filetimes import dt_to_filetime
 
@@ -131,10 +131,9 @@ class CuckooHost:
                 "ModulePath"
             ]
         }))
-        # Convert our unix timestamps into Windows's FILETIME because Cuckoo
+        # Convert our unix timestamp into Windows's FILETIME because Cuckoo
         # result server expect timestamps to be in this format
-        dt = datetime.datetime.fromtimestamp(thing.timestamp)
-        filetime = dt_to_filetime(dt)
+        filetime = self._filetime_from_timestamp(thing.timestamp)
         # Get process name (aka module path)
         module = self._proc_name_from_pid(pid)
         self.sockets[pid].sendall(BSON.encode({
@@ -151,6 +150,12 @@ class CuckooHost:
                 module
             ]
         }))
+
+    def _filetime_from_timestamp(self, ts):
+        # Timezones are hard, sorry
+        dt = datetime.fromtimestamp(ts)
+        delta_from_utc = dt - datetime.utcfromtimestamp(ts)
+        return dt_to_filetime(dt, delta_from_utc)
 
     def _proc_name_from_pid(self, pid):
         # The first line of an output is reserved for `ps` headers and the
