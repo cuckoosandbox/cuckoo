@@ -11,21 +11,6 @@ from lib.core.packages import Package
 class MachO(Package):
     """ Mach-O executable analysys package. """
 
-    def start(self):
-
-        if "method" in self.options:
-            method = self.options["method"]
-        else: # fallback
-            method = "apicalls"
-
-        # Ensure that our target is executable
+    def prepare(self):
+        # Make sure that our target is executable
         system("/bin/chmod +x \"%s\"" % self.target)
-
-        if "dtruss" in method:
-            for x in self._start_dtruss():
-                yield x
-        elif "apicalls" in method:
-            for x in self._start_apicalls():
-                yield x
-        else:
-            yield "Invalid analysis method \"%S\" for package \"MachO\"" % method
