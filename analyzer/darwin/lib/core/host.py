@@ -12,6 +12,7 @@ from bson import BSON
 class CuckooHost:
 
     sockets = {}
+    descriptions = {}
 
     def __init__(self, host_ip, host_port):
         self.ip = host_ip
@@ -20,16 +21,29 @@ class CuckooHost:
     def send_api(self, thing):
         """  """
         pid = thing.pid
+        api = thing.api
+
+        # We're required to report results of every target process to *its own*
+        # result server. So create a communication socket...
         if not self.sockets.has_key(pid):
             self.sockets[pid] = self._socket_for_pid(pid)
-        s = self.sockets[pid]
+            if not self.sockets[pid]:
+                raise Exception("CuckooHost error: could not create socket.")
+        # ... and don't forget to explain every single API call again to this server
+        self.descriptions.setdefault(pid, ["__process__", "__thread__"])
+        try:
+            lookup_idx = self.descriptions[pid].index(api)
+        except ValueError:
+            self.descriptions[pid].append(api)
+            lookup_idx = len(self.descriptions[pid]) - 1
+            self._send_api_description(lookup_idx, thing)
 
-        if not s:
-            raise Exception("CuckooHost error: could not create socket.")
-
-        # FIXME(rodionovd): remember which APIs we've described earlier
-        lookup_idx = 42
-        self._send_api_description(lookup_idx, thing)
+        # if api in self.descriptions[pid]:
+        #
+        # else:
+        #     self.descriptions[pid].append(api)
+        #     lookup_idx = len(self.descriptions[pid]) - 1
+        #     self._send_api_description(lookup_idx, thing)
 
         # Here's an api object:
         # {
@@ -45,7 +59,7 @@ class CuckooHost:
         #         (any)<value the n-th argument>,
         #     ]
         # }
-        s.sendall(BSON.encode({
+        self.sockets[pid].sendall(BSON.encode({
             "I"    : lookup_idx,
             "T"    : thing.tid,
             "t"    : 0,   # FIXME(rodionovd): put an actual value here
@@ -87,6 +101,7 @@ class CuckooHost:
 
     def _prepare_args(self, thing):
         result = [
+            1,  # FIXME(rodionovd): put an actual "is_success" value here
             thing.retval
         ]
         for arg in thing.args: result.append(arg)
