@@ -155,5 +155,8 @@ class CuckooHost:
     def _proc_name_from_pid(self, pid):
         # The first line of an output is reserved for `ps` headers and the
         # second one contains a process path
-        ps_output = check_output(["/bin/ps", "-p", str(pid), "-o", "comm"])
-        return ps_output.split("\n")[1]
+        try:
+            ps_output = check_output(["/bin/ps", "-p", str(pid), "-o", "comm"])
+            return ps_output.split("\n")[1]
+        except:
+            return "unknown"
