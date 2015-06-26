@@ -18,7 +18,7 @@ except ImportError:
 
 from distributed.db import db, AlembicVersion, DistStatus
 from distributed.scheduler import SchedulerThread
-from views import blueprints
+from distributed.views import blueprints
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
