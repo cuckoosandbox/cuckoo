@@ -11,45 +11,20 @@ import signal
 import sys
 
 try:
-    from flask import Flask, g
+    from flask import g
 except ImportError:
     print "Error: you need to install flask (`pip install flask`)"
     sys.exit(1)
 
-from distributed.db import db, AlembicVersion, DistStatus
+from distributed.app import create_app
+from distributed.db import DistStatus
 from distributed.scheduler import SchedulerThread
-from distributed.views import blueprints
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.core.startup import drop_privileges
 
 log = logging.getLogger(__name__)
-
-def create_app(database_connection):
-    app = Flask("Distributed Cuckoo")
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_connection
-    app.config["SECRET_KEY"] = os.urandom(32)
-
-    for blueprint, routes in blueprints:
-        for route in routes:
-            app.register_blueprint(blueprint, url_prefix=route)
-
-    db.init_app(app)
-    db.create_all(app=app)
-
-    # Check whether an alembic version is present and whether
-    # we're up-to-date.
-    with app.app_context():
-        row = AlembicVersion.query.first()
-        if not row:
-            db.session.add(AlembicVersion(AlembicVersion.VERSION))
-            db.session.commit()
-        elif row.version_num != AlembicVersion.VERSION:
-            sys.exit("Your database is not up-to-date. Please upgrade it "
-                     "using alembic (run `alembic upgrade head`).")
-
-    return app
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
