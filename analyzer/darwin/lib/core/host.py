@@ -6,12 +6,15 @@
 # of the MIT license. See the LICENSE file for details.
 
 import socket
+import datetime
 from bson import BSON
+from filetimes import dt_to_filetime
 
 class CuckooHost:
 
     sockets = {}
     descriptions = {}
+    launch_times = {}
 
     def __init__(self, host_ip, host_port):
         self.ip = host_ip
@@ -55,7 +58,7 @@ class CuckooHost:
         self.sockets[pid].sendall(BSON.encode({
             "I"    : lookup_idx,
             "T"    : thing.tid,
-            "t"    : 0,   # FIXME(rodionovd): put an actual value here
+            "t"    : 1000*(thing.timestamp - self.launch_times[pid]),
             "args" : self._prepare_args(thing)
         }))
 
@@ -108,7 +111,11 @@ class CuckooHost:
 
     def _send_new_process(self, thing):
         """  """
-        self.sockets[thing.pid].sendall(BSON.encode({
+        pid = thing.pid
+        # Remember when this process was born
+        self.launch_times[pid] = thing.timestamp
+        # Describe the __process__ notification
+        self.sockets[pid].sendall(BSON.encode({
             "I"        : 0,
             "name"     : "__process__",
             "type"     : "info",
@@ -121,7 +128,12 @@ class CuckooHost:
                 "ModulePath"
             ]
         }))
-        self.sockets[thing.pid].sendall(BSON.encode({
+        # Convert our unix timestamps into Windows's FILETIME because Cuckoo
+        # result server expect timestamps to be in this format
+        dt = datetime.datetime.fromtimestamp(thing.timestamp)
+        filetime = dt_to_filetime(dt)
+
+        self.sockets[pid].sendall(BSON.encode({
             "I"    : 0,
             "T"    : thing.tid,
             "t"    : 0,
@@ -129,8 +141,10 @@ class CuckooHost:
                 # FIXME(rodionovd): replace with real values
                 1,
                 0,
-                0, 0,
+                # TimeLow (first 32bits) and TimeHigh (last 32bits)
+                (filetime) & 0xffffffff, (filetime) >> 32,
                 thing.pid, thing.ppid,
+                # ModulePath
                 "dummy"
             ]
         }))
