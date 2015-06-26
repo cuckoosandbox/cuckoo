@@ -45,7 +45,7 @@ class CuckooHost:
         # {
         #     "I"    : (int)<index in the API lookup table>,
         #     "T"    : (int)<caller thread id>,
-        #     "t"    : (int)<time since a process launch>,
+        #     "t"    : (int)<time (in milliseconds) since a process launch>,
         #     "args" : [
         #         (int)<1 if this API call was successfull, 0 otherwise>,
         #         (int)<return value>,
@@ -114,7 +114,7 @@ class CuckooHost:
         pid = thing.pid
         # Remember when this process was born
         # FIXME(rodionovd): increase resulution of the timestamps
-        # (from 1 second to like 1 milisecond)
+        # (from 1 second to like 1 millisecond)
         self.launch_times[pid] = thing.timestamp
         # Describe the __process__ notification
         self.sockets[pid].sendall(BSON.encode({
