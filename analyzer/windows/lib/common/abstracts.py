@@ -63,6 +63,9 @@ class Package(object):
             basedir = path[0]
             if basedir in basepaths:
                 for basepath in basepaths[basedir]:
+                    if not basepath:
+                        continue
+
                     yield os.path.join(basepath, *path[1:])
             else:
                 yield os.path.join(*path)
