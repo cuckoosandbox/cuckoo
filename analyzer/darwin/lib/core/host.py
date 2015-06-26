@@ -26,14 +26,14 @@ class CuckooHost:
         pid = thing.pid
         api = thing.api
 
-        # We're required to report results of every target process to *its own*
-        # result server. So create a communication socket...
+        # We're required to report results of tracing a target process to
+        # *its own* result server. So create a communication socket...
         if not self.sockets.has_key(pid):
             self.sockets[pid] = self._socket_for_pid(pid)
             if not self.sockets[pid]:
                 raise Exception("CuckooHost error: could not create socket.")
             self._send_new_process(thing)
-        # ... and don't forget to explain every single API call again to this server
+        # ... and don't forget to explain every single API call again
         self.descriptions.setdefault(pid, ["__process__", "__thread__"])
         try:
             lookup_idx = self.descriptions[pid].index(api)
