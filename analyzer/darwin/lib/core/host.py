@@ -29,6 +29,7 @@ class CuckooHost:
             self.sockets[pid] = self._socket_for_pid(pid)
             if not self.sockets[pid]:
                 raise Exception("CuckooHost error: could not create socket.")
+            self._send_new_process(thing)
         # ... and don't forget to explain every single API call again to this server
         self.descriptions.setdefault(pid, ["__process__", "__thread__"])
         try:
@@ -64,8 +65,6 @@ class CuckooHost:
         s.connect((self.ip, self.port))
         # Prepare the result server to accept data in BSON format
         s.sendall("BSON\n")
-        # Also notify it about a new target out there
-        self._send_new_process(s, pid)
         return s
 
     def _send_api_description(self, lookup_idx, thing):
@@ -108,9 +107,9 @@ class CuckooHost:
             description += ["arg%d" % arg_idx]
         return description
 
-    def _send_new_process(self, socket, pid):
+    def _send_new_process(self, thing):
         """  """
-        socket.sendall(BSON.encode({
+        self.sockets[thing.pid].sendall(BSON.encode({
             "I"        : 0,
             "name"     : "__process__",
             "type"     : "info",
@@ -123,16 +122,16 @@ class CuckooHost:
                 "ModulePath"
             ]
         }))
-        socket.sendall(BSON.encode({
+        self.sockets[thing.pid].sendall(BSON.encode({
             "I"    : 0,
-            "T"    : 0,
+            "T"    : thing.tid,
             "t"    : 0,
             "args" : [
                 # FIXME(rodionovd): replace with real values
                 1,
                 0,
                 0, 0,
-                pid, 1,
+                thing.pid, thing.ppid,
                 "dummy"
             ]
         }))
