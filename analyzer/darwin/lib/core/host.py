@@ -114,7 +114,7 @@ class CuckooHost:
         """  """
         pid = thing.pid
         # Remember when this process was born
-        # FIXME(rodionovd): increase resulution of the timestamps
+        # FIXME(rodionovd): increase resolution of the timestamps
         # (from 1 second to like 1 millisecond)
         self.launch_times[pid] = thing.timestamp
         # Describe the __process__ notification
