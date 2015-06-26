@@ -55,7 +55,9 @@ class CuckooHost:
     def _socket_for_pid(self, pid):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.ip, self.port))
+        # Prepare the result server to accept data in BSON format
         s.sendall("BSON\n")
+        # Also notify it about a new target out there
         self._send_new_process(s, pid)
         return s
 
@@ -85,7 +87,6 @@ class CuckooHost:
 
     def _prepare_args(self, thing):
         result = [
-            1,  # FIXME(rodionovd): put an actual value here
             thing.retval
         ]
         for arg in thing.args: result.append(arg)
@@ -95,6 +96,7 @@ class CuckooHost:
         """ """
         description = ["is_success", "retval"]
         for arg_idx in range(0, len(thing.args)):
+            # TODO(rodionovd): we need actual names here
             description += ["arg%d" % arg_idx]
         return description
 
