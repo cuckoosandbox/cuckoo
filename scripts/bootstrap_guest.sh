@@ -8,6 +8,7 @@
 # Abstract
 # ---------
 # This is a bootstrap script for an OS X guest machine. It's able to:
+#   0) Update network settings (Ethernet)
 #   1) Install the anti-antitracing kernel module (aka `pt_deny_attach` kext)
 #   2) Patch /etc/sudoers to allow the user to launch `dtrace` and `date`
 #      without a password
@@ -35,6 +36,10 @@ while getopts ":sk" opt; do
     \?) echo "Invalid option -$OPTARG" >&2 ;;
   esac
 done
+
+# [0] Setup network
+sudo networksetup -setmanual Ethernet 192.168.56.101 255.255.255.0 192.168.56.1
+sudo networksetup -setdnsservers Ethernet 8.8.8.8 8.8.4.4
 
 # [1] Install `pt_deny_attach` kext.
 if [ "$opt_install_kext" == true ]; then
