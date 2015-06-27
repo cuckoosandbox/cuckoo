@@ -26,7 +26,7 @@ My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc
 + username   ALL=(root) NOPASSWD: /usr/sbin/dtrace
 + username   ALL=(root) NOPASSWD: /bin/date
   ```
-  (replace `username` above with an actual name of the user).
+  (replace `username` above with an actual user name).
 
  2. Download and launch Cuckoo's `agent.py`:  
 
