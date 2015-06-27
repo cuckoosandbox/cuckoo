@@ -11,8 +11,13 @@
 #
 # Usage
 # ---------
+# Launch this script with -i flag to create a host-only network interface
+# and assign it to the given VirtualBox guest machine:
 # ./bootstrap_host.sh -i MyOSXVirtualMachine
-#
+# 
+# Or just launch it without any arguments to enable traffic forwarding
+# for vboxnet0 host-only interface:
+# ./bootstrap_host.sh
 
 opt_create_interface=false; vmname="";
 while getopds ":i:" opt; do
