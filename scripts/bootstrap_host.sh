@@ -9,6 +9,10 @@
 # ---------
 # A bootstrap script for an OS X host.
 #
+# Usage
+# ---------
+# ./bootstrap_host.sh -i MyOSXVirtualMachine
+#
 
 opt_create_interface=false; vmname="";
 while getopds ":i:" opt; do
