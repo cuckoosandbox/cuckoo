@@ -57,8 +57,11 @@ class Package(object):
         This function is a generator.
         """
         self.prepare()
-        # FIXME(rodionovd): add support for other analysis methods
-        self.apicalls_analysis()
+
+        if self.method == "apicalls":
+            self.apicalls_analysis()
+        else:
+            raise Exception("Unsupported analysis method")
 
     def apicalls_analysis(self):
         kwargs = {
