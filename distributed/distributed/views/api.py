@@ -6,9 +6,11 @@ import os
 import tempfile
 import time
 
-from flask import Blueprint, g, jsonify, request, send_file
+from flask import Blueprint, jsonify, request, send_file
 
-from distributed.db import db, Node, Task, Machine, dist_status
+import settings
+
+from distributed.db import db, Node, Task, Machine, NodeStatus
 from distributed.api import list_machines
 
 blueprint = Blueprint("api", __name__)
@@ -186,7 +188,7 @@ def task_post():
 
     f = request.files["file"]
 
-    fd, path = tempfile.mkstemp(dir=g.samples_directory)
+    fd, path = tempfile.mkstemp(dir=settings.samples_directory)
     f.save(path)
     os.close(fd)
 
@@ -229,8 +231,8 @@ def task_delete(task_id):
         return json_error(404, "Task not found")
 
     # Remove all available reports.
-    dirpath = os.path.join(g.reports_directory, "%d" % task_id)
-    for report_format in g.report_formats:
+    dirpath = os.path.join(settings.reports_directory, "%d" % task_id)
+    for report_format in settings.report_formats:
         path = os.path.join(dirpath, "report.%s" % report_format)
         if os.path.isfile(path):
             os.unlink(path)
@@ -256,7 +258,7 @@ def report_get(task_id, report_format="json"):
     if task.status != Task.FINISHED:
         return json_error(420, "Task not finished yet")
 
-    report_path = os.path.join(g.reports_directory,
+    report_path = os.path.join(settings.reports_directory,
                                "%d" % task_id, "report.%s" % report_format)
     if not os.path.isfile(report_path):
         return json_error(404, "Report format not found")
@@ -265,4 +267,36 @@ def report_get(task_id, report_format="json"):
 
 @blueprint.route("/status")
 def status_get():
-    return jsonify(success=True, nodes=g.statuses, tasks=dist_status)
+    paths = dict(
+        reports=settings.reports_directory,
+        samples=settings.samples_directory,
+    )
+
+    diskspace = {}
+    for key, path in paths.items():
+        if hasattr(os, "statvfs"):
+            stats = os.statvfs(path)
+            diskspace[key] = dict(
+                free=stats.f_bavail * stats.f_frsize,
+                total=stats.f_blocks * stats.f_frsize,
+                used=(stats.f_blocks - stats.f_bavail) * stats.f_frsize,
+            )
+
+    dist = {
+        "diskspace": diskspace,
+    }
+
+    statuses = {}
+    for node in Node.query.filter_by(enabled=True).all():
+        q = NodeStatus.query.filter_by(name=node.name)
+        status = q.order_by(NodeStatus.timestamp.desc()).first()
+        if status:
+            statuses[node.name] = status.status
+
+    q = NodeStatus.query.filter_by(name="__scheduler__")
+    tasks = q.order_by(NodeStatus.timestamp.desc()).first()
+    if tasks:
+        tasks = tasks.status
+
+    return jsonify(success=True, nodes=statuses, tasks=tasks,
+                   dist=dist, timestamp=int(time.time()))

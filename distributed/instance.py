@@ -4,13 +4,12 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import argparse
-import ConfigParser
 import datetime
-import json
 import logging
 import os.path
-import sys
 import time
+
+import settings
 
 from distributed.api import node_status, fetch_tasks, delete_task
 from distributed.api import store_report, submit_task
@@ -18,18 +17,18 @@ from distributed.app import create_app
 from distributed.db import db, Task, Node, NodeStatus
 from distributed.exception import InvalidReport
 
-def scheduler(args):
+def scheduler():
     while True:
         for node in Node.query.filter_by(enabled=True).all():
             # Check whether this node still has enough samples to work with.
             q = Task.query.filter_by(node_id=node.id)
             q = q.filter(Task.status.in_((Task.ASSIGNED, Task.PROCESSING)))
-            if q.count() >= args.threshold:
+            if q.count() >= settings.threshold:
                 continue
 
             # Schedule new samples for this node.
             q = Task.query.filter_by(status=Task.PENDING)
-            tasks = q.limit(args.threshold).all()
+            tasks = q.limit(settings.threshold).all()
             for task in tasks:
                 task.status = Task.ASSIGNED
                 task.node_id = node.id
@@ -41,34 +40,59 @@ def scheduler(args):
 
         time.sleep(10)
 
-def status_caching(args):
-    pass
+def status_caching():
+    def fetch_stats(tasks):
+        return dict(
+            pending=tasks.filter_by(status=Task.PENDING).count(),
+            processing=tasks.filter_by(status=Task.PROCESSING).count(),
+            finished=tasks.filter_by(status=Task.FINISHED).count(),
+            deleted=tasks.filter_by(status=Task.DELETED).count(),
+        )
 
-def handle_node(args):
-    node = Node.query.filter_by(name=args.instance).first()
+    while True:
+        yesterday = datetime.datetime.now() - datetime.timedelta(1)
+        today = Task.query.filter(Task.started > yesterday)
+
+        status = {
+            "all": fetch_stats(Task.query),
+            "prio1": fetch_stats(Task.query.filter_by(priority=1)),
+            "prio2": fetch_stats(Task.query.filter_by(priority=2)),
+            "today": fetch_stats(today),
+            "today1": fetch_stats(today.filter_by(priority=1)),
+            "today2": fetch_stats(today.filter_by(priority=2)),
+        }
+
+        ns = NodeStatus("__scheduler__", datetime.datetime.now(), status)
+        db.session.add(ns)
+        db.session.commit()
+
+        time.sleep(30)
+
+def handle_node(instance):
+    node = Node.query.filter_by(name=instance).first()
     if not node:
-        log.critical("Node not found: %s", args.instance)
+        log.critical("Node not found: %s", instance)
         return
 
     while True:
         # Fetch the status of this node.
         status = node_status(node.url)
         if not status:
-            time.sleep(args.interval)
+            time.sleep(settings.interval)
             continue
 
         # Include the timestamp of when we retrieved this status.
         status["timestamp"] = int(time.time())
 
         # Add this node status to the database for monitoring purposes.
-        ns = NodeStatus(node.id, datetime.datetime.now(), json.dumps(status))
+        ns = NodeStatus(node.name, datetime.datetime.now(), status)
         db.session.add(ns)
 
         # Submission of new tasks.
-        if status["tasks"]["pending"] < args.threshold:
+        if status["tasks"]["pending"] < settings.threshold:
             q = Task.query.filter_by(node_id=node.id, status=Task.ASSIGNED)
             q = q.order_by(Task.priority.desc(), Task.id)
-            tasks = q.limit(args.threshold).all()
+            tasks = q.limit(settings.threshold).all()
             for t in tasks:
                 t.task_id = submit_task(node.url, t.to_dict())
                 t.status = Task.PROCESSING
@@ -85,19 +109,19 @@ def handle_node(args):
 
             if t is None:
                 log.debug("Node %s task #%d has not been submitted "
-                          "by us!", args.instance, task["id"])
+                          "by us!", instance, task["id"])
 
                 # Should we delete this task? Improve through the usage of
                 # the "owner" parameter.
                 delete_task(node.url, task["id"])
                 continue
 
-            dirpath = os.path.join(args.reports_directory, "%d" % t.id)
+            dirpath = os.path.join(settings.reports_directory, "%d" % t.id)
             if not os.path.isdir(dirpath):
                 os.makedirs(dirpath)
 
             # Fetch each report.
-            for report_format in args.report_formats:
+            for report_format in settings.report_formats:
                 try:
                     store_report(node.url, t.task_id, report_format, dirpath)
                 except InvalidReport as e:
@@ -114,37 +138,15 @@ def handle_node(args):
             log.debug("Fetched %d reports from %s", len(tasks), node.name)
 
         db.session.commit()
-        time.sleep(args.interval)
+        time.sleep(settings.interval)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("instance", type=str, help="Name of this node instance.")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbosity for debug information.")
-    parser.add_argument("-s", "--settings", type=str, help="Settings file.")
     args = parser.parse_args()
 
-    if not args.settings:
-        dirpath = os.path.abspath(os.path.dirname(__file__))
-        conf_path = os.path.join(dirpath, "..", "conf", "distributed.conf")
-        args.settings = conf_path
-
-    s = ConfigParser.ConfigParser()
-    s.read(args.settings)
-
-    if not s.get("distributed", "database"):
-        sys.exit("Please configure a database connection.")
-
-    args.database_connection = s.get("distributed", "database")
-    args.threshold = s.getint("distributed", "threshold")
-    args.interval = s.getint("distributed", "interval")
-    args.reports_directory = s.get("distributed", "reports_directory")
-
-    args.report_formats = []
-    for report_format in s.get("distributed", "report_formats").split(","):
-        args.report_formats.append(report_format.strip())
-
-    if not args.report_formats:
-        sys.exit("Please configure one or more reporting formats.")
+    app = create_app()
 
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
@@ -155,10 +157,10 @@ if __name__ == "__main__":
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     log = logging.getLogger("dist-%s" % args.instance)
 
-    with create_app(args.database_connection).app_context():
+    with app.app_context():
         if args.instance == "__scheduler__":
-            scheduler(args)
+            scheduler()
         elif args.instance == "__status__":
-            status_caching(args)
+            status_caching()
         else:
-            handle_node(args)
+            handle_node(args.instance)

@@ -1,14 +1,19 @@
-import flask
-import os
+import os.path
 import sys
+
+try:
+    from flask import Flask
+except ImportError:
+    sys.exit("Error: you need to install flask (`pip install flask`)")
 
 from distributed.db import db, AlembicVersion
 from distributed.views import blueprints
 
-def create_app(database_connection):
-    app = flask.Flask("Distributed Cuckoo")
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_connection
-    app.config["SECRET_KEY"] = os.urandom(32)
+import settings
+
+def create_app():
+    app = Flask("Distributed Cuckoo")
+    app.config.from_object(settings)
 
     for blueprint, routes in blueprints:
         for route in routes:
@@ -27,5 +32,20 @@ def create_app(database_connection):
         elif row.version_num != AlembicVersion.VERSION:
             sys.exit("Your database is not up-to-date. Please upgrade it "
                      "using alembic (run `alembic upgrade head`).")
+
+    # Further check the configuration.
+    if not settings.SQLALCHEMY_DATABASE_URI:
+        sys.exit("Please configure a database connection.")
+
+    if not settings.report_formats:
+        sys.exit("Please configure one or more reporting formats.")
+
+    if not settings.samples_directory or \
+            not os.path.isdir(settings.samples_directory):
+        sys.exit("Please configure a samples directory path.")
+
+    if not settings.reports_directory or \
+            not os.path.isdir(settings.reports_directory):
+        sys.exit("Please configure a reports directory path.")
 
     return app
