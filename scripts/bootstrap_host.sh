@@ -31,8 +31,8 @@ if [ "$opt_create_interface" == true ]; then
     # Let's also verify that a VM with this name actually exists
     # Note: `vboxmanage list vms` outputs data in the following format:
     # 	"SandboxXP" {2b96015e-42e0-4662-b792-c738c2de155f}
-    vm_exists=`vboxmanage list vms | grep "\"$vmname\" {[0-9a-z\-]*}" | wc -l`
-    if [ $vm_exists -ne 1 ]; then
+    vm_exists=$(vboxmanage list vms | grep -c "\"$vmname\" {[0-9a-z\-]*}")
+    if [ "$vm_exists" -ne 1 ]; then
     	echo -e "[Error] Could not find a VM named \"$vmname\"."
     	exit 1
     fi

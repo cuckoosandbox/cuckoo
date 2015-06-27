@@ -52,9 +52,9 @@ fi
 # [2] Patch /etc/sudoers to enable passwordless sudo for `dtrace` and `date`
 if [ "$opt_patch_sudoers" == true ]; then
     echo "[INFO]: Patching /etc/sudoers to enable passwordless dtrace for current user"
-    user=`whoami`
+    user=$(whoami)
     if [ -z "$user" ]; then
-        echo "[ERROR]: `whoami` failed. /etc/sudoers wasn't patched."
+        echo "[ERROR]: $(whoami) failed. /etc/sudoers wasn't patched."
     else
         # Since `>>` redirect is done by the shell itself and it drops all privileges,
         # we must run this command in a subshell.
