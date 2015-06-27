@@ -82,10 +82,3 @@ def _parse_entry(entry):
     tid       = parsed['tid']
 
     return apicall(api, args, retval, timestamp, pid, ppid, tid)
-
-#
-# Standalone app
-# TODO(rodionovd): implement a standalone version of this module
-
-if __name__ == "__main__":
-    pass
