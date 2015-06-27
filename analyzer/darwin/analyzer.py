@@ -106,6 +106,7 @@ class Macalyzer:
 		if not pkg:
 			raise Exception("No valid package available for file type: "
 			                "{0}".format(self.config.file_type))
+		self.log.debug("Using package \"%s\"." % pkg)
 		# Importing the selected analysis package
 		package_name = "modules.packages.%s" % pkg
 		try:
