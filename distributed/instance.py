@@ -62,7 +62,7 @@ def status_caching():
             "today2": fetch_stats(today.filter_by(priority=2)),
         }
 
-        ns = NodeStatus("__scheduler__", datetime.datetime.now(), status)
+        ns = NodeStatus("dist.scheduler", datetime.datetime.now(), status)
         db.session.add(ns)
         db.session.commit()
 
@@ -158,9 +158,9 @@ if __name__ == "__main__":
     log = logging.getLogger("dist-%s" % args.instance)
 
     with app.app_context():
-        if args.instance == "__scheduler__":
+        if args.instance == "dist.scheduler":
             scheduler()
-        elif args.instance == "__status__":
+        elif args.instance == "dist.status":
             status_caching()
         else:
             handle_node(args.instance)

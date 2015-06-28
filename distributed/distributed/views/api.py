@@ -293,7 +293,7 @@ def status_get():
         if status:
             statuses[node.name] = status.status
 
-    q = NodeStatus.query.filter_by(name="__scheduler__")
+    q = NodeStatus.query.filter_by(name="dist.scheduler")
     tasks = q.order_by(NodeStatus.timestamp.desc()).first()
     if tasks:
         tasks = tasks.status
