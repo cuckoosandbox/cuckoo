@@ -4,7 +4,7 @@ import os
 # Examples, see documentation for more:
 # postgresql://foo:bar@localhost:5432/mydatabase
 # mysql://foo:bar@localhost/mydatabase
-SQLALCHEMY_DATABASE_URI = "postgresql://jbr:jbr@localhost/distributed"
+SQLALCHEMY_DATABASE_URI = "postgresql://cuckoo:cuckoo@localhost/distributed"
 
 # Secret key used by Flask to generate sessions etc. (This feature is not
 # actually used at the moment as we have no user accounts etc).
