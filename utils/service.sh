@@ -141,40 +141,12 @@ script
 end script
 EOF
 
-    cat > /etc/init/cuckoo-distributed.conf << EOF
-# Cuckoo distributed API service.
-
-description "cuckoo distributed api service"
-start on started cuckoo
-stop on stopped cuckoo
-setuid "$USERNAME"
-chdir "$CUCKOO"
-
-env CONFFILE="$CONFFILE"
-env LOGDIR="$LOGDIR"
-env DISTADDR=""
-
-script
-    . "\$CONFFILE"
-
-    if [ -n "\$DISTADDR" ]; then
-        if [ "\$VERBOSE" -eq 0 ]; then
-            exec ./distributed/app.py "\$DISTADDR" \
-                2>&1 >> "\$LOGDIR/dist.log"
-        else
-            exec ./distributed/app.py "\$DISTADDR" -v \
-                2>&1 >> "\$LOGDIR/dist.log"
-        fi
-    fi
-end script
-EOF
-
     cat > /etc/init/cuckoo-distributed-instance.conf << EOF
 # Cuckoo distributed API node instance service.
 
 description "cuckoo distributed api node instance service"
 setuid "$USERNAME"
-chdir "$CUCKOO"
+chdir "$CUCKOO/distributed"
 instance \$INSTANCE
 
 env CONFFILE="$CONFFILE"
@@ -184,12 +156,42 @@ script
     . "\$CONFFILE"
 
     if [ "\$VERBOSE" -eq 0 ]; then
-        exec ./distributed/instance.py "\$INSTANCE"
+        exec ./instance.py "\$INSTANCE"
     else
-        exec ./distributed/instance.py "\$INSTANCE" -v
+        exec ./instance.py "\$INSTANCE" -v
     fi
 end script
 EOF
+
+    cat > /etc/uwsgi/apps-available/cuckoo-distributed.ini << EOF
+[uwsgi]
+plugins = python
+chdir = $CUCKOO/distributed
+file = app.py
+uid = $USERNAME
+gid = $USERNAME
+EOF
+
+    ln -s /etc/uwsgi/apps-available/cuckoo-distributed.ini \
+        /etc/uwsgi/apps-enabled/cuckoo-distributed.ini
+
+    cat > /etc/nginx/sites-available/cuckoo-distributed << EOF
+upstream _uwsgi_cuckoo_distributed {
+    server unix:/run/uwsgi/app/cuckoo-distributed/socket;
+}
+
+server {
+    listen 9003;
+
+    location / {
+        uwsgi_pass _uwsgi_cuckoo_distributed;
+        include uwsgi_params;
+    }
+}
+EOF
+
+    ln -s /etc/nginx/sites-available/cuckoo-distributed \
+        /etc/nginx/sites-enabled/cuckoo-distributed
 
     cat > /etc/init/cuckoo-web.conf << EOF
 # Cuckoo Web Interface server.
