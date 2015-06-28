@@ -9,7 +9,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 
 db = SQLAlchemy(session_options=dict(autoflush=True))
-ALEMBIC_VERSION = "3d1d8fd2cdbb"
+ALEMBIC_VERSION = "166078eb1311"
 
 class Serializer(object):
     """Serialize a query result object."""
