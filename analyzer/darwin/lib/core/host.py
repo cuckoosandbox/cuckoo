@@ -33,9 +33,9 @@ class CuckooHost:
             self.sockets[pid] = self._socket_for_pid()
             if not self.sockets[pid]:
                 raise Exception("CuckooHost error: could not create socket.")
+            # ... and don't forget to explain every single API call again
+            self.descriptions.setdefault(pid, ["__process__", "__thread__"])
             self._send_new_process(thing)
-        # ... and don't forget to explain every single API call again
-        self.descriptions.setdefault(pid, ["__process__", "__thread__"])
         try:
             lookup_idx = self.descriptions[pid].index(api)
         except ValueError:
