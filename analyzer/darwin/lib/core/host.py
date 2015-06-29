@@ -33,7 +33,7 @@ class CuckooHost:
         # We're required to report results of tracing a target process to
         # *its own* result server. So create a communication socket...
         if pid not in self.sockets:
-            self.sockets[pid] = self._socket_for_pid()
+            self.sockets[pid] = self._create_socket()
             if not self.sockets[pid]:
                 raise Exception("CuckooHost error: could not create socket.")
             # ... and don't forget to explain every single API call again
@@ -68,7 +68,7 @@ class CuckooHost:
             "args" : _prepare_args(thing)
         }))
 
-    def _socket_for_pid(self):
+    def _create_socket(self):
         """ Allocates a new socket and prepares it for communicating with the host """
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.ip, self.port))
