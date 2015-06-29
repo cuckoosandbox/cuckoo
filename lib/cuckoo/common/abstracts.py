@@ -1257,3 +1257,30 @@ class Report(object):
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
+
+class BehaviorHandler(object):
+    """Base class for behavior handlers inside of BehaviorAnalysis."""
+
+    key = "undefined"
+
+    # behavior event types this handler is interested in
+    event_types = []
+
+    def __init__(self, behavior_analysis):
+        self.analysis = behavior_analysis
+
+    def handles_path(self, logpath):
+        """Needs to return True for the log files this handler wants to process."""
+        return False
+
+    def parse(self, logpath):
+        """Called after _handles_path succeeded, should generate behavior events."""
+        raise NotImplementedError
+
+    def handle_event(self, event):
+        """Handle an event that gets passed down the stack."""
+        raise NotImplementedError
+
+    def run(self):
+        """Return the handler specific structure, gets placed into behavior[self.key]."""
+        raise NotImplementedError

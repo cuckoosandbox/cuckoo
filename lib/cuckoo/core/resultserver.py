@@ -15,20 +15,15 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooResultError
-from lib.cuckoo.common.netlog import NetlogParser, BsonParser
+from lib.cuckoo.common.netlog import BsonParser
 from lib.cuckoo.common.utils import create_folder, Singleton, logtime
 
 log = logging.getLogger(__name__)
 
 BUFSIZE = 16 * 1024
-EXTENSIONS = {
-    NetlogParser: ".raw",
-    BsonParser: ".bson",
-}
 
 class Disconnect(Exception):
     pass
-
 
 class ResultServer(SocketServer.ThreadingTCPServer, object):
     """Result server. Singleton!
@@ -153,6 +148,9 @@ class ResultHandler(SocketServer.BaseRequestHandler):
             if rs:
                 return True
 
+    def seek(self, pos):
+        pass
+
     def read(self, length):
         buf = ""
         while len(buf) < length:
@@ -163,7 +161,7 @@ class ResultHandler(SocketServer.BaseRequestHandler):
                 raise Disconnect()
             buf += tmp
 
-        if isinstance(self.protocol, (NetlogParser, BsonParser)):
+        if isinstance(self.protocol, BsonParser):
             if self.rawlogfd:
                 self.rawlogfd.write(buf)
             else:
@@ -188,9 +186,7 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         # Read until newline.
         buf = self.read_newline()
 
-        if "NETLOG" in buf:
-            self.protocol = NetlogParser(self)
-        elif "BSON" in buf:
+        if "BSON" in buf:
             self.protocol = BsonParser(self)
         elif "FILE" in buf:
             self.protocol = FileUpload(self)
@@ -216,8 +212,10 @@ class ResultHandler(SocketServer.BaseRequestHandler):
             # Initialize the protocol handler class for this connection.
             self.negotiate_protocol()
 
-            while self.protocol.read_next_message():
-                pass
+            for event in self.protocol:
+                if isinstance(self.protocol, BsonParser) and event["type"] == "process":
+                    self.open_process_log(event)
+
         except CuckooResultError as e:
             log.warning("ResultServer connection stopping because of "
                         "CuckooResultError: %s.", str(e))
@@ -229,7 +227,11 @@ class ResultHandler(SocketServer.BaseRequestHandler):
 
         log.debug("Connection closed: {0}:{1}".format(ip, port))
 
-    def log_process(self, ctx, timestring, pid, ppid, modulepath, procname):
+    def open_process_log(self, event):
+        pid = event["process_identifier"]
+        ppid = event["parent_process_identifier"]
+        procname = event["process_name"]
+
         if self.pid is not None:
             log.debug("ResultServer got a new process message but already "
                       "has pid %d ppid %s procname %s.",
@@ -237,52 +239,12 @@ class ResultHandler(SocketServer.BaseRequestHandler):
             raise CuckooResultError("ResultServer connection state "
                                     "inconsistent.")
 
-        log.debug("New process (pid={0}, ppid={1}, name={2}, "
-                  "path={3})".format(pid, ppid, procname, modulepath))
-
-        # CSV format files are optional.
-        if self.server.cfg.resultserver.store_csvs:
-            path = os.path.join(self.storagepath, "logs", "%d.csv" % pid)
-            self.logfd = open(path, "wb")
-
-        # Raw Bson or Netlog extension.
-        ext = EXTENSIONS.get(type(self.protocol), ".raw")
-        path = os.path.join(self.storagepath, "logs", str(pid) + ext)
+        log.debug("New process (pid={0}, ppid={1}, name={2}".format(pid, ppid, procname))
+        path = os.path.join(self.storagepath, "logs", str(pid) + ".bson")
         self.rawlogfd = open(path, "wb")
         self.rawlogfd.write(self.startbuf)
 
         self.pid, self.ppid, self.procname = pid, ppid, procname
-
-    def log_thread(self, context, pid):
-        log.debug("New thread (tid={0}, pid={1})".format(context[3], pid))
-
-    def log_anomaly(self, subcategory, tid, funcname, msg):
-        log.debug("Anomaly (tid=%s, category=%s, funcname=%s): %s",
-                  tid, subcategory, funcname, msg)
-
-    def log_call(self, context, apiname, modulename, arguments):
-        if not self.rawlogfd:
-            raise CuckooOperationalError("Netlog failure, call "
-                                         "before process.")
-
-        apiindex, status, returnval, tid, timediff, _, _ = context
-
-        # log.debug("log_call> tid:{0} apiname:{1}".format(tid, apiname))
-
-        if self.logfd:
-            current_time = \
-                self.connect_time + datetime.timedelta(0, 0, timediff*1000)
-            timestring = logtime(current_time)
-            argumentstrings = ["{0}->{1}".format(argname, repr(str(r))[1:-1])
-                               for argname, r in arguments]
-            print >>self.logfd, ",".join("\"{0}\"".format(i) for i in [
-                timestring, self.pid, self.procname, tid, self.ppid,
-                modulename, apiname, status, returnval] + argumentstrings)
-
-    def log_error(self, emsg):
-        log.warning("ResultServer error condition on connection %s "
-                    "(pid %s procname %s): %s", str(self.client_address),
-                    str(self.pid), str(self.procname), emsg)
 
     def create_folders(self):
         folders = "shots", "files", "logs"
@@ -305,7 +267,7 @@ class FileUpload(object):
         self.storagepath = self.handler.storagepath
         self.fd = None
 
-    def read_next_message(self):
+    def __iter__(self):
         # Read until newline for file path, e.g.,
         # shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
 
@@ -325,7 +287,7 @@ class FileUpload(object):
             create_folder(self.storagepath, dir_part)
         except CuckooOperationalError:
             log.error("Unable to create folder %s" % dir_part)
-            return False
+            return
 
         file_path = os.path.join(self.storagepath, buf.strip())
 
@@ -334,7 +296,7 @@ class FileUpload(object):
 
         if os.path.exists(file_path):
             log.warning("Analyzer tried to overwrite an existing file, closing connection.")
-            return False
+            return
 
         self.fd = open(file_path, "wb")
         chunk = self.handler.read_any()
@@ -352,6 +314,8 @@ class FileUpload(object):
                 break
 
         log.debug("Uploaded file length: {0}".format(self.fd.tell()))
+        return
+        yield
 
     def close(self):
         if self.fd:
@@ -365,16 +329,22 @@ class LogHandler(object):
         self.fd = self._open()
         log.debug("LogHandler for live analysis.log initialized.")
 
-    def read_next_message(self):
+    def __iter__(self):
         if not self.fd:
-            return False
+            return
 
-        buf = self.handler.read_newline()
-        if not buf:
-            return False
-        self.fd.write(buf)
-        self.fd.flush()
-        return True
+        while True:
+            try:
+                buf = self.handler.read_newline()
+            except Disconnect:
+                break
+
+            if not buf: break
+            self.fd.write(buf)
+            self.fd.flush()
+
+        return
+        yield
 
     def close(self):
         if self.fd:

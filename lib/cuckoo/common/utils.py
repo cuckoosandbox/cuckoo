@@ -12,6 +12,7 @@ import xmlrpclib
 import inspect
 import threading
 import multiprocessing
+
 from datetime import datetime
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -181,6 +182,15 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
+class ThreadSingleton(type):
+    """Singleton per thread."""
+    _instances = threading.local()
+
+    def __call__(cls, *args, **kwargs):
+        if not getattr(cls._instances, "instance", None):
+            cls._instances.instance = super(ThreadSingleton, cls).__call__(*args, **kwargs)
+        return cls._instances.instance
+
 def logtime(dt):
     """Formats time like a logger does, for the csv output
        (e.g. "2013-01-25 13:21:44,590")
@@ -277,3 +287,6 @@ class SuperLock(object):
     def __exit__(self, type, value, traceback):
         self.mlock.release()
         self.tlock.release()
+
+def subdict(x, keys):
+    return dict((k, v) for k, v in x.iteritems() if k in keys)

@@ -481,12 +481,29 @@ class RunSignatures(object):
                 except:
                     log.exception("Failed run on_complete() method for signature \"%s\":", sig.name)
                     continue
+                else:
+                    if result is True:
+                        log.debug("Analysis matched signature \"%s\"", sig.name)
+                        matched.append(sig.as_result())
+                        if sig in complete_list:
+                            complete_list.remove(sig)
 
-                if result is True:
-                    log.debug("Analysis matched signature \"%s\"", sig.name)
-                    self.append_sig(sig)
-                    if sig in complete_list:
-                        complete_list.remove(sig)
+        # Link this into the results already at this point, so non-evented signatures can use it
+        self.results["signatures"] = matched
+
+        # Compat loop for old-style (non evented) signatures.
+        if complete_list:
+            complete_list.sort(key=lambda sig: sig.order)
+            log.debug("Running non-evented signatures")
+
+            for signature in complete_list:
+                match = self.process(signature)
+                # If the signature is matched, add it to the list.
+                if match:
+                    matched.append(match)
+
+        # Sort the matched signatures by their severity level.
+        matched.sort(key=lambda key: key["severity"])
 
 class RunReporting:
     """Reporting Engine.
