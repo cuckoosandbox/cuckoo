@@ -74,12 +74,12 @@ def _parse_entry(entry):
     entry = entry.replace("\\0", "")
     parsed = json.loads(entry)
 
-    api = parsed['api']
-    args = parsed['args']
-    retval = parsed['retval']
+    api       = parsed['api']
+    args      = parsed['args']
+    retval    = parsed['retval']
     timestamp = parsed['timestamp']
-    pid = parsed['pid']
-    ppid = parsed['ppid']
-    tid = parsed['tid']
+    pid       = parsed['pid']
+    ppid      = parsed['ppid']
+    tid       = parsed['tid']
 
     return apicall(api, args, retval, timestamp, pid, ppid, tid)
