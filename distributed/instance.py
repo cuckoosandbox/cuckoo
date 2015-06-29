@@ -56,7 +56,7 @@ def status_caching():
 
     while True:
         yesterday = datetime.datetime.now() - datetime.timedelta(1)
-        today = Task.query.filter(Task.started > yesterday)
+        today = Task.query.filter(Task.completed > yesterday)
 
         status = {
             "all": fetch_stats(Task.query),
@@ -83,6 +83,7 @@ def handle_node(instance):
         # Fetch the status of this node.
         status = node_status(node.url)
         if not status:
+            log.debug("Error retrieving status of node %s", node.name)
             time.sleep(settings.interval)
             continue
 
@@ -92,6 +93,7 @@ def handle_node(instance):
         # Add this node status to the database for monitoring purposes.
         ns = NodeStatus(node.name, datetime.datetime.now(), status)
         db.session.add(ns)
+        db.session.commit()
 
         # Submission of new tasks.
         if status["tasks"]["pending"] < settings.threshold:
@@ -103,8 +105,8 @@ def handle_node(instance):
                 t.status = Task.PROCESSING
                 t.delegated = datetime.datetime.now()
 
-            if tasks:
-                log.debug("Submitted %d tasks to %s", len(tasks), node.name)
+            log.debug("Submitted %d tasks to %s", len(tasks), node.name)
+            db.session.commit()
 
         # Fetching of reports.
         tasks = fetch_tasks(node.url, status="reported")
@@ -139,8 +141,7 @@ def handle_node(instance):
                                                    "%Y-%m-%d %H:%M:%S")
             t.completed = datetime.datetime.now()
 
-        if tasks:
-            log.debug("Fetched %d reports from %s", len(tasks), node.name)
+        log.debug("Fetched %d reports from %s", len(tasks), node.name)
 
         db.session.commit()
         time.sleep(settings.interval)
