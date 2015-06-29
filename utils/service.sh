@@ -148,6 +148,7 @@ description "cuckoo distributed api node instance service"
 setuid "$USERNAME"
 chdir "$CUCKOO/distributed"
 instance \$INSTANCE
+respawn
 
 env CONFFILE="$CONFFILE"
 env LOGDIR="$LOGDIR"
