@@ -105,6 +105,8 @@ class Task(db.Model, Serializer):
     started = db.Column(db.DateTime(timezone=False), nullable=True)
     completed = db.Column(db.DateTime(timezone=False), nullable=True)
 
+    __table_args__ = db.Index("ix_node_task", node_id, task_id, unique=True),
+
     def __init__(self, path, filename, package, timeout, priority, options,
                  machine, platform, tags, custom, owner, memory, clock,
                  enforce_timeout):
