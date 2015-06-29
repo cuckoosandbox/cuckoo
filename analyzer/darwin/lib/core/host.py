@@ -13,7 +13,10 @@ from filetimes import dt_to_filetime
 
 
 class CuckooHost:
+    """ Sending analysis results back to the Cuckoo Host.
 
+    Currently it only supports sending results about API calls via send_api() -- see `apicalls` module.
+    """
     sockets = {}
     descriptions = {}
     launch_times = {}
@@ -23,7 +26,7 @@ class CuckooHost:
         self.port = host_port
 
     def send_api(self, thing):
-        """  """
+        """ Sends a new API notification to the Cuckoo host """
         pid = thing.pid
         api = thing.api
 
@@ -66,6 +69,7 @@ class CuckooHost:
         }))
 
     def _socket_for_pid(self):
+        """ Allocates a new socket and prepares it for communicating with the host """
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.ip, self.port))
         # Prepare the result server to accept data in BSON format
@@ -73,6 +77,7 @@ class CuckooHost:
         return s
 
     def _send_api_description(self, lookup_idx, thing):
+        """ Describes the given API call to the host """
         # Here's an api description object:
         # {
         #     "I"        : (string)<index in the API lookup table>,
@@ -97,6 +102,7 @@ class CuckooHost:
         }))
 
     def _send_new_process(self, thing):
+        """ Sends a notification about a new target process out there """
         """  """
         pid = thing.pid
         lookup_idx = self.descriptions[pid].index("__process__")
@@ -140,6 +146,7 @@ class CuckooHost:
         }))
 
 def _proc_name_from_pid(pid):
+    """ Parses `ps` output for the given PID """
     try:
         ps_output = check_output(["/bin/ps", "-p", str(pid), "-o", "comm"])
         # The first line of an output is reserved for `ps` headers and the
@@ -150,6 +157,7 @@ def _proc_name_from_pid(pid):
 
 
 def _filetime_from_timestamp(ts):
+    """ See filetimes.py for details """
     # Timezones are hard, sorry
     dt = datetime.fromtimestamp(ts)
     delta_from_utc = dt - datetime.utcfromtimestamp(ts)
@@ -160,12 +168,11 @@ def _prepare_args(thing):
         1,  # FIXME(rodionovd): put an actual "is_success" value here
         thing.retval
     ]
-    for arg in thing.args:
-        result.append(arg)
+    result += thing.args
     return result
 
 def _args_description(thing):
-    """ """
+    """ Composes a description of the given API call arguments. """
     description = ["is_success", "retval"]
     for arg_idx in range(0, len(thing.args)):
         # TODO(rodionovd): we need actual names here
