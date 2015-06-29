@@ -103,7 +103,6 @@ class CuckooHost:
 
     def _send_new_process(self, thing):
         """ Sends a notification about a new target process out there """
-        """  """
         pid = thing.pid
         lookup_idx = self.descriptions[pid].index("__process__")
 
@@ -172,7 +171,7 @@ def _prepare_args(thing):
     return result
 
 def _args_description(thing):
-    """ Composes a description of the given API call arguments. """
+    """ Composes a description of the given API call arguments """
     description = ["is_success", "retval"]
     for arg_idx in range(0, len(thing.args)):
         # TODO(rodionovd): we need actual names here
