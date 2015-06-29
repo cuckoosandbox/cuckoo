@@ -20,10 +20,15 @@ from distributed.exception import InvalidReport
 def scheduler():
     while True:
         for node in Node.query.filter_by(enabled=True).all():
+            # Fetch the status of this node.
+            status = node_status(node.url)
+            if not status:
+                log.debug("Error retrieving status of node %s", node.name)
+                time.sleep(settings.interval)
+                continue
+
             # Check whether this node still has enough samples to work with.
-            q = Task.query.filter_by(node_id=node.id)
-            q = q.filter(Task.status.in_((Task.ASSIGNED, Task.PROCESSING)))
-            if q.count() >= settings.threshold:
+            if status["tasks"]["pending"] >= settings.threshold:
                 continue
 
             # Schedule new samples for this node.
