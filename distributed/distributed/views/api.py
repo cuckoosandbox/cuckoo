@@ -123,10 +123,11 @@ def task_list():
     q = Task.query.order_by(Task.id)
 
     if finished is not None:
-        if bool(int(finished)):
+        if int(finished):
             q = q.filter_by(status=Task.FINISHED)
         else:
-            q = q.filter(Task.status.in_([Task.PENDING, Task.PROCESSING]))
+            q = q.filter(Task.status.in_((Task.PENDING, Task.ASSIGNED,
+                                          Task.PROCESSING)))
 
     if status is not None:
         q = q.filter_by(status=status)
