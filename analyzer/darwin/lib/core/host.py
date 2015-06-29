@@ -57,10 +57,11 @@ class CuckooHost:
         #         (any)<value the n-th argument>,
         #     ]
         # }
+        ms_since_process_launch = 1000*(thing.timestamp - self.launch_times[pid])
         self.sockets[pid].sendall(BSON.encode({
             "I"    : lookup_idx,
             "T"    : thing.tid,
-            "t"    : 1000*(thing.timestamp - self.launch_times[pid]),
+            "t"    : ms_since_process_launch,
             "args" : _prepare_args(thing)
         }))
 
@@ -98,13 +99,15 @@ class CuckooHost:
     def _send_new_process(self, thing):
         """  """
         pid = thing.pid
+        lookup_idx = self.descriptions[pid].index("__process__")
+
         # Remember when this process was born
         # FIXME(rodionovd): increase resolution of the timestamps
         # (from 1 second to like 1 millisecond)
         self.launch_times[pid] = thing.timestamp
         # Describe the __process__ notification
         self.sockets[pid].sendall(BSON.encode({
-            "I"        : 0,
+            "I"        : lookup_idx,
             "name"     : "__process__",
             "type"     : "info",
             "category" : "unknown",
@@ -122,7 +125,7 @@ class CuckooHost:
         # Get process name (aka module path)
         module = _proc_name_from_pid(pid)
         self.sockets[pid].sendall(BSON.encode({
-            "I"    : 0,
+            "I"    : lookup_idx,
             "T"    : thing.tid,
             "t"    : 0,
             "args" : [
