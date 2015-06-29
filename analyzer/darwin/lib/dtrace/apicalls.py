@@ -52,9 +52,9 @@ def apicalls(target, **kwargs):
     with open(os.devnull, "w") as f:
         handler = Popen(cmd, stdout=f, stderr=f, cwd=current_directory())
 
-        # If we use `sudo -u` for dropping root privileges, we also have to
-        # exclude it's output from the results
-        sudo_pid = None
+    # When we're using `sudo -u` for dropping root privileges, we also have to
+    # exclude sudo's own output from the results
+    sudo_pid = None
 
     for entry in filelines(output_file):
         if "## apicalls.d done ##" in entry.strip():
