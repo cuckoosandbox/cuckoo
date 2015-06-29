@@ -9,6 +9,7 @@ from ..dtrace.dtruss import dtruss
 from ..dtrace.apicalls import apicalls
 from ..dtrace.ipconnections import ipconnections
 
+
 def choose_package(file_type, file_name):
     if "Bourne-Again" in file_type or "bash" in file_type:
         return "bash"
@@ -16,6 +17,7 @@ def choose_package(file_type, file_name):
         return "macho"
     else:
         return None
+
 
 class Package(object):
     """ Base analysis package """
@@ -30,7 +32,7 @@ class Package(object):
         if "options" in kwargs:
             self.options = kwargs["options"]
         else:
-            self.options = []
+            self.options = {}
         # A timeout for analysis
         if "timeout" in kwargs:
             self.timeout = kwargs["timeout"]
@@ -40,7 +42,7 @@ class Package(object):
         # Choose an analysis method
         if "method" in self.options:
             self.method = self.options["method"]
-        else: # fallback
+        else:  # fallback
             self.method = "apicalls"
         # Should our target be launched as root or not
         if "run_as_root" in self.options:
@@ -65,16 +67,19 @@ class Package(object):
 
     def apicalls_analysis(self):
         kwargs = {
-            'args' : self.args,
-            'timeout' : self.timeout,
-            'run_as_root' : self.run_as_root
+            'args': self.args,
+            'timeout': self.timeout,
+            'run_as_root': self.run_as_root
         }
         for call in apicalls(self.target, **kwargs):
             self.host.send_api(call)
 
+
 class Auxiliary(object):
-    def __init__(self, options=[]):
+    def __init__(self, options=None):
         self.options = options
+        if not self.options:
+            self.options = {}
 
     def start(self):
         pass

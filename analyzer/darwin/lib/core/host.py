@@ -11,6 +11,7 @@ from datetime import datetime
 from subprocess import check_output
 from filetimes import dt_to_filetime
 
+
 class CuckooHost:
 
     sockets = {}
@@ -28,8 +29,8 @@ class CuckooHost:
 
         # We're required to report results of tracing a target process to
         # *its own* result server. So create a communication socket...
-        if not self.sockets.has_key(pid):
-            self.sockets[pid] = self._socket_for_pid(pid)
+        if pid not in self.sockets:
+            self.sockets[pid] = self._socket_for_pid()
             if not self.sockets[pid]:
                 raise Exception("CuckooHost error: could not create socket.")
             self._send_new_process(thing)
@@ -60,10 +61,10 @@ class CuckooHost:
             "I"    : lookup_idx,
             "T"    : thing.tid,
             "t"    : 1000*(thing.timestamp - self.launch_times[pid]),
-            "args" : self._prepare_args(thing)
+            "args" : _prepare_args(thing)
         }))
 
-    def _socket_for_pid(self, pid):
+    def _socket_for_pid(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.ip, self.port))
         # Prepare the result server to accept data in BSON format
@@ -90,25 +91,9 @@ class CuckooHost:
             "I"        : lookup_idx,
             "name"     : thing.api,
             "type"     : "info",
-            "category" : "unknown", # FIXME(rodionovd): put an actual value here
-            "args"     : self._args_description(thing)
+            "category" : "unknown",  # FIXME(rodionovd): put an actual value here
+            "args"     : _args_description(thing)
         }))
-
-    def _prepare_args(self, thing):
-        result = [
-            1,  # FIXME(rodionovd): put an actual "is_success" value here
-            thing.retval
-        ]
-        for arg in thing.args: result.append(arg)
-        return result
-
-    def _args_description(self, thing):
-        """ """
-        description = ["is_success", "retval"]
-        for arg_idx in range(0, len(thing.args)):
-            # TODO(rodionovd): we need actual names here
-            description += ["arg%d" % arg_idx]
-        return description
 
     def _send_new_process(self, thing):
         """  """
@@ -133,9 +118,9 @@ class CuckooHost:
         }))
         # Convert our unix timestamp into Windows's FILETIME because Cuckoo
         # result server expect timestamps to be in this format
-        filetime = self._filetime_from_timestamp(thing.timestamp)
+        filetime = _filetime_from_timestamp(thing.timestamp)
         # Get process name (aka module path)
-        module = self._proc_name_from_pid(pid)
+        module = _proc_name_from_pid(pid)
         self.sockets[pid].sendall(BSON.encode({
             "I"    : 0,
             "T"    : thing.tid,
@@ -144,24 +129,42 @@ class CuckooHost:
                 1,
                 0,
                 # TimeLow (first 32bits) and TimeHigh (last 32bits)
-                (filetime) & 0xffffffff, (filetime) >> 32,
+                filetime & 0xffffffff, filetime >> 32,
                 thing.pid, thing.ppid,
                 # ModulePath
                 module
             ]
         }))
 
-    def _filetime_from_timestamp(self, ts):
-        # Timezones are hard, sorry
-        dt = datetime.fromtimestamp(ts)
-        delta_from_utc = dt - datetime.utcfromtimestamp(ts)
-        return dt_to_filetime(dt, delta_from_utc)
+def _proc_name_from_pid(pid):
+    try:
+        ps_output = check_output(["/bin/ps", "-p", str(pid), "-o", "comm"])
+        # The first line of an output is reserved for `ps` headers and the
+        # second one contains a process path
+        return ps_output.split("\n")[1]
+    except:
+        return "unknown"
 
-    def _proc_name_from_pid(self, pid):
-        try:
-            ps_output = check_output(["/bin/ps", "-p", str(pid), "-o", "comm"])
-            # The first line of an output is reserved for `ps` headers and the
-            # second one contains a process path
-            return ps_output.split("\n")[1]
-        except:
-            return "unknown"
+
+def _filetime_from_timestamp(ts):
+    # Timezones are hard, sorry
+    dt = datetime.fromtimestamp(ts)
+    delta_from_utc = dt - datetime.utcfromtimestamp(ts)
+    return dt_to_filetime(dt, delta_from_utc)
+
+def _prepare_args(thing):
+    result = [
+        1,  # FIXME(rodionovd): put an actual "is_success" value here
+        thing.retval
+    ]
+    for arg in thing.args:
+        result.append(arg)
+    return result
+
+def _args_description(thing):
+    """ """
+    description = ["is_success", "retval"]
+    for arg_idx in range(0, len(thing.args)):
+        # TODO(rodionovd): we need actual names here
+        description += ["arg%d" % arg_idx]
+    return description

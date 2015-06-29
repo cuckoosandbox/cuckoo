@@ -19,14 +19,14 @@ def path_for_script(script):
 def current_directory():
     return path.dirname(path.abspath(__file__))
 
-def filelines(file):
+def filelines(source_file):
     """ A generator that returns lines of the file.
     If there're no new lines it waits until the file is updated.
     """
     # Go to the end of the file
-    file.seek(0,2)
+    source_file.seek(0, 2)
     while True:
-        line = file.readline()
+        line = source_file.readline()
         if not line:
             # Sleep briefly
             sleep(0.1)
