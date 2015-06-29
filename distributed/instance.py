@@ -110,7 +110,7 @@ def handle_node(instance):
 
         # Fetching of reports.
         tasks = fetch_tasks(node.url, status="reported")
-        for task in tasks:
+        for task in tasks[:settings.threshold]:
             q = Task.query.filter_by(node_id=node.id, task_id=task["id"])
             t = q.first()
 

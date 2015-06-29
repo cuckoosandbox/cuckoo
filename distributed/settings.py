@@ -21,7 +21,7 @@ reports_directory = "/tmp"
 
 # Rough interval between each status checkup per Cuckoo node. As it's not
 # necessary to check the status every second half a minute should do.
-interval = 30
+interval = 10
 
 # Threshold and amount of tasks to push every time a Cuckoo node requires
 # more samples. That is, whenever the "pending" task count drops below
