@@ -24,6 +24,8 @@ sys.path.append(settings.CUCKOO_PATH)
 from lib.cuckoo.core.database import Database, TASK_PENDING
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 import modules.processing.network as network
+from mechanize import Browser
+
 
 results_db = pymongo.MongoClient(settings.MONGO_HOST, settings.MONGO_PORT)[settings.MONGO_DB]
 fs = GridFS(results_db)
@@ -466,6 +468,7 @@ def pcapstream(request, task_id, conntuple):
 
 @require_safe
 def share(request, av_name, task_id):
+    result = (2, "%s sender not implemented" % av_name)
     report = results_db.analysis.find_one({"info.id": int(task_id)},
                                           sort=[("_id", pymongo.DESCENDING)])
 
@@ -475,6 +478,26 @@ def share(request, av_name, task_id):
             {"error": "The specified analysis does not exist"},
             context_instance=RequestContext(request))
 
-    result = report["target"]["file"]
-    result["url"] = "https://cuckoo.skbkontur.ru/file/sample/%s/" % report["target"]["file_id"]
-    return HttpResponse(json.dumps(result), content_type='application/json')
+    report = report["target"]["file"]
+    if av_name == "Kaspersky":
+        br = Browser()
+        br.open("http://newvirus.kaspersky.com/")
+        br.select_form(nr=0)
+        br.form.add_file(open(report["path"]),
+                         "application/octetstream",
+                         report["sha256"])
+        br.form.set_all_readonly(False)
+        br.form["VirLabRecordModel.Email"] = settings.EMAIL
+        br.form["VirLabRecordModel.SuspiciousFilePath"] = report["sha256"]
+        br.form["VirLabRecordModel.CategoryValue"] = "SuspiciousFile"
+        response = br.submit()
+        response = response.read()
+
+        if "was successfully sent" in response:
+            result = (1, "Success!")
+        else:
+            result = (0, "Something goes wrong")
+
+    return render_to_response("analysis/share.html",
+                              {"result": result},
+                              context_instance=RequestContext(request))

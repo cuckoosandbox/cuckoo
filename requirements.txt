@@ -1,3 +1,5 @@
+mechanize
+bson
 sqlalchemy
 dpkt
 python-magic

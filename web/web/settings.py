@@ -168,6 +168,8 @@ LOGGING = {
     }
 }
 
+EMAIL = "mmr@skbkontur.ru"
+
 # Hack to import local settings.
 try:
     LOCAL_SETTINGS
