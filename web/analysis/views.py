@@ -499,7 +499,7 @@ def share(request, av_name, task_id):
             result = (0, "Something goes wrong")
     elif av_name == "DrWeb":
         br = Browser()
-        br.open("https://vms.drweb.ru/sendvirus/?lng=en")
+        br.open("https://vms.drweb.com/sendvirus/?lng=en")
         br.select_form(nr=1)
         br.form.add_file(open(file_info["path"]),
                          "application/octetstream",
