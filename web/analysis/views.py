@@ -478,22 +478,40 @@ def share(request, av_name, task_id):
             {"error": "The specified analysis does not exist"},
             context_instance=RequestContext(request))
 
-    report = report["target"]["file"]
+    file_info = report["target"]["file"]
     if av_name == "Kaspersky":
         br = Browser()
         br.open("http://newvirus.kaspersky.com/")
         br.select_form(nr=0)
-        br.form.add_file(open(report["path"]),
+        br.form.add_file(open(file_info["path"]),
                          "application/octetstream",
-                         report["sha256"])
+                         file_info["sha256"])
         br.form.set_all_readonly(False)
         br.form["VirLabRecordModel.Email"] = settings.EMAIL
-        br.form["VirLabRecordModel.SuspiciousFilePath"] = report["sha256"]
+        br.form["VirLabRecordModel.SuspiciousFilePath"] = file_info["sha256"]
         br.form["VirLabRecordModel.CategoryValue"] = "SuspiciousFile"
         response = br.submit()
         response = response.read()
 
         if "was successfully sent" in response:
+            result = (1, "Success!")
+        else:
+            result = (0, "Something goes wrong")
+    elif av_name == "DrWeb":
+        br = Browser()
+        br.open("https://vms.drweb.ru/sendvirus/?lng=en")
+        br.select_form(nr=1)
+        br.form.add_file(open(file_info["path"]),
+                         "application/octetstream",
+                         file_info["sha256"])
+        br.form.set_all_readonly(False)
+        br.form["email"] = settings.EMAIL
+        br.form["text"] = ("Additional information at "
+                           "http://cuckoo.skbkontur.ru/analysis/%s/" % task_id)
+        response = br.submit()
+        response = response.read()
+
+        if "thanks you for cooperation!" in response:
             result = (1, "Success!")
         else:
             result = (0, "Something goes wrong")
