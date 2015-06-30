@@ -174,7 +174,7 @@ _setup() {
         # Update our apt repository with "contrib".
         DEBVERSION="$(lsb_release -cs)"
         echo "deb http://download.virtualbox.org/virtualbox/debian " \
-            "$DEBVERSION contrib" >> /etc/apt/sources.list
+            "$DEBVERSION contrib" >> /etc/apt/sources.list.d/virtualbox.list
 
         # Add the VirtualBox public key to our apt repository.
         wget -q https://www.virtualbox.org/download/oracle_vbox.asc \
