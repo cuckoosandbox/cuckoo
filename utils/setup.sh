@@ -24,7 +24,7 @@ usage() {
     echo "-7 --win7:         Create Windows 7 x64 Virtual Machines."
     echo "   --win7x86:      Create Windows 7 x86 Virtual Machines."
     echo "-c --vmcount:      Amount of Virtual Machines to be created."
-    echo "-i --iso:          Path to a Windows XP Installer ISO."
+    echo "-i --iso:          Path to the Windows Installer ISO."
     echo "-s --serial-key:   Serial Key for the given Windows XP version."
     echo "-t --tmpfs:        Indicate tmpfs should be used for snapshots."
     echo "-T --tags:         Tags for the Virtual Machines."
@@ -191,6 +191,7 @@ _setup() {
         PRETTYNAME="Oracle_VM_VirtualBox_Extension_Pack-$VBOXVERSION"
         wget "http://cuckoo.sh/vmcloak-files/${PRETTYNAME}.vbox-extpack"
         VBoxManage extpack install --replace "${PRETTYNAME}.vbox-extpack"
+        rm -f "${PRETTYNAME}.vbox-extpack"
     fi
 
     # Allow tcpdump to dump packet captures when executed as a normal user.
