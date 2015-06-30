@@ -512,7 +512,7 @@ def share(request, av_name, task_id):
         response = br.submit()
         response = response.read()
 
-        if "thanks you for cooperation!" in response:
+        if "SNForm" not in response:
             result = (1, "Success!")
         else:
             result = (0, "Something goes wrong")
