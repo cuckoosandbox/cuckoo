@@ -505,6 +505,7 @@ def share(request, av_name, task_id):
                          "application/octetstream",
                          file_info["sha256"])
         br.form.set_all_readonly(False)
+        br.form["category"] = ["2"]
         br.form["email"] = settings.EMAIL
         br.form["text"] = ("Additional information at "
                            "http://cuckoo.skbkontur.ru/analysis/%s/" % task_id)
