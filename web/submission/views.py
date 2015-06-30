@@ -27,6 +27,7 @@ def index(request):
         package = request.POST.get("package", "")
         timeout = force_int(request.POST.get("timeout"))
         options = request.POST.get("options", "")
+        analysis = force_int(request.POST.get("analysis"))
         priority = force_int(request.POST.get("priority"))
         machine = request.POST.get("machine", "")
         custom = request.POST.get("custom", "")
@@ -43,6 +44,11 @@ def index(request):
             if options:
                 options += ","
             options += "procmemdump=yes"
+
+        if analysis == 2:
+            if options:
+                options += "&"
+            options += "kernel_analysis=yes"
 
         db = Database()
         task_ids = []

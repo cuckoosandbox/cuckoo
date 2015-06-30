@@ -336,6 +336,21 @@ class Summary:
             name = self._check_registry(registry, subkey, handle)
             if name and name not in self.keys:
                 self.keys.append(name)
+        
+        elif call["api"] == ("REGISTRY_OPEN_KEY"):
+            registry = -1
+            subkey = ""
+            handle = 0
+
+            for argument in call["arguments"]:
+                if argument["name"] == "SubKey":
+                    subkey = argument["value"]
+
+            name = self._check_registry(registry, subkey, handle)
+            if name and name not in self.keys:
+                self.keys.append(name)
+
+
         elif call["api"].startswith("NtOpenKey"):
             registry = -1
             subkey = ""

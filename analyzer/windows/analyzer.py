@@ -65,6 +65,12 @@ def add_pid(pid):
         log.info("Added new process to list with pid: %s", pid)
         PROCESS_LIST.append(int(pid))
 
+def remove_pid(pid):
+    """Remove a process from process list."""
+    if type(pid) == long or type(pid) == int or type(pid) == str:
+        log.info("Process with pid %s has terminated", pid)
+        PROCESS_LIST.remove(pid)
+
 def add_pids(pids):
     """Add PID."""
     if isinstance(pids, (tuple, list)):
@@ -230,6 +236,43 @@ class PipeHandler(Thread):
                     response = "\x00"
                 else:
                     response = hookdll_encode(url_dlls)
+
+
+            # Remove PID from process list because we received a notification from the driver
+            elif command.startswith("KTERMINATE:"):
+                data = command[11:]
+                process_id = int(data)
+                if process_id:
+                    if process_id in PROCESS_LIST:
+                        remove_pid(process_id)
+
+            # Same than below but we don't want to inject any DLLs because it's a kernel analysis
+            elif command.startswith("KPROCESS:"):
+                PROCESS_LOCK.acquire()
+                data = command[9:]
+                process_id = int(data)
+                thread_id = None
+                if process_id:
+                    if process_id not in (PID, PPID):
+                        if process_id not in PROCESS_LIST:
+                            proc = Process(pid=process_id,thread_id=thread_id)
+                            filepath = proc.get_filepath()
+                            filename = os.path.basename(filepath)
+
+                            if not protected_filename(filename):
+                                add_pid(process_id)
+                                log.info("Announce process name : %s", filename)
+                PROCESS_LOCK.release()
+
+            elif command.startswith("KERROR:"):
+                error_msg = command[7:]
+                log.error("Error : %s", str(error_msg))
+
+            # Stop the analysis
+            elif command.startswith("KSUBVERT:"):
+                for pid in PROCESS_LIST:
+                    log.info("Process with pid : %s has terminated", pid)
+                    PROCESS_LIST.remove(pid)
 
             # In case of PID, the client is trying to notify the creation of
             # a new process to be injected and monitored.
@@ -597,6 +640,7 @@ class Analyzer:
             pid_check = False
 
         time_counter = 0
+        kernel_analysis = self.config.get_options().get("kernel_analysis", None)
 
         while True:
             time_counter += 1
@@ -615,14 +659,17 @@ class Analyzer:
                 # If the process monitor is enabled we start checking whether
                 # the monitored processes are still alive.
                 if pid_check:
-                    for pid in PROCESS_LIST:
-                        if not Process(pid=pid).is_alive():
-                            log.info("Process with pid %s has terminated", pid)
-                            PROCESS_LIST.remove(pid)
-
+                    if kernel_analysis is False:
+                        for pid in PROCESS_LIST:
+                            if not Process(pid=pid).is_alive():
+                                log.info("Process with pid %s has terminated", pid)
+                                PROCESS_LIST.remove(pid)
+            
+    
                     # If none of the monitored processes are still alive, we
                     # can terminate the analysis.
                     if not PROCESS_LIST:
+                        KERNEL32.Sleep(1000)
                         log.info("Process list is empty, "
                                  "terminating analysis.")
                         break
@@ -687,14 +734,15 @@ class Analyzer:
             # Try to terminate remaining active processes. We do this to make sure
             # that we clean up remaining open handles (sockets, files, etc.).
             log.info("Terminating remaining processes before shutdown.")
-
-            for pid in PROCESS_LIST:
-                proc = Process(pid=pid)
-                if proc.is_alive():
-                    try:
-                        proc.terminate()
-                    except:
-                        continue
+    
+            if kernel_analysis is False:
+                for pid in PROCESS_LIST:
+                    proc = Process(pid=pid)
+                    if proc.is_alive():
+                        try:
+                            proc.terminate()
+                        except:
+                            continue
 
         # Run the finish callback of every available Auxiliary module.
         for aux in aux_avail:

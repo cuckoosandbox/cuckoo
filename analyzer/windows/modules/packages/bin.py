@@ -11,8 +11,12 @@ class Shellcode(Package):
     def start(self, path):
         p = Process()
         dll = self.options.get("dll")
+        kernel_analysis = self.options.get("kernel_analysis", False)
+        if kernel_analysis != False:
+            kernel_analysis = True
         p.execute(path="bin/execsc.exe", args=path, suspended=True)
-        p.inject(dll)
+        if not kernel_analysis:
+            p.inject(dll)
         p.resume()
         p.wait()
         return p.pid

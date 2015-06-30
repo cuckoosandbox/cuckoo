@@ -5,14 +5,15 @@
 import os
 import logging
 import random
+import platform
 from time import time
-from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
+from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof, c_void_p, c_char_p, POINTER
 from shutil import copy
 
 from lib.common.constants import PIPE, PATHS, SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
-from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
-from lib.common.defines import STARTUPINFO, PROCESS_INFORMATION
+from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS, TH32CS_SNAPPROCESS
+from lib.common.defines import STARTUPINFO, PROCESS_INFORMATION, PROCESSENTRY32
 from lib.common.defines import CREATE_NEW_CONSOLE, CREATE_SUSPENDED
 from lib.common.defines import MEM_RESERVE, MEM_COMMIT, PAGE_READWRITE
 from lib.common.defines import MEMORY_BASIC_INFORMATION
@@ -23,7 +24,19 @@ from lib.common.rand import random_string
 from lib.common.results import NetlogFile
 from lib.core.config import Config
 
+IOCTL_PID = 0x222008
+IOCTL_CUCKOO_PATH = 0x22200C
+PATH_KERNEL_DRIVER = "\\\\.\\DriverSSDT"
+
+GENERIC_READ = 0x80000000
+GENERIC_WRITE = 0x40000000
+OPEN_EXISTING = 3
+FILE_ATTRIBUTE_NORMAL = 128
+
 log = logging.getLogger(__name__)
+
+def is_os_64bit():
+    return platform.machine().endswith('64')
 
 def randomize_dll(dll_path):
     """Randomize DLL name.
@@ -176,7 +189,7 @@ class Process:
 
         return None
 
-    def execute(self, path, args=None, suspended=False):
+    def execute(self, path, args=None, suspended=False, kernel_analysis=False):
         """Execute sample process.
         @param path: sample path.
         @param args: process args.
@@ -223,6 +236,110 @@ class Process:
             self.h_thread = process_info.hThread
             log.info("Successfully executed process from path \"%s\" with "
                      "arguments \"%s\" with pid %d", path, args or "", self.pid)
+            
+        
+            if kernel_analysis == True:
+                log.info("Starting kernel analysis")
+                log.info("Installing driver")
+                if is_os_64bit():
+                    sys_file = os.path.join(os.getcwd(), "dll", "zer0m0n_x64.sys")
+                else:
+                    sys_file = os.path.join(os.getcwd(), "dll", "zer0m0n.sys")
+                exe_file = os.path.join(os.getcwd(), "dll", "logs_dispatcher.exe")
+                if not sys_file or not exe_file or not os.path.exists(sys_file) or not os.path.exists(exe_file):
+                    log.warning("No valid zer0m0n files to be used for process with pid %d, injection aborted", self.pid)
+                    return False
+            
+                exe_name = random_string(6)
+                service_name = random_string(6)
+                driver_name = random_string(6)
+    
+                inf_data = '[Version]\r\nSignature = "$Windows NT$"\r\nClass = "ActivityMonitor"\r\nClassGuid = {b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2}\r\nProvider= %Prov%\r\nDriverVer = 22/01/2014,1.0.0.0\r\nCatalogFile = %DriverName%.cat\r\n[DestinationDirs]\r\nDefaultDestDir = 12\r\nMiniFilter.DriverFiles = 12\r\n[DefaultInstall]\r\nOptionDesc = %ServiceDescription%\r\nCopyFiles = MiniFilter.DriverFiles\r\n[DefaultInstall.Services]\r\nAddService = %ServiceName%,,MiniFilter.Service\r\n[DefaultUninstall]\r\nDelFiles = MiniFilter.DriverFiles\r\n[DefaultUninstall.Services]\r\nDelService = %ServiceName%,0x200\r\n[MiniFilter.Service]\r\nDisplayName= %ServiceName%\r\nDescription= %ServiceDescription%\r\nServiceBinary= %12%\\%DriverName%.sys\r\nDependencies = "FltMgr"\r\nServiceType = 2\r\nStartType = 3\r\nErrorControl = 1\r\nLoadOrderGroup = "FSFilter Activity Monitor"\r\nAddReg = MiniFilter.AddRegistry\r\n[MiniFilter.AddRegistry]\r\nHKR,,"DebugFlags",0x00010001 ,0x0\r\nHKR,"Instances","DefaultInstance",0x00000000,%DefaultInstance%\r\nHKR,"Instances\\"%Instance1.Name%,"Altitude",0x00000000,%Instance1.Altitude%\r\nHKR,"Instances\\"%Instance1.Name%,"Flags",0x00010001,%Instance1.Flags%\r\n[MiniFilter.DriverFiles]\r\n%DriverName%.sys\r\n[SourceDisksFiles]\r\n'+driver_name+'.sys = 1,,\r\n[SourceDisksNames]\r\n1 = %DiskId1%,,,\r\n[Strings]\r\n'+'Prov = "'+random_string(8)+'"\r\nServiceDescription = "'+random_string(12)+'"\r\nServiceName = "'+service_name+'"\r\nDriverName = "'+driver_name+'"\r\nDiskId1 = "'+service_name+' Device Installation Disk"\r\nDefaultInstance = "'+service_name+' Instance"\r\nInstance1.Name = "'+service_name+' Instance"\r\nInstance1.Altitude = "370050"\r\nInstance1.Flags = 0x0'
+
+                new_inf = os.path.join(os.getcwd(), "dll", "{0}.inf".format(service_name))
+                new_sys = os.path.join(os.getcwd(), "dll", "{0}.sys".format(driver_name))
+                copy(sys_file, new_sys)
+                new_exe = os.path.join(os.getcwd(), "dll", "{0}.exe".format(exe_name))
+                copy(exe_file, new_exe)
+                log.info("[-] Driver name : "+new_sys)
+                log.info("[-] Inf name : "+new_inf)
+                log.info("[-] Application name : "+new_exe)
+                log.info("[-] Service : "+service_name)
+
+                fh = open(new_inf,"w")
+                fh.write(inf_data)
+                fh.close()
+
+                if is_os_64bit():
+                    wow64 = c_ulong(0)
+                    KERNEL32.Wow64DisableWow64FsRedirection(byref(wow64))
+
+                os.system('cmd /c "rundll32 setupapi.dll, InstallHinfSection DefaultInstall 132 '+new_inf+'"')
+                os.system("net start "+service_name)
+
+                si = STARTUPINFO()
+                si.cb = sizeof(startup_info)
+                pi = PROCESS_INFORMATION()
+                cr = CREATE_NEW_CONSOLE
+                ldp = KERNEL32.CreateProcessA(new_exe,
+                                              None,
+                                              None,
+                                              None,
+                                              None,
+                                              cr,
+                                              None,
+                                              os.getenv("TEMP"),
+                                              byref(si),
+                                              byref(pi))
+
+                if not ldp:
+                    log.error("Failed starting "+exe_name+".exe.")
+                    return False
+
+                config_path = os.path.join(os.getenv("TEMP"), "%s.ini" % self.pid)
+                with open(config_path, "w") as config:
+                    cfg = Config("analysis.conf")
+            
+                    config.write("host-ip={0}\n".format(cfg.ip))
+                    config.write("host-port={0}\n".format(cfg.port))
+                    config.write("pipe={0}\n".format(PIPE))
+
+                log.info("Sending startup information")
+                hFile = KERNEL32.CreateFileA(PATH_KERNEL_DRIVER, GENERIC_READ|GENERIC_WRITE,
+                                             0, None, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, None)
+    
+                if hFile:
+                    p = Process(pid=os.getpid())
+                    ppid = p.get_parent_pid()
+                    pid_vboxservice = 0
+                    pid_vboxtray = 0
+
+                    # get pid of VBoxService.exe and VBoxTray.exe
+                    proc_info = PROCESSENTRY32()
+                    proc_info.dwSize = sizeof(PROCESSENTRY32)
+                
+                    snapshot = KERNEL32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+                    flag = KERNEL32.Process32First(snapshot, byref(proc_info))
+                    while flag:
+                        if proc_info.sz_exeFile == "VBoxService.exe":
+                            log.info("VBoxService.exe found !")
+                            pid_vboxservice = proc_info.th32ProcessID
+                            flag = 0
+                        elif proc_info.sz_exeFile == "VBoxTray.exe":
+                            pid_vboxtray = proc_info.th32ProcessID
+                            log.info("VBoxTray.exe found !")
+                            flag = 0
+                        flag = KERNEL32.Process32Next(snapshot, byref(proc_info))
+                    msg = str(self.pid)+"_"+str(ppid)+"_"+str(os.getpid())+"_"+str(pi.dwProcessId)+"_"+str(pid_vboxservice)+"_"+str(pid_vboxtray)+'\0'
+                    buf = create_string_buffer(128)
+                    length = c_int()
+                    KERNEL32.DeviceIoControl.argtypes = [c_int, c_int, c_char_p, c_int, c_void_p, c_int, POINTER(c_int), c_void_p]
+                    KERNEL32.DeviceIoControl(hFile, IOCTL_PID, msg, len(msg), byref(buf), 128, byref(length), None)
+                    msg = os.getcwd()+'\0'             
+                    KERNEL32.DeviceIoControl(hFile, IOCTL_CUCKOO_PATH, unicode(msg), len(msg), byref(buf), 128, byref(length), None)
+                else:
+                    log.warning("Failed to access kernel driver")         
+            
             return True
         else:
             log.error("Failed to execute process from path \"%s\" with "

@@ -71,17 +71,21 @@ class Package(object):
         """
         dll = self.options.get("dll")
         free = self.options.get("free")
+        kernel_analysis = self.options.get("kernel_analysis", False)
+        if kernel_analysis != False:
+            kernel_analysis = True
         suspended = True
         if free:
             suspended = False
 
         p = Process()
-        if not p.execute(path=path, args=args, suspended=suspended):
+        if not p.execute(path=path, args=args, suspended=suspended, kernel_analysis=kernel_analysis):
             raise CuckooPackageError("Unable to execute the initial process, "
                                      "analysis aborted.")
 
         if not free and suspended:
-            p.inject(dll)
+            if not kernel_analysis:
+                p.inject(dll)
             p.resume()
             p.wait()
             p.close()
