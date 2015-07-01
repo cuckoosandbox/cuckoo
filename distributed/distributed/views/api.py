@@ -242,7 +242,14 @@ def task_delete(task_id):
     if os.path.isfile(task.path):
         os.unlink(task.path)
 
-    task.status = Task.DELETED
+    # If the task has been finalized then we set the status as deleted. But
+    # otherwise we just delete the entry altogether, as it'd incorrectly
+    # reflect the amount of processed samples in our database.
+    if task.status == Task.PENDING:
+        db.session.delete(task)
+    else:
+        task.status = Task.DELETED
+
     db.session.commit()
     return jsonify(success=True)
 
