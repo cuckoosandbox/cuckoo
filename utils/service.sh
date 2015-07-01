@@ -185,6 +185,7 @@ server {
     listen 9003;
 
     location / {
+        client_max_body_size 100M;
         uwsgi_pass _uwsgi_cuckoo_distributed;
         include uwsgi_params;
     }
