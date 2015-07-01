@@ -182,6 +182,7 @@ upstream _uwsgi_cuckoo_distributed {
 }
 
 server {
+    # If required, prepend a listening IP address.
     listen 9003;
 
     location / {
