@@ -381,6 +381,12 @@ if [ -z "$HOME" ]; then
     export HOME="/home/cuckoo"
 fi
 
+# If $LC_ALL is not set then we force it to en_US.UTF-8, otherwise PostgreSQL
+# and possibly others will complain about a missing language.
+if [ -z "$LC_ALL" ]; then
+    export LC_ALL="en_US.UTF-8"
+fi
+
 # First of all, setup the machine with all required packages etc
 # if asked to do so. (Or, actually, if not asked to not do).
 if [ "$VMCHECKUP" -eq 0 ]; then
