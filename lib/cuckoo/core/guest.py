@@ -4,6 +4,7 @@
 
 import os
 import time
+import pickle
 import socket
 import logging
 import xmlrpclib
@@ -116,6 +117,70 @@ class GuestManager:
                                    "to upload agent, check networking or try "
                                    "to increase timeout".format(self.id))
 
+    def send_tool(self, tool_path, is_tool=False, base_dir="tool"):
+        """Upload a file to the guest. 
+
+        @param tool_path: path to tool/file on host
+        @param is_tool: specifies whether file is the tool or a supporting file
+        @param base_dir: path to place file on guest. path is appended to 
+            guest temporary directory i.e. (%TEMP%).
+        """
+        if os.path.isfile(tool_path):
+            if '/' in tool_path:
+                index = tool_path.rfind("/")
+                file_name = tool_path[index+1:]
+                
+            #The tool will have '.tool' appended to it in order to distinguish
+            #it from any other 'exe' files in the same directory on the guest.
+            if is_tool:
+                file_name = file_name + ".tool"
+            try:
+                file_data = open(tool_path, 'rb').read()
+            except (IOError, OSError) as e:
+                raise CuckooGuestError("{0}: Unable to read tool file {1}: {2}".format(self.id, tool_path, e))
+
+            data = xmlrpclib.Binary(file_data)
+
+            try:
+                self.server.add_malware(data, file_name, base_dir)
+            except MemoryError as e:
+                raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
+            return file_name
+
+        else:
+            raise CuckooGuestError("%s not a valid file/path(send_tool)." % tool_path)
+
+    def send_dir(self, dir_path, base_dir):
+        """Upload a directory and all it contains to the guest
+
+        @param dir_path: path to directory on the host
+        @param base_dir: path to place directory on guest. path is appended to 
+            guest temporary directory i.e. (%TEMP%). 
+        """
+        uploaded_tools = []
+        depth = 0
+        for root, subdirs, files in os.walk(dir_path):
+            if depth == 0:
+                dest_dir = base_dir
+                src_dir = src_root = root
+            else:
+                src_dir = root.replace(src_root, '', 1).lstrip('/')
+                dest_dir = os.path.join(base_dir, src_dir)
+
+            for item in files:
+                self.send_tool(os.path.join(root, item), False, dest_dir)
+                uploaded_tools.append(item)
+
+            for subdir in subdirs:
+                try:
+                    self.server.add_malware('', '', os.path.join(dest_dir, subdir))
+                    uploaded_tools.append(subdir)
+                except MemoryError as e:
+                    raise CuckooGuestError("{0}: unable to upload tool to analysis machine, not enough memory".format(self.id))
+
+            depth = depth + 1
+        return uploaded_tools
+
     def start_analysis(self, options):
         """Start analysis.
         @param options: options.
@@ -133,6 +198,24 @@ class GuestManager:
             log.debug("Automatically increased critical timeout to %s",
                       self.timeout)
             self.timeout = options["timeout"] + 60
+
+        # If tool is specified, you need to send certain options
+        # upload_path, tool, uploaded_tools
+        if options["tool"]:
+            task_id = options["id"]
+            upload_path = ',upload-path=' + os.path.join(CUCKOO_ROOT, "storage/analyses", str(task_id), "tool_output")
+            options["options"] = options["options"] + upload_path
+
+            index = options["tool"].rfind("/")
+            tool_option = ",tool=" + options["tool"][index+1:]
+            options["options"] = options["options"] + tool_option
+            
+            uploaded_tools = [options["tool"][index+1:].lower()]
+            if options["tool_dir"]:
+                for root, subdirs, files in os.walk(options["tool_dir"]):
+                    uploaded_tools.extend(files)
+                    uploaded_tools.extend(subdirs)
+            options["options"] = options["options"] + ",uploaded_tools=" + pickle.dumps(uploaded_tools)
 
         # Get and set dynamically generated resultserver port.
         options["port"] = str(ResultServer().port)
@@ -153,6 +236,16 @@ class GuestManager:
             except:
                 raise CuckooGuestError("{0}: unable to upload config to "
                                        "analysis machine".format(self.id))
+
+            # If a tool was specified, upload it to the guest.
+            if options["tool"]:
+                if options["tool"]:
+                    self.send_tool(options["tool"], True)
+
+                if options["tool_dir"]:
+                    if not os.path.isdir(options["tool_dir"]):
+                        raise CuckooGuestError("--tool-dir must be a directory")
+                    self.send_dir(options["tool_dir"], 'tool')
 
             # If the target of the analysis is a file, upload it to the guest.
             if options["category"] == "file":

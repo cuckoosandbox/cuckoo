@@ -21,7 +21,8 @@ command-line utility. It currently has the following options available::
                      [--options OPTIONS] [--priority PRIORITY] [--machine MACHINE]
                      [--platform PLATFORM] [--memory] [--enforce-timeout]
                      [--clock CLOCK] [--tags TAGS] [--max MAX] [--pattern PATTERN]
-                     [--shuffle] [--unique] [--quiet]
+                     [--shuffle] [--unique] [--quiet] [--tool TOOL]
+                     [--tool-dir TOOL_DIR]
                      target
 
     positional arguments:
@@ -53,6 +54,8 @@ command-line utility. It currently has the following options available::
       --shuffle            Shuffle samples before submitting them
       --unique             Only submit new samples, ignore duplicates
       --quiet              Only print text on failure
+      --tool               Run a tool on the sample
+      --tool-dir           Specify location of supporting files for a tool
 
 If you specify a directory as path, all the files contained in it will be
 submitted for analysis.
@@ -109,6 +112,10 @@ some options (in this case a command line argument for the malware)::
 *Example*: submit a sample for Volatility analysis (to reduce side effects of the cuckoo hooking, switch it off with *options free=True*)::
 
     $ ./utils/submit.py --memory --options free=True /path/to/binary
+
+*Example*: submit a sample and a tool to run on the sample. Cuckoomon is NOT injected into either sample or tool. If the tool requires additional files, use --tool-dir to specify the location on the host.::
+
+	$ ./utils/submit.py --tool /path/to/tool --options tool-options="/F /O" /path/to/binary
 
 .. _webpy:
 
@@ -235,3 +242,48 @@ Example Usage:
     >>>
 
 .. _`SQLAlchemy`: http://www.sqlalchemy.org
+
+
+Using the tools package
+=======================
+
+Generic format::
+
+    submit.py --tool [path] --tool-dir [path] --options tool-options=[options for tool] target
+
+In order to use the tools package, the ``--tool`` argument is required. Following are a description of the arguments shown above: ::
+
+    --tool [path]
+    [path] is the full path to the tool on the host machine
+
+    --tool-dir [path]
+        [path] is the full path to a directory on the host machine. This directory should contain any files that the tool requires to run
+
+    tool-options=[options]
+        [options] should be surrounded by quotes and contain the options needed by the tool.
+        If the substring "$sample" is located within [options] it will be replaced with the path to the sample on the guest machine.
+
+    target
+        path to the file to analyze
+
+Examples::
+
+    submit.py --tool ~/unpacker.exe ~/malicious.dll
+    submit.py --tool ~/pin.exe --tool-dir ~/pin_files --options tool-options="-t veratrace.dll -- " ~/Malware/us.exe
+
+In the last example, the ``pin_files`` directory contains the following files that are required for pin.exe to run:
+
+* veratrace.dll
+* pinvm.dll
+
+If the tool is just an .exe file then you wouldn’t need to worry about
+``--tool-dir``. ``--tool-dir`` exists in case the tool has additional files
+required to run that should also be located on the guest machine (i.e. a dll
+file). The files within the specified ``--tool-dir`` will be uploaded to the
+same directory as the tool on the sandbox.
+
+The ``tool-options`` argument specifies what the options for the tool should
+be. (e.g.  ``-xvf``). If one of the options needs to be the sample, simply
+enter ``$sample`` in the correct location in the string (e.g.
+``tool-options="/F $sample" /O output.dll``). Arguments (specified by the
+"--options arguments=..." will automatically be placed after the sample.

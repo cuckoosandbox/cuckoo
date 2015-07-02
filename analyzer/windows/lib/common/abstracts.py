@@ -3,9 +3,38 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import pickle
+from subprocess import Popen
 
 from lib.api.process import Process
+from lib.common.results import upload_to_host
 from lib.common.exceptions import CuckooPackageError
+
+def get_tool_path():
+    tool_name = ""
+    tool_dir = os.path.join(os.getenv("Temp"), "tool")
+    for item in os.listdir(tool_dir):
+        if item[-5:].lower() == ".tool":
+            tool_name = item[:-5].lower()
+            if tool_name in os.listdir(tool_dir):
+                os.remove(os.path.join(tool_dir, tool_name))
+            os.rename(os.path.join(tool_dir, item), os.path.join(tool_dir, tool_name))
+            break
+
+    tool_path = os.path.join(tool_dir, tool_name)
+    return tool_path
+
+def format_user_options(options, sample_options, path):
+    if not options:
+        options = ""
+    if not sample_options:
+        sample_options = ""
+    if "$sample" in options:
+        options = options.replace("$sample", path + " " + sample_options)
+    else:
+        options = options + " " + path + " " + sample_options
+
+    return options.split()
 
 class Package(object):
     """Base abstract analysis package."""
@@ -71,9 +100,39 @@ class Package(object):
         """
         dll = self.options.get("dll")
         free = self.options.get("free")
+        tool = self.options.get("tool")
+
         suspended = True
         if free:
             suspended = False
+
+        if tool:
+            cwd = os.getcwd()
+            os.chdir(os.path.join(os.getenv("Temp"), 'tool'))
+            tool_path = get_tool_path()
+            tool_args = self.options.get('tool-options')
+            arg_list = format_user_options(tool_args, args, path)
+            cmd_list = [tool_path]
+            cmd_list.extend(arg_list)
+            cmd_list = [val for val in cmd_list if val]
+            # 0x08000000 = CREATE_NO_WINDOW
+            # Either set creation flag to CREATE_NO_WINDOW
+            # or disable the human auxiliary module
+            # because the module will interfere with the running tool
+            creation_flag = 0x08000000
+            with open('tool_output.log', 'w+') as output_file:
+                output_file.write(str(cmd_list) + "\n")
+                self.tool_process = Popen(cmd_list,
+                                          stdout=output_file,
+                                          stderr=output_file,
+                                          creationflags=creation_flag,
+                                          shell=False)
+                self.tool_process.communicate()
+
+            os.chdir(cwd)
+            if self.tool_process < 0:
+                raise CuckooPackageError("Unable to execute initial process, analysis aborted")
+            return self.tool_process.pid
 
         p = Process()
         if not p.execute(path=path, args=args, suspended=suspended):
@@ -85,16 +144,16 @@ class Package(object):
             p.resume()
             p.wait()
             p.close()
-        
+
         return p.pid
 
     def package_files(self):
         """A list of files to upload to host.
         The list should be a list of tuples (<path on guest>, <name of file in package_files folder>).
-        (package_files is a folder that will be created in analysis folder). 
+        (package_files is a folder that will be created in analysis folder).
         """
         return None
-    
+
     def finish(self):
         """Finish run.
         If specified to do so, this method dumps the memory of
@@ -104,8 +163,22 @@ class Package(object):
             for pid in self.pids:
                 p = Process(pid=pid)
                 p.dump_memory()
-        
+
+        if self.options.get("tool"):
+            upload_path = self.options.get("upload_path", "/tmp/upload")
+            uploaded_tools = pickle.loads(self.options.get("uploaded_tools"))
+            temp_dir = os.getenv("Temp")
+            tool_dir = os.path.join(temp_dir, "tool")
+            for root, subdirs, files in os.walk(tool_dir):
+                for item in files:
+                    if item not in uploaded_tools:
+                        try:
+                            upload_to_host(os.path.join(root, item), os.path.join("tool_output", item))
+                        except (IOError) as e:
+                            CuckooPackageError("Unable to upload dropped file at path \"%s\": %s", file_path, e)
+
         return True
+
 
 class Auxiliary(object):
     def __init__(self, options={}):

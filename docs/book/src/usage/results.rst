@@ -27,11 +27,13 @@ Following is an example of an analysis directory structure::
     |   |-- report.json
     |   |-- report.maec-4.0.1.xml
     |   `-- report.metadata.xml
-    `-- shots
-        |-- 0001.jpg
-        |-- 0002.jpg
-        |-- 0003.jpg
-        `-- 0004.jpg
+    |-- shots
+    |   |-- 0001.jpg
+    |   |-- 0002.jpg
+    |   |-- 0003.jpg
+    |   `-- 0004.jpg
+    `-- tool_output
+        `--tool_output.log
 
 analysis.conf
 =============
@@ -82,3 +84,24 @@ shots/
 
 This directory contains all the screenshots of the guest's desktop taken during
 the malware execution.
+
+tool_output/
+============
+
+This directory contains the output from running the tool in 'tool_output.log' and
+also any files that were dropped during the running of the tool. The dropped files
+must be located within %temp%/tool/ on the guest which is where the tool is run 
+from.
+
+``tool`` package results
+========================
+
+If using the ``--tool`` option to run a user-provided tool on the guest, a
+successful run will create output in the ``files/`` directory. The following
+files are returned:
+
+* pkg.log - stdout/stderr of command that is run
+* command.log - the command that is run on the guest machine
+
+Any other files that the tool creates in the current working directory
+(``%USERPROFILE%\AppData\Local\tool\``) will also be returned.
