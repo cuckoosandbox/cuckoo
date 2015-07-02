@@ -38,6 +38,7 @@ log = logging.getLogger(__name__)
 
 class Pcap:
     """Reads network data from PCAP file."""
+    ssl_ports = 443,
 
     def __init__(self, filepath):
         """Creates a new instance.
@@ -61,6 +62,8 @@ class Pcap:
         self.icmp_requests = []
         # List containing all HTTP requests.
         self.http_requests = {}
+        # List containing all TLS/SSL3 key combinations.
+        self.tls_keys = []
         # List containing all DNS requests.
         self.dns_requests = {}
         self.dns_answers = set()
@@ -161,12 +164,18 @@ class Pcap:
         """
         if self._check_http(data):
             self._add_http(data, conn["dport"])
+
         # SMTP.
         if conn["dport"] == 25:
             self._reassemble_smtp(conn, data)
+
         # IRC.
         if conn["dport"] != 21 and self._check_irc(data):
             self._add_irc(data)
+
+        # HTTPS.
+        if conn["dport"] in self.ssl_ports or conn["sport"] in self.ssl_ports:
+            self._https_identify(conn, data)
 
     def _udp_dissect(self, conn, data):
         """Runs all UDP dissectors.
@@ -412,6 +421,47 @@ class Pcap:
 
         return True
 
+    def _https_identify(self, conn, data):
+        """Extract a combination of the Session ID, Client Random, and Server
+        Random in order to identify the accompanying master secret later."""
+        try:
+            record = dpkt.ssl.TLSRecord(data)
+        except dpkt.NeedData:
+            return
+        except:
+            log.exception("Error reading possible TLS Record")
+            return
+
+        # Is this a valid TLS packet?
+        if record.type not in dpkt.ssl.RECORD_TYPES:
+            return
+
+        # Is this a TLSv1 Handshake packet?
+        try:
+            record = dpkt.ssl.RECORD_TYPES[record.type](record.data)
+        except dpkt.ssl.SSL3Exception:
+            log.exception("Error reading possible TLS Handshake record")
+            return
+        except dpkt.NeedData:
+            log.exception("Incomplete possible TLS Handshake record found")
+            return
+
+        if not isinstance(record, dpkt.ssl.TLSHandshake):
+            return
+
+        keys = {}
+        if conn["dport"] == 443 and \
+                isinstance(record.data, dpkt.ssl.TLSClientHello):
+            keys["client_random"] = record.data.random
+            keys["client_session_id"] = getattr(record.data, "session_id")
+        elif conn["sport"] == 443 and \
+                isinstance(record.data, dpkt.ssl.TLSServerHello):
+            keys["server_random"] = record.data.random
+            keys["server_session_id"] = getattr(record.data, "session_id")
+
+        if keys:
+            self.tls_keys.append(keys)
+
     def _reassemble_smtp(self, conn, data):
         """Reassemble a SMTP flow.
         @param conn: connection dict.
@@ -563,6 +613,7 @@ class Pcap:
         self.results["udp"] = [conn_from_flowtuple(i) for i in self.udp_connections]
         self.results["icmp"] = self.icmp_requests
         self.results["http"] = self.http_requests.values()
+        self.results["tls"] = self.tls_keys
         self.results["dns"] = self.dns_requests.values()
         self.results["smtp"] = self.smtp_requests
         self.results["irc"] = self.irc_requests
