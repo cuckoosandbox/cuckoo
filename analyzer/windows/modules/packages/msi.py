@@ -8,7 +8,7 @@ class Msi(Package):
     """MSI analysis package."""
 
     PATHS = [
-        ("SystemRoot", "system32", "msiexec.exe"),
+        ("System32", "msiexec.exe"),
     ]
 
     def start(self, path):

@@ -7,7 +7,7 @@ from lib.common.abstracts import Package
 class CPL(Package):
     """Control Panel Applet analysis package."""
     PATHS = [
-        ("SystemRoot", "system32", "control.exe"),
+        ("System32", "control.exe"),
     ]
 
     def start(self, path):

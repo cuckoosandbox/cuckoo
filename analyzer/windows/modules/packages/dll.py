@@ -11,7 +11,7 @@ from lib.common.abstracts import Package
 class Dll(Package):
     """DLL analysis package."""
     PATHS = [
-        ("SystemRoot", "system32", "rundll32.exe"),
+        ("System32", "rundll32.exe"),
     ]
 
     def start(self, path):

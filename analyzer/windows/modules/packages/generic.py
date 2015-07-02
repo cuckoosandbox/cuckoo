@@ -11,7 +11,7 @@ class Generic(Package):
     The sample is started using START command in a cmd.exe prompt.
     """
     PATHS = [
-        ("SystemRoot", "system32", "cmd.exe"),
+        ("System32", "cmd.exe"),
     ]
 
     def start(self, path):

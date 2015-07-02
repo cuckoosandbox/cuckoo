@@ -7,7 +7,7 @@ from lib.common.abstracts import Package
 class Javascript(Package):
     """Javascript analysis package."""
     PATHS = [
-        ("SystemRoot", "system32", "wscript.exe"),
+        ("System32", "wscript.exe"),
     ]
 
     def start(self, path):

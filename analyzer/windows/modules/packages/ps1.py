@@ -9,9 +9,9 @@ from lib.common.abstracts import Package
 class PS1(Package):
     """PowerShell analysis package."""
     PATHS = [
-        ("SystemRoot", "system32", "WindowsPowerShell", "v1.0", "powershell.exe"),
-        ("SystemRoot", "system32", "WindowsPowerShell", "v2.0", "powershell.exe"),
-        ("SystemRoot", "system32", "WindowsPowerShell", "v3.0", "powershell.exe"),
+        ("System32", "WindowsPowerShell", "v1.0", "powershell.exe"),
+        ("System32", "WindowsPowerShell", "v2.0", "powershell.exe"),
+        ("System32", "WindowsPowerShell", "v3.0", "powershell.exe"),
     ]
 
     def start(self, path):
