@@ -44,9 +44,8 @@ class Package(object):
         """Enumerate available paths."""
         basepaths = {
             "System32": [
-                os.path.join(os.getenv("SystemRoot"), "Sysnative"),
-                os.path.join(os.getenv("SystemRoot"), "SysWOW64"),
                 os.path.join(os.getenv("SystemRoot"), "System32"),
+                os.path.join(os.getenv("SystemRoot"), "SysWOW64"),
             ],
             "ProgramFiles": [
                 os.getenv("ProgramFiles").replace(" (x86)", ""),

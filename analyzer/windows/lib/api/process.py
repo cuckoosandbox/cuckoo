@@ -177,6 +177,13 @@ class Process(object):
             args = [is32bit_exe, "-p", "%s" % pid]
         elif process_name:
             args = [is32bit_exe, "-n", process_name]
+        # If we're running a 32-bit Python in a 64-bit Windows system and the
+        # path points to System32, then we hardcode it as being a 64-bit
+        # binary. (To be fair, a 64-bit Python on 64-bit Windows would also
+        # make the System32 binary 64-bit).
+        elif os.path.isdir("C:\\Windows\\Sysnative") and \
+                path.lower().startswith("c:\\windows\\system32"):
+            return False
         else:
             args = [is32bit_exe, "-f", self.shortpath(path)]
 
