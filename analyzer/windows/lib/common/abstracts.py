@@ -61,14 +61,11 @@ class Package(object):
 
         for path in self.PATHS:
             basedir = path[0]
-            if basedir in basepaths:
-                for basepath in basepaths[basedir]:
-                    if not basepath:
-                        continue
+            for basepath in basepaths.get(basedir, [basedir]):
+                if not basepath or not os.path.isdir(basepath):
+                    continue
 
-                    yield os.path.join(basepath, *path[1:])
-            else:
-                yield os.path.join(*path)
+                yield os.path.join(basepath, *path[1:])
 
     def get_path(self, application):
         """Search for an application in all available paths.
@@ -76,7 +73,7 @@ class Package(object):
         @return: executable path
         """
         for path in self._enum_paths():
-            if os.path.exists(path):
+            if os.path.isfile(path):
                 return path
 
         raise CuckooPackageError("Unable to find any %s executable." %
