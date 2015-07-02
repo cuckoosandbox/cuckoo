@@ -27,13 +27,15 @@ class Process(object):
     first_process = True
     config = None
 
-    def __init__(self, pid=0, tid=0):
+    def __init__(self, pid=None, tid=None, process_name=None):
         """
         @param pid: process identifier.
         @param tid: thread identifier.
+        @param process_name: process name.
         """
         self.pid = pid
         self.tid = tid
+        self.process_name = process_name
 
     @staticmethod
     def set_config(config):
@@ -156,21 +158,25 @@ class Process(object):
                 ret.append(line)
         return " ".join(ret)
 
-    def is32bit(self, pid=None, path=None):
+    def is32bit(self, pid=None, process_name=None, path=None):
         """Is a PE file 32-bit or does a process identifier belong to a
         32-bit process.
         @param pid: process identifier.
+        @param process_name: process name.
         @param path: path to a PE file.
         @return: boolean or exception.
         """
-        if pid is None and path is None or \
-                pid is not None and path is not None:
-            raise CuckooError("Invalid usage of is32bit")
+        count = (pid is None) + (process_name is None) + (path is None)
+        if count != 2:
+            raise CuckooError("Invalid usage of is32bit, only one identifier "
+                              "should be specified")
 
         is32bit_exe = os.path.join("bin", "is32bit.exe")
 
         if pid:
             args = [is32bit_exe, "-p", "%s" % pid]
+        elif process_name:
+            args = [is32bit_exe, "-n", process_name]
         else:
             args = [is32bit_exe, "-f", self.shortpath(path)]
 
@@ -271,16 +277,22 @@ class Process(object):
         @param dll: Cuckoo DLL path.
         @param apc: Use APC injection.
         """
-        if not self.pid:
-            log.warning("No valid pid specified, injection aborted")
+        if not self.pid and not self.process_name:
+            log.warning("No valid pid or process name specified, "
+                        "injection aborted")
             return False
 
-        if not self.is_alive():
+        # Only check whether the process is still alive when it's identified
+        # by a process identifier. Not when it's identified by a process name.
+        if not self.process_name and not self.is_alive():
             log.warning("The process with pid %s is not alive, "
                         "injection aborted", self.pid)
             return False
 
-        is32bit = self.is32bit(pid=self.pid)
+        if self.process_name:
+            is32bit = self.is32bit(process_name=self.process_name)
+        elif self.pid:
+            is32bit = self.is32bit(pid=self.pid)
 
         if not dll:
             if is32bit:
@@ -292,7 +304,8 @@ class Process(object):
 
         if not os.path.exists(dllpath):
             log.warning("No valid DLL specified to be injected in process "
-                        "with pid %d, injection aborted.", self.pid)
+                        "with pid %s / process name %s, injection aborted.",
+                        self.pid, self.process_name)
             return False
 
         if is32bit:
@@ -301,9 +314,13 @@ class Process(object):
             inject_exe = os.path.join("bin", "inject-x64.exe")
 
         args = [
-            inject_exe, "--pid", "%s" % self.pid, "--dll", dllpath,
-            "--config", self.drop_config(),
+            inject_exe, "--dll", dllpath, "--config", self.drop_config(),
         ]
+
+        if self.pid:
+            args += ["--pid", "%s" % self.pid]
+        elif self.process_name:
+            args += ["--process-name", self.process_name]
 
         if apc:
             args += ["--apc", "--tid", "%s" % self.tid]
@@ -313,10 +330,12 @@ class Process(object):
         try:
             subprocess.check_call(args)
         except Exception:
-            log.error("Failed to inject process with pid %d", self.pid)
+            log.error("Failed to inject %s process with pid %s and "
+                      "process name %s", 32 if is32bit else 64, self.pid,
+                      self.process_name)
             return False
 
-        log.info("Successfully injected process with pid %d", self.pid)
+        log.info("Successfully injected process with pid %s", self.pid)
         return True
 
     def drop_config(self):
