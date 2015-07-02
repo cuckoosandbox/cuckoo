@@ -8,6 +8,7 @@ import logging
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.core.database import Database
 
 try:
     import volatility.conf as conf
@@ -916,6 +917,8 @@ class VolatilityManager(object):
         self.taint_pid = set()
         self.memfile = memfile
 
+        db = Database()
+
         conf_path = os.path.join(CUCKOO_ROOT, "conf", "memory.conf")
         if not os.path.exists(conf_path):
             log.error("Configuration file volatility.conf not found".format(conf_path))
@@ -929,9 +932,25 @@ class VolatilityManager(object):
             if pid:
                 self.mask_pid.append(int(pid))
 
+        response = {}
+
+        task = db.view_task(db.list_tasks(limit=1)[0].id, details=True)
+        if task:
+            entry = task.to_dict()
+            entry["guest"] = {}
+            if task.guest:
+                entry["guest"] = task.guest.to_dict()
+
+            response["task"] = entry
+            name = response["task"]["guest"]["name"]
+            machine = db.view_machine(name=name)
+            response["machine"] = machine.to_dict()
+
         self.no_filter = not self.voptions.mask.enabled
         if self.voptions.basic.guest_profile:
             self.osprofile = self.voptions.basic.guest_profile
+        elif response["machine"]["profile"]:
+            self.osprofile = response["machine"]["profile"]
         else:
             self.osprofile = osprofile or self.get_osprofile()
 

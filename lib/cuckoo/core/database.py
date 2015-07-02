@@ -72,6 +72,7 @@ class Machine(Base):
     status_changed_on = Column(DateTime(timezone=False), nullable=True)
     resultserver_ip = Column(String(255), nullable=False)
     resultserver_port = Column(String(255), nullable=False)
+    profile = Column(String(255), nullable=True)
 
     def __repr__(self):
         return "<Machine('{0}','{1}')>".format(self.id, self.name)
@@ -99,7 +100,7 @@ class Machine(Base):
         return json.dumps(self.to_dict())
 
     def __init__(self, name, label, ip, platform, interface, snapshot,
-                 resultserver_ip, resultserver_port):
+                 resultserver_ip, resultserver_port, profile):
         self.name = name
         self.label = label
         self.ip = ip
@@ -108,6 +109,7 @@ class Machine(Base):
         self.snapshot = snapshot
         self.resultserver_ip = resultserver_ip
         self.resultserver_port = resultserver_port
+        self.profile = profile
 
 class Tag(Base):
     """Tag describing anything you want."""
@@ -451,7 +453,7 @@ class Database(object):
 
     @classlock
     def add_machine(self, name, label, ip, platform, tags, interface,
-                    snapshot, resultserver_ip, resultserver_port):
+                    snapshot, resultserver_ip, resultserver_port, profile):
         """Add a guest machine.
         @param name: machine id
         @param label: machine label
@@ -462,6 +464,7 @@ class Database(object):
         @param snapshot: snapshot name to use instead of the current one, if configured
         @param resultserver_ip: IP address of the Result Server
         @param resultserver_port: port of the Result Server
+        @param profile: profile String for volatility
         """
         session = self.Session()
         machine = Machine(name=name,
@@ -471,7 +474,8 @@ class Database(object):
                           interface=interface,
                           snapshot=snapshot,
                           resultserver_ip=resultserver_ip,
-                          resultserver_port=resultserver_port)
+                          resultserver_port=resultserver_port,
+                          profile=profile)
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
             for tag in tags.split(","):
