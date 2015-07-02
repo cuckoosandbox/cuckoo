@@ -450,11 +450,11 @@ class Pcap:
             return
 
         keys = {}
-        if conn["dport"] == 443 and \
+        if conn["dport"] in self.ssl_ports and \
                 isinstance(record.data, dpkt.ssl.TLSClientHello):
             keys["client_random"] = record.data.random
             keys["client_session_id"] = getattr(record.data, "session_id")
-        elif conn["sport"] == 443 and \
+        elif conn["sport"] in self.ssl_ports and \
                 isinstance(record.data, dpkt.ssl.TLSServerHello):
             keys["server_random"] = record.data.random
             keys["server_session_id"] = getattr(record.data, "session_id")
@@ -561,7 +561,7 @@ class Pcap:
                     if not isinstance(tcp, dpkt.tcp.TCP):
                         tcp = dpkt.tcp.TCP(tcp)
 
-                    if len(tcp.data) > 0:
+                    if tcp.data:
                         connection["sport"] = tcp.sport
                         connection["dport"] = tcp.dport
                         self._tcp_dissect(connection, tcp.data)
