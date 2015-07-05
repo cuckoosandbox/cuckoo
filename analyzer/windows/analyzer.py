@@ -127,9 +127,15 @@ class ProcessList(object):
         else:
             self.add_pid(pids)
 
-    def has_pid(self, pid):
+    def has_pid(self, pid, notrack=True):
         """Is this process identifier being tracked?"""
-        return int(pid) in self.pids or int(pid) in self.pids_notrack
+        if int(pid) in self.pids:
+            return True
+
+        if notrack and int(pid) in self.pids_notrack:
+            return True
+
+        return False
 
     def remove_pid(self, pid):
         """Remove a process identifier from being tracked."""
@@ -211,7 +217,17 @@ class CommandPipeHandler(object):
         # otherwise we would generated polluted logs (if it wouldn't crash
         # horribly to start with).
         if PROCESS_LIST.has_pid(process_id):
-            if process_id not in CommandPipeHandler.ignore_list["pid"]:
+            # This pid is already on the notrack list, move it to the
+            # list of tracked pids.
+            if not PROCESS_LIST.has_pid(process_id, notrack=False):
+                log.debug("Received request to inject pid=%d. It was already "
+                          "on our notrack list, moving it to the track list.")
+
+                PROCESS_LIST.remove_pid(process_id)
+                PROCESS_LIST.add_pid(process_id)
+                CommandPipeHandler.ignore_list["pid"].append(process_id)
+            # Spit out an error once and just ignore it further on.
+            elif process_id not in CommandPipeHandler.ignore_list["pid"]:
                 log.debug("Received request to inject pid=%d, but we are "
                           "already injected there.", process_id)
                 CommandPipeHandler.ignore_list["pid"].append(process_id)
