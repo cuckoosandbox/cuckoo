@@ -26,20 +26,42 @@ My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc
 + username   ALL=(root) NOPASSWD: /usr/sbin/dtrace
 + username   ALL=(root) NOPASSWD: /bin/date
   ```
-  (replace `username` above with an actual user name).
+  (replace `username` above with an actual user name).  
 
- 2. Download and launch Cuckoo's `agent.py`:  
+ 2. Set the network settings: IP address, subnet mask, router address and DNS servers:  
+  ```bash
+  $ sudo networksetup -setmanual Ethernet 192.168.56.101 255.255.255.0 192.168.56.1
+  $ sudo networksetup -setdnsservers Ethernet 8.8.8.8 8.8.4.4
+  ```
+  
+ > Also, if you're using VirtualBox: don't forget to setup your host-only internet adapter and attach it to the guest machine.
+ 
+ 3. Download and launch Cuckoo's `agent.py`:  
 
   ```bash
 $ curl -o /Users/Shared/agent.py https://raw.githubusercontent.com/cuckoobox/cuckoo/master/agent/agent.py
 $ python /Users/Shared/agent.py
   ```
 
- 3. Take a VM snapshot. It's `cmd+T` for VirtualBox.
+ 4. Take a VM snapshot. It's `cmd+T` for VirtualBox.
 
 ##### On the host side
 
+ 0. Setup internet traffic forwarding to and from your guest machine. Here's an example of using `pfctl` to forward traffic to and from `vboxnet0` interface:
 
+  ```shell
+  $ sudo sysctl -w net.inet.ip.forwarding=1
+  
+  $ rules="nat on en1 from vboxnet0:network to any -> (en1)
+  pass inet proto icmp all
+  pass in on vboxnet0 proto udp from any to any port domain keep state
+  pass quick on en1 proto udp from any to any port domain keep state"
+  
+  $ echo "$rules" > ./pfrules
+  $ sudo pfctl -e -f ./pfrules
+  $ rm -f ./pfrules
+  ```
+  
  1. Clone this repository:  
 
   ```shell
