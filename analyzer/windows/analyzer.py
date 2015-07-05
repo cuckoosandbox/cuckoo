@@ -103,12 +103,21 @@ class Files(object):
 class ProcessList(object):
     def __init__(self):
         self.pids = []
+        self.pids_notrack = []
 
-    def add_pid(self, pid):
-        """Add a process identifier to the process list."""
-        if int(pid) not in self.pids:
-            log.info("Added new process to list with pid: %s", pid)
-            self.pids.append(int(pid))
+    def add_pid(self, pid, track=True):
+        """Add a process identifier to the process list.
+
+        Track determines whether the analyzer should be monitoring this
+        process, i.e., whether Cuckoo should wait for this process to finish.
+        """
+        if int(pid) not in self.pids and int(pid) not in self.pids_notrack:
+            log.info("Added new process to list with pid: %s (track=%d)",
+                     pid, track)
+            if track:
+                self.pids.append(int(pid))
+            else:
+                self.pids_notrack.append(int(pid))
 
     def add_pids(self, pids):
         """Add one or more process identifiers to the process list."""
@@ -120,11 +129,15 @@ class ProcessList(object):
 
     def has_pid(self, pid):
         """Is this process identifier being tracked?"""
-        return int(pid) in self.pids
+        return int(pid) in self.pids or int(pid) in self.pids_notrack
 
     def remove_pid(self, pid):
         """Remove a process identifier from being tracked."""
-        self.pids.remove(pid)
+        if pid in self.pids:
+            self.pids.remove(pid)
+
+        if pid in self.pids_notrack:
+            self.pids_notrack.remove(pid)
 
 FILES = Files()
 PROCESS_LIST = ProcessList()
@@ -155,16 +168,22 @@ class CommandPipeHandler(object):
 
     def _handle_loaded(self, data):
         """The monitor has loaded into a particular process."""
-        if not data or not data.isdigit():
-            log.warning("Received loaded command with incorrect process "
-                        "identifier, skipping it.")
+        if not data or data.count(",") != 1:
+            log.warning("Received loaded command with incorrect parameters, "
+                        "skipping it.")
+            return
+
+        pid, track = data.split(",")
+        if not pid.isdigit() or not track.isdigit():
+            log.warning("Received loaded command with incorrect parameters, "
+                        "skipping it.")
             return
 
         PROCESS_LOCK.acquire()
-        PROCESS_LIST.add_pid(int(data))
+        PROCESS_LIST.add_pid(int(pid), track=int(track))
         PROCESS_LOCK.release()
 
-        log.debug("Loaded monitor into process with pid %s", data)
+        log.debug("Loaded monitor into process with pid %s", pid)
 
     def _handle_getpids(self, data):
         """Return the process identifiers of the agent and its parent

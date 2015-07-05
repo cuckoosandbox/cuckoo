@@ -279,7 +279,7 @@ class Process(object):
             log.error("Failed to terminate process with pid %d.", self.pid)
             return False
 
-    def inject(self, dll=None, apc=False):
+    def inject(self, dll=None, apc=False, track=True):
         """Inject our monitor into the specified process.
         @param dll: Cuckoo DLL path.
         @param apc: Use APC injection.
@@ -321,7 +321,8 @@ class Process(object):
             inject_exe = os.path.join("bin", "inject-x64.exe")
 
         args = [
-            inject_exe, "--dll", dllpath, "--config", self.drop_config(),
+            inject_exe, "--dll", dllpath,
+            "--config", self.drop_config(track=track),
         ]
 
         if self.pid:
@@ -345,7 +346,7 @@ class Process(object):
         log.info("Successfully injected process with pid %s", self.pid)
         return True
 
-    def drop_config(self):
+    def drop_config(self, track=True):
         """Helper function to drop the configuration for a new process."""
         fd, config_path = tempfile.mkstemp()
 
@@ -368,6 +369,7 @@ class Process(object):
             "shutdown-mutex": SHUTDOWN_MUTEX,
             "force-sleepskip": self.config.options.get("force-sleepskip", "0"),
             "hashes-path": os.path.join(os.getcwd(), "hashes.bin"),
+            "track": "1" if track else "0",
         }
 
         for key, value in lines.items():
