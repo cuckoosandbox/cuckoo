@@ -9,8 +9,8 @@ from lib.common.abstracts import Auxiliary
 
 log = logging.getLogger(__name__)
 
-class DumpTLSMasterKeys(Auxiliary):
-    """Dump TLS master keys as used by various Windows libraries."""
+class DumpTLSMasterSecrets(Auxiliary):
+    """Dump TLS master secrets as used by various Windows libraries."""
     def start(self):
         Process(process_name="lsass.exe").inject(track=False)
-        log.info("Injected lsass for dumping TLS master keys!")
+        log.info("Injected lsass for dumping TLS master secrets!")
