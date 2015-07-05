@@ -107,8 +107,6 @@ class CuckooHost:
         lookup_idx = self.descriptions[pid].index("__process__")
 
         # Remember when this process was born
-        # FIXME(rodionovd): increase resolution of the timestamps
-        # (from 1 second to like 1 millisecond)
         self.launch_times[pid] = thing.timestamp
         # Describe the __process__ notification
         self.sockets[pid].sendall(BSON.encode({
