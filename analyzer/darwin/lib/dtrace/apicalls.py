@@ -77,7 +77,8 @@ def _parse_entry(entry):
     api       = parsed['api']
     args      = parsed['args']
     retval    = parsed['retval']
-    timestamp = parsed['timestamp']
+    # Convert milliseconds to floating point seconds
+    timestamp = float(parsed['timestamp']) / 1000
     pid       = parsed['pid']
     ppid      = parsed['ppid']
     tid       = parsed['tid']

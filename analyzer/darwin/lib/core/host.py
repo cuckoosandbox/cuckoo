@@ -60,7 +60,7 @@ class CuckooHost:
         #         (any)<value the n-th argument>,
         #     ]
         # }
-        ms_since_process_launch = 1000*(thing.timestamp - self.launch_times[pid])
+        ms_since_process_launch = int(1000*thing.timestamp - 1000*self.launch_times[pid])
         self.sockets[pid].sendall(BSON.encode({
             "I"    : lookup_idx,
             "T"    : thing.tid,
