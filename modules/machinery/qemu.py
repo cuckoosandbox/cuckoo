@@ -155,6 +155,7 @@ class QEMU(Machinery):
         # also do another round of parameter formatting
         for var in ["mac", "kernel", "initrd"]:
             val = getattr(vm_options, var, params[var])
+            if not val: continue
             params[var] = val.format(**params)
 
         # magic arg building
