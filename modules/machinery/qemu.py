@@ -77,6 +77,15 @@ QEMU_ARGS = {
             "initrd": "{imagepath}/initrd-3.2.0-4-versatile-arm",
         }
     },
+    "x64": {
+        "cmdline": ["qemu-system-x86_64", "-display", "none", "-m", "{memory}",
+                    "-hda", "{snapshot_path}",
+                    "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+        ],
+        "params": {
+            "memory": "1024M",
+        }
+    },
 }
 
 class QEMU(Machinery):
