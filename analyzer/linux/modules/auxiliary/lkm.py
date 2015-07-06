@@ -18,6 +18,7 @@ class LKM(Auxiliary):
 
     def __init__(self):
         self.config = Config(cfg="analysis.conf")
+        self.pids_reported = set()
 
     def start(self):
         # highest priority: if the vm config specifies the path
@@ -38,6 +39,24 @@ class LKM(Auxiliary):
 
         os.system("insmod %s trace_descendants=1 target_pid=%u" % (path, os.getpid()))
         return True
+
+    def get_pids(self):
+        new = []
+
+        fd = open("/var/log/kern.log")
+        for line in fd:
+            if not "[probelkm]" in line: continue
+            pos1 = line.find("forked to ")
+            pos2 = line.find("@", pos1+10)
+            forked_pid = int(line[pos1+10:pos2])
+
+            if forked_pid in self.pids_reported:
+                continue
+
+            self.pids_reported.add(forked_pid)
+            new.append(forked_pid)
+
+        return new
 
     def stop(self):
         # i guess we don't need to unload at all
