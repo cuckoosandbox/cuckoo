@@ -48,6 +48,8 @@ class LKM(Auxiliary):
             if not "[probelkm]" in line: continue
             pos1 = line.find("forked to ")
             pos2 = line.find("@", pos1+10)
+            if pos1 == -1 or pos2 == -1: continue
+
             forked_pid = int(line[pos1+10:pos2])
 
             if forked_pid in self.pids_reported:
