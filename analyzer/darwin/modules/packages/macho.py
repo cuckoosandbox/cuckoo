@@ -8,7 +8,7 @@
 from os import system
 from lib.core.packages import Package
 
-class MachO(Package):
+class Macho(Package):
     """ Mach-O executable analysys package. """
 
     def prepare(self):

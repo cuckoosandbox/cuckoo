@@ -16,9 +16,8 @@ from traceback import format_exc
 from lib.common.config import Config
 from lib.common.results import NetlogHandler
 from lib.core.constants import PATHS
-from lib.core.packages import choose_package, Package, Auxiliary
+from lib.core.packages import choose_package_class, Package
 
-from modules import auxiliary
 from lib.core.host import CuckooHost
 
 class Macalyzer:
@@ -43,14 +42,12 @@ class Macalyzer:
         self.log.debug("Starting analyzer from %s", os.getcwd())
         self.log.debug("Storing results at: %s", PATHS["root"])
 
-        aux = _setup_auxiliary_modules(self.log)
         package = self._setup_analysis_package()
 
         if self.config.clock:
             self._setup_machine_time(self.config.clock)
         self._analysis(package)
 
-        _shutdown_auxiliary_modules(aux, self.log)
         return self._complete()
 
     def _complete(self):
@@ -89,37 +86,17 @@ class Macalyzer:
         else: # It's not a file, but a URL
             self.target = self.config.target
 
-    # TODO(rodionovd): this method is way to long. Consider spliting it
-    # into multiple parts. e.g. (1) search the package, (2) initialize it.
     def _setup_analysis_package(self):
-        pkg = None
         if self.config.package:
-            pkg = self.config.package
+            suggestion = self.config.package
+        elif self.config.category != "file":
+            suggestion = "url"
         else:
-            self.log.debug("No analysis package specified, trying to detect it"
-                           " automagically.")
-            if self.config.category != "file":
-                pkg = "url"
-            else:
-                pkg = choose_package(self.config.file_type,
-                                     self.config.file_name)
-        if not pkg:
-            raise Exception("No valid package available for file type: "
-                            "{0}".format(self.config.file_type))
-        self.log.debug("Using package \"%s\"." % pkg)
-        # Importing the selected analysis package
-        package_name = "modules.packages.%s" % pkg
-        try:
-            __import__(package_name, globals(), locals(), ["foo"], -1)
-        except ImportError:
-            raise Exception("Unable to import package \"{0}\": it does not "
-                            "exist.".format(package_name))
-        try:
-            package_class = Package.__subclasses__()[0]
-        except IndexError as e:
-            raise Exception("Unable to select package class (package={0}): "
-                            "{1}".format(package_name, e))
-
+            suggestion = None
+        # Try to figure out what analysis package to use with this target
+        kwargs = { "suggestion" : suggestion }
+        package_class = choose_package_class(self.config.file_type,
+                                             self.config.file_name, **kwargs)
         # Package initialization
         host = CuckooHost(self.config.ip, self.config.port)
         kwargs = {
@@ -143,49 +120,6 @@ class Macalyzer:
 
     def _analysis(self, package):
         package.start()
-
-
-def _setup_auxiliary_modules(logger):
-    Auxiliary()
-    prefix = auxiliary.__name__ + "."
-    for loader, name, ispkg in iter_modules(auxiliary.__path__, prefix):
-        if ispkg:
-            continue
-        # Import auxiliary modules
-        try:
-            __import__(name, globals(), locals(), ["dummy"], -1)
-        except ImportError:
-            logger.warning("Unable to import the auxiliary module "
-                           "\"{0}\": {1}".format(name, e))
-    # Walk through the available auxiliary modules
-    aux_enabled = []
-    for module in Auxiliary.__subclasses__():
-        try:
-            aux = module(self.config.get_options())
-            aux.start()
-        except (NotImplementedError, AttributeError):
-            logger.warning("Auxiliary module %s was not implemented",
-                           aux.__class__.__name__)
-            continue
-        except Exception as e:
-            logger.warning("Cannot execute auxiliary module %s: %s",
-                           aux.__class__.__name__, e)
-            continue
-        finally:
-            self.log.debug("Started auxiliary module %s", aux.__class__.__name__)
-            aux_enabled.append(aux)
-    return aux_enabled
-
-def _shutdown_auxiliary_modules(aux, logger):
-    for a in aux:
-        try:
-            a.stop()
-        except (NotImplementedError, AttributeError):
-            continue
-        except Exception as e:
-            logger.warning("Cannot terminate auxiliary module %s: %s",
-                           aux.__class__.__name__, e)
-
 
 
 

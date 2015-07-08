@@ -9,12 +9,49 @@ from ..dtrace.dtruss import dtruss
 from ..dtrace.apicalls import apicalls
 from ..dtrace.ipconnections import ipconnections
 
+import inspect
+from os import sys, path
 
-def choose_package(file_type, file_name):
+def choose_package_class(file_type, file_name, suggestion=None):
+    if suggestion is not None:
+        name = suggestion
+    else:
+        name = _guess_package_name(file_type, file_name)
+
+    if not name:
+        return None
+
+    full_name = "modules.packages.%s" % name
+    try:
+        # I couldn't figure out how to make __import__ import anything from
+        # the (grand)parent package, so here I just patch the PATH
+        sys.path.append(path.abspath(path.join(path.dirname(__file__), '..', '..')))
+        # Since we don't now the package class yet, we import everything from
+        # within this module (i.e. fromlist=['*'])
+        module = __import__(full_name, globals(), locals(), ['*'])
+    except ImportError:
+        raise Exception("Unable to import package \"{0}\": it does not "
+                        "exist.".format(name))
+    try:
+        # The first member of the module we've just imported is our target class
+        members = inspect.getmembers(module, inspect.isclass)
+        pkg_class = [x[1] for x in members if x[0] == name.capitalize()][0]
+        # raise Exception(pkg_class)
+    except IndexError as e:
+        raise Exception("Unable to select package class (package={0}): "
+                        "{1}".format(full_name, e))
+    return pkg_class
+
+
+def _guess_package_name(file_type, file_name):
     if "Bourne-Again" in file_type or "bash" in file_type:
         return "bash"
     elif "Mach-O" in file_type and "executable" in file_type:
         return "macho"
+    elif "directory" in file_type and (file_name.endswith(".app") or file_name.endswith(".app/")):
+        return "app"
+    elif "Zip archive" in file_type and file_name.endswith(".zip"):
+        return "zip"
     else:
         return None
 
@@ -73,16 +110,3 @@ class Package(object):
         }
         for call in apicalls(self.target, **kwargs):
             self.host.send_api(call)
-
-
-class Auxiliary(object):
-    def __init__(self, options=None):
-        self.options = options
-        if not self.options:
-            self.options = {}
-
-    def start(self):
-        pass
-
-    def stop(self):
-        pass
