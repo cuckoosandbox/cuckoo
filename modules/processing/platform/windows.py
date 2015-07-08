@@ -40,7 +40,7 @@ class MonitorProcessLog(list):
                 del event["type"]
 
                 # also get rid of the pid (we're below the pid in the structure)
-                del event["process_identifier"]
+                del event["pid"]
 
                 yield event
 
@@ -51,16 +51,12 @@ class WindowsMonitor(BehaviorHandler):
     """Parses cuckoomon/monitor generated logs."""
 
     # special key, we return a dict to be merged with the behavior result structure
-    key = "UPDATE"
+    key = "processes"
 
     def __init__(self, *args, **kwargs):
         super(WindowsMonitor, self).__init__(*args, **kwargs)
-        self.results = {
-            "name": "windows",
-            "architecture": "unknown", # look this up in the task / vm info?
-            "source": ["monitor", "windows"],
-        }
         self.processes = []
+        self.reconstructors = {}
         self.matched = False
 
     def handles_path(self, path):
@@ -78,60 +74,37 @@ class WindowsMonitor(BehaviorHandler):
                 process["calls"] = MonitorProcessLog(parser)
                 self.processes.append(process)
 
+                self.reconstructors[process["pid"]] = BehaviorReconstructor()
+
+            # create generic events out of the windows calls
+            elif event["type"] == "call":
+                reconstructor = self.reconstructors[event["pid"]]
+
+                fn = getattr(reconstructor, "_api_%s" % event["api"], None)
+                if fn is not None:
+                    res = fn(event["return_value"], event["arguments"])
+
+                    if res and type(res) == tuple:
+                        res = [res,]
+
+                    if res:
+                        for category, arg in res:
+                            yield {
+                                "type": "generic",
+                                "pid": event["pid"],
+                                "category": category,
+                                "value": arg,
+                            }
+
             yield event
 
     def run(self):
-        if not self.matched: return False
+        if not self.matched:
+            return False
 
         self.processes.sort(key=lambda process: process["first_seen"])
+        return self.processes
 
-        return {
-            "platform": self.results,
-            "processes": self.processes,
-        }
-
-class WindowsMonitorTemp(BehaviorHandler):
-    """Temporary handler, generating summary ("generic") events from the monitor logs.
-    Uses skier's BehaviorReconstructor (see below), might be refactored soon."""
-
-    event_types = ["call", "process"]
-
-    def __init__(self, *args, **kwargs):
-        super(WindowsMonitorTemp, self).__init__(*args, **kwargs)
-        self.processes = {}
-        self.hashes = []
-
-    def handle_event(self, event):
-        if event["type"] == "process":
-            process = event
-            if process["process_identifier"] in self.processes:
-                return
-
-            self.processes[process["process_identifier"]] = BehaviorReconstructor()
-
-        elif event["type"] == "call":
-            reconstructor = self.processes[event["process_identifier"]]
-
-            fn = getattr(reconstructor, "_api_%s" % event["api"], None)
-            if fn is not None:
-                res = fn(event["return_value"], event["arguments"])
-
-                if res and type(res) == tuple:
-                    res = [res,]
-
-                if res:
-                    for category, arg in res:
-                        yield {
-                            "type": "generic",
-                            "process_identifier": event["process_identifier"],
-                            "category": category,
-                            "value": arg,
-                        }
-
-            self.hashes.append(event["uniqhash"])
-
-    def run(self):
-        return False
 
 def NT_SUCCESS(value):
     return value % 2**32 < 0x80000000

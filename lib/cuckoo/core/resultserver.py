@@ -226,8 +226,8 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         log.debug("Connection closed: {0}:{1}".format(ip, port))
 
     def open_process_log(self, event):
-        pid = event["process_identifier"]
-        ppid = event["parent_process_identifier"]
+        pid = event["pid"]
+        ppid = event["ppid"]
         procname = event["process_name"]
 
         if self.pid is not None:

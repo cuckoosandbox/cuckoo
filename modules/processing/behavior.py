@@ -58,8 +58,8 @@ class Anomaly(BehaviorHandler):
                 message = row["value"]
 
         self.anomalies.append(dict(
-            name=process["process_name"],
-            pid=process["process_id"],
+            #name=process["process_name"],
+            #pid=process["process_id"],
             category=category,
             funcname=funcname,
             message=message,
@@ -80,19 +80,19 @@ class ProcessTree(BehaviorHandler):
         self.processes = {}
 
     def handle_event(self, process):
-        if process["process_identifier"] in self.processes:
+        if process["pid"] in self.processes:
             return
 
-        pcopy = subdict(process, ["process_identifier", "process_name", "first_seen", "parent_process_identifier"])
+        pcopy = subdict(process, ["pid", "process_name", "first_seen", "ppid"])
         pcopy["children"] = []
 
-        self.processes[process["process_identifier"]] = pcopy
+        self.processes[process["pid"]] = pcopy
 
     def run(self):
         root = {"children": []}
 
         for p in self.processes.values():
-            self.processes.get(p["parent_process_identifier"], root)["children"].append(p)
+            self.processes.get(p["pid"], root)["children"].append(p)
 
         return root["children"]
 
@@ -109,20 +109,20 @@ class GenericBehavior(BehaviorHandler):
     def handle_event(self, event):
         if event["type"] == "process":
             process = event
-            if process["process_identifier"] in self.processes:
+            if process["pid"] in self.processes:
                 return
 
-            pcopy = subdict(process, ["process_identifier", "process_name", "first_seen", "parent_process_identifier"])
+            pcopy = subdict(process, ["pid", "process_name", "first_seen", "ppid"])
             pcopy["summary"] = collections.defaultdict(jsonset)
 
-            self.processes[process["process_identifier"]] = pcopy
+            self.processes[process["pid"]] = pcopy
 
         elif event["type"] == "generic":
-            if event["process_identifier"] in self.processes:
+            if event["pid"] in self.processes:
                 # TODO: rewrite / generalize / more flexible
-                self.processes[event["process_identifier"]]["summary"][event["category"]].append(event["value"])
+                self.processes[event["pid"]]["summary"][event["category"]].append(event["value"])
             else:
-                log.warning("Generic event for unknown process id %u", event["process_identifier"])
+                log.warning("Generic event for unknown process id %u", event["pid"])
 
     def run(self):
         return self.processes.values()
@@ -138,10 +138,23 @@ class ApiStats(BehaviorHandler):
         self.processes = collections.defaultdict(lambda: collections.defaultdict(lambda: 0))
 
     def handle_event(self, event):
-        self.processes[event["process_identifier"]][event["api"]] += 1
+        self.processes[event["pid"]][event["api"]] += 1
 
     def run(self):
         return self.processes
+
+class PlatformInfo(BehaviorHandler):
+    """Provides information about the platform for the collected behavior.
+
+    Not sure if this is really needed, as probably all the info is in the results["info"] area.
+    """
+    key = "platform"
+
+        # self.results = {
+        #     "name": "windows",
+        #     "architecture": "unknown", # look this up in the task / vm info?
+        #     "source": ["monitor", "windows"],
+        # }
 
 class BehaviorAnalysis(Processing):
     """Behavior Analyzer.
@@ -158,8 +171,8 @@ class BehaviorAnalysis(Processing):
         "generic": {
             "processes": [
                 {
-                    "process_identifier": x,
-                    "parent_process_identifier": y,
+                    "pid": x,
+                    "ppid": y,
                     "calls": [
                         {
                             "function": "foo",
@@ -290,13 +303,9 @@ class BehaviorAnalysis(Processing):
         for handler in handlers:
             try:
                 r = handler.run()
-                if r is False: continue
-
-                # special key to support more flexible output structures
-                if handler.key == "UPDATE":
-                    behavior.update(r)
-                else:
-                    behavior[handler.key] = r
+                if r is False:
+                    continue
+                behavior[handler.key] = r
             except:
                 log.exception("Failed to run partial behavior class \"%s\"", handler.key)
 

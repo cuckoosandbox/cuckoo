@@ -134,8 +134,8 @@ class BsonParser(object):
 
             parsed = {
                 "type": mtype,
-                "thread_id": tid,
-                "time": time, 
+                "tid": tid,
+                "time": time,
             }
 
             if mtype == "debug":
@@ -169,16 +169,16 @@ class BsonParser(object):
                         timelow = argdict["TimeLow"]
                         timehigh = argdict["TimeHigh"]
 
-                        parsed["process_identifier"] = pid = argdict["ProcessIdentifier"]
-                        parsed["parent_process_identifier"] = ppid = argdict["ParentProcessIdentifier"]
+                        parsed["pid"] = pid = argdict["ProcessIdentifier"]
+                        parsed["ppid"] = ppid = argdict["ParentProcessIdentifier"]
                         modulepath = argdict["ModulePath"]
 
                     elif "time_low" in argdict:
                         timelow = argdict["time_low"]
                         timehigh = argdict["time_high"]
 
-                        parsed["process_identifier"] = pid = argdict["process_identifier"]
-                        parsed["parent_process_identifier"] = ppid = argdict["parent_process_identifier"]
+                        parsed["pid"] = pid = argdict.get("pid", argdict["process_identifier"])
+                        parsed["ppid"] = ppid = argdict.get("ppid", argdict["parent_process_identifier"])
                         modulepath = argdict["module_path"]
 
                     else:
@@ -196,7 +196,7 @@ class BsonParser(object):
                     self.pid = pid
 
                 elif apiname == "__thread__":
-                    parsed["process_identifier"] = pid = argdict["ProcessIdentifier"]
+                    parsed["pid"] = pid = argdict["ProcessIdentifier"]
 
                 # elif apiname == "__anomaly__":
                     # tid = argdict["ThreadIdentifier"]
@@ -207,7 +207,7 @@ class BsonParser(object):
 
                 else:
                     parsed["type"] = "call"
-                    parsed["process_identifier"] = self.pid
+                    parsed["pid"] = self.pid
                     parsed["api"] = apiname
                     parsed["category"] = category
                     parsed["status"] = argdict.pop("is_success", 1)

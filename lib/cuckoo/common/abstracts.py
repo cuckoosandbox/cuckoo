@@ -826,7 +826,7 @@ class Signature(object):
         @return: List of processes or empty list
         """
         for item in self.get_results("behavior", {}).get("processes", []):
-            if pid is None or item["process_identifier"] == pid:
+            if pid is None or item["pid"] == pid:
                 yield item
 
     def get_threads(self, pid=None):
@@ -1144,7 +1144,7 @@ class Signature(object):
         if process:
             process_summary = {
                 "process_name": process["process_name"],
-                "process_id": process["process_id"],
+                "pid": process["pid"],
             }
 
         self.data.append({"process": process_summary, "signs": signs})
