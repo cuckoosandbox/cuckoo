@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "CHILD FAILED\n");
 	} else {
 		int status;
-		wait(&status);
+		// wait(&status);
 		printf("parent done\n");
 	}
 

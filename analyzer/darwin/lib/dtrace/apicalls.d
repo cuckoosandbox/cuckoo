@@ -71,17 +71,15 @@ profile:::tick-1sec
     dtrace:::BEGIN
     {
         pidresume($target);
+#ifdef WAS_EXECED
+        /* Since (1) we have now dtrace scripts attached to both
+         * parent and child processes and (2) they both have *the same* PID,
+         * we'll get the same results from both these scripts.
+         * To fix this, I just stop tracing the child here. */
+        exit(0);
+#endif
     }
-    #ifdef WAS_EXECED
-        dtrace:::BEGIN
-        {
-            /* Since (1) we have now dtrace scripts attached to both
-             * parent and child processes and (2) they both have *the same* PID,
-             * we'll get the same results from both these scripts.
-             * To fix this, I just stop tracing the child here. */
-            exit(0);
-        }
-    #endif
+
     /* TODO(rodionovd): it looks like there's a bug in Apple dtrace that keeps
      * dtrace running even when its target (specified via -p) was already terminated.
      * Maybe I'm doing something wrong, but here's a temporary workaround.
@@ -93,11 +91,12 @@ profile:::tick-1sec
     }
 #endif
 
-/* FORKs */
+/* FORK */
 proc:::create
 / pid == $target /
 {
     tracked[args[0]->pr_pid] = 1;
+    system("echo %d >> \"%s.lock\"", args[0]->pr_pid, str(OUTPUT_FILE));
 }
 proc:::start
 / tracked[pid] == 1 /
@@ -111,10 +110,6 @@ proc:::start
 /* EXEC */
 proc:::exec
 / pid == $target /
-{ /* exec-success probe won't fire without this */ }
-
-proc:::exec-success
-/ ppid == $target /
 {
     tracked[pid] = 2;
 }
@@ -131,10 +126,10 @@ syscall::stat64:entry
 dtrace:::END
 {
 #ifdef ROOT
-    /* It takes children scripts some time to write final stuff to the output
-     * file (mainly because of printf() caching). */
-    system("sleep 1.5");
+    system("sleep 0.7 && while [ $(cat \"%s.lock\" | wc -l) != \"0\" ]; do sleep 0.1; done", str(OUTPUT_FILE));
     printf("## %s done ##", SCRIPT_NAME);
+#else
+    system("sed -i \"\" \"/%d/d\" \"%s.lock\"", $target, str(OUTPUT_FILE));
 #endif
 }
 
