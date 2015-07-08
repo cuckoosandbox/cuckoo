@@ -45,12 +45,22 @@ class Config:
                 for field in fields:
                     # Split the name and the value of the option.
                     try:
-                        key, value = field.split("=", 1)
+                        key_and_value = field.split("=", 1)
                     except ValueError as e:
                         pass
                     else:
-                        # If the parsing went good, we add the option to the
-                        # dictionary.
-                        options[key.strip()] = value.strip()
+                        # TODO(rodionovd): this code is very ugly :(
+                        key = key_and_value[0]
+                        if key.startswith("arg-"):
+                            key = key[4:].strip()
+                            key_and_value[0] = key
+                            if "args" not in options:
+                                options["args"] = []
+                            options["args"] += key_and_value
+                        else:
+                            # If the parsing went good, we add the option to the
+                            # dictionary.
+                            value = key_and_value[1]
+                            options[key.strip()] = value.strip()
 
         return options

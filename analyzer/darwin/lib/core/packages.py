@@ -10,6 +10,7 @@ from ..dtrace.apicalls import apicalls
 from ..dtrace.ipconnections import ipconnections
 
 import inspect
+from ast import literal_eval
 from os import sys, path
 
 def choose_package_class(file_type, file_name, suggestion=None):
@@ -74,8 +75,10 @@ class Package(object):
         if "timeout" in kwargs:
             self.timeout = kwargs["timeout"]
         # Command-line arguments for the target.
-        # TODO(rodionovd): add an option to specify arguments
-        self.args = []
+        if "args" in self.options:
+            self.args = self.options["args"]
+        else:
+            self.args = []
         # Choose an analysis method
         if "method" in self.options:
             self.method = self.options["method"]
