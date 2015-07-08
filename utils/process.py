@@ -175,7 +175,10 @@ def main():
         autoprocess(parallel=args.parallel)
     else:
         task = Database().view_task(int(args.id))
-        process(task=task.to_dict(), report=args.report)
+        if not task:
+            process(task={"id": int(args.id), "category": "file", "target": ""}, report=args.report)
+        else:
+            process(task=task.to_dict(), report=args.report)
 
 if __name__ == "__main__":
     cfg = Config()
