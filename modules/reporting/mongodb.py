@@ -191,8 +191,7 @@ class MongoDB(Report):
                     # If the chunk size is paginate or if the loop is
                     # completed then store the chunk in MongoDB.
                     if len(chunk) == paginate:
-                        to_insert = {"pid": process["process_id"],
-                                     "calls": chunk}
+                        to_insert = {"pid": process["pid"], "calls": chunk}
                         chunk_id = self.db.calls.insert(to_insert)
                         chunks_ids.append(chunk_id)
                         # Reset the chunk.
@@ -203,7 +202,7 @@ class MongoDB(Report):
 
                 # Store leftovers.
                 if chunk:
-                    to_insert = {"pid": process["process_id"], "calls": chunk}
+                    to_insert = {"pid": process["pid"], "calls": chunk}
                     chunk_id = self.db.calls.insert(to_insert)
                     chunks_ids.append(chunk_id)
 

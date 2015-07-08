@@ -146,7 +146,7 @@ class ApiStats(BehaviorHandler):
         self.processes = collections.defaultdict(lambda: collections.defaultdict(lambda: 0))
 
     def handle_event(self, event):
-        self.processes[event["pid"]][event["api"]] += 1
+        self.processes["%d" % event["pid"]][event["api"]] += 1
 
     def run(self):
         return self.processes
