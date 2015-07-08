@@ -206,7 +206,7 @@ class BsonParser(object):
                     # return True
 
                 else:
-                    parsed["type"] = "call"
+                    parsed["type"] = "apicall"
                     parsed["pid"] = self.pid
                     parsed["api"] = apiname
                     parsed["category"] = category

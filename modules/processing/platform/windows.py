@@ -23,7 +23,7 @@ class MonitorProcessLog(list):
         for event in self.eventstream:
             if event["type"] == "process":
                 self.first_seen = event["first_seen"]
-            elif event["type"] == "call":
+            elif event["type"] == "apicall":
                 event["time"] = self.first_seen + datetime.timedelta(0, 0, event["time"] * 1000)
 
                 # backwards compat with previous reports, remove if not necessary
@@ -77,7 +77,7 @@ class WindowsMonitor(BehaviorHandler):
                 self.reconstructors[process["pid"]] = BehaviorReconstructor()
 
             # create generic events out of the windows calls
-            elif event["type"] == "call":
+            elif event["type"] == "apicall":
                 reconstructor = self.reconstructors[event["pid"]]
 
                 fn = getattr(reconstructor, "_api_%s" % event["api"], None)

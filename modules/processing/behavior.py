@@ -129,7 +129,7 @@ class ApiStats(BehaviorHandler):
     """Counts API calls."""
 
     key = "apistats"
-    event_types = ["call"]
+    event_types = ["apicall"]
 
     def __init__(self, *args, **kwargs):
         super(ApiStats, self).__init__(*args, **kwargs)

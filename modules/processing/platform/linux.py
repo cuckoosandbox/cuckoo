@@ -136,5 +136,5 @@ class StapParser(object):
                 "time": dt, "process_name": pname, "process_identifier": pid,
                 "instruction_pointer": ip, "api": fn, "arguments": arguments,
                 "return_value": retval, "status": ecode,
-                "type": "call", "raw": line,
+                "type": "apicall", "raw": line,
             }
