@@ -198,7 +198,7 @@ class BehaviorAnalysis(Processing):
 
     There are several handlers that produce the respective keys / subkeys. Overall
     the platform / analyzer specific ones parse / process the captured data and yield
-    both their own output, but also a standard structure that is then captured by the 
+    both their own output, but also a standard structure that is then captured by the
     "generic" handlers so they can generate the standard result structures.
 
     The resulting structure contains some iterator onions for the monitored function calls
@@ -229,9 +229,11 @@ class BehaviorAnalysis(Processing):
                 log.warning("Behavior log file %r is not a file.", fname)
                 continue
 
-            if self.cfg.processing.analysis_size_limit and os.stat(path).st_size > self.cfg.processing.analysis_size_limit:
-                # this needs to be a big alert
-                log.info("Behavior log file %r is too big, skipped.", fname)
+            analysis_size_limit = self.cfg.processing.analysis_size_limit
+            if analysis_size_limit and \
+                    os.stat(path).st_size > analysis_size_limit:
+                # This needs to be a big alert.
+                log.critical("Behavior log file %r is too big, skipped.", fname)
                 continue
 
             yield path

@@ -101,16 +101,16 @@ class PortableExecutable:
                     continue
 
         return imports
-    
+
     def _get_exported_symbols(self):
         """Gets exported symbols.
         @return: exported symbols dict or None.
         """
         if not self.pe:
             return None
-        
+
         exports = []
-        
+
         if hasattr(self.pe, "DIRECTORY_ENTRY_EXPORT"):
             for exported_symbol in self.pe.DIRECTORY_ENTRY_EXPORT.symbols:
                 symbol = {}
@@ -215,7 +215,6 @@ class PortableExecutable:
                         continue
 
         return infos
-
 
     def _get_imphash(self):
         """Gets imphash.

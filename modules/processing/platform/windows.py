@@ -2,12 +2,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import logging
 import datetime
 
 from lib.cuckoo.common.abstracts import BehaviorHandler
-from lib.cuckoo.common.utils import convert_to_printable, logtime, cleanup_value
 from lib.cuckoo.common.netlog import BsonParser
 
 log = logging.getLogger(__name__)

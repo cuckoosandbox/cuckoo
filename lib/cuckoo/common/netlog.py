@@ -94,10 +94,13 @@ class BsonParser(object):
 
         while True:
             data = self.fd.read(4)
-            if not data: return
+            if not data:
+                return
+
             if not len(data) == 4:
                 log.critical("BsonParser lacking data.")
                 return
+
             blen = struct.unpack("I", data)[0]
             if blen > MAX_MESSAGE_LENGTH:
                 log.critical("BSON message larger than MAX_MESSAGE_LENGTH, "
