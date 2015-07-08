@@ -23,6 +23,7 @@ else:
         HAVE_BSON = False
 
 from lib.cuckoo.common.utils import get_filename_from_path
+from lib.cuckoo.common.exceptions import CuckooResultError
 
 log = logging.getLogger(__name__)
 
@@ -164,21 +165,26 @@ class BsonParser(object):
                 # Special new process message from the monitor.
                 if apiname == "__process__":
                     parsed["type"] = "process"
-                    
+
                     if "TimeLow" in argdict:
                         timelow = argdict["TimeLow"]
                         timehigh = argdict["TimeHigh"]
 
                         parsed["pid"] = pid = argdict["ProcessIdentifier"]
-                        parsed["ppid"] = ppid = argdict["ParentProcessIdentifier"]
+                        parsed["ppid"] = argdict["ParentProcessIdentifier"]
                         modulepath = argdict["ModulePath"]
 
                     elif "time_low" in argdict:
                         timelow = argdict["time_low"]
                         timehigh = argdict["time_high"]
 
-                        parsed["pid"] = pid = argdict.get("pid", argdict["process_identifier"])
-                        parsed["ppid"] = ppid = argdict.get("ppid", argdict["parent_process_identifier"])
+                        if "pid" in argdict:
+                            parsed["pid"] = pid = argdict["pid"]
+                            parsed["ppid"] = argdict["ppid"]
+                        else:
+                            parsed["pid"] = pid = argdict["process_identifier"]
+                            parsed["ppid"] = argdict["parent_process_identifier"]
+
                         modulepath = argdict["module_path"]
 
                     else:
