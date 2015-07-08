@@ -126,7 +126,7 @@ syscall::stat64:entry
 dtrace:::END
 {
 #ifdef ROOT
-    system("sleep 0.7 && while [ $(cat \"%s.lock\" | wc -l) != \"0\" ]; do sleep 0.1; done", str(OUTPUT_FILE));
+    system("sleep 1 && while [ $(cat \"%s.lock\" | wc -l) != \"0\" ]; do sleep 0.1; done", str(OUTPUT_FILE));
     printf("## %s done ##", SCRIPT_NAME);
 #else
     system("sed -i \"\" \"/%d/d\" \"%s.lock\"", $target, str(OUTPUT_FILE));
