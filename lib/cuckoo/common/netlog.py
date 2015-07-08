@@ -223,6 +223,10 @@ class BsonParser(object):
                     parsed["stacktrace"] = dec.get("s", [])
                     parsed["uniqhash"] = dec.get("h", 0)
 
+                    if "e" in dec and "E" in dec:
+                        parsed["last_error"] = dec["e"]
+                        parsed["nt_status"] = dec["E"]
+
                     if apiname in self.flags:
                         for flag in self.flags[apiname].keys():
                             argdict[flag + "_s"] = self._flag_represent(apiname, flag, argdict[flag])
