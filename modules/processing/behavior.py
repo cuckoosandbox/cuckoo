@@ -176,7 +176,10 @@ class BehaviorAnalysis(Processing):
                     "calls": [
                         {
                             "function": "foo",
-                            "arguments": [("a": 1), ("b": 2)],
+                            "arguments": {
+                                "a": 1,
+                                "b": 2,
+                            },
                         },
                         ...
                     ]
