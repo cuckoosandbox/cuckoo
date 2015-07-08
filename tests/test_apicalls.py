@@ -7,12 +7,14 @@
 
 import unittest
 from sets import Set
+from nose.tools import timed
 
 from common import DtraceTestCase
 from analyzer.darwin.lib.dtrace.apicalls import *
 
 class TestAPICalls(DtraceTestCase):
 
+    @timed(10)
     def test_apicalls_basic(self):
         # given
         expected_api = ("system", ["whoami"], 0)
@@ -24,6 +26,7 @@ class TestAPICalls(DtraceTestCase):
         matched = [x for x in output if (x.api, x.args, x.retval) == expected_api]
         self.assertEqual(len(matched), 1)
 
+    @timed(5)
     def test_apicalls_root(self):
         # given
         expected_api = ("printf", ["I'm root!\n"], 10)
@@ -35,6 +38,7 @@ class TestAPICalls(DtraceTestCase):
         matched = [x for x in output if (x.api, x.args, x.retval) == expected_api]
         self.assertEqual(len(matched), 1)
 
+    @timed(5)
     def test_apicalls_with_args_root(self):
         # given
         expected_api = ("atoi", ["666"])
@@ -47,6 +51,7 @@ class TestAPICalls(DtraceTestCase):
         matched = [x for x in output if (x.api, x.args) == expected_api]
         self.assertEqual(len(matched), 1)
 
+    @timed(10)
     def test_apicalls_with_args(self):
         # given
         expected_api = ("atoi", ["666"])
@@ -59,6 +64,7 @@ class TestAPICalls(DtraceTestCase):
         matched = [x for x in output if (x.api, x.args) == expected_api]
         self.assertEqual(len(matched), 1)
 
+    @timed(20)
     def test_apicalls_children(self):
         # given
         expected_grandchild_api = ("printf", ["grandchild started\n"], 19)
@@ -79,6 +85,7 @@ class TestAPICalls(DtraceTestCase):
         self.assertEqual(len(matched_child), 1)
         self.assertEqual(len(matched_parent), 1)
 
+    @timed(15)
     def test_apicalls_children_root(self):
         # given
         expected_grandchild_api = ("printf", ["grandchild started\n"], 19)
