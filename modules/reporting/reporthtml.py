@@ -82,7 +82,7 @@ class ReportHTML(Report):
         ]
 
         processed = {}
-        for proc in results.get("behavior2", {}).get("processes", []):
+        for proc in results.get("behavior", {}).get("generic", []):
             for orig, cat, subcat in mapping:
                 if cat not in processed:
                     processed[cat] = {}

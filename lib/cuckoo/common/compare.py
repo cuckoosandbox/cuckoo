@@ -6,7 +6,6 @@ import os
 import collections
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
-from modules.processing.behavior import ParseProcessLog
 
 ANALYSIS_ROOT = os.path.join(CUCKOO_ROOT, "storage", "analyses")
 
@@ -56,9 +55,10 @@ def helper_percentages_storage(tid1, tid2):
         counts[tid] = {}
 
         for pid, fpath in iter_task_process_logfiles(tid):
-            ppl = ParseProcessLog(fpath)
-            category_counts = behavior_categories_percent(ppl.calls)
-            
+            # ppl = ParseProcessLog(fpath)
+            # category_counts = behavior_categories_percent(ppl.calls)
+            category_counts = None
+
             counts[tid][pid] = category_counts
 
     return combine_behavior_percentages(counts)
