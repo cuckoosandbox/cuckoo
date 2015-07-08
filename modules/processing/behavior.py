@@ -9,7 +9,7 @@ import collections
 from lib.cuckoo.common.abstracts import Processing, BehaviorHandler
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.utils import ThreadSingleton, subdict, jsonset
-from .platform.windows import WindowsMonitor, WindowsMonitorTemp
+from .platform.windows import WindowsMonitor
 from .platform.linux import LinuxSystemTap
 
 log = logging.getLogger(__name__)
@@ -255,7 +255,6 @@ class BehaviorAnalysis(Processing):
 
             # platform specific stuff
             WindowsMonitor(self),
-            WindowsMonitorTemp(self),
             LinuxSystemTap(self),
         ]
 
