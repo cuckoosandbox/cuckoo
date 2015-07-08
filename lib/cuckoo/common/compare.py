@@ -90,7 +90,9 @@ def helper_percentages_mongo(results_db, tid1, tid2, ignore_categories=["misc"])
                 chunk = results_db.calls.find_one({"_id": coid}, {"calls.category": 1})
                 category_counts = behavior_categories_percent(chunk["calls"])
                 for cat, count in category_counts.items():
-                    if cat in ignore_categories: continue
+                    if cat in ignore_categories:
+                        continue
+
                     counts[tid][pid][cat] = counts[tid][pid].get(cat, 0) + count
 
     return combine_behavior_percentages(counts)
