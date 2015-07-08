@@ -92,8 +92,8 @@
     {% elif results.behavior2 and results.behavior2.processes %}  <!-- Behavior2 code -->
         {% for process in results.behavior2.processes %}
             <div>
-            <h4><a href="javascript:showHide('process_{{process.process_identifier}}');">{{process.process_path}}</a> <small>PID: {{process.process_identifier}}, Parent PID: {{process.parent_process_identifier}}</small></h4>
-            <div id="process_{{process.process_identifier}}" style="display: none;">
+            <h4><a href="javascript:showHide('process_{{process.pid}}');">{{process.process_path}}</a> <small>PID: {{process.pid}}, Parent PID: {{process.ppid}}</small></h4>
+            <div id="process_{{process.pid}}" style="display: none;">
                 <table class="table table-bordered table-condensed" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
                     <tr>
                         <th>Thread</th>
@@ -108,7 +108,7 @@
                     {% for thread in process.threads %}
                         {% for call in thread.calls %}
                         <tr class="{{call.category}}">
-                            <td><a name="{{process.process_identifier}}_{{thread.tid}}_{{loop.index}}">{{thread.tid}}</td>
+                            <td><a name="{{process.pid}}_{{thread.tid}}_{{loop.index}}">{{thread.tid}}</td>
                             <td>{{call.time}}</td>
                             <td><span class="mono">{{call.api}}</span></td>
                             <td style="word-wrap: break-word">

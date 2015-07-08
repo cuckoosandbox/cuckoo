@@ -87,10 +87,10 @@ def chunk(request, task_id, pid, pagenum):
         record = results_db.analysis.find_one(
             {
                 "info.id": int(task_id),
-                "behavior.processes.process_id": pid
+                "behavior.processes.pid": pid
             },
             {
-                "behavior.processes.process_id": 1,
+                "behavior.processes.pid": 1,
                 "behavior.processes.calls": 1
             }
         )
@@ -100,7 +100,7 @@ def chunk(request, task_id, pid, pagenum):
 
         process = None
         for pdict in record["behavior"]["processes"]:
-            if pdict["process_id"] == pid:
+            if pdict["pid"] == pid:
                 process = pdict
 
         if not process:
@@ -108,6 +108,11 @@ def chunk(request, task_id, pid, pagenum):
 
         objectid = process["calls"][pagenum]
         chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
+
+        # Workaround for iterating over dictionaries (there should be a better
+        # alternative).
+        for call in chunk["calls"]:
+            call["arguments"] = call["arguments"].items()
 
         return render_to_response("analysis/behavior/_chunk.html",
                                   {"chunk": chunk},

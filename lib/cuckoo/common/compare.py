@@ -74,7 +74,7 @@ def helper_percentages_mongo(results_db, tid1, tid2, ignore_categories=["misc"])
                 "info.id": int(tid),
             },
             {
-                "behavior.processes.process_id": 1,
+                "behavior.processes.pid": 1,
                 "behavior.processes.calls": 1
             }
         )
@@ -83,7 +83,7 @@ def helper_percentages_mongo(results_db, tid1, tid2, ignore_categories=["misc"])
             continue
 
         for pdoc in pids_calls["behavior"]["processes"]:
-            pid = pdoc["process_id"]
+            pid = pdoc["pid"]
             counts[tid][pid] = {}
 
             for coid in pdoc["calls"]:
