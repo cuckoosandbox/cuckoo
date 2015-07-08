@@ -16,7 +16,7 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooResultError
 from lib.cuckoo.common.netlog import BsonParser
-from lib.cuckoo.common.utils import create_folder, Singleton, logtime
+from lib.cuckoo.common.utils import create_folder, Singleton
 
 log = logging.getLogger(__name__)
 

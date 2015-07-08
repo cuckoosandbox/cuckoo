@@ -10,7 +10,6 @@ import re
 import dateutil.parser
 
 from lib.cuckoo.common.abstracts import BehaviorHandler
-from lib.cuckoo.common.utils import logtime
 
 log = logging.getLogger(__name__)
 
@@ -93,20 +92,14 @@ class LinuxSystemTap(BehaviorHandler):
             yield event
 
     def run(self):
-        if not self.matched: return False
+        if not self.matched:
+            return
 
         self.results["processes"].sort(key=lambda process: process["first_seen"])
         return self.results
 
 class StapParser(object):
-    """Handle .bson logs from cuckoomon/monitor. Basically we would like to directly pass through
-    the parsed data structures, but the .bson logs need a bit special handling to be more space efficient.
-
-    Basically we get "info" messages that explain how the function arguments will come through later on.
-    This class remembers these info mappings and then transforms the api call messages accordingly.
-
-    Other message types typically get passed through after renaming the keys slightly.
-    """
+    """Handle .stap logs from the Linux analyzer."""
 
     def __init__(self, fd):
         self.fd = fd

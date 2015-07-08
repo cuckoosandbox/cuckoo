@@ -5,8 +5,6 @@
 import logging
 import struct
 import datetime
-import string
-import itertools
 
 try:
     import bson
@@ -24,7 +22,6 @@ else:
     else:
         HAVE_BSON = False
 
-from lib.cuckoo.common.exceptions import CuckooResultError
 from lib.cuckoo.common.utils import get_filename_from_path
 
 log = logging.getLogger(__name__)
@@ -68,7 +65,7 @@ def check_names_for_typeinfo(arginfo):
     return argnames, converters
 
 class BsonParser(object):
-    """Handle .bson logs from cuckoomon/monitor. Basically we would like to directly pass through
+    """Handle .bson logs from monitor. Basically we would like to directly pass through
     the parsed data structures, but the .bson logs need a bit special handling to be more space efficient.
 
     Basically we get "info" messages that explain how the function arguments will come through later on.
@@ -164,7 +161,7 @@ class BsonParser(object):
                 argdict = dict((argnames[i], converters[i](args[i]))
                                for i in range(len(args)))
 
-                # Special new process message from cuckoomon.
+                # Special new process message from the monitor.
                 if apiname == "__process__":
                     parsed["type"] = "process"
                     

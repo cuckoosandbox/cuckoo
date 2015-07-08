@@ -46,7 +46,7 @@ class MonitorProcessLog(list):
         return True
 
 class WindowsMonitor(BehaviorHandler):
-    """Parses cuckoomon/monitor generated logs."""
+    """Parses monitor generated logs."""
 
     # special key, we return a dict to be merged with the behavior result structure
     key = "processes"
