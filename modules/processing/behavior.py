@@ -274,10 +274,16 @@ class BehaviorAnalysis(Processing):
         interest_map = {}
         for h in handlers:
             for event_type in h.event_types:
-                if not event_type in interest_map: interest_map[event_type] = []
-                interest_map[event_type].append(h)
+                if event_type not in interest_map:
+                    interest_map[event_type] = []
 
-        ### PARTY
+                # If available go for the specific event type handler rather
+                # than the generic handle_event.
+                if hasattr(h, "handle_%s_event" % event_type):
+                    fn = getattr(h, "handle_%s_event" % event_type)
+                    interest_map[event_type].append(fn)
+                elif h.handle_event not in interest_map[event_type]:
+                    interest_map[event_type].append(h.handle_event)
 
         # Each log file should be parsed by one of the handlers. This handler
         # then yields every event in it which are forwarded to the various
@@ -291,18 +297,17 @@ class BehaviorAnalysis(Processing):
                 # ... and then let it parse the file
                 for event in handler.parse(path):
                     # pass down the parsed message to interested handlers
-                    for ihandler in interest_map.get(event["type"], []):
-                        res = ihandler.handle_event(event)
-                        # we support one layer of "generating" new events, which we'll pass on again
-                        #  (in case the handler returns some)
+                    for hhandler in interest_map.get(event["type"], []):
+                        res = hhandler(event)
+                        # We support one layer of "generating" new events,
+                        # which we'll pass on again (in case the handler
+                        # returns some).
                         if not res:
                             continue
 
                         for subevent in res:
-                            for ihandler2 in interest_map.get(subevent["type"], []):
-                                ihandler2.handle_event(subevent)
-
-        ### END OF PARTY
+                            for hhandler2 in interest_map.get(subevent["type"], []):
+                                hhandler2(subevent)
 
         behavior = {}
 
