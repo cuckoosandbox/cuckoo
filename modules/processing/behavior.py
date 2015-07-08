@@ -92,7 +92,7 @@ class ProcessTree(BehaviorHandler):
         root = {"children": []}
 
         for p in self.processes.values():
-            self.processes.get(p["pid"], root)["children"].append(p)
+            self.processes.get(p["ppid"], root)["children"].append(p)
 
         return root["children"]
 
