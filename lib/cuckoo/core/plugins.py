@@ -393,7 +393,7 @@ class RunSignatures(object):
     def run(self):
         """Run evented signatures."""
         # This will contain all the matched signatures.
-        self.matched = []
+        matched = []
 
         complete_list = list_plugins(group="signatures")
         evented_list = []

@@ -691,6 +691,7 @@ class Signature(object):
     name = ""
     description = ""
     severity = 1
+    order = 1
     categories = []
     families = []
     authors = []
