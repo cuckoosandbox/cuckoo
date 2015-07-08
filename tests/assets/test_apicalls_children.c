@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 		printf("CHILED FAILED\n");
 	} else {
 		int status;
-		wait(&status);
+		// wait(&status);
 		printf("Parent done\n");
 	}
 
