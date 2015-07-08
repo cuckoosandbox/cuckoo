@@ -337,7 +337,9 @@ class LogHandler(object):
             except Disconnect:
                 break
 
-            if not buf: break
+            if not buf:
+                break
+
             self.fd.write(buf)
             self.fd.flush()
 

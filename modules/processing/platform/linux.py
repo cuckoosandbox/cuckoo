@@ -21,7 +21,8 @@ class FilteredProcessLog(list):
     def __iter__(self):
         for event in self.eventstream:
             for k, v in self.kwfilters.items():
-                if event[k] != v: continue
+                if event[k] != v:
+                    continue
 
                 del event["type"]
                 yield event
@@ -39,7 +40,7 @@ class LinuxSystemTap(BehaviorHandler):
 
         self.results = {
             "name": "linux",
-            "architecture": "unknown", # look this up in the task / vm info?
+            "architecture": "unknown",  # look this up in the task / vm info?
             "source": ["systemtap"],
             "processes": [],
         }
@@ -56,7 +57,7 @@ class LinuxSystemTap(BehaviorHandler):
             lines = open(path_lkm).readlines()
 
             forks = [re.findall("task (\d+)@0x[0-9a-f]+ forked to (\d+)@0x[0-9a-f]+", line) for line in lines]
-            self.forkmap = dict((j,i) for i,j in reduce(lambda x,y: x+y, forks, []))
+            self.forkmap = dict((j, i) for i, j in reduce(lambda x, y: x+y, forks, []))
 
             self.results["source"].append("probelkm")
 
@@ -70,7 +71,7 @@ class LinuxSystemTap(BehaviorHandler):
 
         for event in parser:
             pid = event["process_identifier"]
-            if not pid in self.pids_seen:
+            if pid not in self.pids_seen:
                 self.pids_seen.add(pid)
                 ppid = self.forkmap.get(pid, -1)
 

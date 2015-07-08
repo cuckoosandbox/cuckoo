@@ -1134,7 +1134,7 @@ class Signature(object):
         @param match: Value or array of values triggering the match.
         """
         signs = []
-        if isinstance(match, list):
+        if isinstance(match, (tuple, list)):
             for item in match:
                 signs.append({"type": type_, "value": item})
         else:
@@ -1222,17 +1222,19 @@ class Report(object):
         self.task = None
         self.options = None
 
+    def _get_analysis_path(self, subpath):
+        return os.path.join(self.analysis_path, subpath)
+
     def set_path(self, analysis_path):
         """Set analysis folder path.
         @param analysis_path: analysis folder path.
         """
         self.analysis_path = analysis_path
-        self.conf_path = os.path.join(self.analysis_path, "analysis.conf")
-        self.file_path = os.path.realpath(os.path.join(self.analysis_path,
-                                                       "binary"))
-        self.reports_path = os.path.join(self.analysis_path, "reports")
-        self.shots_path = os.path.join(self.analysis_path, "shots")
-        self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
+        self.conf_path = self._get_analysis_path("analysis.conf")
+        self.file_path = os.path.realpath(self._get_analysis_path("binary"))
+        self.reports_path = self._get_analysis_path("reports")
+        self.shots_path = self._get_analysis_path("shots")
+        self.pcap_path = self._get_analysis_path("dump.pcap")
 
         try:
             create_folder(folder=self.reports_path)
@@ -1259,21 +1261,22 @@ class Report(object):
 
 class BehaviorHandler(object):
     """Base class for behavior handlers inside of BehaviorAnalysis."""
-
     key = "undefined"
 
-    # behavior event types this handler is interested in
+    # Behavior event types this handler is interested in.
     event_types = []
 
     def __init__(self, behavior_analysis):
         self.analysis = behavior_analysis
 
     def handles_path(self, logpath):
-        """Needs to return True for the log files this handler wants to process."""
+        """Needs to return True for the log files this handler wants to
+        process."""
         return False
 
     def parse(self, logpath):
-        """Called after _handles_path succeeded, should generate behavior events."""
+        """Called after handles_path succeeded, should generate behavior
+        events."""
         raise NotImplementedError
 
     def handle_event(self, event):
@@ -1284,5 +1287,6 @@ class BehaviorHandler(object):
             return fn(event)
 
     def run(self):
-        """Return the handler specific structure, gets placed into behavior[self.key]."""
+        """Return the handler specific structure, gets placed into
+        behavior[self.key]."""
         raise NotImplementedError

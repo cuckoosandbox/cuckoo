@@ -43,6 +43,8 @@ class MonitorProcessLog(list):
                 yield event
 
     def __nonzero__(self):
+        """Required for the JSON reporting module as otherwise the on-demand
+        generated list of API calls would be seen as empty."""
         return True
 
 class WindowsMonitor(BehaviorHandler):

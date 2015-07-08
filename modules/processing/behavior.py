@@ -280,24 +280,28 @@ class BehaviorAnalysis(Processing):
 
         ### PARTY
 
-        # for loop onion, the more layers the better? \o/
-        # for every log file...
+        # Each log file should be parsed by one of the handlers. This handler
+        # then yields every event in it which are forwarded to the various
+        # behavior/analysis/etc handlers.
         for path in self._enum_logs():
-            # ... ask every handler...
             for handler in handlers:
                 # ... whether it is responsible
-                if handler.handles_path(path):
-                    # ... and then let it parse the file
-                    for event in handler.parse(path):
-                        # pass down the parsed message to interested handlers
-                        for ihandler in interest_map.get(event["type"], []):
-                            res = ihandler.handle_event(event)
-                            # we support one layer of "generating" new events, which we'll pass on again
-                            #  (in case the handler returns some)
-                            if res:
-                                for subevent in res:
-                                    for ihandler2 in interest_map.get(subevent["type"], []):
-                                        ihandler2.handle_event(subevent)
+                if not handler.handles_path(path):
+                    continue
+
+                # ... and then let it parse the file
+                for event in handler.parse(path):
+                    # pass down the parsed message to interested handlers
+                    for ihandler in interest_map.get(event["type"], []):
+                        res = ihandler.handle_event(event)
+                        # we support one layer of "generating" new events, which we'll pass on again
+                        #  (in case the handler returns some)
+                        if not res:
+                            continue
+
+                        for subevent in res:
+                            for ihandler2 in interest_map.get(subevent["type"], []):
+                                ihandler2.handle_event(subevent)
 
         ### END OF PARTY
 
