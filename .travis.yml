@@ -3,7 +3,6 @@ language:
 install:
     - brew install python
     - brew link --overwrite python
-    - python --version
     - sudo easy_install pymongo
     - pip install nose
 script:
