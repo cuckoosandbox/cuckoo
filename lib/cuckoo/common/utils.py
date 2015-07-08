@@ -299,3 +299,21 @@ class jsonset(list):
         if not item in self.set:
             self.set.add(item)
             list.append(self, item)
+
+
+def fix_key(key):
+    """Fix a registry key to have it normalized.
+    @param key: raw key
+    @returns: normalized key
+    """
+    res = key
+    if key.lower().startswith("registry\\machine\\"):
+        res = "HKEY_LOCAL_MACHINE\\" + key[17:]
+    elif key.lower().startswith("registry\\user\\"):
+        res = "HKEY_USERS\\" + key[14:]
+    elif key.lower().startswith("\\registry\\machine\\"):
+        res = "HKEY_LOCAL_MACHINE\\" + key[18:]
+    elif key.lower().startswith("\\registry\\user\\"):
+        res = "HKEY_USERS\\" + key[15:]
+
+    return res

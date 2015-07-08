@@ -5,7 +5,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
-from modules.processing.behavior import fix_key
+from lib.cuckoo.common.utils import fix_key
 
 api_call_mappings = {
     "NtCreateFile": {"action_name": "create file",
