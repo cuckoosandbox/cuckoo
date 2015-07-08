@@ -131,9 +131,9 @@
                         </tr>
                         {% for p in results.memory.pslist.data %}
                             <tr> 
-                                <td>{{p.process_id}}</td>
+                                <td>{{p.pid}}</td>
                                 <td>{{p.process_name}}</td>
-                                <td>{{p.parent_id}}</td>
+                                <td>{{p.ppid}}</td>
                                 <td>{{p.session_id}}</td>
                                 <td>{{p.num_threads}}</td>
                                 <td>{{p.num_handles}}</td>
