@@ -8,7 +8,7 @@ import collections
 
 from lib.cuckoo.common.abstracts import Processing, BehaviorHandler
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.utils import ThreadSingleton, subdict, jsonset
+from lib.cuckoo.common.utils import subdict, jsonset
 from .platform.windows import WindowsMonitor
 from .platform.linux import LinuxSystemTap
 
@@ -47,7 +47,6 @@ class Anomaly(BehaviorHandler):
         @param call: API call object
         @param process: process object
         """
-
         category, funcname, message = None, None, None
         for row in call["arguments"]:
             if row["name"] == "Subcategory":
@@ -58,8 +57,8 @@ class Anomaly(BehaviorHandler):
                 message = row["value"]
 
         self.anomalies.append(dict(
-            #name=process["process_name"],
-            #pid=process["process_id"],
+            # name=process["process_name"],
+            # pid=process["process_id"],
             category=category,
             funcname=funcname,
             message=message,
@@ -127,7 +126,6 @@ class GenericBehavior(BehaviorHandler):
 
 class ApiStats(BehaviorHandler):
     """Counts API calls."""
-
     key = "apistats"
     event_types = ["apicall"]
 
@@ -148,11 +146,11 @@ class PlatformInfo(BehaviorHandler):
     """
     key = "platform"
 
-        # self.results = {
-        #     "name": "windows",
-        #     "architecture": "unknown", # look this up in the task / vm info?
-        #     "source": ["monitor", "windows"],
-        # }
+    # self.results = {
+    #     "name": "windows",
+    #     "architecture": "unknown", # look this up in the task / vm info?
+    #     "source": ["monitor", "windows"],
+    # }
 
 class BehaviorAnalysis(Processing):
     """Behavior Analyzer.
@@ -314,8 +312,9 @@ class BehaviorAnalysis(Processing):
         for handler in handlers:
             try:
                 r = handler.run()
-                if r is False:
+                if not r:
                     continue
+
                 behavior[handler.key] = r
             except:
                 log.exception("Failed to run partial behavior class \"%s\"", handler.key)

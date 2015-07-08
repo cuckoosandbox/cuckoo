@@ -237,7 +237,8 @@ class ResultHandler(SocketServer.BaseRequestHandler):
             raise CuckooResultError("ResultServer connection state "
                                     "inconsistent.")
 
-        log.debug("New process (pid={0}, ppid={1}, name={2}".format(pid, ppid, procname))
+        log.debug("New process (pid={0}, ppid={1}, name={2})",
+                  pid, ppid, procname)
         path = os.path.join(self.storagepath, "logs", str(pid) + ".bson")
         self.rawlogfd = open(path, "wb")
         self.rawlogfd.write(self.startbuf)

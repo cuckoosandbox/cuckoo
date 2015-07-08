@@ -14,10 +14,9 @@ class MonitorProcessLog(list):
     def __init__(self, eventstream):
         self.eventstream = eventstream
         self.first_seen = None
-        self.reconstructor = BehaviorReconstructor()
 
     def __iter__(self):
-        call_id = 0
+        # call_id = 0
         for event in self.eventstream:
             if event["type"] == "process":
                 self.first_seen = event["first_seen"]
@@ -49,8 +48,6 @@ class MonitorProcessLog(list):
 
 class WindowsMonitor(BehaviorHandler):
     """Parses monitor generated logs."""
-
-    # special key, we return a dict to be merged with the behavior result structure
     key = "processes"
 
     def __init__(self, *args, **kwargs):
@@ -83,9 +80,8 @@ class WindowsMonitor(BehaviorHandler):
                 fn = getattr(reconstructor, "_api_%s" % event["api"], None)
                 if fn is not None:
                     res = fn(event["return_value"], event["arguments"])
-
-                    if res and type(res) == tuple:
-                        res = [res,]
+                    if res and isinstance(res, tuple):
+                        res = [res]
 
                     if res:
                         for category, arg in res:
@@ -104,7 +100,6 @@ class WindowsMonitor(BehaviorHandler):
 
         self.processes.sort(key=lambda process: process["first_seen"])
         return self.processes
-
 
 def NT_SUCCESS(value):
     return value % 2**32 < 0x80000000
@@ -127,14 +122,12 @@ class BehaviorReconstructor(object):
     _api_RemoveDirectoryW = _api_RemoveDirectoryA
 
     def _api_MoveFileWithProgressW(self, return_value, arguments):
-        return ("file_moved",
-                    dict(src=arguments["oldfilepath"],
-                    dst=arguments["newfilepath"]))
+        return ("file_moved", dict(src=arguments["oldfilepath"],
+                                   dst=arguments["newfilepath"]))
 
     def _api_CopyFileA(self, return_value, arguments):
-        return ("file_copied",
-                    dict(src=arguments["oldfilepath"],
-                    dst=arguments["newfilepath"]))
+        return ("file_copied", dict(src=arguments["oldfilepath"],
+                                    dst=arguments["newfilepath"]))
 
     _api_CopyFileW = _api_CopyFileA
     _api_CopyFileExW = _api_CopyFileA
@@ -210,8 +203,10 @@ class BehaviorReconstructor(object):
     # Network stuff.
 
     def _api_URLDownloadToFileW(self, return_value, arguments):
-        return [("downloads_file", arguments["url"]),
-            ("file_written", arguments["filepath"])]
+        return [
+            ("downloads_file", arguments["url"]),
+            ("file_written", arguments["filepath"])
+        ]
 
     def _api_InternetConnectA(self, return_value, arguments):
         return ("connects_host", arguments["hostname"])
