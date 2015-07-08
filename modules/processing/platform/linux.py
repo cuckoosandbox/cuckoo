@@ -70,14 +70,14 @@ class LinuxSystemTap(BehaviorHandler):
         parser = StapParser(open(path))
 
         for event in parser:
-            pid = event["process_identifier"]
+            pid = event["pid"]
             if pid not in self.pids_seen:
                 self.pids_seen.add(pid)
                 ppid = self.forkmap.get(pid, -1)
 
                 process = {
-                    "process_identifier": pid,
-                    "parent_process_identifier": ppid,
+                    "pid": pid,
+                    "ppid": ppid,
                     "process_name": event["process_name"],
                     "first_seen": event["time"],
                 }
@@ -87,7 +87,7 @@ class LinuxSystemTap(BehaviorHandler):
                 pevent["type"] = "process"
                 yield pevent
 
-                process["calls"] = FilteredProcessLog(parser, process_identifier=pid)
+                process["calls"] = FilteredProcessLog(parser, pid=pid)
                 self.results["processes"].append(process)
 
             yield event
@@ -127,7 +127,7 @@ class StapParser(object):
             arguments = dict(("p%u" % pos, argsplit[pos]) for pos in range(len(argsplit)))
 
             yield {
-                "time": dt, "process_name": pname, "process_identifier": pid,
+                "time": dt, "process_name": pname, "pid": pid,
                 "instruction_pointer": ip, "api": fn, "arguments": arguments,
                 "return_value": retval, "status": ecode,
                 "type": "apicall", "raw": line,
