@@ -11,6 +11,7 @@ class TLSMasterKeys(Processing):
     information extracted from the PCAP to dump a master key file."""
 
     order = 2
+    key = "tlskeys"
 
     def run(self):
         metakeys, tlskeys = {}, {}
@@ -28,28 +29,27 @@ class TLSMasterKeys(Processing):
                     metakeys[random] = session_id
 
         # Fetch all key information from the behavior logs.
-        if "behavior2" in self.results and \
-                "processes" in self.results["behavior2"]:
-            for process in self.results["behavior2"]["processes"]:
-                if process["process_path"] != "lsass.exe":
+        if "behavior" in self.results and \
+                "processes" in self.results["behavior"]:
+            for process in self.results["behavior"]["processes"]:
+                if process["process_name"] != "lsass.exe":
                     continue
 
                 # TODO This way of enumeration will be changed soon. Also, the
                 # TLS key information should be more easily accessible.
-                for thread in process["threads"]:
-                    for call in thread["calls"]:
-                        if call["api"] != "PRF":
-                            continue
+                for call in process["calls"]:
+                    if call["api"] != "PRF":
+                        continue
 
-                        args = call["arguments"]
-                        if not args["master_secret"]:
-                            continue
+                    args = call["arguments"]
+                    if not args["master_secret"]:
+                        continue
 
-                        client_random = args["client_random"].encode("latin-1")
-                        server_random = args["server_random"].encode("latin-1")
-                        master_secret = args["master_secret"].encode("latin-1")
-                        tlskeys[client_random] = master_secret
-                        tlskeys[server_random] = master_secret
+                    client_random = args["client_random"].encode("latin-1")
+                    server_random = args["server_random"].encode("latin-1")
+                    master_secret = args["master_secret"].encode("latin-1")
+                    tlskeys[client_random] = master_secret
+                    tlskeys[server_random] = master_secret
 
         f = open(os.path.join(self.analysis_path, "tlsmaster.txt"), "wb")
         for random, secret in tlskeys.items():

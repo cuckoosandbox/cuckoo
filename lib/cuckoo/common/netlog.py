@@ -81,6 +81,7 @@ class BsonParser(object):
         self.fd = fd
         self.infomap = {}
         self.flags = {}
+        self.pid = None
 
         if not HAVE_BSON:
             log.critical("Starting BsonParser, but bson is not available! (install with `pip install bson`)")
@@ -192,6 +193,8 @@ class BsonParser(object):
                     procname = get_filename_from_path(modulepath)
                     parsed["process_name"] = procname
 
+                    self.pid = pid
+
                 elif apiname == "__thread__":
                     parsed["process_identifier"] = pid = argdict["ProcessIdentifier"]
 
@@ -204,10 +207,18 @@ class BsonParser(object):
 
                 else:
                     parsed["type"] = "call"
+                    parsed["process_identifier"] = self.pid
                     parsed["api"] = apiname
                     parsed["category"] = category
                     parsed["status"] = argdict.pop("is_success", 1)
                     parsed["return_value"] = argdict.pop("retval", 0)
                     parsed["arguments"] = argdict
+
+                    parsed["stacktrace"] = dec.get("s", [])
+                    parsed["uniqhash"] = dec.get("h", 0)
+
+                    if apiname in self.flags:
+                        for flag in self.flags[apiname].keys():
+                            argdict[flag + "_s"] = self._flag_represent(apiname, flag, argdict[flag])
 
             yield parsed

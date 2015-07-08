@@ -600,7 +600,6 @@ class Processing(object):
         self.logs_path = ""
         self.task = None
         self.options = None
-        self.key = None
         self.results = {}
 
     def set_options(self, options):
@@ -816,7 +815,7 @@ class Signature(object):
         @param name: If set only return processes with that name.
         @return: List of processes or empty list
         """
-        for item in self.get_results("behavior2", {}).get("processes", []):
+        for item in self.get_results("behavior", {}).get("processes", []):
             if name is None or item["process_name"] == name:
                 yield item
 
@@ -826,7 +825,7 @@ class Signature(object):
         @param pid: pid to search for. Can be None to get any process
         @return: List of processes or empty list
         """
-        for item in self.get_results("behavior2", {}).get("processes", []):
+        for item in self.get_results("behavior", {}).get("processes", []):
             if pid is None or item["process_identifier"] == pid:
                 yield item
 

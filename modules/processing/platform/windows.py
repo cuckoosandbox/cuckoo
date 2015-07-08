@@ -16,6 +16,7 @@ class MonitorProcessLog(list):
     def __init__(self, eventstream):
         self.eventstream = eventstream
         self.first_seen = None
+        self.reconstructor = BehaviorReconstructor()
 
     def __iter__(self):
         call_id = 0
@@ -35,7 +36,12 @@ class MonitorProcessLog(list):
                 # event["id"] = call_id
                 # call_id += 1
 
+                # remove the type for reporting output
                 del event["type"]
+
+                # also get rid of the pid (we're below the pid in the structure)
+                del event["process_identifier"]
+
                 yield event
 
     def __nonzero__(self):
@@ -44,7 +50,8 @@ class MonitorProcessLog(list):
 class WindowsMonitor(BehaviorHandler):
     """Parses cuckoomon/monitor generated logs."""
 
-    key = "platform"
+    # special key, we return a dict to be merged with the behavior result structure
+    key = "UPDATE"
 
     def __init__(self, *args, **kwargs):
         super(WindowsMonitor, self).__init__(*args, **kwargs)
@@ -52,8 +59,8 @@ class WindowsMonitor(BehaviorHandler):
             "name": "windows",
             "architecture": "unknown", # look this up in the task / vm info?
             "source": ["monitor", "windows"],
-            "processes": [],
         }
+        self.processes = []
         self.matched = False
 
     def handles_path(self, path):
@@ -69,12 +76,195 @@ class WindowsMonitor(BehaviorHandler):
             if event["type"] == "process":
                 process = dict(event)
                 process["calls"] = MonitorProcessLog(parser)
-                self.results["processes"].append(process)
+                self.processes.append(process)
 
             yield event
 
     def run(self):
         if not self.matched: return False
 
-        self.results["processes"].sort(key=lambda process: process["first_seen"])
-        return self.results
+        self.processes.sort(key=lambda process: process["first_seen"])
+
+        return {
+            "platform": self.results,
+            "processes": self.processes,
+        }
+
+class WindowsMonitorTemp(BehaviorHandler):
+    """Temporary handler, generating summary ("generic") events from the monitor logs.
+    Uses skier's BehaviorReconstructor (see below), might be refactored soon."""
+
+    event_types = ["call", "process"]
+
+    def __init__(self, *args, **kwargs):
+        super(WindowsMonitorTemp, self).__init__(*args, **kwargs)
+        self.processes = {}
+        self.hashes = []
+
+    def handle_event(self, event):
+        if event["type"] == "process":
+            process = event
+            if process["process_identifier"] in self.processes:
+                return
+
+            self.processes[process["process_identifier"]] = BehaviorReconstructor()
+
+        elif event["type"] == "call":
+            reconstructor = self.processes[event["process_identifier"]]
+
+            fn = getattr(reconstructor, "_api_%s" % event["api"], None)
+            if fn is not None:
+                res = fn(event["return_value"], event["arguments"])
+
+                if res and type(res) == tuple:
+                    res = [res,]
+
+                if res:
+                    for category, arg in res:
+                        yield {
+                            "type": "generic",
+                            "process_identifier": event["process_identifier"],
+                            "category": category,
+                            "value": arg,
+                        }
+
+            self.hashes.append(event["uniqhash"])
+
+    def run(self):
+        return False
+
+def NT_SUCCESS(value):
+    return value % 2**32 < 0x80000000
+
+class BehaviorReconstructor(object):
+    """Reconstructs the behavior of behavioral API logs."""
+    def __init__(self):
+        self.files = {}
+
+    # Generic file & directory stuff.
+
+    def _api_CreateDirectoryW(self, return_value, arguments):
+        return ("directory_created", arguments["dirpath"])
+
+    _api_CreateDirectoryExW = _api_CreateDirectoryW
+
+    def _api_RemoveDirectoryA(self, return_value, arguments):
+        return ("directory_removed", arguments["dirpath"])
+
+    _api_RemoveDirectoryW = _api_RemoveDirectoryA
+
+    def _api_MoveFileWithProgressW(self, return_value, arguments):
+        return ("file_moved",
+                    dict(src=arguments["oldfilepath"],
+                    dst=arguments["newfilepath"]))
+
+    def _api_CopyFileA(self, return_value, arguments):
+        return ("file_copied",
+                    dict(src=arguments["oldfilepath"],
+                    dst=arguments["newfilepath"]))
+
+    _api_CopyFileW = _api_CopyFileA
+    _api_CopyFileExW = _api_CopyFileA
+
+    def _api_DeleteFileA(self, return_value, arguments):
+        return ("file_deleted", arguments["filepath"])
+
+    _api_DeleteFileW = _api_DeleteFileA
+    _api_NtDeleteFile = _api_DeleteFileA
+
+    def _api_FindFirstFileExA(self, return_value, arguments):
+        return ("directory_enumerated", arguments["filepath"])
+
+    _api_FindFirstFileExW = _api_FindFirstFileExA
+
+    # File stuff.
+
+    def _api_NtCreateFile(self, return_value, arguments):
+        if NT_SUCCESS(return_value):
+            self.files[arguments["file_handle"]] = arguments["filepath"]
+            return ("file_opened", arguments["filepath"])
+
+    _api_NtOpenFile = _api_NtCreateFile
+
+    def _api_NtReadFile(self, return_value, arguments):
+        h = arguments["file_handle"]
+        if NT_SUCCESS(return_value) and h in self.files:
+            return ("file_read", self.files[h])
+
+    def _api_NtWriteFile(self, return_value, arguments):
+        h = arguments["file_handle"]
+        if NT_SUCCESS(return_value) and h in self.files:
+            return ("file_written", self.files[h])
+
+    # Registry stuff.
+
+    def _api_RegOpenKeyExA(self, return_value, arguments):
+        return ("regkey_opened", arguments["regkey"])
+
+    _api_RegOpenKeyExW = _api_RegOpenKeyExA
+    _api_RegCreateKeyExA = _api_RegOpenKeyExA
+    _api_RegCreateKeyExW = _api_RegOpenKeyExA
+
+    def _api_RegDeleteKeyA(self, return_value, arguments):
+        return ("regkey_deleted", arguments["regkey"])
+
+    _api_RegDeleteKeyW = _api_RegDeleteKeyA
+    _api_RegDeleteValueA = _api_RegDeleteKeyA
+    _api_RegDeleteValueW = _api_RegDeleteKeyA
+    _api_NtDeleteValueKey = _api_RegDeleteKeyA
+
+    def _api_RegQueryValueExA(self, return_value, arguments):
+        return ("regkey_read", arguments["regkey"])
+
+    _api_RegQueryValueExW = _api_RegQueryValueExA
+    _api_NtQueryValueKey = _api_RegQueryValueExA
+
+    def _api_RegSetValueExA(self, return_value, arguments):
+        return ("regkey_written", arguments["regkey"])
+
+    _api_RegSetValueExW = _api_RegSetValueExA
+    _api_NtSetValueKey = _api_RegSetValueExA
+
+    def _api_NtClose(self, return_value, arguments):
+        h = arguments["handle"]
+        if h in self.files:
+            del self.files[h]
+
+    def _api_RegCloseKey(self, return_value, arguments):
+        args = dict(handle=arguments["key_handle"])
+        return self._api_NtClose(return_value, args)
+
+    # Network stuff.
+
+    def _api_URLDownloadToFileW(self, return_value, arguments):
+        return [("downloads_file", arguments["url"]),
+            ("file_written", arguments["filepath"])]
+
+    def _api_InternetConnectA(self, return_value, arguments):
+        return ("connects_host", arguments["hostname"])
+
+    _api_InternetConnectW = _api_InternetConnectA
+
+    def _api_InternetOpenUrlA(self, return_value, arguments):
+        return ("fetches_url", arguments["url"])
+
+    _api_InternetOpenUrlW = _api_InternetOpenUrlA
+
+    def _api_DnsQuery_A(self, return_value, arguments):
+        if arguments["hostname"]:
+            return ("resolves_host", arguments["hostname"])
+
+    _api_DnsQuery_W = _api_DnsQuery_A
+    _api_DnsQuery_UTF8 = _api_DnsQuery_A
+    _api_getaddrinfo = _api_DnsQuery_A
+    _api_GetAddrInfoW = _api_DnsQuery_A
+    _api_gethostbyname = _api_DnsQuery_A
+
+    def _api_connect(self, return_value, arguments):
+        return ("connects_ip", arguments["ip_address"])
+
+    # Mutex stuff
+    def _api_NtCreateMutant(self, return_value, arguments):
+        return ("mutex", arguments["mutant_name"])
+
+    _api_ConnectEx = _api_connect

@@ -4,11 +4,12 @@
 
 import os
 import logging
+import collections
 
 from lib.cuckoo.common.abstracts import Processing, BehaviorHandler
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.utils import ThreadSingleton, subdict
-from .platform.windows import WindowsMonitor
+from lib.cuckoo.common.utils import ThreadSingleton, subdict, jsonset
+from .platform.windows import WindowsMonitor, WindowsMonitorTemp
 from .platform.linux import LinuxSystemTap
 
 log = logging.getLogger(__name__)
@@ -268,7 +269,7 @@ class GenericBehavior(BehaviorHandler):
                 return
 
             pcopy = subdict(process, ["process_identifier", "process_name", "first_seen", "parent_process_identifier"])
-            pcopy["summary"] = {}
+            pcopy["summary"] = collections.defaultdict(jsonset)
 
             self.processes[process["process_identifier"]] = pcopy
 
@@ -317,9 +318,6 @@ class BehaviorAnalysis(Processing):
             "name": "windows",
             "architecture": "x86",
             "source": ["monitor", "windows"],
-            "processes": [
-                ...
-            ],
             ...
         }
     }
@@ -379,6 +377,7 @@ class BehaviorAnalysis(Processing):
             Summary(self),
             Anomaly(self),
             WindowsMonitor(self),
+            WindowsMonitorTemp(self),
             LinuxSystemTap(self),
         ]
 
@@ -414,7 +413,13 @@ class BehaviorAnalysis(Processing):
                     for event in handler.parse(path):
                         # pass down the parsed message to interested handlers
                         for ihandler in interest_map.get(event["type"], []):
-                            ihandler.handle_event(event)
+                            res = ihandler.handle_event(event)
+                            # we support one layer of "generating" new events, which we'll pass on again
+                            #  (in case the handler returns some)
+                            if res:
+                                for subevent in res:
+                                    for ihandler2 in interest_map.get(subevent["type"], []):
+                                        ihandler2.handle_event(subevent)
 
         ### END OF PARTY
 
@@ -423,7 +428,13 @@ class BehaviorAnalysis(Processing):
         for handler in handlers:
             try:
                 r = handler.run()
-                if not r is False: behavior[handler.key] = r
+                if r is False: continue
+
+                # special key to support more flexible output structures
+                if handler.key == "UPDATE":
+                    behavior.update(r)
+                else:
+                    behavior[handler.key] = r
             except:
                 log.exception("Failed to run partial behavior class \"%s\"", handler.key)
 

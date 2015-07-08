@@ -290,3 +290,12 @@ class SuperLock(object):
 
 def subdict(x, keys):
     return dict((k, v) for k, v in x.iteritems() if k in keys)
+
+class jsonset(list):
+    def __init__(self):
+        self.set = set()
+
+    def append(self, item):
+        if not item in self.set:
+            self.set.add(item)
+            list.append(self, item)
