@@ -1278,7 +1278,10 @@ class BehaviorHandler(object):
 
     def handle_event(self, event):
         """Handle an event that gets passed down the stack."""
-        raise NotImplementedError
+        event_type = event["type"]
+        if hasattr(self, "handle_%s_event" % event_type):
+            fn = getattr(self, "handle_%s_event" % event_type)
+            return fn(event)
 
     def run(self):
         """Return the handler specific structure, gets placed into behavior[self.key]."""

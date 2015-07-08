@@ -106,23 +106,21 @@ class GenericBehavior(BehaviorHandler):
         super(GenericBehavior, self).__init__(*args, **kwargs)
         self.processes = {}
 
-    def handle_event(self, event):
-        if event["type"] == "process":
-            process = event
-            if process["pid"] in self.processes:
-                return
+    def handle_process_event(self, process):
+        if process["pid"] in self.processes:
+            return
 
-            pcopy = subdict(process, ["pid", "process_name", "first_seen", "ppid"])
-            pcopy["summary"] = collections.defaultdict(jsonset)
+        pcopy = subdict(process, ["pid", "process_name", "first_seen", "ppid"])
+        pcopy["summary"] = collections.defaultdict(jsonset)
 
-            self.processes[process["pid"]] = pcopy
+        self.processes[process["pid"]] = pcopy
 
-        elif event["type"] == "generic":
-            if event["pid"] in self.processes:
-                # TODO: rewrite / generalize / more flexible
-                self.processes[event["pid"]]["summary"][event["category"]].append(event["value"])
-            else:
-                log.warning("Generic event for unknown process id %u", event["pid"])
+    def handle_generic_event(self, event):
+        if event["pid"] in self.processes:
+            # TODO: rewrite / generalize / more flexible
+            self.processes[event["pid"]]["summary"][event["category"]].append(event["value"])
+        else:
+            log.warning("Generic event for unknown process id %u", event["pid"])
 
     def run(self):
         return self.processes.values()
