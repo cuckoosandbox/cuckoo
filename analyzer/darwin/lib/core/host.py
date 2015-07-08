@@ -162,7 +162,7 @@ def _filetime_from_timestamp(ts):
 
 def _prepare_args(thing):
     result = [
-        1,  # FIXME(rodionovd): put an actual "is_success" value here
+        1 if thing.is_success else 0,
         thing.retval
     ]
     result += thing.args
