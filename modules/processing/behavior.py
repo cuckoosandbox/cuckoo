@@ -8,7 +8,6 @@ import collections
 
 from lib.cuckoo.common.abstracts import Processing, BehaviorHandler
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.utils import subdict, jsonset
 from .platform.windows import WindowsMonitor
 from .platform.linux import LinuxSystemTap
 
@@ -22,12 +21,14 @@ class Summary(BehaviorHandler):
 
     def __init__(self, *args, **kwargs):
         super(Summary, self).__init__(*args, **kwargs)
-        self.results = collections.defaultdict(jsonset)
+        self.results = collections.defaultdict(set)
 
     def handle_event(self, event):
-        self.results[event["category"]].append(event["value"])
+        self.results[event["category"]].add(event["value"])
 
     def run(self):
+        for key, value in self.results.items():
+            self.results[key] = list(value)
         return self.results
 
 class Anomaly(BehaviorHandler):
@@ -82,10 +83,13 @@ class ProcessTree(BehaviorHandler):
         if process["pid"] in self.processes:
             return
 
-        pcopy = subdict(process, ["pid", "process_name", "first_seen", "ppid"])
-        pcopy["children"] = []
-
-        self.processes[process["pid"]] = pcopy
+        self.processes[process["pid"]] = {
+            "pid": process["pid"],
+            "ppid": process["ppid"],
+            "process_name": process["process_name"],
+            "first_seen": process["first_seen"],
+            "children": [],
+        }
 
     def run(self):
         root = {"children": []}
@@ -109,19 +113,27 @@ class GenericBehavior(BehaviorHandler):
         if process["pid"] in self.processes:
             return
 
-        pcopy = subdict(process, ["pid", "process_name", "first_seen", "ppid"])
-        pcopy["summary"] = collections.defaultdict(jsonset)
-
-        self.processes[process["pid"]] = pcopy
+        self.processes[process["pid"]] = {
+            "pid": process["pid"],
+            "pid": process["ppid"],
+            "process_name": process["process_name"],
+            "first_seen": process["first_seen"],
+            "summary": collections.defaultdict(set),
+        }
 
     def handle_generic_event(self, event):
         if event["pid"] in self.processes:
             # TODO: rewrite / generalize / more flexible
-            self.processes[event["pid"]]["summary"][event["category"]].append(event["value"])
+            pid, category = event["pid"], event["category"]
+            self.processes[pid]["summary"][category].add(event["value"])
         else:
             log.warning("Generic event for unknown process id %u", event["pid"])
 
     def run(self):
+        for process in self.processes.values():
+            for key, value in process["summary"].items():
+                process["summary"][key] = list(value)
+
         return self.processes.values()
 
 class ApiStats(BehaviorHandler):
