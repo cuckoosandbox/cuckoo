@@ -23,7 +23,13 @@ def apicalls(target, **kwargs):
         raise Exception("Invalid target for apicalls()")
 
     output_file = NamedTemporaryFile()
-    cmd = ["sudo", "/usr/sbin/dtrace", "-C"]
+
+    # dtrace must be run as root on OS X
+    cmd = ["sudo", "/usr/sbin/dtrace"]
+    # Use -C for running clang's C preprocessor over the script
+    cmd += ["-C"]
+    # Use -I for adding a current directory to the search path for #includes
+    cmd += ["-I./"]
     if "timeout" in kwargs:
         cmd += ["-DANALYSIS_TIMEOUT=%d" % kwargs["timeout"]]
     cmd += ["-s", path_for_script("apicalls.d")]
