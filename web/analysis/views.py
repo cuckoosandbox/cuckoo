@@ -176,6 +176,7 @@ def filtered_chunk(request, task_id, pid, category):
 def search_behavior(request, task_id):
     if request.method == "POST":
         query = request.POST.get("search")
+        query = re.compile(query, re.I)
         results = []
 
         # Fetch anaylsis report
@@ -195,7 +196,6 @@ def search_behavior(request, task_id):
 
             for chunk in chunks:
                 for call in chunk["calls"]:
-                    query = re.compile(query)
                     if query.search(call["api"]):
                         process_results.append(call)
                     else:
