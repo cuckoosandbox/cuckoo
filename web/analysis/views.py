@@ -131,24 +131,33 @@ def filtered_chunk(request, task_id, pid, category):
     if request.is_ajax():
         # Search calls related to your PID.
         record = results_db.analysis.find_one(
-            {"info.id": int(task_id), "behavior.processes.process_id": int(pid)},
-            {"behavior.processes.process_id": 1, "behavior.processes.calls": 1}
+            {
+                "info.id": int(task_id),
+                "behavior.processes.pid": int(pid),
+            },
+            {
+                "behavior.processes.process_id": 1,
+                "behavior.processes.calls": 1,
+            }
         )
 
         if not record:
-            raise PermissionDenied
+            raise ObjectDoesNotExist
 
         # Extract embedded document related to your process from response collection.
         process = None
         for pdict in record["behavior"]["processes"]:
-            if pdict["process_id"] == int(pid):
+            if pdict["pid"] == int(pid):
                 process = pdict
 
         if not process:
-            raise PermissionDenied
+            raise ObjectDoesNotExist
 
         # Create empty process dict for AJAX view.
-        filtered_process = {"process_id": pid, "calls": []}
+        filtered_process = {
+            "pid": pid,
+            "calls": [],
+        }
 
         # Populate dict, fetching data from all calls and selecting only appropriate category.
         for call in process["calls"]:
@@ -171,7 +180,9 @@ def search_behavior(request, task_id):
 
         # Fetch anaylsis report
         record = results_db.analysis.find_one(
-            {"info.id": int(task_id)}
+            {
+                "info.id": int(task_id),
+            }
         )
 
         # Loop through every process
@@ -181,18 +192,26 @@ def search_behavior(request, task_id):
             chunks = results_db.calls.find({
                 "_id": {"$in": process["calls"]}
             })
+
             for chunk in chunks:
                 for call in chunk["calls"]:
                     query = re.compile(query)
                     if query.search(call["api"]):
                         process_results.append(call)
                     else:
-                        for argument in call["arguments"]:
-                            if query.search(argument["name"]) or query.search(argument["value"]):
+                        for key, value in call["arguments"].items():
+                            if query.search(key):
                                 process_results.append(call)
                                 break
 
-            if len(process_results) > 0:
+                            if isinstance(value, basestring) and query.search(value):
+                                process_results.append(call)
+                                break
+
+            if process_results:
+                for call in process_results:
+                    call["arguments"] = call["arguments"].items()
+
                 results.append({
                     "process": process,
                     "signs": process_results
