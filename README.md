@@ -62,6 +62,8 @@ $ python /Users/Shared/agent.py
   $ rm -f ./pfrules
   ```
   
+  > **Note that you'll have to re-enable traffic forwarding every time you reboot the host machine.**  
+  
  1. Clone this repository:  
 
   ```shell
