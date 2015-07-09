@@ -13,7 +13,7 @@ from subprocess import Popen
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
 
-apicall = namedtuple("apicall", "api args retval is_success timestamp pid ppid tid")
+apicall = namedtuple("apicall", "api args retval timestamp pid ppid tid")
 
 
 def apicalls(target, **kwargs):
@@ -77,11 +77,10 @@ def _parse_entry(entry):
     api       = parsed['api']
     args      = parsed['args']
     retval    = parsed['retval']
-    is_success= parsed['is_success']
     # Convert milliseconds to floating point seconds
     timestamp = float(parsed['timestamp']) / 1000
     pid       = parsed['pid']
     ppid      = parsed['ppid']
     tid       = parsed['tid']
 
-    return apicall(api, args, retval, is_success, timestamp, pid, ppid, tid)
+    return apicall(api, args, retval, timestamp, pid, ppid, tid)
