@@ -35,7 +35,7 @@ class Config:
         # Here we parse such options and provide a dictionary that will be made
         # accessible to the analysis package.
         options = {}
-        if hasattr(self, "options"):
+        if hasattr(self, "options") and len(self.options) > 0:
             try:
                 # Split the options by comma.
                 fields = self.options.split(",")

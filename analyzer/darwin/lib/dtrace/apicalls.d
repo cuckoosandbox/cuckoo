@@ -11,7 +11,6 @@
  *     api         : string,            // e.g. "fprintf"
  *     args        : array,             // e.g. [1489124712123, "Hello\n!"]
  *     retval      : string OR integer, // e.g. "kkk"
- *     is_success  : boolean,           // e.g. false
  *     timestamp   : integer,           // e.g. 1433765405
  *     pid         : integer,           // e.g. 9213
  *     ppid        : integer,           // e.g. 9210
@@ -188,12 +187,11 @@ pid$target::execve:entry
 pid$target::fork:return
 {
     this->retval = arg1;
-    this->is_success = (this->retval >= 0);
     this->timestamp_ms = walltimestamp/1000000;
 
-    printf("{\"api\":\"%s\", \"args\":[], \"retval\":%d, \"is_success\": %s, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[], \"retval\":%d, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
         probefunc,
-        (int)this->retval, this->is_success ? "true" : "false",
+        (int)this->retval,
         this->timestamp_ms, pid, ppid, tid);
 }
 
@@ -207,10 +205,10 @@ pid$target:libsystem_c.dylib:atoi:return
                        (probefunc == "atoi"   ? 1 : this->retval > 0));
     this->timestamp_ms = walltimestamp/1000000;
 
-    printf("{\"api\":\"%s\", \"args\":[\"%S\"], \"retval\":%d, \"is_success\": %s, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[\"%S\"], \"retval\":%d, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
         probefunc,
         copyinstr(self->arg0),
-        (int)this->retval, this->is_success ? "true" : "false",
+        (int)this->retval,
         this->timestamp_ms, pid, ppid, tid);
 
     /* Restore arguments for our callee */
@@ -227,10 +225,10 @@ pid$target:libdyld:dlopen:return
     this->is_success = (this->retval > 0);
     this->timestamp_ms = walltimestamp/1000000;
 
-    printf("{\"api\":\"%s\", \"args\":[\"%S\", %d], \"retval\":%llu, \"is_success\": %s, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[\"%S\", %d], \"retval\":%llu, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
         probefunc,
         copyinstr(self->arg0), (int)self->arg1,
-        (unsigned long long)this->retval, this->is_success ? "true" : "false",
+        (unsigned long long)this->retval,
         this->timestamp_ms, pid, ppid, tid);
 
     self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
@@ -248,10 +246,10 @@ pid$target::fprintf:return
     this->is_success = (this->retval > 0);
     this->timestamp_ms = walltimestamp/1000000;
 
-    printf("{\"api\":\"%s\", \"args\":[%llu, \"%S\"], \"retval\":%llu, \"is_success\": %s, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[%llu, \"%S\"], \"retval\":%llu, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
         probefunc,
         (unsigned long long)self->arg0, copyinstr(self->arg1),
-        (unsigned long long)this->retval, this->is_success ? "true" : "false",
+        (unsigned long long)this->retval,
         this->timestamp_ms, pid, ppid, tid);
 
     self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];

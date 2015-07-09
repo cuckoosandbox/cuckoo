@@ -5,7 +5,9 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE file for details.
 
+import json
 import socket
+from os import path
 from bson import BSON
 from datetime import datetime
 from subprocess import check_output, CalledProcessError
@@ -20,6 +22,7 @@ class CuckooHost:
     sockets = {}
     descriptions = {}
     launch_times = {}
+    human_readable_explanations = {}
 
     def __init__(self, host_ip, host_port):
         self.ip = host_ip
@@ -65,7 +68,7 @@ class CuckooHost:
             "I"    : lookup_idx,
             "T"    : thing.tid,
             "t"    : ms_since_process_launch,
-            "args" : _prepare_args(thing)
+            "args" : self._prepare_args(thing)
         }))
 
     def _create_socket(self):
@@ -97,8 +100,8 @@ class CuckooHost:
             "I"        : lookup_idx,
             "name"     : thing.api,
             "type"     : "info",
-            "category" : "unknown",  # FIXME(rodionovd): put an actual value here
-            "args"     : _args_description(thing)
+            "category" : self._api_category(thing),
+            "args"     : self._api_args_description(thing)
         }))
 
     def _send_new_process(self, thing):
@@ -142,6 +145,53 @@ class CuckooHost:
             ]
         }))
 
+    def _prepare_args(self, thing):
+        self._load_human_readable_explanations()
+        result = [
+            self._verify_is_success(thing),
+            thing.retval
+        ]
+        return result + thing.args
+
+    def _verify_is_success(self, thing):
+        retval = thing.retval
+        condition = self.human_readable_explanations[thing.api]["is_success_condition"]
+
+        result = eval(condition, {
+            "retval" : retval
+        })
+        return 1 if result else 0
+
+    def _api_category(self, thing):
+        self._load_human_readable_explanations()
+        # TODO(rodionovd): I'm bad at naming
+        e = self.human_readable_explanations
+        api = thing.api
+        if api not in e: # fallback
+            return "unknown"
+        return e[api]["category"]
+
+    def _api_args_description(self, thing):
+        self._load_human_readable_explanations()
+        # TODO(rodionovd): I'm bad at naming
+        e = self.human_readable_explanations
+        api = thing.api
+        description = ["is_success", "retval"]
+        if api in e:
+            description += e[api]["args"]
+        else: # fallback to arg0, arg1, ..., argN
+            for arg_idx in range(0, len(thing.args)):
+                description += ["arg%d" % arg_idx]
+        return description
+
+    def _load_human_readable_explanations(self):
+        if len(self.human_readable_explanations) == 0:
+            with open(_description_file_path(), "r") as f:
+                self.human_readable_explanations = json.load(f)
+        if len(self.human_readable_explanations) == 0:
+            raise Exception("host.py: Could not load human-readable descriptions")
+
+
 def _proc_name_from_pid(pid):
     """ Parses `ps` output for the given PID """
     try:
@@ -160,18 +210,6 @@ def _filetime_from_timestamp(ts):
     delta_from_utc = dt - datetime.utcfromtimestamp(ts)
     return dt_to_filetime(dt, delta_from_utc)
 
-def _prepare_args(thing):
-    result = [
-        1 if thing.is_success else 0,
-        thing.retval
-    ]
-    result += thing.args
-    return result
 
-def _args_description(thing):
-    """ Composes a description of the given API call arguments """
-    description = ["is_success", "retval"]
-    for arg_idx in range(0, len(thing.args)):
-        # TODO(rodionovd): we need actual names here
-        description += ["arg%d" % arg_idx]
-    return description
+def _description_file_path():
+    return path.join(path.dirname(path.abspath(__file__)), "apis.json")
