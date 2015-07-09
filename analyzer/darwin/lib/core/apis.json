@@ -46,11 +46,11 @@
         "args": [
             "path", "argv", "envp"
         ],
-        "category" : "foobar"
+        "category" : "process"
     },
     "fork": {
         "is_success_condition": "retval >= 0",
         "args": [],
-        "category" : "foobar"
+        "category" : "process"
     }
 }
