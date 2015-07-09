@@ -3,8 +3,7 @@ language:
 install:
     - brew install python
     - brew link --overwrite python
-    - sudo easy_install pymongo
-    - pip install nose
+    - pip install -r requirements.txt
 script:
     - nosetests ./tests/test_dtruss.py
     - nosetests ./tests/test_apicalls.py
