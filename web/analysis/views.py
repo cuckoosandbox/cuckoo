@@ -109,11 +109,6 @@ def chunk(request, task_id, pid, pagenum):
         objectid = process["calls"][pagenum]
         chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
 
-        # Workaround for iterating over dictionaries (there should be a better
-        # alternative).
-        for call in chunk["calls"]:
-            call["arguments"] = call["arguments"].items()
-
         return render_to_response("analysis/behavior/_chunk.html",
                                   {"chunk": chunk},
                                   context_instance=RequestContext(request))
@@ -209,9 +204,6 @@ def search_behavior(request, task_id):
                                 break
 
             if process_results:
-                for call in process_results:
-                    call["arguments"] = call["arguments"].items()
-
                 results.append({
                     "process": process,
                     "signs": process_results

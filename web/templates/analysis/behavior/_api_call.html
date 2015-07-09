@@ -1,7 +1,7 @@
 <td>{{call.time}}</td>
 <td><strong>{{call.api}}</strong></td>
 <td style="word-wrap: break-word;">
-    {% for key, value in call.arguments %}
+    {% for key, value in call.arguments.items %}
         <span class="gray">{{key}}:</span>
         <span class="mono">{{value}}</span><br />
     {% endfor %}
