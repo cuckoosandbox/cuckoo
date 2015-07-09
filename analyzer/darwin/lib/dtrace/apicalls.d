@@ -11,6 +11,7 @@
  *     api         : string,            // e.g. "fprintf"
  *     args        : array,             // e.g. [1489124712123, "Hello\n!"]
  *     retval      : string OR integer, // e.g. "kkk"
+ *     is_success  : boolean,           // e.g. false
  *     timestamp   : integer,           // e.g. 1433765405
  *     pid         : integer,           // e.g. 9213
  *     ppid        : integer,           // e.g. 9210
