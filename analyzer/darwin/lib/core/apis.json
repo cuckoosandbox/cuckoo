@@ -1,0 +1,56 @@
+{
+    "system": {
+        "is_success_condition": "retval == 0",
+        "args": [
+            "command"
+        ],
+        "category" : "foobar"
+    },
+    "printf": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            "format"
+        ],
+        "category" : "foobar"
+    },
+    "atoi": {
+        "is_success_condition": "True",
+        "args": [
+            "str"
+        ],
+        "category" : "foobar"
+    },
+    "dlopen": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            "path", "mode"
+        ],
+        "category" : "foobar"
+    },
+    "dlsym": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            "handle", "symbol"
+        ],
+        "category" : "foobar"
+    },
+    "fprintf": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            "stream", "format"
+        ],
+        "category" : "foobar"
+    },
+    "execve": {
+        "is_success_condition": "retval != -1",
+        "args": [
+            "path", "argv", "envp"
+        ],
+        "category" : "foobar"
+    },
+    "fork": {
+        "is_success_condition": "retval >= 0",
+        "args": [],
+        "category" : "foobar"
+    }
+}
