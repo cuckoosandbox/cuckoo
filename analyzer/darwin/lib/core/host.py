@@ -156,8 +156,11 @@ class CuckooHost:
 
     def _verify_is_success(self, thing):
         retval = thing.retval
-        condition = self.human_readable_explanations[thing.api]["is_success_condition"]
+        e = self.human_readable_explanations
+        if thing.api not in e: # fallback to success
+            return 1
 
+        condition = e[thing.api]["is_success_condition"]
         result = eval(condition, {
             "retval" : retval
         })
