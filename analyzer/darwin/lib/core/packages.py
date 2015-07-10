@@ -85,7 +85,7 @@ class Package(object):
             self.method = "apicalls"
         # Should our target be launched as root or not
         if "run_as_root" in self.options:
-            self.run_as_root = self.options["run_as_root"]
+            self.run_as_root = _string_to_bool(self.options["run_as_root"])
         else:
             self.run_as_root = False
 
@@ -112,3 +112,8 @@ class Package(object):
         }
         for call in apicalls(self.target, **kwargs):
             self.host.send_api(call)
+
+def _string_to_bool(str):
+    if not isinstance(str, basestring):
+        raise Exception("Unexpected input: not a string :/")
+    return str.lower() in ("yes", "true", "t", "1")
