@@ -48,7 +48,6 @@
  / pid == $target /
  {
      tracked[args[0]->pr_pid] = 1;
-     system("echo %d >> \"%s.lock\"", args[0]->pr_pid, str(OUTPUT_FILE));
  }
  proc:::start
  / tracked[pid] == 1 /
@@ -78,9 +77,6 @@
  dtrace:::END
  {
  #ifdef ROOT
-     system("sleep 1 && while [ $(cat \"%s.lock\" | wc -l) != \"0\" ]; do sleep 0.1; done", str(OUTPUT_FILE));
-     printf("## %s done ##", SCRIPT_NAME);
- #else
-     system("sed -i \"\" \"/%d/d\" \"%s.lock\"", $target, str(OUTPUT_FILE));
+     system("sleep 1.5 && echo \"## %s done ##\" >> \"%s\"", SCRIPT_NAME, str(OUTPUT_FILE));
  #endif
  }
