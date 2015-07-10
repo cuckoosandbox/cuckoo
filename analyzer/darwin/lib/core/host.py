@@ -27,6 +27,7 @@ class CuckooHost:
     def __init__(self, host_ip, host_port):
         self.ip = host_ip
         self.port = host_port
+        self._load_human_readable_explanations()
 
     def send_api(self, thing):
         """ Sends a new API notification to the Cuckoo host """
@@ -146,7 +147,7 @@ class CuckooHost:
         }))
 
     def _prepare_args(self, thing):
-        self._load_human_readable_explanations()
+        # First two "arguments" are always is_success and retval
         result = [
             self._verify_is_success(thing),
             thing.retval
@@ -163,8 +164,7 @@ class CuckooHost:
         return 1 if result else 0
 
     def _api_category(self, thing):
-        self._load_human_readable_explanations()
-        # TODO(rodionovd): I'm bad at naming
+        # FIXME(rodionovd): I'm bad at naming
         e = self.human_readable_explanations
         api = thing.api
         if api not in e: # fallback
@@ -172,10 +172,10 @@ class CuckooHost:
         return e[api]["category"]
 
     def _api_args_description(self, thing):
-        self._load_human_readable_explanations()
-        # TODO(rodionovd): I'm bad at naming
+        # FIXME(rodionovd): I'm bad at naming
         e = self.human_readable_explanations
         api = thing.api
+        # First two "arguments" are always these
         description = ["is_success", "retval"]
         if api in e:
             description += e[api]["args"]
@@ -185,11 +185,11 @@ class CuckooHost:
         return description
 
     def _load_human_readable_explanations(self):
-        if len(self.human_readable_explanations) == 0:
+        try:
             with open(_description_file_path(), "r") as f:
                 self.human_readable_explanations = json.load(f)
-        if len(self.human_readable_explanations) == 0:
-            raise Exception("host.py: Could not load human-readable descriptions")
+        except: # TODO(rodionovd): differentiate exceptions and log errors
+            self.human_readable_explanations = {}
 
 
 def _proc_name_from_pid(pid):
