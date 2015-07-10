@@ -10,7 +10,6 @@ from ..dtrace.apicalls import apicalls
 from ..dtrace.ipconnections import ipconnections
 
 import inspect
-from ast import literal_eval
 from os import sys, path
 
 def choose_package_class(file_type, file_name, suggestion=None):
