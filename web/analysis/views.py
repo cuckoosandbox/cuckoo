@@ -270,7 +270,6 @@ def full_memory_dump_file(request, analysis_number):
         content_type = "application/octet-stream"
         response = HttpResponse(open(file_path, "rb").read(), content_type=content_type)
         response["Content-Disposition"] = "attachment; filename=memory.dmp"
-
         return response
     else:
         return render_to_response("error.html",
@@ -286,11 +285,11 @@ def search(request):
                                    "error": None},
                                   context_instance=RequestContext(request))
 
-    try:
-        term, value = request.POST["search"].strip().split(":", 1)
-    except ValueError:
-        term = ""
-        value = request.POST["search"].strip()
+    search = request.POST["search"].strip()
+    if ":" in search:
+        term, value = search.split(":", 1)
+    else:
+        term, value = "", search
 
     if term:
         # Check on search size.
@@ -400,10 +399,12 @@ def remove(request, task_id):
             if "file_id" in analysis["target"]:
                 if results_db.analysis.find({"target.file_id": ObjectId(analysis["target"]["file_id"])}).count() == 1:
                     fs.delete(ObjectId(analysis["target"]["file_id"]))
+
             # Delete screenshots.
             for shot in analysis["shots"]:
                 if results_db.analysis.find({"shots": ObjectId(shot)}).count() == 1:
                     fs.delete(ObjectId(shot))
+
             # Delete network pcap.
             if "pcap_id" in analysis["network"] and results_db.analysis.find({"network.pcap_id": ObjectId(analysis["network"]["pcap_id"])}).count() == 1:
                 fs.delete(ObjectId(analysis["network"]["pcap_id"]))
@@ -416,10 +417,12 @@ def remove(request, task_id):
             for drop in analysis["dropped"]:
                 if "object_id" in drop and results_db.analysis.find({"dropped.object_id": ObjectId(drop["object_id"])}).count() == 1:
                     fs.delete(ObjectId(drop["object_id"]))
+
             # Delete calls.
             for process in analysis["behavior"]["processes"]:
                 for call in process["calls"]:
                     results_db.calls.remove({"_id": ObjectId(call)})
+
             # Delete analysis data.
             results_db.analysis.remove({"_id": ObjectId(analysis["_id"])})
     else:
@@ -444,8 +447,14 @@ def pcapstream(request, task_id, conntuple):
     sport, dport = int(sport), int(dport)
 
     conndata = results_db.analysis.find_one(
-        {"info.id": int(task_id)},
-        {"network.tcp": 1, "network.udp": 1, "network.sorted_pcap_id": 1},
+        {
+            "info.id": int(task_id),
+        },
+        {
+            "network.tcp": 1,
+            "network.udp": 1,
+            "network.sorted_pcap_id": 1,
+        },
         sort=[("_id", pymongo.DESCENDING)])
 
     if not conndata:
