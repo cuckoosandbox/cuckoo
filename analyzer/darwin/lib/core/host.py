@@ -7,12 +7,14 @@
 
 import json
 import socket
+import logging
 from os import path
 from bson import BSON
 from datetime import datetime
 from subprocess import check_output, CalledProcessError
 from filetimes import dt_to_filetime
 
+log = logging.getLogger(__name__)
 
 class CuckooHost:
     """ Sending analysis results back to the Cuckoo Host.
@@ -191,8 +193,10 @@ class CuckooHost:
         try:
             with open(_description_file_path(), "r") as f:
                 self.human_readable_explanations = json.load(f)
-        except: # TODO(rodionovd): differentiate exceptions and log errors
-            self.human_readable_explanations = {}
+        except IOError:
+            log.exception("Could not open apis.json file")
+        except ValueError:
+            log.exception("apis.json contains invalid JSON")
 
 
 def _proc_name_from_pid(pid):
