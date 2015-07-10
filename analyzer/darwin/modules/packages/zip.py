@@ -28,10 +28,16 @@ class Zip(Package):
             target_name = files[0]
             log.debug("Missing file option, auto executing: {0}".format(target_name))
 
+        filepath = path.join(environ.get("TEMP", "/tmp"), target_name)
+        # Remove the trailing slash (if any)
+        if filepath.endswith("/"):
+            self.target = filepath[:-1]
+        else:
+            self.target = filepath
+
         # Since we don't know what kind of file we're going to analyse, let's
         # detect it automatically and create an appropriate analysis package
         # for this file
-        self.target = path.join(environ.get("TEMP", "/tmp"), target_name)
         file_info = self._fileinfo(self.target)
         pkg_class = choose_package_class(file_info, target_name)
 
