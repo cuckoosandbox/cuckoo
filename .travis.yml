@@ -3,7 +3,7 @@ language:
 install:
     - brew install python
     - brew link --overwrite python
-    - pip install -r requirements.txt
+    - pip install -r requirements-dev.txt
 script:
     - nosetests ./tests/test_dtruss.py
     - nosetests ./tests/test_apicalls.py

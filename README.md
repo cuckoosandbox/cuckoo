@@ -33,9 +33,9 @@ My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc
   $ sudo networksetup -setmanual Ethernet 192.168.56.101 255.255.255.0 192.168.56.1
   $ sudo networksetup -setdnsservers Ethernet 8.8.8.8 8.8.4.4
   ```
-  
+
  > Also, if you're using VirtualBox: don't forget to setup your host-only internet adapter and attach it to the guest machine.
- 
+
  3. Download and launch Cuckoo's `agent.py`:  
 
   ```bash
@@ -51,19 +51,19 @@ $ python /Users/Shared/agent.py
 
   ```shell
   $ sudo sysctl -w net.inet.ip.forwarding=1
-  
+
   $ rules="nat on en1 from vboxnet0:network to any -> (en1)
   pass inet proto icmp all
   pass in on vboxnet0 proto udp from any to any port domain keep state
   pass quick on en1 proto udp from any to any port domain keep state"
-  
+
   $ echo "$rules" > ./pfrules
   $ sudo pfctl -e -f ./pfrules
   $ rm -f ./pfrules
   ```
-  
+
   > **Note that you'll have to re-enable traffic forwarding every time you reboot the host machine.**  
-  
+
  1. Clone this repository:  
 
   ```shell
@@ -97,7 +97,7 @@ You can run the test suite with `nose`:
 
 ```bash
 $ cd ./cuckoo-osx-analyzer
-$ # [sudo] pip install nose
+$ sudo -H pip install -r requirements-dev.txt
 $ nosetests
 ```
 
