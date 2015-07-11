@@ -48,7 +48,9 @@ if [ "$opt_create_interface" == true ]; then
     vboxmanage modifyvm "$vmname" --nic1 hostonly
 fi
 
-# [2] Enable traffic forwarding for vboxnet0 interface
+# [2.1] Make sure vboxnet0 is up before doing anything with it
+vboxmanage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1
+# [2.2] Enable traffic forwarding for vboxnet0 interface
 sudo sysctl -w net.inet.ip.forwarding=1 &> /dev/null
 rules="nat on en1 from vboxnet0:network to any -> (en1)
 pass inet proto icmp all
