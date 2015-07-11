@@ -6,14 +6,14 @@
 # of the MIT license. See the LICENSE file for details.
 
 import unittest
-from analyzer.darwin.analyzer import Macalyzer
+from analyzer.darwin.lib.core.osx import set_wallclock
 
 class TestAnalyzer(unittest.TestCase):
 
-    def test_set_machine_time(self):
+    def test_set_wallclock(self):
         # given
         clock_str = "20151203T15:23:43"
         # when
-        result = Macalyzer()._setup_machine_time(clock_str, dont_really_make_changes=True)
+        result = set_wallclock(clock_str, just_testing=True)
         # then
         assert result == "sudo date 1203152315.43"

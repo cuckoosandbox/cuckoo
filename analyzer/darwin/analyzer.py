@@ -18,6 +18,7 @@ from lib.common.results import NetlogHandler
 from lib.core.constants import PATHS
 from lib.core.packages import choose_package_class, Package
 
+from lib.core.osx import set_wallclock
 from lib.core.host import CuckooHost
 
 class Macalyzer:
@@ -45,7 +46,7 @@ class Macalyzer:
         package = self._setup_analysis_package()
 
         if self.config.clock:
-            self._setup_machine_time(self.config.clock)
+            set_wallclock(self.config.clock)
         self._analysis(package)
 
         return self._complete()
@@ -104,19 +105,6 @@ class Macalyzer:
             "timeout" : self.config.timeout
         }
         return package_class(self.target, host, **kwargs)
-
-    def _setup_machine_time(self, clock_str, **kwargs):
-        clock = datetime.strptime(clock_str, "%Y%m%dT%H:%M:%S")
-        # NOTE: On OS X there's `date` utility that accepts
-        # new date/time as a string of the folowing format:
-        # {month}{day}{hour}{minutes}{year}.{seconds}
-        # where every {x} is a 2 digit number.
-        cmd = "sudo date {0}".format(clock.strftime("%m%d%H%M%y.%S"))
-
-        if "dont_really_make_changes" in kwargs:
-            return cmd
-        else:
-            os.system(cmd)
 
     def _analysis(self, package):
         package.start()
