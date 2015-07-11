@@ -9,8 +9,6 @@ import unittest
 
 from analyzer.darwin.lib.core.packages import *
 
-from  analyzer.darwin.modules.packages.zip import Zip
-
 class PackagesTestCase(unittest.TestCase):
 
     def test_bash_package(self):

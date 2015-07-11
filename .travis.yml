@@ -9,3 +9,4 @@ script:
     - nosetests ./tests/test_apicalls.py
     - nosetests ./tests/test_ipconnections.py
     - nosetests ./tests/test_analyzer.py
+    - nosetests ./tests/test_packages.py
