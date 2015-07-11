@@ -31,13 +31,6 @@ from modules import auxiliary
 
 log = logging.getLogger()
 
-BUFSIZE = 4096
-PROCESS_LOCK = threading.Lock()
-DEFAULT_DLL = None
-
-PID = os.getpid()
-PPID = Process(pid=PID).get_parent_pid()
-
 class Files(object):
     PROTECTED_NAMES = ()
 
@@ -145,9 +138,6 @@ class ProcessList(object):
         if pid in self.pids_notrack:
             self.pids_notrack.remove(pid)
 
-FILES = Files()
-PROCESS_LIST = ProcessList()
-
 class CommandPipeHandler(object):
     """Pipe Handler.
 
@@ -155,6 +145,9 @@ class CommandPipeHandler(object):
     decides what to do with them.
     """
     ignore_list = dict(pid=[])
+
+    def __init__(self, analyzer):
+        self.analyzer = analyzer
 
     def _handle_debug(self, data):
         """Debug message from the monitor."""
@@ -185,46 +178,47 @@ class CommandPipeHandler(object):
                         "skipping it.")
             return
 
-        PROCESS_LOCK.acquire()
-        PROCESS_LIST.add_pid(int(pid), track=int(track))
-        PROCESS_LOCK.release()
+        self.analyzer.process_lock.acquire()
+        self.analyzer.process_list.add_pid(int(pid), track=int(track))
+        self.analyzer.process_lock.release()
 
         log.debug("Loaded monitor into process with pid %s", pid)
 
     def _handle_getpids(self, data):
         """Return the process identifiers of the agent and its parent
         process."""
-        return struct.pack("II", PID, PPID)
+        return struct.pack("II", self.analyzer.pid, self.analyzer.ppid)
 
     def _inject_process(self, process_id, thread_id):
         """Helper function for injecting the monitor into a process."""
         # We acquire the process lock in order to prevent the analyzer to
         # terminate the analysis while we are operating on the new process.
-        PROCESS_LOCK.acquire()
+        self.analyzer.process_lock.acquire()
 
         # Set the current DLL to the default one provided at submission.
-        dll = DEFAULT_DLL
+        dll = self.analyzer.default_dll
 
-        if process_id in (PID, PPID):
+        if process_id in (self.analyzer.pid, self.analyzer.ppid):
             if process_id not in CommandPipeHandler.ignore_list["pid"]:
                 log.warning("Received request to inject Cuckoo processes, "
                             "skipping it.")
                 CommandPipeHandler.ignore_list["pid"].append(process_id)
-            PROCESS_LOCK.release()
+            self.analyzer.process_lock.release()
             return
 
         # We inject the process only if it's not being monitored already,
         # otherwise we would generated polluted logs (if it wouldn't crash
         # horribly to start with).
-        if PROCESS_LIST.has_pid(process_id):
+        if self.analyzer.process_list.has_pid(process_id):
             # This pid is already on the notrack list, move it to the
             # list of tracked pids.
-            if not PROCESS_LIST.has_pid(process_id, notrack=False):
+            if not self.analyzer.process_list.has_pid(process_id,
+                                                      notrack=False):
                 log.debug("Received request to inject pid=%d. It was already "
                           "on our notrack list, moving it to the track list.")
 
-                PROCESS_LIST.remove_pid(process_id)
-                PROCESS_LIST.add_pid(process_id)
+                self.analyzer.process_list.remove_pid(process_id)
+                self.analyzer.process_list.add_pid(process_id)
                 CommandPipeHandler.ignore_list["pid"].append(process_id)
             # Spit out an error once and just ignore it further on.
             elif process_id not in CommandPipeHandler.ignore_list["pid"]:
@@ -233,7 +227,7 @@ class CommandPipeHandler(object):
                 CommandPipeHandler.ignore_list["pid"].append(process_id)
 
             # We're done operating on the processes list, release the lock.
-            PROCESS_LOCK.release()
+            self.analyzer.process_lock.release()
             return
 
         # Open the process and inject the DLL. Hope it enjoys it.
@@ -242,13 +236,13 @@ class CommandPipeHandler(object):
         filename = os.path.basename(proc.get_filepath())
         log.info("Announced process name: %s", filename)
 
-        if not FILES.is_protected_filename(filename):
+        if not self.analyzer.files.is_protected_filename(filename):
             # Add the new process ID to the list of monitored processes.
-            PROCESS_LIST.add_pid(process_id)
+            self.analyzer.process_list.add_pid(process_id)
 
             # We're done operating on the processes list,
             # release the lock. Let the injection do its thing.
-            PROCESS_LOCK.release()
+            self.analyzer.process_lock.release()
 
             log.debug("Injecting into process with pid %d", proc.pid)
 
@@ -289,12 +283,12 @@ class CommandPipeHandler(object):
     def _handle_file_new(self, data):
         """Notification of a new dropped file."""
         # Extract the file path and add it to the list.
-        FILES.add_file(data.decode("utf8"))
+        self.analyzer.files.add_file(data.decode("utf8"))
 
     def _handle_file_del(self, data):
         """Notification of a file being removed - we have to dump it before
         it's being removed."""
-        FILES.delete_file(data.decode("utf8"))
+        self.analyzer.files.delete_file(data.decode("utf8"))
 
     def _handle_file_move(self, data):
         """A file is being moved - track these changes."""
@@ -304,8 +298,8 @@ class CommandPipeHandler(object):
             return
 
         old_filepath, new_filepath = data.split("::", 1)
-        FILES.move_file(old_filepath.decode("utf8"),
-                        new_filepath.decode("utf8"))
+        self.analyzer.files.move_file(old_filepath.decode("utf8"),
+                                      new_filepath.decode("utf8"))
 
     def dispatch(self, data):
         response = "NOPE"
@@ -339,17 +333,15 @@ class Analyzer(object):
         self.do_run = True
         self.time_counter = 0
 
-        self.process_lock = PROCESS_LOCK
-        self.default_dll = DEFAULT_DLL
-        self.pid = PID
-        self.ppid = PPID
-        self.files = FILES
-        self.process_list = PROCESS_LIST
+        self.process_lock = threading.Lock()
+        self.default_dll = None
+        self.pid = os.getpid()
+        self.ppid = Process(pid=self.pid).get_parent_pid()
+        self.files = Files()
+        self.process_list = ProcessList()
 
     def prepare(self):
         """Prepare env for analysis."""
-        global DEFAULT_DLL
-
         # Get SeDebugPrivilege for the Python process. It will be needed in
         # order to perform the injections.
         grant_debug_privilege()
@@ -380,7 +372,7 @@ class Analyzer(object):
         os.system("echo:|time {0}".format(clock.strftime("%H:%M:%S")))
 
         # Set the default DLL to be used for this analysis.
-        self.default_dll = DEFAULT_DLL = self.config.options.get("dll")
+        self.default_dll = self.config.options.get("dll")
 
         # If a pipe name has not set, then generate a random one.
         if "pipe" in self.config.options:
@@ -395,7 +387,7 @@ class Analyzer(object):
         # to be used for communicating with the monitored processes.
         self.command_pipe = PipeServer(PipeDispatcher, self.config.pipe,
                                        message=True,
-                                       dispatcher=CommandPipeHandler())
+                                       dispatcher=CommandPipeHandler(self))
         self.command_pipe.daemon = True
         self.command_pipe.start()
 
@@ -428,7 +420,7 @@ class Analyzer(object):
         self.log_pipe_server.stop()
 
         # Dump all the notified files.
-        FILES.dump_files()
+        self.files.dump_files()
 
         # Hell yeah.
         log.info("Analysis completed.")
@@ -555,7 +547,7 @@ class Analyzer(object):
         # If the analysis package returned a list of process identifiers, we
         # add them to the list of monitored processes and enable the process monitor.
         if pids:
-            PROCESS_LIST.add_pids(pids)
+            self.process_list.add_pids(pids)
             pid_check = True
 
         # If the package didn't return any process ID (for example in the case
@@ -581,7 +573,7 @@ class Analyzer(object):
             # If the process lock is locked, it means that something is
             # operating on the list of monitored processes. Therefore we
             # cannot proceed with the checks until the lock is released.
-            if PROCESS_LOCK.locked():
+            if self.process_lock.locked():
                 KERNEL32.Sleep(1000)
                 continue
 
@@ -589,14 +581,14 @@ class Analyzer(object):
                 # If the process monitor is enabled we start checking whether
                 # the monitored processes are still alive.
                 if pid_check:
-                    for pid in PROCESS_LIST.pids:
+                    for pid in self.process_list.pids:
                         if not Process(pid=pid).is_alive():
                             log.info("Process with pid %s has terminated", pid)
-                            PROCESS_LIST.remove_pid(pid)
+                            self.process_list.remove_pid(pid)
 
                     # If none of the monitored processes are still alive, we
                     # can terminate the analysis.
-                    if not PROCESS_LIST.pids:
+                    if not self.process_list.pids:
                         log.info("Process list is empty, "
                                  "terminating analysis.")
                         break
@@ -604,7 +596,7 @@ class Analyzer(object):
                     # Update the list of monitored processes available to the
                     # analysis package. It could be used for internal
                     # operations within the module.
-                    package.set_pids(PROCESS_LIST.pids)
+                    package.set_pids(self.process_list.pids)
 
                 try:
                     # The analysis packages are provided with a function that
@@ -665,7 +657,7 @@ class Analyzer(object):
             # that we clean up remaining open handles (sockets, files, etc.).
             log.info("Terminating remaining processes before shutdown.")
 
-            for pid in PROCESS_LIST.pids:
+            for pid in self.process_list.pids:
                 proc = Process(pid=pid)
                 if proc.is_alive():
                     try:
