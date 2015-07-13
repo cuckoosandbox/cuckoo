@@ -24,12 +24,12 @@ class CuckooHost:
     sockets = {}
     descriptions = {}
     launch_times = {}
-    human_readable_explanations = {}
+    human_readable_info = {}
 
     def __init__(self, host_ip, host_port):
         self.ip = host_ip
         self.port = host_port
-        self._load_human_readable_explanations()
+        self._load_human_readable_info()
 
     def send_api(self, thing):
         """ Sends a new API notification to the Cuckoo host """
@@ -158,41 +158,36 @@ class CuckooHost:
 
     def _verify_is_success(self, thing):
         retval = thing.retval
-        e = self.human_readable_explanations
-        if thing.api not in e: # fallback to success
+        if thing.api not in self.human_readable_info: # fallback to success
             return 1
 
-        condition = e[thing.api]["is_success_condition"]
+        condition = self.human_readable_info[thing.api]["is_success_condition"]
         result = eval(condition, {
             "retval" : retval
         })
         return 1 if result else 0
 
     def _api_category(self, thing):
-        # FIXME(rodionovd): I'm bad at naming
-        e = self.human_readable_explanations
         api = thing.api
-        if api not in e: # fallback
+        if api not in self.human_readable_info: # fallback
             return "unknown"
-        return e[api]["category"]
+        return self.human_readable_info[api]["category"]
 
     def _api_args_description(self, thing):
-        # FIXME(rodionovd): I'm bad at naming
-        e = self.human_readable_explanations
         api = thing.api
         # First two "arguments" are always these
         description = ["is_success", "retval"]
-        if api in e:
-            description += e[api]["args"]
+        if api in self.human_readable_info:
+            description += self.human_readable_info[api]["args"]
         else: # fallback to arg0, arg1, ..., argN
             for arg_idx in range(0, len(thing.args)):
                 description += ["arg%d" % arg_idx]
         return description
 
-    def _load_human_readable_explanations(self):
+    def _load_human_readable_info(self):
         try:
             with open(_description_file_path(), "r") as f:
-                self.human_readable_explanations = json.load(f)
+                self.human_readable_info = json.load(f)
         except IOError:
             log.exception("Could not open apis.json file")
         except ValueError:
