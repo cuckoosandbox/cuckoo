@@ -11,3 +11,4 @@ nose
 python-dateutil
 requests
 flask
+alembic
