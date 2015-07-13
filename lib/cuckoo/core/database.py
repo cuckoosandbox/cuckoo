@@ -16,7 +16,7 @@ from lib.cuckoo.common.objects import File, URL
 from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock
 
 try:
-    from sqlalchemy import create_engine, Column
+    from sqlalchemy import create_engine, Column, not_
     from sqlalchemy import Integer, String, Boolean, DateTime, Enum
     from sqlalchemy import ForeignKey, Text, Index, Table
     from sqlalchemy.ext.declarative import declarative_base
@@ -308,6 +308,18 @@ class Task(Base):
 
     def __repr__(self):
         return "<Task('{0}','{1}')>".format(self.id, self.target)
+
+class TaskProcessing(Base):
+    """Task processing queue for process2.py"""
+    __tablename__ = "task_processing"
+
+    id = Column(Integer, primary_key=True)
+    task_id = Column(Integer, ForeignKey("tasks.id"), nullable=True)
+    instance = Column(Text, nullable=False)
+
+    def __init__(self, task_id, instance):
+        self.task_id = task_id
+        self.instance = instance
 
 class AlembicVersion(Base):
     """Table used to pinpoint actual database schema release."""
@@ -1197,3 +1209,83 @@ class Database(object):
         finally:
             session.close()
         return errors
+
+    def count_processing_tasks(self, instance):
+        """Count the amount of pending tasks for this processing instance.
+        @param instance: processing instance
+        """
+        session = self.Session()
+        try:
+            count = session.query(TaskProcessing)
+            count = count.filter_by(instance=instance).count()
+        except SQLAlchemyError as e:
+            log.debug("Database error counting processing tasks: {0}".format(e))
+            return 0
+        finally:
+            session.close()
+        return count
+
+    def processing_get_new_tasks(self, count):
+        """Get available tasks that have not been assigned to other instances
+        yet."""
+        session = self.Session()
+        try:
+            tasks = session.query(Task).filter_by(status=TASK_COMPLETED)
+            tasks = tasks.filter(not_(Task.id.in_(TaskProcessing.task_id)))
+            tasks = tasks.limit(count).all()
+        except SQLAlchemyError as e:
+            log.debug("Database error getting new processing tasks: %s", e)
+            return []
+        finally:
+            session.close()
+        return tasks
+
+    def add_processing_task(self, tp):
+        """Add a new processing task."""
+        session = self.Session()
+        session.add(tp)
+
+        try:
+            session.commit()
+            session.refresh(tp)
+        except SQLAlchemyError as e:
+            log.debug("Database error adding processing task: %s", e)
+            session.rollback()
+        finally:
+            session.close()
+
+    def delete_processing_task(self, tp):
+        """Delete an existing processing task."""
+        session = self.Session()
+        session.delete(tp)
+
+        try:
+            session.commit()
+        except SQLAlchemyError as e:
+            log.debug("Database error deleting processing task: %s", e)
+            session.rollback()
+        finally:
+            session.close()
+
+    def list_processing_tasks(self, instance, count):
+        """List available processing tasks for a particular instance."""
+        session = self.Session()
+        try:
+            tasks = session.query(TaskProcessing)
+
+            if instance is None:
+                # Filter for instance IDs.
+                tasks = tasks.filter_by(task_id=None)
+            else:
+                # Filter for new tasks for this instance.
+                null = None
+                tasks = tasks.filter_by(instance=instance)
+                tasks = tasks.filter(TaskProcessing.task_id != null)
+
+            tasks = tasks.limit(count).all()
+        except SQLAlchemyError as e:
+            log.debug("Database error getting processing tasks: {0}".format(e))
+            return []
+        finally:
+            session.close()
+        return tasks
