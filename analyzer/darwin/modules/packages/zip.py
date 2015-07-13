@@ -72,7 +72,7 @@ class Zip(Package):
         # Test if zip file contains a file named as itself.
         if self._is_overwritten(file):
             log.debug("ZIP file contains a file with the same name, original is going to be overwrite")
-            new_zip_path = file + _random_extension()
+            new_zip_path = file + self._random_extension()
             move(file, new_zip_path)
             file = new_zip_path
         # Extraction.
