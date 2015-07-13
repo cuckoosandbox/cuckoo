@@ -14,7 +14,7 @@ from analyzer.darwin.lib.dtrace.apicalls import *
 
 class TestAPICalls(DtraceTestCase):
 
-    @timed(10)
+    @timed(15)
     def test_apicalls_basic(self):
         # given
         expected_api = ("system", ["whoami"], 0)
