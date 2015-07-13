@@ -51,7 +51,7 @@ class TestAPICalls(DtraceTestCase):
         matched = [x for x in output if (x.api, x.args) == expected_api]
         self.assertEqual(len(matched), 1)
 
-    @timed(10)
+    @timed(15)
     def test_apicalls_with_args(self):
         # given
         expected_api = ("atoi", ["666"])
