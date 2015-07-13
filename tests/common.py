@@ -18,7 +18,7 @@ class DtraceTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if platform.system() != "Darwin":
-            raise Exception("%s: This test suite must be run on OS X" % cls.__name__)
+            raise Exception("%s: dtrace-based test suites must be run on OS X" % cls.__name__)
 
     def setUp(self):
         build_target(self._testMethodName)
