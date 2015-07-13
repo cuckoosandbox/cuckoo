@@ -7,6 +7,8 @@
 
 import logging
 from shutil import move
+from random import SystemRandom
+from string import ascii_letters
 from subprocess import check_output
 from os import path, environ, system
 from zipfile import ZipFile, BadZipfile
@@ -70,8 +72,7 @@ class Zip(Package):
         # Test if zip file contains a file named as itself.
         if self._is_overwritten(file):
             log.debug("ZIP file contains a file with the same name, original is going to be overwrite")
-            # TODO: add random string.
-            new_zip_path = file + ".old"
+            new_zip_path = file + _random_extension()
             move(file, new_zip_path)
             file = new_zip_path
         # Extraction.
@@ -111,3 +112,6 @@ class Zip(Package):
                 return False
             except BadZipfile:
                 raise Exception("Invalid Zip file")
+
+    def _random_extension(length=5):
+        return '.' + ''.join(SystemRandom().choice(ascii_letters) for _ in range(length))
