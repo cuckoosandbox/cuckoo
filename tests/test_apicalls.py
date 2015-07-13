@@ -14,7 +14,7 @@ from analyzer.darwin.lib.dtrace.apicalls import *
 
 class TestAPICalls(DtraceTestCase):
 
-    @timed(10)
+    @timed(15)
     def test_apicalls_basic(self):
         # given
         expected_api = ("system", ["whoami"], 0)
@@ -51,7 +51,7 @@ class TestAPICalls(DtraceTestCase):
         matched = [x for x in output if (x.api, x.args) == expected_api]
         self.assertEqual(len(matched), 1)
 
-    @timed(10)
+    @timed(15)
     def test_apicalls_with_args(self):
         # given
         expected_api = ("atoi", ["666"])
