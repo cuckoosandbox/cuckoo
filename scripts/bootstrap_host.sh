@@ -50,12 +50,16 @@ fi
 
 # [2.1] Make sure vboxnet0 is up before doing anything with it
 vboxmanage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1
-# [2.2] Enable traffic forwarding for vboxnet0 interface
-sudo sysctl -w net.inet.ip.forwarding=1 &> /dev/null
-rules="nat on en1 from vboxnet0:network to any -> (en1)
-pass inet proto icmp all
-pass in on vboxnet0 proto udp from any to any port domain keep state
-pass quick on en1 proto udp from any to any port domain keep state"
-echo "$rules" > ./pfrules
-sudo pfctl -e -f ./pfrules
-rm -f ./pfrules
+if [ "$(uname -s)" != "Darwin" ]; then
+    echo "I can't setup traffic forwarding for your OS, sorry :("
+else
+    # [2.2] Enable traffic forwarding for vboxnet0 interface (for OS X only)
+    sudo sysctl -w net.inet.ip.forwarding=1 &> /dev/null
+    rules="nat on en1 from vboxnet0:network to any -> (en1)
+    pass inet proto icmp all
+    pass in on vboxnet0 proto udp from any to any port domain keep state
+    pass quick on en1 proto udp from any to any port domain keep state"
+    echo "$rules" > ./pfrules
+    sudo pfctl -e -f ./pfrules
+    rm -f ./pfrules
+fi
