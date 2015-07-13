@@ -214,4 +214,4 @@ def _filetime_from_timestamp(ts):
 
 
 def _description_file_path():
-    return path.join(path.dirname(path.abspath(__file__)), "apis.json")
+    return path.join(path.dirname(path.abspath(__file__)), "data", "apis.json")
