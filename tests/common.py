@@ -7,12 +7,19 @@
 
 import os
 import unittest
+import platform
 import subprocess
 
 TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class DtraceTestCase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        if platform.system() != "Darwin":
+            raise Exception("%s: This test suite must be run on OS X" % cls.__name__)
+
     def setUp(self):
         build_target(self._testMethodName)
 
