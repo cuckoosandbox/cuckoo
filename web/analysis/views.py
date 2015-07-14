@@ -131,7 +131,7 @@ def filtered_chunk(request, task_id, pid, category):
                 "behavior.processes.pid": int(pid),
             },
             {
-                "behavior.processes.process_id": 1,
+                "behavior.processes.pid": 1,
                 "behavior.processes.calls": 1,
             }
         )
