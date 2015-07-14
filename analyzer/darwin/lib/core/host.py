@@ -21,10 +21,23 @@ class CuckooHost:
 
     Currently it only supports sending results about API calls via send_api() -- see `apicalls` module.
     """
-    sockets = {}
-    descriptions = {}
-    launch_times = {}
-    human_readable_info = {}
+    sockets = {
+        # Each target process has its own results server on the host, so
+        # we setup as many sockets as we have targets to analyse.
+    }
+    descriptions = {
+        # We don't want to explain APIs every single time they're about to be
+        # send to the host, so we explain them once and then just refer to them
+        # via an unique ID.
+    }
+    launch_times = {
+        # Since Cuckoo host expects us to send relative times, we remember when
+        # every target was launched.
+    }
+    human_readable_info = {
+        # Here goes all the additional information about APIs like category,
+        # arguments names and so on. See date/apis.json for more details.
+    }
 
     def __init__(self, host_ip, host_port):
         self.ip = host_ip
