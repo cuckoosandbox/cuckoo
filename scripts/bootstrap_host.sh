@@ -17,6 +17,9 @@
 # for vboxnet0 host-only interface:
 # ./bootstrap_host.sh
 
+GUEST_IP="192.168.56.1"
+INTERFACE="vboxnet0"
+
 opt_create_interface=false; vmname="";
 while getopts ":i:" opt; do
     case $opt in
@@ -41,13 +44,13 @@ if [ "$opt_create_interface" == true ]; then
     fi
     vboxmanage hostonlyif create
     # 192.168.56.1 is the default IP from `cuckoo.conf`
-    vboxmanage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1
-    vboxmanage modifyvm "$vmname" --hostonlyadapter1 vboxnet0
+    vboxmanage hostonlyif ipconfig $INTERFACE --ip $GUEST_IP
+    vboxmanage modifyvm "$vmname" --hostonlyadapter1 $INTERFACE
     vboxmanage modifyvm "$vmname" --nic1 hostonly
 fi
 
 # [2.1] Make sure vboxnet0 is up before doing anything with it
-vboxmanage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1
+vboxmanage hostonlyif ipconfig $INTERFACE --ip $GUEST_IP
 if [ "$(uname -s)" != "Darwin" ]; then
     echo "I can't setup traffic forwarding for your OS, sorry :("
 else
