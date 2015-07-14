@@ -45,7 +45,7 @@ $ python /Users/Shared/agent.py
 
  4. Take a VM snapshot. It's `cmd+T` for VirtualBox.
 
-##### On the host side
+##### On the host side (OS X)
 
  0. Setup internet traffic forwarding to and from your guest machine. Here's an example of using `pfctl` to forward traffic to and from `vboxnet0` interface:
 
