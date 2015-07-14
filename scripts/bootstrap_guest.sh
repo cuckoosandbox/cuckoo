@@ -27,7 +27,7 @@
 IP_ADDRESS="192.168.56.101"
 SUBNET_MASK="255.255.255.0"
 ROUTER_ADDRESS="192.168.56.1"
-DNS_SERVERS="208.67.220.220 208.67.222.222"
+DNS_SERVERS=("208.67.220.220" "208.67.222.222")
 # Cuckoo agent locations
 AGENT_DIR="/Users/Shared"
 AGENT_URL="https://raw.githubusercontent.com/cuckoobox/cuckoo/master/agent/agent.py"
@@ -43,7 +43,7 @@ done
 
 # [0] Setup network
 sudo networksetup -setmanual Ethernet $IP_ADDRESS $SUBNET_MASK $ROUTER_ADDRESS
-sudo networksetup -setdnsservers Ethernet $DNS_SERVERS
+sudo networksetup -setdnsservers Ethernet "${DNS_SERVERS[@]}"
 
 # [1] Install `pt_deny_attach` kext.
 if [ "$opt_install_kext" == true ]; then
