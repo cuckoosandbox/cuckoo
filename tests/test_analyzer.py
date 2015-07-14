@@ -16,4 +16,4 @@ class TestAnalyzer(unittest.TestCase):
         # when
         result = set_wallclock(clock_str, just_testing=True)
         # then
-        assert result == "sudo date 1203152315.43"
+        self.assertEqual(result, "sudo date 1203152315.43")
