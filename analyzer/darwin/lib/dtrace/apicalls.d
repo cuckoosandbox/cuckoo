@@ -25,23 +25,23 @@
 #endif
 
 dtrace:::BEGIN
- {
-     countdown = ANALYSIS_TIMEOUT;
+{
+    countdown = ANALYSIS_TIMEOUT;
 
-     self->deeplevel = 0;
-     self->arg0  = (int64_t)0;
-     self->arg1  = (int64_t)0;
-     self->arg2  = (int64_t)0;
-     self->arg3  = (int64_t)0;
-     self->arg4  = (int64_t)0;
-     self->arg5  = (int64_t)0;
-     self->arg6  = (int64_t)0;
-     self->arg7  = (int64_t)0;
-     self->arg8  = (int64_t)0;
-     self->arg9  = (int64_t)0;
-     self->arg10 = (int64_t)0;
-     self->arg11 = (int64_t)0;
- }
+    self->deeplevel = 0;
+    self->arg0  = (int64_t)0;
+    self->arg1  = (int64_t)0;
+    self->arg2  = (int64_t)0;
+    self->arg3  = (int64_t)0;
+    self->arg4  = (int64_t)0;
+    self->arg5  = (int64_t)0;
+    self->arg6  = (int64_t)0;
+    self->arg7  = (int64_t)0;
+    self->arg8  = (int64_t)0;
+    self->arg9  = (int64_t)0;
+    self->arg10 = (int64_t)0;
+    self->arg11 = (int64_t)0;
+}
 
 profile:::tick-1sec
 / countdown > 0 /
