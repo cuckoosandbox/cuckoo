@@ -50,6 +50,10 @@ proc:::create
     tracked[args[0]->pr_pid] = 1;
 }
 
+/* Attach a new instance of dtrace to the new child process.
+ * Note that we pause the process before attaching dtrace to it, so we'll even
+ * catch short-lived ones.
+ */
 proc:::start
 / tracked[pid] == 1 /
 {
@@ -66,6 +70,17 @@ proc:::exec
     tracked[pid] = 2;
 }
 
+/* Well, we were exec*(), now what?
+ * Since a new image does contain different symbols and also may require different
+ * shared libraries -- and we really want to be able to install probes on them -- we
+ * must re-attach dtrace to this process again so it can see these new stuff.
+ *
+ * We wait some time to make sure that all shared libraries are loaded, stop()
+ * (actually, pause) the process and then spawn a new instance of dtrace attached
+ * to this process.
+ * Why start64("/AppleInternal")? This syscall happens at the end of a programm
+ * initialization process, so it's a great place to do our thing.
+ */
 syscall::stat64:entry
 / tracked[pid] == 2 && copyinstr(arg0) == "/AppleInternal\0" /
 {
