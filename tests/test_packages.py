@@ -29,6 +29,15 @@ class PackagesTestCase(unittest.TestCase):
         # then
         self.assertEqual(pkg_class.__name__, "Macho")
 
+    def test_macho_package_alt(self):
+        # given
+        file_type = "Mach-O 32-bit executable i386"
+        file_name = "foobar"
+        # when
+        pkg_class = choose_package_class(file_type, file_name)
+        # then
+        self.assertEqual(pkg_class.__name__, "Macho")
+
     def test_zip_package(self):
         # given
         file_type = "Zip archive data, at least v1.0 to extract"
