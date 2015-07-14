@@ -66,11 +66,11 @@ class CuckooHost:
         #         (any)<value the n-th argument>,
         #     ]
         # }
-        ms_since_process_launch = int(1000*thing.timestamp - 1000*self.launch_times[pid])
+        time_offset_ms = int(1000*thing.timestamp - 1000*self.launch_times[pid])
         self.sockets[pid].sendall(BSON.encode({
             "I"    : lookup_idx,
             "T"    : thing.tid,
-            "t"    : ms_since_process_launch,
+            "t"    : time_offset_ms,
             "args" : self._prepare_args(thing)
         }))
 
@@ -195,7 +195,7 @@ class CuckooHost:
 
 
 def _proc_name_from_pid(pid):
-    """ Parses `ps` output for the given PID """
+    """ Parses `ps -o comm` output for the given PID """
     try:
         ps_output = check_output(["/bin/ps", "-p", str(pid), "-o", "comm"])
         # The first line of an output is reserved for `ps` headers and the
