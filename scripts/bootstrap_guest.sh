@@ -25,6 +25,11 @@
 # ./bootstrap_guest.sh -k -s   -- for both actions
 #
 
+# Network settings
+IP_ADDRESS="192.168.56.101"
+SUBNET_MASK="255.255.255.0"
+ROUTER_ADDRESS="192.168.56.1"
+# Cuckoo agent locations
 AGENT_DIR="/Users/Shared"
 AGENT_URL="https://raw.githubusercontent.com/cuckoobox/cuckoo/master/agent/agent.py"
 
@@ -38,8 +43,8 @@ while getopts ":sk" opt; do
 done
 
 # [0] Setup network
-sudo networksetup -setmanual Ethernet 192.168.56.101 255.255.255.0 192.168.56.1
 sudo networksetup -setdnsservers Ethernet 8.8.8.8 8.8.4.4
+sudo networksetup -setmanual Ethernet $IP_ADDRESS $SUBNET_MASK $ROUTER_ADDRESS
 
 # [1] Install `pt_deny_attach` kext.
 if [ "$opt_install_kext" == true ]; then
