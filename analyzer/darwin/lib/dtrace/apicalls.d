@@ -58,6 +58,12 @@ profile:::tick-1sec
 #pragma mark - Following children
 #include "follow_children.d"
 
+/* We may use `sudo -u` to drop (root) privileges before running a target.
+ * If this were the case, we wouldn't care about API calls of sudo itself, thus
+ * no probes.
+ */
+#ifndef SUDO
+
 /* ******* **************************** ******* */
 self int64_t arguments_stack[unsigned long, string];
 self deeplevel;
@@ -182,3 +188,5 @@ pid$target::fprintf:return
     self->arguments_stack[self->deeplevel, "arg1"] = 0;
     --self->deeplevel;
 }
+
+#endif /* SUDO */

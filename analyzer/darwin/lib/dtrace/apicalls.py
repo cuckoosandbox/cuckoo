@@ -48,6 +48,7 @@ def apicalls(target, **kwargs):
     # with `sudo -u current_user` right before calling the target.
     if not run_as_root:
         target_cmd = "sudo -u %s %s" % (getuser(), target_cmd)
+        cmd += ["-DSUDO=1"]
 
     cmd += ["-c", target_cmd]
 
