@@ -9,7 +9,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 
 db = SQLAlchemy(session_options=dict(autoflush=True))
-ALEMBIC_VERSION = "4d0a2590e997"
+ALEMBIC_VERSION = "151400d38e03"
 
 class Serializer(object):
     """Serialize a query result object."""
@@ -131,8 +131,9 @@ class Task(db.Model, Serializer):
 class NodeStatus(db.Model, Serializer):
     """Node status monitoring database model."""
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime(timezone=False), nullable=False)
+    name = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime(timezone=False), nullable=False,
+                          index=True)
     status = db.Column(JsonType, nullable=False)
 
     def __init__(self, name, timestamp, status):
