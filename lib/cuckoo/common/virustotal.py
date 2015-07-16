@@ -33,7 +33,8 @@ class VirusTotalAPI(object):
                 "library (install with `pip install requests`)")
 
         try:
-            return requests.post(url, timeout=self.timeout, **kwargs).json()
+            r = requests.post(url, timeout=self.timeout, **kwargs)
+            return r.json() if r.status_code == 200 else {}
         except (requests.ConnectionError, ValueError) as e:
             raise CuckooOperationalError("Unable to fetch VirusTotal "
                                          "results: %r" % e.message)
