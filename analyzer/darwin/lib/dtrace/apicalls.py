@@ -71,7 +71,7 @@ def _parse_entry(entry):
     parsed = json.loads(entry)
 
     api       = parsed['api']
-    args      = parsed['args']
+    args      = _stringify_args(parsed['args'])
     retval    = parsed['retval']
     # Convert milliseconds to floating point seconds
     timestamp = float(parsed['timestamp']) / 1000
@@ -80,3 +80,14 @@ def _parse_entry(entry):
     tid       = parsed['tid']
 
     return apicall(api, args, retval, timestamp, pid, ppid, tid)
+
+def _stringify_args(args):
+    """ Converts each argument into a string.
+    In case of integers, it's a hex string. Other types are converted with str() """
+    new_args = []
+    for item in args:
+        if isinstance(item, (int, long)):
+            new_args.append("%#lx" % item)
+        else:
+            new_args.append(str(item))
+    return new_args
