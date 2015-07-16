@@ -58,17 +58,17 @@ def apicalls(target, **kwargs):
         handler = Popen(cmd, stdout=f, stderr=f, cwd=current_directory())
 
     for entry in filelines(output_file):
-        if "## apicalls.d done ##" in entry.strip():
+        value = entry.strip()
+        if "## apicalls.d done ##" in value:
             break
-        if len(entry.strip()) == 0:
+        if len(value) == 0:
             continue
-        yield _parse_entry(entry.strip())
+        yield _parse_entry(value)
     output_file.close()
 
 
 def _parse_entry(entry):
-    entry = entry.replace("\\0", "")
-    parsed = json.loads(entry)
+    parsed = json.loads(entry.replace("\\0", ""))
 
     api       = parsed['api']
     args      = _stringify_args(parsed['args'])
