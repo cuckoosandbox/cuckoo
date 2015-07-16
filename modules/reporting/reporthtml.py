@@ -27,8 +27,9 @@ class ReportHTML(Report):
         @raise CuckooReportError: if fails to write report.
         """
         if not HAVE_JINJA2:
-            raise CuckooReportError("Failed to generate HTML report: "
-                                    "Jinja2 Python library is not installed")
+            raise CuckooReportError(
+                "Failed to generate HTML report: Jinja2 library is not "
+                "installed (install `pip install jinja2`)")
 
         shots_path = os.path.join(self.analysis_path, "shots")
         if os.path.exists(shots_path):

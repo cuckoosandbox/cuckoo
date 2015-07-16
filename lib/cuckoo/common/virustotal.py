@@ -28,8 +28,9 @@ class VirusTotalAPI(object):
     def _request_json(self, url, **kwargs):
         """Wrapper around doing a request and parsing its JSON output."""
         if not HAVE_REQUESTS:
-            raise CuckooOperationalError("The VirusTotal processing module "
-                                         "requires the requests library")
+            raise CuckooOperationalError(
+                "The VirusTotal processing module requires the requests "
+                "library (install with `pip install requests`)")
 
         try:
             return requests.post(url, timeout=self.timeout, **kwargs).json()
