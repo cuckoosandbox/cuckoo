@@ -9,3 +9,4 @@ django
 chardet
 nose
 dateutil
+requests
