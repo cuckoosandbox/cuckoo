@@ -36,6 +36,12 @@ class TestAPICalls(DtraceTestCase):
         matched = [x for x in output if (x.api, x.args, x.retval) == expected_api]
         self.assertEqual(len(matched), 1)
 
+    @timed(2)
+    def test_apicalls_without_target(self):
+        with self.assertRaisesRegexp(Exception, "Invalid target for apicalls()"):
+            for call in apicalls(None):
+                pass
+
     @timed(5)
     def test_apicalls_with_args_root(self):
         # given

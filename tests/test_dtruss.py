@@ -27,6 +27,11 @@ class TestDtruss(DtraceTestCase):
 
         self.assertEqual(len(matched), 1)
 
+    def test_dtruss_without_target(self):
+        with self.assertRaisesRegexp(Exception, "Invalid target for dtruss()"):
+            for call in dtruss(None):
+                pass
+
     def test_dtruss_specific_syscall(self):
         # given
         expected_syscall = 'write_nocancel'
