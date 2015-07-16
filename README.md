@@ -43,7 +43,7 @@ $ curl -o /Users/Shared/agent.py https://raw.githubusercontent.com/cuckoobox/cuc
 $ python /Users/Shared/agent.py
   ```
 
- 4. Take a VM snapshot. It's `cmd+T` for VirtualBox.
+ 4. Take a VM snapshot. It's <kbd>cmd+T</kbd> for VirtualBox.
 
 ##### On the host side (OS X)
 
