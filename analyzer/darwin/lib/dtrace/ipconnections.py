@@ -64,10 +64,3 @@ def _parse_single_entry(entry):
     timestamp = parsed['timestamp']
     pid = parsed['pid']
     return connection(host, host_port, remote, remote_port, protocol, timestamp, pid)
-
-#
-# Standalone app
-#
-
-if __name__ == "__main__":
-    pass
