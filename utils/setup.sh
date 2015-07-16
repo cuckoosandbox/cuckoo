@@ -158,20 +158,9 @@ _setup() {
     # All functionality related to setting up the machine - this is not
     # required when doing a Virtual Machine checkup.
 
-    # Update apt repository and install required packages.
-    apt-get update -y --force-yes
-    apt-get install -y --force-yes sudo git python-dev python-pip postgresql \
-        libpq-dev python-dpkt vim tcpdump libcap2-bin genisoimage pwgen \
-        htop tig mosh mongodb uwsgi uwsgi-plugin-python nginx
-
-    # Create the main postgresql cluster. In recent versions of Ubuntu Server
-    # 14.04 you have to do this manually. If it already exists this command
-    # will simply fail.
-    pg_createcluster 9.3 main --start
-
-    # Install the most up-to-date version of VirtualBox available at the moment.
-    if [ ! -e "/usr/bin/VirtualBox" ]; then
-        # Update our apt repository with "contrib".
+    # Add the VirtualBox apt repository.
+    if [ ! -e /etc/apt/sources.list.d/virtualbox.list ]; then
+        # Update our apt repository with VirtualBox "contrib".
         DEBVERSION="$(lsb_release -cs)"
         echo "deb http://download.virtualbox.org/virtualbox/debian " \
             "$DEBVERSION contrib" >> /etc/apt/sources.list.d/virtualbox.list
@@ -179,11 +168,18 @@ _setup() {
         # Add the VirtualBox public key to our apt repository.
         wget -q https://www.virtualbox.org/download/oracle_vbox.asc \
             -O- | apt-key add -
-
-        # Install the most recent VirtualBox.
-        apt-get update -y
-        apt-get install -y virtualbox-4.3
     fi
+
+    # Update apt repository and install required packages.
+    apt-get update -y --force-yes
+    apt-get install -y --force-yes sudo git python-dev python-pip postgresql \
+        libpq-dev python-dpkt vim tcpdump libcap2-bin genisoimage pwgen \
+        htop tig mosh mongodb uwsgi uwsgi-plugin-python nginx virtualbox-4.3
+
+    # Create the main postgresql cluster. In recent versions of Ubuntu Server
+    # 14.04 you have to do this manually. If it already exists this command
+    # will simply fail.
+    pg_createcluster 9.3 main --start
 
     # Install the VirtualBox Extension Pack for VRDE support.
     if grep "Extension Packs: 0" <(VBoxManage list extpacks); then
