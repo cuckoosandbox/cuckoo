@@ -25,8 +25,9 @@ class Macalyzer:
 
     log = logging.getLogger()
 
-    def __init__(self, configuration=None):
+    def __init__(self, host, configuration=None):
         self.config = configuration
+        self.host = host
 
     def _bootstrap(self):
         self._create_result_folders()
@@ -86,6 +87,7 @@ class Macalyzer:
             self.target = self.config.target
 
     def _setup_analysis_package(self):
+        # Do we have a suggestion about an analysis package?
         if self.config.package:
             suggestion = self.config.package
         elif self.config.category != "file":
@@ -97,12 +99,11 @@ class Macalyzer:
         package_class = choose_package_class(self.config.file_type,
                                              self.config.file_name, **kwargs)
         # Package initialization
-        host = CuckooHost(self.config.ip, self.config.port)
         kwargs = {
             "options" : self.config.get_options(),
             "timeout" : self.config.timeout
         }
-        return package_class(self.target, host, **kwargs)
+        return package_class(self.target, self.host, **kwargs)
 
     def _analysis(self, package):
         package.start()
@@ -115,8 +116,8 @@ if __name__ == "__main__":
 
     try:
         config = Config(cfg="analysis.conf")
-        analyzer = Macalyzer(config)
-        success = analyzer.run()
+        host = CuckooHost(config.ip, config.port)
+        success = Macalyzer(host, config).run()
 
     except KeyboardInterrupt:
         error = "Keyboard Interrupt"
