@@ -76,21 +76,19 @@ class WindowsMonitor(BehaviorHandler):
             # create generic events out of the windows calls
             elif event["type"] == "apicall":
                 reconstructor = self.reconstructors[event["pid"]]
+                res = reconstructor.process_apicall(event)
 
-                fn = getattr(reconstructor, "_api_%s" % event["api"], None)
-                if fn is not None:
-                    res = fn(event["return_value"], event["arguments"])
-                    if res and isinstance(res, tuple):
-                        res = [res]
+                if res and isinstance(res, tuple):
+                    res = [res]
 
-                    if res:
-                        for category, arg in res:
-                            yield {
-                                "type": "generic",
-                                "pid": event["pid"],
-                                "category": category,
-                                "value": arg,
-                            }
+                if res:
+                    for category, arg in res:
+                        yield {
+                            "type": "generic",
+                            "pid": event["pid"],
+                            "category": category,
+                            "value": arg,
+                        }
 
             yield event
 
@@ -108,6 +106,11 @@ class BehaviorReconstructor(object):
     """Reconstructs the behavior of behavioral API logs."""
     def __init__(self):
         self.files = {}
+
+    def process_apicall(self, event):
+        fn = getattr(self, "_api_%s" % event["api"], None)
+        if fn is not None:
+            return fn(event["return_value"], event["arguments"])
 
     # Generic file & directory stuff.
 
