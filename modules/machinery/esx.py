@@ -24,7 +24,7 @@ class ESX(LibVirtMachinery):
             raise CuckooMachineError("ESX(i) password is missing, please add it to the config file")
 
         self.dsn = self.options.esx.dsn 
-    
+        self.global_conn = self._global_connect()
         super(ESX, self)._initialize_check()
   
     def _auth_callback(self, credentials, user_data):
@@ -38,9 +38,29 @@ class ESX(LibVirtMachinery):
 
         return 0
     
-    def _connect(self):
+    def _connect(self):     
+        """
+        return the already-connected single connection handle if set, otherwise set it.
+        """  
+        if self.global_conn == None:
+            self.global_conn = self._global_connect()
+        return self.global_conn
+
+    def _global_connect(self):
+        """
+        set the single connection handle
+        """
         try:
             self.auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_NOECHOPROMPT], self._auth_callback, None]
             return libvirt.openAuth(self.dsn, self.auth, 0)
         except libvirt.libvirtError as libvex:
             raise CuckooCriticalError("libvirt returned an exception on connection: %s" % libvex)
+    
+    def _disconnect(self, conn):
+        """
+        Using one global connection we now disconnect in the destructor, ignore requests to disconnect
+        """
+        pass            
+        
+    def __del__(self):
+        self.global_conn.close()
