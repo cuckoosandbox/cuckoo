@@ -10,7 +10,6 @@ import tarfile
 import argparse
 from datetime import datetime
 from StringIO import StringIO
-from zipfile import ZipFile, ZIP_STORED
 
 try:
     from flask import Flask, request, jsonify, make_response
@@ -269,52 +268,52 @@ def tasks_report(task_id, report_format="json"):
                                    "%d" % task_id, "reports",
                                    formats[report_format.lower()])
     elif report_format.lower() in bz_formats:
-            bzf = bz_formats[report_format.lower()]
-            srcdir = os.path.join(CUCKOO_ROOT, "storage",
-                                  "analyses", "%d" % task_id)
-            s = StringIO()
+        bzf = bz_formats[report_format.lower()]
+        srcdir = os.path.join(CUCKOO_ROOT, "storage",
+                              "analyses", "%d" % task_id)
+        s = StringIO()
 
-            # By default go for bz2 encoded tar files (for legacy reasons.)
-            tarmode = tar_formats.get(request.args.get("tar"), "w:bz2")
+        # By default go for bz2 encoded tar files (for legacy reasons.)
+        tarmode = tar_formats.get(request.args.get("tar"), "w:bz2")
 
-            tar = tarfile.open(fileobj=s, mode=tarmode)
-            for filedir in os.listdir(srcdir):
-                if bzf["type"] == "-" and filedir not in bzf["files"]:
-                    tar.add(os.path.join(srcdir, filedir), arcname=filedir)
-                if bzf["type"] == "+" and filedir in bzf["files"]:
-                    tar.add(os.path.join(srcdir, filedir), arcname=filedir)
-            tar.close()
+        tar = tarfile.open(fileobj=s, mode=tarmode)
+        for filedir in os.listdir(srcdir):
+            if bzf["type"] == "-" and filedir not in bzf["files"]:
+                tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+            if bzf["type"] == "+" and filedir in bzf["files"]:
+                tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+        tar.close()
 
-            response = make_response(s.getvalue())
-            response.headers["Content-Type"] = \
-                "application/x-tar; charset=UTF-8"
-            return response
+        response = make_response(s.getvalue())
+        response.headers["Content-Type"] = \
+            "application/x-tar; charset=UTF-8"
+        return response
     else:
         return json_error(400, "Invalid report format")
 
     if os.path.exists(report_path):
         return open(report_path, "rb").read()
     else:
-        return HTTPError(404, "Report not found")
+        return json_error(404, "Report not found")
 
-@route("/tasks/rereport/<task_id:int>", method="GET")
+@app.route("/tasks/rereport/<int:task_id>")
 def rereport(task_id):
     task = db.view_task(task_id)
     if task:
         if task.status == TASK_REPORTED:
             db.set_status(task_id, TASK_COMPLETED)
-            return jsonize(dict(success=True))
+            return jsonify(success=True)
 
-        return jsonize(dict(success=False))
+        return jsonify(success=False)
     else:
-        return HTTPError(404, "Task not found")
+        return json_error(404, "Task not found")
 
-@route("/files/view/md5/<md5>", method="GET")
-@route("/v1/files/view/md5/<md5>", method="GET")
-@route("/files/view/sha256/<sha256>", method="GET")
-@route("/v1/files/view/sha256/<sha256>", method="GET")
-@route("/files/view/id/<sample_id:int>", method="GET")
-@route("/v1/files/view/id/<sample_id:int>", method="GET")
+@app.route("/files/view/md5/<md5>")
+@app.route("/v1/files/view/md5/<md5>")
+@app.route("/files/view/sha256/<sha256>")
+@app.route("/v1/files/view/sha256/<sha256>")
+@app.route("/files/view/id/<int:sample_id>")
+@app.route("/v1/files/view/id/<int:sample_id>")
 def files_view(md5=None, sha256=None, sample_id=None):
     response = {}
 
