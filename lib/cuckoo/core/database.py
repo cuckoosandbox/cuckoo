@@ -16,7 +16,7 @@ from lib.cuckoo.common.objects import File, URL
 from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock
 
 try:
-    from sqlalchemy import create_engine, Column
+    from sqlalchemy import create_engine, Column, event
     from sqlalchemy import Integer, String, Boolean, DateTime, Enum
     from sqlalchemy import ForeignKey, Text, Index, Table
     from sqlalchemy.ext.declarative import declarative_base
@@ -62,8 +62,7 @@ class Machine(Base):
     label = Column(String(255), nullable=False)
     ip = Column(String(255), nullable=False)
     platform = Column(String(255), nullable=False)
-    tags = relationship("Tag", secondary=machines_tags, cascade="all, delete",
-                        single_parent=True, backref=backref("machine", cascade="all"))
+    tags = relationship("Tag", secondary=machines_tags, backref="machines")
     interface = Column(String(255), nullable=True)
     snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)
@@ -256,9 +255,7 @@ class Task(Base):
     owner = Column(String(64), nullable=True)
     machine = Column(String(255), nullable=True)
     package = Column(String(255), nullable=True)
-    tags = relationship("Tag", secondary=tasks_tags, cascade="all, delete",
-                        single_parent=True, backref=backref("task", cascade="all"),
-                        lazy="subquery")
+    tags = relationship("Tag", secondary=tasks_tags, backref="tasks", lazy="subquery")
     options = Column(String(255), nullable=True)
     platform = Column(String(255), nullable=True)
     memory = Column(Boolean, nullable=False, default=False)
@@ -363,6 +360,10 @@ class Database(object):
 
         # Get db session.
         self.Session = sessionmaker(bind=self.engine)
+
+        @event.listens_for(self.Session, 'after_flush')
+        def delete_tag_orphans(session, ctx):
+            session.query(Tag).filter(~Tag.tasks.any()).filter(~Tag.machines.any()).delete(synchronize_session=False)
 
         # Deal with schema versioning.
         # TODO: it's a little bit dirty, needs refactoring.
