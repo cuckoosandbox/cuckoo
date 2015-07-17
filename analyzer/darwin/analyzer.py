@@ -81,8 +81,7 @@ class Macalyzer:
 
     def _detect_target(self):
         if self.config.category == "file":
-            self.target = os.path.join("/tmp/",
-                                       str(self.config.file_name))
+            self.target = os.path.join("/tmp/", str(self.config.file_name))
         else: # It's not a file, but a URL
             self.target = self.config.target
 

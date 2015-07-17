@@ -55,7 +55,7 @@ class Zip(Package):
         self.real_package = pkg_class(self.target, self.host, **kwargs)
 
     def start(self):
-        # We have nothing to do here; let other package do it's job
+        # We have nothing to do here; let the proper package do it's job
         self.prepare()
         self.real_package.start()
 
