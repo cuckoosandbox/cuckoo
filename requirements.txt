@@ -8,5 +8,5 @@ pefile
 django
 chardet
 nose
-dateutil
+python-dateutil
 requests
