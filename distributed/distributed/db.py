@@ -9,7 +9,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 
 db = SQLAlchemy(session_options=dict(autoflush=True))
-ALEMBIC_VERSION = "151400d38e03"
+ALEMBIC_VERSION = "2aa59981b59d"
 
 class Serializer(object):
     """Serialize a query result object."""
@@ -105,7 +105,7 @@ class Task(db.Model, Serializer):
     started = db.Column(db.DateTime(timezone=False), nullable=True)
     completed = db.Column(db.DateTime(timezone=False), nullable=True)
 
-    __table_args__ = db.Index("ix_node_task", node_id, task_id, unique=True),
+    __table_args__ = db.Index("ix_node_task", node_id, task_id),
 
     def __init__(self, path, filename, package, timeout, priority, options,
                  machine, platform, tags, custom, owner, memory, clock,
