@@ -10,3 +10,4 @@ chardet
 nose
 python-dateutil
 requests
+flask
