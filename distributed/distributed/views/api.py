@@ -43,10 +43,23 @@ def node_get(name=None):
             ))
 
         nodes[node.name] = dict(
+            enabled=node.enabled,
             name=node.name,
             url=node.url,
             machines=machines,
         )
+
+    # In the "workers" mode we only report the names of each enabled node.
+    if request.args.get("mode") == "workers":
+        workers = []
+        for node in nodes.values():
+            if not node["enabled"]:
+                continue
+
+            workers.append(node["name"])
+
+        return " ".join(sorted(workers))
+
     return jsonify(success=True, nodes=nodes)
 
 @blueprint.route("/node", methods=["POST"])
