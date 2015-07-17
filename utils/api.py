@@ -131,7 +131,7 @@ def tasks_create_url():
         clock=clock
     )
 
-    return jsonify(task_id)
+    return jsonify(task_id=task_id)
 
 @app.route("/tasks/list")
 @app.route("/v1/tasks/list")
