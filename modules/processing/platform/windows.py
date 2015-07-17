@@ -94,7 +94,7 @@ class WindowsMonitor(BehaviorHandler):
 
     def run(self):
         if not self.matched:
-            return False
+            return
 
         self.processes.sort(key=lambda process: process["first_seen"])
         return self.processes
@@ -195,19 +195,14 @@ class BehaviorReconstructor(object):
     _api_NtSetValueKey = _api_RegSetValueExA
 
     def _api_NtClose(self, return_value, arguments):
-        h = arguments["handle"]
-        if h in self.files:
-            del self.files[h]
-
-    def _api_RegCloseKey(self, return_value, arguments):
-        args = dict(handle=arguments["key_handle"])
-        return self._api_NtClose(return_value, args)
+        self.files.pop(arguments["handle"], None)
 
     # Network stuff.
 
     def _api_URLDownloadToFileW(self, return_value, arguments):
         return [
             ("downloads_file", arguments["url"]),
+            ("file_opened", arguments["filepath"])
             ("file_written", arguments["filepath"])
         ]
 
@@ -235,6 +230,7 @@ class BehaviorReconstructor(object):
         return ("connects_ip", arguments["ip_address"])
 
     # Mutex stuff
+
     def _api_NtCreateMutant(self, return_value, arguments):
         return ("mutex", arguments["mutant_name"])
 

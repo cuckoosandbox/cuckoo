@@ -81,6 +81,8 @@ class ProcessTree(BehaviorHandler):
 
     def handle_event(self, process):
         if process["pid"] in self.processes:
+            log.warning("Found the same process identifier twice, this "
+                        "shouldn't happen!")
             return
 
         self.processes[process["pid"]] = {
