@@ -404,7 +404,7 @@ def cuckoo_status():
 
     diskspace = {}
     for key, path in paths.items():
-        if hasattr(os, "statvfs"):
+        if hasattr(os, "statvfs") and os.path.isdir(path):
             stats = os.statvfs(path)
             diskspace[key] = dict(
                 free=stats.f_bavail * stats.f_frsize,
