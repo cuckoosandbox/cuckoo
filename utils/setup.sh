@@ -196,13 +196,17 @@ _setup() {
     # Setup a Cuckoo user.
     useradd cuckoo -d /home/cuckoo -s /bin/bash
 
+    # Copy any authorized keys from the current user to the cuckoo user.
+    mkdir /home/cuckoo/.ssh
+    cp ~/.ssh/authorized_keys /home/cuckoo/.ssh/authorized_keys
+
     # Add the www-data user to the cuckoo group.
     adduser www-data cuckoo
 
     VMTEMP="$(mktemp -d "/home/cuckoo/tempXXXXXX")"
 
     # Fetch Cuckoo.
-    git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO" -b monitor
+    git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
 
     chown -R cuckoo:cuckoo "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
     chmod 755 "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
@@ -211,7 +215,8 @@ _setup() {
     pip install --upgrade psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
 
     # Create a random password.
-    PASSWORD="$(pwgen -1 16)"
+    # PASSWORD="$(pwgen -1 16)"
+    PASSWORD="cuckoo"
 
     sql_query() {
         echo "$1"|sudo -u postgres psql
@@ -465,3 +470,6 @@ fi
 
 echo "PostgreSQL connection string:  " \
     "postgresql://cuckoo:$PASSWORD@localhost/cuckoo"
+
+# A reboot is required for the grub command-line to take effect.
+shutdown -r now
