@@ -109,3 +109,28 @@ class TestAPICalls(DtraceTestCase):
         self.assertEqual(len(matched_grandchild), 1)
         self.assertEqual(len(matched_child), 1)
         self.assertEqual(len(matched_parent), 1)
+
+    @timed(15)
+    def test_apicalls_from_dynamic_library(self):
+        # given
+        expected_api = ("rb_isalpha", ["0x61"], 1)
+        # when
+        output = []
+        for call in apicalls(self.current_target()):
+            output.append(call)
+        matched = [x for x in output if (x.api, x.args, x.retval) == expected_api]
+        # then
+        print output
+        self.assertEqual(len(matched), 1)
+
+    @timed(5)
+    def test_apicalls_from_dynamic_library_root(self):
+        # given
+        expected_api = ("rb_isalpha", ["0x61"], 1)
+        # when
+        output = []
+        for call in apicalls(self.current_target(), run_as_root=True):
+            output.append(call)
+        matched = [x for x in output if (x.api, x.args, x.retval) == expected_api]
+        # then
+        self.assertEqual(len(matched), 1)

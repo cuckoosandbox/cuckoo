@@ -88,7 +88,8 @@ pid$target:libsystem_c.dylib:atoi:entry
 /* Two arguments */
 pid$target:libdyld:dlopen:entry,
 pid$target:libdyld:dlsym:entry,
-pid$target::fprintf:entry
+pid$target::fprintf:entry,
+pid$target::rb_isalpha:entry
 {
     ++self->deeplevel;
     self->arguments_stack[self->deeplevel, "arg0"] = self->arg0;
@@ -138,6 +139,26 @@ pid$target:libsystem_c.dylib:atoi:return
     printf("{\"api\":\"%s\", \"args\":[\"%S\"], \"retval\":%d, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
         probefunc,
         copyinstr(self->arg0),
+        (int)this->retval,
+        this->timestamp_ms, pid, ppid, tid);
+
+    /* Restore arguments for our callee */
+    self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
+    /* Release the memory for the current level stack */
+    self->arguments_stack[self->deeplevel, "arg0"] = 0;
+    --self->deeplevel;
+}
+
+/* One argument: char/int, retval: int */
+pid$target::rb_isalpha:return
+{
+    this->retval = arg1;
+    this->is_success = (this->retval == 1);
+    this->timestamp_ms = walltimestamp/1000000;
+
+    printf("{\"api\":\"%s\", \"args\":[%d], \"retval\":%d, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
+        probefunc,
+        (int)self->arg0,
         (int)this->retval,
         this->timestamp_ms, pid, ppid, tid);
 

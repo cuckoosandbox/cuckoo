@@ -28,6 +28,8 @@ def apicalls(target, **kwargs):
     cmd += ["-C"]
     # Use -I for adding a current directory to the search path for #includes
     cmd += ["-I./"]
+    # Use -Z to allow probe descriptions that match zero probes in a target
+    cmd += ["-Z"]
     if "timeout" in kwargs:
         cmd += ["-DANALYSIS_TIMEOUT=%d" % kwargs["timeout"]]
     cmd += ["-s", path_for_script("apicalls.d")]
