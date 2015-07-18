@@ -27,7 +27,7 @@ class Macalyzer(object):
         self.config = configuration
         self.host = host
 
-    def _bootstrap(self):
+    def bootstrap(self):
         _create_result_folders()
         _setup_logging()
         self._detect_target()
@@ -35,7 +35,7 @@ class Macalyzer(object):
     def run(self):
         """Run analysis.
         """
-        self._bootstrap()
+        self.bootstrap()
 
         self.log.debug("Starting analyzer from %s", getcwd())
         self.log.debug("Storing results at: %s", PATHS["root"])
