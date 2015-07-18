@@ -5,16 +5,18 @@
 
 import logging
 from shutil import move
+from os import path, environ
 from random import SystemRandom
 from string import ascii_letters
 from subprocess import check_output
-from os import path, environ, system
 from zipfile import ZipFile, BadZipfile
 from lib.core.packages import Package, choose_package_class
 
 log = logging.getLogger(__name__)
 
 class Zip(Package):
+
+    real_package = None
 
     def prepare(self):
         password = self.options.get("password")
@@ -26,7 +28,7 @@ class Zip(Package):
         if not target_name:
             # If no file name is provided via option, take the first file
             target_name = files[0]
-            log.debug("Missing file option, auto executing: {0}".format(target_name))
+            log.debug("Missing file option, auto executing: %s", target_name)
 
         filepath = path.join(environ.get("TEMP", "/tmp"), target_name)
         # Remove the trailing slash (if any)
@@ -38,14 +40,13 @@ class Zip(Package):
         # Since we don't know what kind of file we're going to analyse, let's
         # detect it automatically and create an appropriate analysis package
         # for this file
-        file_info = self._fileinfo(self.target)
+        file_info = _fileinfo(self.target)
         pkg_class = choose_package_class(file_info, target_name)
 
         if not pkg_class:
             raise Exception("Unable to detect analysis package for the file %s" % target_name)
         else:
-            log.debug("Analysing file \"%s\" using package \"%s\"", target_name,
-                pkg_class.__name__)
+            log.debug("Analysing file \"%s\" using package \"%s\"", target_name, pkg_class.__name__)
 
         kwargs = {
             "options" : self.options,
@@ -57,25 +58,24 @@ class Zip(Package):
     def start(self):
         # We have nothing to do here; let the proper package do it's job
         self.prepare()
+        if not self.real_package:
+            raise Exception("Invalid analysis package, aborting")
         self.real_package.start()
 
-    def _fileinfo(self, file):
-        o = check_output(["file", file])
-        return o[o.index(":")+2:]
-
-    def _extract(self, file, password):
+    def _extract(self, archive_path, password):
         # Verify that the archive is actually readable
-        if not self._verify_archive(file):
+        if _verify_archive(archive_path) == False:
             return None
         # Test if zip file contains a file named as itself.
-        if self._is_overwritten(file):
-            log.debug("ZIP file contains a file with the same name, original is going to be overwrite")
-            new_zip_path = file + self._random_extension()
-            move(file, new_zip_path)
-            file = new_zip_path
+        if _is_overwritten(archive_path):
+            log.debug("ZIP file contains a file with the same name, original is \
+            going to be overwrite")
+            new_zip_path = archive_path + _random_extension()
+            move(archive_path, new_zip_path)
+            archive_path = new_zip_path
         # Extraction.
         extract_path = environ.get("TEMP", "/tmp")
-        with ZipFile(file, "r") as archive:
+        with ZipFile(archive_path, "r") as archive:
             try:
                 archive.extractall(path=extract_path, pwd=password)
             except BadZipfile:
@@ -84,35 +84,42 @@ class Zip(Package):
             except RuntimeError:
                 try:
                     archive.extractall(path=extract_path, pwd="infected")
-                except RuntimeError as e:
-                    raise Exception("Unable to extract Zip file: {0}".format(e))
+                except RuntimeError as err:
+                    raise Exception("Unable to extract Zip file: %s" % err)
             finally:
                 self._extract_nested_archives(archive, extract_path, password)
         return archive.namelist()
 
-    def _extract_nested_archives(self, arch, where, password):
+    def _extract_nested_archives(self, archive, where, password):
         for name in archive.namelist():
             if name.endswith(".zip"):
-                self._extract(os.path.join(where, name), password)
+                self._extract(path.join(where, name), password)
 
-    def _verify_archive(self, path):
+
+def _is_overwritten(zip_path):
+    with ZipFile(zip_path, "r") as archive:
         try:
-            with ZipFile(path, "r") as archive:
-                archive.close()
-                return True
-        except BadZipfile:
+            # Test if zip file contains a file named as itself
+            for name in archive.namelist():
+                if name == path.basename(zip_path):
+                    return True
             return False
+        except BadZipfile:
+            raise Exception("Invalid Zip file")
 
-    def _is_overwritten(self, zip_path):
-        with ZipFile(zip_path, "r") as archive:
-            try:
-                # Test if zip file contains a file named as itself
-                for name in archive.namelist():
-                    if name == path.basename(zip_path):
-                        return True
-                return False
-            except BadZipfile:
-                raise Exception("Invalid Zip file")
+def _random_extension(length=5):
+    return '.' + ''.join(SystemRandom().choice(ascii_letters) for _ in range(length))
 
-    def _random_extension(length=5):
-        return '.' + ''.join(SystemRandom().choice(ascii_letters) for _ in range(length))
+
+def _fileinfo(target):
+    raw = check_output(["file", target])
+    return raw[raw.index(":")+2:]
+
+
+def _verify_archive(archive_path):
+    try:
+        with ZipFile(archive_path, "r") as archive:
+            archive.close()
+            return True
+    except BadZipfile:
+        return False
