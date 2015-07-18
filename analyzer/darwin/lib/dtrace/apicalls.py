@@ -56,8 +56,8 @@ def apicalls(target, **kwargs):
 
     # The dtrace script will take care of timeout itself, so we just launch
     # it asynchronously
-    with open(os.devnull, "w") as f:
-        handler = Popen(cmd, stdout=f, stderr=f, cwd=current_directory())
+    with open(os.devnull, "w") as null:
+        _ = Popen(cmd, stdout=null, stderr=null, cwd=current_directory())
 
     for entry in filelines(output_file):
         value = entry.strip()
