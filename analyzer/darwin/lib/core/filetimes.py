@@ -24,7 +24,6 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """Tools to convert between Python datetime instances and Microsoft times.
 """
-from datetime import datetime, timedelta, tzinfo
 from calendar import timegm
 
 
