@@ -6,9 +6,9 @@
 from os import path
 from time import sleep
 
-def sanitize_path(path):
+def sanitize_path(raw_path):
     """ Replace spaces with backslashes+spaces """
-    return path.replace(" ", "\\ ")
+    return raw_path.replace(" ", "\\ ")
 
 def path_for_script(script):
     """ Return the full path for the given script """
