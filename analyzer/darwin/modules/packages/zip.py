@@ -87,15 +87,18 @@ class Zip(Package):
                 except RuntimeError as e:
                     raise Exception("Unable to extract Zip file: {0}".format(e))
             finally:
-                # Extract nested archives
-                for name in archive.namelist():
-                    if name.endswith(".zip"):
-                        self._extract(os.path.join(extract_path, name), password)
+                self._extract_nested_archives(archive, extract_path, password)
         return archive.namelist()
+
+    def _extract_nested_archives(self, arch, where, password):
+        for name in archive.namelist():
+            if name.endswith(".zip"):
+                self._extract(os.path.join(where, name), password)
 
     def _verify_archive(self, path):
         try:
             with ZipFile(path, "r") as archive:
+                archive.close()
                 return True
         except BadZipfile:
             return False
