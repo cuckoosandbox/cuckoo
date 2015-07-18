@@ -3,9 +3,7 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE file for details.
 
-from ..dtrace.dtruss import dtruss
 from ..dtrace.apicalls import apicalls
-from ..dtrace.ipconnections import ipconnections
 
 import inspect
 from os import sys, path
@@ -35,9 +33,9 @@ def choose_package_class(file_type, file_name, suggestion=None):
         members = inspect.getmembers(module, inspect.isclass)
         pkg_class = [x[1] for x in members if x[0] == name.capitalize()][0]
         # raise Exception(pkg_class)
-    except IndexError as e:
+    except IndexError as err:
         raise Exception("Unable to select package class (package={0}): "
-                        "{1}".format(full_name, e))
+                        "{1}".format(full_name, err))
     return pkg_class
 
 
@@ -111,7 +109,7 @@ class Package(object):
         for call in apicalls(self.target, **kwargs):
             self.host.send_api(call)
 
-def _string_to_bool(str):
-    if not isinstance(str, basestring):
+def _string_to_bool(raw):
+    if not isinstance(raw, basestring):
         raise Exception("Unexpected input: not a string :/")
-    return str.lower() in ("yes", "true", "t", "1")
+    return raw.lower() in ("yes", "true", "t", "1")
