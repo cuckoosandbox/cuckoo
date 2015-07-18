@@ -73,6 +73,8 @@ class Macalyzer(object):
         kwargs = {"suggestion" : suggestion}
         package_class = choose_package_class(self.config.file_type,
                                              self.config.file_name, **kwargs)
+        if not package_class:
+            raise Exception("Could not find an appropriate analysis package")
         # Package initialization
         kwargs = {
             "options" : self.config.get_options(),
