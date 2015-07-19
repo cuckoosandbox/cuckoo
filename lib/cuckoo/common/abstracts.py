@@ -627,6 +627,8 @@ class Processing(object):
         self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
         self.pmemory_path = os.path.join(self.analysis_path, "memory")
         self.memory_path = os.path.join(self.analysis_path, "memory.dmp")
+        self.mitmout_path = os.path.join(self.analysis_path, "mitm.log")
+        self.mitmerr_path = os.path.join(self.analysis_path, "mitm.err")
 
     def set_results(self, results):
         """Set the results - the fat dictionary."""

@@ -32,4 +32,9 @@ class Debug(Processing):
         for error in Database().view_errors(int(self.task["id"])):
             debug["errors"].append(error.message)
 
+        if os.path.exists(self.mitmerr_path):
+            mitmerr = open(self.mitmerr_path, "rb").read()
+            if mitmerr:
+                debug["errors"].append(mitmerr)
+
         return debug
