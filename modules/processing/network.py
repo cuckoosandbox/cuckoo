@@ -654,13 +654,13 @@ class NetworkAnalysis(Processing):
             results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
 
         # Include any results provided by the mitm script.
-        self.results["mitm"] = []
+        results["mitm"] = []
         if os.path.exists(self.mitmout_path):
             for line in open(self.mitmout_path, "rb"):
                 try:
-                    self.results["mitm"].append(json.loads(line))
+                    results["mitm"].append(json.loads(line))
                 except:
-                    self.results["mitm"].append(line)
+                    results["mitm"].append(line)
 
         return results
 
