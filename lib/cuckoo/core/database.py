@@ -509,10 +509,10 @@ class Database(object):
         session = self.Session()
         try:
             row = session.query(Task).get(task_id)
-            
+
             if not row:
                 return
-            
+
             row.status = status
 
             if status == TASK_RUNNING:

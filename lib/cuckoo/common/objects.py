@@ -254,39 +254,42 @@ class File:
         """
         matches = []
 
-        if HAVE_YARA:
-            if os.path.getsize(self.file_path) > 0:
-                if not os.path.exists(rulepath):
-                    log.warning("The specified rule file at %s doesn't exist, skip",
-                                rulepath)
-                    return
-
-                try:
-                    rules = yara.compile(rulepath)
-
-                    for match in rules.match(self.file_path):
-                        strings = []
-                        for s in match.strings:
-                            # Beware, spaghetti code ahead.
-                            try:
-                                new = s[2].encode("utf-8")
-                            except UnicodeDecodeError:
-                                s = s[2].lstrip("uU").encode("hex").upper()
-                                s = " ".join(s[i:i+2] for i in range(0, len(s), 2))
-                                new = "{ %s }" % s
-
-                            if new not in strings:
-                                strings.append(new)
-
-                        matches.append({"name": match.rule,
-                                        "meta": match.meta,
-                                        "strings": strings})
-                except Exception as e:
-                    log.warning("Unable to match Yara signatures: %s", e)
-        else:
+        if not HAVE_YARA:
             if not File.notified_yara:
                 File.notified_yara = True
                 log.warning("Unable to import yara (please compile from sources)")
+            return matches
+
+        if not os.path.exists(rulepath):
+            log.warning("The specified rule file at %s doesn't exist, skip",
+                        rulepath)
+            return matches
+
+        if not os.path.getsize(self.file_path):
+            return matches
+
+        try:
+            rules = yara.compile(rulepath)
+
+            for match in rules.match(self.file_path):
+                strings = []
+                for s in match.strings:
+                    # Beware, spaghetti code ahead.
+                    try:
+                        new = s[2].encode("utf-8")
+                    except UnicodeDecodeError:
+                        s = s[2].lstrip("uU").encode("hex").upper()
+                        s = " ".join(s[i:i+2] for i in range(0, len(s), 2))
+                        new = "{ %s }" % s
+
+                    if new not in strings:
+                        strings.append(new)
+
+                matches.append({"name": match.rule,
+                                "meta": match.meta,
+                                "strings": strings})
+        except Exception as e:
+            log.exception("Unable to match Yara signatures: %s", e)
 
         return matches
 
