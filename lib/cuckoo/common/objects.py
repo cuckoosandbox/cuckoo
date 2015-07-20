@@ -248,6 +248,31 @@ class File:
 
         return file_type
 
+    def _yara_matches_177(self, matches):
+        """Extract matches from the Yara output for version 1.7.7."""
+        ret = []
+        for _, rule_matches in matches.items():
+            for match in rule_matches:
+                strings = set()
+
+                for s in match["strings"]:
+                    # Beware, spaghetti code ahead.
+                    try:
+                        new = s["data"].encode("utf-8")
+                    except UnicodeDecodeError:
+                        s = s["data"].lstrip("uU").encode("hex").upper()
+                        s = " ".join(s[i:i+2] for i in range(0, len(s), 2))
+                        new = "{ %s }" % s
+
+                    strings.add(new)
+
+                ret.append({
+                    "rule": match["rule"],
+                    "meta": match["meta"],
+                    "strings": list(strings),
+                })
+        return ret
+
     def get_yara(self, rulepath=os.path.join(CUCKOO_ROOT, "data", "yara", "index_binaries.yar")):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
@@ -270,8 +295,12 @@ class File:
 
         try:
             rules = yara.compile(rulepath)
+            matches = rules.match(self.file_path)
 
-            for match in rules.match(self.file_path):
+            if yara.__version__ == "1.7.7":
+                return self._yara_matches_177(matches)
+
+            for match in matches:
                 strings = []
                 for s in match.strings:
                     # Beware, spaghetti code ahead.
