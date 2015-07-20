@@ -51,6 +51,9 @@ class URL:
 class File:
     """Basic file object class with all useful utilities."""
 
+    YARA_RULEPATH = \
+        os.path.join(CUCKOO_ROOT, "data", "yara", "index_binaries.yar")
+
     # static fields which indicate whether the user has been
     # notified about missing dependencies already
     notified_yara = False
@@ -276,7 +279,7 @@ class File:
                 })
         return ret
 
-    def get_yara(self, rulepath=os.path.join(CUCKOO_ROOT, "data", "yara", "index_binaries.yar")):
+    def get_yara(self, rulepath=YARA_RULEPATH):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
         """
