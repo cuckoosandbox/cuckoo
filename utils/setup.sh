@@ -182,13 +182,11 @@ _setup() {
     pg_createcluster 9.3 main --start
 
     # Install the VirtualBox Extension Pack for VRDE support.
-    if grep "Extension Packs: 0" <(VBoxManage list extpacks); then
-        VBOXVERSION="$(VBoxManage --version|sed s/r/\-/)"
-        PRETTYNAME="Oracle_VM_VirtualBox_Extension_Pack-$VBOXVERSION"
-        wget "http://cuckoo.sh/vmcloak-files/${PRETTYNAME}.vbox-extpack"
-        VBoxManage extpack install --replace "${PRETTYNAME}.vbox-extpack"
-        rm -f "${PRETTYNAME}.vbox-extpack"
-    fi
+    VBOXVERSION="$(VBoxManage --version|sed s/r/\-/)"
+    PRETTYNAME="Oracle_VM_VirtualBox_Extension_Pack-$VBOXVERSION"
+    wget "http://cuckoo.sh/vmcloak-files/${PRETTYNAME}.vbox-extpack"
+    VBoxManage extpack install --replace "${PRETTYNAME}.vbox-extpack"
+    rm -f "${PRETTYNAME}.vbox-extpack"
 
     # Allow tcpdump to dump packet captures when executed as a normal user.
     setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
