@@ -2,9 +2,15 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
+
 try:
     import requests
     HAVE_REQUESTS = True
+
+    # Disable requests/urllib3 debug & info messages.
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
 except ImportError:
     HAVE_REQUESTS = False
 
