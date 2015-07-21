@@ -14,6 +14,7 @@ class MonitorProcessLog(list):
     def __init__(self, eventstream):
         self.eventstream = eventstream
         self.first_seen = None
+        self.has_apicalls = False
 
     def __iter__(self):
         # call_id = 0
@@ -21,6 +22,8 @@ class MonitorProcessLog(list):
             if event["type"] == "process":
                 self.first_seen = event["first_seen"]
             elif event["type"] == "apicall":
+                self.has_apicalls = True
+
                 event["time"] = self.first_seen + datetime.timedelta(0, 0, event["time"] * 1000)
 
                 # backwards compat with previous reports, remove if not necessary
@@ -44,7 +47,7 @@ class MonitorProcessLog(list):
     def __nonzero__(self):
         """Required for the JSON reporting module as otherwise the on-demand
         generated list of API calls would be seen as empty."""
-        return True
+        return self.has_apicalls
 
 class WindowsMonitor(BehaviorHandler):
     """Parses monitor generated logs."""
