@@ -68,17 +68,15 @@ class WindowsMonitor(BehaviorHandler):
         # Invoke parsing of current log file.
         parser = BsonParser(open(path, "rb"))
 
-        first_apicall = True
-
         for event in parser:
             if event["type"] == "process":
                 process = dict(event)
-                process["calls"] = []
+                process["calls"] = MonitorProcessLog(parser)
                 self.processes.append(process)
 
                 self.reconstructors[process["pid"]] = BehaviorReconstructor()
 
-            # Create generic events out of the windows calls.
+            # create generic events out of the windows calls
             elif event["type"] == "apicall":
                 reconstructor = self.reconstructors[event["pid"]]
                 res = reconstructor.process_apicall(event)
@@ -94,16 +92,6 @@ class WindowsMonitor(BehaviorHandler):
                             "category": category,
                             "value": arg,
                         }
-
-                # If this is the first apicall then we instantiate the
-                # MonitorProcessLog parser for the calls. This fixes an issue
-                # when there are no actual API calls while the
-                # MonitorProcessLog returns True for __nonzero__. In effect
-                # this causes the json dumping to fail dumping the "list"
-                # leaving us with a non-compliant JSON file.
-                if first_apicall:
-                    process["calls"] = MonitorProcessLog(parser)
-                    first_apicall = False
 
             yield event
 
