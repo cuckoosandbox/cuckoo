@@ -48,7 +48,7 @@ class URL:
         """@param url: URL"""
         self.url = url
 
-class File:
+class File(object):
     """Basic file object class with all useful utilities."""
 
     YARA_RULEPATH = \
@@ -277,6 +277,7 @@ class File:
                     "meta": match["meta"],
                     "strings": list(strings),
                 })
+
         return ret
 
     def get_yara(self, rulepath=YARA_RULEPATH):

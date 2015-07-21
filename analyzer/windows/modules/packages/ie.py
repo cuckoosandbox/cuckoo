@@ -2,11 +2,14 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import os
 
 from _winreg import HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER
 
 from lib.common.abstracts import Package
+
+log = logging.getLogger(__name__)
 
 class IE(Package):
     """Internet Explorer analysis package."""

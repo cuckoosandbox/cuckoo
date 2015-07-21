@@ -2,12 +2,13 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-import logging
 import collections
+import logging
+import os
 
 from lib.cuckoo.common.abstracts import Processing, BehaviorHandler
 from lib.cuckoo.common.config import Config
+
 from .platform.windows import WindowsMonitor
 from .platform.linux import LinuxSystemTap
 
