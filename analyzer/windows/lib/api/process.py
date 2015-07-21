@@ -195,7 +195,7 @@ class Process(object):
         return bitsize == 32
 
     def execute(self, path, args=None, dll=None, free=False, curdir=None,
-                source=None):
+                source=None, mode=None):
         """Execute sample process.
         @param path: sample path.
         @param args: process args.
@@ -204,6 +204,7 @@ class Process(object):
         @param curdir: current working directory.
         @param source: process identifier or process name which will
                        become the parent process for the new process.
+        @param mode: monitor mode - which functions to instrument.
         @return: operation status.
         """
         if not os.access(path, os.X_OK):
@@ -240,7 +241,7 @@ class Process(object):
             argv += ["--free"]
         else:
             argv += ["--apc", "--dll", dllpath,
-                     "--config", self.drop_config()]
+                     "--config", self.drop_config(mode=mode)]
 
         if curdir:
             argv += ["--curdir", self.shortpath(curdir)]
@@ -279,10 +280,12 @@ class Process(object):
             log.error("Failed to terminate process with pid %d.", self.pid)
             return False
 
-    def inject(self, dll=None, apc=False, track=True):
+    def inject(self, dll=None, apc=False, track=True, mode=None):
         """Inject our monitor into the specified process.
         @param dll: Cuckoo DLL path.
         @param apc: Use APC injection.
+        @param track: Track this process in the analyzer.
+        @param mode: Monitor mode - which functions to instrument.
         """
         if not self.pid and not self.process_name:
             log.warning("No valid pid or process name specified, "
@@ -322,7 +325,7 @@ class Process(object):
 
         args = [
             inject_exe, "--dll", dllpath,
-            "--config", self.drop_config(track=track),
+            "--config", self.drop_config(track=track, mode=mode),
         ]
 
         if self.pid:
@@ -346,7 +349,7 @@ class Process(object):
         log.info("Successfully injected process with pid %s", self.pid)
         return True
 
-    def drop_config(self, track=True):
+    def drop_config(self, track=True, mode=None):
         """Helper function to drop the configuration for a new process."""
         fd, config_path = tempfile.mkstemp()
 
@@ -370,6 +373,7 @@ class Process(object):
             "force-sleepskip": self.config.options.get("force-sleepskip", "0"),
             "hashes-path": os.path.join(os.getcwd(), "hashes.bin"),
             "track": "1" if track else "0",
+            "mode": mode or "",
         }
 
         for key, value in lines.items():

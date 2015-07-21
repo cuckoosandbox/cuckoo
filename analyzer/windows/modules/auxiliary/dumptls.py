@@ -12,5 +12,5 @@ log = logging.getLogger(__name__)
 class DumpTLSMasterSecrets(Auxiliary):
     """Dump TLS master secrets as used by various Windows libraries."""
     def start(self):
-        Process(process_name="lsass.exe").inject(track=False)
+        Process(process_name="lsass.exe").inject(track=False, mode="dumptls")
         log.info("Injected lsass for dumping TLS master secrets!")
