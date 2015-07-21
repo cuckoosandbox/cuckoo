@@ -18,8 +18,7 @@ class TLSMasterSecrets(Processing):
         # Build server random -> session id from the pcap information.
         if "network" in self.results and "tls" in self.results["network"]:
             for row in self.results["network"]["tls"]:
-                server_random = row["server_random"].encode("hex")
-                metakeys[server_random] = row["session_id"].encode("hex")
+                metakeys[row["server_random"]] = row["session_id"]
 
         results = {}
 

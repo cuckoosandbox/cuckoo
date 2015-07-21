@@ -456,8 +456,8 @@ class Pcap:
 
         # Extract the server random and the session id.
         self.tls_keys.append({
-            "server_random": record.data.random,
-            "session_id": record.data.session_id,
+            "server_random": record.data.random.encode("hex"),
+            "session_id": record.data.session_id.encode("hex"),
         })
 
     def _reassemble_smtp(self, conn, data):
