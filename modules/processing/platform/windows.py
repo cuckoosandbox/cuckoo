@@ -22,8 +22,6 @@ class MonitorProcessLog(list):
             if event["type"] == "process":
                 self.first_seen = event["first_seen"]
             elif event["type"] == "apicall":
-                self.has_apicalls = True
-
                 event["time"] = self.first_seen + datetime.timedelta(0, 0, event["time"] * 1000)
 
                 # backwards compat with previous reports, remove if not necessary
@@ -51,9 +49,12 @@ class MonitorProcessLog(list):
         Note that the result structure is kept between processing and
         reporting time which means that at reporting time, where this
         functionality is actually needed, the has_apicalls will already have
-        been set by an earlier iteration over the MonitorProcessLog. We use
-        this knowledge to pass along whether or not this log actually has API
-        call events and thus whether it's "nonzero" or not.
+        been set while iterating through the BSON logs iterator in the parse()
+        function of the WindowsMonitor class. We use this knowledge to pass
+        along whether or not this log actually has API call events and thus
+        whether it's "nonzero" or not. (The correctness of this field is
+        required as otherwise the json.dump() function will fail - probably
+        due to buffering issues).
         """
         return self.has_apicalls
 
@@ -100,6 +101,10 @@ class WindowsMonitor(BehaviorHandler):
                             "category": category,
                             "value": arg,
                         }
+
+                # Indicate that the process has API calls. For more
+                # information on this matter, see also the __nonzero__ above.
+                process["calls"].has_apicalls = True
 
             yield event
 
