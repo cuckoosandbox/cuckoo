@@ -437,7 +437,6 @@ class Pcap:
         if record.type not in dpkt.ssl.RECORD_TYPES:
             return
 
-        # Is this a TLSv1 Handshake packet?
         try:
             record = dpkt.ssl.RECORD_TYPES[record.type](record.data)
         except dpkt.ssl.SSL3Exception:
@@ -447,21 +446,19 @@ class Pcap:
             log.exception("Incomplete possible TLS Handshake record found")
             return
 
+        # Is this a TLSv1 Handshake packet?
         if not isinstance(record, dpkt.ssl.TLSHandshake):
             return
 
-        keys = {}
-        if conn["dport"] in self.ssl_ports and \
-                isinstance(record.data, dpkt.ssl.TLSClientHello):
-            keys["client_random"] = record.data.random
-            keys["client_session_id"] = getattr(record.data, "session_id")
-        elif conn["sport"] in self.ssl_ports and \
-                isinstance(record.data, dpkt.ssl.TLSServerHello):
-            keys["server_random"] = record.data.random
-            keys["server_session_id"] = getattr(record.data, "session_id")
+        # We're only interested in the TLS Server Hello packets.
+        if not isinstance(record.data, dpkt.ssl.TLSServerHello):
+            return
 
-        if keys:
-            self.tls_keys.append(keys)
+        # Extract the server random and the session id.
+        self.tls_keys.append({
+            "server_random": record.data.random,
+            "session_id": record.data.session_id,
+        })
 
     def _reassemble_smtp(self, conn, data):
         """Reassemble a SMTP flow.
