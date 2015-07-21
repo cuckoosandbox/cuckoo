@@ -136,12 +136,12 @@ class BehaviorReconstructor(object):
     _api_RemoveDirectoryW = _api_RemoveDirectoryA
 
     def _api_MoveFileWithProgressW(self, return_value, arguments):
-        return ("file_moved", dict(src=arguments["oldfilepath"],
-                                   dst=arguments["newfilepath"]))
+        return ("file_moved", (arguments["oldfilepath"],
+                               arguments["newfilepath"]))
 
     def _api_CopyFileA(self, return_value, arguments):
-        return ("file_copied", dict(src=arguments["oldfilepath"],
-                                    dst=arguments["newfilepath"]))
+        return ("file_copied", (arguments["oldfilepath"],
+                                arguments["newfilepath"]))
 
     _api_CopyFileW = _api_CopyFileA
     _api_CopyFileExW = _api_CopyFileA
