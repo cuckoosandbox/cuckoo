@@ -46,7 +46,15 @@ class MonitorProcessLog(list):
 
     def __nonzero__(self):
         """Required for the JSON reporting module as otherwise the on-demand
-        generated list of API calls would be seen as empty."""
+        generated list of API calls would be seen as empty.
+
+        Note that the result structure is kept between processing and
+        reporting time which means that at reporting time, where this
+        functionality is actually needed, the has_apicalls will already have
+        been set by an earlier iteration over the MonitorProcessLog. We use
+        this knowledge to pass along whether or not this log actually has API
+        call events and thus whether it's "nonzero" or not.
+        """
         return self.has_apicalls
 
 class WindowsMonitor(BehaviorHandler):
@@ -76,7 +84,7 @@ class WindowsMonitor(BehaviorHandler):
 
                 self.reconstructors[process["pid"]] = BehaviorReconstructor()
 
-            # create generic events out of the windows calls
+            # Create generic events out of the windows calls.
             elif event["type"] == "apicall":
                 reconstructor = self.reconstructors[event["pid"]]
                 res = reconstructor.process_apicall(event)
