@@ -23,8 +23,8 @@ def choose_package_class(file_type, file_name, suggestion=None):
         # I couldn't figure out how to make __import__ import anything from
         # the (grand)parent package, so here I just patch the PATH
         sys.path.append(path.abspath(path.join(path.dirname(__file__), '..', '..')))
-        # Since we don't now the package class yet, we import everything from
-        # within this module (i.e. fromlist=['*'])
+        # Since we don't know the package class yet, we'll just import everything
+        # from this module and then try to figure out the required member class
         module = __import__(full_name, globals(), locals(), ['*'])
     except ImportError:
         raise Exception("Unable to import package \"{0}\": it does not "
