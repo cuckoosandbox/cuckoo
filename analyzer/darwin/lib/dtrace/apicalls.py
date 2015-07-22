@@ -33,7 +33,7 @@ def apicalls(target, **kwargs):
     if "timeout" in kwargs:
         cmd += ["-DANALYSIS_TIMEOUT=%d" % kwargs["timeout"]]
     cmd += ["-s", path_for_script("apicalls.d")]
-    cmd += ["-DROOT=1"]
+    cmd += ["-DTOPLEVELSCRIPT=1"]
     cmd += ["-o", output_file.name]
     cmd += ["-DOUTPUT_FILE=\"%s\"" % output_file.name]
 

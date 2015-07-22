@@ -92,7 +92,7 @@ syscall::stat64:entry
 
 dtrace:::END
 {
-#ifdef ROOT
+#ifdef TOPLEVELSCRIPT
     system("sleep 1.5 && echo \"## %s done ##\" >> \"%s\"", SCRIPT_NAME, str(OUTPUT_FILE));
 #endif
 }
