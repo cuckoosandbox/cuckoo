@@ -19,6 +19,7 @@ def choose_package_class(file_type, file_name, suggestion=None):
 
     full_name = "modules.packages.%s" % name
     try:
+        # FIXME(rodionovd):
         # I couldn't figure out how to make __import__ import anything from
         # the (grand)parent package, so here I just patch the PATH
         sys.path.append(path.abspath(path.join(path.dirname(__file__), '..', '..')))
