@@ -785,20 +785,6 @@ class Signature(object):
         res["end"] = self._mark_end
         return res
 
-    def goto_on_call(self, call, pid, tid, cid):
-        """A wrapper around on_call, Handles some
-
-        @call: Call details
-        @pid: process id
-        @tid: thread id
-        @cid: Number of this call in that pid/tid
-        """
-        self.pid = pid
-        self.tid = tid
-        self.cid = cid
-
-        return self.on_call(call, pid, tid)
-
     def get_results(self, key=None, default=None):
         if key:
             return self._caller.results.get(key, default)
@@ -849,7 +835,7 @@ class Signature(object):
         @param actions: A list of actions to get
         """
         ret = []
-        for process in self.get_processes_by_pid(pid):
+        for process in self.get_results("behavior", {}).get("generic", []):
             for action in actions:
                 if action not in process["summary"]:
                     continue
@@ -1131,15 +1117,14 @@ class Signature(object):
         """
         return len(self.data) > 0
 
-    def on_call(self, call, pid, tid):
+    def on_call(self, call, process):
         """Notify signature about API call. Return value determines
         if this signature is done or could still match.
 
         Only called if signature is "active".
 
         @param call: logged API call.
-        @param pid: process id doing API call.
-        @param tid: thread id doing API call.
+        @param process: proc object.
         """
         pass
 

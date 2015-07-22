@@ -436,11 +436,7 @@ class RunSignatures(object):
 
             # Iterate calls and tell interested signatures about them.
             for proc in self.results.get("behavior", {}).get("processes", []):
-                call_count = 0
-
                 for call in proc.get("calls", []):
-                    call_count += 1
-
                     # Loop through active evented signatures.
                     for sig in evented_list:
 
@@ -459,7 +455,7 @@ class RunSignatures(object):
 
                         result = None
                         try:
-                            result = sig.on_call(call, proc["pid"], call_count)
+                            result = sig.on_call(call, proc)
                         except:
                             log.exception("Failed to run signature \"%s\":", sig.name)
                             result = False
