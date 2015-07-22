@@ -34,11 +34,15 @@ class MonitorProcessLog(list):
                 # event["id"] = call_id
                 # call_id += 1
 
-                # remove the type for reporting output
+                # Remove the event type for reporting output.
                 del event["type"]
 
-                # also get rid of the pid (we're below the pid in the structure)
+                # Get rid of the pid (we're below the pid in the structure).
                 del event["pid"]
+
+                # Get rid of the unique hash, this is only relevant
+                # for automation.
+                del event["uniqhash"]
 
                 yield event
 
