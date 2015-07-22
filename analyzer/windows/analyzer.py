@@ -189,7 +189,7 @@ class CommandPipeHandler(object):
         process."""
         return struct.pack("II", self.analyzer.pid, self.analyzer.ppid)
 
-    def _inject_process(self, process_id, thread_id):
+    def _inject_process(self, process_id, thread_id, mode):
         """Helper function for injecting the monitor into a process."""
         # We acquire the process lock in order to prevent the analyzer to
         # terminate the analysis while we are operating on the new process.
@@ -248,9 +248,9 @@ class CommandPipeHandler(object):
 
             # If we have both pid and tid, then we can use APC to inject.
             if process_id and thread_id:
-                proc.inject(dll, apc=True)
+                proc.inject(dll, apc=True, mode="%s" % mode)
             else:
-                proc.inject(dll, apc=False)
+                proc.inject(dll, apc=False, mode="%s" % mode)
 
             log.info("Successfully injected process with pid %s", proc.pid)
 
@@ -262,23 +262,23 @@ class CommandPipeHandler(object):
                         "incorrect argument.")
             return
 
-        return self._inject_process(int(data), None)
+        return self._inject_process(int(data), None, 0)
 
     def _handle_process2(self, data):
         """Request for injection into a process using APC."""
         # Parse the process and thread identifier.
-        if not data or data.count(",") != 1:
+        if not data or data.count(",") != 2:
             log.warning("Received PROCESS2 command from monitor with an "
                         "incorrect argument.")
             return
 
-        pid, tid = data.split(",")
-        if not pid.isdigit() or not tid.isdigit():
+        pid, tid, mode = data.split(",")
+        if not pid.isdigit() or not tid.isdigit() or not mode.isdigit():
             log.warning("Received PROCESS2 command from monitor with an "
                         "incorrect argument.")
             return
 
-        return self._inject_process(int(pid), int(tid))
+        return self._inject_process(int(pid), int(tid), int(mode))
 
     def _handle_file_new(self, data):
         """Notification of a new dropped file."""
