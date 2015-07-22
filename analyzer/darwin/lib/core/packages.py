@@ -30,14 +30,19 @@ def choose_package_class(file_type, file_name, suggestion=None):
         raise Exception("Unable to import package \"{0}\": it does not "
                         "exist.".format(name))
     try:
-        # The first member of the module we've just imported is our target class
-        members = inspect.getmembers(module, inspect.isclass)
-        pkg_class = [x[1] for x in members if x[0] == name.capitalize()][0]
-        # raise Exception(pkg_class)
+        pkg_class = _found_target_class(module, name)
     except IndexError as err:
         raise Exception("Unable to select package class (package={0}): "
                         "{1}".format(full_name, err))
     return pkg_class
+
+
+def _found_target_class(module, name):
+    """ Searches for a class with the specific name: it should be
+    equal to capitalized $name.
+    """
+    members = inspect.getmembers(module, inspect.isclass)
+    return [x[1] for x in members if x[0] == name.capitalize()][0]
 
 
 def _guess_package_name(file_type, file_name):
