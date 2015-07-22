@@ -195,7 +195,7 @@ class Process(object):
         return bitsize == 32
 
     def execute(self, path, args=None, dll=None, free=False, curdir=None,
-                source=None, mode=None):
+                source=None, mode=None, maximize=False):
         """Execute sample process.
         @param path: sample path.
         @param args: process args.
@@ -205,6 +205,7 @@ class Process(object):
         @param source: process identifier or process name which will
                        become the parent process for the new process.
         @param mode: monitor mode - which functions to instrument.
+        @param maximize: whether the GUI should be maximized.
         @return: operation status.
         """
         if not os.access(path, os.X_OK):
@@ -251,6 +252,9 @@ class Process(object):
                 argv += ["--from", "%s" % source]
             else:
                 argv += ["--from-process", source]
+
+        if maximize:
+            argv += ["--maximize"]
 
         try:
             self.pid = int(subprocess.check_output(argv))

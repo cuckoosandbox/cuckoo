@@ -122,4 +122,4 @@ class IE(Package):
             log.info("Submitted file is missing extension, adding .html")
 
         iexplore = self.get_path("Internet Explorer")
-        return self.execute(iexplore, args=[target])
+        return self.execute(iexplore, args=[target], maximize=True)
