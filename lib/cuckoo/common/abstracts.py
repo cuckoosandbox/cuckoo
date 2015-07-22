@@ -725,7 +725,7 @@ class Signature(object):
 
         # Used to de-activate a signature that already matched.
         self._active = True
-
+  
     def is_active(self):
         return self._active
 
@@ -1156,6 +1156,11 @@ class Signature(object):
 
     def on_complete(self):
         """Evented signature is notified when all API calls are done."""
+        pass
+
+    def run(self):
+        """Main function for old-style non-evented signatures.
+        """
         pass
 
     def as_result(self):
