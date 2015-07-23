@@ -273,7 +273,7 @@ class File(object):
                     strings.add(self._yara_encode_string(s["data"]))
 
                 ret.append({
-                    "rule": match["rule"],
+                    "name": match["rule"],
                     "meta": match["meta"],
                     "strings": list(strings),
                 })
@@ -315,7 +315,7 @@ class File(object):
                     strings.add(self._yara_encode_string(s[2]))
 
                 results.append({
-                    "rule": match.rule,
+                    "name": match.rule,
                     "meta": match.meta,
                     "strings": list(s),
                 })
