@@ -21,7 +21,8 @@
             {"name": "str", "type": "string"}
         ],
         "retval_type": "integer",
-        "category" : "foobar"
+        "category" : "foobar",
+        "library" : "libsystem"
     },
     "dlopen": {
         "is_success_condition": "retval > 0",
@@ -30,7 +31,8 @@
             {"name": "mode", "type": "integer"}
         ],
         "retval_type": "pointer",
-        "category" : "foobar"
+        "category" : "foobar",
+        "library" : "libdyld"
     },
     "dlsym": {
         "is_success_condition": "retval > 0",
@@ -39,7 +41,8 @@
             {"name": "symbol", "type": "string"}
         ],
         "retval_type": "pointer",
-        "category" : "foobar"
+        "category" : "foobar",
+        "library" : "libdyld"
     },
     "fprintf": {
         "is_success_condition": "retval > 0",
