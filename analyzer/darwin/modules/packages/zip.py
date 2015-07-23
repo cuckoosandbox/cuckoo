@@ -62,17 +62,10 @@ class Zip(Package):
             raise Exception("Invalid analysis package, aborting")
         self.real_package.start()
 
-    def _extract(self, archive_path, password):
-        # Verify that the archive is actually readable
-        if _verify_archive(archive_path) == False:
+    def _extract(self, filename, password):
+        archive_path = _prepare_archive_at_path(filename)
+        if not archive_path:
             return None
-        # Test if zip file contains a file named as itself.
-        if _is_overwritten(archive_path):
-            log.debug("ZIP file contains a file with the same name, original is \
-            going to be overwrite")
-            new_zip_path = archive_path + _random_extension()
-            move(archive_path, new_zip_path)
-            archive_path = new_zip_path
         # Extraction.
         extract_path = environ.get("TEMP", "/tmp")
         with ZipFile(archive_path, "r") as archive:
@@ -96,16 +89,38 @@ class Zip(Package):
                 self._extract(path.join(where, name), password)
 
 
+def _prepare_archive_at_path(filename):
+    """ Verifies that there's a readable zip archive at the given path.
+
+    This function returns a new name for the archive (for most cases it's
+    the same as the original one; but if an archive named "foo.zip" contains
+    a file named "foo" this archive will be renamed to avoid being overwrite.
+    """
+    # Verify that the archive is actually readable
+    try:
+        with ZipFile(filename, "r") as archive:
+            archive.close()
+    except BadZipfile:
+        return None
+    # Test if zip file contains a file named as itself
+    if _is_overwritten(filename):
+        log.debug("ZIP file contains a file with the same name, original is \
+        going to be overwrite")
+        # In this case we just change the file name
+        new_zip_path = filename + _random_extension()
+        move(filename, new_zip_path)
+        filename = new_zip_path
+    return filename
+
+
 def _is_overwritten(zip_path):
-    with ZipFile(zip_path, "r") as archive:
-        try:
-            # Test if zip file contains a file named as itself
-            for name in archive.namelist():
-                if name == path.basename(zip_path):
-                    return True
-            return False
-        except BadZipfile:
-            raise Exception("Invalid Zip file")
+    archive = ZipFile(zip_path, "r")
+    try:
+        # Test if zip file contains a file named as itself
+        return any(n == path.basename(zip_path) for n in archive.namelist())
+    except BadZipfile:
+        raise Exception("Invalid Zip file")
+
 
 def _random_extension(length=5):
     return '.' + ''.join(SystemRandom().choice(ascii_letters) for _ in range(length))
@@ -113,13 +128,6 @@ def _random_extension(length=5):
 
 def _fileinfo(target):
     raw = check_output(["file", target])
+    # The utility has the following output format: "%filename%: %description%",
+    # so we just skip everything before the actual description
     return raw[raw.index(":")+2:]
-
-
-def _verify_archive(archive_path):
-    try:
-        with ZipFile(archive_path, "r") as archive:
-            archive.close()
-            return True
-    except BadZipfile:
-        return False
