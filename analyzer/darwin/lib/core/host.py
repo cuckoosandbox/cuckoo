@@ -17,7 +17,8 @@ log = logging.getLogger(__name__)
 class CuckooHost:
     """ Sending analysis results back to the Cuckoo Host.
 
-    Currently it only supports sending results about API calls via send_api() -- see `apicalls` module.
+    Currently it only supports sending results about API calls via send_api(),
+    see `apicalls` module.
     """
     sockets = {
         # Each target process has its own results server on the host, so
