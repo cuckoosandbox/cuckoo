@@ -317,7 +317,7 @@ class File(object):
                 results.append({
                     "name": match.rule,
                     "meta": match.meta,
-                    "strings": list(s),
+                    "strings": list(strings),
                 })
 
         except Exception as e:
