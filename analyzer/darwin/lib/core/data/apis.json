@@ -4,6 +4,7 @@
         "args": [
             {"name": "command", "type": "string"}
         ],
+        "retval_type": "int",
         "category" : "foobar"
     },
     "printf": {
@@ -11,6 +12,7 @@
         "args": [
             {"name": "format", "type": "string"}
         ],
+        "retval_type": "int",
         "category" : "foobar"
     },
     "atoi": {
@@ -18,6 +20,7 @@
         "args": [
             {"name": "str", "type": "string"}
         ],
+        "retval_type": "int",
         "category" : "foobar"
     },
     "dlopen": {
@@ -26,6 +29,7 @@
             {"name": "path", "type": "string"},
             {"name": "mode", "type": "int"}
         ],
+        "retval_type": "pointer",
         "category" : "foobar"
     },
     "dlsym": {
@@ -34,6 +38,7 @@
             {"name": "handle", "type": "pointer"},
             {"name": "symbol", "type": "string"}
         ],
+        "retval_type": "pointer",
         "category" : "foobar"
     },
     "fprintf": {
@@ -42,6 +47,7 @@
             {"name": "stream", "type": "pointer"},
             {"name": "format", "type": "string"}
         ],
+        "retval_type": "int",
         "category" : "foobar"
     },
     "execve": {
@@ -51,11 +57,13 @@
             {"name": "argv", "type": "pointer"},
             {"name": "envp", "type": "pointer"}
         ],
+        "retval_type": "int",
         "category" : "process"
     },
     "fork": {
         "is_success_condition": "retval >= 0",
         "args": [],
+        "retval_type": "int",
         "category" : "process"
     }
 }
