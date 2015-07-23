@@ -29,7 +29,7 @@ from lib.core.privileges import grant_debug_privilege
 from lib.core.startup import create_folders, init_logging
 from modules import auxiliary
 
-log = logging.getLogger()
+log = logging.getLogger("analyzer")
 
 class Files(object):
     PROTECTED_NAMES = ()
@@ -105,8 +105,6 @@ class ProcessList(object):
         process, i.e., whether Cuckoo should wait for this process to finish.
         """
         if int(pid) not in self.pids and int(pid) not in self.pids_notrack:
-            log.info("Added new process to list with pid: %s (track=%d)",
-                     pid, track)
             if track:
                 self.pids.append(int(pid))
             else:
@@ -234,7 +232,6 @@ class CommandPipeHandler(object):
         proc = Process(pid=process_id, tid=thread_id)
 
         filename = os.path.basename(proc.get_filepath())
-        log.info("Announced process name: %s", filename)
 
         if not self.analyzer.files.is_protected_filename(filename):
             # Add the new process ID to the list of monitored processes.
@@ -244,15 +241,14 @@ class CommandPipeHandler(object):
             # release the lock. Let the injection do its thing.
             self.analyzer.process_lock.release()
 
-            log.debug("Injecting into process with pid %d", proc.pid)
-
             # If we have both pid and tid, then we can use APC to inject.
             if process_id and thread_id:
                 proc.inject(dll, apc=True, mode="%s" % mode)
             else:
                 proc.inject(dll, apc=False, mode="%s" % mode)
 
-            log.info("Successfully injected process with pid %s", proc.pid)
+            log.info("Injected into process with pid %s and name %s",
+                     proc.pid, filename)
 
     def _handle_process(self, data):
         """Request for injection into a process."""
@@ -513,8 +509,6 @@ class Analyzer(object):
         for module in Auxiliary.__subclasses__():
             # Try to start the auxiliary module.
             try:
-                log.debug("Starting auxiliary module %s", module.__name__)
-
                 aux = module(options=self.config.options, analyzer=self)
                 aux_avail.append(aux)
                 aux.start()

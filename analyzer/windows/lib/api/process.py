@@ -265,7 +265,7 @@ class Process(object):
             return False
 
         log.info("Successfully executed process from path %r with "
-                 "arguments %r with pid %d", path, args or "", self.pid)
+                 "arguments %r and pid %d", path, args or "", self.pid)
         return True
 
     def terminate(self):
