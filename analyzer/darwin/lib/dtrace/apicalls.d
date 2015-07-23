@@ -105,10 +105,10 @@ pid$target::execve:entry
     this->is_success = 1;
     this->timestamp_ms = walltimestamp/1000000;
 
-    printf("{\"api\":\"%s\", \"args\":[\"%S\", %llu, %llu], \"retval\":%d, \"is_success\": %s, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[\"%S\", %llu, %llu], \"retval\":%d, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
         probefunc,
         copyinstr(arg0), (unsigned long long)arg1, (unsigned long long)arg2,
-        (int)this->retval, this->is_success ? "true" : "false",
+        (int)this->retval,
         this->timestamp_ms, pid, ppid, tid);
 }
 
@@ -132,8 +132,6 @@ pid$target::printf:return,
 pid$target:libsystem_c.dylib:atoi:return
 {
     this->retval = arg1;
-    this->is_success = (probefunc == "system" ? this->retval == 0 :
-                       (probefunc == "atoi"   ? 1 : this->retval > 0));
     this->timestamp_ms = walltimestamp/1000000;
 
     printf("{\"api\":\"%s\", \"args\":[\"%S\"], \"retval\":%d, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
@@ -153,7 +151,6 @@ pid$target:libsystem_c.dylib:atoi:return
 pid$target::rb_isalpha:return
 {
     this->retval = arg1;
-    this->is_success = (this->retval == 1);
     this->timestamp_ms = walltimestamp/1000000;
 
     printf("{\"api\":\"%s\", \"args\":[%d], \"retval\":%d, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
@@ -173,7 +170,6 @@ pid$target::rb_isalpha:return
 pid$target:libdyld:dlopen:return
 {
     this->retval = arg1;
-    this->is_success = (this->retval > 0);
     this->timestamp_ms = walltimestamp/1000000;
 
     printf("{\"api\":\"%s\", \"args\":[\"%S\", %d], \"retval\":%llu, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
@@ -194,7 +190,6 @@ pid$target::dlsym:return,
 pid$target::fprintf:return
 {
     this->retval = arg1;
-    this->is_success = (this->retval > 0);
     this->timestamp_ms = walltimestamp/1000000;
 
     printf("{\"api\":\"%s\", \"args\":[%llu, \"%S\"], \"retval\":%llu, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
