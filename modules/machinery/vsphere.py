@@ -1,4 +1,6 @@
 # Copyright (C) 2015 eSentire, Inc (jacob.gajek@esentire.com).
+# This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+# See the file 'docs/LICENSE' for copying permission.
 
 import requests
 import logging
@@ -20,6 +22,7 @@ except ImportError:
     HAVE_PYVMOMI = False
 
 log = logging.getLogger(__name__)
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 
 class vSphere(Machinery):
@@ -33,7 +36,8 @@ class vSphere(Machinery):
 
     def __init__(self):
         if not HAVE_PYVMOMI:
-            raise CuckooDependencyError("Couldn't import pyVmomi")
+            raise CuckooDependencyError("Couldn't import pyVmomi. Please install "
+                                        "using 'pip install --upgrade pyvmomi'")
 
         super(vSphere, self).__init__()
 
@@ -49,8 +53,8 @@ class vSphere(Machinery):
     def _initialize_check(self):
         """Runs checks against virtualization software when a machine manager
         is initialized.
-        @raise CuckooMachineError: if a misconfiguration or unsupported state
-                                   is found.
+        @raise CuckooCriticalError: if a misconfiguration or unsupported state
+                                    is found.
         """
         self.connect_opts = {}
 
@@ -63,12 +67,14 @@ class vSphere(Machinery):
         if self.options.vsphere.port:
             self.connect_opts["port"] = self.options.vsphere.port
         else:
-            self.connect_opts["port"] = "443"
+            raise CuckooCriticalError("vSphere port setting not found, "
+                                      "please add it to the config file.")
 
         if self.options.vsphere.user:
             self.connect_opts["user"] = self.options.vsphere.user
         else:
-            self.connect_opts["user"] = "root"
+            raise CuckooCriticalError("vSphere username setting not found, "
+                                      "please add it to the config file.")
 
         if self.options.vsphere.pwd:
             self.connect_opts["pwd"] = self.options.vsphere.pwd
@@ -140,7 +146,7 @@ class vSphere(Machinery):
         @param path: path to where to store the memory dump
         @raise CuckooMachineError: if error taking the memory dump
         """
-        name = "cuckoo_memdump_{0}".format(random.randint(100, 999))
+        name = "cuckoo_memdump_{0}".format(random.randint(100000, 999999))
         with SmartConnection(**self.connect_opts) as conn:
             vm = self._get_virtual_machine_by_label(conn, label)
             if vm:
