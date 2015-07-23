@@ -102,7 +102,6 @@ pid$target::rb_isalpha:entry
 pid$target::execve:entry
 {
     this->retval = 0;
-    this->is_success = 1;
     this->timestamp_ms = walltimestamp/1000000;
 
     printf("{\"api\":\"%s\", \"args\":[\"%S\", %llu, %llu], \"retval\":%d, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
