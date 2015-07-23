@@ -189,6 +189,7 @@ class CuckooHost:
         api = thing.api
         # First two "arguments" are always these
         description = ["is_success", "retval"]
+        # Try to parse argument names for known APIs
         if api in self.human_readable_info:
             args = self.human_readable_info[api]["args"]
             description += map(lambda x: x["name"], args)
