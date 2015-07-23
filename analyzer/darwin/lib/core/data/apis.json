@@ -2,49 +2,54 @@
     "system": {
         "is_success_condition": "retval == 0",
         "args": [
-            "command"
+            {"name": "command", "type": "string"}
         ],
         "category" : "foobar"
     },
     "printf": {
         "is_success_condition": "retval > 0",
         "args": [
-            "format"
+            {"name": "format", "type": "string"}
         ],
         "category" : "foobar"
     },
     "atoi": {
         "is_success_condition": "True",
         "args": [
-            "str"
+            {"name": "str", "type": "string"}
         ],
         "category" : "foobar"
     },
     "dlopen": {
         "is_success_condition": "retval > 0",
         "args": [
-            "path", "mode"
+            {"name": "path", "type": "string"},
+            {"name": "mode", "type": "int"}
         ],
         "category" : "foobar"
     },
     "dlsym": {
         "is_success_condition": "retval > 0",
         "args": [
-            "handle", "symbol"
+            {"name": "handle", "type": "pointer"},
+            {"name": "symbol", "type": "string"}
         ],
         "category" : "foobar"
     },
     "fprintf": {
         "is_success_condition": "retval > 0",
         "args": [
-            "stream", "format"
+            {"name": "stream", "type": "pointer"},
+            {"name": "format", "type": "string"}
         ],
         "category" : "foobar"
     },
     "execve": {
         "is_success_condition": "retval != -1",
         "args": [
-            "path", "argv", "envp"
+            {"name": "path", "type": "string"},
+            {"name": "argv", "type": "pointer"},
+            {"name": "envp", "type": "pointer"}
         ],
         "category" : "process"
     },
