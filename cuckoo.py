@@ -19,7 +19,7 @@ try:
     from lib.cuckoo.core.startup import check_version, create_structure
     from lib.cuckoo.core.startup import cuckoo_clean, drop_privileges
     from lib.cuckoo.core.startup import init_logging, init_modules
-    from lib.cuckoo.core.startup import init_tasks, init_yara
+    from lib.cuckoo.core.startup import init_tasks, init_yara, init_binaries
 
     import bson
 
@@ -58,6 +58,7 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     init_modules()
     init_tasks()
     init_yara()
+    init_binaries()
 
     # This is just a temporary hack, we need an actual test suite to integrate
     # with Travis-CI.
