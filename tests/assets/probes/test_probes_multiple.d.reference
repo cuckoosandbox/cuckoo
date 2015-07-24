@@ -1,0 +1,50 @@
+pid$target::foo:entry
+{
+	self->deeplevel++;
+	self->arguments_stack[self->deeplevel, "arg0"] = self->arg0;
+	self->arg0 = arg0;
+	self->arguments_stack[self->deeplevel, "arg1"] = self->arg1;
+	self->arg1 = arg1;
+}
+pid$target::foo:return
+{
+	this->retval = arg1;
+	this->timestamp_ms = walltimestamp/1000000;
+	printf("{\"api\":\"%s\", \"args\":[%d, \"%S\"], \"retval\":%llu, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
+		probefunc,
+		(int)(self->arg0), copyinstr(self->arg1),
+		(unsigned long long)(this->retval),
+		this->timestamp_ms, pid, ppid, tid);
+	self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
+	self->arguments_stack[self->deeplevel, "arg0"] = 0;
+	self->arg1 = self->arguments_stack[self->deeplevel, "arg1"];
+	self->arguments_stack[self->deeplevel, "arg1"] = 0;
+	--self->deeplevel;
+}
+pid$target::kkk:entry
+{
+	self->deeplevel++;
+	self->arguments_stack[self->deeplevel, "arg0"] = self->arg0;
+	self->arg0 = arg0;
+	self->arguments_stack[self->deeplevel, "arg1"] = self->arg1;
+	self->arg1 = arg1;
+	self->arguments_stack[self->deeplevel, "arg2"] = self->arg2;
+	self->arg2 = arg2;
+}
+pid$target::kkk:return
+{
+	this->retval = arg1;
+	this->timestamp_ms = walltimestamp/1000000;
+	printf("{\"api\":\"%s\", \"args\":[%f, \"%S\", %d], \"retval\":%lf, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
+		probefunc,
+		(float)(self->arg0), copyinstr(self->arg1), (int)(self->arg2),
+		(double)(this->retval),
+		this->timestamp_ms, pid, ppid, tid);
+	self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
+	self->arguments_stack[self->deeplevel, "arg0"] = 0;
+	self->arg1 = self->arguments_stack[self->deeplevel, "arg1"];
+	self->arguments_stack[self->deeplevel, "arg1"] = 0;
+	self->arg2 = self->arguments_stack[self->deeplevel, "arg2"];
+	self->arguments_stack[self->deeplevel, "arg2"] = 0;
+	--self->deeplevel;
+}

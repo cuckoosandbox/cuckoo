@@ -5,7 +5,7 @@
 
 import filecmp
 import unittest
-
+from os import remove
 from common import TESTS_DIR
 from analyzer.darwin.lib.dtrace.autoprobes import generate_probes
 
@@ -16,13 +16,16 @@ class ProbesGeneratorTestCase(unittest.TestCase):
     # HELPERS
 
     def definitions_file(self):
-        return TESTS_DIR + "/assets/" + self._testMethodName + ".json"
+        return TESTS_DIR + "/assets/probes/" + self._testMethodName + ".json"
 
     def result_file(self):
-        return TESTS_DIR + "/assets/" + self._testMethodName + ".d"
+        return TESTS_DIR + "/assets/probes/" + self._testMethodName + ".d"
 
     def reference_file(self):
-        return TESTS_DIR + "/assets/" + self._testMethodName + ".d.reference"
+        return TESTS_DIR + "/assets/probes/" + self._testMethodName + ".d.reference"
+
+    def tearDown(self):
+        remove(self.result_file())
 
     # TESTS
 
@@ -125,17 +128,6 @@ class ProbesGeneratorTestCase(unittest.TestCase):
             _files_are_equal(self.result_file(), self.reference_file())
         )
 
-    def test_probes_one_argument_float_return_float(self):
-        # given
-        source = self.definitions_file()
-        destination = self.result_file()
-        # when
-        generate_probes(source, destination)
-        # then
-        self.assertTrue(
-            _files_are_equal(self.result_file(), self.reference_file())
-        )
-
     def test_probes_one_argument_float_return_pointer(self):
         # given
         source = self.definitions_file()
@@ -147,16 +139,6 @@ class ProbesGeneratorTestCase(unittest.TestCase):
             _files_are_equal(self.result_file(), self.reference_file())
         )
 
-    def test_probes_one_argument_double_return_integer(self):
-        # given
-        source = self.definitions_file()
-        destination = self.result_file()
-        # when
-        generate_probes(source, destination)
-        # then
-        self.assertTrue(
-            _files_are_equal(self.result_file(), self.reference_file())
-        )
 
     def test_probes_two_arguments_integer_string_return_integer(self):
         # given
@@ -180,7 +162,7 @@ class ProbesGeneratorTestCase(unittest.TestCase):
             _files_are_equal(self.result_file(), self.reference_file())
         )
 
-    def test_probes_two_arguments_float_string_return_double(self):
+    def test_probes_two_arguments_float_integer_return_string(self):
         # given
         source = self.definitions_file()
         destination = self.result_file()
@@ -191,7 +173,18 @@ class ProbesGeneratorTestCase(unittest.TestCase):
             _files_are_equal(self.result_file(), self.reference_file())
         )
 
-    def test_probes_two_arguments_float_integer_return_string(self):
+    def test_probes_three_arguments_float_string_int_return_double(self):
+        # given
+        source = self.definitions_file()
+        destination = self.result_file()
+        # when
+        generate_probes(source, destination)
+        # then
+        self.assertTrue(
+            _files_are_equal(self.result_file(), self.reference_file())
+        )
+
+    def test_probes_multiple(self):
         # given
         source = self.definitions_file()
         destination = self.result_file()

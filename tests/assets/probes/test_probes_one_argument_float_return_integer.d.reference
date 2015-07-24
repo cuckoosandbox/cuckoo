@@ -1,0 +1,19 @@
+pid$target::foo:entry
+{
+	self->deeplevel++;
+	self->arguments_stack[self->deeplevel, "arg0"] = self->arg0;
+	self->arg0 = arg0;
+}
+pid$target::foo:return
+{
+	this->retval = arg1;
+	this->timestamp_ms = walltimestamp/1000000;
+	printf("{\"api\":\"%s\", \"args\":[%f], \"retval\":%d, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
+		probefunc,
+		(float)(self->arg0),
+		(int)(this->retval),
+		this->timestamp_ms, pid, ppid, tid);
+	self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
+	self->arguments_stack[self->deeplevel, "arg0"] = 0;
+	--self->deeplevel;
+}
