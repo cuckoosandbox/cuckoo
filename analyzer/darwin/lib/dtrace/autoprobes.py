@@ -70,21 +70,18 @@ def _create_probe(definition):
         }
         entry_probe = entry_template.substitute(entry_mapping)
 
-    if definition.get("ignore_return_probe", False):
-        return entry_probe
-    else:
-        return_template = Template(RETURN_PROBE_TEMPLATE)
-        return_mapping = {
-            "__LIBRARY__": definition.get("library", ""),
-            "__NAME__"   : definition["name"],
-            "__ARGS_FORMAT_STRING__"      : _args_format_string(args),
-            "__RETVAL_FORMAT_SPECIFIER__" : PRINTF_FORMATS[retval_type],
-            "__ARGUMENTS__"               : _arguments_section(args),
-            "__RETVAL_CAST__"             : C_CASTS[retval_type],
-            "__ARGUMENTS_POP_FROM_STACK"  : _pop_from_stack_section(args)
-        }
-        return_probe = return_template.substitute(return_mapping)
-        return entry_probe + return_probe
+    return_template = Template(RETURN_PROBE_TEMPLATE)
+    return_mapping = {
+        "__LIBRARY__": definition.get("library", ""),
+        "__NAME__"   : definition["name"],
+        "__ARGS_FORMAT_STRING__"      : _args_format_string(args),
+        "__RETVAL_FORMAT_SPECIFIER__" : PRINTF_FORMATS[retval_type],
+        "__ARGUMENTS__"               : _arguments_section(args),
+        "__RETVAL_CAST__"             : C_CASTS[retval_type],
+        "__ARGUMENTS_POP_FROM_STACK"  : _pop_from_stack_section(args)
+    }
+    return_probe = return_template.substitute(return_mapping)
+    return entry_probe + return_probe
 
 #
 # Generation detals
