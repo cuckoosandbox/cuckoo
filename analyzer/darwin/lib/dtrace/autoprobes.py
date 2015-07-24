@@ -165,25 +165,3 @@ __probe_return_template = """pid$$target:${__LIBRARY__}:${__NAME__}:return
 \t\t${__RETVAL_CAST__}(this->retval),
 \t\tthis->timestamp_ms, pid, ppid, tid);${__ARGUMENTS_POP_FROM_STACK}
 }\n"""
-
-
-if __name__ == "__main__":
-    k = {
-        "name": "system",
-        "is_success_condition": "retval == 0",
-        "args": [],
-        "retval_type": "pointer",
-        "category" : "process"
-    }
-    p = {
-        "name": "foo",
-        "is_success_condition": "retval > 0",
-        "args": [
-            {"name": "bar", "type": "integer"},
-            {"name": "rab", "type": "string"}
-        ],
-        "retval_type": "integer",
-        "category" : "foobar"
-    }
-    print _create_probe(k)
-    print _create_probe(p)
