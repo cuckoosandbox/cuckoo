@@ -19,10 +19,7 @@ def generate_probes(source, output_path, overwrite=False):
     """
     if not overwrite and path.isfile(output_path):
         return # we already have our probes generated
-    if isinstance(source, list):
-        defs = source
-    else:
-        defs = _read_definitions(source)
+    defs = _read_definitions(source)
     probes = map(_create_probe, defs)
     _save_probes(probes, output_path)
 
