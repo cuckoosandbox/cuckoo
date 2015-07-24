@@ -38,7 +38,6 @@ def download_archive():
 
     return temp_dir, final_dir
 
-
 def install(enabled, force, rewrite):
     (temp, source) = download_archive()
 
@@ -46,7 +45,8 @@ def install(enabled, force, rewrite):
         "signatures": os.path.join("modules", "signatures"),
         "processing": os.path.join("modules", "processing"),
         "reporting": os.path.join("modules", "reporting"),
-        "machinemanagers": os.path.join("modules", "machinemanagers")
+        "machinemanagers": os.path.join("modules", "machinemanagers"),
+        "windows": os.path.join("analyzer", "windows", "bin"),
     }
 
     for category in enabled:
@@ -55,6 +55,9 @@ def install(enabled, force, rewrite):
         print("\nInstalling {0}".format(colors.cyan(category.upper())))
 
         origin = os.path.join(source, folder)
+        if not os.path.isdir(origin):
+            print "  No candidates available, continuing."
+            continue
 
         for file_name in os.listdir(origin):
             if file_name == ".gitignore":
@@ -114,6 +117,7 @@ def main():
         enabled.append("signatures")
         enabled.append("reporting")
         enabled.append("machinemanagers")
+        enabled.append("windows")
     else:
         if args.signatures:
             enabled.append("signatures")
