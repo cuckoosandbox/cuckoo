@@ -96,7 +96,7 @@ def _push_on_stack_section(args):
     if len(parts) == 0:
         return ""
     else:
-        parts.insert(0, "\n\tself->deeplevel++;")
+        parts.insert(0, "self->deeplevel++;")
         return "\n\t".join(parts)
 
 
@@ -152,7 +152,8 @@ __c_casts = {
 }
 # Templates
 __probe_entry_template = """pid$$target:${__LIBRARY__}:${__NAME__}:entry
-{${__ARGUMENTS_PUSH_ON_STACK__}
+{
+\t${__ARGUMENTS_PUSH_ON_STACK__}
 }\n"""
 
 __probe_return_template = """pid$$target:${__LIBRARY__}:${__NAME__}:return
