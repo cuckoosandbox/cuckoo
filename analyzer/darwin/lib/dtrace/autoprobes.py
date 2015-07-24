@@ -134,7 +134,8 @@ def _format_specifier_from_type(type_string):
 # Constants
 __printf_formats = {
     "pointer" : "%llu",
-    "string"  : "\\\"%S\\\"", # raw string: ignore special characters, etc
+    # %S is for raw string: ignore special characters, etc. Must be escaped.
+    "string"  : "\\\"%S\\\"",
     "integer" : "%d",
     "float"   : "%f",
     "double"  : "%lf"
