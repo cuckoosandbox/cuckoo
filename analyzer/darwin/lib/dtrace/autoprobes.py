@@ -3,10 +3,12 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE file for details.
 
+import logging
 from json import load
 from os import path
 from string import Template
-from collections import namedtuple
+
+log = logging.getLogger(__name__)
 
 def generate_probes(source, output_path, overwrite=False):
     """ Generates dtrace pid-based probes at $output_path based definitions
@@ -30,8 +32,8 @@ def _read_definitions(fromfile):
     See lib/core/data/apis.json for the reference.
     """
     try:
-        with open(fromfile, "r") as f:
-            contents = load(f)
+        with open(fromfile, "r") as infile:
+            contents = load(infile)
             # Now convert the root dictionary to an array of dictionaries where
             # original keys become values for the "name" key.
             defs = []
@@ -45,8 +47,8 @@ def _read_definitions(fromfile):
 
 def _save_probes(probes, tofile):
     try:
-        with open(tofile, "w") as f:
-            f.writelines(probes)
+        with open(tofile, "w") as outfile:
+            outfile.writelines(probes)
     except IOError:
         log.exception("Could not open output file for writing")
 #
@@ -55,13 +57,12 @@ def _save_probes(probes, tofile):
 def _create_probe(definition):
     args = definition["args"]
     retval_type = definition["retval_type"]
-
     # We only need entry probes to save arguments. If there're no arguments,
     # don't even bother creating an empty probe.
     if len(args) == 0:
         entry_probe = ""
     else:
-        entry_template = Template(__probe_entry_template)
+        entry_template = Template(ENTRY_PROBE_TEMPLATE)
         entry_mapping = {
             "__LIBRARY__": definition.get("library", ""),
             "__NAME__"   : definition["name"],
@@ -72,14 +73,14 @@ def _create_probe(definition):
     if definition.get("ignore_return_probe", False):
         return entry_probe
     else:
-        return_template = Template(__probe_return_template)
+        return_template = Template(RETURN_PROBE_TEMPLATE)
         return_mapping = {
             "__LIBRARY__": definition.get("library", ""),
             "__NAME__"   : definition["name"],
             "__ARGS_FORMAT_STRING__"      : _args_format_string(args),
-            "__RETVAL_FORMAT_SPECIFIER__" : __printf_formats[retval_type],
+            "__RETVAL_FORMAT_SPECIFIER__" : PRINTF_FORMATS[retval_type],
             "__ARGUMENTS__"               : _arguments_section(args),
-            "__RETVAL_CAST__"             : __c_casts[retval_type],
+            "__RETVAL_CAST__"             : C_CASTS[retval_type],
             "__ARGUMENTS_POP_FROM_STACK"  : _pop_from_stack_section(args)
         }
         return_probe = return_template.substitute(return_mapping)
@@ -90,9 +91,9 @@ def _create_probe(definition):
 #
 def _push_on_stack_section(args):
     parts = []
-    for x in xrange(len(args)):
+    for idx in xrange(len(args)):
         parts.append("""self->arguments_stack[self->deeplevel, \"arg%d\"] = self->arg%d;
-\tself->arg%d = arg%d;""" % (x, x, x, x))
+\tself->arg%d = arg%d;""" % (idx, idx, idx, idx))
     if len(parts) == 0:
         return ""
     else:
@@ -102,18 +103,17 @@ def _push_on_stack_section(args):
 
 def _pop_from_stack_section(args):
     parts = []
-    for x in xrange(len(args)):
+    for idx in xrange(len(args)):
         parts.append("""self->arg%d = self->arguments_stack[self->deeplevel, \"arg%d\"];
-\tself->arguments_stack[self->deeplevel, \"arg%d\"] = 0;""" % (x, x, x))
+\tself->arguments_stack[self->deeplevel, \"arg%d\"] = 0;""" % (idx, idx, idx))
     if len(parts) == 0:
         return ""
     else:
         parts.append("--self->deeplevel;")
-        return ("\n\t" + "\n\t".join(parts))
+        return "\n\t" + "\n\t".join(parts)
 
 
 def _args_format_string(args):
-
     convertor = lambda x: _format_specifier_from_type(x["type"])
     return ", ".join(map(convertor, args))
 
@@ -121,18 +121,18 @@ def _args_format_string(args):
 def _arguments_section(args):
     parts = []
     for idx, item in enumerate(args):
-        parts.append("%s(self->arg%d)," % (__c_casts[item["type"]], idx))
+        parts.append("%s(self->arg%d)," % (C_CASTS[item["type"]], idx))
     return ("\n\t\t" + " ".join(parts)) if len(parts) > 0 else ""
 
 
 def _format_specifier_from_type(type_string):
-    if type_string in __printf_formats:
-        return __printf_formats[type_string]
+    if type_string in PRINTF_FORMATS:
+        return PRINTF_FORMATS[type_string]
     else:
         raise Exception("Unsupported type string")
 
 # Constants
-__printf_formats = {
+PRINTF_FORMATS = {
     "pointer" : "%llu",
     # %S is for raw string: ignore special characters, etc. Must be escaped.
     "string"  : "\\\"%S\\\"",
@@ -141,7 +141,7 @@ __printf_formats = {
     "double"  : "%lf"
 }
 
-__c_casts = {
+C_CASTS = {
     "pointer" : "(unsigned long long)",
     # dtrace strings need to be copied into userland with copyinstr() first,
     # so we use this function instead of castinge
@@ -151,12 +151,12 @@ __c_casts = {
     "double"  : "(double)"
 }
 # Templates
-__probe_entry_template = """pid$$target:${__LIBRARY__}:${__NAME__}:entry
+ENTRY_PROBE_TEMPLATE = """pid$$target:${__LIBRARY__}:${__NAME__}:entry
 {
 \t${__ARGUMENTS_PUSH_ON_STACK__}
 }\n"""
 
-__probe_return_template = """pid$$target:${__LIBRARY__}:${__NAME__}:return
+RETURN_PROBE_TEMPLATE = """pid$$target:${__LIBRARY__}:${__NAME__}:return
 {
 \tthis->retval = arg1;
 \tthis->timestamp_ms = walltimestamp/1000000;
