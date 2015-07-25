@@ -113,7 +113,7 @@ class TestAPICalls(DtraceTestCase):
     @timed(15)
     def test_apicalls_from_dynamic_library(self):
         # given
-        expected_api = ("rb_isalpha", ["0x61"], 1)
+        expected_api = ("rb_isalpha", ["a"], 1)
         # when
         output = []
         for call in apicalls(self.current_target()):
@@ -126,7 +126,7 @@ class TestAPICalls(DtraceTestCase):
     @timed(5)
     def test_apicalls_from_dynamic_library_root(self):
         # given
-        expected_api = ("rb_isalpha", ["0x61"], 1)
+        expected_api = ("rb_isalpha", ["a"], 1)
         # when
         output = []
         for call in apicalls(self.current_target(), run_as_root=True):
