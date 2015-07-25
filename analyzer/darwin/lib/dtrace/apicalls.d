@@ -70,7 +70,6 @@ self deeplevel;
 /* ******* **************************** ******* */
 
 #pragma mark - Probes
-
 #include "probes.d"
 
-#endif /* SUDO */
+#endif /* not SUDO */
