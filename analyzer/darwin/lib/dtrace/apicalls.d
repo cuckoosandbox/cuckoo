@@ -72,4 +72,17 @@ self deeplevel;
 #pragma mark - Probes
 #include "probes.d"
 
+/* exec* probes are special: they don't return on success; so catch them early */
+pid$target::execve:entry
+{
+    this->retval = 0;
+    this->timestamp_ms = walltimestamp/1000000;
+
+    printf("{\"api\":\"%s\", \"args\":[\"%S\", %llu, %llu], \"retval\":%d, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
+        probefunc,
+        copyinstr(arg0), (unsigned long long)arg1, (unsigned long long)arg2,
+        (int)this->retval,
+        this->timestamp_ms, pid, ppid, tid);
+}
+
 #endif /* not SUDO */
