@@ -120,7 +120,6 @@ class TestAPICalls(DtraceTestCase):
             output.append(call)
         matched = [x for x in output if (x.api, x.args, x.retval) == expected_api]
         # then
-        print output
         self.assertEqual(len(matched), 1)
 
     @timed(5)
