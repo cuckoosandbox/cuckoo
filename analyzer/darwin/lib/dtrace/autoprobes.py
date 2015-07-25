@@ -4,8 +4,8 @@
 # of the MIT license. See the LICENSE file for details.
 
 import logging
-from json import load
 from os import path
+from json import load
 from string import Template
 
 log = logging.getLogger(__name__)
