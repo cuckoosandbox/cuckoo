@@ -22,7 +22,7 @@
         ],
         "retval_type": "integer",
         "category" : "foobar",
-        "library" : "libsystem"
+        "library" : "libsystem_c"
     },
     "dlopen": {
         "is_success_condition": "retval > 0",
