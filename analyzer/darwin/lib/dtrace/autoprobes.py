@@ -56,7 +56,7 @@ def _create_probe(definition):
     retval_type = definition["retval_type"]
     # We only need entry probes to save arguments. If there're no arguments,
     # don't even bother creating an empty probe.
-    if len(args) == 0:
+    if len(args) == 0 or definition.get("__ignore__", False):
         entry_probe = ""
     else:
         entry_template = Template(ENTRY_PROBE_TEMPLATE)
