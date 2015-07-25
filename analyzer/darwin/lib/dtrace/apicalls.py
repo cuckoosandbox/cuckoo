@@ -55,7 +55,7 @@ def apicalls(target, **kwargs):
 
     cmd += ["-c", target_cmd]
 
-    # Blah-blah-blah
+    # Generate dtrace probes for analysis
     definitions = os.path.abspath(os.path.join(__file__, "../../core/data/apis.json"))
     probes_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "probes.d")
     generate_probes(definitions, probes_file, overwrite=True)
