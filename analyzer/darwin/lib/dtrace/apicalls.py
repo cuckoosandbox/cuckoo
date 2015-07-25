@@ -71,7 +71,6 @@ def apicalls(target, **kwargs):
 
 def _parse_entry(entry):
     parsed = json.loads(entry.replace("\\0", ""))
-
     api       = parsed['api']
     args      = _stringify_args(parsed['args'])
     retval    = parsed['retval']
@@ -80,8 +79,8 @@ def _parse_entry(entry):
     pid       = parsed['pid']
     ppid      = parsed['ppid']
     tid       = parsed['tid']
-
     return apicall(api, args, retval, timestamp, pid, ppid, tid)
+
 
 def _stringify_args(args):
     """ Converts each argument into a string.
