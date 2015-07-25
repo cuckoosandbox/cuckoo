@@ -132,7 +132,8 @@ PRINTF_FORMATS = {
     "string"  : "\\\"%S\\\"",
     "integer" : "%d",
     "float"   : "%f",
-    "double"  : "%lf"
+    "double"  : "%lf",
+    "char"    : "\\\"%c\\\""
 }
 
 C_CASTS = {
@@ -142,7 +143,8 @@ C_CASTS = {
     "string"  : "copyinstr",
     "integer" : "(int)",
     "float"   : "(float)",
-    "double"  : "(double)"
+    "double"  : "(double)",
+    "char"    : "(char)"
 }
 # Templates
 ENTRY_PROBE_TEMPLATE = """pid$$target:${__LIBRARY__}:${__NAME__}:entry

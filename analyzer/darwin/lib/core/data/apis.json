@@ -68,5 +68,13 @@
         "args": [],
         "retval_type": "integer",
         "category" : "process"
+    },
+    "rb_isalpha": {
+        "is_success_condition": "retval != 0",
+        "args": [
+            {"name": "character", "type": "char"}
+        ],
+        "retval_type": "integer",
+        "category" : "foobar"
     }
 }
