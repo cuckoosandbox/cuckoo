@@ -10,6 +10,7 @@ from getpass import getuser
 from subprocess import Popen
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
+from autoprobes import generate_probes
 
 apicall = namedtuple("apicall", "api args retval timestamp pid ppid tid")
 
@@ -54,6 +55,11 @@ def apicalls(target, **kwargs):
 
     cmd += ["-c", target_cmd]
 
+    # Blah-blah-blah
+    definitions = os.path.abspath(os.path.join(__file__, "../../core/data/apis.json"))
+    probes_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "probes.d")
+    generate_probes(definitions, probes_file, overwrite=True)
+
     # The dtrace script will take care of timeout itself, so we just launch
     # it asynchronously
     with open(os.devnull, "w") as null:
@@ -67,6 +73,7 @@ def apicalls(target, **kwargs):
             continue
         yield _parse_entry(value)
     output_file.close()
+    os.remove(probes_file)
 
 
 def _parse_entry(entry):
