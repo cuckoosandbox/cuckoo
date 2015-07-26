@@ -14,7 +14,7 @@ from filetimes import dt_to_filetime
 
 log = logging.getLogger(__name__)
 
-class CuckooHost:
+class CuckooHost(object):
     """ Sending analysis results back to the Cuckoo Host.
 
     Currently it only supports sending results about API calls via send_api(),
