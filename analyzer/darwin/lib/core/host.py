@@ -192,7 +192,7 @@ class CuckooHost:
         # Try to parse argument names for known APIs
         if api in self.human_readable_info:
             args = self.human_readable_info[api]["args"]
-            description += map(lambda x: x["name"], args)
+            description += [x["name"] for x in args]
         else: # fallback to arg0, arg1, ..., argN
             for arg_idx in range(0, len(thing.args)):
                 description += ["arg%d" % arg_idx]
