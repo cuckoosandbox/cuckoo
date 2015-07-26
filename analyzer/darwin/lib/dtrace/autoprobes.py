@@ -52,23 +52,32 @@ def _save_probes(probes, tofile):
 # Generation
 #
 def _create_probe(definition):
+    if definition.get("__ignore__", False):
+        return ""
+    elif len(definition["args"]) == 0:
+        # We only need entry probes to save arguments. If there're no arguments,
+        # don't even bother creating an empty probe.
+        return _create_return_probe(definition)
+    else:
+        return _create_entry_probe(definition) + _create_return_probe(definition)
+
+#
+# Generation detals
+#
+def _create_entry_probe(definition):
+    template = Template(ENTRY_PROBE_TEMPLATE)
+    mapping = {
+        "__LIBRARY__": definition.get("library", ""),
+        "__NAME__"   : definition["name"],
+        "__ARGUMENTS_PUSH_ON_STACK__": _push_on_stack_section(definition["args"])
+    }
+    return template.substitute(mapping)
+
+def _create_return_probe(definition):
     args = definition["args"]
     retval_type = definition["retval_type"]
-    # We only need entry probes to save arguments. If there're no arguments,
-    # don't even bother creating an empty probe.
-    if len(args) == 0 or definition.get("__ignore__", False):
-        entry_probe = ""
-    else:
-        entry_template = Template(ENTRY_PROBE_TEMPLATE)
-        entry_mapping = {
-            "__LIBRARY__": definition.get("library", ""),
-            "__NAME__"   : definition["name"],
-            "__ARGUMENTS_PUSH_ON_STACK__": _push_on_stack_section(args)
-        }
-        entry_probe = entry_template.substitute(entry_mapping)
-
-    return_template = Template(RETURN_PROBE_TEMPLATE)
-    return_mapping = {
+    template = Template(RETURN_PROBE_TEMPLATE)
+    mapping = {
         "__LIBRARY__": definition.get("library", ""),
         "__NAME__"   : definition["name"],
         "__ARGS_FORMAT_STRING__"      : _args_format_string(args),
@@ -77,12 +86,8 @@ def _create_probe(definition):
         "__RETVAL_CAST__"             : C_CASTS[retval_type],
         "__ARGUMENTS_POP_FROM_STACK"  : _pop_from_stack_section(args)
     }
-    return_probe = return_template.substitute(return_mapping)
-    return entry_probe + return_probe
+    return template.substitute(mapping)
 
-#
-# Generation detals
-#
 def _push_on_stack_section(args):
     parts = []
     for idx in xrange(len(args)):
