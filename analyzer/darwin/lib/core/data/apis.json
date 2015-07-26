@@ -2,55 +2,80 @@
     "system": {
         "is_success_condition": "retval == 0",
         "args": [
-            "command"
+            {"name": "command", "type": "string"}
         ],
+        "retval_type": "integer",
         "category" : "foobar"
     },
     "printf": {
         "is_success_condition": "retval > 0",
         "args": [
-            "format"
+            {"name": "format", "type": "string"}
         ],
+        "retval_type": "integer",
         "category" : "foobar"
     },
     "atoi": {
         "is_success_condition": "True",
         "args": [
-            "str"
+            {"name": "str", "type": "string"}
         ],
-        "category" : "foobar"
+        "retval_type": "integer",
+        "category" : "foobar",
+        "library" : "libsystem_c"
     },
     "dlopen": {
         "is_success_condition": "retval > 0",
         "args": [
-            "path", "mode"
+            {"name": "path", "type": "string"},
+            {"name": "mode", "type": "integer"}
         ],
-        "category" : "foobar"
+        "retval_type": "pointer",
+        "category" : "foobar",
+        "library" : "libdyld"
     },
     "dlsym": {
         "is_success_condition": "retval > 0",
         "args": [
-            "handle", "symbol"
+            {"name": "handle", "type": "pointer"},
+            {"name": "symbol", "type": "string"}
         ],
-        "category" : "foobar"
+        "retval_type": "pointer",
+        "category" : "foobar",
+        "library" : "libdyld"
     },
     "fprintf": {
         "is_success_condition": "retval > 0",
         "args": [
-            "stream", "format"
+            {"name": "stream", "type": "pointer"},
+            {"name": "format", "type": "string"}
         ],
+        "retval_type": "integer",
         "category" : "foobar"
     },
     "execve": {
         "is_success_condition": "retval != -1",
         "args": [
-            "path", "argv", "envp"
+            {"name": "path", "type": "string"},
+            {"name": "argv", "type": "pointer"},
+            {"name": "envp", "type": "pointer"}
         ],
-        "category" : "process"
+        "retval_type": "integer",
+        "category" : "process",
+        "__ignore__": true
     },
     "fork": {
         "is_success_condition": "retval >= 0",
         "args": [],
+        "retval_type": "integer",
         "category" : "process"
+    },
+    "rb_isalpha": {
+        "is_success_condition": "retval != 0",
+        "args": [
+            {"name": "character", "type": "char"}
+        ],
+        "retval_type": "integer",
+        "category" : "foobar"
     }
 }

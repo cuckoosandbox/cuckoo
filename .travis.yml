@@ -8,11 +8,14 @@ install:
     - brew install python
     - brew link --overwrite python
     - brew install shellcheck
+    - npm install jsonlint -g
     - pip install -r requirements-dev.txt
 script:
+    - jsonlint -q ./analyzer/darwin/lib/core/data/apis.json
     - nosetests ./tests/test_dtruss.py || echo "Temporary workaround for dtruss tests failing without a reason. See issue 23"
     - nosetests ./tests/test_apicalls.py
     - nosetests ./tests/test_ipconnections.py
     - nosetests ./tests/test_analyzer.py
     - nosetests ./tests/test_packages.py
+    - nosetests ./tests/test_probesgenerator.py
     - shellcheck ./scripts/*

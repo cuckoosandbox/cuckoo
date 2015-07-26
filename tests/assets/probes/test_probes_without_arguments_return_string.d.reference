@@ -1,0 +1,9 @@
+pid$target::foo:return
+{
+	this->retval = arg1;
+	this->timestamp_ms = walltimestamp/1000000;
+	printf("{\"api\":\"%s\", \"args\":[], \"retval\":\"%S\", \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
+		probefunc,
+		copyinstr(this->retval),
+		this->timestamp_ms, pid, ppid, tid);
+}

@@ -1,0 +1,8 @@
+{
+    "foo": {
+        "is_success_condition": "retval > 0",
+        "args": [],
+        "retval_type": "string",
+        "category" : "foobar"
+    }
+}
