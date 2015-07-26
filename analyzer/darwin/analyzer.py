@@ -12,7 +12,7 @@ from os import path, getcwd, makedirs
 from lib.common.config import Config
 from lib.common.results import NetlogHandler
 from lib.core.constants import PATHS
-from lib.core.packages import choose_package_class, Package
+from lib.core.packages import choose_package_class
 from lib.core.osx import set_wallclock
 from lib.core.host import CuckooHost
 
