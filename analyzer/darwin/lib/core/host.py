@@ -174,7 +174,7 @@ class CuckooHost(object):
             return 1
 
         condition = self.human_readable_info[thing.api]["is_success_condition"]
-        result = eval(condition, {
+        result = eval(condition, {"__builtins__" : None}, {
             "retval" : retval
         })
         return 1 if result else 0
