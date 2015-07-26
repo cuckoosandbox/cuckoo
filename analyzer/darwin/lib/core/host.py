@@ -88,11 +88,11 @@ class CuckooHost:
 
     def _create_socket(self):
         """ Allocates a new socket and prepares it for communicating with the host """
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.ip, self.port))
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((self.ip, self.port))
         # Prepare the result server to accept data in BSON format
-        s.sendall("BSON\n")
-        return s
+        sock.sendall("BSON\n")
+        return sock
 
     def _send_api_description(self, lookup_idx, thing):
         """ Describes the given API call to the host """
@@ -200,8 +200,8 @@ class CuckooHost:
 
     def _load_human_readable_info(self):
         try:
-            with open(_description_file_path(), "r") as f:
-                self.human_readable_info = json.load(f)
+            with open(_description_file_path(), "r") as infile:
+                self.human_readable_info = json.load(infile)
         except IOError:
             log.exception("Could not open apis.json file")
         except ValueError:
@@ -219,12 +219,12 @@ def _proc_name_from_pid(pid):
         return "unknown"
 
 
-def _filetime_from_timestamp(ts):
+def _filetime_from_timestamp(timestamp):
     """ See filetimes.py for details """
     # Timezones are hard, sorry
-    dt = datetime.fromtimestamp(ts)
-    delta_from_utc = dt - datetime.utcfromtimestamp(ts)
-    return dt_to_filetime(dt, delta_from_utc)
+    moment = datetime.fromtimestamp(timestamp)
+    delta_from_utc = moment - datetime.utcfromtimestamp(timestamp)
+    return dt_to_filetime(moment, delta_from_utc)
 
 
 def _description_file_path():
