@@ -161,8 +161,8 @@ RETURN_PROBE_TEMPLATE = """pid$$target:${__LIBRARY__}:${__NAME__}:return
 {
 \tthis->retval = arg1;
 \tthis->timestamp_ms = walltimestamp/1000000;
-\tprintf("{\\\"api\\\":\\\"%s\\\", \\\"args\\\":[${__ARGS_FORMAT_STRING__}], \\\"retval\\\":${__RETVAL_FORMAT_SPECIFIER__}, \\\"timestamp\\\":%ld, \\\"pid\\\":%d, \\\"ppid\\\":%d, \\\"tid\\":%d}\\n",
+\tprintf("{\\\"api\\\":\\\"%s\\\", \\\"args\\\":[${__ARGS_FORMAT_STRING__}], \\\"retval\\\":${__RETVAL_FORMAT_SPECIFIER__}, \\\"timestamp\\\":%ld, \\\"pid\\\":%d, \\\"ppid\\\":%d, \\\"tid\\":%d, \\\"errno\\\":%d}\\n",
 \t\tprobefunc,${__ARGUMENTS__}
 \t\t${__RETVAL_CAST__}(this->retval),
-\t\tthis->timestamp_ms, pid, ppid, tid);${__ARGUMENTS_POP_FROM_STACK}
+\t\tthis->timestamp_ms, pid, ppid, tid, errno);${__ARGUMENTS_POP_FROM_STACK}
 }\n"""

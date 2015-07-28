@@ -133,3 +133,27 @@ class TestAPICalls(DtraceTestCase):
         matched = [x for x in output if (x.api, x.args, x.retval) == expected_api]
         # then
         self.assertEqual(len(matched), 1)
+
+    @timed(15)
+    def test_apicalls_errno(self):
+        # given
+        expected_api = ("fopen", ["doesn't matter", "invalid mode"], 0, 22)
+        # when
+        output = []
+        for call in apicalls(self.current_target()):
+            output.append(call)
+        matched = [x for x in output if (x.api, x.args, x.retval, x.errno) == expected_api]
+        # then
+        self.assertEqual(len(matched), 1)
+
+    @timed(5)
+    def test_apicalls_errno_root(self):
+        # given
+        expected_api = ("fopen", ["doesn't matter", "r"], 0, 2)
+        # when
+        output = []
+        for call in apicalls(self.current_target(), run_as_root=True):
+            output.append(call)
+        matched = [x for x in output if (x.api, x.args, x.retval, x.errno) == expected_api]
+        # then
+        self.assertEqual(len(matched), 1)

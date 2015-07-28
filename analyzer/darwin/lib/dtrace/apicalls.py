@@ -12,7 +12,7 @@ from collections import namedtuple
 from tempfile import NamedTemporaryFile
 from autoprobes import generate_probes
 
-apicall = namedtuple("apicall", "api args retval timestamp pid ppid tid")
+apicall = namedtuple("apicall", "api args retval timestamp pid ppid tid errno")
 
 
 def apicalls(target, **kwargs):
@@ -86,7 +86,8 @@ def _parse_entry(entry):
     pid       = parsed['pid']
     ppid      = parsed['ppid']
     tid       = parsed['tid']
-    return apicall(api, args, retval, timestamp, pid, ppid, tid)
+    errno     = parsed['errno']
+    return apicall(api, args, retval, timestamp, pid, ppid, tid, errno)
 
 
 def _stringify_args(args):

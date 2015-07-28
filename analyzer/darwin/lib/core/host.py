@@ -170,12 +170,14 @@ class CuckooHost(object):
 
     def _verify_is_success(self, thing):
         retval = thing.retval
+        errno = thing.errno
         if thing.api not in self.human_readable_info: # fallback to success
             return 1
 
         condition = self.human_readable_info[thing.api]["is_success_condition"]
         result = eval(condition, {"__builtins__" : None}, {
-            "retval" : retval
+            "retval" : retval,
+            "errno"  : errno
         })
         return 1 if result else 0
 
