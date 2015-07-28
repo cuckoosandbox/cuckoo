@@ -167,16 +167,14 @@ class AnalysisManager(Thread):
 
             # If the user specified a specific machine ID, a platform to be
             # used or machine tags acquire the machine accordingly.
-            try:
-                machine = machinery.acquire(machine_id=self.task.machine,
-                                            platform=self.task.platform,
-                                            tags=self.task.tags)
-            finally:
-                machine_lock.release()
+            machine = machinery.acquire(machine_id=self.task.machine,
+                                        platform=self.task.platform,
+                                        tags=self.task.tags)
 
             # If no machine is available at this moment, wait for one second
             # and try again.
             if not machine:
+                machine_lock.release()
                 log.debug("Task #%d: no machine available yet", self.task.id)
                 time.sleep(1)
             else:
@@ -246,6 +244,7 @@ class AnalysisManager(Thread):
         try:
             self.acquire_machine()
         except CuckooOperationalError as e:
+            machine_lock.release()
             log.error("Cannot acquire machine: {0}".format(e))
             return False
 
@@ -270,6 +269,10 @@ class AnalysisManager(Thread):
                                             machinery.__class__.__name__)
             # Start the machine.
             machinery.start(self.machine.label)
+
+            # By the time start returns it will have fully started the Virtual
+            # Machine. We can now safely release the machine lock.
+            machine_lock.release()
 
             # Initialize the guest manager.
             guest = GuestManager(self.machine.name, self.machine.ip,
@@ -524,6 +527,16 @@ class Scheduler:
         while self.running:
             time.sleep(1)
 
+            # Wait until the machine lock is not locked. This is only the case
+            # when all machines are fully running, rather that about to start
+            # or still busy starting. This way we won't have race conditions
+            # with finding out there are no available machines in the analysis
+            # manager or having two analyses pick the same machine.
+            if not machine_lock.acquire(False):
+                continue
+
+            machine_lock.release()
+
             # If not enough free disk space is available, then we print an
             # error message and wait another round (this check is ignored
             # when the freespace configuration variable is set to zero).
@@ -576,6 +589,7 @@ class Scheduler:
                         # Initialize and start the analysis manager.
                         analysis = AnalysisManager(task, errors)
                         analysis.start()
+                        break
 
             # Deal with errors.
             try:
