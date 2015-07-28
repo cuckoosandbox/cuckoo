@@ -464,8 +464,8 @@ if ! grep "* soft nofile" /etc/security/limits.conf; then
     cat >> /etc/security/limits.conf << EOF
 
 # Set the file descriptor limit fairly high.
-* soft nofile 40000
-* hard nofile 80000
+* soft nofile 499999
+* hard nofile 999999
 EOF
 fi
 

@@ -67,6 +67,9 @@ kill timeout 600
 # Restart Cuckoo if it exits.
 respawn
 
+# Upstart ignores limits found in /etc/security/limits.conf.
+limit nofile 499999 999999
+
 env CONFFILE="$CONFFILE"
 env VMINTERNET=""
 env CHECKVMS="/etc/default/cuckoo-setup"
