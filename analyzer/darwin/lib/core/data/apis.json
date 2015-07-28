@@ -15,15 +15,6 @@
         "retval_type": "integer",
         "category" : "foobar"
     },
-    "atoi": {
-        "is_success_condition": "True",
-        "args": [
-            {"name": "str", "type": "string"}
-        ],
-        "retval_type": "integer",
-        "category" : "foobar",
-        "library" : "libsystem_c"
-    },
     "dlopen": {
         "is_success_condition": "retval > 0",
         "args": [
@@ -71,11 +62,22 @@
         "category" : "process"
     },
     "rb_isalpha": {
+        "DO NOT REMOVE THIS DEFINITION. IT'S FOR TESTS": true,
         "is_success_condition": "retval != 0",
         "args": [
             {"name": "character", "type": "char"}
         ],
         "retval_type": "integer",
         "category" : "foobar"
+    },
+    "atoi": {
+        "DO NOT REMOVE THIS DEFINITION. IT'S FOR TESTS": true,
+        "is_success_condition": "True",
+        "args": [
+            {"name": "str", "type": "string"}
+        ],
+        "retval_type": "integer",
+        "category" : "foobar",
+        "library" : "libsystem_c"
     }
 }
