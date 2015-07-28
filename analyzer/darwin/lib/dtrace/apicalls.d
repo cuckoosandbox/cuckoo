@@ -14,7 +14,8 @@
  *     timestamp   : integer,           // e.g. 1433765405
  *     pid         : integer,           // e.g. 9213
  *     ppid        : integer,           // e.g. 9210
- *     tid         : integer            // e.g. 269040
+ *     tid         : integer,           // e.g. 269040
+ *     errno       : integer            // e.g. 22
  * }
  *
  */
@@ -78,11 +79,11 @@ pid$target::execve:entry
     this->retval = 0;
     this->timestamp_ms = walltimestamp/1000000;
 
-    printf("{\"api\":\"%s\", \"args\":[\"%S\", %llu, %llu], \"retval\":%d, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d}\n",
+    printf("{\"api\":\"%s\", \"args\":[\"%S\", %llu, %llu], \"retval\":%d, \"timestamp\":%ld, \"pid\":%d, \"ppid\":%d, \"tid\":%d, \"errno\":%d}\n",
         probefunc,
         copyinstr(arg0), (unsigned long long)arg1, (unsigned long long)arg2,
         (int)this->retval,
-        this->timestamp_ms, pid, ppid, tid);
+        this->timestamp_ms, pid, ppid, tid, errno);
 }
 
 #endif /* not SUDO */
