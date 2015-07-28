@@ -44,6 +44,15 @@
         "retval_type": "integer",
         "category" : "foobar"
     },
+    "fopen": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "filename", "type": "string"},
+            {"name": "mode", "type": "string"}
+        ],
+        "retval_type": "integer",
+        "category" : "file"
+    },
     "execve": {
         "is_success_condition": "retval != -1",
         "args": [
