@@ -427,7 +427,9 @@ class AnalysisManager(Thread):
                 # Deal with race conditions using a lock.
                 latest_symlink_lock.acquire()
                 try:
-                    if os.path.exists(latest):
+                    # As per documentation, lexists() returns True for dead
+                    # symbolic links.
+                    if os.path.lexists(latest):
                         os.remove(latest)
 
                     os.symlink(self.storage, latest)
