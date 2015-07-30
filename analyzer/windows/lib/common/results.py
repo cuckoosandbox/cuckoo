@@ -34,7 +34,7 @@ class NetlogConnection(object):
     def __init__(self, proto=""):
         config = Config(cfg="analysis.conf")
         self.hostip, self.hostport = config.ip, config.port
-        self.sock, self.file = None, None
+        self.sock = None
         self.proto = proto
 
     def connect(self):
@@ -50,7 +50,6 @@ class NetlogConnection(object):
                 i = min(i + 1, 60)
             else:
                 self.sock = s
-                self.file = s.makefile()
                 break
 
     def send(self, data, retry=True):
@@ -73,7 +72,6 @@ class NetlogConnection(object):
 
     def close(self):
         try:
-            self.file.close()
             self.sock.close()
         except Exception:
             pass
