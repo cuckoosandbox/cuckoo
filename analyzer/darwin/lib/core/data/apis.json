@@ -81,7 +81,7 @@
     },
     "atoi": {
         "DO NOT REMOVE THIS DEFINITION. IT'S FOR TESTS": true,
-        "is_success_condition": "True",
+        "is_success_condition": "1==1",
         "args": [
             {"name": "str", "type": "string"}
         ],
