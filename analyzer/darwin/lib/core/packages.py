@@ -90,6 +90,8 @@ class Package(object):
             self.run_as_root = _string_to_bool(self.options["run_as_root"])
         else:
             self.run_as_root = False
+        # Our target may touch some files; keep an eye on them
+        self.touched_files = []
 
     def prepare(self):
         """ Preparation routine. Do anything you want here. """
@@ -114,6 +116,15 @@ class Package(object):
         }
         for call in apicalls(self.target, **kwargs):
             self.host.send_api(call)
+            suspicious = ["fopen", "freopen", "open"]
+            if call.api in suspicious and call.api not in self.touched_files:
+                self.handle_file(call.args[0])
+
+    def handle_file(self, filepath):
+        # Is it a relative path? Suppose it's relative to our dtrace working directory
+        if not path.isfile(filepath):
+            filepath = path.join(path.dirname(__file__), "..", "dtrace", filepath)
+        self.touched_files += [filepath]
 
 def _string_to_bool(raw):
     if not isinstance(raw, basestring):
