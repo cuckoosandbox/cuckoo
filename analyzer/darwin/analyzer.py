@@ -7,7 +7,6 @@ import logging
 from sys import stderr
 from hashlib import sha256
 from xmlrpclib import Server
-from tempfile import gettempdir
 from traceback import format_exc
 from os import path, getcwd, makedirs
 
