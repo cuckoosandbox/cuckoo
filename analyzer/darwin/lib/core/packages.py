@@ -116,6 +116,7 @@ class Package(object):
         }
         for call in apicalls(self.target, **kwargs):
             self.host.send_api(call)
+            # TODO(rodionovd): Handle moves and deletions as well
             suspicious = ["fopen", "freopen", "open"]
             if call.api in suspicious and call.api not in self.touched_files:
                 self.handle_file(call.args[0])
