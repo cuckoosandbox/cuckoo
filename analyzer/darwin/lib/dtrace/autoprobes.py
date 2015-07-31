@@ -128,7 +128,7 @@ def _format_specifier_from_type(type_string):
     if type_string in PRINTF_FORMATS:
         return PRINTF_FORMATS[type_string]
     else:
-        raise Exception("Unsupported type string")
+        raise Exception("Unsupported type string: \"%s\"" % type_string)
 
 def _c_cast_for_type(type_string):
     if type_string in C_CASTS:
