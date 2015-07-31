@@ -87,7 +87,7 @@
             {"name": "from", "type": "string"},
             {"name": "to",   "type": "string"},
             {"name": "state","type": "pointer"},
-            {"name": "flags","type": "integer"}
+            {"name": "flags","type": "uint32_t"}
         ],
         "retval_type": "integer",
         "category" : "file"

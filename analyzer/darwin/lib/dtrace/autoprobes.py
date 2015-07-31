@@ -83,7 +83,7 @@ def _create_return_probe(definition):
         "__ARGS_FORMAT_STRING__"      : _args_format_string(args),
         "__RETVAL_FORMAT_SPECIFIER__" : PRINTF_FORMATS[retval_type],
         "__ARGUMENTS__"               : _arguments_section(args),
-        "__RETVAL_CAST__"             : C_CASTS[retval_type],
+        "__RETVAL_CAST__"             : _c_cast_for_type(retval_type),
         "__ARGUMENTS_POP_FROM_STACK"  : _pop_from_stack_section(args)
     }
     return template.substitute(mapping)
@@ -120,7 +120,7 @@ def _args_format_string(args):
 def _arguments_section(args):
     parts = []
     for idx, item in enumerate(args):
-        parts.append("%s(self->arg%d)," % (C_CASTS[item["type"]], idx))
+        parts.append("%s(self->arg%d)," % (_c_cast_for_type(item["type"]), idx))
     return ("\n\t\t" + " ".join(parts)) if len(parts) > 0 else ""
 
 
@@ -130,6 +130,12 @@ def _format_specifier_from_type(type_string):
     else:
         raise Exception("Unsupported type string")
 
+def _c_cast_for_type(type_string):
+    if type_string in C_CASTS:
+        return C_CASTS[type_string]
+    else:
+        return "(%s)" % type_string
+
 # Constants
 PRINTF_FORMATS = {
     "pointer" : "%llu",
@@ -138,7 +144,15 @@ PRINTF_FORMATS = {
     "integer" : "%d",
     "float"   : "%f",
     "double"  : "%lf",
-    "char"    : "\\\"%c\\\""
+    "char"    : "\\\"%c\\\"",
+    "uint8_t" : "%u",
+    "uint16_t": "%u",
+    "uint32_t": "%u",
+    "uint64_t": "%llu",
+    "int64_t" : "%lld",
+    "int32_t" : "%d",
+    "int16_t" : "%d",
+    "int8_t"  : "%d"
 }
 
 C_CASTS = {
