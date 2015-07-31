@@ -44,11 +44,66 @@
         "retval_type": "integer",
         "category" : "foobar"
     },
+    "open": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "path",  "type": "string"},
+            {"name": "oflag", "type": "integer"}
+        ],
+        "retval_type": "integer",
+        "category" : "file"
+    },
     "fopen": {
         "is_success_condition": "retval > 0",
         "args": [
             {"name": "filename", "type": "string"},
-            {"name": "mode", "type": "string"}
+            {"name": "mode",     "type": "string"}
+        ],
+        "retval_type": "pointer",
+        "category" : "file"
+    },
+    "freopen": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "filename", "type": "string"},
+            {"name": "mode",     "type": "string"},
+            {"name": "stream",   "type": "pointer"}
+        ],
+        "retval_type": "pointer",
+        "category" : "file"
+    },
+    "rename": {
+        "is_success_condition": "retval == 0",
+        "args": [
+            {"name": "old", "type": "string"},
+            {"name": "new", "type": "string"}
+        ],
+        "retval_type": "integer",
+        "category" : "file"
+    },
+    "copyfile": {
+        "is_success_condition": "retval == 0",
+        "args": [
+            {"name": "from", "type": "string"},
+            {"name": "to",   "type": "string"},
+            {"name": "state","type": "pointer"},
+            {"name": "flags","type": "integer"}
+        ],
+        "retval_type": "integer",
+        "category" : "file"
+    },
+    "remove": {
+        "is_success_condition": "retval == 0",
+        "args": [
+            {"name": "path", "type": "string"}
+        ],
+        "retval_type": "integer",
+        "category" : "file"
+    },
+    "unlink": {
+        "is_success_condition": "retval == 0",
+        "args": [
+            {"name": "path", "type": "string"}
         ],
         "retval_type": "integer",
         "category" : "file"
