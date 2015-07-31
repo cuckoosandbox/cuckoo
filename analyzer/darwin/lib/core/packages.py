@@ -6,6 +6,7 @@
 from ..dtrace.apicalls import apicalls
 
 import inspect
+from sets import Set
 from os import sys, path
 
 def choose_package_class(file_type, file_name, suggestion=None):
@@ -61,6 +62,9 @@ def _guess_package_name(file_type, file_name):
 class Package(object):
     """ Base analysis package """
 
+    # Our target may touch some files; keep an eye on them
+    touched_files = Set()
+
     def __init__(self, target, host, **kwargs):
         if not target or not host:
             raise Exception("Package(): `target` and `host` arguments are required")
@@ -90,8 +94,6 @@ class Package(object):
             self.run_as_root = _string_to_bool(self.options["run_as_root"])
         else:
             self.run_as_root = False
-        # Our target may touch some files; keep an eye on them
-        self.touched_files = []
 
     def prepare(self):
         """ Preparation routine. Do anything you want here. """
@@ -115,17 +117,41 @@ class Package(object):
             'run_as_root': self.run_as_root
         }
         for call in apicalls(self.target, **kwargs):
+            # Send this API to Cuckoo host
             self.host.send_api(call)
-            # TODO(rodionovd): Handle moves and deletions as well
-            suspicious = ["fopen", "freopen", "open"]
-            if call.api in suspicious and call.api not in self.touched_files:
-                self.handle_file(call.args[0])
 
-    def handle_file(self, filepath):
-        # Is it a relative path? Suppose it's relative to our dtrace working directory
-        if not path.isfile(filepath):
-            filepath = path.join(path.dirname(__file__), "..", "dtrace", filepath)
-        self.touched_files += [filepath]
+            def makeabs(filepath):
+                # Is it a relative path? Suppose it's relative to our dtrace working directory
+                if not path.isfile(filepath):
+                    filepath = path.join(path.dirname(__file__), "..", "dtrace", filepath)
+                return filepath
+            # Handle file IO APIs
+            if call.api in ["fopen", "freopen", "open"]:
+                self.open_file(makeabs(call.args[0]))
+            if call.api in ["rename"]:
+                self.move_file(makeabs(call.args[0]), makeabs(call.args[1]))
+            if call.api in ["copyfile"]:
+                self.copy_file(makeabs(call.args[0]), makeabs(call.args[1]))
+            if call.api in ["remove", "unlink"]:
+                self.remove_file(makeabs(call.args[0]))
+
+    def open_file(self, filepath):
+        self.touched_files.add(filepath)
+
+    def move_file(self, frompath, topath):
+        # Remove old reference if needed
+        if frompath in self.touched_files:
+            self.touched_files.remove(frompath)
+        self.touched_files.add(topath)
+
+    def copy_file(self, frompath, topath):
+        # Add both files to the watch list
+        self.touched_files.update([frompath, topath])
+
+    def remove_file(self, filepath):
+        # TODO(rodionovd): we're actually unable to dump this file
+        # because well, it was removed
+        self.touched_files.add(filepath)
 
 def _string_to_bool(raw):
     if not isinstance(raw, basestring):
