@@ -226,12 +226,40 @@ _setup() {
     sql_query "DROP USER cuckoo"
     sql_query "CREATE USER cuckoo WITH PASSWORD '$PASSWORD'"
 
-    # Setup the VirtualBox hostonly network.
-    vmcloak-vboxnet0
+    # Install the Upstart/SystemV scripts.
+    "$CUCKOO/utils/service.sh" install
 
-    # Run the magic iptables script that turns hostonly networks into full
-    # internet access.
-    vmcloak-iptables 192.168.56.1/24 "$INTERFACES"
+    # Add "nmi_watchdog=0" to the GRUB commandline if it's not in there already.
+    if ! grep nmi_watchdog /etc/default/grub; then
+        cat >> /etc/default/grub << EOF
+
+# Add nmi_watchdog=0 to the GRUB commandline to prevent
+# VirtualBox from kernel panicing when the load increases.
+GRUB_CMDLINE_LINUX_DEFAULT="\$GRUB_CMDLINE_LINUX_DEFAULT nmi_watchdog=0"
+EOF
+    fi
+
+    # Recreate the GRUB configuration.
+    grub-mkconfig -o /boot/grub/grub.cfg
+
+    # Increase the file descriptor limits. TODO How to set it for just the cuckoo
+    # user? Doesn't seem to work when using 'cuckoo' instead of '*'.
+    if ! grep "* soft nofile" /etc/security/limits.conf; then
+        cat >> /etc/security/limits.conf << EOF
+
+# Set the file descriptor limit fairly high.
+* soft nofile 499999
+* hard nofile 999999
+EOF
+    fi
+
+    # TODO Should be automated away.
+    echo "PostgreSQL connection string:  " \
+        "postgresql://cuckoo:$PASSWORD@localhost/cuckoo"
+
+    # A reboot is required for the grub command-line changes and limits.conf
+    # changes to take effect.
+    shutdown -r now
 }
 
 _create_virtual_machines() {
@@ -441,36 +469,3 @@ _create_virtual_machines
 
 # Initialize all VMs.
 _initialize_from_backup "$TMPFS"
-
-# Install the Upstart/SystemV scripts.
-"$CUCKOO/utils/service.sh" install
-
-# Add "nmi_watchdog=0" to the GRUB commandline if it's not in there already.
-if ! grep nmi_watchdog /etc/default/grub; then
-    cat >> /etc/default/grub << EOF
-
-# Add nmi_watchdog=0 to the GRUB commandline to prevent
-# VirtualBox from kernel panicing when the load increases.
-GRUB_CMDLINE_LINUX_DEFAULT="\$GRUB_CMDLINE_LINUX_DEFAULT nmi_watchdog=0"
-EOF
-fi
-
-# Recreate the GRUB configuration.
-grub-mkconfig -o /boot/grub/grub.cfg
-
-# Increase the file descriptor limits. TODO How to set it for just the cuckoo
-# user? Doesn't seem to work when using 'cuckoo' instead of '*'.
-if ! grep "* soft nofile" /etc/security/limits.conf; then
-    cat >> /etc/security/limits.conf << EOF
-
-# Set the file descriptor limit fairly high.
-* soft nofile 40000
-* hard nofile 80000
-EOF
-fi
-
-echo "PostgreSQL connection string:  " \
-    "postgresql://cuckoo:$PASSWORD@localhost/cuckoo"
-
-# A reboot is required for the grub command-line to take effect.
-shutdown -r now

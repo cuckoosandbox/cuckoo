@@ -35,10 +35,6 @@ LOGDIR="$LOGDIR"
 # turned *OFF*. Enable by uncommenting and setting the value.
 # APIADDR="127.0.0.1"
 
-# IP address the Cuckoo Distributed API will bind on. Distributed API is by
-# default turned *OFF*. Enable by uncommenting and setting the value.
-# DISTADDR="127.0.0.1"
-
 # IP address the Cuckoo Web Interface will bind on. The Cuckoo Web Interface
 # is by default turned *OFF*. Enable by uncommenting and setting the value.
 # WEBADDR="127.0.0.1"
@@ -66,6 +62,9 @@ kill timeout 600
 
 # Restart Cuckoo if it exits.
 respawn
+
+# Upstart ignores limits found in /etc/security/limits.conf.
+limit nofile 499999 999999
 
 env CONFFILE="$CONFFILE"
 env VMINTERNET=""
@@ -224,7 +223,7 @@ _remove_upstart() {
     rm -f /etc/init/cuckoo.conf
     rm -f /etc/init/cuckoo-api.conf
     rm -f /etc/init/cuckoo-process.conf
-    rm -f /etc/init/cuckoo-distributed.conf
+    rm -f /etc/init/cuckoo-distributed-instance.conf
     rm -f /etc/init/cuckoo-web.conf
 }
 
@@ -271,7 +270,6 @@ USERNAME="$USERNAME"
 CUCKOO="$CUCKOO"
 LOGDIR="$LOGDIR"
 APIADDR=""
-DISTADDR=""
 WEBADDR=""
 
 # Load configuration values.
@@ -307,13 +305,6 @@ _start() {
         echo -n "Starting Cuckoo API server.. "
         nohup python ./utils/api.py -u "\$USERNAME" \
             -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log" &
-        PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
-    fi
-
-    if [ -n "\$DISTADDR" ]; then
-        echo -n "Starting Cuckoo Distributed API.. "
-        nohup python ./distributed/app.py -u "\$USERNAME" \
-            "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log" &
         PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
     fi
 

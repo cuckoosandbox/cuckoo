@@ -222,8 +222,8 @@ class BehaviorReconstructor(object):
     def _api_URLDownloadToFileW(self, return_value, arguments):
         return [
             ("downloads_file", arguments["url"]),
-            ("file_opened", arguments["filepath"])
-            ("file_written", arguments["filepath"])
+            ("file_opened", arguments["filepath"]),
+            ("file_written", arguments["filepath"]),
         ]
 
     def _api_InternetConnectA(self, return_value, arguments):

@@ -262,6 +262,8 @@ class AnalysisManager(Thread):
         options = self.build_options()
 
         try:
+            unlocked = False
+
             # Mark the selected analysis machine in the database as started.
             guest_log = self.db.guest_start(self.task.id,
                                             self.machine.name,
@@ -273,6 +275,7 @@ class AnalysisManager(Thread):
             # By the time start returns it will have fully started the Virtual
             # Machine. We can now safely release the machine lock.
             machine_lock.release()
+            unlocked = True
 
             # Initialize the guest manager.
             guest = GuestManager(self.machine.name, self.machine.ip,
@@ -284,9 +287,13 @@ class AnalysisManager(Thread):
             guest.wait_for_completion()
             succeeded = True
         except CuckooMachineError as e:
+            if not unlocked:
+                machine_lock.release()
             log.error(str(e), extra={"task_id": self.task.id})
             dead_machine = True
         except CuckooGuestError as e:
+            if not unlocked:
+                machine_lock.release()
             log.error(str(e), extra={"task_id": self.task.id})
         finally:
             # Stop Auxiliary modules.
@@ -420,7 +427,9 @@ class AnalysisManager(Thread):
                 # Deal with race conditions using a lock.
                 latest_symlink_lock.acquire()
                 try:
-                    if os.path.exists(latest):
+                    # As per documentation, lexists() returns True for dead
+                    # symbolic links.
+                    if os.path.lexists(latest):
                         os.remove(latest)
 
                     os.symlink(self.storage, latest)
