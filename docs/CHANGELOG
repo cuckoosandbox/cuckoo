@@ -1,11 +1,10 @@
                                   CHANGELOG
 
 
-Cuckoo Sandbox 1.3 (TBD)
+Cuckoo Sandbox 2.0 (TBD)
 ===============================
 
-* Added new Flask based distributed utility
-* Upgraded to MAEC 4.1
+* Added screenshots processing module with OCR support
 
 Cuckoo Sandbox 1.2 (2015-03-04)
 ===============================
