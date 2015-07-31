@@ -20,7 +20,7 @@ def generate_probes(source, output_path, overwrite=False):
     if not overwrite and path.isfile(output_path):
         return # we already have our probes generated
     defs = _read_definitions(source)
-    probes = map(_create_probe, defs)
+    probes = [HEADER] + map(_create_probe, defs)
     _save_probes(probes, output_path)
 
 # File IO
@@ -175,8 +175,22 @@ RETURN_PROBE_TEMPLATE = """pid$$target:${__LIBRARY__}:${__NAME__}:return
 {
 \tthis->retval = arg1;
 \tthis->timestamp_ms = walltimestamp/1000000;
-\tprintf("{\\\"api\\\":\\\"%s\\\", \\\"args\\\":[${__ARGS_FORMAT_STRING__}], \\\"retval\\\":${__RETVAL_FORMAT_SPECIFIER__}, \\\"timestamp\\\":%ld, \\\"pid\\\":%d, \\\"ppid\\\":%d, \\\"tid\\":%d, \\\"errno\\\":%d}\\n",
+\tprintf("{\\\"api\\\":\\\"%s\\\", \\\"args\\\":[${__ARGS_FORMAT_STRING__}], \\\"retval\\\":${__RETVAL_FORMAT_SPECIFIER__}, \\\"timestamp\\\":%lld, \\\"pid\\\":%d, \\\"ppid\\\":%d, \\\"tid\\":%d, \\\"errno\\\":%d}\\n",
 \t\tprobefunc,${__ARGUMENTS__}
 \t\t${__RETVAL_CAST__}(this->retval),
-\t\tthis->timestamp_ms, pid, ppid, tid, errno);${__ARGUMENTS_POP_FROM_STACK}
+\t\t(int64_t)this->timestamp_ms, pid, ppid, tid, errno);${__ARGUMENTS_POP_FROM_STACK}
 }\n"""
+
+HEADER="""/* For some reason either dtrace or clang preprocessor refuses to identify standard
+ * C integer types like int64_t or uint8_t. Thus we must include stdint.h with the
+ * following patches.
+ */
+/* (1) fix sys/_types/_int8_t.h */
+#define __signed signed
+/* (2) cdefs.h throws "Unsupported compiler detected" warning, ignore it */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-W#warnings"
+#include <stdint.h>
+#pragma clang diagnostic pop
+\n
+"""
