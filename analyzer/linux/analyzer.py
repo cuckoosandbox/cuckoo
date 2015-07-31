@@ -4,9 +4,6 @@
 
 import os
 import sys
-import socket
-import struct
-import random
 import pkgutil
 import logging
 import tempfile
@@ -19,7 +16,6 @@ from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
 from lib.common.constants import PATHS
 from lib.common.exceptions import CuckooError, CuckooPackageError
-from lib.common.hashing import hash_file
 from lib.common.results import upload_to_host
 from lib.core.config import Config
 from lib.core.startup import create_folders, init_logging
