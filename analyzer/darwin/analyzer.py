@@ -5,12 +5,14 @@
 
 import logging
 from sys import stderr
+from hashlib import sha256
 from xmlrpclib import Server
 from traceback import format_exc
 from os import path, getcwd, makedirs
 
 from lib.common.config import Config
-from lib.common.results import NetlogHandler
+from lib.common.hashing import hash_file
+from lib.common.results import NetlogHandler, upload_to_host
 from lib.core.constants import PATHS
 from lib.core.packages import choose_package_class
 from lib.core.osx import set_wallclock
@@ -22,6 +24,9 @@ class Macalyzer(object):
 
     log = logging.getLogger()
     target = None
+
+    files_to_upload = []
+    uploaded_hashes = []
 
     def __init__(self, host, configuration=None):
         self.config = configuration
@@ -49,6 +54,8 @@ class Macalyzer(object):
         return self._complete()
 
     def _complete(self):
+        for f in self.files_to_upload:
+            self._upload_file(f)
         return True
 
     #
@@ -84,7 +91,27 @@ class Macalyzer(object):
 
     def _analysis(self, package):
         package.start()
+        self.files_to_upload = package.touched_files
 
+    def _upload_file(self, filepath):
+        if not path.isfile(filepath):
+            return
+        # Check whether we've already dumped this file - in that case skip it
+        try:
+            hashsum = hash_file(sha256, filepath)
+            if sha256 in self.uploaded_hashes:
+                return
+        except IOError as e:
+            self.log.info("Error dumping file from path \"%s\": %s", filepath, e)
+            return
+        filename = "%s_%s" % (hashsum[:16], path.basename(filepath))
+        upload_path = path.join("files", filename)
+
+        try:
+            upload_to_host(filepath, upload_path)
+            self.uploaded_hashes.append(hashsum)
+        except IOError as e:
+            self.log.error("Unable to upload dropped file at path \"%s\": %s", filepath, e)
 
 def _create_result_folders():
     for _, folder in PATHS.items():

@@ -20,7 +20,7 @@ def generate_probes(source, output_path, overwrite=False):
     if not overwrite and path.isfile(output_path):
         return # we already have our probes generated
     defs = _read_definitions(source)
-    probes = map(_create_probe, defs)
+    probes = [HEADER] + map(_create_probe, defs)
     _save_probes(probes, output_path)
 
 # File IO
@@ -83,7 +83,7 @@ def _create_return_probe(definition):
         "__ARGS_FORMAT_STRING__"      : _args_format_string(args),
         "__RETVAL_FORMAT_SPECIFIER__" : PRINTF_FORMATS[retval_type],
         "__ARGUMENTS__"               : _arguments_section(args),
-        "__RETVAL_CAST__"             : C_CASTS[retval_type],
+        "__RETVAL_CAST__"             : _c_cast_for_type(retval_type),
         "__ARGUMENTS_POP_FROM_STACK"  : _pop_from_stack_section(args)
     }
     return template.substitute(mapping)
@@ -120,7 +120,7 @@ def _args_format_string(args):
 def _arguments_section(args):
     parts = []
     for idx, item in enumerate(args):
-        parts.append("%s(self->arg%d)," % (C_CASTS[item["type"]], idx))
+        parts.append("%s(self->arg%d)," % (_c_cast_for_type(item["type"]), idx))
     return ("\n\t\t" + " ".join(parts)) if len(parts) > 0 else ""
 
 
@@ -128,7 +128,13 @@ def _format_specifier_from_type(type_string):
     if type_string in PRINTF_FORMATS:
         return PRINTF_FORMATS[type_string]
     else:
-        raise Exception("Unsupported type string")
+        raise Exception("Unsupported type string: \"%s\"" % type_string)
+
+def _c_cast_for_type(type_string):
+    if type_string in C_CASTS:
+        return C_CASTS[type_string]
+    else:
+        return "(%s)" % type_string
 
 # Constants
 PRINTF_FORMATS = {
@@ -138,7 +144,15 @@ PRINTF_FORMATS = {
     "integer" : "%d",
     "float"   : "%f",
     "double"  : "%lf",
-    "char"    : "\\\"%c\\\""
+    "char"    : "\\\"%c\\\"",
+    "uint8_t" : "%u",
+    "uint16_t": "%u",
+    "uint32_t": "%u",
+    "uint64_t": "%llu",
+    "int64_t" : "%lld",
+    "int32_t" : "%d",
+    "int16_t" : "%d",
+    "int8_t"  : "%d"
 }
 
 C_CASTS = {
@@ -161,8 +175,22 @@ RETURN_PROBE_TEMPLATE = """pid$$target:${__LIBRARY__}:${__NAME__}:return
 {
 \tthis->retval = arg1;
 \tthis->timestamp_ms = walltimestamp/1000000;
-\tprintf("{\\\"api\\\":\\\"%s\\\", \\\"args\\\":[${__ARGS_FORMAT_STRING__}], \\\"retval\\\":${__RETVAL_FORMAT_SPECIFIER__}, \\\"timestamp\\\":%ld, \\\"pid\\\":%d, \\\"ppid\\\":%d, \\\"tid\\":%d, \\\"errno\\\":%d}\\n",
+\tprintf("{\\\"api\\\":\\\"%s\\\", \\\"args\\\":[${__ARGS_FORMAT_STRING__}], \\\"retval\\\":${__RETVAL_FORMAT_SPECIFIER__}, \\\"timestamp\\\":%lld, \\\"pid\\\":%d, \\\"ppid\\\":%d, \\\"tid\\":%d, \\\"errno\\\":%d}\\n",
 \t\tprobefunc,${__ARGUMENTS__}
 \t\t${__RETVAL_CAST__}(this->retval),
-\t\tthis->timestamp_ms, pid, ppid, tid, errno);${__ARGUMENTS_POP_FROM_STACK}
+\t\t(int64_t)this->timestamp_ms, pid, ppid, tid, errno);${__ARGUMENTS_POP_FROM_STACK}
 }\n"""
+
+HEADER="""/* For some reason either dtrace or clang preprocessor refuses to identify standard
+ * C integer types like int64_t or uint8_t. Thus we must include stdint.h with the
+ * following patches.
+ */
+/* (1) fix sys/_types/_int8_t.h */
+#define __signed signed
+/* (2) cdefs.h throws "Unsupported compiler detected" warning, ignore it */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-W#warnings"
+#include <stdint.h>
+#pragma clang diagnostic pop
+\n
+"""
