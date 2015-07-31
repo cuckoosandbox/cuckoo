@@ -54,7 +54,8 @@ class Macalyzer(object):
         return self._complete()
 
     def _complete(self):
-        self._upload_files()
+        for f in self.files_to_upload:
+            self._upload_file(f)
         return True
 
     #
@@ -91,10 +92,6 @@ class Macalyzer(object):
     def _analysis(self, package):
         package.start()
         self.files_to_upload = package.touched_files
-
-    def _upload_files(self):
-        for f in self.files_to_upload:
-            self._upload_file(f)
 
     def _upload_file(self, filepath):
         if not path.isfile(filepath):
