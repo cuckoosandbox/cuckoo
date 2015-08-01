@@ -1,9 +1,11 @@
 # Copyright (C) Check Point Software Technologies LTD.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+
 import hashlib
 import os
 import logging
+
 from zipfile import BadZipfile
 
 from lib.cuckoo.common.objects import File
@@ -64,32 +66,31 @@ class ApkInfo(Processing):
             if not os.path.exists(self.file_path):
                 raise CuckooProcessingError("Sample file doesn't exist: \"%s\"" % self.file_path)
 
-            try :
+            try:
                 a = APK(self.file_path)
                 if a.is_valid_APK():
-
-                    manifest ={}
+                    manifest = {}
                     apkinfo["files"] = self._apk_files(a)
-                    manifest["package"]=a.get_package()
+                    manifest["package"] = a.get_package()
                     # manifest["permissions"]=a.get_details_permissions_new()
-                    manifest["main_activity"]=a.get_main_activity()
-                    manifest["activities"]=a.get_activities()
-                    manifest["services"]= a.get_services()
-                    manifest["receivers"]=a.get_receivers()
+                    manifest["main_activity"] = a.get_main_activity()
+                    manifest["activities"] = a.get_activities()
+                    manifest["services"] = a.get_services()
+                    manifest["receivers"] = a.get_receivers()
                     # manifest["receivers_actions"]=a.get__extended_receivers()
-                    manifest["providers"]= a.get_providers()
+                    manifest["providers"] = a.get_providers()
                     manifest["libraries"] = a.get_libraries()
-                    apkinfo["manifest"]=manifest
+                    apkinfo["manifest"] = manifest
                     # apkinfo["certificate"] = a.get_certificate()
                     static_calls = {}
                     if self.check_size(apkinfo["files"]):
                         vm = DalvikVMFormat(a.get_dex())
                         vmx = uVMAnalysis(vm)
 
-                        static_calls["all_methods"] =self.get_methods(vmx)
+                        static_calls["all_methods"] = self.get_methods(vmx)
                         static_calls["is_native_code"] = analysis.is_native_code(vmx)
                         static_calls["is_dynamic_code"] = analysis.is_dyn_code(vmx)
-                        static_calls["is_reflection_code"]= analysis.is_reflection_code(vmx)
+                        static_calls["is_reflection_code"] = analysis.is_reflection_code(vmx)
 
                         # static_calls["dynamic_method_calls"]= analysis.get_show_DynCode(vmx)
                         # static_calls["reflection_method_calls"]= analysis.get_show_ReflectionCode(vmx)
@@ -97,25 +98,26 @@ class ApkInfo(Processing):
                         # static_calls["crypto_method_calls"]= analysis.get_show_CryptoCode(vmx)
                         # static_calls["native_method_calls"]= analysis.get_show_NativeMethods(vmx)
                     else:
-                        log.warning("Dex size bigger than: %s", self.options.decompilation_threshold)
-                    apkinfo["static_method_calls"]=static_calls
-            except (IOError, OSError,BadZipfile) as e:
+                        log.warning("Dex size bigger than: %s",
+                                    self.options.decompilation_threshold)
+                    apkinfo["static_method_calls"] = static_calls
+            except (IOError, OSError, BadZipfile) as e:
                 raise CuckooProcessingError("Error opening file %s" % e)
 
         return apkinfo
 
-    def get_methods(self,vmx):
-        methods=[]
-        for i in vmx.get_methods() :
-            method= {}
+    def get_methods(self, vmx):
+        methods = []
+        for i in vmx.get_methods():
+            method = {}
             i.create_tags()
-            if not i.tags.empty() :
-                proto =i.method.proto.replace('(','').replace(';','')
-                protos = proto.split(')')
-                params = protos[0].split(' ')
-                method["class"]= i.method.get_class_name().replace(';','')
-                method["name"]=i.method.name
-                if(params.__len__()>0 and params[0]!=""):
+            if not i.tags.empty():
+                proto = i.method.proto.replace("(", "").replace(";", "")
+                protos = proto.split(")")
+                params = protos[0].split(" ")
+                method["class"] = i.method.get_class_name().replace(";", "")
+                method["name"] = i.method.name
+                if params and params[0]:
                     method["params"] = params
                 method["return"] = protos[1]
                 methods.append(method)
