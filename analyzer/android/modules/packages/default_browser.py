@@ -10,12 +10,8 @@ class default_browser(Package):
     def __init__(self,options={}):
         Package(options)
 
-    def start(self, path):
-        try:
-            execute_browser(path)
-        except OSError as e:
-            ERROR_MESSAGE = str(e)
-            return False
+    def start(self, target):
+        execute_browser(target)
 
     def check(self):
         return True

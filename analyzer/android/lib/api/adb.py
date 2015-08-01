@@ -3,33 +3,28 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
-from lib.common.exceptions import CuckooPackageError
-from lib.common import utils
 import os
-import re
 import string
 import subprocess
 from zipfile import BadZipfile
 from lib.api.androguard import apk
 
-log = logging.getLogger()
+from lib.common.exceptions import CuckooPackageError
+from lib.common.utils import send_file
+
+log = logging.getLogger(__name__)
 
 def install_sample(path):
     """Install the sample on the emulator via adb"""
-    log.info("installing sample on emulator: pm install "+path)
-    str=""
-    #proc = subprocess.Popen(["/system/bin/pm", "install", path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    str =os.popen("/system/bin/pm install "+path).read()
-    #for s in stdout:
-    #    str=str+s
+    log.info("Installing sample in the device: %s", path)
+    try:
+        args = ["/system/bin/sh", "/system/bin/pm", "install", path]
+        output = subprocess.check_output(args)
+    except subprocess.CalledProcessError as e:
+        log.error("Error installing sample: %r", e)
+        return
 
-    log.info(str)
-    lines = str.split("\n")
-    for line in lines:
-        #if in command output will appear "Failure" it means that the sample did not install
-        if("Failure" in line):
-            raise CuckooPackageError("failed to install sample on emulator:"+line)
-    log.info("finished")
+    log.info("Installed sample: %r", output)
 
 def get_package_activity_name(path):
     """Using the Android Asset Packaging Tool to extract from apk the package name and main activity"""
@@ -71,7 +66,7 @@ def get_package_activity_name_androguard(path):
     package=""
     main_activity=""
 
-    try :
+    try:
         a = apk.APK(path)
         if a.is_valid_APK():
             package = a.get_package()
@@ -103,55 +98,69 @@ def get_package_activity_name_androguard(path):
         else:
             raise CuckooPackageError("INVALID_APK:"+os.path.basename(path))
 
-    except (IOError, OSError,BadZipfile) as e:
+    except (IOError, OSError, BadZipfile) as e:
         raise CuckooPackageError("BAD_APK:"+os.path.basename(path)+","+e.message)
 
-def execute_sample(package,activity):
+def execute_sample(package, activity):
     """Execute the sample on the emulator via adb"""
-    log.info("executing sample on emulator:adb shell am start -n " +package+"/"+activity)
-    str=""
-    #proc = subprocess.Popen(["/system/bin/am","start","-n", package+"/"+activity], stdout=subprocess.PIPE, stderr=subprocess.PIPE)#adb shell am start -n $pkg/$act
-    str = os.popen("/system/bin/am start -n "+package+"/"+activity).read()
-    log.info("am reported -> %r", str)
-    lines = str.split("\n")
-    for line in lines:
-        if("Error" in line):
-            #if in command output will appear "Error" it means that the sample did not execute
-            raise CuckooPackageError("failed to execute sample on emulator:"+line)
+    try:
+        package_activity = "%s/%s" % (package, activity)
+        args = [
+            "/system/bin/sh", "/system/bin/am", "start",
+            "-n", package_activity,
+        ]
+        output = subprocess.check_output(args)
+    except subprocess.CalledProcessError as e:
+        log.error("Error executing package activity: %r", e)
+        return
+
+    log.info("Executed package activity: %r", output)
 
 def dump_droidmon_logs(package):
-    filename="/data/data/de.robv.android.xposed.installer/log/error.log"
-    with open(filename) as log_file:
-        tag = "Droidmon-apimonitor-"+package
-        tag_error = "Droidmon-shell-"+package
-        apimonitor = ""
-        shell = ""
-        for line in log_file:
-            if tag in line:
-                out = re.sub(tag+":", "", line)
-                apimonitor=apimonitor+out
-            if tag_error in line:
-                out = re.sub(tag_error+":", "", line)
-                shell=shell+out
-        utils.send_file("logs/droidmon.log",apimonitor)
-        utils.send_file("logs/droidmon_error.log",shell)
-    utils.send_file("logs/xposed.log", open(filename, "rb").read())
+    xposed_logs = "/data/data/de.robv.android.xposed.installer/log/error.log"
+    if not os.path.exists(xposed_logs):
+        log.info("Could not find any Xposed logs, skipping droidmon logs.")
+        return
+
+    tag = "Droidmon-apimonitor-%s" % package
+    tag_error = "Droidmon-shell-%s" % package
+
+    log_xposed, log_success, log_error = [], [], []
+
+    for line in open(xposed_logs, "rb"):
+        if tag in line:
+            log_success.append(line.split(":", 1)[1])
+
+        if tag_error in line:
+            log_error.append(line.split(":", 1)[1])
+
+        log_xposed.append(line)
+
+    send_file("logs/xposed.log", "\n".join(log_xposed))
+    send_file("logs/droidmon.log", "\n".join(log_success))
+    send_file("logs/droidmon_error.log", "\n".join(log_error))
 
 def execute_browser(url):
-    """Execute the url on the emulator via adb"""
-    str=""
-    proc = subprocess.Popen(["am","start","-a","android.intent.action.VIEW", "-d", url], stdout=subprocess.PIPE)
-    for s in proc.stdout.xreadlines():
-        log.info(s)
-        str=str+s
+    """Start URL intent on the emulator."""
+    try:
+        args = [
+            "/system/bin/sh", "/system/bin/am", "start",
+            "-a", "android.intent.action.VIEW",
+            "-d", url,
+        ]
+        output = subprocess.check_output(args)
+    except subprocess.CalledProcessError as e:
+        log.error("Error starting browser intent: %r", e)
+        return
 
-    lines = str.split("\n")
-    for line in lines:
-        if("Error" in line):
-            #if in command output will appear "Error" it means that the url did not execute
-            raise CuckooPackageError("failed to execute default browser on emulator:"+line)
+    log.info("Intent returned: %r", output)
 
 def take_screenshot(filename):
-    proc1= subprocess.Popen(["/system/bin/screencap","-p","/sdcard/"+filename], stdout=subprocess.PIPE)
-    proc1.communicate()
-    return "/sdcard/"+filename
+    try:
+        subprocess.check_output(["/system/bin/screencap", "-p",
+                                 "/sdcard/%s" % filename])
+    except subprocess.CalledProcessError as e:
+        log.error("Error creating screenshot: %r", e)
+        return
+
+    return "/sdcard/%s" % filename
