@@ -5,13 +5,21 @@
 import os
 from zipfile import BadZipfile
 
-from analyzer.android_on_linux.lib.api.androguard import apk
 from lib.cuckoo.common.objects import File
-from analyzer.android_on_linux.lib.core.packages import choose_package
-from lib.api.googleplay.googleplay import GooglePlayAPI
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.exceptions import CuckooProcessingError
 
+try:
+    from androguard.core.bytecodes.apk import APK
+    HAVE_ANDROGUARD = True
+except ImportError:
+    HAVE_ANDROGUARD = False
+
+try:
+    from lib.api.googleplay.googleplay import GooglePlayAPI
+    HAVE_GOOGLEPLAY = True
+except ImportError:
+    HAVE_GOOGLEPLAY = False
 
 class GooglePlay(Processing):
     """Google Play information about the analysis session"""
@@ -23,10 +31,20 @@ class GooglePlay(Processing):
         self.key = "googleplay"
         googleplay = {}
 
+        if not HAVE_GOOGLEPLAY:
+            log.error("Unable to import the GooglePlay library, has it been "
+                      "installed properly?")
+            return
+
+        if not HAVE_ANDROGUARD:
+            log.error("Could not find the Androguard library, please install "
+                      "it. (`pip install androguard`)")
+
         if ("file" not in self.task["category"]):
             return
 
-        if("apk" in choose_package(File(self.task["target"]).get_type(),File(self.task["target"]).get_name())):
+        f = File(self.task["target"])
+        if f.get_name().endswith((".zip", ".apk")) or "zip" in f.get_type():
             if not os.path.exists(self.file_path):
                 raise CuckooProcessingError("Sample file doesn't exist: \"%s\"" % self.file_path)
 
@@ -38,8 +56,8 @@ class GooglePlay(Processing):
             if not (android_id or google_login or google_password):
                 raise CuckooProcessingError("Google Play Credentials not configured, skip")
 
-            try :
-                a = apk.APK(self.file_path)
+            try:
+                a = APK(self.file_path)
                 if a.is_valid_APK():
                     package=a.get_package()
                     # Connect
