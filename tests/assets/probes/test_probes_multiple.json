@@ -1,0 +1,21 @@
+{
+    "foo": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "bar", "type": "integer"},
+            {"name": "rab", "type": "string"}
+        ],
+        "retval_type": "pointer",
+        "category" : "foobar"
+    },
+    "kkk": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "bar", "type": "float"},
+            {"name": "rab", "type": "string"},
+            {"name": "bbb", "type": "integer"}
+        ],
+        "retval_type": "double",
+        "category" : "foobar"
+    }
+}

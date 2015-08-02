@@ -1,0 +1,10 @@
+{
+    "foo": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "bar", "type": "integer"}
+        ],
+        "retval_type": "double",
+        "category" : "foobar"
+    }
+}

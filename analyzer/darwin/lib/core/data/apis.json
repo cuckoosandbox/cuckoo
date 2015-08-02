@@ -1,0 +1,147 @@
+{
+    "system": {
+        "is_success_condition": "retval == 0",
+        "args": [
+            {"name": "command", "type": "string"}
+        ],
+        "retval_type": "integer",
+        "category" : "foobar"
+    },
+    "printf": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "format", "type": "string"}
+        ],
+        "retval_type": "integer",
+        "category" : "foobar"
+    },
+    "dlopen": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "path", "type": "string"},
+            {"name": "mode", "type": "integer"}
+        ],
+        "retval_type": "pointer",
+        "category" : "foobar",
+        "library" : "libdyld"
+    },
+    "dlsym": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "handle", "type": "pointer"},
+            {"name": "symbol", "type": "string"}
+        ],
+        "retval_type": "pointer",
+        "category" : "foobar",
+        "library" : "libdyld"
+    },
+    "fprintf": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "stream", "type": "pointer"},
+            {"name": "format", "type": "string"}
+        ],
+        "retval_type": "integer",
+        "category" : "foobar"
+    },
+    "open": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "path",  "type": "string"},
+            {"name": "oflag", "type": "integer"}
+        ],
+        "retval_type": "integer",
+        "category" : "file"
+    },
+    "fopen": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "filename", "type": "string"},
+            {"name": "mode",     "type": "string"}
+        ],
+        "retval_type": "pointer",
+        "category" : "file"
+    },
+    "freopen": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "filename", "type": "string"},
+            {"name": "mode",     "type": "string"},
+            {"name": "stream",   "type": "pointer"}
+        ],
+        "retval_type": "pointer",
+        "category" : "file"
+    },
+    "rename": {
+        "is_success_condition": "retval == 0",
+        "args": [
+            {"name": "old", "type": "string"},
+            {"name": "new", "type": "string"}
+        ],
+        "retval_type": "integer",
+        "category" : "file"
+    },
+    "copyfile": {
+        "is_success_condition": "retval == 0",
+        "args": [
+            {"name": "from", "type": "string"},
+            {"name": "to",   "type": "string"},
+            {"name": "state","type": "pointer"},
+            {"name": "flags","type": "uint32_t"}
+        ],
+        "retval_type": "integer",
+        "category" : "file"
+    },
+    "remove": {
+        "is_success_condition": "retval == 0",
+        "args": [
+            {"name": "path", "type": "string"}
+        ],
+        "retval_type": "integer",
+        "category" : "file"
+    },
+    "unlink": {
+        "is_success_condition": "retval == 0",
+        "args": [
+            {"name": "path", "type": "string"}
+        ],
+        "retval_type": "integer",
+        "category" : "file"
+    },
+    "execve": {
+        "is_success_condition": "retval != -1",
+        "args": [
+            {"name": "path", "type": "string"},
+            {"name": "argv", "type": "pointer"},
+            {"name": "envp", "type": "pointer"}
+        ],
+        "retval_type": "integer",
+        "category" : "process",
+        "__ignore__": true
+    },
+    "fork": {
+        "is_success_condition": "retval >= 0",
+        "args": [],
+        "retval_type": "integer",
+        "category" : "process"
+    },
+    "rb_isalpha": {
+        "DO NOT REMOVE THIS DEFINITION. IT'S FOR TESTS": true,
+        "is_success_condition": "retval != 0",
+        "args": [
+            {"name": "character", "type": "char"}
+        ],
+        "retval_type": "integer",
+        "category" : "foobar"
+    },
+    "atoi": {
+        "DO NOT REMOVE THIS DEFINITION. IT'S FOR TESTS": true,
+        "is_success_condition": "1==1",
+        "args": [
+            {"name": "str", "type": "string"}
+        ],
+        "retval_type": "integer",
+        "category" : "foobar",
+        "library" : "libsystem_c"
+    }
+}
