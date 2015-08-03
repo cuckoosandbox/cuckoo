@@ -25,37 +25,6 @@ log = logging.getLogger(__name__)
 class ElasticsearchDB(Report):
     """Stores report in Elasticsearch."""
 
-    def get_options(self, options_string):
-        """Get analysis options.
-        @return: options dict.
-        """
-        # The analysis package can be provided with some options in the
-        # following format:
-        #   option1=value1,option2=value2,option3=value3
-        #
-        # Here we parse such options and provide a dictionary that will be made
-        # accessible to the analysis package.
-        options = {}
-        if options_string:
-            try:
-                # Split the options by comma.
-                fields = options_string.strip().split(",")
-            except ValueError as e:
-                log.warning("Failed parsing the options: %s", e)
-            else:
-                for field in fields:
-                    # Split the name and the value of the option.
-                    try:
-                        key, value = field.strip().split("=")
-                    except ValueError as e:
-                        log.warning("Failed parsing option (%s): %s", field, e)
-                    else:
-                        # If the parsing went good, we add the option to the
-                        # dictionary.
-                        options[key.strip()] = value.strip()
-
-        return options
-
     def walk_dict(self, d, k=None, dk=None):
         if type(d) == type({}):
             for k in d:
@@ -80,7 +49,7 @@ class ElasticsearchDB(Report):
                     pass
 
     def connect(self):
-        """Connects to Mongo database, loads options and set connectors.
+        """Connects to Elasticsearch, loads options and set connectors.
         @raise CuckooReportError: if unable to connect.
         """
         hosts = self.options.get("hosts", "127.0.0.1:9200").split(",")
