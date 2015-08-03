@@ -584,21 +584,25 @@ class Scheduler:
                 if active_analysis_count <= 0:
                     log.debug("Reached max analysis count, exiting.")
                     self.stop()
-            else:
-                # Fetch a pending analysis task.
-                # TODO This fixes only submissions by --machine, need to add
-                # other attributes (tags etc).
-                for machine in self.db.get_available_machines():
+                continue
 
-                    task = self.db.fetch(machine=machine.name)
-                    if task:
-                        log.debug("Processing task #%s", task.id)
-                        self.total_analysis_count += 1
+            # Fetch a pending analysis task.
+            # TODO This fixes only submissions by --machine, need to add
+            # other attributes (tags etc).
+            # TODO We should probably move the entire "acquire machine" logic
+            # from the Analysis Manager to the Scheduler and then pass the
+            # selected machine onto the Analysis Manager instance.
+            for machine in self.db.get_available_machines():
 
-                        # Initialize and start the analysis manager.
-                        analysis = AnalysisManager(task, errors)
-                        analysis.start()
-                        break
+                task = self.db.fetch(machine=machine.name)
+                if task:
+                    log.debug("Processing task #%s", task.id)
+                    self.total_analysis_count += 1
+
+                    # Initialize and start the analysis manager.
+                    analysis = AnalysisManager(task, errors)
+                    analysis.start()
+                    break
 
             # Deal with errors.
             try:
