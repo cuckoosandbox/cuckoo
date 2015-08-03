@@ -29,6 +29,7 @@ def submit_job(target, options):
     cmd += [target]
     subprocess.check_call(cmd)
 
+
 def latest_analysis_results():
     storage_dir = path.realpath(path.join(cuckoo_root(), "storage", "analyses", "latest"))
     with open(path.join(storage_dir, "reports", "report.json"), "r") as report_file:
@@ -39,6 +40,7 @@ def latest_analysis_results():
         "logs"  : listdir(path.join(storage_dir, "logs")),
         "analysis_log" : path.join(storage_dir, "analysis.log")
     }
+
 
 def cuckoo_analysis(target, options):
     """ Returns a dictionary with the following keys:
