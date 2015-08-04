@@ -34,14 +34,14 @@
                     <tbody>
                         {% for match in signature.data %}
                             {% if match.process.process_name %}
-                                <tr><td colspan="7" class="signature-process">Process: {{match.process.process_name}} ({{match.process.process_id}})</td></tr>
+                                <tr><td colspan="7" class="signature-process">Process: {{match.process.process_name}} ({{match.process.pid}})</td></tr>
                             {% endif %}
                             {% for sign in match.signs %}
                                 <tr>
                                     {% if sign.type == 'api' %}
                                         {% include "analysis/behavior/_api_call.html" with call=sign.value %}
                                         <td>
-                                            <a href='#' class='call-link' data-pid='{{match.process.process_id}}' data-cid='{{sign.value.id}}'>
+                                            <a href='#' class='call-link' data-pid='{{match.process.pid}}' data-cid='{{sign.value.id}}'>
                                                 <span class="glyphicon glyphicon-circle-arrow-right"></span>
                                             </a>
                                         </td>

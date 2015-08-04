@@ -35,7 +35,7 @@ def choose_package(file_type, file_name):
             file_name.endswith((".ppt", ".pptx", ".pps", ".ppsx", ".pptm", ".potm", ".potx", ".ppsm")):
         return "ppt"
     elif "HTML" in file_type or file_name.endswith((".htm", ".html")):
-        return "html"
+        return "ie"
     elif file_name.endswith(".jar"):
         return "jar"
     elif "Zip" in file_type:
@@ -44,6 +44,8 @@ def choose_package(file_type, file_name):
         return "python"
     elif file_name.endswith(".vbs"):
         return "vbs"
+    elif file_name.endswith(".js"):
+        return "js"
     elif file_name.endswith(".msi"):
         return "msi"
     elif file_name.endswith(".ps1"):

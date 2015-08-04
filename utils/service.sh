@@ -35,10 +35,6 @@ LOGDIR="$LOGDIR"
 # turned *OFF*. Enable by uncommenting and setting the value.
 # APIADDR="127.0.0.1"
 
-# IP address the Cuckoo Distributed API will bind on. Distributed API is by
-# default turned *OFF*. Enable by uncommenting and setting the value.
-# DISTADDR="127.0.0.1"
-
 # IP address the Cuckoo Web Interface will bind on. The Cuckoo Web Interface
 # is by default turned *OFF*. Enable by uncommenting and setting the value.
 # WEBADDR="127.0.0.1"
@@ -67,8 +63,12 @@ kill timeout 600
 # Restart Cuckoo if it exits.
 respawn
 
+# Upstart ignores limits found in /etc/security/limits.conf.
+limit nofile 499999 999999
+
 env CONFFILE="$CONFFILE"
 env VMINTERNET=""
+env CHECKVMS="/etc/default/cuckoo-setup"
 
 pre-start script
     . "\$CONFFILE"
@@ -76,7 +76,12 @@ pre-start script
     vmcloak-vboxnet0
 
     if [ -n "\$VMINTERNET" ]; then
-        vmcloak-iptables "\$VMINTERNET"
+        vmcloak-iptables 192.168.56.1/24 "\$VMINTERNET"
+    fi
+
+    # Check up on all VMs and fix any if required.
+    if [ -f "\$CHECKVMS" ]; then
+        ./utils/setup.sh -S "\$CHECKVMS" -V
     fi
 end script
 
@@ -135,27 +140,60 @@ script
 end script
 EOF
 
-    cat > /etc/init/cuckoo-distributed.conf << EOF
-# Cuckoo distributed API service.
+    cat > /etc/init/cuckoo-distributed-instance.conf << EOF
+# Cuckoo distributed API node instance service.
 
-description "cuckoo distributed api service"
-start on started cuckoo
-stop on stopped cuckoo
+description "cuckoo distributed api node instance service"
 setuid "$USERNAME"
-chdir "$CUCKOO"
+chdir "$CUCKOO/distributed"
+instance \$INSTANCE
+respawn
 
 env CONFFILE="$CONFFILE"
 env LOGDIR="$LOGDIR"
-env DISTADDR=""
 
 script
     . "\$CONFFILE"
 
-    if [ -n "\$DISTADDR" ]; then
-        exec ./distributed/app.py "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log"
+    if [ "\$VERBOSE" -eq 0 ]; then
+        exec ./instance.py "\$INSTANCE"
+    else
+        exec ./instance.py "\$INSTANCE" -v
     fi
 end script
 EOF
+
+    cat > /etc/uwsgi/apps-available/cuckoo-distributed.ini << EOF
+[uwsgi]
+plugins = python
+chdir = $CUCKOO/distributed
+file = app.py
+uid = $USERNAME
+gid = $USERNAME
+EOF
+
+    ln -s /etc/uwsgi/apps-available/cuckoo-distributed.ini \
+        /etc/uwsgi/apps-enabled/cuckoo-distributed.ini
+
+    cat > /etc/nginx/sites-available/cuckoo-distributed << EOF
+upstream _uwsgi_cuckoo_distributed {
+    server unix:/run/uwsgi/app/cuckoo-distributed/socket;
+}
+
+server {
+    # If required, prepend a listening IP address.
+    listen 9003;
+
+    location / {
+        client_max_body_size 100M;
+        uwsgi_pass _uwsgi_cuckoo_distributed;
+        include uwsgi_params;
+    }
+}
+EOF
+
+    ln -s /etc/nginx/sites-available/cuckoo-distributed \
+        /etc/nginx/sites-enabled/cuckoo-distributed
 
     cat > /etc/init/cuckoo-web.conf << EOF
 # Cuckoo Web Interface server.
@@ -185,7 +223,7 @@ _remove_upstart() {
     rm -f /etc/init/cuckoo.conf
     rm -f /etc/init/cuckoo-api.conf
     rm -f /etc/init/cuckoo-process.conf
-    rm -f /etc/init/cuckoo-distributed.conf
+    rm -f /etc/init/cuckoo-distributed-instance.conf
     rm -f /etc/init/cuckoo-web.conf
 }
 
@@ -232,7 +270,6 @@ USERNAME="$USERNAME"
 CUCKOO="$CUCKOO"
 LOGDIR="$LOGDIR"
 APIADDR=""
-DISTADDR=""
 WEBADDR=""
 
 # Load configuration values.
@@ -268,13 +305,6 @@ _start() {
         echo -n "Starting Cuckoo API server.. "
         nohup python ./utils/api.py -u "\$USERNAME" \
             -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log" &
-        PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
-    fi
-
-    if [ -n "\$DISTADDR" ]; then
-        echo -n "Starting Cuckoo Distributed API.. "
-        nohup python ./distributed/app.py -u "\$USERNAME" \
-            "\$DISTADDR" 2>&1 >> "\$LOGDIR/dist.log" &
         PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
     fi
 
@@ -375,6 +405,9 @@ esac
 
 if [ "$#" -eq 0 ]; then
     echo "Usage: $0 <install|remove|start|stop>"
+    echo "-u --username: Username from which to run Cuckoo."
+    echo "-c --cuckoo:   Directory where Cuckoo is located."
+    echo "-l --logdir:   Logging directory."
     exit 1
 fi
 

@@ -10,12 +10,9 @@ import tarfile
 import argparse
 from datetime import datetime
 from StringIO import StringIO
-from zipfile import ZipFile, ZIP_STORED
 
 try:
-    from flask import Flask
-    from flask import render_template as template
-    from flask import request, make_response, jsonify, abort
+    from flask import Flask, request, jsonify, make_response
 except ImportError:
     sys.exit("ERROR: Flask library is missing (`pip install flask`)")
 
@@ -24,6 +21,7 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file, delete_folder
 from lib.cuckoo.core.database import Database, TASK_RUNNING, Task
+from lib.cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
 from lib.cuckoo.core.startup import drop_privileges
 
 # Global Database object.
@@ -31,6 +29,12 @@ db = Database()
 
 # Initialize Flask app.
 app = Flask(__name__)
+
+def json_error(status_code, message):
+    """Return a JSON object with a HTTP error code."""
+    r = jsonify(message=message)
+    r.status_code = status_code
+    return r
 
 @app.after_request
 def custom_headers(response):
@@ -42,32 +46,33 @@ def custom_headers(response):
     response.headers["Pragma"] = "no-cache"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Expires"] = "0"
-
     return response
 
-@app.route("/tasks/create/file", methods=["POST",])
-@app.route("/v1/tasks/create/file", methods=["POST",])
+@app.route("/tasks/create/file", methods=["POST"])
+@app.route("/v1/tasks/create/file", methods=["POST"])
 def tasks_create_file():
-    data = request.files.file
-    package = request.forms.get("package", "")
-    timeout = request.forms.get("timeout", "")
-    priority = request.forms.get("priority", 1)
-    options = request.forms.get("options", "")
-    machine = request.forms.get("machine", "")
-    platform = request.forms.get("platform", "")
-    tags = request.forms.get("tags", None)
-    custom = request.forms.get("custom", "")
-    owner = request.forms.get("owner", "")
-    memory = request.forms.get("memory", False)
-    clock = request.forms.get("clock", None)
+    data = request.files["file"]
+    package = request.form.get("package", "")
+    timeout = request.form.get("timeout", "")
+    priority = request.form.get("priority", 1)
+    options = request.form.get("options", "")
+    machine = request.form.get("machine", "")
+    platform = request.form.get("platform", "")
+    tags = request.form.get("tags", None)
+    custom = request.form.get("custom", "")
+    owner = request.form.get("owner", "")
+    memory = request.form.get("memory", False)
+    clock = request.form.get("clock", None)
 
     if memory:
         memory = True
-    enforce_timeout = request.forms.get("enforce_timeout", False)
+    enforce_timeout = request.form.get("enforce_timeout", False)
+
     if enforce_timeout:
         enforce_timeout = True
 
-    temp_file_path = store_temp_file(data.file.read(), data.filename)
+    temp_file_path = store_temp_file(data.read(), data.filename)
+
     task_id = db.add_path(
         file_path=temp_file_path,
         package=package,
@@ -86,29 +91,29 @@ def tasks_create_file():
 
     return jsonify(task_id=task_id)
 
-@app.route("/tasks/create/url", methods=["POST",])
-@app.route("/v1/tasks/create/url", methods=["POST",])
+@app.route("/tasks/create/url", methods=["POST"])
+@app.route("/v1/tasks/create/url", methods=["POST"])
 def tasks_create_url():
-    url = request.forms.get("url")
-    package = request.forms.get("package", "")
-    timeout = request.forms.get("timeout", "")
-    priority = request.forms.get("priority", 1)
-    options = request.forms.get("options", "")
-    machine = request.forms.get("machine", "")
-    platform = request.forms.get("platform", "")
-    tags = request.forms.get("tags", None)
-    custom = request.forms.get("custom", "")
-    owner = request.forms.get("owner", "")
+    url = request.form.get("url")
+    package = request.form.get("package", "")
+    timeout = request.form.get("timeout", "")
+    priority = request.form.get("priority", 1)
+    options = request.form.get("options", "")
+    machine = request.form.get("machine", "")
+    platform = request.form.get("platform", "")
+    tags = request.form.get("tags", None)
+    custom = request.form.get("custom", "")
+    owner = request.form.get("owner", "")
 
-    memory = request.forms.get("memory", False)
+    memory = request.form.get("memory", False)
     if memory:
         memory = True
 
-    enforce_timeout = request.forms.get("enforce_timeout", False)
+    enforce_timeout = request.form.get("enforce_timeout", False)
     if enforce_timeout:
         enforce_timeout = True
 
-    clock = request.forms.get("clock", None)
+    clock = request.form.get("clock", None)
 
     task_id = db.add_url(
         url=url,
@@ -126,7 +131,7 @@ def tasks_create_url():
         clock=clock
     )
 
-    return jsonify(task_id)
+    return jsonify(task_id=task_id)
 
 @app.route("/tasks/list")
 @app.route("/v1/tasks/list")
@@ -139,12 +144,12 @@ def tasks_list(limit=None, offset=None):
 
     response["tasks"] = []
 
-    completed_after = request.GET.get("completed_after")
+    completed_after = request.args.get("completed_after")
     if completed_after:
         completed_after = datetime.fromtimestamp(int(completed_after))
 
-    owner = request.GET.get("owner")
-    status = request.GET.get("status")
+    owner = request.args.get("owner")
+    status = request.args.get("status")
 
     for row in db.list_tasks(limit=limit, details=True, offset=offset,
                              completed_after=completed_after, owner=owner,
@@ -190,7 +195,9 @@ def tasks_view(task_id):
 
         response["task"] = entry
     else:
-        return HTTPError(404, "Task not found")
+        r = jsonify(message="Task not found")
+        r.status_code = 404
+        return r
 
     return jsonify(response)
 
@@ -200,13 +207,13 @@ def tasks_reschedule(task_id):
     response = {}
 
     if not db.view_task(task_id):
-        return HTTPError(404, "There is no analysis with the specified ID")
+        return json_error(404, "There is no analysis with the specified ID")
 
     if db.reschedule(task_id):
         response["status"] = "OK"
     else:
-        return HTTPError(500, "An error occurred while trying to "
-                              "reschedule the task")
+        return json_error(500, "An error occurred while trying to "
+                          "reschedule the task")
 
     return jsonify(response)
 
@@ -218,18 +225,18 @@ def tasks_delete(task_id):
     task = db.view_task(task_id)
     if task:
         if task.status == TASK_RUNNING:
-            return HTTPError(500, "The task is currently being "
-                                  "processed, cannot delete")
+            return json_error(500, "The task is currently being "
+                              "processed, cannot delete")
 
         if db.delete_task(task_id):
             delete_folder(os.path.join(CUCKOO_ROOT, "storage",
                                        "analyses", "%d" % task_id))
             response["status"] = "OK"
         else:
-            return HTTPError(500, "An error occurred while trying to "
-                                  "delete the task")
+            return json_error(500, "An error occurred while trying to "
+                              "delete the task")
     else:
-        return HTTPError(404, "Task not found")
+        return json_error(404, "Task not found")
 
     return jsonify(response)
 
@@ -261,59 +268,45 @@ def tasks_report(task_id, report_format="json"):
                                    "%d" % task_id, "reports",
                                    formats[report_format.lower()])
     elif report_format.lower() in bz_formats:
-            bzf = bz_formats[report_format.lower()]
-            srcdir = os.path.join(CUCKOO_ROOT, "storage",
-                                  "analyses", "%d" % task_id)
-            s = StringIO()
+        bzf = bz_formats[report_format.lower()]
+        srcdir = os.path.join(CUCKOO_ROOT, "storage",
+                              "analyses", "%d" % task_id)
+        s = StringIO()
 
-            # By default go for bz2 encoded tar files (for legacy reasons.)
-            tarmode = tar_formats.get(request.GET.get("tar"), "w:bz2")
+        # By default go for bz2 encoded tar files (for legacy reasons.)
+        tarmode = tar_formats.get(request.args.get("tar"), "w:bz2")
 
-            tar = tarfile.open(fileobj=s, mode=tarmode)
-            for filedir in os.listdir(srcdir):
-                if bzf["type"] == "-" and filedir not in bzf["files"]:
-                    tar.add(os.path.join(srcdir, filedir), arcname=filedir)
-                if bzf["type"] == "+" and filedir in bzf["files"]:
-                    tar.add(os.path.join(srcdir, filedir), arcname=filedir)
-            tar.close()
-            response.content_type = "application/x-tar; charset=UTF-8"
-            return s.getvalue()
+        tar = tarfile.open(fileobj=s, mode=tarmode)
+        for filedir in os.listdir(srcdir):
+            if bzf["type"] == "-" and filedir not in bzf["files"]:
+                tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+            if bzf["type"] == "+" and filedir in bzf["files"]:
+                tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+        tar.close()
+
+        response = make_response(s.getvalue())
+        response.headers["Content-Type"] = \
+            "application/x-tar; charset=UTF-8"
+        return response
     else:
-        return HTTPError(400, "Invalid report format")
+        return json_error(400, "Invalid report format")
 
     if os.path.exists(report_path):
         return open(report_path, "rb").read()
     else:
-        return HTTPError(404, "Report not found")
+        return json_error(404, "Report not found")
 
-@app.route("/tasks/screenshots/<int:task_id>")
-@app.route("/v1/tasks/screenshots/<int:task_id>")
-@app.route("/tasks/screenshots/<int:task_id>/<screenshot>")
-@app.route("/v1/tasks/screenshots/<int:task_id>/<screenshot>")
-def task_screenshots(task_id=0, screenshot=None):
-    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id), "shots")
+@app.route("/tasks/rereport/<int:task_id>")
+def rereport(task_id):
+    task = db.view_task(task_id)
+    if task:
+        if task.status == TASK_REPORTED:
+            db.set_status(task_id, TASK_COMPLETED)
+            return jsonify(success=True)
 
-    if os.path.exists(folder_path):
-        if screenshot:
-            screenshot_name = "{0}.jpg".format(screenshot)
-            screenshot_path = os.path.join(folder_path, screenshot_name)
-            if os.path.exists(screenshot_path):
-                # TODO: Add content disposition.
-                response.content_type = "image/jpeg"
-                return open(screenshot_path, "rb").read()
-            else:
-                return HTTPError(404, screenshot_path)
-        else:
-            zip_data = StringIO()
-            with ZipFile(zip_data, "w", ZIP_STORED) as zip_file:
-                for shot_name in os.listdir(folder_path):
-                    zip_file.write(os.path.join(folder_path, shot_name), shot_name)
-
-            # TODO: Add content disposition.
-            response.content_type = "application/zip"
-            return zip_data.getvalue()
+        return jsonify(success=False)
     else:
-        return HTTPError(404, folder_path)
+        return json_error(404, "Task not found")
 
 @app.route("/files/view/md5/<md5>")
 @app.route("/v1/files/view/md5/<md5>")
@@ -331,12 +324,12 @@ def files_view(md5=None, sha256=None, sample_id=None):
     elif sample_id:
         sample = db.view_sample(sample_id)
     else:
-        return HTTPError(400, "Invalid lookup term")
+        return json_error(400, "Invalid lookup term")
 
     if sample:
         response["sample"] = sample.to_dict()
     else:
-        return HTTPError(404, "File not found")
+        return json_error(404, "File not found")
 
     return jsonify(response)
 
@@ -345,10 +338,12 @@ def files_view(md5=None, sha256=None, sample_id=None):
 def files_get(sha256):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", sha256)
     if os.path.exists(file_path):
-        response.content_type = "application/octet-stream; charset=UTF-8"
-        return open(file_path, "rb").read()
+        response = make_response(open(file_path, "rb").read())
+        response.headers["Content-Type"] = \
+            "application/octet-stream; charset=UTF-8"
+        return response
     else:
-        return HTTPError(404, "File not found")
+        return json_error(404, "File not found")
 
 @app.route("/pcap/get/<int:task_id>")
 @app.route("/v1/pcap/get/<int:task_id>")
@@ -356,13 +351,17 @@ def pcap_get(task_id):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                              "%d" % task_id, "dump.pcap")
     if os.path.exists(file_path):
-        response.content_type = "application/octet-stream; charset=UTF-8"
         try:
-            return open(file_path, "rb").read()
+            # TODO This could be a big file, so eventually we have to switch
+            # to app.send_static_file() instead.
+            response = make_response(open(file_path, "rb").read())
+            response.headers["Content-Type"] = \
+                "application/octet-stream; charset=UTF-8"
+            return response
         except:
-            return HTTPError(500, "An error occurred while reading PCAP")
+            return json_error(500, "An error occurred while reading PCAP")
     else:
-        return HTTPError(404, "File not found")
+        return json_error(404, "File not found")
 
 @app.route("/machines/list")
 @app.route("/v1/machines/list")
@@ -386,7 +385,7 @@ def machines_view(name=None):
     if machine:
         response["machine"] = machine.to_dict()
     else:
-        return HTTPError(404, "Machine not found")
+        return json_error(404, "Machine not found")
 
     return jsonify(response)
 
@@ -405,7 +404,7 @@ def cuckoo_status():
 
     diskspace = {}
     for key, path in paths.items():
-        if hasattr(os, "statvfs"):
+        if hasattr(os, "statvfs") and os.path.isdir(path):
             stats = os.statvfs(path)
             diskspace[key] = dict(
                 free=stats.f_bavail * stats.f_frsize,
@@ -446,11 +445,11 @@ def cuckoo_status():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-H", "--host", help="Host to bind the API server on",
-        default="localhost", action="store", required=False)
+                        default="localhost", action="store", required=False)
     parser.add_argument("-p", "--port", help="Port to bind the API server on",
-        default=8090, action="store", required=False)
+                        default=8090, action="store", required=False)
     parser.add_argument("-u", "--user", type=str,
-        help="Drop user privileges to this user")
+                        help="Drop user privileges to this user")
     args = parser.parse_args()
 
     if args.user:

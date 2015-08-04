@@ -17,4 +17,4 @@ class XLS(Package):
 
     def start(self, path):
         excel = self.get_path("Microsoft Office Excel")
-        return self.execute(excel, "\"%s\"" % path)
+        return self.execute(excel, args=[path])

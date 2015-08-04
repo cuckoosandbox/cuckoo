@@ -21,6 +21,19 @@ class AnalysisInfo(Processing):
         """
         self.key = "info"
 
+        if not "started_on" in self.task:
+            return dict(
+                version=CUCKOO_VERSION,
+                started="none",
+                ended="none",
+                duration="none",
+                id=int(self.task["id"]),
+                category="unknown",
+                custom="unknown",
+                machine=None,
+                package="unknown"
+            )
+
         try:
             started = time.strptime(self.task["started_on"], "%Y-%m-%d %H:%M:%S")
             started = datetime.fromtimestamp(time.mktime(started))

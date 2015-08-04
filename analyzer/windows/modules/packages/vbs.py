@@ -10,9 +10,9 @@ from lib.common.abstracts import Package
 class VBS(Package):
     """VBS analysis package."""
     PATHS = [
-        ("SystemRoot", "system32", "wscript.exe"),
+        ("System32", "wscript.exe"),
     ]
 
     def start(self, path):
         wscript = self.get_path("WScript")
-        return self.execute(wscript, "\"%s\"" % path)
+        return self.execute(wscript, args=[path])

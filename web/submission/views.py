@@ -113,8 +113,8 @@ def index(request):
         tasks_count = len(task_ids)
         if tasks_count > 0:
             return render_to_response("submission/complete.html",
-                                      {"tasks" : task_ids,
-                                       "tasks_count" : tasks_count},
+                                      {"tasks": task_ids,
+                                       "tasks_count": tasks_count},
                                       context_instance=RequestContext(request))
         else:
             return render_to_response("error.html",
@@ -166,7 +166,7 @@ def status(request, task_id):
         completed = True
 
     return render_to_response("submission/status.html",
-                              {"completed" : completed,
-                               "status" : task.status,
-                               "task_id" : task_id},
+                              {"completed": completed,
+                               "status": task.status,
+                               "task_id": task_id},
                               context_instance=RequestContext(request))

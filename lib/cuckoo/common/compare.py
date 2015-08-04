@@ -6,7 +6,6 @@ import os
 import collections
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
-from modules.processing.behavior import ParseProcessLog
 
 ANALYSIS_ROOT = os.path.join(CUCKOO_ROOT, "storage", "analyses")
 
@@ -56,9 +55,10 @@ def helper_percentages_storage(tid1, tid2):
         counts[tid] = {}
 
         for pid, fpath in iter_task_process_logfiles(tid):
-            ppl = ParseProcessLog(fpath)
-            category_counts = behavior_categories_percent(ppl.calls)
-            
+            # ppl = ParseProcessLog(fpath)
+            # category_counts = behavior_categories_percent(ppl.calls)
+            category_counts = None
+
             counts[tid][pid] = category_counts
 
     return combine_behavior_percentages(counts)
@@ -74,7 +74,7 @@ def helper_percentages_mongo(results_db, tid1, tid2, ignore_categories=["misc"])
                 "info.id": int(tid),
             },
             {
-                "behavior.processes.process_id": 1,
+                "behavior.processes.pid": 1,
                 "behavior.processes.calls": 1
             }
         )
@@ -83,14 +83,16 @@ def helper_percentages_mongo(results_db, tid1, tid2, ignore_categories=["misc"])
             continue
 
         for pdoc in pids_calls["behavior"]["processes"]:
-            pid = pdoc["process_id"]
+            pid = pdoc["pid"]
             counts[tid][pid] = {}
 
             for coid in pdoc["calls"]:
                 chunk = results_db.calls.find_one({"_id": coid}, {"calls.category": 1})
                 category_counts = behavior_categories_percent(chunk["calls"])
                 for cat, count in category_counts.items():
-                    if cat in ignore_categories: continue
+                    if cat in ignore_categories:
+                        continue
+
                     counts[tid][pid][cat] = counts[tid][pid].get(cat, 0) + count
 
     return combine_behavior_percentages(counts)

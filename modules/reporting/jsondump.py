@@ -5,9 +5,18 @@
 import os
 import json
 import codecs
+import calendar
+import datetime
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
+
+def default(obj):
+    if isinstance(obj, datetime.datetime):
+        if obj.utcoffset() is not None:
+            obj = obj - obj.utcoffset()
+        return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000.0
+    raise TypeError("%r is not JSON serializable" % obj)
 
 class JsonDump(Report):
     """Saves analysis results in JSON format."""
@@ -22,8 +31,9 @@ class JsonDump(Report):
 
         try:
             path = os.path.join(self.reports_path, "report.json")
+
             with codecs.open(path, "w", "utf-8") as report:
-                json.dump(results, report, sort_keys=False,
+                json.dump(results, report, default=default, sort_keys=False,
                           indent=int(indent), encoding=encoding)
         except (UnicodeError, TypeError, IOError) as e:
             raise CuckooReportError("Failed to generate JSON report: %s" % e)

@@ -7,7 +7,6 @@ import time
 
 from django.conf import settings
 from django.template import RequestContext
-from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.views.decorators.http import require_safe
 
@@ -19,7 +18,8 @@ from lib.cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSIN
 
 def timestamp(dt):
     """Returns the timestamp of a datetime object."""
-    if not dt: return None
+    if not dt:
+        return None
     return time.mktime(dt.timetuple())
 
 @require_safe
@@ -70,5 +70,5 @@ def index(request):
         report["estimate_day"] = int(24 * hourly)
 
     return render_to_response("dashboard/index.html",
-                              {"report" : report},
+                              {"report": report},
                               context_instance=RequestContext(request))

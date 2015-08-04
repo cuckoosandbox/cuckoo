@@ -2,14 +2,15 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import datetime
 import os
 import tempfile
 import time
 
-from flask import Blueprint, g, jsonify, request, send_file
+from flask import Blueprint, jsonify, request, send_file
 
-from distributed.db import db, Node, Task, Machine
+import settings
+
+from distributed.db import db, Node, Task, Machine, NodeStatus
 from distributed.api import list_machines
 
 blueprint = Blueprint("api", __name__)
@@ -42,10 +43,23 @@ def node_get(name=None):
             ))
 
         nodes[node.name] = dict(
+            enabled=node.enabled,
             name=node.name,
             url=node.url,
             machines=machines,
         )
+
+    # In the "workers" mode we only report the names of each enabled node.
+    if request.args.get("mode") == "workers":
+        workers = []
+        for node in nodes.values():
+            if not node["enabled"]:
+                continue
+
+            workers.append(node["name"])
+
+        return " ".join(sorted(workers))
+
     return jsonify(success=True, nodes=nodes)
 
 @blueprint.route("/node", methods=["POST"])
@@ -122,25 +136,26 @@ def task_list():
     q = Task.query.order_by(Task.id)
 
     if finished is not None:
-        if bool(int(finished)):
+        if int(finished):
             q = q.filter_by(status=Task.FINISHED)
         else:
-            q = q.filter(Task.status.in_([Task.PENDING, Task.PROCESSING]))
+            q = q.filter(Task.status.in_((Task.PENDING, Task.ASSIGNED,
+                                          Task.PROCESSING)))
 
     if status is not None:
         q = q.filter_by(status=status)
-
-    if offset is not None:
-        q = q.offset(int(offset))
-
-    if limit is not None:
-        q = q.limit(int(limit))
 
     if owner:
         q = q.filter_by(owner=owner)
 
     if priority:
         q = q.filter_by(priority=int(priority))
+
+    if offset is not None:
+        q = q.offset(int(offset))
+
+    if limit is not None:
+        q = q.limit(int(limit))
 
     tasks = {}
     for task in q.all():
@@ -187,7 +202,7 @@ def task_post():
 
     f = request.files["file"]
 
-    fd, path = tempfile.mkstemp(dir=g.samples_directory)
+    fd, path = tempfile.mkstemp(dir=settings.samples_directory)
     f.save(path)
     os.close(fd)
 
@@ -230,8 +245,8 @@ def task_delete(task_id):
         return json_error(404, "Task not found")
 
     # Remove all available reports.
-    dirpath = os.path.join(g.reports_directory, "%d" % task_id)
-    for report_format in g.report_formats:
+    dirpath = os.path.join(settings.reports_directory, "%d" % task_id)
+    for report_format in settings.report_formats:
         path = os.path.join(dirpath, "report.%s" % report_format)
         if os.path.isfile(path):
             os.unlink(path)
@@ -240,7 +255,14 @@ def task_delete(task_id):
     if os.path.isfile(task.path):
         os.unlink(task.path)
 
-    task.status = Task.DELETED
+    # If the task has been finalized then we set the status as deleted. But
+    # otherwise we just delete the entry altogether, as it'd incorrectly
+    # reflect the amount of processed samples in our database.
+    if task.status == Task.PENDING:
+        db.session.delete(task)
+    else:
+        task.status = Task.DELETED
+
     db.session.commit()
     return jsonify(success=True)
 
@@ -257,7 +279,7 @@ def report_get(task_id, report_format="json"):
     if task.status != Task.FINISHED:
         return json_error(420, "Task not finished yet")
 
-    report_path = os.path.join(g.reports_directory,
+    report_path = os.path.join(settings.reports_directory,
                                "%d" % task_id, "report.%s" % report_format)
     if not os.path.isfile(report_path):
         return json_error(404, "Report format not found")
@@ -266,27 +288,36 @@ def report_get(task_id, report_format="json"):
 
 @blueprint.route("/status")
 def status_get():
-    tasks = Task.query
+    paths = dict(
+        reports=settings.reports_directory,
+        samples=settings.samples_directory,
+    )
 
-    def fetch_stats(tasks):
-        return dict(
-            pending=tasks.filter_by(status=Task.PENDING).count(),
-            processing=tasks.filter_by(status=Task.PROCESSING).count(),
-            finished=tasks.filter_by(status=Task.FINISHED).count(),
-            deleted=tasks.filter_by(status=Task.DELETED).count(),
-        )
+    diskspace = {}
+    for key, path in paths.items():
+        if hasattr(os, "statvfs"):
+            stats = os.statvfs(path)
+            diskspace[key] = dict(
+                free=stats.f_bavail * stats.f_frsize,
+                total=stats.f_blocks * stats.f_frsize,
+                used=(stats.f_blocks - stats.f_bavail) * stats.f_frsize,
+            )
 
-    yesterday = datetime.datetime.now() - datetime.timedelta(1)
-    since_yesterday = tasks.filter(Task.started > yesterday)
-
-    tasks = {
-        "all": fetch_stats(tasks),
-        "prio1": fetch_stats(tasks.filter_by(priority=1)),
-        "prio2": fetch_stats(tasks.filter_by(priority=2)),
-        "today": fetch_stats(since_yesterday),
-        "today1": fetch_stats(since_yesterday.filter_by(priority=1)),
-        "today2": fetch_stats(since_yesterday.filter_by(priority=2)),
+    dist = {
+        "diskspace": diskspace,
     }
 
-    return jsonify(success=True, nodes=g.statuses, tasks=tasks,
-                   timestamp=int(time.time()))
+    statuses = {}
+    for node in Node.query.filter_by(enabled=True).all():
+        q = NodeStatus.query.filter_by(name=node.name)
+        status = q.order_by(NodeStatus.timestamp.desc()).first()
+        if status:
+            statuses[node.name] = status.status
+
+    q = NodeStatus.query.filter_by(name="dist.scheduler")
+    tasks = q.order_by(NodeStatus.timestamp.desc()).first()
+    if tasks:
+        tasks = tasks.status
+
+    return jsonify(success=True, nodes=statuses, tasks=tasks,
+                   dist=dist, timestamp=int(time.time()))

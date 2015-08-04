@@ -60,6 +60,24 @@ class AnalysisManager(Thread):
         self.storage = ""
         self.binary = ""
         self.machine = None
+        self.db = Database()
+
+        self.task.options = self._parse_options(self.task.options)
+
+    def _parse_options(self, options):
+        """Parse the analysis options field to a dictionary."""
+        ret = {}
+        for field in options.split(","):
+            if "=" not in field:
+                continue
+
+            key, value = field.split("=", 1)
+            ret[key.strip()] = value.strip()
+        return ret
+
+    def _emit_options(self, options):
+        """Emit the analysis options from a dictionary to a string."""
+        return ",".join("%s=%s" % (k, v) for k, v in options.items())
 
     def init_storage(self):
         """Initialize analysis storage folder."""
@@ -87,7 +105,7 @@ class AnalysisManager(Thread):
 
     def check_file(self):
         """Checks the integrity of the file to be analyzed."""
-        sample = Database().view_sample(self.task.sample_id)
+        sample = self.db.view_sample(self.task.sample_id)
 
         sha256 = File(self.task.target).get_sha256()
         if sha256 != sample.sha256:
@@ -149,16 +167,14 @@ class AnalysisManager(Thread):
 
             # If the user specified a specific machine ID, a platform to be
             # used or machine tags acquire the machine accordingly.
-            try:
-                machine = machinery.acquire(machine_id=self.task.machine,
-                                            platform=self.task.platform,
-                                            tags=self.task.tags)
-            finally:
-                machine_lock.release()
+            machine = machinery.acquire(machine_id=self.task.machine,
+                                        platform=self.task.platform,
+                                        tags=self.task.tags)
 
             # If no machine is available at this moment, wait for one second
             # and try again.
             if not machine:
+                machine_lock.release()
                 log.debug("Task #%d: no machine available yet", self.task.id)
                 time.sleep(1)
             else:
@@ -180,12 +196,12 @@ class AnalysisManager(Thread):
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
-        options["options"] = self.task.options
+        options["options"] = self._emit_options(self.task.options)
         options["enforce_timeout"] = self.task.enforce_timeout
         options["clock"] = self.task.clock
         options["terminate_processes"] = self.cfg.cuckoo.terminate_processes
 
-        if not self.task.timeout or self.task.timeout == 0:
+        if not self.task.timeout:
             options["timeout"] = self.cfg.timeouts.default
         else:
             options["timeout"] = self.task.timeout
@@ -193,6 +209,12 @@ class AnalysisManager(Thread):
         if self.task.category == "file":
             options["file_name"] = File(self.task.target).get_name()
             options["file_type"] = File(self.task.target).get_type()
+
+        # copy in other analyzer specific options, TEMPORARY (most likely)
+        vm_options = getattr(machinery.options, self.machine.name)
+        for k in vm_options:
+            if k.startswith("analyzer_"):
+                options[k] = vm_options[k]
 
         return options
 
@@ -222,11 +244,9 @@ class AnalysisManager(Thread):
         try:
             self.acquire_machine()
         except CuckooOperationalError as e:
+            machine_lock.release()
             log.error("Cannot acquire machine: {0}".format(e))
             return False
-
-        # Generate the analysis configuration file.
-        options = self.build_options()
 
         # At this point we can tell the ResultServer about it.
         try:
@@ -238,14 +258,24 @@ class AnalysisManager(Thread):
         aux = RunAuxiliary(task=self.task, machine=self.machine)
         aux.start()
 
+        # Generate the analysis configuration file.
+        options = self.build_options()
+
         try:
+            unlocked = False
+
             # Mark the selected analysis machine in the database as started.
-            guest_log = Database().guest_start(self.task.id,
-                                               self.machine.name,
-                                               self.machine.label,
-                                               machinery.__class__.__name__)
+            guest_log = self.db.guest_start(self.task.id,
+                                            self.machine.name,
+                                            self.machine.label,
+                                            machinery.__class__.__name__)
             # Start the machine.
             machinery.start(self.machine.label)
+
+            # By the time start returns it will have fully started the Virtual
+            # Machine. We can now safely release the machine lock.
+            machine_lock.release()
+            unlocked = True
 
             # Initialize the guest manager.
             guest = GuestManager(self.machine.name, self.machine.ip,
@@ -257,9 +287,13 @@ class AnalysisManager(Thread):
             guest.wait_for_completion()
             succeeded = True
         except CuckooMachineError as e:
+            if not unlocked:
+                machine_lock.release()
             log.error(str(e), extra={"task_id": self.task.id})
             dead_machine = True
         except CuckooGuestError as e:
+            if not unlocked:
+                machine_lock.release()
             log.error(str(e), extra={"task_id": self.task.id})
         finally:
             # Stop Auxiliary modules.
@@ -286,7 +320,7 @@ class AnalysisManager(Thread):
             # Mark the machine in the database as stopped. Unless this machine
             # has been marked as dead, we just keep it as "started" in the
             # database so it'll not be used later on in this session.
-            Database().guest_stop(guest_log)
+            self.db.guest_stop(guest_log)
 
             # After all this, we can make the ResultServer forget about the
             # internal state for this analysis task.
@@ -296,7 +330,7 @@ class AnalysisManager(Thread):
                 # Remove the guest from the database, so that we can assign a
                 # new guest when the task is being analyzed with another
                 # machine.
-                Database().guest_remove(guest_log)
+                self.db.guest_remove(guest_log)
 
                 # Remove the analysis directory that has been created so
                 # far, as launch_analysis() is going to be doing that again.
@@ -320,9 +354,9 @@ class AnalysisManager(Thread):
 
     def process_results(self):
         """Process the analysis results and generate the enabled reports."""
-        results = RunProcessing(task_id=self.task.id).run()
+        results = RunProcessing(task=self.task.to_dict()).run()
         RunSignatures(results=results).run()
-        RunReporting(task_id=self.task.id, results=results).run()
+        RunReporting(task=self.task.to_dict(), results=results).run()
 
         # If the target is a file and the user enabled the option,
         # delete the original copy.
@@ -366,14 +400,20 @@ class AnalysisManager(Thread):
 
                 break
 
-            Database().set_status(self.task.id, TASK_COMPLETED)
+            self.db.set_status(self.task.id, TASK_COMPLETED)
+
+            # If the task is still available in the database, update our task
+            # variable with what's in the database, as otherwise we're missing
+            # out on the status and completed_on change. This would then in
+            # turn thrown an exception in the analysisinfo processing module.
+            self.task = self.db.view_task(self.task.id) or self.task
 
             log.debug("Released database task #%d with status %s",
                       self.task.id, success)
 
             if self.cfg.cuckoo.process_results:
                 self.process_results()
-                Database().set_status(self.task.id, TASK_REPORTED)
+                self.db.set_status(self.task.id, TASK_REPORTED)
 
             # We make a symbolic link ("latest") which links to the latest
             # analysis - this is useful for debugging purposes. This is only
@@ -387,7 +427,9 @@ class AnalysisManager(Thread):
                 # Deal with race conditions using a lock.
                 latest_symlink_lock.acquire()
                 try:
-                    if os.path.exists(latest):
+                    # As per documentation, lexists() returns True for dead
+                    # symbolic links.
+                    if os.path.lexists(latest):
                         os.remove(latest)
 
                     os.symlink(self.storage, latest)
@@ -494,6 +536,16 @@ class Scheduler:
         while self.running:
             time.sleep(1)
 
+            # Wait until the machine lock is not locked. This is only the case
+            # when all machines are fully running, rather that about to start
+            # or still busy starting. This way we won't have race conditions
+            # with finding out there are no available machines in the analysis
+            # manager or having two analyses pick the same machine.
+            if not machine_lock.acquire(False):
+                continue
+
+            machine_lock.release()
+
             # If not enough free disk space is available, then we print an
             # error message and wait another round (this check is ignored
             # when the freespace configuration variable is set to zero).
@@ -546,6 +598,7 @@ class Scheduler:
                         # Initialize and start the analysis manager.
                         analysis = AnalysisManager(task, errors)
                         analysis.start()
+                        break
 
             # Deal with errors.
             try:

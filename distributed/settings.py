@@ -1,30 +1,29 @@
-[distributed]
+import os
 
 # Database connection URI. PostgreSQL or MySQL suggested.
 # Examples, see documentation for more:
 # postgresql://foo:bar@localhost:5432/mydatabase
 # mysql://foo:bar@localhost/mydatabase
-database =
+SQLALCHEMY_DATABASE_URI = "postgresql://cuckoo:cuckoo@localhost/distributed"
 
-# A comma-seperated list of reporting formats, e.g., json.
-report_formats = json
+# Secret key used by Flask to generate sessions etc. (This feature is not
+# actually used at the moment as we have no user accounts etc).
+SECRET_KEY = os.urandom(32)
+
+# A list of reporting formats, e.g., json.
+report_formats = "json",
 
 # Directory for storing samples as long as their task is available.
-samples_directory =
+samples_directory = "/tmp"
 
 # Directory for storing reports as long as their task is available.
-reports_directory =
-
-# Amount of worker processes talking with Cuckoo nodes. You don't need more
-# worker processes than Cuckoo nodes, however, 4 worker processes should
-# probably be enough for up to a few dozen nodes.
-worker_processes = 4
+reports_directory = "/tmp"
 
 # Rough interval between each status checkup per Cuckoo node. As it's not
 # necessary to check the status every second half a minute should do.
-interval = 30
+interval = 10
 
 # Threshold and amount of tasks to push every time a Cuckoo node requires
 # more samples. That is, whenever the "pending" task count drops below
-# "batch_size" tasks, "batch_size" tasks are submitted to the node.
-batch_size = 500
+# "threshold" tasks, "threshold" tasks are submitted to the node.
+threshold = 500

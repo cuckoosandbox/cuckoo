@@ -33,4 +33,4 @@ class Applet(Package):
         browser = self.get_path("browser")
         class_name = self.options.get("class")
         html_path = self.make_html(path, class_name)
-        return self.execute(browser, "\"%s\"" % html_path)
+        return self.execute(browser, args=[html_path])

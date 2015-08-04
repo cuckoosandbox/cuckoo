@@ -10,3 +10,7 @@ pefile
 django
 chardet
 nose
+python-dateutil
+requests
+flask
+alembic

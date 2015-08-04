@@ -2,12 +2,14 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import json
+
 from datetime import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 
 db = SQLAlchemy(session_options=dict(autoflush=True))
-ALEMBIC_VERSION = "3d1d8fd2cdbb"
+ALEMBIC_VERSION = "2aa59981b59d"
 
 class Serializer(object):
     """Serialize a query result object."""
@@ -26,6 +28,16 @@ class StringList(db.TypeDecorator):
 
     def process_result_value(self, value, dialect):
         return value.split(", ")
+
+class JsonType(db.TypeDecorator):
+    """List of comma-separated strings as field."""
+    impl = db.Text
+
+    def process_bind_param(self, value, dialect):
+        return json.dumps(value)
+
+    def process_result_value(self, value, dialect):
+        return json.loads(value)
 
 class Node(db.Model):
     """Cuckoo node database model."""
@@ -56,10 +68,12 @@ class Machine(db.Model):
 class Task(db.Model, Serializer):
     """Analysis task database model."""
     PENDING = "pending"
+    ASSIGNED = "assigned"
     PROCESSING = "processing"
     FINISHED = "finished"
     DELETED = "deleted"
-    task_status = db.Enum(PENDING, PROCESSING, FINISHED, DELETED,
+
+    task_status = db.Enum(PENDING, ASSIGNED, PROCESSING, FINISHED, DELETED,
                           name="task_status_type")
 
     id = db.Column(db.Integer, primary_key=True)
@@ -91,6 +105,8 @@ class Task(db.Model, Serializer):
     started = db.Column(db.DateTime(timezone=False), nullable=True)
     completed = db.Column(db.DateTime(timezone=False), nullable=True)
 
+    __table_args__ = db.Index("ix_node_task", node_id, task_id),
+
     def __init__(self, path, filename, package, timeout, priority, options,
                  machine, platform, tags, custom, owner, memory, clock,
                  enforce_timeout):
@@ -112,15 +128,16 @@ class Task(db.Model, Serializer):
         self.task_id = None
         self.status = Task.PENDING
 
-class NodeStatus(db.Model):
+class NodeStatus(db.Model, Serializer):
     """Node status monitoring database model."""
     id = db.Column(db.Integer, primary_key=True)
-    node_id = db.Column(db.Integer, db.ForeignKey("node.id"))
-    timestamp = db.Column(db.DateTime(timezone=False), nullable=False)
-    status = db.Column(db.Text, nullable=False)
+    name = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime(timezone=False), nullable=False,
+                          index=True)
+    status = db.Column(JsonType, nullable=False)
 
-    def __init__(self, node_id, timestamp, status):
-        self.node_id = node_id
+    def __init__(self, name, timestamp, status):
+        self.name = name
         self.timestamp = timestamp
         self.status = status
 

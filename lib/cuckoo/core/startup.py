@@ -12,11 +12,9 @@ import urllib2
 import logging
 import logging.handlers
 import pwd
+import time
 
-import modules.auxiliary
-import modules.processing
-import modules.signatures
-import modules.reporting
+from datetime import datetime, timedelta
 
 from lib.cuckoo.common.colors import red, green, yellow, cyan
 from lib.cuckoo.common.config import Config
@@ -189,21 +187,29 @@ def init_tasks():
             db.set_status(task.id, TASK_FAILED_ANALYSIS)
             log.info("Updated running task ID {0} status to failed_analysis".format(task.id))
 
-def init_modules():
+def init_modules(machinery=True):
     """Initializes plugins."""
     log.debug("Importing modules...")
 
     # Import all auxiliary modules.
+    import modules.auxiliary
     import_package(modules.auxiliary)
+
     # Import all processing modules.
+    import modules.processing
     import_package(modules.processing)
+
     # Import all signatures.
+    import modules.signatures
     import_package(modules.signatures)
+
     # Import all reporting modules.
+    import modules.reporting
     import_package(modules.reporting)
 
     # Import machine manager.
-    import_plugin("modules.machinery." + Config().cuckoo.machinery)
+    if machinery:
+        import_plugin("modules.machinery." + Config().cuckoo.machinery)
 
     for category, entries in list_plugins().items():
         log.debug("Imported \"%s\" modules:", category)
@@ -266,6 +272,44 @@ def init_yara():
         else:
             log.debug("\t |-- %s", entry)
 
+def init_binaries():
+    """Inform the user about the need to periodically look for new analyzer
+    binaries. These include the Windows monitor etc."""
+    windows = os.path.join("analyzer", "windows", "bin")
+
+    binaries = [
+        os.path.join(windows, "monitor-x86.dll"),
+        os.path.join(windows, "monitor-x64.dll"),
+        os.path.join(windows, "inject-x86.exe"),
+        os.path.join(windows, "inject-x64.exe"),
+        os.path.join(windows, "is32bit.exe"),
+    ]
+
+    update = False
+
+    for path in binaries:
+        if not os.path.exists(path):
+            log.warning("The binary %s, required for Windows analysis, "
+                        "is missing.", path)
+            update = True
+            continue
+
+        filetime = datetime.fromtimestamp(os.path.getctime(path))
+        one_week = datetime.now() - timedelta(days=7)
+
+        if filetime < one_week:
+            update = True
+            log.info("The binary %s is more than a week old, this is not "
+                     "critical, but checking for an update is recommended.",
+                     path)
+
+    if update:
+        log.critical("It is recommended that you update the binaries used "
+                     "for Windows analysis. To do so, please run the "
+                     "following command: ./utils/community.py -wafb monitor")
+        for x in xrange(3):
+            log.info("Please take note of the warnings above!")
+            time.sleep(1)
 
 def cuckoo_clean():
     """Clean up cuckoo setup.

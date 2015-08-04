@@ -4,7 +4,6 @@
 
 import logging
 import socket
-import time
 
 from lib.core.config import Config
 
@@ -34,27 +33,24 @@ class NetlogConnection(object):
     def __init__(self, proto=""):
         config = Config(cfg="analysis.conf")
         self.hostip, self.hostport = config.ip, config.port
-        self.sock, self.file = None, None
+        self.sock = None
         self.proto = proto
 
     def connect(self):
-        i = 1
-        # this can loop forever, if we can't connect the whole analysis is useless anyways
-        while True:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Try to connect as quickly as possible. Just sort of force it to
+        # connect with a short timeout.
+        while not self.sock:
             try:
-                s.connect((self.hostip, self.hostport))
+                s = socket.create_connection((self.hostip, self.hostport), 0.1)
                 s.sendall(self.proto)
-            except:
-                time.sleep(i)
-                i = min(i + 1, 60)
-            else:
-                self.sock = s
-                self.file = s.makefile()
-                break
+            except socket.error:
+                continue
+
+            self.sock = s
 
     def send(self, data, retry=True):
-        if not self.sock: self.connect()
+        if not self.sock:
+            self.connect()
 
         try:
             self.sock.sendall(data)
@@ -73,7 +69,6 @@ class NetlogConnection(object):
 
     def close(self):
         try:
-            self.file.close()
             self.sock.close()
         except Exception:
             pass

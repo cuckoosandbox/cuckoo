@@ -15,5 +15,4 @@ PATHS = {"root"   : ROOT,
          "memory" : os.path.join(ROOT, "memory"),
          "drop"   : os.path.join(ROOT, "drop")}
 
-PIPE = "\\\\.\\PIPE\\" + random_string(6, 10)
 SHUTDOWN_MUTEX = "Global\\" + random_string(6, 10)

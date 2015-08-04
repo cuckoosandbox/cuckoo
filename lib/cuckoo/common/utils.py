@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import time
 import shutil
 import ntpath
 import string
@@ -12,6 +11,7 @@ import xmlrpclib
 import inspect
 import threading
 import multiprocessing
+
 from datetime import datetime
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -181,22 +181,14 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-def logtime(dt):
-    """Formats time like a logger does, for the csv output
-       (e.g. "2013-01-25 13:21:44,590")
-    @param dt: datetime object
-    @return: time string
-    """
-    t = time.strftime("%Y-%m-%d %H:%M:%S", dt.timetuple())
-    s = "%s,%03d" % (t, dt.microsecond/1000)
-    return s
+class ThreadSingleton(type):
+    """Singleton per thread."""
+    _instances = threading.local()
 
-def time_from_cuckoomon(s):
-    """Parse time string received from cuckoomon via netlog
-    @param s: time string
-    @return: datetime object
-    """
-    return datetime.strptime(s, "%Y-%m-%d %H:%M:%S,%f")
+    def __call__(cls, *args, **kwargs):
+        if not getattr(cls._instances, "instance", None):
+            cls._instances.instance = super(ThreadSingleton, cls).__call__(*args, **kwargs)
+        return cls._instances.instance
 
 def to_unicode(s):
     """Attempt to fix non uft-8 string into utf-8. It tries to guess input encoding,
@@ -249,18 +241,6 @@ def cleanup_value(v):
         v = v[4:]
     return v
 
-def sanitize_filename(x):
-    """Kind of awful but necessary sanitizing of filenames to
-    get rid of unicode problems."""
-    out = ""
-    for c in x:
-        if c in string.letters + string.digits + " _-.":
-            out += c
-        else:
-            out += "_"
-
-    return out
-
 def classlock(f):
     """Classlock decorator (created for database.Database).
     Used to put a lock to avoid sqlite errors.
@@ -285,6 +265,24 @@ class SuperLock(object):
     def __enter__(self):
         self.tlock.acquire()
         self.mlock.acquire()
+
     def __exit__(self, type, value, traceback):
         self.mlock.release()
         self.tlock.release()
+
+def fix_key(key):
+    """Fix a registry key to have it normalized.
+    @param key: raw key
+    @returns: normalized key
+    """
+    res = key
+    if key.lower().startswith("registry\\machine\\"):
+        res = "HKEY_LOCAL_MACHINE\\" + key[17:]
+    elif key.lower().startswith("registry\\user\\"):
+        res = "HKEY_USERS\\" + key[14:]
+    elif key.lower().startswith("\\registry\\machine\\"):
+        res = "HKEY_LOCAL_MACHINE\\" + key[18:]
+    elif key.lower().startswith("\\registry\\user\\"):
+        res = "HKEY_USERS\\" + key[15:]
+
+    return res

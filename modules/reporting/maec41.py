@@ -30,7 +30,7 @@ except ImportError as e:
     HAVE_CYBOX = False
 
 try:
-    from maec.bundle import (Bundle, MalwareAction, BundleReference, 
+    from maec.bundle import (Bundle, MalwareAction, BundleReference,
                              ProcessTree, AVClassification)
     from maec.package import MalwareSubject, Package, Analysis
     import maec.utils

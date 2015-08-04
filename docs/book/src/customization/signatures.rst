@@ -14,6 +14,7 @@ Some examples of what you can use Cuckoo's signatures for:
     * Identify a particular malware family you're interested in by isolating some unique behaviors (like file names or mutexes).
     * Spot interesting modifications the malware performs on the system, such as installation of device drivers.
     * Identify particular malware categories, such as Banking Trojans or Ransomware by isolating typical actions commonly performed by those.
+    * Classify samples into the categories malware/unknown (it is not possible to identify clean samples)
 
 You can find signatures created by us and by other Cuckoo users on our `Community`_ repository.
 
@@ -40,20 +41,24 @@ The following is a basic example signature:
             severity = 2
             categories = ["generic"]
             authors = ["Cuckoo Developers"]
-            minimum = "0.5"
+            minimum = "1.2"
 
-            def run(self):
+            def on_complete(self):
                 return self.check_file(pattern=".*\\.exe$",
                                        regex=True)
 
 As you can see the structure is really simple and consistent with the other
 modules. We're going to get into details later, but as you can see at line **12**
-from version 0.5 Cuckoo provides some helper functions that make the process of
+from version 1.2 Cuckoo provides some helper functions that make the process of
 creating signatures much easier.
 
 In this example we just walk through all the accessed files in the summary and check
 if there is anything ending with "*.exe*": in that case it will return ``True``, meaning that
 the signature matched, otherwise return ``False``.
+
+the function ``on_complete`` is called at the end of the cuckoo signature process.
+Other function will be called before on specific events and help you to write
+more sophisticated and faster signatures.
 
 In case the signature gets matched, a new entry in the "signatures" section will be added to
 the global container as follows::
@@ -73,31 +78,6 @@ the global container as follows::
         }
     ]
 
-We could rewrite the exact same signature by accessing the **global container**
-directly:
-
-    .. code-block:: python
-        :linenos:
-
-        from lib.cuckoo.common.abstracts import Signature
-
-        class CreatesExe(Signature):
-            name = "creates_exe"
-            description = "Creates a Windows executable on the filesystem"
-            severity = 2
-            categories = ["generic"]
-            authors = ["Cuckoo Developers"]
-            minimum = "0.5"
-
-            def run(self):
-                for file_path in self.results["behavior"]["summary"]["files"]:
-                    if file_path.endswith(".exe"):
-                        return True
-
-                return False
-
-This obviously requires you to know the structure of the **global container**,
-which you can observe represented in the JSON report of your analyses.
 
 Creating your new signature
 ===========================
@@ -137,9 +117,9 @@ In our example, we would create the following skeleton:
             categories = ["trojan"] # We add a category
             families = ["badbadmalware"] # We add the name of our fictional malware family
             authors = ["Me"] # We specify the author
-            minimum = "0.5" # We specify that in order to run the signature, the user will need at least Cuckoo 0.5
+            minimum = "1.2" # We specify that in order to run the signature, the user will need at least Cuckoo 0.5
 
-        def run(self):
+        def on_complete(self):
             return
 
 This is a perfectly valid signature. It doesn't really do anything yet,
@@ -159,9 +139,9 @@ As we said, we want to match a particular mutex name, so we proceed as follows:
             categories = ["trojan"]
             families = ["badbadmalware"]
             authors = ["Me"]
-            minimum = "0.5"
+            minimum = "1.2"
 
-        def run(self):
+        def on_complete(self):
             return self.check_mutex("i_am_a_malware")
 
 Simple as that, now our signature will return ``True`` whether the analyzed
@@ -182,24 +162,27 @@ you could translate the previous signature in the following way:
             categories = ["trojan"]
             families = ["badbadmalware"]
             authors = ["Me"]
-            minimum = "0.5"
+            minimum = "1.2"
 
-        def run(self):
-            for mutex in self.results["behavior"]["summary"]["mutexes"]:
-                if mutex == "i_am_a_malware":
-                    return True
+        def on_complete(self):
+            for process in self.get_processes_by_pid():
+                if "summary" in process and "mutexes" in process["summary"]:
+                    for mutex in process["summary"]["mutexes"]:
+                        if mutex == "i_am_a_malware":
+                            return True
 
             return False
 
 Evented Signatures
 ==================
 
-Since version 1.0, Cuckoo provides a way to write more high-performance signatures.
+Since version 1.0, Cuckoo provides a way to write more high performance signatures.
 In the past every signature was required to loop through the whole collection of API calls
 collected during the analysis. This was necessarily causing some performance issues when such
 collection would be of a large size.
 
-Cuckoo now supports both the old model as well as what we call "evented signatures".
+Since 1.2 Cuckoo only supports the so called "evented signatures". The old signatures
+based on the ``run`` function can be ported to using ``on_complete``.
 The main difference is that with this new format, all the signatures will be executed in parallel
 and a callback function called ``on_call()`` will be invoked for each signature within one
 single loop through the collection of API calls.
@@ -217,10 +200,7 @@ An example signature using this technique is the following:
             severity = 2
             categories = ["generic"]
             authors = ["Cuckoo Developers"]
-            minimum = "1.0"
-
-            # Evented signatures need to implement the "on_call" method
-            evented = True
+            minimum = "1.2"
 
             # Evented signatures can specify filters that reduce the amount of
             # API calls that are streamed in. One can filter Process name, API
@@ -235,18 +215,17 @@ An example signature using this technique is the following:
             # These use a more efficient way of processing logged API calls.
             enabled = False
 
-            def stop(self):
-                # In the stop method one can implement any cleanup code and
+            def on_complete(self):
+                # In the on_complete method one can implement any cleanup code and
                 #  decide one last time if this signature matches or not.
                 #  Return True in case it matches.
                 return False
 
             # This method will be called for every logged API call by the loop
             # in the RunSignatures plugin. The return value determines the "state"
-            # of this signature. True means the signature matched and False means
-            # it can't match anymore. Both of which stop streaming in API calls.
-            # Returning None keeps the signature active and will continue.
-            def on_call(self, call, process):
+            # of this signature. True means the signature matched and False it did not this time.
+            # Use self.deactivate() to stop streaming in API calls.
+            def on_call(self, call, pid, tid):
                 # This check would in reality not be needed as we already make use
                 # of filter_apinames above.
                 if call["api"] == "GetSystemMetrics":
@@ -257,7 +236,43 @@ An example signature using this technique is the following:
                 return None
 
 The inline comments are already self-explanatory.
-You can find many more example of both evented and traditional signatures in our `community repository`_.
+
+Another event is triggered when a signature matches. 
+
+    .. code-block:: python
+        :linenos:
+
+        def on_signature(self, matched_sig):
+            required = ["creates_exe", "badmalware"]
+            for sig in required:
+                if not sig in self.list_signatures():
+                    return
+            return True
+
+This kind of signature can be used to combine several signatures identifying anomalies into one signature
+classifying the sample (malware alert).
+
+Two more events can be used to write more complex signatures. They are called when new processes are processed or new threads.
+``on_process`` and ``on_thread``. They can be used to reset the state of flags when a new process is entered. Allowing
+to write signatures that take into account if a series of events happened in one thread/process or globally.
+
+.. code-block:: python
+        :linenos:
+
+        def on_process(self, pid):
+            pass
+
+        def on_thread(self, pid, tid):
+            pass
+
+Quickout
+========
+Additionally to the filters you can use a quickout function to determine if the
+signature can be matched at all. For example if a signature is written to identify
+behavior of malicious PDFs you could test for the file type to be PDF. Returning ``True`` will
+remove the signature from the list of potential candidates (reducing False Positives and processing time).
+
+You can find many more example of signatures in our `community repository`_.
 
 .. _`community repository`: https://github.com/cuckoobox/community
 
@@ -327,6 +342,10 @@ As anticipated, from version 0.5 the ``Signature`` base class also provides
 some helper methods that simplify the creation of signatures and avoid the need
 for you having to access the global container directly (at least most of the times).
 
+With Cuckoo 1.2 the amount of information extracted from a sample grew another step and the
+resulting data format got more complex. To avoid having to port your signatures with every extension and to reduce
+errors we strongly suggest to use the helpers to access data.
+
 Following is a list of available methods.
 
 .. function:: Signature.check_file(pattern[, regex=False])
@@ -346,7 +365,7 @@ Following is a list of available methods.
 
         self.check_file(pattern=".*\.exe$", regex=True)
 
-.. function:: Signature.check_key(pattern[, regex=False])
+.. function:: Signature.check_key(pattern[, regex=False[, actions=["regkey_written", "regkey_opened", "regkey_read"][, pid=None]]])
 
     Checks whether the malware opened or created a registry key matching the specified pattern. Returns ``True`` in case it did, otherwise returns ``False``.
 
@@ -354,6 +373,10 @@ Following is a list of available methods.
     :type pattern: string
     :param regex: enable to compile the pattern as a regular expression
     :type regex: boolean
+    :param actions: a list of key-access-actions to search the key in
+    :type actions: list
+    :param pid: process id to filter for
+    :type pid: int
     :rtype: boolean
 
     Example Usage:
@@ -399,10 +422,11 @@ Following is a list of available methods.
 
         self.check_api(pattern="URLDownloadToFileW", process="AcroRd32.exe")
 
-.. function:: Signature.check_argument(pattern[, name=Name[, api=None[, category=None[, process=None[, regex=False]]]])
+.. function:: Signature.check_argument_call(call, pattern[, name=Name[, api=None[, category=None[, regex=False]]])
 
     Checks whether the malware invoked a function with a specific argument value. Returns ``True`` in case it did, otherwise returns ``False``.
 
+    :param call: the call to check to check the argument in
     :param pattern: argument value pattern to be matched
     :type pattern: string
     :param name: name of the argument to be matched
@@ -411,8 +435,6 @@ Following is a list of available methods.
     :type api: string
     :param category: name of the category of the function to be matched
     :type category: string
-    :param process: name of the process performing the associated call
-    :type process: string
     :param regex: enable to compile the pattern as a regular expression
     :type regex: boolean
     :rtype: boolean
@@ -422,7 +444,202 @@ Following is a list of available methods.
     .. code-block:: python
         :linenos:
 
-        self.check_argument(pattern=".*cuckoo.*", category="filesystem", regex=True)
+        self.check_argument_call(call, pattern=".*cuckoo.*", category="filesystem", regex=True)
+
+.. function:: Signatures.list_signatures()
+
+    Returns a list of signature names that matched so far. It can be used to write meta-signatures combining several
+    signatures on anomalies into a classification.
+
+    :rtype: list
+
+    Example Usage:
+
+    .. code-block:: python
+        :linenos:
+
+        def on_signature(self, matched_sig):
+            required = ["creates_exe", "badmalware"]
+            for sig in required:
+                if not sig in self.list_signatures():
+                    return
+            return True
+
+.. function:: Signatures.get_processes([name=None])
+
+    An iterator returning the processes monitored. If name is given, they will be filtered for the name
+
+    :param name: Name of the process to filter for
+    :type name: string
+    :rtype: iterator
+
+    Example Usage:
+
+    .. code-block:: python
+        :linenos:
+
+        for process in self.get_processes("foo"):
+            pass
+
+.. function:: Signatures.get_processes_by_pid([pid=None])
+
+    An iterator returning the processes monitored. If pid is given, they will be filtered for the process id
+
+    :param pid: Process ID of the process to filter for
+    :type pid: int
+    :rtype: iterator
+
+    .. code-block:: python
+        :linenos:
+
+        for process in self.get_processes_by_pid(4):
+            pass
+
+.. function:: Signatures.get_threads([pid=None])
+
+    An iterator returning the threads monitored. If pid is given, they will be filtered for the process id.
+
+    :param pid: Name of the process to filter for
+    :type pid: int
+    :rtype: iterator
+
+    .. code-block:: python
+        :linenos:
+
+        for thread in self.get_threads():
+            pass
+
+.. function:: Signatures.get_files([pid=None,[actions=None]])
+
+    Iterates over the files accessed by a process (or all processes). Access type can be a list of "file_written",
+    "file_read", "file_deleted". Default is all.
+
+    :param pid: Name of the process to filter for
+    :type pid: int
+    :param actions: access types of the files to return
+    :type actions: list
+    :rtype: iterator
+
+    .. code-block:: python
+        :linenos:
+
+        for afile in self.get_files():
+            pass
+
+.. function:: Signatures.get_keys([pid=None,[actions=None]])
+
+    Iterates over the registry keys accessed by a process (or all processes). Access type can be a list of "regkey_written",
+    "regkey_opened", "regkey_read". Default is all.
+
+    :param pid: Name of the process to filter for
+    :type pid: int
+    :param actions: access types of the registry keys to return
+    :type actions: list
+    :rtype: iterator
+
+    .. code-block:: python
+        :linenos:
+
+        for akey in self.get_keys():
+            pass
+
+.. function:: Signatures.get_mutexes([pid=None])
+
+    Returns a list of mutexes. Optionally filtered by process id
+
+    :param pid: Name of the process to filter for
+    :type pid: int
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for mutex in self.get_mutexes():
+            pass
+
+.. function:: Signature.get_net_hosts()
+
+    Returns a list of hosts from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for host in self.get_net_hosts():
+            pass
+
+.. function:: Signature.get_net_domains()
+
+    Returns a list of domains from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for domain in self.get_net_domains():
+            pass
+
+.. function:: Signature.get_net_http()
+
+    Returns a list of http information blocks from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for http_data in self.get_net_http():
+            pass
+
+.. function:: Signature.get_net_udp()
+
+    Returns a list of udp information blocks from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for udp_data in self.get_net_udp():
+            pass
+
+.. function:: Signature.get_net_icmp()
+
+    Returns a list of icmp information blocks from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for icmp_data in self.get_net_icmp():
+            pass
+
+.. function:: Signature.get_net_irc()
+
+    Returns a list of irc information blocks from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for irc_data in self.get_net_irc():
+            pass
+
+.. function:: Signature.get_net_smtp()
+
+    Returns a list of smtp information blocks from the network sniffing part of the collected data
+
+    :rtype: list
+
+    .. code-block:: python
+        :linenos:
+
+        for smtp_data in self.get_net_smtp():
+            pass
 
 .. function:: Signature.check_ip(pattern[, regex=False])
 
@@ -474,3 +691,106 @@ Following is a list of available methods.
         :linenos:
 
         self.check_url(pattern="^.+\/load\.php\?file=[0-9a-zA-Z]+$", regex=True)
+
+.. function:: Signature.flags.set(name, [pid=None[, tid=None[, timestamp=None]]])
+
+    Flags can be used to collect information in the on_call section of a signature and react (decide to alert) in the
+    on_complete part if all required flags are set. Flags are signature specific. They are identified by their name.
+    PID, TID and timestamp can be later used to identify if a flag was set in a specific process/thread or at a specific
+    time.
+
+    :param name: Name of the flag to set
+    :type name: string
+    :param pid: process id
+    :type pid: int
+    :param tid: thread id
+    :type tid: int
+    :param timestamp: timestamp in the log to mark this flag for
+    :type timestamp: int
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, pid, tid):
+            self.flags.set("foo", 1, 2, 2345)
+
+.. function:: Signature.flags.find([name=None[, pid=None[, tid=None[, before=None[, after=None]]]])
+
+    Returns a list of flags matching the given criteria
+
+    :param name: Name of the flag look for
+    :type name: string
+    :param pid: process id to filter for
+    :type pid: int
+    :param tid: thread id to filter for
+    :type tid: int
+    :param before: flag timestamp must be <= before-timestamp
+    :type before: int
+    :param after: flag timestamp must be >= after-timestamp
+    :type after: int
+
+    .. code-block:: python
+        :linenos:
+
+        def on_complete(self):
+            if self.flags.find("foo"):
+                self.data.append({"Flag found matching name": "foo"})
+                return True
+
+.. function:: Signature.mark_start()
+
+    Mark the start of a api-call region relevant for the signature. This way the report can contain a link to the API call that triggered the signature.
+    As soon as the signature returns ``True`` this mark will be stored in the report. Subsequent start marks will overwrite the old one till it is
+    stored in the results with the triggering of the signature. So you can set a start mark "on suspicion" and overwrite it several times till the signature triggers.
+
+    It is marking the api call. So the only reasonable signatures to use it is in on_call evented ones
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, pid, tid):
+            if self.check_argument_call(call, pattern=".*cuckoo.*", category="filesystem", regex=True):
+                self.mark_start()
+                return True
+
+.. function:: Signature.mark_end()
+
+    A complementary function to mark_start. It is optional and marks the end of a api call range that triggered the signature. It should be
+    called before returning the ``True`` result.
+
+    Without a prior mark_start, the end-mark will not be stored in the result.
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, pid, tid):
+            if self.check_argument_call(call, pattern=".*foo.*", category="filesystem", regex=True):
+                self.mark_start()
+                return None
+            if self.check_argument_call(call, pattern=".*cuckoo.*", category="filesystem", regex=True):
+                self.mark_end()
+                return True
+
+.. function:: Signature.deactivate()
+
+    Deactivate a signature. Deactivated signatures will not be notified in ``on_call`` events. This can be used after a
+    signature triggered (just before the return) to match this signature only once.
+
+    .. code-block:: python
+        :linenos:
+
+        def on_call(self, call, pid, tid):
+            if call["api"] == "LdrGetProcedureAddress":
+                self.deactivate()
+                return True
+
+
+.. function:: Signature.activate()
+
+    Re-activates a signature after it has been de-activated.
+
+    .. code-block:: python
+        :linenos:
+
+        def on_process(self, pid):
+            self.activate()

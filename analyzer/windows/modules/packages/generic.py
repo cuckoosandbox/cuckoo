@@ -11,17 +11,19 @@ class Generic(Package):
     The sample is started using START command in a cmd.exe prompt.
     """
     PATHS = [
-        ("SystemRoot", "system32", "cmd.exe"),
+        ("System32", "cmd.exe"),
     ]
 
     def start(self, path):
         cmd_path = self.get_path("cmd.exe")
+
         # Create random cmd.exe window title.
         rand_title = "".join([chr(randint(0, 128)) for i in xrange(0, randint(1, 10))])
+
         # START syntax.
         # See: https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/start.mspx?mfr=true
         # start ["title"] [/dPath] [/i] [/min] [/max] [{/separate | /shared}]
         # [{/low | /normal | /high | /realtime | /abovenormal | belownormal}]
         # [/wait] [/b] [FileName] [parameters]
-        cmd_args = "/c start /wait \"{0}\" \"{1}\"".format(rand_title, path)
-        return self.execute(cmd_path, cmd_args)
+        args = ["/c", "start", "/wait", rand_title, path]
+        return self.execute(cmd_path, args=args)

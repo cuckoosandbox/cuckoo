@@ -16,7 +16,7 @@ from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT
 from lib.cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
 from lib.cuckoo.common.constants import CUCKOO_GUEST_FAILED
 from lib.cuckoo.common.exceptions import CuckooGuestError
-from lib.cuckoo.common.utils import TimeoutServer, sanitize_filename
+from lib.cuckoo.common.utils import TimeoutServer
 from lib.cuckoo.core.resultserver import ResultServer
 
 log = logging.getLogger(__name__)
@@ -75,7 +75,7 @@ class GuestManager:
         self.server._set_timeout(None)
         return True
 
-    def upload_analyzer(self):
+    def upload_analyzer(self, hashes_path):
         """Upload analyzer to guest.
         @return: operation status.
         """
@@ -100,6 +100,9 @@ class GuestManager:
                 archive_name = os.path.join(archive_root, name)
                 zip_file.write(path, archive_name)
 
+        if hashes_path:
+            zip_file.write(hashes_path, "hashes.bin")
+
         zip_file.close()
         data = xmlrpclib.Binary(zip_data.getvalue())
         zip_data.close()
@@ -123,9 +126,8 @@ class GuestManager:
         """
         log.info("Starting analysis on guest (id=%s, ip=%s)", self.id, self.ip)
 
-        # TODO: deal with unicode URLs.
-        if options["category"] == "file":
-            options["file_name"] = sanitize_filename(options["file_name"])
+        # TODO Deal with unicode URLs, should probably try URL encoding.
+        # Unicode files are being taken care of.
 
         # If the analysis timeout is higher than the critical timeout,
         # automatically increase the critical timeout by one minute.
@@ -134,8 +136,18 @@ class GuestManager:
                       self.timeout)
             self.timeout = options["timeout"] + 60
 
-        # Get and set dynamically generated resultserver port.
-        options["port"] = str(ResultServer().port)
+        opt = {}
+        for row in options["options"].split(","):
+            if "=" not in row:
+                continue
+
+            key, value = row.split("=", 1)
+            opt[key.strip()] = value.strip()
+
+        # Check whether the hashes file exists if it was provided.
+        if "hashes-path" in opt:
+            if not os.path.isfile(opt["hashes-path"]):
+                raise CuckooGuestError("Non-existing hashing file provided!")
 
         try:
             # Wait for the agent to respond. This is done to check the
@@ -144,7 +156,7 @@ class GuestManager:
             self.wait(CUCKOO_GUEST_INIT)
 
             # Invoke the upload of the analyzer to the guest.
-            self.upload_analyzer()
+            self.upload_analyzer(opt.get("hashes-path"))
 
             # Give the analysis options to the guest, so it can generate the
             # analysis.conf inside the guest.

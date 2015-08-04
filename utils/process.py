@@ -10,6 +10,7 @@ import logging
 import argparse
 import signal
 import multiprocessing
+import traceback
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -19,26 +20,34 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.database import Database, TASK_REPORTED, TASK_COMPLETED
-from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
+from lib.cuckoo.core.database import Task, TASK_FAILED_PROCESSING
 from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from lib.cuckoo.core.startup import init_modules, drop_privileges
 
-def process(task_id, target=None, copy_path=None, report=False, auto=False):
-    assert isinstance(task_id, int)
+# We keep a reporting queue with at most a few hundred entries.
+QUEUE_THRESHOLD = 128
 
-    results = RunProcessing(task_id=task_id).run()
+def process(target=None, copy_path=None, task=None, report=False, auto=False):
+    results = RunProcessing(task=task).run()
     RunSignatures(results=results).run()
 
     if report:
-        RunReporting(task_id=task_id, results=results).run()
-        Database().set_status(task_id, TASK_REPORTED)
+        RunReporting(task=task, results=results).run()
 
         if auto:
             if cfg.cuckoo.delete_original and os.path.exists(target):
                 os.unlink(target)
 
-            if cfg.cuckoo.delete_bin_copy and os.path.exists(copy_path):
+            if cfg.cuckoo.delete_bin_copy and copy_path and \
+                    os.path.exists(copy_path):
                 os.unlink(copy_path)
+
+def process_wrapper(*args, **kwargs):
+    try:
+        process(*args, **kwargs)
+    except Exception as e:
+        e.traceback = traceback.format_exc()
+        raise e
 
 def init_worker():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -47,46 +56,78 @@ def autoprocess(parallel=1):
     maxcount = cfg.cuckoo.max_analysis_count
     count = 0
     db = Database()
-    pool = multiprocessing.Pool(parallel, init_worker)
-    pending_results = []
+    pending_results = {}
+
+    # Respawn a worker process every 1000 tasks just in case we
+    # have any memory leaks.
+    pool = multiprocessing.Pool(processes=parallel, initializer=init_worker,
+                                maxtasksperchild=1000)
 
     try:
-        # CAUTION - big ugly loop ahead.
-        while count < maxcount or not maxcount:
+        while True:
+            # Pending results maintenance.
+            for tid, ar in pending_results.items():
+                if not ar.ready():
+                    continue
 
-            # Pending_results maintenance.
-            for ar, tid, target, copy_path in list(pending_results):
-                if ar.ready():
-                    if ar.successful():
-                        log.info("Task #%d: reports generation completed", tid)
-                    else:
-                        try:
-                            ar.get()
-                        except:
-                            log.exception("Exception when processing task ID %u.", tid)
-                            db.set_status(tid, TASK_FAILED_PROCESSING)
+                if ar.successful():
+                    log.info("Task #%d: reports generation completed", tid)
+                    db.set_status(tid, TASK_REPORTED)
+                else:
+                    try:
+                        ar.get()
+                    except Exception as e:
+                        log.critical("Task #%d: exception in reports generation: %s", tid, e)
+                        if hasattr(e, "traceback"):
+                            log.info(e.traceback)
 
-                    pending_results.remove((ar, tid, target, copy_path))
+                    db.set_status(tid, TASK_FAILED_PROCESSING)
 
-            # If still full, don't add more (necessary despite pool).
-            if len(pending_results) >= parallel:
+                pending_results.pop(tid)
+                count += 1
+
+            # Make sure our queue has plenty of tasks in it.
+            if len(pending_results) >= QUEUE_THRESHOLD:
+                time.sleep(1)
+                continue
+
+            # End of processing?
+            if maxcount and count == maxcount:
+                break
+
+            # No need to submit further tasks for reporting as we've already
+            # gotten to our maximum.
+            if maxcount and count + len(pending_results) == maxcount:
+                time.sleep(1)
+                continue
+
+            # Get at most queue threshold new tasks. We skip the first N tasks
+            # where N is the amount of entries in the pending results list.
+            # Given we update a tasks status right before we pop it off the
+            # pending results list it is guaranteed that we skip over all of
+            # the pending tasks in the database and no further.
+            if maxcount:
+                limit = maxcount - count - len(pending_results)
+            else:
+                limit = QUEUE_THRESHOLD
+
+            tasks = db.list_tasks(status=TASK_COMPLETED,
+                                  offset=len(pending_results),
+                                  limit=min(limit, QUEUE_THRESHOLD),
+                                  order_by=Task.completed_on)
+
+            # No new tasks, we can wait a small while before we query again
+            # for new tasks.
+            if not tasks:
                 time.sleep(5)
                 continue
 
-            # If we're here, getting parallel tasks should at least
-            # have one we don't know.
-            tasks = db.list_tasks(status=TASK_COMPLETED, limit=parallel,
-                                  order_by="completed_on asc")
-
-            added = False
-            # For loop to add only one, nice. (reason is that we shouldn't overshoot maxcount)
             for task in tasks:
-                # Not-so-efficient lock.
-                if task.id in [tid for ar, tid, target, copy_path
-                               in pending_results]:
-                    continue
+                # Ensure that this task is not already in the pending list.
+                # This is really mostly for debugging and should never happen.
+                assert task.id not in pending_results
 
-                log.info("Processing analysis data for Task #%d", task.id)
+                log.info("Task #%d: queueing for reporting", task.id)
 
                 if task.category == "file":
                     sample = db.view_sample(task.sample_id)
@@ -96,26 +137,15 @@ def autoprocess(parallel=1):
                 else:
                     copy_path = None
 
-                args = int(task.id), task.target, copy_path
-                kwargs = dict(report=True, auto=True)
-                result = pool.apply_async(process, args, kwargs)
-
-                pending_results.append((result, task.id, task.target, copy_path))
-
-                count += 1
-                added = True
-                break
-
-            if not added:
-                # don't hog cpu
-                time.sleep(5)
-
+                args = task.target, copy_path
+                kwargs = dict(report=True, auto=True, task=task.to_dict())
+                result = pool.apply_async(process_wrapper, args, kwargs)
+                pending_results[task.id] = result
     except KeyboardInterrupt:
         pool.terminate()
         raise
     except:
-        import traceback
-        traceback.print_exc()
+        log.exception("Caught unknown exception")
     finally:
         pool.join()
 
@@ -126,6 +156,8 @@ def main():
     parser.add_argument("-r", "--report", help="Re-generate report", action="store_true", required=False)
     parser.add_argument("-p", "--parallel", help="Number of parallel threads to use (auto mode only).", type=int, required=False, default=1)
     parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
+    parser.add_argument("-m", "--modules", help="Path to signature and reporting modules - overrides default modules path.", type=str, required=False)
+
     args = parser.parse_args()
 
     if args.user:
@@ -134,13 +166,19 @@ def main():
     if args.debug:
         log.setLevel(logging.DEBUG)
 
-    init_modules()
+    if args.modules:
+        sys.path.insert(0, args.modules)
+
+    init_modules(machinery=False)
 
     if args.id == "auto":
         autoprocess(parallel=args.parallel)
     else:
-        process(int(args.id), report=args.report)
-
+        task = Database().view_task(int(args.id))
+        if not task:
+            process(task={"id": int(args.id), "category": "file", "target": ""}, report=args.report)
+        else:
+            process(task=task.to_dict(), report=args.report)
 
 if __name__ == "__main__":
     cfg = Config()
