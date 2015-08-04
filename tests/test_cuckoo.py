@@ -63,7 +63,6 @@ def cuckoo_analysis(target, options):
         # Nah, don't even care about returning anything on error
         if re.search(r'.*ERROR: Analysis failed:', line) != None:
             raise Exception("Cuckoo analysis failed")
-
     line = read_cuckoo_output()
     while (not is_completion(line)) and (not is_error(line)):
         line = read_cuckoo_output()
