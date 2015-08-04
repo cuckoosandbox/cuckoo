@@ -25,8 +25,10 @@ def submit_job(target, options):
     # Too lazy to re-implement this stuff myself, so use an existing tool
     submit_py = path.join(cuckoo_root(), "utils", "submit.py")
     cmd = ["python", submit_py]
-    # Transform options into --options. I tried to implement a flatMap() here
-    cmd += sum(map(lambda (x, y): ["--"+x, y], options.items()), [])
+    # Transform options into --options and compose a command line args string
+    def dummy_flatten(list_of_lists):
+        return sum(list_of_lists, [])
+    cmd += dummy_flatten([["--"+x, y] for (x, y) in options.items()])
     cmd += [target]
     subprocess.check_call(cmd)
 
