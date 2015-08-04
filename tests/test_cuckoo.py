@@ -7,6 +7,7 @@ import re
 import json
 from os import path, symlink, listdir
 import unittest
+import platform
 import subprocess
 
 TESTS_DIR = path.dirname(path.abspath(__file__))
@@ -67,10 +68,12 @@ def cuckoo_analysis(target, options):
     # Now go to the results directory and parse all the data
     return latest_analysis_results()
 
-# TODO(rodionovd):
-# 1) build assets from sources or store precompiled programms? Bear in mind that
-# user shall be able to run these tests on any host...
-
+def build_target(target_name):
+    if platform.system() != "Darwin" and not path.exists(target_name):
+        raise Exception("Unable to build an OS X target on non-darwin machine")
+    source = target_name + ".c"
+    output = target_name
+    subprocess.check_call(["clang", "-arch", "x86_64", "-O0", "-o", output, source])
 
 @unittest.skipUnless(path.exists(cuckoo_root()), "Unable to locate Cuckoo")
 class CuckooTests(unittest.TestCase):
@@ -97,6 +100,11 @@ class CuckooTests(unittest.TestCase):
 
     def current_target(self):
         return path.join(TESTS_DIR, "assets", self._testMethodName)
+
+    def setUp(self):
+        # We don't delete compiled targets after tests, so they can be reused
+        # on platforms other than OS X (cross compilation is a hell of work, you know)
+        build_target(self.current_target())
 
     #-#-#-#-#-#-#-# #-#-#-#-#-#-#-# #-#-#-#-#-#-#-#
     # Cuckoo management
@@ -129,15 +137,12 @@ class CuckooTests(unittest.TestCase):
     # Test cases
     #-#-#-#-#-#-#-# #-#-#-#-#-#-#-# #-#-#-#-#-#-#-#
 
-    def test_cuckoo_blah(self):
+    def test_cuckoo_dropped_files(self):
         # given
-        target = "/Backup/Cuckoo Research/fopen_demo"
+        target = self.current_target()
         options = {
         }
         # when
         results = cuckoo_analysis(target, options)
         # then
-        self.assertTrue(len(results["logs"]) > 0)
-
-    def test_foo(self):
-        self.assertEqual(cuckoo_root(), "/Users/rodionovd/projects/cuckoo")
+        self.assertTrue(1 == len([x for x in results["files"] if x.endswith("something.txt")]))
