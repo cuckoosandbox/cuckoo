@@ -5,10 +5,10 @@
 
 import re
 import json
-from os import path, symlink, listdir
 import unittest
 import platform
 import subprocess
+from os import path, symlink, listdir
 
 TESTS_DIR = path.dirname(path.abspath(__file__))
 ANALYZER_ROOT = path.dirname(TESTS_DIR)
