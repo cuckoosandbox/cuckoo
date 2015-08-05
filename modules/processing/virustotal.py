@@ -54,7 +54,10 @@ class VirusTotal(Processing):
         return results
 
     def scan_file(self, filepath, summary=False):
-        """Retrieve VirusTotal results for a file."""
+        """Retrieve VirusTotal results for a file.
+        @param filepath: file path
+        @param summary: if you want a summary report
+        """
         if not os.path.exists(filepath):
             log.warning("Path \"%s\" could not be found for VirusTotal "
                         "lookup, skipping it", os.path.basename(filepath))
@@ -70,7 +73,10 @@ class VirusTotal(Processing):
                         "\"%s\": %s", os.path.basename(filepath), e.message)
 
     def scan_url(self, url, summary=False):
-        """Retrieve VirusTotal results for a URL."""
+        """Retrieve VirusTotal results for a URL.
+        @param url: URL
+        @param summary: if you want a summary report
+        """
         try:
             return self.vt.url_report(url, summary=summary)
         except VirusTotalResourceNotScanned:
@@ -83,5 +89,7 @@ class VirusTotal(Processing):
     def should_scan_file(self, filetype):
         """Determines whether a certain filetype should be scanned on
         VirusTotal. For example, we're not interested in scanning text
-        files."""
+        files.
+        @param filetype: file type
+        """
         return filetype.startswith("PE32")
