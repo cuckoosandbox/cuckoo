@@ -43,6 +43,9 @@ class VirusTotal(Processing):
             results = self.scan_file(self.file_path)
         elif self.task["category"] == "url":
             results = self.scan_url(self.task["target"])
+        else:
+            raise CuckooProcessingError("Unsupported task category: %s" %
+                                        self.task["category"])
 
         # Scan any dropped files that have an interesting filetype.
         for row in self.results.get("dropped", []):
