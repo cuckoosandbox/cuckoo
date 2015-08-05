@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 from lib.cuckoo.common.colors import red, green, yellow, cyan
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
-from lib.cuckoo.common.exceptions import CuckooStartupError
+from lib.cuckoo.common.exceptions import CuckooStartupError, CuckooDatabaseError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.core.database import Database, TASK_RUNNING, TASK_FAILED_ANALYSIS
@@ -323,10 +323,17 @@ def cuckoo_clean():
     init_console_logging()
 
     # Initialize the database connection.
-    db = Database()
-
-    # Drop all tables.
-    db.drop()
+    try:
+        db = Database()
+    except CuckooDatabaseError as e:
+        # If something is screwed due to incorrect database migrations or bad
+        # database SqlAlchemy would be unable to connect and operate.
+        log.warning("Error connecting to database: it is suggested to check "
+                    "the connectivity, apply all migrations if needed or purge "
+                    "it manually. Error description: %s", e)
+    else:
+        # Drop all tables.
+        db.drop()
 
     # Check if MongoDB reporting is enabled and drop that if it is.
     cfg = Config("reporting")
