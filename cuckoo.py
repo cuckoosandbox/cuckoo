@@ -30,6 +30,12 @@ except (CuckooDependencyError, ImportError) as e:
 log = logging.getLogger()
 
 def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
+    """Cuckoo initialization workflow.
+    @param quiet: if set enable silent mode, it doesn't print anything except warnings
+    @param debug: if set enable debug mode, it print all debug messages
+    @param artwork: if set it will print only artworks, forever
+    @param test: enable integration test mode, used only for testing
+    """
     cur_path = os.getcwd()
     os.chdir(CUCKOO_ROOT)
 
@@ -60,8 +66,8 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     init_yara()
     init_binaries()
 
-    # This is just a temporary hack, we need an actual test suite to integrate
-    # with Travis-CI.
+    # TODO: This is just a temporary hack, we need an actual test suite to
+    # integrate with Travis-CI.
     if test:
         return
 
@@ -70,6 +76,9 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     os.chdir(cur_path)
 
 def cuckoo_main(max_analysis_count=0):
+    """Cuckoo main loop.
+    @param max_analysis_count: kill cuckoo after this number of analyses
+    """
     cur_path = os.getcwd()
     os.chdir(CUCKOO_ROOT)
 
