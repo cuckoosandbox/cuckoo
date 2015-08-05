@@ -81,7 +81,7 @@ pid$target::execve:entry
 
     printf("{\"api\":\"%s\", \"args\":[\"%S\", %llu, %llu], \"retval\":%d, \"timestamp\":%lld, \"pid\":%d, \"ppid\":%d, \"tid\":%d, \"errno\":%d}\n",
         probefunc,
-        copyinstr(arg0), (unsigned long long)arg1, (unsigned long long)arg2,
+        arg0 != NULL ? copyinstr(arg0) : "<NULL>", (unsigned long long)arg1, (unsigned long long)arg2,
         (int)this->retval,
         (int64_t)this->timestamp_ms, pid, ppid, tid, errno);
 }

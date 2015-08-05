@@ -120,7 +120,11 @@ def _args_format_string(args):
 def _arguments_section(args):
     parts = []
     for idx, item in enumerate(args):
-        parts.append("%s(self->arg%d)," % (_c_cast_for_type(item["type"]), idx))
+        if item["type"] == "string":
+            # Verify that the pointer is valid before dereferencing
+            parts.append("self->arg%d != NULL ? copyinstr(self->arg%d) : \"<NULL>\"," % (idx, idx))
+        else:
+            parts.append("%s(self->arg%d)," % (_c_cast_for_type(item["type"]), idx))
     return ("\n\t\t" + " ".join(parts)) if len(parts) > 0 else ""
 
 
