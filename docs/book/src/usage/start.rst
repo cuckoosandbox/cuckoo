@@ -35,7 +35,7 @@ Now Cuckoo is ready to run and it's waiting for submissions.
 ``cuckoo.py`` accepts some command line options as shown by the help::
 
     usage: cuckoo.py [-h] [-q] [-d] [-v] [-a] [-t] [-m MAX_ANALYSIS_COUNT]
-                     [--clean]
+                     [-u USER] [--clean]
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -46,6 +46,7 @@ Now Cuckoo is ready to run and it's waiting for submissions.
       -t, --test            Test startup
       -m MAX_ANALYSIS_COUNT, --max-analysis-count MAX_ANALYSIS_COUNT
                             Maximum number of analyses
+      -u USER, --user USER  Drop user privileges to this user
       --clean               Remove all tasks and samples and their associated data
 
 
