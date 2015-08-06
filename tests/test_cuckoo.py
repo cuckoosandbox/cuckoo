@@ -8,6 +8,7 @@ import json
 import unittest
 import platform
 import subprocess
+from time import sleep
 from os import path, symlink, listdir
 
 TESTS_DIR = path.dirname(path.abspath(__file__))
@@ -65,6 +66,7 @@ def cuckoo_analysis(target, options):
             raise Exception("Cuckoo analysis failed")
     line = read_cuckoo_output()
     while (not is_completion(line)) and (not is_error(line)):
+        sleep(1)
         line = read_cuckoo_output()
     # Now go to the results directory and parse all the data
     return latest_analysis_results()
@@ -123,6 +125,7 @@ class CuckooTests(unittest.TestCase):
         while isalive(cls.cuckoo):
             if "Waiting for analysis tasks" in cls.cuckoo.stderr.readline().rstrip():
                 break
+            sleep(1)
         # so if Cuckoo is dead at this moment, something bad has happend
         if not isalive(cls.cuckoo):
             raise Exception("Cuckoo failed to launch")
