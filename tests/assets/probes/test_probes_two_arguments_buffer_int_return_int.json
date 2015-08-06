@@ -1,0 +1,11 @@
+{
+    "foo": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name": "msg", "type": "buffer", "size_arg": "length"},
+            {"name": "length", "type": "integer"}
+        ],
+        "retval_type": "integer",
+        "category" : "foobar"
+    }
+}

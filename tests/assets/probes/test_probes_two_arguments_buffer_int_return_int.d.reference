@@ -1,0 +1,36 @@
+/* For some reason either dtrace or clang preprocessor refuses to identify standard
+ * C integer types like int64_t or uint8_t. Thus we must include stdint.h with the
+ * following patches.
+ */
+/* (1) fix sys/_types/_int8_t.h */
+#define __signed signed
+/* (2) cdefs.h throws "Unsupported compiler detected" warning, ignore it */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-W#warnings"
+#include <stdint.h>
+#pragma clang diagnostic pop
+
+
+pid$target::foo:entry
+{
+	self->deeplevel++;
+	self->arguments_stack[self->deeplevel, "arg0"] = self->arg0;
+	self->arg0 = arg0;
+	self->arguments_stack[self->deeplevel, "arg1"] = self->arg1;
+	self->arg1 = arg1;
+}
+pid$target::foo:return
+{
+	this->retval = arg1;
+	this->timestamp_ms = walltimestamp/1000000;
+	printf("{\"api\":\"%s\", \"args\":[\"%S\", %d], \"retval\":%d, \"timestamp\":%lld, \"pid\":%d, \"ppid\":%d, \"tid\":%d, \"errno\":%d}\n",
+		probefunc,
+		self->arg0 != NULL ? stringof(copyin(self->arg0, self->arg1)) : "<NULL>", (int)(self->arg1),
+		(int)(this->retval),
+		(int64_t)this->timestamp_ms, pid, ppid, tid, errno);
+	self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
+	self->arguments_stack[self->deeplevel, "arg0"] = 0;
+	self->arg1 = self->arguments_stack[self->deeplevel, "arg1"];
+	self->arguments_stack[self->deeplevel, "arg1"] = 0;
+	--self->deeplevel;
+}

@@ -206,5 +206,16 @@ class ProbesGeneratorTestCase(unittest.TestCase):
             _files_are_equal(self.result_file(), self.reference_file())
         )
 
+    def test_probes_two_arguments_buffer_int_return_int(self):
+        # given
+        source = self.definitions_file()
+        destination = self.result_file()
+        # when
+        generate_probes(source, destination)
+        # then
+        self.assertTrue(
+            _files_are_equal(self.result_file(), self.reference_file())
+        )
+
 def _files_are_equal(a, b):
     return filecmp.cmp(a, b)
