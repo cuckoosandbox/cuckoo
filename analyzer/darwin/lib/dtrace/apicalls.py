@@ -56,18 +56,14 @@ def _dtrace_command_line(target, **kwargs):
     cmd += ["-I./"]
     # Use -Z to allow probe descriptions that match zero probes in a target
     cmd += ["-Z"]
-    if "timeout" in kwargs:
-        cmd += ["-DANALYSIS_TIMEOUT=%d" % kwargs["timeout"]]
+    cmd += ["-DANALYSIS_TIMEOUT=%d" % kwargs.get("timeout", -1)]
     cmd += ["-s", path_for_script("apicalls.d")]
     cmd += ["-DTOPLEVELSCRIPT=1"]
     output_file = kwargs["output_file"]
     cmd += ["-o", output_file.name]
     cmd += ["-DOUTPUT_FILE=\"%s\"" % output_file.name]
 
-    if "run_as_root" in kwargs:
-        run_as_root = kwargs["run_as_root"]
-    else:
-        run_as_root = False
+    run_as_root = kwargs.get("run_as_root", False)
 
     if "args" in kwargs:
         target_cmd = "%s %s" % (sanitize_path(target), " ".join(kwargs["args"]))
