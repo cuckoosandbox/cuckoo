@@ -147,3 +147,15 @@ class CuckooTests(unittest.TestCase):
         results = cuckoo_analysis(target, options)
         # then
         self.assertTrue(1 == len([x for x in results["files"] if x.endswith("something.txt")]))
+
+    def test_cuckoo_parents_and_children(self):
+        # given
+        target = self.current_target()
+        options = {
+        }
+        # when
+        results = cuckoo_analysis(target, options)
+        # then
+        # We have a separate log file for each target: one for the parent process
+        # and one for the child
+        self.assertTrue(len(results["logs"]) == 2)
