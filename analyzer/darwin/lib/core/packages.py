@@ -95,7 +95,7 @@ class Package(object):
         if self.method == "apicalls":
             self.apicalls_analysis()
         else:
-            raise Exception("Unsupported analysis method")
+            raise Exception("Unsupported analysis method. Try `apicalls`.")
 
     def apicalls_analysis(self):
         kwargs = {
