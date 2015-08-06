@@ -18,4 +18,5 @@ script:
     - nosetests ./tests/test_analyzer.py
     - nosetests ./tests/test_packages.py
     - nosetests ./tests/test_probesgenerator.py
+    - nosetests ./tests/test_cuckoo.py
     - shellcheck ./scripts/*
