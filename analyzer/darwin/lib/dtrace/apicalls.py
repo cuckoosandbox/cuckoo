@@ -22,38 +22,8 @@ def apicalls(target, **kwargs):
         raise Exception("Invalid target for apicalls()")
 
     output_file = NamedTemporaryFile()
-
-    # dtrace must be run as root on OS X
-    cmd = ["sudo", "/usr/sbin/dtrace"]
-    # Use -C for running clang's C preprocessor over the script
-    cmd += ["-C"]
-    # Use -I for adding a current directory to the search path for #includes
-    cmd += ["-I./"]
-    # Use -Z to allow probe descriptions that match zero probes in a target
-    cmd += ["-Z"]
-    if "timeout" in kwargs:
-        cmd += ["-DANALYSIS_TIMEOUT=%d" % kwargs["timeout"]]
-    cmd += ["-s", path_for_script("apicalls.d")]
-    cmd += ["-DTOPLEVELSCRIPT=1"]
-    cmd += ["-o", output_file.name]
-    cmd += ["-DOUTPUT_FILE=\"%s\"" % output_file.name]
-
-    if "run_as_root" in kwargs:
-        run_as_root = kwargs["run_as_root"]
-    else:
-        run_as_root = False
-
-    if "args" in kwargs:
-        target_cmd = "%s %s" % (sanitize_path(target), " ".join(kwargs["args"]))
-    else:
-        target_cmd = sanitize_path(target)
-    # When we don't want to run the target as root, we have to drop privileges
-    # with `sudo -u current_user` right before calling the target.
-    if not run_as_root:
-        target_cmd = "sudo -u %s %s" % (getuser(), target_cmd)
-        cmd += ["-DSUDO=1"]
-
-    cmd += ["-c", target_cmd]
+    kwargs.update({"output_file" : output_file})
+    cmd = _dtrace_command_line(target, **kwargs)
 
     # Generate dtrace probes for analysis
     definitions = os.path.abspath(os.path.join(__file__, "../../core/data/apis.json"))
@@ -74,6 +44,41 @@ def apicalls(target, **kwargs):
         yield _parse_entry(value)
     output_file.close()
     os.remove(probes_file)
+
+
+def _dtrace_command_line(target, **kwargs):
+    # dtrace must be run as root on OS X
+    cmd = ["sudo", "/usr/sbin/dtrace"]
+    # Use -C for running clang's C preprocessor over the script
+    cmd += ["-C"]
+    # Use -I for adding a current directory to the search path for #includes
+    cmd += ["-I./"]
+    # Use -Z to allow probe descriptions that match zero probes in a target
+    cmd += ["-Z"]
+    if "timeout" in kwargs:
+        cmd += ["-DANALYSIS_TIMEOUT=%d" % kwargs["timeout"]]
+    cmd += ["-s", path_for_script("apicalls.d")]
+    cmd += ["-DTOPLEVELSCRIPT=1"]
+    output_file = kwargs["output_file"]
+    cmd += ["-o", output_file.name]
+    cmd += ["-DOUTPUT_FILE=\"%s\"" % output_file.name]
+
+    if "run_as_root" in kwargs:
+        run_as_root = kwargs["run_as_root"]
+    else:
+        run_as_root = False
+
+    if "args" in kwargs:
+        target_cmd = "%s %s" % (sanitize_path(target), " ".join(kwargs["args"]))
+    else:
+        target_cmd = sanitize_path(target)
+    # When we don't want to run the target as root, we have to drop privileges
+    # with `sudo -u current_user` right before calling the target.
+    if not run_as_root:
+        target_cmd = "sudo -u %s %s" % (getuser(), target_cmd)
+        cmd += ["-DSUDO=1"]
+    cmd += ["-c", target_cmd]
+    return cmd
 
 
 def _parse_entry(entry):
