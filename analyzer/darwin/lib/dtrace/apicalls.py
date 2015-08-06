@@ -5,12 +5,13 @@
 
 import os
 import json
-from common import *
 from getpass import getuser
 from subprocess import Popen
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
+
 from autoprobes import generate_probes
+from common import sanitize_path, path_for_script, filelines, current_directory
 
 apicall = namedtuple("apicall", "api args retval timestamp pid ppid tid errno")
 

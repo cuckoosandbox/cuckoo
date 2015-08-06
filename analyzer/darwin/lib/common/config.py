@@ -39,7 +39,7 @@ class Config:
             try:
                 # Split the options by comma.
                 fields = self.options.split(",")
-            except ValueError as e:
+            except ValueError:
                 pass
             else:
                 for field in fields:
@@ -49,7 +49,7 @@ class Config:
                         # command line argument), so we can't use the
                         # `key, value = field.split("=", 1)` style here
                         parts = field.split("=", 1)
-                    except ValueError as e:
+                    except ValueError:
                         pass
                     else:
                         key = parts[0].strip()

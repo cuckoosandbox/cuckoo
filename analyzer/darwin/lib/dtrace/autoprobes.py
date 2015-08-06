@@ -8,7 +8,7 @@ from os import path
 from json import load
 from string import Template
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 def generate_probes(source, output_path, overwrite=False):
     """ Generates dtrace pid-based probes at $output_path based definitions
@@ -20,7 +20,7 @@ def generate_probes(source, output_path, overwrite=False):
     if not overwrite and path.isfile(output_path):
         return # we already have our probes generated
     defs = _read_definitions(source)
-    probes = [HEADER] + map(_create_probe, defs)
+    probes = [HEADER] + [_create_probe(x) for x in defs]
     _save_probes(probes, output_path)
 
 # File IO
@@ -38,16 +38,16 @@ def _read_definitions(fromfile):
                 defs.append(dict({'name': key}, **value))
             return defs
     except IOError:
-        log.exception("Could not open apis.json file")
+        LOG.exception("Could not open apis.json file")
     except ValueError:
-        log.exception("apis.json contains invalid JSON")
+        LOG.exception("apis.json contains invalid JSON")
 
 def _save_probes(probes, tofile):
     try:
         with open(tofile, "w") as outfile:
             outfile.writelines(probes)
     except IOError:
-        log.exception("Could not open output file for writing")
+        LOG.exception("Could not open output file for writing")
 #
 # Generation
 #
@@ -113,8 +113,8 @@ def _pop_from_stack_section(args):
 
 
 def _args_format_string(args):
-    convertor = lambda x: _format_specifier_from_type(x["type"])
-    return ", ".join(map(convertor, args))
+    c_format_of = lambda x: _format_specifier_from_type(x["type"])
+    return ", ".join([c_format_of(x) for x in args])
 
 
 def _arguments_section(args):
@@ -129,9 +129,9 @@ def _arguments_section(args):
             # Use copyin() and stringof() for retriving an arbitatry buffer; thus
             # we need to know a place to look for it's size
             if "size_arg" not in item:
-                raise Exception("Missing `size_arg` key for argument \"%s\" of buffer type" % item["name"])
+                raise Exception("Missing `size_arg` key for buffer argument \"%s\"" % item["name"])
             size_arg_name = item["size_arg"]
-            size_arg_idx = [i for i,x in enumerate(args) if x["name"] == size_arg_name][0]
+            size_arg_idx = [i for i, x in enumerate(args) if x["name"] == size_arg_name][0]
             #
             cmd = "stringof(copyin(self->arg%d, self->arg%d))" % (idx, size_arg_idx)
             parts.append("self->arg%d != NULL ? %s : \"<NULL>\"," % (idx, cmd))
@@ -199,7 +199,7 @@ RETURN_PROBE_TEMPLATE = """pid$$target:${__LIBRARY__}:${__NAME__}:return
 \t\t(int64_t)this->timestamp_ms, pid, ppid, tid, errno);${__ARGUMENTS_POP_FROM_STACK}
 }\n"""
 
-HEADER="""/* For some reason either dtrace or clang preprocessor refuses to identify standard
+HEADER = """/* For some reason either dtrace or clang preprocessor refuses to identify standard
  * C integer types like int64_t or uint8_t. Thus we must include stdint.h with the
  * following patches.
  */
