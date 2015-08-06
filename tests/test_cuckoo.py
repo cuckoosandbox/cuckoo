@@ -72,11 +72,15 @@ def cuckoo_analysis(target, options):
     return latest_analysis_results()
 
 def build_target(target_name):
-    if platform.system() != "Darwin" and not path.exists(target_name):
-        raise Exception("Unable to build an OS X target on non-darwin machine")
-    source = target_name + ".c"
-    output = target_name
-    subprocess.check_call(["clang", "-arch", "x86_64", "-O0", "-o", output, source])
+    # Try to build a target when on OS X
+    if platform.system() == "Darwin":
+        source = target_name + ".c"
+        output = target_name
+        subprocess.check_call(["clang", "-arch", "x86_64", "-O0", "-o", output, source])
+    # Or try to use the pre-built one otherwise
+    elif not path.exists(target_name):
+        raise Exception("Unable to build OS X targets on non-darwin machine")
+
 
 @unittest.skipUnless(path.exists(cuckoo_root()), "Unable to locate Cuckoo")
 class CuckooTests(unittest.TestCase):
