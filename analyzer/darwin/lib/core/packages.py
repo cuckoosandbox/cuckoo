@@ -72,28 +72,15 @@ class Package(object):
         self.host = host
         self.target = target
         # Any analysis options?
-        if "options" in kwargs:
-            self.options = kwargs["options"]
-        else:
-            self.options = {}
+        self.options = kwargs.get("options", {})
         # A timeout for analysis
-        if "timeout" in kwargs:
-            self.timeout = kwargs["timeout"]
+        self.timeout = kwargs.get("timeout", None)
         # Command-line arguments for the target.
-        if "args" in self.options:
-            self.args = self.options["args"]
-        else:
-            self.args = []
-        # Choose an analysis method
-        if "method" in self.options:
-            self.method = self.options["method"]
-        else:  # fallback
-            self.method = "apicalls"
+        self.args = self.options.get("args", [])
+        # Choose an analysis method (or fallback to apicalls)
+        self.method = self.options.get("method", "apicalls")
         # Should our target be launched as root or not
-        if "run_as_root" in self.options:
-            self.run_as_root = _string_to_bool(self.options["run_as_root"])
-        else:
-            self.run_as_root = False
+        self.run_as_root = _string_to_bool(self.options.get("run_as_root", "False"))
 
     def prepare(self):
         """ Preparation routine. Do anything you want here. """
