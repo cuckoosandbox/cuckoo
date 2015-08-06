@@ -105,7 +105,7 @@ class CuckooTests(unittest.TestCase):
         return path.join(TESTS_DIR, "assets", self._testMethodName)
 
     def setUp(self):
-        # We don't delete compiled targets after tests, so they can be reused
+        # We won't delete compiled targets after tests, so they can be reused
         # on platforms other than OS X (cross compilation is a hell of work, you know)
         build_target(self.current_target())
 
