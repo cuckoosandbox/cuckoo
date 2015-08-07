@@ -103,6 +103,7 @@ $ cd ./cuckoo-osx-analyzer
 $ sudo -H pip install -r requirements-dev.txt
 $ nosetests
 ```
+See also: [`.travis.yml`](https://github.com/rodionovd/cuckoo-osx-analyzer/blob/master/.travis.yml) and [Travis CI project](https://travis-ci.org/rodionovd/cuckoo-osx-analyzer).
 
 -----
 
