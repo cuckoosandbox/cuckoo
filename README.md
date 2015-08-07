@@ -90,10 +90,6 @@ $ ./utils/submit.py --platform darwin ~/bin/sample
 ### Adding custom API signatures
 You can add, modify or delete API signatures in [`apis.json`](https://github.com/rodionovd/cuckoo-osx-analyzer/blob/master/analyzer/darwin/lib/core/data/apis.json) file. See the builtin examples for details on the format.
 
-### Roadmap, bugs and whatnot  
-
-Please, look into the Issues and PRs of this repo.
-
 ### Tests
 
 You can run the test suite with `nose`:  
@@ -111,6 +107,12 @@ cuckoo cuckoo-osx-analyzer
 ```
 
 See also: [`.travis.yml`](https://github.com/rodionovd/cuckoo-osx-analyzer/blob/master/.travis.yml) and [Travis CI project](https://travis-ci.org/rodionovd/cuckoo-osx-analyzer).
+
+
+### Roadmap, issues and reports  
+
+See my [weekly reports](https://github.com/rodionovd/cuckoo-osx-analyzer/wiki/GSoC-weekly-reports) and [Issues](https://github.com/rodionovd/cuckoo-osx-analyzer/issues).
+
 
 -----
 
