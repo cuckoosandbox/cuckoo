@@ -14,9 +14,8 @@ def choose_package_class(file_type, file_name, suggestion=None):
         name = suggestion
     else:
         name = _guess_package_name(file_type, file_name)
-
-    if not name:
-        return None
+        if not name:
+            return None
 
     full_name = "modules.packages.%s" % name
     try:
@@ -106,21 +105,24 @@ class Package(object):
         for call in apicalls(self.target, **kwargs):
             # Send this API to Cuckoo host
             self.host.send_api(call)
-
-            def makeabs(filepath):
-                # Is it a relative path? Suppose it's relative to our dtrace working directory
-                if not path.isfile(filepath):
-                    filepath = path.join(path.dirname(__file__), "..", "dtrace", filepath)
-                return filepath
             # Handle file IO APIs
-            if call.api in ["fopen", "freopen", "open"]:
-                self.open_file(makeabs(call.args[0]))
-            if call.api in ["rename"]:
-                self.move_file(makeabs(call.args[0]), makeabs(call.args[1]))
-            if call.api in ["copyfile"]:
-                self.copy_file(makeabs(call.args[0]), makeabs(call.args[1]))
-            if call.api in ["remove", "unlink"]:
-                self.remove_file(makeabs(call.args[0]))
+            self.handle_files(call)
+
+    def handle_files(self, call):
+        """ Remember what files our target has been working with during the analysis"""
+        def makeabs(filepath):
+            # Is it a relative path? Suppose it's relative to our dtrace working directory
+            if not path.isfile(filepath):
+                filepath = path.join(path.dirname(__file__), "..", "dtrace", filepath)
+            return filepath
+        if call.api in ["fopen", "freopen", "open"]:
+            self.open_file(makeabs(call.args[0]))
+        if call.api in ["rename"]:
+            self.move_file(makeabs(call.args[0]), makeabs(call.args[1]))
+        if call.api in ["copyfile"]:
+            self.copy_file(makeabs(call.args[0]), makeabs(call.args[1]))
+        if call.api in ["remove", "unlink"]:
+            self.remove_file(makeabs(call.args[0]))
 
     def open_file(self, filepath):
         self.touched_files.add(filepath)
