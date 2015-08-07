@@ -132,7 +132,7 @@ class CuckooTests(unittest.TestCase):
             sleep(1)
         # so if Cuckoo is dead at this moment, something bad has happend
         if not isalive(cls.cuckoo):
-            raise Exception("Cuckoo failed to launch")
+            raise Exception("Cuckoo failed to launch. Try scripts/bootstrap_host.sh")
 
     @classmethod
     def terminate_cuckoo(cls):
