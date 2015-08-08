@@ -172,7 +172,7 @@ PRINTF_FORMATS = {
     "int32_t" : "%d",
     "int16_t" : "%d",
     "int8_t"  : "%d",
-    "size_t"  : "%zu"
+    "size_t"  : "%lu"
 }
 
 C_CASTS = {
