@@ -124,7 +124,7 @@ def _arguments_section(args):
             # dtrace strings need to be copied into userland with copyinstr() first,
             # so we use this function instead of casting. Also, verify that the
             # pointer is valid before dereferencing
-            parts.append("self->arg%d != NULL ? copyinstr(self->arg%d) : \"<NULL>\"," % (idx, idx))
+            parts.append("self->arg%d != (int64_t)NULL ? copyinstr(self->arg%d) : \"<NULL>\"," % (idx, idx))
         elif item["type"] == "buffer":
             # Use copyin() and stringof() for retriving an arbitatry buffer; thus
             # we need to know a place to look for it's size
@@ -134,7 +134,7 @@ def _arguments_section(args):
             size_arg_idx = [i for i, x in enumerate(args) if x["name"] == size_arg_name][0]
             #
             cmd = "stringof(copyin(self->arg%d, self->arg%d))" % (idx, size_arg_idx)
-            parts.append("self->arg%d != NULL ? %s : \"<NULL>\"," % (idx, cmd))
+            parts.append("self->arg%d != (int64_t)NULL ? %s : \"<NULL>\"," % (idx, cmd))
         else:
             parts.append("%s(self->arg%d)," % (_c_cast_for_type(item["type"]), idx))
     return ("\n\t\t" + " ".join(parts)) if len(parts) > 0 else ""
@@ -213,6 +213,7 @@ HEADER = """/* For some reason either dtrace or clang preprocessor refuses to id
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-W#warnings"
 #include <stdint.h>
+#include <stddef.h>
 #pragma clang diagnostic pop
 \n
 """
