@@ -8,6 +8,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-W#warnings"
 #include <stdint.h>
+#include <stddef.h>
 #pragma clang diagnostic pop
 
 
