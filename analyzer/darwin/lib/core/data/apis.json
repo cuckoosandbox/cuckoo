@@ -125,6 +125,27 @@
         "retval_type": "integer",
         "category" : "process"
     },
+    "send": {
+        "is_success_condition": "retval >= 0",
+        "args": [
+            {"name": "socket", "type": "int"},
+            {"name": "buffer", "type": "buffer", "size_arg": "length"},
+            {"name": "length", "type": "size_t"},
+            {"name":  "flags", "type": "int"}
+        ],
+        "retval_type": "size_t",
+        "category" : "network"
+    },
+    "socket": {
+        "is_success_condition": "retval > 0",
+        "args": [
+            {"name":   "domain", "type": "int"},
+            {"name":     "type", "type": "int"},
+            {"name": "protocol", "type": "int"}
+        ],
+        "retval_type": "int",
+        "category" : "network"
+    },
     "rb_isalpha": {
         "DO NOT REMOVE THIS DEFINITION. IT'S FOR TESTS": true,
         "is_success_condition": "retval != 0",
