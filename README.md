@@ -72,7 +72,7 @@ $ git clone https://github.com/rodionovd/cuckoo-osx-analyzer.git ~/cuckoo-osx-an
 # $ git clone git@github.com:rodionovd/cuckoo-osx-analyzer.git cuckoo-osx-analyzer
   ```
 
- 2. Symlink `analyzer/darwin` directory from this repository to your [Cuckoo Sandbox](https://github.com/cuckoobox/cuckoo/) copy:
+ 2. Symlink `analyzer/darwin` directory from this repository to your own copy of [Cuckoo Sandbox](https://github.com/cuckoobox/cuckoo/):
 
   ```shell
 $ cd /path/to/cuckoo/sandbox/
