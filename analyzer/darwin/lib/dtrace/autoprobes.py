@@ -160,6 +160,7 @@ PRINTF_FORMATS = {
     # %S will print everything, not just ASCII, so we use it for buffers too
     "buffer"  : "\\\"%S\\\"",
     "integer" : "%d",
+    "int"     : "%d",
     "float"   : "%f",
     "double"  : "%lf",
     "char"    : "\\\"%c\\\"",
@@ -170,7 +171,8 @@ PRINTF_FORMATS = {
     "int64_t" : "%lld",
     "int32_t" : "%d",
     "int16_t" : "%d",
-    "int8_t"  : "%d"
+    "int8_t"  : "%d",
+    "size_t"  : "%zu"
 }
 
 C_CASTS = {
@@ -179,9 +181,11 @@ C_CASTS = {
     # so we use this function instead of casting
     "string"  : "copyinstr",
     "integer" : "(int)",
+    "int"     : "(int)",
     "float"   : "(float)",
     "double"  : "(double)",
-    "char"    : "(char)"
+    "char"    : "(char)",
+    "size_t"  : "(size_t)"
 }
 # Templates
 ENTRY_PROBE_TEMPLATE = """pid$$target:${__LIBRARY__}:${__NAME__}:entry
