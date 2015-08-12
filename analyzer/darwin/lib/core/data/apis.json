@@ -1,4 +1,4 @@
-{"argtype"
+{
     "system": {
         "is_success_condition": "retval == 0",
         "args": [
