@@ -24,31 +24,30 @@ def generate_probes2(definitions_path, output_path, overwrite=True):
 
 # FILE IO
 
-def read_definitions(infile):
-    """ TBD """
+def read_definitions(fromfile):
+    """ Read API signatures from a file. """
     with open(fromfile, "r") as stream:
         contents = json.load(stream)
         # Now convert the root dictionary to an array of dictionaries where
         # original keys become values for the "name" key.
-        defs = []
-        for key, value in contents.iteritems():
-            defs.append(dict({'name': key}, **value))
-        return defs
+        # FIXME(rodionvod): yes, I know, it should be an array..
+        return [dict({'name': k}, **v) for k, v in contents.iteritems()]
 
 def read_types(infile):
-    """ TBD """
+    """ Reads types definitions from a file. """
     with open(infile, "r") as stream:
         return yaml.safe_load(stream)
 
 def dump_probes(probes, tofile):
-    """ TBD """
+    """ Writes the given list of dtrace probes to a file. If the file
+    already exists, it's truncated."""
     with open(tofile, "w") as stream:
         stream.writelines(probes)
 
 # GENERATION
 
 def probe_from_definition(definition):
-    """ TBD """
+    """ Maps the given API definition to an actual dtrace probe(s). """
     if definition.get('__ignore__', False):
         return ""
     # We only need entry probes to save arguments
@@ -60,7 +59,7 @@ def probe_from_definition(definition):
         return entry_probe + return_probe
 
 def entry_probe_from_definition(df):
-    """ TBD """
+    """ Generates an entry dtrace probe from the given API definition. """
     template = Template(ENTRY_PROBE_TEMPLATE)
     mapping = {
         "__LIBRARY__": df.get("library", ""),
@@ -70,7 +69,7 @@ def entry_probe_from_definition(df):
     return template.substitute(mapping)
 
 def return_probe_from_definition(df):
-    """ TBD """
+    """ Generates a return dtrace probe from the given API definition. """
     args = df["args"]
     retval_type = df["retval_type"]
     printf_specifier = type_description(retval_type)["printf_specifier"]
@@ -183,15 +182,18 @@ def serialize_atomic_type(argtype, accessor):
         t = (accessor, real_type, real_type, real_type, accessor, real_type)
         return "%s == (%s)NULL ? (%s)NULL : *(%s *)copyin(%s, sizeof(%s))," % t
 
-def serialize_struct_type(struct_type, struct_accessor):
+def serialize_struct_type(struct_type, accessor):
     """ Returns a serialization statement for the given structure type. """
     fields = []
-    # FIXME: these lines is very long
-    memeber_operator = "." if struct_type == dereference_type(struct_type) else "->"
-    for (field_name, field_type) in type_description(struct_type)["struct"].iteritems():
+    if struct_type == dereference_type(struct_type):
+        memeber_operator = "."
+    else:
+        memeber_operator = "->"
+    structure = type_description(struct_type)["struct"]
+    for (field_name, field_type) in structure.iteritems():
         fields.append(serialize_type(
             field_type,
-            "(" + struct_type + ")(" + struct_accessor + ")" + memeber_operator + field_name
+            "(%s)(%s)" % (struct_type, accessor) + memeber_operator + field_name
         ))
     return " ".join(fields)
 
@@ -248,6 +250,8 @@ print serialize_struct_type("foo_t", "self->arg0")
 # -----------------------------------------------------------------------
 
 def push_on_stack_section(args):
+    """ Composes a "push arguments on stack" section of
+    an entry PID dtrace probe. """
     if len(args) == 0:
         return ""
     parts = ["self->deeplevel++;"]
@@ -259,6 +263,8 @@ def push_on_stack_section(args):
 
 
 def pop_from_stack_section(args):
+    """ Composes a "pop arguments from stack" section of
+    a return PID dtrace probe. """
     if len(args) == 0:
         return ""
     parts = []
