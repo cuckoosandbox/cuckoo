@@ -101,7 +101,7 @@ def arguments_format_string(args):
     """ TBD """
     if len(args) == 0:
         return ""
-    parts = [printf_format_string_for_type(x["argtype"]) for x in args]
+    parts = [printf_format_for_type(x["argtype"]) for x in args]
     return ", ".join(parts)
   
 def retval_section(retval_type):
@@ -110,24 +110,25 @@ def retval_section(retval_type):
     
 # -------------------------------
 
-def printf_format_string_for_type(type):
+def printf_format_for_type(type):
     """ TBD """
     description = type_description(type)
     if "struct" not in description:
         format = description["printf_specifier"]
     else:
-        format = printf_format_string_for_struct(description)
+        format = printf_format_for_struct(type)
     return format.replace("\"", "\\\"")
 
-def printf_format_string_for_struct(description):
+def printf_format_for_struct(type):
+    """ TBD """
     fields = []
-    for (name, argtype) in description["struct"].items():
+    for (name, argtype) in type_description(type)["struct"].items():
         field_description = type_description(argtype)
         if "printf_specifier" in field_description:
             fields.append("\""+name +"\"" + " : " + field_description["printf_specifier"])
         else:
             # Yay, recursion!
-            struct_format = printf_format_string_for_struct(field_description)
+            struct_format = printf_format_for_struct(argtype)
             fields.append("\""+name +"\"" + " : " + struct_format)
     return "{%s}" % ", ".join(fields)
 
@@ -198,11 +199,11 @@ k = [
 
 TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/types.yml')  
 
-print printf_format_string_for_type("string")
-print printf_format_string_for_type("char *")
-print printf_format_string_for_type("float *")
-print printf_format_string_for_type("void *")
-print printf_format_string_for_type("pointer")
+print printf_format_for_type("string")
+print printf_format_for_type("char *")
+print printf_format_for_type("float *")
+print printf_format_for_type("void *")
+print printf_format_for_type("pointer")
 
 
 print "["+arguments_format_string(k)+"]"
