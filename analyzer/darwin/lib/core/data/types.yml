@@ -109,8 +109,15 @@ foo_t:
     native: No
     struct:
          hash: "int"
-         base: "float"
+         base: "kkk_t *"
          description: "string"
+        
+kkk_t:
+    native: No
+    struct:
+        abc: "double *"
+        hfa: "size_t"
+        sss: "string"
 
 bar_t:
     native: No

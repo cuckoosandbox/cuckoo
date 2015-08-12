@@ -20,7 +20,7 @@ def generate_probes2(definitions_path, output_path, overwrite=True):
 # FILE IO
 
 def read_definitions(infile):
-    """ """
+    """ TBD """
     with open(fromfile, "r") as stream:
         contents = json.load(stream)
         # Now convert the root dictionary to an array of dictionaries where
@@ -31,19 +31,19 @@ def read_definitions(infile):
         return defs
     
 def read_types(infile):
-    """ """
+    """ TBD """
     with open(infile, "r") as stream:
         return yaml.safe_load(stream)
     
 def dump_probes(probes, tofile):
-    """ """
+    """ TBD """
     with open(tofile, "w") as stream:
         stream.writelines(probes)
 
 # GENERATION
     
 def probe_from_definition(definition, types):
-    """ """
+    """ TBD """
     if definition.get('__ignore__', False):
         return ""
     # We only need entry probes to save arguments
@@ -55,7 +55,7 @@ def probe_from_definition(definition, types):
         return entry_probe + return_probe
     
 def entry_probe_from_definition(df):
-    """ """
+    """ TBD """
     template = Template(ENTRY_PROBE_TEMPLATE)
     mapping = {
         "__LIBRARY__": df.get("library", ""),
@@ -65,7 +65,7 @@ def entry_probe_from_definition(df):
     return template.substitute(mapping)
     
 def return_probe_from_definition(df, types):
-    """ """
+    """ TBD """
     args = df["args"]
     retval_type = df["retval_type"]
     
@@ -84,46 +84,50 @@ def return_probe_from_definition(df, types):
 # -----------------------------------------------------------------------
 
 def arguments_section(args, types):
-    """ """
+    """ TBD """
     if len(args) == 0:
         return ""
-    parts = [serialize_argument_at_idx(i, args, types, "self->arg%d" % i) for i in xrange(len(args))]
+    def serialize_arg(idx):
+        serialize_argument_at_idx(idx, args, types, "self->arg%d" % idx)
+    parts = [serialize_arg(i) for i in xrange(len(args))]
     return ("\n\t\t" + " ".join(parts)) 
     
 def arguments_format_string(args, types):
-    """ """
+    """ TBD """
     if len(args) == 0:
         return ""
     parts = [printf_format_string_for_type(x["argtype"], types) for x in args]
     return ", ".join(parts)
   
 def retval_section(retval_type, types):
-    """ """
-    # TODO(rodionovd): verify that (int64_t) is an appropriate cast for this->retval
+    """ TBD """
     return serialize_type(retval_type, types, "this->retval")  
     
 # -------------------------------
 
 def printf_format_string_for_type(type, all_types):
-    """ """
+    """ TBD """
     description = type_description(type, all_types)
     if "struct" not in description:
-        return description["printf_specifier"].replace("\"", "\\\"")
+        format = description["printf_specifier"]
     else:
-        return printf_format_string_for_struct(description, types).replace("\"", "\\\"")
+        format = printf_format_string_for_struct(description, types)
+    return format.replace("\"", "\\\"")
 
 def printf_format_string_for_struct(description, types):
     fields = []
     for (name, argtype) in description["struct"].items():
         field_description = type_description(argtype, types)
-        if "struct" in field_description:
-            fields.append(name + " => " + printf_format_string_for_struct(field_description, types))
+        if "printf_specifier" in field_description:
+            fields.append("\""+name +"\"" + " : " + field_description["printf_specifier"])
         else:
-            fields.append(name + " => " + field_description["printf_specifier"])
+            # Yay, recursion!
+            struct_format = printf_format_string_for_struct(field_description, types)
+            fields.append("\""+name +"\"" + " : " + struct_format)
     return "{%s}" % ", ".join(fields)
 
 def serialize_argument_at_idx(idx, all_args, types, accessor):
-    """ """
+    """ TBD """
     arg = all_args[idx]
     type_name = arg["argtype"]
     if "template" in type_description(type_name, types):
@@ -132,33 +136,36 @@ def serialize_argument_at_idx(idx, all_args, types, accessor):
         return serialize_type(type_name, types, accessor)
         
 def serialize_type(name, types, accessor):
-    """ """
+    """ TBD """
+    name = name.strip()
     description = type_description(name, types)
     if "struct" in description:
+        # TODO(rodionovd): add support for struct arguments
         raise Exception("Not implemented yet")
     else:
         return serialize_atomic_type(name, accessor)
 
-def serialize_atomic_type(oftype, accessor):
-    """ """
-    oftype = oftype.strip()
+def serialize_atomic_type(argtype, accessor):
+    """ TBD """
     # Do we need to dereference this argument and copy it to the userspace?
-    if dereference_type(oftype) == oftype:
+    if dereference_type(argtype) == argtype:
         # Nope: it's a value type
-        return "(%s)(%s)," % (oftype, accessor)
+        return "(%s)(%s)," % (argtype, accessor)
     else:
         # Yep: it's a reference type
-        real_type = dereference_type(oftype)
+        real_type = dereference_type(argtype)
         t = (accessor, real_type, real_type, real_type, accessor, real_type)
         return "%s == (%s)NULL ? (%s)NULL : *(%s *)copyin(%s, sizeof(%s))," % t
        
 def serialize_template(oftype, types, accessor=""):
-    """ """
+    """ TBD """
     description = type_description(oftype, types)
     template = Template(description["template"])
     mapping = {"ARG" : accessor}
     # TODO(rodionovd): add support for buffers (ARG_SIZE)
     return template.substitute(mapping) + ","
+    
+# -------------------------------        
         
 def dereference_type(type):
     """ Removes everything after the last star character in a type string,
@@ -171,7 +178,7 @@ def dereference_type(type):
         return type.strip()
     
 def type_description(name, types):
-    """ """
+    """ TBD """
     return types[dereference_type(name)]
     
   
@@ -193,7 +200,7 @@ print printf_format_string_for_type("void *", types)
 print printf_format_string_for_type("pointer", types)
 
 
-print arguments_format_string(k, types)
+print "["+arguments_format_string(k, types)+"]"
 
 # -----------------------------------------------------------------------
 
