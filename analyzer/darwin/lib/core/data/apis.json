@@ -1,8 +1,8 @@
-{
+{"argtype"
     "system": {
         "is_success_condition": "retval == 0",
         "args": [
-            {"name": "command", "type": "string"}
+            {"name": "command", "argtype": "string"}
         ],
         "retval_type": "integer",
         "category" : "foobar"
@@ -10,7 +10,7 @@
     "printf": {
         "is_success_condition": "retval > 0",
         "args": [
-            {"name": "format", "type": "string"}
+            {"name": "format", "argtype": "string"}
         ],
         "retval_type": "integer",
         "category" : "foobar"
@@ -18,8 +18,8 @@
     "dlopen": {
         "is_success_condition": "retval > 0",
         "args": [
-            {"name": "path", "type": "string"},
-            {"name": "mode", "type": "integer"}
+            {"name": "path", "argtype": "string"},
+            {"name": "mode", "argtype": "integer"}
         ],
         "retval_type": "pointer",
         "category" : "foobar",
@@ -28,8 +28,8 @@
     "dlsym": {
         "is_success_condition": "retval > 0",
         "args": [
-            {"name": "handle", "type": "pointer"},
-            {"name": "symbol", "type": "string"}
+            {"name": "handle", "argtype": "pointer"},
+            {"name": "symbol", "argtype": "string"}
         ],
         "retval_type": "pointer",
         "category" : "foobar",
@@ -38,8 +38,8 @@
     "fprintf": {
         "is_success_condition": "retval > 0",
         "args": [
-            {"name": "stream", "type": "pointer"},
-            {"name": "format", "type": "string"}
+            {"name": "stream", "argtype": "pointer"},
+            {"name": "format", "argtype": "string"}
         ],
         "retval_type": "integer",
         "category" : "foobar"
@@ -47,8 +47,8 @@
     "open": {
         "is_success_condition": "retval > 0",
         "args": [
-            {"name": "path",  "type": "string"},
-            {"name": "oflag", "type": "integer"}
+            {"name": "path",  "argtype": "string"},
+            {"name": "oflag", "argtype": "integer"}
         ],
         "retval_type": "integer",
         "category" : "file"
@@ -56,8 +56,8 @@
     "fopen": {
         "is_success_condition": "retval > 0",
         "args": [
-            {"name": "filename", "type": "string"},
-            {"name": "mode",     "type": "string"}
+            {"name": "filename", "argtype": "string"},
+            {"name": "mode",     "argtype": "string"}
         ],
         "retval_type": "pointer",
         "category" : "file"
@@ -65,9 +65,9 @@
     "freopen": {
         "is_success_condition": "retval > 0",
         "args": [
-            {"name": "filename", "type": "string"},
-            {"name": "mode",     "type": "string"},
-            {"name": "stream",   "type": "pointer"}
+            {"name": "filename", "argtype": "string"},
+            {"name": "mode",     "argtype": "string"},
+            {"name": "stream",   "argtype": "pointer"}
         ],
         "retval_type": "pointer",
         "category" : "file"
@@ -75,8 +75,8 @@
     "rename": {
         "is_success_condition": "retval == 0",
         "args": [
-            {"name": "old", "type": "string"},
-            {"name": "new", "type": "string"}
+            {"name": "old", "argtype": "string"},
+            {"name": "new", "argtype": "string"}
         ],
         "retval_type": "integer",
         "category" : "file"
@@ -84,10 +84,10 @@
     "copyfile": {
         "is_success_condition": "retval == 0",
         "args": [
-            {"name": "from", "type": "string"},
-            {"name": "to",   "type": "string"},
-            {"name": "state","type": "pointer"},
-            {"name": "flags","type": "uint32_t"}
+            {"name": "from", "argtype": "string"},
+            {"name": "to",   "argtype": "string"},
+            {"name": "state","argtype": "pointer"},
+            {"name": "flags","argtype": "uint32_t"}
         ],
         "retval_type": "integer",
         "category" : "file"
@@ -95,7 +95,7 @@
     "remove": {
         "is_success_condition": "retval == 0",
         "args": [
-            {"name": "path", "type": "string"}
+            {"name": "path", "argtype": "string"}
         ],
         "retval_type": "integer",
         "category" : "file"
@@ -103,7 +103,7 @@
     "unlink": {
         "is_success_condition": "retval == 0",
         "args": [
-            {"name": "path", "type": "string"}
+            {"name": "path", "argtype": "string"}
         ],
         "retval_type": "integer",
         "category" : "file"
@@ -111,9 +111,9 @@
     "execve": {
         "is_success_condition": "retval != -1",
         "args": [
-            {"name": "path", "type": "string"},
-            {"name": "argv", "type": "pointer"},
-            {"name": "envp", "type": "pointer"}
+            {"name": "path", "argtype": "string"},
+            {"name": "argv", "argtype": "pointer"},
+            {"name": "envp", "argtype": "pointer"}
         ],
         "retval_type": "integer",
         "category" : "process",
@@ -128,10 +128,10 @@
     "send": {
         "is_success_condition": "retval >= 0",
         "args": [
-            {"name": "socket", "type": "int"},
-            {"name": "buffer", "type": "buffer", "size_arg": "length"},
-            {"name": "length", "type": "size_t"},
-            {"name":  "flags", "type": "int"}
+            {"name": "socket", "argtype": "int"},
+            {"name": "buffer", "argtype": "buffer", "size_arg": "length"},
+            {"name": "length", "argtype": "size_t"},
+            {"name":  "flags", "argtype": "int"}
         ],
         "retval_type": "size_t",
         "category" : "network"
@@ -139,9 +139,9 @@
     "socket": {
         "is_success_condition": "retval > 0",
         "args": [
-            {"name":   "domain", "type": "int"},
-            {"name":     "type", "type": "int"},
-            {"name": "protocol", "type": "int"}
+            {"name":   "domain", "argtype": "int"},
+            {"name":     "type", "argtype": "int"},
+            {"name": "protocol", "argtype": "int"}
         ],
         "retval_type": "int",
         "category" : "network"
@@ -150,7 +150,7 @@
         "DO NOT REMOVE THIS DEFINITION. IT'S FOR TESTS": true,
         "is_success_condition": "retval != 0",
         "args": [
-            {"name": "character", "type": "char"}
+            {"name": "character", "argtype": "char"}
         ],
         "retval_type": "integer",
         "category" : "foobar"
@@ -159,7 +159,7 @@
         "DO NOT REMOVE THIS DEFINITION. IT'S FOR TESTS": true,
         "is_success_condition": "1==1",
         "args": [
-            {"name": "str", "type": "string"}
+            {"name": "str", "argtype": "string"}
         ],
         "retval_type": "integer",
         "category" : "foobar",
