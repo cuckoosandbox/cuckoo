@@ -21,7 +21,7 @@ def generate_probes2(definitions_path, output_path, overwrite=True):
     TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/config/types.yml')
     probes = [HEADER] + [probe_from_definition(x) for x in DEFS]
     return dump_probes(probes, output_path)
-    
+
 # FILE IO
 
 def read_definitions(infile):
@@ -34,19 +34,19 @@ def read_definitions(infile):
         for key, value in contents.iteritems():
             defs.append(dict({'name': key}, **value))
         return defs
-    
+
 def read_types(infile):
     """ TBD """
     with open(infile, "r") as stream:
         return yaml.safe_load(stream)
-    
+
 def dump_probes(probes, tofile):
     """ TBD """
     with open(tofile, "w") as stream:
         stream.writelines(probes)
 
 # GENERATION
-    
+
 def probe_from_definition(definition):
     """ TBD """
     if definition.get('__ignore__', False):
@@ -58,7 +58,7 @@ def probe_from_definition(definition):
         entry_probe  = entry_probe_from_definition(definition)
         return_probe = return_probe_from_definition(definition)
         return entry_probe + return_probe
-    
+
 def entry_probe_from_definition(df):
     """ TBD """
     template = Template(ENTRY_PROBE_TEMPLATE)
@@ -68,13 +68,13 @@ def entry_probe_from_definition(df):
         "__ARGUMENTS_PUSH_ON_STACK__": push_on_stack_section(df["args"])
     }
     return template.substitute(mapping)
-    
+
 def return_probe_from_definition(df):
     """ TBD """
     args = df["args"]
     retval_type = df["retval_type"]
     printf_specifier = type_description(retval_type)["printf_specifier"]
-    
+
     template = Template(RETURN_PROBE_TEMPLATE)
     mapping = {
         "__LIBRARY__": df.get("library", ""),
@@ -86,11 +86,11 @@ def return_probe_from_definition(df):
         "__ARGUMENTS_POP_FROM_STACK__"  : pop_from_stack_section(args)
     }
     return template.substitute(mapping)
-    
+
 def typedefs_for_custom_structs():
     """ Returns a list of typedef statements for custom structures
     defined in `types.yml`."""
-    struct_types = {k:v for (k, v) in TYPES.iteritems() if "struct" in v}    
+    struct_types = {k:v for (k, v) in TYPES.iteritems() if "struct" in v}
     typedefs = []
     for (name, description) in struct_types.iteritems():
         fields = []
@@ -110,8 +110,8 @@ def arguments_section(args):
     def serialize_arg(idx):
         serialize_argument_at_idx(idx, args, "self->arg%d" % idx)
     parts = [serialize_arg(i) for i in xrange(len(args))]
-    return ("\n\t\t" + " ".join(parts)) 
-    
+    return ("\n\t\t" + " ".join(parts))
+
 def arguments_format_string(args):
     """ Returns a format string for printing the given arguments
     with printf(). """
@@ -119,16 +119,17 @@ def arguments_format_string(args):
         return ""
     parts = [printf_format_for_type(x["argtype"]) for x in args]
     return ", ".join(parts)
-  
+
 def retval_section(retval_type):
     """ Returns a serialization stetement for a return value of
     the given type. """
-    return serialize_type(retval_type, "this->retval")  
-    
+    return serialize_type(retval_type, "this->retval")
+
 # -------------------------------
 
 def printf_format_for_type(type):
-    """ Returns a format string for printing the given type (either atomic or struct). """
+    """ Returns a format string for printing the given type
+    (either atomic or struct). """
     description = type_description(type)
     if "struct" not in description:
         format = description["printf_specifier"]
@@ -140,9 +141,9 @@ def printf_format_for_struct(type):
     """ Returns a format string for printing the given struct type. """
     fields = []
     for (name, argtype) in type_description(type)["struct"].items():
-        field_description = type_description(argtype)
-        if "printf_specifier" in field_description:
-            fields.append("\""+name +"\"" + " : " + field_description["printf_specifier"])
+        printf_specifier = type_description(argtype).get("printf_specifier", None)
+        if printf_specifier:
+            fields.append("\""+name +"\"" + " : " + printf_specifier)
         else:
             # Yay, recursion!
             struct_format = printf_format_for_struct(argtype)
@@ -158,7 +159,7 @@ def serialize_argument_at_idx(idx, all_args, accessor):
         return serialize_type_with_template(type_name, accessor)
     else:
         return serialize_type(type_name, accessor)
-        
+
 def serialize_type(name, accessor):
     """ Returns a serialization statement for the given type. """
     name = name.strip()
@@ -181,10 +182,11 @@ def serialize_atomic_type(argtype, accessor):
         real_type = dereference_type(argtype)
         t = (accessor, real_type, real_type, real_type, accessor, real_type)
         return "%s == (%s)NULL ? (%s)NULL : *(%s *)copyin(%s, sizeof(%s))," % t
-        
+
 def serialize_struct_type(struct_type, struct_accessor):
     """ Returns a serialization statement for the given structure type. """
     fields = []
+    # FIXME: these lines is very long
     memeber_operator = "." if struct_type == dereference_type(struct_type) else "->"
     for (field_name, field_type) in type_description(struct_type)["struct"].iteritems():
         fields.append(serialize_type(
@@ -192,7 +194,7 @@ def serialize_struct_type(struct_type, struct_accessor):
             "(" + struct_type + ")(" + struct_accessor + ")" + memeber_operator + field_name
         ))
     return " ".join(fields)
-       
+
 def serialize_type_with_template(oftype, accessor):
     """ Returns a serialization template for the given type
     with all placeholders replaced with the actual values. """
@@ -200,9 +202,9 @@ def serialize_type_with_template(oftype, accessor):
     mapping = {"ARG" : accessor}
     # TODO(rodionovd): add support for buffers (ARG_SIZE)
     return template.substitute(mapping) + ","
-    
-# -------------------------------        
-        
+
+# -------------------------------
+
 def dereference_type(type):
     """ Removes everything after the last star character in a type string,
     except for 'void *' and 'char *`. """
@@ -217,8 +219,8 @@ def type_description(name):
     """ Returns a dictionary description the given type. See `types.yml`
     for more information about keys and values there. """
     return TYPES[dereference_type(name)]
-    
-  
+
+
 # -----------------------------------------------------------------------
 
 k = [
@@ -226,9 +228,9 @@ k = [
     {"name":     "type", "argtype": "char*"},
     {"name":   "baaarr", "argtype": "void *"},
     {"name":   "asdas",  "argtype": "bar_t"},
-]    
+]
 
-TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/config/types.yml')  
+TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/config/types.yml')
 
 print printf_format_for_type("char*")
 print printf_format_for_type("char *")
@@ -250,9 +252,11 @@ def push_on_stack_section(args):
         return ""
     parts = ["self->deeplevel++;"]
     for idx in xrange(len(args)):
-        parts.append("""self->arguments_stack[self->deeplevel, \"arg%d\"] = self->arg%d;\tself->arg%d = arg%d;""" % (idx, idx, idx, idx))
+        parts.append(
+            """self->arguments_stack[self->deeplevel, \"arg%d\"] = self->arg%d;\tself->arg%d = arg%d;""" % (idx, idx, idx, idx)
+        )
     return "\n\t".join(parts)
-        
+
 
 def pop_from_stack_section(args):
     if len(args) == 0:
@@ -263,8 +267,8 @@ def pop_from_stack_section(args):
 \tself->arguments_stack[self->deeplevel, \"arg%d\"] = 0;""" % (idx, idx, idx))
     parts.append("--self->deeplevel;")
     return "\n\t" + "\n\t".join(parts)
-        
-    
+
+
 ENTRY_PROBE_TEMPLATE = """pid$$target:${__LIBRARY__}:${__NAME__}:entry
 {
 \t${__ARGUMENTS_PUSH_ON_STACK__}
