@@ -18,7 +18,7 @@ def generate_probes2(definitions_path, output_path, overwrite=True):
     if not overwrite and path.isfile(output_path):
         pass
     DEFS  = read_definitions('apis.json')
-    TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/types.yml')
+    TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/config/types.yml')
     probes = [HEADER] + [probe_from_definition(x) for x in DEFS]
     return dump_probes(probes, output_path)
     
@@ -155,25 +155,22 @@ def serialize_argument_at_idx(idx, all_args, accessor):
     arg = all_args[idx]
     type_name = arg["argtype"]
     if "template" in type_description(type_name):
-        return serialize_template(type_name, accessor)
+        return serialize_type_with_template(type_name, accessor)
     else:
         return serialize_type(type_name, accessor)
         
 def serialize_type(name, accessor):
-    """ Returns a serialization statement for the given type.
-    NOTE: only atomic values are supported.
-    """
+    """ Returns a serialization statement for the given type. """
     name = name.strip()
     description = type_description(name)
     if "struct" in description:
-        # TODO(rodionovd): add support for struct arguments
-        raise Exception("Complex types not supported yet")
+        return serialize_struct_type(name, accessor)
     else:
         return serialize_atomic_type(name, accessor)
 
 def serialize_atomic_type(argtype, accessor):
     """ Returns a serialization statement for the given atomic type.
-    In case of pointers, values they're referencing to will be used instead
+    In case of pointers, values they're referencing will be used instead
     (see `dereference_type()` for exceptions). """
     # Do we need to dereference this argument and copy it to the userspace?
     if dereference_type(argtype) == argtype:
@@ -184,12 +181,22 @@ def serialize_atomic_type(argtype, accessor):
         real_type = dereference_type(argtype)
         t = (accessor, real_type, real_type, real_type, accessor, real_type)
         return "%s == (%s)NULL ? (%s)NULL : *(%s *)copyin(%s, sizeof(%s))," % t
+        
+def serialize_struct_type(struct_type, struct_accessor):
+    """ Returns a serialization statement for the given structure type. """
+    fields = []
+    memeber_operator = "." if struct_type == dereference_type(struct_type) else "->"
+    for (field_name, field_type) in type_description(struct_type)["struct"].iteritems():
+        fields.append(serialize_type(
+            field_type,
+            "(" + struct_type + ")(" + struct_accessor + ")" + memeber_operator + field_name
+        ))
+    return " ".join(fields)
        
-def serialize_template(oftype, accessor):
+def serialize_type_with_template(oftype, accessor):
     """ Returns a serialization template for the given type
     with all placeholders replaced with the actual values. """
-    description = type_description(oftype)
-    template = Template(description["template"])
+    template = Template(type_description(oftype)["template"])
     mapping = {"ARG" : accessor}
     # TODO(rodionovd): add support for buffers (ARG_SIZE)
     return template.substitute(mapping) + ","
@@ -205,7 +212,7 @@ def dereference_type(type):
         return type[:type.rindex("*")].strip()
     except:
         return type.strip()
-    
+
 def type_description(name):
     """ Returns a dictionary description the given type. See `types.yml`
     for more information about keys and values there. """
@@ -221,7 +228,7 @@ k = [
     {"name":   "asdas",  "argtype": "bar_t"},
 ]    
 
-TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/types.yml')  
+TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/config/types.yml')  
 
 print printf_format_for_type("char*")
 print printf_format_for_type("char *")
@@ -234,6 +241,8 @@ print "["+arguments_format_string(k)+"]"
 print "-----------------------------"
 
 print typedefs_for_custom_structs()
+
+print serialize_struct_type("foo_t", "self->arg0")
 # -----------------------------------------------------------------------
 
 def push_on_stack_section(args):
