@@ -42,7 +42,6 @@ double: &double
 # Raw pointers: just dump their values (in *decimal* since dtrace will output
 # JSON that doesn't accept hex values)
 #
-pointer:  *unsigned-long-long
 "void *": *unsigned-long-long
 #
 # Strings
@@ -52,8 +51,6 @@ pointer:  *unsigned-long-long
     native: No
     template: |-
         ${ARG} != (int64_t)NULL ? copyinstr(${ARG}) : "<NULL>"
-
-string: *char-pointer
 #
 # Arbitrary buffers
 #
@@ -110,14 +107,14 @@ foo_t:
     struct:
          hash: "int"
          base: "kkk_t *"
-         description: "string"
+         description: "char *"
         
 kkk_t:
     native: No
     struct:
         abc: "double *"
         hfa: "size_t"
-        sss: "string"
+        sss: "char *"
 
 bar_t:
     native: No

@@ -86,6 +86,15 @@ def return_probe_from_definition(df):
     }
     return template.substitute(mapping)
     
+def typedefs_for_custom_structs():
+    struct_types = {k:v for (k,v) in TYPES.iteritems() if "struct" in v}    
+    typedefs = []
+    for (name, description) in struct_types.iteritems():
+        fields = []
+        for (f,t) in description["struct"].iteritems():
+            fields.append("%s %s" % (t, f))
+        typedefs.append("typedef struct {\n\t%s\n} %s;" % (",\n\t".join(fields), name))
+    return "\n\n".join(typedefs)
 # -----------------------------------------------------------------------
 
 def arguments_section(args):
@@ -111,7 +120,7 @@ def retval_section(retval_type):
 # -------------------------------
 
 def printf_format_for_type(type):
-    """ TBD """
+    """ Returns a format string for printing the given type (either atomic or struct). """
     description = type_description(type)
     if "struct" not in description:
         format = description["printf_specifier"]
@@ -120,7 +129,7 @@ def printf_format_for_type(type):
     return format.replace("\"", "\\\"")
 
 def printf_format_for_struct(type):
-    """ TBD """
+    """ Returns a format string for printing the given struct type. """
     fields = []
     for (name, argtype) in type_description(type)["struct"].items():
         field_description = type_description(argtype)
@@ -133,7 +142,8 @@ def printf_format_for_struct(type):
     return "{%s}" % ", ".join(fields)
 
 def serialize_argument_at_idx(idx, all_args, accessor):
-    """ TBD """
+    """ For an argument at the given index, returns a serialization
+    statement for reading it's value. """
     arg = all_args[idx]
     type_name = arg["argtype"]
     if "template" in type_description(type_name):
@@ -142,17 +152,21 @@ def serialize_argument_at_idx(idx, all_args, accessor):
         return serialize_type(type_name, accessor)
         
 def serialize_type(name, accessor):
-    """ TBD """
+    """ Returns a serialization statement for the given type.
+    NOTE: only atomic values are supported.
+    """
     name = name.strip()
     description = type_description(name)
     if "struct" in description:
         # TODO(rodionovd): add support for struct arguments
-        raise Exception("Not implemented yet")
+        raise Exception("Complex types not supported yet")
     else:
         return serialize_atomic_type(name, accessor)
 
 def serialize_atomic_type(argtype, accessor):
-    """ TBD """
+    """ Returns a serialization statement for the given atomic type.
+    In case of pointers, values they're referencing to will be used instead
+    (see `dereference_type()` for exceptions). """
     # Do we need to dereference this argument and copy it to the userspace?
     if dereference_type(argtype) == argtype:
         # Nope: it's a value type
@@ -163,8 +177,9 @@ def serialize_atomic_type(argtype, accessor):
         t = (accessor, real_type, real_type, real_type, accessor, real_type)
         return "%s == (%s)NULL ? (%s)NULL : *(%s *)copyin(%s, sizeof(%s))," % t
        
-def serialize_template(oftype, accessor=""):
-    """ TBD """
+def serialize_template(oftype, accessor):
+    """ Returns a serialization template for the given type
+    with all placeholders replaced with the actual values. """
     description = type_description(oftype)
     template = Template(description["template"])
     mapping = {"ARG" : accessor}
@@ -184,7 +199,8 @@ def dereference_type(type):
         return type.strip()
     
 def type_description(name):
-    """ TBD """
+    """ Returns a dictionary description the given type. See `types.yml`
+    for more information about keys and values there. """
     return TYPES[dereference_type(name)]
     
   
@@ -192,22 +208,24 @@ def type_description(name):
 
 k = [
     {"name":   "domain", "argtype": "int *"},
-    {"name":     "type", "argtype": "string"},
+    {"name":     "type", "argtype": "char*"},
     {"name":   "baaarr", "argtype": "void *"},
     {"name":   "asdas",  "argtype": "bar_t"},
 ]    
 
 TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/types.yml')  
 
-print printf_format_for_type("string")
+print printf_format_for_type("char*")
 print printf_format_for_type("char *")
 print printf_format_for_type("float *")
 print printf_format_for_type("void *")
-print printf_format_for_type("pointer")
+print printf_format_for_type("void * ")
 
 
 print "["+arguments_format_string(k)+"]"
+print "-----------------------------"
 
+print typedefs_for_custom_structs()
 # -----------------------------------------------------------------------
 
 def push_on_stack_section(args):
