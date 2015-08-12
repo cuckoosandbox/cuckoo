@@ -10,14 +10,16 @@ from string import Template
 
 #
 TYPES = {}
+#
+DEFS = {}
 
 def generate_probes2(definitions_path, output_path, overwrite=True):
     """ TBD """
     if not overwrite and path.isfile(output_path):
         pass
-    defs  = read_definitions('apis.json')
+    DEFS  = read_definitions('apis.json')
     TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/types.yml')
-    probes = [HEADER] + [probe_from_definition(x) for x in defs]
+    probes = [HEADER] + [probe_from_definition(x) for x in DEFS]
     return dump_probes(probes, output_path)
     
 # FILE IO
