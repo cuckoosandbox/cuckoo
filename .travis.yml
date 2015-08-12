@@ -9,7 +9,7 @@ install:
     - brew link --overwrite python
     - brew install shellcheck
     - npm install jsonlint -g
-    - pip install -r requirements-dev.txt
+    - pip install -r requirements.txt
 script:
     - jsonlint -q ./analyzer/darwin/lib/core/data/apis.json
     - nosetests ./tests/test_dtruss.py || echo "Temporary workaround for dtruss tests failing without a reason. See issue 23"
