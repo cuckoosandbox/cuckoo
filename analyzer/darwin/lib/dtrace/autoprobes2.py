@@ -73,32 +73,38 @@ def return_probe_from_definition(df):
     """ TBD """
     args = df["args"]
     retval_type = df["retval_type"]
+    printf_specifier = type_description(retval_type)["printf_specifier"]
     
     template = Template(RETURN_PROBE_TEMPLATE)
     mapping = {
         "__LIBRARY__": df.get("library", ""),
         "__NAME__"   : df["name"],
         "__ARGS_FORMAT_STRING__"      : arguments_format_string(args),
-        "__RETVAL_FORMAT_SPECIFIER__" : type_description(retval_type)["printf_specifier"],
+        "__RETVAL_FORMAT_SPECIFIER__" : printf_specifier,
         "__ARGUMENTS__"               : arguments_section(args),
         "__RETVAL_CAST__"             : retval_section(retval_type),
-        "__ARGUMENTS_POP_FROM_STACK"  : pop_from_stack_section(args)
+        "__ARGUMENTS_POP_FROM_STACK__"  : pop_from_stack_section(args)
     }
     return template.substitute(mapping)
     
 def typedefs_for_custom_structs():
-    struct_types = {k:v for (k,v) in TYPES.iteritems() if "struct" in v}    
+    """ Returns a list of typedef statements for custom structures
+    defined in `types.yml`."""
+    struct_types = {k:v for (k, v) in TYPES.iteritems() if "struct" in v}    
     typedefs = []
     for (name, description) in struct_types.iteritems():
         fields = []
         for (f,t) in description["struct"].iteritems():
             fields.append("%s %s" % (t, f))
-        typedefs.append("typedef struct {\n\t%s\n} %s;" % (",\n\t".join(fields), name))
+        template = "typedef struct {\n\t%s\n} %s;"
+        typedefs.append(template % (",\n\t".join(fields), name))
     return "\n\n".join(typedefs)
+
 # -----------------------------------------------------------------------
 
 def arguments_section(args):
-    """ TBD """
+    """ Returns a serialization statement for accessing values of
+    the given arguments. """
     if len(args) == 0:
         return ""
     def serialize_arg(idx):
@@ -107,14 +113,16 @@ def arguments_section(args):
     return ("\n\t\t" + " ".join(parts)) 
     
 def arguments_format_string(args):
-    """ TBD """
+    """ Returns a format string for printing the given arguments
+    with printf(). """
     if len(args) == 0:
         return ""
     parts = [printf_format_for_type(x["argtype"]) for x in args]
     return ", ".join(parts)
   
 def retval_section(retval_type):
-    """ TBD """
+    """ Returns a serialization stetement for a return value of
+    the given type. """
     return serialize_type(retval_type, "this->retval")  
     
 # -------------------------------
@@ -260,7 +268,7 @@ RETURN_PROBE_TEMPLATE = """pid$$target:${__LIBRARY__}:${__NAME__}:return
 \tprintf("{\\\"api\\\":\\\"%s\\\", \\\"args\\\":[${__ARGS_FORMAT_STRING__}], \\\"retval\\\":${__RETVAL_FORMAT_SPECIFIER__}, \\\"timestamp\\\":%lld, \\\"pid\\\":%d, \\\"ppid\\\":%d, \\\"tid\\":%d, \\\"errno\\\":%d}\\n",
 \t\tprobefunc,${__ARGUMENTS__}
 \t\t${__RETVAL_CAST__}(this->retval),
-\t\t(int64_t)this->timestamp_ms, pid, ppid, tid, errno);${__ARGUMENTS_POP_FROM_STACK}
+\t\t(int64_t)this->timestamp_ms, pid, ppid, tid, errno);${__ARGUMENTS_POP_FROM_STACK__}
 }\n"""
 
 HEADER = """/* For some reason either dtrace or clang preprocessor refuses to identify standard
