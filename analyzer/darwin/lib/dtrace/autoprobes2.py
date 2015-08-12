@@ -8,13 +8,16 @@ import json
 from os import path
 from string import Template
 
+#
+TYPES = {}
+
 def generate_probes2(definitions_path, output_path, overwrite=True):
     """ TBD """
     if not overwrite and path.isfile(output_path):
         pass
     defs  = read_definitions('apis.json')
-    types = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/types.yml')
-    probes = [HEADER] + [probe_from_definition(x, types) for x in defs]
+    TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/types.yml')
+    probes = [HEADER] + [probe_from_definition(x) for x in defs]
     return dump_probes(probes, output_path)
     
 # FILE IO
@@ -42,16 +45,16 @@ def dump_probes(probes, tofile):
 
 # GENERATION
     
-def probe_from_definition(definition, types):
+def probe_from_definition(definition):
     """ TBD """
     if definition.get('__ignore__', False):
         return ""
     # We only need entry probes to save arguments
     elif len(definition['args']) == 0:
-        return return_probe_from_definition(definition, types)
+        return return_probe_from_definition(definition)
     else:
         entry_probe  = entry_probe_from_definition(definition)
-        return_probe = return_probe_from_definition(definition, types)
+        return_probe = return_probe_from_definition(definition)
         return entry_probe + return_probe
     
 def entry_probe_from_definition(df):
@@ -64,7 +67,7 @@ def entry_probe_from_definition(df):
     }
     return template.substitute(mapping)
     
-def return_probe_from_definition(df, types):
+def return_probe_from_definition(df):
     """ TBD """
     args = df["args"]
     retval_type = df["retval_type"]
@@ -73,72 +76,72 @@ def return_probe_from_definition(df, types):
     mapping = {
         "__LIBRARY__": df.get("library", ""),
         "__NAME__"   : df["name"],
-        "__ARGS_FORMAT_STRING__"      : arguments_format_string(args, types),
-        "__RETVAL_FORMAT_SPECIFIER__" : types[retval_type]["printf_specifier"],
-        "__ARGUMENTS__"               : arguments_section(args, types),
-        "__RETVAL_CAST__"             : retval_section(retval_type, types),
+        "__ARGS_FORMAT_STRING__"      : arguments_format_string(args),
+        "__RETVAL_FORMAT_SPECIFIER__" : type_description(retval_type)["printf_specifier"],
+        "__ARGUMENTS__"               : arguments_section(args),
+        "__RETVAL_CAST__"             : retval_section(retval_type),
         "__ARGUMENTS_POP_FROM_STACK"  : pop_from_stack_section(args)
     }
     return template.substitute(mapping)
     
 # -----------------------------------------------------------------------
 
-def arguments_section(args, types):
+def arguments_section(args):
     """ TBD """
     if len(args) == 0:
         return ""
     def serialize_arg(idx):
-        serialize_argument_at_idx(idx, args, types, "self->arg%d" % idx)
+        serialize_argument_at_idx(idx, args, "self->arg%d" % idx)
     parts = [serialize_arg(i) for i in xrange(len(args))]
     return ("\n\t\t" + " ".join(parts)) 
     
-def arguments_format_string(args, types):
+def arguments_format_string(args):
     """ TBD """
     if len(args) == 0:
         return ""
-    parts = [printf_format_string_for_type(x["argtype"], types) for x in args]
+    parts = [printf_format_string_for_type(x["argtype"]) for x in args]
     return ", ".join(parts)
   
-def retval_section(retval_type, types):
+def retval_section(retval_type):
     """ TBD """
-    return serialize_type(retval_type, types, "this->retval")  
+    return serialize_type(retval_type, "this->retval")  
     
 # -------------------------------
 
-def printf_format_string_for_type(type, all_types):
+def printf_format_string_for_type(type):
     """ TBD """
-    description = type_description(type, all_types)
+    description = type_description(type)
     if "struct" not in description:
         format = description["printf_specifier"]
     else:
-        format = printf_format_string_for_struct(description, types)
+        format = printf_format_string_for_struct(description)
     return format.replace("\"", "\\\"")
 
-def printf_format_string_for_struct(description, types):
+def printf_format_string_for_struct(description):
     fields = []
     for (name, argtype) in description["struct"].items():
-        field_description = type_description(argtype, types)
+        field_description = type_description(argtype)
         if "printf_specifier" in field_description:
             fields.append("\""+name +"\"" + " : " + field_description["printf_specifier"])
         else:
             # Yay, recursion!
-            struct_format = printf_format_string_for_struct(field_description, types)
+            struct_format = printf_format_string_for_struct(field_description)
             fields.append("\""+name +"\"" + " : " + struct_format)
     return "{%s}" % ", ".join(fields)
 
-def serialize_argument_at_idx(idx, all_args, types, accessor):
+def serialize_argument_at_idx(idx, all_args, accessor):
     """ TBD """
     arg = all_args[idx]
     type_name = arg["argtype"]
-    if "template" in type_description(type_name, types):
-        return serialize_template(type_name, types, accessor)
+    if "template" in type_description(type_name):
+        return serialize_template(type_name, accessor)
     else:
-        return serialize_type(type_name, types, accessor)
+        return serialize_type(type_name, accessor)
         
-def serialize_type(name, types, accessor):
+def serialize_type(name, accessor):
     """ TBD """
     name = name.strip()
-    description = type_description(name, types)
+    description = type_description(name)
     if "struct" in description:
         # TODO(rodionovd): add support for struct arguments
         raise Exception("Not implemented yet")
@@ -157,9 +160,9 @@ def serialize_atomic_type(argtype, accessor):
         t = (accessor, real_type, real_type, real_type, accessor, real_type)
         return "%s == (%s)NULL ? (%s)NULL : *(%s *)copyin(%s, sizeof(%s))," % t
        
-def serialize_template(oftype, types, accessor=""):
+def serialize_template(oftype, accessor=""):
     """ TBD """
-    description = type_description(oftype, types)
+    description = type_description(oftype)
     template = Template(description["template"])
     mapping = {"ARG" : accessor}
     # TODO(rodionovd): add support for buffers (ARG_SIZE)
@@ -177,9 +180,9 @@ def dereference_type(type):
     except:
         return type.strip()
     
-def type_description(name, types):
+def type_description(name):
     """ TBD """
-    return types[dereference_type(name)]
+    return TYPES[dereference_type(name)]
     
   
 # -----------------------------------------------------------------------
@@ -191,16 +194,16 @@ k = [
     {"name":   "asdas",  "argtype": "bar_t"},
 ]    
 
-types = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/types.yml')  
+TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/types.yml')  
 
-print printf_format_string_for_type("string", types)
-print printf_format_string_for_type("char *", types)
-print printf_format_string_for_type("float *", types)
-print printf_format_string_for_type("void *", types)
-print printf_format_string_for_type("pointer", types)
+print printf_format_string_for_type("string")
+print printf_format_string_for_type("char *")
+print printf_format_string_for_type("float *")
+print printf_format_string_for_type("void *")
+print printf_format_string_for_type("pointer")
 
 
-print "["+arguments_format_string(k, types)+"]"
+print "["+arguments_format_string(k)+"]"
 
 # -----------------------------------------------------------------------
 
