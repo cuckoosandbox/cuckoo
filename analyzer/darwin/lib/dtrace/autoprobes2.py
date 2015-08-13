@@ -13,11 +13,14 @@ TYPES = {}
 #
 DEFS = {}
 
-def generate_probes2(definitions_path, output_path, overwrite=True):
+def generate_probes2(definitions, output_path, overwrite=True):
     """ TBD """
     if not overwrite and path.isfile(output_path):
         pass
-    DEFS  = read_definitions('apis.json')
+    if isinstance(definitions, list):
+        DEFS = definitions
+    else:
+        DEFS = read_definitions('apis.json')
     TYPES = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/config/types.yml')
     probes = [HEADER] + [probe_from_definition(x) for x in DEFS]
     return dump_probes(probes, output_path)
