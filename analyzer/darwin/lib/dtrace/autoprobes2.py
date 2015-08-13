@@ -32,9 +32,9 @@ def read_definitions(fromfile):
     with open(fromfile, "r") as stream:
         contents = json.load(stream)
         # Now convert the root dictionary to an array of dictionaries where
-        # original keys become values for the "name" key.
-        # FIXME(rodionvod): yes, I know, it should be an array..
-        return [dict({'name': k}, **v) for k, v in contents.iteritems()]
+        # original keys become values for the "api" key.
+        # FIXME(rodionovd): yes, I know, it should be an array..
+        return [dict({'api': k}, **v) for k, v in contents.iteritems()]
 
 def read_types(infile):
     """ Reads types definitions from a file. """
@@ -66,7 +66,7 @@ def entry_probe_from_definition(df):
     template = Template(ENTRY_PROBE_TEMPLATE)
     mapping = {
         "__LIBRARY__": df.get("library", ""),
-        "__NAME__"   : df["name"],
+        "__NAME__"   : df["api"],
         "__ARGUMENTS_PUSH_ON_STACK__": push_on_stack_section(df["args"])
     }
     return template.substitute(mapping)
@@ -80,7 +80,7 @@ def return_probe_from_definition(df):
     template = Template(RETURN_PROBE_TEMPLATE)
     mapping = {
         "__LIBRARY__": df.get("library", ""),
-        "__NAME__"   : df["name"],
+        "__NAME__"   : df["api"],
         "__ARGS_FORMAT_STRING__"      : arguments_format_string(args),
         "__RETVAL_FORMAT_SPECIFIER__" : printf_specifier,
         "__ARGUMENTS__"               : arguments_section(args),
