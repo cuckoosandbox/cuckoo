@@ -25,6 +25,12 @@ from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.core.database import Database, TASK_RUNNING, TASK_FAILED_ANALYSIS
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
 
+try:
+    import pefile
+    HAVE_PEFILE = True
+except ImportError:
+    HAVE_PEFILE = True
+
 log = logging.getLogger()
 
 def check_python_version():
@@ -294,14 +300,17 @@ def init_binaries():
             update = True
             continue
 
-        filetime = datetime.fromtimestamp(os.path.getctime(path))
+        if HAVE_PEFILE:
+            timestamp = pefile.PE(path).FILE_HEADER.TimeDateStamp
+        else:
+            timestamp = os.path.getctime(path)
+
+        filetime = datetime.fromtimestamp(timestamp)
         one_week = datetime.now() - timedelta(days=7)
 
         if filetime < one_week:
             update = True
-            log.info("The binary %s is more than a week old, this is not "
-                     "critical, but checking for an update is recommended.",
-                     path)
+            log.info("The binary %s is more than a week old!", path)
 
     if update:
         log.critical("It is recommended that you update the binaries used "
