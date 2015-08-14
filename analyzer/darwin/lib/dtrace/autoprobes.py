@@ -16,10 +16,10 @@ def generate_probes(definitions, output_path, overwrite=True):
         defs = definitions
     else:
         defs = read_definitions(definitions)
-    # FIXME(rodionovd): fix hardcoded path
-    types = read_types('/Users/rodionovd/projects/cuckoo-osx-analyzer/config/types.yml')
-    probes = [HEADER] + typedefs_for_custom_structs(types) + [probe_from_definition(x, types) for x in defs]
-    dump_probes(probes, output_path)
+    types = read_types(path.abspath(path.join(__file__, "../../core/data/types.yml")))
+    contents  = [HEADER] + typedefs_for_custom_structs(types)
+    contents += [probe_from_definition(x, types) for x in defs]
+    dump_probes(contents, output_path)
 
 # FILE IO
 
@@ -129,18 +129,18 @@ def printf_format_for_type(t, types):
     """ Returns a format string for printing the given type
     (either atomic or struct). """
     description = type_description(t, types)
-    if "struct" not in description:
-        format = description["printf_specifier"]
+    if "struct" in description:
+        specifer = printf_format_for_struct(t, types)
     else:
-        format = printf_format_for_struct(t, types)
-    return format.replace("\"", "\\\"")
+        specifer = description["printf_specifier"]
+    return specifer.replace("\"", "\\\"")
 
 def printf_format_for_struct(t, types):
     """ Returns a format string for printing the given struct type. """
     fields = []
     for (name, argtype) in type_description(t, types)["struct"].items():
         printf_specifier = type_description(argtype, types).get("printf_specifier", None)
-        if printf_specifier:
+        if printf_specifier != None:
             fields.append("\""+name +"\"" + " : " + printf_specifier)
         else:
             # Yay, recursion!
