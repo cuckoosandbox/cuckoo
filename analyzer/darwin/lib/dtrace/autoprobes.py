@@ -195,7 +195,7 @@ def serialize_struct_type(struct_type, accessor, types):
             "(%s)(%s)" % (struct_type, accessor) + memeber_operator + field_name,
             types
         ))
-    return " ".join(fields)
+    return ", ".join(fields)
 
 def serialize_type_with_template(oftype, accessor, types):
     """ Returns a serialization template for the given type
