@@ -29,6 +29,7 @@ db = Database()
 
 # Initialize Flask app.
 app = Flask(__name__)
+app.config["APPLICATION_ROOT"] = "/api"
 
 def json_error(status_code, message):
     """Return a JSON object with a HTTP error code."""
@@ -48,8 +49,8 @@ def custom_headers(response):
     response.headers["Expires"] = "0"
     return response
 
-@app.route("/tasks/create/file", methods=["POST"])
-@app.route("/v1/tasks/create/file", methods=["POST"])
+@app.route(app.config["APPLICATION_ROOT"] + "/tasks/create/file", methods=["POST"])
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/tasks/create/file", methods=["POST"])
 def tasks_create_file():
     data = request.files["file"]
     package = request.form.get("package", "")
@@ -91,8 +92,8 @@ def tasks_create_file():
 
     return jsonify(task_id=task_id)
 
-@app.route("/tasks/create/url", methods=["POST"])
-@app.route("/v1/tasks/create/url", methods=["POST"])
+@app.route(app.config["APPLICATION_ROOT"] + "/tasks/create/url", methods=["POST"])
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/tasks/create/url", methods=["POST"])
 def tasks_create_url():
     url = request.form.get("url")
     package = request.form.get("package", "")
@@ -133,12 +134,12 @@ def tasks_create_url():
 
     return jsonify(task_id=task_id)
 
-@app.route("/tasks/list")
-@app.route("/v1/tasks/list")
-@app.route("/tasks/list/<int:limit>")
-@app.route("/v1/tasks/list/<int:limit>")
-@app.route("/tasks/list/<int:limit>/<int:offset>")
-@app.route("/v1/tasks/list/<int:limit>/<int:offset>")
+@app.route(app.config["APPLICATION_ROOT"] + "/tasks/list")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/tasks/list")
+@app.route(app.config["APPLICATION_ROOT"] + "/tasks/list/<int:limit>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/tasks/list/<int:limit>")
+@app.route(app.config["APPLICATION_ROOT"] + "/tasks/list/<int:limit>/<int:offset>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/tasks/list/<int:limit>/<int:offset>")
 def tasks_list(limit=None, offset=None):
     response = {}
 
@@ -172,8 +173,8 @@ def tasks_list(limit=None, offset=None):
 
     return jsonify(response)
 
-@app.route("/tasks/view/<int:task_id>")
-@app.route("/v1/tasks/view/<int:task_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/tasks/view/<int:task_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/tasks/view/<int:task_id>")
 def tasks_view(task_id):
     response = {}
 
@@ -201,8 +202,8 @@ def tasks_view(task_id):
 
     return jsonify(response)
 
-@app.route("/tasks/reschedule/<int:task_id>")
-@app.route("/v1/tasks/reschedule/<int:task_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/tasks/reschedule/<int:task_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/tasks/reschedule/<int:task_id>")
 def tasks_reschedule(task_id):
     response = {}
 
@@ -217,8 +218,8 @@ def tasks_reschedule(task_id):
 
     return jsonify(response)
 
-@app.route("/tasks/delete/<int:task_id>")
-@app.route("/v1/tasks/delete/<int:task_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/tasks/delete/<int:task_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/tasks/delete/<int:task_id>")
 def tasks_delete(task_id):
     response = {}
 
@@ -240,10 +241,10 @@ def tasks_delete(task_id):
 
     return jsonify(response)
 
-@app.route("/tasks/report/<int:task_id>")
-@app.route("/v1/tasks/report/<int:task_id>")
-@app.route("/tasks/report/<int:task_id>/<report_format>")
-@app.route("/v1/tasks/report/<int:task_id>/<report_format>")
+@app.route(app.config["APPLICATION_ROOT"] + "/tasks/report/<int:task_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/tasks/report/<int:task_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/tasks/report/<int:task_id>/<report_format>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/tasks/report/<int:task_id>/<report_format>")
 def tasks_report(task_id, report_format="json"):
     formats = {
         "json": "report.json",
@@ -296,7 +297,7 @@ def tasks_report(task_id, report_format="json"):
     else:
         return json_error(404, "Report not found")
 
-@app.route("/tasks/rereport/<int:task_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/tasks/rereport/<int:task_id>")
 def rereport(task_id):
     task = db.view_task(task_id)
     if task:
@@ -308,12 +309,12 @@ def rereport(task_id):
     else:
         return json_error(404, "Task not found")
 
-@app.route("/files/view/md5/<md5>")
-@app.route("/v1/files/view/md5/<md5>")
-@app.route("/files/view/sha256/<sha256>")
-@app.route("/v1/files/view/sha256/<sha256>")
-@app.route("/files/view/id/<int:sample_id>")
-@app.route("/v1/files/view/id/<int:sample_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/files/view/md5/<md5>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/files/view/md5/<md5>")
+@app.route(app.config["APPLICATION_ROOT"] + "/files/view/sha256/<sha256>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/files/view/sha256/<sha256>")
+@app.route(app.config["APPLICATION_ROOT"] + "/files/view/id/<int:sample_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/files/view/id/<int:sample_id>")
 def files_view(md5=None, sha256=None, sample_id=None):
     response = {}
 
@@ -333,8 +334,8 @@ def files_view(md5=None, sha256=None, sample_id=None):
 
     return jsonify(response)
 
-@app.route("/files/get/<sha256>")
-@app.route("/v1/files/get/<sha256>")
+@app.route(app.config["APPLICATION_ROOT"] + "/files/get/<sha256>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/files/get/<sha256>")
 def files_get(sha256):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "binaries", sha256)
     if os.path.exists(file_path):
@@ -345,8 +346,8 @@ def files_get(sha256):
     else:
         return json_error(404, "File not found")
 
-@app.route("/pcap/get/<int:task_id>")
-@app.route("/v1/pcap/get/<int:task_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/pcap/get/<int:task_id>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/pcap/get/<int:task_id>")
 def pcap_get(task_id):
     file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                              "%d" % task_id, "dump.pcap")
@@ -363,8 +364,8 @@ def pcap_get(task_id):
     else:
         return json_error(404, "File not found")
 
-@app.route("/machines/list")
-@app.route("/v1/machines/list")
+@app.route(app.config["APPLICATION_ROOT"] + "/machines/list")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/machines/list")
 def machines_list():
     response = {}
 
@@ -376,8 +377,8 @@ def machines_list():
 
     return jsonify(response)
 
-@app.route("/machines/view/<name>")
-@app.route("/v1/machines/view/<name>")
+@app.route(app.config["APPLICATION_ROOT"] + "/machines/view/<name>")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/machines/view/<name>")
 def machines_view(name=None):
     response = {}
 
@@ -389,8 +390,8 @@ def machines_view(name=None):
 
     return jsonify(response)
 
-@app.route("/cuckoo/status")
-@app.route("/v1/cuckoo/status")
+@app.route(app.config["APPLICATION_ROOT"] + "/cuckoo/status")
+@app.route(app.config["APPLICATION_ROOT"] + "/v1/cuckoo/status")
 def cuckoo_status():
     # In order to keep track of the diskspace statistics of the temporary
     # directory we create a temporary file so we can statvfs() on that.

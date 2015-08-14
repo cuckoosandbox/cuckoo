@@ -23,7 +23,7 @@ def json_error(status_code, message, *args):
 
 def node_url(ip=None, url=None):
     if ip is not None:
-        return "http://%s:8090/" % ip
+        return "http://%s:8090/api" % ip
     return url
 
 @blueprint.route("/node")
