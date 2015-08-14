@@ -88,7 +88,7 @@ $ ./utils/submit.py --platform darwin ~/bin/sample
   ```
 
 ### Adding custom API signatures
-You can add custom API signatures and define data types in [`signatures.json`](./config/signatures.yml) and [`types.yml`](./config/types.yml) files.
+You can add custom API signatures and define data types in [`signatures.json`](./cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/signatures.yml) and [`types.yml`](./cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/types.yml) files.
 
 ### Tests
 
