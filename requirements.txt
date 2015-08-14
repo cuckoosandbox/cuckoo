@@ -14,3 +14,4 @@ python-dateutil
 requests
 flask
 alembic
+pyminizip
