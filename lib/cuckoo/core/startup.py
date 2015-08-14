@@ -29,7 +29,7 @@ try:
     import pefile
     HAVE_PEFILE = True
 except ImportError:
-    HAVE_PEFILE = True
+    HAVE_PEFILE = False
 
 log = logging.getLogger()
 
