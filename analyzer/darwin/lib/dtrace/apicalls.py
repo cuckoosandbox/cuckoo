@@ -27,7 +27,7 @@ def apicalls(target, **kwargs):
     cmd = _dtrace_command_line(target, **kwargs)
 
     # Generate dtrace probes for analysis
-    definitions = os.path.abspath(os.path.join(__file__, "../../core/data/apis.json"))
+    definitions = os.path.abspath(os.path.join(__file__, "../../core/data/signatures.yml"))
     probes_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "probes.d")
     generate_probes(definitions, probes_file, overwrite=True)
 

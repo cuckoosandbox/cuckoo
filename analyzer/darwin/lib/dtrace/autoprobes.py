@@ -26,7 +26,7 @@ def generate_probes(definitions, output_path, overwrite=True):
 def read_definitions(fromfile):
     """ Read API signatures from a file. """
     with open(fromfile, "r") as stream:
-        contents = json.load(stream)
+        contents = yaml.safe_load(stream)
         # Now convert the root dictionary to an array of dictionaries where
         # original keys become values for the "api" key.
         # FIXME(rodionovd): yes, I know, it should be an array..
