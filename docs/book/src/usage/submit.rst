@@ -18,41 +18,43 @@ command-line utility. It currently has the following options available::
 
     usage: submit.py [-h] [-d] [--remote REMOTE] [--url] [--package PACKAGE]
                      [--custom CUSTOM] [--owner OWNER] [--timeout TIMEOUT]
-                     [--options OPTIONS] [--priority PRIORITY] [--machine MACHINE]
+                     [-o OPTIONS] [--priority PRIORITY] [--machine MACHINE]
                      [--platform PLATFORM] [--memory] [--enforce-timeout]
                      [--clock CLOCK] [--tags TAGS] [--max MAX] [--pattern PATTERN]
                      [--shuffle] [--unique] [--quiet]
                      target
 
     positional arguments:
-      target               URL, path to the file or folder to analyze
+      target                URL, path to the file or folder to analyze
 
     optional arguments:
-      -h, --help           show this help message and exit
-      --remote REMOTE      Specify IP:port to a Cuckoo API server to submit
-                           remotely
-      --url                Specify whether the target is an URL
-      --package PACKAGE    Specify an analysis package
-      --custom CUSTOM      Specify any custom value
-      --owner OWNER        Specify the task owner
-      --timeout TIMEOUT    Specify an analysis timeout
-      --options OPTIONS    Specify options for the analysis package (e.g.
-                           "name=value,name2=value2")
-      --priority PRIORITY  Specify a priority for the analysis represented by an
-                           integer
-      --machine MACHINE    Specify the identifier of a machine you want to use
-      --platform PLATFORM  Specify the operating system platform you want to use
-                           (windows/darwin/linux)
-      --memory             Enable to take a memory dump of the analysis machine
-      --enforce-timeout    Enable to force the analysis to run for the full
-                           timeout period
-      --clock CLOCK        Set virtual machine clock
-      --tags TAGS          Specify tags identifier of a machine you want to use
-      --max MAX            Maximum samples to add in a row
-      --pattern PATTERN    Pattern of files to submit
-      --shuffle            Shuffle samples before submitting them
-      --unique             Only submit new samples, ignore duplicates
-      --quiet              Only print text on failure
+      -h, --help            show this help message and exit
+      -d, --debug           Enable debug logging
+      --remote REMOTE       Specify IP:port to a Cuckoo API server to submit
+                            remotely
+      --url                 Specify whether the target is an URL
+      --package PACKAGE     Specify an analysis package
+      --custom CUSTOM       Specify any custom value
+      --owner OWNER         Specify the task owner
+      --timeout TIMEOUT     Specify an analysis timeout
+      -o OPTIONS, --options OPTIONS
+                            Specify options for the analysis package (e.g.
+                            "name=value,name2=value2")
+      --priority PRIORITY   Specify a priority for the analysis represented by an
+                            integer
+      --machine MACHINE     Specify the identifier of a machine you want to use
+      --platform PLATFORM   Specify the operating system platform you want to use
+                            (windows/darwin/linux)
+      --memory              Enable to take a memory dump of the analysis machine
+      --enforce-timeout     Enable to force the analysis to run for the full
+                            timeout period
+      --clock CLOCK         Set virtual machine clock
+      --tags TAGS           Specify tags identifier of a machine you want to use
+      --max MAX             Maximum samples to add in a row
+      --pattern PATTERN     Pattern of files to submit
+      --shuffle             Shuffle samples before submitting them
+      --unique              Only submit new samples, ignore duplicates
+      --quiet               Only print text on failure
 
 If you specify a directory as path, all the files contained in it will be
 submitted for analysis.
