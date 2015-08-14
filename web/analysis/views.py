@@ -1,11 +1,6 @@
 # Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
-from email.mime.application import MIMEApplication
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import smtplib
-
 import sys
 import re
 import os
@@ -30,6 +25,11 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 import modules.processing.network as network
 from mechanize import Browser
 from pyminizip import compress
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.Utils import formatdate
+import smtplib
 
 
 results_db = pymongo.MongoClient(settings.MONGO_HOST, settings.MONGO_PORT)[settings.MONGO_DB]
@@ -549,27 +549,35 @@ def share(request, av_name, task_id):
             result = (1, "Success!")
         else:
             result = (0, "Something goes wrong")
-
     elif av_name == "ESET-NOD32":
-        compress(file_info["path"], file_info["path"] + ".zip", "infected", 5)
-        msg = MIMEMultipart(
-            From=settings.EMAIL,
-            To="support@esetnod32.ru",
-            Subject="Potential malware"
-        )
-        msg.attach(
-            MIMEText("Additional information at "
-                     "http://cuckoo.skbkontur.ru/analysis/%s/" % task_id))
-        with open(file_info["path"] + ".zip", "rb") as archive:
-            msg.attach(MIMEApplication(
-                archive.read(),
-                Content_Disposition='attachment; filename="%s"'
-                                    % file_info["sha256"],
-                Name=file_info["sha256"]
-            ))
-        smtp = smtplib.SMTP("smtp")
-        smtp.sendmail(settings.EMAIL, "support@esetnod32.ru", msg.as_string())
-        smtp.close()
+        try:
+            filename = file_info["path"]
+            if ".zip" not in filename:
+                compress(filename, filename + ".zip", "infected", 5)
+                filename = filename + ".zip"
+            
+            msg = MIMEMultipart(
+                From=settings.EMAIL,
+                To="support@esetnod32.ru",
+                Subject="Potential malware",
+                Date=formatdate(localtime=True)
+            )
+            msg.attach(
+                MIMEText("Additional information at "
+                         "http://cuckoo.skbkontur.ru/analysis/%s/" % task_id))
+            with open(filename, "rb") as archive:
+                msg.attach(MIMEApplication(
+                    archive.read(),
+                    Content_Disposition='attachment; filename="%s"'
+                                        % file_info["sha256"] + ".zip",
+                    Name=file_info["sha256"] + ".zip"
+                ))
+            smtp = smtplib.SMTP("smtp")
+            smtp.sendmail(settings.EMAIL, "support@esetnod32.ru", msg.as_string())
+            smtp.close()
+            result = (1, "Success!")
+        except:
+            result = (0, "Something goes wrong")
 
     return render_to_response("analysis/share.html",
                               {"result": result},
