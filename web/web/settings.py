@@ -168,7 +168,7 @@ LOGGING = {
     }
 }
 
-EMAIL = "mmr@skbkontur.ru"
+EMAIL = "malware-report@kontur.ru"
 
 # Hack to import local settings.
 try:
