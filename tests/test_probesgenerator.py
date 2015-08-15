@@ -9,6 +9,7 @@ from os import remove, path
 from common import TESTS_DIR
 from os.path import basename
 from difflib import unified_diff
+
 from analyzer.darwin.lib.dtrace.autoprobes import generate_probes
 from analyzer.darwin.lib.dtrace.autoprobes import dereference_type
 from analyzer.darwin.lib.dtrace.autoprobes import serialize_atomic_type
@@ -53,7 +54,7 @@ class ProbesGeneratorTestCase(unittest.TestCase):
 
     def test_probes_dereference_reference_type_with_random_spaces(self):
         # given
-        type = "foo  *  "
+        type = "foo      *  "
         # when
         output = dereference_type(type)
         # then
@@ -101,7 +102,7 @@ class ProbesGeneratorTestCase(unittest.TestCase):
                 "native": True
             },
             "int": {
-                "printf_specifier": "%f",
+                "printf_specifier": "%d",
                 "native": True
             },
             "foo_t": {
@@ -175,8 +176,8 @@ class ProbesGeneratorTestCase(unittest.TestCase):
         source = [{
             "api": "foo",
             "args": [
-                {"name": "key", "argtype": "void *"},
-                {"name": "hash", "argtype": "uint64_t"},
+                {"name": "key",   "argtype": "void *"},
+                {"name": "hash",  "argtype": "uint64_t"},
                 {"name": "rando", "argtype": "foo_t *"}
             ],
             "retval_type": "int",
