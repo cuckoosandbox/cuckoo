@@ -29,6 +29,12 @@ from lib.core.privileges import grant_debug_privilege
 from lib.core.startup import create_folders, init_logging
 from modules import auxiliary
 
+try:
+    import pefile
+    HAVE_PEFILE = True
+except ImportError:
+    HAVE_PEFILE = False
+
 log = logging.getLogger("analyzer")
 
 class Files(object):
@@ -441,8 +447,18 @@ class Analyzer(object):
             # If the analysis target is a file, we choose the package according
             # to the file format.
             if self.config.category == "file":
+                exports = []
+                try:
+                    if HAVE_PEFILE:
+                        pe = pefile.PE(self.config.target)
+                        for export in pe.DIRECTORY_ENTRY_EXPORT.symbols:
+                            exports.append(export.name)
+                except Exception as e:
+                    log.warning("Error enumerating exported functions: %s", e)
+
                 package = choose_package(self.config.file_type,
-                                         self.config.file_name)
+                                         self.config.file_name,
+                                         exports)
             # If it's an URL, we'll just use the default Internet Explorer
             # package.
             else:

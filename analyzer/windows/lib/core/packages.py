@@ -2,7 +2,21 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-def choose_package(file_type, file_name):
+def has_com_exports(exports):
+    com_exports = [
+        "DllInstall",
+        "DllCanUnloadNow",
+        "DllGetClassObject",
+        "DllRegisterServer",
+        "DllUnregisterServer",
+    ]
+
+    for name in com_exports:
+        if name not in exports:
+            return False
+    return True
+
+def choose_package(file_type, file_name, exports):
     """Choose analysis package due to file type and file extension.
     @param file_type: file type.
     @param file_name: file name.
@@ -16,6 +30,8 @@ def choose_package(file_type, file_name):
     if "DLL" in file_type:
         if file_name.endswith(".cpl"):
             return "cpl"
+        elif has_com_exports(exports):
+            return "com"
         else:
             return "dll"
     elif "PE32" in file_type or "MS-DOS" in file_type:
