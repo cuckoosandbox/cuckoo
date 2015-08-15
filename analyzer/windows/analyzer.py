@@ -23,8 +23,8 @@ from lib.common.hashing import hash_file
 from lib.common.rand import random_string
 from lib.common.results import upload_to_host
 from lib.core.config import Config
-from lib.core.log import PipeServer, PipeForwarder, PipeDispatcher
 from lib.core.packages import choose_package
+from lib.core.pipe import PipeServer, PipeForwarder, PipeDispatcher
 from lib.core.privileges import grant_debug_privilege
 from lib.core.startup import create_folders, init_logging
 from modules import auxiliary
