@@ -85,7 +85,7 @@ class ProbesGeneratorTestCase(unittest.TestCase):
         type = "float"
         accessor = "self->arg0"
         # when
-        output = serialize_atomic_type(type, accessor)
+        output = serialize_atomic_type(type, type, accessor)
         # then
         self.assertEqual("(float)(self->arg0)", output)
 
@@ -94,10 +94,10 @@ class ProbesGeneratorTestCase(unittest.TestCase):
         type = "int *"
         accessor = "self->arg0"
         # when
-        output = serialize_atomic_type(type, accessor)
+        output = serialize_atomic_type(type, "int", accessor)
         # then
         self.assertEqual(
-            "!!(self->arg0) ? (int)0 : *(int *)copyin((user_addr_t)self->arg0, sizeof(int))",
+            "!!(self->arg0) ? (int)0 : *(int *)copyin((uint64_t)self->arg0, sizeof(int))",
             output
         )
 
@@ -114,7 +114,7 @@ class ProbesGeneratorTestCase(unittest.TestCase):
                 "printf_specifier": '"%S"',
                 "native": True,
                 "template":
-                    '!!(${ARG}) ? copyinstr((user_addr_t)${ARG}) : "<NULL>"'
+                    '!!(${ARG}) ? copyinstr((uint64_t)${ARG}) : "<NULL>"'
             },
             "foo_t": {
                 "native": False,
@@ -128,7 +128,7 @@ class ProbesGeneratorTestCase(unittest.TestCase):
         output = serialize_struct_type(type, accessor, types)
         # then
         self.assertEqual(
-            '(float)(((foo_t)(self->arg0)).value_f), !!(((foo_t)(self->arg0)).value_str) ? copyinstr((user_addr_t)((foo_t)(self->arg0)).value_str) : "<NULL>"',
+            '(float)(((foo_t)(self->arg0)).value_f), !!(((foo_t)(self->arg0)).value_str) ? copyinstr((uint64_t)((foo_t)(self->arg0)).value_str) : "<NULL>"',
             output
         )
 
@@ -157,7 +157,7 @@ class ProbesGeneratorTestCase(unittest.TestCase):
         output = serialize_struct_type(type, accessor, types)
         # then
         self.assertEqual(
-            "!!(((foo_t *)(self->arg0))->value_int) ? (int)0 : *(int *)copyin((user_addr_t)((foo_t *)(self->arg0))->value_int, sizeof(int)), (float)(((foo_t *)(self->arg0))->value_f)",
+            "!!(((foo_t *)(self->arg0))->value_int) ? (int)0 : *(int *)copyin((uint64_t)((foo_t *)(self->arg0))->value_int, sizeof(int)), (float)(((foo_t *)(self->arg0))->value_f)",
             output
         )
 
@@ -169,14 +169,14 @@ class ProbesGeneratorTestCase(unittest.TestCase):
             "string": {
                 "printf_specifier": '"%S"',
                 "native": False,
-                "template": '!!(${ARG}) ? copyinstr((user_addr_t)${ARG}) : "<NULL>"'
+                "template": '!!(${ARG}) ? copyinstr((uint64_t)${ARG}) : "<NULL>"'
             }
         }
         # when
         output = serialize_type_with_template(type, accessor, types)
         # then
         self.assertEqual(
-            '!!(self->arg0) ? copyinstr((user_addr_t)self->arg0) : "<NULL>"',
+            '!!(self->arg0) ? copyinstr((uint64_t)self->arg0) : "<NULL>"',
             output
         )
 

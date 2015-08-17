@@ -36,7 +36,7 @@ pid$target::system:return
 	this->timestamp_ms = walltimestamp/1000000;
 	printf("{\"api\":\"%s\", \"args\":[\"%S\"], \"retval\":%d, \"timestamp\":%lld, \"pid\":%d, \"ppid\":%d, \"tid\":%d, \"errno\":%d}\n",
 		probefunc,
-		!!(self->arg0) ? copyinstr((user_addr_t)self->arg0) : "<NULL>",
+		!!(self->arg0) ? copyinstr((uint64_t)self->arg0) : "<NULL>",
 		(int)(this->retval),
 		(int64_t)this->timestamp_ms, pid, ppid, tid, errno);
 	self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
@@ -59,7 +59,7 @@ pid$target::socket:return
 	this->timestamp_ms = walltimestamp/1000000;
 	printf("{\"api\":\"%s\", \"args\":[%d, %f, {\"base\" : {\"hfa\" : %llu, \"abc\" : %f, \"sss\" : \"%S\"}, \"hash\" : %d, \"description\" : \"%S\"}], \"retval\":%llu, \"timestamp\":%lld, \"pid\":%d, \"ppid\":%d, \"tid\":%d, \"errno\":%d}\n",
 		probefunc,
-		(int)(self->arg0), (double)(self->arg1), (size_t)(((test_internal_t *)(((test_t *)(self->arg2))->base))->hfa), !!(((test_internal_t *)(((test_t *)(self->arg2))->base))->abc) ? (double)0 : *(double *)copyin((user_addr_t)((test_internal_t *)(((test_t *)(self->arg2))->base))->abc, sizeof(double)), !!(((test_internal_t *)(((test_t *)(self->arg2))->base))->sss) ? copyinstr((user_addr_t)((test_internal_t *)(((test_t *)(self->arg2))->base))->sss) : "<NULL>", (int)(((test_t *)(self->arg2))->hash), !!(((test_t *)(self->arg2))->description) ? copyinstr((user_addr_t)((test_t *)(self->arg2))->description) : "<NULL>",
+		(int)(self->arg0), (double)(self->arg1), (size_t)(((test_internal_t *)(((test_t *)(self->arg2))->base))->hfa), !!(((test_internal_t *)(((test_t *)(self->arg2))->base))->abc) ? (double)0 : *(double *)copyin((uint64_t)((test_internal_t *)(((test_t *)(self->arg2))->base))->abc, sizeof(double)), !!(((test_internal_t *)(((test_t *)(self->arg2))->base))->sss) ? copyinstr((uint64_t)((test_internal_t *)(((test_t *)(self->arg2))->base))->sss) : "<NULL>", (int)(((test_t *)(self->arg2))->hash), !!(((test_t *)(self->arg2))->description) ? copyinstr((uint64_t)((test_t *)(self->arg2))->description) : "<NULL>",
 		(size_t)(this->retval),
 		(int64_t)this->timestamp_ms, pid, ppid, tid, errno);
 	self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
