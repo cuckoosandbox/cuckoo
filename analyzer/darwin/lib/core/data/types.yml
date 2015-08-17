@@ -36,7 +36,7 @@ float: &float
     native: Yes
 
 double: &double
-    printf_specifier: "%lf"
+    printf_specifier: "%f"
     native: Yes
 #
 # Raw pointers: just dump their values (in *decimal* since dtrace will output
