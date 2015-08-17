@@ -541,7 +541,7 @@ def share(request, av_name, task_id):
         br.form["category"] = ["2"]
         br.form["email"] = settings.EMAIL
         br.form["text"] = ("Additional information at "
-                           "http://cuckoo.skbkontur.ru/analysis/%s/" % task_id)
+                           "https://cuckoo.skbkontur.ru/analysis/%s/" % task_id)
         response = br.submit()
         response = response.read()
 
@@ -562,7 +562,7 @@ def share(request, av_name, task_id):
             br.form.add_file(open(filename, 'application/zip', file_info["sha256"] + ".zip")
             br.form["email"] = settings.EMAIL
             br.form["commentary"] = ("Additional information at "
-                                     "http://cuckoo.skbkontur.ru/analysis/%s/" % task_id)
+                                     "https://cuckoo.skbkontur.ru/analysis/%s/" % task_id)
             response = br.submit()
             response=response.read().decode("windows-1251")
             if u"Спасибо, Ваше сообщение успешно отправлено." in response:
