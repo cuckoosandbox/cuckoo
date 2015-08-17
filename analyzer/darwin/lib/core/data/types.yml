@@ -25,7 +25,7 @@ unsigned long long: &unsigned-long-long
     printf_specifier: "%llu"
     native: Yes
 
-size_t: *unsigned-long-long
+size_t: *unsigned-long
 
 char: &char
     printf_specifier: '"%c"'
