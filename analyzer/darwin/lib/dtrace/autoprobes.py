@@ -150,13 +150,9 @@ def printf_format_for_struct(t, types):
 
 def serialize_argument_at_idx(idx, all_args, accessor, types):
     """ For an argument at the given index, returns a serialization
-    statement for reading it's value. """
-    arg = all_args[idx]
-    type_name = arg["argtype"]
-    if "template" in type_description(type_name, types):
-        return serialize_type_with_template(type_name, accessor, types)
-    else:
-        return serialize_type(type_name, accessor, types)
+    statement for it's value. """
+    type_name = all_args[idx]["type"]
+    return serialize_type(type_name, accessor, types)
 
 def serialize_type(name, accessor, types):
     """ Returns a serialization statement for the given type. """
@@ -164,6 +160,8 @@ def serialize_type(name, accessor, types):
     description = type_description(name, types)
     if "struct" in description:
         return serialize_struct_type(name, accessor, types)
+    elif "template" in description:
+        return serialize_type_with_template(name, accessor, types)
     else:
         return serialize_atomic_type(name, accessor)
 
