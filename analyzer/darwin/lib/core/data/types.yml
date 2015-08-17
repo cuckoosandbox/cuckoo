@@ -50,7 +50,7 @@ double: &double
     printf_specifier: '"%S"'
     native: No
     template: |-
-        ${ARG} != (int64_t)NULL ? copyinstr(${ARG}) : "<NULL>"
+        !!(${ARG}) ? copyinstr((user_addr_t)${ARG}) : "<NULL>"
 #
 # Arbitrary buffers
 #
