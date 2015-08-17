@@ -33,12 +33,24 @@ class Zip(Package):
         # Extraction.
         with ZipFile(zip_path, "r") as archive:
             try:
-                archive.extractall(path=extract_path, pwd=password)
+                for zipinfo in archive.infolist():
+                    try:
+                        zipinfo.filename = zipinfo.filename.decode('utf8').encode('utf8')
+                    except UnicodeDecodeError:
+                        zipinfo.filename = zipinfo.filename.decode('cp866').encode('utf8')
+                    archive.extract(zipinfo, path=extract_path, pwd=password)
+                #archive.extractall(path=extract_path, pwd=password)
             except BadZipfile:
                 raise CuckooPackageError("Invalid Zip file")
             except RuntimeError:
                 try:
-                    archive.extractall(path=extract_path, pwd="infected")
+                    #archive.extractall(path=extract_path, pwd="infected")
+                    for zipinfo in archive.infolist():
+                        try:
+                            zipinfo.filename = zipinfo.filename.decode('utf8').encode('utf8')
+                        except UnicodeDecodeError:
+                            zipinfo.filename = zipinfo.filename.decode('cp866').encode('utf8')
+                    archive.extract(zipinfo, path=extract_path, pwd="infected")
                 except RuntimeError as e:
                     raise CuckooPackageError("Unable to extract Zip file: "
                                              "{0}".format(e))
