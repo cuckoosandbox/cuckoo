@@ -180,7 +180,7 @@ def serialize_type(name, accessor, types):
     elif "template" in description:
         return serialize_type_with_template(name, accessor, types)
     else:
-        cast = description.get("cast", name)
+        cast = description.get("cast", dereference_type(name))
         return serialize_atomic_type(name, cast, accessor)
 
 def serialize_atomic_type(argtype, cast, accessor):
