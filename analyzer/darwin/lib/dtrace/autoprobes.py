@@ -132,7 +132,7 @@ def arguments_format_string(args, types):
     with printf(). """
     if len(args) == 0:
         return ""
-    parts = [printf_format_for_type(x["argtype"], types) for x in args]
+    parts = [printf_format_for_type(x["type"], types) for x in args]
     return ", ".join(parts)
 
 def retval_section(retval_type, types):
