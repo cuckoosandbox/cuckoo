@@ -314,7 +314,9 @@ def init_binaries():
 
     if update:
         log.critical("It is recommended that you update the binaries used "
-                     "for Windows analysis. To do so, please run the "
+                     "for Windows analysis (if you have not done so already, "
+                     "it is possible that there was no update - in that case "
+                     "this error will persist). To do so, please run the "
                      "following command: ./utils/community.py -wafb monitor")
         for x in xrange(3):
             log.info("Please take note of the warnings above!")
