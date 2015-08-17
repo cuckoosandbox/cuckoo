@@ -6,7 +6,7 @@ int: &int
     printf_specifier: "%d"
     # Is it a native C type (on OS X)?
     native: Yes
-# Alternative name for backward compatibilityх
+# Alternative name for backward compatibility
 integer: *int
 
 unsigned int: &unsigned-int
@@ -42,7 +42,9 @@ double: &double
 # Raw pointers: just dump their values (in *decimal* since dtrace will output
 # JSON that doesn't accept hex values)
 #
-"void *": *unsigned-long-long
+"void *":
+    <<: *unsigned-long-long
+    cast: "unsigned long long"
 #
 # Strings
 #

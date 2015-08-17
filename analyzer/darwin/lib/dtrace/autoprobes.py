@@ -180,20 +180,21 @@ def serialize_type(name, accessor, types):
     elif "template" in description:
         return serialize_type_with_template(name, accessor, types)
     else:
-        return serialize_atomic_type(name, accessor)
+        cast = description.get("cast", name)
+        return serialize_atomic_type(name, cast, accessor)
 
-def serialize_atomic_type(argtype, accessor):
+def serialize_atomic_type(argtype, cast, accessor):
     """ Returns a serialization statement for the given atomic type.
     In case of pointers, values they're referencing will be used instead
     (see `dereference_type()` for exceptions). """
     # Do we need to dereference this argument and copy it to the userspace?
     if dereference_type(argtype) == argtype:
         # Nope: it's a value type
-        return "(%s)(%s)" % (argtype, accessor)
+        return "(%s)(%s)" % (cast, accessor)
     else:
         # Yep: it's a reference type
         real_type = dereference_type(argtype)
-        t = (accessor, real_type, real_type, accessor, real_type)
+        t = (accessor, cast, real_type, accessor, real_type)
         return "!!(%s) ? (%s)0 : *(%s *)copyin((user_addr_t)%s, sizeof(%s))" % t
 
 def serialize_struct_type(struct_type, accessor, types):
