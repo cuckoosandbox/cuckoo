@@ -1,3 +1,4 @@
+# encoding: utf8
 # Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -559,7 +560,7 @@ def share(request, av_name, task_id):
             br.open("http://www.esetnod32.ru/support/knowledge_base/new_virus/")
             br.select_form(predicate=lambda f: f.attrs.get('id', None) == 'new_license_activation_v')
             br.form.set_all_readonly(False)
-            br.form.add_file(open(filename, 'application/zip', file_info["sha256"] + ".zip")
+            br.form.add_file(open(filename), 'application/zip', file_info["sha256"] + ".zip")
             br.form["email"] = settings.EMAIL
             br.form["commentary"] = ("Additional information at "
                                      "https://cuckoo.skbkontur.ru/analysis/%s/" % task_id)
