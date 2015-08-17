@@ -110,9 +110,9 @@ def typedefs_for_custom_structs(defs, types):
     for (name, description) in struct_types.iteritems():
         fields = []
         for (f,t) in description["struct"].iteritems():
-            fields.append("%s %s" % (t, f))
+            fields.append("%s %s;" % (t, f))
         template = "typedef struct {\n\t%s\n} %s;\n\n"
-        typedefs.append(template % (",\n\t".join(fields), name))
+        typedefs.append(template % ("\n\t".join(fields), name))
     return typedefs
 
 # -----------------------------------------------------------------------
