@@ -195,7 +195,7 @@ def serialize_atomic_type(argtype, cast, accessor):
         # Yep: it's a reference type
         real_type = dereference_type(argtype)
         t = (accessor, cast, real_type, accessor, real_type)
-        return "!!(%s) ? (%s)0 : *(%s *)copyin((user_addr_t)%s, sizeof(%s))" % t
+        return "!!(%s) ? (%s)0 : *(%s *)copyin((uint64_t)%s, sizeof(%s))" % t
 
 def serialize_struct_type(struct_type, accessor, types):
     """ Returns a serialization statement for the given structure type. """
