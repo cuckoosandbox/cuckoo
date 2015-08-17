@@ -555,27 +555,20 @@ def share(request, av_name, task_id):
             if ".zip" not in filename:
                 compress(filename, filename + ".zip", "infected", 5)
                 filename = filename + ".zip"
-            
-            msg = MIMEMultipart(
-                From=settings.EMAIL,
-                To="support@esetnod32.ru",
-                Subject="Potential malware",
-                Date=formatdate(localtime=True)
-            )
-            msg.attach(
-                MIMEText("Additional information at "
-                         "http://cuckoo.skbkontur.ru/analysis/%s/" % task_id))
-            with open(filename, "rb") as archive:
-                msg.attach(MIMEApplication(
-                    archive.read(),
-                    Content_Disposition='attachment; filename="%s"'
-                                        % file_info["sha256"] + ".zip",
-                    Name=file_info["sha256"] + ".zip"
-                ))
-            smtp = smtplib.SMTP("smtp")
-            smtp.sendmail(settings.EMAIL, "support@esetnod32.ru", msg.as_string())
-            smtp.close()
-            result = (1, "Success!")
+            br = Browser()
+            br.open("http://www.esetnod32.ru/support/knowledge_base/new_virus/")
+            br.select_form(predicate=lambda f: f.attrs.get('id', None) == 'new_license_activation_v')
+            br.form.set_all_readonly(False)
+            br.form.add_file(open(filename, 'application/zip', file_info["sha256"] + ".zip")
+            br.form["email"] = settings.EMAIL
+            br.form["commentary"] = ("Additional information at "
+                                     "http://cuckoo.skbkontur.ru/analysis/%s/" % task_id)
+            response = br.submit()
+            response=response.read().decode("windows-1251")
+            if u"Спасибо, Ваше сообщение успешно отправлено." in response:
+                result = (1, "Success!")
+            else:
+                result = (0, response)
         except:
             result = (0, "Something goes wrong")
 
