@@ -97,27 +97,26 @@ uint64_t: &uint64_t
 # Structures
 #
 
-# TBD
-
-#
-# Your custom data types
-#
-foo_t:
+test_t:
     native: No
     struct:
          hash: "int"
-         base: "kkk_t *"
+         base: "test_internal_t *"
          description: "char *"
-        
-kkk_t:
+
+test_internal_t:
     native: No
     struct:
         abc: "double *"
         hfa: "size_t"
         sss: "char *"
 
-bar_t:
+test_extra_t:
     native: No
     struct:
-        lkj: "foo_t *"
-        aaa: "float"
+        foo: int
+        bar: uint64_t
+
+#
+# Your custom data types
+#
