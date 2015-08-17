@@ -7,6 +7,7 @@ import yaml
 import json
 from os import path
 from string import Template
+from sets import Set
 
 def generate_probes(definitions, output_path, overwrite=True):
     """ TBD """
@@ -17,7 +18,7 @@ def generate_probes(definitions, output_path, overwrite=True):
     else:
         defs = read_definitions(definitions)
     types = read_types(path.abspath(path.join(__file__, "../../core/data/types.yml")))
-    contents  = [HEADER] + typedefs_for_custom_structs(types)
+    contents  = [HEADER] + typedefs_for_custom_structs(defs, types)
     contents += [probe_from_definition(x, types) for x in defs]
     dump_probes(contents, output_path)
 
@@ -85,10 +86,26 @@ def return_probe_from_definition(df, types):
     }
     return template.substitute(mapping)
 
-def typedefs_for_custom_structs(types):
+def typedefs_for_custom_structs(defs, types):
     """ Returns a list of typedef statements for custom structures
     defined in `types.yml`."""
-    struct_types = {k:v for (k, v) in types.iteritems() if "struct" in v}
+    def flatten(list_of_lists):
+        return sum(list_of_lists, [])
+    def deep_search_types(parent, types):
+        result = Set()
+        for t in parent:
+            description = type_description(t, types)
+            if "struct" in description:
+                result |= deep_search_types(description["struct"].values(), types)
+            result.add(dereference_type(t))
+        return result
+    # We will only generate typedefs for struct that are actually in use
+    obviously_used_types = [x["type"] for x in flatten([y["args"] for y in defs])]
+    all_used_types = deep_search_types(obviously_used_types, types)
+
+    struct_types = {
+        k:v for (k, v) in types.iteritems() if "struct" in v and k in all_used_types
+    }
     typedefs = []
     for (name, description) in struct_types.iteritems():
         fields = []
