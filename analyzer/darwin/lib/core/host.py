@@ -3,7 +3,7 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE file for details.
 
-import json
+import yaml
 import socket
 import logging
 from os import path
@@ -201,13 +201,14 @@ class CuckooHost(object):
         return description
 
     def _load_human_readable_info(self):
+        signatures = _description_file_path()
         try:
-            with open(_description_file_path(), "r") as infile:
-                self.human_readable_info = json.load(infile)
+            with open(signatures, "r") as infile:
+                self.human_readable_info = yaml.safe_load(infile)
         except IOError:
-            log.exception("Could not open apis.json file")
+            log.exception("Could not open %s" % path.basename(signatures))
         except ValueError:
-            log.exception("apis.json contains invalid JSON")
+            log.exception("Invalid YAML file %s" % path.basename(signatures))
 
 
 def _proc_name_from_pid(pid):
@@ -230,4 +231,4 @@ def _filetime_from_timestamp(timestamp):
 
 
 def _description_file_path():
-    return path.join(path.dirname(path.abspath(__file__)), "data", "apis.json")
+    return path.join(path.dirname(path.abspath(__file__)), "data", "signatures.yml")
