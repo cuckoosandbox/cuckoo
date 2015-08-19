@@ -518,6 +518,9 @@ def share(request, av_name, task_id):
             context_instance=RequestContext(request))
 
     file_info = report["target"]["file"]
+    help_text = ("Additional information at "
+                 "https://cuckoo.skbkontur.ru/analysis/%s:%s/"
+                 % (task_id, file_info["md5"]))
     if av_name == "Kaspersky":
         br = Browser()
         br.open("http://newvirus.kaspersky.com/")
@@ -546,8 +549,7 @@ def share(request, av_name, task_id):
         br.form.set_all_readonly(False)
         br.form["category"] = ["2"]
         br.form["email"] = settings.EMAIL
-        br.form["text"] = ("Additional information at "
-                           "https://cuckoo.skbkontur.ru/analysis/%s/" % task_id)
+        br.form["text"] = help_text
         response = br.submit()
         response = response.read()
 
@@ -567,8 +569,7 @@ def share(request, av_name, task_id):
             br.form.set_all_readonly(False)
             br.form.add_file(open(filename), 'application/zip', file_info["sha256"] + ".zip")
             br.form["email"] = settings.EMAIL
-            br.form["commentary"] = ("Additional information at "
-                                     "https://cuckoo.skbkontur.ru/analysis/%s/" % task_id)
+            br.form["commentary"] = help_text
             response = br.submit()
             response=response.read().decode("windows-1251")
             if u"Спасибо, Ваше сообщение успешно отправлено." in response:
