@@ -224,12 +224,17 @@ def search_behavior(request, task_id):
         raise PermissionDenied
 
 @require_safe
-def report(request, task_id):
+def report(request, task_id, task_hash):
     report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
 
     if not report:
         return render_to_response("error.html",
                                   {"error": "The specified analysis does not exist"},
+                                  context_instance=RequestContext(request))
+
+    if report['info']['category'] == 'file' and task_hash != report['target']['file']['md5']:
+        return render_to_response("error.html",
+                                  {"error": "File hash is wrong"},
                                   context_instance=RequestContext(request))
 
     # Creating dns information dicts by domain and ip.
