@@ -41,6 +41,8 @@ class Pcap:
     """Reads network data from PCAP file."""
     ssl_ports = 443,
 
+    notified_dpkt = False
+
     def __init__(self, filepath):
         """Creates a new instance.
         @param filepath: path to PCAP file
@@ -425,6 +427,14 @@ class Pcap:
     def _https_identify(self, conn, data):
         """Extract a combination of the Session ID, Client Random, and Server
         Random in order to identify the accompanying master secret later."""
+        if not hasattr(dpkt.ssl, "TLSRecord"):
+            if not Pcap.notified_dpkt:
+                Pcap.notified_dpkt = True
+                log.warning("Using an old version of dpkt that does not "
+                            "support TLS streams (install the latest with "
+                            "`pip install dpkt`)")
+            return
+
         try:
             record = dpkt.ssl.TLSRecord(data)
         except dpkt.NeedData:
