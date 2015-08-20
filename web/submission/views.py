@@ -155,7 +155,7 @@ def index(request):
                                   context_instance=RequestContext(request))
 
 def status(request, task_id):
-    task = Database().view_task(task_id)
+    task = Database().view_task(task_id, details=True)
     if not task:
         return render_to_response("error.html",
                                   {"error": "The specified task doesn't seem to exist."},
@@ -168,5 +168,6 @@ def status(request, task_id):
     return render_to_response("submission/status.html",
                               {"completed": completed,
                                "status": task.status,
+                               "task_md5": task.sample.md5,
                                "task_id": task_id},
                               context_instance=RequestContext(request))

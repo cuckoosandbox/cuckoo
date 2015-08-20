@@ -2,7 +2,7 @@
 {% block content %}
 <p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
 {% if completed %}
-    <div class="alert alert-success"><h4>Good news! :-)</h4>The analysis is completed, you can view it <a href="{% url "analysis.views.report" task_id %}">here</a>.</div>
+    <div class="alert alert-success"><h4>Good news! :-)</h4>The analysis is completed, you can view it <a href="{% url "analysis.views.report" task_id task_md5 %}">here</a>.</div>
 {% else %}
     <script type="text/JavaScript">setTimeout("location.reload(true);",30000);</script>
     <div class="alert alert-info">
