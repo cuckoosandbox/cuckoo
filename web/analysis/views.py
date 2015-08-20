@@ -227,15 +227,19 @@ def search_behavior(request, task_id):
 
 
 @require_safe
-def report(request, task_id):
-    report = results_db.analysis.find_one({"info.id": int(task_id)},
-                                          sort=[("_id", pymongo.DESCENDING)])
+def report(request, task_id, task_hash):
+    report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
 
     if not report:
         return render_to_response(
             "error.html",
             {"error": "The specified analysis does not exist"},
             context_instance=RequestContext(request))
+
+    if report['info']['category'] == 'file' and task_hash != report['target']['file']['md5']:
+        return render_to_response("error.html",
+                                  {"error": "File hash is wrong"},
+                                  context_instance=RequestContext(request))
 
     # Creating dns information dicts by domain and ip.
     if "network" in report and "domains" in report["network"]:
@@ -580,6 +584,9 @@ def share(request, av_name, task_id):
             context_instance=RequestContext(request))
 
     file_info = report["target"]["file"]
+    help_text = ("Additional information at "
+                 "https://cuckoo.skbkontur.ru/analysis/%s:%s/"
+                 % (task_id, file_info["md5"]))
     if av_name == "Kaspersky":
         br = Browser()
         br.open("http://newvirus.kaspersky.com/")
@@ -608,9 +615,7 @@ def share(request, av_name, task_id):
         br.form.set_all_readonly(False)
         br.form["category"] = ["2"]
         br.form["email"] = settings.EMAIL
-        br.form["text"] = (
-            "Additional information at "
-            "https://cuckoo.skbkontur.ru/analysis/%s/" % task_id)
+        br.form["text"] = help_text
         response = br.submit()
         response = response.read()
 
@@ -635,9 +640,7 @@ def share(request, av_name, task_id):
             br.form.add_file(open(filename), 'application/zip',
                              file_info["sha256"] + ".zip")
             br.form["email"] = settings.EMAIL
-            br.form["commentary"] = (
-                "Additional information at "
-                "https://cuckoo.skbkontur.ru/analysis/%s/" % task_id)
+            br.form["commentary"] = help_text
             response = br.submit()
             response = response.read().decode("cp1251")
             if u"Спасибо, Ваше сообщение успешно отправлено." in response:
