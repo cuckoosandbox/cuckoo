@@ -5,7 +5,6 @@
 import sys
 import re
 import os
-import json
 
 from django.conf import settings
 from django.template import RequestContext
@@ -24,8 +23,7 @@ sys.path.append(settings.CUCKOO_PATH)
 from lib.cuckoo.core.database import Database, TASK_PENDING
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 import modules.processing.network as network
-from mechanize import Browser
-from pyminizip import compress
+from share import ANTIVIRUSES
 
 
 results_db = pymongo.MongoClient(settings.MONGO_HOST,
@@ -573,7 +571,6 @@ def pcapstream(request, task_id, conntuple):
 
 @require_safe
 def share(request, av_name, task_id):
-    result = (2, "%s sender not implemented" % av_name)
     report = results_db.analysis.find_one({"info.id": int(task_id)},
                                           sort=[("_id", pymongo.DESCENDING)])
 
@@ -587,68 +584,16 @@ def share(request, av_name, task_id):
     help_text = ("Additional information at "
                  "https://cuckoo.skbkontur.ru/analysis/%s:%s/"
                  % (task_id, file_info["md5"]))
-    if av_name == "Kaspersky":
-        br = Browser()
-        br.open("http://newvirus.kaspersky.com/")
-        br.select_form(nr=0)
-        br.form.add_file(open(file_info["path"]),
-                         "application/octetstream",
-                         file_info["sha256"])
-        br.form.set_all_readonly(False)
-        br.form["VirLabRecordModel.Email"] = settings.EMAIL
-        br.form["VirLabRecordModel.SuspiciousFilePath"] = file_info["sha256"]
-        br.form["VirLabRecordModel.CategoryValue"] = "SuspiciousFile"
-        response = br.submit()
-        response = response.read()
 
-        if "was successfully sent" in response:
-            result = (1, "Success!")
-        else:
-            result = (0, "Something goes wrong")
-    elif av_name == "DrWeb":
-        br = Browser()
-        br.open("https://vms.drweb.com/sendvirus/")
-        br.select_form(nr=1)
-        br.form.add_file(open(file_info["path"]),
-                         "application/octetstream",
-                         file_info["sha256"])
-        br.form.set_all_readonly(False)
-        br.form["category"] = ["2"]
-        br.form["email"] = settings.EMAIL
-        br.form["text"] = help_text
-        response = br.submit()
-        response = response.read()
-
-        if "SNForm" not in response:
-            result = (1, "Success!")
-        else:
-            result = (0, "Something goes wrong")
-    elif av_name == "ESET-NOD32":
+    sender = ANTIVIRUSES.get(av_name)
+    if sender:
         try:
-            filename = file_info["path"]
-            if ".zip" not in filename:
-                compress(filename, filename + ".zip", "infected", 5)
-                filename += ".zip"
-
-            br = Browser()
-            br.open(
-                "http://www.esetnod32.ru/support/knowledge_base/new_virus/")
-            br.select_form(
-                predicate=lambda f:
-                f.attrs.get('id', None) == 'new_license_activation_v')
-            br.form.set_all_readonly(False)
-            br.form.add_file(open(filename), 'application/zip',
-                             file_info["sha256"] + ".zip")
-            br.form["email"] = settings.EMAIL
-            br.form["commentary"] = help_text
-            response = br.submit()
-            response = response.read().decode("cp1251")
-            if u"Спасибо, Ваше сообщение успешно отправлено." in response:
-                result = (1, "Success!")
-            else:
-                result = (0, response)
-        except:
-            result = (0, "Something goes wrong")
+            result = sender(file_info['path'], help_text,
+                            settings.EMAIL, file_info['sha256'])
+        except Exception as e:
+            result = (1, "Something goes wrong: %s" % e)
+    else:
+        result = (2, "%s sender not implemented" % av_name)
 
     return render_to_response("analysis/share.html",
                               {"result": result},
