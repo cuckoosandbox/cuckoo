@@ -72,7 +72,7 @@ def sendEset(filename, help_text, email, sha):
     form_data["commentary"] = help_text
 
     response = br.post(hostUrl, data=form_data,
-                       files={u'suspicious_file': ("image003.zip",
+                       files={u'suspicious_file': (sha + ".zip",
                                                    open(filename, 'rb'),
                                                    "application/zip")})
 
