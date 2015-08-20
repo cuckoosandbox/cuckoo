@@ -26,9 +26,9 @@ def sendKaspersky(filename, help_text, email, sha):
                               open(filename, 'rb')})
 
     if "was successfully sent" in response:
-        return 1, "Success!"
+        return 0, "Success!"
     else:
-        return 0, "Something goes wrong"
+        return 1, "Something goes wrong"
 
 
 def sendDrWeb(filename, help_text, email, sha):
@@ -46,9 +46,9 @@ def sendDrWeb(filename, help_text, email, sha):
                        files={'file': open(filename, 'rb')})
 
     if "SNForm" not in response:
-        return 1, "Success!"
+        return 0, "Success!"
     else:
-        return 0, "Something goes wrong"
+        return 1, "Something goes wrong"
 
 
 def sendEset(filename, help_text, email, sha):
@@ -77,9 +77,9 @@ def sendEset(filename, help_text, email, sha):
                                                    "application/zip")})
 
     if u"Спасибо, Ваше сообщение успешно отправлено." in response.text:
-        return 1, "Success!"
+        return 0, "Success!"
     else:
-        return 0, "Something goes wrong"
+        return 1, "Something goes wrong"
 
 
 def sendClamAV(filename, help_text, email, sha):
@@ -101,7 +101,7 @@ def sendClamAV(filename, help_text, email, sha):
     s3_answer = br.post(s3_url, data=form_s3_data,
                         files={'file': open(filename, 'rb')})
     if s3_answer.status_code != 201:
-        return 0, "Something wrong. s3 status = %s" % s3_answer.status_code
+        return 1, "Something wrong. s3 status = %s" % s3_answer.status_code
 
     form = page.find('form', id='fileData')
     form_data = dict([(el['name'], el.get('value', None))
