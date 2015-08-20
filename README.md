@@ -96,7 +96,7 @@ You can run the test suite with `nose`:
 
 ```bash
 $ cd ./cuckoo-osx-analyzer
-$ sudo -H pip install -r requirements-dev.txt
+$ sudo -H pip install -r requirements.txt
 $ nosetests
 ```
 
