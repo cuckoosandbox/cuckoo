@@ -1,5 +1,5 @@
 # cuckoo-osx-analyzer
-[![Build Status](https://travis-ci.org/rodionovd/cuckoo-osx-analyzer.svg?branch=master)](https://travis-ci.org/rodionovd/cuckoo-osx-analyzer) [![GitHub version](https://badge.fury.io/gh/rodionovd%2Fcuckoo-osx-analyzer.svg)](http://badge.fury.io/gh/rodionovd%2Fcuckoo-osx-analyzer) [![Code Climate](https://codeclimate.com/github/rodionovd/cuckoo-osx-analyzer/badges/gpa.svg)](https://codeclimate.com/github/rodionovd/cuckoo-osx-analyzer)    
+[![Build Status](https://travis-ci.org/rodionovd/cuckoo-osx-analyzer.svg?branch=master)](https://travis-ci.org/rodionovd/cuckoo-osx-analyzer) [![GitHub version](https://badge.fury.io/gh/rodionovd%2Fcuckoo-osx-analyzer.svg)](http://badge.fury.io/gh/rodionovd%2Fcuckoo-osx-analyzer) [![Code Climate](https://codeclimate.com/github/rodionovd/cuckoo-osx-analyzer/badges/gpa.svg)](https://codeclimate.com/github/rodionovd/cuckoo-osx-analyzer)
 My [GSoC project](http://www.google-melange.com/gsoc/project/details/google/gsoc2015/rodionovd/5649050225344512) aiming at building an OS X analyzer for [Cuckoo Sandbox](http://www.cuckoosandbox.org/) project.  
 
 :warning: **WIP** :warning:  
@@ -88,7 +88,7 @@ $ ./utils/submit.py --platform darwin ~/bin/sample
   ```
 
 ### Adding custom API signatures
-You can add, modify or delete API signatures in [`apis.json`](https://github.com/rodionovd/cuckoo-osx-analyzer/blob/master/analyzer/darwin/lib/core/data/apis.json) file. See the builtin examples for details on the format.
+You can add custom API signatures and define data types in [`signatures.json`](./cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/signatures.yml) and [`types.yml`](./cuckoo-osx-analyzer/analyzer/darwin/lib/core/data/types.yml) files.
 
 ### Tests
 
@@ -96,7 +96,7 @@ You can run the test suite with `nose`:
 
 ```bash
 $ cd ./cuckoo-osx-analyzer
-$ sudo -H pip install -r requirements-dev.txt
+$ sudo -H pip install -r requirements.txt
 $ nosetests
 ```
 

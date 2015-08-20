@@ -3,191 +3,269 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE file for details.
 
-import logging
+import yaml
+import json
 from os import path
-from json import load
 from string import Template
+from sets import Set
 
-LOG = logging.getLogger(__name__)
-
-def generate_probes(source, output_path, overwrite=False):
-    """ Generates dtrace pid-based probes at $output_path based definitions
-    from $source JSON file.
-
-    By default if there's already a file at $output_path, this function is no-op.
-    To overwrite the destination file, set $overwrite to True.
-    """
+def generate_probes(definitions, output_path, overwrite=True):
+    """ TBD """
     if not overwrite and path.isfile(output_path):
-        return # we already have our probes generated
-    defs = _read_definitions(source)
-    probes = [HEADER] + [_create_probe(x) for x in defs]
-    _save_probes(probes, output_path)
-
-# File IO
-def _read_definitions(fromfile):
-    """ Reads API definitions from the given JSON file.
-    See lib/core/data/apis.json for the reference.
-    """
-    try:
-        with open(fromfile, "r") as infile:
-            contents = load(infile)
-            # Now convert the root dictionary to an array of dictionaries where
-            # original keys become values for the "name" key.
-            defs = []
-            for key, value in contents.iteritems():
-                defs.append(dict({'name': key}, **value))
-            return defs
-    except IOError:
-        LOG.exception("Could not open apis.json file")
-    except ValueError:
-        LOG.exception("apis.json contains invalid JSON")
-
-def _save_probes(probes, tofile):
-    try:
-        with open(tofile, "w") as outfile:
-            outfile.writelines(probes)
-    except IOError:
-        LOG.exception("Could not open output file for writing")
-#
-# Generation
-#
-def _create_probe(definition):
-    if definition.get("__ignore__", False):
-        return ""
-    elif len(definition["args"]) == 0:
-        # We only need entry probes to save arguments. If there're no arguments,
-        # don't even bother creating an empty probe.
-        return _create_return_probe(definition)
+        pass
+    if isinstance(definitions, list):
+        defs = definitions
     else:
-        return _create_entry_probe(definition) + _create_return_probe(definition)
+        defs = read_definitions(definitions)
+    types = read_types(path.abspath(path.join(__file__, "../../core/data/types.yml")))
+    contents  = [HEADER] + typedefs_for_custom_structs(defs, types)
+    contents += [probe_from_definition(x, types) for x in defs]
+    dump_probes(contents, output_path)
 
-#
-# Generation detals
-#
-def _create_entry_probe(definition):
+# FILE IO
+
+def read_definitions(fromfile):
+    """ Read API signatures from a file. """
+    with open(fromfile, "r") as stream:
+        contents = yaml.safe_load(stream)
+        # Now convert the root dictionary to an array of dictionaries where
+        # original keys become values for the "api" key.
+        # FIXME(rodionovd): yes, I know, it should be an array..
+        return [dict({'api': k}, **v) for k, v in contents.iteritems()]
+
+def read_types(infile):
+    """ Reads types definitions from a file. """
+    with open(infile, "r") as stream:
+        return yaml.safe_load(stream)
+
+def dump_probes(probes, tofile):
+    """ Writes the given list of dtrace probes to a file. If the file
+    already exists, it's truncated."""
+    with open(tofile, "w") as stream:
+        stream.writelines(probes)
+
+# GENERATION
+
+def probe_from_definition(definition, types):
+    """ Maps the given API definition to an actual dtrace probe(s). """
+    if definition.get('__ignore__', False):
+        return ""
+    # We only need entry probes to save arguments
+    elif len(definition['args']) == 0:
+        return return_probe_from_definition(definition, types)
+    else:
+        entry_probe  = entry_probe_from_definition(definition)
+        return_probe = return_probe_from_definition(definition, types)
+        return entry_probe + return_probe
+
+def entry_probe_from_definition(df):
+    """ Generates an entry dtrace probe from the given API definition. """
     template = Template(ENTRY_PROBE_TEMPLATE)
     mapping = {
-        "__LIBRARY__": definition.get("library", ""),
-        "__NAME__"   : definition["name"],
-        "__ARGUMENTS_PUSH_ON_STACK__": _push_on_stack_section(definition["args"])
+        "__LIBRARY__": df.get("library", ""),
+        "__NAME__"   : df["api"],
+        "__ARGUMENTS_PUSH_ON_STACK__": push_on_stack_section(df["args"])
     }
     return template.substitute(mapping)
 
-def _create_return_probe(definition):
-    args = definition["args"]
-    retval_type = definition["retval_type"]
+def return_probe_from_definition(df, types):
+    """ Generates a return dtrace probe from the given API definition. """
+    args = df["args"]
+    retval_type = df["retval_type"]
+    printf_specifier = type_description(retval_type, types)["printf_specifier"]
+
     template = Template(RETURN_PROBE_TEMPLATE)
     mapping = {
-        "__LIBRARY__": definition.get("library", ""),
-        "__NAME__"   : definition["name"],
-        "__ARGS_FORMAT_STRING__"      : _args_format_string(args),
-        "__RETVAL_FORMAT_SPECIFIER__" : PRINTF_FORMATS[retval_type],
-        "__ARGUMENTS__"               : _arguments_section(args),
-        "__RETVAL_CAST__"             : _c_cast_for_type(retval_type),
-        "__ARGUMENTS_POP_FROM_STACK"  : _pop_from_stack_section(args)
+        "__LIBRARY__": df.get("library", ""),
+        "__NAME__"   : df["api"],
+        "__ARGS_FORMAT_STRING__"      : arguments_format_string(args, types),
+        "__RETVAL_FORMAT_SPECIFIER__" : printf_specifier,
+        "__ARGUMENTS__"               : arguments_section(args, types),
+        "__RETVAL__"                  : retval_section(retval_type, types),
+        "__ARGUMENTS_POP_FROM_STACK__": pop_from_stack_section(args)
     }
     return template.substitute(mapping)
 
-def _push_on_stack_section(args):
-    parts = []
-    for idx in xrange(len(args)):
-        parts.append("""self->arguments_stack[self->deeplevel, \"arg%d\"] = self->arg%d;
-\tself->arg%d = arg%d;""" % (idx, idx, idx, idx))
-    if len(parts) == 0:
+def typedefs_for_custom_structs(defs, types):
+    """ Returns a list of typedef statements for custom structures
+    defined in `types.yml`."""
+    def flatten(list_of_lists):
+        return sum(list_of_lists, [])
+    def deep_search_types(parent, types):
+        result = Set()
+        for t in parent:
+            description = type_description(t, types)
+            if "struct" in description:
+                result |= deep_search_types(description["struct"].values(), types)
+            result.add(dereference_type(t))
+        return result
+    # We will only generate typedefs for struct that are actually in use
+    obviously_used_types = [x["type"] for x in flatten([y["args"] for y in defs])]
+    all_used_types = deep_search_types(obviously_used_types, types)
+
+    struct_types = {
+        k:v for (k, v) in types.iteritems() if "struct" in v and k in all_used_types
+    }
+    typedefs = []
+    for (name, description) in struct_types.iteritems():
+        fields = []
+        for (f,t) in description["struct"].iteritems():
+            fields.append("%s %s;" % (t, f))
+        template = "typedef struct {\n\t%s\n} %s;\n\n"
+        typedefs.append(template % ("\n\t".join(fields), name))
+    return typedefs
+
+# -----------------------------------------------------------------------
+
+def arguments_section(args, types):
+    """ Returns a serialization statement for accessing values of
+    the given arguments. """
+    if len(args) == 0:
         return ""
+    def serialize_arg(idx):
+        return serialize_argument_at_idx(idx, args, "self->arg%d" % idx, types)
+    parts = [serialize_arg(i) for i in xrange(len(args))]
+    return ("\n\t\t" + ", ".join(parts) + ",")
+
+def arguments_format_string(args, types):
+    """ Returns a format string for printing the given arguments
+    with printf(). """
+    if len(args) == 0:
+        return ""
+    parts = [printf_format_for_type(x["type"], types) for x in args]
+    return ", ".join(parts)
+
+def retval_section(retval_type, types):
+    """ Returns a serialization stetement for a return value of
+    the given type. """
+    return serialize_type(retval_type, "this->retval", types)
+
+# -------------------------------
+
+def printf_format_for_type(t, types):
+    """ Returns a format string for printing the given type
+    (either atomic or struct). """
+    description = type_description(t, types)
+    if "struct" in description:
+        specifer = printf_format_for_struct(t, types)
     else:
-        parts.insert(0, "self->deeplevel++;")
-        return "\n\t".join(parts)
+        specifer = description["printf_specifier"]
+    return specifer.replace("\"", "\\\"")
+
+def printf_format_for_struct(t, types):
+    """ Returns a format string for printing the given struct type. """
+    fields = []
+    for (name, argtype) in type_description(t, types)["struct"].items():
+        printf_specifier = type_description(argtype, types).get("printf_specifier", None)
+        if printf_specifier != None:
+            fields.append("\""+name +"\"" + " : " + printf_specifier)
+        else:
+            # Yay, recursion!
+            struct_format = printf_format_for_struct(argtype, types)
+            fields.append("\""+name +"\"" + " : " + struct_format)
+    return "{%s}" % ", ".join(fields)
+
+def serialize_argument_at_idx(idx, all_args, accessor, types):
+    """ For an argument at the given index, returns a serialization
+    statement for it's value. """
+    type_name = all_args[idx]["type"]
+    return serialize_type(type_name, accessor, types)
+
+def serialize_type(name, accessor, types):
+    """ Returns a serialization statement for the given type. """
+    name = name.strip()
+    description = type_description(name, types)
+    if "struct" in description:
+        return serialize_struct_type(name, accessor, types)
+    elif "template" in description:
+        return serialize_type_with_template(name, accessor, types)
+    else:
+        cast = description.get("cast", dereference_type(name))
+        return serialize_atomic_type(name, cast, accessor)
+
+def serialize_atomic_type(argtype, cast, accessor):
+    """ Returns a serialization statement for the given atomic type.
+    In case of pointers, values they're referencing will be used instead
+    (see `dereference_type()` for exceptions). """
+    # Do we need to dereference this argument and copy it to the userspace?
+    if dereference_type(argtype) == argtype:
+        # Nope: it's a value type
+        return "(%s)(%s)" % (cast, accessor)
+    else:
+        # Yep: it's a reference type
+        real_type = dereference_type(argtype)
+        t = (accessor, cast, real_type, accessor, real_type)
+        return "!!(%s) ? (%s)0 : *(%s *)copyin((uint64_t)%s, sizeof(%s))" % t
+
+def serialize_struct_type(struct_type, accessor, types):
+    """ Returns a serialization statement for the given structure type. """
+    fields = []
+    if struct_type == dereference_type(struct_type):
+        memeber_operator = "."
+    else:
+        memeber_operator = "->"
+    structure = type_description(struct_type, types)["struct"]
+    for (field_name, field_type) in structure.iteritems():
+        fields.append(serialize_type(
+            field_type,
+            "((%s)(%s))" % (struct_type, accessor) + memeber_operator + field_name,
+            types
+        ))
+    return ", ".join(fields)
+
+def serialize_type_with_template(oftype, accessor, types):
+    """ Returns a serialization template for the given type
+    with all placeholders replaced with the actual values. """
+    template = Template(type_description(oftype, types)["template"])
+    mapping = {"ARG" : accessor}
+    # TODO(rodionovd): add support for buffers (ARG_SIZE)
+    return template.substitute(mapping)
+
+# -------------------------------
+
+def dereference_type(t):
+    """ Removes everything after the last star character in a type string,
+    except for 'void *' and 'char *`. """
+    if t.strip() in ["void *", "char *"]:
+        return t.strip()
+    try:
+        return t[:t.rindex("*")].strip()
+    except:
+        return t.strip()
+
+def type_description(name, types):
+    """ Returns a dictionary description the given type. See `types.yml`
+    for more information about keys and values there. """
+    return types[dereference_type(name)]
+
+# -----------------------------------------------------------------------
+
+def push_on_stack_section(args):
+    """ Composes a "push arguments on stack" section of
+    an entry PID dtrace probe. """
+    if len(args) == 0:
+        return ""
+    parts = ["self->deeplevel++;"]
+    for idx in xrange(len(args)):
+        parts.append(
+            """self->arguments_stack[self->deeplevel, \"arg%d\"] = self->arg%d;\n\tself->arg%d = arg%d;""" % (idx, idx, idx, idx)
+        )
+    return "\n\t".join(parts)
 
 
-def _pop_from_stack_section(args):
+def pop_from_stack_section(args):
+    """ Composes a "pop arguments from stack" section of
+    a return PID dtrace probe. """
+    if len(args) == 0:
+        return ""
     parts = []
     for idx in xrange(len(args)):
         parts.append("""self->arg%d = self->arguments_stack[self->deeplevel, \"arg%d\"];
 \tself->arguments_stack[self->deeplevel, \"arg%d\"] = 0;""" % (idx, idx, idx))
-    if len(parts) == 0:
-        return ""
-    else:
-        parts.append("--self->deeplevel;")
-        return "\n\t" + "\n\t".join(parts)
+    parts.append("--self->deeplevel;")
+    return "\n\t" + "\n\t".join(parts)
 
 
-def _args_format_string(args):
-    c_format_of = lambda x: _format_specifier_from_type(x["type"])
-    return ", ".join([c_format_of(x) for x in args])
-
-
-def _arguments_section(args):
-    parts = []
-    for idx, item in enumerate(args):
-        if item["type"] == "string":
-            # dtrace strings need to be copied into userland with copyinstr() first,
-            # so we use this function instead of casting. Also, verify that the
-            # pointer is valid before dereferencing
-            parts.append("self->arg%d != (int64_t)NULL ? copyinstr(self->arg%d) : \"<NULL>\"," % (idx, idx))
-        elif item["type"] == "buffer":
-            # Use copyin() and stringof() for retriving an arbitatry buffer; thus
-            # we need to know a place to look for it's size
-            if "size_arg" not in item:
-                raise Exception("Missing `size_arg` key for buffer argument \"%s\"" % item["name"])
-            size_arg_name = item["size_arg"]
-            size_arg_idx = [i for i, x in enumerate(args) if x["name"] == size_arg_name][0]
-            #
-            cmd = "stringof(copyin(self->arg%d, self->arg%d))" % (idx, size_arg_idx)
-            parts.append("self->arg%d != (int64_t)NULL ? %s : \"<NULL>\"," % (idx, cmd))
-        else:
-            parts.append("%s(self->arg%d)," % (_c_cast_for_type(item["type"]), idx))
-    return ("\n\t\t" + " ".join(parts)) if len(parts) > 0 else ""
-
-
-def _format_specifier_from_type(type_string):
-    if type_string in PRINTF_FORMATS:
-        return PRINTF_FORMATS[type_string]
-    else:
-        raise Exception("Unsupported type string: \"%s\"" % type_string)
-
-def _c_cast_for_type(type_string):
-    if type_string in C_CASTS:
-        return C_CASTS[type_string]
-    else:
-        return "(%s)" % type_string
-
-# Constants
-PRINTF_FORMATS = {
-    "pointer" : "%llu",
-    # %S is for raw string: ignore special characters, etc. Must be escaped.
-    "string"  : "\\\"%S\\\"",
-    # %S will print everything, not just ASCII, so we use it for buffers too
-    "buffer"  : "\\\"%S\\\"",
-    "integer" : "%d",
-    "int"     : "%d",
-    "float"   : "%f",
-    "double"  : "%lf",
-    "char"    : "\\\"%c\\\"",
-    "uint8_t" : "%u",
-    "uint16_t": "%u",
-    "uint32_t": "%u",
-    "uint64_t": "%llu",
-    "int64_t" : "%lld",
-    "int32_t" : "%d",
-    "int16_t" : "%d",
-    "int8_t"  : "%d",
-    "size_t"  : "%lu"
-}
-
-C_CASTS = {
-    "pointer" : "(unsigned long long)",
-    # dtrace strings need to be copied into userland with copyinstr() first,
-    # so we use this function instead of casting
-    "string"  : "copyinstr",
-    "integer" : "(int)",
-    "int"     : "(int)",
-    "float"   : "(float)",
-    "double"  : "(double)",
-    "char"    : "(char)",
-    "size_t"  : "(size_t)"
-}
-# Templates
 ENTRY_PROBE_TEMPLATE = """pid$$target:${__LIBRARY__}:${__NAME__}:entry
 {
 \t${__ARGUMENTS_PUSH_ON_STACK__}
@@ -199,8 +277,8 @@ RETURN_PROBE_TEMPLATE = """pid$$target:${__LIBRARY__}:${__NAME__}:return
 \tthis->timestamp_ms = walltimestamp/1000000;
 \tprintf("{\\\"api\\\":\\\"%s\\\", \\\"args\\\":[${__ARGS_FORMAT_STRING__}], \\\"retval\\\":${__RETVAL_FORMAT_SPECIFIER__}, \\\"timestamp\\\":%lld, \\\"pid\\\":%d, \\\"ppid\\\":%d, \\\"tid\\":%d, \\\"errno\\\":%d}\\n",
 \t\tprobefunc,${__ARGUMENTS__}
-\t\t${__RETVAL_CAST__}(this->retval),
-\t\t(int64_t)this->timestamp_ms, pid, ppid, tid, errno);${__ARGUMENTS_POP_FROM_STACK}
+\t\t${__RETVAL__},
+\t\t(int64_t)this->timestamp_ms, pid, ppid, tid, errno);${__ARGUMENTS_POP_FROM_STACK__}
 }\n"""
 
 HEADER = """/* For some reason either dtrace or clang preprocessor refuses to identify standard

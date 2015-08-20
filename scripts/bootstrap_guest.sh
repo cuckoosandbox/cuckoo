@@ -70,10 +70,9 @@ fi
 # [3] Download agent.py into /Users/Shared
 echo "[INFO]: Downloading the Cuckoo guest agent"
 curl -o "$AGENT_DIR"/agent.py "$AGENT_URL"
-# [3.1] Install the analyser dependencies (e.g. pymongo for bson)
-for dep in "pymongo"; do
-	sudo easy_install "${dep}"
-done
+# [3.1] Install dependencies
+sudo easy_install pip
+(cd "$(dirname "$0")/.." && sudo -H pip install -r requirements.txt)
 # [4] and run it
 echo "[INFO]: Launching the Cuckoo guest agent"
 python "$AGENT_DIR"/agent.py

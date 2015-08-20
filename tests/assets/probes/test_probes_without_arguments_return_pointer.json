@@ -1,8 +1,0 @@
-{
-    "foo": {
-        "is_success_condition": "retval > 0",
-        "args": [],
-        "retval_type": "pointer",
-        "category" : "foobar"
-    }
-}
