@@ -72,7 +72,7 @@ echo "[INFO]: Downloading the Cuckoo guest agent"
 curl -o "$AGENT_DIR"/agent.py "$AGENT_URL"
 # [3.1] Install dependencies
 sudo easy_install pip
-sudo -H pip install -r ../requirements.txt
+(cd "$(dirname "$0")/.." && sudo -H pip install -r requirements.txt)
 # [4] and run it
 echo "[INFO]: Launching the Cuckoo guest agent"
 python "$AGENT_DIR"/agent.py
