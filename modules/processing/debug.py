@@ -21,16 +21,20 @@ class Debug(Processing):
 
         if os.path.exists(self.log_path):
             try:
-                debug["log"] = codecs.open(self.log_path, "rb", "utf8").readlines()
+                debug["log"] = codecs.open(self.log_path,
+                                           "rb", "utf8").readlines()
             except ValueError as e:
                 try:
-                    debug["log"] = codecs.open(self.log_path, "rb", "cp866").readlines()
+                    debug["log"] = codecs.open(self.log_path,
+                                               "rb", "cp866").readlines()
                 except ValueError as ee:
                     try:
-                        debug["log"] = codecs.open(self.log_path, "rb", "cp1251").readlines()
+                        debug["log"] = codecs.open(self.log_path,
+                                                   "rb", "cp1251").readlines()
                     except ValueError as eee:
-                        raise CuckooProcessingError("Error decoding %s: %s, %s, %s" %
-                                                    (self.log_path, e, ee, eee))
+                        raise CuckooProcessingError(
+                            "Error decoding %s: %s, %s, %s" %
+                            (self.log_path, e, ee, eee))
             except (IOError, OSError) as e:
                 raise CuckooProcessingError("Error opening %s: %s" %
                                             (self.log_path, e))
