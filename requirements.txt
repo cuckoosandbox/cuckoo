@@ -15,4 +15,3 @@ flask
 alembic
 pyminizip
 beautifulsoup4
-mechanize

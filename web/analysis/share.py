@@ -1,24 +1,29 @@
 # coding=utf-8
 __author__ = 'm_messiah'
-from mechanize import Browser
 from pyminizip import compress
 from requests import Session
 from bs4 import BeautifulSoup
 
 
 def sendKaspersky(filename, help_text, email, sha):
-    br = Browser()
-    br.open("http://newvirus.kaspersky.com/")
-    br.select_form(nr=0)
-    br.form.add_file(open(filename),
-                     "application/octetstream",
-                     sha)
-    br.form.set_all_readonly(False)
-    br.form["VirLabRecordModel.Email"] = email
-    br.form["VirLabRecordModel.SuspiciousFilePath"] = sha
-    br.form["VirLabRecordModel.CategoryValue"] = "SuspiciousFile"
-    response = br.submit()
-    response = response.read()
+    br = Session()
+    hostUrl = "http://newvirus.kaspersky.com/"
+    page = br.get(hostUrl)
+    page = BeautifulSoup(page.text, 'html.parser')
+
+    form = page.find('form', id="SendForm")
+
+    form_data = dict([(el['name'], el.get('value', None))
+                      for el in form.find_all('input') if 'name' in el])
+
+    form_data["cc"] = "on"
+    form_data["VirLabRecordModel.Email"] = email
+    form_data["VirLabRecordModel.SuspiciousFilePath"] = sha
+    form_data["VirLabRecordModel.CategoryValue"] = "SuspiciousFile"
+
+    response = br.post(hostUrl + form['action'], data=form_data,
+                       files={'VirLabRecordModel.SuspiciousFileContent':
+                              open(filename, 'rb')})
 
     if "was successfully sent" in response:
         return 1, "Success!"
@@ -27,18 +32,18 @@ def sendKaspersky(filename, help_text, email, sha):
 
 
 def sendDrWeb(filename, help_text, email, sha):
-    br = Browser()
-    br.open("https://vms.drweb.com/sendvirus/")
-    br.select_form(nr=1)
-    br.form.add_file(open(filename),
-                     "application/octetstream",
-                     sha)
-    br.form.set_all_readonly(False)
-    br.form["category"] = ["2"]
-    br.form["email"] = email
-    br.form["text"] = help_text
-    response = br.submit()
-    response = response.read()
+    br = Session()
+    page = br.get("https://vms.drweb.com/sendvirus/")
+    page = BeautifulSoup(page.text, 'html.parser')
+    form = page.find('form', id="SNForm")
+    form_data = dict([(el['name'], el.get('value', None))
+                      for el in form.find_all('input') if 'name' in el])
+
+    form_data["email"] = "mmr@kontur.ru"
+    form_data["category"] = ["2"]
+    form_data["text"] = "Test"
+    response = br.post(form['action'], data=form_data,
+                       files={'file': open(filename, 'rb')})
 
     if "SNForm" not in response:
         return 1, "Success!"
@@ -51,20 +56,27 @@ def sendEset(filename, help_text, email, sha):
         compress(filename, filename + ".zip", "infected", 5)
         filename += ".zip"
 
-    br = Browser()
-    br.open(
-        "http://www.esetnod32.ru/support/knowledge_base/new_virus/")
-    br.select_form(
-        predicate=lambda f:
-        f.attrs.get('id', None) == 'new_license_activation_v')
-    br.form.set_all_readonly(False)
-    br.form.add_file(open(filename), 'application/zip',
-                     sha + ".zip")
-    br.form["email"] = email
-    br.form["commentary"] = help_text
-    response = br.submit()
-    response = response.read().decode("cp1251")
-    if u"Спасибо, Ваше сообщение успешно отправлено." in response:
+    hostUrl = "http://www.esetnod32.ru/support/knowledge_base/new_virus/"
+    br = Session()
+    br.headers.update({'referer': hostUrl})
+
+    page = br.get(hostUrl)
+    page = BeautifulSoup(page.text, 'html.parser')
+
+    form = page.find('form', id="new_license_activation_v")
+    form_data = dict([(el['name'], el.get('value', None))
+                      for el in form.find_all('input') if el.has_attr('name')])
+
+    form_data["email"] = email
+    del form_data["suspicious_file"]
+    form_data["commentary"] = help_text
+
+    response = br.post(hostUrl, data=form_data,
+                       files={u'suspicious_file': ("image003.zip",
+                                                   open(filename, 'rb'),
+                                                   "application/zip")})
+
+    if u"Спасибо, Ваше сообщение успешно отправлено." in response.text:
         return 1, "Success!"
     else:
         return 0, "Something goes wrong"
@@ -76,8 +88,8 @@ def sendClamAV(filename, help_text, email, sha):
     page = br.get(hostUrl + "/report/report-malware.html")
     page = BeautifulSoup(page.text, 'html.parser')
 
-    credentials = br.get("http://www.clamav.net/presigned").json()
-    submissionid = credentials['id']
+    credentials = br.get(hostUrl + "/presigned").json()
+    submissionid = credentials.pop('id')
 
     form_s3 = page.find('form', id='s3Form')
     s3_url = form_s3['action']
@@ -95,8 +107,8 @@ def sendClamAV(filename, help_text, email, sha):
     form_data = dict([(el['name'], el.get('value', None))
                       for el in form.find_all('input')[:-1]])
     form_data['submissionID'] = submissionid
-    form_data['sendername'] = "Maxim"
-    form_data['email'] = 'mmr@kontur.ru'
+    form_data['sendername'] = email[:email.find("@")]
+    form_data['email'] = email
 
     response = br.post(hostUrl + form['action'], data=form_data)
 
