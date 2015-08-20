@@ -25,7 +25,7 @@ def sendKaspersky(filename, help_text, email, sha):
                        files={'VirLabRecordModel.SuspiciousFileContent':
                               open(filename, 'rb')})
 
-    if "was successfully sent" in response:
+    if "was successfully sent" in response.text:
         return 0, "Success!"
     else:
         return 1, "Something goes wrong"
@@ -45,7 +45,7 @@ def sendDrWeb(filename, help_text, email, sha):
     response = br.post(form['action'], data=form_data,
                        files={'file': open(filename, 'rb')})
 
-    if "SNForm" not in response:
+    if "SNForm" not in response.text:
         return 0, "Success!"
     else:
         return 1, "Something goes wrong"
