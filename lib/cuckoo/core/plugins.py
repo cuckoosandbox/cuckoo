@@ -246,26 +246,6 @@ class RunSignatures(object):
             if sig.enabled and self._check_signature_version(sig):
                 self.evented_signatures.append(sig(self))
 
-    def _load_overlay(self):
-        """Loads overlay data from a json file.
-        See example in data/signature_overlay.json
-        """
-        filename = os.path.join(CUCKOO_ROOT, "data", "signature_overlay.json")
-
-        try:
-            return json.load(open(filename, "rb"))
-        except IOError:
-            pass
-
-        return {}
-
-    def _apply_overlay(self, signature, overlay):
-        """Applies the overlay attributes to the signature object."""
-        if signature.name in overlay:
-            attrs = overlay[signature.name]
-            for attr, value in attrs.items():
-                setattr(signature, attr, value)
-
     def _check_signature_version(self, current):
         """Check signature version.
         @param current: signature class/instance to check.
@@ -410,11 +390,6 @@ class RunSignatures(object):
         for sig in evented_list:
             if sig.quickout():
                 evented_list.remove(sig)
-
-        overlay = self._load_overlay()
-        log.debug("Applying signature overlays for signatures: %s", ", ".join(overlay.keys()))
-        for signature in complete_list + evented_list:
-            self._apply_overlay(signature, overlay)
 
         if evented_list:
             # Cleanup code to identify and remove old signatures still depending on run
