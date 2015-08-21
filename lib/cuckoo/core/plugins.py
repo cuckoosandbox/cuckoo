@@ -241,61 +241,66 @@ class RunSignatures(object):
         self.results = results
         self.matched = []
 
+        # While developing our version is generally something along the lines
+        # of "2.0-dev" whereas StrictVersion() does not handle "-dev", so we
+        # strip that part off.
+        self.version = CUCKOO_VERSION.split("-")[0]
+
         self.evented_signatures = []
         for sig in list_plugins(group="signatures"):
             if sig.enabled and self._check_signature_version(sig):
                 self.evented_signatures.append(sig(self))
 
-    def _check_signature_version(self, current):
+    def check_signature_version(self, signature):
         """Check signature version.
         @param current: signature class/instance to check.
         @return: check result.
         """
-        # Since signatures can hardcode some values or checks that might
-        # become obsolete in future versions or that might already be obsolete,
-        # I need to match its requirements with the running version of Cuckoo.
-        version = CUCKOO_VERSION.split("-")[0]
-
-        # If provided, check the minimum working Cuckoo version for this
-        # signature.
-        if current.minimum:
+        # Check the minimum Cuckoo version for this signature, if provided.
+        if signature.minimum:
             try:
                 # If the running Cuckoo is older than the required minimum
                 # version, skip this signature.
-                if StrictVersion(version) < StrictVersion(current.minimum.split("-")[0]):
+                if StrictVersion(self.version) < StrictVersion(signature.minimum):
                     log.debug("You are running an older incompatible version "
                               "of Cuckoo, the signature \"%s\" requires "
-                              "minimum version %s",
-                              current.name, current.minimum)
-                    return None
+                              "minimum version %s.",
+                              signature.name, signature.minimum)
+                    return False
 
-                if StrictVersion("1.2") > StrictVersion(current.minimum.split("-")[0]):
+                if StrictVersion("1.2") > StrictVersion(signature.minimum):
                     log.warn("Cuckoo signature style has been redesigned in "
                              "cuckoo 1.2. This signature is not "
-                             "compatible: %s.", current.name)
-                    return None
+                             "compatible: %s.", signature.name)
+                    return False
+
+                if StrictVersion("2.0") > StrictVersion(signature.minimum):
+                    log.warn("Cuckoo version 2.0 features a lot of changes that "
+                             "render old signatures ineffective as they are not "
+                             "backwards-compatible. Please upgrade this "
+                             "signature: %s.", signature.name)
+                    return False
 
             except ValueError:
                 log.debug("Wrong minor version number in signature %s",
-                          current.name)
-                return None
+                          signature.name)
+                return False
 
-        # If provided, check the maximum working Cuckoo version for this
-        # signature.
-        if current.maximum:
+        # Check the maximum version of Cuckoo for this signature, if provided.
+        if signature.maximum:
             try:
                 # If the running Cuckoo is newer than the required maximum
                 # version, skip this signature.
-                if StrictVersion(version) > StrictVersion(current.maximum.split("-")[0]):
+                if StrictVersion(self.version) > StrictVersion(signature.maximum):
                     log.debug("You are running a newer incompatible version "
                               "of Cuckoo, the signature \"%s\" requires "
-                              "maximum version %s",
-                              current.name, current.maximum)
-                    return None
+                              "maximum version %s.",
+                              signature.name, signature.maximum)
+                    return False
             except ValueError:
                 log.debug("Wrong major version number in signature %s",
-                          current.name)
-                return None
+                          signature.name)
+                return False
 
         return True
 
@@ -322,7 +327,7 @@ class RunSignatures(object):
         if not current.enabled:
             return None
 
-        if not self._check_signature_version(current):
+        if not self.check_signature_version(current):
             return None
 
         try:
