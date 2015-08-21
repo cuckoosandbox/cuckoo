@@ -118,9 +118,47 @@ def sendClamAV(filename, help_text, email, sha):
         return 1, "Something goes wrong"
 
 
+def sendMicrosoft(filename, help_text, email, sha):
+    br = Session()
+    hostUrl = "https://www.microsoft.com/security/portal/submission/submit.aspx"
+    br.headers.update({'referer': hostUrl})
+    page = br.get(hostUrl)
+    page = BeautifulSoup(page.text, 'html.parser')
+    form = page.find('form', id='aspnetForm')
+
+    form_data = dict([(el['name'], el.get('value', None))
+                      for el in form.find_all('input') if el.has_attr('name')])
+
+    form_data["ctl00$ctl00$pageContent$leftside$submitterName"] = email
+    text = """I suspect this file contains malware <a
+     href="#"
+     onclick="window.open('../mmpc/shared/glossary.aspx#Malware',
+     'Definitions', 'scrollbars=1,width=1000,height=500');"
+     title="Click here for more details."
+     >(?)</a>"""
+    form_data["ctl00$ctl00$pageContent$leftside$incorrectDetectionRb"] = text
+    form_data["ctl00$ctl00$pageContent$leftside$submissionComments"] = help_text
+    form_data["ctl00$ctl00$pageContent$leftside$productSelection"] = [0]
+
+    response = br.post(
+        hostUrl, data=form_data,
+        files={u'ctl00$ctl00$pageContent$leftside$submissionFile':
+               open(filename, 'rb')})
+
+    response = BeautifulSoup(response.text, 'html.parser')
+    answer = response.find(id="ctl00_ctl00_pageContent_contentTop_ctl00_"
+                              "contenttop_submissionFileGrid_"
+                              "ctl02_HyperlinkFileName")
+    if answer:
+        return 0, "Success! Your id: %s" % answer['title']
+    else:
+        return 1, "Something wrong"
+
+
 ANTIVIRUSES = {
     "Kaspersky": sendKaspersky,
     "DrWeb": sendDrWeb,
     "ESET-NOD32": sendEset,
     "ClamAV": sendClamAV,
+    "Microsoft": sendMicrosoft,
 }
