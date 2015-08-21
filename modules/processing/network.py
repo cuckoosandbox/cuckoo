@@ -705,6 +705,7 @@ def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None
             current_chunk = list(islice(input_iterator, buffer_size))
             if not current_chunk:
                 break
+
             current_chunk.sort()
             fd, filepath = tempfile.mkstemp()
             os.close(fd)
@@ -727,7 +728,6 @@ def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None
             except Exception:
                 pass
 
-# magic
 class SortCap(object):
     """SortCap is a wrapper around the packet lib (dpkt) that allows us to sort pcaps
     together with the batch_sort function above."""
@@ -760,6 +760,7 @@ class SortCap(object):
         rp = next(self.fditer)
         if rp is None:
             return None
+
         self.ctr += 1
 
         ts, raw = rp

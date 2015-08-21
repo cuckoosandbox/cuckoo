@@ -213,6 +213,9 @@ _setup() {
     # Add the www-data user to the cuckoo group.
     adduser www-data cuckoo
 
+    # TODO Somehow vmtemp is not properly propagated into the vmcloak
+    # configuration thing, having to run the setup.sh script twice to
+    # actually start creating the bird.
     VMTEMP="$(mktemp -d "/home/cuckoo/tempXXXXXX")"
 
     # Fetch Cuckoo or in the case of a longterm setup, longcuckoo.
