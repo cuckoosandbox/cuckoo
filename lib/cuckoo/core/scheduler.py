@@ -22,6 +22,12 @@ from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
 from lib.cuckoo.core.plugins import RunSignatures, RunReporting
 from lib.cuckoo.core.resultserver import ResultServer
 
+try:
+    import pefile
+    HAVE_PEFILE = True
+except ImportError:
+    HAVE_PEFILE = False
+
 log = logging.getLogger(__name__)
 
 machinery = None
@@ -208,6 +214,18 @@ class AnalysisManager(threading.Thread):
         if self.task.category == "file":
             options["file_name"] = File(self.task.target).get_name()
             options["file_type"] = File(self.task.target).get_type()
+
+            exports = []
+
+            try:
+                if HAVE_PEFILE:
+                    pe = pefile.PE(self.config.target)
+                    for export in pe.DIRECTORY_ENTRY_EXPORT.symbols:
+                        exports.append(export.name)
+            except Exception as e:
+                log.warning("Error enumerating exported functions: %s", e)
+
+            options["pe_exports"] = ",".join(exports)
 
         # copy in other analyzer specific options, TEMPORARY (most likely)
         vm_options = getattr(machinery.options, self.machine.name)
