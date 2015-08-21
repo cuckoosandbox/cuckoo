@@ -122,7 +122,8 @@ socket:
     retval_type: "int"
     category: "network"
 
-# For tests. Do not remove.
+# Signatures for tests.
+# Please don't remove them. Thanks!
 
 rb_isalpha:
     is_success_condition: "retval != 0"

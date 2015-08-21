@@ -95,8 +95,10 @@ int64_t: &int64_t
 uint64_t: &uint64_t
     printf_specifier: "%llu"
     native: Yes
+
 #
-# Structures
+# Structures for tests.
+# Please don't remove them. Thanks!
 #
 
 test_t:
