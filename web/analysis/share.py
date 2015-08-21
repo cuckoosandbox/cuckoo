@@ -39,9 +39,9 @@ def sendDrWeb(filename, help_text, email, sha):
     form_data = dict([(el['name'], el.get('value', None))
                       for el in form.find_all('input') if 'name' in el])
 
-    form_data["email"] = "mmr@kontur.ru"
+    form_data["email"] = email
     form_data["category"] = ["2"]
-    form_data["text"] = "Test"
+    form_data["text"] = help_text
     response = br.post(form['action'], data=form_data,
                        files={'file': open(filename, 'rb')})
 

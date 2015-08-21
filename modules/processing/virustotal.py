@@ -19,7 +19,7 @@ class VirusTotal(Processing):
     Currently obtains VirusTotal results for the target sample or URL and the
     dropped files.
     """
-    order = 2
+    order = 1
 
     def run(self):
         """Runs VirusTotal processing

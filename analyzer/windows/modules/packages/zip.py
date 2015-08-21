@@ -83,6 +83,11 @@ class Zip(Package):
         """
         try:
             with ZipFile(zip_path, "r") as archive:
+		for zipinfo in archive.infolist():
+                    try:
+                        zipinfo.filename = zipinfo.filename.decode('utf8').encode('utf8')
+                    except UnicodeDecodeError:
+                        zipinfo.filename = zipinfo.filename.decode('cp866').encode('utf8')
                 return archive.infolist()
         except BadZipfile:
             raise CuckooPackageError("Invalid Zip file")
