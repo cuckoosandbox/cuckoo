@@ -712,6 +712,7 @@ class Signature(object):
         @param caller: calling object. Stores results in caller.results
         """
         self.data = []
+        self.matched = False
         self._caller = caller
         self._current_call_cache = None
         self._current_call_dict = None
@@ -1156,11 +1157,6 @@ class Signature(object):
 
     def on_complete(self):
         """Evented signature is notified when all API calls are done."""
-        pass
-
-    def run(self):
-        """Main function for old-style non-evented signatures.
-        """
         pass
 
     def as_result(self):

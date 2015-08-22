@@ -305,41 +305,22 @@ class RunSignatures(object):
 
         return True
 
-    def is_matched(self, sig):
-        """Return True if signature already matched
+    def call_signature(self, signature, handler, *args, **kwargs):
+        """Wrapper to call into 3rd party signatures. This wrapper yields the
+        event to the signature and handles matched signatures recursively."""
+        try:
+            if signature.is_active() and not signature.matched and \
+                    handler(*args, **kwargs):
+                log.debug("Analysis matched signature: %s", signature.name)
 
-        @param sig: The signature to verify
-        @return:
-        """
-        for matched in self.matched:
-            if sig.name == matched["name"]:
-                return True
-        return False
-
-    def append_sig(self, sig):
-        """
-        @param sig: The signature, that matched
-        @return:
-        """
-        self.matched.append(sig.as_result())
-
-        # Link this into the results already at this point, so other
-        # signatures can use it.
-        self.matched.sort(key=lambda key: key["severity"])
-        self.results["signatures"] = self.matched
-
-        for sig in self.evented_signatures:
-            try:
-                result = sig.on_signature(sig)
-                if result is True and not self.is_matched(sig):
-                    self.append_sig(sig)
-            except:
-                log.exception("Failed to run signature \"%s\":", sig.name)
+                for sig in self.signatures:
+                    self.call_signature(sig, sig.on_signature, signature)
+        except:
+            log.exception("Failed to run '%s' of the %s signature",
+                          handler.__name__, signature.name)
 
     def run(self):
         """Run evented signatures."""
-        matched = []
-
         # Transform the filter_ things into set()'s for faster lookup. (This
         # is just a small optimization).
         for signature in self.signatures:
@@ -347,17 +328,12 @@ class RunSignatures(object):
             signature.filter_apinames = set(signature.filter_apinames)
             signature.filter_categories = set(signature.filter_categories)
 
-        # Cleanup code to identify and remove old signatures still depending on run
-        for sig in self.signatures:
-            try:
-                sig.run()
-            except AttributeError:
-                pass
-            else:
-                log.warn("This signature is still old-style. Removing it: %s", sig.name)
-                self.signatures.remove(sig)
+        # Allow signatures to do an early exit.
+        for signature in self.signatures:
+            if signature.quickout():
+                self.signatures.remove(signature)
 
-        log.debug("Running %u evented signatures", len(self.signatures))
+        log.debug("Running %d signatures", len(self.signatures))
         for sig in self.signatures:
             if sig == self.signatures[-1]:
                 log.debug("\t `-- %s", sig.name)
@@ -366,59 +342,36 @@ class RunSignatures(object):
 
         # Iterate calls and tell interested signatures about them.
         for proc in self.results.get("behavior", {}).get("processes", []):
+
+            # Yield the new process event.
+            for sig in self.signatures:
+                self.call_signature(sig, sig.on_process, proc)
+
+            # Yield each call of interest.
             for call in proc.get("calls", []):
-                # Loop through active evented signatures.
                 for sig in self.signatures:
-
-                    # Skip current call if it doesn't match the filters (if any).
-                    if not sig.is_active():
+                    if sig.filter_processnames and \
+                            proc["process_name"] not in sig.filter_processnames:
                         continue
 
-                    if sig.filter_processnames and not proc["process_name"] in sig.filter_processnames:
+                    if sig.filter_apinames and \
+                            call["api"] not in sig.filter_apinames:
                         continue
 
-                    if sig.filter_apinames and not call["api"] in sig.filter_apinames:
+                    if sig.filter_categories and \
+                            call["category"] not in sig.filter_categories:
                         continue
 
-                    if sig.filter_categories and not call["category"] in sig.filter_categories:
-                        continue
+                    self.call_signature(sig, sig.on_call, call, proc)
 
-                    result = None
-                    try:
-                        result = sig.on_call(call, proc)
-                    except:
-                        log.exception("Failed to run signature \"%s\":", sig.name)
-                        result = False
-
-                    # If the signature returns None we can carry on, the
-                    # condition was not matched.
-                    if result is None:
-                        continue
-
-                    # On True, the signature is matched.
-                    if result is True:
-                        log.debug("Analysis matched signature \"%s\"", sig.name)
-                        self.append_sig(sig)
-
-        # Call the stop method on all signatures.
+        # Yield completion events to each signature.
         for sig in self.signatures:
-            try:
-                result = sig.on_complete()
-            except:
-                log.exception("Failed run on_complete() method for signature \"%s\":", sig.name)
-                continue
-            else:
-                if result is True:
-                    log.debug("Analysis matched signature \"%s\"", sig.name)
-                    matched.append(sig.as_result())
-                    if sig in self.signatures:
-                        self.signatures.remove(sig)
+            self.call_signature(sig, sig.on_complete)
 
-        # Link this into the results already at this point, so non-evented signatures can use it
-        self.results["signatures"] = matched
-
-        # Sort the matched signatures by their severity level.
-        matched.sort(key=lambda key: key["severity"])
+        # Sort the matched signatures by their severity level and put them
+        # into the results dictionary.
+        self.matched.sort(key=lambda key: key["severity"])
+        self.results["signatures"] = self.matched
 
 class RunReporting:
     """Reporting Engine.
