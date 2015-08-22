@@ -281,6 +281,15 @@ class RunSignatures(object):
                              "signature: %s.", signature.name)
                     return False
 
+                if hasattr(signature, "run") or \
+                        hasattr(signature, "add_match") or \
+                        hasattr(signature, "has_matches"):
+                    log.warn("This signatures features one or more deprecated "
+                             "functions which indicates that it is very likely "
+                             "an old-style signature. Please upgrade this "
+                             "signature: %s.", signature.name)
+                    return False
+
             except ValueError:
                 log.debug("Wrong minor version number in signature %s",
                           signature.name)
@@ -309,10 +318,6 @@ class RunSignatures(object):
         event to the signature and handles matched signatures recursively."""
         try:
             if signature.is_active() and handler(*args, **kwargs):
-                if not signature.matched:
-                    log.debug("Analysis matched signature: %s", signature.name)
-                    signature.matched = True
-
                 for sig in self.signatures:
                     self.call_signature(sig, sig.on_signature, signature)
         except:
@@ -320,7 +325,7 @@ class RunSignatures(object):
                           handler.__name__, signature.name)
 
     def run(self):
-        """Run evented signatures."""
+        """Run signatures."""
         # Transform the filter_ things into set()'s for faster lookup. (This
         # is just a small optimization).
         for signature in self.signatures:
@@ -328,8 +333,10 @@ class RunSignatures(object):
             signature.filter_apinames = set(signature.filter_apinames)
             signature.filter_categories = set(signature.filter_categories)
 
-        # Allow signatures to do an early exit.
+        # Allow signatures to initialize and do an early exit.
         for signature in self.signatures:
+            signature.init()
+
             if signature.quickout():
                 self.signatures.remove(signature)
 
@@ -369,6 +376,10 @@ class RunSignatures(object):
         # Yield completion events to each signature.
         for sig in self.signatures:
             self.call_signature(sig, sig.on_complete)
+
+        for sig in self.signatures:
+            if sig.matched:
+                log.debug("Analysis matched signature: %s", signature.name)
 
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.

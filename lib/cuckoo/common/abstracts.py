@@ -685,7 +685,7 @@ class Signature(object):
     def activate(self):
         self._active = True
 
-    def _check_value(self, pattern, subject, regex=False):
+    def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.
         @param pattern: string or expression to check for.
         @param subject: target of the check.
@@ -693,23 +693,31 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
+        ret = set()
         if regex:
             exp = re.compile(pattern, re.IGNORECASE)
             if isinstance(subject, list):
                 for item in subject:
                     if exp.match(item):
-                        return item
+                        ret.add(item)
             else:
                 if exp.match(subject):
-                    return subject
+                    ret.add(subject)
         else:
             if isinstance(subject, list):
                 for item in subject:
                     if item == pattern:
-                        return item
+                        ret.add(item)
             else:
                 if subject == pattern:
-                    return subject
+                    ret.add(subject)
+
+        # Return all elements.
+        if all:
+            return list(ret)
+        # Return only the first element, if available. Otherwise return None.
+        elif ret:
+            return ret[0]
 
     def get_results(self, key=None, default=None):
         if key:
@@ -779,7 +787,7 @@ class Signature(object):
 
         return self.get_summary_generic(pid, actions)
 
-    def check_file(self, pattern, regex=False):
+    def check_file(self, pattern, regex=False, all=False):
         """Checks for a file being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
@@ -788,9 +796,11 @@ class Signature(object):
         """
         return self._check_value(pattern=pattern,
                                  subject=self.get_files(),
-                                 regex=regex)
+                                 regex=regex,
+                                 all=all)
 
-    def check_key(self, pattern, regex=False, actions=None, pid=None):
+    def check_key(self, pattern, regex=False, actions=None, pid=None,
+                  all=False):
         """Checks for a registry key being accessed.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
@@ -805,7 +815,8 @@ class Signature(object):
 
         return self._check_value(pattern=pattern,
                                  subject=self.get_keys(pid, actions),
-                                 regex=regex)
+                                 regex=regex,
+                                 all=all)
 
     def get_mutexes(self, pid=None):
         """
@@ -814,7 +825,7 @@ class Signature(object):
         """
         return self.get_summary_generic(pid, ["mutex"])
 
-    def check_mutex(self, pattern, regex=False):
+    def check_mutex(self, pattern, regex=False, all=False):
         """Checks for a mutex being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
@@ -823,7 +834,8 @@ class Signature(object):
         """
         return self._check_value(pattern=pattern,
                                  subject=self.get_mutexes(),
-                                 regex=regex)
+                                 regex=regex,
+                                 all=all)
 
     def get_net_generic(self, subtype):
         """Generic getting network data.
@@ -860,7 +872,16 @@ class Signature(object):
         """Returns a list of all smtp data."""
         return self.get_net_generic("smtp")
 
-    def check_ip(self, pattern, regex=False):
+    def get_virustotal(self):
+        """Returns the information retrieved from virustotal."""
+        return self.get_results("virustotal", {})
+
+    def get_volatility(self, module=None):
+        """Returns the data that belongs to the given module."""
+        volatility = self.get_results("memory", {})
+        return volatility if module is None else volatility.get(module, {})
+
+    def check_ip(self, pattern, regex=False, all=False):
         """Checks for an IP address being contacted.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
@@ -869,9 +890,10 @@ class Signature(object):
         """
         return self._check_value(pattern=pattern,
                                  subject=self.get_net_hosts(),
-                                 regex=regex)
+                                 regex=regex,
+                                 all=all)
 
-    def check_domain(self, pattern, regex=False):
+    def check_domain(self, pattern, regex=False, all=False):
         """Checks for a domain being contacted.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
@@ -881,10 +903,11 @@ class Signature(object):
         for item in self.get_net_domains():
             if self._check_value(pattern=pattern,
                                  subject=item["domain"],
-                                 regex=regex):
+                                 regex=regex,
+                                 all=all):
                 return item
 
-    def check_url(self, pattern, regex=False):
+    def check_url(self, pattern, regex=False, all=False):
         """Checks for a URL being contacted.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
@@ -894,8 +917,12 @@ class Signature(object):
         for item in self.get_net_http():
             if self._check_value(pattern=pattern,
                                  subject=item["uri"],
-                                 regex=regex):
+                                 regex=regex,
+                                 all=all):
                 return item
+
+    def init(self):
+        """Allow signatures to initialize theirselves."""
 
     def quickout(self):
         """Quickout test. Implement that to do a fast verification if
@@ -908,15 +935,20 @@ class Signature(object):
                  False if you still want to process it.
         """
 
-    def mark(self, **kwargs):
+    def mark(self, **mark):
         """Mark the current call as explanation as to why this signature
         matched."""
-        mark = {
-            "pid": self.pid,
-            "cid": self.cid
-        }
-        mark.update(kwargs)
+        mark["_pid"] = self.pid
+        mark["_cid"] = self.cid
         self.data.append(mark)
+        self.matched = True
+
+    def match(self, pid, type_, **match):
+        """This signature matched, log its information."""
+        match["_pid"] = pid
+        match["_type"] = type_
+        self.data.append(match)
+        self.matched = True
 
     def on_call(self, call, process):
         """Notify signature about API call. Return value determines
@@ -945,8 +977,7 @@ class Signature(object):
         """
 
     def on_complete(self):
-        """Evented signature is notified when all API calls have been
-        processed."""
+        """Signature is notified when all API calls have been processed."""
 
 class Report(object):
     """Base abstract class for reporting module."""
