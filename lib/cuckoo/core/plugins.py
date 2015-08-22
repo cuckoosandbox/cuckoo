@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import json
 import pkgutil
 import inspect
 import logging
@@ -346,10 +345,11 @@ class RunSignatures(object):
 
             # Yield the new process event.
             for sig in self.signatures:
+                sig.pid = proc["pid"]
                 self.call_signature(sig, sig.on_process, proc)
 
             # Yield each call of interest.
-            for call in proc.get("calls", []):
+            for idx, call in enumerate(proc.get("calls", [])):
                 for sig in self.signatures:
                     if sig.filter_processnames and \
                             proc["process_name"] not in sig.filter_processnames:
@@ -363,6 +363,7 @@ class RunSignatures(object):
                             call["category"] not in sig.filter_categories:
                         continue
 
+                    sig.cid = idx
                     self.call_signature(sig, sig.on_call, call, proc)
 
         # Yield completion events to each signature.
@@ -374,7 +375,7 @@ class RunSignatures(object):
         self.matched.sort(key=lambda key: key["severity"])
         self.results["signatures"] = self.matched
 
-class RunReporting:
+class RunReporting(object):
     """Reporting Engine.
 
     This class handles the loading and execution of the enabled reporting
