@@ -219,7 +219,7 @@ class AnalysisManager(threading.Thread):
 
             try:
                 if HAVE_PEFILE:
-                    pe = pefile.PE(self.config.target)
+                    pe = pefile.PE(self.task.target)
                     for export in pe.DIRECTORY_ENTRY_EXPORT.symbols:
                         exports.append(export.name)
             except Exception as e:
