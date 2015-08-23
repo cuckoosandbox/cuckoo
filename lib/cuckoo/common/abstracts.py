@@ -685,6 +685,15 @@ class Signature(object):
     def activate(self):
         self._active = True
 
+    def _return_value(self, elements, all_):
+        """Helper to return one or more elements, or None."""
+        # Return all elements.
+        if all_:
+            return list(elements)
+        # Return only the first element, if available. Otherwise return None.
+        elif elements:
+            return elements[0]
+
     def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.
         @param pattern: string or expression to check for.
@@ -712,12 +721,7 @@ class Signature(object):
                 if subject == pattern:
                     ret.add(subject)
 
-        # Return all elements.
-        if all:
-            return list(ret)
-        # Return only the first element, if available. Otherwise return None.
-        elif ret:
-            return ret[0]
+        return self._return_value(ret, all)
 
     def get_results(self, key=None, default=None):
         if key:
@@ -900,12 +904,15 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
+        ret = set()
         for item in self.get_net_domains():
-            if self._check_value(pattern=pattern,
-                                 subject=item["domain"],
-                                 regex=regex,
-                                 all=all):
-                return item
+            for domain in self._check_value(pattern=pattern,
+                                            subject=item["domain"],
+                                            regex=regex,
+                                            all=all):
+                ret.add(domain)
+
+        return self._return_value(ret, all)
 
     def check_url(self, pattern, regex=False, all=False):
         """Checks for a URL being contacted.
@@ -914,12 +921,15 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
+        ret = set()
         for item in self.get_net_http():
-            if self._check_value(pattern=pattern,
-                                 subject=item["uri"],
-                                 regex=regex,
-                                 all=all):
-                return item
+            for url in self._check_value(pattern=pattern,
+                                         subject=item["uri"],
+                                         regex=regex,
+                                         all=all):
+                ret.add(url)
+
+        return self._return_value(ret, all)
 
     def init(self):
         """Allow signatures to initialize theirselves."""

@@ -281,9 +281,7 @@ class RunSignatures(object):
                              "signature: %s.", signature.name)
                     return False
 
-                if hasattr(signature, "run") or \
-                        hasattr(signature, "add_match") or \
-                        hasattr(signature, "has_matches"):
+                if hasattr(signature, "run"):
                     log.warn("This signatures features one or more deprecated "
                              "functions which indicates that it is very likely "
                              "an old-style signature. Please upgrade this "
@@ -318,6 +316,7 @@ class RunSignatures(object):
         event to the signature and handles matched signatures recursively."""
         try:
             if signature.is_active() and handler(*args, **kwargs):
+                signature.matched = True
                 for sig in self.signatures:
                     self.call_signature(sig, sig.on_signature, signature)
         except:
