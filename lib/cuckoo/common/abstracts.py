@@ -685,15 +685,6 @@ class Signature(object):
     def activate(self):
         self._active = True
 
-    def _return_value(self, elements, all_):
-        """Helper to return one or more elements, or None."""
-        # Return all elements.
-        if all_:
-            return list(elements)
-        # Return only the first element, if available. Otherwise return None.
-        elif elements:
-            return elements[0]
-
     def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.
         @param pattern: string or expression to check for.
@@ -721,7 +712,12 @@ class Signature(object):
                 if subject == pattern:
                     ret.add(subject)
 
-        return self._return_value(ret, all)
+        # Return all elements.
+        if all:
+            return list(ret)
+        # Return only the first element, if available. Otherwise return None.
+        elif ret:
+            return ret.pop()
 
     def get_results(self, key=None, default=None):
         if key:
