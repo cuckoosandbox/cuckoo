@@ -272,11 +272,33 @@ class RunSignatures(object):
         # strip that part off.
         self.version = CUCKOO_VERSION.split("-")[0]
 
-        # Gather all signatures.
+        # Gather all enabled, up-to-date, and applicable signatures.
         self.signatures = []
         for signature in list_plugins(group="signatures"):
-            if signature.enabled and self.check_signature_version(signature):
+            if self._should_enable_signature(signature):
                 self.signatures.append(signature(self))
+
+    def _should_enable_signature(self, signature):
+        """Should the given signature be enabled for this analysis?"""
+        if not signature.enabled:
+            return False
+
+        if not self.check_signature_version(signature):
+            return False
+
+        # Network and/or cross-platform signatures.
+        if not signature.platform:
+            return True
+
+        task_platform = self.results.get("info", {}).get("platform")
+
+        # Windows is implied when a platform has not been specified during the
+        # submission of a sample, but for other platforms the platform has to
+        # be explicitly stated.
+        if not task_platform and signature.platform == "windows":
+            return True
+
+        return task_platform == signature.platform
 
     def check_signature_version(self, signature):
         """Check signature version.

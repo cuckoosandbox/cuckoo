@@ -650,6 +650,7 @@ class Signature(object):
     families = []
     authors = []
     references = []
+    platform = None
     alert = False
     enabled = True
     minimum = None
