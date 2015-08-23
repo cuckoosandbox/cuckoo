@@ -664,7 +664,7 @@ class Signature(object):
         """
         @param caller: calling object. Stores results in caller.results
         """
-        self.data = []
+        self.marks = []
         self.matched = False
         self._caller = caller
 
@@ -958,20 +958,51 @@ class Signature(object):
                  False if you still want to process it.
         """
 
-    def mark(self, **mark):
+    def mark_call(self, **kwargs):
         """Mark the current call as explanation as to why this signature
         matched."""
-        mark["_pid"] = self.pid
-        mark["_cid"] = self.cid
-        self.data.append(mark)
-        self.matched = True
+        mark = {
+            "_type": "call",
+            "_pid": self.pid,
+            "_cid": self.cid,
+        }
+        mark.update(kwargs)
+        self.marks.append(mark)
 
-    def match(self, pid, type_, **match):
-        """This signature matched, log its information."""
-        match["_pid"] = pid
-        match["_type"] = type_
-        self.data.append(match)
-        self.matched = True
+    def mark_ioc(self, category, ioc, **kwargs):
+        """Mark an IOC as explanation as to why the current signature
+        matched."""
+        mark = {
+            "_type": "ioc",
+            "_category": category,
+            "_ioc": ioc,
+        }
+        mark.update(kwargs)
+        self.marks.append(mark)
+
+    def mark_vol(self, plugin, **kwargs):
+        """Mark output of a Volatility plugin as explanation as to why the
+        current signature matched."""
+        mark = {
+            "_type": "volatility",
+            "_plugin": plugin,
+        }
+        mark.update(kwargs)
+        self.marks.append(mark)
+
+    def mark(self, **kwargs):
+        """Mark arbitrary data."""
+        mark = {
+            "_type": "generic",
+        }
+        mark.update(kwargs)
+        self.marks.append(mark)
+
+    def has_marks(self, count=None):
+        """Returns true if this signature has one or more marks."""
+        if count is not None:
+            return len(self.marks) >= count
+        return not not self.marks
 
     def on_call(self, call, process):
         """Notify signature about API call. Return value determines
