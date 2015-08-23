@@ -298,10 +298,6 @@ Fetch a report for the given task in the specified format::
     $ curl http://localhost:9003/report/2
     ...
 
-    # Get an XML report.
-    $ curl http://localhost:9003/report/2/maec -H "Accept: application/xml"
-    ...
-
 .. _quick-usage:
 
 Quick usage
@@ -329,11 +325,6 @@ an error with code 420). Following example will default to the ``JSON``
 report::
 
     $ curl http://localhost:9003/api/report/1
-
-In order to fetch an XML report such as a MAEC report, use the following
-instead (this is currently *not* working!)::
-
-    $ curl http://localhost:9003/report/1/maec -H 'Accept: application/xml'
 
 Proposed setup
 ==============
