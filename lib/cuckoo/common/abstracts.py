@@ -885,6 +885,21 @@ class Signature(object):
         volatility = self.get_results("memory", {})
         return volatility if module is None else volatility.get(module, {})
 
+    def get_apkinfo(self, section=None, default={}):
+        """Returns the apkinfo results for this analysis."""
+        apkinfo = self.get_results("apkinfo", {})
+        return apkinfo if section is None else apkinfo.get(section, default)
+
+    def get_droidmon(self, section=None, default={}):
+        """Returns the droidmon results for this analysis."""
+        droidmon = self.get_results("droidmon", {})
+        return droidmon if section is None else droidmon.get(section, default)
+
+    def get_googleplay(self, section=None, default={}):
+        """Returns the Google Play results for this analysis."""
+        googleplay = self.get_results("googleplay", {})
+        return googleplay if section is None else googleplay.get(section, default)
+
     def check_ip(self, pattern, regex=False, all=False):
         """Checks for an IP address being contacted.
         @param pattern: string or expression to check for.
