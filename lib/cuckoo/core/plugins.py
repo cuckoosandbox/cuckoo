@@ -392,13 +392,14 @@ class RunSignatures(object):
         for sig in self.signatures:
             self.call_signature(sig, sig.on_complete)
 
-        for sig in self.signatures:
-            if sig.matched:
+        for signature in self.signatures:
+            if signature.matched:
                 log.debug("Analysis matched signature: %s", signature.name)
+                self.matched.append(signature)
 
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.
-        self.matched.sort(key=lambda key: key["severity"])
+        self.matched.sort(key=lambda key: key.severity)
         self.results["signatures"] = self.matched
 
 class RunReporting(object):
