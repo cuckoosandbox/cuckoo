@@ -189,6 +189,19 @@ class AnalysisManager(threading.Thread):
 
         self.machine = machine
 
+    def _get_pe_exports(self, filepath):
+        """Get the exported function names of this PE file."""
+        exports = []
+        try:
+            if HAVE_PEFILE:
+                pe = pefile.PE(self.task.target)
+                exports = getattr(pe, "DIRECTORY_ENTRY_EXPORT", None)
+                for export in getattr(exports, "symbols", []):
+                    exports.append(export.name)
+        except Exception as e:
+            log.warning("Error enumerating exported functions: %s", e)
+        return exports
+
     def build_options(self):
         """Generate analysis options.
         @return: options dict.
@@ -214,18 +227,7 @@ class AnalysisManager(threading.Thread):
         if self.task.category == "file":
             options["file_name"] = File(self.task.target).get_name()
             options["file_type"] = File(self.task.target).get_type()
-
-            exports = []
-
-            try:
-                if HAVE_PEFILE:
-                    pe = pefile.PE(self.task.target)
-                    for export in pe.DIRECTORY_ENTRY_EXPORT.symbols:
-                        exports.append(export.name)
-            except Exception as e:
-                log.warning("Error enumerating exported functions: %s", e)
-
-            options["pe_exports"] = ",".join(exports)
+            options["pe_exports"] = ",".join(self._get_pe_exports())
 
         # copy in other analyzer specific options, TEMPORARY (most likely)
         vm_options = getattr(machinery.options, self.machine.name)
