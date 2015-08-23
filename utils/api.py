@@ -422,6 +422,19 @@ def cuckoo_status():
     else:
         cpuload = []
 
+    if os.path.isfile("/proc/meminfo"):
+        values = {}
+        for line in open("/proc/meminfo"):
+            key, value = line.split(":", 1)
+            values[key.strip()] = value.replace("kB", "").strip()
+
+        if "MemAvailable" in values and "MemTotal" in values:
+            memory = 100.0 * int(values["MemFree"]) / int(values["MemTotal"])
+        else:
+            memory = None
+    else:
+        memory = None
+
     response = dict(
         version=CUCKOO_VERSION,
         hostname=socket.gethostname(),
@@ -438,6 +451,7 @@ def cuckoo_status():
         ),
         diskspace=diskspace,
         cpuload=cpuload,
+        memory=memory,
     )
 
     return jsonify(response)

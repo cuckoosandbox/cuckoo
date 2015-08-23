@@ -3,36 +3,132 @@
     <div class="tabbable tabs">
         <ul class="nav nav-pills" style="margin-bottom: 0;">
             <li class="active"><a href="#summary_files" data-toggle="tab">Files</a></li>
-            <li><a href="#summary_keys" data-toggle="tab">Registry Keys</a></li>
+            <li><a href="#summary_keys" data-toggle="tab">Registry</a></li>
             <li><a href="#summary_mutexes" data-toggle="tab">Mutexes</a></li>
+            <li><a href="#summary_directories" data-toggle="tab">Directories</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane fade in active" id="summary_files">
-                <div class="well mono">
-                {% if analysis.behavior.summary.files %}
-                    {% for file in analysis.behavior.summary.files %}
-                        {{file}}<br />
-                    {% endfor %}
-                {% endif %}
-                </div>
+                {% for process in analysis.behavior.generic %}
+                    {% if process.summary %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
+                        <ul class="list-group">
+                        {% if process.summary.file_opened %}
+                            <li class="list-group-item">
+                                <p><b>Opened files</b></p>
+                                <ul>
+                                {% for entry in process.summary.file_opened %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.file_written %}
+                            <li class="list-group-item">
+                                <p><b>Written files</b></p>
+                                <ul>
+                                {% for entry in process.summary.file_written %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.file_read %}
+                            <li class="list-group-item">
+                                <p><b>Files Read</b></p>
+                                <ul>
+                                {% for entry in process.summary.file_read %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                {% endfor %}
             </div>
             <div class="tab-pane fade" id="summary_keys">
-                <div class="well mono">
-                {% if analysis.behavior.summary.keys %}
-                    {% for key in analysis.behavior.summary.keys %}
-                        {{key}}<br />
-                    {% endfor %}
-                {% endif %}
-                </div>
+                {% for process in analysis.behavior.generic %}
+                    {% if process.summary %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
+                        <ul class="list-group">
+                        {% if process.summary.reg_opened %}
+                            <li class="list-group-item">
+                                <p><b>Registry keys opened</b></p>
+                                <ul>
+                                {% for entry in process.summary.reg_opened %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.reg_written %}
+                            <li class="list-group-item">
+                                <p><b>Registry keys written</b></p>
+                                <ul>
+                                {% for entry in process.summary.reg_written %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.reg_read %}
+                            <li class="list-group-item">
+                                <p><b>Registry keys read</b></p>
+                                <ul>
+                                {% for entry in process.summary.reg_read %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                {% endfor %}
             </div>
             <div class="tab-pane fade" id="summary_mutexes">
-                <div class="well mono">
-                {% if analysis.behavior.summary.mutexes %}
-                    {% for mutex in analysis.behavior.summary.mutexes %}
-                        {{mutex}}<br />
-                    {% endfor %}
-                {% endif %}
-                </div>
+                {% for process in analysis.behavior.generic %}
+                    {% if process.summary %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
+                        <div class="panel-body">
+                        {% if process.summary.mutex %}
+                            <ul>
+                            {% for entry in process.summary.mutex %}
+                                <li>{{entry}}</li>
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="tab-pane fade" id="summary_directories">
+                {% for process in analysis.behavior.generic %}
+                    {% if process.summary %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
+                        <div class="panel-body">
+                        {% if process.summary.directory_enumerated %}
+                            <ul>
+                            {% for entry in process.summary.directory_enumerated %}
+                                <li>{{entry}}</li>
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
     </div>

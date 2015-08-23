@@ -62,8 +62,8 @@ class Machine(Base):
     label = Column(String(255), nullable=False)
     ip = Column(String(255), nullable=False)
     platform = Column(String(255), nullable=False)
-    tags = relationship("Tag", secondary=machines_tags, cascade="all, delete",
-                        single_parent=True, backref=backref("machine", cascade="all"))
+    tags = relationship("Tag", secondary=machines_tags, single_parent=True,
+                        backref="machine")
     interface = Column(String(255), nullable=True)
     snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)
@@ -256,9 +256,8 @@ class Task(Base):
     owner = Column(String(64), nullable=True)
     machine = Column(String(255), nullable=True)
     package = Column(String(255), nullable=True)
-    tags = relationship("Tag", secondary=tasks_tags, cascade="all, delete",
-                        single_parent=True, backref=backref("task", cascade="all"),
-                        lazy="subquery")
+    tags = relationship("Tag", secondary=tasks_tags, single_parent=True,
+                        backref="task", lazy="subquery")
     options = Column(String(255), nullable=True)
     platform = Column(String(255), nullable=True)
     memory = Column(Boolean, nullable=False, default=False)
@@ -509,7 +508,6 @@ class Database(object):
         session = self.Session()
         try:
             row = session.query(Task).get(task_id)
-
             if not row:
                 return
 

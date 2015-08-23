@@ -4,8 +4,7 @@
 
 import os
 import tempfile
-import copy
-from nose.tools import assert_equal, raises, assert_not_equal
+from nose.tools import assert_equal, raises, assert_not_equal, assert_in
 
 from lib.cuckoo.common.objects import Dictionary, File
 
@@ -63,7 +62,7 @@ class TestFile:
         assert_equal("empty", self.file.get_type())
 
     def test_get_content_type(self):
-        assert_equal("inode/x-empty", self.file.get_content_type())
+        assert_in(self.file.get_content_type(), ["inode/x-empty", "application/x-empty"])
 
     def test_get_all_type(self):
         assert isinstance(self.file.get_all(), dict)

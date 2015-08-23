@@ -23,8 +23,8 @@ from lib.common.hashing import hash_file
 from lib.common.rand import random_string
 from lib.common.results import upload_to_host
 from lib.core.config import Config
-from lib.core.log import PipeServer, PipeForwarder, PipeDispatcher
 from lib.core.packages import choose_package
+from lib.core.pipe import PipeServer, PipeForwarder, PipeDispatcher
 from lib.core.privileges import grant_debug_privilege
 from lib.core.startup import create_folders, init_logging
 from modules import auxiliary
@@ -442,7 +442,8 @@ class Analyzer(object):
             # to the file format.
             if self.config.category == "file":
                 package = choose_package(self.config.file_type,
-                                         self.config.file_name)
+                                         self.config.file_name,
+                                         self.config.pe_exports.split(","))
             # If it's an URL, we'll just use the default Internet Explorer
             # package.
             else:

@@ -21,13 +21,18 @@ class VirusTotalResourceNotScanned(CuckooOperationalError):
     """This resource has not been scanned yet."""
 
 class VirusTotalAPI(object):
+    """Wrapper to VirusTotal API."""
+
     FILE_REPORT = "https://www.virustotal.com/vtapi/v2/file/report"
     URL_REPORT = "https://www.virustotal.com/vtapi/v2/url/report"
     FILE_SCAN = "https://www.virustotal.com/vtapi/v2/file/scan"
     URL_SCAN = "https://www.virustotal.com/vtapi/v2/url/scan"
 
     def __init__(self, apikey, timeout):
-        """Initialize VirusTotal API with the API key and timeout."""
+        """Initialize VirusTotal API with the API key and timeout.
+        @param api_key: virustotal api key
+        @param timeout: request and response timeout
+        """
         self.apikey = apikey
         self.timeout = timeout
 
@@ -79,22 +84,30 @@ class VirusTotalAPI(object):
         return results
 
     def url_report(self, url, summary=False):
-        """Get the report of an existing URL scan."""
+        """Get the report of an existing URL scan.
+        @param url: URL
+        @param summary: if you want a summary report"""
         return self._get_report(self.URL_REPORT, url, summary)
 
     def file_report(self, filepath, summary=False):
-        """Get the report of an existing file scan."""
+        """Get the report of an existing file scan.
+        @param filepath: file path
+        @param summary: if you want a summary report"""
         resource = File(filepath).get_md5()
         return self._get_report(self.FILE_REPORT, resource, summary)
 
     def url_scan(self, url):
-        """Submit a URL to be scanned."""
+        """Submit a URL to be scanned.
+        @param url: URL
+        """
         data = dict(apikey=self.apikey, url=url)
         r = self._request_json(self.URL_SCAN, data=data)
         return dict(summary=dict(permalink=r.get("permalink")))
 
     def file_scan(self, filepath):
-        """Submit a file to be scanned."""
+        """Submit a file to be scanned.
+        @param filepath: file path
+        """
         data = dict(apikey=self.apikey)
         files = {"file": open(filepath, "rb")}
         r = self._request_json(self.FILE_SCAN, data=data, files=files)
