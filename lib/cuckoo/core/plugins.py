@@ -24,10 +24,13 @@ log = logging.getLogger(__name__)
 
 _modules = defaultdict(list)
 
-def enumerate_plugins(dirpath, module_prefix, namespace, class_):
+def enumerate_plugins(dirpath, module_prefix, namespace, class_,
+                      attributes={}):
     """Import plugins of type `class` located at `dirpath` into the
     `namespace` that starts with `module_prefix`. If `dirpath` represents a
-    filepath then it is converted into its containing directory."""
+    filepath then it is converted into its containing directory. The
+    `attributes` dictionary allows one to set extra fields for all imported
+    plugins."""
     if os.path.isfile(dirpath):
         dirpath = os.path.dirname(dirpath)
 
@@ -38,7 +41,15 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_):
 
     plugins = []
     for subclass in class_.__subclasses__():
+        # Check whether this subclass belongs to the module namespace that
+        # we're currently importing. It should be noted that parent and child
+        # namespaces should fail the following if-statement.
+        if module_prefix != ".".join(subclass.__module__.split(".")[:-1]):
+            continue
+
         namespace[subclass.__name__] = subclass
+        for key, value in attributes.items():
+            setattr(subclass, key, value)
         plugins.append(subclass)
     return plugins
 
