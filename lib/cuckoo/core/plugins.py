@@ -5,6 +5,7 @@
 import os
 import json
 import pkgutil
+import importlib
 import inspect
 import logging
 from collections import defaultdict
@@ -24,6 +25,24 @@ log = logging.getLogger(__name__)
 
 _modules = defaultdict(list)
 
+def enumerate_plugins(dirpath, module_prefix, namespace, class_):
+    """Import plugins of type `class` located at `dirpath` into the
+    `namespace` that starts with `module_prefix`. If `dirpath` represents a
+    filepath then it is converted into its containing directory."""
+    if os.path.isfile(dirpath):
+        dirpath = os.path.dirname(dirpath)
+
+    for fname in os.listdir(dirpath):
+        if fname.endswith(".py") and not fname.startswith("__init__"):
+            module_name, _ = os.path.splitext(fname)
+            importlib.import_module("%s.%s" % (module_prefix, module_name))
+
+    plugins = []
+    for subclass in class_.__subclasses__():
+        namespace[subclass.__name__] = subclass
+        plugins.append(subclass)
+    return plugins
+
 def import_plugin(name):
     try:
         module = __import__(name, globals(), locals(), ["dummy"], -1)
@@ -36,9 +55,6 @@ def import_plugin(name):
 def import_package(package):
     prefix = package.__name__ + "."
     for loader, name, ispkg in pkgutil.iter_modules(package.__path__, prefix):
-        if ispkg:
-            continue
-
         import_plugin(name)
 
 def load_plugins(module):
