@@ -58,7 +58,7 @@ class ApkInfo(Processing):
         self.key = "apkinfo"
         apkinfo = {}
 
-        if ("file" not in self.task["category"]):
+        if "file" not in self.task["category"] or not HAVE_ANDROGUARD:
             return
 
         f = File(self.task["target"])
