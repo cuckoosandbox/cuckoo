@@ -1030,6 +1030,15 @@ class Signature(object):
     def on_complete(self):
         """Signature is notified when all API calls have been processed."""
 
+    def results(self):
+        """Turn this signature into actionable results."""
+        return dict(name=self.name,
+                    description=self.description,
+                    severity=self.severity,
+                    families=self.families,
+                    references=self.references,
+                    marks=self.marks)
+
 class Report(object):
     """Base abstract class for reporting module."""
     order = 1
