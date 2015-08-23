@@ -919,15 +919,14 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        ret = set()
+        domains = set()
         for item in self.get_net_domains():
-            for domain in self._check_value(pattern=pattern,
-                                            subject=item["domain"],
-                                            regex=regex,
-                                            all=all):
-                ret.add(domain)
+            domains.add(item["domain"])
 
-        return self._return_value(ret, all)
+        return self._check_value(pattern=pattern,
+                                 subject=list(domains),
+                                 regex=regex,
+                                 all=all)
 
     def check_url(self, pattern, regex=False, all=False):
         """Checks for a URL being contacted.
@@ -936,15 +935,14 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        ret = set()
+        urls = set()
         for item in self.get_net_http():
-            for url in self._check_value(pattern=pattern,
-                                         subject=item["uri"],
-                                         regex=regex,
-                                         all=all):
-                ret.add(url)
+            urls.add(item["uri"])
 
-        return self._return_value(ret, all)
+        return self._check_value(pattern=pattern,
+                                 subject=list(urls),
+                                 regex=regex,
+                                 all=all)
 
     def init(self):
         """Allow signatures to initialize theirselves."""
