@@ -144,13 +144,14 @@ def sendMicrosoft(filename, help_text, email, sha):
         hostUrl, data=form_data,
         files={u'ctl00$ctl00$pageContent$leftside$submissionFile':
                open(filename, 'rb')})
+    response_url = response.url
 
     response = BeautifulSoup(response.text, 'html.parser')
     answer = response.find(id="ctl00_ctl00_pageContent_contentTop_ctl00_"
                               "contenttop_submissionFileGrid_"
                               "ctl02_HyperlinkFileName")
     if answer:
-        return 0, "Success! Your id: %s" % answer['title']
+        return 0, "Success! Your status is <a href='%s'>here (sha1=%s)</a>" % (response_url, answer['title'])
     else:
         return 1, "Something wrong"
 
