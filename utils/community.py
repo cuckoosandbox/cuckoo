@@ -38,6 +38,47 @@ def download_archive():
 
     return temp_dir, final_dir
 
+def installdir(src, dst, force, rewrite, origin=[]):
+    for file_name in os.listdir(src):
+        if file_name == ".gitignore":
+            continue
+
+        destination = os.path.join(dst, file_name)
+
+        if not rewrite:
+            if os.path.exists(destination):
+                print("File \"{0}\" already exists, "
+                      "{1}".format(file_name, colors.yellow("skipped")))
+                continue
+
+        install = False
+
+        if not force:
+            while 1:
+                choice = raw_input("Do you want to install file "
+                                   "\"{0}\"? [yes/no] ".format(file_name))
+                if choice.lower() == "yes":
+                    install = True
+                    break
+                elif choice.lower() == "no":
+                    break
+                else:
+                    continue
+        else:
+            install = True
+
+        if install:
+            srcpath = os.path.join(src, file_name)
+            if os.path.isdir(srcpath):
+                installdir(srcpath, destination, force, rewrite,
+                           origin + [file_name])
+            else:
+                shutil.copy(srcpath, destination)
+                print("File \"{0}/{1}\" {2}".format("/".join(origin),
+                                                    file_name,
+                                                    colors.green("installed")))
+
+
 def install(enabled, force, rewrite):
     (temp, source) = download_archive()
 
@@ -59,38 +100,7 @@ def install(enabled, force, rewrite):
             print "  No candidates available, continuing."
             continue
 
-        for file_name in os.listdir(origin):
-            if file_name == ".gitignore":
-                continue
-
-            destination = os.path.join(CUCKOO_ROOT, folder, file_name)
-
-            if not rewrite:
-                if os.path.exists(destination):
-                    print("File \"{0}\" already exists, "
-                          "{1}".format(file_name, colors.yellow("skipped")))
-                    continue
-
-            install = False
-
-            if not force:
-                while 1:
-                    choice = raw_input("Do you want to install file "
-                                       "\"{0}\"? [yes/no] ".format(file_name))
-                    if choice.lower() == "yes":
-                        install = True
-                        break
-                    elif choice.lower() == "no":
-                        break
-                    else:
-                        continue
-            else:
-                install = True
-
-            if install:
-                shutil.copy(os.path.join(origin, file_name), destination)
-                print("File \"{0}\" {1}".format(file_name,
-                                                colors.green("installed")))
+        installdir(origin, os.path.join(CUCKOO_ROOT, folder), force, rewrite)
 
     shutil.rmtree(temp)
 
@@ -101,7 +111,7 @@ def main():
     parser.add_argument("-a", "--all", help="Download everything", action="store_true", required=False)
     parser.add_argument("-s", "--signatures", help="Download Cuckoo signatures", action="store_true", required=False)
     parser.add_argument("-p", "--processing", help="Download processing modules", action="store_true", required=False)
-    parser.add_argument("-m", "--machinemanagers", help="Download machine managers",action="store_true", required=False)
+    parser.add_argument("-m", "--machinemanagers", help="Download machine managers", action="store_true", required=False)
     parser.add_argument("-r", "--reporting", help="Download reporting modules", action="store_true", required=False)
     parser.add_argument("-f", "--force", help="Install files without confirmation", action="store_true", required=False)
     parser.add_argument("-w", "--rewrite", help="Rewrite existing files", action="store_true", required=False)
