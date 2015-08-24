@@ -321,7 +321,7 @@ def init_binaries():
 
         if filetime < one_week:
             update = True
-            log.info("The binary %s is more than a week old!", path)
+            log.warning("The binary %s is more than a week old!", path)
 
     if update:
         log.critical("It is recommended that you update the binaries used "
@@ -329,9 +329,6 @@ def init_binaries():
                      "it is possible that there was no update - in that case "
                      "this error will persist). To do so, please run the "
                      "following command: ./utils/community.py -wafb monitor")
-        for x in xrange(3):
-            log.info("Please take note of the warnings above!")
-            time.sleep(1)
 
 def cuckoo_clean():
     """Clean up cuckoo setup.
