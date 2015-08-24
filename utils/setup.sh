@@ -166,6 +166,12 @@ if [ "$TMPFS" -ne 0 ] && [ "$LONGTERM" -ne 0 ]; then
     exit 1
 fi
 
+if [ "$LONGTERM" -ne 0 ] && [ "$VMCOUNT" -ne 0 ]; then
+    echo "In longterm mode virtual machines should not be created through the"
+    echo "setup.sh script - this is handled by the vm cronjob."
+    exit 1
+fi
+
 _setup() {
     # All functionality related to setting up the machine - this is not
     # required when doing a Virtual Machine checkup.
