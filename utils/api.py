@@ -454,42 +454,43 @@ def cuckoo_status():
 
     return jsonify(response)
 
-@route("/memory/list/<task:int>", method="GET")
-def memorydumps_list(task=0, pid=None):
-    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "memory")
+@app.route("/memory/list/<int:task_id>")
+def memorydumps_list(task_id):
+    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id), "memory")
 
     if os.path.exists(folder_path):
         memory_files = []
-        memory_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "memory")
+        memory_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id), "memory")
         for subdir, dirs, files in os.walk(memory_path):
-            for file in files:
-                memory_files.append(file.replace('.dmp', ''))
+            for filename in files:
+                memory_files.append(filename.replace(".dmp", ""))
 
         if len(memory_files) == 0:
-            return HTTPError(404, folder_path)
+            return json_error(404, "Memory dump not found")
 
-        return jsonize(memory_files)
+        return jsonify(memory_files)
     else:
-        return HTTPError(404, folder_path)
+        return json_error(404, "Memory dump not found")
 
-@route("/memory/get/<task:int>/<pid>", method="GET")
-def memorydumps_get(task=0, pid=None):
-    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task), "memory")
+@app.route("/memory/get/<int:task_id>/<pid>")
+def memorydumps_get(task_id, pid=None):
+    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id), "memory")
 
     if os.path.exists(folder_path):
         if pid:
             pid_name = "{0}.dmp".format(pid)
             pid_path = os.path.join(folder_path, pid_name)
             if os.path.exists(pid_path):
-                response.content_type = "application/octet-stream"
-                return open(pid_path, "rb").read()
+                response = make_response(open(pid_path, "rb").read())
+                response.headers["Content-Type"] = \
+                    "application/octet-stream; charset=UTF-8"
+                return response
             else:
-                return HTTPError(404, pid_path)
+                return json_error(404, "Memory dump not found")
         else:
-            return HTTPError(404, folder_path)
+            return json_error(404, "Memory dump not found")
     else:
-        return HTTPError(404, folder_path)
-
+        return json_error(404, "Memory dump not found")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
