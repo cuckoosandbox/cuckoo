@@ -298,10 +298,6 @@ EOF
     # TODO Should be automated away.
     echo "PostgreSQL connection string:  " \
         "postgresql://cuckoo:$PASSWORD@localhost/cuckoo"
-
-    # A reboot is required for the grub command-line changes and limits.conf
-    # changes to take effect.
-    shutdown -r now
 }
 
 _create_virtual_machines() {
