@@ -194,7 +194,7 @@ class AnalysisManager(threading.Thread):
         exports = []
         try:
             if HAVE_PEFILE:
-                pe = pefile.PE(filepath)
+                pe = pefile.PE(self.task.target)
                 exports = getattr(pe, "DIRECTORY_ENTRY_EXPORT", None)
                 for export in getattr(exports, "symbols", []):
                     exports.append(export.name)
@@ -227,8 +227,7 @@ class AnalysisManager(threading.Thread):
         if self.task.category == "file":
             options["file_name"] = File(self.task.target).get_name()
             options["file_type"] = File(self.task.target).get_type()
-            options["pe_exports"] = \
-                ",".join(self._get_pe_exports(self.task.target))
+            options["pe_exports"] = ",".join(self._get_pe_exports())
 
         # copy in other analyzer specific options, TEMPORARY (most likely)
         vm_options = getattr(machinery.options, self.machine.name)
