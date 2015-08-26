@@ -332,18 +332,6 @@ It contains the following sections::
     [reporthtml]
     enabled = yes
 
-    [mmdef]
-    enabled = no
-
-    [maec40]
-    enabled = no
-    mode = overview
-    processtree = true
-    output_handles = false
-    static = true
-    strings = true
-    virustotal = true
-
     [mongodb]
     enabled = no
     host = 127.0.0.1

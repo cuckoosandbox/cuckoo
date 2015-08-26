@@ -10,7 +10,7 @@ class SystemMetrics(Signature):
     severity = 2
     categories = ["generic"]
     authors = ["Cuckoo Developers"]
-    minimum = "1.2"
+    minimum = "2.0"
 
     # Evented signatures can specify filters that reduce the amount of
     # API calls that are streamed in. One can filter Process name, API

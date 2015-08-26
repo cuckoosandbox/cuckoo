@@ -25,6 +25,12 @@ from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.core.database import Database, TASK_RUNNING, TASK_FAILED_ANALYSIS
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
 
+try:
+    import pefile
+    HAVE_PEFILE = True
+except ImportError:
+    HAVE_PEFILE = False
+
 log = logging.getLogger()
 
 def check_python_version():
@@ -54,9 +60,20 @@ def check_configs():
     """Checks if config files exist.
     @raise CuckooStartupError: if config files do not exist.
     """
-    configs = [os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"),
-               os.path.join(CUCKOO_ROOT, "conf", "reporting.conf"),
-               os.path.join(CUCKOO_ROOT, "conf", "auxiliary.conf")]
+    configs = [
+        os.path.join(CUCKOO_ROOT, "conf", "auxiliary.conf"),
+        os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"),
+        os.path.join(CUCKOO_ROOT, "conf", "esx.conf"),
+        os.path.join(CUCKOO_ROOT, "conf", "kvm.conf"),
+        os.path.join(CUCKOO_ROOT, "conf", "memory.conf"),
+        os.path.join(CUCKOO_ROOT, "conf", "physical.conf"),
+        os.path.join(CUCKOO_ROOT, "conf", "processing.conf"),
+        os.path.join(CUCKOO_ROOT, "conf", "qemu.conf"),
+        os.path.join(CUCKOO_ROOT, "conf", "reporting.conf"),
+        os.path.join(CUCKOO_ROOT, "conf", "virtualbox.conf"),
+        os.path.join(CUCKOO_ROOT, "conf", "vmware.conf"),
+        os.path.join(CUCKOO_ROOT, "conf", "xenserver.conf"),
+    ]
 
     for config in configs:
         if not os.path.exists(config):
@@ -294,22 +311,24 @@ def init_binaries():
             update = True
             continue
 
-        filetime = datetime.fromtimestamp(os.path.getctime(path))
+        if HAVE_PEFILE:
+            timestamp = pefile.PE(path).FILE_HEADER.TimeDateStamp
+        else:
+            timestamp = os.path.getctime(path)
+
+        filetime = datetime.fromtimestamp(timestamp)
         one_week = datetime.now() - timedelta(days=7)
 
         if filetime < one_week:
             update = True
-            log.info("The binary %s is more than a week old, this is not "
-                     "critical, but checking for an update is recommended.",
-                     path)
+            log.warning("The binary %s is more than a week old!", path)
 
     if update:
         log.critical("It is recommended that you update the binaries used "
-                     "for Windows analysis. To do so, please run the "
+                     "for Windows analysis (if you have not done so already, "
+                     "it is possible that there was no update - in that case "
+                     "this error will persist). To do so, please run the "
                      "following command: ./utils/community.py -wafb monitor")
-        for x in xrange(3):
-            log.info("Please take note of the warnings above!")
-            time.sleep(1)
 
 def cuckoo_clean():
     """Clean up cuckoo setup.
@@ -324,7 +343,7 @@ def cuckoo_clean():
 
     # Initialize the database connection.
     try:
-        db = Database()
+        db = Database(schema_check=False)
     except CuckooDatabaseError as e:
         # If something is screwed due to incorrect database migrations or bad
         # database SqlAlchemy would be unable to connect and operate.

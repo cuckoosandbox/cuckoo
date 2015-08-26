@@ -141,6 +141,10 @@ Following is a list of currently available resources and a brief description of 
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_shots`        | Retrieves one or all screenshots associated with a given analysis task ID.                                       |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`memory_list`        | Returns a list of memory dump files associated with a given analysis task ID.                                    |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`memory_get`         | Retrieves one memory dump file associated with a given analysis task ID.                                         |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`files_view`         | Search the analyzed binaries by MD5 hash, SHA256 hash or internal ID (referenced by the tasks details).          |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`files_get`          | Returns the content of the binary with the specified SHA256 hash.                                                |
@@ -427,7 +431,7 @@ Following is a list of currently available resources and a brief description of 
 
         **Parameters**:
             * ``id`` *(required)* *(int)* - ID of the task to get the report for
-            * ``format`` *(optional)* - format of the report to retrieve [json/html/maec/metadata/all/dropped]. If none is specified the JSON report will be returned. ``all`` returns all the result files as tar.bz2, ``dropped`` the dropped files as tar.bz2
+            * ``format`` *(optional)* - format of the report to retrieve [json/html/all/dropped]. If none is specified the JSON report will be returned. ``all`` returns all the result files as tar.bz2, ``dropped`` the dropped files as tar.bz2
 
         **Status codes**:
             * ``200`` - no error
@@ -450,6 +454,45 @@ Following is a list of currently available resources and a brief description of 
         **Parameters**:
             * ``id`` *(required)* *(int)* - ID of the task to get the report for
             * ``screenshot`` *(optional)* - numerical identifier of a single screenshot (e.g. 0001, 0002)
+
+        **Status codes**:
+            * ``404`` - file or folder not found
+            
+.. _memory_list:
+
+/memory/list
+------------------
+
+    **GET /memory/list/** *(int: id)*
+
+        Returns a list of memory dump files or one memory dump file associated with the specified task ID.
+
+        **Example request**::
+
+            wget http://localhost:8090/memory/list/1
+
+        **Parameters**:
+            * ``id`` *(required)* *(int)* - ID of the task to get the report for
+
+        **Status codes**:
+            * ``404`` - file or folder not found
+            
+.. _memory_get:
+
+/memory/get
+------------------
+
+    **GET /memory/get/** *(int: id)* **/** *(str: number)*
+
+        Returns one memory dump file associated with the specified task ID.
+
+        **Example request**::
+
+            wget http://localhost:8090/memory/get/1/1908
+
+        **Parameters**:
+            * ``id`` *(required)* *(int)* - ID of the task to get the report for
+            * ``pid`` *(required)* - numerical identifier (pid) of a single memory dump file (e.g. 205, 1908)
 
         **Status codes**:
             * ``404`` - file or folder not found

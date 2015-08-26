@@ -17,6 +17,7 @@ CLEAN="0"
 DEPENDENCIES=""
 BASEDIR="/home/cuckoo"
 VMCHECKUP="0"
+LONGTERM="0"
 
 usage() {
     echo "Usage: $0 [options...]"
@@ -34,6 +35,7 @@ usage() {
     echo "-d --dependencies: Dependencies to install in the Virtual Machine."
     echo "-b --basedir:      Base directory for Virtual Machine files."
     echo "-V --vms:          Only check Virtual Machines, don't re-setup."
+    echo "-l --longterm:     Indicate this is a longterm analysis setup."
     exit 1
 }
 
@@ -116,6 +118,10 @@ while [ "$#" -gt 0 ]; do
             VMCHECKUP="1"
             ;;
 
+        -l|--longterm)
+            LONGTERM="1"
+            ;;
+
         *)
             echo "$0: Invalid argument.. $1" >&2
             usage
@@ -151,6 +157,18 @@ fi
 
 if [ "$WIN7" -eq 0 ] && [ -z "$SERIALKEY" ]; then
     echo "Please specify a working serial key."
+    exit 1
+fi
+
+if [ "$TMPFS" -ne 0 ] && [ "$LONGTERM" -ne 0 ]; then
+    echo "It is not recommended to use tmpfs in a longterm setup."
+    echo "Please update your settings or remove this check."
+    exit 1
+fi
+
+if [ "$LONGTERM" -ne 0 ] && [ "$VMCOUNT" -ne 0 ]; then
+    echo "In longterm mode virtual machines should not be created through the"
+    echo "setup.sh script - this is handled by the vm cronjob."
     exit 1
 fi
 
@@ -201,10 +219,17 @@ _setup() {
     # Add the www-data user to the cuckoo group.
     adduser www-data cuckoo
 
+    # TODO Somehow vmtemp is not properly propagated into the vmcloak
+    # configuration thing, having to run the setup.sh script twice to
+    # actually start creating the bird.
     VMTEMP="$(mktemp -d "/home/cuckoo/tempXXXXXX")"
 
-    # Fetch Cuckoo.
-    git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
+    # Fetch Cuckoo or in the case of a longterm setup, longcuckoo.
+    if [ "$LONGTERM" -eq 0 ]; then
+        git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
+    else
+        git clone git://github.com/jbremer/longcuckoo.git "$CUCKOO"
+    fi
 
     chown -R cuckoo:cuckoo "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
     chmod 755 "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
@@ -253,13 +278,26 @@ EOF
 EOF
     fi
 
+    # For longterm setups we install the VM provisioning script and cronjob.
+    if [ "$LONGTERM" -ne 0 ]; then
+        CRONJOB="/home/cuckoo/vmprovision.sh"
+
+        # Install the machine cronjob.
+        "$CUCKOO/utils/experiment.py" machine-cronjob install "$CRONJOB"
+        chown cuckoo:cuckoo "$CRONJOB"
+        chmod +x "$CRONJOB"
+
+        # We want to run the vm provisioning cronjob every five minutes.
+        # Ensure that we only install the cronjob entry once.
+        CRONTAB="$(crontab -u cuckoo -l)"
+        if [[ ! "$CRONTAB" =~ "vmprovision.sh" ]]; then
+            (echo "$CRONTAB" ; echo "*/5 * * * * $CRONJOB")|crontab -u cuckoo -
+        fi
+    fi
+
     # TODO Should be automated away.
     echo "PostgreSQL connection string:  " \
         "postgresql://cuckoo:$PASSWORD@localhost/cuckoo"
-
-    # A reboot is required for the grub command-line changes and limits.conf
-    # changes to take effect.
-    shutdown -r now
 }
 
 _create_virtual_machines() {

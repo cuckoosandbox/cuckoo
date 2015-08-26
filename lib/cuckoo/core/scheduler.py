@@ -6,8 +6,8 @@ import os
 import time
 import shutil
 import logging
+import threading
 import Queue
-from threading import Thread, Lock
 
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -22,11 +22,17 @@ from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
 from lib.cuckoo.core.plugins import RunSignatures, RunReporting
 from lib.cuckoo.core.resultserver import ResultServer
 
+try:
+    import pefile
+    HAVE_PEFILE = True
+except ImportError:
+    HAVE_PEFILE = False
+
 log = logging.getLogger(__name__)
 
 machinery = None
-machine_lock = Lock()
-latest_symlink_lock = Lock()
+machine_lock = None
+latest_symlink_lock = threading.Lock()
 
 active_analysis_count = 0
 
@@ -40,7 +46,7 @@ class CuckooDeadMachine(Exception):
     pass
 
 
-class AnalysisManager(Thread):
+class AnalysisManager(threading.Thread):
     """Analysis Manager.
 
     This class handles the full analysis process for a given task. It takes
@@ -51,8 +57,7 @@ class AnalysisManager(Thread):
 
     def __init__(self, task, error_queue):
         """@param task: task object containing the details for the analysis."""
-        Thread.__init__(self)
-        Thread.daemon = True
+        threading.Thread.__init__(self)
 
         self.task = task
         self.errors = error_queue
@@ -184,6 +189,19 @@ class AnalysisManager(Thread):
 
         self.machine = machine
 
+    def _get_pe_exports(self, filepath):
+        """Get the exported function names of this PE file."""
+        exports = []
+        try:
+            if HAVE_PEFILE:
+                pe = pefile.PE(filepath)
+                exports = getattr(pe, "DIRECTORY_ENTRY_EXPORT", None)
+                for export in getattr(exports, "symbols", []):
+                    exports.append(export.name)
+        except Exception as e:
+            log.warning("Error enumerating exported functions: %s", e)
+        return exports
+
     def build_options(self):
         """Generate analysis options.
         @return: options dict.
@@ -209,6 +227,8 @@ class AnalysisManager(Thread):
         if self.task.category == "file":
             options["file_name"] = File(self.task.target).get_name()
             options["file_type"] = File(self.task.target).get_type()
+            options["pe_exports"] = \
+                ",".join(self._get_pe_exports(self.task.target))
 
         # copy in other analyzer specific options, TEMPORARY (most likely)
         vm_options = getattr(machinery.options, self.machine.name)
@@ -463,11 +483,21 @@ class Scheduler:
 
     def initialize(self):
         """Initialize the machine manager."""
-        global machinery
+        global machinery, machine_lock
 
         machinery_name = self.cfg.cuckoo.machinery
 
-        log.info("Using \"%s\" machine manager", machinery_name)
+        max_vmstartup_count = self.cfg.cuckoo.max_vmstartup_count
+        if max_vmstartup_count:
+            machine_lock = threading.Semaphore(max_vmstartup_count)
+        else:
+            machine_lock = threading.Lock()
+
+        log.info("Using \"%s\" machine manager with max_analysis_count=%d, "
+                 "max_machines_count=%d, and max_vmstartup_count=%d",
+                 machinery_name, self.cfg.cuckoo.max_analysis_count,
+                 self.cfg.cuckoo.max_machines_count,
+                 self.cfg.cuckoo.max_vmstartup_count)
 
         # Get registered class name. Only one machine manager is imported,
         # therefore there should be only one class in the list.
@@ -584,21 +614,26 @@ class Scheduler:
                 if active_analysis_count <= 0:
                     log.debug("Reached max analysis count, exiting.")
                     self.stop()
-            else:
-                # Fetch a pending analysis task.
-                # TODO This fixes only submissions by --machine, need to add
-                # other attributes (tags etc).
-                for machine in self.db.get_available_machines():
+                continue
 
-                    task = self.db.fetch(machine=machine.name)
-                    if task:
-                        log.debug("Processing task #%s", task.id)
-                        self.total_analysis_count += 1
+            # Fetch a pending analysis task.
+            # TODO This fixes only submissions by --machine, need to add
+            # other attributes (tags etc).
+            # TODO We should probably move the entire "acquire machine" logic
+            # from the Analysis Manager to the Scheduler and then pass the
+            # selected machine onto the Analysis Manager instance.
+            for machine in self.db.get_available_machines():
 
-                        # Initialize and start the analysis manager.
-                        analysis = AnalysisManager(task, errors)
-                        analysis.start()
-                        break
+                task = self.db.fetch(machine=machine.name)
+                if task:
+                    log.debug("Processing task #%s", task.id)
+                    self.total_analysis_count += 1
+
+                    # Initialize and start the analysis manager.
+                    analysis = AnalysisManager(task, errors)
+                    analysis.daemon = True
+                    analysis.start()
+                    break
 
             # Deal with errors.
             try:
