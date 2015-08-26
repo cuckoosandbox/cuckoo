@@ -24,16 +24,28 @@ def left(request, left_id):
                                   {"error": "No analysis found with specified ID"},
                                   context_instance=RequestContext(request))
 
-    # Select all analyses with same file hash.
-    records = results_db.analysis.find(
-        {
-            "$and": [
-                {"target.file.md5": left["target"]["file"]["md5"]},
-                {"info.id": {"$ne": int(left_id)}}
-            ]
-        },
-        {"target": 1, "info": 1}
-    )
+    if left["target"]["category"] == "url":
+        # Select all analyses for the same URL.
+        records = results_db.analysis.find(
+            {
+                "$and": [
+                    {"target.url": left["target"]["url"]},
+                    {"info.id": {"$ne": int(left_id)}}
+                ]
+            },
+            {"target": 1, "info": 1}
+        )
+    else:
+        # Select all analyses with same file hash.
+        records = results_db.analysis.find(
+            {
+                "$and": [
+                    {"target.file.md5": left["target"]["file"]["md5"]},
+                    {"info.id": {"$ne": int(left_id)}}
+                ]
+            },
+            {"target": 1, "info": 1}
+        )
 
     return render_to_response("compare/left.html",
                               {"left": left, "records": records},
