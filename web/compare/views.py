@@ -59,16 +59,28 @@ def hash(request, left_id, right_hash):
                                   {"error": "No analysis found with specified ID"},
                                   context_instance=RequestContext(request))
 
-    # Select all analyses with same file hash.
-    records = results_db.analysis.find(
-        {
-            "$and": [
-                {"target.file.md5": right_hash},
-                {"info.id": {"$ne": int(left_id)}}
-            ]
-        },
-        {"target": 1, "info": 1}
-    )
+    # If the analysis is not of a file, but of a URL, we consider the hash
+    # to be a URL instead.
+    if left["target"]["category"] == "url":
+        records = results_db.analysis.find(
+            {
+                "$and": [
+                    {"target.url": right_hash},
+                    {"info.id": {"$ne": int(left_id)}}
+                ]
+            },
+            {"target": 1, "info": 1}
+        )
+    else:
+        records = results_db.analysis.find(
+            {
+                "$and": [
+                    {"target.file.md5": right_hash},
+                    {"info.id": {"$ne": int(left_id)}}
+                ]
+            },
+            {"target": 1, "info": 1}
+        )
 
     # Select all analyses with specified file hash.
     return render_to_response("compare/hash.html",
