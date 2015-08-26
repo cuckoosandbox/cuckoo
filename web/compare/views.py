@@ -65,7 +65,7 @@ def hash(request, left_id, right_hash):
         records = results_db.analysis.find(
             {
                 "$and": [
-                    {"target.url": right_hash},
+                    {"target.url": {"$regex": right_hash, "$options": "-i"}},
                     {"info.id": {"$ne": int(left_id)}}
                 ]
             },

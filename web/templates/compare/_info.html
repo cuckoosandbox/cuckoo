@@ -3,8 +3,12 @@
         <tr>
             <th>ID</th>
             <th>Category</th>
+            {% if record.target.category == "url" %}
+            <th>URL</th>
+            {% else %}
             <th>Name</th>
             <th>MD5</th>
+            {% endif %}
             <th>Machine</th>
             <th>Completed On</th>
             <th>Duration</th>
@@ -14,8 +18,12 @@
         <tr>
             <td>{{record.info.id}}</td>
             <td>{{record.info.category|upper}}</td>
+            {% if record.target.category == "url" %}
+            <td><a href="{% url "analysis.views.report" record.info.id %}">{{record.target.url}}</a></td>
+            {% else %}
             <td>{{record.target.file.name}}</td>
             <td><a href="{% url "analysis.views.report" record.info.id %}">{{record.target.file.md5}}</a></td>
+            {% endif %}
             <td>{{record.info.machine.name}}</td>
             <td>{{record.info.ended}}</td>
             <td>{{record.info.duration}} seconds</td>
