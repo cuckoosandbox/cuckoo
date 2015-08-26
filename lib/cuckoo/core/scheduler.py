@@ -195,7 +195,7 @@ class AnalysisManager(threading.Thread):
         try:
             if HAVE_PEFILE:
                 pe = pefile.PE(filepath)
-                exports = getattr(pe, "DIRECTORY_ENTRY_EXPORT", None)
+                exports = getattr(pe, "DIRECTORY_ENTRY_EXPORT", [])
                 for export in getattr(exports, "symbols", []):
                     exports.append(export.name)
         except Exception as e:
