@@ -95,4 +95,4 @@ class VirusTotal(Processing):
         files.
         @param filetype: file type
         """
-        return filetype.startswith("PE32")
+        return True #filetype.startswith("PE32")

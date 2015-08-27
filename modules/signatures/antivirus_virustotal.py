@@ -21,7 +21,7 @@ class KnownVirustotal(Signature):
     severity = 2
     categories = ["antivirus"]
     authors = ["Michael Boman", "nex"]
-    minimum = "1.2"
+    minimum = "0.5"
 
     def run(self):
         if "virustotal" in self.results:
