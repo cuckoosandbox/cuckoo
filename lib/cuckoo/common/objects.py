@@ -264,19 +264,40 @@ class File(object):
             if not File.notified_pefile:
                 File.notified_pefile = True
                 log.warning("Unable to import pefile (`pip install pefile`)")
-            return []
+            return
 
-        exports = []
         try:
             pe = pefile.PE(self.file_path)
             if not hasattr(pe, "DIRECTORY_ENTRY_EXPORT"):
-                return []
+                return
 
             for export in pe.DIRECTORY_ENTRY_EXPORT.symbols:
-                exports.append(export.name)
+                yield export.name
         except Exception as e:
             log.warning("Error enumerating exported functions: %s", e)
-        return exports
+
+    def get_imported_functions(self):
+        """Get the imported functions of this PE file."""
+        if not HAVE_PEFILE:
+            if not File.notified_pefile:
+                File.notified_pefile = True
+                log.warning("Unable to import pefile (`pip install pefile`)")
+            return
+
+        try:
+            pe = pefile.PE(self.file_path)
+            if not hasattr(pe, "DIRECTORY_ENTRY_IMPORT"):
+                return
+
+            for imp in pe.DIRECTORY_ENTRY_IMPORT:
+                for entry in imp.imports:
+                    yield dict(dll=imp.dll,
+                               name=entry.name,
+                               ordinal=entry.ordinal,
+                               hint=entry.hint,
+                               address=entry.address)
+        except Exception as e:
+            log.warning("Error enumerating imported functions: %s", e)
 
     def _yara_encode_string(self, s):
         # Beware, spaghetti code ahead.
