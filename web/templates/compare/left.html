@@ -25,13 +25,13 @@ $(function () {
 
         <p>You need to select the second analysis.</p>
         {% if records.count > 0 %}
-            <p>Following are all the other analyses of the same file:</p>
+            <p>Following are all the other analyses of the same file or URL:</p>
             {% include "compare/_summary_table.html" %}
         {% else %}
-            <p><b>There is no other analysis for the same file.</b></p>
+            <p><b>There is no other analysis for the same file or URL.</b></p>
         {% endif %}
 
-        <p>If you want to compare the analysis to a different file, please provide the MD5 hash:</p>
+        <p>If you want to compare to a different analysis, please provide an MD5 hash or a URL:</p>
         <form class="form-inline" action="#" id="hash">
             <input class="form-control" type="text" name="hash" /> <button type="submit" class="btn btn-primary btn-small">Search</button>
         </form>
