@@ -28,6 +28,12 @@ try:
 except ImportError:
     HAVE_YARA = False
 
+try:
+    import pefile
+    HAVE_PEFILE = True
+except ImportError:
+    HAVE_PEFILE = False
+
 log = logging.getLogger(__name__)
 
 FILE_CHUNK_SIZE = 16 * 1024
@@ -58,6 +64,7 @@ class File(object):
     # notified about missing dependencies already
     notified_yara = False
     notified_pydeep = False
+    notified_pefile = False
 
     def __init__(self, file_path):
         """@param file_path: file path."""
@@ -250,6 +257,26 @@ class File(object):
                 pass
 
         return file_type
+
+    def get_exported_functions(self):
+        """Get the exported function names of this PE file."""
+        if not HAVE_PEFILE:
+            if not File.notified_pefile:
+                File.notified_pefile = True
+                log.warning("Unable to import pefile (`pip install pefile`)")
+            return []
+
+        exports = []
+        try:
+            pe = pefile.PE(self.file_path)
+            if not hasattr(pe, "DIRECTORY_ENTRY_EXPORT"):
+                return []
+
+            for export in pe.DIRECTORY_ENTRY_EXPORT.symbols:
+                exports.append(export.name)
+        except Exception as e:
+            log.warning("Error enumerating exported functions: %s", e)
+        return exports
 
     def _yara_encode_string(self, s):
         # Beware, spaghetti code ahead.
