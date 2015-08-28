@@ -33,6 +33,10 @@
         {% endfor %}
     </table>
     {% else %}
-    No antivirus signatures available.
+        {% if analysis.virustotal.summary.permalink %}
+            <a href="{{analysis.virustotal.summary.permalink}}">Your file is being analysed</a>
+        {% else %}
+            No antivirus signatures available.
+        {% endif %}
     {% endif %}
 </section>
