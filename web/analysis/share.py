@@ -5,7 +5,7 @@ from requests import Session
 from bs4 import BeautifulSoup
 
 
-def sendKaspersky(filename, help_text, email, sha):
+def sendKaspersky(filename, help_text, email, name):
     br = Session()
     hostUrl = "http://newvirus.kaspersky.com/"
     page = br.get(hostUrl)
@@ -18,12 +18,12 @@ def sendKaspersky(filename, help_text, email, sha):
 
     form_data["cc"] = "on"
     form_data["VirLabRecordModel.Email"] = email
-    form_data["VirLabRecordModel.SuspiciousFilePath"] = sha
+    form_data["VirLabRecordModel.SuspiciousFilePath"] = name
     form_data["VirLabRecordModel.CategoryValue"] = "SuspiciousFile"
 
     response = br.post(hostUrl + form['action'], data=form_data,
                        files={'VirLabRecordModel.SuspiciousFileContent':
-                              open(filename, 'rb')})
+                              (name,open(filename, 'rb'))})
 
     if "was successfully sent" in response.text:
         return 0, "Success!"
@@ -31,7 +31,7 @@ def sendKaspersky(filename, help_text, email, sha):
         return 1, "Something goes wrong"
 
 
-def sendDrWeb(filename, help_text, email, sha):
+def sendDrWeb(filename, help_text, email, name):
     br = Session()
     page = br.get("https://vms.drweb.com/sendvirus/")
     page = BeautifulSoup(page.text, 'html.parser')
@@ -43,7 +43,7 @@ def sendDrWeb(filename, help_text, email, sha):
     form_data["category"] = ["2"]
     form_data["text"] = help_text
     response = br.post(form['action'], data=form_data,
-                       files={'file': open(filename, 'rb')})
+                       files={'file': (name, open(filename, 'rb'))})
 
     if "SNForm" not in response.text:
         return 0, "Success!"
@@ -51,10 +51,11 @@ def sendDrWeb(filename, help_text, email, sha):
         return 1, "Something goes wrong"
 
 
-def sendEset(filename, help_text, email, sha):
+def sendEset(filename, help_text, email, name):
     if ".zip" not in filename:
         compress(filename, filename + ".zip", "infected", 5)
         filename += ".zip"
+        name += ".zip"
 
     hostUrl = "http://www.esetnod32.ru/support/knowledge_base/new_virus/"
     br = Session()
@@ -72,7 +73,7 @@ def sendEset(filename, help_text, email, sha):
     form_data["commentary"] = help_text
 
     response = br.post(hostUrl, data=form_data,
-                       files={u'suspicious_file': (sha + ".zip",
+                       files={u'suspicious_file': (name,
                                                    open(filename, 'rb'),
                                                    "application/zip")})
 
@@ -82,7 +83,7 @@ def sendEset(filename, help_text, email, sha):
         return 1, "Something goes wrong"
 
 
-def sendClamAV(filename, help_text, email, sha):
+def sendClamAV(filename, help_text, email, name):
     br = Session()
     hostUrl = "http://www.clamav.net"
     page = br.get(hostUrl + "/report/report-malware.html")
@@ -99,7 +100,7 @@ def sendClamAV(filename, help_text, email, sha):
     form_s3_data.update(credentials)
 
     s3_answer = br.post(s3_url, data=form_s3_data,
-                        files={'file': open(filename, 'rb')})
+                        files={'file': (name, open(filename, 'rb'))})
     if s3_answer.status_code != 201:
         return 1, "Something wrong. s3 status = %s" % s3_answer.status_code
 
@@ -118,7 +119,7 @@ def sendClamAV(filename, help_text, email, sha):
         return 1, "Something goes wrong"
 
 
-def sendMicrosoft(filename, help_text, email, sha):
+def sendMicrosoft(filename, help_text, email, name):
     br = Session()
     hostUrl = "https://www.microsoft.com/security/portal/submission/submit.aspx"
     br.headers.update({'referer': hostUrl})
@@ -143,7 +144,7 @@ def sendMicrosoft(filename, help_text, email, sha):
     response = br.post(
         hostUrl, data=form_data,
         files={u'ctl00$ctl00$pageContent$leftside$submissionFile':
-               open(filename, 'rb')})
+               (name, open(filename, 'rb'))})
     response_url = response.url
 
     response = BeautifulSoup(response.text, 'html.parser')

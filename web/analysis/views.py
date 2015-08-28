@@ -589,7 +589,7 @@ def share(request, av_name, task_id):
     if sender:
         try:
             result = sender(file_info['path'], help_text,
-                            settings.EMAIL, file_info['sha256'])
+                            settings.EMAIL, file_info['name'])
         except Exception as e:
             result = (1, "Something goes wrong: %s" % e)
     else:
