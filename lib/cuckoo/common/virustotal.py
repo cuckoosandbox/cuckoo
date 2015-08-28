@@ -28,13 +28,15 @@ class VirusTotalAPI(object):
     FILE_SCAN = "https://www.virustotal.com/vtapi/v2/file/scan"
     URL_SCAN = "https://www.virustotal.com/vtapi/v2/url/scan"
 
-    def __init__(self, apikey, timeout):
+    def __init__(self, apikey, timeout, scan=0):
         """Initialize VirusTotal API with the API key and timeout.
         @param api_key: virustotal api key
         @param timeout: request and response timeout
+        @param scan: send file to scan or just get report
         """
         self.apikey = apikey
         self.timeout = timeout
+        self.scan = scan
 
     def _request_json(self, url, **kwargs):
         """Wrapper around doing a request and parsing its JSON output."""
@@ -59,11 +61,14 @@ class VirusTotalAPI(object):
         # This URL has not been analyzed yet - send a request to analyze it
         # and return with the permalink.
         if not r.get("response_code"):
-            return {
-                "summary": {
-                    "error": "resource has not been scanned yet",
+            if self.scan:
+                raise VirusTotalResourceNotScanned
+            else:
+                return {
+                    "summary": {
+                        "error": "resource has not been scanned yet",
+                    }
                 }
-            }
 
         results = {
             "summary": {
