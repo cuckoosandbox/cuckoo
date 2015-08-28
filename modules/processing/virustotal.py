@@ -36,7 +36,7 @@ class VirusTotal(Processing):
                                         "configured, skipping VirusTotal "
                                         "processing module.")
 
-        self.vt = VirusTotalAPI(apikey, timeout)
+        self.vt = VirusTotalAPI(apikey, timeout, self.scan)
 
         # Scan the original sample or URL.
         if self.task["category"] == "file":
