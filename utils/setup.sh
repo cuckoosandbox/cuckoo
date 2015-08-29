@@ -293,6 +293,9 @@ EOF
         if [[ ! "$CRONTAB" =~ "vmprovision.sh" ]]; then
             (echo "$CRONTAB" ; echo "*/5 * * * * $CRONJOB")|crontab -u cuckoo -
         fi
+
+        # Initially execute the cronjob so we have a couple of machines ready.
+        sh "$CRONJOB"
     fi
 
     # TODO Should be automated away.
