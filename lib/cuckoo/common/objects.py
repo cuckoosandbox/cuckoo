@@ -209,8 +209,9 @@ class File(object):
             except:
                 try:
                     file_type = magic.from_file(self.file_path)
-                except:
-                    pass
+                except Exception as e:
+                    log.debug("Error getting magic from file %s: %s",
+                              self.file_path, e)
             finally:
                 try:
                     ms.close()
@@ -222,8 +223,9 @@ class File(object):
                 p = subprocess.Popen(["file", "-b", self.file_path],
                                      stdout=subprocess.PIPE)
                 file_type = p.stdout.read().strip()
-            except:
-                pass
+            except Exception as e:
+                log.debug("Error running file(1) on %s: %s",
+                          self.file_path, e)
 
         return file_type
 
@@ -250,9 +252,8 @@ class File(object):
 
         if file_type is None:
             try:
-                p = subprocess.Popen(["file", "-b", "--mime-type", self.file_path],
-                                     stdout=subprocess.PIPE)
-                file_type = p.stdout.read().strip()
+                args = ["file", "-b", "--mime-type", self.file_path]
+                file_type = subprocess.check_output(args).strip()
             except:
                 pass
 
