@@ -303,7 +303,7 @@ EOF
         fi
 
         # Initially execute the cronjob so we have a couple of machines ready.
-        sh "$CRONJOB"
+        sudo -u cuckoo -i sh "$CRONJOB"
     fi
 
     # TODO Should be automated away.
