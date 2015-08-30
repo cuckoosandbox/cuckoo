@@ -18,6 +18,7 @@ DEPENDENCIES=""
 BASEDIR="/home/cuckoo"
 VMCHECKUP="0"
 LONGTERM="0"
+CPUCOUNT="1"
 
 usage() {
     echo "Usage: $0 [options...]"
@@ -36,6 +37,7 @@ usage() {
     echo "-b --basedir:      Base directory for Virtual Machine files."
     echo "-V --vms:          Only check Virtual Machines, don't re-setup."
     echo "-l --longterm:     Indicate this is a longterm analysis setup."
+    echo "-u --cpucount:     Amount of CPUs per Virtual Machine."
     exit 1
 }
 
@@ -120,6 +122,11 @@ while [ "$#" -gt 0 ]; do
 
         -l|--longterm)
             LONGTERM="1"
+            ;;
+
+        -u|--cpucount)
+            CPUCOUNT="$1"
+            shift
             ;;
 
         *)
@@ -283,7 +290,8 @@ EOF
         CRONJOB="/home/cuckoo/vmprovision.sh"
 
         # Install the machine cronjob.
-        "$CUCKOO/utils/experiment.py" machine-cronjob install "$CRONJOB"
+        "$CUCKOO/utils/experiment.py" machine-cronjob install \
+            "cpucount=$CPUCOUNT" "path=$CRONJOB"
         chown cuckoo:cuckoo "$CRONJOB"
         chmod +x "$CRONJOB"
 
@@ -360,7 +368,8 @@ EOF
 
         echo "Creating Virtual Machine $name.."
         vmcloak-clone -s "$VMCLOAKCONF" -u cuckoo --bird "${EGGNAME}_bird" \
-            --hostonly-ip "192.168.56.$((2+$i))" "$name"
+            --hostonly-ip "192.168.56.$((2+$i))" --cpu-count "$CPUCOUNT" \
+            "$name"
     done
 
     rm -rf "$VMCLOAKCONF" "$VMTEMP"
