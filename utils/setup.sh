@@ -179,6 +179,22 @@ if [ "$LONGTERM" -ne 0 ] && [ "$VMCOUNT" -ne 0 ]; then
     exit 1
 fi
 
+_clone_cuckoo() {
+    # Fetch Cuckoo or in the case of a longterm setup, longcuckoo.
+    if [ "$LONGTERM" -eq 0 ]; then
+        git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
+    else
+        git clone git://github.com/jbremer/longcuckoo.git "$CUCKOO"
+    fi
+
+    chown -R cuckoo:cuckoo "$CUCKOO"
+    chmod 755 "/home/cuckoo/" "$CUCKOO"
+
+    # Delete the cuckoo1 machine that is included in the VirtualBox
+    # configuration by default.
+    sudo -u cuckoo -i "$CUCKOO/utils/machine.py" --delete cuckoo1
+}
+
 _setup() {
     # All functionality related to setting up the machine - this is not
     # required when doing a Virtual Machine checkup.
@@ -187,7 +203,7 @@ _setup() {
     if [ ! -e /etc/apt/sources.list.d/virtualbox.list ]; then
         # Update our apt repository with VirtualBox "contrib".
         DEBVERSION="$(lsb_release -cs)"
-        echo "deb http://download.virtualbox.org/virtualbox/debian " \
+        echo "deb http://download.virtualbox.org/virtualbox/debian" \
             "$DEBVERSION contrib" >> /etc/apt/sources.list.d/virtualbox.list
 
         # Add the VirtualBox public key to our apt repository.
@@ -231,15 +247,12 @@ _setup() {
     # actually start creating the bird.
     VMTEMP="$(mktemp -d "/home/cuckoo/tempXXXXXX")"
 
-    # Fetch Cuckoo or in the case of a longterm setup, longcuckoo.
-    if [ "$LONGTERM" -eq 0 ]; then
-        git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
-    else
-        git clone git://github.com/jbremer/longcuckoo.git "$CUCKOO"
-    fi
+    chown cuckoo:cuckoo "/home/cuckoo/"
+    chown -R cuckoo:cuckoo "$VMTEMP"
+    chmod 755 "/home/cuckoo/" "$VMTEMP"
 
-    chown -R cuckoo:cuckoo "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
-    chmod 755 "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
+    # Clone the Cuckoo repository and initialize it.
+    _clone_cuckoo
 
     # Install required packages part two.
     pip install --upgrade psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
@@ -301,9 +314,6 @@ EOF
         if [[ ! "$CRONTAB" =~ "vmprovision.sh" ]]; then
             (echo "$CRONTAB" ; echo "*/5 * * * * $CRONJOB")|crontab -u cuckoo -
         fi
-
-        # Initially execute the cronjob so we have a couple of machines ready.
-        sudo -u cuckoo -i sh "$CRONJOB"
     fi
 
     # TODO Should be automated away.
@@ -332,10 +342,6 @@ EOF
     fi
 
     chown cuckoo:cuckoo "$VMCLOAKCONF"
-
-    # Delete the cuckoo1 machine that is included in the VirtualBox
-    # configuration by default.
-    "$CUCKOO/utils/machine.py" --delete cuckoo1
 
     # Check whether the bird image for this Windows version already exists.
     sudo -u cuckoo -i vmcloak-bird hddpath "${EGGNAME}_bird"
@@ -373,6 +379,11 @@ EOF
     done
 
     rm -rf "$VMCLOAKCONF" "$VMTEMP"
+
+    # In longterm modes we have a different script that provides VMs for us.
+    if [ "$LONGTERM" -ne 0 ]; then
+        sudo -u cuckoo -i sh "$CRONJOB"
+    fi
 
     # Remove all Virtual Machine related logfiles, we're not interested
     # in keeping those.
@@ -448,11 +459,16 @@ _initialize_from_backup() {
 }
 
 # Initialize various variables.
-CUCKOO="/home/cuckoo/cuckoo"
 MOUNT="/mnt/$MOUNTOS/"
 VMS="$BASEDIR/vms/"
 VMBACKUP="$BASEDIR/vmbackup/"
 VMMOUNT="/home/cuckoo/vmmount/"
+
+if [ "$LONGTERM" -eq 0 ]; then
+    CUCKOO="/home/cuckoo/cuckoo"
+else
+    CUCKOO="/home/cuckoo/longcuckoo"
+fi
 
 # In Upstart scripts the $HOME variable may not have been set. If so, set it.
 if [ -z "$HOME" ]; then
