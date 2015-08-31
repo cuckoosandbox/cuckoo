@@ -12,7 +12,6 @@ import urllib2
 import logging
 import logging.handlers
 import pwd
-import time
 
 from datetime import datetime, timedelta
 
@@ -389,7 +388,12 @@ def cuckoo_clean():
             if not fname.endswith(".pyc"):
                 continue
 
-            path = os.path.join(CUCKOO_ROOT, dirpath, fname)
+            # We don't want to delete the Android's Agent .pyc files (as we
+            # don't ship the original .py files and thus they're critical).
+            if "agent/android/python_agent" in dirpath.replace("\\", "/"):
+                continue
+
+            path = os.path.join(dirpath, fname)
 
             try:
                 os.unlink(path)
