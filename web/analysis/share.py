@@ -23,7 +23,7 @@ def sendKaspersky(filename, help_text, email, name):
 
     response = br.post(hostUrl + form['action'], data=form_data,
                        files={'VirLabRecordModel.SuspiciousFileContent':
-                              (name,open(filename, 'rb'))})
+                              open(filename, 'rb')})
 
     if "was successfully sent" in response.text:
         return 0, "Success!"
@@ -43,12 +43,12 @@ def sendDrWeb(filename, help_text, email, name):
     form_data["category"] = ["2"]
     form_data["text"] = help_text
     response = br.post(form['action'], data=form_data,
-                       files={'file': (name, open(filename, 'rb'))})
+                       files={'file': open(filename, 'rb')})
 
     if "SNForm" not in response.text:
         return 0, "Success!"
     else:
-        return 1, "Something goes wrong"
+        return 1, "%s. Something goes wrong: %s" % (filename, response.text)
 
 
 def sendEset(filename, help_text, email, name):
@@ -73,14 +73,12 @@ def sendEset(filename, help_text, email, name):
     form_data["commentary"] = help_text
 
     response = br.post(hostUrl, data=form_data,
-                       files={u'suspicious_file': (name,
-                                                   open(filename, 'rb'),
-                                                   "application/zip")})
+                       files={u'suspicious_file': open(filename, 'rb')})
 
     if u"Спасибо, Ваше сообщение успешно отправлено." in response.text:
         return 0, "Success!"
     else:
-        return 1, "Something goes wrong"
+        return 1, "Something goes wrong: %s" % response.text
 
 
 def sendClamAV(filename, help_text, email, name):
@@ -100,7 +98,7 @@ def sendClamAV(filename, help_text, email, name):
     form_s3_data.update(credentials)
 
     s3_answer = br.post(s3_url, data=form_s3_data,
-                        files={'file': (name, open(filename, 'rb'))})
+                        files={'file': open(filename, 'rb')})
     if s3_answer.status_code != 201:
         return 1, "Something wrong. s3 status = %s" % s3_answer.status_code
 
@@ -144,7 +142,7 @@ def sendMicrosoft(filename, help_text, email, name):
     response = br.post(
         hostUrl, data=form_data,
         files={u'ctl00$ctl00$pageContent$leftside$submissionFile':
-               (name, open(filename, 'rb'))})
+               open(filename, 'rb')})
     response_url = response.url
 
     response = BeautifulSoup(response.text, 'html.parser')
