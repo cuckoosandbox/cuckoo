@@ -18,6 +18,7 @@ DEPENDENCIES=""
 BASEDIR="/home/cuckoo"
 VMCHECKUP="0"
 LONGTERM="0"
+CPUCOUNT="1"
 
 usage() {
     echo "Usage: $0 [options...]"
@@ -36,6 +37,7 @@ usage() {
     echo "-b --basedir:      Base directory for Virtual Machine files."
     echo "-V --vms:          Only check Virtual Machines, don't re-setup."
     echo "-l --longterm:     Indicate this is a longterm analysis setup."
+    echo "-u --cpucount:     Amount of CPUs per Virtual Machine."
     exit 1
 }
 
@@ -122,6 +124,11 @@ while [ "$#" -gt 0 ]; do
             LONGTERM="1"
             ;;
 
+        -u|--cpucount)
+            CPUCOUNT="$1"
+            shift
+            ;;
+
         *)
             echo "$0: Invalid argument.. $1" >&2
             usage
@@ -172,6 +179,22 @@ if [ "$LONGTERM" -ne 0 ] && [ "$VMCOUNT" -ne 0 ]; then
     exit 1
 fi
 
+_clone_cuckoo() {
+    # Fetch Cuckoo or in the case of a longterm setup, longcuckoo.
+    if [ "$LONGTERM" -eq 0 ]; then
+        git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
+    else
+        git clone git://github.com/jbremer/longcuckoo.git "$CUCKOO"
+    fi
+
+    chown -R cuckoo:cuckoo "$CUCKOO"
+    chmod 755 "/home/cuckoo/" "$CUCKOO"
+
+    # Delete the cuckoo1 machine that is included in the VirtualBox
+    # configuration by default.
+    sudo -u cuckoo -i "$CUCKOO/utils/machine.py" --delete cuckoo1
+}
+
 _setup() {
     # All functionality related to setting up the machine - this is not
     # required when doing a Virtual Machine checkup.
@@ -180,7 +203,7 @@ _setup() {
     if [ ! -e /etc/apt/sources.list.d/virtualbox.list ]; then
         # Update our apt repository with VirtualBox "contrib".
         DEBVERSION="$(lsb_release -cs)"
-        echo "deb http://download.virtualbox.org/virtualbox/debian " \
+        echo "deb http://download.virtualbox.org/virtualbox/debian" \
             "$DEBVERSION contrib" >> /etc/apt/sources.list.d/virtualbox.list
 
         # Add the VirtualBox public key to our apt repository.
@@ -224,15 +247,12 @@ _setup() {
     # actually start creating the bird.
     VMTEMP="$(mktemp -d "/home/cuckoo/tempXXXXXX")"
 
-    # Fetch Cuckoo or in the case of a longterm setup, longcuckoo.
-    if [ "$LONGTERM" -eq 0 ]; then
-        git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
-    else
-        git clone git://github.com/jbremer/longcuckoo.git "$CUCKOO"
-    fi
+    chown cuckoo:cuckoo "/home/cuckoo/"
+    chown -R cuckoo:cuckoo "$VMTEMP"
+    chmod 755 "/home/cuckoo/" "$VMTEMP"
 
-    chown -R cuckoo:cuckoo "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
-    chmod 755 "/home/cuckoo/" "$CUCKOO" "$VMTEMP"
+    # Clone the Cuckoo repository and initialize it.
+    _clone_cuckoo
 
     # Install required packages part two.
     pip install --upgrade psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
@@ -283,7 +303,8 @@ EOF
         CRONJOB="/home/cuckoo/vmprovision.sh"
 
         # Install the machine cronjob.
-        "$CUCKOO/utils/experiment.py" machine-cronjob install "$CRONJOB"
+        "$CUCKOO/utils/experiment.py" machine-cronjob install \
+            "cpucount=$CPUCOUNT" "path=$CRONJOB"
         chown cuckoo:cuckoo "$CRONJOB"
         chmod +x "$CRONJOB"
 
@@ -322,10 +343,6 @@ EOF
 
     chown cuckoo:cuckoo "$VMCLOAKCONF"
 
-    # Delete the cuckoo1 machine that is included in the VirtualBox
-    # configuration by default.
-    "$CUCKOO/utils/machine.py" --delete cuckoo1
-
     # Check whether the bird image for this Windows version already exists.
     sudo -u cuckoo -i vmcloak-bird hddpath "${EGGNAME}_bird"
     if [ "$?" -ne 0 ]; then
@@ -357,10 +374,16 @@ EOF
 
         echo "Creating Virtual Machine $name.."
         vmcloak-clone -s "$VMCLOAKCONF" -u cuckoo --bird "${EGGNAME}_bird" \
-            --hostonly-ip "192.168.56.$((2+$i))" "$name"
+            --hostonly-ip "192.168.56.$((2+$i))" --cpu-count "$CPUCOUNT" \
+            "$name"
     done
 
     rm -rf "$VMCLOAKCONF" "$VMTEMP"
+
+    # In longterm modes we have a different script that provides VMs for us.
+    if [ "$LONGTERM" -ne 0 ]; then
+        sudo -u cuckoo -i sh "$CRONJOB"
+    fi
 
     # Remove all Virtual Machine related logfiles, we're not interested
     # in keeping those.
@@ -436,11 +459,16 @@ _initialize_from_backup() {
 }
 
 # Initialize various variables.
-CUCKOO="/home/cuckoo/cuckoo"
 MOUNT="/mnt/$MOUNTOS/"
 VMS="$BASEDIR/vms/"
 VMBACKUP="$BASEDIR/vmbackup/"
 VMMOUNT="/home/cuckoo/vmmount/"
+
+if [ "$LONGTERM" -eq 0 ]; then
+    CUCKOO="/home/cuckoo/cuckoo"
+else
+    CUCKOO="/home/cuckoo/longcuckoo"
+fi
 
 # In Upstart scripts the $HOME variable may not have been set. If so, set it.
 if [ -z "$HOME" ]; then
@@ -473,6 +501,8 @@ TAGS="$TAGS"
 INTERFACES="$INTERFACES"
 DEPENDENCIES="$DEPENDENCIES"
 BASEDIR="$BASEDIR"
+LONGTERM="$LONGTERM"
+CPUCOUNT="$CPUCOUNT"
 
 # Values set based on configuration values.
 EGGNAME="$EGGNAME"

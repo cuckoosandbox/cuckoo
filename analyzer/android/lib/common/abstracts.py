@@ -4,7 +4,7 @@
 
 class Package(object):
     """Base abstact analysis package."""
-    
+
     def __init__(self, options={}):
         """@param options: options dict."""
         self.options = options
@@ -35,4 +35,5 @@ class Package(object):
         """
         raise NotImplementedError
 
-class Auxiliary(object): pass
+class Auxiliary(object):
+    pass

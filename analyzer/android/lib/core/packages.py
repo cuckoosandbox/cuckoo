@@ -17,8 +17,7 @@ def choose_package(file_type, file_name):
         return "apk"
     elif "zip" in file_type:
         return "apk"
-    #elif "DEX" in file_type:
+    # elif "DEX" in file_type:
     #    return "dex"
     else:
         return "apk"
-

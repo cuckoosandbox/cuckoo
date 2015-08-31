@@ -34,7 +34,7 @@
     {% endif %}
 
     <div id="info-log" class="collapse">
-        <pre>{{analysis.debug.log}}</pre>
+        <pre>{{analysis.debug.log|join:""}}</pre>
     </div>
 </section>
 

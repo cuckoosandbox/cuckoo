@@ -4,7 +4,7 @@
 
 from lib.common.results import NetlogFile
 
-def send_file(name,data):
+def send_file(name, data):
     """Send file to result server"""
     nf = NetlogFile(name)
     nf.sock.sendall(data)

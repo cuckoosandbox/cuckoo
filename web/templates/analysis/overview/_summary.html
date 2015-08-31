@@ -57,33 +57,33 @@
                     <div class="panel panel-default">
                         <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
                         <ul class="list-group">
-                        {% if process.summary.reg_opened %}
+                        {% if process.summary.regkey_opened %}
                             <li class="list-group-item">
                                 <p><b>Registry keys opened</b></p>
                                 <ul>
-                                {% for entry in process.summary.reg_opened %}
+                                {% for entry in process.summary.regkey_opened %}
                                     <li>{{entry}}</li>
                                 {% endfor %}
                                 </ul>
                             </li>
                         {% endif %}
 
-                        {% if process.summary.reg_written %}
+                        {% if process.summary.regkey_written %}
                             <li class="list-group-item">
                                 <p><b>Registry keys written</b></p>
                                 <ul>
-                                {% for entry in process.summary.reg_written %}
+                                {% for entry in process.summary.regkey_written %}
                                     <li>{{entry}}</li>
                                 {% endfor %}
                                 </ul>
                             </li>
                         {% endif %}
 
-                        {% if process.summary.reg_read %}
+                        {% if process.summary.regkey_read %}
                             <li class="list-group-item">
                                 <p><b>Registry keys read</b></p>
                                 <ul>
-                                {% for entry in process.summary.reg_read %}
+                                {% for entry in process.summary.regkey_read %}
                                     <li>{{entry}}</li>
                                 {% endfor %}
                                 </ul>
@@ -117,15 +117,40 @@
                     {% if process.summary %}
                     <div class="panel panel-default">
                         <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
-                        <div class="panel-body">
-                        {% if process.summary.directory_enumerated %}
-                            <ul>
-                            {% for entry in process.summary.directory_enumerated %}
-                                <li>{{entry}}</li>
-                            {% endfor %}
-                            </ul>
+                        <ul class="list-group">
+                        {% if process.summary.directory_created %}
+                            <li class="list-group-item">
+                                <p><b>Directories created</b></p>
+                                <ul>
+                                {% for entry in process.summary.directory_created %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
                         {% endif %}
-                        </div>
+
+                        {% if process.summary.directory_removed %}
+                            <li class="list-group-item">
+                                <p><b>Directories removed</b></p>
+                                <ul>
+                                {% for entry in process.summary.directory_removed %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.directory_enumerated %}
+                            <li class="list-group-item">
+                                <p><b>Directories enumerated</b></p>
+                                <ul>
+                                {% for entry in process.summary.directory_enumerated %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                        </ul>
                     </div>
                     {% endif %}
                 {% endfor %}

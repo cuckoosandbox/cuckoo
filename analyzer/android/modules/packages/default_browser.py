@@ -7,8 +7,8 @@ from lib.api.adb import execute_browser
 
 class default_browser(Package):
     """Default Browser analysis package."""
-    def __init__(self,options={}):
-        Package(options)
+    def __init__(self, options={}):
+        super(default_browser, self).__init__(options)
 
     def start(self, target):
         execute_browser(target)
@@ -18,4 +18,3 @@ class default_browser(Package):
 
     def finish(self):
         return True
-
