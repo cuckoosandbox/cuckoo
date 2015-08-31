@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 class Apk(Package):
     """Apk analysis package."""
     def __init__(self, options={}):
-        super(Package, self).__init__(options)
+        super(Apk, self).__init__(options)
         self.package = ""
         self.activity = ""
 

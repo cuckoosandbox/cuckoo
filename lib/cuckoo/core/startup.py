@@ -61,6 +61,7 @@ def check_configs():
     """
     configs = [
         os.path.join(CUCKOO_ROOT, "conf", "auxiliary.conf"),
+        os.path.join(CUCKOO_ROOT, "conf", "avd.conf"),
         os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"),
         os.path.join(CUCKOO_ROOT, "conf", "esx.conf"),
         os.path.join(CUCKOO_ROOT, "conf", "kvm.conf"),
