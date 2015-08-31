@@ -86,7 +86,7 @@ def install(enabled, force, rewrite):
         "signatures": os.path.join("modules", "signatures"),
         "processing": os.path.join("modules", "processing"),
         "reporting": os.path.join("modules", "reporting"),
-        "machinemanagers": os.path.join("modules", "machinemanagers"),
+        "machinery": os.path.join("modules", "machinery"),
         "windows": os.path.join("analyzer", "windows", "bin"),
     }
 
@@ -111,7 +111,7 @@ def main():
     parser.add_argument("-a", "--all", help="Download everything", action="store_true", required=False)
     parser.add_argument("-s", "--signatures", help="Download Cuckoo signatures", action="store_true", required=False)
     parser.add_argument("-p", "--processing", help="Download processing modules", action="store_true", required=False)
-    parser.add_argument("-m", "--machinemanagers", help="Download machine managers", action="store_true", required=False)
+    parser.add_argument("-m", "--machinery", help="Download machine managers", action="store_true", required=False)
     parser.add_argument("-r", "--reporting", help="Download reporting modules", action="store_true", required=False)
     parser.add_argument("-f", "--force", help="Install files without confirmation", action="store_true", required=False)
     parser.add_argument("-w", "--rewrite", help="Rewrite existing files", action="store_true", required=False)
@@ -126,7 +126,7 @@ def main():
         enabled.append("processing")
         enabled.append("signatures")
         enabled.append("reporting")
-        enabled.append("machinemanagers")
+        enabled.append("machinery")
         enabled.append("windows")
     else:
         if args.signatures:
@@ -135,8 +135,8 @@ def main():
             enabled.append("processing")
         if args.reporting:
             enabled.append("reporting")
-        if args.machinemanagers:
-            enabled.append("machinemanagers")
+        if args.machinery:
+            enabled.append("machinery")
 
     if not enabled:
         print(colors.red("You need to enable some category!\n"))
