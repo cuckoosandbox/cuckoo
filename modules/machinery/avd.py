@@ -179,6 +179,10 @@ class Avd(Machinery):
             pcap_dump_path
         ]
 
+        # In headless mode we remove the skin, audio, and window support.
+        if self.options.avd.mode == "headless":
+            cmd += ["-no-skin", "-no-audio", "-no-window"]
+
         self.emulator_processes[label] = OSCommand.executeAsyncCommand(cmd)
         time.sleep(10)
         # if not self.__checkADBRecognizeEmu(label):
