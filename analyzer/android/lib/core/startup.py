@@ -18,7 +18,7 @@ def create_folders():
 
         try:
             os.makedirs(folder)
-        except OSError as e:
+        except OSError:
             pass
 
 def init_logging():
@@ -27,7 +27,7 @@ def init_logging():
     sh = logging.StreamHandler()
     sh.setFormatter(formatter)
     log.addHandler(sh)
-    
+
     nh = NetlogHandler()
     nh.setFormatter(formatter)
     log.addHandler(nh)
