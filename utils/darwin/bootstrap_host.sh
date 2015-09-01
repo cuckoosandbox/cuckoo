@@ -31,16 +31,16 @@ done
 # [1] Setup a host-only network interface (vboxnet0)
 if [ "$opt_create_interface" == true ]; then
     if [[ ! -f $(which vboxmanage) ]]; then
-    	echo -e "[Error] Could not locate vboxmanage. Please, install Virtual Box first."
-    	exit 1
+        echo -e "[Error] Could not locate vboxmanage. Please, install Virtual Box first."
+        exit 1
     fi
     # Let's also verify that a VM with this name actually exists
     # Note: `vboxmanage list vms` outputs data in the following format:
-    # 	"SandboxXP" {2b96015e-42e0-4662-b792-c738c2de155f}
+    #   "SandboxXP" {2b96015e-42e0-4662-b792-c738c2de155f}
     vm_exists=$(vboxmanage list vms | grep -c "\"$vmname\" {[0-9a-z\-]*}")
     if [ "$vm_exists" -ne 1 ]; then
-    	echo -e "[Error] Could not find a VM named \"$vmname\"."
-    	exit 1
+        echo -e "[Error] Could not find a VM named \"$vmname\"."
+        exit 1
     fi
     vboxmanage hostonlyif create
     # 192.168.56.1 is the default IP from `cuckoo.conf`
