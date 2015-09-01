@@ -10,7 +10,7 @@ In my bachelor thesis I developed a prototype that can be used for comprehensive
 * Several small and not so small changes that needed to be done:
   * Webinterface (the user can choose between linux and windows analysis)
   * Reporting module (formatting and output things)
-  * Linux agent and analyzer (to make my modules run and communicate properly)
+  * Linux analyzer module (to make my modules run and communicate properly)
   * And even more (this will be updated soon)
   
 
