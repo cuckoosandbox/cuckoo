@@ -38,7 +38,7 @@
     </table>
     {% else %}
         {% if analysis.virustotal.summary.permalink %}
-            <a href="{{analysis.virustotal.summary.permalink}}">Your file is being analysed</a>
+            <a href="{{analysis.virustotal.summary.permalink}}">Your file was sent to VirusTotal, upload again to see results</a>
         {% else %}
             No antivirus signatures available.
         {% endif %}
