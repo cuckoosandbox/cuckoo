@@ -78,12 +78,12 @@ class VirtualBox(Machinery):
 
         try:
             proc = subprocess.Popen([self.options.virtualbox.path,
-                             "startvm",
-                             label,
-                             "--type",
-                             self.options.virtualbox.mode],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+                                     "startvm",
+                                     label,
+                                     "--type",
+                                     self.options.virtualbox.mode],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
             output, err = proc.communicate()
             if err:
                 raise OSError(err)
@@ -205,8 +205,8 @@ class VirtualBox(Machinery):
 
         try:
             proc = subprocess.Popen([self.options.virtualbox.path, "-v"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
             output, err = proc.communicate()
 
             if proc.returncode != 0:
