@@ -210,9 +210,10 @@ class XenServerMachinery(Machinery):
 
         return vm["power_state"] == "Halted"
 
-    def start(self, label):
+    def start(self, label, task):
         """Start a virtual machine.
         @param label: vm uuid
+        @param task: task object.
         """
 
         vm_ref = self._get_vm_ref(label)

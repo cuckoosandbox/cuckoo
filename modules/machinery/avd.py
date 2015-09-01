@@ -64,9 +64,10 @@ class Avd(Machinery):
             raise CuckooCriticalError("reference machine not found at "
                                       "specified path \"%s\"" % machine_path)
 
-    def start(self, label):
+    def start(self, label, task):
         """Start a virtual machine.
         @param label: virtual machine name.
+        @param task: task object.
         @raise CuckooMachineError: if unable to start.
         """
         log.debug("Starting vm %s" % label)

@@ -274,7 +274,7 @@ class AnalysisManager(threading.Thread):
                                             self.machine.label,
                                             machinery.__class__.__name__)
             # Start the machine.
-            machinery.start(self.machine.label)
+            machinery.start(self.machine.label, self.task)
 
             # By the time start returns it will have fully started the Virtual
             # Machine. We can now safely release the machine lock.

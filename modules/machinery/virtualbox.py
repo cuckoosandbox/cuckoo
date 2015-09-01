@@ -41,9 +41,10 @@ class VirtualBox(Machinery):
         # Base checks.
         super(VirtualBox, self)._initialize_check()
 
-    def start(self, label):
+    def start(self, label, task):
         """Start a virtual machine.
         @param label: virtual machine name.
+        @param task: task object.
         @raise CuckooMachineError: if unable to start.
         """
         log.debug("Starting vm %s" % label)

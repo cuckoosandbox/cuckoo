@@ -238,9 +238,10 @@ class Machinery(object):
         """
         self.db.set_machine_status(label, status)
 
-    def start(self, label=None):
+    def start(self, label, task):
         """Start a machine.
         @param label: machine name.
+        @param task: task object.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
@@ -333,9 +334,10 @@ class LibVirtMachinery(Machinery):
         # currently still active.
         super(LibVirtMachinery, self)._initialize_check()
 
-    def start(self, label):
+    def start(self, label, task):
         """Starts a virtual machine.
         @param label: virtual machine name.
+        @param task: task object.
         @raise CuckooMachineError: if unable to start virtual machine.
         """
         log.debug("Starting machine %s", label)
