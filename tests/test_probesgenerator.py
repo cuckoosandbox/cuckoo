@@ -16,7 +16,8 @@ from analyzer.darwin.lib.dtrace.autoprobes import serialize_atomic_type
 from analyzer.darwin.lib.dtrace.autoprobes import serialize_struct_type
 from analyzer.darwin.lib.dtrace.autoprobes import serialize_type_with_template
 
-SIGNATURES_FILE = path.join(TESTS_DIR, "..", "config", "signatures.yml")
+SIGNATURES_FILE = path.join(TESTS_DIR, "..", "analyzer", "darwin", "lib",
+                            "core", "data", "signatures.yml")
 
 class ProbesGeneratorTestCase(unittest.TestCase):
 
