@@ -66,6 +66,7 @@ class VMware(Machinery):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             output, _ = p.communicate()
+            output = output.decode("utf-8")
         except OSError as e:
             raise CuckooMachineError("Unable to get snapshot list for %s. "
                                      "Reason: %s" % (vmx_path, e))
