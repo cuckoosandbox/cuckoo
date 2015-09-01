@@ -4,6 +4,7 @@
 
 import logging
 import socket
+import time
 
 from lib.core.config import Config
 
@@ -44,6 +45,7 @@ class NetlogConnection(object):
                 s = socket.create_connection((self.hostip, self.hostport), 0.1)
                 s.sendall(self.proto)
             except socket.error:
+                time.sleep(0.1)
                 continue
 
             self.sock = s
