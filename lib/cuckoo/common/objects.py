@@ -329,19 +329,23 @@ class File(object):
 
             main_activity = a.get_main_activity()
             if main_activity:
+                log.debug("Picked package %s and main activity %s.",
+                          package, main_activity)
                 return package, main_activity
 
             activities = a.get_activities()
             for activity in activities:
                 if "main" in activity or "start" in activity:
-                    log.debug("Choosing main activity due to its name: %s",
-                              activity)
+                    log.debug("Choosing package %s and main activity due to "
+                              "its name %s.", activity)
                     return package, activity
 
             if activities and activities[0]:
+                log.debug("Picked package %s and the first activity %s.",
+                          package, activities[0])
                 return package, activities[0]
         except Exception as e:
-            log.warning("Error extracting package and main activity: %s", e)
+            log.warning("Error extracting package and main activity: %s.", e)
 
         return "", ""
 
