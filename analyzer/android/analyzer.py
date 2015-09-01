@@ -7,6 +7,7 @@ import os
 import logging
 import pkgutil
 import shutil
+import sys
 import xmlrpclib
 import time
 
