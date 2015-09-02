@@ -4,6 +4,7 @@
 
 import os
 from datetime import datetime
+import re
 
 try:
     import magic
@@ -268,7 +269,9 @@ class PortableExecutable:
 
 class Static(Processing):
     """Static analysis."""
-    
+    PUBKEY_RE = "(-----BEGIN PUBLIC KEY-----[a-zA-Z0-9\\n\\+/]+-----END PUBLIC KEY-----)"
+    PRIVKEY_RE = "(-----BEGIN RSA PRIVATE KEY-----[a-zA-Z0-9\\n\\+/]+-----END RSA PRIVATE KEY-----)"
+
     def run(self):
         """Run analysis.
         @return: results dict.
@@ -276,9 +279,20 @@ class Static(Processing):
         self.key = "static"
         static = {}
 
-        if HAVE_PEFILE:
-            if self.task["category"] == "file":
+        if self.task["category"] == "file" and os.path.exists(self.file_path):
+            if HAVE_PEFILE:
                 if "PE32" in File(self.file_path).get_type():
-                    static = PortableExecutable(self.file_path).run()
+                    static.update(PortableExecutable(self.file_path).run())
+
+            static["keys"] = self._get_keys()
 
         return static
+
+    def _get_keys(self):
+        """Get any embedded plaintext public and/or private keys."""
+        buf = open(self.file_path).read()
+        ret = []
+
+        ret += re.findall(self.PUBKEY_RE, buf)
+        ret += re.findall(self.PRIVKEY_RE, buf)
+        return ret
