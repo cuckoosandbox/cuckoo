@@ -2,8 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import datetime
 import os
-from datetime import datetime
 import re
 
 try:
@@ -27,7 +27,7 @@ from lib.cuckoo.common.utils import convert_to_printable
 # Partially taken from
 # http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 
-class PortableExecutable:
+class PortableExecutable(object):
     """PE analysis."""
 
     def __init__(self, file_path):
@@ -241,7 +241,8 @@ class PortableExecutable:
         except AttributeError:
             return None
 
-        return datetime.fromtimestamp(pe_timestamp).strftime("%Y-%m-%d %H:%M:%S")
+        dt = datetime.datetime.fromtimestamp(pe_timestamp)
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
 
     def run(self):
         """Run analysis.
