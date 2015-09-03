@@ -136,6 +136,10 @@ class Pcap:
         @param connection: connection data
         """
         try:
+            # TODO: Perhaps this block should be removed.
+            # If there is a packet from a non-local IP address, which hasn't
+            # been seen before, it means that the connection wasn't initiated
+            # during the time of the current analysis.
             if connection["src"] not in self.hosts:
                 ip = convert_to_printable(connection["src"])
 
