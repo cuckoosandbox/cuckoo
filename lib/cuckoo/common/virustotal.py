@@ -32,6 +32,7 @@ class VirusTotalAPI(object):
         """Initialize VirusTotal API with the API key and timeout.
         @param api_key: virustotal api key
         @param timeout: request and response timeout
+        @param scan: send file to scan or just get report
         """
         self.apikey = apikey
         self.timeout = timeout

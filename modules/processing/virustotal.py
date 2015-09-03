@@ -19,7 +19,7 @@ class VirusTotal(Processing):
     Currently obtains VirusTotal results for the target sample or URL and the
     dropped files.
     """
-    order = 1
+    order = 2
 
     def run(self):
         """Runs VirusTotal processing
@@ -29,14 +29,14 @@ class VirusTotal(Processing):
 
         apikey = self.options.get("key")
         timeout = int(self.options.get("timeout", 60))
-        self.scan = int(self.options.get("scan", 0))
+        scan = int(self.options.get("scan", 0))
 
         if not apikey:
             raise CuckooProcessingError("VirusTotal API key not "
                                         "configured, skipping VirusTotal "
                                         "processing module.")
 
-        self.vt = VirusTotalAPI(apikey, timeout, self.scan)
+        self.vt = VirusTotalAPI(apikey, timeout, scan)
 
         # Scan the original sample or URL.
         if self.task["category"] == "file":
@@ -69,8 +69,7 @@ class VirusTotal(Processing):
         try:
             return self.vt.file_report(filepath, summary=summary)
         except VirusTotalResourceNotScanned:
-            if self.scan:
-                return self.vt.file_scan(filepath)
+            return self.vt.file_scan(filepath)
         except CuckooOperationalError as e:
             log.warning("Error fetching results from VirusTotal for "
                         "\"%s\": %s", os.path.basename(filepath), e.message)
@@ -83,8 +82,7 @@ class VirusTotal(Processing):
         try:
             return self.vt.url_report(url, summary=summary)
         except VirusTotalResourceNotScanned:
-            if self.scan:
-                return self.vt.url_scan(url)
+            return self.vt.url_scan(url)
         except CuckooOperationalError as e:
             log.warning("Error fetching results from VirusTotal for "
                         "\"%s\": %s", url, e.message)
@@ -95,4 +93,4 @@ class VirusTotal(Processing):
         files.
         @param filetype: file type
         """
-        return True #filetype.startswith("PE32")
+        return filetype.startswith("PE32")

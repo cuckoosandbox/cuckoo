@@ -189,6 +189,15 @@ class AnalysisManager(threading.Thread):
         """
         options = {}
 
+        if self.task.category == "file":
+            options["file_name"] = File(self.task.target).get_name()
+            options["file_type"] = File(self.task.target).get_type()
+            options["pe_exports"] = \
+                ",".join(File(self.task.target).get_exported_functions())
+
+            package, activity = File(self.task.target).get_apk_entry()
+            self.task.options["apk_entry"] = "%s:%s" % (package, activity)
+
         options["id"] = self.task.id
         options["ip"] = self.machine.resultserver_ip
         options["port"] = self.machine.resultserver_port
@@ -204,12 +213,6 @@ class AnalysisManager(threading.Thread):
             options["timeout"] = self.cfg.timeouts.default
         else:
             options["timeout"] = self.task.timeout
-
-        if self.task.category == "file":
-            options["file_name"] = File(self.task.target).get_name()
-            options["file_type"] = File(self.task.target).get_type()
-            options["pe_exports"] = \
-                ",".join(File(self.task.target).get_exported_functions())
 
         # copy in other analyzer specific options, TEMPORARY (most likely)
         vm_options = getattr(machinery.options, self.machine.name)
@@ -271,7 +274,7 @@ class AnalysisManager(threading.Thread):
                                             self.machine.label,
                                             machinery.__class__.__name__)
             # Start the machine.
-            machinery.start(self.machine.label)
+            machinery.start(self.machine.label, self.task)
 
             # By the time start returns it will have fully started the Virtual
             # Machine. We can now safely release the machine lock.

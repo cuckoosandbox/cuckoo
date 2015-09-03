@@ -1,7 +1,7 @@
-# Copyright (C) Check Point Software Technologies LTD.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
-
+# Originally contributed by Check Point Software Technologies, Ltd.
 
 import logging
 import os
@@ -64,15 +64,16 @@ class Avd(Machinery):
             raise CuckooCriticalError("reference machine not found at "
                                       "specified path \"%s\"" % machine_path)
 
-    def start(self, label):
+    def start(self, label, task):
         """Start a virtual machine.
         @param label: virtual machine name.
+        @param task: task object.
         @raise CuckooMachineError: if unable to start.
         """
         log.debug("Starting vm %s" % label)
 
         self.duplicate_reference_machine(label)
-        self.start_emulator(label)
+        self.start_emulator(label, task)
         self.port_forward(label)
         self.start_agent(label)
 
@@ -155,16 +156,12 @@ class Avd(Machinery):
         with open(fileName, 'w') as fd:
             fd.writelines(newLines)
 
-    def start_emulator(self, label):
+    def start_emulator(self, label, task):
         emulator_port = str(self.options.get(label)["emulator_port"])
-
-        task_id = self.get_task_id(label)
-        if task_id is None:
-            raise CuckooCriticalError("android emulator failed starting the machine ,can't find task_id")
 
         """Starts the emulator"""
         pcap_dump_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
-                                      str(task_id), "dump.pcap")
+                                      "%s" % task.id, "dump.pcap")
         cmd = [
             self.options.avd.emulator_path,
             "@{0}".format(label),
@@ -176,12 +173,20 @@ class Avd(Machinery):
             "-port",
             emulator_port,
             "-tcpdump",
-            pcap_dump_path
+            pcap_dump_path,
         ]
 
         # In headless mode we remove the skin, audio, and window support.
         if self.options.avd.mode == "headless":
             cmd += ["-no-skin", "-no-audio", "-no-window"]
+
+        # If a proxy address has been provided for this analysis, then we have
+        # to pass the proxy address along to the emulator command. The
+        # mitmproxy instance is not located at the resultserver's IP address
+        # though, so we manually replace the IP address by localhost.
+        if "proxy" in task.options:
+            _, port = task.options["proxy"].split(":")
+            cmd += ["-http-proxy", "http://127.0.0.1:%s" % port]
 
         self.emulator_processes[label] = OSCommand.executeAsyncCommand(cmd)
         time.sleep(10)

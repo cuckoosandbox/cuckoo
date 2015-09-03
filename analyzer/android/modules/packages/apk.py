@@ -1,11 +1,11 @@
-# Copyright (C) Check Point Software Technologies LTD.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+# Originally contributed by Check Point Software Technologies, Ltd.
 
 import logging
 
-from lib.api.adb import dump_droidmon_logs, execute_sample
-from lib.api.adb import install_sample, get_package_activity_name
+from lib.api.adb import dump_droidmon_logs, execute_sample, install_sample
 from lib.common.abstracts import Package
 
 log = logging.getLogger(__name__)
@@ -14,11 +14,10 @@ class Apk(Package):
     """Apk analysis package."""
     def __init__(self, options={}):
         super(Apk, self).__init__(options)
-        self.package = ""
-        self.activity = ""
+
+        self.package, self.activity = options.get("apk_entry", ":").split(":")
 
     def start(self, path):
-        self.package, self.activity = get_package_activity_name(path)
         install_sample(path)
         execute_sample(self.package, self.activity)
 
