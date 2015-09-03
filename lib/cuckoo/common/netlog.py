@@ -34,16 +34,32 @@ log = logging.getLogger(__name__)
 ###############################################################################
 
 TYPECONVERTERS = {
-    "p": lambda v: "0x%08x" % default_converter(v),
+    "p": lambda v: pointer_converter(v),
 }
 
 # 20 Mb max message length.
 MAX_MESSAGE_LENGTH = 20 * 1024 * 1024
 
+def pointer_converter(v):
+    # If it's a 64-bit pointer treat it as such. Note that 0xffffffff is also
+    # an often-used pointer so we have to handle negative pointers as well.
+    if isinstance(v, bson.int64.Int64):
+        return "0x%016x" % (v % 2**64)
+    else:
+        return "0x%08x" % (v % 2**32)
+
 def default_converter(v):
-    # Fix signed ints (bson is kind of limited there).
-    if type(v) in (int, long) and v < 0:
-        return v + 0x100000000
+    # Turn signed 32-bit integers into unsigned 32-bit integers. Don't convert
+    # signed 64-bit integers into unsigned 64-bit integers as MongoDB doesn't
+    # support unsigned 64-bit integers (and ElasticSearch probably doesn't
+    # either).
+    if isinstance(v, bson.int64.Int64):
+        return v
+
+    if isinstance(v, (int, long)) and v < 0:
+        return v % 2**32
+
+    # Try to avoid various unicode issues through usage of latin-1 encoding.
     if isinstance(v, str):
         return v.decode("latin-1")
     return v
