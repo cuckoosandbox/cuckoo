@@ -7,11 +7,17 @@
 <ul class="nav nav-tabs">
     <li class="active"><a href="#overview" data-toggle="tab">Quick Overview</a></li>
     <li><a href="#static" data-toggle="tab">Static Analysis</a></li>
-    {% if analysis.behavior.processes %}<li><a href="#behavior" data-toggle="tab" id="graph_hook">Behavioral Analysis</a></li>{% endif %}
+    {% if analysis.behavior.processes %}
+    <li><a href="#behavior" data-toggle="tab" id="graph_hook">Behavioral Analysis</a></li>
+    {% endif %}
     <li><a href="#network" data-toggle="tab">Network Analysis</a></li>
     <li><a href="#dropped" data-toggle="tab">Dropped Files</a></li>
-    {% if analysis.procmemory %}<li><a href="#procmemory" data-toggle="tab">Process Memory</a></li>{% endif %}
-    {% if analysis.memory %}<li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>{% endif %}
+    {% if analysis.procmemory %}
+    <li><a href="#procmemory" data-toggle="tab">Process Memory</a></li>
+    {% endif %}
+    {% if analysis.memory %}
+    <li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>
+    {% endif %}
     <li><a href="#admin" data-toggle="tab">Admin</a></li>
 </ul>
 <div class="tab-content">
