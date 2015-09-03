@@ -2,8 +2,9 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import datetime
 import os
-from datetime import datetime
+import re
 
 try:
     import magic
@@ -26,7 +27,7 @@ from lib.cuckoo.common.utils import convert_to_printable
 # Partially taken from
 # http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 
-class PortableExecutable:
+class PortableExecutable(object):
     """PE analysis."""
 
     def __init__(self, file_path):
@@ -240,7 +241,8 @@ class PortableExecutable:
         except AttributeError:
             return None
 
-        return datetime.fromtimestamp(pe_timestamp).strftime("%Y-%m-%d %H:%M:%S")
+        dt = datetime.datetime.fromtimestamp(pe_timestamp)
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
 
     def run(self):
         """Run analysis.
@@ -268,7 +270,9 @@ class PortableExecutable:
 
 class Static(Processing):
     """Static analysis."""
-    
+    PUBKEY_RE = "(-----BEGIN PUBLIC KEY-----[a-zA-Z0-9\\n\\+/]+-----END PUBLIC KEY-----)"
+    PRIVKEY_RE = "(-----BEGIN RSA PRIVATE KEY-----[a-zA-Z0-9\\n\\+/]+-----END RSA PRIVATE KEY-----)"
+
     def run(self):
         """Run analysis.
         @return: results dict.
@@ -276,9 +280,20 @@ class Static(Processing):
         self.key = "static"
         static = {}
 
-        if HAVE_PEFILE:
-            if self.task["category"] == "file":
+        if self.task["category"] == "file" and os.path.exists(self.file_path):
+            if HAVE_PEFILE:
                 if "PE32" in File(self.file_path).get_type():
-                    static = PortableExecutable(self.file_path).run()
+                    static.update(PortableExecutable(self.file_path).run())
+
+            static["keys"] = self._get_keys()
 
         return static
+
+    def _get_keys(self):
+        """Get any embedded plaintext public and/or private keys."""
+        buf = open(self.file_path).read()
+        ret = []
+
+        ret += re.findall(self.PUBKEY_RE, buf)
+        ret += re.findall(self.PRIVKEY_RE, buf)
+        return ret

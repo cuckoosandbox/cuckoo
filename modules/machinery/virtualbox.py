@@ -41,9 +41,10 @@ class VirtualBox(Machinery):
         # Base checks.
         super(VirtualBox, self)._initialize_check()
 
-    def start(self, label):
+    def start(self, label, task):
         """Start a virtual machine.
         @param label: virtual machine name.
+        @param task: task object.
         @raise CuckooMachineError: if unable to start.
         """
         log.debug("Starting vm %s" % label)
@@ -77,12 +78,12 @@ class VirtualBox(Machinery):
 
         try:
             proc = subprocess.Popen([self.options.virtualbox.path,
-                             "startvm",
-                             label,
-                             "--type",
-                             self.options.virtualbox.mode],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+                                     "startvm",
+                                     label,
+                                     "--type",
+                                     self.options.virtualbox.mode],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
             output, err = proc.communicate()
             if err:
                 raise OSError(err)
@@ -201,9 +202,32 @@ class VirtualBox(Machinery):
         """Takes a memory dump.
         @param path: path to where to store the memory dump.
         """
+
+        try:
+            proc = subprocess.Popen([self.options.virtualbox.path, "-v"],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            output, err = proc.communicate()
+
+            if proc.returncode != 0:
+                # It's quite common for virtualbox crap utility to exit with:
+                # VBoxManage: error: Details: code E_ACCESSDENIED (0x80070005)
+                # So we just log to debug this.
+                log.debug("VBoxManage returns error checking status for "
+                          "machine %s: %s", label, err)
+        except OSError as e:
+            raise CuckooMachineError("VBoxManage failed return it's version: %s" % (e))
+
+        if output[:1] == str(5):
+            # VirtualBox version 5.x
+            dumpcmd = "dumpvmcore"
+        else:
+            # VirtualBox version 4.x
+            dumpcmd = "dumpguestcore"
+
         try:
             subprocess.call([self.options.virtualbox.path, "debugvm",
-                             label, "dumpguestcore", "--filename", path],
+                             label, dumpcmd, "--filename", path],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
             log.info("Successfully generated memory dump for virtual machine "

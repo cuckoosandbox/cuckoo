@@ -19,9 +19,7 @@ try:
 except ImportError:
     HAVE_XENAPI = False
 
-
 log = logging.getLogger(__name__)
-
 
 class XenServerMachinery(Machinery):
     """Virtualization layer for XenServer using the XenAPI XML-RPC interface."""
@@ -38,7 +36,6 @@ class XenServerMachinery(Machinery):
         """Check XenServer configuration, initialize a Xen API connection, and
         verify machine validity.
         """
-
         self._sessions = {}
 
         if not HAVE_XENAPI:
@@ -102,28 +99,24 @@ class XenServerMachinery(Machinery):
         """Get a virtual machine reference.
         @param uuid: vm uuid
         """
-
         return self.session.xenapi.VM.get_by_uuid(uuid.lower())
 
     def _get_vm_record(self, ref):
         """Get the virtual machine record.
         @param ref: vm reference
         """
-
         return self.session.xenapi.VM.get_record(ref)
 
     def _get_vm_power_state(self, ref):
         """Get the virtual machine power state.
         @param ref: vm reference
         """
-
         return self.session.xenapi.VM.get_power_state(ref)
 
     def _check_vm(self, uuid):
         """Check vm existence and validity.
         @param uuid: vm uuid
         """
-
         try:
             ref = self._get_vm_ref(uuid)
             vm = self._get_vm_record(ref)
@@ -148,7 +141,6 @@ class XenServerMachinery(Machinery):
         @param vm_uuid: vm uuid
         @param snapshot_uuid: snapshot uuid
         """
-
         try:
             snapshot_ref = self._get_vm_ref(snapshot_uuid)
             snapshot = self._get_vm_record(snapshot_ref)
@@ -172,7 +164,6 @@ class XenServerMachinery(Machinery):
         """Check whether each attached disk is set to reset on boot.
         @param vm: vm record
         """
-
         for ref in vm["VBDs"]:
             try:
                 vbd = self.session.xenapi.VBD.get_record(ref)
@@ -199,7 +190,6 @@ class XenServerMachinery(Machinery):
         """Get the snapshot uuid from a virtual machine.
         @param uuid: vm uuid
         """
-
         machine = self.db.view_machine_by_label(uuid)
         return machine.snapshot
 
@@ -207,14 +197,13 @@ class XenServerMachinery(Machinery):
         """Checks if the virtual machine is running.
         @param uuid: vm uuid
         """
-
         return vm["power_state"] == "Halted"
 
-    def start(self, label):
+    def start(self, label, task):
         """Start a virtual machine.
         @param label: vm uuid
+        @param task: task object.
         """
-
         vm_ref = self._get_vm_ref(label)
         vm = self._get_vm_record(vm_ref)
 
@@ -252,7 +241,6 @@ class XenServerMachinery(Machinery):
         """Stop a virtual machine.
         @param label: vm uuid
         """
-
         ref = self._get_vm_ref(label)
         vm = self._get_vm_record(ref)
         if self._is_halted(vm):
@@ -268,7 +256,6 @@ class XenServerMachinery(Machinery):
         """List available virtual machines.
         @raise CuckooMachineError: if unable to list virtual machines.
         """
-
         try:
             vm_list = []
             for ref in self.session.xenapi.VM.get_all():
@@ -284,8 +271,6 @@ class XenServerMachinery(Machinery):
         @param label: virtual machine uuid
         @return: status string.
         """
-
         ref = self._get_vm_ref(label)
         state = self._get_vm_power_state(ref)
-
         return state

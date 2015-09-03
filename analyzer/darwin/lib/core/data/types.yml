@@ -1,0 +1,126 @@
+# ===============================================
+# Basic types
+#
+int: &int
+    # We will print it with something like printf("%d", value)
+    printf_specifier: "%d"
+    # Is it a native C type (on OS X)?
+    native: Yes
+# Alternative name for backward compatibility
+integer: *int
+
+unsigned int: &unsigned-int
+    printf_specifier: "%ld"
+    native: Yes
+
+long: &long
+    printf_specifier: "%l"
+    native: Yes
+
+unsigned long: &unsigned-long
+    printf_specifier: "%lu"
+    native: Yes
+
+unsigned long long: &unsigned-long-long
+    printf_specifier: "%llu"
+    native: Yes
+
+size_t: *unsigned-long
+
+char: &char
+    printf_specifier: '"%c"'
+    native: Yes
+
+float: &float
+    printf_specifier: "%f"
+    native: Yes
+
+double: &double
+    printf_specifier: "%f"
+    native: Yes
+#
+# Raw pointers: just dump their values (in *decimal* since dtrace will output
+# JSON that doesn't accept hex values)
+#
+"void *":
+    <<: *unsigned-long-long
+    cast: "unsigned long long"
+#
+# Strings
+#
+"char *": &char-pointer
+    printf_specifier: '"%S"'
+    native: No
+    template: |-
+        !!(${ARG}) ? copyinstr((uint64_t)${ARG}) : "<NULL>"
+#
+# Arbitrary buffers
+#
+#buffer: &buffer
+#    printf_specifier: '"%S"'
+#    native: No
+#    template: |-
+#        ${ARG} != (int64_t)NULL ? stringof(copyin(${ARG}, ${SIZE_ARG})) : "<NULL>"
+#
+# Fixed length C types
+#
+int8_t: &int8_t
+    printf_specifier: "%d"
+    native: Yes
+
+uint8_t: &uint8_t
+    printf_specifier: "%u"
+    native: Yes
+
+int16_t: &int16_t
+    printf_specifier: "%d"
+    native: Yes
+
+uint16_t: &uint16_t
+    printf_specifier: "%u"
+    native: Yes
+
+int32_t: &int32_t
+    printf_specifier: "%d"
+    native: Yes
+
+uint32_t: &uint32_t
+    printf_specifier: "%u"
+    native: Yes
+
+int64_t: &int64_t
+    printf_specifier: "%lld"
+    native: Yes
+
+uint64_t: &uint64_t
+    printf_specifier: "%llu"
+    native: Yes
+
+#
+# Structures for tests.
+# Please don't remove them. Thanks!
+#
+
+test_t:
+    native: No
+    struct:
+         hash: "int"
+         base: "test_internal_t *"
+         description: "char *"
+
+test_internal_t:
+    native: No
+    struct:
+        abc: "double *"
+        hfa: "size_t"
+        sss: "char *"
+
+test_extra_t:
+    native: No
+    struct:
+        foo: int
+        bar: uint64_t
+
+#
+# Your custom data types
+#

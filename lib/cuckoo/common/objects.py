@@ -34,6 +34,12 @@ try:
 except ImportError:
     HAVE_PEFILE = False
 
+try:
+    import androguard
+    HAVE_ANDROGUARD = True
+except ImportError:
+    HAVE_ANDROGUARD = False
+
 log = logging.getLogger(__name__)
 
 FILE_CHUNK_SIZE = 16 * 1024
@@ -65,6 +71,7 @@ class File(object):
     notified_yara = False
     notified_pydeep = False
     notified_pefile = False
+    notified_androguard = False
 
     def __init__(self, file_path):
         """@param file_path: file path."""
@@ -299,6 +306,48 @@ class File(object):
                                address=entry.address)
         except Exception as e:
             log.warning("Error enumerating imported functions: %s", e)
+
+    def get_apk_entry(self):
+        """Get the entry point for this APK. The entry point is denoted by a
+        package and main activity name."""
+        if not HAVE_ANDROGUARD:
+            if not File.notified_androguard:
+                File.notified_androguard = True
+                log.warning("Unable to import androguard (`pip install androguard`)")
+            return "", ""
+
+        try:
+            a = androguard.core.bytecodes.apk.APK(self.file_path)
+            if not a.is_valid_APK():
+                return "", ""
+
+            package = a.get_package()
+            if not package:
+                log.warning("Unable to find the main package, this analysis "
+                            "will probably fail.")
+                return "", ""
+
+            main_activity = a.get_main_activity()
+            if main_activity:
+                log.debug("Picked package %s and main activity %s.",
+                          package, main_activity)
+                return package, main_activity
+
+            activities = a.get_activities()
+            for activity in activities:
+                if "main" in activity or "start" in activity:
+                    log.debug("Choosing package %s and main activity due to "
+                              "its name %s.", activity)
+                    return package, activity
+
+            if activities and activities[0]:
+                log.debug("Picked package %s and the first activity %s.",
+                          package, activities[0])
+                return package, activities[0]
+        except Exception as e:
+            log.warning("Error extracting package and main activity: %s.", e)
+
+        return "", ""
 
     def _yara_encode_string(self, s):
         # Beware, spaghetti code ahead.

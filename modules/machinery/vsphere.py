@@ -46,7 +46,7 @@ class vSphere(Machinery):
         @param module_name: module name.
         """
         super(vSphere, self)._initialize(module_name)
-        
+
         # Initialize random number generator
         random.seed()
 
@@ -63,7 +63,7 @@ class vSphere(Machinery):
         else:
             raise CuckooCriticalError("vSphere host address setting not found, "
                                       "please add it to the config file.")
-        
+
         if self.options.vsphere.port:
             self.connect_opts["port"] = self.options.vsphere.port
         else:
@@ -114,9 +114,10 @@ class vSphere(Machinery):
 
         super(vSphere, self)._initialize_check()
 
-    def start(self, label):
+    def start(self, label, task):
         """Start a machine.
         @param label: machine name.
+        @param task: task object.
         @raise CuckooMachineError: if unable to start machine.
         """
         name = self.db.view_machine_by_label(label).snapshot
@@ -262,7 +263,7 @@ class vSphere(Machinery):
 
     def _download_snapshot(self, conn, vm, name, path):
         """Download snapshot file from host to local path"""
-        
+
         # Get filespec to .vmsn file of named snapshot
         snapshot = self._get_snapshot_by_name(vm, name)
         if not snapshot:
@@ -280,8 +281,8 @@ class vSphere(Machinery):
         datastore, filepath = re.match(r"\[([^\]]*)\] (.*)", filespec).groups()
 
         # Construct URL request
-        params = { "dsName" : datastore }
-        headers = { "Cookie" : conn._stub.cookie }
+        params = {"dsName": datastore}
+        headers = {"Cookie": conn._stub.cookie}
         url = "https://{0}:{1}/folder/{2}".format(self.connect_opts["host"],
                                                   self.connect_opts["port"],
                                                   filepath)
@@ -331,4 +332,3 @@ class vSphere(Machinery):
                 for child in self._traverseSnapshots(node.childSnapshotList):
                     yield child
             yield node
-
