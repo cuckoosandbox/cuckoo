@@ -12,8 +12,7 @@
                         <th>Destination Port</th>
                     </tr>
                     {% for p in analysis.network.tcp %}
-                        <tr class="connrow">
-                            <input type="hidden" name="conn" value="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}},tcp" />
+                        <tr class="connrow" data="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}},tcp">
                             <td>{{p.src}}</td>
                             <td>{{p.sport}}</td>
                             <td>{{p.dst}} {{ iplookups|get_item:p.dst }}</td>
@@ -36,9 +35,9 @@ $(function () {
         $section.find("table tr.connrow").removeClass("row-active");
         $(this).addClass("row-active"); 
 
-        var $choice = $(this).find("input[name='conn']");
+        var choice = $(this).closest('tr').attr('data');
 
-        $.get("/analysis/{{analysis.info.id}}/pcapstream/"+$choice.val()+"/", function(data, status, xhr) {
+        $.get("/analysis/{{analysis.info.id}}/pcapstream/"+choice+"/", function(data, status, xhr) {
             if (status == "error") {
                 $section.find("div.stream").html("Error loading data. Please reload the page and if the error persists contact us.");
             } else {
