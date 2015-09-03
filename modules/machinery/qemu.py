@@ -29,57 +29,62 @@ QEMU_ARGS = {
         },
     },
     "mipsel": {
-        "cmdline": ["qemu-system-mipsel", "-display", "none", "-M", "malta", "-m", "{memory}",
-                    "-kernel", "{kernel}",
-                    "-hda","{snapshot_path}",
-                    "-append", "root=/dev/sda1 console=tty0",
-                    "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname}",
-                    "-device", "e1000,netdev=net_{vmname},mac={mac}", # virtio-net-pci doesn't work here
+        "cmdline": [
+            "qemu-system-mipsel", "-display", "none", "-M", "malta", "-m", "{memory}",
+            "-kernel", "{kernel}",
+            "-hda", "{snapshot_path}",
+            "-append", "root=/dev/sda1 console=tty0",
+            "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname}",
+            "-device", "e1000,netdev=net_{vmname},mac={mac}",  # virtio-net-pci doesn't work here
         ],
         "params": {
             "kernel": "{imagepath}/vmlinux-3.2.0-4-4kc-malta-mipsel",
         }
     },
     "mips": {
-        "cmdline": ["qemu-system-mips", "-display", "none", "-M", "malta", "-m", "{memory}",
-                    "-kernel", "{kernel}",
-                    "-hda","{snapshot_path}",
-                    "-append", "root=/dev/sda1 console=tty0",
-                    "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname}",
-                    "-device", "e1000,netdev=net_{vmname},mac={mac}", # virtio-net-pci doesn't work here
+        "cmdline": [
+            "qemu-system-mips", "-display", "none", "-M", "malta", "-m", "{memory}",
+            "-kernel", "{kernel}",
+            "-hda", "{snapshot_path}",
+            "-append", "root=/dev/sda1 console=tty0",
+            "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname}",
+            "-device", "e1000,netdev=net_{vmname},mac={mac}",  # virtio-net-pci doesn't work here
         ],
         "params": {
             "kernel": "{imagepath}/vmlinux-3.2.0-4-4kc-malta-mips",
         }
     },
     "armwrt": {
-        "cmdline": ["qemu-system-arm", "-display", "none", "-M", "realview-eb-mpcore", "-m", "{memory}",
-                    "-kernel", "{kernel}",
-                    "-drive", "if=sd,cache=unsafe,file={snapshot_path}",
-                    "-append", "console=ttyAMA0 root=/dev/mmcblk0 rootwait",
-                    "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+        "cmdline": [
+            "qemu-system-arm", "-display", "none", "-M", "realview-eb-mpcore", "-m", "{memory}",
+            "-kernel", "{kernel}",
+            "-drive", "if=sd,cache=unsafe,file={snapshot_path}",
+            "-append", "console=ttyAMA0 root=/dev/mmcblk0 rootwait",
+            "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
         ],
         "params": {
             "kernel": "{imagepath}/openwrt-realview-vmlinux.elf",
         }
     },
     "arm": {
-        "cmdline": ["qemu-system-arm", "-display", "none", "-M", "versatilepb", "-m", "{memory}",
-                    "-kernel", "{kernel}", "-initrd", "{initrd}",
-                    "-hda", "{snapshot_path}",
-                    "-append", "root=/dev/sda1",
-                    "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+        "cmdline": [
+            "qemu-system-arm", "-display", "none", "-M", "versatilepb", "-m", "{memory}",
+            "-kernel", "{kernel}", "-initrd", "{initrd}",
+            "-hda", "{snapshot_path}",
+            "-append", "root=/dev/sda1",
+            "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
         ],
         "params": {
-            "memory": "256M", #512 didn't work for some reason
+            "memory": "256M",  # 512 didn't work for some reason
             "kernel": "{imagepath}/vmlinuz-3.2.0-4-versatile-arm",
             "initrd": "{imagepath}/initrd-3.2.0-4-versatile-arm",
         }
     },
     "x64": {
-        "cmdline": ["qemu-system-x86_64", "-display", "none", "-m", "{memory}",
-                    "-hda", "{snapshot_path}",
-                    "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}", # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+        "cmdline": [
+            "qemu-system-x86_64", "-display", "none", "-m", "{memory}",
+            "-hda", "{snapshot_path}",
+            "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
         ],
         "params": {
             "memory": "1024M",
@@ -115,9 +120,10 @@ class QEMU(Machinery):
         self.qemu_dir = os.path.dirname(self.options.qemu.path)
         self.qemu_img = os.path.join(self.qemu_dir, "qemu-img")
 
-    def start(self, label):
+    def start(self, label, task):
         """Start a virtual machine.
         @param label: virtual machine label.
+        @param task: task object.
         @raise CuckooMachineError: if unable to start.
         """
         log.debug("Starting vm %s" % label)
@@ -126,12 +132,13 @@ class QEMU(Machinery):
         vm_options = getattr(self.options, vm_info.name)
 
         snapshot_path = os.path.join(os.path.dirname(vm_options.image), vm_info.name) + ".qcow2"
-        if os.path.exists(snapshot_path): os.remove(snapshot_path)
+        if os.path.exists(snapshot_path):
+            os.remove(snapshot_path)
 
         # make sure we use a new harddisk layer by creating a new qcow2 with backing file
         try:
             proc = subprocess.Popen([self.qemu_img, "create", "-f", "qcow2", "-b", vm_options.image, snapshot_path],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             output, err = proc.communicate()
             if err:
                 raise OSError(err)
@@ -154,7 +161,8 @@ class QEMU(Machinery):
         # also do another round of parameter formatting
         for var in ["mac", "kernel", "initrd"]:
             val = getattr(vm_options, var, params.get(var, None))
-            if not val: continue
+            if not val:
+                continue
             params[var] = val.format(**params)
 
         # magic arg building
@@ -204,6 +212,6 @@ class QEMU(Machinery):
         @return: status string.
         """
         p = self.state.get(name, None)
-        if p != None:
+        if p is not None:
             return self.RUNNING
         return self.STOPPED

@@ -3,19 +3,19 @@
     <table class="table table-striped">
         <tr>
             <th>Task ID</th>
-            <td>{{analysis.info.id}}</th>
+            <td>{{analysis.info.id}}</td>
         </tr>
         <tr>
             <th>Mongo ID</th>
-            <td>{{analysis|mongo_id}}</th>
+            <td>{{analysis|mongo_id}}</td>
         </tr>
         <tr>
             <th>Cuckoo release</th>
-            <td>{{analysis.info.version}}</th>
+            <td>{{analysis.info.version}}</td>
         </tr>
         <tr>
             <th></th>
-            <td><a href="{% url "analysis.views.remove" analysis.info.id %}" class="btn btn-primary btn-small">Delete</a></th>
+            <td><a href="{% url "analysis.views.remove" analysis.info.id %}" class="btn btn-primary btn-small">Delete</a></td>
         </tr>
     </table>
 </div>
