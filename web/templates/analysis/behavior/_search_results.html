@@ -27,11 +27,6 @@
                 {% for sign in match.signs %}
                 <tr class="{{sign.category}}" id="call_{{sign.id}}">
                     {% include "analysis/behavior/_api_call.html" with call=sign %}
-                    <td>
-                        <a href='#' class='call-link' data-pid='{{match.process.pid}}' data-cid='{{sign.id}}'>
-                            <span class="glyphicon glyphicon-circle-arrow-right"></span>
-                        </a>
-                    </td>
                 <tr>
                 {% endfor %}
             {% endfor %}
