@@ -106,8 +106,11 @@ def chunk(request, task_id, pid, pagenum):
         if not process:
             raise ObjectDoesNotExist
 
-        objectid = process["calls"][pagenum]
-        chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
+        if pagenum >= 0 and pagenum < len(process["calls"]):
+            objectid = process["calls"][pagenum]
+            chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
+        else:
+            chunk = dict(calls=[])
 
         return render_to_response("analysis/behavior/_chunk.html",
                                   {"chunk": chunk},
