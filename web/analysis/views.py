@@ -243,6 +243,11 @@ def report(request, task_id):
                               context_instance=RequestContext(request))
 
 @require_safe
+def latest_report(request):
+    rep = results_db.analysis.find_one({}, sort=[("_id", pymongo.DESCENDING)])
+    return report(request, rep["info"]["id"] if rep else 0)
+
+@require_safe
 def file(request, category, object_id):
     file_item = fs.get(ObjectId(object_id))
 
