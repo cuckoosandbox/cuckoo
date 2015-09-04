@@ -2,9 +2,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import logging
-import struct
 import datetime
+import hashlib
+import logging
+import os.path
+import struct
 
 try:
     import bson
@@ -144,6 +146,29 @@ class BsonParser(object):
 
                 argnames, converters = check_names_for_typeinfo(arginfo)
                 self.infomap[index] = name, arginfo, argnames, converters, category
+                continue
+
+            # Handle dumped buffers.
+            if mtype == "buffer":
+                buf = dec.get("buffer")
+                sha1 = dec.get("checksum")
+
+                # Why do we pass along a sha1 checksum again?
+                if sha1 != hashlib.sha1(buf).hexdigest():
+                    log.warning("Incorrect sha1 passed along for a buffer.")
+                    continue
+
+                # If the parent is netlogs ResultHandler then we actually dump
+                # it - this should only be the case during the analysis, any
+                # after proposing will then be ignored.
+                from lib.cuckoo.core.resultserver import ResultHandler
+
+                if isinstance(self.fd, ResultHandler):
+                    filepath = os.path.join(self.fd.storagepath,
+                                            "buffer", sha1)
+                    with open(filepath, "wb") as f:
+                        f.write(buf)
+
                 continue
 
             tid = dec.get("T", 0)
