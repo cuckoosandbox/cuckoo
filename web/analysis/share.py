@@ -1,11 +1,11 @@
 # coding=utf-8
-from email.utils import formatdate
 from pyminizip import compress
 from requests import Session
 from bs4 import BeautifulSoup
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import formatdate
 import smtplib
 
 
@@ -161,10 +161,11 @@ def sendMicrosoft(filename, help_text, email, name):
 
 def sendMcAfee(filename, help_text, email, name):
     try:
-        if ".zip" not in filename:
-            compress(filename, filename + ".zip", "infected", 5)
-            filename += ".zip"
-            name += ".zip"
+        #if ".zip" not in filename:
+        compress(filename, filename + ".zip", "infected", 5)
+        filename += ".zip"
+        name += ".zip"
+        name = name.encode("utf8")
 
         msg = MIMEMultipart(
             From=email,
@@ -173,7 +174,7 @@ def sendMcAfee(filename, help_text, email, name):
             Date=formatdate(localtime=True)
         )
         msg.attach(MIMEText(help_text))
-        with open(filename, "rb") as archive:
+        with open(filename, 'rb') as archive:
             msg.attach(MIMEApplication(
                 archive.read(),
                 Content_Disposition='attachment; filename="%s"' % name,
@@ -183,8 +184,8 @@ def sendMcAfee(filename, help_text, email, name):
         smtp.sendmail(email, "virus_research@mcafee.com", msg.as_string())
         smtp.close()
         return 0, "Success!"
-    except:
-        return 1, "Something goes wrong"
+    except Exception as e:
+        return 1, "Something goes wrong: %s" % e
 
 
 ANTIVIRUSES = {
