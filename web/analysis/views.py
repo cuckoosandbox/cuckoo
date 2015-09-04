@@ -109,6 +109,8 @@ def chunk(request, task_id, pid, pagenum):
         if pagenum >= 0 and pagenum < len(process["calls"]):
             objectid = process["calls"][pagenum]
             chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
+            for idx, call in enumerate(chunk["calls"]):
+                call["id"] = pagenum * 100 + idx
         else:
             chunk = dict(calls=[])
 
@@ -192,9 +194,11 @@ def search_behavior(request, task_id):
                 "_id": {"$in": process["calls"]}
             })
 
-            index = 0
+            index = -1
             for chunk in chunks:
                 for call in chunk["calls"]:
+                    index += 1
+
                     if query.search(call["api"]):
                         call["id"] = index
                         process_results.append(call)
@@ -210,8 +214,6 @@ def search_behavior(request, task_id):
                             call["id"] = index
                             process_results.append(call)
                             break
-
-                    index += 1
 
             if process_results:
                 results.append({
