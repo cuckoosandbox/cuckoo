@@ -119,7 +119,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
     """
 
     def setup(self):
-        self.logfd = None
         self.rawlogfd = None
         self.protocol = None
         self.startbuf = ""
@@ -133,8 +132,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
 
         if self.protocol:
             self.protocol.close()
-        if self.logfd:
-            self.logfd.close()
         if self.rawlogfd:
             self.rawlogfd.close()
 
