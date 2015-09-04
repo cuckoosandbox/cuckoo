@@ -192,19 +192,25 @@ def search_behavior(request, task_id):
                 "_id": {"$in": process["calls"]}
             })
 
+            index = 0
             for chunk in chunks:
                 for call in chunk["calls"]:
                     if query.search(call["api"]):
+                        call["id"] = index
                         process_results.append(call)
                     else:
                         for key, value in call["arguments"].items():
                             if query.search(key):
+                                call["id"] = index
                                 process_results.append(call)
                                 break
 
                             if isinstance(value, basestring) and query.search(value):
+                                call["id"] = index
                                 process_results.append(call)
                                 break
+
+                    index += 1
 
             if process_results:
                 results.append({
