@@ -242,7 +242,7 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
     def create_folders(self):
-        folders = "shots", "files", "logs"
+        folders = "shots", "files", "logs", "buffer"
 
         for folder in folders:
             try:
