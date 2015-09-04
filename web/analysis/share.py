@@ -160,27 +160,31 @@ def sendMicrosoft(filename, help_text, email, name):
 
 
 def sendMcAfee(filename, help_text, email, name):
-    if ".zip" not in filename:
-        compress(filename, filename + ".zip", "infected", 5)
-        filename += ".zip"
-        name += ".zip"
+    try:
+        if ".zip" not in filename:
+            compress(filename, filename + ".zip", "infected", 5)
+            filename += ".zip"
+            name += ".zip"
 
-    msg = MIMEMultipart(
-        From=email,
-        To="virus_research@mcafee.com",
-        Subject="Potential virus",
-        Date=formatdate(localtime=True)
-    )
-    msg.attach(MIMEText(help_text))
-    with open(filename, "rb") as archive:
-        msg.attach(MIMEApplication(
-            archive.read(),
-            Content_Disposition='attachment; filename="%s"' % name,
-            Name=name
-        ))
-    smtp = smtplib.SMTP("smtp")
-    smtp.sendmail(email, "virus_research@mcafee.com", msg.as_string())
-    smtp.close()
+        msg = MIMEMultipart(
+            From=email,
+            To="virus_research@mcafee.com",
+            Subject="Potential virus",
+            Date=formatdate(localtime=True)
+        )
+        msg.attach(MIMEText(help_text))
+        with open(filename, "rb") as archive:
+            msg.attach(MIMEApplication(
+                archive.read(),
+                Content_Disposition='attachment; filename="%s"' % name,
+                Name=name
+            ))
+        smtp = smtplib.SMTP("smtp")
+        smtp.sendmail(email, "virus_research@mcafee.com", msg.as_string())
+        smtp.close()
+        return 0, "Success!"
+    except:
+        return 1, "Something goes wrong"
 
 
 ANTIVIRUSES = {
