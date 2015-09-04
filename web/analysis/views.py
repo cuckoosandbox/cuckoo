@@ -198,17 +198,18 @@ def search_behavior(request, task_id):
                     if query.search(call["api"]):
                         call["id"] = index
                         process_results.append(call)
-                    else:
-                        for key, value in call["arguments"].items():
-                            if query.search(key):
-                                call["id"] = index
-                                process_results.append(call)
-                                break
+                        continue
 
-                            if isinstance(value, basestring) and query.search(value):
-                                call["id"] = index
-                                process_results.append(call)
-                                break
+                    for key, value in call["arguments"].items():
+                        if query.search(key):
+                            call["id"] = index
+                            process_results.append(call)
+                            break
+
+                        if isinstance(value, basestring) and query.search(value):
+                            call["id"] = index
+                            process_results.append(call)
+                            break
 
                     index += 1
 
