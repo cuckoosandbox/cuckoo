@@ -161,10 +161,10 @@ def sendMicrosoft(filename, help_text, email, name):
 
 def sendMcAfee(filename, help_text, email, name):
     try:
-        if ".zip" not in filename:
-            compress(filename, filename + ".zip", "infected", 5)
-            filename += ".zip"
-            name += ".zip"
+        compress(filename, filename + ".zip", "infected", 5)
+        filename += ".zip"
+        name += ".zip"
+        name = name.encode("utf8")
 
         msg = MIMEMultipart(
             From=email,
