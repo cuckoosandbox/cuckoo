@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-6"><p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p></div>
+</div>
+<div class="row">
+    <div class="alert alert-{% if result.0 == 2 %}info{% else %}{% if result.0 == 1 %}danger{% else %}success{% endif %}{% endif %}" role="alert">
+        {{ result.1|safe }}
+    </div>
+</div>
+{% endblock %}
+
