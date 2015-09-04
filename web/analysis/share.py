@@ -1,8 +1,12 @@
 # coding=utf-8
-__author__ = 'm_messiah'
+from email.utils import formatdate
 from pyminizip import compress
 from requests import Session
 from bs4 import BeautifulSoup
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import smtplib
 
 
 def sendKaspersky(filename, help_text, email, name):
@@ -155,10 +159,35 @@ def sendMicrosoft(filename, help_text, email, name):
         return 1, "Something wrong"
 
 
+def sendMcAfee(filename, help_text, email, name):
+    if ".zip" not in filename:
+        compress(filename, filename + ".zip", "infected", 5)
+        filename += ".zip"
+        name += ".zip"
+
+    msg = MIMEMultipart(
+        From=email,
+        To="virus_research@mcafee.com",
+        Subject="Potential virus",
+        Date=formatdate(localtime=True)
+    )
+    msg.attach(MIMEText(help_text))
+    with open(filename, "rb") as archive:
+        msg.attach(MIMEApplication(
+            archive.read(),
+            Content_Disposition='attachment; filename="%s"' % name,
+            Name=name
+        ))
+    smtp = smtplib.SMTP("smtp")
+    smtp.sendmail(email, "virus_research@mcafee.com", msg.as_string())
+    smtp.close()
+
+
 ANTIVIRUSES = {
     "Kaspersky": sendKaspersky,
     "DrWeb": sendDrWeb,
     "ESET-NOD32": sendEset,
     "ClamAV": sendClamAV,
     "Microsoft": sendMicrosoft,
+    'McAfee': sendMcAfee,
 }

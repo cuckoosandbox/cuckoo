@@ -15,7 +15,7 @@
             <td>
                 {% if analysis.info.category == "file" %}
                     {% if not values.result %}
-                        {% if av in "Kaspersky,DrWeb,ESET-NOD32,ClamAV,Microsoft,McAfee,Bkav" %}
+                        {% if av in "Kaspersky,DrWeb,ESET-NOD32,ClamAV,Microsoft,McAfee" %}
                             <a class="text-muted" href="{% url 'analysis.views.share' av analysis.info.id %}">Clean (submit?)</a>
                         {% else %}
                             <span class="text-muted">Clean</span>
