@@ -774,7 +774,10 @@ class Signature(object):
 
         """
         if actions is None:
-            actions = "file_written", "file_read", "file_deleted"
+            actions = [
+                "file_opened", "file_written",
+                "file_read", "file_deleted",
+            ]
 
         return self.get_summary_generic(pid, actions)
 
@@ -787,7 +790,10 @@ class Signature(object):
 
         """
         if actions is None:
-            actions = "regkey_written", "regkey_opened", "regkey_read"
+            actions = [
+                "regkey_opened", "regkey_written",
+                "regkey_read", "regkey_deleted",
+            ]
 
         return self.get_summary_generic(pid, actions)
 
