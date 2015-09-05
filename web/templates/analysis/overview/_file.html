@@ -38,6 +38,12 @@
                 <th>Ssdeep</th>
                 <td>{{analysis.target.file.ssdeep}}</td>
             </tr>
+            {% if analysis.static.pdb_path %}
+            <tr>
+                <th>PDB Path</th>
+                <td>{{analysis.static.pdb_path}}</td>
+            </tr>
+            {% endif %}
             <tr>
                 <th>Yara</th>
                 <td>

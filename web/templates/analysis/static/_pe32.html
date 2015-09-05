@@ -7,6 +7,12 @@
             </div>
             <hr />
         {% endif %}
+        {% if analysis.static.pdb_path %}
+            <div>
+                <h4>PDB Path</h4>
+                <div class="well">{{analysis.static.pdb_path}}</div>
+            </div>
+        {% endif %}
         {% if analysis.static.pe_imphash %}
             <div>
                 <h4>PE Imphash</h4>

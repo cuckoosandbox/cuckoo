@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import datetime
+import logging
 import os
 import re
 
@@ -23,6 +24,8 @@ from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import convert_to_printable
+
+log = logging.getLogger(__name__)
 
 # Partially taken from
 # http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
@@ -244,6 +247,19 @@ class PortableExecutable(object):
         dt = datetime.datetime.fromtimestamp(pe_timestamp)
         return dt.strftime("%Y-%m-%d %H:%M:%S")
 
+    def _get_pdb_path(self):
+        """Get the path to any available debugging symbols."""
+        try:
+            for entry in getattr(self.pe, "DIRECTORY_ENTRY_DEBUG", []):
+                raw_offset = entry.struct.PointerToRawData
+                size_data = entry.struct.SizeOfData
+                debug_data = self.pe.__data__[raw_offset:raw_offset+size_data]
+
+                if debug_data.startswith("RSDS"):
+                    return debug_data[24:].strip("\x00")
+        except:
+            log.exception("Exception parsing PDB path")
+
     def run(self):
         """Run analysis.
         @return: analysis results dict or None.
@@ -265,6 +281,7 @@ class PortableExecutable(object):
         results["pe_versioninfo"] = self._get_versioninfo()
         results["pe_imphash"] = self._get_imphash()
         results["pe_timestamp"] = self._get_timestamp()
+        results["pdb_path"] = self._get_pdb_path()
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
         return results
 
