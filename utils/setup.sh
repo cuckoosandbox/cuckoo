@@ -272,7 +272,7 @@ _setup() {
     sql_query "CREATE USER cuckoo WITH PASSWORD '$PASSWORD'"
 
     # Install the Upstart/SystemV scripts.
-    "$CUCKOO/utils/service.sh" install
+    "$CUCKOO/utils/service.sh" -c "$CUCKOO" -l "$CUCKOO/log" install
 
     # Add "nmi_watchdog=0" to the GRUB commandline if it's not in there already.
     if ! grep nmi_watchdog /etc/default/grub; then
