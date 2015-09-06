@@ -109,12 +109,11 @@ chdir "$CUCKOO"
 respawn
 
 env CONFFILE="$CONFFILE"
-env LOGDIR="$LOGDIR"
 
 script
     . "\$CONFFILE"
 
-    exec ./utils/process.py auto -p 4 2>&1 >> "\$LOGDIR/process.log"
+    exec ./utils/process.py auto -p 4
 end script
 EOF
 
@@ -128,14 +127,13 @@ setuid "$USERNAME"
 chdir "$CUCKOO"
 
 env CONFFILE="$CONFFILE"
-env LOGDIR="$LOGDIR"
 env APIADDR=""
 
 script
     . "\$CONFFILE"
 
     if [ -n "\$APIADDR" ]; then
-        exec ./utils/api.py -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log"
+        exec ./utils/api.py -H "\$APIADDR"
     fi
 end script
 EOF
@@ -150,7 +148,6 @@ instance \$INSTANCE
 respawn
 
 env CONFFILE="$CONFFILE"
-env LOGDIR="$LOGDIR"
 
 script
     . "\$CONFFILE"
@@ -205,14 +202,13 @@ setuid "$USERNAME"
 chdir "$(readlink -f "$CUCKOO/web/")"
 
 env CONFFILE="$CONFFILE"
-env LOGDIR="$LOGDIR"
 env WEBADDR=""
 
 script
     . "\$CONFFILE"
 
     if [ -n "\$WEBADDR" ]; then
-        exec ./manage.py runserver "\$WEBADDR:8000" 2>&1 >> "\$LOGDIR/web.log"
+        exec ./manage.py runserver "\$WEBADDR:8000"
     fi
 end script
 EOF
