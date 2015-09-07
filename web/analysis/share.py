@@ -2,6 +2,7 @@
 from pyminizip import compress
 from requests import Session
 from bs4 import BeautifulSoup
+from email.header import Header
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -175,15 +176,18 @@ def sendMcAfee(filename, help_text, email, name):
         )
         msg.attach(MIMEText(help_text))
         with open(filename, 'rb') as archive:
-            msg.attach(MIMEApplication(
+            msg_attach = MIMEApplication(
                 archive.read(),
-                Content_Disposition='attachment; filename="%s"' % name,
-                Name=name
-            ))
+                Name=name,
+            )
+            msg_attach.add_header('Content-Disposition', 'attachment',
+                                  filename=(Header(name, 'utf-8').encode()))
+            msg.attach(msg_attach)
+
         smtp = smtplib.SMTP("smtp")
         smtp.sendmail(email, "virus_research@mcafee.com", msg.as_string())
         smtp.close()
-        return 0, "Success!"
+        return 0, "Success! %s" % name
     except Exception as e:
         return 1, "Something goes wrong: %s" % e
 
