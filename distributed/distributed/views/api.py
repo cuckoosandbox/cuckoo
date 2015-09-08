@@ -74,7 +74,8 @@ def node_post():
         return json_error(409, "There is already a node with this name")
 
     url = node_url(ip=request.form.get("ip"), url=request.form.get("url"))
-    node = Node(name=request.form["name"], url=url)
+    node = Node(name=request.form["name"], url=url,
+                mode=request.form.get("mode", "normal"))
 
     try:
         machines = list_machines(url)
