@@ -19,7 +19,7 @@ from distributed.exception import InvalidReport
 
 def scheduler():
     while True:
-        for node in Node.query.filter_by(enabled=True).all():
+        for node in Node.query.filter_by(enabled=True, mode="normal").all():
             # Fetch the status of this node.
             status = node_status(node.url)
             if not status:
