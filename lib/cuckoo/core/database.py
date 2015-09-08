@@ -21,7 +21,7 @@ try:
     from sqlalchemy import ForeignKey, Text, Index, Table
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-    from sqlalchemy.orm import sessionmaker, relationship, joinedload, backref
+    from sqlalchemy.orm import sessionmaker, relationship, joinedload
     Base = declarative_base()
 except ImportError:
     raise CuckooDependencyError("Unable to import sqlalchemy "
