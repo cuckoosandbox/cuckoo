@@ -96,7 +96,8 @@ class BsonParser(object):
     def __init__(self, fd):
         self.fd = fd
         self.infomap = {}
-        self.flags = {}
+        self.flags_value = {}
+        self.flags_bitmask = {}
         self.pid = None
 
         if not HAVE_BSON:
@@ -104,6 +105,32 @@ class BsonParser(object):
 
     def close(self):
         pass
+
+    def resolve_flags(self, apiname, argdict, flags):
+        # Resolve 1:1 values.
+        for argument, values in self.flags_value[apiname].items():
+            if isinstance(argdict[argument], str):
+                value = int(argdict[argument], 16)
+            else:
+                value = argdict[argument]
+
+            if value in values:
+                flags[argument] = values[value]
+
+        # Resolve bitmasks.
+        for argument, values in self.flags_bitmask[apiname].items():
+            flags[argument] = []
+            if isinstance(argdict[argument], str):
+                value = int(argdict[argument], 16)
+            else:
+                value = argdict[argument]
+
+            for key, flag in values:
+                # TODO Have the monitor provide actual bitmasks as well.
+                if (value & key) == key:
+                    flags[argument].append(flag)
+
+            flags[argument] = "|".join(flags[argument])
 
     def __iter__(self):
         self.fd.seek(0)
@@ -146,6 +173,16 @@ class BsonParser(object):
 
                 argnames, converters = check_names_for_typeinfo(arginfo)
                 self.infomap[index] = name, arginfo, argnames, converters, category
+
+                if dec.get("flags_value"):
+                    self.flags_value[name] = {}
+                    for arg, values in dec["flags_value"].items():
+                        self.flags_value[name][arg] = dict(values)
+
+                if dec.get("flags_bitmask"):
+                    self.flags_bitmask[name] = {}
+                    for arg, values in dec["flags_bitmask"].items():
+                        self.flags_bitmask[name][arg] = values
                 continue
 
             # Handle dumped buffers.
@@ -260,6 +297,7 @@ class BsonParser(object):
                     parsed["status"] = argdict.pop("is_success", 1)
                     parsed["return_value"] = argdict.pop("retval", 0)
                     parsed["arguments"] = argdict
+                    parsed["flags"] = {}
 
                     parsed["stacktrace"] = dec.get("s", [])
                     parsed["uniqhash"] = dec.get("h", 0)
@@ -268,8 +306,7 @@ class BsonParser(object):
                         parsed["last_error"] = dec["e"]
                         parsed["nt_status"] = dec["E"]
 
-                    if apiname in self.flags:
-                        for flag in self.flags[apiname].keys():
-                            argdict[flag + "_s"] = self._flag_represent(apiname, flag, argdict[flag])
+                    if apiname in self.flags_value:
+                        self.resolve_flags(apiname, argdict, parsed["flags"])
 
             yield parsed
