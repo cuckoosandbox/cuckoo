@@ -176,3 +176,10 @@ except NameError:
         from local_settings import *
     except ImportError:
         pass
+
+# Pretty ugly to embed the following here, but where else?
+from django.template.defaulttags import register
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
