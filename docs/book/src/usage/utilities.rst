@@ -179,3 +179,11 @@ Following are the available options::
     --snapshot SNAPSHOT   Specific Virtual Machine Snapshot to use.
     --resultserver RESULTSERVER
                           IP:Port of the Result Server.
+
+Distributed scripts
+===================
+
+There are a couple of shell scripts used to automate distributed utility:
+
+ * "start-distributed" is used to start distributed Cuckoo
+ * "stop-distributed" is used to stop distributed Cuckoo
