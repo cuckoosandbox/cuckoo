@@ -119,7 +119,11 @@ class BsonParser(object):
 
         # Resolve bitmasks.
         for argument, values in self.flags_bitmask[apiname].items():
+            if argument in flags:
+                continue
+
             flags[argument] = []
+
             if isinstance(argdict[argument], str):
                 value = int(argdict[argument], 16)
             else:
