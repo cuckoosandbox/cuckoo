@@ -6,7 +6,9 @@ import os
 import time
 import socket
 import logging
+import requests
 import xmlrpclib
+
 from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
 
@@ -17,15 +19,14 @@ from lib.cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
 from lib.cuckoo.common.constants import CUCKOO_GUEST_FAILED
 from lib.cuckoo.common.exceptions import CuckooGuestError
 from lib.cuckoo.common.utils import TimeoutServer
-from lib.cuckoo.core.resultserver import ResultServer
 
 log = logging.getLogger(__name__)
 
-class GuestManager:
-    """Guest Manager.
+class OldGuestManager(object):
+    """Old and deprecated Guest Manager.
 
-    This class handles the communications with the agents running in the
-    machines.
+    This class handles the communications with the old agent running in the
+    virtual machine.
     """
 
     def __init__(self, vm_id, ip, platform="windows"):
@@ -230,3 +231,167 @@ class GuestManager:
                           self.id, status)
 
         self.server._set_timeout(None)
+
+class GuestManager(object):
+    """This class represents the new Guest Manager. It operates on the new
+    Cuckoo Agent which features a more abstract but more feature-rich API."""
+
+    def __init__(self, vmid, ipaddr, platform):
+        self.vmid = vmid
+        self.ipaddr = ipaddr
+        self.port = CUCKOO_GUEST_PORT
+        self.platform = platform
+
+        self.timeout = Config().timeouts.critical
+
+        # Just in case we have an old agent inside the Virtual Machine. This
+        # allows us to remain backwards compatible (for now).
+        self.old = OldGuestManager(vmid, ipaddr, platform)
+        self.is_old = False
+
+        # We maintain the path of the Cuckoo Analyzer on the host.
+        self.analyzer_path = None
+        self.environ = {}
+
+    def wait_available(self):
+        """Wait until the Virtual Machine is available for usage."""
+        end = time.time() + self.timeout
+        while True:
+            try:
+                socket.create_connection((self.ipaddr, self.port), 1).close()
+                break
+            except socket.error:
+                log.debug("%s: not ready yet", self.vmid)
+                time.sleep(1)
+
+            if time.time() > end:
+                raise CuckooGuestError("{0}: the guest initialization hit the "
+                                       "critical timeout, analysis "
+                                       "aborted.".format(self.id))
+
+    def query_environ(self):
+        """Query the environment of the Agent in the Virtual Machine."""
+        r = requests.get("http://%s:%s/environ" % (self.ipaddr, self.port))
+        self.environ = r.json()["environ"]
+
+    def determine_analyzer_path(self):
+        """Determine the path of the analyzer. Basically creating a temporary
+        directory in the systemdrive, i.e., C:\\."""
+        systemdrive = "%s\\" % self.environ["SYSTEMDRIVE"]
+
+        r = requests.post("http://%s:%s/mkdtemp" % (self.ipaddr, self.port),
+                          data={"dirpath": systemdrive})
+        self.analyzer_path = r.json()["dirpath"]
+
+    def upload_analyzer(self):
+        """Upload the analyzer to the Virtual Machine."""
+        zip_data = StringIO()
+        zip_file = ZipFile(zip_data, "w", ZIP_STORED)
+
+        # Select the proper analyzer's folder according to the operating
+        # system associated with the current machine.
+        root = os.path.join(CUCKOO_ROOT, "analyzer", self.platform)
+        root_len = len(os.path.abspath(root))
+
+        if not os.path.exists(root):
+            log.error("No valid analyzer found at path: %s", root)
+            return False
+
+        # Walk through everything inside the analyzer's folder and write
+        # them to the zip archive.
+        for root, dirs, files in os.walk(root):
+            archive_root = os.path.abspath(root)[root_len:]
+            for name in files:
+                path = os.path.join(root, name)
+                archive_name = os.path.join(archive_root, name)
+                zip_file.write(path, archive_name)
+
+        zip_file.close()
+
+        log.debug("Uploading analyzer to guest (id=%s, ip=%s)",
+                  self.id, self.ip)
+
+        self.determine_analyzer_path()
+        requests.post("http://%s:%s/extract" % (self.ipaddr, self.port),
+                      files={"file": zip_data},
+                      data={"dirpath": self.analyzer_path})
+
+        zip_data.close()
+
+    def add_config(self, options):
+        """Upload the analysis.conf for this task to the Virtual Machine."""
+        config = StringIO()
+        config.write("[analysis]\n")
+        for key, value in options.items():
+            config.write("%s = %s\n" % (key, value))
+
+        analysis_conf = os.path.join(self.analyzer_path, "analysis.conf")
+        requests.post("http://%s:%s/store" % (self.ipaddr, self.port),
+                      files={"file": config},
+                      data={"filepath": analysis_conf})
+
+    def start_analysis(self, options):
+        """Start the analysis by uploading all required files."""
+        log.info("Starting analysis on guest (id=%s, ip=%s)",
+                 self.vmid, self.ipaddr)
+
+        # If the analysis timeout is higher than the critical timeout,
+        # automatically increase the critical timeout by one minute.
+        if options["timeout"] > self.timeout:
+            log.debug("Automatically increased critical timeout to %s",
+                      self.timeout)
+            self.timeout = options["timeout"] + 60
+
+        # Wait for the agent to come alive.
+        self.wait_available()
+
+        # Check whether this is the new Agent or the old one.
+        r = requests.get("http://%s:%s/" % (self.ipaddr, self.port))
+        if r.status_code == 501:
+            log.info("Cuckoo 2.0 features a new Agent which is more "
+                     "feature-rich. It is recommended to make new Virtual "
+                     "Machines with the new Agent, but for now falling back "
+                     "to backwards compatibility with the old agent.")
+            self.is_old = True
+            self.old.start_analysis(options)
+            return
+
+        # Obtain the environment variables.
+        self.query_environ()
+
+        # Upload the analyzer.
+        self.upload_analyzer()
+
+        # Pass along the analysis.conf file.
+        self.add_config(options)
+
+        # If the target is a file, upload it to the guest.
+        if options["category"] == "file":
+            filepath = os.path.join(self.environ["TEMP"], options["file_name"])
+            requests.post("http://%s:%s/store" % (self.ipaddr, self.port),
+                          files={"file": open(options["target"], "rb")},
+                          data={"filepath": filepath})
+
+        # Execute the analyzer that we just uploaded. TODO Improve this.
+        data = {
+            "command": "C:\\Python27\\pythonw.exe %s\\analyzer.py" % self.analyzer_path,
+            "async": "yes",
+            "cwd": self.analyzer_path,
+        }
+        requests.post("http://%s:%s/execute" % (self.ipaddr, self.port),
+                      data=data)
+
+    def wait_for_completion(self):
+        if self.is_old:
+            self.old.wait_for_completion()
+            return
+
+        status = None
+        while status != "complete":
+            try:
+                r = requests.get("http://%s:%s/status" % (self.ipaddr, self.port),
+                                 timeout=5)
+                status = r.json()["status"]
+            except:
+                log.info("Virtual Machine stopped abruptly")
+                break
