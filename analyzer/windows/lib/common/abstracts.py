@@ -120,7 +120,7 @@ class Package(object):
         """
         dll = self.options.get("dll")
         free = self.options.get("free")
-        source = self.options.get("from")
+        source = self.options.get("from", "explorer.exe")
 
         # Setup pre-defined registry keys.
         self.init_regkeys(self.REGKEYS)
