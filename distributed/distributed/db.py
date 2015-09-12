@@ -146,7 +146,7 @@ class NodeStatus(db.Model, Serializer):
 class AlembicVersion(db.Model):
     """Support model for keeping track of the alembic revision identifier."""
     VERSION = ALEMBIC_VERSION
-    version_num = db.Column(db.String, nullable=False, primary_key=True)
+    version_num = db.Column(db.Text, nullable=False, primary_key=True)
 
     def __init__(self, version_num):
         self.version_num = version_num
