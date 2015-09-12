@@ -1,4 +1,5 @@
 from django.template.defaultfilters import register
+from django.template.defaulttags import register as register_tags
 
 @register.filter("mongo_id")
 def mongo_id(value):
@@ -20,3 +21,7 @@ def is_dict(value):
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key, "")
+
+@register_tags.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
