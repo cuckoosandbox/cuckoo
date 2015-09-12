@@ -358,6 +358,9 @@ EOF
     # port for vmcloak-clone might still be in use..
     vmcloak-killvbox
 
+    # Ensure that vboxnet0 is up and running.
+    vmcloak-vboxnet0
+
     # Create various Virtual Machine eggs.
     for i in $(seq 1 "$VMCOUNT"); do
         name="${EGGNAME}_egg$i"
