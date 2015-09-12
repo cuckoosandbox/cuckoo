@@ -1,4 +1,4 @@
-{% if analysis.buffer|length > 0 %}
+{% if analysis.buffer|length %}
     {% for file in analysis.buffer %}
         <div class="panel panel-default">
             <table class="table table-striped">
@@ -53,10 +53,10 @@
                     <td><a href="https://www.virustotal.com/en/file/{{file.sha256}}/analysis/">Search for analysis</a></td>
                 </tr>
                 {% if file.object_id %}
-                <tr>
-                    <th></th>
-                    <td><a href="{% url "analysis.views.file" "buffer" file.object_id %}" class="btn btn-primary btn-small">Download</a></td>
-                </tr>
+                    <tr>
+                        <th></th>
+                        <td><a href="{% url "analysis.views.file" "buffer" file.object_id %}" class="btn btn-primary btn-small">Download</a></td>
+                    </tr>
                 {% endif %}
             </table>
         </div>
