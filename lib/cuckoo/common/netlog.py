@@ -21,6 +21,8 @@ else:
     # "loads" function (just like pickle etc.)
     elif hasattr(bson, "loads"):
         bson_decode = lambda d: bson.loads(d)
+    elif not hasattr(bson, "int64") or not hasattr(bson.int64, "Int64"):
+        HAVE_BSON = False
     else:
         HAVE_BSON = False
 
@@ -55,7 +57,7 @@ def default_converter(v):
     # signed 64-bit integers into unsigned 64-bit integers as MongoDB doesn't
     # support unsigned 64-bit integers (and ElasticSearch probably doesn't
     # either).
-    if isinstance(v, bson.int64.Int64):
+    if HAVE_BSON and isinstance(v, bson.int64.Int64):
         return v
 
     if isinstance(v, (int, long)) and v < 0:
