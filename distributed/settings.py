@@ -13,6 +13,9 @@ SECRET_KEY = os.urandom(32)
 # A list of reporting formats, e.g., json.
 report_formats = "json",
 
+# Fetch the pcap?
+pcap = False
+
 # Directory for storing samples as long as their task is available.
 samples_directory = "/tmp"
 
