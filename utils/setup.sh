@@ -346,6 +346,9 @@ EOF
 
     chown cuckoo:cuckoo "$VMCLOAKCONF"
 
+    # Ensure that vboxnet0 is up and running.
+    vmcloak-vboxnet0
+
     # Check whether the bird image for this Windows version already exists.
     sudo -u cuckoo -i vmcloak-bird hddpath "${EGGNAME}_bird"
     if [ "$?" -ne 0 ]; then
@@ -357,9 +360,6 @@ EOF
     # Kill all VirtualBox processes as otherwise the listening
     # port for vmcloak-clone might still be in use..
     vmcloak-killvbox
-
-    # Ensure that vboxnet0 is up and running.
-    vmcloak-vboxnet0
 
     # Create various Virtual Machine eggs.
     for i in $(seq 1 "$VMCOUNT"); do
