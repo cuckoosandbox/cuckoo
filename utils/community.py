@@ -73,6 +73,9 @@ def installdir(src, dst, force, rewrite, origin=[]):
                 installdir(srcpath, destination, force, rewrite,
                            origin + [file_name])
             else:
+                if not os.path.isdir(os.path.dirname(destination)):
+                    os.makedirs(os.path.dirname(destination))
+
                 shutil.copy(srcpath, destination)
                 print("File \"{0}/{1}\" {2}".format("/".join(origin),
                                                     file_name,
