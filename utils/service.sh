@@ -22,9 +22,6 @@ _install_configuration() {
     cat > /etc/default/cuckoo << EOF
 # Configuration file for the Cuckoo Sandbox service(s).
 
-# Log directory, defaults to the log/ directory in the Cuckoo setup.
-LOGDIR="$LOGDIR"
-
 # It is possible to allow the virtual machines to connect to the entire
 # internet through the vmcloak-iptables script. Enable by uncommenting and
 # setting the following value. Give the network interface(s) that can allow
@@ -259,7 +256,6 @@ if [ "$#" -eq 0 ]; then
     echo "Usage: $0 <install|remove|start|stop>"
     echo "-u --username: Username from which to run Cuckoo."
     echo "-c --cuckoo:   Directory where Cuckoo is located."
-    echo "-l --logdir:   Logging directory."
     exit 1
 fi
 
@@ -271,7 +267,6 @@ fi
 USERNAME="cuckoo"
 CONFFILE="/etc/default/cuckoo"
 CUCKOO="/home/cuckoo/cuckoo/"
-LOGDIR="/home/cuckoo/cuckoo/log/"
 
 # Note that this way the variables have to be set before the
 # actions are invoked.
@@ -312,11 +307,6 @@ while [ "$#" -ne 0 ]; do
 
         -c|--cuckoo)
             CUCKOO="$1"
-            shift
-            ;;
-
-        -l|--logdir)
-            LOGDIR="$1"
             shift
             ;;
 
