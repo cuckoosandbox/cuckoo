@@ -1,9 +1,22 @@
-<td>{{call.time}}</td>
-<td><strong>{{call.api}}</strong></td>
+{% load analysis_tags %}
+<td>
+    {{call.time}}<br/>
+    <strong>{{call.api}}</strong>
+    {% if sign %}
+        <br />
+        <a href="#" class="call-link" data-pid="{{match.process.pid}}" data-cid="{{call.id}}">
+            <span class="glyphicon glyphicon-circle-arrow-right"></span>
+        </a>
+    {% endif %}
+</td>
 <td style="word-wrap: break-word;">
     {% for key, value in call.arguments.items %}
         <span class="gray">{{key}}:</span>
-        <span class="mono">{{value}}</span><br />
+        <span class="mono">{{value}}</span>
+        {% if key in call.flags %}
+            <span class="gray">({{ call.flags|get_item:key }})</span>
+        {% endif %}
+        <br />
     {% endfor %}
 </td>
 <td>

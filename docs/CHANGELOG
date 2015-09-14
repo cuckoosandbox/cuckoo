@@ -13,6 +13,9 @@ Cuckoo Sandbox 2.0 (TBD)
 * Added auxiliary module to dump TLS master secrets as used by Windows libraries
 * Added analyzer for Linux
 * Added Qemu machinery module
+* Added PDB path extraction
+* Added processing module for dropped buffers
+* Added option to drop privileges to a specified user
 * By default HTML report is disabled now
 * By default Virtualbox is starting in headless mode now
 * Upgraded HTML analyzer package to Internet Explorer with proper setup phase

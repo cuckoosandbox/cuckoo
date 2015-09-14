@@ -2,9 +2,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import logging
-import struct
 import datetime
+import hashlib
+import logging
+import os.path
+import struct
 
 try:
     import bson
@@ -19,6 +21,8 @@ else:
     # "loads" function (just like pickle etc.)
     elif hasattr(bson, "loads"):
         bson_decode = lambda d: bson.loads(d)
+    elif not hasattr(bson, "int64") or not hasattr(bson.int64, "Int64"):
+        HAVE_BSON = False
     else:
         HAVE_BSON = False
 
@@ -34,16 +38,32 @@ log = logging.getLogger(__name__)
 ###############################################################################
 
 TYPECONVERTERS = {
-    "p": lambda v: "0x%08x" % default_converter(v),
+    "p": lambda v: pointer_converter(v),
 }
 
 # 20 Mb max message length.
 MAX_MESSAGE_LENGTH = 20 * 1024 * 1024
 
+def pointer_converter(v):
+    # If it's a 64-bit pointer treat it as such. Note that 0xffffffff is also
+    # an often-used pointer so we have to handle negative pointers as well.
+    if isinstance(v, bson.int64.Int64):
+        return "0x%016x" % (v % 2**64)
+    else:
+        return "0x%08x" % (v % 2**32)
+
 def default_converter(v):
-    # Fix signed ints (bson is kind of limited there).
-    if type(v) in (int, long) and v < 0:
-        return v + 0x100000000
+    # Turn signed 32-bit integers into unsigned 32-bit integers. Don't convert
+    # signed 64-bit integers into unsigned 64-bit integers as MongoDB doesn't
+    # support unsigned 64-bit integers (and ElasticSearch probably doesn't
+    # either).
+    if HAVE_BSON and isinstance(v, bson.int64.Int64):
+        return v
+
+    if isinstance(v, (int, long)) and v < 0:
+        return v % 2**32
+
+    # Try to avoid various unicode issues through usage of latin-1 encoding.
     if isinstance(v, str):
         return v.decode("latin-1")
     return v
@@ -78,7 +98,8 @@ class BsonParser(object):
     def __init__(self, fd):
         self.fd = fd
         self.infomap = {}
-        self.flags = {}
+        self.flags_value = {}
+        self.flags_bitmask = {}
         self.pid = None
 
         if not HAVE_BSON:
@@ -86,6 +107,36 @@ class BsonParser(object):
 
     def close(self):
         pass
+
+    def resolve_flags(self, apiname, argdict, flags):
+        # Resolve 1:1 values.
+        for argument, values in self.flags_value[apiname].items():
+            if isinstance(argdict[argument], str):
+                value = int(argdict[argument], 16)
+            else:
+                value = argdict[argument]
+
+            if value in values:
+                flags[argument] = values[value]
+
+        # Resolve bitmasks.
+        for argument, values in self.flags_bitmask[apiname].items():
+            if argument in flags:
+                continue
+
+            flags[argument] = []
+
+            if isinstance(argdict[argument], str):
+                value = int(argdict[argument], 16)
+            else:
+                value = argdict[argument]
+
+            for key, flag in values:
+                # TODO Have the monitor provide actual bitmasks as well.
+                if (value & key) == key:
+                    flags[argument].append(flag)
+
+            flags[argument] = "|".join(flags[argument])
 
     def __iter__(self):
         self.fd.seek(0)
@@ -128,6 +179,39 @@ class BsonParser(object):
 
                 argnames, converters = check_names_for_typeinfo(arginfo)
                 self.infomap[index] = name, arginfo, argnames, converters, category
+
+                if dec.get("flags_value"):
+                    self.flags_value[name] = {}
+                    for arg, values in dec["flags_value"].items():
+                        self.flags_value[name][arg] = dict(values)
+
+                if dec.get("flags_bitmask"):
+                    self.flags_bitmask[name] = {}
+                    for arg, values in dec["flags_bitmask"].items():
+                        self.flags_bitmask[name][arg] = values
+                continue
+
+            # Handle dumped buffers.
+            if mtype == "buffer":
+                buf = dec.get("buffer")
+                sha1 = dec.get("checksum")
+
+                # Why do we pass along a sha1 checksum again?
+                if sha1 != hashlib.sha1(buf).hexdigest():
+                    log.warning("Incorrect sha1 passed along for a buffer.")
+                    continue
+
+                # If the parent is netlogs ResultHandler then we actually dump
+                # it - this should only be the case during the analysis, any
+                # after proposing will then be ignored.
+                from lib.cuckoo.core.resultserver import ResultHandler
+
+                if isinstance(self.fd, ResultHandler):
+                    filepath = os.path.join(self.fd.storagepath,
+                                            "buffer", sha1)
+                    with open(filepath, "wb") as f:
+                        f.write(buf)
+
                 continue
 
             tid = dec.get("T", 0)
@@ -219,6 +303,7 @@ class BsonParser(object):
                     parsed["status"] = argdict.pop("is_success", 1)
                     parsed["return_value"] = argdict.pop("retval", 0)
                     parsed["arguments"] = argdict
+                    parsed["flags"] = {}
 
                     parsed["stacktrace"] = dec.get("s", [])
                     parsed["uniqhash"] = dec.get("h", 0)
@@ -227,8 +312,7 @@ class BsonParser(object):
                         parsed["last_error"] = dec["e"]
                         parsed["nt_status"] = dec["E"]
 
-                    if apiname in self.flags:
-                        for flag in self.flags[apiname].keys():
-                            argdict[flag + "_s"] = self._flag_represent(apiname, flag, argdict[flag])
+                    if apiname in self.flags_value:
+                        self.resolve_flags(apiname, argdict, parsed["flags"])
 
             yield parsed

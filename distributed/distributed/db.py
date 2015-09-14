@@ -9,7 +9,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 
 db = SQLAlchemy(session_options=dict(autoflush=True))
-ALEMBIC_VERSION = "2aa59981b59d"
+ALEMBIC_VERSION = "4b86bc0d40aa"
 
 class Serializer(object):
     """Serialize a query result object."""
@@ -44,12 +44,14 @@ class Node(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text, nullable=False, unique=True)
     url = db.Column(db.Text, nullable=False)
+    mode = db.Column(db.Text, nullable=False)
     enabled = db.Column(db.Boolean, nullable=False)
     machines = db.relationship("Machine", backref="node", lazy="dynamic")
 
-    def __init__(self, name, url, enabled=True):
+    def __init__(self, name, url, mode, enabled=True):
         self.name = name
         self.url = url
+        self.mode = mode
         self.enabled = enabled
 
 class Machine(db.Model):
@@ -144,7 +146,7 @@ class NodeStatus(db.Model, Serializer):
 class AlembicVersion(db.Model):
     """Support model for keeping track of the alembic revision identifier."""
     VERSION = ALEMBIC_VERSION
-    version_num = db.Column(db.String, nullable=False, primary_key=True)
+    version_num = db.Column(db.Text, nullable=False, primary_key=True)
 
     def __init__(self, version_num):
         self.version_num = version_num
