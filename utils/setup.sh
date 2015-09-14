@@ -236,7 +236,7 @@ _setup() {
     # Setup a Cuckoo user.
     useradd cuckoo -d /home/cuckoo -s /bin/bash
     mkdir -p /home/cuckoo
-    chown -R cuckoo:cuckoo /home/cuckoo
+    chown cuckoo:cuckoo /home/cuckoo
 
     # Copy any authorized keys from the current user to the cuckoo user.
     mkdir /home/cuckoo/.ssh
