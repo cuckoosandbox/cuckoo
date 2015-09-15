@@ -287,6 +287,25 @@ def report_get(task_id, report_format="json"):
 
     return send_file(report_path)
 
+@blueprint.route("/pcap/<int:task_id>")
+def pcap_get(task_id):
+    task = Task.query.get(task_id)
+    if not task:
+        return json_error(404, "Task not found")
+
+    if task.status == Task.DELETED:
+        return json_error(404, "Task files has been deleted")
+
+    if task.status != Task.FINISHED:
+        return json_error(420, "Task not finished yet")
+
+    pcap_path = os.path.join(settings.reports_directory,
+                             "%s" % task_id, "dump.pcap")
+    if not os.path.isfile(pcap_path):
+        return json_error(404, "Pcap file not found")
+
+    return send_file(pcap_path)
+
 @blueprint.route("/status")
 def status_get():
     paths = dict(
