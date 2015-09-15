@@ -253,13 +253,6 @@ class RunProcessing(object):
                 if "." in module_name:
                     module_name = module_name.rsplit(".", 1)[1]
 
-                if module_name == "behavior":
-                    if self.task["platform"] == "linux":
-                        continue
-                if module_name == "behavior_linux":
-                    if self.task["platform"] == "windows" or self.task["platform"] == "":
-                        continue
-
                 key, result = self.process(module, results)
 
                 # If the module provided results, append it to the fat dict.

@@ -20,12 +20,10 @@ except ImportError:
 else:
     # The BSON module provided by pymongo works through its "BSON" class.
     if hasattr(bson, "BSON"):
-        log.info("HAVE ATTRIBUTE BSON.")
         bson_encode = lambda e: bson.BSON.encode(e)
     # The BSON module provided by "pip install bson" works through the
     # "loads" function (just like pickle etc.)
     elif hasattr(bson, "loads"):
-        log.info("HAVE ATTRIBUTE LOADS.")
         bson_encode = lambda e: bson.dumps(e)
     elif not hasattr(bson, "int64") or not hasattr(bson.int64, "Int64"):
         HAVE_BSON = False
