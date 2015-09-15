@@ -215,7 +215,8 @@ _setup() {
     apt-get update -y --force-yes
     apt-get install -y --force-yes sudo git python-dev python-pip postgresql \
         libpq-dev python-dpkt vim tcpdump libcap2-bin genisoimage pwgen \
-        htop tig mosh mongodb uwsgi uwsgi-plugin-python nginx virtualbox-4.3
+        htop tig mosh mongodb uwsgi uwsgi-plugin-python nginx virtualbox-4.3 \
+        libffi-dev
 
     # Create the main postgresql cluster. In recent versions of Ubuntu Server
     # 14.04 you have to do this manually. If it already exists this command
@@ -234,6 +235,8 @@ _setup() {
 
     # Setup a Cuckoo user.
     useradd cuckoo -d /home/cuckoo -s /bin/bash
+    mkdir -p /home/cuckoo
+    chown cuckoo:cuckoo /home/cuckoo
 
     # Copy any authorized keys from the current user to the cuckoo user.
     mkdir /home/cuckoo/.ssh
@@ -272,7 +275,7 @@ _setup() {
     sql_query "CREATE USER cuckoo WITH PASSWORD '$PASSWORD'"
 
     # Install the Upstart/SystemV scripts.
-    "$CUCKOO/utils/service.sh" -c "$CUCKOO" -l "$CUCKOO/log" install
+    "$CUCKOO/utils/service.sh" -c "$CUCKOO" install
 
     # Add "nmi_watchdog=0" to the GRUB commandline if it's not in there already.
     if ! grep nmi_watchdog /etc/default/grub; then
@@ -342,6 +345,9 @@ EOF
     fi
 
     chown cuckoo:cuckoo "$VMCLOAKCONF"
+
+    # Ensure that vboxnet0 is up and running.
+    vmcloak-vboxnet0
 
     # Check whether the bird image for this Windows version already exists.
     sudo -u cuckoo -i vmcloak-bird hddpath "${EGGNAME}_bird"

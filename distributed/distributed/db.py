@@ -97,7 +97,7 @@ class Task(db.Model, Serializer):
     # Cuckoo node and Task ID this has been submitted to.
     node_id = db.Column(db.Integer, db.ForeignKey("node.id"))
     task_id = db.Column(db.Integer)
-    status = db.Column(task_status, server_default=PENDING, nullable=False)
+    status = db.Column(task_status, nullable=False)
 
     # Timestamps for this task. When it was submitted, when it was delegated
     # to a Cuckoo node, when the analysis started, and when we retrieved
@@ -109,9 +109,11 @@ class Task(db.Model, Serializer):
 
     __table_args__ = db.Index("ix_node_task", node_id, task_id),
 
-    def __init__(self, path, filename, package, timeout, priority, options,
-                 machine, platform, tags, custom, owner, memory, clock,
-                 enforce_timeout):
+    def __init__(self, path=None, filename=None, package=None, timeout=None,
+                 priority=None, options=None, machine=None, platform=None,
+                 tags=None, custom=None, owner=None, memory=None, clock=None,
+                 enforce_timeout=None, node_id=None, task_id=None,
+                 status=PENDING):
         self.path = path
         self.filename = filename
         self.package = package
@@ -126,9 +128,9 @@ class Task(db.Model, Serializer):
         self.memory = memory
         self.clock = clock
         self.enforce_timeout = enforce_timeout
-        self.node_id = None
-        self.task_id = None
-        self.status = Task.PENDING
+        self.node_id = node_id
+        self.task_id = task_id
+        self.status = status
 
 class NodeStatus(db.Model, Serializer):
     """Node status monitoring database model."""
