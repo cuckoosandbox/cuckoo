@@ -337,7 +337,7 @@ class File(object):
             for activity in activities:
                 if "main" in activity or "start" in activity:
                     log.debug("Choosing package %s and main activity due to "
-                              "its name %s.", activity)
+                              "its name %s.", package, activity)
                     return package, activity
 
             if activities and activities[0]:
