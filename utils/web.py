@@ -52,6 +52,7 @@ def parse_tasks(rows):
                 "target": row.target,
                 "category": row.category,
                 "status": row.status,
+                "platform": row.platform,
                 "added_on": row.added_on,
                 "processed": False
             }
@@ -111,8 +112,9 @@ def custom_headers():
 def index():
     context = {}
     template = env.get_template("submit.html")
-    return template.render({"context": context, "machines": [m.name for m in db.list_machines()]})
-
+    return template.render({"context": context, "machines": [m.name for m in db.list_machines()],
+                           "platforms": [platform for platform in db.list_platforms()]})
+    
 @app.route("/browse")
 def browse():
     rows = db.list_tasks()
@@ -181,7 +183,8 @@ def submit():
     priority = request.forms.get("priority", 1)
     timeout = request.forms.get("timeout", 0)
     machine = request.forms.get("machine", "")
-    memory = request.forms.get("memory", "")
+    platform = request.forms.get("platform", "")
+    memory  = request.forms.get("memory", "")
     data = request.files.file
 
     try:
@@ -204,6 +207,7 @@ def submit():
                                 "package": package,
                                 "context": context,
                                 "machine": machine,
+                                "platform": platform,
                                 "memory": memory})
 
     temp_file_path = store_temp_file(data.file.read(), data.filename)
@@ -214,6 +218,7 @@ def submit():
                           options=options,
                           package=package,
                           machine=machine,
+                          platform=platform,
                           memory=memory)
 
     if task_id:

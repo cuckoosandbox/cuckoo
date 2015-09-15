@@ -6,6 +6,7 @@ import datetime
 import logging
 import os
 import re
+import subprocess
 
 try:
     import magic
@@ -36,7 +37,7 @@ class PortableExecutable(object):
     def __init__(self, file_path):
         """@param file_path: file path."""
         self.file_path = file_path
-        self.pe = None
+        self.elf = None
 
     def _get_filetype(self, data):
         """Gets filetype, uses libmagic if available.
@@ -285,6 +286,131 @@ class PortableExecutable(object):
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
         return results
 
+class ELF:
+    """ ELF analysis """
+    
+    def __init__(self, file_path):
+        """@param file_path: file path."""
+        self.file_path = file_path
+    
+    def __get_relocations(self):
+        """Gets relocations.
+        @return: relocations dict or None.
+        """
+        relocs = []
+        
+        process = subprocess.Popen(["/usr/bin/objdump",self.file_path, "-R"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        # take output
+        dump_result = process.communicate()[0]
+        # format output
+        dump_result = re.split("\n[ ]{0,}", dump_result)
+        
+        for i in range(0,len(dump_result)):
+            if re.search("00", dump_result[i]):
+                relocs.append(filter(None, re.split("\s", dump_result[i])))
+        
+        return relocs
+    
+    def _get_symbols(self):
+        """Gets symbols.
+        @return: symbols dict or None.
+        """
+        
+        libs = []
+        entry = []
+        
+        # dump dynamic symbols using 'objdump -T'
+        process = subprocess.Popen(["/usr/bin/objdump",self.file_path, "-T"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        elf = process.communicate()[0]
+        
+        # Format to lines by splitting at '\n'
+        elf = re.split("\n[ ]{0,}", elf)
+            
+        for i in range(0,len(elf)):
+            if re.search("DF \*UND\*", elf[i]):
+                entry.append(filter(None, re.split("\s", elf[i])))
+        
+        # extract library names
+        lib_names = set()
+        for e in entry:
+            # check for existing library name
+            if len(e) > 5:
+                # add library to set
+                lib_names.add(e[4])
+        lib_names.add("None")
+        
+        # fetch relocation addresses
+        relocs = self.__get_relocations()
+        
+        # find all symbols for each lib
+        for lib in lib_names:
+            symbols = []
+            for e in entry:
+                if lib == e[4]:
+                    symbol = {}
+                    symbol["address"] = "0x{0}".format(e[0])
+                    symbol["name"] = e[5]
+                    
+                    # fetch the address from relocation sections if possible
+                    for r in relocs:
+                        if symbol["name"] in r:
+                            symbol["address"] = "0x{0}".format(r[0])
+                    symbols.append(symbol)
+                
+            if symbols:
+                symbol_section = {}
+                symbol_section["lib"] = lib
+                symbol_section["symbols"] = symbols
+                libs.append(symbol_section)
+                
+        return libs
+            
+    def _get_sections(self):
+        """Gets sections.
+        @return: sections dict or None.
+        """
+
+        sections = []
+        entry = []
+        
+        process = subprocess.Popen(["/usr/bin/readelf", self.file_path, "-S", "-W"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        elf = process.communicate()[0]
+        
+        # Format to lines by splitting at '\n'
+        tmp = re.split("\n[ ]{0,}", elf)
+        for i in range(0,len(tmp)):
+            # Filter lines containing [xx]
+            if re.search("^\[[ 0-9][1-9]\]", tmp[i]):
+                # Regex: Split all whitespaces '\s' if they are not proceeded '(?<!\[)' by a '['
+                # remove all splitted whitespaces from the list filter()'
+                entry.append(filter(None, re.split("(?<!\[)\s", tmp[i])))
+                
+        for e in entry:
+            try:
+                section = {}
+                section["name"] = e[1]
+                section["type"] = e[2]
+                section["virtual_address"] = "0x{0}".format(e[3])
+                section["virtual_size"] = "0x{0}".format(e[4])
+                sections.append(section)
+                
+            except:
+                continue
+            
+        return sections
+        
+    def run(self):
+        """Run analysis.
+        @return: analysis results dict or None.
+        """
+        if not os.path.exists(self.file_path):
+            return None
+        
+        results = {}
+        results["elf_sections"] = self._get_sections()
+        results["elf_symbols"] = self._get_symbols()
+        return results
+        
 class Static(Processing):
     """Static analysis."""
     PUBKEY_RE = "(-----BEGIN PUBLIC KEY-----[a-zA-Z0-9\\n\\+/]+-----END PUBLIC KEY-----)"
@@ -297,12 +423,15 @@ class Static(Processing):
         self.key = "static"
         static = {}
 
-        if self.task["category"] == "file" and os.path.exists(self.file_path):
-            if HAVE_PEFILE:
-                if "PE32" in File(self.file_path).get_type():
+        if self.task["category"] == "file":
+            if "PE32" in File(self.file_path).get_type():
+                if HAVE_PEFILE:
                     static.update(PortableExecutable(self.file_path).run())
 
-            static["keys"] = self._get_keys()
+                    static["keys"] = self._get_keys()
+                    
+            if "ELF" in File(self.file_path).get_type():
+                static.update(ELF(self.file_path).run())
 
         return static
 

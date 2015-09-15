@@ -115,7 +115,6 @@ class BsonParser(object):
                 value = int(argdict[argument], 16)
             else:
                 value = argdict[argument]
-
             if value in values:
                 flags[argument] = values[value]
 
@@ -258,6 +257,10 @@ class BsonParser(object):
                         parsed["ppid"] = argdict["ParentProcessIdentifier"]
                         modulepath = argdict["ModulePath"]
 
+                        # FILETIME is 100-nanoseconds from 1601 :/
+                        vmtimeunix = (timelow + (timehigh << 32))
+                        vmtimeunix = vmtimeunix / 10000000.0 - 11644473600
+
                     elif "time_low" in argdict:
                         timelow = argdict["time_low"]
                         timehigh = argdict["time_high"]
@@ -271,12 +274,21 @@ class BsonParser(object):
 
                         modulepath = argdict["module_path"]
 
+                        # FILETIME is 100-nanoseconds from 1601 :/
+                        vmtimeunix = (timelow + (timehigh << 32))
+                        vmtimeunix = vmtimeunix / 10000000.0 - 11644473600
+
+                    elif "TimeStamp" in argdict:
+                        vmtimeunix = argdict["TimeStamp"] / 1000.0
+                        vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
+
+                        parsed["pid"] = pid = argdict["ProcessIdentifier"]
+                        parsed["ppid"] = argdict["ParentProcessIdentifier"]
+                        modulepath = argdict["ModulePath"]
+
                     else:
                         raise CuckooResultError("I don't recognise the bson log contents.")
 
-                    # FILETIME is 100-nanoseconds from 1601 :/
-                    vmtimeunix = (timelow + (timehigh << 32))
-                    vmtimeunix = vmtimeunix / 10000000.0 - 11644473600
                     vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
                     parsed["first_seen"] = vmtime
 
