@@ -252,8 +252,8 @@ def task_delete(task_id):
         if os.path.isfile(path):
             os.unlink(path)
 
-    # Remove the sample related to this task.
-    if os.path.isfile(task.path):
+    # Remove the sample related to this task (if there's any).
+    if task.path and os.path.isfile(task.path):
         os.unlink(task.path)
 
     # If the task has been finalized then we set the status as deleted. But
