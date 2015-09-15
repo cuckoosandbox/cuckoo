@@ -306,8 +306,8 @@ EOF
         CRONJOB="/home/cuckoo/vmprovision.sh"
 
         # Install the machine cronjob.
-        "$CUCKOO/utils/experiment.py" machine-cronjob install \
-            "cpucount=$CPUCOUNT" "path=$CRONJOB"
+        "/opt/cuckoo/utils/experiment.py" machine-cronjob install \
+            "cpucount=$CPUCOUNT" "path=$CRONJOB" "basedir=$BASEDIR"
         chown cuckoo:cuckoo "$CRONJOB"
         chmod +x "$CRONJOB"
 
