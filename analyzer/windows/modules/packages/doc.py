@@ -27,6 +27,16 @@ class DOC(Package):
                 "ShownOptIn": 1,
             },
         ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\12.0\\Word\\Security",
+            {
+                # Enable VBA macros in Office 2007.
+                # TODO Do this for all Office products.
+                "VBAWarnings": 1,
+                "AccessVBOM": 1,
+            },
+        ],
     ]
 
     def start(self, path):
