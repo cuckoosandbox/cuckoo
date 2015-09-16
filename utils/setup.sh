@@ -180,19 +180,46 @@ if [ "$LONGTERM" -ne 0 ] && [ "$VMCOUNT" -ne 0 ]; then
 fi
 
 _clone_cuckoo() {
+    local gitrepo=""
+
     # Fetch Cuckoo or in the case of a longterm setup, longcuckoo.
     if [ "$LONGTERM" -eq 0 ]; then
-        git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
+        sudo -u cuckoo -i \
+            git clone --bare git://github.com/cuckoobox/cuckoo.git
+
+        gitrepo="cuckoo.git"
     else
-        git clone git://github.com/jbremer/longcuckoo.git "$CUCKOO"
+        sudo -u cuckoo -i \
+            git clone --bare git://github.com/jbremer/longcuckoo.git
+
+        gitrepo="longcuckoo.git"
     fi
 
-    chown -R cuckoo:cuckoo "$CUCKOO"
-    chmod 755 "/home/cuckoo/" "$CUCKOO"
+    sudo -u cuckoo -i tee "$gitrepo/hooks/post-receive" << EOF
+#!/bin/bash
+
+read commit
+
+if ! echo \$commit|grep production$; then
+    echo -e "\\e[31mWe only check out changes to the production branch.\\e[0m"
+    exit
+fi
+
+GIT_WORK_TREE=/opt/cuckoo git checkout -f production
+EOF
+
+    mkdir -p "/opt/cuckoo"
+    chown cuckoo:cuckoo "/opt/cuckoo"
+    chmod 755 "/home/cuckoo/" "/opt/cuckoo"
+    sudo -u cuckoo -i chmod +x "$gitrepo/hooks/post-receive"
+
+    # Checkout master branch of the repository.
+    sudo -u cuckoo -i \
+        git --work-tree /opt/cuckoo --git-dir "$gitrepo" checkout -f master
 
     # Delete the cuckoo1 machine that is included in the VirtualBox
     # configuration by default.
-    sudo -u cuckoo -i "$CUCKOO/utils/machine.py" --delete cuckoo1
+    sudo -u cuckoo -i "/opt/cuckoo/utils/machine.py" --delete cuckoo1
 }
 
 _setup() {
@@ -239,7 +266,7 @@ _setup() {
     chown cuckoo:cuckoo /home/cuckoo
 
     # Copy any authorized keys from the current user to the cuckoo user.
-    mkdir /home/cuckoo/.ssh
+    mkdir -p /home/cuckoo/.ssh
     cp ~/.ssh/authorized_keys /home/cuckoo/.ssh/authorized_keys
 
     # Add the www-data user to the cuckoo group.
@@ -258,7 +285,7 @@ _setup() {
     _clone_cuckoo
 
     # Install required packages part two.
-    pip install --upgrade psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
+    pip install --upgrade psycopg2 vmcloak -r "/opt/cuckoo/requirements.txt"
 
     # Create a random password.
     # PASSWORD="$(pwgen -1 16)"
@@ -275,7 +302,7 @@ _setup() {
     sql_query "CREATE USER cuckoo WITH PASSWORD '$PASSWORD'"
 
     # Install the Upstart/SystemV scripts.
-    "$CUCKOO/utils/service.sh" -c "$CUCKOO" install
+    "/opt/cuckoo/utils/service.sh" -c "/opt/cuckoo" install
 
     # Add "nmi_watchdog=0" to the GRUB commandline if it's not in there already.
     if ! grep nmi_watchdog /etc/default/grub; then
@@ -306,8 +333,8 @@ EOF
         CRONJOB="/home/cuckoo/vmprovision.sh"
 
         # Install the machine cronjob.
-        "$CUCKOO/utils/experiment.py" machine-cronjob install \
-            "cpucount=$CPUCOUNT" "path=$CRONJOB"
+        "/opt/cuckoo/utils/experiment.py" machine-cronjob install \
+            "cpucount=$CPUCOUNT" "path=$CRONJOB" "basedir=$BASEDIR"
         chown cuckoo:cuckoo "$CRONJOB"
         chmod +x "$CRONJOB"
 
@@ -331,7 +358,7 @@ _create_virtual_machines() {
 
     cat > "$VMCLOAKCONF" << EOF
 [vmcloak]
-cuckoo = $CUCKOO
+cuckoo = /opt/cuckoo
 vm-dir = $VMBACKUP
 data-dir = $VMBACKUP
 iso-mount = $MOUNT
@@ -372,7 +399,7 @@ EOF
 
         # As vmcloak-clone will add an entry for this node we remove it just
         # in case it did already exist.
-        "$CUCKOO/utils/machine.py" --delete "$name"
+        "/opt/cuckoo/utils/machine.py" --delete "$name"
 
         # Delete any remaining files for this Virtual Machine just in case
         # they were still present.
@@ -469,12 +496,6 @@ MOUNT="/mnt/$MOUNTOS/"
 VMS="$BASEDIR/vms/"
 VMBACKUP="$BASEDIR/vmbackup/"
 VMMOUNT="/home/cuckoo/vmmount/"
-
-if [ "$LONGTERM" -eq 0 ]; then
-    CUCKOO="/home/cuckoo/cuckoo"
-else
-    CUCKOO="/home/cuckoo/longcuckoo"
-fi
 
 # In Upstart scripts the $HOME variable may not have been set. If so, set it.
 if [ -z "$HOME" ]; then
