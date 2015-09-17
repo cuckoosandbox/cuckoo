@@ -366,10 +366,10 @@ class GuestManager(object):
         # the status code of the index page).
         r = self.get("/")
         if r.status_code == 501:
-            log.info("Cuckoo 2.0 features a new Agent which is more "
-                     "feature-rich. It is recommended to make new Virtual "
-                     "Machines with the new Agent, but for now falling back "
-                     "to backwards compatibility with the old agent.")
+            # log.info("Cuckoo 2.0 features a new Agent which is more "
+            #          "feature-rich. It is recommended to make new Virtual "
+            #          "Machines with the new Agent, but for now falling back "
+            #          "to backwards compatibility with the old agent.")
             self.is_old = True
             self.old.start_analysis(options)
             return
