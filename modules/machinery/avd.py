@@ -22,7 +22,7 @@ class Avd(Machinery):
 
     def _initialize_check(self):
         """Runs all checks when a machine manager is initialized.
-        @raise CuckooMachineError: if VBoxManage is not found.
+        @raise CuckooMachineError: if the android emulator is not found.
         """
         self.emulator_processes = {}
 
@@ -157,21 +157,21 @@ class Avd(Machinery):
             fd.writelines(newLines)
 
     def start_emulator(self, label, task):
-        emulator_port = str(self.options.get(label)["emulator_port"])
-
         """Starts the emulator"""
+        emulator_port = self.options.get(label)["emulator_port"]
+
         pcap_dump_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                                       "%s" % task.id, "dump.pcap")
         cmd = [
             self.options.avd.emulator_path,
-            "@{0}".format(label),
+            "@%s" % label,
             "-no-snapshot-save",
             "-netspeed",
             "full",
             "-netdelay",
             "none",
             "-port",
-            emulator_port,
+            "%s" % emulator_port,
             "-tcpdump",
             pcap_dump_path,
         ]
