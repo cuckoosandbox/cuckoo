@@ -116,7 +116,7 @@ Following are the usage options::
 
 *Example*: install all available signatures::
 
-  $ ./utils/community.py --signatures --force
+    $ ./utils/community.py --signatures --force
 
 .. _`Cuckoo Community Repository`: https://github.com/cuckoobox/community
 
@@ -159,27 +159,27 @@ It takes a list of machine details as arguments and write them in the specified
 configuration file of the machinery module enabled in *cuckoo.conf*.
 Following are the available options::
 
-  $ ./utils/machine.py -h
-  usage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
-                  [--tags TAGS] [--interface INTERFACE] [--snapshot SNAPSHOT]
-                  [--resultserver RESULTSERVER]
-                  vmname
+    $ ./utils/machine.py -h
+    usage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
+                    [--tags TAGS] [--interface INTERFACE] [--snapshot SNAPSHOT]
+                    [--resultserver RESULTSERVER]
+                    vmname
 
-  positional arguments:
-    vmname                Name of the Virtual Machine.
+    positional arguments:
+      vmname                Name of the Virtual Machine.
 
-  optional arguments:
-    -h, --help            show this help message and exit
-    --debug               Debug log in case of errors.
-    --add                 Add a Virtual Machine.
-    --ip IP               Static IP Address.
-    --platform PLATFORM   Guest Operating System.
-    --tags TAGS           Tags for this Virtual Machine.
-    --interface INTERFACE
-                          Sniffer interface for this machine.
-    --snapshot SNAPSHOT   Specific Virtual Machine Snapshot to use.
-    --resultserver RESULTSERVER
-                          IP:Port of the Result Server.
+    optional arguments:
+      -h, --help            show this help message and exit
+      --debug               Debug log in case of errors.
+      --add                 Add a Virtual Machine.
+      --ip IP               Static IP Address.
+      --platform PLATFORM   Guest Operating System.
+      --tags TAGS           Tags for this Virtual Machine.
+      --interface INTERFACE
+                            Sniffer interface for this machine.
+      --snapshot SNAPSHOT   Specific Virtual Machine Snapshot to use.
+      --resultserver RESULTSERVER
+                            IP:Port of the Result Server.
 
 Distributed scripts
 ===================
