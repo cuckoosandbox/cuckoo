@@ -187,3 +187,44 @@ There are a couple of shell scripts used to automate distributed utility:
 
  * "start-distributed" is used to start distributed Cuckoo
  * "stop-distributed" is used to stop distributed Cuckoo
+
+SMTP Sinkhole
+=============
+
+The smtp_sinkhole.py utility is designed to provide an easy to use SMTP sinkhole
+to catch all the emails going out of virtual machines network.
+This is typically used to dump all emails when you run an analysis of sample
+used for spam purposes. You can use it also to prevent sending spam on
+internet.
+Following are the available options::
+
+    $ ./utils/smtp_sinkhole.py -h
+    usage: smtp_sinkhole.py [host [port]]
+
+    SMTP Sinkhole
+
+    positional arguments:
+      host
+      port
+
+    optional arguments:
+      -h, --help  show this help message and exit
+      --dir DIR   Directory used to dump emails.
+
+By default, if you run it without arguments, it will listen for incoming mails
+on localhost port 1025.
+Yoy can bind it on different address and port, as in the following example::
+
+    $ ./utils/smtp_sinkhole.py 192.168.56.1 1025
+
+If you want to save the dumped emails to disk, just use the *--dir* argument and
+specify an existent directory where save them, as in the following example::
+
+    $ ./utils/smtp_sinkhole.py --dir /home/dumpmail
+
+You have to use iptables to route all mails generated from your analysis virtual
+machine network to the sinkhole script, for example if 192.168.56.0/24 is the
+address of your virtual network and smtp_sinkhole.py is listening on
+192.168.56.1 port 1025 you can use the following command::
+
+    $ sudo iptables -t nat -A PREROUTING -i vboxnet0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 1025
