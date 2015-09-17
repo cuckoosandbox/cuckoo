@@ -160,10 +160,10 @@ configuration file of the machinery module enabled in *cuckoo.conf*.
 Following are the available options::
 
     $ ./utils/machine.py -h
-    usage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
-                    [--tags TAGS] [--interface INTERFACE] [--snapshot SNAPSHOT]
-                    [--resultserver RESULTSERVER]
-                    vmname
+    usage: machine.py [-h] [--debug] [--add] [--delete] [--ip IP]
+                      [--platform PLATFORM] [--tags TAGS] [--interface INTERFACE]
+                      [--snapshot SNAPSHOT] [--resultserver RESULTSERVER]
+                      vmname
 
     positional arguments:
       vmname                Name of the Virtual Machine.
@@ -172,6 +172,7 @@ Following are the available options::
       -h, --help            show this help message and exit
       --debug               Debug log in case of errors.
       --add                 Add a Virtual Machine.
+      --delete              Delete a Virtual Machine.
       --ip IP               Static IP Address.
       --platform PLATFORM   Guest Operating System.
       --tags TAGS           Tags for this Virtual Machine.
@@ -180,6 +181,7 @@ Following are the available options::
       --snapshot SNAPSHOT   Specific Virtual Machine Snapshot to use.
       --resultserver RESULTSERVER
                             IP:Port of the Result Server.
+
 
 Distributed scripts
 ===================
