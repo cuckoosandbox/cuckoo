@@ -11,9 +11,13 @@ from datetime import datetime
 from smtpd import SMTPServer
 
 class SmtpSink(SMTPServer):
+    """SMTP Sinkhole server."""
+
+    # Where mails should be saved.
     mail_dir = None
 
     def process_message(self, peer, mailfrom, rcpttos, data):
+        """Custom mail processing used to save mails to disk."""
         # Save message to disk only if path is passed.
         if self.mail_dir:
             file_name = "%s" % datetime.now().strftime("%Y%m%d%H%M%S")
