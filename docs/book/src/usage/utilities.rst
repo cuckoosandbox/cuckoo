@@ -105,8 +105,9 @@ Following are the usage options::
       -a, --all             Download everything
       -s, --signatures      Download Cuckoo signatures
       -p, --processing      Download processing modules
-      -m, --machinemanagers
-                            Download machine managers
+      -m, --machinery       Download machine managers
+      -n, --analyzer        Download analyzer modules
+      -g, --agent           Download agent modules
       -r, --reporting       Download reporting modules
       -f, --force           Install files without confirmation
       -w, --rewrite         Rewrite existing files
