@@ -46,6 +46,7 @@ def node_get(name=None):
             enabled=node.enabled,
             name=node.name,
             url=node.url,
+            mode=node.mode,
             machines=machines,
         )
 
