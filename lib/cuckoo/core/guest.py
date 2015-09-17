@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import datetime
 import os
 import time
 import socket
@@ -125,8 +126,6 @@ class OldGuestManager(object):
         @param options: options.
         @return: operation status.
         """
-        log.info("Starting analysis on guest (id=%s, ip=%s)", self.id, self.ip)
-
         # TODO Deal with unicode URLs, should probably try URL encoding.
         # Unicode files are being taken care of.
 
@@ -253,6 +252,16 @@ class GuestManager(object):
         self.analyzer_path = None
         self.environ = {}
 
+    def get(self, method, *args, **kwargs):
+        """Simple wrapper around requests.get()."""
+        url = "http://%s:%s%s" % (self.ipaddr, self.port, method)
+        return requests.get(url, *args, **kwargs)
+
+    def post(self, method, *args, **kwargs):
+        """Simple wrapper around requests.post()."""
+        url = "http://%s:%s%s" % (self.ipaddr, self.port, method)
+        return requests.post(url, *args, **kwargs)
+
     def wait_available(self):
         """Wait until the Virtual Machine is available for usage."""
         end = time.time() + self.timeout
@@ -260,6 +269,8 @@ class GuestManager(object):
             try:
                 socket.create_connection((self.ipaddr, self.port), 1).close()
                 break
+            except socket.timeout:
+                log.debug("%s: not ready yet", self.vmid)
             except socket.error:
                 log.debug("%s: not ready yet", self.vmid)
                 time.sleep(1)
@@ -267,20 +278,18 @@ class GuestManager(object):
             if time.time() > end:
                 raise CuckooGuestError("{0}: the guest initialization hit the "
                                        "critical timeout, analysis "
-                                       "aborted.".format(self.id))
+                                       "aborted.".format(self.vmid))
 
     def query_environ(self):
         """Query the environment of the Agent in the Virtual Machine."""
-        r = requests.get("http://%s:%s/environ" % (self.ipaddr, self.port))
-        self.environ = r.json()["environ"]
+        self.environ = self.get("/environ").json()["environ"]
 
     def determine_analyzer_path(self):
         """Determine the path of the analyzer. Basically creating a temporary
         directory in the systemdrive, i.e., C:\\."""
         systemdrive = "%s\\" % self.environ["SYSTEMDRIVE"]
 
-        r = requests.post("http://%s:%s/mkdtemp" % (self.ipaddr, self.port),
-                          data={"dirpath": systemdrive})
+        r = self.post("/mkdtemp", data={"dirpath": systemdrive})
         self.analyzer_path = r.json()["dirpath"]
 
     def upload_analyzer(self):
@@ -307,14 +316,16 @@ class GuestManager(object):
                 zip_file.write(path, archive_name)
 
         zip_file.close()
+        zip_data.seek(0)
 
         log.debug("Uploading analyzer to guest (id=%s, ip=%s)",
-                  self.id, self.ip)
+                  self.vmid, self.ipaddr)
 
         self.determine_analyzer_path()
-        requests.post("http://%s:%s/extract" % (self.ipaddr, self.port),
-                      files={"file": zip_data},
-                      data={"dirpath": self.analyzer_path})
+        data = {
+            "dirpath": self.analyzer_path,
+        }
+        self.post("/extract", files={"zipfile": zip_data}, data=data)
 
         zip_data.close()
 
@@ -323,12 +334,18 @@ class GuestManager(object):
         config = StringIO()
         config.write("[analysis]\n")
         for key, value in options.items():
-            config.write("%s = %s\n" % (key, value))
+            # Encode datetime objects the way xmlrpc encodes them.
+            if isinstance(value, datetime.datetime):
+                config.write("%s = %s\n" % (key, value.strftime("%Y%m%dT%H:%M:%S")))
+            else:
+                config.write("%s = %s\n" % (key, value))
 
-        analysis_conf = os.path.join(self.analyzer_path, "analysis.conf")
-        requests.post("http://%s:%s/store" % (self.ipaddr, self.port),
-                      files={"file": config},
-                      data={"filepath": analysis_conf})
+        config.seek(0)
+
+        data = {
+            "filepath": os.path.join(self.analyzer_path, "analysis.conf"),
+        }
+        self.post("/store", files={"file": config}, data=data)
 
     def start_analysis(self, options):
         """Start the analysis by uploading all required files."""
@@ -345,8 +362,9 @@ class GuestManager(object):
         # Wait for the agent to come alive.
         self.wait_available()
 
-        # Check whether this is the new Agent or the old one.
-        r = requests.get("http://%s:%s/" % (self.ipaddr, self.port))
+        # Check whether this is the new Agent or the old one (by looking at
+        # the status code of the index page).
+        r = self.get("/")
         if r.status_code == 501:
             log.info("Cuckoo 2.0 features a new Agent which is more "
                      "feature-rich. It is recommended to make new Virtual "
@@ -367,10 +385,13 @@ class GuestManager(object):
 
         # If the target is a file, upload it to the guest.
         if options["category"] == "file":
-            filepath = os.path.join(self.environ["TEMP"], options["file_name"])
-            requests.post("http://%s:%s/store" % (self.ipaddr, self.port),
-                          files={"file": open(options["target"], "rb")},
-                          data={"filepath": filepath})
+            data = {
+                "filepath": os.path.join(self.environ["TEMP"], options["file_name"]),
+            }
+            files = {
+                "file": open(options["target"], "rb"),
+            }
+            self.post("/store", files=files, data=data)
 
         # Execute the analyzer that we just uploaded. TODO Improve this.
         data = {
@@ -378,20 +399,35 @@ class GuestManager(object):
             "async": "yes",
             "cwd": self.analyzer_path,
         }
-        requests.post("http://%s:%s/execute" % (self.ipaddr, self.port),
-                      data=data)
+        self.post("/execute", data=data)
 
     def wait_for_completion(self):
         if self.is_old:
             self.old.wait_for_completion()
             return
 
-        status = None
-        while status != "complete":
+        end = time.time() + self.timeout
+
+        while True:
+            time.sleep(1)
+
+            # If the analysis hits the critical timeout, just return straight
+            # away and try to recover the analysis results from the guest.
+            if time.time() > end:
+                raise CuckooGuestError("The analysis hit the critical timeout, terminating.")
+
             try:
-                r = requests.get("http://%s:%s/status" % (self.ipaddr, self.port),
-                                 timeout=5)
-                status = r.json()["status"]
+                status = self.get("/status", timeout=5).json()
             except:
                 log.info("Virtual Machine stopped abruptly")
                 break
+
+            if status["status"] == "complete":
+                log.info("%s: analysis completed successfully", self.vmid)
+                return
+            elif status["status"] == "exception":
+                log.info("%s: analysis caught an exception\n%s",
+                         self.vmid, status["description"])
+                return
+
+            log.debug("%s: analysis still processing", self.vmid)
