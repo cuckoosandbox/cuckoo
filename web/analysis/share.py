@@ -12,7 +12,7 @@ import smtplib
 
 def sendKaspersky(filename, help_text, email, name):
     br = Session()
-    hostUrl = "http://newvirus.kaspersky.com/"
+    hostUrl = "https://newvirus.kaspersky.com/"
     page = br.get(hostUrl)
     page = BeautifulSoup(page.text, 'html.parser')
 
@@ -33,7 +33,7 @@ def sendKaspersky(filename, help_text, email, name):
     if "was successfully sent" in response.text:
         return 0, "Success!"
     else:
-        return 1, "Something goes wrong"
+        return 1, "Something went wrong %s " % response.text
 
 
 def sendDrWeb(filename, help_text, email, name):
@@ -53,7 +53,7 @@ def sendDrWeb(filename, help_text, email, name):
     if "SNForm" not in response.text:
         return 0, "Success!"
     else:
-        return 1, "%s. Something goes wrong: %s" % (filename, response.text)
+        return 1, "%s. Something went wrong: %s" % (filename, response.text)
 
 
 def sendEset(filename, help_text, email, name):
@@ -83,7 +83,7 @@ def sendEset(filename, help_text, email, name):
     if u"Спасибо, Ваше сообщение успешно отправлено." in response.text:
         return 0, "Success!"
     else:
-        return 1, "Something goes wrong: %s" % response.text
+        return 1, "Something went wrong: %s" % response.text
 
 
 def sendClamAV(filename, help_text, email, name):
@@ -119,7 +119,7 @@ def sendClamAV(filename, help_text, email, name):
     if "Report Submitted" in response.text:
         return 0, "Success!"
     else:
-        return 1, "Something goes wrong"
+        return 1, "Something went wrong"
 
 
 def sendMicrosoft(filename, help_text, email, name):
@@ -189,7 +189,7 @@ def sendMcAfee(filename, help_text, email, name):
         smtp.close()
         return 0, "Success! %s" % name
     except Exception as e:
-        return 1, "Something goes wrong: %s" % e
+        return 1, "Something went wrong: %s" % e
 
 
 ANTIVIRUSES = {
