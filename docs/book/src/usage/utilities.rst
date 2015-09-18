@@ -15,7 +15,7 @@ Cleanup utility
 
     Use :ref:`./cuckoo.py --clean <cuckoo-clean>` instead which *also* takes
     care of cleaning sample and task information from MySQL and PostgreSQL
-    databases.
+    databases. If mongodb reporting module is enabled it will clean mongodb also.
 
 If you want to delete all history, analysis, data and begin again from the first
 task you need the clean.sh utility.
