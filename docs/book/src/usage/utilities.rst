@@ -91,6 +91,24 @@ running Cuckoo with many virtual machines:
 This could increase the performance of your system because the reporting is not
 yet demanded to Cuckoo.
 
+With Cuckoo 2 a new processing utility was introduced, it is more stable and
+with better performance. It is dubbed *process2.py*, following are the usage
+options::
+
+    $ ./utils/process2.py -h
+    usage: process2.py [-h] [-d] [-u USER] [-m MODULES] instance
+
+    positional arguments:
+      instance              Task processing instance.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -d, --debug           Display debug messages
+      -u USER, --user USER  Drop user privileges to this user
+      -m MODULES, --modules MODULES
+                            Path to signature and reporting modules - overrides
+                            default modules path.
+
 Community Download Utility
 ==========================
 
