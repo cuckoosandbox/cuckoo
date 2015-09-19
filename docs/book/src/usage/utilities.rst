@@ -113,7 +113,7 @@ Community Download Utility
 ==========================
 
 This utility downloads signatures from `Cuckoo Community Repository`_ and installs
-specific additional modules in your local setup and for example update id with
+specific additional modules in your local setup and for example update it with
 all the latest available signatures.
 Following are the usage options::
 
