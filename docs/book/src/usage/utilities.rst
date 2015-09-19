@@ -65,8 +65,7 @@ If you want to re-generate the reports::
 Following are the usage options::
 
     $ ./utils/process.py -h
-
-    usage: process.py [-h] [-d] [-r] [-p PARALLEL] id
+    usage: process.py [-h] [-d] [-r] [-p PARALLEL] [-u USER] [-m MODULES] id
 
     positional arguments:
       id                    ID of the analysis to process (auto for continuous
@@ -78,6 +77,10 @@ Following are the usage options::
       -r, --report          Re-generate report
       -p PARALLEL, --parallel PARALLEL
                             Number of parallel threads to use (auto mode only).
+      -u USER, --user USER  Drop user privileges to this user
+      -m MODULES, --modules MODULES
+                            Path to signature and reporting modules - overrides
+                            default modules path.
 
 As best practice we suggest to adopt the following configuration if you are
 running Cuckoo with many virtual machines:
