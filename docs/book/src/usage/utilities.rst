@@ -261,3 +261,12 @@ address of your virtual network and smtp_sinkhole.py is listening on
 192.168.56.1 port 1025 you can use the following command::
 
     $ sudo iptables -t nat -A PREROUTING -i vboxnet0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 1025
+
+Setup script
+============
+
+Cuckoo setup script is a tool to setup a whole Cuckoo environment on a Debian
+based OS (i.e. Ubuntu or Debian).
+Actually it is a working in progress, but it is suggested to give it a try!
+It is located in *utils/setup.sh* and it is configured by some constants, so
+you should edit it if you want to customize the behaviour.
