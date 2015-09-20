@@ -48,7 +48,9 @@ class VirusTotalAPI(object):
         "mailer", "obfus", "obfuscator", "heur_generic", "suspicious file",
         "suspected of trojan", "heuristic", "rogue", "virtool", "infostealer",
         "generic downloader", "generic malware", "undef", "inject", "packer",
-        "generic backdoor", "word",
+        "generic backdoor", "word", "macosx", "hack", "unknown", "downloader",
+        "trojanspy", "dldr", "msoffice", "osx32", "script", "stealer",
+        "not a virus",
     ]
 
     def __init__(self, apikey, timeout, scan=0):
