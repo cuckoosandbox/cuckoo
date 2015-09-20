@@ -212,6 +212,15 @@ There are a couple of shell scripts used to automate distributed utility:
  * "start-distributed" is used to start distributed Cuckoo
  * "stop-distributed" is used to stop distributed Cuckoo
 
+Mac OS X Bootstrap scripts
+==========================
+
+A couple of bootstrap scripts used for Mac OS X analysis are located in
+*utils/darwin* folder, they are used to bootstrap the guest and host system for
+Mac OS X malware analysis.
+Some settings are defined as constants inside them, so it is suggested to have a
+look at them and configure them for your needs.
+
 SMTP Sinkhole
 =============
 
