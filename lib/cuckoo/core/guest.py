@@ -395,7 +395,7 @@ class GuestManager(object):
 
         # Execute the analyzer that we just uploaded. TODO Improve this.
         data = {
-            "command": "C:\\Python27\\pythonw.exe %s\\analyzer.py" % self.analyzer_path,
+            "command": "C:\\Python27\\python.exe %s\\analyzer.py" % self.analyzer_path,
             "async": "yes",
             "cwd": self.analyzer_path,
         }
