@@ -4,7 +4,6 @@
 # of the MIT license. See the LICENSE file for details.
 
 import yaml
-import json
 from os import path
 from string import Template
 from sets import Set
