@@ -2,12 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import logging
-import os.path
-
 from lib.cuckoo.common.abstracts import Processing
-
-log = logging.getLogger(__name__)
 
 class TLSMasterSecrets(Processing):
     """Cross-references TLS master secrets extracted from the monitor and key
@@ -19,10 +14,6 @@ class TLSMasterSecrets(Processing):
 
     def run(self):
         metakeys = {}
-
-        if not os.path.exists(self.tlsmaster_path):
-            log.info("TLS Master secrets file not found for analysis.")
-            return
 
         # Build server random -> session id from the pcap information.
         if "network" in self.results and "tls" in self.results["network"]:
