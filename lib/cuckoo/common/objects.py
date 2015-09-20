@@ -268,6 +268,10 @@ class File(object):
 
     def get_exported_functions(self):
         """Get the exported function names of this PE file."""
+        filetype = self.get_type()
+        if "MS-DOS" not in filetype and "PE32" not in self.get_type():
+            return
+
         if not HAVE_PEFILE:
             if not File.notified_pefile:
                 File.notified_pefile = True
@@ -286,6 +290,10 @@ class File(object):
 
     def get_imported_functions(self):
         """Get the imported functions of this PE file."""
+        filetype = self.get_type()
+        if "MS-DOS" not in filetype and "PE32" not in self.get_type():
+            return
+
         if not HAVE_PEFILE:
             if not File.notified_pefile:
                 File.notified_pefile = True
@@ -310,6 +318,10 @@ class File(object):
     def get_apk_entry(self):
         """Get the entry point for this APK. The entry point is denoted by a
         package and main activity name."""
+        filetype = self.get_type()
+        if "Zip archive data" not in filetype and "Java Jar" not in filetype:
+            return "", ""
+
         if not HAVE_ANDROGUARD:
             if not File.notified_androguard:
                 File.notified_androguard = True
