@@ -306,7 +306,7 @@ class Avd(Machinery):
 
         emu = "emulator-%s" % self.options.get(label)["emulator_port"]
         if emu in output:
-            log.debug("Emulator has been find!")
+            log.debug("Emulator has been found!")
             return True
 
         log.debug("Emulator has not been found.")
