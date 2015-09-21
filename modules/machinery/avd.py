@@ -103,7 +103,7 @@ class Avd(Machinery):
         reference_machine = self.options.avd.reference_machine
         log.debug("Duplicate Reference Machine '{0}'.".format(reference_machine))
 
-        # clean/delete if new emulator already exists
+        # Clean/delete if new emulator already exists.
         self.delete_old_emulator(label)
 
         avd_config_file = os.path.join(self.options.avd.avd_path, reference_machine+".ini")
@@ -112,16 +112,16 @@ class Avd(Machinery):
         new_avd_path = os.path.join(self.options.avd.avd_path, label+".avd/")
         hw_qemu_config_file = os.path.join(new_avd_path, "hardware-qemu.ini")
 
-        # First we copy the template
+        # First we copy the template.
         log.debug("Copy AVD reference config file '{0}' in '{1}'...".format(avd_config_file, new_config_file))
         shutil.copyfile(avd_config_file, new_config_file)
 
-        # Copy the internal files of the reference avd
+        # Copy the internal files of the reference avd.
         log.debug("Duplicate the AVD internal content from '{0}' in '{1}'...".format(reference_avd_path, new_avd_path))
         cmd = "cp -R {0} {1}".format(reference_avd_path, new_avd_path)
         OSCommand.executeCommand(cmd)
 
-        # Than adapt the content of the copied files
+        # Than adapt the content of the copied files.
         self.replace_content_in_file(new_config_file, reference_machine, label)
         self.replace_content_in_file(hw_qemu_config_file, reference_machine, label)
 
@@ -144,7 +144,9 @@ class Avd(Machinery):
             shutil.rmtree(old_emulator_path)
 
     def replace_content_in_file(self, fileName, contentToReplace, replacementContent):
-        """Replaces the specified motif by a specified value in the specified file"""
+        """Replaces the specified motif by a specified value in the specified
+        file.
+        """
 
         log.debug("Replacing '{0}' with '{1}' in '{2}'".format(contentToReplace, replacementContent, fileName))
         newLines = []
@@ -157,7 +159,7 @@ class Avd(Machinery):
             fd.writelines(newLines)
 
     def start_emulator(self, label, task):
-        """Starts the emulator"""
+        """Starts the emulator."""
         emulator_port = self.options.get(label)["emulator_port"]
 
         pcap_dump_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
@@ -192,15 +194,15 @@ class Avd(Machinery):
         time.sleep(10)
         # if not self.__checkADBRecognizeEmu(label):
         self.restart_adb_server()
-        # waits for device to be ready
+        # Waits for device to be ready.
         self.wait_for_device_ready(label)
 
     def stop_emulator(self, label):
-        """ Stop the emulator"""
+        """Stop the emulator."""
         emulator_port = str(self.options.get(label)["emulator_port"])
         log.info("Stopping AVD listening on port {0}".format(emulator_port))
 
-        # Kill process
+        # Kill process.
         cmd = [
             self.options.avd.adb_path,
             "-s", "emulator-%s" % emulator_port,
@@ -294,8 +296,8 @@ class Avd(Machinery):
         OSCommand.executeAsyncCommand(cmd)
 
     def check_adb_recognize_emulator(self, label):
-        """
-        Checks that ADB recognizes the emulator. Returns True if device is recognized by ADB, False otherwise.
+        """Checks that ADB recognizes the emulator. Returns True if device is
+        recognized by ADB, False otherwise.
         """
         log.debug("Checking if ADB recognizes emulator...")
 
@@ -311,8 +313,8 @@ class Avd(Machinery):
         return False
 
     def restart_adb_server(self):
-        """
-        Restarts ADB server. This function is not used because we have to verify we don't have multiple devices.
+        """Restarts ADB server. This function is not used because we have to
+        verify we don't have multiple devices.
         """
         log.debug("Restarting ADB server...")
 
@@ -333,8 +335,7 @@ class Avd(Machinery):
         return None
 
 class OSCommand(object):
-    """Tool class that provides common methods to execute commands on the OS
-    """
+    """Tool class that provides common methods to execute commands on the OS."""
 
     @staticmethod
     def executeAsyncCommand(commandAndArgs):
