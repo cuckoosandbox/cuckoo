@@ -282,6 +282,7 @@ class BsonParser(object):
 
                     procname = get_filename_from_path(modulepath)
                     parsed["process_name"] = procname
+                    parsed["command_line"] = argdict.get("command_line")
 
                     self.pid = pid
 
