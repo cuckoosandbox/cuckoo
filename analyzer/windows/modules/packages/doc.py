@@ -32,9 +32,14 @@ class DOC(Package):
             "Software\\Microsoft\\Office\\12.0\\Word\\Security",
             {
                 # Enable VBA macros in Office 2007.
-                # TODO Do this for all Office products.
                 "VBAWarnings": 1,
                 "AccessVBOM": 1,
+
+                # "The file you are trying to open .xyz is in a different
+                # format than specified by the file extension. Verify the file
+                # is not corrupted and is from trusted source before opening
+                # the file. Do you want to open the file now?"
+                "ExtensionHardening": 0,
             },
         ],
     ]
