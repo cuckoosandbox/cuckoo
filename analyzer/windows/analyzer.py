@@ -53,7 +53,7 @@ class Files(object):
     def dump_file(self, filepath):
         """Dump a file to the host."""
         if not os.path.isfile(filepath):
-            log.warning("File at path \"%s\" does not exist, skip.", filepath)
+            log.warning("File at path \"%r\" does not exist, skip.", filepath)
             return False
 
         # Check whether we've already dumped this file - in that case skip it.
