@@ -67,9 +67,6 @@ class PortableExecutable(object):
         """Gets PEID signatures.
         @return: matched signatures or None.
         """
-        if not self.pe:
-            return None
-
         try:
             sig_path = os.path.join(CUCKOO_ROOT, "data",
                                     "peutils", "UserDB.TXT")
@@ -82,9 +79,6 @@ class PortableExecutable(object):
         """Gets imported symbols.
         @return: imported symbols dict or None.
         """
-        if not self.pe:
-            return None
-
         imports = []
 
         if hasattr(self.pe, "DIRECTORY_ENTRY_IMPORT"):
@@ -110,9 +104,6 @@ class PortableExecutable(object):
         """Gets exported symbols.
         @return: exported symbols dict or None.
         """
-        if not self.pe:
-            return None
-
         exports = []
 
         if hasattr(self.pe, "DIRECTORY_ENTRY_EXPORT"):
@@ -130,9 +121,6 @@ class PortableExecutable(object):
         """Gets sections.
         @return: sections dict or None.
         """
-        if not self.pe:
-            return None
-
         sections = []
 
         for entry in self.pe.sections:
@@ -153,9 +141,6 @@ class PortableExecutable(object):
         """Get resources.
         @return: resources dict or None.
         """
-        if not self.pe:
-            return None
-
         resources = []
 
         if hasattr(self.pe, "DIRECTORY_ENTRY_RESOURCE"):
@@ -193,9 +178,6 @@ class PortableExecutable(object):
         """Get version info.
         @return: info dict or None.
         """
-        if not self.pe:
-            return None
-
         infos = []
         if hasattr(self.pe, "VS_VERSIONINFO"):
             if hasattr(self.pe, "FileInfo"):
@@ -224,9 +206,6 @@ class PortableExecutable(object):
         """Gets imphash.
         @return: imphash string or None.
         """
-        if not self.pe:
-            return None
-
         try:
             return self.pe.get_imphash()
         except AttributeError:
@@ -236,9 +215,6 @@ class PortableExecutable(object):
         """Get compilation timestamp.
         @return: timestamp or None.
         """
-        if not self.pe:
-            return None
-
         try:
             pe_timestamp = self.pe.FILE_HEADER.TimeDateStamp
         except AttributeError:
@@ -265,12 +241,12 @@ class PortableExecutable(object):
         @return: analysis results dict or None.
         """
         if not os.path.exists(self.file_path):
-            return None
+            return {}
 
         try:
             self.pe = pefile.PE(self.file_path)
         except pefile.PEFormatError:
-            return None
+            return {}
 
         results = {}
         results["peid_signatures"] = self._get_peid_signatures()
