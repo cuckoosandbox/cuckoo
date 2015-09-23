@@ -8,6 +8,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
 import smtplib
+import logging
+
+logger = logging.getLogger('av_report')
 
 
 def sendKaspersky(filename, help_text, email, name):
@@ -33,6 +36,7 @@ def sendKaspersky(filename, help_text, email, name):
     if "was successfully sent" in response.text:
         return 0, "Success!"
     else:
+        logger.warning("Kaspersky error: %s" % response.text)
         return 1, "Something went wrong %s " % response.text
 
 
@@ -53,6 +57,7 @@ def sendDrWeb(filename, help_text, email, name):
     if "SNForm" not in response.text:
         return 0, "Success!"
     else:
+        logger.warning("Dr.WEB error: %s" % response.text)
         return 1, "%s. Something went wrong: %s" % (filename, response.text)
 
 
@@ -83,6 +88,7 @@ def sendEset(filename, help_text, email, name):
     if u"Спасибо, Ваше сообщение успешно отправлено." in response.text:
         return 0, "Success!"
     else:
+        logger.warning("Eset error: %s" % response.text)
         return 1, "Something went wrong: %s" % response.text
 
 
@@ -119,6 +125,7 @@ def sendClamAV(filename, help_text, email, name):
     if "Report Submitted" in response.text:
         return 0, "Success!"
     else:
+        logger.warning("ClamAV error: %s" % response.text)
         return 1, "Something went wrong"
 
 
@@ -157,6 +164,7 @@ def sendMicrosoft(filename, help_text, email, name):
     if answer:
         return 0, "Success! Your status is <a href='%s'>here (sha1=%s)</a>" % (response_url, answer['title'])
     else:
+        logger.warning("Microsoft error: %s" % response.content)
         return 1, "Something wrong"
 
 
@@ -189,6 +197,7 @@ def sendMcAfee(filename, help_text, email, name):
         smtp.close()
         return 0, "Success! %s" % name
     except Exception as e:
+        logger.warning("MacAfee error: %s" % e)
         return 1, "Something went wrong: %s" % e
 
 
