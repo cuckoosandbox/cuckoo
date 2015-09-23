@@ -20,6 +20,12 @@ try:
 except ImportError:
     HAVE_PEFILE = False
 
+try:
+    import M2Crypto
+    HAVE_MCRYPTO = True
+except ImportError:
+    HAVE_MCRYPTO = False
+
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.objects import File
@@ -236,6 +242,55 @@ class PortableExecutable(object):
         except:
             log.exception("Exception parsing PDB path")
 
+    def _get_signature(self):
+        """If this executable is signed, get its signature(s)."""
+        dir_index = pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_SECURITY"]
+        if len(self.pe.OPTIONAL_HEADER.DATA_DIRECTORY) < dir_index:
+            return []
+
+        dir_entry = self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[dir_index]
+        if not dir_entry or not dir_entry.VirtualAddress or not dir_entry.Size:
+            return []
+
+        if not HAVE_MCRYPTO:
+            log.critical("You do not have the m2crypto library installed "
+                         "preventing certificate extraction: "
+                         "pip install m2crypto")
+            return []
+
+        signatures = self.pe.write()[dir_entry.VirtualAddress+8:]
+        bio = M2Crypto.BIO.MemoryBuffer(signatures)
+        if not bio:
+            return []
+
+        pkcs7_obj = M2Crypto.m2.pkcs7_read_bio_der(bio.bio_ptr())
+        if not pkcs7_obj:
+            return []
+
+        ret = []
+        p7 = M2Crypto.SMIME.PKCS7(pkcs7_obj)
+        for cert in p7.get0_signers(M2Crypto.X509.X509_Stack()) or []:
+            subject = cert.get_subject()
+            ret.append({
+                "serial_number": "%x" % cert.get_serial_number(),
+                "common_name": subject.CN,
+                "country": subject.C,
+                "locality": subject.L,
+                "organization": subject.O,
+                "email": subject.Email,
+                "sha1": cert.get_fingerprint("sha1").lower(),
+                "md5": cert.get_fingerprint("md5").lower(),
+            })
+
+            if subject.GN and subject.SN:
+                ret[-1]["full_name"] = "%s %s" % (subject.GN, subject.SN)
+            elif subject.GN:
+                ret[-1]["full_name"] = subject.GN
+            elif subject.SN:
+                ret[-1]["full_name"] = subject.SN
+
+        return ret
+
     def run(self):
         """Run analysis.
         @return: analysis results dict or None.
@@ -258,6 +313,7 @@ class PortableExecutable(object):
         results["pe_imphash"] = self._get_imphash()
         results["pe_timestamp"] = self._get_timestamp()
         results["pdb_path"] = self._get_pdb_path()
+        results["signature"] = self._get_signature()
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
         return results
 
