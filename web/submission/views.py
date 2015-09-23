@@ -6,7 +6,7 @@ import os
 import sys
 
 from django.conf import settings
-from django.shortcuts import render_to_response
+from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext
 
 sys.path.append(settings.CUCKOO_PATH)
@@ -27,7 +27,6 @@ def index(request):
         package = request.POST.get("package", "")
         timeout = force_int(request.POST.get("timeout"))
         options = request.POST.get("options", "")
-        analysis = force_int(request.POST.get("analysis"))
         priority = force_int(request.POST.get("priority"))
         machine = request.POST.get("machine", "")
         custom = request.POST.get("custom", "")
@@ -44,11 +43,6 @@ def index(request):
             if options:
                 options += ","
             options += "procmemdump=yes"
-
-        if analysis == 2:
-            if options:
-                options += "&"
-            options += "kernel_analysis=yes"
 
         db = Database()
         task_ids = []
@@ -155,19 +149,15 @@ def index(request):
                                   context_instance=RequestContext(request))
 
 def status(request, task_id):
-    task = Database().view_task(task_id, details=True)
+    task = Database().view_task(task_id)
     if not task:
         return render_to_response("error.html",
                                   {"error": "The specified task doesn't seem to exist."},
                                   context_instance=RequestContext(request))
 
-    completed = False
     if task.status == "reported":
-        completed = True
+        return redirect("analysis.views.report", task_id=task_id)
 
     return render_to_response("submission/status.html",
-                              {"completed": completed,
-                               "status": task.status,
-                               "task_md5": task.sample.md5,
-                               "task_id": task_id},
+                              {"status": task.status, "task_id": task_id},
                               context_instance=RequestContext(request))

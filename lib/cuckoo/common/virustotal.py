@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
+import re
 
 try:
     import requests
@@ -27,6 +28,30 @@ class VirusTotalAPI(object):
     URL_REPORT = "https://www.virustotal.com/vtapi/v2/url/report"
     FILE_SCAN = "https://www.virustotal.com/vtapi/v2/file/scan"
     URL_SCAN = "https://www.virustotal.com/vtapi/v2/url/scan"
+
+    VARIANT_BLACKLIST = [
+        "generic", "malware", "trojan", "agent", "win32", "multi", "w32",
+        "trojanclicker", "trojware", "win", "a variant of win32", "trj",
+        "susp", "dangerousobject", "backdoor", "clicker", "variant", "heur",
+        "troj_gen", "virus", "dropper", "generic suspicious", "spyware",
+        "suspectcrc", "corrupt", "behaveslike", "crypt", "adclicker",
+        "troj", "injector", "cryptor", "packed", "adware", "macro",
+        "suspicious", "worm", "msil", "msword", "drop", "keygen", "office",
+        "password", "malpack", "lookslike", "banker", "riskware",
+        "unclassifiedmalware", "ransom", "trojan horse", "trjndwnlder",
+        "trojandwnldr", "autorun", "trojandownloader", "trojandwnldr",
+        "download", "excel", "msilobfuscator", "rootkit",
+        "a variant of win64", "w97m", "shellcode", "o97m", "exploit",
+        "x97m", "maliciousmacro", "downldr", "msexcel", "pp97m", "other",
+        "trojandropper", "crypter", "a variant of msil", "macrodown",
+        "trojanapt", "dwnldr", "downldexe", "troj_dload", "trojanhorse",
+        "mailer", "obfus", "obfuscator", "heur_generic", "suspicious file",
+        "suspected of trojan", "heuristic", "rogue", "virtool", "infostealer",
+        "generic downloader", "generic malware", "undef", "inject", "packer",
+        "generic backdoor", "word", "macosx", "hack", "unknown", "downloader",
+        "trojanspy", "dldr", "msoffice", "osx32", "script", "stealer",
+        "not a virus",
+    ]
 
     def __init__(self, apikey, timeout, scan=0):
         """Initialize VirusTotal API with the API key and timeout.
@@ -83,8 +108,21 @@ class VirusTotalAPI(object):
 
         if not summary:
             results["scans"] = {}
+            results["normalized"] = []
+
+            # Embed all VirusTotal results into the report.
             for engine, signature in r.get("scans", {}).items():
+                signature["normalized"] = self.normalize(signature["result"])
                 results["scans"][engine.replace(".", "_")] = signature
+
+            # Normalize each detected variant in order to try to find the
+            # exact malware family.
+            norm_lower = []
+            for signature in results["scans"].values():
+                for normalized in signature["normalized"]:
+                    if normalized.lower() not in norm_lower:
+                        results["normalized"].append(normalized)
+                        norm_lower.append(normalized.lower())
 
         return results
 
@@ -117,3 +155,25 @@ class VirusTotalAPI(object):
         files = {"file": open(filepath, "rb")}
         r = self._request_json(self.FILE_SCAN, data=data, files=files)
         return dict(summary=dict(permalink=r.get("permalink")))
+
+    def normalize(self, variant):
+        """Normalize the variant name provided by an Anti Virus engine. This
+        attempts to extract the useful parts of a variant name by stripping
+        all the boilerplate stuff from it."""
+        if not variant:
+            return []
+
+        ret = []
+        for word in re.split("[\\.\\,\\-\\(\\)\\[\\]/!:]", variant):
+            word = word.strip()
+            if len(word) < 4:
+                continue
+
+            if word.lower() in self.VARIANT_BLACKLIST:
+                continue
+
+            if re.match("[a-fA-F0-9]+$", word):
+                continue
+
+            ret.append(word)
+        return ret

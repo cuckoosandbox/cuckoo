@@ -129,7 +129,7 @@ class CuckooTests(unittest.TestCase):
             if "Waiting for analysis tasks" in cls.cuckoo.stderr.readline().rstrip():
                 break
             sleep(0.1)
-        # so if Cuckoo is dead at this moment, something bad has happend
+        # so if Cuckoo is dead at this moment, something bad has happened.
         if not isalive(cls.cuckoo):
             raise Exception("Cuckoo failed to launch. Try scripts/bootstrap_host.sh")
 
