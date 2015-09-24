@@ -431,3 +431,10 @@ class GuestManager(object):
                 return
 
             log.debug("%s: analysis still processing", self.vmid)
+
+    @property
+    def server(self):
+        """Currently the Physical machine manager is using GuestManager in
+        an incorrect way. This should be fixed up later but for now this
+        workaround will do."""
+        return self.old.server
