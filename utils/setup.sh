@@ -285,7 +285,8 @@ _setup() {
     _clone_cuckoo
 
     # Install required packages part two.
-    pip install --upgrade psycopg2 vmcloak -r "/opt/cuckoo/requirements.txt"
+    pip install --upgrade \
+        psycopg2 vmcloak==0.2.13 -r "/opt/cuckoo/requirements.txt"
 
     # Create a random password.
     # PASSWORD="$(pwgen -1 16)"

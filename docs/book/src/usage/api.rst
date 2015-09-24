@@ -3,18 +3,14 @@ REST API
 ========
 
 As mentioned in :doc:`submit`, Cuckoo provides a simple and lightweight REST
-API server implemented in `Bottle.py`_, therefore in order to make the service
-work you'll need it installed. Bottle release must be 0.10 or above.
+API server implemented in `Flask`_, therefore in order to make the service
+work you'll need it installed.
 
-On Debian/Ubuntu::
+On Debian/Ubuntu with pip::
 
-    $ sudo apt-get install python-bottle
+    $ pip install flask
 
-With Pip::
-
-    $ pip install bottle
-
-.. _`Bottle.py`: http://www.bottlepy.org
+.. _`Flask`: http://flask.pocoo.org/
 
 Starting the API server
 =======================
@@ -30,11 +26,11 @@ By default it will bind the service on **localhost:8090**. If you want to change
 Web deployment
 --------------
 
-While the default method of starting the API server works fine for many cases, 
-some users may wish to deploy the server in a robust manner. This can be done 
-by exposing the API as a WSGI application through a web server. This section shows 
-a simple example of deploying the API via `uWSGI`_ and `Nginx`_. These 
-instructions are written with Ubuntu GNU/Linux in mind, but may be adapted for 
+While the default method of starting the API server works fine for many cases,
+some users may wish to deploy the server in a robust manner. This can be done
+by exposing the API as a WSGI application through a web server. This section shows
+a simple example of deploying the API via `uWSGI`_ and `Nginx`_. These
+instructions are written with Ubuntu GNU/Linux in mind, but may be adapted for
 other platforms.
 
 This solution requires uWSGI, the uWSGI Python plugin, and Nginx. All are available as packages::
@@ -54,9 +50,9 @@ To begin, create a uWSGI configuration file at ``/etc/uwsgi/apps-available/cucko
     uid = cuckoo
     gid = cuckoo
 
-This configuration inherits a number of settings from the distribution's 
-default uWSGI configuration, loading ``api.py`` from the Cuckoo installation 
-directory. If Cuckoo is installed in a different path, adjust the configuration 
+This configuration inherits a number of settings from the distribution's
+default uWSGI configuration, loading ``api.py`` from the Cuckoo installation
+directory. If Cuckoo is installed in a different path, adjust the configuration
 (the *chdir* setting, and perhaps the *uid* and *gid* settings) accordingly.
 
 Enable the app configuration and start the server::
@@ -457,7 +453,7 @@ Following is a list of currently available resources and a brief description of 
 
         **Status codes**:
             * ``404`` - file or folder not found
-            
+
 .. _memory_list:
 
 /memory/list
@@ -476,7 +472,7 @@ Following is a list of currently available resources and a brief description of 
 
         **Status codes**:
             * ``404`` - file or folder not found
-            
+
 .. _memory_get:
 
 /memory/get
