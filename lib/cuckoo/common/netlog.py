@@ -21,45 +21,22 @@ else:
     # "loads" function (just like pickle etc.)
     elif hasattr(bson, "loads"):
         bson_decode = lambda d: bson.loads(d)
-    elif not hasattr(bson, "int64") or not hasattr(bson.int64, "Int64"):
-        HAVE_BSON = False
-    else:
-        HAVE_BSON = False
 
 from lib.cuckoo.common.utils import get_filename_from_path
 from lib.cuckoo.common.exceptions import CuckooResultError
 
 log = logging.getLogger(__name__)
 
-###############################################################################
-# Generic BSON based protocol - by rep
-# Allows all kinds of languages / sources to generate input for Cuckoo,
-# thus we can reuse report generation / signatures for other API trace sources.
-###############################################################################
-
-TYPECONVERTERS = {
-    "p": lambda v: pointer_converter(v),
-}
-
 # 20 Mb max message length.
 MAX_MESSAGE_LENGTH = 20 * 1024 * 1024
 
-def pointer_converter(v):
-    # If it's a 64-bit pointer treat it as such. Note that 0xffffffff is also
-    # an often-used pointer so we have to handle negative pointers as well.
-    if isinstance(v, bson.int64.Int64):
-        return "0x%016x" % (v % 2**64)
-    else:
-        return "0x%08x" % (v % 2**32)
+def pointer_converter_32bit(v):
+    return "0x%08x" % (v % 2**32)
 
-def default_converter(v):
-    # Turn signed 32-bit integers into unsigned 32-bit integers. Don't convert
-    # signed 64-bit integers into unsigned 64-bit integers as MongoDB doesn't
-    # support unsigned 64-bit integers (and ElasticSearch probably doesn't
-    # either).
-    if HAVE_BSON and isinstance(v, bson.int64.Int64):
-        return v
+def pointer_converter_64bit(v):
+    return "0x%016x" % (v % 2**64)
 
+def default_converter_32bit(v):
     if isinstance(v, (int, long)) and v < 0:
         return v % 2**32
 
@@ -68,22 +45,17 @@ def default_converter(v):
         return v.decode("latin-1")
     return v
 
-def check_names_for_typeinfo(arginfo):
-    argnames = [i[0] if type(i) in (list, tuple) else i for i in arginfo]
+def default_converter_64bit(v):
+    # Don't convert signed 64-bit integers into unsigned 64-bit integers as
+    # MongoDB doesn't support 64-bit unsigned integers (and ElasticSearch
+    # probably doesn't either).
+    # if isinstance(v, (int, long)) and v < 0:
+        # return v % 2**64
 
-    converters = []
-    for i in arginfo:
-        if type(i) in (list, tuple):
-            r = TYPECONVERTERS.get(i[1], None)
-            if not r:
-                log.debug("Analyzer sent unknown format "
-                          "specifier '{0}'".format(i[1]))
-                r = default_converter
-            converters.append(r)
-        else:
-            converters.append(default_converter)
-
-    return argnames, converters
+    # Try to avoid various unicode issues through usage of latin-1 encoding.
+    if isinstance(v, str):
+        return v.decode("latin-1")
+    return v
 
 class BsonParser(object):
     """Handle .bson logs from monitor. Basically we would like to directly pass through
@@ -94,6 +66,15 @@ class BsonParser(object):
 
     Other message types typically get passed through after renaming the keys slightly.
     """
+    converters_32bit = {
+        None: default_converter_32bit,
+        "p": pointer_converter_32bit,
+    }
+
+    converters_64bit = {
+        None: default_converter_64bit,
+        "p": pointer_converter_64bit,
+    }
 
     def __init__(self, fd):
         self.fd = fd
@@ -101,6 +82,7 @@ class BsonParser(object):
         self.flags_value = {}
         self.flags_bitmask = {}
         self.pid = None
+        self.is_64bit = False
 
         if not HAVE_BSON:
             log.critical("Starting BsonParser, but bson is not available! (install with `pip install bson`)")
@@ -137,6 +119,28 @@ class BsonParser(object):
                     flags[argument].append(flag)
 
             flags[argument] = "|".join(flags[argument])
+
+    def determine_unserializers(self, arginfo):
+        """Determines which unserializers (or converters) have to be used in
+        order to parse the various arguments for this function call. Keeps in
+        mind whether the current bson is 32-bit or 64-bit."""
+        argnames, converters = [], []
+
+        for argument in arginfo:
+            if isinstance(argument, (tuple, list)):
+                argument, argtype = argument
+            else:
+                argtype = None
+
+            if self.is_64bit:
+                converter = self.converters_64bit[argtype]
+            else:
+                converter = self.converters_32bit[argtype]
+
+            argnames.append(argument)
+            converters.append(converter)
+
+        return argnames, converters
 
     def __iter__(self):
         self.fd.seek(0)
@@ -177,7 +181,7 @@ class BsonParser(object):
                 arginfo = dec.get("args", [])
                 category = dec.get("category")
 
-                argnames, converters = check_names_for_typeinfo(arginfo)
+                argnames, converters = self.determine_unserializers(arginfo)
                 self.infomap[index] = name, arginfo, argnames, converters, category
 
                 if dec.get("flags_value"):
@@ -283,6 +287,10 @@ class BsonParser(object):
                     procname = get_filename_from_path(modulepath)
                     parsed["process_name"] = procname
                     parsed["command_line"] = argdict.get("command_line")
+
+                    # Is this a 64-bit process?
+                    if argdict.get("is_64bit"):
+                        self.is_64bit = True
 
                     self.pid = pid
 
