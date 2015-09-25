@@ -13,6 +13,7 @@ from lib.common.exceptions import CuckooPackageError
 
 log = logging.getLogger(__name__)
 
+
 class Zip(Package):
     """Zip analysis package."""
 
@@ -24,7 +25,8 @@ class Zip(Package):
         """
         # Test if zip file contains a file named as itself.
         if self.is_overwritten(zip_path):
-            log.debug("ZIP file contains a file with the same name, original is going to be overwrite")
+            log.debug("ZIP file contains a file with the same name, "
+                      "original is going to be overwrite")
             # TODO: add random string.
             new_zip_path = zip_path + ".old"
             shutil.move(zip_path, new_zip_path)
@@ -83,7 +85,7 @@ class Zip(Package):
         """
         try:
             with ZipFile(zip_path, "r") as archive:
-		for zipinfo in archive.infolist():
+                for zipinfo in archive.infolist():
                     try:
                         zipinfo.filename = zipinfo.filename.decode('utf8').encode('utf8')
                     except UnicodeDecodeError:
