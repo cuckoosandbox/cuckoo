@@ -3,8 +3,10 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 from django.conf.urls import patterns, url
+from submission.views import Submission, SubmissionStatus
+
 
 urlpatterns = patterns("",
-    url(r"^$", "submission.views.index"),
-    url(r"status/(?P<task_id>\d+)/$", "submission.views.status"),
+    url(r"^$", Submission.as_view()),
+    url(r"status/(?P<task_id>\d+)/$", SubmissionStatus.as_view()),
 )

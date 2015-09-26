@@ -8,6 +8,7 @@ import sys
 from django.conf import settings
 from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext
+from django.views.generic import View
 
 sys.path.append(settings.CUCKOO_PATH)
 
@@ -15,21 +16,22 @@ from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.utils import store_temp_file
 
 
-def force_int(value):
-    try:
-        value = int(value)
-    except:
-        value = 0
-    finally:
-        return value
+class Submission(View):
+    """View for send a submission"""
 
+    def _force_int(self, value):
+        try:
+            value = int(value)
+        except:
+            value = 0
+        finally:
+            return value
 
-def index(request):
-    if request.method == "POST":
+    def post(self, request):
         package = request.POST.get("package", "")
-        timeout = force_int(request.POST.get("timeout"))
+        timeout = self._force_int(request.POST.get("timeout"))
         options = request.POST.get("options", "")
-        priority = force_int(request.POST.get("priority"))
+        priority = self._force_int(request.POST.get("priority"))
         machine = request.POST.get("machine", "")
         custom = request.POST.get("custom", "")
         memory = bool(request.POST.get("memory", False))
@@ -117,7 +119,8 @@ def index(request):
             return render_to_response("error.html",
                                       {"error": "Error adding task to Cuckoo's database."},
                                       context_instance=RequestContext(request))
-    else:
+
+    def get(self, request):
         files = os.listdir(os.path.join(settings.CUCKOO_PATH,
                                         "analyzer",
                                         "windows",
@@ -155,16 +158,20 @@ def index(request):
                                    "machines": machines},
                                   context_instance=RequestContext(request))
 
-def status(request, task_id):
-    task = Database().view_task(task_id)
-    if not task:
-        return render_to_response("error.html",
-                                  {"error": "The specified task doesn't seem to exist."},
+
+class SubmissionStatus(View):
+    """View for show status of submission"""
+
+    def get(self, request, task_id):
+        task = Database().view_task(task_id)
+        if not task:
+            return render_to_response("error.html",
+                                      {"error": "The specified task doesn't seem to exist."},
+                                      context_instance=RequestContext(request))
+
+        if task.status == "reported":
+            return redirect("analysis.views.report", task_id=task_id)
+
+        return render_to_response("submission/status.html",
+                                  {"status": task.status, "task_id": task_id},
                                   context_instance=RequestContext(request))
-
-    if task.status == "reported":
-        return redirect("analysis.views.report", task_id=task_id)
-
-    return render_to_response("submission/status.html",
-                              {"status": task.status, "task_id": task_id},
-                              context_instance=RequestContext(request))
