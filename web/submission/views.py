@@ -14,6 +14,7 @@ sys.path.append(settings.CUCKOO_PATH)
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.utils import store_temp_file
 
+
 def force_int(value):
     try:
         value = int(value)
@@ -21,6 +22,7 @@ def force_int(value):
         value = 0
     finally:
         return value
+
 
 def index(request):
     if request.method == "POST":
@@ -65,8 +67,9 @@ def index(request):
                                               {"error": "You uploaded a file that exceeds that maximum allowed upload size."},
                                               context_instance=RequestContext(request))
 
-                # Moving sample from django temporary file to Cuckoo temporary storage to
-                # let it persist between reboot (if user like to configure it in that way).
+                # Moving sample from django temporary file to Cuckoo temporary
+                #  storage to let it persist between reboot (if user like to
+                #  configure it in that way).
                 path = store_temp_file(sample.read(),
                                        sample.name)
 
@@ -115,7 +118,11 @@ def index(request):
                                       {"error": "Error adding task to Cuckoo's database."},
                                       context_instance=RequestContext(request))
     else:
-        files = os.listdir(os.path.join(settings.CUCKOO_PATH, "analyzer", "windows", "modules", "packages"))
+        files = os.listdir(os.path.join(settings.CUCKOO_PATH,
+                                        "analyzer",
+                                        "windows",
+                                        "modules",
+                                        "packages"))
 
         packages = []
         for name in files:

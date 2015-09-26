@@ -25,14 +25,20 @@ from lib.cuckoo.core.database import Database, TASK_PENDING
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 import modules.processing.network as network
 
-results_db = pymongo.MongoClient(settings.MONGO_HOST, settings.MONGO_PORT)[settings.MONGO_DB]
+results_db = pymongo.MongoClient(settings.MONGO_HOST,
+                                 settings.MONGO_PORT)[settings.MONGO_DB]
 fs = GridFS(results_db)
+
 
 @require_safe
 def index(request):
     db = Database()
-    tasks_files = db.list_tasks(limit=50, category="file", not_status=TASK_PENDING)
-    tasks_urls = db.list_tasks(limit=50, category="url", not_status=TASK_PENDING)
+    tasks_files = db.list_tasks(limit=50,
+                                category="file",
+                                not_status=TASK_PENDING)
+    tasks_urls = db.list_tasks(limit=50,
+                               category="url",
+                               not_status=TASK_PENDING)
 
     analyses_files = []
     analyses_urls = []
@@ -63,6 +69,7 @@ def index(request):
                               {"files": analyses_files, "urls": analyses_urls},
                               context_instance=RequestContext(request))
 
+
 @require_safe
 def pending(request):
     db = Database()
@@ -76,10 +83,11 @@ def pending(request):
                               {"tasks": pending},
                               context_instance=RequestContext(request))
 
+
 @require_safe
 def chunk(request, task_id, pid, pagenum):
     try:
-        pid, pagenum = int(pid), int(pagenum)-1
+        pid, pagenum = int(pid), int(pagenum) - 1
     except:
         raise PermissionDenied
 
@@ -144,7 +152,8 @@ def filtered_chunk(request, task_id, pid, category):
         if not record:
             raise ObjectDoesNotExist
 
-        # Extract embedded document related to your process from response collection.
+        # Extract embedded document related to your process from response
+        #  collection.
         process = None
         for pdict in record["behavior"]["processes"]:
             if pdict["pid"] == int(pid):
@@ -159,7 +168,8 @@ def filtered_chunk(request, task_id, pid, category):
             "calls": [],
         }
 
-        # Populate dict, fetching data from all calls and selecting only appropriate category.
+        # Populate dict, fetching data from all calls and selecting only
+        #  appropriate category.
         for call in process["calls"]:
             chunk = results_db.calls.find_one({"_id": call})
             for call in chunk["calls"]:
@@ -171,6 +181,7 @@ def filtered_chunk(request, task_id, pid, category):
                                   context_instance=RequestContext(request))
     else:
         raise PermissionDenied
+
 
 @csrf_exempt
 def search_behavior(request, task_id):
@@ -204,13 +215,17 @@ def search_behavior(request, task_id):
                         process_results.append(call)
                         continue
 
-                    for key, value in call["arguments"].items():
+                    for key, value in list(call["arguments"].items()):
                         if query.search(key):
                             call["id"] = index
                             process_results.append(call)
                             break
 
-                        if isinstance(value, basestring) and query.search(value):
+                        if sys.version_info >= (3, 0):
+                            _string = str
+                        else:
+                            _string = basestring
+                        if isinstance(value, _string) and query.search(value):
                             call["id"] = index
                             process_results.append(call)
                             break
@@ -227,9 +242,11 @@ def search_behavior(request, task_id):
     else:
         raise PermissionDenied
 
+
 @require_safe
 def report(request, task_id):
-    report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
+    report = results_db.analysis.find_one({"info.id": int(task_id)},
+                                          sort=[("_id", pymongo.DESCENDING)])
 
     if not report:
         return render_to_response("error.html",
@@ -248,7 +265,9 @@ def report(request, task_id):
         iplookups = dict()
 
     return render_to_response("analysis/report.html",
-                              {"analysis": report, "domainlookups": domainlookups, "iplookups": iplookups},
+                              {"analysis": report,
+                               "domainlookups": domainlookups,
+                               "iplookups": iplookups},
                               context_instance=RequestContext(request))
 
 @require_safe
@@ -282,10 +301,12 @@ def file(request, category, object_id):
 
 @require_safe
 def full_memory_dump_file(request, analysis_number):
-    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(analysis_number), "memory.dmp")
+    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                             str(analysis_number), "memory.dmp")
     if os.path.exists(file_path):
         content_type = "application/octet-stream"
-        response = HttpResponse(open(file_path, "rb").read(), content_type=content_type)
+        response = HttpResponse(open(file_path, "rb").read(),
+                                content_type=content_type)
         response["Content-Disposition"] = "attachment; filename=memory.dmp"
         return response
     else:
@@ -396,6 +417,7 @@ def search(request):
                                "error": None},
                               context_instance=RequestContext(request))
 
+
 @require_safe
 def remove(request, task_id):
     """Remove an analysis.
@@ -403,7 +425,8 @@ def remove(request, task_id):
     """
     anals = results_db.analysis.find({"info.id": int(task_id)})
 
-    # Checks if more analysis found with the same ID, like if process.py was run manually.
+    # Checks if more analysis found with the same ID, like if process.py was
+    #  run manually.
     if anals.count() > 1:
         message = "Multiple tasks with this ID deleted, thanks for all the fish. (The specified analysis was duplicated in mongo)"
     elif anals.count() == 1:
@@ -458,7 +481,8 @@ def remove(request, task_id):
 @require_safe
 def pcapstream(request, task_id, conntuple):
     """Get packets from the task PCAP related to a certain connection.
-    This is possible because we sort the PCAP during processing and remember offsets for each stream.
+    This is possible because we sort the PCAP during processing and remember
+    offsets for each stream.
     """
     src, sport, dst, dport, proto = conntuple.split(",")
     sport, dport = int(sport), int(dport)
@@ -497,7 +521,8 @@ def pcapstream(request, task_id, conntuple):
 
     try:
         fobj = fs.get(conndata["network"]["sorted_pcap_id"])
-        # Gridfs gridout has no fileno(), which is needed by dpkt pcap reader for NOTHING.
+        # Gridfs gridout has no fileno(), which is needed by dpkt pcap reader
+        #  for NOTHING.
         setattr(fobj, "fileno", lambda: -1)
     except:
         return render_to_response(

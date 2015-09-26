@@ -13,14 +13,19 @@ from django.views.decorators.http import require_safe
 sys.path.append(settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_RUNNING
-from lib.cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED, TASK_REPORTED
-from lib.cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING
+from lib.cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED
+from lib.cuckoo.core.database import TASK_REPORTED
+from lib.cuckoo.core.database import TASK_FAILED_ANALYSIS
+from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
+from lib.cuckoo.core.database import TASK_FAILED_REPORTING
+
 
 def timestamp(dt):
     """Returns the timestamp of a datetime object."""
     if not dt:
         return None
     return time.mktime(dt.timetuple())
+
 
 @require_safe
 def index(request):
