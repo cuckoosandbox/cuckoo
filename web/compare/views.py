@@ -73,7 +73,12 @@ class Hash(LoginRequiredMixin, View):
             records = results_db.analysis.find(
                 {
                     "$and": [
-                        {"target.url": {"$regex": right_hash, "$options": "-i"}},
+                        {
+                            "target.url": {
+                                "$regex": right_hash,
+                                "$options": "-i"
+                            }
+                        },
                         {"info.id": {"$ne": int(left_id)}}
                     ]
                 },
