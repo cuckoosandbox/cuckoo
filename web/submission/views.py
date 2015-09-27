@@ -9,6 +9,7 @@ from django.conf import settings
 from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext
 from django.views.generic import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 sys.path.append(settings.CUCKOO_PATH)
 
@@ -16,7 +17,7 @@ from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.utils import store_temp_file
 
 
-class Submission(View):
+class Submission(LoginRequiredMixin, View):
     """View for send a submission"""
 
     def _force_int(self, value):
@@ -159,7 +160,7 @@ class Submission(View):
                                   context_instance=RequestContext(request))
 
 
-class SubmissionStatus(View):
+class SubmissionStatus(LoginRequiredMixin, View):
     """View for show status of submission"""
 
     def get(self, request, task_id):
