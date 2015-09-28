@@ -50,7 +50,7 @@ class VirusTotalAPI(object):
         "generic downloader", "generic malware", "undef", "inject", "packer",
         "generic backdoor", "word", "macosx", "hack", "unknown", "downloader",
         "trojanspy", "dldr", "msoffice", "osx32", "script", "stealer",
-        "not a virus",
+        "not a virus", "html", "expl", "shellkode",
     ]
 
     def __init__(self, apikey, timeout, scan=0):
@@ -164,6 +164,12 @@ class VirusTotalAPI(object):
             return []
 
         ret = []
+
+        # Extract CVE number.
+        cve = re.search("(CVE[-_](\\d){4}[-_](\\d){4})", variant)
+        if cve:
+            ret.append(cve.group(0).replace("_", "-"))
+
         for word in re.split("[\\.\\,\\-\\(\\)\\[\\]/!:_]", variant):
             word = word.strip()
             if len(word) < 4:
