@@ -33,7 +33,7 @@ class VirusTotalAPI(object):
         "generic", "malware", "trojan", "agent", "win32", "multi", "w32",
         "trojanclicker", "trojware", "win", "a variant of win32", "trj",
         "susp", "dangerousobject", "backdoor", "clicker", "variant", "heur",
-        "troj_gen", "virus", "dropper", "generic suspicious", "spyware",
+        "gen", "virus", "dropper", "generic suspicious", "spyware",
         "suspectcrc", "corrupt", "behaveslike", "crypt", "adclicker",
         "troj", "injector", "cryptor", "packed", "adware", "macro",
         "suspicious", "worm", "msil", "msword", "drop", "keygen", "office",
@@ -44,8 +44,8 @@ class VirusTotalAPI(object):
         "a variant of win64", "w97m", "shellcode", "o97m", "exploit",
         "x97m", "maliciousmacro", "downldr", "msexcel", "pp97m", "other",
         "trojandropper", "crypter", "a variant of msil", "macrodown",
-        "trojanapt", "dwnldr", "downldexe", "troj_dload", "trojanhorse",
-        "mailer", "obfus", "obfuscator", "heur_generic", "suspicious file",
+        "trojanapt", "dwnldr", "downldexe", "dload", "trojanhorse",
+        "mailer", "obfus", "obfuscator", "suspicious file",
         "suspected of trojan", "heuristic", "rogue", "virtool", "infostealer",
         "generic downloader", "generic malware", "undef", "inject", "packer",
         "generic backdoor", "word", "macosx", "hack", "unknown", "downloader",
@@ -164,7 +164,7 @@ class VirusTotalAPI(object):
             return []
 
         ret = []
-        for word in re.split("[\\.\\,\\-\\(\\)\\[\\]/!:]", variant):
+        for word in re.split("[\\.\\,\\-\\(\\)\\[\\]/!:_]", variant):
             word = word.strip()
             if len(word) < 4:
                 continue
