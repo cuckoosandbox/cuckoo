@@ -251,6 +251,7 @@ class BehaviorReconstructor(object):
     # Mutex stuff
 
     def _api_NtCreateMutant(self, return_value, arguments):
-        return ("mutex", arguments["mutant_name"])
+        if arguments["mutant_name"]:
+            return ("mutex", arguments["mutant_name"])
 
     _api_ConnectEx = _api_connect
