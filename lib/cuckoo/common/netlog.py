@@ -69,11 +69,13 @@ class BsonParser(object):
     converters_32bit = {
         None: default_converter_32bit,
         "p": pointer_converter_32bit,
+        "x": pointer_converter_32bit,
     }
 
     converters_64bit = {
         None: default_converter_64bit,
         "p": pointer_converter_64bit,
+        "x": pointer_converter_32bit,
     }
 
     def __init__(self, fd):
