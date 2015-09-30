@@ -165,10 +165,15 @@ class VirusTotalAPI(object):
 
         ret = []
 
-        # Extract CVE number.
-        cve = re.search("(CVE[-_](\\d){4}[-_](\\d){4})", variant)
+        # Handles "CVE-2012-1234", "CVE2012-1234".
+        cve = re.search("CVE[-_]?(\\d{4})[-_](\\d{4})", variant)
         if cve:
-            ret.append(cve.group(0).replace("_", "-"))
+            ret.append("CVE-%s-%s" % (cve.group(1), cve.group(2)))
+
+        # Handles "CVE121234".
+        cve = re.search("CVE(\\d{2})(\\d{4})", variant)
+        if cve:
+            ret.append("CVE-20%s-%s" % (cve.group(1), cve.group(2)))
 
         for word in re.split("[\\.\\,\\-\\(\\)\\[\\]/!:_]", variant):
             word = word.strip()
