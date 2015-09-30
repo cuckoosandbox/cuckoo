@@ -288,6 +288,7 @@ class BsonParser(object):
                     parsed["first_seen"] = vmtime
 
                     procname = get_filename_from_path(modulepath)
+                    parsed["process_path"] = modulepath
                     parsed["process_name"] = procname
                     parsed["command_line"] = argdict.get("command_line")
 
