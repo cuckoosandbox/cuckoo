@@ -28,3 +28,4 @@ SQLAlchemy==1.0.8
 Werkzeug==0.10.4
 beautifulsoup4==4.4.0
 pyminizip==0.2.1
+rarfile==2.7
