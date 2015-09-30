@@ -169,9 +169,8 @@ class BehaviorReconstructor(object):
     # File stuff.
 
     def _api_NtCreateFile(self, return_value, arguments):
-        if NT_SUCCESS(return_value):
-            self.files[arguments["file_handle"]] = arguments["filepath"]
-            return ("file_opened", arguments["filepath"])
+        self.files[arguments["file_handle"]] = arguments["filepath"]
+        return ("file_opened", arguments["filepath"])
 
     _api_NtOpenFile = _api_NtCreateFile
 
@@ -252,6 +251,7 @@ class BehaviorReconstructor(object):
     # Mutex stuff
 
     def _api_NtCreateMutant(self, return_value, arguments):
-        return ("mutex", arguments["mutant_name"])
+        if arguments["mutant_name"]:
+            return ("mutex", arguments["mutant_name"])
 
     _api_ConnectEx = _api_connect

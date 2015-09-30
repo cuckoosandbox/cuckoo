@@ -73,6 +73,9 @@ def installdir(src, dst, force, rewrite, origin=[]):
                 installdir(srcpath, destination, force, rewrite,
                            origin + [file_name])
             else:
+                if not os.path.isdir(os.path.dirname(destination)):
+                    os.makedirs(os.path.dirname(destination))
+
                 shutil.copy(srcpath, destination)
                 print("File \"{0}/{1}\" {2}".format("/".join(origin),
                                                     file_name,
@@ -86,8 +89,9 @@ def install(enabled, force, rewrite):
         "signatures": os.path.join("modules", "signatures"),
         "processing": os.path.join("modules", "processing"),
         "reporting": os.path.join("modules", "reporting"),
-        "machinemanagers": os.path.join("modules", "machinemanagers"),
-        "windows": os.path.join("analyzer", "windows", "bin"),
+        "machinery": os.path.join("modules", "machinery"),
+        "analyzer": os.path.join("analyzer"),
+        "agent": os.path.join("agent"),
     }
 
     for category in enabled:
@@ -111,7 +115,9 @@ def main():
     parser.add_argument("-a", "--all", help="Download everything", action="store_true", required=False)
     parser.add_argument("-s", "--signatures", help="Download Cuckoo signatures", action="store_true", required=False)
     parser.add_argument("-p", "--processing", help="Download processing modules", action="store_true", required=False)
-    parser.add_argument("-m", "--machinemanagers", help="Download machine managers", action="store_true", required=False)
+    parser.add_argument("-m", "--machinery", help="Download machine managers", action="store_true", required=False)
+    parser.add_argument("-n", "--analyzer", help="Download analyzer modules", action="store_true", required=False)
+    parser.add_argument("-g", "--agent", help="Download agent modules", action="store_true", required=False)
     parser.add_argument("-r", "--reporting", help="Download reporting modules", action="store_true", required=False)
     parser.add_argument("-f", "--force", help="Install files without confirmation", action="store_true", required=False)
     parser.add_argument("-w", "--rewrite", help="Rewrite existing files", action="store_true", required=False)
@@ -126,8 +132,9 @@ def main():
         enabled.append("processing")
         enabled.append("signatures")
         enabled.append("reporting")
-        enabled.append("machinemanagers")
-        enabled.append("windows")
+        enabled.append("machinery")
+        enabled.append("analyzer")
+        enabled.append("agent")
     else:
         if args.signatures:
             enabled.append("signatures")
@@ -135,8 +142,12 @@ def main():
             enabled.append("processing")
         if args.reporting:
             enabled.append("reporting")
-        if args.machinemanagers:
-            enabled.append("machinemanagers")
+        if args.machinery:
+            enabled.append("machinery")
+        if args.analyzer:
+            enabled.append("analyzer")
+        if args.agent:
+            enabled.append("agent")
 
     if not enabled:
         print(colors.red("You need to enable some category!\n"))

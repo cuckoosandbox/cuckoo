@@ -21,7 +21,7 @@ try:
     from sqlalchemy import ForeignKey, Text, Index, Table
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-    from sqlalchemy.orm import sessionmaker, relationship, joinedload, backref
+    from sqlalchemy.orm import sessionmaker, relationship, joinedload
     Base = declarative_base()
 except ImportError:
     raise CuckooDependencyError("Unable to import sqlalchemy "
@@ -343,7 +343,7 @@ class Database(object):
 
         if dsn:
             self._connect_database(dsn)
-        elif cfg.database.connection:
+        elif hasattr(cfg, "database") and cfg.database.connection:
             self._connect_database(cfg.database.connection)
         else:
             db_file = os.path.join(CUCKOO_ROOT, "db", "cuckoo.db")
@@ -361,10 +361,15 @@ class Database(object):
         self.engine.echo = False
 
         # Connection timeout.
-        if cfg.database.timeout:
+        if hasattr(cfg, "database") and cfg.database.timeout:
             self.engine.pool_timeout = cfg.database.timeout
         else:
             self.engine.pool_timeout = 60
+
+        # Let's emit a warning just in case.
+        if not hasattr(cfg, "database"):
+            log.warning("It appears you don't have a valid `database` "
+                        "section in conf/cuckoo.conf, using sqlite3 instead.")
 
         # Create schema.
         try:

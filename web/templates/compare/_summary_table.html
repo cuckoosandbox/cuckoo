@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <th>ID</th>
-            <th>Name</th>
+            <th>Target</th>
             <th>Machine</th>
             <th>Completed On</th>
             <th>Duration</th>
@@ -13,7 +13,11 @@
         {% for record in records %}
             <tr>
                 <td>{{record.info.id}}</td>
+                {% if record.target.category == "url" %}
+                <td>{{record.target.url}}</td>
+                {% else %}
                 <td>{{record.target.file.name}}</td>
+                {% endif %}
                 <td>{{record.info.machine.name}}</td>
                 <td>{{record.info.ended}}</td>
                 <td>{{record.info.duration}} seconds</td>

@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os.path
+import shutil
 import requests
 
 from distributed.exception import InvalidReport
@@ -68,3 +69,15 @@ def store_report(url, task_id, report_format, dirpath):
 def delete_task(url, task_id):
     url = os.path.join(url, "tasks", "delete", "%d" % task_id)
     return requests.get(url).status_code == 200
+
+def fetch_pcap(url, task_id, filepath):
+    url = os.path.join(url, "pcap", "get", "%s" % task_id)
+    # Explicitly disable any compression as otherwise we'd end up with a
+    # compressed file as shutil.copyfileobj() wouldn't decompress it
+    # transparently.
+    headers = {
+        "accept-encoding": "gzip;q=0,deflate,sdch",
+    }
+    r = requests.get(url, headers=headers, stream=True)
+    with open(filepath, "wb") as f:
+        shutil.copyfileobj(r.raw, f)

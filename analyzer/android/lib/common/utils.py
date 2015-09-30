@@ -1,10 +1,11 @@
-# Copyright (C) Check Point Software Technologies LTD.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+# Originally contributed by Check Point Software Technologies, Ltd.
 
 from lib.common.results import NetlogFile
 
-def send_file(name,data):
+def send_file(name, data):
     """Send file to result server"""
     nf = NetlogFile(name)
     nf.sock.sendall(data)

@@ -83,11 +83,11 @@ def main():
         log.setLevel(logging.DEBUG)
 
     db = Database()
+    conf = Config()
 
     if args.resultserver:
         resultserver_ip, resultserver_port = args.resultserver.split(":")
     else:
-        conf = Config()
         resultserver_ip = conf.resultserver.ip
         resultserver_port = conf.resultserver.port
 

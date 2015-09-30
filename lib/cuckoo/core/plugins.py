@@ -389,11 +389,6 @@ class RunSignatures(object):
                 self.signatures.remove(signature)
 
         log.debug("Running %d signatures", len(self.signatures))
-        for sig in self.signatures:
-            if sig == self.signatures[-1]:
-                log.debug("\t `-- %s", sig.name)
-            else:
-                log.debug("\t |-- %s", sig.name)
 
         # Iterate calls and tell interested signatures about them.
         for proc in self.results.get("behavior", {}).get("processes", []):

@@ -1,0 +1,141 @@
+system:
+    is_success_condition: "retval == 0"
+    args:
+      - {name: "command", type: "char *"}
+    retval_type: "int"
+    category: "foobar"
+
+printf:
+    is_success_condition: "retval > 0"
+    args:
+      - {name: "format", type: "char *"}
+    retval_type: "int"
+    category: "foobar"
+
+dlopen:
+    is_success_condition: "retval > 0"
+    args:
+      - {name: "path", type: "char *"}
+      - {name: "mode", type: "int"}
+    retval_type: "void *"
+    category: "foobar"
+    library: "libdyld"
+
+dlsym:
+    is_success_condition: "retval > 0"
+    args:
+      - {name: "handle", type: "void *"}
+      - {name: "symbol", type: "char *"}
+    retval_type: "void *"
+    category: "foobar"
+    library: "libdyld"
+
+fprintf:
+    is_success_condition: "retval > 0"
+    args:
+      - {name: "stream", type: "void *"}
+      - {name: "format", type: "char *"}
+    retval_type: "int"
+    category: "foobar"
+
+open:
+    is_success_condition: "retval > 0"
+    args:
+      - {name: "path",  type: "char *"}
+      - {name: "oflag", type: "int"}
+    retval_type: "int"
+    category: "file"
+
+fopen:
+    is_success_condition: "retval > 0"
+    args:
+      - {name: "filename", type: "char *"}
+      - {name: "mode",     type: "char *"}
+    retval_type: "void *"
+    category: "file"
+
+freopen:
+    is_success_condition: "retval > 0"
+    args:
+      - {name: "filename", type: "char *"}
+      - {name: "mode",     type: "char *"}
+      - {name: "stream",   type: "void *"}
+    retval_type: "void *"
+    category: "file"
+
+rename:
+    is_success_condition: "retval == 0"
+    args:
+      - {name: "old",   type: "char *"}
+      - {name: "new",   type: "char *"}
+      - {name: "state", type: "void *"}
+      - {name: "flags", type: "uint64_t"}
+    retval_type: "int"
+    category: "file"
+
+copyfile:
+    is_success_condition: "retval == 0"
+    args:
+      - {name: "from",  type: "char *"}
+      - {name: "to",    type: "char *"}
+      - {name: "state", type: "void *"}
+      - {name: "flags", type: "uint32_t"}
+    retval_type: "int"
+    category: "file"
+
+remove:
+    is_success_condition: "retval == 0"
+    args:
+      - {name: "path", type: "char *"}
+    retval_type: "int"
+    category: "file"
+
+unlink:
+    is_success_condition: "retval == 0"
+    args:
+      - {name: "path", type: "char *"}
+    retval_type: "int"
+    category: "file"
+
+execve:
+    is_success_condition: "retval != -1"
+    args:
+      - {name: "path", type: "char *"}
+      - {name: "argv", type: "void *"}
+      - {name: "envp", type: "void *"}
+    retval_type: "int"
+    category: "process"
+    __ignore__: true
+
+fork:
+    is_success_condition: "retval >= 0"
+    args: []
+    retval_type: "int"
+    category: "process"
+
+socket:
+    is_success_condition: "retval > 0"
+    args:
+      - {name: "domain",   type: "int"}
+      - {name: "type",     type: "int"}
+      - {name: "protocol", type: "int"}
+    retval_type: "int"
+    category: "network"
+
+# Signatures for tests.
+# Please don't remove them. Thanks!
+
+rb_isalpha:
+    is_success_condition: "retval != 0"
+    args:
+      - {name: "character", type: "char"}
+    retval_type: "int"
+    category: "foobar"
+
+atoi:
+    is_success_condition: "1==1"
+    args:
+      - {name: "str", type: "char *"}
+    retval_type: "int"
+    category: "foobar"
+    library: "libsystem_c"

@@ -1,21 +1,24 @@
-# Copyright (C) Check Point Software Technologies LTD.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+# Originally contributed by Check Point Software Technologies, Ltd.
 
 import os
 import logging
 import pkgutil
 import shutil
-import subprocess
+import sys
 import xmlrpclib
 import time
+
 from lib.core.packages import choose_package
 from lib.common.exceptions import CuckooError, CuckooPackageError
-from lib.common.abstracts import Package,Auxiliary
+from lib.common.abstracts import Package, Auxiliary
 from lib.common.constants import PATHS
 from lib.core.config import Config
 from lib.core.startup import init_logging
 from modules import auxiliary
+
 logging.disable(level=logging.DEBUG)
 log = logging.getLogger()
 
@@ -75,41 +78,12 @@ class Analyzer(object):
         else:
             self.target = self.config.target
 
-    def cmd_exists(self,cmd):
-        """Checks if application is in $PATH"""
-        return subprocess.call("type " + cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
-
-    def emulator_exists(self):
-        """Checks if Android emulator is running"""
-        adb_results = subprocess.Popen(["adb", "devices"], stdout=subprocess.PIPE)
-        output = adb_results.communicate()[0].decode("utf-8")
-
-        if output.find("emulator") == -1:
-            return False
-        else:
-            return True
-
-    def check_environment_ready(self):
-        """Checks if analysis environment is ready"""
-
-        #Checks if Android Asset Packaging Tool is installed in $PATH
-        if not self.cmd_exists("aapt"):
-            raise CuckooError("virtual machine not configured correctly:missing aapt")
-        #Checks if Android Debug Bridge is installed in $PATH
-        if not self.cmd_exists("adb"):
-            raise CuckooError("virtual machine not configured correctly:missing adb")
-        #Checks if Android emulator is running"
-        if not self.emulator_exists():
-            raise CuckooError("virtual machine not configured correctly:emulator not detected")
-
-
     def run(self):
         self.prepare()
-        #self.check_environment_ready()
+
         log.info("Starting analyzer from: {0}".format(os.getcwd()))
         log.info("Storing results at: {0}".format(PATHS["root"]))
         log.info("Target is: {0}".format(self.target))
-
 
         # If no analysis package was specified at submission, we try to select
         # one automatically.
@@ -133,7 +107,6 @@ class Analyzer(object):
         # Otherwise just select the specified package.
         else:
             package = self.config.package
-
 
         # Generate the package path.
         package_name = "modules.packages.%s" % package

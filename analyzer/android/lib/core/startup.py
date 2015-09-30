@@ -1,6 +1,7 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+# Originally contributed by Check Point Software Technologies, Ltd.
 
 import os
 import logging
@@ -18,7 +19,7 @@ def create_folders():
 
         try:
             os.makedirs(folder)
-        except OSError as e:
+        except OSError:
             pass
 
 def init_logging():
@@ -27,7 +28,7 @@ def init_logging():
     sh = logging.StreamHandler()
     sh.setFormatter(formatter)
     log.addHandler(sh)
-    
+
     nh = NetlogHandler()
     nh.setFormatter(formatter)
     log.addHandler(nh)

@@ -1,6 +1,7 @@
-# Copyright (C) Check Point Software Technologies LTD.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+# Originally contributed by Check Point Software Technologies, Ltd.
 
 import time
 import logging
@@ -8,7 +9,7 @@ import StringIO
 from threading import Thread
 from lib.common.abstracts import Auxiliary
 from lib.common.results import NetlogFile
-from lib.api import adb,screenshot
+from lib.api.adb import take_screenshot
 from lib.api.screenshot import Screenshot
 
 log = logging.getLogger(__name__)
@@ -37,13 +38,13 @@ class Screenshots(Auxiliary, Thread):
 
             try:
                 filename = "screenshot%s.jpg" % str(img_counter)
-                img_current = adb.take_screenshot(filename)
+                img_current = take_screenshot(filename)
                 if img_last:
                     if Screenshot().equal(img_last, img_current):
                         continue
 
                 file = open(img_current, 'r')
-                tmpio =StringIO.StringIO(file.read())
+                tmpio = StringIO.StringIO(file.read())
                 # now upload to host from the StringIO
                 nf = NetlogFile("shots/%s.jpg" % str(img_counter).rjust(4, "0"))
 
@@ -60,4 +61,3 @@ class Screenshots(Auxiliary, Thread):
                 continue
 
         return True
-

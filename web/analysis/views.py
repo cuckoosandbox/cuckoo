@@ -106,8 +106,13 @@ def chunk(request, task_id, pid, pagenum):
         if not process:
             raise ObjectDoesNotExist
 
-        objectid = process["calls"][pagenum]
-        chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
+        if pagenum >= 0 and pagenum < len(process["calls"]):
+            objectid = process["calls"][pagenum]
+            chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
+            for idx, call in enumerate(chunk["calls"]):
+                call["id"] = pagenum * 100 + idx
+        else:
+            chunk = dict(calls=[])
 
         return render_to_response("analysis/behavior/_chunk.html",
                                   {"chunk": chunk},
@@ -189,19 +194,26 @@ def search_behavior(request, task_id):
                 "_id": {"$in": process["calls"]}
             })
 
+            index = -1
             for chunk in chunks:
                 for call in chunk["calls"]:
-                    if query.search(call["api"]):
-                        process_results.append(call)
-                    else:
-                        for key, value in call["arguments"].items():
-                            if query.search(key):
-                                process_results.append(call)
-                                break
+                    index += 1
 
-                            if isinstance(value, basestring) and query.search(value):
-                                process_results.append(call)
-                                break
+                    if query.search(call["api"]):
+                        call["id"] = index
+                        process_results.append(call)
+                        continue
+
+                    for key, value in call["arguments"].items():
+                        if query.search(key):
+                            call["id"] = index
+                            process_results.append(call)
+                            break
+
+                        if isinstance(value, basestring) and query.search(value):
+                            call["id"] = index
+                            process_results.append(call)
+                            break
 
             if process_results:
                 results.append({
@@ -238,6 +250,11 @@ def report(request, task_id):
     return render_to_response("analysis/report.html",
                               {"analysis": report, "domainlookups": domainlookups, "iplookups": iplookups},
                               context_instance=RequestContext(request))
+
+@require_safe
+def latest_report(request):
+    rep = results_db.analysis.find_one({}, sort=[("_id", pymongo.DESCENDING)])
+    return report(request, rep["info"]["id"] if rep else 0)
 
 @require_safe
 def file(request, category, object_id):
@@ -419,7 +436,7 @@ def remove(request, task_id):
                     fs.delete(ObjectId(drop["object_id"]))
 
             # Delete calls.
-            for process in analysis["behavior"]["processes"]:
+            for process in analysis.get("behavior", {}).get("processes", []):
                 for call in process["calls"]:
                     results_db.calls.remove({"_id": ObjectId(call)})
 

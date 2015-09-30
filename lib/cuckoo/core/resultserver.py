@@ -119,7 +119,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
     """
 
     def setup(self):
-        self.logfd = None
         self.rawlogfd = None
         self.protocol = None
         self.startbuf = ""
@@ -133,8 +132,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
 
         if self.protocol:
             self.protocol.close()
-        if self.logfd:
-            self.logfd.close()
         if self.rawlogfd:
             self.rawlogfd.close()
 
@@ -245,7 +242,7 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         self.pid, self.ppid, self.procname = pid, ppid, procname
 
     def create_folders(self):
-        folders = "shots", "files", "logs"
+        folders = "shots", "files", "logs", "buffer"
 
         for folder in folders:
             try:

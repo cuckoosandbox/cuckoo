@@ -28,6 +28,18 @@ try:
 except ImportError:
     HAVE_YARA = False
 
+try:
+    import pefile
+    HAVE_PEFILE = True
+except ImportError:
+    HAVE_PEFILE = False
+
+try:
+    import androguard
+    HAVE_ANDROGUARD = True
+except ImportError:
+    HAVE_ANDROGUARD = False
+
 log = logging.getLogger(__name__)
 
 FILE_CHUNK_SIZE = 16 * 1024
@@ -58,6 +70,8 @@ class File(object):
     # notified about missing dependencies already
     notified_yara = False
     notified_pydeep = False
+    notified_pefile = False
+    notified_androguard = False
 
     def __init__(self, file_path):
         """@param file_path: file path."""
@@ -202,8 +216,9 @@ class File(object):
             except:
                 try:
                     file_type = magic.from_file(self.file_path)
-                except:
-                    pass
+                except Exception as e:
+                    log.debug("Error getting magic from file %s: %s",
+                              self.file_path, e)
             finally:
                 try:
                     ms.close()
@@ -215,8 +230,9 @@ class File(object):
                 p = subprocess.Popen(["file", "-b", self.file_path],
                                      stdout=subprocess.PIPE)
                 file_type = p.stdout.read().strip()
-            except:
-                pass
+            except Exception as e:
+                log.debug("Error running file(1) on %s: %s",
+                          self.file_path, e)
 
         return file_type
 
@@ -243,13 +259,107 @@ class File(object):
 
         if file_type is None:
             try:
-                p = subprocess.Popen(["file", "-b", "--mime-type", self.file_path],
-                                     stdout=subprocess.PIPE)
-                file_type = p.stdout.read().strip()
+                args = ["file", "-b", "--mime-type", self.file_path]
+                file_type = subprocess.check_output(args).strip()
             except:
                 pass
 
         return file_type
+
+    def get_exported_functions(self):
+        """Get the exported function names of this PE file."""
+        filetype = self.get_type()
+        if "MS-DOS" not in filetype and "PE32" not in self.get_type():
+            return
+
+        if not HAVE_PEFILE:
+            if not File.notified_pefile:
+                File.notified_pefile = True
+                log.warning("Unable to import pefile (`pip install pefile`)")
+            return
+
+        try:
+            pe = pefile.PE(self.file_path)
+            if not hasattr(pe, "DIRECTORY_ENTRY_EXPORT"):
+                return
+
+            for export in pe.DIRECTORY_ENTRY_EXPORT.symbols:
+                yield export.name
+        except Exception as e:
+            log.warning("Error enumerating exported functions: %s", e)
+
+    def get_imported_functions(self):
+        """Get the imported functions of this PE file."""
+        filetype = self.get_type()
+        if "MS-DOS" not in filetype and "PE32" not in self.get_type():
+            return
+
+        if not HAVE_PEFILE:
+            if not File.notified_pefile:
+                File.notified_pefile = True
+                log.warning("Unable to import pefile (`pip install pefile`)")
+            return
+
+        try:
+            pe = pefile.PE(self.file_path)
+            if not hasattr(pe, "DIRECTORY_ENTRY_IMPORT"):
+                return
+
+            for imp in pe.DIRECTORY_ENTRY_IMPORT:
+                for entry in imp.imports:
+                    yield dict(dll=imp.dll,
+                               name=entry.name,
+                               ordinal=entry.ordinal,
+                               hint=entry.hint,
+                               address=entry.address)
+        except Exception as e:
+            log.warning("Error enumerating imported functions: %s", e)
+
+    def get_apk_entry(self):
+        """Get the entry point for this APK. The entry point is denoted by a
+        package and main activity name."""
+        filetype = self.get_type()
+        if "Zip archive data" not in filetype and "Java Jar" not in filetype:
+            return "", ""
+
+        if not HAVE_ANDROGUARD:
+            if not File.notified_androguard:
+                File.notified_androguard = True
+                log.warning("Unable to import androguard (`pip install androguard`)")
+            return "", ""
+
+        try:
+            a = androguard.core.bytecodes.apk.APK(self.file_path)
+            if not a.is_valid_APK():
+                return "", ""
+
+            package = a.get_package()
+            if not package:
+                log.warning("Unable to find the main package, this analysis "
+                            "will probably fail.")
+                return "", ""
+
+            main_activity = a.get_main_activity()
+            if main_activity:
+                log.debug("Picked package %s and main activity %s.",
+                          package, main_activity)
+                return package, main_activity
+
+            activities = a.get_activities()
+            for activity in activities:
+                if "main" in activity or "start" in activity:
+                    log.debug("Choosing package %s and main activity due to "
+                              "its name %s.", package, activity)
+                    return package, activity
+
+            if activities and activities[0]:
+                log.debug("Picked package %s and the first activity %s.",
+                          package, activities[0])
+                return package, activities[0]
+        except Exception as e:
+            log.warning("Error extracting package and main activity: %s.", e)
+
+        return "", ""
 
     def _yara_encode_string(self, s):
         # Beware, spaghetti code ahead.

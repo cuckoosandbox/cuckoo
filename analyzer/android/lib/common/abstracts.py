@@ -1,10 +1,11 @@
-# Copyright (C) 2010-2013 Cuckoo Sandbox Developers.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+# Originally contributed by Check Point Software Technologies, Ltd.
 
 class Package(object):
     """Base abstact analysis package."""
-    
+
     def __init__(self, options={}):
         """@param options: options dict."""
         self.options = options
@@ -35,4 +36,5 @@ class Package(object):
         """
         raise NotImplementedError
 
-class Auxiliary(object): pass
+class Auxiliary(object):
+    pass

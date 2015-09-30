@@ -21,7 +21,7 @@ class MITM(Auxiliary):
 
     def start(self):
         mitmdump = self.options.get("mitmdump", "/usr/local/bin/mitmdump")
-        port_base = int(self.options.get("port_base", 8080))
+        port_base = int(self.options.get("port_base", 50000))
         script = self.options.get("script", "data/mitm.py")
         certificate = self.options.get("certificate", "bin/cert.p12")
 

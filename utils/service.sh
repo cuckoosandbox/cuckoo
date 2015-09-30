@@ -22,9 +22,6 @@ _install_configuration() {
     cat > /etc/default/cuckoo << EOF
 # Configuration file for the Cuckoo Sandbox service(s).
 
-# Log directory, defaults to the log/ directory in the Cuckoo setup.
-LOGDIR="$LOGDIR"
-
 # It is possible to allow the virtual machines to connect to the entire
 # internet through the vmcloak-iptables script. Enable by uncommenting and
 # setting the following value. Give the network interface(s) that can allow
@@ -109,12 +106,11 @@ chdir "$CUCKOO"
 respawn
 
 env CONFFILE="$CONFFILE"
-env LOGDIR="$LOGDIR"
 
 script
     . "\$CONFFILE"
 
-    exec ./utils/process.py auto -p 4 2>&1 >> "\$LOGDIR/process.log"
+    exec ./utils/process.py auto -p 4
 end script
 EOF
 
@@ -128,14 +124,13 @@ setuid "$USERNAME"
 chdir "$CUCKOO"
 
 env CONFFILE="$CONFFILE"
-env LOGDIR="$LOGDIR"
 env APIADDR=""
 
 script
     . "\$CONFFILE"
 
     if [ -n "\$APIADDR" ]; then
-        exec ./utils/api.py -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log"
+        exec ./utils/api.py -H "\$APIADDR"
     fi
 end script
 EOF
@@ -150,7 +145,6 @@ instance \$INSTANCE
 respawn
 
 env CONFFILE="$CONFFILE"
-env LOGDIR="$LOGDIR"
 
 script
     . "\$CONFFILE"
@@ -205,14 +199,13 @@ setuid "$USERNAME"
 chdir "$(readlink -f "$CUCKOO/web/")"
 
 env CONFFILE="$CONFFILE"
-env LOGDIR="$LOGDIR"
 env WEBADDR=""
 
 script
     . "\$CONFFILE"
 
     if [ -n "\$WEBADDR" ]; then
-        exec ./manage.py runserver "\$WEBADDR:8000" 2>&1 >> "\$LOGDIR/web.log"
+        exec ./manage.py runserver "\$WEBADDR:8000"
     fi
 end script
 EOF
@@ -243,140 +236,6 @@ _restart_upstart() {
     initctl restart cuckoo
 }
 
-_about_systemv() {
-    echo "Using SystemV technique.."
-}
-
-_install_systemv() {
-    cat > /etc/init.d/cuckoo << EOF
-#!/bin/sh
-# Cuckoo service.
-
-### BEGIN INIT INFO
-# Provides:          cuckoo
-# Required-Start:    \$remote_fs \$syslog
-# Required-Stop:     \$remote_fs \$syslog
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: Cuckoo Sandbox
-# Description:       Cuckoo Sandbox, Automated Malware Analysis Sandbox
-### END INIT INFO
-
-PIDFILE="/var/run/cuckoo.pid"
-CONFFILE="$CONFFILE"
-
-# Default configuration values.
-USERNAME="$USERNAME"
-CUCKOO="$CUCKOO"
-LOGDIR="$LOGDIR"
-APIADDR=""
-WEBADDR=""
-
-# Load configuration values.
-[ -f "\$CONFFILE" ] && . "\$CONFFILE"
-
-_start() {
-    if [ -f "\$PIDFILE" ]; then
-        echo "Cuckoo is already running.. please stop it first!"
-        exit 1
-    fi
-
-    vmcloak-vboxnet0
-    vmcloak-iptables
-
-    cd "\$CUCKOO"
-
-    echo -n "Starting Cuckoo daemon.. "
-    if [ "\$VERBOSE" -eq 0 ]; then
-        nohup python ./cuckoo.py -u "\$USERNAME" \
-            2>&1 > /dev/null &
-    else
-        nohup python ./cuckoo.py -u "\$USERNAME" \
-            -d 2>&1 > /dev/null &
-    fi
-    PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
-
-    echo -n "Starting Cuckoo results processing.. "
-    nohup python ./utils/process.py -u "\$USERNAME" \
-        auto -p 4 2>&1 >> "\$LOGDIR/process.log" &
-    PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
-
-    if [ -n "\$APIADDR" ]; then
-        echo -n "Starting Cuckoo API server.. "
-        nohup python ./utils/api.py -u "\$USERNAME" \
-            -H "\$APIADDR" 2>&1 >> "\$LOGDIR/api.log" &
-        PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
-    fi
-
-    if [ -n "\$WEBADDR" ]; then
-        echo -n "Starting Cuckoo Web Interface.. "
-        cd web/
-        nohup sudo -u cuckoo python ./manage.py runserver \
-            "\$WEBADDR:8000" 2>&1 >> "\$LOGDIR/web.log" &
-        PID=\$! && echo "\$PID" && echo "\$PID" >> "\$PIDFILE"
-        cd ..
-    fi
-
-    echo "Cuckoo started.."
-}
-
-_stop() {
-    if [ ! -f "\$PIDFILE" ]; then
-        echo "Cuckoo isn't running.."
-        exit 1
-    fi
-
-    echo "Stopping Cuckoo processes.."
-    kill -SIGINT \$(cat "\$PIDFILE")
-    echo "Cuckoo stopped.."
-    rm -f "\$PIDFILE"
-}
-
-case "\$1" in
-    start)
-        _start \$2
-        ;;
-
-    stop)
-        _stop
-        ;;
-
-    restart|force-reload)
-        _stop
-        _start \$2
-        ;;
-
-    *)
-        echo "Usage: \$0 {start|stop|restart|force-reload}" >&2
-        exit 1
-        ;;
-esac
-EOF
-
-    chmod +x /etc/init.d/cuckoo
-    echo "Cuckoo Service script installed!"
-}
-
-_remove_systemv() {
-    rm -f /etc/init.d/cuckoo
-}
-
-_reload_systemv() {
-    : # Nothing to do here.
-}
-
-_start_systemv() {
-    /etc/init.d/cuckoo start
-}
-
-_stop_systemv() {
-    /etc/init.d/cuckoo stop
-}
-
-_restart_systemv() {
-    /etc/init.d/cuckoo restart
-}
-
 case "$(lsb_release -is)" in
     Ubuntu)
         alias _about=_about_upstart
@@ -388,16 +247,6 @@ case "$(lsb_release -is)" in
         alias _restart=_restart_upstart
         ;;
 
-    Debian)
-        alias _about=_about_systemv
-        alias _install=_install_systemv
-        alias _remove=_remove_systemv
-        alias _reload=_reload_systemv
-        alias _start=_start_systemv
-        alias _stop=_stop_systemv
-        alias _restart=_restart_systemv
-        ;;
-
     *)
         echo "Unsupported Linux distribution.."
         exit 1
@@ -407,7 +256,6 @@ if [ "$#" -eq 0 ]; then
     echo "Usage: $0 <install|remove|start|stop>"
     echo "-u --username: Username from which to run Cuckoo."
     echo "-c --cuckoo:   Directory where Cuckoo is located."
-    echo "-l --logdir:   Logging directory."
     exit 1
 fi
 
@@ -419,7 +267,6 @@ fi
 USERNAME="cuckoo"
 CONFFILE="/etc/default/cuckoo"
 CUCKOO="/home/cuckoo/cuckoo/"
-LOGDIR="/home/cuckoo/cuckoo/log/"
 
 # Note that this way the variables have to be set before the
 # actions are invoked.
@@ -460,11 +307,6 @@ while [ "$#" -ne 0 ]; do
 
         -c|--cuckoo)
             CUCKOO="$1"
-            shift
-            ;;
-
-        -l|--logdir)
-            LOGDIR="$1"
             shift
             ;;
 

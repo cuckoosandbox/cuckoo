@@ -238,9 +238,10 @@ class Machinery(object):
         """
         self.db.set_machine_status(label, status)
 
-    def start(self, label=None):
+    def start(self, label, task):
         """Start a machine.
         @param label: machine name.
+        @param task: task object.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
@@ -333,9 +334,10 @@ class LibVirtMachinery(Machinery):
         # currently still active.
         super(LibVirtMachinery, self)._initialize_check()
 
-    def start(self, label):
+    def start(self, label, task):
         """Starts a virtual machine.
         @param label: virtual machine name.
+        @param task: task object.
         @raise CuckooMachineError: if unable to start virtual machine.
         """
         log.debug("Starting machine %s", label)
@@ -621,6 +623,7 @@ class Processing(object):
         self.file_path = os.path.realpath(os.path.join(self.analysis_path,
                                                        "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
+        self.buffer_path = os.path.join(self.analysis_path, "buffer")
         self.logs_path = os.path.join(self.analysis_path, "logs")
         self.shots_path = os.path.join(self.analysis_path, "shots")
         self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
@@ -771,7 +774,10 @@ class Signature(object):
 
         """
         if actions is None:
-            actions = "file_written", "file_read", "file_deleted"
+            actions = [
+                "file_opened", "file_written",
+                "file_read", "file_deleted",
+            ]
 
         return self.get_summary_generic(pid, actions)
 
@@ -784,7 +790,10 @@ class Signature(object):
 
         """
         if actions is None:
-            actions = "regkey_written", "regkey_opened", "regkey_read"
+            actions = [
+                "regkey_opened", "regkey_written",
+                "regkey_read", "regkey_deleted",
+            ]
 
         return self.get_summary_generic(pid, actions)
 

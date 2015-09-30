@@ -1,9 +1,11 @@
 # Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+# Originally contributed by Check Point Software Technologies, Ltd.
 
 import logging
 import socket
+import time
 
 from lib.core.config import Config
 
@@ -44,6 +46,7 @@ class NetlogConnection(object):
                 s = socket.create_connection((self.hostip, self.hostport), 0.1)
                 s.sendall(self.proto)
             except socket.error:
+                time.sleep(0.1)
                 continue
 
             self.sock = s
