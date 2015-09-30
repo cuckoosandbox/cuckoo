@@ -156,7 +156,7 @@ def status(request, task_id):
                                   context_instance=RequestContext(request))
 
     if task.status == "reported":
-        return redirect("analysis.views.report", task_id=task_id)
+        return redirect("analysis.views.index")
 
     return render_to_response("submission/status.html",
                               {"status": task.status, "task_id": task_id},
