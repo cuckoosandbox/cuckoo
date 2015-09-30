@@ -469,9 +469,9 @@ class Analyzer(object):
         try:
             __import__(package_name, globals(), locals(), ["dummy"], -1)
         # If it fails, we need to abort the analysis.
-        except ImportError as e:
+        except ImportError:
             raise CuckooError("Unable to import package \"{0}\", does "
-                              "not exist. {1}".format(package_name, e))
+                              "not exist.".format(package_name))
 
         # Initialize the package parent abstract.
         Package()
