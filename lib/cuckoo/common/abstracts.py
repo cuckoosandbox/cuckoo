@@ -749,6 +749,11 @@ class Signature(object):
             if item["pid"] == pid:
                 return item
 
+    def get_summary(self, key=None, default=[]):
+        """Get one or all values related to the global summary."""
+        summary = self.get_results("behavior", {}).get("summary", {})
+        return summary.get(key, default) if key else summary
+
     def get_summary_generic(self, pid, actions):
         """Get generic info from summary.
 
@@ -846,6 +851,10 @@ class Signature(object):
                                  subject=self.get_mutexes(),
                                  regex=regex,
                                  all=all)
+
+    def get_command_lines(self):
+        """Retrieves all command lines used."""
+        return self.get_summary("command_line")
 
     def get_net_generic(self, subtype):
         """Generic getting network data.
