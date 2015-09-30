@@ -30,7 +30,7 @@ class Package(object):
         """
         self.pids = pids
 
-    def start(self):
+    def start(self, target):
         """Run analysis package.
         @raise NotImplementedError: this method is abstract.
         """

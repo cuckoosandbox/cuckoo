@@ -152,7 +152,7 @@ class BsonParser(object):
             if not data:
                 return
 
-            if not len(data) == 4:
+            if len(data) != 4:
                 log.critical("BsonParser lacking data.")
                 return
 
@@ -249,8 +249,9 @@ class BsonParser(object):
                                                                apiname))
                     continue
 
-                argdict = dict((argnames[i], converters[i](args[i]))
-                               for i in range(len(args)))
+                argdict = {}
+                for idx, value in enumerate(args):
+                    argdict[argnames[idx]] = converters[idx](value)
 
                 # Special new process message from the monitor.
                 if apiname == "__process__":
