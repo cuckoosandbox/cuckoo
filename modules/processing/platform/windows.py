@@ -255,3 +255,19 @@ class BehaviorReconstructor(object):
             return ("mutex", arguments["mutant_name"])
 
     _api_ConnectEx = _api_connect
+
+    # Process stuff.
+
+    def _api_CreateProcessInternalW(self, return_value, arguments):
+        cmdline = arguments["command_line"] or arguments["filepath"]
+        return ("command_line", cmdline)
+
+    def _api_ShellExecuteExW(self, return_value, arguments):
+        if arguments["parameters"]:
+            cmdline = "%s %s" % (arguments["filepath"], arguments["arguments"])
+        else:
+            cmdline = arguments["filepath"]
+        return ("command_line", cmdline)
+
+    def _api_system(self, return_value, arguments):
+        return ("command_line", arguments["command"])
