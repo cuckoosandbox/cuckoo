@@ -602,7 +602,7 @@ def share(request, av_name, task_id):
             result = sender(file_info['path'], help_text,
                             settings.EMAIL, file_info['name'])
         except Exception as e:
-            result = (1, "Something goes wrong: %s" % e)
+            result = (1, "Something went wrong: %s" % e)
     else:
         result = (2, "%s sender not implemented" % av_name)
 

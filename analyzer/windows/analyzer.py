@@ -537,6 +537,7 @@ class Analyzer(object):
             raise CuckooError("The package \"{0}\" start function raised an "
                               "error: {1}".format(package_name, e))
         except Exception as e:
+            tb = sys.exc_info()[2]
             raise CuckooError("The package \"{0}\" start function encountered "
                               "an unhandled exception: "
                               "{1}".format(package_name, e))
