@@ -35,25 +35,25 @@ class Rar(Package):
         # Extraction.
         with RarFile(rar_path, "r") as archive:
             try:
-                for rarinfo in archive.infolist():
-                    try:
-                        rarinfo.filename = rarinfo.filename.decode('utf8').encode('utf8')
-                    except UnicodeDecodeError:
-                        rarinfo.filename = rarinfo.filename.decode('cp866').encode('utf8')
-                    archive.extract(rarinfo, path=extract_path, pwd=password)
-                #archive.extractall(path=extract_path, pwd=password)
+                #for rarinfo in archive.infolist():
+                #    try:
+                #        rarinfo.filename = rarinfo.filename.decode('utf8').encode(sys.getfilesystemencoding())
+                #    except UnicodeDecodeError:
+                #        rarinfo.filename = rarinfo.filename.encode('utf8')
+                #    archive.extract(rarinfo, path=extract_path, pwd=password)
+                archive.extractall(path=extract_path, pwd=password)
             except BadRarFile:
                 raise CuckooPackageError("Invalid Rar file")
             except RuntimeError:
                 try:
-                    #archive.extractall(path=extract_path, pwd="infected")
-                    for rarinfo in archive.infolist():
-                        try:
-                            rarinfo.filename = rarinfo.filename.decode('utf8').encode('utf8')
-                        except UnicodeDecodeError:
-                            rarinfo.filename = rarinfo.filename.decode('cp866').encode('utf8')
-                        archive.extract(rarinfo, path=extract_path,
-                                        pwd="infected")
+                    archive.extractall(path=extract_path, pwd="infected")
+                    #for rarinfo in archive.infolist():
+                    #    try:
+                    #        rarinfo.filename = rarinfo.filename.decode('utf8').encode('utf8')
+                    #    except UnicodeDecodeError:
+                    #        rarinfo.filename = rarinfo.filename.decode('cp866').encode('utf8')
+                    #    archive.extract(rarinfo, path=extract_path,
+                    #                    pwd="infected")
                 except RuntimeError as e:
                     raise CuckooPackageError("Unable to extract Rar file: "
                                              "{0}".format(e))
@@ -87,11 +87,11 @@ class Rar(Package):
         """
         try:
             with RarFile(rar_path, "r") as archive:
-                for rarinfo in archive.infolist():
-                    try:
-                        rarinfo.filename = rarinfo.filename.decode('utf8').encode('utf8')
-                    except UnicodeDecodeError:
-                        rarinfo.filename = rarinfo.filename.decode('cp866').encode('utf8')
+                #for rarinfo in archive.infolist():
+                #    try:
+                #        rarinfo.filename = rarinfo.filename.decode('utf8').encode('utf8')
+                #    except UnicodeDecodeError:
+                #        rarinfo.filename = rarinfo.filename.decode('cp866').encode('utf8')
                 return archive.infolist()
         except BadRarFile:
             raise CuckooPackageError("Invalid Rar file")
@@ -109,9 +109,8 @@ class Rar(Package):
             if len(rarinfos):
                 # Take the first one.
                 file_name = rarinfos[0].filename
-                log.debug("Missing file option, auto executing: {0}".format(file_name))
+                log.debug("Missing file option, auto executing: {0}".format(file_name.encode("utf8")))
             else:
                 raise CuckooPackageError("Empty Rar archive")
-
         file_path = os.path.join(self.curdir, file_name)
         return self.execute(file_path, self.options.get("arguments"))
