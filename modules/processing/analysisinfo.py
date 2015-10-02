@@ -66,6 +66,7 @@ class AnalysisInfo(Processing):
             id=int(self.task["id"]),
             category=self.task["category"],
             custom=self.task["custom"],
+            owner=self.task["owner"],
             machine=machine,
             package=self.task["package"],
             platform=self.task["platform"],
