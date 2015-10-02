@@ -51,7 +51,7 @@ class VirusTotalAPI(object):
         "generic backdoor", "word", "macosx", "hack", "unknown", "downloader",
         "trojanspy", "dldr", "msoffice", "osx32", "script", "stealer",
         "not a virus", "html", "expl", "shellkode", "downagent", "win64",
-        "applicunwnt", "heur2",
+        "applicunwnt", "heur2", "ddos", "avkill", "servstart",
     ]
 
     def __init__(self, apikey, timeout, scan=0):
