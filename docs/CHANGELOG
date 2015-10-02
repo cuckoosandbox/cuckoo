@@ -21,6 +21,7 @@ Cuckoo Sandbox 2.0 (TBD)
 * By default Virtualbox is starting in headless mode now
 * Upgraded HTML analyzer package to Internet Explorer with proper setup phase
 * Upgraded to MAEC 4.1
+* Removed web.py interface
 
 Cuckoo Sandbox 1.2 (2015-03-04)
 ===============================
