@@ -89,7 +89,7 @@ class Pending(LoginRequiredMixin, View):
                                   context_instance=RequestContext(request))
 
 
-class ChunK(LoginRequiredMixin, View):
+class Chunk(LoginRequiredMixin, View):
 
     def get(self, request, task_id, pid, pagenum):
         try:
@@ -135,7 +135,7 @@ class ChunK(LoginRequiredMixin, View):
             raise PermissionDenied
 
 
-class FilteredChunck(LoginRequiredMixin, View):
+class FilteredChunk(LoginRequiredMixin, View):
 
     def get(self, request, task_id, pid, category):
         """Filters calls for call category.
@@ -283,7 +283,7 @@ class Report(LoginRequiredMixin, View):
                                   context_instance=RequestContext(request))
 
 
-class LatestReport(LoginRequiredMixin, Report):
+class LatestReport(Report):
 
     def get(self, request):
         rep = results_db.analysis.find_one({}, sort=[("_id",
