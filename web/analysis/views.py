@@ -336,6 +336,13 @@ class FullMemoryDumpFile(LoginRequiredMixin, View):
 
 class Search(LoginRequiredMixin, View):
 
+    def get(self, request):
+        return render_to_response("analysis/search.html",
+                                  {"analyses": None,
+                                   "term": None,
+                                   "error": None},
+                                  context_instance=RequestContext(request))
+
     def post(self, request):
         if "search" not in request.POST:
             return render_to_response("analysis/search.html",

@@ -7,5 +7,5 @@ from dashboard.views import Dashboard
 
 
 urlpatterns = [
-    url(r"^$", Dashboard.as_view()),
+    url(r"^$", Dashboard.as_view(), name='dashboard'),
 ]
