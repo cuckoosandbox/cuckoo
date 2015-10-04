@@ -4,10 +4,14 @@
 
 from django.conf.urls import include, url
 from analysis.views import File, FullMemoryDumpFile
+from django.contrib import admin
+from django.contrib.auth.views import login
 
 
 urlpatterns = [
     url(r"^$", include("dashboard.urls")),
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^accounts/login/', login, {'template_name': 'admin/login.html'}),
     url(r"^analysis/", include("analysis.urls")),
     url(r"^compare/", include("compare.urls")),
     url(r"^submit/", include("submission.urls")),
