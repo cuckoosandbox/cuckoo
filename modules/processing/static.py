@@ -341,8 +341,7 @@ class Static(Processing):
     def _get_keys(self):
         """Get any embedded plaintext public and/or private keys."""
         buf = open(self.file_path).read()
-        ret = []
-
-        ret += re.findall(self.PUBKEY_RE, buf)
-        ret += re.findall(self.PRIVKEY_RE, buf)
-        return ret
+        ret = set()
+        ret.update(re.findall(self.PUBKEY_RE, buf))
+        ret.update(re.findall(self.PRIVKEY_RE, buf))
+        return list(ret)
