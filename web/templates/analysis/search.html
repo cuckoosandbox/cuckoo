@@ -108,7 +108,7 @@
                         {% endif %}
                         </td>
                         <td>{{analysis.category|upper}}</td>
-                        <td style="word-wrap: break-word;"><a href="{% url "analysis.views.report" analysis.id %}">
+                        <td style="word-wrap: break-word;"><a href="{% url "analysis.report" analysis.id %}">
                             {% if analysis.category == "url" %}
                                 <span class="mono">{{analysis.target}}</span></a>
                             {% else %}
