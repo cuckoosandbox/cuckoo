@@ -8,5 +8,7 @@ from submission.views import Submission, SubmissionStatus
 
 urlpatterns = [
     url(r"^$", Submission.as_view(), name='submission.index'),
-    url(r"status/(?P<task_id>\d+)/$", SubmissionStatus.as_view(), name='submission.status'),
+    url(r"status/(?P<task_id>\d+)/$",
+        SubmissionStatus.as_view(),
+        name='submission.status'),
 ]

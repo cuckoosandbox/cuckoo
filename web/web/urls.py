@@ -15,8 +15,11 @@ urlpatterns = [
     url(r"^analysis/", include("analysis.urls")),
     url(r"^compare/", include("compare.urls")),
     url(r"^submit/", include("submission.urls")),
-    url(r"^file/(?P<category>\w+)/(?P<object_id>\w+)/$", File.as_view()),
+    url(r"^file/(?P<category>\w+)/(?P<object_id>\w+)/$",
+        File.as_view(),
+        name='analysis.file'),
     url(r"^full_memory/(?P<analysis_number>\w+)/$",
-        FullMemoryDumpFile.as_view()),
+        FullMemoryDumpFile.as_view(),
+        name='analysis.full_memory_dump_file'),
     url(r"^dashboard/", include("dashboard.urls")),
 ]

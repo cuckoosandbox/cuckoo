@@ -7,7 +7,11 @@ from compare.views import Left, Hash, Both
 
 
 urlpatterns = [
-    url(r"^(?P<left_id>\d+)/$", Left.as_view()),
-    url(r"^(?P<left_id>\d+)/(?P<right_id>\d+)/$", Both.as_view()),
-    url(r"^(?P<left_id>\d+)/(?P<right_hash>\w+)/$", Hash.as_view()),
+    url(r"^(?P<left_id>\d+)/$", Left.as_view(), name='compare.index'),
+    url(r"^(?P<left_id>\d+)/(?P<right_id>\d+)/$",
+        Both.as_view(),
+        name='compare.both'),
+    url(r"^(?P<left_id>\d+)/(?P<right_hash>\w+)/$",
+        Hash.as_view(),
+        name='compare.hash'),
 ]
