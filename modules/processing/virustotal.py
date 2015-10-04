@@ -93,4 +93,4 @@ class VirusTotal(Processing):
         files.
         @param filetype: file type
         """
-        return filetype.startswith("PE32")
+        return "PE32" in filetype or "MS-DOS" in filetype

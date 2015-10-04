@@ -213,9 +213,11 @@ EOF
     chmod 755 "/home/cuckoo/" "/opt/cuckoo"
     sudo -u cuckoo -i chmod +x "$gitrepo/hooks/post-receive"
 
-    # Checkout master branch of the repository.
-    sudo -u cuckoo -i \
-        git --work-tree /opt/cuckoo --git-dir "$gitrepo" checkout -f master
+    # Checkout master branch of the repository (if this was not done already).
+    if [ -z "$(ls -A /opt/cuckoo)" ]; then
+        sudo -u cuckoo -i \
+            git --work-tree /opt/cuckoo --git-dir "$gitrepo" checkout -f master
+    fi
 
     # Delete the cuckoo1 machine that is included in the VirtualBox
     # configuration by default.
@@ -268,6 +270,7 @@ _setup() {
     # Copy any authorized keys from the current user to the cuckoo user.
     mkdir -p /home/cuckoo/.ssh
     cp ~/.ssh/authorized_keys /home/cuckoo/.ssh/authorized_keys
+    chown cuckoo:cuckoo /home/cuckoo/.ssh/authorized_keys
 
     # Add the www-data user to the cuckoo group.
     adduser www-data cuckoo
@@ -281,12 +284,12 @@ _setup() {
     chown -R cuckoo:cuckoo "$VMTEMP"
     chmod 755 "/home/cuckoo/" "$VMTEMP"
 
-    # Clone the Cuckoo repository and initialize it.
-    _clone_cuckoo
-
     # Install required packages part two.
     pip install --upgrade \
         psycopg2 vmcloak==0.2.13 -r "/opt/cuckoo/requirements.txt"
+
+    # Clone the Cuckoo repository and initialize it.
+    _clone_cuckoo
 
     # Create a random password.
     # PASSWORD="$(pwgen -1 16)"
