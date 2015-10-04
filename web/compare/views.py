@@ -25,8 +25,9 @@ class Left(LoginRequiredMixin, View):
         left = results_db.analysis.find_one({"info.id": int(left_id)},
                                             {"target": 1, "info": 1})
         if not left:
+            error = {"error": "No analysis found with specified ID"}
             return render_to_response("error.html",
-                                      {"error": "No analysis found with specified ID"},
+                                      error,
                                       context_instance=RequestContext(request))
 
         if left["target"]["category"] == "url":
@@ -63,8 +64,9 @@ class Hash(LoginRequiredMixin, View):
         left = results_db.analysis.find_one({"info.id": int(left_id)},
                                             {"target": 1, "info": 1})
         if not left:
+            error = {"error": "No analysis found with specified ID"}
             return render_to_response("error.html",
-                                      {"error": "No analysis found with specified ID"},
+                                      error,
                                       context_instance=RequestContext(request))
 
         # If the analysis is not of a file, but of a URL, we consider the hash
