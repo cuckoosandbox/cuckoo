@@ -264,7 +264,7 @@ class BehaviorReconstructor(object):
 
     def _api_ShellExecuteExW(self, return_value, arguments):
         if arguments["parameters"]:
-            cmdline = "%s %s" % (arguments["filepath"], arguments["arguments"])
+            cmdline = "%s %s" % (arguments["filepath"], arguments["parameters"])
         else:
             cmdline = arguments["filepath"]
         return ("command_line", cmdline)
