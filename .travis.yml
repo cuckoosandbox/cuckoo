@@ -15,6 +15,7 @@ before_install:
     - cd ..
 install:
     - pip install -r requirements.txt
+    - pip install yaml
 script:
     - python cuckoo.py --debug --test
     - nosetests
