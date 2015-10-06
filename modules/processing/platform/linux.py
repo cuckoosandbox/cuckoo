@@ -126,6 +126,9 @@ class StapParser(object):
             argsplit = arguments.split(", ")
             arguments = dict(("p%u" % pos, argsplit[pos]) for pos in range(len(argsplit)))
 
+            try: pid = int(pid)
+            except: pid = -1
+
             yield {
                 "time": dt, "process_name": pname, "pid": pid,
                 "instruction_pointer": ip, "api": fn, "arguments": arguments,
