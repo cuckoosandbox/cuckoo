@@ -284,7 +284,8 @@ class File(object):
                 return
 
             for export in pe.DIRECTORY_ENTRY_EXPORT.symbols:
-                yield export.name
+                if export.name:
+                    yield export.name
         except Exception as e:
             log.warning("Error enumerating exported functions: %s", e)
 
