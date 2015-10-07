@@ -14,6 +14,7 @@ Cuckoo Sandbox 2.0 (TBD)
 * Added analyzer for Linux
 * Added Qemu machinery module
 * Added PDB path extraction
+* Added public / private keys extraction
 * Added processing module for dropped buffers
 * Added option to drop privileges to a specified user
 * By default HTML report is disabled now
