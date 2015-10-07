@@ -802,15 +802,25 @@ class Signature(object):
 
         return self.get_summary_generic(pid, actions)
 
-    def check_file(self, pattern, regex=False, all=False):
+    def check_file(self, pattern, regex=False, actions=None, pid=None,
+                   all=False):
         """Checks for a file being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
+        @param actions: a list of key actions to use.
+        @param pid: The process id to check. If it is set to None, all
+                    processes will be checked.
         @return: boolean with the result of the check.
         """
+        if actions is None:
+            actions = [
+                "file_opened", "file_written",
+                "file_read", "file_deleted",
+            ]
+
         return self._check_value(pattern=pattern,
-                                 subject=self.get_files(),
+                                 subject=self.get_files(pid, actions),
                                  regex=regex,
                                  all=all)
 
@@ -826,7 +836,10 @@ class Signature(object):
         @return: boolean with the result of the check.
         """
         if actions is None:
-            actions = "regkey_written", "regkey_opened", "regkey_read"
+            actions = [
+                "regkey_written", "regkey_opened",
+                "regkey_read", "regkey_deleted",
+            ]
 
         return self._check_value(pattern=pattern,
                                  subject=self.get_keys(pid, actions),
