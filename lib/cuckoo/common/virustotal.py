@@ -52,7 +52,12 @@ class VirusTotalAPI(object):
         "trojanspy", "dldr", "msoffice", "osx32", "script", "stealer",
         "not a virus", "html", "expl", "shellkode", "downagent", "win64",
         "applicunwnt", "heur2", "ddos", "avkill", "servstart", "normal",
-        "encoder",
+        "encoder", "w2km_dloader", "docdl", "w97m_dloadr", "mo97", "dloader",
+        "x2km_dloadr", "w2km_dload", "w2km_dloade", "x2km_droppr", "exedown",
+        "encodefeature", "docdrop", "mw97", "adload", "a variant of pp97m",
+        "a variant of w97m", "badmacro", "bkdr", "docdrp", "exedrop",
+        "generic trojan", "malcrypt", "malicious website", "ransomlock",
+        "ransomcrypt", "reputation", "trojanransom",
     ]
 
     def __init__(self, apikey, timeout, scan=0):
