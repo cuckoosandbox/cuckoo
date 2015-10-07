@@ -324,11 +324,10 @@ def init_binaries():
             log.warning("The binary %s is more than a week old!", path)
 
     if update:
-        log.critical("It is recommended that you update the binaries used "
-                     "for Windows analysis (if you have not done so already, "
-                     "it is possible that there was no update - in that case "
-                     "this error will persist). To do so, please run the "
-                     "following command: ./utils/community.py -wafb monitor")
+        log.warning("The binaries used for Windows analysis are updated "
+                    "regularly, independently from the release line. "
+                    "We recommend that you keep them up-to-date by running "
+                    "the following command: ./utils/community.py -wafb monitor")
 
 def cuckoo_clean():
     """Clean up cuckoo setup.

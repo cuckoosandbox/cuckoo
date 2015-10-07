@@ -272,14 +272,14 @@ class PortableExecutable(object):
         for cert in p7.get0_signers(M2Crypto.X509.X509_Stack()) or []:
             subject = cert.get_subject()
             ret.append({
-                "serial_number": "%x" % cert.get_serial_number(),
+                "serial_number": "%032x" % cert.get_serial_number(),
                 "common_name": subject.CN,
                 "country": subject.C,
                 "locality": subject.L,
                 "organization": subject.O,
                 "email": subject.Email,
-                "sha1": cert.get_fingerprint("sha1").lower(),
-                "md5": cert.get_fingerprint("md5").lower(),
+                "sha1": "%040x" % int(cert.get_fingerprint("sha1"), 16),
+                "md5": "%032x" % int(cert.get_fingerprint("md5"), 16),
             })
 
             if subject.GN and subject.SN:
@@ -341,8 +341,7 @@ class Static(Processing):
     def _get_keys(self):
         """Get any embedded plaintext public and/or private keys."""
         buf = open(self.file_path).read()
-        ret = []
-
-        ret += re.findall(self.PUBKEY_RE, buf)
-        ret += re.findall(self.PRIVKEY_RE, buf)
-        return ret
+        ret = set()
+        ret.update(re.findall(self.PUBKEY_RE, buf))
+        ret.update(re.findall(self.PRIVKEY_RE, buf))
+        return list(ret)
