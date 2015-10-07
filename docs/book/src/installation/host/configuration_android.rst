@@ -2,7 +2,7 @@
 Configuration (Android Analysis)
 ================================
 
-To get Cuckoo running Androis analysis you should download the `Android SDK`_
+To get Cuckoo running Android analysis you should download the `Android SDK`_
 and extract it in a folder Cuckoo can access.
 You should also configure :ref:`avd_conf` with the settings of your setup.
                                                                                                                                             
