@@ -5,7 +5,6 @@ Submit an Analysis
     * :ref:`submitpy`
     * :ref:`apipy`
     * :ref:`distpy`
-    * :ref:`webpy`
     * :ref:`python`
 
 .. _submitpy:
@@ -111,19 +110,6 @@ some options (in this case a command line argument for the malware)::
 *Example*: submit a sample for Volatility analysis (to reduce side effects of the cuckoo hooking, switch it off with *options free=True*)::
 
     $ ./utils/submit.py --memory --options free=True /path/to/binary
-
-.. _webpy:
-
-web.py
-======
-
-Cuckoo provides a very small utility under ``utils/web.py``, which will bind a simple
-webserver on localhost port 8080, through which you will be able to browse through
-existing reports as well as submit new files.
-
-Beware that this is not a full-fledged web interface, which is instead provided
-under the folder ``web/`` as a Django-powered application. You can find more details
-about that under :doc:`web`.
 
 .. _apipy:
 

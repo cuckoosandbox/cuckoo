@@ -6,37 +6,6 @@ Cuckoo comes with a set of pre-built utilities to automate several common
 tasks.
 You can find them under the "utils" folder.
 
-.. _cleanup-utility:
-
-Cleanup utility
-===============
-
-.. deprecated:: 1.2
-
-    Use :ref:`./cuckoo.py --clean <cuckoo-clean>` instead which *also* takes
-    care of cleaning sample and task information from MySQL and PostgreSQL
-    databases.
-
-If you want to delete all history, analysis, data and begin again from the first
-task you need the clean.sh utility.
-
-.. note::
-
-    Running clean.sh will delete: analysis results, binaries, SQLite database (if used) and logs.
-
-To clean your setup, run::
-
-    $ ./utils/clean.sh
-
-This utility is designed to be used with Cuckoo (including API and web interface)
-not running.
-
-If you are using a custom database (MySQL, PostgreSQL or SQLite in custom
-location) clean.sh doesn't clean it, you have to take care of that.
-
-If you are using the MongoDB reporting module clean.sh does **not** clean your
-database, you have to take care of that.
-
 Submission Utility
 ==================
 
@@ -65,8 +34,7 @@ If you want to re-generate the reports::
 Following are the usage options::
 
     $ ./utils/process.py -h
-
-    usage: process.py [-h] [-d] [-r] [-p PARALLEL] id
+    usage: process.py [-h] [-d] [-r] [-p PARALLEL] [-u USER] [-m MODULES] id
 
     positional arguments:
       id                    ID of the analysis to process (auto for continuous
@@ -78,6 +46,10 @@ Following are the usage options::
       -r, --report          Re-generate report
       -p PARALLEL, --parallel PARALLEL
                             Number of parallel threads to use (auto mode only).
+      -u USER, --user USER  Drop user privileges to this user
+      -m MODULES, --modules MODULES
+                            Path to signature and reporting modules - overrides
+                            default modules path.
 
 As best practice we suggest to adopt the following configuration if you are
 running Cuckoo with many virtual machines:
@@ -88,11 +60,29 @@ running Cuckoo with many virtual machines:
 This could increase the performance of your system because the reporting is not
 yet demanded to Cuckoo.
 
+With Cuckoo 2 a new processing utility was introduced, it is more stable and
+with better performance. It is dubbed *process2.py*, following are the usage
+options::
+
+    $ ./utils/process2.py -h
+    usage: process2.py [-h] [-d] [-u USER] [-m MODULES] instance
+
+    positional arguments:
+      instance              Task processing instance.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -d, --debug           Display debug messages
+      -u USER, --user USER  Drop user privileges to this user
+      -m MODULES, --modules MODULES
+                            Path to signature and reporting modules - overrides
+                            default modules path.
+
 Community Download Utility
 ==========================
 
 This utility downloads signatures from `Cuckoo Community Repository`_ and installs
-specific additional modules in your local setup and for example update id with
+specific additional modules in your local setup and for example update it with
 all the latest available signatures.
 Following are the usage options::
 
@@ -105,8 +95,9 @@ Following are the usage options::
       -a, --all             Download everything
       -s, --signatures      Download Cuckoo signatures
       -p, --processing      Download processing modules
-      -m, --machinemanagers
-                            Download machine managers
+      -m, --machinery       Download machine managers
+      -n, --analyzer        Download analyzer modules
+      -g, --agent           Download agent modules
       -r, --reporting       Download reporting modules
       -f, --force           Install files without confirmation
       -w, --rewrite         Rewrite existing files
@@ -115,7 +106,7 @@ Following are the usage options::
 
 *Example*: install all available signatures::
 
-  $ ./utils/community.py --signatures --force
+    $ ./utils/community.py --signatures --force
 
 .. _`Cuckoo Community Repository`: https://github.com/cuckoobox/community
 
@@ -158,27 +149,29 @@ It takes a list of machine details as arguments and write them in the specified
 configuration file of the machinery module enabled in *cuckoo.conf*.
 Following are the available options::
 
-  $ ./utils/machine.py -h
-  usage: machine.py [-h] [--debug] [--add] [--ip IP] [--platform PLATFORM]
-                  [--tags TAGS] [--interface INTERFACE] [--snapshot SNAPSHOT]
-                  [--resultserver RESULTSERVER]
-                  vmname
+    $ ./utils/machine.py -h
+    usage: machine.py [-h] [--debug] [--add] [--delete] [--ip IP]
+                      [--platform PLATFORM] [--tags TAGS] [--interface INTERFACE]
+                      [--snapshot SNAPSHOT] [--resultserver RESULTSERVER]
+                      vmname
 
-  positional arguments:
-    vmname                Name of the Virtual Machine.
+    positional arguments:
+      vmname                Name of the Virtual Machine.
 
-  optional arguments:
-    -h, --help            show this help message and exit
-    --debug               Debug log in case of errors.
-    --add                 Add a Virtual Machine.
-    --ip IP               Static IP Address.
-    --platform PLATFORM   Guest Operating System.
-    --tags TAGS           Tags for this Virtual Machine.
-    --interface INTERFACE
-                          Sniffer interface for this machine.
-    --snapshot SNAPSHOT   Specific Virtual Machine Snapshot to use.
-    --resultserver RESULTSERVER
-                          IP:Port of the Result Server.
+    optional arguments:
+      -h, --help            show this help message and exit
+      --debug               Debug log in case of errors.
+      --add                 Add a Virtual Machine.
+      --delete              Delete a Virtual Machine.
+      --ip IP               Static IP Address.
+      --platform PLATFORM   Guest Operating System.
+      --tags TAGS           Tags for this Virtual Machine.
+      --interface INTERFACE
+                            Sniffer interface for this machine.
+      --snapshot SNAPSHOT   Specific Virtual Machine Snapshot to use.
+      --resultserver RESULTSERVER
+                            IP:Port of the Result Server.
+
 
 Distributed scripts
 ===================
@@ -187,3 +180,62 @@ There are a couple of shell scripts used to automate distributed utility:
 
  * "start-distributed" is used to start distributed Cuckoo
  * "stop-distributed" is used to stop distributed Cuckoo
+
+Mac OS X Bootstrap scripts
+==========================
+
+A couple of bootstrap scripts used for Mac OS X analysis are located in
+*utils/darwin* folder, they are used to bootstrap the guest and host system for
+Mac OS X malware analysis.
+Some settings are defined as constants inside them, so it is suggested to have a
+look at them and configure them for your needs.
+
+SMTP Sinkhole
+=============
+
+The smtp_sinkhole.py utility is designed to provide an easy to use SMTP sinkhole
+to catch all the emails going out of virtual machines network.
+This is typically used to dump all emails when you run an analysis of sample
+used for spam purposes. You can use it also to prevent sending spam on
+internet.
+Following are the available options::
+
+    $ ./utils/smtp_sinkhole.py -h
+    usage: smtp_sinkhole.py [host [port]]
+
+    SMTP Sinkhole
+
+    positional arguments:
+      host
+      port
+
+    optional arguments:
+      -h, --help  show this help message and exit
+      --dir DIR   Directory used to dump emails.
+
+By default, if you run it without arguments, it will listen for incoming mails
+on localhost port 1025.
+Yoy can bind it on different address and port, as in the following example::
+
+    $ ./utils/smtp_sinkhole.py 192.168.56.1 1025
+
+If you want to save the dumped emails to disk, just use the *--dir* argument and
+specify an existent directory where save them, as in the following example::
+
+    $ ./utils/smtp_sinkhole.py --dir /home/dumpmail
+
+You have to use iptables to route all mails generated from your analysis virtual
+machine network to the sinkhole script, for example if 192.168.56.0/24 is the
+address of your virtual network and smtp_sinkhole.py is listening on
+192.168.56.1 port 1025 you can use the following command::
+
+    $ sudo iptables -t nat -A PREROUTING -i vboxnet0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 1025
+
+Setup script
+============
+
+Cuckoo setup script is a tool to setup a whole Cuckoo environment on a Debian
+based OS (i.e. Ubuntu or Debian).
+Actually it is a working in progress, but it is suggested to give it a try!
+It is located in *utils/setup.sh* and it is configured by some constants, so
+you should edit it if you want to customize the behaviour.

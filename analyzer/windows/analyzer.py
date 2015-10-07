@@ -9,9 +9,11 @@ import struct
 import pkgutil
 import logging
 import hashlib
-import xmlrpclib
 import threading
 import traceback
+import urllib
+import urllib2
+import xmlrpclib
 from datetime import datetime
 
 from lib.api.process import Process
@@ -51,7 +53,7 @@ class Files(object):
     def dump_file(self, filepath):
         """Dump a file to the host."""
         if not os.path.isfile(filepath):
-            log.warning("File at path \"%s\" does not exist, skip.", filepath)
+            log.warning("File at path \"%r\" does not exist, skip.", filepath)
             return False
 
         # Check whether we've already dumped this file - in that case skip it.
@@ -686,6 +688,10 @@ if __name__ == "__main__":
         # Run it and wait for the response.
         success = analyzer.run()
 
+        data = {
+            "status": "complete",
+            "description": success,
+        }
     # This is not likely to happen.
     except KeyboardInterrupt:
         error = "Keyboard Interrupt"
@@ -704,9 +710,16 @@ if __name__ == "__main__":
         else:
             sys.stderr.write("{0}\n".format(error_exc))
 
-    # Once the analysis is completed or terminated for any reason, we report
-    # back to the agent, notifying that it can report back to the host.
+        data = {
+            "status": "exception",
+            "description": error_exc,
+        }
     finally:
-        # Establish connection with the agent XMLRPC server.
-        server = xmlrpclib.Server("http://127.0.0.1:8000")
-        server.complete(success, error, PATHS["root"])
+        # Report that we're finished. First try with the XML RPC thing and
+        # if that fails, attempt the new Agent.
+        try:
+            server = xmlrpclib.Server("http://127.0.0.1:8000")
+            server.complete(success, error, PATHS["root"])
+        except xmlrpclib.ProtocolError:
+            urllib2.urlopen("http://127.0.0.1:8000/status",
+                            urllib.urlencode(data)).read()

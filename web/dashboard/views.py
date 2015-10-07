@@ -64,7 +64,12 @@ def index(request):
         # Get the amount of tasks that actually completed.
         finished = len(tasks)
 
-        hourly = 60 * 60 * finished / (completed - started)
+        # It has happened that for unknown reasons completed and started were
+        # equal in which case an exception is thrown, avoid this.
+        if int(completed - started):
+            hourly = 60 * 60 * finished / (completed - started)
+        else:
+            hourly = 0
 
         report["estimate_hour"] = int(hourly)
         report["estimate_day"] = int(24 * hourly)

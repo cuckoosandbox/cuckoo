@@ -6,7 +6,7 @@ import os
 import sys
 
 from django.conf import settings
-from django.shortcuts import render_to_response
+from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext
 
 sys.path.append(settings.CUCKOO_PATH)
@@ -155,12 +155,9 @@ def status(request, task_id):
                                   {"error": "The specified task doesn't seem to exist."},
                                   context_instance=RequestContext(request))
 
-    completed = False
     if task.status == "reported":
-        completed = True
+        return redirect("analysis.views.report", task_id=task_id)
 
     return render_to_response("submission/status.html",
-                              {"completed": completed,
-                               "status": task.status,
-                               "task_id": task_id},
+                              {"status": task.status, "task_id": task_id},
                               context_instance=RequestContext(request))
