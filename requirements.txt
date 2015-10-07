@@ -1,5 +1,4 @@
 alembic==0.8.0
-bottle==0.12.8
 cffi==1.2.1
 chardet==2.3.0
 cryptography==1.0

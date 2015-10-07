@@ -30,7 +30,7 @@ class Package(object):
         """
         self.pids = pids
 
-    def start(self):
+    def start(self, target):
         """Run analysis package.
         @raise NotImplementedError: this method is abstract.
         """
@@ -120,7 +120,7 @@ class Package(object):
         """
         dll = self.options.get("dll")
         free = self.options.get("free")
-        source = self.options.get("from", "explorer.exe")
+        source = self.options.get("from")
 
         # Setup pre-defined registry keys.
         self.init_regkeys(self.REGKEYS)
