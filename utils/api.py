@@ -274,7 +274,7 @@ def tasks_report(task_id, report_format="json"):
         # By default go for bz2 encoded tar files (for legacy reasons.)
         tarmode = tar_formats.get(request.args.get("tar"), "w:bz2")
 
-        tar = tarfile.open(fileobj=s, mode=tarmode)
+        tar = tarfile.open(fileobj=s, mode=tarmode, dereference=True)
         for filedir in os.listdir(srcdir):
             if bzf["type"] == "-" and filedir not in bzf["files"]:
                 tar.add(os.path.join(srcdir, filedir), arcname=filedir)
