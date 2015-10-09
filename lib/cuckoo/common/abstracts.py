@@ -786,6 +786,15 @@ class Signature(object):
 
         return self.get_summary_generic(pid, actions)
 
+    def get_dll_loaded(self, pid=None):
+        """Get DLLs loaded by a specific process.
+
+        @param pid: the process or None for all
+        @return: yields DLLs loaded
+
+        """
+        return self.get_summary_generic(pid, ["dll_loaded"])
+
     def get_keys(self, pid=None, actions=None):
         """Get registry keys.
 
@@ -821,6 +830,21 @@ class Signature(object):
 
         return self._check_value(pattern=pattern,
                                  subject=self.get_files(pid, actions),
+                                 regex=regex,
+                                 all=all)
+
+    def check_dll_loaded(self, pattern, regex=False, actions=None, pid=None,
+                         all=False):
+        """Checks for DLLs being loaded.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @param pid: The process id to check. If it is set to None, all
+                    processes will be checked.
+        @return: boolean with the result of the check.
+        """
+        return self._check_value(pattern=pattern,
+                                 subject=self.get_dll_loaded(pid),
                                  regex=regex,
                                  all=all)
 

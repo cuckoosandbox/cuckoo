@@ -166,6 +166,9 @@ class BehaviorReconstructor(object):
 
     _api_FindFirstFileExW = _api_FindFirstFileExA
 
+    def _api_LdrLoadDll(self, return_value, arguments):
+        return ("dll_loaded", arguments["module_name"])
+
     # File stuff.
 
     def _api_NtCreateFile(self, return_value, arguments):
