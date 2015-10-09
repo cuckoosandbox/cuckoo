@@ -57,7 +57,8 @@ class VirusTotalAPI(object):
         "encodefeature", "docdrop", "mw97", "adload", "a variant of pp97m",
         "a variant of w97m", "badmacro", "bkdr", "docdrp", "exedrop",
         "generic trojan", "malcrypt", "malicious website", "ransomlock",
-        "ransomcrypt", "reputation", "trojanransom",
+        "ransomcrypt", "reputation", "trojanransom", "pepatch", "risk",
+        "adplugin", "webtoolbar",
     ]
 
     def __init__(self, apikey, timeout, scan=0):
