@@ -710,7 +710,7 @@ class Signature(object):
         else:
             if isinstance(subject, list):
                 for item in subject:
-                    if item == pattern:
+                    if item.lower() == pattern.lower():
                         ret.add(item)
             else:
                 if subject == pattern:
