@@ -199,10 +199,10 @@ class CommandPipeHandler(object):
         dll = self.analyzer.default_dll
 
         if process_id in (self.analyzer.pid, self.analyzer.ppid):
-            if process_id not in CommandPipeHandler.ignore_list["pid"]:
+            if process_id not in self.ignore_list["pid"]:
                 log.warning("Received request to inject Cuckoo processes, "
                             "skipping it.")
-                CommandPipeHandler.ignore_list["pid"].append(process_id)
+                self.ignore_list["pid"].append(process_id)
             self.analyzer.process_lock.release()
             return
 
@@ -212,19 +212,18 @@ class CommandPipeHandler(object):
         if self.analyzer.process_list.has_pid(process_id):
             # This pid is already on the notrack list, move it to the
             # list of tracked pids.
-            if not self.analyzer.process_list.has_pid(process_id,
-                                                      notrack=False):
+            if not self.analyzer.process_list.has_pid(process_id, notrack=False):
                 log.debug("Received request to inject pid=%d. It was already "
                           "on our notrack list, moving it to the track list.")
 
                 self.analyzer.process_list.remove_pid(process_id)
                 self.analyzer.process_list.add_pid(process_id)
-                CommandPipeHandler.ignore_list["pid"].append(process_id)
+                self.ignore_list["pid"].append(process_id)
             # Spit out an error once and just ignore it further on.
-            elif process_id not in CommandPipeHandler.ignore_list["pid"]:
+            elif process_id not in self.ignore_list["pid"]:
                 log.debug("Received request to inject pid=%d, but we are "
                           "already injected there.", process_id)
-                CommandPipeHandler.ignore_list["pid"].append(process_id)
+                self.ignore_list["pid"].append(process_id)
 
             # We're done operating on the processes list, release the lock.
             self.analyzer.process_lock.release()
