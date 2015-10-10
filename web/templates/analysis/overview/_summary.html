@@ -100,15 +100,18 @@
                     {% if process.summary %}
                     <div class="panel panel-default">
                         <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
-                        <div class="panel-body">
+                        <ul class="list-group">
                         {% if process.summary.mutex %}
-                            <ul>
-                            {% for entry in process.summary.mutex %}
-                                <li>{{entry}}</li>
-                            {% endfor %}
-                            </ul>
+                            <li class="list-group-item">
+                                <p><b>Mutexes accessed</b></p>
+                                <ul>
+                                {% for entry in process.summary.mutex %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
                         {% endif %}
-                        </div>
+                        </ul>
                     </div>
                     {% endif %}
                 {% endfor %}
