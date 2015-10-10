@@ -371,11 +371,11 @@ class GuestManager(object):
             #          "Machines with the new Agent, but for now falling back "
             #          "to backwards compatibility with the old agent.")
             self.is_old = True
-            log.info("Determined the VM is running the old agent, starting OldGuestManager (id=%s, ip=%s)", self.vmid, self.ipaddr)
             self.old.start_analysis(options)
             return
 
-        log.info("Determined the VM is running the new agent, continuing... (id=%s, ip=%s)", self.vmid, self.ipaddr)
+        log.info("Guest is running Cuckoo Agent %s (id=%s, ip=%s)",
+                 r.json().get("version"), self.vmid, self.ipaddr)
 
         # Obtain the environment variables.
         self.query_environ()
