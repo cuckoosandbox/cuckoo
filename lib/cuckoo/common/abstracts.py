@@ -893,6 +893,10 @@ class Signature(object):
         """Retrieves all command lines used."""
         return self.get_summary("command_line")
 
+    def get_wmi_queries(self):
+        """Retrieves all executed WMI queries."""
+        return self.get_summary("wmi_query")
+
     def get_net_generic(self, subtype):
         """Generic getting network data.
 
