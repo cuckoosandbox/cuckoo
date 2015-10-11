@@ -11,7 +11,6 @@ import urllib
 import urllib2
 import logging
 import logging.handlers
-import pwd
 
 from datetime import datetime, timedelta
 
@@ -23,6 +22,12 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.core.database import Database, TASK_RUNNING, TASK_FAILED_ANALYSIS
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
+
+try:
+    import pwd
+    HAVE_PWD = True
+except ImportError:
+    HAVE_PWD = False
 
 try:
     import pefile
@@ -404,6 +409,10 @@ def drop_privileges(username):
     """Drops privileges to selected user.
     @param username: drop privileges to this username
     """
+    if not HAVE_PWD:
+        sys.exit("Unable to import pwd required for dropping "
+                 "privileges (`pip install pwd`)")
+
     try:
         user = pwd.getpwnam(username)
         os.setgroups((user.pw_gid,))
