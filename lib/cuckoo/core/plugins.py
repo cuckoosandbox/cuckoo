@@ -413,7 +413,7 @@ class RunSignatures(object):
                             call["category"] not in sig.filter_categories:
                         continue
 
-                    sig.cid = idx
+                    sig.cid, sig.call = idx, call
                     self.call_signature(sig, sig.on_call, call, proc)
 
         # Yield completion events to each signature.

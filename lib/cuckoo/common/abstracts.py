@@ -676,6 +676,7 @@ class Signature(object):
         # and call index respectively.
         self.pid = None
         self.cid = None
+        self.call = None
 
         # Used to de-activate a signature that already matched.
         self._active = True
@@ -1018,9 +1019,10 @@ class Signature(object):
         """Mark the current call as explanation as to why this signature
         matched."""
         mark = {
-            "_type": "call",
-            "_pid": self.pid,
-            "_cid": self.cid,
+            "type": "call",
+            "pid": self.pid,
+            "cid": self.cid,
+            "call": self.call,
         }
         mark.update(kwargs)
         self.marks.append(mark)
@@ -1029,9 +1031,9 @@ class Signature(object):
         """Mark an IOC as explanation as to why the current signature
         matched."""
         mark = {
-            "_type": "ioc",
-            "_category": category,
-            "_ioc": ioc,
+            "type": "ioc",
+            "category": category,
+            "ioc": ioc,
         }
         mark.update(kwargs)
         self.marks.append(mark)
@@ -1040,8 +1042,8 @@ class Signature(object):
         """Mark output of a Volatility plugin as explanation as to why the
         current signature matched."""
         mark = {
-            "_type": "volatility",
-            "_plugin": plugin,
+            "type": "volatility",
+            "plugin": plugin,
         }
         mark.update(kwargs)
         self.marks.append(mark)
@@ -1049,7 +1051,7 @@ class Signature(object):
     def mark(self, **kwargs):
         """Mark arbitrary data."""
         mark = {
-            "_type": "generic",
+            "type": "generic",
         }
         mark.update(kwargs)
         self.marks.append(mark)
