@@ -95,22 +95,21 @@ def sendEset(filename, help_text, email, name):
 def sendClamAV(filename, help_text, email, name):
     br = Session()
     hostUrl = "http://www.clamav.net"
-    page = br.get(hostUrl + "/report/report-malware.html")
+    page = br.get(hostUrl + "/reports/malware")
     page = BeautifulSoup(page.text, 'html.parser')
 
     credentials = br.get(hostUrl + "/presigned").json()
-    submissionid = credentials.pop('id')
-
+    submissionid = credentials["key"].split("/")[1].split("-")[0]
     form_s3 = page.find('form', id='s3Form')
     s3_url = form_s3['action']
     form_s3_data = dict([(el['name'], el.get('value', None))
                          for el in form_s3.find_all('input')])
-
+    
     form_s3_data.update(credentials)
 
     s3_answer = br.post(s3_url, data=form_s3_data,
                         files={'file': open(filename, 'rb')})
-    if s3_answer.status_code != 201:
+    if s3_answer.status_code > 210:
         return 1, "Something wrong. s3 status = %s" % s3_answer.status_code
 
     form = page.find('form', id='fileData')
