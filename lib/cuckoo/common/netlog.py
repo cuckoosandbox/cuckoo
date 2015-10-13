@@ -296,6 +296,9 @@ class BsonParser(object):
                     if argdict.get("is_64bit"):
                         self.is_64bit = True
 
+                    # Is this process being "tracked"?
+                    parsed["track"] = bool(argdict.get("track", 1))
+
                     self.pid = pid
 
                 elif apiname == "__thread__":

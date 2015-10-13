@@ -89,13 +89,13 @@ function load_filtered_chunk(pid, category) {
 <div class="tabbable">
     <ul class="nav nav-tabs">
         <li><a href="#search" data-toggle="tab"><span class="glyphicon glyphicon-search"></span> Search</a></li>
-    {% for process in analysis.behavior.processes %}
+    {% for process in analysis.behavior.processes|filter_key:"track" %}
         <li {% if forloop.counter == 1 %}class="active"{% endif %}><a href="#process_{{process.pid}}" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> {{process.process_name}}</a></li>
     {% endfor %}
     </ul>
     <div class="tab-content">
     {% include "analysis/behavior/_search.html" %}
-    {% for process in analysis.behavior.processes %}
+    {% for process in analysis.behavior.processes|filter_key:"track" %}
         <div class="tab-pane{% if forloop.counter == 1%} active{% endif %}" id="process_{{process.pid}}" data-pid="{{process.pid}}" data-length="{{process.calls|length}}">
             <div class="alert alert-info" style="text-align: center;"><b>{{process.process_name}}</b>, PID: <b>{{process.pid}}</b>, Parent PID: {{process.ppid}}</div>
 
