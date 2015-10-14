@@ -13,6 +13,7 @@ class PDF(Package):
         ("ProgramFiles", "Adobe", "Reader 9.0", "Reader", "AcroRd32.exe"),
         ("ProgramFiles", "Adobe", "Reader 10.0", "Reader", "AcroRd32.exe"),
         ("ProgramFiles", "Adobe", "Reader 11.0", "Reader", "AcroRd32.exe"),
+        ("ProgramFiles", "Adobe", "Acrobat Reader DC", "Reader", "AcroRd32.exe"),
     ]
 
     REGKEYS = [

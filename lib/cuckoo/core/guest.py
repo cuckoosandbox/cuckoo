@@ -374,6 +374,9 @@ class GuestManager(object):
             self.old.start_analysis(options)
             return
 
+        log.info("Guest is running Cuckoo Agent %s (id=%s, ip=%s)",
+                 r.json().get("version"), self.vmid, self.ipaddr)
+
         # Obtain the environment variables.
         self.query_environ()
 

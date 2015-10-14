@@ -272,15 +272,16 @@ def tasks_report(task_id, report_format="json"):
                               "analyses", "%d" % task_id)
         s = StringIO()
 
-        # By default go for bz2 encoded tar files (for legacy reasons.)
+        # By default go for bz2 encoded tar files (for legacy reasons).
         tarmode = tar_formats.get(request.args.get("tar"), "w:bz2")
 
-        tar = tarfile.open(fileobj=s, mode=tarmode)
+        tar = tarfile.open(fileobj=s, mode=tarmode, dereference=True)
         for filedir in os.listdir(srcdir):
+            filepath = os.path.join(srcdir, filedir)
             if bzf["type"] == "-" and filedir not in bzf["files"]:
-                tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+                tar.add(filepath, arcname=filedir)
             if bzf["type"] == "+" and filedir in bzf["files"]:
-                tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+                tar.add(filepath, arcname=filedir)
         tar.close()
 
         response = make_response(s.getvalue())

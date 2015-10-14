@@ -25,3 +25,9 @@ def get_item(dictionary, key):
 @register_tags.filter
 def get_item(dictionary, key):
     return dictionary.get(key)
+
+@register.filter
+def filter_key(l, key):
+    for x in l:
+        if x.get(key):
+            yield x

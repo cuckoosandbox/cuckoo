@@ -213,72 +213,48 @@ class Process(object):
                       "execution aborted", path)
             return False
 
-        if source:
-            source_is32bit = self.is32bit(process_name=source)
-        else:
-            source_is32bit = self.is32bit(pid=os.getpid())
-
-        sample_is32bit = self.is32bit(path=path)
+        is32bit = self.is32bit(path=path)
 
         if not dll:
-            if sample_is32bit:
+            if is32bit:
                 dll = "monitor-x86.dll"
             else:
                 dll = "monitor-x64.dll"
 
         dllpath = os.path.abspath(os.path.join("bin", dll))
+
         if not os.path.exists(dllpath):
             log.warning("No valid DLL specified to be injected, "
                         "injection aborted.")
             return False
 
-        if source_is32bit:
+        if is32bit:
             inject_exe = os.path.join("bin", "inject-x86.exe")
         else:
             inject_exe = os.path.join("bin", "inject-x64.exe")
 
-        # The --free is required because otherwise we have to provide a DLL
-        # to inject even though we won't be injecting anything at this point.
-        argv = [
-            inject_exe, "--app", self.shortpath(path),
-            "--only-start", "--free",
-        ]
+        argv = [inject_exe, "--app", self.shortpath(path)]
 
         if args:
             argv += ["--args", self._encode_args(args)]
 
+        if free:
+            argv += ["--free"]
+        else:
+            argv += ["--apc", "--dll", dllpath,
+                     "--config", self.drop_config(mode=mode)]
+
         if curdir:
             argv += ["--curdir", self.shortpath(curdir)]
 
+        if source:
+            if isinstance(source, (int, long)) or source.isdigit():
+                argv += ["--from", "%s" % source]
+            else:
+                argv += ["--from-process", source]
+
         if maximize:
             argv += ["--maximize"]
-
-        if source:
-            argv += ["--from-process", source]
-        else:
-            argv += ["--from", "%s" % os.getpid()]
-
-        try:
-            pid, tid = subprocess.check_output(argv).strip().split()
-        except Exception:
-            log.error("Failed to execute process from path %r with "
-                      "arguments %r (Error: %s)", path, argv,
-                      get_error_string(KERNEL32.GetLastError()))
-            return False
-
-        if free:
-            return True
-
-        if sample_is32bit:
-            inject_exe = os.path.join("bin", "inject-x86.exe")
-        else:
-            inject_exe = os.path.join("bin", "inject-x64.exe")
-
-        argv = [
-            inject_exe, "--apc", "--dll", dllpath,
-            "--pid", pid, "--tid", tid, "--resume-thread",
-            "--config", self.drop_config(mode=mode),
-        ]
 
         try:
             self.pid = int(subprocess.check_output(argv))
@@ -317,7 +293,7 @@ class Process(object):
         """
         if not self.pid and not self.process_name:
             log.warning("No valid pid or process name specified, "
-                        "injection aborted")
+                        "injection aborted.")
             return False
 
         # Only check whether the process is still alive when it's identified
@@ -369,7 +345,7 @@ class Process(object):
         try:
             subprocess.check_call(args)
         except Exception:
-            log.error("Failed to inject %s process with pid %s and "
+            log.error("Failed to inject %s-bit process with pid %s and "
                       "process name %s", 32 if is32bit else 64, self.pid,
                       self.process_name)
             return False

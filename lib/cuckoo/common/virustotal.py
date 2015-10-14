@@ -33,24 +33,32 @@ class VirusTotalAPI(object):
         "generic", "malware", "trojan", "agent", "win32", "multi", "w32",
         "trojanclicker", "trojware", "win", "a variant of win32", "trj",
         "susp", "dangerousobject", "backdoor", "clicker", "variant", "heur",
-        "troj_gen", "virus", "dropper", "generic suspicious", "spyware",
+        "gen", "virus", "dropper", "generic suspicious", "spyware", "program",
         "suspectcrc", "corrupt", "behaveslike", "crypt", "adclicker",
-        "troj", "injector", "cryptor", "packed", "adware", "macro",
+        "troj", "injector", "cryptor", "packed", "adware", "macro", "msil4",
         "suspicious", "worm", "msil", "msword", "drop", "keygen", "office",
-        "password", "malpack", "lookslike", "banker", "riskware",
+        "password", "malpack", "lookslike", "banker", "riskware", "unwanted",
         "unclassifiedmalware", "ransom", "trojan horse", "trjndwnlder",
-        "trojandwnldr", "autorun", "trojandownloader", "trojandwnldr",
-        "download", "excel", "msilobfuscator", "rootkit",
+        "trojandwnldr", "autorun", "trojandownloader", "trojandwnldr", "text",
+        "download", "excel", "msilobfuscator", "rootkit", "application",
         "a variant of win64", "w97m", "shellcode", "o97m", "exploit",
         "x97m", "maliciousmacro", "downldr", "msexcel", "pp97m", "other",
         "trojandropper", "crypter", "a variant of msil", "macrodown",
-        "trojanapt", "dwnldr", "downldexe", "troj_dload", "trojanhorse",
-        "mailer", "obfus", "obfuscator", "heur_generic", "suspicious file",
+        "trojanapt", "dwnldr", "downldexe", "dload", "trojanhorse", "toolbar",
+        "mailer", "obfus", "obfuscator", "suspicious file", "optional",
         "suspected of trojan", "heuristic", "rogue", "virtool", "infostealer",
         "generic downloader", "generic malware", "undef", "inject", "packer",
         "generic backdoor", "word", "macosx", "hack", "unknown", "downloader",
         "trojanspy", "dldr", "msoffice", "osx32", "script", "stealer",
-        "not a virus",
+        "not a virus", "html", "expl", "shellkode", "downagent", "win64",
+        "applicunwnt", "heur2", "ddos", "avkill", "servstart", "normal",
+        "encoder", "w2km_dloader", "docdl", "w97m_dloadr", "mo97", "dloader",
+        "x2km_dloadr", "w2km_dload", "w2km_dloade", "x2km_droppr", "exedown",
+        "encodefeature", "docdrop", "mw97", "adload", "a variant of pp97m",
+        "a variant of w97m", "badmacro", "bkdr", "docdrp", "exedrop",
+        "generic trojan", "malcrypt", "malicious website", "ransomlock",
+        "ransomcrypt", "reputation", "trojanransom", "pepatch", "risk",
+        "adplugin", "webtoolbar",
     ]
 
     def __init__(self, apikey, timeout, scan=0):
@@ -164,7 +172,18 @@ class VirusTotalAPI(object):
             return []
 
         ret = []
-        for word in re.split("[\\.\\,\\-\\(\\)\\[\\]/!:]", variant):
+
+        # Handles "CVE-2012-1234", "CVE2012-1234".
+        cve = re.search("CVE[-_]?(\\d{4})[-_](\\d{4})", variant)
+        if cve:
+            ret.append("CVE-%s-%s" % (cve.group(1), cve.group(2)))
+
+        # Handles "CVE121234".
+        cve = re.search("CVE(\\d{2})(\\d{4})", variant)
+        if cve:
+            ret.append("CVE-20%s-%s" % (cve.group(1), cve.group(2)))
+
+        for word in re.split("[\\.\\,\\-\\(\\)\\[\\]/!:_]", variant):
             word = word.strip()
             if len(word) < 4:
                 continue
@@ -172,7 +191,12 @@ class VirusTotalAPI(object):
             if word.lower() in self.VARIANT_BLACKLIST:
                 continue
 
+            # Random hashes that are specific to this file.
             if re.match("[a-fA-F0-9]+$", word):
+                continue
+
+            # Family names followed by "potentially unwanted".
+            if re.match("[a-zA-Z]{1,2} potentially unwanted", word.lower()):
                 continue
 
             ret.append(word)

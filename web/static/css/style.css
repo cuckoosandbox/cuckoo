@@ -85,7 +85,7 @@ a.tag-label {
     color: white;
 }
 
-.filesystem {
+.file {
     background-color: #ffe3c5;
 }
 .registry {
@@ -103,10 +103,7 @@ a.tag-label {
 .network {
     background-color: #d3ffc5;
 }
-.socket {
-    background-color: #d3ffc5;
-}
-.synchronization {
+.synchronisation {
     background-color: #f9c5ff;
 }
 .system {
