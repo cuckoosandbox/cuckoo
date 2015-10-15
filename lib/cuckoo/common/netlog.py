@@ -85,6 +85,7 @@ class BsonParser(object):
         self.flags_bitmask = {}
         self.pid = None
         self.is_64bit = False
+        self.buffer_sha1 = None
 
         if not HAVE_BSON:
             log.critical("Starting BsonParser, but bson is not available! (install with `pip install bson`)")
@@ -201,11 +202,11 @@ class BsonParser(object):
             if mtype == "buffer":
                 buf = dec.get("buffer")
                 sha1 = dec.get("checksum")
+                self.buffer_sha1 = hashlib.sha1(buf).hexdigest()
 
                 # Why do we pass along a sha1 checksum again?
-                if sha1 != hashlib.sha1(buf).hexdigest():
+                if sha1 != self.buffer_sha1:
                     log.warning("Incorrect sha1 passed along for a buffer.")
-                    continue
 
                 # If the parent is netlogs ResultHandler then we actually dump
                 # it - this should only be the case during the analysis, any
@@ -214,7 +215,7 @@ class BsonParser(object):
 
                 if isinstance(self.fd, ResultHandler):
                     filepath = os.path.join(self.fd.storagepath,
-                                            "buffer", sha1)
+                                            "buffer", self.buffer_sha1)
                     with open(filepath, "wb") as f:
                         f.write(buf)
 
@@ -330,5 +331,9 @@ class BsonParser(object):
 
                     if apiname in self.flags_value:
                         self.resolve_flags(apiname, argdict, parsed["flags"])
+
+                    if self.buffer_sha1:
+                        parsed["buffer"] = self.buffer_sha1
+                        self.buffer_sha1 = None
 
             yield parsed
