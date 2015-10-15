@@ -14,4 +14,4 @@ You can find a full documentation of the latest stable release [here](http://doc
 
 <hr />
 
-[![Build Status](https://travis-ci.org/cuckoobox/cuckoo.png?branch=master)](https://travis-ci.org/cuckoobox/cuckoo)
+[![Build Status](https://travis-ci.org/m-messiah/cuckoo.svg)](https://travis-ci.org/m-messiah/cuckoo)
