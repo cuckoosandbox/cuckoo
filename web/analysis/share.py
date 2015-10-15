@@ -103,6 +103,8 @@ def sendClamAV(filename, help_text, email, name):
         if credentials.status_code == 200:
             credentials = credentials.json()
             break
+        import time
+        time.sleep(5)
         
     submissionid = credentials["key"].split("/")[1].split("-")[0]
     form_s3 = page.find('form', id='s3Form')
