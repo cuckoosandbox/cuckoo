@@ -89,24 +89,24 @@ function load_filtered_chunk(pid, category) {
 <div class="tabbable">
     <ul class="nav nav-tabs">
         <li><a href="#search" data-toggle="tab"><span class="glyphicon glyphicon-search"></span> Search</a></li>
-    {% for process in analysis.behavior.processes %}
-        <li {% if forloop.counter == 1 %}class="active"{% endif %}><a href="#process_{{process.pid}}" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> {{process.process_name}}</a></li>
+    {% for process in analysis.behavior.processes|filter_key:"track" %}
+        <li {% if forloop.counter == 1 %}class="active"{% endif %}><a href="#process_{{process.pid}}" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> {{process.process_name}} ({{process.pid}})</a></li>
     {% endfor %}
     </ul>
     <div class="tab-content">
     {% include "analysis/behavior/_search.html" %}
-    {% for process in analysis.behavior.processes %}
+    {% for process in analysis.behavior.processes|filter_key:"track" %}
         <div class="tab-pane{% if forloop.counter == 1%} active{% endif %}" id="process_{{process.pid}}" data-pid="{{process.pid}}" data-length="{{process.calls|length}}">
             <div class="alert alert-info" style="text-align: center;"><b>{{process.process_name}}</b>, PID: <b>{{process.pid}}</b>, Parent PID: {{process.ppid}}</div>
 
             <p style="text-align: center;">
                 <a id="badge_default_{{process.pid}}" class="badge default" style="color:black;">default</a>
                 <a id="badge_registry_{{process.pid}}" class="badge registry" style="color:black;">registry</a>
-                <a id="badge_filesystem_{{process.pid}}" class="badge filesystem" style="color:black;">filesystem</a>
+                <a id="badge_file_{{process.pid}}" class="badge file" style="color:black;">file</a>
                 <a id="badge_network_{{process.pid}}" class="badge network" style="color:black;">network</a>
                 <a id="badge_process_{{process.pid}}" class="badge process" style="color:black;">process</a>
                 <a id="badge_services_{{process.pid}}" class="badge services" style="color:black;">services</a>
-                <a id="badge_sync_{{process.pid}}" class="badge synchronization" style="color:black;">synchronization</a>
+                <a id="badge_sync_{{process.pid}}" class="badge synchronisation" style="color:black;">synchronisation</a>
             </p>
 
             <script type="text/javascript">
@@ -114,11 +114,11 @@ function load_filtered_chunk(pid, category) {
             {
                 $("#badge_default_{{process.pid}}").click(function() { load_chunk({{process.pid}}, 1); });
                 $("#badge_network_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "network"); });
-                $("#badge_filesystem_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "filesystem"); });
+                $("#badge_file_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "file"); });
                 $("#badge_registry_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "registry"); });
                 $("#badge_process_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "process"); });
                 $("#badge_services_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "services"); });
-                $("#badge_sync_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "synchronization"); });
+                $("#badge_sync_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "synchronisation"); });
 
                 $('.tab-content').on('click', '.call-link', function (event) {
                     cid = $(this).attr('data-cid');

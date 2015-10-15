@@ -26,7 +26,7 @@ class STAP(Auxiliary):
         # helper function locating the stap module
         def has_stap(p):
             files = os.listdir(p)
-            only_stap = [fn for fn in os.listdir(p) if fn.startswith("stap_")]
+            only_stap = [fn for fn in os.listdir(p) if fn.startswith("stap_") and fn.endswith(".ko")]
             if only_stap: return os.path.join(p, only_stap[0])
             return False
 
@@ -48,7 +48,8 @@ class STAP(Auxiliary):
             return self.start_strace()
 
         stap_start = time.time()
-        self.proc = subprocess.Popen(["staprun", "-v", "-x", str(os.getpid()), "-o", "stap.log", path], stderr=subprocess.PIPE)
+        stderrfd = open("stap.stderr", "wb")
+        self.proc = subprocess.Popen(["staprun", "-v", "-x", str(os.getpid()), "-o", "stap.log", path], stderr=stderrfd)
 
         # read from stderr until the tap script is compiled
         # while True:
@@ -80,6 +81,8 @@ class STAP(Auxiliary):
 
     def stop(self):
         try:
+            r = self.proc.poll()
+            log.debug("stap subprocess retval %r", r)
             self.proc.kill()
         except Exception as e:
             log.warning("Exception killing stap: %s", e)

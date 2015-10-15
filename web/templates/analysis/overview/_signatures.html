@@ -18,54 +18,59 @@
 </style>
 <section id="signatures">
     <h4>Signatures</h4>
-    {% if analysis.signatures %}
-        {% for signature in analysis.signatures %}
-            <a style="text-decoration: none;" href="#signature_{{signature.name}}" data-toggle="collapse">
-            {% if signature.severity <= 1 %}
-                <div class="alert alert-info signature">
-            {% elif signature.severity == 2 %}
-                <div class="alert alert-warning signature">
-            {% elif signature.severity >= 3 %}
-                <div class="alert alert-danger signature">
-            {% endif %}
-            {{signature.description}}</div></a>
-            <div id="signature_{{signature.name}}" class="collapse">
-                <table class="table table-bordered" style="table-layout: fixed;">
-                    <tbody>
-                        {% for match in signature.data %}
-                            {% if match.process.process_name %}
-                                <tr><td colspan="7" class="signature-process">Process: {{match.process.process_name}} ({{match.process.pid}})</td></tr>
-                            {% endif %}
-                            {% for sign in match.signs %}
-                                <tr>
-                                    {% if sign.type == 'api' %}
-                                        {% include "analysis/behavior/_api_call.html" with call=sign.value %}
-                                        <td>
-                                            <a href='#' class='call-link' data-pid='{{match.process.pid}}' data-cid='{{sign.value.id}}'>
-                                                <span class="glyphicon glyphicon-circle-arrow-right"></span>
-                                            </a>
-                                        </td>
+    {% for signature in analysis.signatures %}
+        <a style="text-decoration: none;" href="#signature_{{signature.name}}" data-toggle="collapse">
+        {% if signature.severity <= 1 %}
+            <div class="alert alert-info signature">
+        {% elif signature.severity == 2 %}
+            <div class="alert alert-warning signature">
+        {% elif signature.severity >= 3 %}
+            <div class="alert alert-danger signature">
+        {% endif %}
+        {{signature.description}}</div></a>
+
+        <div id="signature_{{signature.name}}" class="collapse">
+            <table class="table table-bordered" style="table-layout: fixed;">
+                <tbody>
+                    {% for mark in signature.marks|slice:":50" %}
+                        <tr>
+                            {% if mark.type == "call" %}
+                                {% include "analysis/behavior/_api_call.html" with call=mark.call %}
+                                <td>
+                                    <a href="#" class="call-link" data-pid="{{mark.pid}}" data-cid="{{mark.cid}}">
+                                        <span class="glyphicon glyphicon-circle-arrow-right"></span>
+                                    </a>
+                                </td>
+                            {% elif mark.type == "ioc" %}
+                                <td colspan="2">{{mark.category}}</td>
+                                <td colspan="5">{{mark.ioc}}</td>
+                            {% else %}
+                                <td colspan="2">{{mark.type}}</td>
+                                <td colspan="5">
+                                    {% if sign.value|is_dict %}
+                                        {% for key, value in sign.value.items %}
+                                            <span class="sign-key">{{key}}:</span>
+                                            <span class="sign-value">{{value}}</span><br />
+                                        {% endfor %}
                                     {% else %}
-                                        <td colspan="2">{{sign.type}}</td>
-                                        <td colspan="5">
-                                            {% if sign.value|is_dict %}
-                                                {% for key, value in  sign.value.items %}
-                                                    <span class='sign-key'>{{key}}:</span>
-                                                    <span class='sign-value'>{{value}}</span><br />
-                                                {% endfor %}
-                                            {% else %}
-                                                {{sign.value}}
-                                            {% endif %}
-                                        </td>
+                                        {{sign.value}}
                                     {% endif %}
-                                </tr>
-                            {% endfor %}
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% endfor %}
-    {% else %}
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                    {% if signature.marks|length > 50 %}
+                        <tr>
+                            <td colspan="6">
+                                And there is more..
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+    {% if not analysis.signatures %}
         <p>No signatures</p>
     {% endif %}
 </section>

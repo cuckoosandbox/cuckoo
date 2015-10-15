@@ -676,6 +676,7 @@ class Signature(object):
         # and call index respectively.
         self.pid = None
         self.cid = None
+        self.call = None
 
         # Used to de-activate a signature that already matched.
         self._active = True
@@ -710,7 +711,7 @@ class Signature(object):
         else:
             if isinstance(subject, list):
                 for item in subject:
-                    if item == pattern:
+                    if item.lower() == pattern.lower():
                         ret.add(item)
             else:
                 if subject == pattern:
@@ -749,6 +750,11 @@ class Signature(object):
             if item["pid"] == pid:
                 return item
 
+    def get_summary(self, key=None, default=[]):
+        """Get one or all values related to the global summary."""
+        summary = self.get_results("behavior", {}).get("summary", {})
+        return summary.get(key, default) if key else summary
+
     def get_summary_generic(self, pid, actions):
         """Get generic info from summary.
 
@@ -781,6 +787,15 @@ class Signature(object):
 
         return self.get_summary_generic(pid, actions)
 
+    def get_dll_loaded(self, pid=None):
+        """Get DLLs loaded by a specific process.
+
+        @param pid: the process or None for all
+        @return: yields DLLs loaded
+
+        """
+        return self.get_summary_generic(pid, ["dll_loaded"])
+
     def get_keys(self, pid=None, actions=None):
         """Get registry keys.
 
@@ -797,15 +812,40 @@ class Signature(object):
 
         return self.get_summary_generic(pid, actions)
 
-    def check_file(self, pattern, regex=False, all=False):
+    def check_file(self, pattern, regex=False, actions=None, pid=None,
+                   all=False):
         """Checks for a file being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
+        @param actions: a list of key actions to use.
+        @param pid: The process id to check. If it is set to None, all
+                    processes will be checked.
+        @return: boolean with the result of the check.
+        """
+        if actions is None:
+            actions = [
+                "file_opened", "file_written",
+                "file_read", "file_deleted",
+            ]
+
+        return self._check_value(pattern=pattern,
+                                 subject=self.get_files(pid, actions),
+                                 regex=regex,
+                                 all=all)
+
+    def check_dll_loaded(self, pattern, regex=False, actions=None, pid=None,
+                         all=False):
+        """Checks for DLLs being loaded.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @param pid: The process id to check. If it is set to None, all
+                    processes will be checked.
         @return: boolean with the result of the check.
         """
         return self._check_value(pattern=pattern,
-                                 subject=self.get_files(),
+                                 subject=self.get_dll_loaded(pid),
                                  regex=regex,
                                  all=all)
 
@@ -821,7 +861,10 @@ class Signature(object):
         @return: boolean with the result of the check.
         """
         if actions is None:
-            actions = "regkey_written", "regkey_opened", "regkey_read"
+            actions = [
+                "regkey_written", "regkey_opened",
+                "regkey_read", "regkey_deleted",
+            ]
 
         return self._check_value(pattern=pattern,
                                  subject=self.get_keys(pid, actions),
@@ -846,6 +889,14 @@ class Signature(object):
                                  subject=self.get_mutexes(),
                                  regex=regex,
                                  all=all)
+
+    def get_command_lines(self):
+        """Retrieves all command lines used."""
+        return self.get_summary("command_line")
+
+    def get_wmi_queries(self):
+        """Retrieves all executed WMI queries."""
+        return self.get_summary("wmi_query")
 
     def get_net_generic(self, subtype):
         """Generic getting network data.
@@ -968,9 +1019,10 @@ class Signature(object):
         """Mark the current call as explanation as to why this signature
         matched."""
         mark = {
-            "_type": "call",
-            "_pid": self.pid,
-            "_cid": self.cid,
+            "type": "call",
+            "pid": self.pid,
+            "cid": self.cid,
+            "call": self.call,
         }
         mark.update(kwargs)
         self.marks.append(mark)
@@ -979,9 +1031,9 @@ class Signature(object):
         """Mark an IOC as explanation as to why the current signature
         matched."""
         mark = {
-            "_type": "ioc",
-            "_category": category,
-            "_ioc": ioc,
+            "type": "ioc",
+            "category": category,
+            "ioc": ioc,
         }
         mark.update(kwargs)
         self.marks.append(mark)
@@ -990,8 +1042,8 @@ class Signature(object):
         """Mark output of a Volatility plugin as explanation as to why the
         current signature matched."""
         mark = {
-            "_type": "volatility",
-            "_plugin": plugin,
+            "type": "volatility",
+            "plugin": plugin,
         }
         mark.update(kwargs)
         self.marks.append(mark)
@@ -999,7 +1051,7 @@ class Signature(object):
     def mark(self, **kwargs):
         """Mark arbitrary data."""
         mark = {
-            "_type": "generic",
+            "type": "generic",
         }
         mark.update(kwargs)
         self.marks.append(mark)

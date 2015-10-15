@@ -33,18 +33,12 @@ class FilteredProcessLog(list):
 class LinuxSystemTap(BehaviorHandler):
     """Parses systemtap generated plaintext logs (see data/strace.stp)."""
 
-    key = "platform"
+    key = "processes"
 
     def __init__(self, *args, **kwargs):
         super(LinuxSystemTap, self).__init__(*args, **kwargs)
 
-        self.results = {
-            "name": "linux",
-            "architecture": "unknown",  # look this up in the task / vm info?
-            "source": ["systemtap"],
-            "processes": [],
-        }
-
+        self.processes = []
         self.pids_seen = set()
         self.forkmap = {}
         self.matched = False
@@ -59,7 +53,7 @@ class LinuxSystemTap(BehaviorHandler):
             forks = [re.findall("task (\d+)@0x[0-9a-f]+ forked to (\d+)@0x[0-9a-f]+", line) for line in lines]
             self.forkmap = dict((j, i) for i, j in reduce(lambda x, y: x+y, forks, []))
 
-            self.results["source"].append("probelkm")
+            # self.results["source"].append("probelkm")
 
     def handles_path(self, path):
         if path.endswith(".stap"):
@@ -88,7 +82,7 @@ class LinuxSystemTap(BehaviorHandler):
                 yield pevent
 
                 process["calls"] = FilteredProcessLog(parser, pid=pid)
-                self.results["processes"].append(process)
+                self.processes.append(process)
 
             yield event
 
@@ -96,8 +90,8 @@ class LinuxSystemTap(BehaviorHandler):
         if not self.matched:
             return
 
-        self.results["processes"].sort(key=lambda process: process["first_seen"])
-        return self.results
+        self.processes.sort(key=lambda process: process["first_seen"])
+        return self.processes
 
 class StapParser(object):
     """Handle .stap logs from the Linux analyzer."""
@@ -125,6 +119,8 @@ class StapParser(object):
             pname, ip, pid, fn, arguments, retval, ecode = parts.groups()
             argsplit = arguments.split(", ")
             arguments = dict(("p%u" % pos, argsplit[pos]) for pos in range(len(argsplit)))
+
+            pid = int(pid) if pid.isdigit() else -1
 
             yield {
                 "time": dt, "process_name": pname, "pid": pid,

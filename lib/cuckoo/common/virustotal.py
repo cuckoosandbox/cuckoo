@@ -51,6 +51,14 @@ class VirusTotalAPI(object):
         "generic backdoor", "word", "macosx", "hack", "unknown", "downloader",
         "trojanspy", "dldr", "msoffice", "osx32", "script", "stealer",
         "not a virus", "html", "expl", "shellkode", "downagent", "win64",
+        "applicunwnt", "heur2", "ddos", "avkill", "servstart", "normal",
+        "encoder", "w2km_dloader", "docdl", "w97m_dloadr", "mo97", "dloader",
+        "x2km_dloadr", "w2km_dload", "w2km_dloade", "x2km_droppr", "exedown",
+        "encodefeature", "docdrop", "mw97", "adload", "a variant of pp97m",
+        "a variant of w97m", "badmacro", "bkdr", "docdrp", "exedrop",
+        "generic trojan", "malcrypt", "malicious website", "ransomlock",
+        "ransomcrypt", "reputation", "trojanransom", "pepatch", "risk",
+        "adplugin", "webtoolbar",
     ]
 
     def __init__(self, apikey, timeout, scan=0):
@@ -165,10 +173,15 @@ class VirusTotalAPI(object):
 
         ret = []
 
-        # Extract CVE number.
-        cve = re.search("(CVE[-_](\\d){4}[-_](\\d){4})", variant)
+        # Handles "CVE-2012-1234", "CVE2012-1234".
+        cve = re.search("CVE[-_]?(\\d{4})[-_](\\d{4})", variant)
         if cve:
-            ret.append(cve.group(0).replace("_", "-"))
+            ret.append("CVE-%s-%s" % (cve.group(1), cve.group(2)))
+
+        # Handles "CVE121234".
+        cve = re.search("CVE(\\d{2})(\\d{4})", variant)
+        if cve:
+            ret.append("CVE-20%s-%s" % (cve.group(1), cve.group(2)))
 
         for word in re.split("[\\.\\,\\-\\(\\)\\[\\]/!:_]", variant):
             word = word.strip()

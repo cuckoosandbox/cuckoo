@@ -6,6 +6,7 @@
             <li><a href="#summary_keys" data-toggle="tab">Registry</a></li>
             <li><a href="#summary_mutexes" data-toggle="tab">Mutexes</a></li>
             <li><a href="#summary_directories" data-toggle="tab">Directories</a></li>
+            <li><a href="#summary_processes" data-toggle="tab">Processes</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane fade in active" id="summary_files">
@@ -99,15 +100,18 @@
                     {% if process.summary %}
                     <div class="panel panel-default">
                         <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
-                        <div class="panel-body">
+                        <ul class="list-group">
                         {% if process.summary.mutex %}
-                            <ul>
-                            {% for entry in process.summary.mutex %}
-                                <li>{{entry}}</li>
-                            {% endfor %}
-                            </ul>
+                            <li class="list-group-item">
+                                <p><b>Mutexes accessed</b></p>
+                                <ul>
+                                {% for entry in process.summary.mutex %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
                         {% endif %}
-                        </div>
+                        </ul>
                     </div>
                     {% endif %}
                 {% endfor %}
@@ -145,6 +149,38 @@
                                 <p><b>Directories enumerated</b></p>
                                 <ul>
                                 {% for entry in process.summary.directory_enumerated %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="tab-pane fade" id="summary_processes">
+                {% for process in analysis.behavior.generic %}
+                    {% if process.summary %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
+                        <ul class="list-group">
+                        {% if process.summary.command_line %}
+                            <li class="list-group-item">
+                                <p><b>Processes created</b></p>
+                                <ul>
+                                {% for entry in process.summary.command_line %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.dll_loaded %}
+                            <li class="list-group-item">
+                                <p><b>DLLs Loaded</b></p>
+                                <ul>
+                                {% for entry in process.summary.dll_loaded %}
                                     <li>{{entry}}</li>
                                 {% endfor %}
                                 </ul>

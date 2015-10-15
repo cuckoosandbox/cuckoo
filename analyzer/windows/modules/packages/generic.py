@@ -2,9 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-from random import randint
-
 from lib.common.abstracts import Package
+from lib.common.rand import random_string
 
 class Generic(Package):
     """Generic analysis package.
@@ -18,7 +17,7 @@ class Generic(Package):
         cmd_path = self.get_path("cmd.exe")
 
         # Create random cmd.exe window title.
-        rand_title = "".join([chr(randint(0, 128)) for i in xrange(0, randint(1, 10))])
+        rand_title = random_string(4, 16)
 
         # START syntax.
         # See: https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/start.mspx?mfr=true
