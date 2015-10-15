@@ -152,7 +152,7 @@ class BsonParser(object):
             if not data:
                 return
 
-            if not len(data) == 4:
+            if len(data) != 4:
                 log.critical("BsonParser lacking data.")
                 return
 
@@ -249,8 +249,9 @@ class BsonParser(object):
                                                                apiname))
                     continue
 
-                argdict = dict((argnames[i], converters[i](args[i]))
-                               for i in range(len(args)))
+                argdict = {}
+                for idx, value in enumerate(args):
+                    argdict[argnames[idx]] = converters[idx](value)
 
                 # Special new process message from the monitor.
                 if apiname == "__process__":
@@ -287,12 +288,16 @@ class BsonParser(object):
                     parsed["first_seen"] = vmtime
 
                     procname = get_filename_from_path(modulepath)
+                    parsed["process_path"] = modulepath
                     parsed["process_name"] = procname
                     parsed["command_line"] = argdict.get("command_line")
 
                     # Is this a 64-bit process?
                     if argdict.get("is_64bit"):
                         self.is_64bit = True
+
+                    # Is this process being "tracked"?
+                    parsed["track"] = bool(argdict.get("track", 1))
 
                     self.pid = pid
 

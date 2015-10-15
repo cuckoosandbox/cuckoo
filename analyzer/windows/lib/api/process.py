@@ -293,7 +293,7 @@ class Process(object):
         """
         if not self.pid and not self.process_name:
             log.warning("No valid pid or process name specified, "
-                        "injection aborted")
+                        "injection aborted.")
             return False
 
         # Only check whether the process is still alive when it's identified
@@ -345,7 +345,7 @@ class Process(object):
         try:
             subprocess.check_call(args)
         except Exception:
-            log.error("Failed to inject %s process with pid %s and "
+            log.error("Failed to inject %s-bit process with pid %s and "
                       "process name %s", 32 if is32bit else 64, self.pid,
                       self.process_name)
             return False
