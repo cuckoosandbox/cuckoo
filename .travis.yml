@@ -4,7 +4,7 @@ branches:
 language: python
 python:
     - 2.7
-sudo: false
+sudo: required
 addons.apt.packages:
     - python-libvirt
     - python-yaml
@@ -14,7 +14,7 @@ before_install:
     - tar -zxvf ssdeep-2.12.tar.gz
     - cd ssdeep-2.12
     - ./configure && make
-    - make install
+    - sudo make install
     - cd ..
 install:
     - pip install -r requirements.txt
