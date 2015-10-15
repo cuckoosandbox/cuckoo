@@ -6,7 +6,7 @@ from django.conf.urls import patterns, url
 
 urlpatterns = patterns("",
     url(r"^$", "analysis.views.index"),
-    url(r"^(?P<task_id>\d+)/$", "analysis.views.report"),
+    url(r"^(?P<task_id>\d+):(?P<task_hash>\w+)/$", "analysis.views.report"),
     url(r"^latest/$", "analysis.views.latest_report"),
     url(r"^remove/(?P<task_id>\d+)/$", "analysis.views.remove"),
     url(r"^chunk/(?P<task_id>\d+)/(?P<pid>\d+)/(?P<pagenum>\d+)/$", "analysis.views.chunk"),
@@ -15,4 +15,5 @@ urlpatterns = patterns("",
     url(r"^search/$", "analysis.views.search"),
     url(r"^pending/$", "analysis.views.pending"),
     url(r"^(?P<task_id>\d+)/pcapstream/(?P<conntuple>[.,\w]+)/$", "analysis.views.pcapstream"),
+    url(r"^share/(?P<av_name>[\w\-]+)/(?P<task_id>\d+)/$", "analysis.views.share"),
 )

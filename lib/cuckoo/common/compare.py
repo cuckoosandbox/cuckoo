@@ -81,6 +81,8 @@ def helper_percentages_mongo(results_db, tid1, tid2, ignore_categories=["misc"])
 
         if not pids_calls:
             continue
+        if "behavior" not in pids_calls:
+            continue
 
         for pdoc in pids_calls["behavior"]["processes"]:
             pid = pdoc["pid"]

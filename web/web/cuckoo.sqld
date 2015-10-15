@@ -1,0 +1,296 @@
+-- MySQL dump 10.14  Distrib 5.5.41-MariaDB, for Linux (x86_64)
+--
+-- Host: localhost    Database: cuckoo
+-- ------------------------------------------------------
+-- Server version	5.5.41-MariaDB
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Current Database: `cuckoo`
+--
+
+/*!40000 DROP DATABASE IF EXISTS `cuckoo`*/;
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `cuckoo` /*!40100 DEFAULT CHARACTER SET utf8 */;
+
+USE `cuckoo`;
+
+--
+-- Table structure for table `alembic_version`
+--
+
+DROP TABLE IF EXISTS `alembic_version`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `alembic_version` (
+  `version_num` varchar(32) NOT NULL,
+  PRIMARY KEY (`version_num`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `alembic_version`
+--
+
+LOCK TABLES `alembic_version` WRITE;
+/*!40000 ALTER TABLE `alembic_version` DISABLE KEYS */;
+INSERT INTO `alembic_version` (`version_num`) VALUES ('3aa42d870199');
+/*!40000 ALTER TABLE `alembic_version` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `errors`
+--
+
+DROP TABLE IF EXISTS `errors`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `errors` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `message` varchar(255) NOT NULL,
+  `task_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `task_id` (`task_id`),
+  CONSTRAINT `errors_ibfk_1` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `errors`
+--
+
+LOCK TABLES `errors` WRITE;
+/*!40000 ALTER TABLE `errors` DISABLE KEYS */;
+INSERT INTO `errors` (`id`, `message`, `task_id`) VALUES (1,'Analysis failed: The package \"modules.packages.xls\" start function raised an error: Unable to find any Microsoft Office Excel executable.',1),(2,'Analysis failed: The package \"modules.packages.exe\" start function raised an error: Unable to execute the initial process, analysis aborted.',2),(3,'Analysis failed: The package \"modules.packages.zip\" start function raised an error: Unable to execute the initial process, analysis aborted.',3),(4,'Analysis failed: The package \"modules.packages.exe\" start function raised an error: Unable to execute the initial process, analysis aborted.',4),(5,'Analysis failed: The package \"modules.packages.exe\" start function raised an error: Unable to execute the initial process, analysis aborted.',9),(6,'Analysis failed: The package \"modules.packages.exe\" start function raised an error: Unable to execute the initial process, analysis aborted.',11),(7,'VBoxManage exited with error restoring the machine\'s snapshot',15),(8,'Analysis failed: The package \"modules.packages.zip\" start function raised an error: Invalid Zip file',20);
+/*!40000 ALTER TABLE `errors` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `guests`
+--
+
+DROP TABLE IF EXISTS `guests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `guests` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `label` varchar(255) NOT NULL,
+  `manager` varchar(255) NOT NULL,
+  `started_on` datetime NOT NULL,
+  `shutdown_on` datetime DEFAULT NULL,
+  `task_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `task_id` (`task_id`),
+  CONSTRAINT `guests_ibfk_1` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `guests`
+--
+
+LOCK TABLES `guests` WRITE;
+/*!40000 ALTER TABLE `guests` DISABLE KEYS */;
+INSERT INTO `guests` (`id`, `name`, `label`, `manager`, `started_on`, `shutdown_on`, `task_id`) VALUES (1,'Windows8_1','Windows8.1','VirtualBox','2015-06-22 10:32:06','2015-06-22 10:32:33',1),(2,'Windows8_1','Windows8.1','VirtualBox','2015-06-22 10:34:21','2015-06-22 10:34:48',2),(3,'Windows7','Windows7','VirtualBox','2015-06-22 11:15:22','2015-06-22 11:15:50',3),(4,'Windows8.1x64','Windows8.1x64','VirtualBox','2015-06-22 11:53:38','2015-06-22 11:54:27',4),(5,'Windows8.1x64','Windows8.1x64','VirtualBox','2015-06-22 12:16:53','2015-06-22 12:22:25',5),(6,'Windows7','Windows7','VirtualBox','2015-06-22 12:36:54','2015-06-22 12:37:25',6),(7,'Windows7','Windows7','VirtualBox','2015-06-22 12:53:07','2015-06-22 12:57:51',7),(8,'Windows8.1','Windows8.1','VirtualBox','2015-06-22 12:53:07','2015-06-22 12:57:40',8),(9,'Windows8.1x64','Windows8.1x64','VirtualBox','2015-06-22 12:53:08','2015-06-22 12:53:56',9),(10,'Windows7','Windows7','VirtualBox','2015-06-24 11:40:34',NULL,10),(11,'Windows8.1','Windows8.1','VirtualBox','2015-06-24 11:41:27','2015-06-24 11:41:56',11),(12,'Windows7','Windows7','VirtualBox','2015-06-24 12:45:12','2015-06-24 12:48:54',13),(13,'Windows7','Windows7','VirtualBox','2015-06-24 14:46:01','2015-06-24 14:49:37',14),(15,'Windows7','Windows7','VirtualBox','2015-07-09 11:02:51',NULL,16),(16,'Windows7','Windows7','VirtualBox','2015-07-09 14:21:34','2015-07-09 14:22:09',17),(17,'Windows7','Windows7','VirtualBox','2015-07-09 14:54:03','2015-07-09 14:58:52',18),(18,'Windows7','Windows7','VirtualBox','2015-07-09 15:16:50','2015-07-09 15:21:44',19),(19,'Windows7','Windows7','VirtualBox','2015-07-14 12:47:42','2015-07-14 12:48:09',20),(20,'Windows7','Windows7','VirtualBox','2015-08-04 04:20:00','2015-08-04 04:25:02',21);
+/*!40000 ALTER TABLE `guests` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `machines`
+--
+
+DROP TABLE IF EXISTS `machines`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `machines` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `label` varchar(255) NOT NULL,
+  `ip` varchar(255) NOT NULL,
+  `platform` varchar(255) NOT NULL,
+  `interface` varchar(255) DEFAULT NULL,
+  `snapshot` varchar(255) DEFAULT NULL,
+  `locked` tinyint(1) NOT NULL,
+  `locked_changed_on` datetime DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
+  `status_changed_on` datetime DEFAULT NULL,
+  `resultserver_ip` varchar(255) NOT NULL,
+  `resultserver_port` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `machines`
+--
+
+LOCK TABLES `machines` WRITE;
+/*!40000 ALTER TABLE `machines` DISABLE KEYS */;
+INSERT INTO `machines` (`id`, `name`, `label`, `ip`, `platform`, `interface`, `snapshot`, `locked`, `locked_changed_on`, `status`, `status_changed_on`, `resultserver_ip`, `resultserver_port`) VALUES (27,'Windows7','Windows7','10.31.37.101','windows',NULL,NULL,0,NULL,'poweroff','2015-08-04 09:07:06','10.31.37.1','2042'),(28,'Windows8.1','Windows8.1','10.31.37.102','windows',NULL,NULL,0,NULL,'saved','2015-08-04 09:07:08','10.31.37.1','2042'),(29,'Windows8.1x64','Windows8.1x64','10.31.37.103','windows',NULL,NULL,0,NULL,'saved','2015-08-04 09:07:09','10.31.37.1','2042');
+/*!40000 ALTER TABLE `machines` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `machines_tags`
+--
+
+DROP TABLE IF EXISTS `machines_tags`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `machines_tags` (
+  `machine_id` int(11) DEFAULT NULL,
+  `tag_id` int(11) DEFAULT NULL,
+  KEY `machine_id` (`machine_id`),
+  KEY `tag_id` (`tag_id`),
+  CONSTRAINT `machines_tags_ibfk_1` FOREIGN KEY (`machine_id`) REFERENCES `machines` (`id`),
+  CONSTRAINT `machines_tags_ibfk_2` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `machines_tags`
+--
+
+LOCK TABLES `machines_tags` WRITE;
+/*!40000 ALTER TABLE `machines_tags` DISABLE KEYS */;
+/*!40000 ALTER TABLE `machines_tags` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `samples`
+--
+
+DROP TABLE IF EXISTS `samples`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `samples` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `file_size` int(11) NOT NULL,
+  `file_type` text NOT NULL,
+  `md5` varchar(32) NOT NULL,
+  `crc32` varchar(8) NOT NULL,
+  `sha1` varchar(40) NOT NULL,
+  `sha256` varchar(64) NOT NULL,
+  `sha512` varchar(128) NOT NULL,
+  `ssdeep` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `hash_index` (`md5`,`crc32`,`sha1`,`sha256`,`sha512`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `samples`
+--
+
+LOCK TABLES `samples` WRITE;
+/*!40000 ALTER TABLE `samples` DISABLE KEYS */;
+INSERT INTO `samples` (`id`, `file_size`, `file_type`, `md5`, `crc32`, `sha1`, `sha256`, `sha512`, `ssdeep`) VALUES (1,257024,'Composite Document File V2 Document, Little Endian, Os: Windows, Version 6.1, Code page: 1252, Author: MHervas, Last Saved By: MHervas, Name of Creating Application: Microsoft Excel, Create Time/Date: Wed Oct 22 16:20:00 2014, Last Saved Time/Date: Wed Oct 22 16:20:52 2014, Security: 0','ef87792b16d5fa0469f330f7c066545a','A38591AB','6c13b30996768438319fd705de5c9441b2038b13','28a9c5602aec9d90b86031e645d63b6dd8b1697f237cc3cd0fdceb1ad8da8ba6','b1ac7dbe7e32c9791a5280c5351cb7a2534836a52be1770f9b1cfe92e7722571c2d87e236ec0738d35bacbed33d8e1a830583cfe10977114d3d07b3761cac493','3072:j3xZ+RwPONXoRjDhIcp0fDlaGGx+cL26nA/h429Ob4L:FZ+RwPONXoRjDhIcp0fDlavx+W26nA'),(2,3612304,'PE32 executable (GUI) Intel 80386, for MS Windows','813c766cbfd6bb5e0c2fe86d510d5d23','F5DAFC3E','4a8d0576c5d985b797fec35c9212a67877bdfe9b','22198f04b386c9b0395898cd32df9688ef46b90c72161a86482504b1130ca1a4','02c0766c8928af87e277300fb5f5d92eb6fd3e1c23dea14f3df60086871e7689e94adbf3576518c9b53db08b5d77680200da04bbd71d8288cceddad98f2d5ff4','98304:KbCgiiig2DbwdpdynEpgt0A0tLBfxtZrHbkrvyeiB88ky:KbfiiBdyEpgt0A0HTVHyvyeG8hy'),(3,5262,'Zip archive data, at least v2.0 to extract','e4511700426dd108a544f7d3890da2b7','D0681E1D','e35cc548d122c220b86258a42e7d8eefb5d619fb','7fade7aef9f1173552a1887d518d025cd94b2a957373b821409fc7b4b52ad5cf','f276f1071e869a20353451a965c384a67c500576099364897c902d4343afc05097939cc11ea6aa59046a5746f4d244bd24e50e5e7b8102774b18bc2da4fd6ebd','96:DVaOxpPjixb1DkhPbtMs9EobtvB57Nj6CgrLGP/j1XDbRYfaAZoh749XEOKJxFog:xHrPjKbyq4PBpVNGCfTUcm1EOK/H'),(4,291328,'PE32 executable (GUI) Intel 80386, for MS Windows, UPX compressed','027e65609ee748a19663c4f406b28b97','3C510489','1f28b1121b1d67dad56de38abdbde26876fa4de3','3f28b2a84a7c68df42b51776a251f2e30232a5655c8704010bbc6d1e12b54f79','6a663c4d5f5d33e9ddf903329c03ff50e74097700dc7db534668685d281d2a183faf2f298345aae4a7c91278066537e14be9ce8d54db6ff3ed88e5a6afeb992d','6144:2k4qmhVG1IQ4EaUvNJyujf8IisSi9gusHTfPOtYk9ugKbeaMH:J99R4GlsQfris3g9HMJg'),(5,18432,'PE32 executable (console) Intel 80386, for MS Windows','8b0965cbf6a197da6ee423f05ec9da10','DCEB2A25','0dba6db260ce19616d03ffc2d0868a0e21405913','dc928af5fdb75d2dbabaab27049adf3eec2bdeaf289f4088a13a8d5eccd6cf8b','3e340f59e92acbb5d45554e2d3dac433bb9a2854c985b4c07b28a80e1d6a6b946e1859d7d231eed0c9febef7d95e88e52451b92c0a1f536f286abe235c781157','384:Y5dADw+y6fO+DhvMZPyFb8mm9O2z6ttBF3:sdAd9dvkyFbhoz6ttBF'),(7,366080,'PE32 executable (GUI) Intel 80386, for MS Windows','6864622ce46cefc725a6196d518e667c','04BE63F2','78ba44c4184372d9b632e6735bae7d296b1b818a','b6bd69c995369e426503dfe62f01d03559b499074ed33b49900ab00779d9a9b4','2c84b701fccb2767a06d58f942a6a387b393b6e32a3576d3346f488e147d4bddb5d85bd7f00ace6d242ad416c462fad58b19a0be54f69129e02e103496b720c1','6144:Zg9+38PbG1NYiRWpAe/h1rSPYFVqQyLM/GQDtyrXqHetB+ptMZIcES5:q9+3+Qmic+YXrOnertqXq+asI25'),(10,2507776,'PE32 executable (console) Intel 80386, for MS Windows','e0dff6b36158488c65a310befbdd4b0c','0E13DC77','ef74efd739dcdb9fa70fd0fe6f2c7aa2dcc6c597','887af1ed02c3cf8de4c4852858ae9e8e084b8e4db3f1557cedd48581b6f29e38','3ebfdbeed8fdcb778c12ab4a1c886c430e02a64b11697ffa4eb844b2e6fdc325562867b1bcc2bb0101604af4f3db3f0b80a342b3000592519e5f33f48e6d0ac0','24576:UPT0FSuMcaPGraDVwdfFlgBl8CmS+hPRvPLpt8DsO1X/q90kYpQxo:qAIQGBOCAp0sO1X/q90kYpQxo'),(17,257024,'gzip compressed data, was \"postavlenie_125-1_CBR.scr\", from FAT filesystem (MS-DOS, OS/2, NT), last modified: Wed Jul  8 13:07:19 2015, max speed','d4ef0533737135d18e22873eb2acae2d','FD02B26F','7feacf935ba47c3017120765f608fde56bffa528','4fa069857a947c5459725fc580c9791e5bd5651c898f1e0aa638b1734eaa8b4d','ae6ea2834133647c7a2641f74094d9e3a202a917bba6883dc2e726c6e712a09e2b19b48dd9e8a361da0d8407a5fd65c39e6d15a3cb2c7f58352e087cc06033e5','6144:ZMMpcFhmiT5UXnglIqTcPSL7nwv9guogroVo:ZE5UXnWIrInwvUuoVo'),(18,119720,'PE32+ executable (DLL) (GUI) x86-64, for MS Windows','f25617d58815e32aab958b9b7f6bdf59','3620E00D','735dde78f557281b391466805d52c7fa046e44ba','fc20547408a7c34f0bd4946a34c21aab48a75e3b98dce9e55969f486d37b212f','0c625336435f41d6af535e7a5199d09ec083d3f4763928e41daffaf3ae34251cfd5e32b6825d8ad36043045216af804f33cee5501fb06dca5d9fdc53e7122fbf','1536:SeQlAK0s7LsBGeaVYsaZHlmDLDCTxojCLaM41VqqkYL/D9PdUkeRg8T/M6g7kiiM:xQj7gYmscmDnCTxatbqq1dQy8TKYqaM'),(19,391047,'data','ba6ececcdc9686fa047251599269c1a6','1A5E8189','bd65e53448137897f8731988da8137c0a4cb93da','b9cf4182621f9bfc994498048b3387720f8f6a83acf635ea8d700b62c0d4fb5f','4594b093f8be37cb3a998301b1127f8f09b76db75388d42e0be8f43305b84072c5bb105636262bb07c86b4b025a173b6c5ca81299952dfce9ccd9aa833b31c2f','6144:CrWFu+nRjRqJVT79vaAZdJftp8KMTrs9XVKI4rynCG1/Y923xGGGf/Fjf1ADGdow:pFxtRq/TpXNtoUdVqt/4BSFjnomL8wbV'),(20,2268,'Zip archive data, at least v2.0 to extract','d0b37787f4d49f1156890ec0cce4287a','9768570D','c778f5f97be2f40ee68a4b657eddeee9aa217a12','b7afb1eed5eb33eafcd359e6f3a4e76661734e6c85a331853355553d96b9aff2','c5d1b5465924f69022e32ee224280c299721ee46b1686aa9fa7a0cee49f3d17c05471f4f304e380022983417eef38b00c0679910453601500d0e26c298da55b7','48:9H6r9vm2ciXSewutcqOzDm+pnLHpE8U2QkGGM7OdO2E4:4Q/XuWJzDmkp3sk5Vf'),(21,427163,'PE32 executable (GUI) Intel 80386, for MS Windows','da46ba387dfbe1237382439d878bf92f','6DF90357','b6c1dd7739b961ae3b8711555ac77d0f0fbe93a1','1c2679592d487cbe3478c60d5d5a93c67843a787a902adadb0174f978b6be259','d235044d86214c60b0069af6ce74c287453d55edf7b81bcf7734493c161092d9638093b72e5b0d6732db81eb06760019152b604779edd36f9e74e6a7ad00d16d',NULL),(23,1504,'UTF-8 Unicode text','b9e0778b730c4ec99ae965b00a06c7b6','49847BED','dfc416aeb5112af4f83455f4a0ac8b9b47a5e231','6e545cc1c01fb1371a0145f29b365d955d703607aa1ce5b6dbd97706c643dff0','99bd4444b1682599445a3edf8676604f5091a1a7fa6ff2e3bfd954b63c0e6bfe1b889617e40195956e73995601cf33d09ca5dec8e0a3e433e82ae523f9a6e36d',NULL);
+/*!40000 ALTER TABLE `samples` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tags`
+--
+
+DROP TABLE IF EXISTS `tags`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tags` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tags`
+--
+
+LOCK TABLES `tags` WRITE;
+/*!40000 ALTER TABLE `tags` DISABLE KEYS */;
+/*!40000 ALTER TABLE `tags` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tasks`
+--
+
+DROP TABLE IF EXISTS `tasks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tasks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `target` text NOT NULL,
+  `category` varchar(255) NOT NULL,
+  `timeout` int(11) NOT NULL DEFAULT '0',
+  `priority` int(11) NOT NULL DEFAULT '1',
+  `custom` varchar(255) DEFAULT NULL,
+  `owner` varchar(64) DEFAULT NULL,
+  `machine` varchar(255) DEFAULT NULL,
+  `package` varchar(255) DEFAULT NULL,
+  `options` varchar(255) DEFAULT NULL,
+  `platform` varchar(255) DEFAULT NULL,
+  `memory` tinyint(1) NOT NULL,
+  `enforce_timeout` tinyint(1) NOT NULL,
+  `clock` datetime NOT NULL,
+  `added_on` datetime NOT NULL,
+  `started_on` datetime DEFAULT NULL,
+  `completed_on` datetime DEFAULT NULL,
+  `status` enum('pending','running','completed','reported','recovered','failed_analysis','failed_processing','failed_reporting') NOT NULL DEFAULT 'pending',
+  `sample_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `sample_id` (`sample_id`),
+  CONSTRAINT `tasks_ibfk_1` FOREIGN KEY (`sample_id`) REFERENCES `samples` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tasks`
+--
+
+LOCK TABLES `tasks` WRITE;
+/*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
+INSERT INTO `tasks` (`id`, `target`, `category`, `timeout`, `priority`, `custom`, `owner`, `machine`, `package`, `options`, `platform`, `memory`, `enforce_timeout`, `clock`, `added_on`, `started_on`, `completed_on`, `status`, `sample_id`) VALUES (1,'/tmp/cuckoo-tmp/upload_97cGNO/1.bin','file',0,1,'','','','','','',0,0,'2015-06-22 09:52:11','2015-06-22 09:52:11','2015-06-22 10:32:06','2015-06-22 10:32:34','reported',1),(2,'/tmp/cuckoo-tmp/upload_pAZH8G/19.bin','file',0,1,'','','','','','',0,0,'2015-06-22 10:34:21','2015-06-22 10:34:21','2015-06-22 10:34:21','2015-06-22 10:34:48','reported',2),(3,'/tmp/cuckoo-tmp/upload_O57h_c/29.bin','file',0,1,'','','Windows7','','','',0,0,'2015-06-22 11:15:22','2015-06-22 11:15:22','2015-06-22 11:15:22','2015-06-22 11:15:51','reported',3),(4,'/tmp/cuckoo-tmp/upload_t9f_OZ/91.bin','file',0,1,'','','Windows8.1x64','','','',0,0,'2015-06-22 11:53:37','2015-06-22 11:53:37','2015-06-22 11:53:38','2015-06-22 11:54:27','reported',4),(5,'/tmp/cuckoo-tmp/upload_80T1hK/12.bin','file',0,2,'','','Windows8.1x64','','procmemdump=yes','',1,0,'2015-06-22 12:16:52','2015-06-22 12:16:52','2015-06-22 12:16:53','2015-06-22 12:22:25','reported',5),(6,'/tmp/cuckoo-tmp/upload_kPfI5H/8.bin','file',0,1,'','','','','','',0,0,'2015-06-22 12:36:53','2015-06-22 12:36:53','2015-06-22 12:36:54','2015-06-22 12:37:25','reported',5),(7,'/tmp/cuckoo-tmp/upload_jo2t5j/21.bin','file',0,1,'','','Windows7','','','',0,0,'2015-06-22 12:53:07','2015-06-22 12:53:07','2015-06-22 12:53:07','2015-06-22 12:57:51','reported',7),(8,'/tmp/cuckoo-tmp/upload_jo2t5j/21.bin','file',0,1,'','','Windows8.1','','','',0,0,'2015-06-22 12:53:07','2015-06-22 12:53:07','2015-06-22 12:53:07','2015-06-22 12:57:50','reported',7),(9,'/tmp/cuckoo-tmp/upload_jo2t5j/21.bin','file',0,1,'','','Windows8.1x64','','','',0,0,'2015-06-22 12:53:07','2015-06-22 12:53:07','2015-06-22 12:53:07','2015-06-22 12:53:57','reported',7),(10,'/tmp/cuckoo-tmp/upload_zVZ1eX/anticuckoo.exe','file',0,1,'','','','exe','','',0,0,'2015-06-24 11:40:33','2015-06-24 11:40:33','2015-06-24 11:40:34',NULL,'failed_analysis',10),(11,'/tmp/cuckoo-tmp/upload_EazjHR/anticuckoo.exe','file',3,1,'','','','exe','arguments=-c1','',0,0,'2015-06-24 11:41:26','2015-06-24 11:41:26','2015-06-24 11:41:27','2015-06-24 11:41:57','reported',10),(12,'/tmp/cuckoo-tmp/upload_lh8DzP/anticuckoo.exe','file',3,1,'','','Windows7','','arguments=-c1','',0,0,'2015-06-24 11:45:33','2015-06-24 11:45:33','2015-06-24 11:45:34',NULL,'failed_analysis',10),(13,'/tmp/cuckoo-tmp/upload_CBEXuH/anticuckoo.exe','file',180,1,'','','Windows7','','','',0,0,'2015-06-24 12:45:11','2015-06-24 12:45:11','2015-06-24 12:45:12','2015-06-24 12:49:01','reported',10),(14,'/tmp/cuckoo-tmp/upload_fmkLGQ/anticuckoo.exe','file',180,1,'','','Windows7','','arguments=-c1','',0,0,'2015-06-24 14:46:00','2015-06-24 14:46:00','2015-06-24 14:46:01','2015-06-24 14:49:37','reported',10),(15,'/tmp/cuckoo-tmp/upload_qlZ8v1/anticuckoo.exe','file',5,1,'','','Windows8.1x64','','arguments=-c1&kernel_analysis=yes','',0,0,'2015-06-26 15:50:24','2015-06-26 15:50:24','2015-06-26 15:50:24',NULL,'reported',10),(16,'/tmp/cuckoo-tmp/upload_GJZVoX/postanovlenie_125-1_CBR.gz','file',1,1,'','','','','','',0,1,'2015-07-09 11:01:27','2015-07-09 11:01:27','2015-07-09 11:02:50','2015-07-09 11:12:26','reported',17),(17,'/tmp/cuckoo-tmp/upload_hT70ev/98.bin','file',300,1,'','','Windows7','','kernel_analysis=yes','',1,0,'2015-07-09 14:14:48','2015-07-09 14:14:48','2015-07-09 14:21:34','2015-07-09 14:22:17','reported',18),(18,'/tmp/cuckoo-tmp/upload_t8OGAL/31.bin','file',0,1,'','','Windows7','','kernel_analysis=yes','',1,0,'2015-07-09 14:54:03','2015-07-09 14:54:03','2015-07-09 14:54:03','2015-07-09 14:58:58','reported',19),(19,'https://tuts4you.com/request.php?2795','url',0,1,'','','','','','',0,0,'2015-07-09 15:16:49','2015-07-09 15:16:49','2015-07-09 15:16:50','2015-07-09 15:21:45','reported',NULL),(20,'/tmp/cuckoo-tmp/upload_VtR2tq/AKT_CBEPKA.zip','file',0,1,'','','','','','',0,0,'2015-07-14 12:47:41','2015-07-14 12:47:41','2015-07-14 12:47:42','2015-07-14 12:48:09','reported',20),(21,'/tmp/cuckoo-tmp/upload_V3s4Ke/kartochka.exe','file',0,1,'','','','','','',0,0,'2015-08-04 04:20:00','2015-08-04 04:20:00','2015-08-04 04:20:00','2015-08-04 04:25:02','reported',21),(22,'/tmp/cuckoo-tmp/upload_dn45Py/??????.txt','file',0,1,'','','','','','',0,0,'2015-08-04 09:07:18','2015-08-04 09:07:18','2015-08-04 09:07:19',NULL,'running',23);
+/*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tasks_tags`
+--
+
+DROP TABLE IF EXISTS `tasks_tags`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tasks_tags` (
+  `task_id` int(11) DEFAULT NULL,
+  `tag_id` int(11) DEFAULT NULL,
+  KEY `task_id` (`task_id`),
+  KEY `tag_id` (`tag_id`),
+  CONSTRAINT `tasks_tags_ibfk_1` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`),
+  CONSTRAINT `tasks_tags_ibfk_2` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tasks_tags`
+--
+
+LOCK TABLES `tasks_tags` WRITE;
+/*!40000 ALTER TABLE `tasks_tags` DISABLE KEYS */;
+/*!40000 ALTER TABLE `tasks_tags` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2015-08-04  9:25:47

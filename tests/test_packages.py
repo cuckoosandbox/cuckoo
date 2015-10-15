@@ -53,3 +53,12 @@ class PackagesTestCase(unittest.TestCase):
         pkg_class = choose_package_class(file_type, file_name)
         # then
         self.assertEqual(pkg_class.__name__, "App")
+
+    def test_rar_package(self):
+        # given
+        file_type = "RAR archive data, v1d, os: Unix"
+        file_name = "foobar.rar"
+        # when
+        pkg_class = choose_package_class(file_type, file_name)
+        # then
+        self.assertEqual(pkg_class.__name__, "Rar")
