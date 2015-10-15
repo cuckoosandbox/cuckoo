@@ -14,7 +14,7 @@ before_install:
     - tar -zxvf ssdeep-2.12.tar.gz
     - cd ssdeep-2.12
     - ./configure && make
-    - sudo make install
+    - make install
     - cd ..
 install:
     - pip install -r requirements.txt
