@@ -16,13 +16,13 @@
                 {% if analysis.info.category == "file" %}
                     {% if not values.result %}
                         <span class="text-muted">Clean
-                            {% if av in "Kaspersky,DrWeb,ESET-NOD32,ClamAV,Microsoft,McAfee" %}
-                                <a class="text-muted" href="{% url 'analysis.views.share' av analysis.info.id %}">(submit?)</a>
-                            {% endif %}
-                        </span>
                     {% else %}
-                        <span class="text-danger">{{values.result}}</span>
+                        <span class="text-danger">{{values.result}}
                     {% endif %}
+                    {% if av in "Kaspersky,DrWeb,ESET-NOD32,ClamAV,Microsoft,McAfee" %}
+                        <a class="text-muted" href="{% url 'analysis.views.share' av analysis.info.id %}">(submit?)</a>
+                    {% endif %}
+                    </span>
                 {% else %}
                     {% if not values.detected %}
                         <span class="text-muted">
@@ -38,7 +38,7 @@
     </table>
     {% else %}
         {% if analysis.virustotal.summary.permalink %}
-            <a href="{{analysis.virustotal.summary.permalink}}">Your file is being analysed</a>
+            <a href="{{analysis.virustotal.summary.permalink}}">Your file was sent to VirusTotal, upload again to see results</a>
         {% else %}
             No antivirus signatures available.
         {% endif %}

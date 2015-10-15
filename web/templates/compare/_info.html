@@ -19,10 +19,10 @@
             <td>{{record.info.id}}</td>
             <td>{{record.info.category|upper}}</td>
             {% if record.target.category == "url" %}
-            <td><a href="{% url "analysis.views.report" record.info.id %}">{{record.target.url}}</a></td>
+            <td><a href="{% url "analysis.views.report" record.info.id 0 %}">{{record.target.url}}</a></td>
             {% else %}
             <td>{{record.target.file.name}}</td>
-            <td><a href="{% url "analysis.views.report" record.info.id %}">{{record.target.file.md5}}</a></td>
+            <td><a href="{% url "analysis.views.report" record.info.id record.target.file.md5 %}">{{record.target.file.md5}}</a></td>
             {% endif %}
             <td>{{record.info.machine.name}}</td>
             <td>{{record.info.ended}}</td>

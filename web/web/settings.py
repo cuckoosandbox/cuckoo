@@ -56,8 +56,9 @@ except ImportError:
     # Write secret_key.py
     with open(os.path.join(SETTINGS_DIR, "secret_key.py"), "w") as key_file:
         key_file.write("SECRET_KEY = \"{0}\"".format(key))
+        key_file.write("EMAIL = \"malware-report@example.com\"")
 
-    # Reload key.
+    # Reload key and email.
     from secret_key import *
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
@@ -96,7 +97,7 @@ STATICFILES_FINDERS = (
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+#    'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (

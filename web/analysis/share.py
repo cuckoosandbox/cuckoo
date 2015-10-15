@@ -1,17 +1,21 @@
 # coding=utf-8
-from email.utils import formatdate
 from pyminizip import compress
 from requests import Session
 from bs4 import BeautifulSoup
+from email.header import Header
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import formatdate
 import smtplib
+import logging
+
+logger = logging.getLogger('av_report')
 
 
 def sendKaspersky(filename, help_text, email, name):
     br = Session()
-    hostUrl = "http://newvirus.kaspersky.com/"
+    hostUrl = "https://newvirus.kaspersky.com/"
     page = br.get(hostUrl)
     page = BeautifulSoup(page.text, 'html.parser')
 
@@ -32,7 +36,8 @@ def sendKaspersky(filename, help_text, email, name):
     if "was successfully sent" in response.text:
         return 0, "Success!"
     else:
-        return 1, "Something goes wrong"
+        logger.warning("Kaspersky error: %s" % response.text)
+        return 1, "Something went wrong %s " % response.text
 
 
 def sendDrWeb(filename, help_text, email, name):
@@ -52,7 +57,8 @@ def sendDrWeb(filename, help_text, email, name):
     if "SNForm" not in response.text:
         return 0, "Success!"
     else:
-        return 1, "%s. Something goes wrong: %s" % (filename, response.text)
+        logger.warning("Dr.WEB error: %s" % response.text)
+        return 1, "%s. Something went wrong: %s" % (filename, response.text)
 
 
 def sendEset(filename, help_text, email, name):
@@ -82,28 +88,35 @@ def sendEset(filename, help_text, email, name):
     if u"Спасибо, Ваше сообщение успешно отправлено." in response.text:
         return 0, "Success!"
     else:
-        return 1, "Something goes wrong: %s" % response.text
+        logger.warning("Eset error: %s" % response.text)
+        return 1, "Something went wrong: %s" % response.text
 
 
 def sendClamAV(filename, help_text, email, name):
     br = Session()
     hostUrl = "http://www.clamav.net"
-    page = br.get(hostUrl + "/report/report-malware.html")
+    page = br.get(hostUrl + "/reports/malware")
     page = BeautifulSoup(page.text, 'html.parser')
 
-    credentials = br.get(hostUrl + "/presigned").json()
-    submissionid = credentials.pop('id')
-
+    for _ in range(5):
+        credentials = br.get(hostUrl + "/presigned")
+        if credentials.status_code == 200:
+            credentials = credentials.json()
+            break
+        import time
+        time.sleep(5)
+        
+    submissionid = credentials["key"].split("/")[1].split("-")[0]
     form_s3 = page.find('form', id='s3Form')
     s3_url = form_s3['action']
     form_s3_data = dict([(el['name'], el.get('value', None))
                          for el in form_s3.find_all('input')])
-
+    
     form_s3_data.update(credentials)
 
     s3_answer = br.post(s3_url, data=form_s3_data,
                         files={'file': open(filename, 'rb')})
-    if s3_answer.status_code != 201:
+    if s3_answer.status_code > 210:
         return 1, "Something wrong. s3 status = %s" % s3_answer.status_code
 
     form = page.find('form', id='fileData')
@@ -118,7 +131,8 @@ def sendClamAV(filename, help_text, email, name):
     if "Report Submitted" in response.text:
         return 0, "Success!"
     else:
-        return 1, "Something goes wrong"
+        logger.warning("ClamAV error: %s" % response.text)
+        return 1, "Something went wrong"
 
 
 def sendMicrosoft(filename, help_text, email, name):
@@ -156,11 +170,13 @@ def sendMicrosoft(filename, help_text, email, name):
     if answer:
         return 0, "Success! Your status is <a href='%s'>here (sha1=%s)</a>" % (response_url, answer['title'])
     else:
+        logger.warning("Microsoft error: %s" % response.content)
         return 1, "Something wrong"
 
 
 def sendMcAfee(filename, help_text, email, name):
     try:
+        #if ".zip" not in filename:
         compress(filename, filename + ".zip", "infected", 5)
         filename += ".zip"
         name += ".zip"
@@ -173,18 +189,22 @@ def sendMcAfee(filename, help_text, email, name):
             Date=formatdate(localtime=True)
         )
         msg.attach(MIMEText(help_text))
-        with open(filename, "rb") as archive:
-            msg.attach(MIMEApplication(
+        with open(filename, 'rb') as archive:
+            msg_attach = MIMEApplication(
                 archive.read(),
-                Content_Disposition='attachment; filename="%s"' % name,
-                Name=name
-            ))
+                Name=name,
+            )
+            msg_attach.add_header('Content-Disposition', 'attachment',
+                                  filename=(Header(name, 'utf-8').encode()))
+            msg.attach(msg_attach)
+
         smtp = smtplib.SMTP("smtp")
         smtp.sendmail(email, "virus_research@mcafee.com", msg.as_string())
         smtp.close()
-        return 0, "Success!"
-    except:
-        return 1, "Something goes wrong"
+        return 0, "Success! %s" % name
+    except Exception as e:
+        logger.warning("MacAfee error: %s" % e)
+        return 1, "Something went wrong: %s" % e
 
 
 ANTIVIRUSES = {
@@ -195,4 +215,3 @@ ANTIVIRUSES = {
     "Microsoft": sendMicrosoft,
     'McAfee': sendMcAfee,
 }
-
