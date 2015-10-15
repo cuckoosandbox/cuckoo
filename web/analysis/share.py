@@ -98,7 +98,12 @@ def sendClamAV(filename, help_text, email, name):
     page = br.get(hostUrl + "/reports/malware")
     page = BeautifulSoup(page.text, 'html.parser')
 
-    credentials = br.get(hostUrl + "/presigned").json()
+    for _ in range(5):
+        credentials = br.get(hostUrl + "/presigned")
+        if credentials.status_code == 200:
+            credentials = credentials.json()
+            break
+        
     submissionid = credentials["key"].split("/")[1].split("-")[0]
     form_s3 = page.find('form', id='s3Form')
     s3_url = form_s3['action']
