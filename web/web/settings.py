@@ -56,8 +56,9 @@ except ImportError:
     # Write secret_key.py
     with open(os.path.join(SETTINGS_DIR, "secret_key.py"), "w") as key_file:
         key_file.write("SECRET_KEY = \"{0}\"".format(key))
+        key_file.write("EMAIL = \"malware-report@example.com\"")
 
-    # Reload key.
+    # Reload key and email.
     from secret_key import *
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
@@ -167,8 +168,6 @@ LOGGING = {
         },
     }
 }
-
-EMAIL = "malware-report@kontur.ru"
 
 # Hack to import local settings.
 try:
