@@ -280,3 +280,27 @@ class BehaviorReconstructor(object):
 
     def _api_IWbemServices_ExecQueryAsync(self, return_value, arguments):
         return ("wmi_query", arguments["query"])
+
+    # GUIDs.
+
+    def _api_CoCreateInstance(self, return_value, arguments):
+        # The iid vs riid is to be removed later on and should be just iid.
+        return [
+            ("guid", arguments["clsid"]),
+            ("guid", arguments.get("iid", arguments.get("riid"))),
+        ]
+
+    def _api_CoCreateInstanceEx(self, return_value, arguments):
+        ret = [
+            ("guid", arguments["clsid"]),
+        ]
+        for iid in arguments["iid"]:
+            ret.append(("guid", iid))
+        return ret
+
+    def _api_CoGetClassObject(self, return_value, arguments):
+        # The iid vs riid is to be removed later on and should be just iid.
+        return [
+            ("guid", arguments["clsid"]),
+            ("guid", arguments.get("iid", arguments.get("riid"))),
+        ]
