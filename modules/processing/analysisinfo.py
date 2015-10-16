@@ -21,7 +21,7 @@ class AnalysisInfo(Processing):
         """
         self.key = "info"
 
-        if not "started_on" in self.task:
+        if "started_on" not in self.task:
             return dict(
                 version=CUCKOO_VERSION,
                 started="none",
@@ -53,8 +53,9 @@ class AnalysisInfo(Processing):
         if task and task.guest:
             # Get machine description.
             machine = task.guest.to_dict()
-            # Remove useless task_id.
+            # Remove superfluous fields.
             del machine["task_id"]
+            del machine["id"]
         else:
             machine = None
 
@@ -70,4 +71,5 @@ class AnalysisInfo(Processing):
             machine=machine,
             package=self.task["package"],
             platform=self.task["platform"],
+            options=self.task["options"],
         )
