@@ -636,32 +636,7 @@ class NetworkAnalysis(Processing):
 
     def run(self):
         self.key = "network"
-
-        if not IS_DPKT:
-            log.error("Python DPKT is not installed, aborting PCAP analysis.")
-            return {}
-
-        if not os.path.exists(self.pcap_path):
-            log.warning("The PCAP file does not exist at path \"%s\".",
-                        self.pcap_path)
-            return {}
-
-        if os.path.getsize(self.pcap_path) == 0:
-            log.error("The PCAP file at path \"%s\" is empty." % self.pcap_path)
-            return {}
-
-        sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
-        if Config().processing.sort_pcap:
-            sort_pcap(self.pcap_path, sorted_path)
-            results = Pcap(sorted_path).run()
-        else:
-            results = Pcap(self.pcap_path).run()
-
-        # Save PCAP file hash.
-        if os.path.exists(self.pcap_path):
-            results["pcap_sha256"] = File(self.pcap_path).get_sha256()
-        if os.path.exists(sorted_path):
-            results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
+        results = {}
 
         # Include any results provided by the mitm script.
         results["mitm"] = []
@@ -671,6 +646,32 @@ class NetworkAnalysis(Processing):
                     results["mitm"].append(json.loads(line))
                 except:
                     results["mitm"].append(line)
+
+        if not IS_DPKT:
+            log.error("Python DPKT is not installed, aborting PCAP analysis.")
+            return results
+
+        if not os.path.exists(self.pcap_path):
+            log.warning("The PCAP file does not exist at path \"%s\".",
+                        self.pcap_path)
+            return results
+
+        if os.path.getsize(self.pcap_path) == 0:
+            log.error("The PCAP file at path \"%s\" is empty." % self.pcap_path)
+            return results
+
+        sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
+        if Config().processing.sort_pcap:
+            sort_pcap(self.pcap_path, sorted_path)
+            results.update(Pcap(sorted_path).run())
+        else:
+            results.update(Pcap(self.pcap_path).run())
+
+        # Save PCAP file hash.
+        if os.path.exists(self.pcap_path):
+            results["pcap_sha256"] = File(self.pcap_path).get_sha256()
+        if os.path.exists(sorted_path):
+            results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
 
         return results
 
