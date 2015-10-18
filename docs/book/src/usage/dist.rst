@@ -47,9 +47,7 @@ Following is a listing of all available commandline options::
                               Settings file.
         -v, --verbose         Enable verbose logging.
 
-Settings for the Distributed API are defined in its own configuration
-file, located at ``conf/distributed.conf``. The various configuration options
-are described in the configuration file, but following we have more in-depth
+The various configuration options are described in the configuration file, but following we have more in-depth
 descriptions as well.
 
 Report Formats
@@ -353,6 +351,8 @@ Update ``connection`` to use something *not* sqlite3. Preferably PostgreSQL or
 MySQL. SQLite3 doesn't support multi-threaded applications that well and this
 will give errors at random if used.
 
+You should create your own empty database for the distributed cuckoo setup. Do not be tempted to use any existing cuckoo database in order to avoid update problems with the DB scripts. In the config use the new database name, the remaining stuff like usernames , servers can be the same as for your cuckoo install. 
+
 conf/processing.conf
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -391,11 +391,16 @@ as follows, this allows one to check back on each script to ensure it's
 Setup Distributed Cuckoo
 ------------------------
 
-On the first machine start a separate ``screen(1)`` session for the
-Distributed Cuckoo script with all the required parameters (see the rest of
+On the first machine (so the say the "management machine" ) start a few separate ``screen(1)`` sessions for the
+Distributed Cuckoo scripts with all the required parameters (see the rest of
 the documentation on the parameters for this script)::
 
     $ screen -S distributed ./distributed/app.py
+    $ SCREEN -S dist_scheduler ./distributed/instance.py dist.scheduler
+    $ SCREEN -S dist_status ./distributed/instance.py dist.status
+    $ SCREEN -S cuckoo1 ./distributed/instance.py -v cuckoo1
+    
+The -v parameter enables verbose output and the cuckoo1 parameter is the name assigned to the actual cuckoo instance running the virtual machine while registering the node as outlined below.
 
 Register Cuckoo nodes
 ---------------------
@@ -408,4 +413,4 @@ the Distributed Cuckoo script::
 
 Having registered the Cuckoo nodes all that's left to do now is to submit
 tasks and fetch reports once finished. Documentation on these commands can be
-found in the :ref:`quick-usage` section.
+found in the :ref:`quick-usage` section. In case you are not using localhost, replace localhost with the IP of the node where there distributed.py is running and the -F url parameter points to the nodes running the actual virtual machines.
