@@ -83,7 +83,7 @@ class vSphere(Machinery):
                                       "please add it to the config file.")
 
         # Workaround for PEP-0476 issues in recent Python versions
-        if self.options.vsphere.unverified_ssl == "on":
+        if self.options.vsphere.unverified_ssl:
             import ssl
 
             try:
@@ -91,6 +91,7 @@ class vSphere(Machinery):
             except AttributeError:
                 pass
             else:
+                log.warn("Turning off SSL certificate verification!")
                 ssl._create_default_https_context = _create_ssl_context
 
         # Check that a snapshot is configured for each machine
