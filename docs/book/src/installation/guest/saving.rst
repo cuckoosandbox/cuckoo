@@ -5,7 +5,7 @@ Saving the Virtual Machine
 Now you should be ready to save the virtual machine to a snapshot state.
 
 Before doing this **make sure you rebooted it softly and that it's currently
-running, with Cuckoo's agent running and with Windows fully booted**. 
+running, with Cuckoo's agent running and with Windows fully booted**.
 
 Now you can proceed saving the machine. The way to do it obviously depends on
 the virtualization software you decided to use.
@@ -16,7 +16,7 @@ to be used by Cuckoo.
 VirtualBox
 ==========
 
-If you are going for VirtualBox you can take the snapshot from the graphical user 
+If you are going for VirtualBox you can take the snapshot from the graphical user
 interface or from the command line::
 
     $ VBoxManage snapshot "<Name of VM>" take "<Name of snapshot>" --pause
@@ -30,7 +30,7 @@ restore it::
 KVM
 ===
 
-If decided to adopt KVM, you must fist of all be sure to use a disk format for 
+If decided to adopt KVM, you must first of all be sure to use a disk format for
 your virtual machines which supports snapshots.
 By default libvirt tools create RAW virtual disks, and since we need snapshots
 you'll either have to use QCOW2 or LVM. For the scope of this guide we adopt QCOW2,
@@ -96,3 +96,65 @@ Where your_snapshot_name is the name you choose for the snapshot.
 After that power off the machine from the GUI or from the command line::
 
     $ vmrun stop "/your/disk/image/path/wmware_image_name.vmx" hard
+
+XenServer
+=========
+
+If you decided to adopt XenServer, the XenServer machinery supports starting
+virtual machines from either disk or a memory snapshot. Creating and reverting
+memory snapshots require that the Xen guest tools be installed in the
+virtual machine. The recommended method of booting XenServer virtual machines is
+through memory snapshots because they can greatly reduce the boot time of
+virtual machines during analysis. If, however, the option of installing the
+guest tools is not available, the virtual machine can be configured to have its
+disks reset on boot. Resetting the disk ensures that malware samples cannot
+permanently modify the virtual machine.
+
+Memory Snapshots
+----------------
+
+The Xen guest tools can be installed from the XenCenter application that ships
+with XenServer. Once installed, restart the virtual machine and ensure that the
+Cuckoo agent is running.
+
+Snapshots can be taken through the XenCenter application and the command line
+interface on the control domain (Dom0). When creating the snapshot from
+XenCenter, ensure that the "Snapshot disk and memory" is checked. Once created,
+right-click on the snapshot and note the snapshot UUID.
+
+To snapshot from the command line interface, run the following command::
+
+    $ xe vm-checkpoint vm="vm_uuid_or_name" new-name-label="Snapshot Name/Description"
+
+The snapshot UUID is printed to the screen once the command completes.
+
+Regardless of how the snapshot was created, save the UUID in the virtual
+machine's configuration section. Once the snapshot has been created, you can
+shutdown the virtual machine.
+
+Booting from Disk
+-----------------
+
+If you can't install the Xen guest tools or if you don't need to use memory
+snapshots, you will need to ensure that the virtual machine's disks are reset on
+boot and that the Cuckoo agent is set to run at boot time.
+
+Running the agent at boot time can be configured in Windows by adding a startup
+item for the agent.
+
+The following commands must be run while the virtual machine is powered off.
+
+To set the virtual machine's disks to reset on boot, you'll first need to list
+all the attached disks for the virtual machine. To list all attached disks, run
+the following command::
+
+    $ xe vm-disk-list vm="vm_name_or_uuid"
+
+Ignoring all CD-ROM and read-only disks, run the following command for each
+remaining disk to change it's behavior to reset on boot::
+
+    $ xe vdi-param-set uuid="vdi_uuid" on-boot=reset
+
+After the disk is set to reset on boot, no permanent changes can be made to the
+virtual machine's disk. Modifications that occur while a virtual machine is
+running will not persist past shutdown.

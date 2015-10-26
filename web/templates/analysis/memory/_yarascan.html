@@ -1,0 +1,18 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Owner</th>
+            <th>Rule</th>
+            <th>Hexdump</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for x in analysis.memory.yarascan.data %}
+        <tr>
+            <td>{{x.owner}}</td>
+            <td>{{x.rule}}</td>
+            <td><span class="mono"><pre>{{x.hexdump}}</pre></span></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

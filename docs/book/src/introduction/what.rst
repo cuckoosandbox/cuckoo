@@ -32,12 +32,12 @@ first time.
 
 In March 2011, Cuckoo has been selected again as a supported project during
 Google Summer of Code 2011 with The Honeynet Project, during which
-*Dario Fernandes* joined the project and extended its functionalities.
+*Dario Fernandes* joined the project and extended its functionality.
 
 On November 2nd 2011 Cuckoo the release of its 0.2 version to the public as the
 first real stable release.
 On late November 2011 *Alessandro "jekil" Tanasi* joined the team expanding
-Cuckoo's processing and reporting functionalities.
+Cuckoo's processing and reporting functionality.
 
 On December 2011 Cuckoo v0.3 gets released and quickly hits release 0.3.2 in
 early February.
@@ -97,6 +97,7 @@ It can be used to analyze:
     * Visual Basic (VB) scripts
     * ZIP files
     * Java JAR
+    * Python files
     * *Almost anything else*
 
 Thanks to its modularity and powerful scripting capabilities, there's not limit
@@ -117,7 +118,7 @@ software) and a number of Guest machines (virtual machines for analysis).
 
 The Host runs the core component of the sandbox that manages the whole
 analysis process, while the Guests are the isolated environments
-where the malwares get actually safely executed and analyzed.
+where the malware samples get actually safely executed and analyzed.
 
 The following picture explains Cuckoo's main architecture:
 

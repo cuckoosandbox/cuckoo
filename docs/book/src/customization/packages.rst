@@ -21,64 +21,74 @@ Windows executables (located at *analyzer/windows/packages/exe.py*):
         :linenos:
 
         from lib.common.abstracts import Package
-        from lib.api.process import Process
-        from lib.common.exceptions import CuckooPackageError
 
         class Exe(Package):
             """EXE analysis package."""
 
             def start(self, path):
-                free = self.options.get("free", False)
-                args = self.options.get("arguments", None)
-                dll = self.options.get("dll", None)
+                args = self.options.get("arguments")
+                return self.execute(path, args)
+
+It seems really easy, thanks to all method inherited by Package object.
+Let's have a look as some of the main methods an analysis package inherits from
+Package object:
+
+    .. code-block:: python
+        :linenos:
+
+        from lib.api.process import Process
+        from lib.common.exceptions import CuckooPackageError
+
+        class Package(object):
+            def start(self):
+                raise NotImplementedError
+
+            def check(self):
+                return True
+
+            def execute(self, path, args):
+                dll = self.options.get("dll")
+                free = self.options.get("free")
                 suspended = True
                 if free:
                     suspended = False
 
                 p = Process()
                 if not p.execute(path=path, args=args, suspended=suspended):
-                    raise CuckooPackageError("Unable to execute initial process, "
-                                             "analysis aborted")
+                    raise CuckooPackageError("Unable to execute the initial process, "
+                                             "analysis aborted.")
 
                 if not free and suspended:
                     p.inject(dll)
                     p.resume()
                     p.close()
                     return p.pid
-                else:
-                    return None
-
-            def check(self):
-                return True
 
             def finish(self):
-                if self.options.get("procmemdump", False):
+                if self.options.get("procmemdump"):
                     for pid in self.pids:
                         p = Process(pid=pid)
                         p.dump_memory()
-
                 return True
 
 Let's walk through the code:
-    * Line **1**: import the base ``Package`` class, it's needed to define our analysis package class.
-    * Line **2**: import the ``Process`` API class, which is used to create and manipulate Windows processes.
-    * Line **3**: import the ``CuckooPackageError`` exception, which is used to notify issues with the execution of the package to the analyzer.
-    * Line **5**: define the main class, inheriting ``Package``.
-    * Line **8**: define the ``start()`` function, which takes as argument the path to the file to execute.
-    * Line **9**: acquire the ``free`` option, which is used to define whether the process should be monitored or not.
-    * Line **10**: acquire the ``arguments`` option, which is passed to the creation of the initial process.
-    * Line **16**: initialize a ``Process`` instance.
-    * Line **17** and **18**: try to execute the malware, if it fails it aborts the execution and notify the analyzer.
-    * Line **21**: check if the process should be monitored.
-    * Line **22**: inject the process with our DLL.
-    * Line **23**: resume the process from the suspended state.
-    * Line **25**: return the PID of the newly created process to the analyzer.
-    * Line **29**: define the ``check()`` function.
-    * Line **32**: define the ``finish()`` function.
-    * Line **33**: check if the ``procmemdump`` option was enabled.
-    * Line **34**: loop through the currently monitored processes.
-    * Line **35**: open a ``Process`` instance.
-    * Line **36**: take a dump of the process memory.
+    * Line **1**: import the ``Process`` API class, which is used to create and manipulate Windows processes.
+    * Line **2**: import the ``CuckooPackageError`` exception, which is used to notify issues with the execution of the package to the analyzer.
+    * Line **4**: define the main class, inheriting ``object``.
+    * Line **5**: define the ``start()`` function, which takes as argument the path to the file to execute. It should be implemented by each analysis package.
+    * Line **8**: define the ``check()`` function.
+    * Line **13**: acquire the ``free`` option, which is used to define whether the process should be monitored or not.
+    * Line **18**: initialize a ``Process`` instance.
+    * Line **19**: try to execute the malware, if it fails it aborts the execution and notify the analyzer.
+    * Line **23**: check if the process should be monitored.
+    * Line **24**: inject the process with our DLL.
+    * Line **25**: resume the process from the suspended state.
+    * Line **27**: return the PID of the newly created process to the analyzer.
+    * Line **29**: define the ``finish()`` function.
+    * Line **30**: check if the ``procmemdump`` option was enabled.
+    * Line **31**: loop through the currently monitored processes.
+    * Line **32**: open a ``Process`` instance.
+    * Line **33**: take a dump of the process memory.
 
 ``start()``
 -----------
@@ -109,6 +119,11 @@ For example::
 
 This ``check()`` function will cause Cuckoo to immediately terminate the analysis
 whenever *C:\\config.bin* is created.
+
+``execute()``
+-------------
+
+Wraps the malware execution and deal with DLL injection.
 
 ``finish()``
 ------------
@@ -267,7 +282,7 @@ Methods
 
 .. function:: Process.terminate()
 
-    Terminates the opened process. Returns ``True`` or ``False`` in case of success or failure of the operaton.
+    Terminates the opened process. Returns ``True`` or ``False`` in case of success or failure of the operation.
 
     :rtype: boolean
 
@@ -288,7 +303,7 @@ Methods
 
     :param dll: path to the DLL to inject into the process
     :type dll: string
-    :param apc: enable to use ``QueueUserAPC()`` injection istead of ``CreateRemoteThread()``, beware that if the process is in suspended mode, Cuckoo will always use ``QueueUserAPC()``
+    :param apc: enable to use ``QueueUserAPC()`` injection instead of ``CreateRemoteThread()``, beware that if the process is in suspended mode, Cuckoo will always use ``QueueUserAPC()``
     :type apc: boolean
     :rtype: boolean
 

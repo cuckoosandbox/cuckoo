@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -38,6 +38,49 @@ def download_archive():
 
     return temp_dir, final_dir
 
+def installdir(src, dst, force, rewrite, origin=[]):
+    for file_name in os.listdir(src):
+        if file_name == ".gitignore":
+            continue
+
+        destination = os.path.join(dst, file_name)
+
+        if not rewrite:
+            if os.path.exists(destination):
+                print("File \"{0}\" already exists, "
+                      "{1}".format(file_name, colors.yellow("skipped")))
+                continue
+
+        install = False
+
+        if not force:
+            while 1:
+                choice = raw_input("Do you want to install file "
+                                   "\"{0}\"? [yes/no] ".format(file_name))
+                if choice.lower() == "yes":
+                    install = True
+                    break
+                elif choice.lower() == "no":
+                    break
+                else:
+                    continue
+        else:
+            install = True
+
+        if install:
+            srcpath = os.path.join(src, file_name)
+            if os.path.isdir(srcpath):
+                installdir(srcpath, destination, force, rewrite,
+                           origin + [file_name])
+            else:
+                if not os.path.isdir(os.path.dirname(destination)):
+                    os.makedirs(os.path.dirname(destination))
+
+                shutil.copy(srcpath, destination)
+                print("File \"{0}/{1}\" {2}".format("/".join(origin),
+                                                    file_name,
+                                                    colors.green("installed")))
+
 
 def install(enabled, force, rewrite):
     (temp, source) = download_archive()
@@ -46,7 +89,9 @@ def install(enabled, force, rewrite):
         "signatures": os.path.join("modules", "signatures"),
         "processing": os.path.join("modules", "processing"),
         "reporting": os.path.join("modules", "reporting"),
-        "machinemanagers": os.path.join("modules", "machinemanagers")
+        "machinery": os.path.join("modules", "machinery"),
+        "analyzer": os.path.join("analyzer"),
+        "agent": os.path.join("agent"),
     }
 
     for category in enabled:
@@ -55,39 +100,11 @@ def install(enabled, force, rewrite):
         print("\nInstalling {0}".format(colors.cyan(category.upper())))
 
         origin = os.path.join(source, folder)
+        if not os.path.isdir(origin):
+            print "  No candidates available, continuing."
+            continue
 
-        for file_name in os.listdir(origin):
-            if file_name == ".gitignore":
-                continue
-
-            destination = os.path.join(CUCKOO_ROOT, folder, file_name)
-
-            if not rewrite:
-                if os.path.exists(destination):
-                    print("File \"{0}\" already exists, "
-                          "{1}".format(file_name, colors.yellow("skipped")))
-                    continue
-
-            install = False
-
-            if not force:
-                while 1:
-                    choice = raw_input("Do you want to install file "
-                                       "\"{0}\"? [yes/no] ".format(file_name))
-                    if choice.lower() == "yes":
-                        install = True
-                        break
-                    elif choice.lower() == "no":
-                        break
-                    else:
-                        continue
-            else:
-                install = True
-
-            if install:
-                shutil.copy(os.path.join(origin, file_name), destination)
-                print("File \"{0}\" {1}".format(file_name,
-                                                colors.green("installed")))
+        installdir(origin, os.path.join(CUCKOO_ROOT, folder), force, rewrite)
 
     shutil.rmtree(temp)
 
@@ -98,7 +115,9 @@ def main():
     parser.add_argument("-a", "--all", help="Download everything", action="store_true", required=False)
     parser.add_argument("-s", "--signatures", help="Download Cuckoo signatures", action="store_true", required=False)
     parser.add_argument("-p", "--processing", help="Download processing modules", action="store_true", required=False)
-    parser.add_argument("-m", "--machinemanagers", help="Download machine managers",action="store_true", required=False)
+    parser.add_argument("-m", "--machinery", help="Download machine managers", action="store_true", required=False)
+    parser.add_argument("-n", "--analyzer", help="Download analyzer modules", action="store_true", required=False)
+    parser.add_argument("-g", "--agent", help="Download agent modules", action="store_true", required=False)
     parser.add_argument("-r", "--reporting", help="Download reporting modules", action="store_true", required=False)
     parser.add_argument("-f", "--force", help="Install files without confirmation", action="store_true", required=False)
     parser.add_argument("-w", "--rewrite", help="Rewrite existing files", action="store_true", required=False)
@@ -113,7 +132,9 @@ def main():
         enabled.append("processing")
         enabled.append("signatures")
         enabled.append("reporting")
-        enabled.append("machinemanagers")
+        enabled.append("machinery")
+        enabled.append("analyzer")
+        enabled.append("agent")
     else:
         if args.signatures:
             enabled.append("signatures")
@@ -121,8 +142,12 @@ def main():
             enabled.append("processing")
         if args.reporting:
             enabled.append("reporting")
-        if args.machinemanagers:
-            enabled.append("machinemanagers")
+        if args.machinery:
+            enabled.append("machinery")
+        if args.analyzer:
+            enabled.append("analyzer")
+        if args.agent:
+            enabled.append("agent")
 
     if not enabled:
         print(colors.red("You need to enable some category!\n"))

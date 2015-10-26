@@ -1,9 +1,9 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
-from _winreg import OpenKey, SetValueEx
+from _winreg import OpenKey, SetValueEx, CloseKey
 from _winreg import HKEY_LOCAL_MACHINE, KEY_SET_VALUE, REG_SZ
 
 from lib.common.abstracts import Auxiliary
@@ -27,6 +27,7 @@ class Disguise(Auxiliary):
                                          random_integer(7), random_integer(5))
 
         SetValueEx(key, "ProductId", 0, REG_SZ, value)
+        CloseKey(key)
 
     def start(self):
         self.change_productid()

@@ -1,9 +1,10 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
 import socket
+import time
 
 from lib.core.config import Config
 
@@ -19,10 +20,10 @@ def upload_to_host(file_path, dump_path):
         infd = open(file_path, "rb")
         buf = infd.read(BUFSIZE)
         while buf:
-            nc.send(buf)
+            nc.send(buf, retry=False)
             buf = infd.read(BUFSIZE)
     except Exception as e:
-        log.error("Exception uploading file to host: %s", e)
+        log.error("Exception uploading file %s to host: %s", file_path, e)
     finally:
         if infd:
             infd.close()
@@ -33,28 +34,36 @@ class NetlogConnection(object):
     def __init__(self, proto=""):
         config = Config(cfg="analysis.conf")
         self.hostip, self.hostport = config.ip, config.port
-        self.sock, self.file = None, None
+        self.sock = None
         self.proto = proto
 
     def connect(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            s.connect((self.hostip, self.hostport))
-            s.sendall(self.proto)
-        except:
-            pass
-        else:
+        # Try to connect as quickly as possible. Just sort of force it to
+        # connect with a short timeout.
+        while not self.sock:
+            try:
+                s = socket.create_connection((self.hostip, self.hostport), 0.1)
+                s.sendall(self.proto)
+            except socket.error:
+                time.sleep(0.1)
+                continue
+
             self.sock = s
-            self.file = s.makefile()
 
     def send(self, data, retry=True):
+        if not self.sock:
+            self.connect()
+
         try:
             self.sock.sendall(data)
-        except socket.error:
-            self.connect()
+        except socket.error as e:
             if retry:
+                self.connect()
                 self.send(data, retry=False)
-        except:
+            else:
+                raise
+        except Exception as e:
+            log.error("Unhandled exception in NetlogConnection: %s", str(e))
             # We really have nowhere to log this, if the netlog connection
             # does not work, we can assume that any logging won't work either.
             # So we just fail silently.
@@ -62,7 +71,6 @@ class NetlogConnection(object):
 
     def close(self):
         try:
-            self.file.close()
             self.sock.close()
         except Exception:
             pass

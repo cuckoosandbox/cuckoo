@@ -16,6 +16,7 @@ storage/*
 
 # Ignore OS generated files
 .DS_Store*
+.AppleDouble
 ehthumbs.db
 Icon?
 Thumbs.db
@@ -23,6 +24,14 @@ Thumbs.db
 # Ignore development files
 docs/book/src/_build/
 .idea/
+.project
+.pydevproject
 
 # Ignore Django secret_key
 web/web/secret_key.py
+
+# Ignore yara rules
+data/yara/index_*.yar
+
+# Ignore venv
+venv

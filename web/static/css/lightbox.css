@@ -1,37 +1,40 @@
-/* line 6, ../sass/lightbox.sass */
-#lightboxOverlay {
+/* Preload images */
+body:after {
+  content: url(../img/close.png) url(../img/loading.gif) url(../img/prev.png) url(../img/next.png);
+  display: none;
+}
+
+.lightboxOverlay {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 9999;
   background-color: black;
-  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=85);
-  opacity: 0.85;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=80);
+  opacity: 0.8;
   display: none;
 }
 
-/* line 15, ../sass/lightbox.sass */
-#lightbox {
+.lightbox {
   position: absolute;
   left: 0;
   width: 100%;
   z-index: 10000;
   text-align: center;
   line-height: 0;
-  font-family: "lucida grande", tahoma, verdana, arial, sans-serif;
   font-weight: normal;
 }
-/* line 24, ../sass/lightbox.sass */
-#lightbox img {
-  width: auto;
+
+.lightbox .lb-image {
+  display: block;
   height: auto;
+  max-width: inherit;
 }
-/* line 27, ../sass/lightbox.sass */
-#lightbox a img {
+
+.lightbox a img {
   border: none;
 }
 
-/* line 30, ../sass/lightbox.sass */
 .lb-outerContainer {
   position: relative;
   background-color: white;
@@ -45,30 +48,35 @@
   -o-border-radius: 4px;
   border-radius: 4px;
 }
-/* line 38, ../../../../.rvm/gems/ruby-1.9.2-p290/gems/compass-0.12.1/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+
 .lb-outerContainer:after {
   content: "";
   display: table;
   clear: both;
 }
 
-/* line 39, ../sass/lightbox.sass */
 .lb-container {
-  padding: 10px;
+  padding: 4px;
 }
 
-/* line 42, ../sass/lightbox.sass */
 .lb-loader {
   position: absolute;
-  top: 40%;
-  left: 0%;
+  top: 43%;
+  left: 0;
   height: 25%;
   width: 100%;
   text-align: center;
   line-height: 0;
 }
 
-/* line 51, ../sass/lightbox.sass */
+.lb-cancel {
+  display: block;
+  width: 32px;
+  height: 32px;
+  margin: 0 auto;
+  background: url(../img/loading.gif) no-repeat;
+}
+
 .lb-nav {
   position: absolute;
   top: 0;
@@ -78,48 +86,57 @@
   z-index: 10;
 }
 
-/* line 59, ../sass/lightbox.sass */
 .lb-container > .nav {
   left: 0;
 }
 
-/* line 62, ../sass/lightbox.sass */
 .lb-nav a {
   outline: none;
+  background-image: url('data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==');
 }
 
-/* line 65, ../sass/lightbox.sass */
 .lb-prev, .lb-next {
-  width: 49%;
   height: 100%;
-  background-image: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
-  /* Trick IE into showing hover */
+  cursor: pointer;
   display: block;
 }
 
-/* line 72, ../sass/lightbox.sass */
-.lb-prev {
+.lb-nav a.lb-prev {
+  width: 34%;
   left: 0;
   float: left;
+  background: url(../img/prev.png) left 48% no-repeat;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0;
+  -webkit-transition: opacity 0.6s;
+  -moz-transition: opacity 0.6s;
+  -o-transition: opacity 0.6s;
+  transition: opacity 0.6s;
 }
 
-/* line 76, ../sass/lightbox.sass */
-.lb-next {
+.lb-nav a.lb-prev:hover {
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+  opacity: 1;
+}
+
+.lb-nav a.lb-next {
+  width: 64%;
   right: 0;
   float: right;
+  background: url(../img/next.png) right 48% no-repeat;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0;
+  -webkit-transition: opacity 0.6s;
+  -moz-transition: opacity 0.6s;
+  -o-transition: opacity 0.6s;
+  transition: opacity 0.6s;
 }
 
-/* line 81, ../sass/lightbox.sass */
-.lb-prev:hover {
-  background: url(/static/img/prev.png) left 48% no-repeat;
+.lb-nav a.lb-next:hover {
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+  opacity: 1;
 }
 
-/* line 85, ../sass/lightbox.sass */
-.lb-next:hover {
-  background: url(/static/img/next.png) right 48% no-repeat;
-}
-
-/* line 88, ../sass/lightbox.sass */
 .lb-dataContainer {
   margin: 0 auto;
   padding-top: 5px;
@@ -127,55 +144,62 @@
   width: 100%;
   -moz-border-radius-bottomleft: 4px;
   -webkit-border-bottom-left-radius: 4px;
-  -ms-border-bottom-left-radius: 4px;
-  -o-border-bottom-left-radius: 4px;
   border-bottom-left-radius: 4px;
   -moz-border-radius-bottomright: 4px;
   -webkit-border-bottom-right-radius: 4px;
-  -ms-border-bottom-right-radius: 4px;
-  -o-border-bottom-right-radius: 4px;
   border-bottom-right-radius: 4px;
 }
-/* line 38, ../../../../.rvm/gems/ruby-1.9.2-p290/gems/compass-0.12.1/frameworks/compass/stylesheets/compass/utilities/general/_clearfix.scss */
+
 .lb-dataContainer:after {
   content: "";
   display: table;
   clear: both;
 }
 
-/* line 95, ../sass/lightbox.sass */
 .lb-data {
-  padding: 0 10px;
-  color: #bbbbbb;
+  padding: 0 4px;
+  color: #ccc;
 }
-/* line 98, ../sass/lightbox.sass */
+
 .lb-data .lb-details {
   width: 85%;
   float: left;
   text-align: left;
   line-height: 1.1em;
 }
-/* line 103, ../sass/lightbox.sass */
+
 .lb-data .lb-caption {
   font-size: 13px;
   font-weight: bold;
   line-height: 1em;
 }
-/* line 107, ../sass/lightbox.sass */
+
 .lb-data .lb-number {
   display: block;
   clear: left;
   padding-bottom: 1em;
-  font-size: 11px;
+  font-size: 12px;
+  color: #999999;
 }
-/* line 112, ../sass/lightbox.sass */
+
 .lb-data .lb-close {
-  width: 35px;
+  display: block;
   float: right;
-  padding-bottom: 0.7em;
+  width: 30px;
+  height: 30px;
+  background: url(../img/close.png) top right no-repeat;
+  text-align: right;
   outline: none;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=70);
+  opacity: 0.7;
+  -webkit-transition: opacity 0.2s;
+  -moz-transition: opacity 0.2s;
+  -o-transition: opacity 0.2s;
+  transition: opacity 0.2s;
 }
-/* line 117, ../sass/lightbox.sass */
+
 .lb-data .lb-close:hover {
   cursor: pointer;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+  opacity: 1;
 }

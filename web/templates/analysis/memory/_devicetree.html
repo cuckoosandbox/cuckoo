@@ -1,0 +1,24 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Driver Name</th>
+            <th>Driver Offset</th>
+            <th>Devices</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for service in analysis.memory.devicetree.data %}
+        <tr>
+            <td>{{service.driver_name}}</td>
+            <td><span class="mono">{{service.driver_offset}}</span></td>
+            <td>
+            {% for device in service.devices %}
+                {% if device.device_name %}
+                    {{device.device_name}}, 
+                {% endif %}
+            {% endfor %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

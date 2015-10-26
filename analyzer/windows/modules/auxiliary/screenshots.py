@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -13,12 +13,17 @@ from lib.api.screenshot import Screenshot
 
 log = logging.getLogger(__name__)
 SHOT_DELAY = 1
+# Skip the following area when comparing screen shots.
+# Example for 800x600 screen resolution.
+# SKIP_AREA = ((735, 575), (790, 595))
+SKIP_AREA = None
 
 class Screenshots(Auxiliary, Thread):
     """Take screenshots."""
 
-    def __init__(self):
+    def __init__(self, options={}, analyzer=None):
         Thread.__init__(self)
+        Auxiliary.__init__(self, options, analyzer)
         self.do_run = True
 
     def stop(self):
@@ -29,6 +34,9 @@ class Screenshots(Auxiliary, Thread):
         """Run screenshotting.
         @return: operation status.
         """
+        if "screenshots" in self.options:
+            self.do_run = int(self.options["screenshots"])
+
         if not Screenshot().have_pil():
             log.warning("Python Image Library is not installed, "
                         "screenshots are disabled")
@@ -47,7 +55,7 @@ class Screenshots(Auxiliary, Thread):
                 continue
 
             if img_last:
-                if Screenshot().equal(img_last, img_current):
+                if Screenshot().equal(img_last, img_current, SKIP_AREA):
                     continue
 
             img_counter += 1

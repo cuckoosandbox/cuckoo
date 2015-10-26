@@ -1,11 +1,13 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file was originally produced by Mike Tu.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import glob
 import logging
 import subprocess
 import os.path
+import shutil
 import time
 
 from lib.cuckoo.common.abstracts import Machinery
@@ -64,19 +66,22 @@ class VMware(Machinery):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             output, _ = p.communicate()
+            output = output.decode("utf-8")
+        except OSError as e:
+            raise CuckooMachineError("Unable to get snapshot list for %s. "
+                                     "Reason: %s" % (vmx_path, e))
+        else:
             if output:
                 return snapshot in output
             else:
                 raise CuckooMachineError("Unable to get snapshot list for %s. "
                                          "No output from "
                                          "`vmrun listSnapshots`" % vmx_path)
-        except OSError as e:
-            raise CuckooMachineError("Unable to get snapshot list for %s. "
-                                     "Reason: %s" % (vmx_path, e))
 
-    def start(self, vmx_path):
+    def start(self, vmx_path, task):
         """Start a virtual machine.
         @param vmx_path: path to vmx file.
+        @param task: task object.
         @raise CuckooMachineError: if unable to start.
         """
         snapshot = self._snapshot_from_vmx(vmx_path)
@@ -157,15 +162,16 @@ class VMware(Machinery):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             output, error = p.communicate()
+        except OSError as e:
+            raise CuckooMachineError("Unable to check running status for %s. "
+                                     "Reason: %s" % (vmx_path, e))
+        else:
             if output:
                 return vmx_path in output
             else:
                 raise CuckooMachineError("Unable to check running status "
                                          "for %s. No output from "
                                          "`vmrun list`" % vmx_path)
-        except OSError as e:
-            raise CuckooMachineError("Unable to check running status for %s. "
-                                     "Reason: %s" % (vmx_path, e))
 
     def _snapshot_from_vmx(self, vmx_path):
         """Get snapshot for a given vmx file.
@@ -173,3 +179,35 @@ class VMware(Machinery):
         """
         vm_info = self.db.view_machine_by_label(vmx_path)
         return vm_info.snapshot
+
+    def dump_memory(self, vmx_path, path):
+        """Take a memory dump of the machine."""
+        if not os.path.exists(vmx_path):
+            raise CuckooMachineError("Can't find .vmx file {0}. Ensure to configure a fully qualified path in vmware.conf (key = vmx_path)".format(vmx_path))
+
+        try:
+            subprocess.call([self.options.vmware.path, "snapshot",
+                             vmx_path, "memdump"],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+        except OSError as e:
+            raise CuckooMachineError("vmrun failed to take a memory dump of the machine with label %s: %s" % (vmx_path, e))
+
+        vmwarepath, _ = os.path.split(vmx_path)
+        latestvmem = max(glob.iglob(os.path.join(vmwarepath, "*.vmem")),
+                         key=os.path.getctime)
+
+        # We need to move the snapshot to the current analysis directory as
+        # vmware doesn't support an option for the destination path :-/
+        shutil.move(latestvmem, path)
+
+        # Old snapshot can be deleted, as it isn't needed any longer.
+        try:
+            subprocess.call([self.options.vmware.path, "deleteSnapshot",
+                             vmx_path, "memdump"],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+        except OSError as e:
+            raise CuckooMachineError("vmrun failed to delete the temporary snapshot in %s: %s" % (vmx_path, e))
+
+        log.info("Successfully generated memory dump for virtual machine with label %s ", vmx_path)

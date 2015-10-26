@@ -1,19 +1,21 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import time
 import shutil
 import ntpath
 import string
 import tempfile
 import xmlrpclib
+import inspect
+import threading
+import multiprocessing
+
 from datetime import datetime
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 try:
     import chardet
@@ -44,7 +46,6 @@ def create_folder(root=".", folder=None):
             raise CuckooOperationalError("Unable to create folder: %s" %
                                          folder_path)
 
-
 def delete_folder(folder):
     """Delete a folder and all its subdirectories.
     @param folder: path to delete.
@@ -57,12 +58,10 @@ def delete_folder(folder):
             raise CuckooOperationalError("Unable to delete folder: "
                                          "{0}".format(folder))
 
-
 # Don't allow all characters in "string.printable", as newlines, carriage
 # returns, tabs, \x0b, and \x0c may mess up reports.
 PRINTABLE_CHARACTERS = \
     string.letters + string.digits + string.punctuation + " \t\r\n"
-
 
 def convert_char(c):
     """Escapes characters.
@@ -73,7 +72,6 @@ def convert_char(c):
         return c
     else:
         return "\\x%02x" % ord(c)
-
 
 def is_printable(s):
     """ Test if a string is printable."""
@@ -106,10 +104,11 @@ def get_filename_from_path(path):
     dirpath, filename = ntpath.split(path)
     return filename if filename else ntpath.basename(dirpath)
 
-def store_temp_file(filedata, filename):
+def store_temp_file(filedata, filename, path=None):
     """Store a temporary file.
     @param filedata: content of the original file.
     @param filename: name of the original file.
+    @param path: optional path for temp directory.
     @return: path to the temporary file.
     """
     filename = get_filename_from_path(filename)
@@ -117,13 +116,17 @@ def store_temp_file(filedata, filename):
     # Reduce length (100 is arbitrary).
     filename = filename[:100]
 
-    options = Config(os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"))
-    tmppath = options.cuckoo.tmppath
-    targetpath = os.path.join(tmppath, "cuckoo-tmp")
-    if not os.path.exists(targetpath):
-        os.mkdir(targetpath)
+    options = Config()
+    # Create temporary directory path.
+    if path:
+        target_path = path
+    else:
+        tmp_path = options.cuckoo.get("tmppath", "/tmp")
+        target_path = os.path.join(tmp_path, "cuckoo-tmp")
+    if not os.path.exists(target_path):
+        os.mkdir(target_path)
 
-    tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=targetpath)
+    tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=target_path)
     tmp_file_path = os.path.join(tmp_dir, filename)
     with open(tmp_file_path, "wb") as tmp_file:
         # If filedata is file object, do chunked copy.
@@ -178,22 +181,14 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-def logtime(dt):
-    """Formats time like a logger does, for the csv output
-       (e.g. "2013-01-25 13:21:44,590")
-    @param dt: datetime object
-    @return: time string
-    """
-    t = time.strftime("%Y-%m-%d %H:%M:%S", dt.timetuple())
-    s = "%s,%03d" % (t, dt.microsecond/1000)
-    return s
+class ThreadSingleton(type):
+    """Singleton per thread."""
+    _instances = threading.local()
 
-def time_from_cuckoomon(s):
-    """Parse time string received from cuckoomon via netlog
-    @param s: time string
-    @return: datetime object
-    """
-    return datetime.strptime(s, "%Y-%m-%d %H:%M:%S,%f")
+    def __call__(cls, *args, **kwargs):
+        if not getattr(cls._instances, "instance", None):
+            cls._instances.instance = super(ThreadSingleton, cls).__call__(*args, **kwargs)
+        return cls._instances.instance
 
 def to_unicode(s):
     """Attempt to fix non uft-8 string into utf-8. It tries to guess input encoding,
@@ -246,14 +241,31 @@ def cleanup_value(v):
         v = v[4:]
     return v
 
-def sanitize_filename(x):
-    """Kind of awful but necessary sanitizing of filenames to
-    get rid of unicode problems."""
-    out = ""
-    for c in x:
-        if c in string.letters + string.digits + " _-.":
-            out += c
-        else:
-            out += "_"
+def classlock(f):
+    """Classlock decorator (created for database.Database).
+    Used to put a lock to avoid sqlite errors.
+    """
+    def inner(self, *args, **kwargs):
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
 
-    return out
+        if calframe[1][1].endswith("database.py"):
+            return f(self, *args, **kwargs)
+
+        with self._lock:
+            return f(self, *args, **kwargs)
+
+    return inner
+
+class SuperLock(object):
+    def __init__(self):
+        self.tlock = threading.Lock()
+        self.mlock = multiprocessing.Lock()
+
+    def __enter__(self):
+        self.tlock.acquire()
+        self.mlock.acquire()
+
+    def __exit__(self, type, value, traceback):
+        self.mlock.release()
+        self.tlock.release()

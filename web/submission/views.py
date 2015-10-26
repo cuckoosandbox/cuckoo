@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -6,7 +6,7 @@ import os
 import sys
 
 from django.conf import settings
-from django.shortcuts import render_to_response
+from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext
 
 sys.path.append(settings.CUCKOO_PATH)
@@ -36,12 +36,12 @@ def index(request):
 
         if request.POST.get("free"):
             if options:
-                options += "&"
+                options += ","
             options += "free=yes"
 
         if request.POST.get("process_memory"):
             if options:
-                options += "&"
+                options += ","
             options += "procmemdump=yes"
 
         db = Database()
@@ -55,33 +55,40 @@ def index(request):
             task_machines.append(machine)
 
         if "sample" in request.FILES:
-            if request.FILES["sample"].size == 0:
-                return render_to_response("error.html",
-                                          {"error": "You uploaded an empty file."},
-                                          context_instance=RequestContext(request))
-            elif request.FILES["sample"].size > settings.MAX_UPLOAD_SIZE:
-                return render_to_response("error.html",
-                                          {"error": "You uploaded a file that exceeds that maximum allowed upload size."},
-                                          context_instance=RequestContext(request))
+            samples = request.FILES.getlist("sample")
+            for sample in samples:
+                # Error if there was only one submitted sample and it's empty.
+                # But if there are multiple and one was empty, just ignore it.
+                if not sample.size:
+                    if len(samples) != 1:
+                        continue
 
-            # Moving sample from django temporary file to Cuckoo temporary storage to
-            # let it persist between reboot (if user like to configure it in that way).
-            path = store_temp_file(request.FILES["sample"].read(),
-                                   request.FILES["sample"].name)
+                    return render_to_response("error.html",
+                                              {"error": "You uploaded an empty file."},
+                                              context_instance=RequestContext(request))
+                elif sample.size > settings.MAX_UPLOAD_SIZE:
+                    return render_to_response("error.html",
+                                              {"error": "You uploaded a file that exceeds that maximum allowed upload size."},
+                                              context_instance=RequestContext(request))
 
-            for entry in task_machines:
-                task_id = db.add_path(file_path=path,
-                                      package=package,
-                                      timeout=timeout,
-                                      options=options,
-                                      priority=priority,
-                                      machine=entry,
-                                      custom=custom,
-                                      memory=memory,
-                                      enforce_timeout=enforce_timeout,
-                                      tags=tags)
-                if task_id:
-                    task_ids.append(task_id)
+                # Moving sample from django temporary file to Cuckoo temporary storage to
+                # let it persist between reboot (if user like to configure it in that way).
+                path = store_temp_file(sample.read(),
+                                       sample.name)
+
+                for entry in task_machines:
+                    task_id = db.add_path(file_path=path,
+                                          package=package,
+                                          timeout=timeout,
+                                          options=options,
+                                          priority=priority,
+                                          machine=entry,
+                                          custom=custom,
+                                          memory=memory,
+                                          enforce_timeout=enforce_timeout,
+                                          tags=tags)
+                    if task_id:
+                        task_ids.append(task_id)
         elif "url" in request.POST:
             url = request.POST.get("url").strip()
             if not url:
@@ -105,13 +112,10 @@ def index(request):
 
         tasks_count = len(task_ids)
         if tasks_count > 0:
-            if tasks_count == 1:
-                message = "The analysis task was successfully added with ID {0}.".format(task_ids[0])
-            else:
-                message = "The analysis task were successfully added with IDs {0}.".format(", ".join(str(i) for i in task_ids))
-
-            return render_to_response("success.html",
-                                      {"message": message},
+            return render_to_response("submission/complete.html",
+                                      {"tasks": task_ids,
+                                       "tasks_count": tasks_count,
+                                       "baseurl": request.build_absolute_uri('/')[:-1]},
                                       context_instance=RequestContext(request))
         else:
             return render_to_response("error.html",
@@ -136,11 +140,11 @@ def index(request):
                 tags.append(tag.name)
 
             if tags:
-                label = machine.name + ": " + ", ".join(tags)
+                label = machine.label + ": " + ", ".join(tags)
             else:
-                label = machine.name
+                label = machine.label
 
-            machines.append((machine.name, label))
+            machines.append((machine.label, label))
 
         # Prepend ALL/ANY options.
         machines.insert(0, ("", "First available"))
@@ -150,3 +154,17 @@ def index(request):
                                   {"packages": sorted(packages),
                                    "machines": machines},
                                   context_instance=RequestContext(request))
+
+def status(request, task_id):
+    task = Database().view_task(task_id)
+    if not task:
+        return render_to_response("error.html",
+                                  {"error": "The specified task doesn't seem to exist."},
+                                  context_instance=RequestContext(request))
+
+    if task.status == "reported":
+        return redirect("analysis.views.report", task_id=task_id)
+
+    return render_to_response("submission/status.html",
+                              {"status": task.status, "task_id": task_id},
+                              context_instance=RequestContext(request))

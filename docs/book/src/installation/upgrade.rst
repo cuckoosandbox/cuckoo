@@ -4,10 +4,10 @@ Upgrade from a previous release
 
 Cuckoo Sandbox grows really fast and in every release new features are added and
 some others are fixed or removed.
-There are two ways to upgrade your Cuckoo: start from scratch or migrate your "old" setup (migration is supported only
-starting from Cuckoo 0.6).
-The suggested way to upgrade Cuckoo is to start from a fresh setup because it's easier and faster than migrate your
-old setup.
+There are two ways to upgrade your Cuckoo: start from scratch or migrate your
+"old" setup (migration is supported only starting from Cuckoo 0.6).
+The suggested way to upgrade Cuckoo is to start from a fresh setup because it's
+easier and faster than migrate your old setup.
 
 Upgrade starting from scratch
 =============================
@@ -44,7 +44,8 @@ release files, as it might raise some problems because:
 Migrate your Cuckoo
 ===================
 
-Data migration is shipped starting from Cuckoo 1.1 and supports migration starting from Cuckoo 0.6.
+Data migration is shipped starting from Cuckoo 1.1 and supports migration
+starting from Cuckoo 0.6.
 If your Cuckoo release is older than 0.6 you can't migrate your data.
 
 The following steps are suggested as requirement to migrate your data:
@@ -56,8 +57,8 @@ The following steps are suggested as requirement to migrate your data:
 5. Reconfigure Cuckoo as explained in this book (copying old configuration files
    is not safe because options can change between releases), and update agent in
    your virtual machines.
-6. Copy from your backup "storage" and "db" folders. (Reports and analyses already
-   present in "storage" folder will keep the old format.)
+6. Copy from your backup "storage" and "db" folders. (Reports and analyses
+   already present in "storage" folder will keep the old format.)
 
 Now setup Alembic (the framework used for migrations) and dateutil with::
 
@@ -68,13 +69,12 @@ Enter the alembic migration directory in "utils/db_migration" with::
 
     cd utils/db_migration
 
-If you are using a custom database (MySQL, PostgreSQL or SQLite in a non-default location) edit
-"alembic.ini" and change "sqlalchemy.url" to point your database.
 Before starting the migration script you must set your database connection in "cuckoo.conf"
-if you are using a custom one.
+if you are using a custom one. Alembic migration script will use the database
+connection parameters configured in cuckoo.conf.
 
-Again, please remeber to backup before launching migration tool! A wrong configuration may
-corrupt your data, backup should save kittens!
+Again, please remember to backup before launching migration tool! A wrong
+configuration may corrupt your data, backup should save kittens!
 
 Run the database migrations with::
 

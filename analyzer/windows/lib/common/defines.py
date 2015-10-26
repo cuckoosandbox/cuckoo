@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -46,6 +46,10 @@ MEM_DECOMMIT              = 0x00004000
 MEM_RELEASE               = 0x00008000
 MEM_RESET                 = 0x00080000
 
+MEM_IMAGE                 = 0x01000000
+MEM_MAPPED                = 0x00040000
+MEM_PRIVATE               = 0x00020000
+
 PAGE_NOACCESS             = 0x00000001
 PAGE_READONLY             = 0x00000002
 PAGE_READWRITE            = 0x00000004
@@ -58,15 +62,21 @@ PAGE_GUARD                = 0x00000100
 PAGE_NOCACHE              = 0x00000200
 PAGE_WRITECOMBINE         = 0x00000400
 
+PIPE_ACCESS_INBOUND       = 0x00000001
 PIPE_ACCESS_DUPLEX        = 0x00000003
 PIPE_TYPE_MESSAGE         = 0x00000004
 PIPE_READMODE_MESSAGE     = 0x00000002
 PIPE_WAIT                 = 0x00000000
 PIPE_UNLIMITED_INSTANCES  = 0x000000ff
+PIPE_TYPE_BYTE            = 0x00000000
+PIPE_READMODE_BYTE        = 0x00000000
+FILE_FLAG_WRITE_THROUGH   = 0x80000000
 INVALID_HANDLE_VALUE      = 0xffffffff
 ERROR_BROKEN_PIPE         = 0x0000006d
 ERROR_MORE_DATA           = 0x000000EA
 ERROR_PIPE_CONNECTED      = 0x00000217
+
+WAIT_TIMEOUT              = 0x00000102
 
 FILE_ATTRIBUTE_HIDDEN     = 0x00000002
 

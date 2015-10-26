@@ -1,29 +1,41 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import argparse
+import logging
 import os
 import sys
-import logging
-import argparse
 
 try:
-    from lib.cuckoo.common.logo import logo
     from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
     from lib.cuckoo.common.exceptions import CuckooCriticalError
     from lib.cuckoo.common.exceptions import CuckooDependencyError
+    from lib.cuckoo.common.logo import logo
+    from lib.cuckoo.core.resultserver import ResultServer
+    from lib.cuckoo.core.scheduler import Scheduler
     from lib.cuckoo.core.startup import check_working_directory, check_configs
     from lib.cuckoo.core.startup import check_version, create_structure
-    from lib.cuckoo.core.startup import init_logging, init_modules, init_tasks
-    from lib.cuckoo.core.scheduler import Scheduler
-    from lib.cuckoo.core.resultserver import ResultServer
+    from lib.cuckoo.core.startup import cuckoo_clean, drop_privileges
+    from lib.cuckoo.core.startup import init_logging, init_modules
+    from lib.cuckoo.core.startup import init_tasks, init_yara, init_binaries
+
+    import bson
+
+    bson  # Pretend like it's actually being used (for static checkers.)
 except (CuckooDependencyError, ImportError) as e:
     sys.exit("ERROR: Missing dependency: {0}".format(e))
 
 log = logging.getLogger()
 
 def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
+    """Cuckoo initialization workflow.
+    @param quiet: if set enable silent mode, it doesn't print anything except warnings
+    @param debug: if set enable debug mode, it print all debug messages
+    @param artwork: if set it will print only artworks, forever
+    @param test: enable integration test mode, used only for testing
+    """
     cur_path = os.getcwd()
     os.chdir(CUCKOO_ROOT)
 
@@ -51,9 +63,11 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
 
     init_modules()
     init_tasks()
+    init_yara()
+    init_binaries()
 
-    # This is just a temporary hack, we need an actual test suite to integrate
-    # with Travis-CI.
+    # TODO: This is just a temporary hack, we need an actual test suite to
+    # integrate with Travis-CI.
     if test:
         return
 
@@ -61,8 +75,10 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
 
     os.chdir(cur_path)
 
-
 def cuckoo_main(max_analysis_count=0):
+    """Cuckoo main loop.
+    @param max_analysis_count: kill cuckoo after this number of analyses
+    """
     cur_path = os.getcwd()
     os.chdir(CUCKOO_ROOT)
 
@@ -82,7 +98,16 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--artwork", help="Show artwork", action="store_true", required=False)
     parser.add_argument("-t", "--test", help="Test startup", action="store_true", required=False)
     parser.add_argument("-m", "--max-analysis-count", help="Maximum number of analyses", type=int, required=False)
+    parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
+    parser.add_argument("--clean", help="Remove all tasks and samples and their associated data", action='store_true', required=False)
     args = parser.parse_args()
+
+    if args.user:
+        drop_privileges(args.user)
+
+    if args.clean:
+        cuckoo_clean()
+        sys.exit(0)
 
     try:
         cuckoo_init(quiet=args.quiet, debug=args.debug, artwork=args.artwork,

@@ -1,0 +1,24 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>CPU</th>
+            <th>Index</th>
+            <th>Selector</th>
+            <th>Address</th>
+            <th>Module</th>
+            <th>Section</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for x in analysis.memory.idt.data %}
+        <tr>
+            <td>{{x.cpu_number}}</td>
+            <td>{{x.index}}</td>
+            <td><span class="mono">{{x.selector}}</span></td>
+            <td><span class="mono">{{x.address}}</span></td>
+            <td>{{x.module}}</td>
+            <td>{{x.section}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

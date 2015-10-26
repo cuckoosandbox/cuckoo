@@ -10,15 +10,15 @@ Make sure to run it inside Cuckoo's root directory.
 
 You will get an output similar to this::
 
-      eeee e   e eeee e   e  eeeee eeeee 
-      8  8 8   8 8  8 8   8  8  88 8  88 
-      8e   8e  8 8e   8eee8e 8   8 8   8 
-      88   88  8 88   88   8 8   8 8   8 
+      eeee e   e eeee e   e  eeeee eeeee
+      8  8 8   8 8  8 8   8  8  88 8  88
+      8e   8e  8 8e   8eee8e 8   8 8   8
+      88   88  8 88   88   8 8   8 8   8
       88e8 88ee8 88e8 88   8 8eee8 8eee8
 
-     Cuckoo Sandbox 1.1
+     Cuckoo Sandbox 1.2
      www.cuckoosandbox.org
-     Copyright (c) 2010-2014
+     Copyright (c) 2010-2015
 
      Checking for updates...
      Good! You have the latest version available.
@@ -34,14 +34,21 @@ Now Cuckoo is ready to run and it's waiting for submissions.
 
 ``cuckoo.py`` accepts some command line options as shown by the help::
 
-    usage: cuckoo.py [-h] [-q] [-d] [-v] [-a]
+    usage: cuckoo.py [-h] [-q] [-d] [-v] [-a] [-t] [-m MAX_ANALYSIS_COUNT]
+                     [-u USER] [--clean]
 
     optional arguments:
-      -h, --help     show this help message and exit
-      -q, --quiet    Display only error messages
-      -d, --debug    Display debug messages
-      -v, --version  show program's version number and exit
-      -a, --artwork  Show artwork
+      -h, --help            show this help message and exit
+      -q, --quiet           Display only error messages
+      -d, --debug           Display debug messages
+      -v, --version         show program's version number and exit
+      -a, --artwork         Show artwork
+      -t, --test            Test startup
+      -m MAX_ANALYSIS_COUNT, --max-analysis-count MAX_ANALYSIS_COUNT
+                            Maximum number of analyses
+      -u USER, --user USER  Drop user privileges to this user
+      --clean               Remove all tasks and samples and their associated data
+
 
 Most importantly ``--debug`` and ``--quiet`` respectively increase and decrease the logging
 verbosity.

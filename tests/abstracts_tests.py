@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -17,14 +17,6 @@ class TestProcessing:
     @raises(NotImplementedError)
     def test_not_implemented_run(self):
         self.p.run()
-
-class TestSignature(object):
-    def setUp(self):
-        self.s = abstracts.Signature()
-
-    @raises(NotImplementedError)
-    def test_not_implemented_run(self):
-        self.s.run()
 
 class TestReport:
     def setUp(self):

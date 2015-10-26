@@ -1,9 +1,8 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import time
-import json
 import logging
 from datetime import datetime
 
@@ -22,6 +21,19 @@ class AnalysisInfo(Processing):
         """
         self.key = "info"
 
+        if "started_on" not in self.task:
+            return dict(
+                version=CUCKOO_VERSION,
+                started="none",
+                ended="none",
+                duration="none",
+                id=int(self.task["id"]),
+                category="unknown",
+                custom="unknown",
+                machine=None,
+                package="unknown"
+            )
+
         try:
             started = time.strptime(self.task["started_on"], "%Y-%m-%d %H:%M:%S")
             started = datetime.fromtimestamp(time.mktime(started))
@@ -39,12 +51,13 @@ class AnalysisInfo(Processing):
         task = db.view_task(self.task["id"], details=True)
 
         if task and task.guest:
-            # Get machine description ad json.
+            # Get machine description.
             machine = task.guest.to_dict()
-            # Remove useless task_id.
-            del(machine["task_id"])
-            # Save.
-            self.task["machine"] = machine
+            # Remove superfluous fields.
+            del machine["task_id"]
+            del machine["id"]
+        else:
+            machine = None
 
         return dict(
             version=CUCKOO_VERSION,
@@ -54,6 +67,9 @@ class AnalysisInfo(Processing):
             id=int(self.task["id"]),
             category=self.task["category"],
             custom=self.task["custom"],
-            machine=self.task["machine"],
-            package=self.task["package"]
+            owner=self.task["owner"],
+            machine=machine,
+            package=self.task["package"],
+            platform=self.task["platform"],
+            options=self.task["options"],
         )

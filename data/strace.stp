@@ -1,0 +1,79 @@
+/* Copyright (C) 2010-2015 Cuckoo Foundation.
+ # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+ # See the file 'docs/LICENSE' for copying permission.
+ #
+ # Based on the Systemtap "strace.stp" example, adapted to our needs
+ */
+
+/* configuration options; set these with stap -G */
+global timestamp = 1     /* -Gtimestamp=0 means don't print a syscall timestamp */
+global elapsed_time = 0  /* -Gelapsed_time=1 means print a syscall duration too */
+
+global thread_argstr%
+global thread_time%
+
+global syscalls_nonreturn
+probe begin 
+  {
+    /* list those syscalls that never .return */
+    syscalls_nonreturn["exit"]=1
+    syscalls_nonreturn["exit_group"]=1
+  }
+
+probe nd_syscall.* 
+  {
+    if (pid() == target()) next # skip our own helper process
+    if (!target_set_pid(pid())) next # skip unrelated processes
+
+    t=tid()
+    thread_argstr[t]=argstr
+    if (timestamp || elapsed_time)
+      thread_time[t]=gettimeofday_us()
+
+    if (name in syscalls_nonreturn)
+      report(name,argstr,"")
+  }
+
+probe nd_syscall.*.return
+  {
+    if (pid() == target()) next # skip our own helper process
+    if (!target_set_pid(pid())) next # skip unrelated processes
+
+    report(name,thread_argstr[tid()],retstr)
+  }
+
+function report(syscall_name, syscall_argstr, syscall_retstr)
+  {
+    t=tid()
+
+    if (timestamp || elapsed_time)
+      {
+        now = gettimeofday_us()
+        then = thread_time[t]
+
+        if (timestamp)
+          prefix=sprintf("%s.%06d ", ctime(then/1000000), then%1000000)
+
+        if (elapsed_time && (now>then)) {
+          diff = now-then
+          suffix=sprintf(" <%d.%06d>", diff/1000000, diff%1000000)
+        }
+
+        delete thread_time[t]
+      }
+
+    /* add a thread-id string in lots of cases, except if
+       stap strace.stp -c SINGLE_THREADED_CMD */
+    if (tid() != target()) {
+      prefix .= sprintf("%s@%x[%d] ", execname(), uaddr(), t)
+    }
+
+    printf("%s%s(%s) = %s%s\n",
+           prefix, 
+           syscall_name, syscall_argstr, syscall_retstr,
+           suffix)
+
+    //print_ubacktrace_brief()
+    
+    delete thread_argstr[t]
+  }

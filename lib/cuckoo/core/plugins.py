@@ -1,16 +1,16 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import json
 import pkgutil
+import importlib
 import inspect
 import logging
 from collections import defaultdict
 from distutils.version import StrictVersion
 
-from lib.cuckoo.common.abstracts import Auxiliary, Machinery, Processing
+from lib.cuckoo.common.abstracts import Auxiliary, Machinery, LibVirtMachinery, Processing
 from lib.cuckoo.common.abstracts import Report, Signature
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
@@ -19,11 +19,39 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooProcessingError
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
-from lib.cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
 
-_modules = defaultdict(dict)
+_modules = defaultdict(list)
+
+def enumerate_plugins(dirpath, module_prefix, namespace, class_,
+                      attributes={}):
+    """Import plugins of type `class` located at `dirpath` into the
+    `namespace` that starts with `module_prefix`. If `dirpath` represents a
+    filepath then it is converted into its containing directory. The
+    `attributes` dictionary allows one to set extra fields for all imported
+    plugins."""
+    if os.path.isfile(dirpath):
+        dirpath = os.path.dirname(dirpath)
+
+    for fname in os.listdir(dirpath):
+        if fname.endswith(".py") and not fname.startswith("__init__"):
+            module_name, _ = os.path.splitext(fname)
+            importlib.import_module("%s.%s" % (module_prefix, module_name))
+
+    plugins = []
+    for subclass in class_.__subclasses__():
+        # Check whether this subclass belongs to the module namespace that
+        # we're currently importing. It should be noted that parent and child
+        # namespaces should fail the following if-statement.
+        if module_prefix != ".".join(subclass.__module__.split(".")[:-1]):
+            continue
+
+        namespace[subclass.__name__] = subclass
+        for key, value in attributes.items():
+            setattr(subclass, key, value)
+        plugins.append(subclass)
+    return plugins
 
 def import_plugin(name):
     try:
@@ -37,9 +65,6 @@ def import_plugin(name):
 def import_package(package):
     prefix = package.__name__ + "."
     for loader, name, ispkg in pkgutil.iter_modules(package.__path__, prefix):
-        if ispkg:
-            continue
-
         import_plugin(name)
 
 def load_plugins(module):
@@ -47,7 +72,7 @@ def load_plugins(module):
         if inspect.isclass(value):
             if issubclass(value, Auxiliary) and value is not Auxiliary:
                 register_plugin("auxiliary", value)
-            elif issubclass(value, Machinery) and value is not Machinery:
+            elif issubclass(value, Machinery) and value is not Machinery and value is not LibVirtMachinery:
                 register_plugin("machinery", value)
             elif issubclass(value, Processing) and value is not Processing:
                 register_plugin("processing", value)
@@ -73,48 +98,47 @@ class RunAuxiliary(object):
     def __init__(self, task, machine):
         self.task = task
         self.machine = machine
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "auxiliary.conf"))
+        self.cfg = Config("auxiliary")
         self.enabled = []
 
     def start(self):
-        auxiliary_list = list_plugins(group="auxiliary")
-        if auxiliary_list:
-            for module in auxiliary_list:
-                try:
-                    current = module()
-                except:
-                    log.exception("Failed to load the auxiliary module "
-                                  "\"{0}\":".format(module))
-                    return
+        for module in list_plugins(group="auxiliary"):
+            try:
+                current = module()
+            except:
+                log.exception("Failed to load the auxiliary module "
+                              "\"{0}\":".format(module))
+                return
 
-                module_name = inspect.getmodule(current).__name__
-                if "." in module_name:
-                    module_name = module_name.rsplit(".", 1)[1]
+            module_name = inspect.getmodule(current).__name__
+            if "." in module_name:
+                module_name = module_name.rsplit(".", 1)[1]
 
-                try:
-                    options = self.cfg.get(module_name)
-                except CuckooOperationalError:
-                    log.debug("Auxiliary module %s not found in "
-                              "configuration file", module_name)
-                    continue
+            try:
+                options = self.cfg.get(module_name)
+            except CuckooOperationalError:
+                log.debug("Auxiliary module %s not found in "
+                          "configuration file", module_name)
+                continue
 
-                if not options.enabled:
-                    continue
+            if not options.enabled:
+                continue
 
-                current.set_task(self.task)
-                current.set_machine(self.machine)
-                current.set_options(options)
+            current.set_task(self.task)
+            current.set_machine(self.machine)
+            current.set_options(options)
 
-                try:
-                    current.start()
-                except NotImplementedError:
-                    pass
-                except Exception as e:
-                    log.warning("Unable to start auxiliary module %s: %s",
-                                module_name, e)
-                else:
-                    log.debug("Started auxiliary module: %s", module_name)
-                    self.enabled.append(current)
+            try:
+                current.start()
+            except NotImplementedError:
+                pass
+            except Exception as e:
+                log.warning("Unable to start auxiliary module %s: %s",
+                            module_name, e)
+            else:
+                log.debug("Started auxiliary module: %s",
+                          current.__class__.__name__)
+                self.enabled.append(current)
 
     def stop(self):
         for module in self.enabled:
@@ -125,7 +149,8 @@ class RunAuxiliary(object):
             except Exception as e:
                 log.warning("Unable to stop auxiliary module: %s", e)
             else:
-                log.debug("Stopped auxiliary module: %s", module)
+                log.debug("Stopped auxiliary module: %s",
+                          module.__class__.__name__)
 
 class RunProcessing(object):
     """Analysis Results Processing Engine.
@@ -135,13 +160,13 @@ class RunProcessing(object):
     is then passed over the reporting engine.
     """
 
-    def __init__(self, task_id):
-        """@param task_id: ID of the analyses to process."""
-        self.task = Database().view_task(task_id).to_dict()
-        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "processing.conf"))
+    def __init__(self, task):
+        """@param task: task dictionary of the analysis to process."""
+        self.task = task
+        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]))
+        self.cfg = Config("processing")
 
-    def process(self, module):
+    def process(self, module, results):
         """Run a processing module.
         @param module: processing module to run.
         @param results: results dict.
@@ -153,7 +178,7 @@ class RunProcessing(object):
         except:
             log.exception("Failed to load the processing module "
                           "\"{0}\":".format(module))
-            return
+            return None, None
 
         # Extract the module name.
         module_name = inspect.getmodule(current).__name__
@@ -165,11 +190,11 @@ class RunProcessing(object):
         except CuckooOperationalError:
             log.debug("Processing module %s not found in configuration file",
                       module_name)
-            return None
+            return None, None
 
         # If the processing module is disabled in the config, skip it.
         if not options.enabled:
-            return None
+            return None, None
 
         # Give it path to the analysis results.
         current.set_path(self.analysis_path)
@@ -177,6 +202,8 @@ class RunProcessing(object):
         current.set_task(self.task)
         # Give it the options from the relevant processing.conf section.
         current.set_options(options)
+        # Give the results that we have obtained so far.
+        current.set_results(results)
 
         try:
             # Run the processing module and retrieve the generated data to be
@@ -186,19 +213,18 @@ class RunProcessing(object):
             log.debug("Executed processing module \"%s\" on analysis at "
                       "\"%s\"", current.__class__.__name__, self.analysis_path)
 
-            # If succeeded, return they module's key name and the data to be
-            # appended to it.
-            return {current.key: data}
+            # If succeeded, return they module's key name and the data.
+            return current.key, data
         except CuckooDependencyError as e:
             log.warning("The processing module \"%s\" has missing dependencies: %s", current.__class__.__name__, e)
         except CuckooProcessingError as e:
             log.warning("The processing module \"%s\" returned the following "
                         "error: %s", current.__class__.__name__, e)
         except:
-            log.exception("Failed to run the processing module \"%s\":",
-                          current.__class__.__name__)
+            log.exception("Failed to run the processing module \"%s\" for task #%d:",
+                          current.__class__.__name__, self.task["id"])
 
-        return None
+        return None, None
 
     def run(self):
         """Run all processing modules and all signatures.
@@ -223,11 +249,11 @@ class RunProcessing(object):
 
             # Run every loaded processing module.
             for module in processing_list:
-                result = self.process(module)
-                # If it provided some results, append it to the big results
-                # container.
-                if result:
-                    results.update(result)
+                key, result = self.process(module, results)
+
+                # If the module provided results, append it to the fat dict.
+                if key and result:
+                    results[key] = result
         else:
             log.info("No processing modules loaded")
 
@@ -239,212 +265,172 @@ class RunSignatures(object):
 
     def __init__(self, results):
         self.results = results
+        self.matched = []
 
-    def _load_overlay(self):
-        """Loads overlay data from a json file.
-        See example in data/signature_overlay.json
-        """
-        filename = os.path.join(CUCKOO_ROOT, "data", "signature_overlay.json")
+        # While developing our version is generally something along the lines
+        # of "2.0-dev" whereas StrictVersion() does not handle "-dev", so we
+        # strip that part off.
+        self.version = CUCKOO_VERSION.split("-")[0]
 
-        try:
-            with open(filename) as fh:
-                odata = json.load(fh)
-                return odata
-        except IOError:
-            pass
-        
-        return {}
+        # Gather all enabled, up-to-date, and applicable signatures.
+        self.signatures = []
+        for signature in list_plugins(group="signatures"):
+            if self._should_enable_signature(signature):
+                self.signatures.append(signature(self))
 
-    def _apply_overlay(self, signature, overlay):
-        """Applies the overlay attributes to the signature object."""
-        if signature.name in overlay:
-            attrs = overlay[signature.name]
-            for attr, value in attrs.items():
-                setattr(signature, attr, value)
+    def _should_enable_signature(self, signature):
+        """Should the given signature be enabled for this analysis?"""
+        if not signature.enabled:
+            return False
 
-    def _check_signature_version(self, current):
+        if not self.check_signature_version(signature):
+            return False
+
+        # Network and/or cross-platform signatures.
+        if not signature.platform:
+            return True
+
+        task_platform = self.results.get("info", {}).get("platform")
+
+        # Windows is implied when a platform has not been specified during the
+        # submission of a sample, but for other platforms the platform has to
+        # be explicitly stated.
+        if not task_platform and signature.platform == "windows":
+            return True
+
+        return task_platform == signature.platform
+
+    def check_signature_version(self, signature):
         """Check signature version.
         @param current: signature class/instance to check.
         @return: check result.
         """
-        # Since signatures can hardcode some values or checks that might
-        # become obsolete in future versions or that might already be obsolete,
-        # I need to match its requirements with the running version of Cuckoo.
-        version = CUCKOO_VERSION.split("-")[0]
-
-        # If provided, check the minimum working Cuckoo version for this
-        # signature.
-        if current.minimum:
+        # Check the minimum Cuckoo version for this signature, if provided.
+        if signature.minimum:
             try:
                 # If the running Cuckoo is older than the required minimum
                 # version, skip this signature.
-                if StrictVersion(version) < StrictVersion(current.minimum.split("-")[0]):
+                if StrictVersion(self.version) < StrictVersion(signature.minimum):
                     log.debug("You are running an older incompatible version "
                               "of Cuckoo, the signature \"%s\" requires "
-                              "minimum version %s",
-                              current.name, current.minimum)
-                    return None
+                              "minimum version %s.",
+                              signature.name, signature.minimum)
+                    return False
+
+                if StrictVersion("1.2") > StrictVersion(signature.minimum):
+                    log.warn("Cuckoo signature style has been redesigned in "
+                             "cuckoo 1.2. This signature is not "
+                             "compatible: %s.", signature.name)
+                    return False
+
+                if StrictVersion("2.0") > StrictVersion(signature.minimum):
+                    log.warn("Cuckoo version 2.0 features a lot of changes that "
+                             "render old signatures ineffective as they are not "
+                             "backwards-compatible. Please upgrade this "
+                             "signature: %s.", signature.name)
+                    return False
+
+                if hasattr(signature, "run"):
+                    log.warn("This signatures features one or more deprecated "
+                             "functions which indicates that it is very likely "
+                             "an old-style signature. Please upgrade this "
+                             "signature: %s.", signature.name)
+                    return False
+
             except ValueError:
                 log.debug("Wrong minor version number in signature %s",
-                          current.name)
-                return None
+                          signature.name)
+                return False
 
-        # If provided, check the maximum working Cuckoo version for this
-        # signature.
-        if current.maximum:
+        # Check the maximum version of Cuckoo for this signature, if provided.
+        if signature.maximum:
             try:
                 # If the running Cuckoo is newer than the required maximum
                 # version, skip this signature.
-                if StrictVersion(version) > StrictVersion(current.maximum.split("-")[0]):
+                if StrictVersion(self.version) > StrictVersion(signature.maximum):
                     log.debug("You are running a newer incompatible version "
                               "of Cuckoo, the signature \"%s\" requires "
-                              "maximum version %s",
-                              current.name, current.maximum)
-                    return None
+                              "maximum version %s.",
+                              signature.name, signature.maximum)
+                    return False
             except ValueError:
                 log.debug("Wrong major version number in signature %s",
-                          current.name)
-                return None
+                          signature.name)
+                return False
 
         return True
 
-    def process(self, signature):
-        """Run a signature.
-        @param signature: signature to run.
-        @param signs: signature results dict.
-        @return: matched signature.
-        """
-        # Initialize the current signature.
+    def call_signature(self, signature, handler, *args, **kwargs):
+        """Wrapper to call into 3rd party signatures. This wrapper yields the
+        event to the signature and handles matched signatures recursively."""
         try:
-            current = signature(self.results)
+            if signature.is_active() and handler(*args, **kwargs):
+                signature.matched = True
+                for sig in self.signatures:
+                    self.call_signature(sig, sig.on_signature, signature)
         except:
-            log.exception("Failed to load signature "
-                          "\"{0}\":".format(signature))
-            return
-
-        log.debug("Running signature \"%s\"", current.name)
-
-        # If the signature is disabled, skip it.
-        if not current.enabled:
-            return None
-
-        if not self._check_signature_version(current):
-            return None
-
-        try:
-            # Run the signature and if it gets matched, extract key information
-            # from it and append it to the results container.
-            if current.run():
-                log.debug("Analysis matched signature \"%s\"", current.name)
-                # Return information on the matched signature.
-                return current.as_result()
-        except NotImplementedError:
-            return None
-        except:
-            log.exception("Failed to run signature \"%s\":", current.name)
-
-        return None
+            log.exception("Failed to run '%s' of the %s signature",
+                          handler.__name__, signature.name)
 
     def run(self):
-        # This will contain all the matched signatures.
-        matched = []
+        """Run signatures."""
+        # Transform the filter_ things into set()'s for faster lookup. (This
+        # is just a small optimization).
+        for signature in self.signatures:
+            signature.filter_processnames = set(signature.filter_processnames)
+            signature.filter_apinames = set(signature.filter_apinames)
+            signature.filter_categories = set(signature.filter_categories)
 
-        complete_list = list_plugins(group="signatures")
-        evented_list = [sig(self.results)
-                        for sig in complete_list
-                        if sig.enabled and sig.evented and
-                        self._check_signature_version(sig)]
+        # Allow signatures to initialize and do an early exit.
+        for signature in self.signatures:
+            signature.init()
 
-        overlay = self._load_overlay()
-        log.debug("Applying signature overlays for signatures: %s", ", ".join(overlay.keys()))
-        for signature in complete_list + evented_list:
-            self._apply_overlay(signature, overlay)
+            if signature.quickout():
+                self.signatures.remove(signature)
 
-        if evented_list:
-            log.debug("Running %u evented signatures", len(evented_list))
-            for sig in evented_list:
-                if sig == evented_list[-1]:
-                    log.debug("\t `-- %s", sig.name)
-                else:
-                    log.debug("\t |-- %s", sig.name)
+        log.debug("Running %d signatures", len(self.signatures))
 
-            # Iterate calls and tell interested signatures about them
-            for proc in self.results["behavior"]["processes"]:
-                for call in proc["calls"]:
-                    # Loop through active evented signatures.
-                    for sig in evented_list:
-                        # Skip current call if it doesn't match the filters (if any).
-                        if sig.filter_processnames and not proc["process_name"] in sig.filter_processnames:
-                            continue
-                        if sig.filter_apinames and not call["api"] in sig.filter_apinames:
-                            continue
-                        if sig.filter_categories and not call["category"] in sig.filter_categories:
-                            continue
+        # Iterate calls and tell interested signatures about them.
+        for proc in self.results.get("behavior", {}).get("processes", []):
 
-                        result = None
-                        try:
-                            result = sig.on_call(call, proc)
-                        except NotImplementedError:
-                            result = False
-                        except:
-                            log.exception("Failed to run signature \"%s\":", sig.name)
-                            result = False
+            # Yield the new process event.
+            for sig in self.signatures:
+                sig.pid = proc["pid"]
+                self.call_signature(sig, sig.on_process, proc)
 
-                        # If the signature returns None we can carry on, the
-                        # condition was not matched.
-                        if result is None:
-                            continue
+            # Yield each call of interest.
+            for idx, call in enumerate(proc.get("calls", [])):
+                for sig in self.signatures:
+                    if sig.filter_processnames and \
+                            proc["process_name"] not in sig.filter_processnames:
+                        continue
 
-                        # On True, the signature is matched.
-                        if result is True:
-                            log.debug("Analysis matched signature \"%s\"", sig.name)
-                            matched.append(sig.as_result())
-                            if sig in complete_list:
-                                complete_list.remove(sig)
-                        
-                        # Either True or False, we don't need to check this sig anymore.
-                        evented_list.remove(sig)
-                        del sig
+                    if sig.filter_apinames and \
+                            call["api"] not in sig.filter_apinames:
+                        continue
 
-            # Call the stop method on all remaining instances.
-            for sig in evented_list:
-                try:
-                    result = sig.on_complete()
-                except NotImplementedError:
-                    continue
-                except:
-                    log.exception("Failed run on_complete() method for signature \"%s\":", sig.name)
-                    continue
-                else:
-                    if result is True:
-                        log.debug("Analysis matched signature \"%s\"", sig.name)
-                        matched.append(sig.as_result())
-                        if sig in complete_list:
-                            complete_list.remove(sig)
+                    if sig.filter_categories and \
+                            call["category"] not in sig.filter_categories:
+                        continue
 
-        # Link this into the results already at this point, so non-evented signatures can use it
-        self.results["signatures"] = matched
+                    sig.cid, sig.call = idx, call
+                    self.call_signature(sig, sig.on_call, call, proc)
 
-        # Compat loop for old-style (non evented) signatures.
-        if complete_list:
-            complete_list.sort(key=lambda sig: sig.order)
-            log.debug("Running non-evented signatures")
+        # Yield completion events to each signature.
+        for sig in self.signatures:
+            self.call_signature(sig, sig.on_complete)
 
-            for signature in complete_list:
-                match = self.process(signature)
-                # If the signature is matched, add it to the list.
-                if match:
-                    matched.append(match)
+        for signature in self.signatures:
+            if signature.matched:
+                log.debug("Analysis matched signature: %s", signature.name)
+                self.matched.append(signature.results())
 
-                # Reset the ParseProcessLog instances after each signature
-                if "behavior" in self.results:
-                    for process in self.results["behavior"]["processes"]:
-                        process["calls"].reset()
+        # Sort the matched signatures by their severity level and put them
+        # into the results dictionary.
+        self.matched.sort(key=lambda key: key["severity"])
+        self.results["signatures"] = self.matched
 
-        # Sort the matched signatures by their severity level.
-        matched.sort(key=lambda key: key["severity"])
-
-class RunReporting:
+class RunReporting(object):
     """Reporting Engine.
 
     This class handles the loading and execution of the enabled reporting
@@ -452,12 +438,12 @@ class RunReporting:
     Engine and pass it over to the reporting modules before executing them.
     """
 
-    def __init__(self, task_id, results):
+    def __init__(self, task, results):
         """@param analysis_path: analysis folder path."""
-        self.task = Database().view_task(task_id).to_dict()
+        self.task = task
         self.results = results
-        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id))
-        self.cfg = Config(cfg=os.path.join(CUCKOO_ROOT, "conf", "reporting.conf"))
+        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]))
+        self.cfg = Config("reporting")
 
     def process(self, module):
         """Run a single reporting module.
@@ -493,7 +479,7 @@ class RunReporting:
         # Give it the the relevant reporting.conf section.
         current.set_options(options)
         # Load the content of the analysis.conf file.
-        current.cfg = Config(current.conf_path)
+        current.cfg = Config(cfg=current.conf_path)
 
         try:
             current.run(self.results)

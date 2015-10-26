@@ -11,6 +11,8 @@ This chapter explains how to use Cuckoo.
     submit
     web
     api
+    dist
     packages
     results
+    clean
     utilities

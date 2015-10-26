@@ -1,14 +1,29 @@
-# Copyright (C) 2010-2014 Cuckoo Foundation.
+# Copyright (C) 2010-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import sys
 import os
-
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 # Cuckoo path.
 CUCKOO_PATH = os.path.join(os.getcwd(), "..")
+sys.path.append(CUCKOO_PATH)
+
+from lib.cuckoo.common.config import Config
+
+cfg = Config("reporting").mongodb
+
+# Checks if mongo reporting is enabled in Cuckoo.
+if not cfg.get("enabled"):
+    raise Exception("Mongo reporting module is not enabled in cuckoo, aborting!")
+
+# Get connection options from reporting.conf.
+MONGO_HOST = cfg.get("host", "127.0.0.1")
+MONGO_PORT = cfg.get("port", 27017)
+MONGO_DB = cfg.get("db", "cuckoo")
+
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
 
 # Database settings. We don't need it.
 DATABASES = {}
@@ -100,7 +115,7 @@ ROOT_URLCONF = 'web.urls'
 WSGI_APPLICATION = 'web.wsgi.application'
 
 TEMPLATE_DIRS = (
-    "templates"
+    "templates",
 )
 
 INSTALLED_APPS = (
@@ -115,9 +130,14 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'analysis',
+    'compare',
 )
 
 LOGIN_REDIRECT_URL = "/"
+
+# Fix to avoid migration warning in django 1.7 about test runner (1_6.W001).
+# In future it could be removed: https://code.djangoproject.com/ticket/23469
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
