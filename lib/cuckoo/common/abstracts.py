@@ -772,7 +772,8 @@ class Signature(object):
         return ret
 
     def get_files(self, pid=None, actions=None):
-        """Get files written by a specific process.
+        """Get files read, queried, or written to optionally by a
+        specific process.
 
         @param pid: the process or None for all
         @param actions: actions to search for. None is all
@@ -783,6 +784,7 @@ class Signature(object):
             actions = [
                 "file_opened", "file_written",
                 "file_read", "file_deleted",
+                "file_exists",
             ]
 
         return self.get_summary_generic(pid, actions)
@@ -827,6 +829,7 @@ class Signature(object):
             actions = [
                 "file_opened", "file_written",
                 "file_read", "file_deleted",
+                "file_exists",
             ]
 
         return self._check_value(pattern=pattern,
