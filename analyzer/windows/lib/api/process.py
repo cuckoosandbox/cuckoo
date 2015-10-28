@@ -378,6 +378,7 @@ class Process(object):
             "hashes-path": os.path.join(os.getcwd(), "hashes.bin"),
             "track": "1" if track else "0",
             "mode": mode or "",
+            "disguise": self.config.options.get("disguise", "0"),
         }
 
         for key, value in lines.items():
