@@ -292,7 +292,7 @@ class GuestManager(object):
         r = self.post("/mkdtemp", data={"dirpath": systemdrive})
         self.analyzer_path = r.json()["dirpath"]
 
-    def upload_analyzer(self):
+    def upload_analyzer(self, monitor):
         """Upload the analyzer to the Virtual Machine."""
         zip_data = StringIO()
         zip_file = ZipFile(zip_data, "w", ZIP_STORED)
@@ -313,6 +313,14 @@ class GuestManager(object):
             for name in files:
                 path = os.path.join(root, name)
                 archive_name = os.path.join(archive_root, name)
+                zip_file.write(path, archive_name)
+
+        # Include the chosen monitoring component.
+        if self.platform == "windows":
+            dirpath = os.path.join(CUCKOO_ROOT, "data", "monitor", monitor)
+            for name in os.listdir(dirpath):
+                path = os.path.join(dirpath, name)
+                archive_name = os.path.join("/bin", name)
                 zip_file.write(path, archive_name)
 
         zip_file.close()
@@ -347,8 +355,12 @@ class GuestManager(object):
         }
         self.post("/store", files={"file": config}, data=data)
 
-    def start_analysis(self, options):
-        """Start the analysis by uploading all required files."""
+    def start_analysis(self, options, monitor):
+        """Start the analysis by uploading all required files.
+
+        @param options: the task options
+        @param monitor: identifier of the monitor to be used.
+        """
         log.info("Starting analysis on guest (id=%s, ip=%s)",
                  self.vmid, self.ipaddr)
 
@@ -381,7 +393,7 @@ class GuestManager(object):
         self.query_environ()
 
         # Upload the analyzer.
-        self.upload_analyzer()
+        self.upload_analyzer(monitor)
 
         # Pass along the analysis.conf file.
         self.add_config(options)

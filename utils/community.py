@@ -91,6 +91,7 @@ def install(enabled, force, rewrite):
         "reporting": os.path.join("modules", "reporting"),
         "machinery": os.path.join("modules", "machinery"),
         "analyzer": os.path.join("analyzer"),
+        "monitor": os.path.join("data", "monitor"),
         "agent": os.path.join("agent"),
     }
 
@@ -117,6 +118,7 @@ def main():
     parser.add_argument("-p", "--processing", help="Download processing modules", action="store_true", required=False)
     parser.add_argument("-m", "--machinery", help="Download machine managers", action="store_true", required=False)
     parser.add_argument("-n", "--analyzer", help="Download analyzer modules", action="store_true", required=False)
+    parser.add_argument("-M", "--monitor", help="Download machine managers", action="store_true", required=False)
     parser.add_argument("-g", "--agent", help="Download agent modules", action="store_true", required=False)
     parser.add_argument("-r", "--reporting", help="Download reporting modules", action="store_true", required=False)
     parser.add_argument("-f", "--force", help="Install files without confirmation", action="store_true", required=False)
@@ -134,6 +136,7 @@ def main():
         enabled.append("reporting")
         enabled.append("machinery")
         enabled.append("analyzer")
+        enabled.append("monitor")
         enabled.append("agent")
     else:
         if args.signatures:
