@@ -286,7 +286,8 @@ class AnalysisManager(threading.Thread):
                                  self.machine.platform)
 
             # Start the analysis.
-            guest.start_analysis(options)
+            monitor = self.task.options.get("monitor", "latest")
+            guest.start_analysis(options, monitor)
 
             guest.wait_for_completion()
             succeeded = True
