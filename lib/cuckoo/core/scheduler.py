@@ -478,11 +478,7 @@ class Scheduler:
         else:
             machine_lock = threading.Lock()
 
-        log.info("Using \"%s\" machine manager with max_analysis_count=%d, "
-                 "max_machines_count=%d, and max_vmstartup_count=%d",
-                 machinery_name, self.cfg.cuckoo.max_analysis_count,
-                 self.cfg.cuckoo.max_machines_count,
-                 self.cfg.cuckoo.max_vmstartup_count)
+        log.info("Using \"%s\" as machine manager", machinery_name)
 
         # Get registered class name. Only one machine manager is imported,
         # therefore there should be only one class in the list.
