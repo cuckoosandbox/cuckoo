@@ -6,6 +6,10 @@ The following tasks were added successfully:
 {% for task in tasks %}
     <a href="{% url "submission.views.status" task %}">{{task}}</a>
 {% endfor %}.
-Click on the links to monitor the status of the submission.
+<br /><br />
+Click on the links to monitor the status of the submission:<br />
+{% for task in tasks %}
+    <a href="{% url "submission.views.status" task %}">{{ baseurl }}{% url "submission.views.status" task %}</a><br />
+{% endfor %}
 </div>
 {% endblock %}

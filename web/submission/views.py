@@ -55,8 +55,14 @@ def index(request):
             task_machines.append(machine)
 
         if "sample" in request.FILES:
-            for sample in request.FILES.getlist("sample"):
-                if sample.size == 0:
+            samples = request.FILES.getlist("sample")
+            for sample in samples:
+                # Error if there was only one submitted sample and it's empty.
+                # But if there are multiple and one was empty, just ignore it.
+                if not sample.size:
+                    if len(samples) != 1:
+                        continue
+
                     return render_to_response("error.html",
                                               {"error": "You uploaded an empty file."},
                                               context_instance=RequestContext(request))
@@ -108,7 +114,8 @@ def index(request):
         if tasks_count > 0:
             return render_to_response("submission/complete.html",
                                       {"tasks": task_ids,
-                                       "tasks_count": tasks_count},
+                                       "tasks_count": tasks_count,
+                                       "baseurl": request.build_absolute_uri('/')[:-1]},
                                       context_instance=RequestContext(request))
         else:
             return render_to_response("error.html",
