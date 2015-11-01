@@ -77,7 +77,7 @@ class OldGuestManager(object):
         self.server._set_timeout(None)
         return True
 
-    def upload_analyzer(self, hashes_path):
+    def upload_analyzer(self, monitor):
         """Upload analyzer to guest.
         @return: operation status.
         """
@@ -102,8 +102,13 @@ class OldGuestManager(object):
                 archive_name = os.path.join(archive_root, name)
                 zip_file.write(path, archive_name)
 
-        if hashes_path:
-            zip_file.write(hashes_path, "hashes.bin")
+        # Include the chosen monitoring component.
+        if self.platform == "windows":
+            dirpath = os.path.join(CUCKOO_ROOT, "data", "monitor", monitor)
+            for name in os.listdir(dirpath):
+                path = os.path.join(dirpath, name)
+                archive_name = os.path.join("/bin", name)
+                zip_file.write(path, archive_name)
 
         zip_file.close()
         data = xmlrpclib.Binary(zip_data.getvalue())
@@ -121,7 +126,7 @@ class OldGuestManager(object):
                                    "to upload agent, check networking or try "
                                    "to increase timeout".format(self.id))
 
-    def start_analysis(self, options):
+    def start_analysis(self, options, monitor):
         """Start analysis.
         @param options: options.
         @return: operation status.
@@ -156,7 +161,7 @@ class OldGuestManager(object):
             self.wait(CUCKOO_GUEST_INIT)
 
             # Invoke the upload of the analyzer to the guest.
-            self.upload_analyzer(opt.get("hashes-path"))
+            self.upload_analyzer(monitor)
 
             # Give the analysis options to the guest, so it can generate the
             # analysis.conf inside the guest.
@@ -235,7 +240,7 @@ class GuestManager(object):
     """This class represents the new Guest Manager. It operates on the new
     Cuckoo Agent which features a more abstract but more feature-rich API."""
 
-    def __init__(self, vmid, ipaddr, platform):
+    def __init__(self, vmid, ipaddr, platform="windows"):
         self.vmid = vmid
         self.ipaddr = ipaddr
         self.port = CUCKOO_GUEST_PORT
@@ -383,7 +388,7 @@ class GuestManager(object):
             #          "Machines with the new Agent, but for now falling back "
             #          "to backwards compatibility with the old agent.")
             self.is_old = True
-            self.old.start_analysis(options)
+            self.old.start_analysis(options, monitor)
             return
 
         log.info("Guest is running Cuckoo Agent %s (id=%s, ip=%s)",
