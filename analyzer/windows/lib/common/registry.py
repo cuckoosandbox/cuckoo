@@ -8,6 +8,7 @@ from ctypes import windll, POINTER, byref, Structure, pointer
 from ctypes import c_ushort, c_wchar_p, c_void_p, create_string_buffer
 from ctypes.wintypes import HANDLE, DWORD, LPCWSTR, ULONG, LONG
 from _winreg import KEY_ALL_ACCESS, KEY_QUERY_VALUE, KEY_SET_VALUE
+from _winreg import REG_SZ, REG_MULTI_SZ
 
 log = logging.getLogger(__name__)
 
@@ -66,6 +67,9 @@ def regkey_exists(rootkey, subkey):
     return not res
 
 def set_regkey(rootkey, subkey, name, type_, value):
+    if type_ == REG_MULTI_SZ:
+        value = u"\u0000".join(value) + u"\u0000\u0000"
+
     res_handle = HANDLE()
     res = RegOpenKeyExW(rootkey, subkey, 0, KEY_SET_VALUE, byref(res_handle))
     if not res:
@@ -80,6 +84,13 @@ def query_value(rootkey, subkey, name):
 
     res = RegOpenKeyExW(rootkey, subkey, 0, KEY_QUERY_VALUE, byref(res_handle))
     if not res:
-        RegQueryValueExW(res_handle, name, None, byref(type_), value, byref(length))
+        res = RegQueryValueExW(res_handle, name, None, byref(type_), value, byref(length))
         RegCloseKey(res_handle)
+
+    if not res:
+        if type_.value == REG_SZ:
+            return value.raw[:length.value].decode("utf16").rstrip("\x00")
+        if type_.value == REG_MULTI_SZ:
+            value = value.raw[:length.value].decode("utf16")
+            return value.rstrip(u"\u0000").split(u"\u0000")
         return value.raw[:length.value]

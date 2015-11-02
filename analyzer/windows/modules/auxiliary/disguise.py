@@ -37,8 +37,8 @@ class Disguise(Auxiliary):
     ]
 
     SYSTEM_BIOS_VERSIONS = [
-        u"LENOVO - 3220\u0000Ver 1.00PARTTBL(\u0000",
-        u"LENOVO - 2020\u0000Ver 1.00PARTTBLX\u0000",
+        ["LENOVO - 3220", "Ver 1.00PARTTBL("],
+        ["LENOVO - 2020", "Ver 1.00PARTTBLX"],
     ]
 
     VIDEO_BIOS_DATES = [
@@ -47,7 +47,7 @@ class Disguise(Auxiliary):
     ]
 
     VIDEO_BIOS_VERSIONS = [
-        "Hardware Version 0.0\u0000PARTTBLX\u0000",
+        ["Hardware Version 0.0", "PARTTBLX"],
     ]
 
     BIOS_VERSIONS = [
