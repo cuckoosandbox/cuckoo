@@ -5,9 +5,9 @@
 import logging
 
 from ctypes import windll, POINTER, byref, Structure, pointer
-from ctypes import c_ushort, c_wchar_p
+from ctypes import c_ushort, c_wchar_p, c_void_p, create_string_buffer
 from ctypes.wintypes import HANDLE, DWORD, LPCWSTR, ULONG, LONG
-from _winreg import KEY_ALL_ACCESS
+from _winreg import KEY_ALL_ACCESS, KEY_QUERY_VALUE, KEY_SET_VALUE
 
 log = logging.getLogger(__name__)
 
@@ -21,6 +21,15 @@ class UNICODE_STRING(Structure):
 RegOpenKeyExW = windll.advapi32.RegOpenKeyExW
 RegOpenKeyExW.argtypes = HANDLE, LPCWSTR, DWORD, ULONG, POINTER(HANDLE)
 RegOpenKeyExW.restype = LONG
+
+RegQueryValueExW = windll.advapi32.RegQueryValueExW
+RegQueryValueExW.argtypes = \
+    HANDLE, LPCWSTR, POINTER(DWORD), POINTER(DWORD), c_void_p, POINTER(DWORD)
+RegQueryValueExW.restype = LONG
+
+RegSetValueExW = windll.advapi32.RegSetValueExW
+RegSetValueExW.argtypes = HANDLE, LPCWSTR, DWORD, DWORD, c_void_p, DWORD
+RegSetValueExW.restype = LONG
 
 NtRenameKey = windll.ntdll.NtRenameKey
 NtRenameKey.argtypes = HANDLE, POINTER(UNICODE_STRING)
@@ -52,6 +61,25 @@ def rename_regkey(skey, ssubkey, dsubkey):
 
 def regkey_exists(rootkey, subkey):
     res_handle = HANDLE()
-    res = RegOpenKeyExW(rootkey, subkey, 0, KEY_ALL_ACCESS, byref(res_handle))
+    res = RegOpenKeyExW(rootkey, subkey, 0, KEY_QUERY_VALUE, byref(res_handle))
     RegCloseKey(res_handle)
     return not res
+
+def set_regkey(rootkey, subkey, name, type_, value):
+    res_handle = HANDLE()
+    res = RegOpenKeyExW(rootkey, subkey, 0, KEY_SET_VALUE, byref(res_handle))
+    if not res:
+        RegSetValueExW(res_handle, name, 0, type_, value, len(value))
+        RegCloseKey(res_handle)
+
+def query_value(rootkey, subkey, name):
+    res_handle = HANDLE()
+    type_ = DWORD()
+    value = create_string_buffer(1024 * 1024)
+    length = DWORD(1024 * 1024)
+
+    res = RegOpenKeyExW(rootkey, subkey, 0, KEY_QUERY_VALUE, byref(res_handle))
+    if not res:
+        RegQueryValueExW(res_handle, name, None, byref(type_), value, byref(length))
+        RegCloseKey(res_handle)
+        return value.raw[:length.value]

@@ -6,13 +6,12 @@ import itertools
 import logging
 import random
 
-from _winreg import SetValueEx, QueryValue, CreateKeyEx
-from _winreg import KEY_QUERY_VALUE, KEY_SET_VALUE
 from _winreg import HKEY_LOCAL_MACHINE, REG_SZ, REG_MULTI_SZ, REG_BINARY
 
 from lib.common.abstracts import Auxiliary
 from lib.common.rand import random_integer, random_string
 from lib.common.registry import rename_regkey, regkey_exists
+from lib.common.registry import set_regkey, query_value
 
 log = logging.getLogger(__name__)
 
@@ -38,8 +37,8 @@ class Disguise(Auxiliary):
     ]
 
     SYSTEM_BIOS_VERSIONS = [
-        ["LENOVO - 3220", "Ver 1.00PARTTBL("],
-        ["LENOVO - 2020", "Ver 1.00PARTTBLX"],
+        u"LENOVO - 3220\u0000Ver 1.00PARTTBL(\u0000",
+        u"LENOVO - 2020\u0000Ver 1.00PARTTBLX\u0000",
     ]
 
     VIDEO_BIOS_DATES = [
@@ -48,7 +47,7 @@ class Disguise(Auxiliary):
     ]
 
     VIDEO_BIOS_VERSIONS = [
-        ["Hardware Version 0.0", "PARTTBLX"],
+        "Hardware Version 0.0\u0000PARTTBLX\u0000",
     ]
 
     BIOS_VERSIONS = [
@@ -65,17 +64,6 @@ class Disguise(Auxiliary):
         "2241W2U",
     ]
 
-    def set_regkey(self, root_key, regkey, name, type_, value):
-        with CreateKeyEx(root_key, regkey, 0, KEY_SET_VALUE) as h:
-            SetValueEx(h, name, 0, type_, value)
-
-    def query_value(self, root_key, regkey, name):
-        try:
-            with CreateKeyEx(root_key, regkey, 0, KEY_QUERY_VALUE) as h:
-                return QueryValue(h, name)
-        except WindowsError:
-            pass
-
     def change_productid(self):
         """Randomizes Windows ProductId.
         The Windows ProductId is occasionally used by malware
@@ -84,9 +72,9 @@ class Disguise(Auxiliary):
         value = "{0}-{1}-{2}-{3}".format(random_integer(5), random_integer(3),
                                          random_integer(7), random_integer(5))
 
-        self.set_regkey(HKEY_LOCAL_MACHINE,
-                        "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
-                        "ProductId", REG_SZ, value)
+        set_regkey(HKEY_LOCAL_MACHINE,
+                   "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
+                   "ProductId", REG_SZ, value)
 
     def patch_scsi_identifiers(self):
         types = {
@@ -95,8 +83,8 @@ class Disguise(Auxiliary):
         }
 
         for row in itertools.product([0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3]):
-            type_ = self.query_value(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port %d\\Scsi Bus %d\\Target Id %d\\Logical Unit Id %d" % row, "Type")
-            value = self.query_value(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port %d\\Scsi Bus %d\\Target Id %d\\Logical Unit Id %d" % row, "Identifier")
+            type_ = query_value(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port %d\\Scsi Bus %d\\Target Id %d\\Logical Unit Id %d" % row, "Type")
+            value = query_value(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port %d\\Scsi Bus %d\\Target Id %d\\Logical Unit Id %d" % row, "Identifier")
             if not type_ or not value:
                 continue
 
@@ -108,14 +96,14 @@ class Disguise(Auxiliary):
                     log.warning("Unknown SCSI type (%s), disguising it with a random string", type_)
                     new_value = random_string(len(value))
 
-                self.set_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port %d\\Scsi Bus %d\\Target Id %d\\Logical Unit Id %d" % row,
-                                "Identifier", REG_SZ, new_value)
+                set_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port %d\\Scsi Bus %d\\Target Id %d\\Logical Unit Id %d" % row,
+                           "Identifier", REG_SZ, new_value)
 
     def patch_bios(self):
-        self.set_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System", "SystemBiosDate", REG_SZ, random.choice(self.SYSTEM_BIOS_DATES))
-        self.set_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System", "SystemBiosVersion", REG_MULTI_SZ, random.choice(self.SYSTEM_BIOS_VERSIONS))
-        self.set_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System", "VideoBiosDate", REG_SZ, random.choice(self.VIDEO_BIOS_DATES))
-        self.set_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System", "VideoBiosVersion", REG_MULTI_SZ, random.choice(self.VIDEO_BIOS_VERSIONS))
+        set_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System", "SystemBiosDate", REG_SZ, random.choice(self.SYSTEM_BIOS_DATES))
+        set_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System", "SystemBiosVersion", REG_MULTI_SZ, random.choice(self.SYSTEM_BIOS_VERSIONS))
+        set_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System", "VideoBiosDate", REG_SZ, random.choice(self.VIDEO_BIOS_DATES))
+        set_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System", "VideoBiosVersion", REG_MULTI_SZ, random.choice(self.VIDEO_BIOS_VERSIONS))
 
     def patch_acpi(self):
         # TODO This should be improved, but for now may suffice.
@@ -135,14 +123,14 @@ class Disguise(Auxiliary):
         ]
 
         for regkey, key in regkeys:
-            value = self.query_value(HKEY_LOCAL_MACHINE, regkey, key)
+            value = query_value(HKEY_LOCAL_MACHINE, regkey, key)
             if value is None:
                 continue
 
             for k, v in keywords.items():
                 value = value.replace(k, v)
 
-            self.set_regkey(HKEY_LOCAL_MACHINE, regkey, key, REG_BINARY, value)
+            set_regkey(HKEY_LOCAL_MACHINE, regkey, key, REG_BINARY, value)
 
         if regkey_exists(HKEY_LOCAL_MACHINE, "HARDWARE\\ACPI\\DSDT\\VBOX__"):
             rename_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\ACPI\\DSDT\\VBOX__", "LENOVO")
@@ -155,29 +143,29 @@ class Disguise(Auxiliary):
         }
 
         for idx in xrange(32):
-            value = self.query_value(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\%d" % idx, "ProcessorNameString")
+            value = query_value(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\%d" % idx, "ProcessorNameString")
             if value is None:
                 continue
 
             for k, v in keywords.items():
                 value = value.replace(k, v)
 
-            self.set_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\%d" % idx,
-                            "ProcessorNameString", REG_SZ, value)
+            set_regkey(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\%d" % idx,
+                       "ProcessorNameString", REG_SZ, value)
 
     def patch_manufacturer(self):
-        self.set_regkey(HKEY_LOCAL_MACHINE, "SYSTEM\\ControlSet001\\Control\\SystemInformation",
-                        "BIOSVersion", REG_SZ, random.choice(self.BIOS_VERSIONS))
-        self.set_regkey(HKEY_LOCAL_MACHINE, "SYSTEM\\ControlSet001\\Control\\SystemInformation",
-                        "BIOSReleaseDate", REG_SZ, random.choice(self.SYSTEM_BIOS_DATES))
-        self.set_regkey(HKEY_LOCAL_MACHINE, "SYSTEM\\ControlSet001\\Control\\SystemInformation",
-                        "SystemManufacturer", REG_SZ, random.choice(self.SYSTEM_MANUFACTURERS))
-        self.set_regkey(HKEY_LOCAL_MACHINE, "SYSTEM\\ControlSet001\\Control\\SystemInformation",
-                        "SystemProductName", REG_SZ, random.choice(self.SYSTEM_PRODUCTNAMES))
+        set_regkey(HKEY_LOCAL_MACHINE, "SYSTEM\\ControlSet001\\Control\\SystemInformation",
+                   "BIOSVersion", REG_SZ, random.choice(self.BIOS_VERSIONS))
+        set_regkey(HKEY_LOCAL_MACHINE, "SYSTEM\\ControlSet001\\Control\\SystemInformation",
+                   "BIOSReleaseDate", REG_SZ, random.choice(self.SYSTEM_BIOS_DATES))
+        set_regkey(HKEY_LOCAL_MACHINE, "SYSTEM\\ControlSet001\\Control\\SystemInformation",
+                   "SystemManufacturer", REG_SZ, random.choice(self.SYSTEM_MANUFACTURERS))
+        set_regkey(HKEY_LOCAL_MACHINE, "SYSTEM\\ControlSet001\\Control\\SystemInformation",
+                   "SystemProductName", REG_SZ, random.choice(self.SYSTEM_PRODUCTNAMES))
 
     def patch_hdd_path(self):
-        self.set_regkey(HKEY_LOCAL_MACHINE, "SYSTEM\\ControlSet001\\Services\\Disk\\Enum",
-                        "0", REG_SZ, random.choice(self.HDD_PATHS))
+        set_regkey(HKEY_LOCAL_MACHINE, "SYSTEM\\ControlSet001\\Services\\Disk\\Enum",
+                   "0", REG_SZ, random.choice(self.HDD_PATHS))
 
     def start(self):
         self.change_productid()
