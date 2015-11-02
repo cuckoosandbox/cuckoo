@@ -67,6 +67,8 @@ def regkey_exists(rootkey, subkey):
     return not res
 
 def set_regkey(rootkey, subkey, name, type_, value):
+    if type_ == REG_SZ:
+        value = unicode(value)
     if type_ == REG_MULTI_SZ:
         value = u"\u0000".join(value) + u"\u0000\u0000"
 
