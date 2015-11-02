@@ -27,7 +27,7 @@ def get_item(dictionary, key):
     return dictionary.get(key)
 
 @register.filter
-def filter_key(l, key):
+def filter_key_if_has(l, key):
     for x in l:
-        if x.get(key):
+        if key not in x or x[key]:
             yield x
