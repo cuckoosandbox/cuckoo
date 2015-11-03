@@ -632,6 +632,7 @@ class Processing(object):
         self.mitmout_path = os.path.join(self.analysis_path, "mitm.log")
         self.mitmerr_path = os.path.join(self.analysis_path, "mitm.err")
         self.tlsmaster_path = os.path.join(self.analysis_path, "tlsmaster.txt")
+        self.suricata_path = os.path.join(self.analysis_path, "suricata")
 
     def set_results(self, results):
         """Set the results - the fat dictionary."""
