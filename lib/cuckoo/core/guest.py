@@ -149,11 +149,6 @@ class OldGuestManager(object):
             key, value = row.split("=", 1)
             opt[key.strip()] = value.strip()
 
-        # Check whether the hashes file exists if it was provided.
-        if "hashes-path" in opt:
-            if not os.path.isfile(opt["hashes-path"]):
-                raise CuckooGuestError("Non-existing hashing file provided!")
-
         try:
             # Wait for the agent to respond. This is done to check the
             # availability of the agent and verify that it's ready to receive
