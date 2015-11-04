@@ -375,7 +375,6 @@ class Process(object):
             "startup-time": Process.startup_time,
             "shutdown-mutex": SHUTDOWN_MUTEX,
             "force-sleepskip": self.config.options.get("force-sleepskip", "0"),
-            "hashes-path": os.path.join(os.getcwd(), "hashes.bin"),
             "track": "1" if track else "0",
             "mode": mode or "",
             "disguise": self.config.options.get("disguise", "0"),
