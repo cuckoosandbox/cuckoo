@@ -120,11 +120,15 @@ class Suricata(Processing):
             if event["event_type"] == "alert":
                 alert = event["alert"]
 
-                # if alert["signature_id"] in self.sid_blacklist:
-                #     continue
+                if alert["signature_id"] in self.sid_blacklist:
+                    log.debug("Ignoring alert with sid=%d, signature=%s",
+                              alert["signature_id"], alert["signature"])
+                    continue
 
-                # if alert["signature"].startswith("SURICATA STREAM"):
-                #     continue
+                if alert["signature"].startswith("SURICATA STREAM"):
+                    log.debug("Ignoring alert starting with "
+                              "\"SURICATA STREAM\"")
+                    continue
 
                 self.results["alerts"].append({
                     "sid": alert["signature_id"],
