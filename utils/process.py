@@ -12,9 +12,6 @@ import signal
 import multiprocessing
 import traceback
 
-logging.basicConfig(level=logging.INFO)
-log = logging.getLogger()
-
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.config import Config
@@ -23,6 +20,8 @@ from lib.cuckoo.core.database import Database, TASK_REPORTED, TASK_COMPLETED
 from lib.cuckoo.core.database import Task, TASK_FAILED_PROCESSING
 from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from lib.cuckoo.core.startup import init_modules, drop_privileges
+
+log = None
 
 # We keep a reporting queue with at most a few hundred entries.
 QUEUE_THRESHOLD = 128
@@ -150,6 +149,8 @@ def autoprocess(parallel=1):
         pool.join()
 
 def main():
+    global log
+
     parser = argparse.ArgumentParser()
     parser.add_argument("id", type=str, help="ID of the analysis to process (auto for continuous processing of unprocessed tasks).")
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
@@ -164,7 +165,11 @@ def main():
         drop_privileges(args.user)
 
     if args.debug:
-        log.setLevel(logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    log = logging.getLogger("cuckoo.process")
 
     if args.modules:
         sys.path.insert(0, args.modules)
