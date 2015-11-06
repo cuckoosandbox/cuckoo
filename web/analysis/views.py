@@ -83,42 +83,42 @@ def chunk(request, task_id, pid, pagenum):
     except:
         raise PermissionDenied
 
-    if request.is_ajax():
-        record = results_db.analysis.find_one(
-            {
-                "info.id": int(task_id),
-                "behavior.processes.pid": pid
-            },
-            {
-                "behavior.processes.pid": 1,
-                "behavior.processes.calls": 1
-            }
-        )
-
-        if not record:
-            raise ObjectDoesNotExist
-
-        process = None
-        for pdict in record["behavior"]["processes"]:
-            if pdict["pid"] == pid:
-                process = pdict
-
-        if not process:
-            raise ObjectDoesNotExist
-
-        if pagenum >= 0 and pagenum < len(process["calls"]):
-            objectid = process["calls"][pagenum]
-            chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
-            for idx, call in enumerate(chunk["calls"]):
-                call["id"] = pagenum * 100 + idx
-        else:
-            chunk = dict(calls=[])
-
-        return render_to_response("analysis/behavior/_chunk.html",
-                                  {"chunk": chunk},
-                                  context_instance=RequestContext(request))
-    else:
+    if not request.is_ajax():
         raise PermissionDenied
+
+    record = results_db.analysis.find_one(
+        {
+            "info.id": int(task_id),
+            "behavior.processes.pid": pid
+        },
+        {
+            "behavior.processes.pid": 1,
+            "behavior.processes.calls": 1
+        }
+    )
+
+    if not record:
+        raise ObjectDoesNotExist
+
+    process = None
+    for pdict in record["behavior"]["processes"]:
+        if pdict["pid"] == pid:
+            process = pdict
+
+    if not process:
+        raise ObjectDoesNotExist
+
+    if pagenum >= 0 and pagenum < len(process["calls"]):
+        objectid = process["calls"][pagenum]
+        chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
+        for idx, call in enumerate(chunk["calls"]):
+            call["id"] = pagenum * 100 + idx
+    else:
+        chunk = dict(calls=[])
+
+    return render_to_response("analysis/behavior/_chunk.html",
+                              {"chunk": chunk},
+                              context_instance=RequestContext(request))
 
 
 @require_safe
@@ -128,104 +128,104 @@ def filtered_chunk(request, task_id, pid, category):
     @param pid: pid you want calls
     @param category: call category type
     """
-    if request.is_ajax():
-        # Search calls related to your PID.
-        record = results_db.analysis.find_one(
-            {
-                "info.id": int(task_id),
-                "behavior.processes.pid": int(pid),
-            },
-            {
-                "behavior.processes.pid": 1,
-                "behavior.processes.calls": 1,
-            }
-        )
-
-        if not record:
-            raise ObjectDoesNotExist
-
-        # Extract embedded document related to your process from response collection.
-        process = None
-        for pdict in record["behavior"]["processes"]:
-            if pdict["pid"] == int(pid):
-                process = pdict
-
-        if not process:
-            raise ObjectDoesNotExist
-
-        # Create empty process dict for AJAX view.
-        filtered_process = {
-            "pid": pid,
-            "calls": [],
-        }
-
-        # Populate dict, fetching data from all calls and selecting only appropriate category.
-        for call in process["calls"]:
-            chunk = results_db.calls.find_one({"_id": call})
-            for call in chunk["calls"]:
-                if call["category"] == category:
-                    filtered_process["calls"].append(call)
-
-        return render_to_response("analysis/behavior/_chunk.html",
-                                  {"chunk": filtered_process},
-                                  context_instance=RequestContext(request))
-    else:
+    if not request.is_ajax():
         raise PermissionDenied
+
+    # Search calls related to your PID.
+    record = results_db.analysis.find_one(
+        {
+            "info.id": int(task_id),
+            "behavior.processes.pid": int(pid),
+        },
+        {
+            "behavior.processes.pid": 1,
+            "behavior.processes.calls": 1,
+        }
+    )
+
+    if not record:
+        raise ObjectDoesNotExist
+
+    # Extract embedded document related to your process from response collection.
+    process = None
+    for pdict in record["behavior"]["processes"]:
+        if pdict["pid"] == int(pid):
+            process = pdict
+
+    if not process:
+        raise ObjectDoesNotExist
+
+    # Create empty process dict for AJAX view.
+    filtered_process = {
+        "pid": pid,
+        "calls": [],
+    }
+
+    # Populate dict, fetching data from all calls and selecting only appropriate category.
+    for call in process["calls"]:
+        chunk = results_db.calls.find_one({"_id": call})
+        for call in chunk["calls"]:
+            if call["category"] == category:
+                filtered_process["calls"].append(call)
+
+    return render_to_response("analysis/behavior/_chunk.html",
+                              {"chunk": filtered_process},
+                              context_instance=RequestContext(request))
 
 @csrf_exempt
 def search_behavior(request, task_id):
-    if request.method == "POST":
-        query = request.POST.get("search")
-        query = re.compile(query, re.I)
-        results = []
+    if not request.method == "POST":
+        raise PermissionDenied
 
-        # Fetch anaylsis report
-        record = results_db.analysis.find_one(
-            {
-                "info.id": int(task_id),
-            }
-        )
+    query = request.POST.get("search")
+    query = re.compile(query, re.I)
+    results = []
 
-        # Loop through every process
-        for process in record["behavior"]["processes"]:
-            process_results = []
+    # Fetch anaylsis report
+    record = results_db.analysis.find_one(
+        {
+            "info.id": int(task_id),
+        }
+    )
 
-            chunks = results_db.calls.find({
-                "_id": {"$in": process["calls"]}
-            })
+    # Loop through every process
+    for process in record["behavior"]["processes"]:
+        process_results = []
 
-            index = -1
-            for chunk in chunks:
-                for call in chunk["calls"]:
-                    index += 1
+        chunks = results_db.calls.find({
+            "_id": {"$in": process["calls"]}
+        })
 
-                    if query.search(call["api"]):
+        index = -1
+        for chunk in chunks:
+            for call in chunk["calls"]:
+                index += 1
+
+                if query.search(call["api"]):
+                    call["id"] = index
+                    process_results.append(call)
+                    continue
+
+                for key, value in call["arguments"].items():
+                    if query.search(key):
                         call["id"] = index
                         process_results.append(call)
-                        continue
+                        break
 
-                    for key, value in call["arguments"].items():
-                        if query.search(key):
-                            call["id"] = index
-                            process_results.append(call)
-                            break
+                    if isinstance(value, basestring) and query.search(value):
+                        call["id"] = index
+                        process_results.append(call)
+                        break
 
-                        if isinstance(value, basestring) and query.search(value):
-                            call["id"] = index
-                            process_results.append(call)
-                            break
+        if process_results:
+            results.append({
+                "process": process,
+                "signs": process_results
+            })
 
-            if process_results:
-                results.append({
-                    "process": process,
-                    "signs": process_results
-                })
-
-        return render_to_response("analysis/behavior/_search_results.html",
-                                  {"results": results},
-                                  context_instance=RequestContext(request))
-    else:
-        raise PermissionDenied
+    return render_to_response("analysis/behavior/_search_results.html",
+                              {"results": results},
+                              context_instance=RequestContext(request))
 
 @require_safe
 def report(request, task_id):
