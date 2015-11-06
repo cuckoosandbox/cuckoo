@@ -21,7 +21,7 @@ class Snort(Processing):
         r"(?P<timestamp>\d{2}/\d{2}/\d{2}-\d{2}:\d{2}:\d{2}\.\d+)\s+"
         r"\[\*\*\]\s+\[\d+:(?P<sid>\d+):(?P<revision>\d+)\] "
         r"(?P<message>.+) \[\*\*\]\s+(\[Classification: (?P<classtype>.+)\] ){0,1}"
-        r"\[Priority: (?P<priority>\d+)\] \{(?P<protocol>\w+)\} "
+        r"\[Priority: (?P<priority>\d+)\] \{(?P<protocol>[a-zA-Z0-9_-]+)\} "
         r"(?P<src>.+) \-\> (?P<dest>.+)"
     )
 
