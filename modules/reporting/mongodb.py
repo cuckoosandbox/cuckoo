@@ -130,6 +130,12 @@ class MongoDB(Report):
             spcap_id = self.store_file(spcap)
             report["network"]["sorted_pcap_id"] = spcap_id
 
+        mitmproxy_path = os.path.join(self.analysis_path, "dump.mitm")
+        mitmpr = File(mitmproxy_path)
+        if mitmpr.valid():
+            mitmpr_id = self.store_file(mitmpr)
+            report["network"]["mitmproxy_id"] = mitmpr_id
+
         # Store the process memory dump file in GridFS and reference it back in the report.
         if "procmemory" in report and self.options.get("store_memdump", False):
             for idx, procmem in enumerate(report["procmemory"]):
