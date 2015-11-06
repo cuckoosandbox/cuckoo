@@ -58,7 +58,10 @@ class VirusTotalAPI(object):
         "a variant of w97m", "badmacro", "bkdr", "docdrp", "exedrop",
         "generic trojan", "malcrypt", "malicious website", "ransomlock",
         "ransomcrypt", "reputation", "trojanransom", "pepatch", "risk",
-        "adplugin", "webtoolbar",
+        "adplugin", "webtoolbar", "malagent", "genmalicious", "vbinject",
+        "vbcrypt", "inject2", "mdropper", "download3", "keylogger",
+        "downloader11", "damaged", "file", "dldrop", "msil7", "injcrypt",
+        "patched", "patchfile", "downware", "dropped",
     ]
 
     def __init__(self, apikey, timeout, scan=0):
