@@ -1,5 +1,12 @@
-{% if analysis.network.pcap_id %}
-<div class="alert alert-info center"><a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "pcap" analysis.network.pcap_id %}">Download PCAP</a></div>
+{% if analysis.network.pcap_id or analysis.network.mitmproxy_id %}
+<div class="alert alert-info center">
+    {% if analysis.network.pcap_id %}
+    <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "pcap" analysis.network.pcap_id %}">Download PCAP</a>
+    {% endif %}
+    {% if analysis.network.mitmproxy_id %}
+    <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "mitmproxy" analysis.network.mitmproxy_id %}">Download mitmproxy dump</a>
+    {% endif %}
+</div>
 {% endif %}
 <div class="tabbable tabs">
     <ul class="nav nav-pills" style="margin-bottom: 0;">

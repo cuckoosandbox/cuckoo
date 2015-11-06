@@ -430,6 +430,10 @@ def remove(request, task_id):
             if "sorted_pcap_id" in analysis["network"] and results_db.analysis.find({"network.sorted_pcap_id": ObjectId(analysis["network"]["sorted_pcap_id"])}).count() == 1:
                 fs.delete(ObjectId(analysis["network"]["sorted_pcap_id"]))
 
+            # Delete mitmproxy dump.
+            if "mitmproxy_id" in analysis["network"] and results_db.analysis.find({"network.mitmproxy_id": ObjectId(analysis["network"]["mitmproxy_id"])}).count() == 1:
+                fs.delete(ObjectId(analysis["network"]["mitmproxy_id"]))
+
             # Delete dropped.
             for drop in analysis["dropped"]:
                 if "object_id" in drop and results_db.analysis.find({"dropped.object_id": ObjectId(drop["object_id"])}).count() == 1:
