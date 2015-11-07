@@ -1,5 +1,4 @@
 from django.template.defaultfilters import register
-from django.template.defaulttags import register as register_tags
 
 @register.filter("mongo_id")
 def mongo_id(value):
@@ -7,8 +6,7 @@ def mongo_id(value):
     @todo: it will be removed in future.
     """
     if isinstance(value, dict):
-        if value.has_key("_id"):
-            value = value["_id"]
+        return value.get("_id", value)
 
     # Return value
     return unicode(value)
@@ -21,10 +19,6 @@ def is_dict(value):
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key, "")
-
-@register_tags.filter
-def get_item(dictionary, key):
-    return dictionary.get(key)
 
 @register.filter
 def filter_key_if_has(l, key):

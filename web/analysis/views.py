@@ -120,7 +120,6 @@ def chunk(request, task_id, pid, pagenum):
                               {"chunk": chunk},
                               context_instance=RequestContext(request))
 
-
 @require_safe
 def filtered_chunk(request, task_id, pid, category):
     """Filters calls for call category.
@@ -174,7 +173,7 @@ def filtered_chunk(request, task_id, pid, category):
 
 @csrf_exempt
 def search_behavior(request, task_id):
-    if not request.method == "POST":
+    if request.method != "POST":
         raise PermissionDenied
 
     query = request.POST.get("search")
@@ -292,7 +291,6 @@ def full_memory_dump_file(request, analysis_number):
         return render_to_response("error.html",
                                   {"error": "File not found"},
                                   context_instance=RequestContext(request))
-
 
 def search(request):
     if "search" not in request.POST:
