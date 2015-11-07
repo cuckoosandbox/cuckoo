@@ -194,7 +194,7 @@ class Suricata(Processing):
                 "filename": os.path.basename(event["filename"]),
                 "hostname": event.get("http_host"),
                 "uri": event.get("http_uri"),
-                "md5": event["md5"],
+                "md5": event.get("md5"),
                 "magic": event.get("magic"),
             })
 
