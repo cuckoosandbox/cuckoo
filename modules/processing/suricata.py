@@ -146,6 +146,14 @@ class Suricata(Processing):
             elif event["event_type"] == "http":
                 http = event["http"]
 
+                referer = http.get("http_referer")
+                if referer == "<unknown>":
+                    referer = None
+
+                user_agent = http.get("http_user_agent")
+                if user_agent == "<unknown>":
+                    user_agent = None
+
                 self.results["http"].append({
                     "src_ip": event["src_ip"],
                     "src_port": event["src_port"],
@@ -157,8 +165,9 @@ class Suricata(Processing):
                     "url": http.get("url"),
                     "status": "%s" % http.get("status"),
                     "content_type": http.get("http_content_type"),
-                    "user_agent": http.get("http_user_agent"),
-                    "referer": http.get("http_referer"),
+                    "user_agent": user_agent,
+                    "referer": referer,
+                    "length": http.get("length"),
                 })
 
             elif event["event_type"] == "tls":
@@ -210,6 +219,10 @@ class Suricata(Processing):
                             event.get("md5"))
                 continue
 
+            referer = event.get("http_referer")
+            if referer == "<unknown>":
+                referer = None
+
             self.results["files"].append({
                 "id": int(filepath.split(".", 1)[-1]),
                 "filesize": event["size"],
@@ -219,6 +232,7 @@ class Suricata(Processing):
                 "md5": md5_file(filepath),
                 "sha1": sha1_file(filepath),
                 "magic": event.get("magic"),
+                "referer": referer,
             })
 
     def run(self):
