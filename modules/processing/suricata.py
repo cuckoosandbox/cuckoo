@@ -11,6 +11,7 @@ import time
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.exceptions import CuckooProcessingError
+from lib.cuckoo.common.utils import md5_file, sha1_file
 
 try:
     import suricatasc
@@ -182,19 +183,41 @@ class Suricata(Processing):
             log.warning("Unable to find the files-json.log log file")
             return
 
+        files = {}
+
+        # Index all the available files.
+        files_dir = os.path.join(self.suricata_path, self.files_dir)
+        for filename in os.listdir(files_dir):
+            filepath = os.path.join(files_dir, filename)
+            files[md5_file(filepath)] = filepath
+
         for line in open(files_log, "rb"):
             event = json.loads(line)
 
-            # Some entries don't have an associated ID, ignore those.
-            if "id" not in event:
+            # Not entirely sure what's up, but some files are given just an
+            # ID, some files are given just an md5 hash (and maybe some get
+            # neither?) So take care of these situations.
+            if "id" in event:
+                filepath = os.path.join(files_dir, "file.%s" % event["id"])
+            elif "md5" in event:
+                filepath = files.get(event["md5"])
+            else:
+                filepath = None
+
+            if not filepath or not os.path.isfile(filepath):
+                log.warning("Suricata dropped file with id=%d and md5=%s not "
+                            "found, skipping it..", event.get("id"),
+                            event.get("md5"))
                 continue
 
             self.results["files"].append({
+                "id": int(filepath.split(".", 1)[-1]),
                 "filesize": event["size"],
                 "filename": os.path.basename(event["filename"]),
                 "hostname": event.get("http_host"),
                 "uri": event.get("http_uri"),
-                "md5": event.get("md5"),
+                "md5": md5_file(filepath),
+                "sha1": sha1_file(filepath),
                 "magic": event.get("magic"),
             })
 
