@@ -20,8 +20,8 @@ class Snort(Processing):
     alert_re = re.compile(
         r"(?P<timestamp>\d{2}/\d{2}/\d{2}-\d{2}:\d{2}:\d{2}\.\d+)\s+"
         r"\[\*\*\]\s+\[\d+:(?P<sid>\d+):(?P<revision>\d+)\] "
-        r"(?P<message>.+) \[\*\*\]\s+(\[Classification: (?P<classtype>.+)\] ){0,1}"
-        r"\[Priority: (?P<priority>\d+)\] \{(?P<protocol>[a-zA-Z0-9_-]+)\} "
+        r"(?P<message>.+) \[\*\*\]\s+(\[Classification: (?P<classtype>.+)\] )?"
+        r"\[Priority: (?P<priority>\d+)\] \{(?P<protocol>[:a-zA-Z0-9_-]+)\} "
         r"(?P<src>.+) \-\> (?P<dest>.+)"
     )
 
@@ -70,8 +70,17 @@ class Snort(Processing):
             timestamp = datetime.datetime.strptime(
                 x.group("timestamp"), "%m/%d/%y-%H:%M:%S.%f")
 
-            src_ip, src_port = x.group("src").rsplit(":", 1)
-            dst_ip, dst_port = x.group("dest").rsplit(":", 1)
+            if ":" in x.group("src"):
+                src_ip, src_port = x.group("src").rsplit(":", 1)
+            else:
+                src_ip = x.group("src")
+                src_port = None
+
+            if ":" in x.group("dest"):
+                dst_ip, dst_port = x.group("dest").rsplit(":", 1)
+            else:
+                dst_ip = x.group("dest")
+                dst_port = None
 
             results.append({
                 "timestamp": timestamp,
@@ -80,9 +89,9 @@ class Snort(Processing):
                 "revision": int(x.group("revision")),
                 "message": x.group("message"),
                 "src_ip": src_ip,
-                "src_port": int(src_port),
+                "src_port": int(src_port) if src_port else None,
                 "dst_ip": dst_ip,
-                "dst_port": int(dst_port),
+                "dst_port": int(dst_port) if dst_port else None,
                 "protocol": x.group("protocol"),
                 "classtype": x.group("classtype"),
             })
