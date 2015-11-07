@@ -80,9 +80,9 @@ class Snort(Processing):
                 "revision": int(x.group("revision")),
                 "message": x.group("message"),
                 "src_ip": src_ip,
-                "src_port": src_port,
+                "src_port": int(src_port),
                 "dst_ip": dst_ip,
-                "dst_port": dst_port,
+                "dst_port": int(dst_port),
                 "protocol": x.group("protocol"),
                 "classtype": x.group("classtype"),
             })
