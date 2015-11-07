@@ -38,6 +38,7 @@ class Moloch(Report):
             "-c", self.config_path,
             "-r", self.pcap_path,
             "-n", self.instance,
+            "-q",
         ]
 
         tags = {}
@@ -47,7 +48,8 @@ class Moloch(Report):
             # Tag file hashes.
             f = results.get("target", {}).get("file", {})
             for field in ("md5", "sha1", "sha256", "sha512"):
-                tags[field] = f.get(field)
+                if field in f:
+                    tags[field] = f[field]
 
             # Tag normalized VirusTotal results.
             for variant in results.get("virustotal", {}).get("normalized", []):
