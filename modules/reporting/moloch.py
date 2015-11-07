@@ -38,10 +38,10 @@ class Moloch(Report):
             "-c", self.config_path,
             "-r", self.pcap_path,
             "-n", self.instance,
-            "-t", "%s:%s" % (self.instance, self.task["id"]),
         ]
 
         tags = {}
+        tags[self.instance] = self.task["id"]
 
         if self.task["category"] == "file":
             # Tag file hashes.
