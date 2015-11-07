@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import hashlib
 import os
 import shutil
 import ntpath
@@ -269,3 +270,24 @@ class SuperLock(object):
     def __exit__(self, type, value, traceback):
         self.mlock.release()
         self.tlock.release()
+
+def hash_file(method, filepath):
+    """Calculates an hash on a file by path.
+    @param method: callable hashing method
+    @param path: file path
+    @return: computed hash string
+    """
+    f = open(filepath, "rb")
+    h = method()
+    while True:
+        buf = f.read(1024 * 1024)
+        if not buf:
+            break
+        h.update(buf)
+    return h.hexdigest()
+
+def md5_file(filepath):
+    return hash_file(hashlib.md5, filepath)
+
+def sha1_file(filepath):
+    return hash_file(hashlib.sha1, filepath)
