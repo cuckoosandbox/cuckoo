@@ -70,14 +70,19 @@ class Snort(Processing):
             timestamp = datetime.datetime.strptime(
                 x.group("timestamp"), "%m/%d/%y-%H:%M:%S.%f")
 
+            src_ip, src_port = x.group("src").rsplit(":", 1)
+            dst_ip, dst_port = x.group("dest").rsplit(":", 1)
+
             results.append({
                 "timestamp": timestamp,
                 "sid": int(x.group("sid")),
                 "priority": int(x.group("priority")),
                 "revision": int(x.group("revision")),
                 "message": x.group("message"),
-                "src_ip": x.group("src"),
-                "dst_ip": x.group("dest"),
+                "src_ip": src_ip,
+                "src_port": src_port,
+                "dst_ip": dst_ip,
+                "dst_port": dst_port,
                 "protocol": x.group("protocol"),
                 "classtype": x.group("classtype"),
             })
