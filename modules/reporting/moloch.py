@@ -15,8 +15,6 @@ class Moloch(Report):
     """Moloch reporting module."""
 
     def run(self, results):
-        self.key = "moloch"
-
         self.moloch_capture = \
             self.options.get("moloch_capture", "/data/moloch/bin/moloch-capture")
         self.config_path = self.options.get("conf", "/data/moloch/etc/config.ini")
@@ -65,5 +63,3 @@ class Moloch(Report):
         except subprocess.CalledProcessError as e:
             raise CuckooProcessingError(
                 "Error submitting PCAP to Moloch: %s" % e)
-
-        return ["%s:%s" % (key, value) for key, value in tags.items()]
