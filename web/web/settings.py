@@ -22,7 +22,8 @@ MONGO_HOST = cfg.mongodb.get("host", "127.0.0.1")
 MONGO_PORT = cfg.mongodb.get("port", 27017)
 MONGO_DB = cfg.mongodb.get("db", "cuckoo")
 
-MOLOCH_HOST = cfg.moloch.get("host", "127.0.0.1")
+MOLOCH_ENABLED = cfg.moloch.get("enabled")
+MOLOCH_HOST = cfg.moloch.get("host")
 
 DEBUG = True
 
