@@ -291,6 +291,11 @@ moloch_mapper = {
 
 @require_safe
 def moloch(request, **kwargs):
+    if not settings.MOLOCH_ENABLED:
+        return render_to_response("error.html",
+                                  {"error": "Moloch is not enabled!"},
+                                  context_instance=RequestContext(request))
+
     query = []
     for key, value in kwargs.items():
         if value:
