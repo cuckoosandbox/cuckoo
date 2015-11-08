@@ -17,8 +17,8 @@ urlpatterns = patterns("",
     url(r"^(?P<task_id>\d+)/pcapstream/(?P<conntuple>[.,\w]+)/$", "analysis.views.pcapstream"),
     url(r"^moloch"
         "/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-\.]+)?"
-        "/(?P<src_ip>[a-zA-Z0-9\.]+)?/(?P<src_port>\d+)?"
-        "/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+)?"
+        "/(?P<src_ip>[a-zA-Z0-9\.]+)?/(?P<src_port>\d+|None)?"
+        "/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+|None)?"
         "/(?P<sid>\d+)?",
         "analysis.views.moloch"),
 )

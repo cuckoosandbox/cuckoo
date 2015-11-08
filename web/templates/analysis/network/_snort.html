@@ -1,0 +1,23 @@
+<h4>Snort Alerts</h4>
+{% if analysis.snort.alerts %}
+    <table class="table table-striped table-bordered">
+        <tr>
+            <th>Flow</th>
+            <th>SID</th>
+            <th>Message</th>
+        </tr>
+        {% for alert in analysis.snort.alerts %}
+        <tr>
+            <td>
+                {{alert.protocol}}
+                <a target="_blank" href="{% url "analysis.views.moloch" src_ip=alert.src_ip src_port=alert.src_port %}">{{alert.src_ip}}{% if alert.src_port %}:{{alert.src_port}}{% endif %}</a> -&gt;
+                <a target="_blank" href="{% url "analysis.views.moloch" dst_ip=alert.dst_ip dst_port=alert.dst_port %}">{{alert.dst_ip}}{% if alert.dst_port %}:{{alert.dst_port}}{% endif %}</a>
+            </td>
+            <td><a target="_blank" href="{% url "analysis.views.moloch" sid=alert.sid %}">{{alert.sid}}</a></td>
+            <td>{{alert.message}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No Snort Alerts</p>
+{% endif %}

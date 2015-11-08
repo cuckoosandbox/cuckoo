@@ -298,7 +298,7 @@ def moloch(request, **kwargs):
 
     query = []
     for key, value in kwargs.items():
-        if value:
+        if value and value != "None":
             query.append(moloch_mapper[key] % value)
 
     if ":" in request.get_host():

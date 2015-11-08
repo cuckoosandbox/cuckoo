@@ -28,7 +28,9 @@ class Snort(Processing):
     def run(self):
         self.key = "snort"
 
-        results = []
+        results = {
+            "alerts": [],
+        }
 
         self.snort = self.options.get("snort", "/usr/local/bin/snort")
         self.config_path = self.options.get("conf", "/etc/snort/snort.conf")
@@ -82,7 +84,7 @@ class Snort(Processing):
                 dst_ip = x.group("dest")
                 dst_port = None
 
-            results.append({
+            results["alerts"].append({
                 "timestamp": timestamp,
                 "sid": int(x.group("sid")),
                 "priority": int(x.group("priority")),
