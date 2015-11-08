@@ -4,7 +4,8 @@
 
 from django.conf.urls import patterns, url
 
-urlpatterns = patterns("",
+urlpatterns = patterns(
+    "",
     url(r"^$", "analysis.views.index"),
     url(r"^(?P<task_id>\d+)/$", "analysis.views.report"),
     url(r"^latest/$", "analysis.views.latest_report"),
