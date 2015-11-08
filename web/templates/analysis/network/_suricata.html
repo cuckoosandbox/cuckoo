@@ -1,0 +1,52 @@
+<h4>Suricata Alerts</h4>
+{% if analysis.suricata.alerts %}
+    <table class="table table-striped table-bordered">
+        <tr>
+            <th>Flow</th>
+            <th>SID</th>
+            <th>Signature</th>
+            <th>Category</th>
+        </tr>
+        {% for alert in analysis.suricata.alerts %}
+        <tr>
+            <td>
+                {{alert.protocol}}
+                {{alert.src_ip}}:{{alert.src_port}} -&gt;
+                {{alert.dst_ip}}:{{alert.dst_port}}
+            </td>
+            <td>{{alert.sid}}</td>
+            <td>{{alert.signature}}</td>
+            <td>{{alert.category}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No Suricata Alerts</p>
+{% endif %}
+
+<h4>Suricata TLS</h4>
+{% if analysis.suricata.tls %}
+    <table class="table table-striped table-bordered">
+        <tr>
+            <th>Flow</th>
+            <th>Issuer</th>
+            <th>Subject</th>
+            <th>Fingerprint</th>
+        </tr>
+        {% for tls in analysis.suricata.tls %}
+        <tr>
+            <td>
+                {{tls.version}} <br />
+                {{tls.src_ip}}:{{tls.src_port}} <br />
+                {{tls.dst_ip}}:{{tls.dst_port}}
+            </td>
+            <td>{{tls.issuer}}</td>
+            <td>{{tls.subject}}</td>
+            <td>{{tls.fingerprint}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+{% else %}
+    <p>No Suricata TLS</p>
+{% endif %}
