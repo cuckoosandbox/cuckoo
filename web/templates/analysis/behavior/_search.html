@@ -14,7 +14,7 @@ $(function () {
 </script>
 
 <div class="tab-pane" id="search">
-	<form id='search' class="form-inline" role="form" action="{% url "analysis.views.search_behavior" analysis.info.id %}">
+	<form id='search' class="form-inline" role="form" action="{% url "analysis.search_behavior" analysis.info.id %}">
 		{% csrf_token %}
     	<div class="form-group">
         	<label class="sr-only" for="form_search">Search term</label>

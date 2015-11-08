@@ -4,7 +4,7 @@
 <div class="alert alert-success"><h4>Submission complete!</h4>
 The following tasks were added successfully:
 {% for task in tasks %}
-    <a href="{% url "submission.views.status" task %}">{{task}}</a>
+    <a href="{% url "submission.status" task %}">{{task}}</a>
 {% endfor %}.
 <br /><br />
 Click on the links to monitor the status of the submission:<br />

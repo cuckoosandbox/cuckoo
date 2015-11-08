@@ -8,72 +8,78 @@ import time
 from django.conf import settings
 from django.template import RequestContext
 from django.shortcuts import render_to_response
-from django.views.decorators.http import require_safe
+from django.views.generic import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 sys.path.append(settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_RUNNING
-from lib.cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED, TASK_REPORTED
-from lib.cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING
+from lib.cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED
+from lib.cuckoo.core.database import TASK_REPORTED
+from lib.cuckoo.core.database import TASK_FAILED_ANALYSIS
+from lib.cuckoo.core.database import TASK_FAILED_PROCESSING
+from lib.cuckoo.core.database import TASK_FAILED_REPORTING
 
-def timestamp(dt):
-    """Returns the timestamp of a datetime object."""
-    if not dt:
-        return None
-    return time.mktime(dt.timetuple())
 
-@require_safe
-def index(request):
-    db = Database()
+class Dashboard(LoginRequiredMixin, View):
 
-    report = dict(
-        total_samples=db.count_samples(),
-        total_tasks=db.count_tasks(),
-        states_count={},
-        estimate_hour=None,
-        estimate_day=None
-    )
+    def _timestamp(self, dt):
+        """Returns the timestamp of a datetime object."""
+        if not dt:
+            return None
+        return time.mktime(dt.timetuple())
 
-    states = (
-        TASK_PENDING,
-        TASK_RUNNING,
-        TASK_COMPLETED,
-        TASK_RECOVERED,
-        TASK_REPORTED,
-        TASK_FAILED_ANALYSIS,
-        TASK_FAILED_PROCESSING,
-        TASK_FAILED_REPORTING
-    )
+    def get(self, request):
+        db = Database()
 
-    for state in states:
-        report["states_count"][state] = db.count_tasks(state)
+        report = dict(
+            total_samples=db.count_samples(),
+            total_tasks=db.count_tasks(),
+            states_count={},
+            estimate_hour=None,
+            estimate_day=None
+        )
 
-    offset = None
+        states = (
+            TASK_PENDING,
+            TASK_RUNNING,
+            TASK_COMPLETED,
+            TASK_RECOVERED,
+            TASK_REPORTED,
+            TASK_FAILED_ANALYSIS,
+            TASK_FAILED_PROCESSING,
+            TASK_FAILED_REPORTING
+        )
 
-    # For the following stats we're only interested in completed tasks.
-    tasks = db.list_tasks(offset=offset, status=TASK_COMPLETED)
-    tasks += db.list_tasks(offset=offset, status=TASK_REPORTED)
+        for state in states:
+            report["states_count"][state] = db.count_tasks(state)
 
-    if tasks:
-        # Get the time when the first task started.
-        started = min(timestamp(task.started_on) for task in tasks)
+        offset = None
 
-        # Get the time when the last task completed.
-        completed = max(timestamp(task.completed_on) for task in tasks)
+        # For the following stats we're only interested in completed tasks.
+        tasks = db.list_tasks(offset=offset, status=TASK_COMPLETED)
+        tasks += db.list_tasks(offset=offset, status=TASK_REPORTED)
 
-        # Get the amount of tasks that actually completed.
-        finished = len(tasks)
+        if tasks:
+            # Get the time when the first task started.
+            started = min(self._timestamp(task.started_on) for task in tasks)
 
-        # It has happened that for unknown reasons completed and started were
-        # equal in which case an exception is thrown, avoid this.
-        if int(completed - started):
-            hourly = 60 * 60 * finished / (completed - started)
-        else:
-            hourly = 0
+            # Get the time when the last task completed.
+            completed = max(self._timestamp(task.completed_on) for task in tasks)
 
-        report["estimate_hour"] = int(hourly)
-        report["estimate_day"] = int(24 * hourly)
+            # Get the amount of tasks that actually completed.
+            finished = len(tasks)
 
-    return render_to_response("dashboard/index.html",
-                              {"report": report},
-                              context_instance=RequestContext(request))
+            # It has happened that for unknown reasons completed and started
+            #  were equal in which case an exception is thrown, avoid this.
+            if int(completed - started):
+                hourly = 60 * 60 * finished / (completed - started)
+            else:
+                hourly = 0
+
+            report["estimate_hour"] = int(hourly)
+            report["estimate_day"] = int(24 * hourly)
+
+        return render_to_response("dashboard/index.html",
+                                  {"report": report},
+                                  context_instance=RequestContext(request))

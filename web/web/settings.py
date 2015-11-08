@@ -25,8 +25,13 @@ MONGO_DB = cfg.get("db", "cuckoo")
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-# Database settings. We don't need it.
-DATABASES = {}
+# Database settings. We don't need it but Django auth yes.
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'cuckoo.sqlite',
+    }
+}
 
 SITE_ID = 1
 
