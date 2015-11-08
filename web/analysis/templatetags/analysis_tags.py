@@ -25,3 +25,10 @@ def filter_key_if_has(l, key):
     for x in l:
         if key not in x or x[key]:
             yield x
+
+@register.filter
+def custom_length(dictionary, keys):
+    ret = 0
+    for key in keys.split():
+        ret += len(dictionary.get(key, []))
+    return ret
