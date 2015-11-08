@@ -28,6 +28,9 @@ def filter_key_if_has(l, key):
 
 @register.filter
 def custom_length(dictionary, keys):
+    if not dictionary:
+        return 0
+
     ret = 0
     for key in keys.split():
         ret += len(dictionary.get(key, []))
