@@ -11,16 +11,18 @@ sys.path.append(CUCKOO_PATH)
 
 from lib.cuckoo.common.config import Config
 
-cfg = Config("reporting").mongodb
+cfg = Config("reporting")
 
 # Checks if mongo reporting is enabled in Cuckoo.
-if not cfg.get("enabled"):
+if not cfg.mongodb.get("enabled"):
     raise Exception("Mongo reporting module is not enabled in cuckoo, aborting!")
 
 # Get connection options from reporting.conf.
-MONGO_HOST = cfg.get("host", "127.0.0.1")
-MONGO_PORT = cfg.get("port", 27017)
-MONGO_DB = cfg.get("db", "cuckoo")
+MONGO_HOST = cfg.mongodb.get("host", "127.0.0.1")
+MONGO_PORT = cfg.mongodb.get("port", 27017)
+MONGO_DB = cfg.mongodb.get("db", "cuckoo")
+
+MOLOCH_HOST = cfg.moloch.get("host", "127.0.0.1")
 
 DEBUG = True
 
