@@ -9,8 +9,6 @@ import logging
 import datetime
 import SocketServer
 from threading import Event, Thread
-import subprocess
-import shlex
 
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
@@ -43,87 +41,50 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
         self.analysistasks = {}
         self.analysishandlers = {}
 
-        self.ip = self.cfg.resultserver.ip
+        ip = self.cfg.resultserver.ip
         self.port = int(self.cfg.resultserver.port)
-        self.vbox_interfaces_initialized = False
         while True:
             try:
-                server_addr = self.ip, self.port
+                server_addr = ip, self.port
                 SocketServer.ThreadingTCPServer.__init__(self,
                                                          server_addr,
                                                          ResultHandler,
                                                          *args,
                                                          **kwargs)
             except Exception as e:
-                self.handle_init_exceptions(e)
+                # In Linux /usr/include/asm-generic/errno-base.h.
+                # EADDRINUSE  98 (Address already in use)
+                # In Mac OS X or FreeBSD:
+                # EADDRINUSE 48 (Address already in use)
+                if e.errno == 98 or e.errno == 48:
+                    log.warning("Cannot bind ResultServer on port %s, "
+                                "trying another port.", self.port)
+                    self.port += 1
+                # In Linux /usr/include/asm-generic/errno.h:
+                # EADDRNOTAVAIL 99 (Cannot assign requested address)
+                # In Mac OS x:
+                # EADDRNOTAVAIL 49 (Cannot assign requested address)
+                elif e.errno == 99 or e.errno == 49:
+                    raise CuckooCriticalError("Unable to bind ResultServer on "
+                                              "{0}:{1}:{2}. This usually happens "
+                                              "when you start Cuckoo without "
+                                              "bringing up the virtual interface "
+                                              "associated with the ResultServer "
+                                              "IP address. "
+                                              "See http://docs.cuckoosandbox.org/en/latest/faq/#troubles-problem"
+                                              "for more information."
+                                              "".format(ip, self.port, str(e)))
 
+                else:
+                    raise CuckooCriticalError("Unable to bind ResultServer on "
+                                              "{0}:{1}: {2}".format(
+                                                  ip, self.port, str(e)))
             else:
-                log.debug("ResultServer running on %s:%s.", self.ip, self.port)
+                log.debug("ResultServer running on %s:%s.", ip, self.port)
                 self.servethread = Thread(target=self.serve_forever)
                 self.servethread.setDaemon(True)
                 self.servethread.start()
                 break
-
-    def handle_init_exceptions(self, e):
-        # In Linux /usr/include/asm-generic/errno-base.h.
-        # EADDRINUSE  98 (Address already in use)
-        # In Mac OS X or FreeBSD:
-        # EADDRINUSE 48 (Address already in use)
-        if e.errno == 98 or e.errno == 48:
-            log.warning("Cannot bind ResultServer on port %s, "
-                        "trying another port.", self.port)
-            self.port += 1
-        # In Linux /usr/include/asm-generic/errno.h:
-        # EADDRNOTAVAIL 99 (Cannot assign requested address)
-        # In Mac OS x:
-        # EADDRNOTAVAIL 49 (Cannot assign requested address)
-        elif e.errno == 99 or e.errno == 49:
-            if self.cfg.cuckoo.machinery == "virtualbox" and not \
-                    self.vbox_interfaces_initialized:
-                log.debug("Running on VirtualBox machinery and got "
-                          "EADDRNOTAVAIL (cannot assign requested address) "
-                          "when trying to bind ResultServer.")
-                self.init_vbox_result_server_interfaces()
-                self.vbox_interfaces_initialized = True
-            else:
-                raise CuckooCriticalError("Unable to bind ResultServer on "
-                                          "{0}:{1}:{2}. This usually happens "
-                                          "when you start Cuckoo without "
-                                          "bringing up the virtual interface "
-                                          "associated with the ResultServer "
-                                          "IP address. "
-                                          "See http://docs.cuckoosandbox.org/en/latest/faq/#troubles-problem "
-                                          "for more information.".
-                                          format(self.ip, self.port, str(e)))
-        else:
-            raise CuckooCriticalError("Unable to bind ResultServer on "
-                                      "{0}:{1}: {2}".
-                                      format(self.ip, self.port, str(e)))
-
-    def init_vbox_result_server_interfaces(self):
-        vbox_cfg = Config(self.cfg.cuckoo.machinery)
-        if_initialized = []
-        for machine in vbox_cfg.get("virtualbox")['machines'].split(","):
-            machine = vbox_cfg.get(machine.strip())
-            try:
-                interface = machine['interface']
-            except KeyError:
-                interface = "vboxnet0"
-            if interface in if_initialized:
-                continue
-            try:
-                ip = machine['resultserver_ip']
-            except KeyError:
-                ip = "192.168.56.1"
-            cmd = "{0} hostonlyif ipconfig {1} --ip {2}".format(vbox_cfg.get("virtualbox")['path'], interface, ip)
-            vbox_manage = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            try:
-                vbox_manage.communicate()
-            except OSError as e:
-                log.warning("Error {0} while trying to initialize result"
-                            " server interface for VirtualBox".format(e))
-            if_initialized.append(interface)
-            log.debug("Tried to initialize result server interface {0} with ip {1}".format(interface, ip))
 
     def add_task(self, task, machine):
         """Register a task/machine with the ResultServer."""
