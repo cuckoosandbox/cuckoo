@@ -18,6 +18,7 @@
         <li><a href="#network_icmp_tab" data-toggle="tab">ICMP ({{ analysis.network.icmp|length }})</a></li>
         <li><a href="#network_irc_tab" data-toggle="tab">IRC ({{ analysis.network.irc|length }})</a></li>
         <li><a href="#network_suricata_tab" data-toggle="tab">Suricata ({{ analysis.suricata|custom_length:"alerts tls" }})</a></li>
+        <li><a href="#network_snort_tab" data-toggle="tab">Snort ({{ analysis.snort.alerts|length }})</a></li>
     </ul>
     <div class="tab-content">
         <div class="tab-pane fade in active" id="network_hosts_tab">{% include "analysis/network/_hosts.html" %}</div>
@@ -28,5 +29,6 @@
         <div class="tab-pane fade" id="network_icmp_tab">{% include "analysis/network/_icmp.html" %}</div>
         <div class="tab-pane fade" id="network_irc_tab">{% include "analysis/network/_irc.html" %}</div>
         <div class="tab-pane fade" id="network_suricata_tab">{% include "analysis/network/_suricata.html" %}</div>
+        <div class="tab-pane fade" id="network_snort_tab">{% include "analysis/network/_snort.html" %}</div>
     </div>
 </div>
