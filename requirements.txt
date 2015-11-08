@@ -3,7 +3,6 @@ cffi==1.2.1
 chardet==2.3.0
 cryptography==1.0
 Django==1.8.4
-django-jinja==1.4.1
 dpkt==1.8.6.2
 enum34==1.0.4
 Flask==0.10.1
