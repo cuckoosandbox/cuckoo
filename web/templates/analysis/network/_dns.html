@@ -10,13 +10,31 @@
             </tr>
             {% for p in analysis.network.dns %}
                 <tr>
-                    <td>{{p.request}}</td>
+                    <td>
+                        <a target="_blank" href="{% url "analysis.views.moloch" host=p.request %}">{{p.request}}</a>
+                    </td>
                     <td>
                         {% for a in p.answers %}
-                            {{a.type}} {{a.data|linebreaksbr}}{% if not forloop.last %}<br/>{% endif %}
+                            {% if a.type == "A" %}
+                                <a target="_blank" href="{% url "analysis.views.moloch" ip=a.data %}">
+                                    {{a.type}} {{a.data|linebreaksbr}}
+                                </a>
+                                {% if not forloop.last %}<br/>{% endif %}
+                            {% elif a.type == "CNAME" %}
+                                <a target="_blank" href="{% url "analysis.views.moloch" host=a.data %}">
+                                    {{a.type}} {{a.data|linebreaksbr}}
+                                </a>
+                                {% if not forloop.last %}<br/>{% endif %}
+                            {% else %}
+                                {{a.type}} {{a.data|linebreaksbr}}{% if not forloop.last %}<br/>{% endif %}
+                            {% endif %}
                         {% endfor %}
                     </td>
-                    <td>{{ domainlookups|get_item:p.request }}</td>
+                    <td>
+                        <a target="_blank" href="{% url "analysis.views.moloch" ip=domainlookups|get_item:p.request %}">
+                            {{ domainlookups|get_item:p.request }}
+                        </a>
+                    </td>
                 </tr>
             {% endfor %}
         </table>

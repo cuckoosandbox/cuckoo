@@ -6,11 +6,12 @@ import sys
 import re
 import os
 import json
+import urllib
 
 from django.conf import settings
 from django.template import RequestContext
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from django.views.decorators.http import require_safe
 from django.views.decorators.csrf import csrf_exempt
 
@@ -278,6 +279,36 @@ def file(request, category, object_id):
                                   {"error": "File not found"},
                                   context_instance=RequestContext(request))
 
+moloch_mapper = {
+    "ip": "ip == %s",
+    "host": "host == %s",
+    "src_ip": "ip == %s",
+    "src_port": "port == %s",
+    "dst_ip": "ip == %s",
+    "dst_port": "port == %s",
+    "sid": 'tags == "sid:%s"',
+}
+
+@require_safe
+def moloch(request, **kwargs):
+    query = []
+    for key, value in kwargs.items():
+        if value:
+            query.append(moloch_mapper[key] % value)
+
+    if ":" in request.get_host():
+        hostname = request.get_host().split(":")[0]
+    else:
+        hostname = request.get_host()
+
+    url = "https://%s:8005/?%s" % (
+        settings.MOLOCH_HOST or hostname,
+        urllib.urlencode({
+            "date": "-1",
+            "expression": " && ".join(query),
+        }),
+    )
+    return redirect(url)
 
 @require_safe
 def full_memory_dump_file(request, analysis_number):
@@ -292,6 +323,7 @@ def full_memory_dump_file(request, analysis_number):
                                   {"error": "File not found"},
                                   context_instance=RequestContext(request))
 
+@require_safe
 def search(request):
     if "search" not in request.POST:
         return render_to_response("analysis/search.html",

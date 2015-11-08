@@ -11,11 +11,11 @@
         <tr>
             <td>
                 {{alert.protocol}}
-                {{alert.src_ip}}:{{alert.src_port}} -&gt;
-                {{alert.dst_ip}}:{{alert.dst_port}}
+                <a target="_blank" href="{% url "analysis.views.moloch" src_ip=alert.src_ip src_port=alert.src_port %}">{{alert.src_ip}}:{{alert.src_port}}</a> -&gt;
+                <a target="_blank" href="{% url "analysis.views.moloch" dst_ip=alert.dst_ip dst_port=alert.dst_port %}">{{alert.dst_ip}}:{{alert.dst_port}}</a>
             </td>
-            <td>{{alert.sid}}</td>
-            <td>{{alert.signature}}</td>
+            <td><a target="_blank" href="{% url "analysis.views.moloch" sid=alert.sid %}">{{alert.sid}}</a></td>
+            <td><a target="_blank" href="{% url "analysis.views.moloch" sid=alert.sid %}">{{alert.signature}}</a></td>
             <td>{{alert.category}}</td>
         </tr>
         {% endfor %}
@@ -37,8 +37,8 @@
         <tr>
             <td>
                 {{tls.version}} <br />
-                {{tls.src_ip}}:{{tls.src_port}} <br />
-                {{tls.dst_ip}}:{{tls.dst_port}}
+                <a target="_blank" href="{% url "analysis.views.moloch" src_ip=tls.src_ip src_port=tls.src_port %}">{{tls.src_ip}}:{{tls.src_port}}</a> <br />
+                <a target="_blank" href="{% url "analysis.views.moloch" dst_ip=tls.dst_ip dst_port=tls.dst_port %}">{{tls.dst_ip}}:{{tls.dst_port}}</a>
             </td>
             <td>{{tls.issuer}}</td>
             <td>{{tls.subject}}</td>
