@@ -27,6 +27,9 @@ def download_archive():
         print("ERROR: Unable to download archive: %s" % e)
         sys.exit(-1)
 
+    return data
+
+def extract_archive(data):
     fd, filepath = tempfile.mkstemp()
     os.write(fd, data)
     os.close(fd)
@@ -91,8 +94,17 @@ def installdir(src, dst, force, rewrite, origin=[]):
                     "/".join(origin), file_name, colors.green("installed"))
 
 
-def install(enabled, force, rewrite):
-    (temp, source) = download_archive()
+def install(enabled, force, rewrite, archive):
+    if archive:
+        if not os.path.isfile(archive):
+            print("ERROR: Provided archive not found!")
+            sys.exit(-1)
+
+        data = open(archive, "rb").read()
+    else:
+        data = download_archive()
+
+    temp, source = extract_archive(data)
 
     folders = {
         "signatures": os.path.join("modules", "signatures"),
@@ -133,6 +145,7 @@ def main():
     parser.add_argument("-f", "--force", help="Install files without confirmation", action="store_true", required=False)
     parser.add_argument("-w", "--rewrite", help="Rewrite existing files", action="store_true", required=False)
     parser.add_argument("-b", "--branch", help="Specify a different branch", action="store", default="master", required=False)
+    parser.add_argument("archive", help="Install a stored archive", nargs="?")
     args = parser.parse_args()
 
     enabled = []
@@ -173,7 +186,7 @@ def main():
 
     URL = URL.format(args.branch)
 
-    install(enabled, force, rewrite)
+    install(enabled, force, rewrite, args.archive)
 
 if __name__ == "__main__":
     try:
