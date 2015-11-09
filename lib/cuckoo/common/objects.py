@@ -69,9 +69,12 @@ class File(object):
     # static fields which indicate whether the user has been
     # notified about missing dependencies already
     notified_yara = False
-    notified_pydeep = False
     notified_pefile = False
     notified_androguard = False
+
+    # Given that ssdeep hashes are not really used much in practice we're just
+    # going to disable its warning by default for now.
+    notified_pydeep = True
 
     def __init__(self, file_path):
         """@param file_path: file path."""
