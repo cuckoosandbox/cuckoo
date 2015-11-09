@@ -23,7 +23,8 @@ In order to properly function, Cuckoo requires some dependencies. They can all b
 
     $ sudo pip install -r requirements.txt
 
-`Yara`_ and `Pydeep`_ will have to beinstalled manually, so please refer to their websites.
+`Yara`_ and `Pydeep`_ are *optional* plugins but will have to be installed
+manually, so please refer to their websites.
 
 If you want to use KVM it's packaged too and you can install it with the following command::
 
