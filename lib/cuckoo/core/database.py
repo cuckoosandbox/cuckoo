@@ -334,9 +334,11 @@ class Database(object):
     """
     __metaclass__ = Singleton
 
-    def __init__(self, dsn=None, schema_check=True):
-        """@param dsn: database connection string.
-        @param schema_check: disable or enable the db schema version check
+    def __init__(self, dsn=None, schema_check=True, echo=False):
+        """
+        @param dsn: database connection string.
+        @param schema_check: disable or enable the db schema version check.
+        @param echo: echo sql queries.
         """
         self._lock = SuperLock()
         cfg = Config()
@@ -358,7 +360,7 @@ class Database(object):
             self._connect_database("sqlite:///%s" % db_file)
 
         # Disable SQL logging. Turn it on for debugging.
-        self.engine.echo = False
+        self.engine.echo = echo
 
         # Connection timeout.
         if hasattr(cfg, "database") and cfg.database.timeout:
