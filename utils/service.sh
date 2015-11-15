@@ -114,6 +114,28 @@ script
 end script
 EOF
 
+    cat > /etc/init/cuckoo-process2.conf << EOF
+# Cuckoo results processing service.
+
+description "cuckoo results processing"
+start on started cuckoo
+stop on stopped cuckoo
+setuid "$USERNAME"
+chdir "$CUCKOO"
+instance \$INSTANCE
+
+# Restart Cuckoo report processing if it exits unexpectedly.
+respawn
+
+env CONFFILE="$CONFFILE"
+
+script
+    . "\$CONFFILE"
+
+    exec ./utils/process2.py "\$INSTANCE"
+end script
+EOF
+
     cat > /etc/init/cuckoo-api.conf << EOF
 # Cuckoo API server service.
 
@@ -216,6 +238,7 @@ _remove_upstart() {
     rm -f /etc/init/cuckoo.conf
     rm -f /etc/init/cuckoo-api.conf
     rm -f /etc/init/cuckoo-process.conf
+    rm -f /etc/init/cuckoo-process2.conf
     rm -f /etc/init/cuckoo-distributed-instance.conf
     rm -f /etc/init/cuckoo-web.conf
 }
