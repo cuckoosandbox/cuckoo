@@ -309,18 +309,6 @@ class Task(Base):
     def __repr__(self):
         return "<Task('{0}','{1}')>".format(self.id, self.target)
 
-class TaskProcessing(Base):
-    """Task processing queue for process2.py"""
-    __tablename__ = "task_processing"
-
-    id = Column(Integer, primary_key=True)
-    task_id = Column(Integer, ForeignKey("tasks.id"), nullable=True)
-    instance = Column(Text, nullable=False)
-
-    def __init__(self, task_id, instance):
-        self.task_id = task_id
-        self.instance = instance
-
 class AlembicVersion(Base):
     """Table used to pinpoint actual database schema release."""
     __tablename__ = "alembic_version"
@@ -1224,6 +1212,9 @@ class Database(object):
         # get that far. This seems to be doing a fine job for avoiding race
         # conditions - especially with the session.commit() thing. But any
         # improvements are welcome.
+        # TODO We can get rid of the `processing` column once again by
+        # introducing a "reporting" status, but this requires annoying
+        # database migrations, so leaving that for another day.
         query = """
             UPDATE tasks SET processing = '%s'
             WHERE id IN (

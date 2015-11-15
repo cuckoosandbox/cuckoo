@@ -57,10 +57,6 @@ def instance(instance):
                 continue
 
             task = db.view_task(task_id)
-            if task.status != TASK_COMPLETED:
-                log.warning("Task #%d: status (%s) is not completed, "
-                            "ignoring", task.id, task.status)
-                continue
 
             log.info("Task #%d: reporting task", task.id)
 
