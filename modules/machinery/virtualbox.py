@@ -10,6 +10,7 @@ import logging
 import subprocess
 import os.path
 
+from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.abstracts import Machinery
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
@@ -41,6 +42,49 @@ class VirtualBox(Machinery):
 
         # Base checks.
         super(VirtualBox, self)._initialize_check()
+
+    def _init_once(self):
+
+        """
+        Brings up vboxnet0 interface if it exists and there's at least one guest that has a single
+        interface configured and that's a hostonly interface named vboxnet0
+        Done because Virtualbox doesn't automatically raise the interface on startup.
+        Doesn't do anything in the interface doesn't exist or it's state is UP.
+        """
+
+        vbox_options = Config("virtualbox")
+        try:
+            host_ifs = subprocess.Popen([vbox_options.get("virtualbox")["path"], "list", "hostonlyifs"], stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE)
+            output, err = host_ifs.communicate()
+            if_state = re.findall(ur'vboxnet0(.*)vboxnet0', output, re.S)
+            if len(if_state) == 0 or re.search(r'Status:[\s]+Up', if_state[0], re.M) is not None:
+                return
+        except OSError as e:
+            log.warning("Error {0} when trying to check the status of the vboxnet0 ".format(e))
+
+        global_options = Config()
+        for machine_name in vbox_options.get("virtualbox")["machines"].split(","):
+            machine = vbox_options.get(machine_name.strip())
+            try:
+                vm_info = subprocess.Popen([vbox_options.get("virtualbox")["path"], "showvminfo", machine_name,
+                                           "--machinereadable"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                output, err = vm_info.communicate()
+                conf_if = [x.split("=")[1].strip().replace("\"", "") for x in output.splitlines() if
+                           re.match(r'^hostonlyadapter[1-9]+="vboxnet[0-9]+"|'r'^nic[1-9]+="[a-zA-Z]+"', x)
+                           and "none" not in x.lower()]
+                if {"hostonly", "vboxnet0"} == set(conf_if):
+                    hostonly = subprocess.Popen([vbox_options.get("virtualbox")["path"],
+                                                 "hostonlyif", "ipconfig", "vboxnet0","--ip",
+                                                 machine.get("resultserver_ip", global_options.resultserver.ip)],
+                                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    hostonly.communicate()
+                    log.debug("Tried to initialize ResultServer interface vboxnet0 "
+                              "with ip {0}".format(global_options.resultserver.ip))
+                    # The only supported case has been handled.
+                    break
+            except OSError as e:
+                log.warning("Error {0} while trying to initialize vboxnet0" .format(str(e)))
 
     def start(self, label, task):
         """Start a virtual machine.

@@ -83,10 +83,20 @@ class Machinery(object):
         """
         self.options = options
 
+    def _init_once(self):
+        """
+        Used to handle machinery specific initialization of the environment.
+        """
+        pass
+
     def initialize(self, module_name):
         """Read, load, and verify machines configuration.
         @param module_name: module name.
         """
+
+        #Initialize the environment if needed
+        self._init_once()
+
         # Load.
         self._initialize(module_name)
 

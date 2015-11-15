@@ -567,6 +567,9 @@ class Scheduler(object):
         except CuckooMachineError as e:
             raise CuckooCriticalError("Error initializing machines: %s" % e)
 
+        #Starting the ResultServer
+        ResultServer()
+
         # At this point all the available machines should have been identified
         # and added to the list. If none were found, Cuckoo needs to abort the
         # execution.
