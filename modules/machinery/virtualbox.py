@@ -8,10 +8,12 @@ import time
 import logging
 import subprocess
 import os.path
+import shlex
 
 from lib.cuckoo.common.abstracts import Machinery
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
+from lib.cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
 
@@ -38,8 +40,34 @@ class VirtualBox(Machinery):
                                       "specified path \"%s\"" %
                                       self.options.virtualbox.path)
 
+        # Check that the interface associated with the result server is up.
+        self.initialize_result_server_interfaces()
         # Base checks.
         super(VirtualBox, self)._initialize_check()
+
+    def initialize_result_server_interfaces(self):
+        if_initialized = []
+        for machine in self.options.get("virtualbox")["machines"].split(","):
+            machine = self.options.get(machine.strip())
+            try:
+                interface = machine['interface']
+            except KeyError:
+                interface = Config("auxiliary").sniffer['interface']
+            if interface in if_initialized:
+                continue
+            try:
+                ip = machine['resultserver_ip']
+            except KeyError:
+                ip = self.options_globals.resultserver
+            cmd = "{0} hostonlyif ipconfig {1} --ip {2}".format(self.options.get("virtualbox")['path'], interface, ip)
+            vbox_manage = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            try:
+                vbox_manage.communicate()
+            except OSError as e:
+                log.warning("Error {0} while trying to initialize result"
+                            " server interface for VirtualBox".format(str(e)))
+            if_initialized.append(interface)
+            log.debug("Tried to initialize result server interface {0} with ip {1}".format(interface, ip))
 
     def start(self, label, task):
         """Start a virtual machine.
