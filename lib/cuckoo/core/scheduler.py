@@ -21,6 +21,7 @@ from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
 from lib.cuckoo.core.plugins import RunSignatures, RunReporting
 from lib.cuckoo.core.resultserver import ResultServer
+from lib.cuckoo.core.rooter import rooter
 
 log = logging.getLogger(__name__)
 
@@ -523,6 +524,30 @@ class Scheduler:
                         "to process the results in a separate process.py to "
                         "increase throughput and stability. Please read the "
                         "documentation about the `Processing Utility`.")
+
+        # Drop all existing packet forwarding rules for each VM. Just in case
+        # Cuckoo was terminated for some reason and various forwarding rules
+        # have thus not been dropped yet.
+        for machine in machinery.machines():
+            if not machine.interface:
+                log.info("Unable to determine the network interface for VM "
+                         "with name %s, Cuckoo will not be able to give it "
+                         "full internet access or route it through a VPN! "
+                         "Please define a default network interface for the "
+                         "machinery or define a network interface for each "
+                         "VM.", machine.name)
+                continue
+
+            if Config("vpn").vpn.enabled:
+                # Drop forwarding rule to each VPN.
+                for vpn in rooter("vpn_list") or []:
+                    rooter("forward_disable", machine.interface,
+                           vpn["tun"], machine.ip)
+
+            # Drop forwarding rule to the internet / dirty line.
+            if self.cfg.routing.internet != "none":
+                rooter("forward_disable", machine.interface,
+                       self.cfg.cuckoo.internet, machine.ip)
 
     def stop(self):
         """Stop scheduler."""

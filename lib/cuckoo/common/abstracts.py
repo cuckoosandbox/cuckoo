@@ -105,7 +105,10 @@ class Machinery(object):
 
                 # If configured, use specific network interface for this
                 # machine, else use the default value.
-                machine.interface = machine_opts.get("interface")
+                if machine_opts.get("interface"):
+                    machine.interface = machine_opts["interface"]
+                else:
+                    machine.interface = mmanager_opts.get("interface")
 
                 # If configured, use specific snapshot name, else leave it
                 # empty and use default behaviour.

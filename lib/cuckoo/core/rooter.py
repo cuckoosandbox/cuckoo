@@ -6,22 +6,33 @@ import json
 import logging
 import os.path
 import socket
+import tempfile
+import threading
 
 from lib.cuckoo.common.config import Config
 
 cfg = Config()
 log = logging.getLogger(__name__)
+unixpath = tempfile.mktemp()
+lock = threading.Lock()
 
 def rooter(command, *args, **kwargs):
-    if not os.path.exists(cfg.rooter):
-        log.critical("Unable to passthrough root command as the rooter unix "
-                     "socket doesn't exist.")
+    if not os.path.exists(cfg.cuckoo.rooter):
+        log.critical("Unable to passthrough root command (%s) as the rooter "
+                     "unix socket doesn't exist.", command)
         return
+
+    lock.acquire()
 
     s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 
+    if os.path.exists(unixpath):
+        os.remove(unixpath)
+
+    s.bind(unixpath)
+
     try:
-        s.connect(cfg.rooter)
+        s.connect(cfg.cuckoo.rooter)
     except socket.error as e:
         log.critical("Unable to passthrough root command as we're unable to "
                      "connect to the rooter unix socket: %s.", e)
@@ -33,8 +44,11 @@ def rooter(command, *args, **kwargs):
         "kwargs": kwargs,
     }))
 
-def vpn_enable(ipaddr, vpn):
-    return rooter("vpn_enable", ipaddr=ipaddr, vpn=vpn)
+    ret = json.loads(s.recv(0x10000))
 
-def vpn_disable(ipaddr, vpn):
-    return rooter("vpn_disable", ipaddr=ipaddr, vpn=vpn)
+    lock.release()
+
+    if ret["exception"]:
+        log.warning("Rooter returned error: %s", ret["exception"])
+
+    return ret["output"]
