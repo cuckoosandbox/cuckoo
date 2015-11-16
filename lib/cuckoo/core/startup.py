@@ -11,6 +11,7 @@ import urllib
 import urllib2
 import logging
 import logging.handlers
+import socket
 
 from lib.cuckoo.common.colors import red, green, yellow, cyan
 from lib.cuckoo.common.config import Config
@@ -20,6 +21,7 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.core.database import Database, TASK_RUNNING, TASK_FAILED_ANALYSIS
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
+from lib.cuckoo.core.rooter import rooter
 
 try:
     import pwd
@@ -305,6 +307,79 @@ def init_binaries():
             "`./utils/community.py -wafb 2.0` if you'd also like to download "
             "over 300 Cuckoo signatures."
         )
+
+def init_rooter():
+    """If required, check whether the rooter is running and whether we can
+    connect to it."""
+    cuckoo = Config()
+
+    # The default configuration doesn't require the rooter to be ran.
+    if not Config("vpn").vpn.enabled and cuckoo.routing.route == "none":
+        return
+
+    cuckoo = Config()
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+
+    try:
+        s.connect(cuckoo.cuckoo.rooter)
+    except socket.error as e:
+        if e.strerror == "No such file or directory":
+            raise CuckooStartupError(
+                "The rooter is required but it is either not running or it "
+                "has been configured to a different Unix socket path."
+            )
+
+        if e.strerror == "Connection refused":
+            raise CuckooStartupError(
+                "The rooter is required but we can't connect to it as the "
+                "rooter is not actually running."
+            )
+
+        if e.strerror == "Permission denied":
+            raise CuckooStartupError(
+                "The rooter is required but we can't connect to it due to "
+                "incorrect permissions. Did you assign it the correct group?"
+            )
+
+        raise CuckooStartupError("Unknown rooter error: %s" % e)
+
+def init_routing():
+    """Initialize and check whether the routing information is correct."""
+    cuckoo = Config()
+
+    # Check whether the default VPN exists if specified.
+    if cuckoo.routing.route not in ("none", "internet"):
+        if not Config("vpn").vpn.enabled:
+            raise CuckooStartupError(
+                "A VPN has been configured as default routing interface for "
+                "VMs, but VPNs have not been enabled in vpn.conf"
+            )
+
+        for vpn in rooter("vpn_list"):
+            if cuckoo.routing.route == vpn["name"]:
+                break
+        else:
+            raise CuckooStartupError(
+                "The VPN defined as default routing target has not been "
+                "configured in vpn.conf."
+            )
+
+    # Check whether the dirty line exists if it has been defined.
+    if cuckoo.routing.internet != "none":
+        if not rooter("nic_available", cuckoo.routing.internet):
+            raise CuckooStartupError(
+                "The network interface that has been configured as dirty "
+                "line is not available."
+            )
+
+    # Check whether all VPNs exist if configured.
+    if Config("vpn").vpn.enabled:
+        for vpn in rooter("vpn_list"):
+            if not rooter("nic_available", vpn["interface"]):
+                raise CuckooStartupError(
+                    "The network interface that has been configured for "
+                    "VPN %s is not available." % vpn["name"]
+                )
 
 def cuckoo_clean():
     """Clean up cuckoo setup.
