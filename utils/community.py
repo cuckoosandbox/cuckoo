@@ -51,10 +51,15 @@ def installdir(src, dst, force, rewrite, origin=[]):
         destination = os.path.join(dst, file_name)
 
         if not rewrite:
-            if os.path.exists(destination):
-                print("File \"{0}\" already exists, "
-                      "{1}".format(file_name, colors.yellow("skipped")))
-                continue
+            srcpath = os.path.join(src, file_name)
+            if not os.path.isdir(srcpath):
+                if os.path.exists(destination):
+                    print("File \"{0}\" already exists, "
+                          "{1}".format(file_name, colors.yellow("skipped")))
+                    continue
+            else:
+                installdir(srcpath, destination, force, rewrite,
+                           origin + [file_name])
 
         install = False
 
