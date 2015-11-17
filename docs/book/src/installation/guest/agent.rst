@@ -11,7 +11,7 @@ agent.
 
 It's very simple.
 
-In the *agent/* directory you will find and *agent.py* file, just copy it
+In the *agent/* directory you will find an *agent.py* file, just copy it
 to the Guest operating system (in whatever way you want, perhaps a temporary
 shared folder or by downloading it from a Host webserver) and run it.
 This will launch the XMLRPC server which will be listening for connections.
