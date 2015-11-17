@@ -577,7 +577,7 @@ class Scheduler:
             # Drop forwarding rule to the internet / dirty line.
             if self.cfg.routing.internet != "none":
                 rooter("forward_disable", machine.interface,
-                       self.cfg.cuckoo.internet, machine.ip)
+                       self.cfg.routing.internet, machine.ip)
 
     def stop(self):
         """Stop scheduler."""

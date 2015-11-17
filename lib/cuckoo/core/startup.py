@@ -373,7 +373,9 @@ def init_routing():
 
             vpns[entry.name] = entry
 
-            # Enable NAT on this network interface.
+            # Disable & enable NAT on this network interface. Disable it just
+            # in case we still had the same rule from a previous run.
+            rooter("disable_nat", entry.interface)
             rooter("enable_nat", entry.interface)
 
     # Check whether the default VPN exists if specified.
