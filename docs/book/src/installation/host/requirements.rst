@@ -34,7 +34,7 @@ If you want to use XenServer you'll have to install the *XenAPI* Python package:
 
     $ sudo pip install XenAPI
 
-.. _Yara: http://code.google.com/p/yara-project/
+.. _Yara: https://github.com/plusvic/yara
 .. _Pydeep: https://github.com/kbandla/pydeep
 
 Virtualization Software
