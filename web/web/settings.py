@@ -25,6 +25,14 @@ MONGO_DB = cfg.mongodb.get("db", "cuckoo")
 MOLOCH_ENABLED = cfg.moloch.get("enabled")
 MOLOCH_HOST = cfg.moloch.get("host")
 
+# In case we have VPNs enabled we need to initialize through the following
+# two methods as they verify the interaction with VPNs as well as gather
+# which VPNs are available (for representation upon File/URL submission).
+from lib.cuckoo.core.startup import init_rooter, init_routing
+
+init_rooter()
+init_routing()
+
 DEBUG = True
 
 # Database settings. We don't need it.

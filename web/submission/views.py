@@ -11,8 +11,10 @@ from django.template import RequestContext
 
 sys.path.append(settings.CUCKOO_PATH)
 
-from lib.cuckoo.core.database import Database
+from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.utils import store_temp_file
+from lib.cuckoo.core.database import Database
+from lib.cuckoo.core.rooter import vpns
 
 def force_int(value):
     try:
@@ -33,6 +35,11 @@ def index(request):
         memory = bool(request.POST.get("memory", False))
         enforce_timeout = bool(request.POST.get("enforce_timeout", False))
         tags = request.POST.get("tags", None)
+
+        if request.POST.get("route"):
+            if options:
+                options += ","
+            options += "route=%s" % request.POST.get("route")
 
         if request.POST.get("free"):
             if options:
@@ -152,7 +159,9 @@ def index(request):
 
         return render_to_response("submission/index.html",
                                   {"packages": sorted(packages),
-                                   "machines": machines},
+                                   "machines": machines,
+                                   "vpns": vpns.values(),
+                                   "dirty": Config().routing.internet},
                                   context_instance=RequestContext(request))
 
 def status(request, task_id):
