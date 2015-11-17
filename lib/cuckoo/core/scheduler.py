@@ -21,7 +21,7 @@ from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
 from lib.cuckoo.core.plugins import RunSignatures, RunReporting
 from lib.cuckoo.core.resultserver import ResultServer
-from lib.cuckoo.core.rooter import rooter
+from lib.cuckoo.core.rooter import rooter, vpns
 
 log = logging.getLogger(__name__)
 
@@ -223,6 +223,31 @@ class AnalysisManager(threading.Thread):
 
         return options
 
+    def route_network(self):
+        """Enable network routing if desired."""
+        # Determine the desired routing strategy (none, internet, VPN).
+        route = self.task.options.get("route", self.cfg.routing.route)
+
+        if route == "none":
+            self.interface = None
+        elif route == "internet":
+            self.interface = self.cfg.routing.internet
+        elif route in vpns:
+            self.interface = vpns[route].interface
+        else:
+            log.warning("Unknown network routing destination specified, "
+                        "ignoring routing for this analysis: %r", route)
+            self.interface = None
+
+        if self.interface:
+            rooter("forward_enable", self.machine.interface,
+                   self.interface, self.machine.ip)
+
+    def unroute_network(self):
+        if self.interface:
+            rooter("forward_disable", self.machine.interface,
+                   self.interface, self.machine.ip)
+
     def launch_analysis(self):
         """Start analysis."""
         succeeded = False
@@ -276,6 +301,9 @@ class AnalysisManager(threading.Thread):
                                             machinery.__class__.__name__)
             # Start the machine.
             machinery.start(self.machine.label, self.task)
+
+            # Enable network routing.
+            self.route_network()
 
             # By the time start returns it will have fully started the Virtual
             # Machine. We can now safely release the machine lock.
@@ -331,6 +359,9 @@ class AnalysisManager(threading.Thread):
             # After all this, we can make the ResultServer forget about the
             # internal state for this analysis task.
             ResultServer().del_task(self.task, self.machine)
+
+            # Drop the network routing rules if any.
+            self.unroute_network()
 
             if dead_machine:
                 # Remove the guest from the database, so that we can assign a
@@ -538,11 +569,10 @@ class Scheduler:
                          "VM.", machine.name)
                 continue
 
-            if Config("vpn").vpn.enabled:
-                # Drop forwarding rule to each VPN.
-                for vpn in rooter("vpn_list") or []:
-                    rooter("forward_disable", machine.interface,
-                           vpn["tun"], machine.ip)
+            # Drop forwarding rule to each VPN.
+            for vpn in vpns.values():
+                rooter("forward_disable", machine.interface,
+                       vpn["interface"], machine.ip)
 
             # Drop forwarding rule to the internet / dirty line.
             if self.cfg.routing.internet != "none":
