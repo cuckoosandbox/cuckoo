@@ -21,7 +21,7 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.core.database import Database, TASK_RUNNING, TASK_FAILED_ANALYSIS
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
-from lib.cuckoo.core.rooter import rooter
+from lib.cuckoo.core.rooter import rooter, vpns
 
 try:
     import pwd
@@ -343,22 +343,48 @@ def init_rooter():
 
         raise CuckooStartupError("Unknown rooter error: %s" % e)
 
+    # Do not forward any packets unless we have explicitly stated so.
+    rooter("forward_drop")
+
 def init_routing():
     """Initialize and check whether the routing information is correct."""
     cuckoo = Config()
+    vpn = Config("vpn")
+
+    # Check whether all VPNs exist if configured and make their configuration
+    # available through the vpns variable. Also enable NAT on each interface.
+    if vpn.vpn.enabled:
+        for name in vpn.vpn.vpns.split(","):
+            if not name.strip():
+                continue
+
+            if not hasattr(vpn, name):
+                raise CuckooStartupError(
+                    "Could not find VPN configuration for %s" % name
+                )
+
+            entry = vpn.get(name)
+
+            if not rooter("nic_available", entry.interface):
+                raise CuckooStartupError(
+                    "The network interface that has been configured for "
+                    "VPN %s is not available." % entry.name
+                )
+
+            vpns[entry.name] = entry
+
+            # Enable NAT on this network interface.
+            rooter("enable_nat", entry.interface)
 
     # Check whether the default VPN exists if specified.
     if cuckoo.routing.route not in ("none", "internet"):
-        if not Config("vpn").vpn.enabled:
+        if not vpn.vpn.enabled:
             raise CuckooStartupError(
                 "A VPN has been configured as default routing interface for "
                 "VMs, but VPNs have not been enabled in vpn.conf"
             )
 
-        for vpn in rooter("vpn_list"):
-            if cuckoo.routing.route == vpn["name"]:
-                break
-        else:
+        if cuckoo.routing.route not in vpns:
             raise CuckooStartupError(
                 "The VPN defined as default routing target has not been "
                 "configured in vpn.conf."
@@ -372,14 +398,8 @@ def init_routing():
                 "line is not available."
             )
 
-    # Check whether all VPNs exist if configured.
-    if Config("vpn").vpn.enabled:
-        for vpn in rooter("vpn_list"):
-            if not rooter("nic_available", vpn["interface"]):
-                raise CuckooStartupError(
-                    "The network interface that has been configured for "
-                    "VPN %s is not available." % vpn["name"]
-                )
+        # Enable NAT for this network interface.
+        rooter("enable_nat", cuckoo.routing.internet)
 
 def cuckoo_clean():
     """Clean up cuckoo setup.

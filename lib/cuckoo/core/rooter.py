@@ -16,6 +16,8 @@ log = logging.getLogger(__name__)
 unixpath = tempfile.mktemp()
 lock = threading.Lock()
 
+vpns = {}
+
 def rooter(command, *args, **kwargs):
     if not os.path.exists(cfg.cuckoo.rooter):
         log.critical("Unable to passthrough root command (%s) as the rooter "

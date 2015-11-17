@@ -19,88 +19,66 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 from lib.cuckoo.common.config import Config
 
 def run(*args):
-    log.info("Running: %s", args)
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     return stdout, stderr
 
 def nic_available(interface):
     try:
-        subprocess.check_call([vpn.vpn.ifconfig, interface])
+        subprocess.check_call([settings.ifconfig, interface],
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
         return True
     except subprocess.CalledProcessError:
         return False
 
 def vpn_status():
     ret = {}
-    for line in run(vpn.vpn.service, "openvpn", "status")[0].split("\n"):
+    for line in run(settings.openvpn, "status")[0].split("\n"):
         x = re.search("'(?P<vpn>\\w+)'\\ is\\ (?P<running>not)?", line)
         if x:
             ret[x.group("vpn")] = x.group("running") != "not"
 
     return ret
 
-def vpn_list():
-    ret = []
-    if not vpn.vpn.enabled:
-        return ret
-
-    for name in vpn.vpn.vpns.split(","):
-        if not name.strip():
-            continue
-
-        if not hasattr(vpn, name):
-            log.warning("Non-existing VPN defined: %r", name)
-            continue
-
-        entry = vpn.get(name)
-
-        ret.append({
-            "name": entry.name,
-            "description": entry.description,
-            "interface": entry.interface,
-        })
-    return ret
-
 def vpn_enable(name):
     """Start a VPN."""
-    run(vpn.vpn.service, "openvpn", "start", name)
+    run(settings.openvpn, "start", name)
 
 def vpn_disable(name):
     """Stop a running VPN."""
-    run(vpn.vpn.service, "openvpn", "stop", name)
+    run(settings.openvpn, "stop", name)
 
 def forward_drop():
     """Disable any and all forwarding unless explicitly said so."""
-    run(vpn.vpn.iptables, "-P", "FORWARD", "DROP")
+    run(settings.iptables, "-P", "FORWARD", "DROP")
 
 def enable_nat(interface):
     """Enable NAT on this interface."""
-    run(vpn.vpn.iptables, "-t", "nat", "-A", "POSTROUTING",
+    run(settings.iptables, "-t", "nat", "-A", "POSTROUTING",
         "-o", interface, "-j", "MASQUERADE")
 
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
     another."""
-    run(vpn.vpn.iptables, "-A", "FORWARD", "-i", src, "-o", dst,
+    run(settings.iptables, "-A", "FORWARD", "-i", src, "-o", dst,
         "--source", ipaddr, "-j", "ACCEPT")
 
-    run(vpn.vpn.iptables, "-A", "FORWARD", "-i", dst, "-o", src,
+    run(settings.iptables, "-A", "FORWARD", "-i", dst, "-o", src,
         "--destination", ipaddr, "-j", "ACCEPT")
 
 def forward_disable(src, dst, ipaddr):
     """Disable forwarding of a specific IP address from one interface into
     another."""
-    run(vpn.vpn.iptables, "-D", "FORWARD", "-i", src, "-o", dst,
+    run(settings.iptables, "-D", "FORWARD", "-i", src, "-o", dst,
         "--source", ipaddr, "-j", "ACCEPT")
 
-    run(vpn.vpn.iptables, "-D", "FORWARD", "-i", dst, "-o", src,
+    run(settings.iptables, "-D", "FORWARD", "-i", dst, "-o", src,
         "--destination", ipaddr, "-j", "ACCEPT")
 
 handlers = {
     "nic_available": nic_available,
     "vpn_status": vpn_status,
-    "vpn_list": vpn_list,
     "vpn_enable": vpn_enable,
     "vpn_disable": vpn_disable,
     "forward_drop": forward_drop,
@@ -113,7 +91,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("socket", nargs="?", default="/tmp/cuckoo-rooter", help="Unix socket path")
     parser.add_argument("-g", "--group", default="cuckoo", help="Unix socket group")
-    args = parser.parse_args()
+    parser.add_argument("--ifconfig", default="/sbin/ifconfig", help="Path to ifconfig")
+    parser.add_argument("--openvpn", default="/etc/init.d/openvpn", help="Unix socket group")
+    parser.add_argument("--iptables", default="/sbin/iptables", help="Unix socket group")
+    settings = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger("cuckoo-rooter")
@@ -122,31 +103,28 @@ if __name__ == "__main__":
     cuckoo = Config()
     vpn = Config("vpn")
 
-    if not vpn.vpn.openvpn or not os.path.isfile(vpn.vpn.openvpn):
+    if not settings.openvpn or not os.path.exists(settings.openvpn):
         sys.exit("OpenVPN binary is not available, please configure!")
 
-    if not vpn.vpn.ifconfig or not os.path.isfile(vpn.vpn.ifconfig):
+    if not settings.ifconfig or not os.path.exists(settings.ifconfig):
         sys.exit("The `ifconfig` binary is not available, eh?!")
 
-    if not vpn.vpn.service or not os.path.isfile(vpn.vpn.service):
-        sys.exit("The `service` binary is not available, eh?!")
-
-    if not vpn.vpn.iptables or not os.path.isfile(vpn.vpn.iptables):
+    if not settings.iptables or not os.path.exists(settings.iptables):
         sys.exit("The `iptables` binary is not available, eh?!")
 
     if os.getuid():
         sys.exit("This utility is supposed to be ran as root.")
 
-    if os.path.exists(args.socket):
-        os.remove(args.socket)
+    if os.path.exists(settings.socket):
+        os.remove(settings.socket)
 
     server = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-    server.bind(args.socket)
+    server.bind(settings.socket)
 
     # Provide the correct file ownership and permission so Cuckoo can use it
     # from an unprivileged process, based on Sean Whalen's routetor.
-    os.chown(args.socket, 0, grp.getgrnam(args.group).gr_gid)
-    os.chmod(args.socket, stat.S_IRUSR | stat.S_IWUSR | stat.S_IWGRP)
+    os.chown(settings.socket, 0, grp.getgrnam(settings.group).gr_gid)
+    os.chmod(settings.socket, stat.S_IRUSR | stat.S_IWUSR | stat.S_IWGRP)
 
     while True:
         command, addr = server.recvfrom(4096)
