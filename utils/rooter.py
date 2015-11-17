@@ -58,6 +58,11 @@ def enable_nat(interface):
     run(settings.iptables, "-t", "nat", "-A", "POSTROUTING",
         "-o", interface, "-j", "MASQUERADE")
 
+def disable_nat(interface):
+    """Disable NAT on this interface."""
+    run(settings.iptables, "-t", "nat", "-D", "POSTROUTING",
+        "-o", interface, "-j", "MASQUERADE")
+
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
     another."""
@@ -83,6 +88,7 @@ handlers = {
     "vpn_disable": vpn_disable,
     "forward_drop": forward_drop,
     "enable_nat": enable_nat,
+    "disable_nat": disable_nat,
     "forward_enable": forward_enable,
     "forward_disable": forward_disable,
 }
