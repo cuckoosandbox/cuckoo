@@ -83,17 +83,18 @@ $(document).ready( function() {
                     <div class="panel-heading">
                         <strong>Network routing through <i>dirty line</i> or VPN</strong>
                     </div>
-            <div class="panel-body">
-                <select class="form-control" id="form_route" name="route">
-                    <option value="none">None (no internet access)</option>
-                    {% if dirty != "none" %}
-                        <option value="internet">Internet (dirty line, {{ dirty }})</option>
-                    {% endif %}
-                    {% for vpn in vpns %}
-                        <option value="{{ vpn.name }}">{{ vpn.description }} (VPN, {{ vpn.interface }})</option>
-                    {% endfor %}
-                </select>
-            </div>
+                    <div class="panel-body">
+                        <select class="form-control" id="form_route" name="route">
+                            <option value="none">None (no internet access)</option>
+                            {% if dirty != "none" %}
+                                <option value="internet">Internet (dirty line, {{ dirty }})</option>
+                            {% endif %}
+                            {% for vpn in vpns %}
+                                <option value="{{ vpn.name }}">{{ vpn.description }} (VPN, {{ vpn.interface }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
             </div>
             <div class="panel" id="accordion" style="margin-top: 20px;">
                 <div class="panel panel-default">
