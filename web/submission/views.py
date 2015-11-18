@@ -22,7 +22,7 @@ def force_int(value):
     finally:
         return value
 
-def index(request):
+def index(request, task_id=None):
     if request.method == "POST":
         package = request.POST.get("package", "")
         timeout = force_int(request.POST.get("timeout"))
@@ -161,3 +161,23 @@ def status(request, task_id):
     return render_to_response("submission/status.html",
                               {"status": task.status, "task_id": task_id},
                               context_instance=RequestContext(request))
+
+def resubmit(request, task_id):
+    task = Database().view_task(task_id)
+
+    if request.method == "POST":
+        return index(request, task_id)
+
+    if task is not None and task.category == "file":
+        return render_to_response("submission/index.html",
+                                  {"sample": task.target},
+                                  context_instance=RequestContext(request))
+
+    elif task is not None and task.category == "url":
+        return render_to_response("submission/index.html",
+                                  {"url": task.target},
+                                  context_instance=RequestContext(request))
+    else:
+        return render_to_response("submission/index.html",
+                                  {"path": "No Task found with this ID"},
+                                  context_instance=RequestContext(request))
