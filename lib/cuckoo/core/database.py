@@ -788,7 +788,7 @@ class Database(object):
     @classlock
     def add(self, obj, timeout=0, package="", options="", priority=1,
             custom="", owner="", machine="", platform="", tags=None,
-            memory=False, enforce_timeout=False, clock=None):
+            memory=False, enforce_timeout=False, clock=None, category=None):
         """Add a task to database.
         @param obj: object to add (File or URL).
         @param timeout: selected timeout.
@@ -842,8 +842,10 @@ class Database(object):
             task.sample_id = sample.id
         elif isinstance(obj, URL):
             task = Task(obj.url)
+        else:
+            task = Task("none")
 
-        task.category = obj.__class__.__name__.lower()
+        task.category = category
         task.timeout = timeout
         task.package = package
         task.options = options
@@ -915,7 +917,7 @@ class Database(object):
 
         return self.add(File(file_path), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
-                        enforce_timeout, clock)
+                        enforce_timeout, clock, "file")
 
     def add_url(self, url, timeout=0, package="", options="", priority=1,
                 custom="", owner="", machine="", platform="", tags=None,
@@ -944,7 +946,18 @@ class Database(object):
 
         return self.add(URL(url), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
-                        enforce_timeout, clock)
+                        enforce_timeout, clock, "url")
+
+    def add_baseline(self, timeout=0, owner="", machine="", memory=False):
+        """Add a baseline task to database.
+        @param timeout: selected timeout.
+        @param owner: task owner.
+        @param machine: selected machine.
+        @param memory: toggle full memory dump.
+        @return: cursor or None.
+        """
+        return self.add(None, timeout=timeout or 0, priority=999, owner=owner,
+                        machine=machine, memory=memory, category="baseline")
 
     @classlock
     def reschedule(self, task_id):

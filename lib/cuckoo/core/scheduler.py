@@ -248,6 +248,27 @@ class AnalysisManager(threading.Thread):
             rooter("forward_disable", self.machine.interface,
                    self.interface, self.machine.ip)
 
+    def guest_manage(self, options):
+        # Handle a special case where we're creating a baseline report of this
+        # particular virtual machine - a report containing all the results
+        # that are gathered if no additional samples are ran in the VM. These
+        # results, such as loaded drivers and opened sockets in volatility, or
+        # DNS requests to hostnames related to Microsoft Windows, etc may be
+        # omitted or at the very least given less priority when creating a
+        # report for an analysis that ran on this VM later on.
+        if self.task.category == "baseline":
+            time.sleep(options["timeout"])
+        else:
+            # Initialize the guest manager.
+            guest = GuestManager(self.machine.name, self.machine.ip,
+                                 self.machine.platform)
+
+            # Start the analysis.
+            monitor = self.task.options.get("monitor", "latest")
+            guest.start_analysis(options, monitor)
+
+            guest.wait_for_completion()
+
     def launch_analysis(self):
         """Start analysis."""
         succeeded = False
@@ -310,15 +331,8 @@ class AnalysisManager(threading.Thread):
             machine_lock.release()
             unlocked = True
 
-            # Initialize the guest manager.
-            guest = GuestManager(self.machine.name, self.machine.ip,
-                                 self.machine.platform)
-
-            # Start the analysis.
-            monitor = self.task.options.get("monitor", "latest")
-            guest.start_analysis(options, monitor)
-
-            guest.wait_for_completion()
+            # Run and manage the components inside the guest.
+            self.guest_manage(options)
             succeeded = True
         except CuckooMachineError as e:
             if not unlocked:
