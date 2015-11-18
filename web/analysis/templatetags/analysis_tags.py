@@ -35,3 +35,18 @@ def custom_length(dictionary, keys):
     for key in keys.split():
         ret += len(dictionary.get(key, []))
     return ret
+
+@register.filter
+def volsort(l):
+    """Sort baselined Volatility results. Results with `class_` set have a
+    higher priority over the regular results."""
+    if not l:
+        return
+
+    for x in l:
+        if x.get("class_"):
+            yield x
+
+    for x in l:
+        if not x.get("class_"):
+            yield x

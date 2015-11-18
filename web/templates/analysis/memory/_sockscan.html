@@ -10,8 +10,7 @@
         </tr>
     </thead>
     <tbody>
-    {% for row in analysis.memory.sockscan.data %}
-        {% if row.class_ %}
+    {% for row in analysis.memory.sockscan.data|volsort %}
         <tr>
             <td class="{{ row.class_ }}">{{row.offset}}</td>
             <td class="{{ row.class_ }}">{{row.process_id}}</td>
@@ -20,19 +19,6 @@
             <td class="{{ row.class_ }}">{{row.protocol}}</td>
             <td class="{{ row.class_ }}">{{row.create_time}}</td>
         </tr>
-        {% endif %}
-    {% endfor %}
-    {% for row in analysis.memory.sockscan.data %}
-        {% if not row.class_ %}
-        <tr>
-            <td>{{row.offset}}</td>
-            <td>{{row.process_id}}</td>
-            <td>{{row.address}}</td>
-            <td>{{row.port}}</td>
-            <td>{{row.protocol}}</td>
-            <td>{{row.create_time}}</td>
-        </tr>
-        {% endif %}
     {% endfor %}
     </tbody>
 </table>
