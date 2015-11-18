@@ -54,7 +54,25 @@ def index(request, task_id=None):
         else:
             task_machines.append(machine)
 
-        if "sample" in request.FILES:
+        # In case of resubmit
+        if request.POST.get("category") == "file":
+            task = Database().view_task(task_id)
+
+            for entry in task_machines:
+                task_id = db.add_path(file_path=task.target,
+                                      package=package,
+                                      timeout=timeout,
+                                      options=options,
+                                      priority=priority,
+                                      machine=entry,
+                                      custom=custom,
+                                      memory=memory,
+                                      enforce_timeout=enforce_timeout,
+                                      tags=tags)
+                if task_id:
+                    task_ids.append(task_id)    
+
+        elif request.FILES.getlist("sample"):
             for sample in request.FILES.getlist("sample"):
                 if sample.size == 0:
                     return render_to_response("error.html",
@@ -83,7 +101,7 @@ def index(request, task_id=None):
                                           tags=tags)
                     if task_id:
                         task_ids.append(task_id)
-        elif "url" in request.POST:
+        else:
             url = request.POST.get("url").strip()
             if not url:
                 return render_to_response("error.html",
@@ -170,12 +188,15 @@ def resubmit(request, task_id):
 
     if task is not None and task.category == "file":
         return render_to_response("submission/index.html",
-                                  {"sample": task.target},
+                                  {"sample_id": task.sample_id,
+                                   "file_name": os.path.basename(task.target),
+                                   "resubmit": "file"},
                                   context_instance=RequestContext(request))
 
     elif task is not None and task.category == "url":
         return render_to_response("submission/index.html",
-                                  {"url": task.target},
+                                  {"url": task.target,
+                                   "resubmit": "URL"},
                                   context_instance=RequestContext(request))
     else:
         return render_to_response("submission/index.html",
