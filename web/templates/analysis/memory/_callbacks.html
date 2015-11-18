@@ -8,12 +8,12 @@
         </tr>
     </thead>
     <tbody>
-    {% for x in analysis.memory.callbacks.data %}
+    {% for row in analysis.memory.callbacks.data %}
         <tr>
-            <td>{{x.type}}</td>
-            <td><span class="mono">{{x.callback}}</span></td>
-            <td>{{x.module}}</td>
-            <td>{{x.details}}</td>
+            <td>{{row.type}}</td>
+            <td><span class="mono">{{row.callback}}</span></td>
+            <td>{{row.module}}</td>
+            <td>{{row.details}}</td>
         </tr>
     {% endfor %}
     </tbody>

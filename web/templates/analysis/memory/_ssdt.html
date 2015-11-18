@@ -11,15 +11,15 @@
         </tr>
     </thead>
     <tbody>
-    {% for x in analysis.memory.ssdt.data %}
+    {% for row in analysis.memory.ssdt.data %}
         <tr>
-            <td>{{x.index}}</td>
-            <td><span class="mono">{{x.table}}</span></td>
-            <td>{{x.entry}}</td>
-            <td>{{x.syscall_name}}</td>
-            <td><span class="mono">{{x.syscall_addr}}</span></td>
-            <td>{{x.syscall_modname}}</span></td>
-            <td>{{x.hook_dest_addr}}: {{x.hook_name}}</td>
+            <td>{{row.index}}</td>
+            <td><span class="mono">{{row.table}}</span></td>
+            <td>{{row.entry}}</td>
+            <td>{{row.syscall_name}}</td>
+            <td><span class="mono">{{row.syscall_addr}}</span></td>
+            <td>{{row.syscall_modname}}</span></td>
+            <td>{{row.hook_dest_addr}}: {{row.hook_name}}</td>
         </tr>
     {% endfor %}
     </tbody>

@@ -10,14 +10,14 @@
         </tr>
     </thead>
     <tbody>
-    {% for x in analysis.memory.idt.data %}
+    {% for row in analysis.memory.idt.data %}
         <tr>
-            <td>{{x.cpu_number}}</td>
-            <td>{{x.index}}</td>
-            <td><span class="mono">{{x.selector}}</span></td>
-            <td><span class="mono">{{x.address}}</span></td>
-            <td>{{x.module}}</td>
-            <td>{{x.section}}</td>
+            <td>{{row.cpu_number}}</td>
+            <td>{{row.index}}</td>
+            <td><span class="mono">{{row.selector}}</span></td>
+            <td><span class="mono">{{row.address}}</span></td>
+            <td>{{row.module}}</td>
+            <td>{{row.section}}</td>
         </tr>
     {% endfor %}
     </tbody>

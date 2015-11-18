@@ -8,12 +8,12 @@
         </tr>
     </thead>
     <tbody>
-    {% for mal in analysis.memory.malfind.data %}
+    {% for row in analysis.memory.malfind.data %}
         <tr>
-            <td>{{mal.process_id}}</td>
-            <td>{{mal.process_name}}</td>
-            <td><span class="mono">{{mal.vad_start}}</span></td>
-            <td>{{mal.vad_tag}}</td>
+            <td>{{row.process_id}}</td>
+            <td>{{row.process_name}}</td>
+            <td><span class="mono">{{row.vad_start}}</span></td>
+            <td>{{row.vad_tag}}</td>
         </tr>
     {% endfor %}
     </tbody>
