@@ -87,7 +87,8 @@ def create_structure():
         "log",
         "storage",
         os.path.join("storage", "analyses"),
-        os.path.join("storage", "binaries")
+        os.path.join("storage", "binaries"),
+        os.path.join("storage", "baseline"),
     ]
 
     try:

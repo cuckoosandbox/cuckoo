@@ -130,7 +130,7 @@ def main():
             exit(1)
 
         task_id = db.add_baseline(args.timeout, args.owner, args.machine,
-                                  args.memory, args.enforce_timeout)
+                                  args.memory)
         if task_id:
             if not args.quiet:
                 print(bold(green("Success")) + u": Baseline analysis added as task with ID {0}".format(task_id))

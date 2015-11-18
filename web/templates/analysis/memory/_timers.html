@@ -11,6 +11,19 @@
     </thead>
     <tbody>
     {% for row in analysis.memory.timers.data %}
+        {% if row.class_ %}
+        <tr>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.offset}}</span></td>
+            <td class="{{ row.class_ }}">{{row.due_time}}</td>
+            <td class="{{ row.class_ }}">{{row.period}}</td>
+            <td class="{{ row.class_ }}">{{row.signaled}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.routine}}</span></td>
+            <td class="{{ row.class_ }}">{{row.module}}</span></td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+    {% for row in analysis.memory.timers.data %}
+        {% if not row.class_ %}
         <tr>
             <td><span class="mono">{{row.offset}}</span></td>
             <td>{{row.due_time}}</td>
@@ -19,6 +32,7 @@
             <td><span class="mono">{{row.routine}}</span></td>
             <td>{{row.module}}</span></td>
         </tr>
+        {% endif %}
     {% endfor %}
     </tbody>
 </table>
