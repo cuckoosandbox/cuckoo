@@ -600,6 +600,7 @@ class Processing(object):
 
     def __init__(self):
         self.analysis_path = ""
+        self.baseline_path = ""
         self.logs_path = ""
         self.task = None
         self.options = None
@@ -616,6 +617,10 @@ class Processing(object):
         @param task: task dictionary.
         """
         self.task = task
+
+    def set_baseline(self, baseline_path):
+        """Set the path to the baseline directory."""
+        self.baseline_path = baseline_path
 
     def set_path(self, analysis_path):
         """Set paths.

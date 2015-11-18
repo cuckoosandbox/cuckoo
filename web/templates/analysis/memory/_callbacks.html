@@ -9,12 +9,24 @@
     </thead>
     <tbody>
     {% for row in analysis.memory.callbacks.data %}
+        {% if row.class_ %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.type}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.callback}}</span></td>
+            <td class="{{ row.class_ }}">{{row.module}}</td>
+            <td class="{{ row.class_ }}">{{row.details}}</td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+    {% for row in analysis.memory.callbacks.data %}
+        {% if not row.class_ %}
         <tr>
             <td>{{row.type}}</td>
             <td><span class="mono">{{row.callback}}</span></td>
             <td>{{row.module}}</td>
             <td>{{row.details}}</td>
         </tr>
+        {% endif %}
     {% endfor %}
     </tbody>
 </table>

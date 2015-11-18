@@ -9,12 +9,24 @@
     </thead>
     <tbody>
     {% for row in analysis.memory.malfind.data %}
+        {% if row.class_ %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.vad_start}}</span></td>
+            <td class="{{ row.class_ }}">{{row.vad_tag}}</td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+    {% for row in analysis.memory.malfind.data %}
+        {% if not row.class_ %}
         <tr>
             <td>{{row.process_id}}</td>
             <td>{{row.process_name}}</td>
             <td><span class="mono">{{row.vad_start}}</span></td>
             <td>{{row.vad_tag}}</td>
         </tr>
+        {% endif %}
     {% endfor %}
     </tbody>
 </table>

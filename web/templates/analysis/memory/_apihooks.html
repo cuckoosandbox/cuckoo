@@ -10,6 +10,18 @@
     </thead>
     <tbody>
     {% for row in analysis.memory.apihooks.data %}
+        {% if row.class_ %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}">{{row.victim_function}}</td>
+            <td class="{{ row.class_ }}">{{row.hook_type}}</td>
+            <td class="{{ row.class_ }}">{{row.hooking_module}}</td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+    {% for row in analysis.memory.apihooks.data %}
+        {% if not row.class_ %}
         <tr>
             <td>{{row.process_id}}</td>
             <td>{{row.process_name}}</td>
@@ -17,6 +29,7 @@
             <td>{{row.hook_type}}</td>
             <td>{{row.hooking_module}}</td>
         </tr>
+        {% endif %}
     {% endfor %}
     </tbody>
 </table>

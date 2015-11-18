@@ -164,6 +164,7 @@ class RunProcessing(object):
         """@param task: task dictionary of the analysis to process."""
         self.task = task
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]))
+        self.baseline_path = os.path.join(CUCKOO_ROOT, "storage", "baseline")
         self.cfg = Config("processing")
 
     def process(self, module, results):
@@ -196,7 +197,9 @@ class RunProcessing(object):
         if not options.enabled:
             return None, None
 
-        # Give it path to the analysis results.
+        # Give it the path to the baseline directory.
+        current.set_baseline(self.baseline_path)
+        # Give it the path to the analysis results.
         current.set_path(self.analysis_path)
         # Give it the analysis task object.
         current.set_task(self.task)
