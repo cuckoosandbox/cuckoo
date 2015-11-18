@@ -7,11 +7,11 @@
         </tr>
     </thead>
     <tbody>
-    {% for x in analysis.memory.yarascan.data %}
+    {% for row in analysis.memory.yarascan.data %}
         <tr>
-            <td>{{x.owner}}</td>
-            <td>{{x.rule}}</td>
-            <td><span class="mono"><pre>{{x.hexdump}}</pre></span></td>
+            <td>{{row.owner}}</td>
+            <td>{{row.rule}}</td>
+            <td><span class="mono"><pre>{{row.hexdump}}</pre></span></td>
         </tr>
     {% endfor %}
     </tbody>

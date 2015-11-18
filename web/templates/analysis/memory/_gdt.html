@@ -12,16 +12,16 @@
         </tr>
     </thead>
     <tbody>
-    {% for x in analysis.memory.gdt.data %}
+    {% for row in analysis.memory.gdt.data %}
         <tr>
-            <td>{{x.cpu_number}}</td>
-            <td><span class="mono">{{x.selector}}</span></td>
-            <td><span class="mono">{{x.base}}</span></td>
-            <td><span class="mono">{{x.limit}}</span></td>
-            <td>{{x.type}}</td>
-            <td>{{x.dpl}}</td>
-            <td>{{x.granularity}}</td>
-            <td>{{x.present}}</td>
+            <td>{{row.cpu_number}}</td>
+            <td><span class="mono">{{row.selector}}</span></td>
+            <td><span class="mono">{{row.base}}</span></td>
+            <td><span class="mono">{{row.limit}}</span></td>
+            <td>{{row.type}}</td>
+            <td>{{row.dpl}}</td>
+            <td>{{row.granularity}}</td>
+            <td>{{row.present}}</td>
         </tr>
     {% endfor %}
     </tbody>

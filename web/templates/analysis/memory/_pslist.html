@@ -12,16 +12,16 @@
         </tr>
     </thead>
     <tbody>
-    {% for process in analysis.memory.pslist.data %}
+    {% for row in analysis.memory.pslist.data %}
         <tr>
-            <td>{{process.parent_id}}</td>
-            <td>{{process.process_id}}</td>
-            <td>{{process.process_name}}</td>
-            <td>{{process.create_time}}</td>
-            <td>{{process.exit_time}}</td>
-            <td>{{process.num_threads}}</td>
-            <td>{{process.num_handles}}</td>
-            <td>{{process.session_id}}</td>
+            <td>{{row.parent_id}}</td>
+            <td>{{row.process_id}}</td>
+            <td>{{row.process_name}}</td>
+            <td>{{row.create_time}}</td>
+            <td>{{row.exit_time}}</td>
+            <td>{{row.num_threads}}</td>
+            <td>{{row.num_handles}}</td>
+            <td>{{row.session_id}}</td>
         </tr>
     {% endfor %}
     </tbody>
