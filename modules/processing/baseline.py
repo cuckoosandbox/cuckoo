@@ -14,6 +14,21 @@ class Baseline(Processing):
     """Reduces Baseline results from gathered information."""
     order = 2
 
+    def _deep_tuple(self, o):
+        if isinstance(o, (tuple, list)):
+            r = []
+            for x in o:
+                r.append(self._deep_tuple(x))
+            return tuple(r)
+
+        if isinstance(o, dict):
+            r = []
+            for k, v in sorted(o.items()):
+                r.append((k, self._deep_tuple(v)))
+            return tuple(r)
+
+        return o
+
     def memory(self, baseline, report):
         """Finds the differences between the analysis report and the baseline
         report. Puts the differences into the baseline part of the report and
@@ -26,20 +41,26 @@ class Baseline(Processing):
                 "data": [],
             }
 
-        # Baseline vs Analysis. These events got removed during the analysis.
-        for plugin in baseline:
-            for row in baseline[plugin]["data"]:
-                if row not in report[plugin]["data"]:
-                    row["class_"] = "warning"
-                    results[plugin]["data"].append(row)
-                    report[plugin]["data"].append(row)
+        # TODO Support having more keys in one report than the other.
+        for plugin in set(baseline.keys() + report.keys()):
+            lr = [self._deep_tuple(x) for x in report[plugin]["data"]]
+            lb = [self._deep_tuple(x) for x in baseline[plugin]["data"]]
+            sr, sb = set(lr), set(lb)
 
-        # Analysis vs Baseline. These events got added during the analysis.
-        for plugin in report:
-            for row in report[plugin]["data"]:
-                if row not in baseline[plugin]["data"]:
-                    row["class_"] = "danger"
-                    results[plugin]["data"].append(row)
+            # Baseline vs Analysis. These events were no longer present
+            # after the analysis.
+            for row in sb.difference(sr):
+                row = baseline[plugin]["data"][lb.index(row)]
+                row["class_"] = "warning"
+                results[plugin]["data"].append(row)
+                report[plugin]["data"].append(row)
+
+            # Analysis vs Baseline. These events were added during
+            # the analysis.
+            for row in sr.difference(sb):
+                row = report[plugin]["data"][lr.index(row)]
+                row["class_"] = "danger"
+                results[plugin]["data"].append(row)
 
         return results
 
