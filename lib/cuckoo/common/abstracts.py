@@ -670,7 +670,6 @@ class Signature(object):
     maximum = None
 
     # Basic filters to reduce the amount of events sent to this signature.
-    filter_processnames = []
     filter_apinames = []
     filter_categories = []
 
@@ -687,18 +686,6 @@ class Signature(object):
         self.pid = None
         self.cid = None
         self.call = None
-
-        # Used to de-activate a signature that already matched.
-        self._active = True
-
-    def is_active(self):
-        return self._active
-
-    def deactivate(self):
-        self._active = False
-
-    def activate(self):
-        self._active = True
 
     def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.
@@ -1015,7 +1002,7 @@ class Signature(object):
                                  all=all)
 
     def init(self):
-        """Allow signatures to initialize theirselves."""
+        """Allow signatures to initialize themselves."""
 
     def quickout(self):
         """Quickout test. Implement that to do a fast verification if

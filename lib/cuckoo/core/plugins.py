@@ -367,7 +367,7 @@ class RunSignatures(object):
         """Wrapper to call into 3rd party signatures. This wrapper yields the
         event to the signature and handles matched signatures recursively."""
         try:
-            if signature.is_active() and handler(*args, **kwargs):
+            if handler(*args, **kwargs):
                 signature.matched = True
                 for sig in self.signatures:
                     self.call_signature(sig, sig.on_signature, signature)
@@ -380,7 +380,6 @@ class RunSignatures(object):
         # Transform the filter_ things into set()'s for faster lookup. (This
         # is just a small optimization).
         for signature in self.signatures:
-            signature.filter_processnames = set(signature.filter_processnames)
             signature.filter_apinames = set(signature.filter_apinames)
             signature.filter_categories = set(signature.filter_categories)
 
@@ -404,10 +403,6 @@ class RunSignatures(object):
             # Yield each call of interest.
             for idx, call in enumerate(proc.get("calls", [])):
                 for sig in self.signatures:
-                    if sig.filter_processnames and \
-                            proc["process_name"] not in sig.filter_processnames:
-                        continue
-
                     if sig.filter_apinames and \
                             call["api"] not in sig.filter_apinames:
                         continue
