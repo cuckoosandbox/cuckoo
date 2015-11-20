@@ -1004,17 +1004,6 @@ class Signature(object):
     def init(self):
         """Allow signatures to initialize themselves."""
 
-    def quickout(self):
-        """Quickout test. Implement that to do a fast verification if
-        signature should be run.
-
-        Can be used for performance optimisation. Check the file type for
-        example to avoid running PDF signatures on PE files.
-
-        @return: True if you want to remove the signature from the list,
-                 False if you still want to process it.
-        """
-
     def mark_call(self, **kwargs):
         """Mark the current call as explanation as to why this signature
         matched."""

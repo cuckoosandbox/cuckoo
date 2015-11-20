@@ -377,18 +377,9 @@ class RunSignatures(object):
 
     def run(self):
         """Run signatures."""
-        # Transform the filter_ things into set()'s for faster lookup. (This
-        # is just a small optimization).
-        for signature in self.signatures:
-            signature.filter_apinames = set(signature.filter_apinames)
-            signature.filter_categories = set(signature.filter_categories)
-
-        # Allow signatures to initialize and do an early exit.
+        # Allow signatures to initialize themselves.
         for signature in self.signatures:
             signature.init()
-
-            if signature.quickout():
-                self.signatures.remove(signature)
 
         log.debug("Running %d signatures", len(self.signatures))
 
