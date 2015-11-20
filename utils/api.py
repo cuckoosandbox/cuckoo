@@ -23,6 +23,7 @@ from lib.cuckoo.common.utils import store_temp_file, delete_folder
 from lib.cuckoo.core.database import Database, TASK_RUNNING, Task
 from lib.cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
 from lib.cuckoo.core.startup import drop_privileges
+from lib.cuckoo.core.rooter import rooter
 
 # Global Database object.
 db = Database()
@@ -492,6 +493,14 @@ def memorydumps_get(task_id, pid=None):
             return json_error(404, "Memory dump not found")
     else:
         return json_error(404, "Memory dump not found")
+
+@app.route("/vpn/status")
+def vpn_status():
+    status = rooter("vpn_status")
+    if status is None:
+        return json_error(500, "Rooter not available")
+
+    return jsonify({"vpns": status})
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
