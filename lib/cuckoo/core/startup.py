@@ -406,8 +406,8 @@ def init_routing():
 
 def cuckoo_clean():
     """Clean up cuckoo setup.
-    It deletes logs, all stored data from file system and configured databases (SQL
-    and MongoDB.
+    It deletes logs, all stored data from file system and configured
+    databases (SQL and MongoDB).
     """
     # Init logging.
     # This need to init a console logger handler, because the standard
