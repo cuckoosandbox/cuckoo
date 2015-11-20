@@ -1060,6 +1060,7 @@ class Signature(object):
         @param call: logged API call.
         @param process: proc object.
         """
+        raise NotImplementedError
 
     def on_signature(self, signature):
         """Event yielded when another signatures has matched. Some signatures
