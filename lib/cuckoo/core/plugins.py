@@ -281,6 +281,9 @@ class RunSignatures(object):
             if self._should_enable_signature(signature):
                 self.signatures.append(signature(self))
 
+        # Signatures to call per API name.
+        self.api_sigs = {}
+
     def _should_enable_signature(self, signature):
         """Should the given signature be enabled for this analysis?"""
         if not signature.enabled:
@@ -371,9 +374,41 @@ class RunSignatures(object):
                 signature.matched = True
                 for sig in self.signatures:
                     self.call_signature(sig, sig.on_signature, signature)
+        except NotImplementedError:
+            return False
         except:
             log.exception("Failed to run '%s' of the %s signature",
                           handler.__name__, signature.name)
+        return True
+
+    def init_api_sigs(self, apiname, category):
+        """Initialize a list of signatures for which we should trigger its
+        on_call method for this particular API name and category."""
+        self.api_sigs[apiname] = []
+
+        for sig in self.signatures:
+            if sig.filter_apinames and apiname not in sig.filter_apinames:
+                continue
+
+            if sig.filter_categories and category not in sig.filter_categories:
+                continue
+
+            self.api_sigs[apiname].append(sig)
+
+    def yield_calls(self, proc):
+        """Yield calls of interest to each interested signature."""
+        for idx, call in enumerate(proc.get("calls", [])):
+
+            # Initialize a list of signatures to call for this API call.
+            if call["api"] not in self.api_sigs:
+                self.init_api_sigs(call["api"], call["category"])
+
+            # See the following SO answer on why we're using reversed() here.
+            # http://stackoverflow.com/a/10665800
+            for sig in reversed(self.api_sigs[call["api"]]):
+                sig.cid, sig.call = idx, call
+                if self.call_signature(sig, sig.on_call, call, proc) is False:
+                    self.api_sigs[call["api"]].remove(sig)
 
     def run(self):
         """Run signatures."""
@@ -391,19 +426,7 @@ class RunSignatures(object):
                 sig.pid = proc["pid"]
                 self.call_signature(sig, sig.on_process, proc)
 
-            # Yield each call of interest.
-            for idx, call in enumerate(proc.get("calls", [])):
-                for sig in self.signatures:
-                    if sig.filter_apinames and \
-                            call["api"] not in sig.filter_apinames:
-                        continue
-
-                    if sig.filter_categories and \
-                            call["category"] not in sig.filter_categories:
-                        continue
-
-                    sig.cid, sig.call = idx, call
-                    self.call_signature(sig, sig.on_call, call, proc)
+            self.yield_calls(proc)
 
         # Yield completion events to each signature.
         for sig in self.signatures:
