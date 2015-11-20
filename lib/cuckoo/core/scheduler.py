@@ -31,7 +31,6 @@ latest_symlink_lock = threading.Lock()
 
 active_analysis_count = 0
 
-
 class CuckooDeadMachine(Exception):
     """Exception thrown when a machine turns dead.
 
@@ -39,7 +38,6 @@ class CuckooDeadMachine(Exception):
     and will try to use another machine, when available.
     """
     pass
-
 
 class AnalysisManager(threading.Thread):
     """Analysis Manager.
@@ -495,7 +493,7 @@ class AnalysisManager(threading.Thread):
 
         active_analysis_count -= 1
 
-class Scheduler:
+class Scheduler(object):
     """Tasks Scheduler.
 
     This class is responsible for the main execution loop of the tool. It

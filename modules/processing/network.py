@@ -818,7 +818,8 @@ def payload_from_raw(raw, linktype=1):
         return ""
 
 def next_connection_packets(piter, linktype=1):
-    """Extract all packets belonging to the same flow from a pcap packet iterator"""
+    """Extract all packets belonging to the same flow from a pcap packet
+    iterator."""
     first_ft = None
 
     for ts, raw in piter:
@@ -837,7 +838,8 @@ def next_connection_packets(piter, linktype=1):
         }
 
 def packets_for_stream(fobj, offset):
-    """Open a PCAP, seek to a packet offset, then get all packets belonging to the same connection"""
+    """Open a PCAP, seek to a packet offset, then get all packets belonging to
+    the same connection."""
     pcap = dpkt.pcap.Reader(fobj)
     pcapiter = iter(pcap)
     ts, raw = pcapiter.next()
