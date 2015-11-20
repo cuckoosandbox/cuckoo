@@ -76,6 +76,11 @@ class File(object):
     # going to disable its warning by default for now.
     notified_pydeep = True
 
+    # The yara rules should not change during one session of processing tasks,
+    # thus we can cache them. If they are updated, one should restart Cuckoo
+    # or the processing tasks.
+    yara_rules = None
+
     def __init__(self, file_path):
         """@param file_path: file path."""
         self.file_path = file_path
@@ -406,17 +411,24 @@ class File(object):
                 log.warning("Unable to import yara (please compile from sources)")
             return results
 
-        if not os.path.exists(rulepath):
-            log.warning("The specified rule file at %s doesn't exist, skip",
-                        rulepath)
-            return results
+        # Compile the Yara rules only the first time.
+        if File.yara_rules is None:
+            if not os.path.exists(rulepath):
+                log.warning("The specified rule file at %s doesn't exist, "
+                            "skip", rulepath)
+                return results
+
+            try:
+                File.yara_rules = yara.compile(rulepath)
+            except:
+                log.exception("Error compiling the Yara rules.")
+                return
 
         if not os.path.getsize(self.file_path):
             return results
 
         try:
-            rules = yara.compile(rulepath)
-            matches = rules.match(self.file_path)
+            matches = File.yara_rules.match(self.file_path)
 
             if getattr(yara, "__version__", None) == "1.7.7":
                 return self._yara_matches_177(matches)
