@@ -28,12 +28,14 @@
 </td>
 <td><span class="mono">{{call.return_value}}</span></td>
 <td>
-    {% if call.repeated > 0 %}
+    {% if call.repeated %}
         {{call.repeated}}
         {% if call.repeated > 1 %}
             times
         {% else %}
             time
         {% endif %}
+    {% else %}
+        0
     {% endif %}
 </td>
