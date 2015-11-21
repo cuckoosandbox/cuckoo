@@ -228,7 +228,7 @@ class AnalysisManager(threading.Thread):
 
         if route == "none":
             self.interface = None
-        elif route == "internet":
+        elif route == "internet" and self.cfg.routing.internet != "none":
             self.interface = self.cfg.routing.internet
         elif route in vpns:
             self.interface = vpns[route].interface
@@ -240,6 +240,9 @@ class AnalysisManager(threading.Thread):
         if self.interface:
             rooter("forward_enable", self.machine.interface,
                    self.interface, self.machine.ip)
+
+        # Propagate the taken route to the database.
+        self.db.set_route(self.task.id, route)
 
     def unroute_network(self):
         if self.interface:

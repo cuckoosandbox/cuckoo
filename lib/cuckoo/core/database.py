@@ -29,7 +29,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "4a04f40d4ab4"
+SCHEMA_VERSION = "1070cd314621"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -277,6 +277,7 @@ class Task(Base):
                     nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     processing = Column(String(16), nullable=True)
+    route = Column(String(16), nullable=True)
     sample = relationship("Sample", backref="tasks")
     guest = relationship("Guest", uselist=False, backref="tasks", cascade="save-update, delete")
     errors = relationship("Error", backref="tasks", cascade="save-update, delete")
@@ -517,6 +518,27 @@ class Database(object):
             session.commit()
         except SQLAlchemyError as e:
             log.debug("Database error setting status: {0}".format(e))
+            session.rollback()
+        finally:
+            session.close()
+
+    @classlock
+    def set_route(self, task_id, route):
+        """Set the taken route of this task.
+        @param task_id: task identifier
+        @param route: route string
+        @return: operation status
+        """
+        session = self.Session()
+        try:
+            row = session.query(Task).get(task_id)
+            if not row:
+                return
+
+            row.route = route
+            session.commit()
+        except SQLAlchemyError as e:
+            log.debug("Database error setting route: {0}".format(e))
             session.rollback()
         finally:
             session.close()

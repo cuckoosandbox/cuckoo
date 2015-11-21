@@ -71,4 +71,5 @@ class AnalysisInfo(Processing):
             package=self.task["package"],
             platform=self.task["platform"],
             options=self.task["options"],
+            route=self.task["route"],
         )
