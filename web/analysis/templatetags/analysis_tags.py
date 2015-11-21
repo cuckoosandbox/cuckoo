@@ -63,3 +63,22 @@ def isdeadip(ipaddr, analysis):
     for ip, port in analysis.get("network", {}).get("dead_hosts", []):
         if ip == ipaddr:
             return True
+
+@register.filter
+def sigsort(l):
+    """Sort signatures entries. Generic explanations come first, followed by
+    IOCs, followed by API calls."""
+    if not l:
+        return
+
+    for x in l:
+        if x["type"] == "generic":
+            yield x
+
+    for x in l:
+        if x["type"] == "ioc":
+            yield x
+
+    for x in l:
+        if x["type"] == "call":
+            yield x
