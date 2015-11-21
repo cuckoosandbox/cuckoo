@@ -10,7 +10,6 @@ from django.conf import settings
 from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext
 from django.core.exceptions import ObjectDoesNotExist
-from _elementtree import dump
 
 sys.path.append(settings.CUCKOO_PATH)
 
@@ -29,7 +28,24 @@ def force_int(value):
     finally:
         return value
 
-def index(request, task_id=None):
+def dropped_filepath(task_id, sha1):
+    record = results_db.analysis.find_one(
+        {
+            "info.id": int(task_id),
+            "dropped.sha1": sha1,
+        }
+    )
+
+    if not record:
+        raise ObjectDoesNotExist
+
+    for dropped in record["dropped"]:
+        if dropped["sha1"] == sha1:
+            return dropped["path"]
+
+    raise ObjectDoesNotExist
+
+def index(request, task_id=None, sha1=None):
     if request.method == "POST":
         package = request.POST.get("package", "")
         timeout = force_int(request.POST.get("timeout"))
@@ -66,7 +82,7 @@ def index(request, task_id=None):
         else:
             task_machines.append(machine)
 
-        # In case of resubmitting a file
+        # In case of resubmitting a file.
         if request.POST.get("category") == "file":
             task = Database().view_task(task_id)
 
@@ -120,13 +136,12 @@ def index(request, task_id=None):
                     if task_id:
                         task_ids.append(task_id)
 
-        #When submitting a dropped file
+        # When submitting a dropped file.
         elif request.POST.get("category") == "dropped_file":
-            print("dropped file submit!")
-            path = request.POST.get("dropped_path")
+            filepath = dropped_filepath(task_id, sha1)
 
             for entry in task_machines:
-                task_id = db.add_path(file_path=path,
+                task_id = db.add_path(file_path=filepath,
                                       package=package,
                                       timeout=timeout,
                                       options=options,
@@ -244,32 +259,14 @@ def resubmit(request, task_id):
                                   {"path": "No Task found with this ID"},
                                   context_instance=RequestContext(request))
 
-def submit_for_dropped_files(request, task_id, sha1):
-    task = Database().view_task(task_id)
-
+def submit_dropped(request, task_id, sha1):
     if request.method == "POST":
-        return index(request, task_id)
+        return index(request, task_id, sha1)
 
-    if task is not None and sha1 is not None:
-        record = results_db.analysis.find_one(
-            {
-                "info.id": int(task_id),
-                "dropped.sha1": sha1
-            }
-        )
+    filepath = dropped_filepath(task_id, sha1)
 
-        if not record:
-            raise ObjectDoesNotExist
-        else:
-            path = None
-
-            for list in record["dropped"]:
-                if list["sha1"] == sha1:
-                    path = list["path"]
-
-            return render_to_response("submission/index.html",
-                                      {"path": path,
-                                       "file_name": os.path.basename(path),
-                                       "resubmit": "file",
-                                       "dropped_file": True},
-                                      context_instance=RequestContext(request))
+    return render_to_response("submission/index.html",
+                              {"file_name": os.path.basename(filepath),
+                               "resubmit": "file",
+                               "dropped_file": True},
+                              context_instance=RequestContext(request))

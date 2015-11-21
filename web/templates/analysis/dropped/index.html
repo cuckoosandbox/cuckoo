@@ -57,7 +57,7 @@
                     <th></th>
                     <td>
                         <a href="{% url "analysis.views.file" "dropped" file.object_id %}" class="btn btn-primary btn-small">Download</a>
-                        <a href="{% url "submission.views.submit_for_dropped_files" analysis.info.id file.sha1 %}" class="btn btn-primary btn-small">Submit as sample</a>
+                        <a href="{% url "submission.views.submit_dropped" analysis.info.id file.sha1 %}" class="btn btn-primary btn-small">Submit file</a>
                     </td>
                 </tr>
                 {% endif %}
