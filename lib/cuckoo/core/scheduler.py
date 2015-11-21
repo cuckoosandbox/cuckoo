@@ -272,8 +272,13 @@ class AnalysisManager(threading.Thread):
         succeeded = False
         dead_machine = False
 
-        log.info("Starting analysis of %s \"%s\" (task=%d)",
-                 self.task.category.upper(), self.task.target, self.task.id)
+        target = self.task.target
+        if self.task.category == "file":
+            target = os.path.basename(target)
+
+        log.info("Starting analysis of %s \"%s\" (task #%d, options \"%s\")",
+                 self.task.category.upper(), target, self.task.id,
+                 self._emit_options(self.task.options))
 
         # Initialize the analysis folders.
         if not self.init_storage():
