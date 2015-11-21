@@ -58,6 +58,10 @@ class Pcap:
         # List containing all TCP packets.
         self.tcp_connections = []
         self.tcp_connections_seen = set()
+        # Lookup table to identify connection requests to services or IP
+        # addresses that are no longer available.
+        self.tcp_connections_dead = {}
+        self.dead_hosts = {}
         # List containing all UDP packets.
         self.udp_connections = []
         self.udp_connections_seen = set()
@@ -581,6 +585,17 @@ class Pcap:
                         if not ((dst, dport, src, sport) in self.tcp_connections_seen or (src, sport, dst, dport) in self.tcp_connections_seen):
                             self.tcp_connections.append((src, sport, dst, dport, offset, ts-first_ts))
                             self.tcp_connections_seen.add((src, sport, dst, dport))
+                    else:
+                        ipconn = (
+                            connection["src"], tcp.sport,
+                            connection["dst"], tcp.dport,
+                        )
+                        seqack = self.tcp_connections_dead.get(ipconn)
+                        if seqack == (tcp.seq, tcp.ack):
+                            host = connection["dst"], tcp.dport
+                            self.dead_hosts[host] = self.dead_hosts.get(host, 1) + 1
+
+                        self.tcp_connections_dead[ipconn] = tcp.seq, tcp.ack
 
                 elif ip.p == dpkt.ip.IP_PROTO_UDP:
                     udp = ip.data
@@ -628,6 +643,16 @@ class Pcap:
         self.results["dns"] = self.dns_requests.values()
         self.results["smtp"] = self.smtp_requests
         self.results["irc"] = self.irc_requests
+
+        self.results["dead_hosts"] = []
+
+        # Report each IP/port combination as a dead host if we've had to retry
+        # at least 3 times to connect to it. TODO We should remove the IP/port
+        # combination from the list if the connection was successful later on
+        # during the analysis.
+        for (ip, port), count in self.dead_hosts.items():
+            if count > 2 and (ip, port) not in self.results["dead_hosts"]:
+                self.results["dead_hosts"].append((ip, port))
 
         return self.results
 

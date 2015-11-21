@@ -52,3 +52,14 @@ def volsort(l):
     for x in l:
         if not x.get("class_"):
             yield x
+
+@register.filter
+def isdeadip(ipaddr, analysis):
+    # It doesn't make much sense to report a dead IP address when the analysis
+    # didn't have internet access in the first place.
+    if analysis.get("info", {}).get("route") == "none":
+        return
+
+    for ip, port in analysis.get("network", {}).get("dead_hosts", []):
+        if ip == ipaddr:
+            return True
