@@ -35,7 +35,7 @@
                 </tr>
                 {% for sign in match.signs %}
                     <tr class="{{sign.category}}">
-                        {% include "analysis/behavior/_api_call.html" with call=sign sign=1 %}
+                        {% include "analysis/behavior/_api_call.html" with call=sign pid=match.process.pid cid=sign.id %}
                     <tr>
                 {% endfor %}
             {% endfor %}
