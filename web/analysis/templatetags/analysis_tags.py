@@ -22,9 +22,11 @@ def get_item(dictionary, key):
 
 @register.filter
 def filter_key_if_has(l, key):
+    ret = []
     for x in l:
         if key not in x or x[key]:
-            yield x
+            ret.append(x)
+    return ret
 
 @register.filter
 def custom_length(dictionary, keys):
