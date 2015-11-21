@@ -432,15 +432,18 @@ class RunSignatures(object):
         for sig in self.signatures:
             self.call_signature(sig, sig.on_complete)
 
+        score = 0
         for signature in self.signatures:
             if signature.matched:
                 log.debug("Analysis matched signature: %s", signature.name)
                 self.matched.append(signature.results())
+                score += signature.severity
 
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.
         self.matched.sort(key=lambda key: key["severity"])
         self.results["signatures"] = self.matched
+        self.results["info"]["score"] = score / 50.0
 
 class RunReporting(object):
     """Reporting Engine.
