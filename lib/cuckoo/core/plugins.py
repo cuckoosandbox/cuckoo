@@ -443,7 +443,7 @@ class RunSignatures(object):
         # into the results dictionary.
         self.matched.sort(key=lambda key: key["severity"])
         self.results["signatures"] = self.matched
-        self.results["info"]["score"] = score / 50.0
+        self.results["info"]["score"] = score / 5.0
 
 class RunReporting(object):
     """Reporting Engine.
