@@ -4,10 +4,13 @@
 
 import os
 import sys
+import pymongo
 
 from django.conf import settings
 from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext
+from django.core.exceptions import ObjectDoesNotExist
+from _elementtree import dump
 
 sys.path.append(settings.CUCKOO_PATH)
 
@@ -15,6 +18,8 @@ from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.rooter import vpns
+
+results_db = pymongo.MongoClient(settings.MONGO_HOST, settings.MONGO_PORT)[settings.MONGO_DB]
 
 def force_int(value):
     try:
@@ -61,7 +66,7 @@ def index(request, task_id=None):
         else:
             task_machines.append(machine)
 
-        # In case of resubmit
+        # In case of resubmitting a file
         if request.POST.get("category") == "file":
             task = Database().view_task(task_id)
 
@@ -114,6 +119,26 @@ def index(request, task_id=None):
                                           tags=tags)
                     if task_id:
                         task_ids.append(task_id)
+
+        #When submitting a dropped file
+        elif request.POST.get("category") == "dropped_file":
+            print("dropped file submit!")
+            path = request.POST.get("dropped_path")
+
+            for entry in task_machines:
+                task_id = db.add_path(file_path=path,
+                                      package=package,
+                                      timeout=timeout,
+                                      options=options,
+                                      priority=priority,
+                                      machine=entry,
+                                      custom=custom,
+                                      memory=memory,
+                                      enforce_timeout=enforce_timeout,
+                                      tags=tags)
+                if task_id:
+                    task_ids.append(task_id)
+
         else:
             url = request.POST.get("url").strip()
             if not url:
@@ -218,3 +243,33 @@ def resubmit(request, task_id):
         return render_to_response("submission/index.html",
                                   {"path": "No Task found with this ID"},
                                   context_instance=RequestContext(request))
+
+def submit_for_dropped_files(request, task_id, sha1):
+    task = Database().view_task(task_id)
+
+    if request.method == "POST":
+        return index(request, task_id)
+
+    if task is not None and sha1 is not None:
+        record = results_db.analysis.find_one(
+            {
+                "info.id": int(task_id),
+                "dropped.sha1": sha1
+            }
+        )
+
+        if not record:
+            raise ObjectDoesNotExist
+        else:
+            path = None
+
+            for list in record["dropped"]:
+                if list["sha1"] == sha1:
+                    path = list["path"]
+
+            return render_to_response("submission/index.html",
+                                      {"path": path,
+                                       "file_name": os.path.basename(path),
+                                       "resubmit": "file",
+                                       "dropped_file": True},
+                                      context_instance=RequestContext(request))
