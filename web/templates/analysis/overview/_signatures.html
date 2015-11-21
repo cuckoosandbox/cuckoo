@@ -35,12 +35,7 @@
                     {% for mark in signature.marks|slice:":50" %}
                         <tr>
                             {% if mark.type == "call" %}
-                                {% include "analysis/behavior/_api_call.html" with call=mark.call %}
-                                <td>
-                                    <a href="#" class="call-link" data-pid="{{mark.pid}}" data-cid="{{mark.cid}}">
-                                        <span class="glyphicon glyphicon-circle-arrow-right"></span>
-                                    </a>
-                                </td>
+                                {% include "analysis/behavior/_api_call.html" with call=mark.call pid=mark.pid cid=mark.cid %}
                             {% elif mark.type == "ioc" %}
                                 <td colspan="2">{{mark.category}}</td>
                                 <td colspan="5">{{mark.ioc}}</td>

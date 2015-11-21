@@ -2,9 +2,9 @@
 <td>
     {{call.time}}<br/>
     <strong>{{call.api}}</strong>
-    {% if sign %}
+    {% if pid and cid %}
         <br />
-        <a href="#" class="call-link" data-pid="{{match.process.pid}}" data-cid="{{call.id}}">
+        <a href="#" class="call-link" data-pid="{{pid}}" data-cid="{{cid}}">
             <span class="glyphicon glyphicon-circle-arrow-right"></span>
         </a>
     {% endif %}
