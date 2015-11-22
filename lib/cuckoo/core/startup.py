@@ -116,16 +116,17 @@ def check_version():
         return
 
     try:
-        response_data = json.loads(response.read())
+        r = json.loads(response.read())
     except ValueError:
         print(red(" Failed! ") + "Invalid response.\n")
         return
 
-    if not response_data["error"]:
-        if response_data["response"] == "NEW_VERSION":
-            msg = "Cuckoo Sandbox version {0} is available " \
-                  "now.\n".format(response_data["current"])
+    if not r["error"]:
+        if r["response"] == "NEW_VERSION" and r["current"] != "1.2":
+            msg = "Cuckoo Sandbox version %s is available now." % r["current"]
             print(red(" Outdated! ") + msg)
+        elif r["current"] == "1.2":
+            print(yellow(" Okay! ") + "You are running a development version.")
         else:
             print(green(" Good! ") + "You have the latest version "
                                      "available.\n")
