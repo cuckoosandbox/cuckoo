@@ -66,7 +66,7 @@ def index(request):
 
         # It has happened that for unknown reasons completed and started were
         # equal in which case an exception is thrown, avoid this.
-        if int(completed - started):
+        if completed and started and int(completed - started):
             hourly = 60 * 60 * finished / (completed - started)
         else:
             hourly = 0
