@@ -1,9 +1,10 @@
 {% if analysis.procmemory %}
     <ul>
     {% for proc in analysis.procmemory %}
-        <li><b>{{proc.pid}}</b> ({{proc.file}})
+        <li>
+            Process memory dump for PID <b>{{ proc.pid }}</b>
         {% if proc.procmem_id %}
-                <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "memdump" proc.procmem_id %}">Download</a>
+            <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "memdump" proc.procmem_id %}">Download</a>
         {% endif %}
         {% for match in proc.yara %}
             <p>Match: {{match.name}}
@@ -13,6 +14,15 @@
             {% endfor %}
             </ul></p>
         {% endfor %}
+        {% if proc.urls %}
+            <h4>Found URLs (potentially malicious URLs)</h4>
+            <pre>{{ proc.urls|join:"<br />" }}</pre>
+            <i>If legitimate URLs are found, please
+                <a href="https://github.com/cuckoobox/cuckoo/issues/new">
+                    report their URLs or hostnames
+                </a>
+                to us so we can whitelist those.</i>
+        {% endif %}
         </li>
     {% endfor %}
 {% endif %}
