@@ -261,20 +261,29 @@ def resubmit(request, task_id):
             "sample_id": task.sample_id,
             "file_name": os.path.basename(task.target),
             "resubmit": "file",
+            "options": task.options,
         })
     elif task.category == "url":
         return render_index(request, {
             "url": task.target,
             "resubmit": "URL",
+            "options": task.options,
         })
 
 def submit_dropped(request, task_id, sha1):
     if request.method == "POST":
         return index(request, task_id, sha1)
 
+    task = Database().view_task(task_id)
+    if not task:
+        return render_to_response("error",
+                                  {"error": "No Task found with this ID"},
+                                  context_instance=RequestContext(request))
+
     filepath = dropped_filepath(task_id, sha1)
     return render_index(request, {
         "file_name": os.path.basename(filepath),
         "resubmit": "file",
         "dropped_file": True,
+        "options": task.options,
     })
