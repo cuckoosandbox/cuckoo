@@ -88,148 +88,148 @@ def render_index(request, kwargs={}):
                               context_instance=RequestContext(request))
 
 def index(request, task_id=None, sha1=None):
-    if request.method == "POST":
-        package = request.POST.get("package", "")
-        timeout = force_int(request.POST.get("timeout"))
-        options = request.POST.get("options", "")
-        priority = force_int(request.POST.get("priority"))
-        machine = request.POST.get("machine", "")
-        custom = request.POST.get("custom", "")
-        memory = bool(request.POST.get("memory", False))
-        enforce_timeout = bool(request.POST.get("enforce_timeout", False))
-        tags = request.POST.get("tags", None)
+    if request.method == "GET":
+        return render_index(request)
 
-        if request.POST.get("route"):
-            if options:
-                options += ","
-            options += "route=%s" % request.POST.get("route")
+    package = request.POST.get("package", "")
+    timeout = force_int(request.POST.get("timeout"))
+    options = request.POST.get("options", "")
+    priority = force_int(request.POST.get("priority"))
+    machine = request.POST.get("machine", "")
+    custom = request.POST.get("custom", "")
+    memory = bool(request.POST.get("memory", False))
+    enforce_timeout = bool(request.POST.get("enforce_timeout", False))
+    tags = request.POST.get("tags", None)
 
-        if request.POST.get("free"):
-            if options:
-                options += ","
-            options += "free=yes"
+    if request.POST.get("route"):
+        if options:
+            options += ","
+        options += "route=%s" % request.POST.get("route")
 
-        if request.POST.get("process_memory"):
-            if options:
-                options += ","
-            options += "procmemdump=yes"
+    if request.POST.get("free"):
+        if options:
+            options += ","
+        options += "free=yes"
 
-        db = Database()
-        task_ids = []
-        task_machines = []
+    if request.POST.get("process_memory"):
+        if options:
+            options += ","
+        options += "procmemdump=yes"
 
-        if machine.lower() == "all":
-            for entry in db.list_machines():
-                task_machines.append(entry.label)
-        else:
-            task_machines.append(machine)
+    db = Database()
+    task_ids = []
+    task_machines = []
 
-        # In case of resubmitting a file.
-        if request.POST.get("category") == "file":
-            task = Database().view_task(task_id)
+    if machine.lower() == "all":
+        for entry in db.list_machines():
+            task_machines.append(entry.label)
+    else:
+        task_machines.append(machine)
 
-            for entry in task_machines:
-                task_id = db.add_path(file_path=task.target,
-                                      package=package,
-                                      timeout=timeout,
-                                      options=options,
-                                      priority=priority,
-                                      machine=entry,
-                                      custom=custom,
-                                      memory=memory,
-                                      enforce_timeout=enforce_timeout,
-                                      tags=tags)
-                if task_id:
-                    task_ids.append(task_id)
+    # In case of resubmitting a file.
+    if request.POST.get("category") == "file":
+        task = Database().view_task(task_id)
 
-        elif request.FILES.getlist("sample"):
-            samples = request.FILES.getlist("sample")
-            for sample in samples:
-                # Error if there was only one submitted sample and it's empty.
-                # But if there are multiple and one was empty, just ignore it.
-                if not sample.size:
-                    if len(samples) != 1:
-                        continue
+        for entry in task_machines:
+            task_id = db.add_path(file_path=task.target,
+                                  package=package,
+                                  timeout=timeout,
+                                  options=options,
+                                  priority=priority,
+                                  machine=entry,
+                                  custom=custom,
+                                  memory=memory,
+                                  enforce_timeout=enforce_timeout,
+                                  tags=tags)
+            if task_id:
+                task_ids.append(task_id)
 
-                    return render_to_response("error.html",
-                                              {"error": "You uploaded an empty file."},
-                                              context_instance=RequestContext(request))
-                elif sample.size > settings.MAX_UPLOAD_SIZE:
-                    return render_to_response("error.html",
-                                              {"error": "You uploaded a file that exceeds that maximum allowed upload size."},
-                                              context_instance=RequestContext(request))
+    elif request.FILES.getlist("sample"):
+        samples = request.FILES.getlist("sample")
+        for sample in samples:
+            # Error if there was only one submitted sample and it's empty.
+            # But if there are multiple and one was empty, just ignore it.
+            if not sample.size:
+                if len(samples) != 1:
+                    continue
 
-                # Moving sample from django temporary file to Cuckoo temporary storage to
-                # let it persist between reboot (if user like to configure it in that way).
-                path = store_temp_file(sample.read(),
-                                       sample.name)
-
-                for entry in task_machines:
-                    task_id = db.add_path(file_path=path,
-                                          package=package,
-                                          timeout=timeout,
-                                          options=options,
-                                          priority=priority,
-                                          machine=entry,
-                                          custom=custom,
-                                          memory=memory,
-                                          enforce_timeout=enforce_timeout,
-                                          tags=tags)
-                    if task_id:
-                        task_ids.append(task_id)
-
-        # When submitting a dropped file.
-        elif request.POST.get("category") == "dropped_file":
-            filepath = dropped_filepath(task_id, sha1)
-
-            for entry in task_machines:
-                task_id = db.add_path(file_path=filepath,
-                                      package=package,
-                                      timeout=timeout,
-                                      options=options,
-                                      priority=priority,
-                                      machine=entry,
-                                      custom=custom,
-                                      memory=memory,
-                                      enforce_timeout=enforce_timeout,
-                                      tags=tags)
-                if task_id:
-                    task_ids.append(task_id)
-
-        else:
-            url = request.POST.get("url").strip()
-            if not url:
                 return render_to_response("error.html",
-                                          {"error": "You specified an invalid URL!"},
+                                          {"error": "You uploaded an empty file."},
+                                          context_instance=RequestContext(request))
+            elif sample.size > settings.MAX_UPLOAD_SIZE:
+                return render_to_response("error.html",
+                                          {"error": "You uploaded a file that exceeds that maximum allowed upload size."},
                                           context_instance=RequestContext(request))
 
+            # Moving sample from django temporary file to Cuckoo temporary
+            # storage to let it persist between reboot (if user like to
+            # configure it in that way).
+            path = store_temp_file(sample.read(), sample.name)
+
             for entry in task_machines:
-                task_id = db.add_url(url=url,
-                                     package=package,
-                                     timeout=timeout,
-                                     options=options,
-                                     priority=priority,
-                                     machine=entry,
-                                     custom=custom,
-                                     memory=memory,
-                                     enforce_timeout=enforce_timeout,
-                                     tags=tags)
+                task_id = db.add_path(file_path=path,
+                                      package=package,
+                                      timeout=timeout,
+                                      options=options,
+                                      priority=priority,
+                                      machine=entry,
+                                      custom=custom,
+                                      memory=memory,
+                                      enforce_timeout=enforce_timeout,
+                                      tags=tags)
                 if task_id:
                     task_ids.append(task_id)
 
-        tasks_count = len(task_ids)
-        if tasks_count > 0:
-            return render_to_response("submission/complete.html",
-                                      {"tasks": task_ids,
-                                       "tasks_count": tasks_count,
-                                       "baseurl": request.build_absolute_uri('/')[:-1]},
-                                      context_instance=RequestContext(request))
-        else:
-            return render_to_response("error.html",
-                                      {"error": "Error adding task to Cuckoo's database."},
-                                      context_instance=RequestContext(request))
+    # When submitting a dropped file.
+    elif request.POST.get("category") == "dropped_file":
+        filepath = dropped_filepath(task_id, sha1)
+
+        for entry in task_machines:
+            task_id = db.add_path(file_path=filepath,
+                                  package=package,
+                                  timeout=timeout,
+                                  options=options,
+                                  priority=priority,
+                                  machine=entry,
+                                  custom=custom,
+                                  memory=memory,
+                                  enforce_timeout=enforce_timeout,
+                                  tags=tags)
+            if task_id:
+                task_ids.append(task_id)
+
     else:
-        return render_index(request)
+        url = request.POST.get("url").strip()
+        if not url:
+            return render_to_response("error.html",
+                                      {"error": "You specified an invalid URL!"},
+                                      context_instance=RequestContext(request))
+
+        for entry in task_machines:
+            task_id = db.add_url(url=url,
+                                 package=package,
+                                 timeout=timeout,
+                                 options=options,
+                                 priority=priority,
+                                 machine=entry,
+                                 custom=custom,
+                                 memory=memory,
+                                 enforce_timeout=enforce_timeout,
+                                 tags=tags)
+            if task_id:
+                task_ids.append(task_id)
+
+    tasks_count = len(task_ids)
+    if tasks_count > 0:
+        return render_to_response("submission/complete.html",
+                                  {"tasks": task_ids,
+                                   "tasks_count": tasks_count,
+                                   "baseurl": request.build_absolute_uri('/')[:-1]},
+                                  context_instance=RequestContext(request))
+    else:
+        return render_to_response("error.html",
+                                  {"error": "Error adding task to Cuckoo's database."},
+                                  context_instance=RequestContext(request))
 
 def status(request, task_id):
     task = Database().view_task(task_id)
