@@ -19,6 +19,7 @@ from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.rooter import vpns
 
 results_db = pymongo.MongoClient(settings.MONGO_HOST, settings.MONGO_PORT)[settings.MONGO_DB]
+cfg = Config()
 
 def force_int(value):
     try:
@@ -219,7 +220,8 @@ def index(request, task_id=None, sha1=None):
                                   {"packages": sorted(packages),
                                    "machines": machines,
                                    "vpns": vpns.values(),
-                                   "dirty": Config().routing.internet},
+                                   "route": cfg.routing.route,
+                                   "internet": cfg.routing.internet},
                                   context_instance=RequestContext(request))
 
 def status(request, task_id):
