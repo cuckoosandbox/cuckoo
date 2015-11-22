@@ -104,11 +104,11 @@ $(document).ready( function() {
                     <div class="panel-body">
                         <select class="form-control" id="form_route" name="route">
                             <option value="none">None (no internet access)</option>
-                            {% if dirty != "none" %}
-                                <option value="internet">Internet (dirty line, {{ dirty }})</option>
+                            {% if internet != "none" %}
+                                <option value="internet"{% if route == "internet" %} selected{% endif %}>Internet (dirty line, {{ internet }})</option>
                             {% endif %}
                             {% for vpn in vpns %}
-                                <option value="{{ vpn.name }}">{{ vpn.description }} (VPN, {{ vpn.interface }})</option>
+                                <option value="{{ vpn.name }}"{% if route == vpn.name %} selected{% endif %}>{{ vpn.description }} (VPN, {{ vpn.interface }})</option>
                             {% endfor %}
                         </select>
                     </div>
