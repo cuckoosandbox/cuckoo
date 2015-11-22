@@ -13,7 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 sys.path.append(settings.CUCKOO_PATH)
 
-from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.config import Config, parse_options, emit_options
 from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.rooter import vpns
@@ -101,20 +101,17 @@ def index(request, task_id=None, sha1=None):
     enforce_timeout = bool(request.POST.get("enforce_timeout", False))
     tags = request.POST.get("tags", None)
 
+    options = parse_options(options)
+
+    # The following POST fields take precedence over the options field.
     if request.POST.get("route"):
-        if options:
-            options += ","
-        options += "route=%s" % request.POST.get("route")
+        options["route"] = request.POST.get("route")
 
     if request.POST.get("free"):
-        if options:
-            options += ","
-        options += "free=yes"
+        options["free"] = "yes"
 
     if request.POST.get("process_memory"):
-        if options:
-            options += ","
-        options += "procmemdump=yes"
+        options["procmemdump"] = "yes"
 
     db = Database()
     task_ids = []
@@ -134,7 +131,7 @@ def index(request, task_id=None, sha1=None):
             task_id = db.add_path(file_path=task.target,
                                   package=package,
                                   timeout=timeout,
-                                  options=options,
+                                  options=emit_options(options),
                                   priority=priority,
                                   machine=entry,
                                   custom=custom,

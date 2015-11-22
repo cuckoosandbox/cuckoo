@@ -9,7 +9,7 @@ import logging
 import threading
 import Queue
 
-from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.config import Config, parse_options, emit_options
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooMachineError, CuckooGuestError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -60,22 +60,7 @@ class AnalysisManager(threading.Thread):
         self.machine = None
         self.db = Database()
 
-        self.task.options = self._parse_options(self.task.options)
-
-    def _parse_options(self, options):
-        """Parse the analysis options field to a dictionary."""
-        ret = {}
-        for field in options.split(","):
-            if "=" not in field:
-                continue
-
-            key, value = field.split("=", 1)
-            ret[key.strip()] = value.strip()
-        return ret
-
-    def _emit_options(self, options):
-        """Emit the analysis options from a dictionary to a string."""
-        return ",".join("%s=%s" % (k, v) for k, v in options.items())
+        self.task.options = parse_options(self.task.options)
 
     def init_storage(self):
         """Initialize analysis storage folder."""
@@ -203,7 +188,7 @@ class AnalysisManager(threading.Thread):
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
-        options["options"] = self._emit_options(self.task.options)
+        options["options"] = emit_options(self.task.options)
         options["enforce_timeout"] = self.task.enforce_timeout
         options["clock"] = self.task.clock
         options["terminate_processes"] = self.cfg.cuckoo.terminate_processes
@@ -281,7 +266,7 @@ class AnalysisManager(threading.Thread):
 
         log.info("Starting analysis of %s \"%s\" (task #%d, options \"%s\")",
                  self.task.category.upper(), target, self.task.id,
-                 self._emit_options(self.task.options))
+                 emit_options(self.task.options))
 
         # Initialize the analysis folders.
         if not self.init_storage():
