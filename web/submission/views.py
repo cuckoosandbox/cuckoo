@@ -46,6 +46,47 @@ def dropped_filepath(task_id, sha1):
 
     raise ObjectDoesNotExist
 
+def render_index(request, kwargs={}):
+    files = os.listdir(os.path.join(settings.CUCKOO_PATH, "analyzer", "windows", "modules", "packages"))
+
+    packages = []
+    for name in files:
+        name = os.path.splitext(name)[0]
+        if name == "__init__":
+            continue
+
+        packages.append(name)
+
+    # Prepare a list of VM names, description label based on tags.
+    machines = []
+    for machine in Database().list_machines():
+        tags = []
+        for tag in machine.tags:
+            tags.append(tag.name)
+
+        if tags:
+            label = machine.label + ": " + ", ".join(tags)
+        else:
+            label = machine.label
+
+        machines.append((machine.label, label))
+
+    # Prepend ALL/ANY options.
+    machines.insert(0, ("", "First available"))
+    machines.insert(1, ("all", "All"))
+
+    values = {
+        "packages": sorted(packages),
+        "machines": machines,
+        "vpns": vpns.values(),
+        "route": cfg.routing.route,
+        "internet": cfg.routing.internet,
+    }
+
+    values.update(kwargs)
+    return render_to_response("submission/index.html", values,
+                              context_instance=RequestContext(request))
+
 def index(request, task_id=None, sha1=None):
     if request.method == "POST":
         package = request.POST.get("package", "")
@@ -188,41 +229,7 @@ def index(request, task_id=None, sha1=None):
                                       {"error": "Error adding task to Cuckoo's database."},
                                       context_instance=RequestContext(request))
     else:
-        files = os.listdir(os.path.join(settings.CUCKOO_PATH, "analyzer", "windows", "modules", "packages"))
-
-        packages = []
-        for name in files:
-            name = os.path.splitext(name)[0]
-            if name == "__init__":
-                continue
-
-            packages.append(name)
-
-        # Prepare a list of VM names, description label based on tags.
-        machines = []
-        for machine in Database().list_machines():
-            tags = []
-            for tag in machine.tags:
-                tags.append(tag.name)
-
-            if tags:
-                label = machine.label + ": " + ", ".join(tags)
-            else:
-                label = machine.label
-
-            machines.append((machine.label, label))
-
-        # Prepend ALL/ANY options.
-        machines.insert(0, ("", "First available"))
-        machines.insert(1, ("all", "All"))
-
-        return render_to_response("submission/index.html",
-                                  {"packages": sorted(packages),
-                                   "machines": machines,
-                                   "vpns": vpns.values(),
-                                   "route": cfg.routing.route,
-                                   "internet": cfg.routing.internet},
-                                  context_instance=RequestContext(request))
+        return render_index(request)
 
 def status(request, task_id):
     task = Database().view_task(task_id)
@@ -244,31 +251,30 @@ def resubmit(request, task_id):
     if request.method == "POST":
         return index(request, task_id)
 
-    if task is not None and task.category == "file":
-        return render_to_response("submission/index.html",
-                                  {"sample_id": task.sample_id,
-                                   "file_name": os.path.basename(task.target),
-                                   "resubmit": "file"},
+    if not task:
+        return render_to_response("error",
+                                  {"error": "No Task found with this ID"},
                                   context_instance=RequestContext(request))
 
-    elif task is not None and task.category == "url":
-        return render_to_response("submission/index.html",
-                                  {"url": task.target,
-                                   "resubmit": "URL"},
-                                  context_instance=RequestContext(request))
-    else:
-        return render_to_response("submission/index.html",
-                                  {"path": "No Task found with this ID"},
-                                  context_instance=RequestContext(request))
+    if task.category == "file":
+        return render_index(request, {
+            "sample_id": task.sample_id,
+            "file_name": os.path.basename(task.target),
+            "resubmit": "file",
+        })
+    elif task.category == "url":
+        return render_index(request, {
+            "url": task.target,
+            "resubmit": "URL",
+        })
 
 def submit_dropped(request, task_id, sha1):
     if request.method == "POST":
         return index(request, task_id, sha1)
 
     filepath = dropped_filepath(task_id, sha1)
-
-    return render_to_response("submission/index.html",
-                              {"file_name": os.path.basename(filepath),
-                               "resubmit": "file",
-                               "dropped_file": True},
-                              context_instance=RequestContext(request))
+    return render_index(request, {
+        "file_name": os.path.basename(filepath),
+        "resubmit": "file",
+        "dropped_file": True,
+    })
