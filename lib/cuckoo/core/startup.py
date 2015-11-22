@@ -328,19 +328,28 @@ def init_rooter():
         if e.strerror == "No such file or directory":
             raise CuckooStartupError(
                 "The rooter is required but it is either not running or it "
-                "has been configured to a different Unix socket path."
+                "has been configured to a different Unix socket path. "
+                "(In order to disable the use of rooter, please set route "
+                "and internet to none in cuckoo.conf and enabled to no in "
+                "vpn.conf)."
             )
 
         if e.strerror == "Connection refused":
             raise CuckooStartupError(
                 "The rooter is required but we can't connect to it as the "
-                "rooter is not actually running."
+                "rooter is not actually running. "
+                "(In order to disable the use of rooter, please set route "
+                "and internet to none in cuckoo.conf and enabled to no in "
+                "vpn.conf)."
             )
 
         if e.strerror == "Permission denied":
             raise CuckooStartupError(
                 "The rooter is required but we can't connect to it due to "
-                "incorrect permissions. Did you assign it the correct group?"
+                "incorrect permissions. Did you assign it the correct group? "
+                "(In order to disable the use of rooter, please set route "
+                "and internet to none in cuckoo.conf and enabled to no in "
+                "vpn.conf)."
             )
 
         raise CuckooStartupError("Unknown rooter error: %s" % e)
