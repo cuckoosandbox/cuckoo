@@ -25,7 +25,7 @@
         <li><a href="#buffer" data-toggle="tab">Dropped Buffers ({{ analysis.buffer|length }})</a></li>
     {% endif %}
     {% if analysis.procmemory %}
-        <li><a href="#procmemory" data-toggle="tab">Process Memory</a></li>
+        <li><a href="#procmemory" data-toggle="tab">Process Memory ({{ analysis.procmemory|length }})</a></li>
     {% endif %}
     {% if analysis.memory %}
         <li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>
