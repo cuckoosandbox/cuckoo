@@ -298,6 +298,23 @@ class CommandPipeHandler(object):
         self.analyzer.files.move_file(old_filepath.decode("utf8"),
                                       new_filepath.decode("utf8"))
 
+    def _handle_kill(self, data):
+        """A process is being killed."""
+        if not data.isdigit():
+            log.warning("Received KILL command with an incorrect argument.")
+            return
+
+        if self.analyzer.config.options.get("procmemdump"):
+            Process(pid=int(data)).dump_memory()
+
+    def _handle_dumpmem(self, data):
+        """Dump the memory of a process as it is right now."""
+        if not data.isdigit():
+            log.warning("Received DUMPMEM command with an incorrect argument.")
+            return
+
+        Process(pid=int(data)).dump_memory()
+
     def dispatch(self, data):
         response = "NOPE"
 
