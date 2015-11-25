@@ -336,6 +336,7 @@ class Analyzer(object):
         self.ppid = Process(pid=self.pid).get_parent_pid()
         self.files = Files()
         self.process_list = ProcessList()
+        self.package = None
 
     def prepare(self):
         """Prepare env for analysis."""
@@ -483,14 +484,14 @@ class Analyzer(object):
                               "(package={0}): {1}".format(package_name, e))
 
         # Initialize the analysis package.
-        package = package_class(self.config.options)
+        self.package = package_class(self.config.options)
 
         # Move the sample to the current working directory as provided by the
         # task - one is able to override the starting path of the sample.
         # E.g., for some samples it might be useful to run from %APPDATA%
         # instead of %TEMP%.
         if self.config.category == "file":
-            self.target = package.move_curdir(self.target)
+            self.target = self.package.move_curdir(self.target)
 
         # Initialize Auxiliary modules
         Auxiliary()
@@ -528,7 +529,7 @@ class Analyzer(object):
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
         try:
-            pids = package.start(self.target)
+            pids = self.package.start(self.target)
         except NotImplementedError:
             raise CuckooError("The package \"{0}\" doesn't contain a run "
                               "function.".format(package_name))
@@ -592,14 +593,14 @@ class Analyzer(object):
                     # Update the list of monitored processes available to the
                     # analysis package. It could be used for internal
                     # operations within the module.
-                    package.set_pids(self.process_list.pids)
+                    self.package.set_pids(self.process_list.pids)
 
                 try:
                     # The analysis packages are provided with a function that
                     # is executed at every loop's iteration. If such function
                     # returns False, it means that it requested the analysis
                     # to be terminate.
-                    if not package.check():
+                    if not self.package.check():
                         log.info("The analysis package requested the "
                                  "termination of the analysis.")
                         break
@@ -624,7 +625,7 @@ class Analyzer(object):
         try:
             # Before shutting down the analysis, the package can perform some
             # final operations through the finish() function.
-            package.finish()
+            self.package.finish()
         except Exception as e:
             log.warning("The package \"%s\" finish function raised an "
                         "exception: %s", package_name, e)
@@ -632,7 +633,7 @@ class Analyzer(object):
         try:
             # Upload files the package created to package_files in the
             # results folder.
-            for path, name in package.package_files() or []:
+            for path, name in self.package.package_files() or []:
                 upload_to_host(path, os.path.join("package_files", name))
         except Exception as e:
             log.warning("The package \"%s\" package_files function raised an "
