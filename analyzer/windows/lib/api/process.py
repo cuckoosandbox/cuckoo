@@ -26,6 +26,11 @@ class Process(object):
     first_process = True
     config = None
 
+    # Keeps track of the dump memory index for a particular process as in
+    # theory, and will be useful later, we may want to dump one process
+    # multiple times.
+    dumpmem = {}
+
     def __init__(self, pid=None, tid=None, process_name=None):
         """
         @param pid: process identifier.
@@ -398,44 +403,37 @@ class Process(object):
                         "dump aborted", self.pid)
             return False
 
-        self.get_system_info()
+        if self.is32bit(pid=self.pid):
+            inject_exe = os.path.join("bin", "inject-x86.exe")
+        else:
+            inject_exe = os.path.join("bin", "inject-x64.exe")
 
-        page_size = self.system_info.dwPageSize
-        min_addr = self.system_info.lpMinimumApplicationAddress
-        max_addr = self.system_info.lpMaximumApplicationAddress
-        mem = min_addr
+        # Take the memory dump.
+        dump_path = tempfile.mktemp()
 
-        # Now upload to host from the StringIO.
-        nf = NetlogFile(os.path.join("memory", "%s.dmp" % str(self.pid)))
+        try:
+            args = [
+                inject_exe,
+                "--pid", "%s" % self.pid,
+                "--dump", dump_path,
+            ]
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError:
+            log.error("Failed to dump memory of %d-bit process with pid %d.",
+                      32 if self.is32bit(pid=self.pid) else 64, self.pid)
+            return
 
-        process_handle = self.open_process()
+        # Calculate the next index. We keep in mind that one process may have
+        # multiple process memory dumps in the future.
+        idx = self.dumpmem[self.pid] = self.dumpmem.get(self.pid, 0) + 1
+        nf = NetlogFile(os.path.join("memory", "%s-%s.dmp" % (self.pid, idx)))
 
-        while mem < max_addr:
-            mbi = MEMORY_BASIC_INFORMATION()
-            count = c_ulong(0)
+        # Send the dumped file.
+        with open(dump_path, "rb") as f:
+            nf.sock.sendall(f.read(1024 * 1024))
 
-            if KERNEL32.VirtualQueryEx(process_handle,
-                                       mem,
-                                       byref(mbi),
-                                       sizeof(mbi)) < sizeof(mbi):
-                mem += page_size
-                continue
-
-            if mbi.State & MEM_COMMIT and \
-                    mbi.Type & (MEM_IMAGE | MEM_MAPPED | MEM_PRIVATE):
-                buf = create_string_buffer(mbi.RegionSize)
-                if KERNEL32.ReadProcessMemory(process_handle,
-                                              mem,
-                                              buf,
-                                              mbi.RegionSize,
-                                              byref(count)):
-                    nf.sock.sendall(buf.raw)
-                mem += mbi.RegionSize
-            else:
-                mem += page_size
-
-        KERNEL32.CloseHandle(process_handle)
         nf.close()
+        os.unlink(dump_path)
 
         log.info("Memory dump of process with pid %d completed", self.pid)
         return True
