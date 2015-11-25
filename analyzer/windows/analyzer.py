@@ -18,7 +18,7 @@ from datetime import datetime
 
 from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
-from lib.common.constants import PATHS, SHUTDOWN_MUTEX
+from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32
 from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.hashing import hash_file
@@ -28,7 +28,7 @@ from lib.core.config import Config
 from lib.core.packages import choose_package
 from lib.core.pipe import PipeServer, PipeForwarder, PipeDispatcher
 from lib.core.privileges import grant_debug_privilege
-from lib.core.startup import create_folders, init_logging
+from lib.core.startup import init_logging
 from modules import auxiliary
 
 log = logging.getLogger("analyzer")
@@ -344,9 +344,6 @@ class Analyzer(object):
         # order to perform the injections.
         grant_debug_privilege()
 
-        # Create the folders used for storing the results.
-        create_folders()
-
         # Initialize logging.
         init_logging()
 
@@ -430,7 +427,6 @@ class Analyzer(object):
         self.prepare()
 
         log.debug("Starting analyzer from: %s", os.getcwd())
-        log.debug("Storing results at: %s", PATHS["root"])
         log.debug("Pipe server name: %s", self.config.pipe)
         log.debug("Log pipe server name: %s", self.config.logpipe)
 
@@ -719,7 +715,7 @@ if __name__ == "__main__":
         # if that fails, attempt the new Agent.
         try:
             server = xmlrpclib.Server("http://127.0.0.1:8000")
-            server.complete(success, error, PATHS["root"])
+            server.complete(success, error, "unused_path")
         except xmlrpclib.ProtocolError:
             urllib2.urlopen("http://127.0.0.1:8000/status",
                             urllib.urlencode(data)).read()

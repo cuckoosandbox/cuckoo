@@ -7,11 +7,10 @@ import logging
 import random
 import subprocess
 import tempfile
-import time
 from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
 from ctypes import c_uint, c_wchar_p, create_unicode_buffer
 
-from lib.common.constants import PATHS, SHUTDOWN_MUTEX
+from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
 from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
 from lib.common.defines import MEM_COMMIT, MEMORY_BASIC_INFORMATION
@@ -369,7 +368,6 @@ class Process(object):
             "host-port": self.config.port,
             "pipe": self.config.pipe,
             "logpipe": self.config.logpipe,
-            "results": PATHS["root"],
             "analyzer": os.getcwd(),
             "first-process": "1" if Process.first_process else "0",
             "startup-time": Process.startup_time,
@@ -406,11 +404,6 @@ class Process(object):
         min_addr = self.system_info.lpMinimumApplicationAddress
         max_addr = self.system_info.lpMaximumApplicationAddress
         mem = min_addr
-
-        root = os.path.join(PATHS["memory"], str(int(time.time())))
-
-        if not os.path.exists(root):
-            os.makedirs(root)
 
         # Now upload to host from the StringIO.
         nf = NetlogFile(os.path.join("memory", "%s.dmp" % str(self.pid)))
