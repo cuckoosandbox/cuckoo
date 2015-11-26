@@ -7,7 +7,6 @@ import re
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.objects import File
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.whitelist import is_whitelisted_domain
 
 HTTP_REGEX = (
@@ -45,7 +44,7 @@ class ProcessMemory(Processing):
                 proc = dict(
                     file=dmp_path,
                     pid=int(os.path.basename(dmp_path).split("-")[0]),
-                    yara=dmp_file.get_yara(os.path.join(CUCKOO_ROOT, "data", "yara", "index_memory.yar")),
+                    yara=dmp_file.get_yara("memory"),
                     urls=list(urls),
                 )
 

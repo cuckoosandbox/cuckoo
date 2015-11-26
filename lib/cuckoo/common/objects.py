@@ -63,8 +63,8 @@ class URL:
 class File(object):
     """Basic file object class with all useful utilities."""
 
-    YARA_RULEPATH = \
-        os.path.join(CUCKOO_ROOT, "data", "yara", "index_binaries.yar")
+    # To be substituted with a category.
+    YARA_RULEPATH = os.path.join(CUCKOO_ROOT, "data", "yara", "index_%s.yar")
 
     # static fields which indicate whether the user has been
     # notified about missing dependencies already
@@ -79,7 +79,7 @@ class File(object):
     # The yara rules should not change during one session of processing tasks,
     # thus we can cache them. If they are updated, one should restart Cuckoo
     # or the processing tasks.
-    yara_rules = None
+    yara_rules = {}
 
     def __init__(self, file_path):
         """@param file_path: file path."""
@@ -399,7 +399,7 @@ class File(object):
 
         return ret
 
-    def get_yara(self, rulepath=YARA_RULEPATH):
+    def get_yara(self, category="binaries"):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
         """
@@ -412,14 +412,15 @@ class File(object):
             return results
 
         # Compile the Yara rules only the first time.
-        if File.yara_rules is None:
+        if category not in File.yara_rules:
+            rulepath = self.YARA_RULEPATH % category
             if not os.path.exists(rulepath):
                 log.warning("The specified rule file at %s doesn't exist, "
                             "skip", rulepath)
                 return results
 
             try:
-                File.yara_rules = yara.compile(rulepath)
+                File.yara_rules[category] = yara.compile(rulepath)
             except:
                 log.exception("Error compiling the Yara rules.")
                 return
@@ -428,7 +429,7 @@ class File(object):
             return results
 
         try:
-            matches = File.yara_rules.match(self.file_path)
+            matches = File.yara_rules[category].match(self.file_path)
 
             if getattr(yara, "__version__", None) == "1.7.7":
                 return self._yara_matches_177(matches)
