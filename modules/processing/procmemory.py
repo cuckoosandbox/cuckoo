@@ -2,8 +2,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import mmap
 import os
 import re
+import struct
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.objects import File
@@ -21,6 +23,39 @@ HTTP_REGEX = (
 
 class ProcessMemory(Processing):
     """Analyze process memory dumps."""
+    def read_dump(self, filepath):
+        f = open(filepath, "rb")
+
+        while True:
+            buf = f.read(24)
+            if not buf:
+                break
+
+            row = struct.unpack("QIIII", buf)
+            addr, size, state, typ, protect = row
+
+            yield {
+                "addr": "0x%x" % addr,
+                "end": "0x%x" % (addr + size),
+                "size": size,
+                "type": typ,
+                "protect": protect,
+                "offset": f.tell(),
+            }
+
+            f.seek(size, 1)
+
+    def extract_urls(self, filepath):
+        # http://stackoverflow.com/a/454589
+        urls = set()
+        f = open(filepath, "rb")
+        m = mmap.mmap(f.fileno(), 0, access=mmap.PROT_READ)
+
+        for url in re.findall(HTTP_REGEX, m):
+            if not is_whitelisted_domain(url[1]):
+                urls.add("".join(url))
+
+        return urls
 
     def run(self):
         """Run analysis.
@@ -31,21 +66,19 @@ class ProcessMemory(Processing):
 
         if os.path.exists(self.pmemory_path):
             for dmp in os.listdir(self.pmemory_path):
-                dmp_path = os.path.join(self.pmemory_path, dmp)
-                dmp_file = File(dmp_path)
+                dump_path = os.path.join(self.pmemory_path, dmp)
+                dump_file = File(dump_path)
 
-                # Let's hope the file is not too big.
-                buf = open(dmp_path, "rb").read()
-                urls = set()
-                for url in re.findall(HTTP_REGEX, buf):
-                    if not is_whitelisted_domain(url[1]):
-                        urls.add("".join(url))
+                if "-" in os.path.basename(dump_path):
+                    pid = int(os.path.basename(dump_path).split("-")[0])
+                else:
+                    pid = int(os.path.basename(dump_path).split(".")[0])
 
                 proc = dict(
-                    file=dmp_path,
-                    pid=int(os.path.basename(dmp_path).split("-")[0]),
-                    yara=dmp_file.get_yara("memory"),
-                    urls=list(urls),
+                    file=dump_path, pid=pid,
+                    yara=dump_file.get_yara("memory"),
+                    urls=list(self.extract_urls(dump_path)),
+                    space=list(self.read_dump(dump_path)),
                 )
 
                 results.append(proc)
