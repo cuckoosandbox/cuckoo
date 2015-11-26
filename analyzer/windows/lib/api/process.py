@@ -13,11 +13,9 @@ from ctypes import c_uint, c_wchar_p, create_unicode_buffer
 from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
 from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
-from lib.common.defines import MEM_COMMIT, MEMORY_BASIC_INFORMATION
-from lib.common.defines import MEM_IMAGE, MEM_MAPPED, MEM_PRIVATE
 from lib.common.errors import get_error_string
 from lib.common.exceptions import CuckooError
-from lib.common.results import NetlogFile
+from lib.common.results import upload_to_host
 
 log = logging.getLogger(__name__)
 
@@ -423,16 +421,12 @@ class Process(object):
                       32 if self.is32bit(pid=self.pid) else 64, self.pid)
             return
 
-        # Calculate the next index. We keep in mind that one process may have
-        # multiple process memory dumps in the future.
+        # Calculate the next index and send the process memory dump over to
+        # the host. Keep in mind that one process may have multiple process
+        # memory dumps in the future.
         idx = self.dumpmem[self.pid] = self.dumpmem.get(self.pid, 0) + 1
-        nf = NetlogFile(os.path.join("memory", "%s-%s.dmp" % (self.pid, idx)))
-
-        # Send the dumped file.
-        with open(dump_path, "rb") as f:
-            nf.sock.sendall(f.read(1024 * 1024))
-
-        nf.close()
+        file_name = os.path.join("memory", "%s-%s.dmp" % (self.pid, idx))
+        upload_to_host(dump_path, file_name)
         os.unlink(dump_path)
 
         log.info("Memory dump of process with pid %d completed", self.pid)

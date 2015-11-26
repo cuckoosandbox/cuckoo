@@ -11,6 +11,24 @@ from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.whitelist import is_whitelisted_domain
 
+PAGE_READONLY = 0x00000002
+PAGE_READWRITE = 0x00000004
+PAGE_WRITECOPY = 0x00000008
+PAGE_EXECUTE = 0x00000010
+PAGE_EXECUTE_READ = 0x00000020
+PAGE_EXECUTE_READWRITE = 0x00000040
+PAGE_EXECUTE_WRITECOPY = 0x00000080
+
+page_access = {
+    PAGE_READONLY: "r",
+    PAGE_READWRITE: "rw",
+    PAGE_WRITECOPY: "rwc",
+    PAGE_EXECUTE: "rx",
+    PAGE_EXECUTE_READ: "rx",
+    PAGE_EXECUTE_READWRITE: "rwx",
+    PAGE_EXECUTE_WRITECOPY: "rwxc",
+}
+
 HTTP_REGEX = (
     "(https?://)(["
     "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]\\."
@@ -35,11 +53,11 @@ class ProcessMemory(Processing):
             addr, size, state, typ, protect = row
 
             yield {
-                "addr": "0x%x" % addr,
-                "end": "0x%x" % (addr + size),
+                "addr": "0x%08x" % addr,
+                "end": "0x%08x" % (addr + size),
                 "size": size,
                 "type": typ,
-                "protect": protect,
+                "protect": page_access.get(protect),
                 "offset": f.tell(),
             }
 
@@ -66,6 +84,9 @@ class ProcessMemory(Processing):
 
         if os.path.exists(self.pmemory_path):
             for dmp in os.listdir(self.pmemory_path):
+                if not dmp.endswith(".dmp"):
+                    continue
+
                 dump_path = os.path.join(self.pmemory_path, dmp)
                 dump_file = File(dump_path)
 
@@ -78,7 +99,7 @@ class ProcessMemory(Processing):
                     file=dump_path, pid=pid,
                     yara=dump_file.get_yara("memory"),
                     urls=list(self.extract_urls(dump_path)),
-                    space=list(self.read_dump(dump_path)),
+                    regions=list(self.read_dump(dump_path)),
                 )
 
                 results.append(proc)
