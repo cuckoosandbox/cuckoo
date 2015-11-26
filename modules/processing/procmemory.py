@@ -75,6 +75,40 @@ class ProcessMemory(Processing):
 
         return urls
 
+    def create_idapy(self, process):
+        i = open(process["file"], "rb")
+        o = open(process["file"].replace(".dmp", ".py"), "wb")
+
+        print>>o, "from idaapi import add_segm, mem2base, autoMark, AU_CODE"
+        print>>o, "from idaapi import set_processor_type, SETPROC_ALL"
+        print>>o, "set_processor_type('80386r', SETPROC_ALL)"
+
+        for idx, region in enumerate(process["regions"]):
+            i.seek(region["offset"])
+
+            if not region["protect"]:
+                section = "unk_%d" % idx
+                type_ = "DATA"
+            elif "x" in region["protect"]:
+                section = "text_%d" % idx
+                type_ = "CODE"
+            elif "w" in region["protect"]:
+                section = "data_%d" % idx
+                type_ = "DATA"
+            else:
+                section = "rdata_%d" % idx
+                type_ = "DATA"
+
+            print>>o, "add_segm(0, %s, %s, '%s', '%s')" % (
+                region["addr"], region["end"], section, type_
+            )
+            print>>o, "mem2base('%s'.decode('base64'), %s)" % (
+                i.read(region["size"]).encode("base64").replace("\n", ""),
+                region["addr"]
+            )
+            if type_ == "CODE":
+                print>>o, "autoMark(%s, AU_CODE)" % region["addr"]
+
     def run(self):
         """Run analysis.
         @return: structured results.
@@ -101,6 +135,9 @@ class ProcessMemory(Processing):
                     urls=list(self.extract_urls(dump_path)),
                     regions=list(self.read_dump(dump_path)),
                 )
+
+                if self.options.get("idapro"):
+                    self.create_idapy(proc)
 
                 results.append(proc)
 
