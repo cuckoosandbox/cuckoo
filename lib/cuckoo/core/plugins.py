@@ -12,7 +12,7 @@ from distutils.version import StrictVersion
 
 from lib.cuckoo.common.abstracts import Auxiliary, Machinery, LibVirtMachinery, Processing
 from lib.cuckoo.common.abstracts import Report, Signature
-from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.config import Config, parse_options
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -459,6 +459,8 @@ class RunReporting(object):
         self.results = results
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]))
         self.cfg = Config("reporting")
+
+        self.task["options"] = parse_options(self.task["options"])
 
     def process(self, module):
         """Run a single reporting module.
