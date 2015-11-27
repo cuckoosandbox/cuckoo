@@ -72,13 +72,13 @@ def sigsort(l):
         return
 
     for x in l:
-        if x["type"] == "generic":
+        if x.get("type", x.get("_type")) == "generic":
             yield x
 
     for x in l:
-        if x["type"] == "ioc":
+        if x.get("type", x.get("_type")) == "ioc":
             yield x
 
     for x in l:
-        if x["type"] == "call":
+        if x.get("type", x.get("_type")) == "call":
             yield x
