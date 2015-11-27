@@ -21,6 +21,21 @@ def default(obj):
 class JsonDump(Report):
     """Saves analysis results in JSON format."""
 
+    def erase_calls(self, results):
+        """Temporarily removes calls from the report by replacing them with
+        empty lists."""
+        calls = []
+        for process in results.get("behavior", {}).get("processes", []):
+            calls.append(process["calls"])
+            process["calls"] = []
+        return calls
+
+    def restore_calls(self, results, original):
+        """Restores calls that were temporarily removed in the report by
+        replacing the calls with the original values."""
+        for process in results.get("behavior", {}).get("processes", []):
+            process["calls"] = original.pop(0)
+
     def run(self, results):
         """Writes report.
         @param results: Cuckoo results dict.
@@ -28,6 +43,16 @@ class JsonDump(Report):
         """
         indent = self.options.get("indent", 4)
         encoding = self.options.get("encoding", "utf-8")
+
+        # Determine whether we want to include the behavioral data in the
+        # JSON report.
+        if "json.calls" in self.task["options"]:
+            calls = int(self.task["options"]["json.calls"])
+        else:
+            calls = self.options.get("calls", True)
+
+        if not calls:
+            original = self.erase_calls(results)
 
         try:
             path = os.path.join(self.reports_path, "report.json")
@@ -37,3 +62,6 @@ class JsonDump(Report):
                           indent=int(indent), encoding=encoding)
         except (UnicodeError, TypeError, IOError) as e:
             raise CuckooReportError("Failed to generate JSON report: %s" % e)
+        finally:
+            if not calls:
+                self.restore_calls(results, original)
