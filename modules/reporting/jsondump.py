@@ -24,17 +24,23 @@ class JsonDump(Report):
     def erase_calls(self, results):
         """Temporarily removes calls from the report by replacing them with
         empty lists."""
-        calls = []
-        for process in results.get("behavior", {}).get("processes", []):
-            calls.append(process["calls"])
-            process["calls"] = []
-        return calls
+        if self.calls:
+            self.calls = None
+            return
 
-    def restore_calls(self, results, original):
+        self.calls = []
+        for process in results.get("behavior", {}).get("processes", []):
+            self.calls.append(process["calls"])
+            process["calls"] = []
+
+    def restore_calls(self, results):
         """Restores calls that were temporarily removed in the report by
         replacing the calls with the original values."""
+        if not self.calls:
+            return
+
         for process in results.get("behavior", {}).get("processes", []):
-            process["calls"] = original.pop(0)
+            process["calls"] = self.calls.pop(0)
 
     def run(self, results):
         """Writes report.
@@ -47,12 +53,11 @@ class JsonDump(Report):
         # Determine whether we want to include the behavioral data in the
         # JSON report.
         if "json.calls" in self.task["options"]:
-            calls = int(self.task["options"]["json.calls"])
+            self.calls = int(self.task["options"]["json.calls"])
         else:
-            calls = self.options.get("calls", True)
+            self.calls = self.options.get("calls", True)
 
-        if not calls:
-            original = self.erase_calls(results)
+        self.erase_calls(results)
 
         try:
             path = os.path.join(self.reports_path, "report.json")
@@ -63,5 +68,4 @@ class JsonDump(Report):
         except (UnicodeError, TypeError, IOError) as e:
             raise CuckooReportError("Failed to generate JSON report: %s" % e)
         finally:
-            if not calls:
-                self.restore_calls(results, original)
+            self.restore_calls(results)
