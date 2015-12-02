@@ -85,14 +85,10 @@ class vSphere(Machinery):
         # Workaround for PEP-0476 issues in recent Python versions
         if self.options.vsphere.unverified_ssl:
             import ssl
-
-            try:
-                _create_ssl_context = ssl._create_unverified_context
-            except AttributeError:
-                pass
-            else:
-                log.warn("Turning off SSL certificate verification!")
-                ssl._create_default_https_context = _create_ssl_context
+            sslContext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+            sslContext.verify_mode = ssl.CERT_NONE
+            self.connect_opts["sslContext"] = sslContext
+            log.warn("Turning off SSL certificate verification!")
 
         # Check that a snapshot is configured for each machine
         # and that it was taken in a powered-on state
@@ -127,15 +123,13 @@ class vSphere(Machinery):
             raise
 
         except Exception as e:
-            raise CuckooCriticalError("Couldn't connect to vSphere host: {0}"
-                                      .format(e))
+            raise CuckooCriticalError("Couldn't connect to vSphere host")
 
         super(vSphere, self)._initialize_check()
 
-    def start(self, label, task):
+    def start(self, label):
         """Start a machine.
         @param label: machine name.
-        @param task: task object.
         @raise CuckooMachineError: if unable to start machine.
         """
         name = self.db.view_machine_by_label(label).snapshot
@@ -299,8 +293,8 @@ class vSphere(Machinery):
         datastore, filepath = re.match(r"\[([^\]]*)\] (.*)", filespec).groups()
 
         # Construct URL request
-        params = {"dsName": datastore}
-        headers = {"Cookie": conn._stub.cookie}
+        params = { "dsName" : datastore }
+        headers = { "Cookie" : conn._stub.cookie }
         url = "https://{0}:{1}/folder/{2}".format(self.connect_opts["host"],
                                                   self.connect_opts["port"],
                                                   filepath)
