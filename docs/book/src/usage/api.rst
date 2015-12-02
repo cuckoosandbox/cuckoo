@@ -384,6 +384,12 @@ Following is a list of currently available resources and a brief description of 
                 }
             }
 
+        Note: possible value for key ``status``:
+            * ``pending``
+            * ``running``
+            * ``completed``
+            * ``reported``
+
         **Parameters**:
             * ``id`` *(required)* *(int)* - ID of the task to lookup
 
