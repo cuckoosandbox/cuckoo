@@ -31,42 +31,34 @@
 
         <div id="signature_{{signature.name}}" class="collapse">
             <table class="table table-bordered" style="table-layout: fixed;">
-                <tbody>
-                    {% for mark in signature.marks|slice:":50" %}
-                        <tr>
-                            {% if mark.type == "call" %}
-                                {% include "analysis/behavior/_api_call.html" with call=mark.call %}
-                                <td>
-                                    <a href="#" class="call-link" data-pid="{{mark.pid}}" data-cid="{{mark.cid}}">
-                                        <span class="glyphicon glyphicon-circle-arrow-right"></span>
-                                    </a>
-                                </td>
-                            {% elif mark.type == "ioc" %}
-                                <td colspan="2">{{mark.category}}</td>
-                                <td colspan="5">{{mark.ioc}}</td>
-                            {% else %}
-                                <td colspan="2">{{mark.type}}</td>
-                                <td colspan="5">
-                                    {% if sign.value|is_dict %}
-                                        {% for key, value in sign.value.items %}
-                                            <span class="sign-key">{{key}}:</span>
-                                            <span class="sign-value">{{value}}</span><br />
-                                        {% endfor %}
-                                    {% else %}
-                                        {{sign.value}}
-                                    {% endif %}
-                                </td>
+                {% for mark in signature.marks|sigsort|slice:":50" %}
+                    {% if mark.type == "call" %}
+                    <tr>
+                        {% include "analysis/behavior/_api_call.html" with call=mark.call pid=mark.pid cid=mark.cid %}
+                    </tr>
+                    {% elif mark.type == "ioc" %}
+                    <tr>
+                        <td colspan="1">{{mark.category}}</td>
+                        <td colspan="4">{{mark.ioc}}</td>
+                    </tr>
+                    {% elif mark.type == "generic" %}
+                    <tr>
+                        {% for key, value in mark.items %}
+                            {% if key != "type" %}
+                                <td colspan="1">{{ key }}</td>
+                                <td colspan="4">{{ value }}</td>
                             {% endif %}
-                        </tr>
-                    {% endfor %}
-                    {% if signature.marks|length > 50 %}
-                        <tr>
-                            <td colspan="6">
-                                And there is more..
-                            </td>
-                        </tr>
+                        {% endfor %}
+                    </tr>
                     {% endif %}
-                </tbody>
+                {% endfor %}
+                {% if signature.marks|length > 50 %}
+                    <tr>
+                        <td colspan="6">
+                            And there is more..
+                        </td>
+                    </tr>
+                {% endif %}
             </table>
         </div>
     {% endfor %}

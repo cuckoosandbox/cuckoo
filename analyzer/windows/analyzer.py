@@ -18,7 +18,7 @@ from datetime import datetime
 
 from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
-from lib.common.constants import PATHS, SHUTDOWN_MUTEX
+from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32
 from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.hashing import hash_file
@@ -28,7 +28,7 @@ from lib.core.config import Config
 from lib.core.packages import choose_package
 from lib.core.pipe import PipeServer, PipeForwarder, PipeDispatcher
 from lib.core.privileges import grant_debug_privilege
-from lib.core.startup import create_folders, init_logging
+from lib.core.startup import init_logging
 from modules import auxiliary
 
 log = logging.getLogger("analyzer")
@@ -298,6 +298,23 @@ class CommandPipeHandler(object):
         self.analyzer.files.move_file(old_filepath.decode("utf8"),
                                       new_filepath.decode("utf8"))
 
+    def _handle_kill(self, data):
+        """A process is being killed."""
+        if not data.isdigit():
+            log.warning("Received KILL command with an incorrect argument.")
+            return
+
+        if self.analyzer.config.options.get("procmemdump"):
+            Process(pid=int(data)).dump_memory()
+
+    def _handle_dumpmem(self, data):
+        """Dump the memory of a process as it is right now."""
+        if not data.isdigit():
+            log.warning("Received DUMPMEM command with an incorrect argument.")
+            return
+
+        Process(pid=int(data)).dump_memory()
+
     def dispatch(self, data):
         response = "NOPE"
 
@@ -336,15 +353,13 @@ class Analyzer(object):
         self.ppid = Process(pid=self.pid).get_parent_pid()
         self.files = Files()
         self.process_list = ProcessList()
+        self.package = None
 
     def prepare(self):
         """Prepare env for analysis."""
         # Get SeDebugPrivilege for the Python process. It will be needed in
         # order to perform the injections.
         grant_debug_privilege()
-
-        # Create the folders used for storing the results.
-        create_folders()
 
         # Initialize logging.
         init_logging()
@@ -429,7 +444,6 @@ class Analyzer(object):
         self.prepare()
 
         log.debug("Starting analyzer from: %s", os.getcwd())
-        log.debug("Storing results at: %s", PATHS["root"])
         log.debug("Pipe server name: %s", self.config.pipe)
         log.debug("Log pipe server name: %s", self.config.logpipe)
 
@@ -483,14 +497,14 @@ class Analyzer(object):
                               "(package={0}): {1}".format(package_name, e))
 
         # Initialize the analysis package.
-        package = package_class(self.config.options)
+        self.package = package_class(self.config.options)
 
         # Move the sample to the current working directory as provided by the
         # task - one is able to override the starting path of the sample.
         # E.g., for some samples it might be useful to run from %APPDATA%
         # instead of %TEMP%.
         if self.config.category == "file":
-            self.target = package.move_curdir(self.target)
+            self.target = self.package.move_curdir(self.target)
 
         # Initialize Auxiliary modules
         Auxiliary()
@@ -528,7 +542,7 @@ class Analyzer(object):
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
         try:
-            pids = package.start(self.target)
+            pids = self.package.start(self.target)
         except NotImplementedError:
             raise CuckooError("The package \"{0}\" doesn't contain a run "
                               "function.".format(package_name))
@@ -592,14 +606,14 @@ class Analyzer(object):
                     # Update the list of monitored processes available to the
                     # analysis package. It could be used for internal
                     # operations within the module.
-                    package.set_pids(self.process_list.pids)
+                    self.package.set_pids(self.process_list.pids)
 
                 try:
                     # The analysis packages are provided with a function that
                     # is executed at every loop's iteration. If such function
                     # returns False, it means that it requested the analysis
                     # to be terminate.
-                    if not package.check():
+                    if not self.package.check():
                         log.info("The analysis package requested the "
                                  "termination of the analysis.")
                         break
@@ -624,7 +638,7 @@ class Analyzer(object):
         try:
             # Before shutting down the analysis, the package can perform some
             # final operations through the finish() function.
-            package.finish()
+            self.package.finish()
         except Exception as e:
             log.warning("The package \"%s\" finish function raised an "
                         "exception: %s", package_name, e)
@@ -632,7 +646,7 @@ class Analyzer(object):
         try:
             # Upload files the package created to package_files in the
             # results folder.
-            for path, name in package.package_files() or []:
+            for path, name in self.package.package_files() or []:
                 upload_to_host(path, os.path.join("package_files", name))
         except Exception as e:
             log.warning("The package \"%s\" package_files function raised an "
@@ -718,7 +732,7 @@ if __name__ == "__main__":
         # if that fails, attempt the new Agent.
         try:
             server = xmlrpclib.Server("http://127.0.0.1:8000")
-            server.complete(success, error, PATHS["root"])
+            server.complete(success, error, "unused_path")
         except xmlrpclib.ProtocolError:
             urllib2.urlopen("http://127.0.0.1:8000/status",
                             urllib.urlencode(data)).read()

@@ -9,7 +9,7 @@ import logging
 import threading
 import Queue
 
-from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.config import Config, parse_options, emit_options
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooMachineError, CuckooGuestError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -21,6 +21,7 @@ from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
 from lib.cuckoo.core.plugins import RunSignatures, RunReporting
 from lib.cuckoo.core.resultserver import ResultServer
+from lib.cuckoo.core.rooter import rooter, vpns
 
 log = logging.getLogger(__name__)
 
@@ -30,7 +31,6 @@ latest_symlink_lock = threading.Lock()
 
 active_analysis_count = 0
 
-
 class CuckooDeadMachine(Exception):
     """Exception thrown when a machine turns dead.
 
@@ -38,7 +38,6 @@ class CuckooDeadMachine(Exception):
     and will try to use another machine, when available.
     """
     pass
-
 
 class AnalysisManager(threading.Thread):
     """Analysis Manager.
@@ -61,22 +60,7 @@ class AnalysisManager(threading.Thread):
         self.machine = None
         self.db = Database()
 
-        self.task.options = self._parse_options(self.task.options)
-
-    def _parse_options(self, options):
-        """Parse the analysis options field to a dictionary."""
-        ret = {}
-        for field in options.split(","):
-            if "=" not in field:
-                continue
-
-            key, value = field.split("=", 1)
-            ret[key.strip()] = value.strip()
-        return ret
-
-    def _emit_options(self, options):
-        """Emit the analysis options from a dictionary to a string."""
-        return ",".join("%s=%s" % (k, v) for k, v in options.items())
+        self.task.options = parse_options(self.task.options)
 
     def init_storage(self):
         """Initialize analysis storage folder."""
@@ -204,7 +188,7 @@ class AnalysisManager(threading.Thread):
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
-        options["options"] = self._emit_options(self.task.options)
+        options["options"] = emit_options(self.task.options)
         options["enforce_timeout"] = self.task.enforce_timeout
         options["clock"] = self.task.clock
         options["terminate_processes"] = self.cfg.cuckoo.terminate_processes
@@ -222,13 +206,67 @@ class AnalysisManager(threading.Thread):
 
         return options
 
+    def route_network(self):
+        """Enable network routing if desired."""
+        # Determine the desired routing strategy (none, internet, VPN).
+        route = self.task.options.get("route", self.cfg.routing.route)
+
+        if route == "none":
+            self.interface = None
+        elif route == "internet" and self.cfg.routing.internet != "none":
+            self.interface = self.cfg.routing.internet
+        elif route in vpns:
+            self.interface = vpns[route].interface
+        else:
+            log.warning("Unknown network routing destination specified, "
+                        "ignoring routing for this analysis: %r", route)
+            self.interface = None
+
+        if self.interface:
+            rooter("forward_enable", self.machine.interface,
+                   self.interface, self.machine.ip)
+
+        # Propagate the taken route to the database.
+        self.db.set_route(self.task.id, route)
+
+    def unroute_network(self):
+        if self.interface:
+            rooter("forward_disable", self.machine.interface,
+                   self.interface, self.machine.ip)
+
+    def guest_manage(self, options):
+        # Handle a special case where we're creating a baseline report of this
+        # particular virtual machine - a report containing all the results
+        # that are gathered if no additional samples are ran in the VM. These
+        # results, such as loaded drivers and opened sockets in volatility, or
+        # DNS requests to hostnames related to Microsoft Windows, etc may be
+        # omitted or at the very least given less priority when creating a
+        # report for an analysis that ran on this VM later on.
+        if self.task.category == "baseline":
+            time.sleep(options["timeout"])
+        else:
+            # Initialize the guest manager.
+            guest = GuestManager(self.machine.name, self.machine.ip,
+                                 self.machine.platform)
+
+            # Start the analysis.
+            monitor = self.task.options.get("monitor", "latest")
+            guest.start_analysis(options, monitor)
+
+            guest.wait_for_completion()
+
     def launch_analysis(self):
         """Start analysis."""
         succeeded = False
         dead_machine = False
 
-        log.info("Starting analysis of %s \"%s\" (task=%d)",
-                 self.task.category.upper(), self.task.target, self.task.id)
+        target = self.task.target
+        if self.task.category == "file":
+            target = os.path.basename(target)
+
+        log.info("Starting analysis of %s \"%s\" (task #%d, options \"%s\")",
+                 self.task.category.upper(), target, self.task.id,
+                 emit_options(self.task.options))
 
         # Initialize the analysis folders.
         if not self.init_storage():
@@ -276,19 +314,16 @@ class AnalysisManager(threading.Thread):
             # Start the machine.
             machinery.start(self.machine.label, self.task)
 
+            # Enable network routing.
+            self.route_network()
+
             # By the time start returns it will have fully started the Virtual
             # Machine. We can now safely release the machine lock.
             machine_lock.release()
             unlocked = True
 
-            # Initialize the guest manager.
-            guest = GuestManager(self.machine.name, self.machine.ip,
-                                 self.machine.platform)
-
-            # Start the analysis.
-            guest.start_analysis(options)
-
-            guest.wait_for_completion()
+            # Run and manage the components inside the guest.
+            self.guest_manage(options)
             succeeded = True
         except CuckooMachineError as e:
             if not unlocked:
@@ -329,6 +364,9 @@ class AnalysisManager(threading.Thread):
             # After all this, we can make the ResultServer forget about the
             # internal state for this analysis task.
             ResultServer().del_task(self.task, self.machine)
+
+            # Drop the network routing rules if any.
+            self.unroute_network()
 
             if dead_machine:
                 # Remove the guest from the database, so that we can assign a
@@ -448,7 +486,7 @@ class AnalysisManager(threading.Thread):
 
         active_analysis_count -= 1
 
-class Scheduler:
+class Scheduler(object):
     """Tasks Scheduler.
 
     This class is responsible for the main execution loop of the tool. It
@@ -477,11 +515,7 @@ class Scheduler:
         else:
             machine_lock = threading.Lock()
 
-        log.info("Using \"%s\" machine manager with max_analysis_count=%d, "
-                 "max_machines_count=%d, and max_vmstartup_count=%d",
-                 machinery_name, self.cfg.cuckoo.max_analysis_count,
-                 self.cfg.cuckoo.max_machines_count,
-                 self.cfg.cuckoo.max_vmstartup_count)
+        log.info("Using \"%s\" as machine manager", machinery_name)
 
         # Get registered class name. Only one machine manager is imported,
         # therefore there should be only one class in the list.
@@ -526,6 +560,29 @@ class Scheduler:
                         "to process the results in a separate process.py to "
                         "increase throughput and stability. Please read the "
                         "documentation about the `Processing Utility`.")
+
+        # Drop all existing packet forwarding rules for each VM. Just in case
+        # Cuckoo was terminated for some reason and various forwarding rules
+        # have thus not been dropped yet.
+        for machine in machinery.machines():
+            if not machine.interface:
+                log.info("Unable to determine the network interface for VM "
+                         "with name %s, Cuckoo will not be able to give it "
+                         "full internet access or route it through a VPN! "
+                         "Please define a default network interface for the "
+                         "machinery or define a network interface for each "
+                         "VM.", machine.name)
+                continue
+
+            # Drop forwarding rule to each VPN.
+            for vpn in vpns.values():
+                rooter("forward_disable", machine.interface,
+                       vpn["interface"], machine.ip)
+
+            # Drop forwarding rule to the internet / dirty line.
+            if self.cfg.routing.internet != "none":
+                rooter("forward_disable", machine.interface,
+                       self.cfg.routing.internet, machine.ip)
 
     def stop(self):
         """Stop scheduler."""

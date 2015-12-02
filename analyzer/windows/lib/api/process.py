@@ -7,18 +7,15 @@ import logging
 import random
 import subprocess
 import tempfile
-import time
 from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
 from ctypes import c_uint, c_wchar_p, create_unicode_buffer
 
-from lib.common.constants import PATHS, SHUTDOWN_MUTEX
+from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
 from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
-from lib.common.defines import MEM_COMMIT, MEMORY_BASIC_INFORMATION
-from lib.common.defines import MEM_IMAGE, MEM_MAPPED, MEM_PRIVATE
 from lib.common.errors import get_error_string
 from lib.common.exceptions import CuckooError
-from lib.common.results import NetlogFile
+from lib.common.results import upload_to_host
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +23,11 @@ class Process(object):
     """Windows process."""
     first_process = True
     config = None
+
+    # Keeps track of the dump memory index for a particular process as in
+    # theory, and will be useful later, we may want to dump one process
+    # multiple times.
+    dumpmem = {}
 
     def __init__(self, pid=None, tid=None, process_name=None):
         """
@@ -369,15 +371,14 @@ class Process(object):
             "host-port": self.config.port,
             "pipe": self.config.pipe,
             "logpipe": self.config.logpipe,
-            "results": PATHS["root"],
             "analyzer": os.getcwd(),
             "first-process": "1" if Process.first_process else "0",
             "startup-time": Process.startup_time,
             "shutdown-mutex": SHUTDOWN_MUTEX,
             "force-sleepskip": self.config.options.get("force-sleepskip", "0"),
-            "hashes-path": os.path.join(os.getcwd(), "hashes.bin"),
             "track": "1" if track else "0",
             "mode": mode or "",
+            "disguise": self.config.options.get("disguise", "0"),
         }
 
         for key, value in lines.items():
@@ -400,49 +401,33 @@ class Process(object):
                         "dump aborted", self.pid)
             return False
 
-        self.get_system_info()
+        if self.is32bit(pid=self.pid):
+            inject_exe = os.path.join("bin", "inject-x86.exe")
+        else:
+            inject_exe = os.path.join("bin", "inject-x64.exe")
 
-        page_size = self.system_info.dwPageSize
-        min_addr = self.system_info.lpMinimumApplicationAddress
-        max_addr = self.system_info.lpMaximumApplicationAddress
-        mem = min_addr
+        # Take the memory dump.
+        dump_path = tempfile.mktemp()
 
-        root = os.path.join(PATHS["memory"], str(int(time.time())))
+        try:
+            args = [
+                inject_exe,
+                "--pid", "%s" % self.pid,
+                "--dump", dump_path,
+            ]
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError:
+            log.error("Failed to dump memory of %d-bit process with pid %d.",
+                      32 if self.is32bit(pid=self.pid) else 64, self.pid)
+            return
 
-        if not os.path.exists(root):
-            os.makedirs(root)
-
-        # Now upload to host from the StringIO.
-        nf = NetlogFile(os.path.join("memory", "%s.dmp" % str(self.pid)))
-
-        process_handle = self.open_process()
-
-        while mem < max_addr:
-            mbi = MEMORY_BASIC_INFORMATION()
-            count = c_ulong(0)
-
-            if KERNEL32.VirtualQueryEx(process_handle,
-                                       mem,
-                                       byref(mbi),
-                                       sizeof(mbi)) < sizeof(mbi):
-                mem += page_size
-                continue
-
-            if mbi.State & MEM_COMMIT and \
-                    mbi.Type & (MEM_IMAGE | MEM_MAPPED | MEM_PRIVATE):
-                buf = create_string_buffer(mbi.RegionSize)
-                if KERNEL32.ReadProcessMemory(process_handle,
-                                              mem,
-                                              buf,
-                                              mbi.RegionSize,
-                                              byref(count)):
-                    nf.sock.sendall(buf.raw)
-                mem += mbi.RegionSize
-            else:
-                mem += page_size
-
-        KERNEL32.CloseHandle(process_handle)
-        nf.close()
+        # Calculate the next index and send the process memory dump over to
+        # the host. Keep in mind that one process may have multiple process
+        # memory dumps in the future.
+        idx = self.dumpmem[self.pid] = self.dumpmem.get(self.pid, 0) + 1
+        file_name = os.path.join("memory", "%s-%s.dmp" % (self.pid, idx))
+        upload_to_host(dump_path, file_name)
+        os.unlink(dump_path)
 
         log.info("Memory dump of process with pid %d completed", self.pid)
         return True

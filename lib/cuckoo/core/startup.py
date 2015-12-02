@@ -11,8 +11,7 @@ import urllib
 import urllib2
 import logging
 import logging.handlers
-
-from datetime import datetime, timedelta
+import socket
 
 from lib.cuckoo.common.colors import red, green, yellow, cyan
 from lib.cuckoo.common.config import Config
@@ -22,18 +21,13 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.core.database import Database, TASK_RUNNING, TASK_FAILED_ANALYSIS
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
+from lib.cuckoo.core.rooter import rooter, vpns
 
 try:
     import pwd
     HAVE_PWD = True
 except ImportError:
     HAVE_PWD = False
-
-try:
-    import pefile
-    HAVE_PEFILE = True
-except ImportError:
-    HAVE_PEFILE = False
 
 log = logging.getLogger()
 
@@ -93,7 +87,8 @@ def create_structure():
         "log",
         "storage",
         os.path.join("storage", "analyses"),
-        os.path.join("storage", "binaries")
+        os.path.join("storage", "binaries"),
+        os.path.join("storage", "baseline"),
     ]
 
     try:
@@ -121,16 +116,17 @@ def check_version():
         return
 
     try:
-        response_data = json.loads(response.read())
+        r = json.loads(response.read())
     except ValueError:
         print(red(" Failed! ") + "Invalid response.\n")
         return
 
-    if not response_data["error"]:
-        if response_data["response"] == "NEW_VERSION":
-            msg = "Cuckoo Sandbox version {0} is available " \
-                  "now.\n".format(response_data["current"])
+    if not r["error"]:
+        if r["response"] == "NEW_VERSION" and r["current"] != "1.2":
+            msg = "Cuckoo Sandbox version %s is available now." % r["current"]
             print(red(" Outdated! ") + msg)
+        elif r["current"] == "1.2":
+            print(yellow(" Okay! ") + "You are running a development version.")
         else:
             print(green(" Good! ") + "You have the latest version "
                                      "available.\n")
@@ -297,47 +293,131 @@ def init_yara():
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer
     binaries. These include the Windows monitor etc."""
-    windows = os.path.join("analyzer", "windows", "bin")
+    monitor = os.path.join(CUCKOO_ROOT, "data", "monitor", "latest")
 
-    binaries = [
-        os.path.join(windows, "monitor-x86.dll"),
-        os.path.join(windows, "monitor-x64.dll"),
-        os.path.join(windows, "inject-x86.exe"),
-        os.path.join(windows, "inject-x64.exe"),
-        os.path.join(windows, "is32bit.exe"),
-    ]
+    # Checks whether the "latest" symlink is available as well as whether
+    # it points to an existing directory.
+    if not os.path.exists(monitor):
+        raise CuckooStartupError(
+            "The binaries used for Windows analysis are updated regularly, "
+            "independently from the release line. It appears that you're "
+            "not up-to-date. This can happen when you've just installed "
+            "Cuckoo or when you've updated your Cuckoo version by pulling "
+            "the latest changes from our Git repository. In order to get "
+            "up-to-date, please run the following "
+            "command: `./utils/community.py -wafb monitor` or "
+            "`./utils/community.py -wafb 2.0` if you'd also like to download "
+            "over 300 Cuckoo signatures."
+        )
 
-    update = False
+def init_rooter():
+    """If required, check whether the rooter is running and whether we can
+    connect to it."""
+    cuckoo = Config()
 
-    for path in binaries:
-        if not os.path.exists(path):
-            log.warning("The binary %s, required for Windows analysis, "
-                        "is missing.", path)
-            update = True
-            continue
+    # The default configuration doesn't require the rooter to be ran.
+    if not Config("vpn").vpn.enabled and cuckoo.routing.route == "none":
+        return
 
-        if HAVE_PEFILE:
-            timestamp = pefile.PE(path).FILE_HEADER.TimeDateStamp
-        else:
-            timestamp = os.path.getctime(path)
+    cuckoo = Config()
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 
-        filetime = datetime.fromtimestamp(timestamp)
-        one_week = datetime.now() - timedelta(days=7)
+    try:
+        s.connect(cuckoo.cuckoo.rooter)
+    except socket.error as e:
+        if e.strerror == "No such file or directory":
+            raise CuckooStartupError(
+                "The rooter is required but it is either not running or it "
+                "has been configured to a different Unix socket path. "
+                "(In order to disable the use of rooter, please set route "
+                "and internet to none in cuckoo.conf and enabled to no in "
+                "vpn.conf)."
+            )
 
-        if filetime < one_week:
-            update = True
-            log.warning("The binary %s is more than a week old!", path)
+        if e.strerror == "Connection refused":
+            raise CuckooStartupError(
+                "The rooter is required but we can't connect to it as the "
+                "rooter is not actually running. "
+                "(In order to disable the use of rooter, please set route "
+                "and internet to none in cuckoo.conf and enabled to no in "
+                "vpn.conf)."
+            )
 
-    if update:
-        log.warning("The binaries used for Windows analysis are updated "
-                    "regularly, independently from the release line. "
-                    "We recommend that you keep them up-to-date by running "
-                    "the following command: ./utils/community.py -wafb monitor")
+        if e.strerror == "Permission denied":
+            raise CuckooStartupError(
+                "The rooter is required but we can't connect to it due to "
+                "incorrect permissions. Did you assign it the correct group? "
+                "(In order to disable the use of rooter, please set route "
+                "and internet to none in cuckoo.conf and enabled to no in "
+                "vpn.conf)."
+            )
+
+        raise CuckooStartupError("Unknown rooter error: %s" % e)
+
+    # Do not forward any packets unless we have explicitly stated so.
+    rooter("forward_drop")
+
+def init_routing():
+    """Initialize and check whether the routing information is correct."""
+    cuckoo = Config()
+    vpn = Config("vpn")
+
+    # Check whether all VPNs exist if configured and make their configuration
+    # available through the vpns variable. Also enable NAT on each interface.
+    if vpn.vpn.enabled:
+        for name in vpn.vpn.vpns.split(","):
+            if not name.strip():
+                continue
+
+            if not hasattr(vpn, name):
+                raise CuckooStartupError(
+                    "Could not find VPN configuration for %s" % name
+                )
+
+            entry = vpn.get(name)
+
+            if not rooter("nic_available", entry.interface):
+                raise CuckooStartupError(
+                    "The network interface that has been configured for "
+                    "VPN %s is not available." % entry.name
+                )
+
+            vpns[entry.name] = entry
+
+            # Disable & enable NAT on this network interface. Disable it just
+            # in case we still had the same rule from a previous run.
+            rooter("disable_nat", entry.interface)
+            rooter("enable_nat", entry.interface)
+
+    # Check whether the default VPN exists if specified.
+    if cuckoo.routing.route not in ("none", "internet"):
+        if not vpn.vpn.enabled:
+            raise CuckooStartupError(
+                "A VPN has been configured as default routing interface for "
+                "VMs, but VPNs have not been enabled in vpn.conf"
+            )
+
+        if cuckoo.routing.route not in vpns:
+            raise CuckooStartupError(
+                "The VPN defined as default routing target has not been "
+                "configured in vpn.conf."
+            )
+
+    # Check whether the dirty line exists if it has been defined.
+    if cuckoo.routing.internet != "none":
+        if not rooter("nic_available", cuckoo.routing.internet):
+            raise CuckooStartupError(
+                "The network interface that has been configured as dirty "
+                "line is not available."
+            )
+
+        # Enable NAT for this network interface.
+        rooter("enable_nat", cuckoo.routing.internet)
 
 def cuckoo_clean():
     """Clean up cuckoo setup.
-    It deletes logs, all stored data from file system and configured databases (SQL
-    and MongoDB.
+    It deletes logs, all stored data from file system and configured
+    databases (SQL and MongoDB).
     """
     # Init logging.
     # This need to init a console logger handler, because the standard

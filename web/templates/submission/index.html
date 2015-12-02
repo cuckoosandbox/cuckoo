@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load staticfiles %}
 {% block content %}
 <style>
 .btn-file {
@@ -50,30 +51,66 @@ $(document).ready( function() {
 </script>
 <div class="row">
     <div class="col-md-6 col-md-offset-3 center">
-        <p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+        <p style="margin-bottom: 10px;"><img src="{% static "graphic/cuckoo.png" %}" /></p>
 
         <form role="form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
             <div class="tabbable">
+                {% if not resubmit %}
                 <ul class="nav nav-tabs">
                     <li class="active"><a href="#file" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> File</a></li>
                     <li><a href="#url" data-toggle="tab"><span class="glyphicon glyphicon-globe"></span> URL</a></li>
                 </ul>
+                {% endif %}
                 <div class="tab-content">
-                    <div class="tab-pane fade in active" id="file">
+                    <div class="tab-pane fade {% if not resubmit or resubmit == "file" %}in active{% endif %}" id="file">
+                        {% if resubmit == "file" %}
+                        <label style="display: flex; color: #337ab7;">Chosen file to resubmit</label>
+                        <input name="category" type="text" class="form-control hidden" value="file">
+                        {% if dropped_file %}
+                        <input name="category" type="text" class="form-control hidden" value="dropped_file">
+                        {% endif %}
+                        {% endif %}
                         <div class="input-group col-md-6">
                             <span class="input-group-btn">
+                            {% if resubmit %}
+                                <input type="text" class="form-control" disabled value="{{file_name}}">
+                                <input name="sample_id" type="text" class="form-control hidden" value="{{sample_id}}">
+                            {% else %}
                                 <input type="text" class="form-control" readonly>
                                 <span class="btn btn-primary btn-file">
                                     Select <input type="file" name="sample" multiple="multiple">
                                 </span>
+                            {% endif %}
                             </span>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="url">
-                        <div class="input-group">
+                    <div class="tab-pane fade {% if resubmit == "URL" %}in active{% endif %}" id="url">
+                        {% if resubmit == "URL" %}
+                        <label style="display: flex; color: #337ab7;">Chosen URL to resubmit</label>
+                        <input name="category" type="text" class="form-control hidden" value="URL">
+                        {% endif %}
+                        <div style="width: 100%;" class="input-group">
                             <label class="sr-only" form="form_url">URL</label>
-                            <input type="text" class="form-control" id="form_url" name="url" placeholder="URL" />
+                            <input type="text" class="form-control" id="form_url" name="url" placeholder="URL" {% if url %} value="{{url}}" {% endif %} />
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="accordion" style="margin-top: 20px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <strong>Network routing through <i>dirty line</i> or VPN</strong>
+                    </div>
+                    <div class="panel-body">
+                        <select class="form-control" id="form_route" name="route">
+                            <option value="none">None (no internet access)</option>
+                            {% if internet != "none" %}
+                                <option value="internet"{% if route == "internet" %} selected{% endif %}>Internet (dirty line, {{ internet }})</option>
+                            {% endif %}
+                            {% for vpn in vpns %}
+                                <option value="{{ vpn.name }}"{% if route == vpn.name %} selected{% endif %}>{{ vpn.description }} (VPN, {{ vpn.interface }})</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
             </div>
@@ -82,7 +119,7 @@ $(document).ready( function() {
                     <div class="panel-heading">
                         <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#options"><i class="icon icon-cog"></i> Advanced Options</a>
                     </div>
-                    <div id="options" class="panel-collapse collapse" style="text-align: left;">
+                    <div id="options" class="panel-collapse collapse {% if resubmit %}in{% endif %}" style="text-align: left;">
                         <div class="panel-body">
                             <div class="form-group">
                                 <label for="form_package">Analysis Package</label>
@@ -99,7 +136,7 @@ $(document).ready( function() {
                             </div>
                             <div class="form-group">
                                 <label for="form_options">Options</label>
-                                <input type="text" class="form-control" id="form_options" name="options" />
+                                <input type="text" class="form-control" id="form_options" name="options" value="{{ options }}" />
                             </div>
                             <div class="form-group">
                                 <label for="form_priority">Priority</label>

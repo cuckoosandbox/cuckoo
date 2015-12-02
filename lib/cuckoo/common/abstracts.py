@@ -105,7 +105,10 @@ class Machinery(object):
 
                 # If configured, use specific network interface for this
                 # machine, else use the default value.
-                machine.interface = machine_opts.get("interface")
+                if machine_opts.get("interface"):
+                    machine.interface = machine_opts["interface"]
+                else:
+                    machine.interface = mmanager_opts.get("interface")
 
                 # If configured, use specific snapshot name, else leave it
                 # empty and use default behaviour.
@@ -597,6 +600,7 @@ class Processing(object):
 
     def __init__(self):
         self.analysis_path = ""
+        self.baseline_path = ""
         self.logs_path = ""
         self.task = None
         self.options = None
@@ -614,6 +618,10 @@ class Processing(object):
         """
         self.task = task
 
+    def set_baseline(self, baseline_path):
+        """Set the path to the baseline directory."""
+        self.baseline_path = baseline_path
+
     def set_path(self, analysis_path):
         """Set paths.
         @param analysis_path: analysis folder path.
@@ -623,6 +631,7 @@ class Processing(object):
         self.file_path = os.path.realpath(os.path.join(self.analysis_path,
                                                        "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
+        self.package_files = os.path.join(self.analysis_path, "package_files")
         self.buffer_path = os.path.join(self.analysis_path, "buffer")
         self.logs_path = os.path.join(self.analysis_path, "logs")
         self.shots_path = os.path.join(self.analysis_path, "shots")
@@ -632,6 +641,7 @@ class Processing(object):
         self.mitmout_path = os.path.join(self.analysis_path, "mitm.log")
         self.mitmerr_path = os.path.join(self.analysis_path, "mitm.err")
         self.tlsmaster_path = os.path.join(self.analysis_path, "tlsmaster.txt")
+        self.suricata_path = os.path.join(self.analysis_path, "suricata")
 
     def set_results(self, results):
         """Set the results - the fat dictionary."""
@@ -660,7 +670,6 @@ class Signature(object):
     maximum = None
 
     # Basic filters to reduce the amount of events sent to this signature.
-    filter_processnames = []
     filter_apinames = []
     filter_categories = []
 
@@ -677,18 +686,6 @@ class Signature(object):
         self.pid = None
         self.cid = None
         self.call = None
-
-        # Used to de-activate a signature that already matched.
-        self._active = True
-
-    def is_active(self):
-        return self._active
-
-    def deactivate(self):
-        self._active = False
-
-    def activate(self):
-        self._active = True
 
     def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.
@@ -772,7 +769,8 @@ class Signature(object):
         return ret
 
     def get_files(self, pid=None, actions=None):
-        """Get files written by a specific process.
+        """Get files read, queried, or written to optionally by a
+        specific process.
 
         @param pid: the process or None for all
         @param actions: actions to search for. None is all
@@ -783,6 +781,7 @@ class Signature(object):
             actions = [
                 "file_opened", "file_written",
                 "file_read", "file_deleted",
+                "file_exists",
             ]
 
         return self.get_summary_generic(pid, actions)
@@ -827,6 +826,7 @@ class Signature(object):
             actions = [
                 "file_opened", "file_written",
                 "file_read", "file_deleted",
+                "file_exists",
             ]
 
         return self._check_value(pattern=pattern,
@@ -1002,18 +1002,7 @@ class Signature(object):
                                  all=all)
 
     def init(self):
-        """Allow signatures to initialize theirselves."""
-
-    def quickout(self):
-        """Quickout test. Implement that to do a fast verification if
-        signature should be run.
-
-        Can be used for performance optimisation. Check the file type for
-        example to avoid running PDF signatures on PE files.
-
-        @return: True if you want to remove the signature from the list,
-                 False if you still want to process it.
-        """
+        """Allow signatures to initialize themselves."""
 
     def mark_call(self, **kwargs):
         """Mark the current call as explanation as to why this signature
@@ -1071,6 +1060,7 @@ class Signature(object):
         @param call: logged API call.
         @param process: proc object.
         """
+        raise NotImplementedError
 
     def on_signature(self, signature):
         """Event yielded when another signatures has matched. Some signatures

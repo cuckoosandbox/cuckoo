@@ -1,3 +1,4 @@
+{% load staticfiles %}
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -8,10 +9,10 @@
 <meta name="author" content="Cuckoo Sandbox">
 
 <!-- Le styles -->
-<link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
-<link href="{{ STATIC_URL }}css/style.css" rel="stylesheet">
-<link href="{{ STATIC_URL }}css/lightbox.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}js/jquery.js"></script>
+<link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
+<link href="{% static "css/style.css" %}" rel="stylesheet">
+<link href="{% static "css/lightbox.css" %}" rel="stylesheet">
+<script src="{% static "js/jquery.js" %}"></script>
 </head>
 <body>
 <header>

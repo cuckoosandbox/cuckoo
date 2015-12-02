@@ -6,11 +6,12 @@ import sys
 import re
 import os
 import json
+import urllib
 
 from django.conf import settings
 from django.template import RequestContext
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from django.views.decorators.http import require_safe
 from django.views.decorators.csrf import csrf_exempt
 
@@ -83,43 +84,42 @@ def chunk(request, task_id, pid, pagenum):
     except:
         raise PermissionDenied
 
-    if request.is_ajax():
-        record = results_db.analysis.find_one(
-            {
-                "info.id": int(task_id),
-                "behavior.processes.pid": pid
-            },
-            {
-                "behavior.processes.pid": 1,
-                "behavior.processes.calls": 1
-            }
-        )
-
-        if not record:
-            raise ObjectDoesNotExist
-
-        process = None
-        for pdict in record["behavior"]["processes"]:
-            if pdict["pid"] == pid:
-                process = pdict
-
-        if not process:
-            raise ObjectDoesNotExist
-
-        if pagenum >= 0 and pagenum < len(process["calls"]):
-            objectid = process["calls"][pagenum]
-            chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
-            for idx, call in enumerate(chunk["calls"]):
-                call["id"] = pagenum * 100 + idx
-        else:
-            chunk = dict(calls=[])
-
-        return render_to_response("analysis/behavior/_chunk.html",
-                                  {"chunk": chunk},
-                                  context_instance=RequestContext(request))
-    else:
+    if not request.is_ajax():
         raise PermissionDenied
 
+    record = results_db.analysis.find_one(
+        {
+            "info.id": int(task_id),
+            "behavior.processes.pid": pid
+        },
+        {
+            "behavior.processes.pid": 1,
+            "behavior.processes.calls": 1
+        }
+    )
+
+    if not record:
+        raise ObjectDoesNotExist
+
+    process = None
+    for pdict in record["behavior"]["processes"]:
+        if pdict["pid"] == pid:
+            process = pdict
+
+    if not process:
+        raise ObjectDoesNotExist
+
+    if pagenum >= 0 and pagenum < len(process["calls"]):
+        objectid = process["calls"][pagenum]
+        chunk = results_db.calls.find_one({"_id": ObjectId(objectid)})
+        for idx, call in enumerate(chunk["calls"]):
+            call["id"] = pagenum * 100 + idx
+    else:
+        chunk = dict(calls=[])
+
+    return render_to_response("analysis/behavior/_chunk.html",
+                              {"chunk": chunk},
+                              context_instance=RequestContext(request))
 
 @require_safe
 def filtered_chunk(request, task_id, pid, category):
@@ -128,104 +128,104 @@ def filtered_chunk(request, task_id, pid, category):
     @param pid: pid you want calls
     @param category: call category type
     """
-    if request.is_ajax():
-        # Search calls related to your PID.
-        record = results_db.analysis.find_one(
-            {
-                "info.id": int(task_id),
-                "behavior.processes.pid": int(pid),
-            },
-            {
-                "behavior.processes.pid": 1,
-                "behavior.processes.calls": 1,
-            }
-        )
-
-        if not record:
-            raise ObjectDoesNotExist
-
-        # Extract embedded document related to your process from response collection.
-        process = None
-        for pdict in record["behavior"]["processes"]:
-            if pdict["pid"] == int(pid):
-                process = pdict
-
-        if not process:
-            raise ObjectDoesNotExist
-
-        # Create empty process dict for AJAX view.
-        filtered_process = {
-            "pid": pid,
-            "calls": [],
-        }
-
-        # Populate dict, fetching data from all calls and selecting only appropriate category.
-        for call in process["calls"]:
-            chunk = results_db.calls.find_one({"_id": call})
-            for call in chunk["calls"]:
-                if call["category"] == category:
-                    filtered_process["calls"].append(call)
-
-        return render_to_response("analysis/behavior/_chunk.html",
-                                  {"chunk": filtered_process},
-                                  context_instance=RequestContext(request))
-    else:
+    if not request.is_ajax():
         raise PermissionDenied
+
+    # Search calls related to your PID.
+    record = results_db.analysis.find_one(
+        {
+            "info.id": int(task_id),
+            "behavior.processes.pid": int(pid),
+        },
+        {
+            "behavior.processes.pid": 1,
+            "behavior.processes.calls": 1,
+        }
+    )
+
+    if not record:
+        raise ObjectDoesNotExist
+
+    # Extract embedded document related to your process from response collection.
+    process = None
+    for pdict in record["behavior"]["processes"]:
+        if pdict["pid"] == int(pid):
+            process = pdict
+
+    if not process:
+        raise ObjectDoesNotExist
+
+    # Create empty process dict for AJAX view.
+    filtered_process = {
+        "pid": pid,
+        "calls": [],
+    }
+
+    # Populate dict, fetching data from all calls and selecting only appropriate category.
+    for call in process["calls"]:
+        chunk = results_db.calls.find_one({"_id": call})
+        for call in chunk["calls"]:
+            if call["category"] == category:
+                filtered_process["calls"].append(call)
+
+    return render_to_response("analysis/behavior/_chunk.html",
+                              {"chunk": filtered_process},
+                              context_instance=RequestContext(request))
 
 @csrf_exempt
 def search_behavior(request, task_id):
-    if request.method == "POST":
-        query = request.POST.get("search")
-        query = re.compile(query, re.I)
-        results = []
+    if request.method != "POST":
+        raise PermissionDenied
 
-        # Fetch anaylsis report
-        record = results_db.analysis.find_one(
-            {
-                "info.id": int(task_id),
-            }
-        )
+    query = request.POST.get("search")
+    query = re.compile(query, re.I)
+    results = []
 
-        # Loop through every process
-        for process in record["behavior"]["processes"]:
-            process_results = []
+    # Fetch anaylsis report
+    record = results_db.analysis.find_one(
+        {
+            "info.id": int(task_id),
+        }
+    )
 
-            chunks = results_db.calls.find({
-                "_id": {"$in": process["calls"]}
-            })
+    # Loop through every process
+    for process in record["behavior"]["processes"]:
+        process_results = []
 
-            index = -1
-            for chunk in chunks:
-                for call in chunk["calls"]:
-                    index += 1
+        chunks = results_db.calls.find({
+            "_id": {"$in": process["calls"]}
+        })
 
-                    if query.search(call["api"]):
+        index = -1
+        for chunk in chunks:
+            for call in chunk["calls"]:
+                index += 1
+
+                if query.search(call["api"]):
+                    call["id"] = index
+                    process_results.append(call)
+                    continue
+
+                for key, value in call["arguments"].items():
+                    if query.search(key):
                         call["id"] = index
                         process_results.append(call)
-                        continue
+                        break
 
-                    for key, value in call["arguments"].items():
-                        if query.search(key):
-                            call["id"] = index
-                            process_results.append(call)
-                            break
+                    if isinstance(value, basestring) and query.search(value):
+                        call["id"] = index
+                        process_results.append(call)
+                        break
 
-                        if isinstance(value, basestring) and query.search(value):
-                            call["id"] = index
-                            process_results.append(call)
-                            break
+        if process_results:
+            results.append({
+                "process": process,
+                "signs": process_results
+            })
 
-            if process_results:
-                results.append({
-                    "process": process,
-                    "signs": process_results
-                })
-
-        return render_to_response("analysis/behavior/_search_results.html",
-                                  {"results": results},
-                                  context_instance=RequestContext(request))
-    else:
-        raise PermissionDenied
+    return render_to_response("analysis/behavior/_search_results.html",
+                              {"results": results},
+                              context_instance=RequestContext(request))
 
 @require_safe
 def report(request, task_id):
@@ -271,7 +271,7 @@ def file(request, category, object_id):
             content_type = "application/octet-stream"
 
         response = HttpResponse(file_item.read(), content_type=content_type)
-        response["Content-Disposition"] = "attachment; filename={0}".format(file_name)
+        response["Content-Disposition"] = "attachment; filename=%s" % file_name
 
         return response
     else:
@@ -279,6 +279,41 @@ def file(request, category, object_id):
                                   {"error": "File not found"},
                                   context_instance=RequestContext(request))
 
+moloch_mapper = {
+    "ip": "ip == %s",
+    "host": "host == %s",
+    "src_ip": "ip == %s",
+    "src_port": "port == %s",
+    "dst_ip": "ip == %s",
+    "dst_port": "port == %s",
+    "sid": 'tags == "sid:%s"',
+}
+
+@require_safe
+def moloch(request, **kwargs):
+    if not settings.MOLOCH_ENABLED:
+        return render_to_response("error.html",
+                                  {"error": "Moloch is not enabled!"},
+                                  context_instance=RequestContext(request))
+
+    query = []
+    for key, value in kwargs.items():
+        if value and value != "None":
+            query.append(moloch_mapper[key] % value)
+
+    if ":" in request.get_host():
+        hostname = request.get_host().split(":")[0]
+    else:
+        hostname = request.get_host()
+
+    url = "https://%s:8005/?%s" % (
+        settings.MOLOCH_HOST or hostname,
+        urllib.urlencode({
+            "date": "-1",
+            "expression": " && ".join(query),
+        }),
+    )
+    return redirect(url)
 
 @require_safe
 def full_memory_dump_file(request, analysis_number):
@@ -293,7 +328,7 @@ def full_memory_dump_file(request, analysis_number):
                                   {"error": "File not found"},
                                   context_instance=RequestContext(request))
 
-
+@require_safe
 def search(request):
     if "search" not in request.POST:
         return render_to_response("analysis/search.html",
@@ -429,6 +464,10 @@ def remove(request, task_id):
             # Delete sorted pcap
             if "sorted_pcap_id" in analysis["network"] and results_db.analysis.find({"network.sorted_pcap_id": ObjectId(analysis["network"]["sorted_pcap_id"])}).count() == 1:
                 fs.delete(ObjectId(analysis["network"]["sorted_pcap_id"]))
+
+            # Delete mitmproxy dump.
+            if "mitmproxy_id" in analysis["network"] and results_db.analysis.find({"network.mitmproxy_id": ObjectId(analysis["network"]["mitmproxy_id"])}).count() == 1:
+                fs.delete(ObjectId(analysis["network"]["mitmproxy_id"]))
 
             # Delete dropped.
             for drop in analysis["dropped"]:

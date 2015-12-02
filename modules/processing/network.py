@@ -58,6 +58,10 @@ class Pcap:
         # List containing all TCP packets.
         self.tcp_connections = []
         self.tcp_connections_seen = set()
+        # Lookup table to identify connection requests to services or IP
+        # addresses that are no longer available.
+        self.tcp_connections_dead = {}
+        self.dead_hosts = {}
         # List containing all UDP packets.
         self.udp_connections = []
         self.udp_connections_seen = set()
@@ -581,6 +585,17 @@ class Pcap:
                         if not ((dst, dport, src, sport) in self.tcp_connections_seen or (src, sport, dst, dport) in self.tcp_connections_seen):
                             self.tcp_connections.append((src, sport, dst, dport, offset, ts-first_ts))
                             self.tcp_connections_seen.add((src, sport, dst, dport))
+                    else:
+                        ipconn = (
+                            connection["src"], tcp.sport,
+                            connection["dst"], tcp.dport,
+                        )
+                        seqack = self.tcp_connections_dead.get(ipconn)
+                        if seqack == (tcp.seq, tcp.ack):
+                            host = connection["dst"], tcp.dport
+                            self.dead_hosts[host] = self.dead_hosts.get(host, 1) + 1
+
+                        self.tcp_connections_dead[ipconn] = tcp.seq, tcp.ack
 
                 elif ip.p == dpkt.ip.IP_PROTO_UDP:
                     udp = ip.data
@@ -629,6 +644,16 @@ class Pcap:
         self.results["smtp"] = self.smtp_requests
         self.results["irc"] = self.irc_requests
 
+        self.results["dead_hosts"] = []
+
+        # Report each IP/port combination as a dead host if we've had to retry
+        # at least 3 times to connect to it. TODO We should remove the IP/port
+        # combination from the list if the connection was successful later on
+        # during the analysis.
+        for (ip, port), count in self.dead_hosts.items():
+            if count > 2 and (ip, port) not in self.results["dead_hosts"]:
+                self.results["dead_hosts"].append((ip, port))
+
         return self.results
 
 class NetworkAnalysis(Processing):
@@ -636,32 +661,7 @@ class NetworkAnalysis(Processing):
 
     def run(self):
         self.key = "network"
-
-        if not IS_DPKT:
-            log.error("Python DPKT is not installed, aborting PCAP analysis.")
-            return {}
-
-        if not os.path.exists(self.pcap_path):
-            log.warning("The PCAP file does not exist at path \"%s\".",
-                        self.pcap_path)
-            return {}
-
-        if os.path.getsize(self.pcap_path) == 0:
-            log.error("The PCAP file at path \"%s\" is empty." % self.pcap_path)
-            return {}
-
-        sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
-        if Config().processing.sort_pcap:
-            sort_pcap(self.pcap_path, sorted_path)
-            results = Pcap(sorted_path).run()
-        else:
-            results = Pcap(self.pcap_path).run()
-
-        # Save PCAP file hash.
-        if os.path.exists(self.pcap_path):
-            results["pcap_sha256"] = File(self.pcap_path).get_sha256()
-        if os.path.exists(sorted_path):
-            results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
+        results = {}
 
         # Include any results provided by the mitm script.
         results["mitm"] = []
@@ -671,6 +671,32 @@ class NetworkAnalysis(Processing):
                     results["mitm"].append(json.loads(line))
                 except:
                     results["mitm"].append(line)
+
+        if not IS_DPKT:
+            log.error("Python DPKT is not installed, aborting PCAP analysis.")
+            return results
+
+        if not os.path.exists(self.pcap_path):
+            log.warning("The PCAP file does not exist at path \"%s\".",
+                        self.pcap_path)
+            return results
+
+        if os.path.getsize(self.pcap_path) == 0:
+            log.error("The PCAP file at path \"%s\" is empty." % self.pcap_path)
+            return results
+
+        sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
+        if Config().processing.sort_pcap:
+            sort_pcap(self.pcap_path, sorted_path)
+            results.update(Pcap(sorted_path).run())
+        else:
+            results.update(Pcap(self.pcap_path).run())
+
+        # Save PCAP file hash.
+        if os.path.exists(self.pcap_path):
+            results["pcap_sha256"] = File(self.pcap_path).get_sha256()
+        if os.path.exists(sorted_path):
+            results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
 
         return results
 
@@ -817,7 +843,8 @@ def payload_from_raw(raw, linktype=1):
         return ""
 
 def next_connection_packets(piter, linktype=1):
-    """Extract all packets belonging to the same flow from a pcap packet iterator"""
+    """Extract all packets belonging to the same flow from a pcap packet
+    iterator."""
     first_ft = None
 
     for ts, raw in piter:
@@ -836,7 +863,8 @@ def next_connection_packets(piter, linktype=1):
         }
 
 def packets_for_stream(fobj, offset):
-    """Open a PCAP, seek to a packet offset, then get all packets belonging to the same connection"""
+    """Open a PCAP, seek to a packet offset, then get all packets belonging to
+    the same connection."""
     pcap = dpkt.pcap.Reader(fobj)
     pcapiter = iter(pcap)
     ts, raw = pcapiter.next()

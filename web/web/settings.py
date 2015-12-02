@@ -11,19 +11,29 @@ sys.path.append(CUCKOO_PATH)
 
 from lib.cuckoo.common.config import Config
 
-cfg = Config("reporting").mongodb
+cfg = Config("reporting")
 
 # Checks if mongo reporting is enabled in Cuckoo.
-if not cfg.get("enabled"):
+if not cfg.mongodb.get("enabled"):
     raise Exception("Mongo reporting module is not enabled in cuckoo, aborting!")
 
 # Get connection options from reporting.conf.
-MONGO_HOST = cfg.get("host", "127.0.0.1")
-MONGO_PORT = cfg.get("port", 27017)
-MONGO_DB = cfg.get("db", "cuckoo")
+MONGO_HOST = cfg.mongodb.get("host", "127.0.0.1")
+MONGO_PORT = cfg.mongodb.get("port", 27017)
+MONGO_DB = cfg.mongodb.get("db", "cuckoo")
+
+MOLOCH_ENABLED = cfg.moloch.get("enabled")
+MOLOCH_HOST = cfg.moloch.get("host")
+
+# In case we have VPNs enabled we need to initialize through the following
+# two methods as they verify the interaction with VPNs as well as gather
+# which VPNs are available (for representation upon File/URL submission).
+from lib.cuckoo.core.startup import init_rooter, init_routing
+
+init_rooter()
+init_routing()
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 # Database settings. We don't need it.
 DATABASES = {}
@@ -89,14 +99,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
-)
-
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -109,21 +112,27 @@ MIDDLEWARE_CLASSES = (
     "web.headers.CuckooHeaders",
 )
 
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [
+            "templates",
+        ],
+        "APP_DIRS": True,
+    },
+]
+
 ROOT_URLCONF = 'web.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'web.wsgi.application'
 
-TEMPLATE_DIRS = (
-    "templates",
-)
-
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    #'django.contrib.sites',
-    #'django.contrib.messages',
+    # 'django.contrib.sites',
+    # 'django.contrib.messages',
     'django.contrib.staticfiles',
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',

@@ -6,8 +6,8 @@
 import yaml
 import socket
 import logging
+import bson
 from os import path
-from bson import BSON
 from datetime import datetime
 from subprocess import check_output, CalledProcessError
 from filetimes import dt_to_filetime
@@ -79,7 +79,7 @@ class CuckooHost(object):
         #     ]
         # }
         time_offset_ms = int(1000*thing.timestamp - 1000*self.launch_times[pid])
-        self.sockets[pid].sendall(BSON.encode({
+        self.sockets[pid].sendall(bson.BSON.encode({
             "I"    : lookup_idx,
             "T"    : thing.tid,
             "t"    : time_offset_ms,
@@ -111,7 +111,7 @@ class CuckooHost(object):
         #         (string)<description of the n-th argument>,
         #     ]
         # }
-        self.sockets[thing.pid].sendall(BSON.encode({
+        self.sockets[thing.pid].sendall(bson.BSON.encode({
             "I"        : lookup_idx,
             "name"     : thing.api,
             "type"     : "info",
@@ -127,7 +127,7 @@ class CuckooHost(object):
         # Remember when this process was born
         self.launch_times[pid] = thing.timestamp
         # Describe the __process__ notification
-        self.sockets[pid].sendall(BSON.encode({
+        self.sockets[pid].sendall(bson.BSON.encode({
             "I"        : lookup_idx,
             "name"     : "__process__",
             "type"     : "info",
@@ -145,7 +145,7 @@ class CuckooHost(object):
         filetime = _filetime_from_timestamp(thing.timestamp)
         # Get process name (aka module path)
         module = _proc_name_from_pid(pid)
-        self.sockets[pid].sendall(BSON.encode({
+        self.sockets[pid].sendall(bson.BSON.encode({
             "I"    : lookup_idx,
             "T"    : thing.tid,
             "t"    : 0,

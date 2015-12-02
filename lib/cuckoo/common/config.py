@@ -56,3 +56,18 @@ class Config:
             raise CuckooOperationalError("Option %s is not found in "
                                          "configuration, error: %s" %
                                          (section, e))
+
+def parse_options(options):
+    """Parse the analysis options field to a dictionary."""
+    ret = {}
+    for field in options.split(","):
+        if "=" not in field:
+            continue
+
+        key, value = field.split("=", 1)
+        ret[key.strip()] = value.strip()
+    return ret
+
+def emit_options(options):
+    """Emit the analysis options from a dictionary to a string."""
+    return ",".join("%s=%s" % (k, v) for k, v in options.items())

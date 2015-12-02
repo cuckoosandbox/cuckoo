@@ -1,3 +1,34 @@
+{% if analysis.info.score < 1 %}
+    <div class="alert alert-success">
+        This {{ analysis.info.category }} appears fairly benign with a score
+        of <strong>{{ analysis.info.score }} out of 10.</strong>
+{% elif analysis.info.score < 2 %}
+    <div class="alert alert-info">
+        This {{ analysis.info.category }} shows some signs of potential
+        malicious behavior with a score of
+        <strong>{{ analysis.info.score }} out of 10.</strong>
+{% elif analysis.info.score < 5 %}
+    <div class="alert alert-warning">
+        This {{ analysis.info.category }} indicates real signs of malicious
+        behavior with a score of
+        <strong>{{ analysis.info.score }} out of 10.</strong>
+{% else %}
+    <div class="alert alert-danger">
+        This {{ analysis.info.category }} is definitely malicious with a score
+        of <strong>{{ analysis.info.score }} out of 10!</strong>
+        You should <strong>NOT</strong> open this {{ analysis.info.category }}
+        on a production system.
+{% endif %}
+
+        <br /><br />
+        <i>
+            Note that the scoring system is still in alpha state and should
+            not yet be considered as a definitive outcome. Please at all times
+            check the analysis yourself - especially when the scoring says
+            it's benign.
+        </i>
+    </div>
+
 {% include "analysis/overview/_info.html" %}
 <hr />
 {% if analysis.info.category == "file" and analysis.target %}

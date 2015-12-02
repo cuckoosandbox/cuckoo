@@ -12,7 +12,7 @@ from distutils.version import StrictVersion
 
 from lib.cuckoo.common.abstracts import Auxiliary, Machinery, LibVirtMachinery, Processing
 from lib.cuckoo.common.abstracts import Report, Signature
-from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.config import Config, parse_options
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -164,6 +164,7 @@ class RunProcessing(object):
         """@param task: task dictionary of the analysis to process."""
         self.task = task
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]))
+        self.baseline_path = os.path.join(CUCKOO_ROOT, "storage", "baseline")
         self.cfg = Config("processing")
 
     def process(self, module, results):
@@ -196,7 +197,9 @@ class RunProcessing(object):
         if not options.enabled:
             return None, None
 
-        # Give it path to the analysis results.
+        # Give it the path to the baseline directory.
+        current.set_baseline(self.baseline_path)
+        # Give it the path to the analysis results.
         current.set_path(self.analysis_path)
         # Give it the analysis task object.
         current.set_task(self.task)
@@ -277,6 +280,9 @@ class RunSignatures(object):
         for signature in list_plugins(group="signatures"):
             if self._should_enable_signature(signature):
                 self.signatures.append(signature(self))
+
+        # Signatures to call per API name.
+        self.api_sigs = {}
 
     def _should_enable_signature(self, signature):
         """Should the given signature be enabled for this analysis?"""
@@ -364,29 +370,51 @@ class RunSignatures(object):
         """Wrapper to call into 3rd party signatures. This wrapper yields the
         event to the signature and handles matched signatures recursively."""
         try:
-            if signature.is_active() and handler(*args, **kwargs):
+            if handler(*args, **kwargs):
                 signature.matched = True
                 for sig in self.signatures:
                     self.call_signature(sig, sig.on_signature, signature)
+        except NotImplementedError:
+            return False
         except:
             log.exception("Failed to run '%s' of the %s signature",
                           handler.__name__, signature.name)
+        return True
+
+    def init_api_sigs(self, apiname, category):
+        """Initialize a list of signatures for which we should trigger its
+        on_call method for this particular API name and category."""
+        self.api_sigs[apiname] = []
+
+        for sig in self.signatures:
+            if sig.filter_apinames and apiname not in sig.filter_apinames:
+                continue
+
+            if sig.filter_categories and category not in sig.filter_categories:
+                continue
+
+            self.api_sigs[apiname].append(sig)
+
+    def yield_calls(self, proc):
+        """Yield calls of interest to each interested signature."""
+        for idx, call in enumerate(proc.get("calls", [])):
+
+            # Initialize a list of signatures to call for this API call.
+            if call["api"] not in self.api_sigs:
+                self.init_api_sigs(call["api"], call["category"])
+
+            # See the following SO answer on why we're using reversed() here.
+            # http://stackoverflow.com/a/10665800
+            for sig in reversed(self.api_sigs[call["api"]]):
+                sig.cid, sig.call = idx, call
+                if self.call_signature(sig, sig.on_call, call, proc) is False:
+                    self.api_sigs[call["api"]].remove(sig)
 
     def run(self):
         """Run signatures."""
-        # Transform the filter_ things into set()'s for faster lookup. (This
-        # is just a small optimization).
-        for signature in self.signatures:
-            signature.filter_processnames = set(signature.filter_processnames)
-            signature.filter_apinames = set(signature.filter_apinames)
-            signature.filter_categories = set(signature.filter_categories)
-
-        # Allow signatures to initialize and do an early exit.
+        # Allow signatures to initialize themselves.
         for signature in self.signatures:
             signature.init()
-
-            if signature.quickout():
-                self.signatures.remove(signature)
 
         log.debug("Running %d signatures", len(self.signatures))
 
@@ -398,37 +426,24 @@ class RunSignatures(object):
                 sig.pid = proc["pid"]
                 self.call_signature(sig, sig.on_process, proc)
 
-            # Yield each call of interest.
-            for idx, call in enumerate(proc.get("calls", [])):
-                for sig in self.signatures:
-                    if sig.filter_processnames and \
-                            proc["process_name"] not in sig.filter_processnames:
-                        continue
-
-                    if sig.filter_apinames and \
-                            call["api"] not in sig.filter_apinames:
-                        continue
-
-                    if sig.filter_categories and \
-                            call["category"] not in sig.filter_categories:
-                        continue
-
-                    sig.cid, sig.call = idx, call
-                    self.call_signature(sig, sig.on_call, call, proc)
+            self.yield_calls(proc)
 
         # Yield completion events to each signature.
         for sig in self.signatures:
             self.call_signature(sig, sig.on_complete)
 
+        score = 0
         for signature in self.signatures:
             if signature.matched:
                 log.debug("Analysis matched signature: %s", signature.name)
                 self.matched.append(signature.results())
+                score += signature.severity
 
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.
         self.matched.sort(key=lambda key: key["severity"])
         self.results["signatures"] = self.matched
+        self.results["info"]["score"] = score / 5.0
 
 class RunReporting(object):
     """Reporting Engine.
@@ -444,6 +459,8 @@ class RunReporting(object):
         self.results = results
         self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]))
         self.cfg = Config("reporting")
+
+        self.task["options"] = parse_options(self.task["options"])
 
     def process(self, module):
         """Run a single reporting module.

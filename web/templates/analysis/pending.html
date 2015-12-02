@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load staticfiles %}
 {% block content %}
-<p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+<p style="margin-bottom: 10px;"><img src="{% static "graphic/cuckoo.png" %}" /></p>
 
 <div class="panel panel-primary">
     <div class="panel-heading">

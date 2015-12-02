@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% load staticfiles %}
 {% block content %}
 <div class="row">
     <div class="col-md-6 col-md-offset-3 center">
-        <p><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+        <p><img src="{% static "graphic/cuckoo.png" %}" /></p>
 
         <form class="form-inline" role="form" action="{% url "analysis.views.search" %}" enctype="multipart/form-data" method="post">{% csrf_token %}
             <p class="text-muted" style="margin-top: 5px;">For details on how to perform searches, get some <a href="#help" data-toggle="collapse">help</a>.</p>

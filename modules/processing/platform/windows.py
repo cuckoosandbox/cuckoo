@@ -171,7 +171,10 @@ class BehaviorReconstructor(object):
 
     def _api_NtCreateFile(self, return_value, arguments):
         self.files[arguments["file_handle"]] = arguments["filepath"]
-        return ("file_opened", arguments["filepath"])
+        return [
+            ("file_opened", arguments["filepath"]),
+            ("file_exists", arguments["filepath"]),
+        ]
 
     _api_NtOpenFile = _api_NtCreateFile
 
@@ -184,6 +187,11 @@ class BehaviorReconstructor(object):
         h = arguments["file_handle"]
         if NT_SUCCESS(return_value) and h in self.files:
             return ("file_written", self.files[h])
+
+    def _api_GetFileAttributesW(self, return_value, arguments):
+        return ("file_exists", arguments["filepath"])
+
+    _api_GetFileAttributesExW = _api_GetFileAttributesW
 
     # Registry stuff.
 
