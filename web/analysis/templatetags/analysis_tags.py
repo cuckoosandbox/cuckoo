@@ -1,6 +1,6 @@
 from django.template.defaultfilters import register
 
-@register.filter("mongo_id")
+@register.filter
 def mongo_id(value):
     """Retrieve _id value.
     @todo: it will be removed in future.
@@ -11,7 +11,7 @@ def mongo_id(value):
     # Return value
     return unicode(value)
 
-@register.filter("is_dict")
+@register.filter
 def is_dict(value):
     """Checks if value is an instance of dict"""
     return isinstance(value, dict)
