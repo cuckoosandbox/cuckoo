@@ -25,6 +25,14 @@ try:
 except ImportError:
     HAVE_DPKT = False
 
+try:
+    import httpreplay
+    import httpreplay.cut
+
+    HAVE_HTTPREPLAY = True
+except ImportError:
+    HAVE_HTTPREPLAY = False
+
 # Imports for the batch sort.
 # http://stackoverflow.com/questions/10665925/how-to-sort-huge-files-with-python
 # http://code.activestate.com/recipes/576755/
@@ -657,11 +665,54 @@ class Pcap(object):
 
         return self.results
 
+class Pcap2(object):
+    """Interprets the PCAP file through the httpreplay library which parses
+    the various protocols, decrypts and decodes them, and then provides us
+    with the high level representation of it."""
+
+    def __init__(self, pcap_path, tlsmaster):
+        self.pcap_path = pcap_path
+
+        self.handlers = {
+            25: httpreplay.cut.smtp_handler,
+            80: httpreplay.cut.http_handler,
+            8000: httpreplay.cut.http_handler,
+            8080: httpreplay.cut.http_handler,
+            443: lambda: httpreplay.cut.https_handler(tlsmaster),
+            4443: lambda: httpreplay.cut.https_handler(tlsmaster),
+        }
+
+    def run(self):
+        results = {
+            "http_ex": [],
+            "https_ex": [],
+        }
+
+        r = httpreplay.reader.PcapReader(self.pcap_path)
+        r.tcp = httpreplay.smegma.TCPPacketStreamer(r, self.handlers)
+
+        for s, ts, protocol, sent, recv in r.process():
+            srcip, srcport, dstip, dstport = s
+
+            if protocol == "http" or protocol == "https":
+                results["%s_ex" % protocol].append({
+                    "src": srcip, "sport": srcport,
+                    "dst": dstip, "dport": dstport,
+                    "host": sent.headers.get("host", dstip),
+                    "uri": sent.uri,
+                    "request": sent.raw.split("\r\n\r\n", 1)[0],
+                    "response": recv.raw.split("\r\n\r\n", 1)[0],
+                })
+
+        return results
+
 class NetworkAnalysis(Processing):
     """Network analysis."""
 
+    order = 2
+    key = "network"
+
     def run(self):
-        self.key = "network"
         results = {}
 
         # Include any results provided by the mitm script.
@@ -673,10 +724,6 @@ class NetworkAnalysis(Processing):
                 except:
                     results["mitm"].append(line)
 
-        if not HAVE_DPKT:
-            log.error("Python DPKT is not installed, aborting PCAP analysis.")
-            return results
-
         if not os.path.exists(self.pcap_path):
             log.warning("The PCAP file does not exist at path \"%s\".",
                         self.pcap_path)
@@ -686,20 +733,48 @@ class NetworkAnalysis(Processing):
             log.error("The PCAP file at path \"%s\" is empty." % self.pcap_path)
             return results
 
+        # PCAP file hash.
+        if os.path.exists(self.pcap_path):
+            results["pcap_sha256"] = File(self.pcap_path).get_sha256()
+
+        if not HAVE_DPKT and not HAVE_HTTPREPLAY:
+            log.error("Both Python HTTPReplay and Python DPKT are not "
+                      "installed, no PCAP analysis possible.")
+            return results
+
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
         if cfg.processing.sort_pcap:
             sort_pcap(self.pcap_path, sorted_path)
-            results.update(Pcap(sorted_path).run())
-        else:
-            results.update(Pcap(self.pcap_path).run())
+            pcap_path = sorted_path
 
-        # Save PCAP file hash.
-        if os.path.exists(self.pcap_path):
-            results["pcap_sha256"] = File(self.pcap_path).get_sha256()
-        if os.path.exists(sorted_path):
+            # Sorted PCAP file hash.
             results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
+        else:
+            pcap_path = self.pcap_path
+
+        if HAVE_DPKT:
+            results.update(Pcap(pcap_path).run())
+
+        if HAVE_HTTPREPLAY:
+            try:
+                results.update(Pcap2(pcap_path, self.get_tlsmaster()).run())
+            except:
+                log.exception("Error running httpreplay-based PCAP analysis")
 
         return results
+
+    def get_tlsmaster(self):
+        """Obtain the client/server random to TLS master secrets mapping that
+        we have obtained through dynamic analysis."""
+        tlsmaster = {}
+        summary = self.results.get("behavior", {}).get("summary", {})
+        for entry in summary.get("tls_master", []):
+            client_random, server_random, master_secret = entry
+            client_random = client_random.decode("hex")
+            server_random = server_random.decode("hex")
+            master_secret = master_secret.decode("hex")
+            tlsmaster[client_random, server_random] = master_secret
+        return tlsmaster
 
 def iplayer_from_raw(raw, linktype=1):
     """Converts a raw packet to a dpkt packet regarding of link type.
