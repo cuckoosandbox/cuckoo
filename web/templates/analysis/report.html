@@ -16,7 +16,11 @@
         <li><a href="#behavior" data-toggle="tab" id="graph_hook">Behavioral Analysis ({{ analysis.behavior.processes|filter_key_if_has:"track"|length }})</a></li>
     {% endif %}
     {% with suricata=analysis.suricata|custom_length:"alerts tls" snort=analysis.snort|custom_length:"alerts" %}
-        <li><a href="#network" data-toggle="tab">Network Analysis ({{ analysis.network|custom_length:"hosts dns tcp udp http icmp irc"|add:suricata|add:snort }})</a></li>
+        {% if analysis.network.http_ex or analysis.network.https_ex %}
+            <li><a href="#network" data-toggle="tab">Network Analysis ({{ analysis.network|custom_length:"hosts dns tcp udp http_ex https_ex icmp irc"|add:suricata|add:snort }})</a></li>
+        {% else %}
+            <li><a href="#network" data-toggle="tab">Network Analysis ({{ analysis.network|custom_length:"hosts dns tcp udp http icmp irc"|add:suricata|add:snort }})</a></li>
+        {% endif %}
     {% endwith %}
     {% if analysis.dropped %}
         <li><a href="#dropped" data-toggle="tab">Dropped Files ({{ analysis.dropped|length }})</a></li>
