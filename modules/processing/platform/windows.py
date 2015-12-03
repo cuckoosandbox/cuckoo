@@ -311,3 +311,15 @@ class BehaviorReconstructor(object):
             ("guid", arguments["clsid"]),
             ("guid", arguments["iid"]),
         ]
+
+    # TLS Master Secrets.
+
+    def _api_PRF(self, return_value, arguments):
+        if arguments["type"] == "key expansion":
+            return [
+                ("tls_master", (
+                    arguments["client_random"],
+                    arguments["server_random"],
+                    arguments["master_secret"],
+                )),
+            ]
