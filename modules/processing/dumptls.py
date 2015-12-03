@@ -15,31 +15,20 @@ class TLSMasterSecrets(Processing):
     def run(self):
         metakeys = {}
 
-        # Build server random -> session id from the pcap information.
+        # Build server random <-> session id mapping from the PCAP.
         if "network" in self.results and "tls" in self.results["network"]:
             for row in self.results["network"]["tls"]:
                 metakeys[row["server_random"]] = row["session_id"]
 
         results = {}
 
-        # Fetch all key information from the behavior logs.
-        for process in self.results.get("behavior", {}).get("processes", []):
-            if process["process_name"] != "lsass.exe":
-                continue
+        # Build server random <-> master secret mapping from behavioral logs.
+        summary = self.results.get("behavior", {}).get("summary", {})
+        for entry in summary.get("tls_master", []):
+            client_random, server_random, master_secret = entry
+            results[metakeys[server_random]] = master_secret
 
-            for call in process["calls"]:
-                args = call["arguments"]
-                if call["api"] != "PRF" or args["type"] != "key expansion":
-                    continue
-
-                if args["server_random"] not in metakeys:
-                    continue
-
-                # We keep the results in a dictionary before writing them out
-                # to a file in order to avoid duplicates (in an easy way).
-                results[metakeys[args["server_random"]]] = \
-                    args["master_secret"]
-
+        # Write the tls master secrets file.
         with open(self.tlsmaster_path, "wb") as f:
             for session_id, master_secret in sorted(results.items()):
                 print>>f, "RSA Session-ID:%s Master-Key:%s" % (
