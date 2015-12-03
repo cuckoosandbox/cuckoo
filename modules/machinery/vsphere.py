@@ -127,9 +127,10 @@ class vSphere(Machinery):
 
         super(vSphere, self)._initialize_check()
 
-    def start(self, label):
+    def start(self, label, task):
         """Start a machine.
         @param label: machine name.
+        @param task: task object.
         @raise CuckooMachineError: if unable to start machine.
         """
         name = self.db.view_machine_by_label(label).snapshot
