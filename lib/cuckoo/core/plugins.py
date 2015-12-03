@@ -239,7 +239,9 @@ class RunProcessing(object):
         # module available. Its structure can be observed through the JSON
         # dump in the analysis' reports folder. (If jsondump is enabled.)
         # We friendly call this "fat dict".
-        results = {}
+        results = {
+            "_temp": {},
+        }
 
         # Order modules using the user-defined sequence number.
         # If none is specified for the modules, they are selected in
@@ -259,6 +261,8 @@ class RunProcessing(object):
                     results[key] = result
         else:
             log.info("No processing modules loaded")
+
+        results.pop("_temp", None)
 
         # Return the fat dict.
         return results
