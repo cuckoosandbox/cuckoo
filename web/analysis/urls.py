@@ -22,4 +22,5 @@ urlpatterns = patterns(
         "/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+|None)?"
         "/(?P<sid>\d+)?",
         "analysis.views.moloch"),
+    url(r"^(?P<task_id>\d+)/export/$", "analysis.views.export_analysis"),
 )

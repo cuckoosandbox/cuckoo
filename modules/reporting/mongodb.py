@@ -108,6 +108,9 @@ class MongoDB(Report):
         if "network" not in report:
             report["network"] = {}
 
+        # Store path of the analysis path.
+        report["info"]["analysis_path"] = self.analysis_path
+
         # Store the sample in GridFS.
         if results["info"]["category"] == "file" and "target" in results:
             sample = File(self.file_path)

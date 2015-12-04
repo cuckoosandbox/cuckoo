@@ -7,6 +7,8 @@ import re
 import os
 import json
 import urllib
+import zipfile
+
 
 from django.conf import settings
 from django.template import RequestContext
@@ -547,3 +549,70 @@ def pcapstream(request, task_id, conntuple):
     packets = list(network.packets_for_stream(fobj, offset))
     # TODO: starting from django 1.7 we should use JsonResponse.
     return HttpResponse(json.dumps(packets), content_type="application/json")
+
+def export_analysis(request, task_id):
+    if request.method == "POST":
+        export(request, task_id)
+
+    report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
+
+    if not report:
+        return render_to_response("error.html",
+                                  {"error": "The specified analysis does not exist"},
+                                  context_instance=RequestContext(request))
+
+    analysis_dir = report["info"]["analysis_path"]
+    directories = []
+
+    #Searches for every directory in the analysis, if found append to directories array
+    for dir in os.listdir(analysis_dir):
+        if os.path.isdir(os.path.join(analysis_dir, dir)):
+            directories.append(dir)
+
+    return render_to_response("analysis/export.html",
+                                  {"analysis": report,
+                                   "directories": directories},
+                                  context_instance=RequestContext(request))
+
+def export(request, task_id):
+    directories = request.POST.getlist("directories")
+
+    if not directories:
+        print("directories is empty")
+        return render_to_response("error.html",
+                                  {"error": "You have not selected any directory"},
+                                  context_instance=RequestContext(request))
+
+    report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
+    if not report:
+        return render_to_response("error.html",
+                                  {"error": "The specified analysis does not exist"},
+                                  context_instance=RequestContext(request))
+ 
+    path = report["info"]["analysis_path"]
+
+    #Creates a zip file with the selected contents of the analyses
+    zf = zipfile.ZipFile(path + ".zip", "w", zipfile.ZIP_DEFLATED)
+
+    for dirname, subdirs, files in os.walk(path):
+        if os.path.basename(dirname) == task_id:
+            for filename in files:
+                zf.write(os.path.join(dirname, filename), filename)
+        if os.path.basename(dirname) in directories:
+            for filename in files:
+                zf.write(os.path.join(dirname, filename), os.path.join(os.path.basename(dirname), filename))
+    zf.close()
+
+    zfile = open(zf.filename, 'rb')
+
+    try:
+        zip_file_type = zf.content_type
+    except AttributeError:
+        zip_file_type = "application/zip"
+
+    response = HttpResponse(zf.filename, content_type=zip_file_type)
+    response["Content-Disposition"] = "attachment; filename=%s" % zf.filename
+    response["Content-Length"] = os.path.getsize(zf.filename)
+
+    return response
+
