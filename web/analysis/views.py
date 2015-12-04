@@ -552,7 +552,7 @@ def pcapstream(request, task_id, conntuple):
 
 def export_analysis(request, task_id):
     if request.method == "POST":
-        export(request, task_id)
+        return export(request, task_id)
 
     report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
 
@@ -610,8 +610,8 @@ def export(request, task_id):
     except AttributeError:
         zip_file_type = "application/zip"
 
-    response = HttpResponse(zf.filename, content_type=zip_file_type)
-    response["Content-Disposition"] = "attachment; filename=%s" % zf.filename
+    response = HttpResponse(zfile, content_type=zip_file_type)
+    response["Content-Disposition"] = "attachment; filename=%s" % task_id + ".zip"
     response["Content-Length"] = os.path.getsize(zf.filename)
 
     return response
