@@ -5,10 +5,13 @@
 import binascii
 import hashlib
 import logging
+import mmap
 import os
+import re
 import subprocess
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.whitelist import is_whitelisted_domain
 
 try:
     import magic
@@ -43,6 +46,16 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 FILE_CHUNK_SIZE = 16 * 1024
+
+URL_REGEX = (
+    "(https?://)(["
+    "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]\\."
+    "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]\\."
+    "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]\\."
+    "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]"
+    "]|[a-zA-Z0-9\\.-]+)"
+    "(:\\d+)?(/[\\(\\)a-zA-Z0-9_:%?=/\\.-]+)"
+)
 
 class Dictionary(dict):
     """Cuckoo custom dict."""
@@ -452,6 +465,19 @@ class File(object):
 
         return results
 
+    def get_urls(self):
+        """Extract all URLs embedded in this file through a simple regex."""
+        # http://stackoverflow.com/a/454589
+        urls = set()
+        f = open(self.file_path, "rb")
+        m = mmap.mmap(f.fileno(), 0, access=mmap.PROT_READ)
+
+        for url in re.findall(URL_REGEX, m):
+            if not is_whitelisted_domain(url[1]):
+                urls.add("".join(url))
+
+        return list(urls)
+
     def get_all(self):
         """Get all information available.
         @return: information dict.
@@ -468,4 +494,5 @@ class File(object):
         infos["ssdeep"] = self.get_ssdeep()
         infos["type"] = self.get_type()
         infos["yara"] = self.get_yara()
+        infos["urls"] = self.get_urls()
         return infos

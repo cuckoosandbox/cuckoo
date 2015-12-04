@@ -2,14 +2,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import mmap
 import os
-import re
 import struct
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.objects import File
-from lib.cuckoo.common.whitelist import is_whitelisted_domain
 
 PAGE_READONLY = 0x00000002
 PAGE_READWRITE = 0x00000004
@@ -28,16 +25,6 @@ page_access = {
     PAGE_EXECUTE_READWRITE: "rwx",
     PAGE_EXECUTE_WRITECOPY: "rwxc",
 }
-
-HTTP_REGEX = (
-    "(https?://)(["
-    "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]\\."
-    "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]\\."
-    "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]\\."
-    "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]"
-    "]|[a-zA-Z0-9\\.-]+)"
-    "(:\\d+)?(/[\\(\\)a-zA-Z0-9_:%?=/\\.-]+)"
-)
 
 class ProcessMemory(Processing):
     """Analyze process memory dumps."""
@@ -62,18 +49,6 @@ class ProcessMemory(Processing):
             }
 
             f.seek(size, 1)
-
-    def extract_urls(self, filepath):
-        # http://stackoverflow.com/a/454589
-        urls = set()
-        f = open(filepath, "rb")
-        m = mmap.mmap(f.fileno(), 0, access=mmap.PROT_READ)
-
-        for url in re.findall(HTTP_REGEX, m):
-            if not is_whitelisted_domain(url[1]):
-                urls.add("".join(url))
-
-        return urls
 
     def create_idapy(self, process):
         i = open(process["file"], "rb")
@@ -132,7 +107,7 @@ class ProcessMemory(Processing):
                 proc = dict(
                     file=dump_path, pid=pid,
                     yara=dump_file.get_yara("memory"),
-                    urls=list(self.extract_urls(dump_path)),
+                    urls=list(dump_file.get_urls()),
                     regions=list(self.read_dump(dump_path)),
                 )
 
