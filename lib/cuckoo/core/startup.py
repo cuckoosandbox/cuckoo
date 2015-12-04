@@ -366,7 +366,8 @@ def init_routing():
     # available through the vpns variable. Also enable NAT on each interface.
     if vpn.vpn.enabled:
         for name in vpn.vpn.vpns.split(","):
-            if not name.strip():
+            name = name.strip()
+            if not name:
                 continue
 
             if not hasattr(vpn, name):
