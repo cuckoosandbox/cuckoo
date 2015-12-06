@@ -129,7 +129,16 @@ if __name__ == "__main__":
 
     # Provide the correct file ownership and permission so Cuckoo can use it
     # from an unprivileged process, based on Sean Whalen's routetor.
-    os.chown(settings.socket, 0, grp.getgrnam(settings.group).gr_gid)
+    try:
+        gr = grp.getgrnam(settings.group)
+    except KeyError:
+        sys.exit(
+            "The group (`%s`) does not exist. Please define the group / user "
+            "through which Cuckoo will connect to the rooter, e.g., "
+            "./utils/rooter.py -g myuser" % settings.group
+        )
+
+    os.chown(settings.socket, 0, gr.gr_gid)
     os.chmod(settings.socket, stat.S_IRUSR | stat.S_IWUSR | stat.S_IWGRP)
 
     while True:
