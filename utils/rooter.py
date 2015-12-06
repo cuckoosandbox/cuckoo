@@ -98,8 +98,8 @@ if __name__ == "__main__":
     parser.add_argument("socket", nargs="?", default="/tmp/cuckoo-rooter", help="Unix socket path")
     parser.add_argument("-g", "--group", default="cuckoo", help="Unix socket group")
     parser.add_argument("--ifconfig", default="/sbin/ifconfig", help="Path to ifconfig")
-    parser.add_argument("--openvpn", default="/etc/init.d/openvpn", help="Unix socket group")
-    parser.add_argument("--iptables", default="/sbin/iptables", help="Unix socket group")
+    parser.add_argument("--openvpn", default="/etc/init.d/openvpn", help="Path to openvpn")
+    parser.add_argument("--iptables", default="/sbin/iptables", help="Path to iptables")
     settings = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
