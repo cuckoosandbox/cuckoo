@@ -2,7 +2,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
+
 from lib.cuckoo.common.abstracts import Processing
+
+log = logging.getLogger(__name__)
 
 class TLSMasterSecrets(Processing):
     """Cross-references TLS master secrets extracted from the monitor and key
@@ -26,9 +30,15 @@ class TLSMasterSecrets(Processing):
         summary = self.results.get("behavior", {}).get("summary", {})
         for entry in summary.get("tls_master", []):
             client_random, server_random, master_secret = entry
+
+            if server_random not in metakeys:
+                log.info("Was unable to extract TLS master secret for server "
+                         "random %s, skipping it.", server_random)
+                continue
+
             results[metakeys[server_random]] = master_secret
 
-        # Write the tls master secrets file.
+        # Write the TLS master secrets file.
         with open(self.tlsmaster_path, "wb") as f:
             for session_id, master_secret in sorted(results.items()):
                 print>>f, "RSA Session-ID:%s Master-Key:%s" % (
