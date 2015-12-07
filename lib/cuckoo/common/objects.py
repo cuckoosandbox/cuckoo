@@ -467,6 +467,9 @@ class File(object):
 
     def get_urls(self):
         """Extract all URLs embedded in this file through a simple regex."""
+        if not os.path.getsize(self.file_path):
+            return []
+
         # http://stackoverflow.com/a/454589
         urls = set()
         f = open(self.file_path, "rb")
