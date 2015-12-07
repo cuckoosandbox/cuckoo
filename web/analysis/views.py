@@ -9,7 +9,6 @@ import json
 import urllib
 import zipfile
 
-
 from django.conf import settings
 from django.template import RequestContext
 from django.http import HttpResponse
@@ -17,14 +16,17 @@ from django.shortcuts import render_to_response, redirect
 from django.views.decorators.http import require_safe
 from django.views.decorators.csrf import csrf_exempt
 
+
 import pymongo
 from bson.objectid import ObjectId
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from gridfs import GridFS
+from mhlib import PATH
 
 sys.path.append(settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING
+from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 import modules.processing.network as network
 
@@ -616,3 +618,52 @@ def export(request, task_id):
 
     return response
 
+def import_analysis(request):
+    if request.method == "POST":
+        db = Database()
+        task_ids = []
+        samples = request.FILES.getlist("sample")
+
+        for sample in samples:
+            print("Sample is: ")
+            print(sample)
+            # Error if there was only one submitted sample and it's empty.
+            # But if there are multiple and one was empty, just ignore it.
+            if not sample.size:
+                if len(samples) != 1:
+                    continue
+
+                return render_to_response("error.html",
+                                         {"error": "You uploaded an empty file."},
+                                         context_instance=RequestContext(request))
+            elif sample.size > settings.MAX_UPLOAD_SIZE:
+                return render_to_response("error.html",
+                                         {"error": "You uploaded a file that exceeds that maximum allowed upload size."},
+                                         context_instance=RequestContext(request))
+
+            if not sample.name.endswith(".zip"):
+                return render_to_response("error.html",
+                                         {"error": "You uploaded a file that wasn't a .zip."},
+                                         context_instance=RequestContext(request))
+
+            path = store_temp_file(sample.read(), sample.name)
+            print(path)
+
+            task_id = db.add_path(file_path=path,
+                                  package="",
+                                  timeout=0,
+                                  options="",
+                                  priority=0,
+                                  machine="",
+                                  custom="",
+                                  memory="",
+                                  enforce_timeout=False,
+                                  tags=None)
+            print("taskid is:")
+            print(task_id)
+            if task_id:
+                task_ids.append(task_id)
+                print(task_id + " is succesfully added")
+
+    return render_to_response("analysis/import.html",
+                                  context_instance=RequestContext(request))
