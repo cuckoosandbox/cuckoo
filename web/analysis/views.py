@@ -247,8 +247,16 @@ def report(request, task_id):
         domainlookups = dict()
         iplookups = dict()
 
+    if "http_ex" in report["network"] or "https_ex" in report["network"]:
+        HAVE_HTTPREPLAY = True
+    else:
+        HAVE_HTTPREPLAY = False
+
     return render_to_response("analysis/report.html",
-                              {"analysis": report, "domainlookups": domainlookups, "iplookups": iplookups},
+                              {"analysis": report,
+                               "domainlookups": domainlookups,
+                               "iplookups": iplookups,
+                               "HAVE_HTTPREPLAY": HAVE_HTTPREPLAY},
                               context_instance=RequestContext(request))
 
 @require_safe

@@ -8,6 +8,19 @@
     {% endif %}
 </div>
 {% endif %}
+
+{% if not HAVE_HTTPREPLAY %}
+<div class="alert alert-warning">
+    <strong>Deprecation note:</strong>
+    While processing this analysis you did not have the httpreplay Python
+    library installed. Installing this library (i.e., pip install httpreplay)
+    will allow Cuckoo to do more proper PCAP analysis including but not
+    limited to showing full HTTP and HTTPS (!) requests and responses.
+    It is recommended that you install this library and possibly reprocess any
+    interesting analysis tasks.
+</div>
+{% endif %}
+
 <div class="tabbable tabs">
     <ul class="nav nav-pills" style="margin-bottom: 0;">
         <li class="active"><a href="#network_hosts_tab" data-toggle="tab">Hosts ({{ analysis.network.hosts|length }})</a></li>
