@@ -29,6 +29,9 @@ try:
     import httpreplay
     import httpreplay.cut
 
+    # Be less verbose about httpreplay logging messages.
+    logging.getLogger("httpreplay").setLevel(logging.CRITICAL)
+
     HAVE_HTTPREPLAY = True
 except ImportError:
     HAVE_HTTPREPLAY = False
