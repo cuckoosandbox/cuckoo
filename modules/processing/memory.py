@@ -882,9 +882,9 @@ class VolatilityManager(object):
         "pslist",
         "psxview",
         "callbacks",
-        "idt",
+        ["idt", "x86"],
         "ssdt",
-        "gdt",
+        ["gdt", "x86"],
         "timers",
         "messagehooks",
         "getsids",
@@ -946,9 +946,11 @@ class VolatilityManager(object):
             else:
                 profiles = []
 
-            # Some plugins can only run in certain profiles.
+            # Some plugins can only run in certain profiles (i.e., only in
+            # Windows XP/Vista/7, or only in x86 or x64).
+            osp = self.osprofile.lower()
             for profile in profiles:
-                if self.osprofile.lower().startswith(profile):
+                if osp.startswith(profile) or osp.endswith(profile):
                     break
             else:
                 if profiles:
