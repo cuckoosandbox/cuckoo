@@ -27,7 +27,7 @@ pre {
     {% for http in analysis.network.https_ex %}
     <tr>
         <td style="word-wrap: break-word;">
-            <pre>URL: http://{{http.host}}{{http.uri}}</pre>
+            <pre>URL: https://{{http.host}}{{http.uri}}</pre>
             <pre>{{http.request}}</pre>
         </td>
         <td style="word-wrap: break-word;">
