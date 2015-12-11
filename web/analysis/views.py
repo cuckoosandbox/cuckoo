@@ -16,12 +16,10 @@ from django.shortcuts import render_to_response, redirect
 from django.views.decorators.http import require_safe
 from django.views.decorators.csrf import csrf_exempt
 
-
 import pymongo
 from bson.objectid import ObjectId
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from gridfs import GridFS
-from mhlib import PATH
 
 sys.path.append(settings.CUCKOO_PATH)
 
@@ -578,6 +576,7 @@ def export_analysis(request, task_id):
 
 def export(request, task_id):
     directories = request.POST.getlist("directories")
+    task = Database().view_task(task_id)
 
     if not directories:
         print("directories is empty")
@@ -596,6 +595,10 @@ def export(request, task_id):
     #Creates a zip file with the selected contents of the analyses
     zf = zipfile.ZipFile(path + ".zip", "w", zipfile.ZIP_DEFLATED)
 
+    #file_path will be used to store the sample of the file in the zip that will be exported
+    if report["info"]["category"] == "file":
+        file_path = task.target
+
     for dirname, subdirs, files in os.walk(path):
         if os.path.basename(dirname) == task_id:
             for filename in files:
@@ -603,6 +606,9 @@ def export(request, task_id):
         if os.path.basename(dirname) in directories:
             for filename in files:
                 zf.write(os.path.join(dirname, filename), os.path.join(os.path.basename(dirname), filename))
+
+    #This write statement is for writing the sample of the file in the zip
+    zf.write(file_path, "binary")
     zf.close()
 
     zfile = open(zf.filename, 'rb')
@@ -625,8 +631,6 @@ def import_analysis(request):
         samples = request.FILES.getlist("sample")
 
         for sample in samples:
-            print("Sample is: ")
-            print(sample)
             # Error if there was only one submitted sample and it's empty.
             # But if there are multiple and one was empty, just ignore it.
             if not sample.size:
@@ -647,23 +651,35 @@ def import_analysis(request):
                                          context_instance=RequestContext(request))
 
             path = store_temp_file(sample.read(), sample.name)
-            print(path)
+            zf = zipfile.ZipFile(path)
 
-            task_id = db.add_path(file_path=path,
-                                  package="",
-                                  timeout=0,
-                                  options="",
-                                  priority=0,
-                                  machine="",
-                                  custom="",
-                                  memory="",
-                                  enforce_timeout=False,
-                                  tags=None)
-            print("taskid is:")
-            print(task_id)
-            if task_id:
-                task_ids.append(task_id)
-                print(task_id + " is succesfully added")
+            #Path to store the exracted files from the zip
+            extract_path = os.path.dirname(path) + "\\" + os.path.splitext(sample.name)[0]
+            zf.extractall(extract_path)
+
+            binary = extract_path + "\\binary"
+
+            if os.path.isfile(binary):
+                task_id = db.add_path(file_path=binary,
+                                      package="",
+                                      timeout=0,
+                                      options="",
+                                      priority=0,
+                                      machine="",
+                                      custom="",
+                                      memory=False,
+                                      enforce_timeout=False,
+                                      tags=None)
+                if task_id:
+                    task_ids.append(task_id)
+
+            tasks_count = len(task_ids)
+            if tasks_count > 0:
+                return render_to_response("submission/complete.html",
+                                         {"tasks": task_ids,
+                                          "tasks_count": tasks_count,
+                                          "baseurl": request.build_absolute_uri('/')[:-1]},
+                                          context_instance=RequestContext(request))
 
     return render_to_response("analysis/import.html",
                                   context_instance=RequestContext(request))
