@@ -12,7 +12,7 @@ from django.conf import settings
 from django.template import RequestContext
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, redirect
-from django.views.decorators.http import require_safe
+from django.views.decorators.http import require_safe, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 
 import pymongo
@@ -336,7 +336,7 @@ def full_memory_dump_file(request, analysis_number):
                                   {"error": "File not found"},
                                   context_instance=RequestContext(request))
 
-@require_safe
+@require_http_methods(["GET", "POST"])
 def search(request):
     if "search" not in request.POST:
         return render_to_response("analysis/search.html",
