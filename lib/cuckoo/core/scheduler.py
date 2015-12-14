@@ -31,14 +31,6 @@ latest_symlink_lock = threading.Lock()
 
 active_analysis_count = 0
 
-class CuckooDeadMachine(Exception):
-    """Exception thrown when a machine turns dead.
-
-    When this exception has been thrown, the analysis task will start again,
-    and will try to use another machine, when available.
-    """
-    pass
-
 class AnalysisManager(threading.Thread):
     """Analysis Manager.
 
@@ -258,7 +250,6 @@ class AnalysisManager(threading.Thread):
     def launch_analysis(self):
         """Start analysis."""
         succeeded = False
-        dead_machine = False
 
         target = self.task.target
         if self.task.category == "file":
@@ -329,7 +320,16 @@ class AnalysisManager(threading.Thread):
             if not unlocked:
                 machine_lock.release()
             log.error(str(e), extra={"task_id": self.task.id})
-            dead_machine = True
+            log.critical(
+                "A critical error has occurred trying to use the machine "
+                "with name %s during an analysis due to which it is no "
+                "longer in a working state, please report this issue and all "
+                "of the related environment details to the developers so we "
+                "can improve this situation. (Note that before we would "
+                "simply remove this VM from doing any more analyses, but as "
+                "all the VMs will eventually be depleted that way, hopefully "
+                "we'll find a better solution now).", self.machine.name,
+            )
         except CuckooGuestError as e:
             if not unlocked:
                 machine_lock.release()
@@ -367,21 +367,6 @@ class AnalysisManager(threading.Thread):
 
             # Drop the network routing rules if any.
             self.unroute_network()
-
-            if dead_machine:
-                # Remove the guest from the database, so that we can assign a
-                # new guest when the task is being analyzed with another
-                # machine.
-                self.db.guest_remove(guest_log)
-
-                # Remove the analysis directory that has been created so
-                # far, as launch_analysis() is going to be doing that again.
-                shutil.rmtree(self.storage)
-
-                # This machine has turned dead, so we throw an exception here
-                # which informs the AnalysisManager that it should analyze
-                # this task again with another available machine.
-                raise CuckooDeadMachine()
 
             try:
                 # Release the analysis machine. But only if the machine has
@@ -434,13 +419,7 @@ class AnalysisManager(threading.Thread):
         global active_analysis_count
         active_analysis_count += 1
         try:
-            while True:
-                try:
-                    success = self.launch_analysis()
-                except CuckooDeadMachine:
-                    continue
-
-                break
+            self.launch_analysis()
 
             self.db.set_status(self.task.id, TASK_COMPLETED)
 
@@ -450,8 +429,7 @@ class AnalysisManager(threading.Thread):
             # turn thrown an exception in the analysisinfo processing module.
             self.task = self.db.view_task(self.task.id) or self.task
 
-            log.debug("Released database task #%d with status %s",
-                      self.task.id, success)
+            log.debug("Released database task #%d", self.task.id)
 
             if self.cfg.cuckoo.process_results:
                 self.process_results()
