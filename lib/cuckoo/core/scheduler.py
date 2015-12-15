@@ -242,10 +242,14 @@ class AnalysisManager(threading.Thread):
                                  self.machine.platform)
 
             # Start the analysis.
+            self.db.guest_set_status(self.task.id, "starting")
             monitor = self.task.options.get("monitor", "latest")
             guest.start_analysis(options, monitor)
 
+            self.db.guest_set_status(self.task.id, "running")
             guest.wait_for_completion()
+
+            self.db.guest_set_status(self.task.id, "stopping")
 
     def launch_analysis(self):
         """Start analysis."""
