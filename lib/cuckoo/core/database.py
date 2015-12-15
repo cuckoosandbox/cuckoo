@@ -29,7 +29,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "1070cd314621"
+SCHEMA_VERSION = "1583656cb935"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -127,6 +127,7 @@ class Guest(Base):
     __tablename__ = "guests"
 
     id = Column(Integer(), primary_key=True)
+    status = Column(String(16), nullable=False)
     name = Column(String(255), nullable=False)
     label = Column(String(255), nullable=False)
     manager = Column(String(255), nullable=False)
@@ -582,10 +583,47 @@ class Database(object):
         session = self.Session()
         guest = Guest(name, label, manager)
         try:
+            guest.status = "init"
             session.query(Task).get(task_id).guest = guest
             session.commit()
             session.refresh(guest)
             return guest.id
+        except SQLAlchemyError as e:
+            log.debug("Database error logging guest start: {0}".format(e))
+            session.rollback()
+            return None
+        finally:
+            session.close()
+
+    @classlock
+    def guest_get_status(self, task_id):
+        """Logs guest start.
+        @param task_id: task id
+        @return: guest status
+        """
+        session = self.Session()
+        try:
+            guest = session.query(Guest).filter_by(task_id=task_id).first()
+            return guest.status
+        except SQLAlchemyError as e:
+            log.debug("Database error logging guest start: {0}".format(e))
+            session.rollback()
+            return
+        finally:
+            session.close()
+
+    @classlock
+    def guest_set_status(self, task_id, status):
+        """Logs guest start.
+        @param task_id: task identifier
+        @param status: status
+        """
+        session = self.Session()
+        try:
+            guest = session.query(Guest).filter_by(task_id=task_id).first()
+            guest.status = status
+            session.commit()
+            session.refresh(guest)
         except SQLAlchemyError as e:
             log.debug("Database error logging guest start: {0}".format(e))
             session.rollback()
@@ -615,7 +653,9 @@ class Database(object):
         """
         session = self.Session()
         try:
-            session.query(Guest).get(guest_id).shutdown_on = datetime.now()
+            guest = session.query(Guest).get(guest_id)
+            guest.status = "stopped"
+            guest.shutdown_on = datetime.now()
             session.commit()
         except SQLAlchemyError as e:
             log.debug("Database error logging guest stop: {0}".format(e))
