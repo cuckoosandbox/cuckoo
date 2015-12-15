@@ -141,14 +141,6 @@ class OldGuestManager(object):
                       self.timeout)
             self.timeout = options["timeout"] + 60
 
-        opt = {}
-        for row in options["options"].split(","):
-            if "=" not in row:
-                continue
-
-            key, value = row.split("=", 1)
-            opt[key.strip()] = value.strip()
-
         try:
             # Wait for the agent to respond. This is done to check the
             # availability of the agent and verify that it's ready to receive
