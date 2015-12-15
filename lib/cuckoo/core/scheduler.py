@@ -239,15 +239,19 @@ class AnalysisManager(threading.Thread):
         else:
             # Initialize the guest manager.
             guest = GuestManager(self.machine.name, self.machine.ip,
-                                 self.machine.platform)
+                                 self.machine.platform, self.task.id)
 
             # Start the analysis.
             self.db.guest_set_status(self.task.id, "starting")
             monitor = self.task.options.get("monitor", "latest")
             guest.start_analysis(options, monitor)
 
-            self.db.guest_set_status(self.task.id, "running")
-            guest.wait_for_completion()
+            # In case the Agent didn't respond and we force-quit the analysis
+            # at some point while it was still starting the analysis the state
+            # will be "stop" (or anything but "running", really).
+            if self.db.guest_get_status(self.task.id) == "starting":
+                self.db.guest_set_status(self.task.id, "running")
+                guest.wait_for_completion()
 
             self.db.guest_set_status(self.task.id, "stopping")
 

@@ -20,8 +20,10 @@ from lib.cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
 from lib.cuckoo.common.constants import CUCKOO_GUEST_FAILED
 from lib.cuckoo.common.exceptions import CuckooGuestError
 from lib.cuckoo.common.utils import TimeoutServer
+from lib.cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
+db = Database()
 
 class OldGuestManager(object):
     """Old and deprecated Guest Manager.
@@ -30,13 +32,14 @@ class OldGuestManager(object):
     virtual machine.
     """
 
-    def __init__(self, vm_id, ip, platform="windows"):
+    def __init__(self, vm_id, ip, platform, task_id):
         """@param ip: guest's IP address.
         @param platform: guest's operating system type.
         """
         self.id = vm_id
         self.ip = ip
         self.platform = platform
+        self.task_id = task_id
 
         self.cfg = Config()
         self.timeout = self.cfg.timeouts.critical
@@ -55,7 +58,7 @@ class OldGuestManager(object):
         end = time.time() + self.timeout
         self.server._set_timeout(self.timeout)
 
-        while True:
+        while db.guest_get_status(self.task_id) == "starting":
             # Check if we've passed the timeout.
             if time.time() > end:
                 raise CuckooGuestError("{0}: the guest initialization hit the "
@@ -193,7 +196,7 @@ class OldGuestManager(object):
         end = time.time() + self.timeout
         self.server._set_timeout(self.timeout)
 
-        while True:
+        while db.guest_get_status(self.task_id) == "running":
             time.sleep(1)
 
             # If the analysis hits the critical timeout, just return straight
@@ -227,17 +230,18 @@ class GuestManager(object):
     """This class represents the new Guest Manager. It operates on the new
     Cuckoo Agent which features a more abstract but more feature-rich API."""
 
-    def __init__(self, vmid, ipaddr, platform="windows"):
+    def __init__(self, vmid, ipaddr, platform, task_id):
         self.vmid = vmid
         self.ipaddr = ipaddr
         self.port = CUCKOO_GUEST_PORT
         self.platform = platform
+        self.task_id = task_id
 
         self.timeout = Config().timeouts.critical
 
         # Just in case we have an old agent inside the Virtual Machine. This
         # allows us to remain backwards compatible (for now).
-        self.old = OldGuestManager(vmid, ipaddr, platform)
+        self.old = OldGuestManager(vmid, ipaddr, platform, task_id)
         self.is_old = False
 
         # We maintain the path of the Cuckoo Analyzer on the host.
@@ -257,7 +261,8 @@ class GuestManager(object):
     def wait_available(self):
         """Wait until the Virtual Machine is available for usage."""
         end = time.time() + self.timeout
-        while True:
+
+        while db.guest_get_status(self.task_id) == "starting":
             try:
                 socket.create_connection((self.ipaddr, self.port), 1).close()
                 break
@@ -366,6 +371,11 @@ class GuestManager(object):
         # Wait for the agent to come alive.
         self.wait_available()
 
+        # Could be beautified a bit, but basically we have to perform the
+        # same check here as we did in wait_available().
+        if db.guest_get_status(self.task_id) != "starting":
+            return
+
         # Check whether this is the new Agent or the old one (by looking at
         # the status code of the index page).
         r = self.get("/")
@@ -415,7 +425,7 @@ class GuestManager(object):
 
         end = time.time() + self.timeout
 
-        while True:
+        while db.guest_get_status(self.task_id) == "running":
             time.sleep(1)
 
             # If the analysis hits the critical timeout, just return straight
