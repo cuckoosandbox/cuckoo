@@ -312,7 +312,17 @@ class BehaviorReconstructor(object):
             ("guid", arguments["iid"]),
         ]
 
-    # TLS Master Secrets.
+    # SSLv3 & TLS Master Secrets.
+
+    def _api_Ssl3GenerateKeyMaterial(self, return_value, arguments):
+        if arguments["client_random"] and arguments["server_random"]:
+            return [
+                ("tls_master", (
+                    arguments["client_random"],
+                    arguments["server_random"],
+                    arguments["master_secret"],
+                ))
+            ]
 
     def _api_PRF(self, return_value, arguments):
         if arguments["type"] == "key expansion":
