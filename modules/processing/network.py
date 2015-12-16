@@ -785,13 +785,15 @@ def iplayer_from_raw(raw, linktype=1):
     @param linktype: integer describing link type as expected by dpkt
     """
     if linktype == 1:  # ethernet
-        pkt = dpkt.ethernet.Ethernet(raw)
-        ip = pkt.data
+        try:
+            pkt = dpkt.ethernet.Ethernet(raw)
+            return pkt.data
+        except dpkt.NeedData:
+            pass
     elif linktype == 101:  # raw
-        ip = dpkt.ip.IP(raw)
+        return dpkt.ip.IP(raw)
     else:
         raise CuckooProcessingError("unknown PCAP linktype")
-    return ip
 
 def conn_from_flowtuple(ft):
     """Convert the flow tuple into a dictionary (suitable for JSON)"""
