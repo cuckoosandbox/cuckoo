@@ -127,6 +127,7 @@ class Guest(Base):
     __tablename__ = "guests"
 
     id = Column(Integer(), primary_key=True)
+    # TODO Replace the guest.status with a more generic Task.status solution.
     status = Column(String(16), nullable=False)
     name = Column(String(255), nullable=False)
     label = Column(String(255), nullable=False)
@@ -604,7 +605,7 @@ class Database(object):
         session = self.Session()
         try:
             guest = session.query(Guest).filter_by(task_id=task_id).first()
-            return guest.status
+            return guest.status if guest else None
         except SQLAlchemyError as e:
             log.debug("Database error logging guest start: {0}".format(e))
             session.rollback()
