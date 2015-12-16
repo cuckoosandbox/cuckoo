@@ -53,12 +53,12 @@ class VirtualBox(Machinery):
             raise CuckooMachineError("Trying to start an already "
                                      "started vm %s" % label)
 
-        vm_info = self.db.view_machine_by_label(label)
+        machine = self.db.view_machine_by_label(label)
         virtualbox_args = [self.options.virtualbox.path, "snapshot", label]
-        if vm_info.snapshot:
+        if machine.snapshot:
             log.debug("Using snapshot {0} for virtual machine "
-                      "{1}".format(vm_info.snapshot, label))
-            virtualbox_args.extend(["restore", vm_info.snapshot])
+                      "{1}".format(machine.snapshot, label))
+            virtualbox_args.extend(["restore", machine.snapshot])
         else:
             log.debug("Using current snapshot for virtual machine "
                       "{0}".format(label))
@@ -91,7 +91,39 @@ class VirtualBox(Machinery):
             raise CuckooMachineError("VBoxManage failed starting the machine "
                                      "in %s mode: %s" %
                                      (self.options.virtualbox.mode.upper(), e))
+
         self._wait_status(label, self.RUNNING)
+
+        # Handle network dumping through the interal VirtualBox functionality.
+        if "nictrace" in machine.options:
+            self.dump_pcap(label, task)
+
+    def dump_pcap(self, label, task):
+        """Dump the pcap for this analysis through the VirtualBox integrated
+        nictrace functionality. This is useful in scenarios where multiple
+        Virtual Machines are talking with each other in the same subnet (which
+        you normally don't see when tcpdump'ing on the gatway)."""
+        try:
+            args = [
+                self.options.virtualbox.path,
+                "controlvm", label,
+                "nictracefile1", self.pcap_path(task.id),
+            ]
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError as e:
+            log.critical("Unable to set NIC tracefile (pcap file): %s", e)
+            return
+
+        try:
+            args = [
+                self.options.virtualbox.path,
+                "controlvm", label,
+                "nictrace1", "on",
+            ]
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError as e:
+            log.critical("Unable to enable NIC tracing (pcap file): %s", e)
+            return
 
     def stop(self, label):
         """Stops a virtual machine.

@@ -10,6 +10,7 @@ import time
 import xml.etree.ElementTree as ET
 
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -69,6 +70,11 @@ class Machinery(object):
         # Machine table is cleaned to be filled from configuration file
         # at each start.
         self.db.clean_machines()
+
+    def pcap_path(self, task_id):
+        """Returns the .pcap path for this task id."""
+        return os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                            "%s" % task_id, "dump.pcap")
 
     def set_options(self, options):
         """Set machine manager options.
