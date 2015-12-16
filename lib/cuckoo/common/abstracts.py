@@ -100,6 +100,7 @@ class Machinery(object):
                 machine.id = machine_id.strip()
                 machine.label = machine_opts[self.LABEL]
                 machine.platform = machine_opts["platform"]
+                machine.options = machine_opts.get("options", "")
                 machine.tags = machine_opts.get("tags")
                 machine.ip = machine_opts["ip"]
 
@@ -137,6 +138,7 @@ class Machinery(object):
                                     label=machine.label,
                                     ip=machine.ip,
                                     platform=machine.platform,
+                                    options=machine.options,
                                     tags=machine.tags,
                                     interface=machine.interface,
                                     snapshot=machine.snapshot,

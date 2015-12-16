@@ -29,7 +29,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "1583656cb935"
+SCHEMA_VERSION = "cd31654d187"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -64,6 +64,7 @@ class Machine(Base):
     platform = Column(String(255), nullable=False)
     tags = relationship("Tag", secondary=machines_tags, single_parent=True,
                         backref="machine")
+    options = Column(String(255), nullable=True)
     interface = Column(String(255), nullable=True)
     snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)
@@ -98,12 +99,13 @@ class Machine(Base):
         """
         return json.dumps(self.to_dict())
 
-    def __init__(self, name, label, ip, platform, interface, snapshot,
-                 resultserver_ip, resultserver_port):
+    def __init__(self, name, label, ip, platform, options, interface,
+                 snapshot, resultserver_ip, resultserver_port):
         self.name = name
         self.label = label
         self.ip = ip
         self.platform = platform
+        self.options = options
         self.interface = interface
         self.snapshot = snapshot
         self.resultserver_ip = resultserver_ip
@@ -458,7 +460,7 @@ class Database(object):
             session.close()
 
     @classlock
-    def add_machine(self, name, label, ip, platform, tags, interface,
+    def add_machine(self, name, label, ip, platform, options, tags, interface,
                     snapshot, resultserver_ip, resultserver_port):
         """Add a guest machine.
         @param name: machine id
@@ -476,6 +478,7 @@ class Database(object):
                           label=label,
                           ip=ip,
                           platform=platform,
+                          options=options,
                           interface=interface,
                           snapshot=snapshot,
                           resultserver_ip=resultserver_ip,
