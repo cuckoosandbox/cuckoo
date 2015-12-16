@@ -88,7 +88,7 @@ class Pcap(object):
         self.dns_answers = set()
         # List containing all SMTP requests.
         self.smtp_requests = []
-        # Reconstruncted SMTP flow.
+        # Reconstructed SMTP flow.
         self.smtp_flow = {}
         # List containing all IRC requests.
         self.irc_requests = []

@@ -94,7 +94,7 @@ class VirtualBox(Machinery):
 
         self._wait_status(label, self.RUNNING)
 
-        # Handle network dumping through the interal VirtualBox functionality.
+        # Handle network dumping through the internal VirtualBox functionality.
         if "nictrace" in machine.options:
             self.dump_pcap(label, task)
 

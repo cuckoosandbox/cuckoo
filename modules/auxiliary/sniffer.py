@@ -22,7 +22,7 @@ class Sniffer(Auxiliary):
             log.error("Network interface not defined, network capture aborted")
             return
 
-        # Handle special interface names.
+        # Handle special pcap dumping options.
         if "nictrace" in self.machine.options:
             return
 
