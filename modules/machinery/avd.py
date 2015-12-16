@@ -12,7 +12,6 @@ import shlex
 
 from lib.cuckoo.common.abstracts import Machinery
 from lib.cuckoo.common.exceptions import CuckooCriticalError
-from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.core.resultserver import ResultServer
 
 log = logging.getLogger(__name__)
@@ -162,8 +161,6 @@ class Avd(Machinery):
         """Starts the emulator."""
         emulator_port = self.options.get(label)["emulator_port"]
 
-        pcap_dump_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
-                                      "%s" % task.id, "dump.pcap")
         cmd = [
             self.options.avd.emulator_path,
             "@%s" % label,
@@ -175,7 +172,7 @@ class Avd(Machinery):
             "-port",
             "%s" % emulator_port,
             "-tcpdump",
-            pcap_dump_path,
+            self.pcap_path(task.id),
         ]
 
         # In headless mode we remove the skin, audio, and window support.
