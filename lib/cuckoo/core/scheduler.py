@@ -226,6 +226,14 @@ class AnalysisManager(threading.Thread):
             rooter("forward_disable", self.machine.interface,
                    self.interface, self.machine.ip)
 
+    def wait_finish(self):
+        """Some VMs don't have an actual agent. Mainly those that are used as
+        assistance for an analysis through the services auxiliary module. This
+        method just waits until the analysis is finished rather than actively
+        trying to engage with the Cuckoo Agent."""
+        while self.db.guest_get_status(self.task.id) == "running":
+            time.sleep(1)
+
     def guest_manage(self, options):
         # Handle a special case where we're creating a baseline report of this
         # particular virtual machine - a report containing all the results
@@ -321,8 +329,14 @@ class AnalysisManager(threading.Thread):
             machine_lock.release()
             unlocked = True
 
-            # Run and manage the components inside the guest.
-            self.guest_manage(options)
+            # Run and manage the components inside the guest unless this
+            # machine has the "noagent" option specified (please refer to the
+            # wait_finish() function for more details on this function).
+            if "noagent" not in self.machine.options:
+                self.guest_manage(options)
+            else:
+                self.wait_finish()
+
             succeeded = True
         except CuckooMachineError as e:
             if not unlocked:
