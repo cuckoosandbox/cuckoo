@@ -1025,6 +1025,16 @@ class Database(object):
         return self.add(None, timeout=timeout or 0, priority=999, owner=owner,
                         machine=machine, memory=memory, category="baseline")
 
+    def add_service(self, timeout, owner, tags):
+        """Add a service task to database.
+        @param timeout: selected timeout.
+        @param owner: task owner.
+        @param tags: task tags.
+        @return: cursor or None.
+        """
+        return self.add(None, timeout=timeout, priority=999, owner=owner,
+                        tags=tags, category="service")
+
     @classlock
     def reschedule(self, task_id):
         """Reschedule a task.
