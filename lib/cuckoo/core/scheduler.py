@@ -231,6 +231,7 @@ class AnalysisManager(threading.Thread):
         assistance for an analysis through the services auxiliary module. This
         method just waits until the analysis is finished rather than actively
         trying to engage with the Cuckoo Agent."""
+        self.db.guest_set_status(self.task.id, "running")
         while self.db.guest_get_status(self.task.id) == "running":
             time.sleep(1)
 
