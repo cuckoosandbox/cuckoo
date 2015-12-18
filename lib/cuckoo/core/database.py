@@ -1256,7 +1256,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).options(joinedload("tags")).filter(Machine.name == name).first()
+            machine = session.query(Machine).options(joinedload("tags")).filter_by(name=name).first()
         except SQLAlchemyError as e:
             log.debug("Database error viewing machine: {0}".format(e))
             return None
@@ -1275,7 +1275,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).options(joinedload("tags")).filter(Machine.label == label).first()
+            machine = session.query(Machine).options(joinedload("tags")).filter_by(label=label).first()
         except SQLAlchemyError as e:
             log.debug("Database error viewing machine by label: {0}".format(e))
             return None
