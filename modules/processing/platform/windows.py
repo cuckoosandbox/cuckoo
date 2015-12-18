@@ -5,16 +5,31 @@
 import logging
 import datetime
 
+try:
+    import jsbeautifier
+    HAVE_JSBEAUTIFIER = True
+except ImportError:
+    HAVE_JSBEAUTIFIER = False
+
 from lib.cuckoo.common.abstracts import BehaviorHandler
 from lib.cuckoo.common.netlog import BsonParser
 
 log = logging.getLogger(__name__)
 
 class MonitorProcessLog(list):
+    """Yields each API call event to the parent handler. Optionally it may
+    beautify certain API calls."""
+
     def __init__(self, eventstream):
         self.eventstream = eventstream
         self.first_seen = None
         self.has_apicalls = False
+
+    def _api_COleScript_Compile(self, event):
+        if HAVE_JSBEAUTIFIER:
+            event["raw"] = "script",
+            event["arguments"]["script"] = \
+                jsbeautifier.beautify(event["arguments"]["script"])
 
     def __iter__(self):
         # call_id = 0
@@ -43,6 +58,11 @@ class MonitorProcessLog(list):
                 # Get rid of the unique hash, this is only relevant
                 # for automation.
                 del event["uniqhash"]
+
+                # If available, call a modifier function.
+                apiname = "_api_%s" % event["api"]
+                if hasattr(self, apiname):
+                    getattr(self, apiname)(event)
 
                 yield event
 
