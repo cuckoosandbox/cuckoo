@@ -16,7 +16,7 @@ from lib.cuckoo.common.objects import File, URL
 from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock
 
 try:
-    from sqlalchemy import create_engine, Column
+    from sqlalchemy import create_engine, Column, not_
     from sqlalchemy import Integer, String, Boolean, DateTime, Enum
     from sqlalchemy import ForeignKey, Text, Index, Table
     from sqlalchemy.ext.declarative import declarative_base
@@ -98,6 +98,15 @@ class Machine(Base):
         @return: JSON data
         """
         return json.dumps(self.to_dict())
+
+    def is_analysis(self):
+        """Is this an analysis machine? Generally speaking all machines are
+        analysis machines, however, this is not the case for service VMs.
+        Please refer to the services auxiliary module."""
+        for tag in self.tags:
+            if tag.name == "service":
+                return
+        return True
 
     def __init__(self, name, label, ip, platform, options, interface,
                  snapshot, resultserver_ip, resultserver_port):
@@ -549,7 +558,7 @@ class Database(object):
             session.close()
 
     @classlock
-    def fetch(self, machine=None):
+    def fetch(self, machine=None, service=True):
         """Fetches a task waiting to be processed and locks it for running.
         @return: None or task
         """
@@ -559,6 +568,9 @@ class Database(object):
 
             if machine:
                 q = q.filter_by(machine=machine)
+
+            if not service:
+                q = q.filter(not_(Task.tags.any(name="service")))
 
             row = q.order_by(Task.priority.desc(), Task.added_on).first()
             if row:
@@ -793,7 +805,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machines = session.query(Machine).filter_by(locked=False).all()
+            machines = session.query(Machine).options(joinedload("tags")).filter_by(locked=False).all()
             return machines
         except SQLAlchemyError as e:
             log.debug("Database error getting available machines: {0}".format(e))
