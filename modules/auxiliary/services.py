@@ -33,10 +33,14 @@ class Services(Auxiliary):
         db.guest_set_status(task_id, "stop")
 
     def start(self):
+        self.tasks = []
+
         if self.task.category == "service":
             return
 
-        self.tasks = []
+        # Have to explicitly enable services.
+        if not self.task.options.get("services"):
+            return
 
         for service in self.options.get("services", "").split(","):
             service = service.strip()
