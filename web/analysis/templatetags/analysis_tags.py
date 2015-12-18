@@ -79,6 +79,10 @@ def sigsort(l):
         if x.get("type", x.get("_type")) == "ioc":
             yield x
 
+    first = True
     for x in l:
         if x.get("type", x.get("_type")) == "call":
+            if first:
+                x["first"] = True
+                first = False
             yield x
