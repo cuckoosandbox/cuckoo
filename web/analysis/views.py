@@ -181,7 +181,7 @@ def search_behavior(request, task_id):
     query = re.compile(query, re.I)
     results = []
 
-    # Fetch anaylsis report
+    # Fetch analysis report.
     record = results_db.analysis.find_one(
         {
             "info.id": int(task_id),
