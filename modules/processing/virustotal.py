@@ -45,6 +45,8 @@ class VirusTotal(Processing):
             results = self.scan_url(self.task["target"])
         elif self.task["category"] == "baseline":
             return
+        elif self.task["category"] == "service":
+            return
         else:
             raise CuckooProcessingError("Unsupported task category: %s" %
                                         self.task["category"])
