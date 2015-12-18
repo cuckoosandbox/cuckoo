@@ -592,12 +592,24 @@ def export(request, task_id):
  
     path = report["info"]["analysis_path"]
 
+    #Creating a analysis.json file for basic information about the analysis. Used for import
+    analysis_path = path + "\\analysis.json"
+    with open(analysis_path, "w") as outfile:
+        json.dump({'Target':report["target"]}, outfile, indent=4)
+
     #Creates a zip file with the selected contents of the analyses
     zf = zipfile.ZipFile(path + ".zip", "w", zipfile.ZIP_DEFLATED)
 
     #file_path will be used to store the sample of the file in the zip that will be exported
     if report["info"]["category"] == "file":
         file_path = task.target
+        zf.write(file_path, "binary")
+    elif report["info"]["category"] == "url":
+        file_path = report["target"]["url"]
+    else:
+        return render_to_response("error.html",
+                                  {"error": "The category of the specified analysis isn't valid"},
+                                  context_instance=RequestContext(request))
 
     for dirname, subdirs, files in os.walk(path):
         if os.path.basename(dirname) == task_id:
@@ -607,9 +619,11 @@ def export(request, task_id):
             for filename in files:
                 zf.write(os.path.join(dirname, filename), os.path.join(os.path.basename(dirname), filename))
 
-    #This write statement is for writing the sample of the file in the zip
-    zf.write(file_path, "binary")
     zf.close()
+
+    #Deleting the analysis.json file from the original analysis directory
+    if os.path.isfile(analysis_path):
+        os.remove(analysis_path)
 
     zfile = open(zf.filename, 'rb')
 
@@ -653,14 +667,21 @@ def import_analysis(request):
             path = store_temp_file(sample.read(), sample.name)
             zf = zipfile.ZipFile(path)
 
-            #Path to store the exracted files from the zip
+            #Path to store the extracted files from the zip
             extract_path = os.path.dirname(path) + "\\" + os.path.splitext(sample.name)[0]
             zf.extractall(extract_path)
 
-            binary = extract_path + "\\binary"
+            report = extract_path + "\\analysis.json"
+            if os.path.isfile(report):
+                with open(report) as json_file:
+                    json_data = json.load(json_file)
+                    category = json_data["Target"]["category"]
 
-            if os.path.isfile(binary):
-                task_id = db.add_path(file_path=binary,
+                    if category == "file":
+                        binary = extract_path + "\\binary"
+
+                        if os.path.isfile(binary):
+                            task_id = db.add_path(file_path=binary,
                                       package="",
                                       timeout=0,
                                       options="",
@@ -670,8 +691,32 @@ def import_analysis(request):
                                       memory=False,
                                       enforce_timeout=False,
                                       tags=None)
-                if task_id:
-                    task_ids.append(task_id)
+                            if task_id:
+                                task_ids.append(task_id)
+
+                    elif category == "url":
+                        url = json_data["Target"]["url"]
+                        if not url:
+                            return render_to_response("error.html",
+                                                      {"error": "You specified an invalid URL!"},
+                                                      context_instance=RequestContext(request))
+
+                        task_id = db.add_url(url=url,
+                                     package="",
+                                      timeout=0,
+                                      options="",
+                                      priority=0,
+                                      machine="",
+                                      custom="",
+                                      memory=False,
+                                      enforce_timeout=False,
+                                      tags=None)
+                        if task_id:
+                            task_ids.append(task_id)
+            else:
+                return render_to_response("error.html",
+                                                      {"error": "No analysis.json found!"},
+                                                      context_instance=RequestContext(request))
 
             tasks_count = len(task_ids)
             if tasks_count > 0:
