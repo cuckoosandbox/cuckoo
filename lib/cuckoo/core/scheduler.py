@@ -664,12 +664,20 @@ class Scheduler(object):
             # TODO We should probably move the entire "acquire machine" logic
             # from the Analysis Manager to the Scheduler and then pass the
             # selected machine onto the Analysis Manager instance.
+            available = False
             for machine in self.db.get_available_machines():
                 task = self.db.fetch(machine=machine.name)
                 if task:
                     break
-            else:
-                task = self.db.fetch()
+
+                if machine.is_analysis():
+                    available = True
+
+            # We only fetch a new task if at least one of the available
+            # machines is not a "service" machine (again, please refer to the
+            # services auxiliary module for more information on service VMs).
+            if not task and available:
+                task = self.db.fetch(service=False)
 
             if task:
                 log.debug("Processing task #%s", task.id)
