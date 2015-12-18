@@ -26,18 +26,18 @@ RESOLUTION = {
 def foreach_child(hwnd, lparam):
     # List of buttons labels to click.
     buttons = [
-        "yes",
+        "yes", "oui",
         "ok",
-        "accept",
-        "next",
-        "install",
+        "accept", "accepter",
+        "next", "suivant",
+        "install", "installer",
         "run",
-        "agree",
-        "enable",
-        "don't send",
-        "continue",
-        "unzip",
-        "open",
+        "agree", "j'accepte",
+        "enable", "activer",
+        "don't send", "ne pas envoyer",
+        "continue", "continuer",
+        "unzip", "dezip",
+        "open", "ouvrir"
     ]
 
     # List of buttons labels to not click.
