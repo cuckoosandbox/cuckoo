@@ -665,17 +665,20 @@ class Scheduler(object):
             # from the Analysis Manager to the Scheduler and then pass the
             # selected machine onto the Analysis Manager instance.
             for machine in self.db.get_available_machines():
-
                 task = self.db.fetch(machine=machine.name)
                 if task:
-                    log.debug("Processing task #%s", task.id)
-                    self.total_analysis_count += 1
-
-                    # Initialize and start the analysis manager.
-                    analysis = AnalysisManager(task, errors)
-                    analysis.daemon = True
-                    analysis.start()
                     break
+            else:
+                task = self.db.fetch()
+
+            if task:
+                log.debug("Processing task #%s", task.id)
+                self.total_analysis_count += 1
+
+                # Initialize and start the analysis manager.
+                analysis = AnalysisManager(task, errors)
+                analysis.daemon = True
+                analysis.start()
 
             # Deal with errors.
             try:
