@@ -2,7 +2,12 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
+import os
+
 from lib.common.abstracts import Package
+
+log = logging.getLogger(__name__)
 
 class Javascript(Package):
     """Javascript analysis package."""
@@ -12,4 +17,11 @@ class Javascript(Package):
 
     def start(self, path):
         wscript = self.get_path("WScript")
+
+        # Enforce the .js file extension as is required by wscript.
+        if not path.endswith(".js"):
+            os.rename(path, path + ".js")
+            path += ".js"
+            log.info("Submitted file is missing extension, added .js")
+
         return self.execute(wscript, args=[path])
