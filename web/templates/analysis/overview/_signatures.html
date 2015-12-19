@@ -27,7 +27,15 @@
         {% elif signature.severity >= 3 %}
             <div class="alert alert-danger signature">
         {% endif %}
-        {{signature.description}}</div></a>
+        {{signature.description}}
+        {% if signature.marks %}
+            {% if signature.marks|length == 1 %}
+            (1 event)
+            {% else %}
+            ({{ signature.marks|length }} events)
+            {% endif %}
+        {% endif %}
+        </div></a>
 
         <div id="signature_{{signature.name}}" class="collapse">
             <table class="table table-bordered" style="table-layout: fixed;">
