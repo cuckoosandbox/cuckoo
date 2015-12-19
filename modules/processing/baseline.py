@@ -76,12 +76,13 @@ class Baseline(Processing):
     def run(self):
         self.key = "baseline"
 
-        machine = self.results.get("info", {}).get("machine", {}).get("name")
-        if not machine:
+        machine = self.results.get("info", {}).get("machine", {})
+        if not machine or not machine.get("name"):
             log.warning("Unable to run baseline processing module as we did "
                         "not find the name of the Virtual Machine.")
             return
 
+        machine = machine["name"]
         baseline = os.path.join(self.baseline_path, "%s.json" % machine)
 
         # If this task has the baseline category then we're creating a new
