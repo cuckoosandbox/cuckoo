@@ -151,79 +151,83 @@ class BehaviorReconstructor(object):
     def process_apicall(self, event):
         fn = getattr(self, "_api_%s" % event["api"], None)
         if fn is not None:
-            return fn(event["return_value"], event["arguments"])
+            if "flags" in event:
+                return fn(event["return_value"], event["arguments"], flags=event["flags"])
+            else:
+                return fn(event["return_value"], event["arguments"])
 
     # Generic file & directory stuff.
 
-    def _api_CreateDirectoryW(self, return_value, arguments):
+    def _api_CreateDirectoryW(self, return_value, arguments, flags=None):
         return ("directory_created", arguments["dirpath"])
 
     _api_CreateDirectoryExW = _api_CreateDirectoryW
 
-    def _api_RemoveDirectoryA(self, return_value, arguments):
+    def _api_RemoveDirectoryA(self, return_value, arguments, flags=None):
         return ("directory_removed", arguments["dirpath"])
 
     _api_RemoveDirectoryW = _api_RemoveDirectoryA
 
-    def _api_MoveFileWithProgressW(self, return_value, arguments):
+    def _api_MoveFileWithProgressW(self, return_value, arguments, flags=None):
         return ("file_moved", (arguments["oldfilepath"],
                                arguments["newfilepath"]))
 
-    def _api_CopyFileA(self, return_value, arguments):
+    def _api_CopyFileA(self, return_value, arguments, flags=None):
         return ("file_copied", (arguments["oldfilepath"],
                                 arguments["newfilepath"]))
 
     _api_CopyFileW = _api_CopyFileA
     _api_CopyFileExW = _api_CopyFileA
 
-    def _api_DeleteFileA(self, return_value, arguments):
+    def _api_DeleteFileA(self, return_value, arguments, flags=None):
         return ("file_deleted", arguments["filepath"])
 
     _api_DeleteFileW = _api_DeleteFileA
     _api_NtDeleteFile = _api_DeleteFileA
 
-    def _api_FindFirstFileExA(self, return_value, arguments):
+    def _api_FindFirstFileExA(self, return_value, arguments, flags=None):
         return ("directory_enumerated", arguments["filepath"])
 
     _api_FindFirstFileExW = _api_FindFirstFileExA
 
-    def _api_LdrLoadDll(self, return_value, arguments):
+    def _api_LdrLoadDll(self, return_value, arguments, flags=None):
         return ("dll_loaded", arguments["module_name"])
 
-    def _api_NtCreateFile(self, return_value, arguments):
+    def _api_NtCreateFile(self, return_value, arguments, flags):
         self.files[arguments["file_handle"]] = arguments["filepath"]
-        return [
-            ("file_opened", arguments["filepath"]),
-            ("file_exists", arguments["filepath"]),
-        ]
+        if NT_SUCCESS(return_value):
+            status_info = flags["status_info"].lower()
+            return (status_info, arguments["filepath"])
+        else:
+            return ("file_failed", arguments["filepath"])
 
     _api_NtOpenFile = _api_NtCreateFile
 
-    def _api_NtReadFile(self, return_value, arguments):
+    def _api_NtReadFile(self, return_value, arguments, flags=None):
         h = arguments["file_handle"]
         if NT_SUCCESS(return_value) and h in self.files:
             return ("file_read", self.files[h])
 
-    def _api_NtWriteFile(self, return_value, arguments):
+    def _api_NtWriteFile(self, return_value, arguments, flags=None):
         h = arguments["file_handle"]
         if NT_SUCCESS(return_value) and h in self.files:
             return ("file_written", self.files[h])
 
-    def _api_GetFileAttributesW(self, return_value, arguments):
+    def _api_GetFileAttributesW(self, return_value, arguments, flags=None):
         return ("file_exists", arguments["filepath"])
 
     _api_GetFileAttributesExW = _api_GetFileAttributesW
 
     # Registry stuff.
 
-    def _api_RegOpenKeyExA(self, return_value, arguments):
+    def _api_RegOpenKeyExA(self, return_value, arguments, flags=None):
         return ("regkey_opened", arguments["regkey"])
 
     _api_RegOpenKeyExW = _api_RegOpenKeyExA
     _api_RegCreateKeyExA = _api_RegOpenKeyExA
     _api_RegCreateKeyExW = _api_RegOpenKeyExA
 
-    def _api_RegDeleteKeyA(self, return_value, arguments):
+    def _api_RegDeleteKeyA(self, return_value, arguments, flags=None):
         return ("regkey_deleted", arguments["regkey"])
 
     _api_RegDeleteKeyW = _api_RegDeleteKeyA
@@ -231,41 +235,41 @@ class BehaviorReconstructor(object):
     _api_RegDeleteValueW = _api_RegDeleteKeyA
     _api_NtDeleteValueKey = _api_RegDeleteKeyA
 
-    def _api_RegQueryValueExA(self, return_value, arguments):
+    def _api_RegQueryValueExA(self, return_value, arguments, flags=None):
         return ("regkey_read", arguments["regkey"])
 
     _api_RegQueryValueExW = _api_RegQueryValueExA
     _api_NtQueryValueKey = _api_RegQueryValueExA
 
-    def _api_RegSetValueExA(self, return_value, arguments):
+    def _api_RegSetValueExA(self, return_value, arguments, flags=None):
         return ("regkey_written", arguments["regkey"])
 
     _api_RegSetValueExW = _api_RegSetValueExA
     _api_NtSetValueKey = _api_RegSetValueExA
 
-    def _api_NtClose(self, return_value, arguments):
+    def _api_NtClose(self, return_value, arguments, flags=None):
         self.files.pop(arguments["handle"], None)
 
     # Network stuff.
 
-    def _api_URLDownloadToFileW(self, return_value, arguments):
+    def _api_URLDownloadToFileW(self, return_value, arguments, flags=None):
         return [
             ("downloads_file", arguments["url"]),
             ("file_opened", arguments["filepath"]),
             ("file_written", arguments["filepath"]),
         ]
 
-    def _api_InternetConnectA(self, return_value, arguments):
+    def _api_InternetConnectA(self, return_value, arguments, flags=None):
         return ("connects_host", arguments["hostname"])
 
     _api_InternetConnectW = _api_InternetConnectA
 
-    def _api_InternetOpenUrlA(self, return_value, arguments):
+    def _api_InternetOpenUrlA(self, return_value, arguments, flags=None):
         return ("fetches_url", arguments["url"])
 
     _api_InternetOpenUrlW = _api_InternetOpenUrlA
 
-    def _api_DnsQuery_A(self, return_value, arguments):
+    def _api_DnsQuery_A(self, return_value, arguments, flags=None):
         if arguments["hostname"]:
             return ("resolves_host", arguments["hostname"])
 
@@ -275,12 +279,12 @@ class BehaviorReconstructor(object):
     _api_GetAddrInfoW = _api_DnsQuery_A
     _api_gethostbyname = _api_DnsQuery_A
 
-    def _api_connect(self, return_value, arguments):
+    def _api_connect(self, return_value, arguments, flags=None):
         return ("connects_ip", arguments["ip_address"])
 
     # Mutex stuff
 
-    def _api_NtCreateMutant(self, return_value, arguments):
+    def _api_NtCreateMutant(self, return_value, arguments, flags=None):
         if arguments["mutant_name"]:
             return ("mutex", arguments["mutant_name"])
 
@@ -288,26 +292,26 @@ class BehaviorReconstructor(object):
 
     # Process stuff.
 
-    def _api_CreateProcessInternalW(self, return_value, arguments):
+    def _api_CreateProcessInternalW(self, return_value, arguments, flags=None):
         cmdline = arguments["command_line"] or arguments["filepath"]
         return ("command_line", cmdline)
 
-    def _api_ShellExecuteExW(self, return_value, arguments):
+    def _api_ShellExecuteExW(self, return_value, arguments, flags=None):
         if arguments["parameters"]:
             cmdline = "%s %s" % (arguments["filepath"], arguments["parameters"])
         else:
             cmdline = arguments["filepath"]
         return ("command_line", cmdline)
 
-    def _api_system(self, return_value, arguments):
+    def _api_system(self, return_value, arguments, flags=None):
         return ("command_line", arguments["command"])
 
     # WMI stuff.
 
-    def _api_IWbemServices_ExecQuery(self, return_value, arguments):
+    def _api_IWbemServices_ExecQuery(self, return_value, arguments, flags=None):
         return ("wmi_query", arguments["query"])
 
-    def _api_IWbemServices_ExecQueryAsync(self, return_value, arguments):
+    def _api_IWbemServices_ExecQueryAsync(self, return_value, arguments, flags=None):
         return ("wmi_query", arguments["query"])
 
     # GUIDs.
@@ -318,7 +322,7 @@ class BehaviorReconstructor(object):
             ("guid", arguments["iid"]),
         ]
 
-    def _api_CoCreateInstanceEx(self, return_value, arguments):
+    def _api_CoCreateInstanceEx(self, return_value, arguments, flags=None):
         ret = [
             ("guid", arguments["clsid"]),
         ]
@@ -326,7 +330,7 @@ class BehaviorReconstructor(object):
             ret.append(("guid", iid))
         return ret
 
-    def _api_CoGetClassObject(self, return_value, arguments):
+    def _api_CoGetClassObject(self, return_value, arguments, flags=None):
         return [
             ("guid", arguments["clsid"]),
             ("guid", arguments["iid"]),
@@ -334,7 +338,7 @@ class BehaviorReconstructor(object):
 
     # SSLv3 & TLS Master Secrets.
 
-    def _api_Ssl3GenerateKeyMaterial(self, return_value, arguments):
+    def _api_Ssl3GenerateKeyMaterial(self, return_value, arguments, flags=None):
         if arguments["client_random"] and arguments["server_random"]:
             return [
                 ("tls_master", (
@@ -344,7 +348,7 @@ class BehaviorReconstructor(object):
                 ))
             ]
 
-    def _api_PRF(self, return_value, arguments):
+    def _api_PRF(self, return_value, arguments, flags=None):
         if arguments["type"] == "key expansion":
             return [
                 ("tls_master", (
