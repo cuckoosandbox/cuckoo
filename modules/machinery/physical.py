@@ -57,10 +57,8 @@ class Physical(Machinery):
         status = self._status(label)
         if status == self.RUNNING:
             log.debug("Machine already running: %s.", label)
-
         elif status == self.STOPPED:
             self._wait_status(label, self.RUNNING)
-
         else:
             raise CuckooMachineError("Error occurred while starting: "
                                      "%s (STATUS=%s)" % (label, status))
@@ -71,13 +69,12 @@ class Physical(Machinery):
         @raise CuckooMachineError: if unable to stop.
         """
         # Since we are 'stopping' a physical machine, it must
-        # actually be rebooted to kick off the re-imaging process
-        n = self.options.physical.user
-        p = self.options.physical.password
-        creds = "%s%%%s" % (n, p)
-        status = self._status(label)
+        # actually be rebooted to kick off the re-imaging process.
+        creds = "%s%%%s" % (
+            self.options.physical.user, self.options.physical.password
+        )
 
-        if status == self.RUNNING:
+        if self._status(label) == self.RUNNING:
             log.debug("Rebooting machine: %s.", label)
             machine = self._get_machine(label)
 
@@ -85,8 +82,7 @@ class Physical(Machinery):
                 "net", "rpc", "shutdown", "-I", machine.ip,
                 "-U", creds, "-r", "-f", "--timeout=5"
             ]
-            shutdown = subprocess.Popen(args, stdout=subprocess.PIPE)
-            output, _ = shutdown.communicate()
+            output = subprocess.check_output(args)
 
             if "Shutdown of remote machine succeeded" not in output:
                 raise CuckooMachineError("Unable to initiate RPC request")
@@ -116,27 +112,22 @@ class Physical(Machinery):
         machine = self._get_machine(label)
         guest = GuestManager(machine.id, machine.ip, machine.platform)
 
-        if not guest:
-            raise CuckooMachineError("Unable to get status for machine: %s."
-                                     % label)
-
-        else:
-            try:
-                status = guest.server.get_status()
-            except xmlrpclib.Fault as e:
-                # Contacted Agent, but it threw an error.
-                log.debug("Agent error: %s (%s) (Error: %s).",
-                          machine.id, machine.ip, e)
-                return self.ERROR
-            except socket.error as e:
-                # Could not contact agent.
-                log.debug("Agent unresponsive: %s (%s) (Error: %s).",
-                          machine.id, machine.ip, e)
-                return self.STOPPED
-            except Exception as e:
-                # TODO Handle this better.
-                log.debug("Received unknown exception: %s.", e)
-                return self.ERROR
+        try:
+            status = guest.server.get_status()
+        except xmlrpclib.Fault as e:
+            # Contacted Agent, but it threw an error.
+            log.debug("Agent error: %s (%s) (Error: %s).",
+                      machine.id, machine.ip, e)
+            return self.ERROR
+        except socket.error as e:
+            # Could not contact agent.
+            log.debug("Agent unresponsive: %s (%s) (Error: %s).",
+                      machine.id, machine.ip, e)
+            return self.STOPPED
+        except Exception as e:
+            # TODO Handle this better.
+            log.debug("Received unknown exception: %s.", e)
+            return self.ERROR
 
         # If the agent responded successfully, then the physical machine
         # is running

@@ -291,6 +291,7 @@ class Machinery(object):
 
         if isinstance(state, str):
             state = [state]
+
         while current not in state:
             log.debug("Waiting %i cuckooseconds for machine %s to switch "
                       "to status %s", waitme, label, state)
