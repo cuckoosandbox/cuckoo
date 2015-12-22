@@ -14,20 +14,28 @@ class Baseline(Processing):
     """Reduces Baseline results from gathered information."""
     order = 2
 
-    def _deep_tuple(self, o):
+    def deep_tuple(self, o, bl=None):
         if isinstance(o, (tuple, list)):
             r = []
             for x in o:
-                r.append(self._deep_tuple(x))
+                r.append(self.deep_tuple(x))
             return tuple(r)
 
         if isinstance(o, dict):
             r = []
             for k, v in sorted(o.items()):
-                r.append((k, self._deep_tuple(v)))
+                if bl and k in bl:
+                    continue
+                r.append((k, self.deep_tuple(v)))
             return tuple(r)
 
         return o
+
+    def normalize(self, plugin, o):
+        plugins = {
+            "pslist": ["num_threads", "num_handles"],
+        }
+        return self.deep_tuple(o, plugins.get(plugin))
 
     def memory(self, baseline, report):
         """Finds the differences between the analysis report and the baseline
@@ -43,8 +51,8 @@ class Baseline(Processing):
 
         # TODO Support having more keys in one report than the other.
         for plugin in set(baseline.keys() + report.keys()):
-            lr = [self._deep_tuple(x) for x in report[plugin]["data"]]
-            lb = [self._deep_tuple(x) for x in baseline[plugin]["data"]]
+            lr = [self.normalize(plugin, x) for x in report[plugin]["data"]]
+            lb = [self.normalize(plugin, x) for x in baseline[plugin]["data"]]
             sr, sb = set(lr), set(lb)
 
             # Baseline vs Analysis. These events were no longer present
