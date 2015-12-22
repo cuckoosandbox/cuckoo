@@ -110,7 +110,7 @@ class Physical(Machinery):
         # exceptions.
         log.debug("Getting status for machine: %s.", label)
         machine = self._get_machine(label)
-        guest = GuestManager(machine.id, machine.ip, machine.platform)
+        guest = GuestManager(machine.id, machine.ip, machine.platform, None)
 
         try:
             status = guest.server.get_status()
