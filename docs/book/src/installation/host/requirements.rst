@@ -13,7 +13,7 @@ have an appropriate version installed. For the current release **Python 2.7** is
 
 Install the basic dependencies::
 
-    $ sudo apt-get install python python-pip python-dev libffi-dev
+    $ sudo apt-get install python python-pip python-dev libffi-dev libssl-dev
 
 If you want to use the Django-based web interface, you'll have to install MongoDB too::
 
