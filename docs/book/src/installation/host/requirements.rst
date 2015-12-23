@@ -11,9 +11,9 @@ Installing Python libraries
 Cuckoo host components are completely written in Python, therefore make sure to
 have an appropriate version installed. For the current release **Python 2.7** is preferred.
 
-Install Python on Ubuntu::
+Install the basic dependencies::
 
-    $ sudo apt-get install python python-pip
+    $ sudo apt-get install python python-pip python-dev libffi-dev
 
 If you want to use the Django-based web interface, you'll have to install MongoDB too::
 
