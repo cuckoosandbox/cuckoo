@@ -5,9 +5,6 @@
 
 from lib.common.abstracts import Package
 
-# Originally proposed by kidrek:
-# https://github.com/cuckoobox/cuckoo/pull/136
-
 class VBS(Package):
     """VBS analysis package."""
     PATHS = [
