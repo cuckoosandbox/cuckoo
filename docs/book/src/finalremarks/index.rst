@@ -7,12 +7,12 @@ Links
 
     * `www.cuckoosandbox.org`_
     * `community.cuckoosandbox.org`_
-    * `github.com/cuckoobox`_
+    * `github.com/cuckoosandbox`_
     * `www.malwr.com`_
 
 .. _`www.cuckoosandbox.org`: http://www.cuckoosandbox.org
 .. _`community.cuckoosandbox.org`: http://community.cuckoosandbox.org
-.. _`github.com/cuckoobox`: http://github.com/cuckoobox
+.. _`github.com/cuckoosandbox`: http://github.com/cuckoosandbox
 .. _`www.malwr.com`: http://www.malwr.com
 
 .. _join_the_discussion:
