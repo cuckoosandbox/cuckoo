@@ -18,7 +18,7 @@ Some examples of what you can use Cuckoo's signatures for:
 
 You can find signatures created by us and by other Cuckoo users on our `Community`_ repository.
 
-.. _`Community`: https://github.com/cuckoobox/community
+.. _`Community`: https://github.com/cuckoosandbox/community
 
 Getting started
 ===============
@@ -274,7 +274,7 @@ remove the signature from the list of potential candidates (reducing False Posit
 
 You can find many more example of signatures in our `community repository`_.
 
-.. _`community repository`: https://github.com/cuckoobox/community
+.. _`community repository`: https://github.com/cuckoosandbox/community
 
 Matches
 =======

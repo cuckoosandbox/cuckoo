@@ -185,7 +185,7 @@ _clone_cuckoo() {
     # Fetch Cuckoo or in the case of a longterm setup, longcuckoo.
     if [ "$LONGTERM" -eq 0 ]; then
         sudo -u cuckoo -i \
-            git clone --bare git://github.com/cuckoobox/cuckoo.git
+            git clone --bare git://github.com/cuckoosandbox/cuckoo.git
 
         gitrepo="cuckoo.git"
     else
