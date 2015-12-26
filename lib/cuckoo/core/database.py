@@ -1315,17 +1315,21 @@ class Database(object):
         # introducing a "reporting" status, but this requires annoying
         # database migrations, so leaving that for another day.
         query = """
-            UPDATE tasks SET processing = '%s'
+            UPDATE tasks SET processing = :instance
             WHERE id IN (
                 SELECT id FROM tasks
-                WHERE status = 'completed' AND processing IS NULL
+                WHERE status = :status AND processing IS NULL
                 LIMIT 1 FOR UPDATE
             )
             RETURNING id
         """
 
         try:
-            task = session.execute(query % instance).first()
+            params = {
+                "instance": instance,
+                "status": TASK_COMPLETED,
+            }
+            task = session.execute(query, params).first()
             session.commit()
             return task[0] if task else None
         except SQLAlchemyError as e:
