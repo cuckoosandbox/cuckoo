@@ -1,4 +1,5 @@
 alembic==0.8.0
+beautifulsoup4==4.4.1
 cffi==1.2.1
 chardet==2.3.0
 cryptography==1.0
@@ -29,4 +30,5 @@ requests==2.7.0
 six==1.9.0
 tlslite-ng==0.6.0a3
 SQLAlchemy==1.0.8
+wakeonlan==0.2.2
 Werkzeug==0.10.4
