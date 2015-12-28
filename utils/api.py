@@ -158,6 +158,11 @@ def tasks_list(limit=None, offset=None):
                              completed_after=completed_after, owner=owner,
                              status=status, order_by=Task.completed_on.asc()):
         task = row.to_dict()
+
+        # Sanitize the target in case it contains non-ASCII characters as we
+        # can't pass along an encoding to flask's jsonify().
+        task["target"] = task["target"].decode("latin-1")
+
         task["guest"] = {}
         if row.guest:
             task["guest"] = row.guest.to_dict()
