@@ -140,9 +140,13 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         while True:
             if self.end_request.isSet():
                 return False
-            rs, _, _ = select.select([self.request], [], [], 1)
-            if rs:
-                return True
+            #rs, _, _ = select.select([self.request], [], [], 1)
+            #if rs:
+            #   return True
+            events = epoll.poll(1)
+            for fd,event in events:
+                if event & select.EPOLLIN:
+                    return True
 
     def seek(self, pos):
         pass
