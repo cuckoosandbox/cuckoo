@@ -163,7 +163,7 @@ class MongoDB(Report):
 
         # Add screenshots.
         report["shots"] = []
-        shots_path = os.path.join(self.analysis_path, "shots")
+        shots_path = self.shots_path
         if os.path.exists(shots_path):
             # Walk through the files and select the JPGs.
             for shot_file in sorted(os.listdir(shots_path)):
