@@ -314,6 +314,7 @@ class AnalysisManager(threading.Thread):
 
         try:
             unlocked = False
+            self.interface = None
 
             # Mark the selected analysis machine in the database as started.
             guest_log = self.db.guest_start(self.task.id,
