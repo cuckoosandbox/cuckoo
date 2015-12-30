@@ -17,3 +17,4 @@ ajax.aspnetcdn.com
 ieonline.microsoft.com
 api.bing.com
 schemas.microsoft.com
+www.w3.org
