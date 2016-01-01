@@ -4880,13 +4880,19 @@ footer a:hover {
   top: 50%;
   margin-top: -40px;
 }
+.cuckoo-files > #filetree > ul {
+  padding: 0;
+}
+.cuckoo-files > #filetree > ul > li:last-child {
+  border-bottom: 1px solid #ccc;
+}
 .cuckoo-files > aside {
   flex-basis: 330px;
   flex-shrink: 0;
   border-left: 1px solid #ccc;
 }
 .cuckoo-files ul {
-  padding: 0;
+  padding: 0 0 0 10px;
   margin: 0;
   list-style: none;
   font-size: 14px;
@@ -4895,6 +4901,9 @@ footer a:hover {
   display: block;
   padding: 5px 10px;
   text-decoration: none;
+}
+#cuckoo-files > .cuckoo-files ul div:first-child {
+  padding-left: 0;
 }
 .cuckoo-files ul div .label {
   display: inline-block;

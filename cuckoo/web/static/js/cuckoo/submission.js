@@ -838,9 +838,9 @@ var FileTree = function () {
 
 			this.el.appendChild(html);
 
-			iterateDOM($(this.el).find('ul:first-child'), 1, function (level) {
-				$(this).css('padding-left', level * 10);
-			});
+			// iterateDOM($(this.el).find('ul:first-child'), 1, function(level) {
+			// 	$(this).css('padding-left', level * 10);
+			// });
 
 			this.connectListeners();
 			this.update();

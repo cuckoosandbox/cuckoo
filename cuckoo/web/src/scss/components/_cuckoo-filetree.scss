@@ -19,6 +19,16 @@
 			top: 50%;
 			margin-top: -40px;
 		}
+
+		// stripes out left padding on the first
+		// list item.
+		& > ul {
+			padding: 0;
+
+			& > li:last-child {
+				border-bottom: 1px solid #ccc;
+			}
+		}
 	}
 
 	& > aside {
@@ -28,7 +38,7 @@
 	}
 
 	ul {
-		padding: 0;
+		padding: 0 0 0 10px;
 		margin: 0;
 		list-style: none;
 		font-size: 14px;
@@ -38,6 +48,10 @@
 			display: block;
 			padding: 5px 10px;
 			text-decoration: none;
+
+			#cuckoo-files > &:first-child {
+				padding-left: 0;
+			}
 
 			.label {
 				display: inline-block;
