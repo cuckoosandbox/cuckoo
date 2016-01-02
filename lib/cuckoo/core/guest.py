@@ -140,10 +140,10 @@ class OldGuestManager(object):
 
         # If the analysis timeout is higher than the critical timeout,
         # automatically increase the critical timeout by one minute.
-        if options["timeout"] > self.timeout:
-            log.debug("Automatically increased critical timeout to %s",
-                      self.timeout)
-            self.timeout = options["timeout"] + 60
+        # if options["timeout"] > self.timeout:
+        #     log.debug("Automatically increased critical timeout to %s",
+        #               self.timeout)
+        #     self.timeout = options["timeout"] + 60
 
         try:
             # Wait for the agent to respond. This is done to check the
@@ -364,10 +364,10 @@ class GuestManager(object):
 
         # If the analysis timeout is higher than the critical timeout,
         # automatically increase the critical timeout by one minute.
-        if options["timeout"] > self.timeout:
-            log.debug("Automatically increased critical timeout to %s",
-                      self.timeout)
-            self.timeout = options["timeout"] + 60
+        # if options["timeout"] > self.timeout:
+        #     log.debug("Automatically increased critical timeout to %s",
+        #               self.timeout)
+        #     self.timeout = options["timeout"] + 60
 
         # Wait for the agent to come alive.
         self.wait_available()
