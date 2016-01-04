@@ -8,7 +8,7 @@ dpkt==1.8.6.2
 ecdsa==0.13
 enum34==1.0.4
 Flask==0.10.1
-HTTPReplay==0.1.4
+HTTPReplay==0.1.5
 idna==2.0
 ipaddress==1.0.14
 itsdangerous==0.24
