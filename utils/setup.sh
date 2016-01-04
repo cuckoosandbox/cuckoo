@@ -146,7 +146,9 @@ if [ "$CLEAN" -ne 0 ]; then
     yes|sudo -u cuckoo -i vmcloak-removevms
     umount /home/cuckoo/vmmount
     rm -rf /home/cuckoo/{.config,.vmcloak,vmmount}
+    rm -rf /home/cuckoo/{cuckoo,cuckoo.git}
     rm -rf "$BASEDIR/vms" "$BASEDIR/vmbackup"
+    rm -rf /opt/cuckoo
     exit 0
 fi
 
@@ -285,11 +287,13 @@ _setup() {
     chmod 755 "/home/cuckoo/" "$VMTEMP"
 
     # Install required packages part two.
-    pip install --upgrade \
-        mitmproxy psycopg2 vmcloak==0.2.13 -r "/opt/cuckoo/requirements.txt"
+    pip install --upgrade mitmproxy psycopg2 vmcloak==0.2.13
 
     # Clone the Cuckoo repository and initialize it.
     _clone_cuckoo
+
+    # Install required packages part three.
+    pip install -r "/opt/cuckoo/requirements.txt"
 
     # Create a random password.
     # PASSWORD="$(pwgen -1 16)"
