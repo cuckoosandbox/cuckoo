@@ -137,6 +137,8 @@ class ResultHandler(SocketServer.BaseRequestHandler):
             self.rawlogfd.close()
 
     def wait_sock_or_end(self):
+        epoll = select.epoll()
+        epoll.register(self.request.fileno(),select.EPOLLIN)
         while True:
             if self.end_request.isSet():
                 return False
