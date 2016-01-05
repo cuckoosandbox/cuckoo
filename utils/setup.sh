@@ -287,7 +287,7 @@ _setup() {
     chmod 755 "/home/cuckoo/" "$VMTEMP"
 
     # Install required packages part two.
-    pip install --upgrade mitmproxy psycopg2 vmcloak==0.2.13
+    pip install --upgrade mitmproxy psycopg2 vmcloak
 
     # Clone the Cuckoo repository and initialize it.
     _clone_cuckoo
@@ -362,39 +362,26 @@ EOF
 _create_virtual_machines() {
     # Prepare the machine for virtual machines and actually create them.
 
-    VMCLOAKCONF="$(mktemp)"
-
-    cat > "$VMCLOAKCONF" << EOF
-[vmcloak]
-cuckoo = /opt/cuckoo
-vm-dir = $VMBACKUP
-data-dir = $VMBACKUP
-iso-mount = $MOUNT
-serial-key = $SERIALKEY
-temp-dirpath = $VMTEMP
-tags = $TAGS
-EOF
-
-    if [ -n "$DEPENDENCIES" ]; then
-        echo "dependencies = $DEPENDENCIES" >> "$VMCLOAKCONF"
-    fi
-
-    chown cuckoo:cuckoo "$VMCLOAKCONF"
-
     # Ensure that vboxnet0 is up and running.
     vmcloak-vboxnet0
 
-    # Check whether the bird image for this Windows version already exists.
-    sudo -u cuckoo -i vmcloak-bird hddpath "${EGGNAME}_bird"
-    if [ "$?" -ne 0 ]; then
-        echo "Creating the Virtual Machine bird.."
-        vmcloak -u cuckoo -s "$VMCLOAKCONF" -r \
-            --bird "${EGGNAME}_bird" "$WINOS" --vrde
+    # Kill all VirtualBox processes as otherwise the listening port for
+    # vmcloak-clone might still be in use.. TODO This can probably be removed.
+    vmcloak-killvbox
+
+    if [ -z "$SERIALKEY" ]; then
+        serial=""
+    else
+        serial="--serial-key $SERIALKEY"
     fi
 
-    # Kill all VirtualBox processes as otherwise the listening
-    # port for vmcloak-clone might still be in use..
-    vmcloak-killvbox
+    options="$serial --cpus $CPUCOUNT"
+
+    # Attempt to create a new image if one does not already exist.
+    sudo -u cuckoo -i vmcloak init "${EGGNAME}_bird" "$WINOS" $options
+    if [ "$?" -eq 0 ]; then
+        vmcloak install "${EGGNAME}_bird" $DEPENDENCIES
+    fi
 
     # Create various Virtual Machine eggs.
     for i in $(seq 1 "$VMCOUNT"); do
@@ -414,9 +401,8 @@ EOF
         rm -rf "$VMBACKUP/$name"
 
         echo "Creating Virtual Machine $name.."
-        vmcloak-clone -s "$VMCLOAKCONF" -u cuckoo --bird "${EGGNAME}_bird" \
-            --hostonly-ip "192.168.56.$((2+$i))" --cpu-count "$CPUCOUNT" \
-            "$name"
+        sudo -u cuckoo -i vmcloak snapshot "${EGGNAME}_bird" \
+            "$name" "192.168.56.$((2+$i))"
     done
 
     rm -rf "$VMCLOAKCONF" "$VMTEMP"
