@@ -313,10 +313,9 @@ class BehaviorReconstructor(object):
     # GUIDs.
 
     def _api_CoCreateInstance(self, return_value, arguments):
-        # The iid vs riid is to be removed later on and should be just iid.
         return [
             ("guid", arguments["clsid"]),
-            ("guid", arguments.get("iid", arguments.get("riid"))),
+            ("guid", arguments["iid"]),
         ]
 
     def _api_CoCreateInstanceEx(self, return_value, arguments):
