@@ -666,7 +666,7 @@ class Scheduler(object):
             # TODO We should probably move the entire "acquire machine" logic
             # from the Analysis Manager to the Scheduler and then pass the
             # selected machine onto the Analysis Manager instance.
-            available = False
+            task, available = None, False
             for machine in self.db.get_available_machines():
                 task = self.db.fetch(machine=machine.name)
                 if task:
