@@ -561,7 +561,13 @@ def export_analysis(request, task_id):
                                   {"error": "The specified analysis does not exist"},
                                   context_instance=RequestContext(request))
 
-    analysis_dir = report["info"]["analysis_path"]
+    #For old analyses
+    try:
+        analysis_dir = report["info"]["analysis_path"]
+    except KeyError as e:
+        return render_to_response("error.html",
+                                  {"error": "The analysis hasn't yet the 'analysis_path' property. Because of this, this analysis can't be exported"},
+                                  context_instance=RequestContext(request))
     directories = []
 
     #Searches for every directory in the analysis, if found append to directories array
@@ -593,9 +599,9 @@ def export(request, task_id):
     path = report["info"]["analysis_path"]
 
     #Creating a analysis.json file for basic information about the analysis. Used for import
-    analysis_path = path + "\\analysis.json"
+    analysis_path = os.path.join(path, "analysis.json")
     with open(analysis_path, "w") as outfile:
-        json.dump({'Target':report["target"]}, outfile, indent=4)
+        json.dump({'target':report["target"]}, outfile, indent=4)
 
     #Creates a zip file with the selected contents of the analyses
     zf = zipfile.ZipFile(path + ".zip", "w", zipfile.ZIP_DEFLATED)
