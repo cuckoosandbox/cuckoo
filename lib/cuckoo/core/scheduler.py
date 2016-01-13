@@ -206,10 +206,13 @@ class AnalysisManager(threading.Thread):
 
         if route == "none":
             self.interface = None
+            self.rt_table = None
         elif route == "internet" and self.cfg.routing.internet != "none":
             self.interface = self.cfg.routing.internet
+            self.rt_table = self.cfg.routing.rt_table
         elif route in vpns:
             self.interface = vpns[route].interface
+            self.rt_table = vpns[route].rt_table
         else:
             log.warning("Unknown network routing destination specified, "
                         "ignoring routing for this analysis: %r", route)
@@ -219,6 +222,9 @@ class AnalysisManager(threading.Thread):
             rooter("forward_enable", self.machine.interface,
                    self.interface, self.machine.ip)
 
+        if self.rt_table:
+            rooter("srcroute_enable", self.rt_table, self.machine.ip)
+            
         # Propagate the taken route to the database.
         self.db.set_route(self.task.id, route)
 
@@ -226,6 +232,9 @@ class AnalysisManager(threading.Thread):
         if self.interface:
             rooter("forward_disable", self.machine.interface,
                    self.interface, self.machine.ip)
+
+        if self.rt_table:
+            rooter("srcroute_disable", self.rt_table, self.machine.ip)
 
     def wait_finish(self):
         """Some VMs don't have an actual agent. Mainly those that are used as

@@ -63,6 +63,29 @@ def disable_nat(interface):
     run(settings.iptables, "-t", "nat", "-D", "POSTROUTING",
         "-o", interface, "-j", "MASQUERADE")
 
+def enable_rttable(rt_table, interface):
+    """Populate routing table for this interface using routes
+    from main table"""
+    if rt_table == "main":
+        return
+
+    for line in run(settings.ip, "route", "list", "dev",
+                    interface)[0].split("\n"):
+        args = ["route", "add"] + [x for x in line.split(" ") if x]
+        args += ["dev", interface, "table", rt_table]
+        run(settings.ip, *args)
+
+def disable_rttable(rt_table, interface):
+    """Flushes routing table entries for this interface"""
+    if rt_table == "main":
+        return
+
+    for line in run(settings.ip, "route", "list", "dev",
+                    interface)[0].split("\n"):
+        args = ["route", "del"] + [x for x in line.split(" ") if x]
+        args += ["dev", interface, "table", rt_table]
+        run(settings.ip, *args)
+
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
     another."""
@@ -81,6 +104,16 @@ def forward_disable(src, dst, ipaddr):
     run(settings.iptables, "-D", "FORWARD", "-i", dst, "-o", src,
         "--destination", ipaddr, "-j", "ACCEPT")
 
+def srcroute_enable(rt_table, ipaddr):
+    """Enable routing policy for specified source IP address"""
+    run(settings.ip, "rule", "add", "from", ipaddr, "table", rt_table)
+    run(settings.ip, "route", "flush", "cache")
+
+def srcroute_disable(rt_table, ipaddr):
+    """Disable routing policy for specified source IP address"""
+    run(settings.ip, "rule", "del", "from", ipaddr, "table", rt_table)
+    run(settings.ip, "route", "flush", "cache")
+
 handlers = {
     "nic_available": nic_available,
     "vpn_status": vpn_status,
@@ -89,8 +122,12 @@ handlers = {
     "forward_drop": forward_drop,
     "enable_nat": enable_nat,
     "disable_nat": disable_nat,
+    "enable_rttable": enable_rttable,
+    "disable_rttable": disable_rttable,
     "forward_enable": forward_enable,
     "forward_disable": forward_disable,
+    "srcroute_enable": srcroute_enable,
+    "srcroute_disable": srcroute_disable,
 }
 
 if __name__ == "__main__":
@@ -100,6 +137,7 @@ if __name__ == "__main__":
     parser.add_argument("--ifconfig", default="/sbin/ifconfig", help="Path to ifconfig")
     parser.add_argument("--openvpn", default="/etc/init.d/openvpn", help="Path to openvpn")
     parser.add_argument("--iptables", default="/sbin/iptables", help="Path to iptables")
+    parser.add_argument("--ip", default="/sbin/ip", help="Path to ip")
     settings = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
