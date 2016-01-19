@@ -43,20 +43,23 @@ class Suricata(Processing):
             raise CuckooProcessingError(
                 "Suricata has been configured to run in socket mode but "
                 "suricatasc has not been installed, please re-install "
-                "Suricata or SuricataSC")
+                "Suricata or SuricataSC"
+            )
 
         if not os.path.exists(self.socket):
             raise CuckooProcessingError(
                 "Suricata has been configured to run in socket mode "
-                "but the socket is unavailable")
+                "but the socket is unavailable"
+            )
 
         suri = suricatasc.SuricataSC(self.socket)
 
         try:
             suri.connect()
         except suricatasc.SuricataException as e:
-            raise CuckooProcessingError("Error connecting to Suricata in "
-                                        "socket mode: %s" % e)
+            raise CuckooProcessingError(
+                "Error connecting to Suricata in socket mode: %s" % e
+            )
 
         # Submit the PCAP file.
         ret = suri.send_command("pcap-file", {
@@ -67,7 +70,8 @@ class Suricata(Processing):
         if not ret or ret["return"] != "OK":
             raise CuckooProcessingError(
                 "Error submitting PCAP file to Suricata in socket mode, "
-                "return value: %s" % ret)
+                "return value: %s" % ret
+            )
 
         # TODO Should we add a timeout here? If we do so we should also add
         # timeout logic to the binary mode.
@@ -93,7 +97,8 @@ class Suricata(Processing):
 
         if not os.path.isfile(self.config_path):
             raise CuckooProcessingError(
-                "Unable to locate Suricata configuration")
+                "Unable to locate Suricata configuration"
+            )
 
         args = [
             self.suricata,
@@ -107,7 +112,8 @@ class Suricata(Processing):
             subprocess.check_call(args)
         except subprocess.CalledProcessError as e:
             raise CuckooProcessingError(
-                "Suricata returned an error processing this pcap: %s" % e)
+                "Suricata returned an error processing this pcap: %s" % e
+            )
 
     def parse_eve_json(self):
         """Parse the eve.json file."""
@@ -123,13 +129,16 @@ class Suricata(Processing):
                 alert = event["alert"]
 
                 if alert["signature_id"] in self.sid_blacklist:
-                    log.debug("Ignoring alert with sid=%d, signature=%s",
-                              alert["signature_id"], alert["signature"])
+                    log.debug(
+                        "Ignoring alert with sid=%d, signature=%s",
+                        alert["signature_id"], alert["signature"]
+                    )
                     continue
 
                 if alert["signature"].startswith("SURICATA STREAM"):
-                    log.debug("Ignoring alert starting with "
-                              "\"SURICATA STREAM\"")
+                    log.debug(
+                        "Ignoring alert starting with \"SURICATA STREAM\""
+                    )
                     continue
 
                 self.results["alerts"].append({
@@ -215,9 +224,10 @@ class Suricata(Processing):
                 filepath = None
 
             if not filepath or not os.path.isfile(filepath):
-                log.warning("Suricata dropped file with id=%d and md5=%s not "
-                            "found, skipping it..", event.get("id"),
-                            event.get("md5"))
+                log.warning(
+                    "Suricata dropped file with id=%d and md5=%s not found, "
+                    "skipping it..", event.get("id"), event.get("md5")
+                )
                 continue
 
             referer = event.get("http_referer")
