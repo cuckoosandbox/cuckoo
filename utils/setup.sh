@@ -221,6 +221,9 @@ EOF
             git --work-tree /opt/cuckoo --git-dir "$gitrepo" checkout -f master
     fi
 
+    # Add the Suricata reboot crontab entry.
+    (crontab -l ; echo @reboot /opt/cuckoo/utils/suricata.sh)|crontab -
+
     # Delete the cuckoo1 machine that is included in the VirtualBox
     # configuration by default.
     sudo -u cuckoo -i "/opt/cuckoo/utils/machine.py" --delete cuckoo1

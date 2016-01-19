@@ -36,6 +36,9 @@ _install_configuration() {
 # is by default turned *OFF*. Enable by uncommenting and setting the value.
 # WEBADDR="127.0.0.1"
 
+# Run Suricata in the background?
+SURICATA="0"
+
 # Start Cuckoo in verbose mode. Toggle to 1 to enable verbose mode.
 VERBOSE="0"
 EOF
