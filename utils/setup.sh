@@ -406,6 +406,9 @@ _create_virtual_machines() {
         echo "Creating Virtual Machine $name.."
         sudo -u cuckoo -i vmcloak snapshot "${EGGNAME}_bird" \
             "$name" "192.168.56.$((2+$i))"
+
+        echo "Registering Virtual Machine $name.."
+        sudo -u cuckoo -i vmcloak register "$name" /opt/cuckoo
     done
 
     rm -rf "$VMCLOAKCONF" "$VMTEMP"
