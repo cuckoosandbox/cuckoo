@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,15 +10,14 @@ import shutil
 import urllib2
 import argparse
 import tempfile
-from zipfile import ZipFile
-from StringIO import StringIO
+from tarfile import TarFile
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 import lib.cuckoo.common.colors as colors
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 
-URL = "https://github.com/cuckoobox/community/archive/{0}.zip"
+URL = "https://github.com/cuckoosandbox/community/archive/{0}.tar.gz"
 
 def download_archive():
     print("Downloading modules from {0}".format(URL))
@@ -28,12 +28,18 @@ def download_archive():
         print("ERROR: Unable to download archive: %s" % e)
         sys.exit(-1)
 
-    zip_data = StringIO()
-    zip_data.write(data)
-    archive = ZipFile(zip_data, "r")
+    return data
+
+def extract_archive(data):
+    fd, filepath = tempfile.mkstemp()
+    os.write(fd, data)
+    os.close(fd)
+
+    archive = TarFile.open(filepath, mode="r:gz")
     temp_dir = tempfile.mkdtemp()
     archive.extractall(temp_dir)
     archive.close()
+    os.unlink(filepath)
     final_dir = os.path.join(temp_dir, os.listdir(temp_dir)[0])
 
     return temp_dir, final_dir
@@ -69,7 +75,15 @@ def installdir(src, dst, force, rewrite, origin=[]):
 
         if install:
             srcpath = os.path.join(src, file_name)
-            if os.path.isdir(srcpath):
+            if os.path.islink(srcpath):
+                if os.path.lexists(destination):
+                    os.remove(destination)
+                os.symlink(os.readlink(srcpath), destination)
+                print "Symbolic link \"%s/%s\" -> \"%s\" %s" % (
+                    "/".join(origin), file_name, os.readlink(srcpath),
+                    colors.green("installed"))
+
+            elif os.path.isdir(srcpath):
                 installdir(srcpath, destination, force, rewrite,
                            origin + [file_name])
             else:
@@ -77,13 +91,21 @@ def installdir(src, dst, force, rewrite, origin=[]):
                     os.makedirs(os.path.dirname(destination))
 
                 shutil.copy(srcpath, destination)
-                print("File \"{0}/{1}\" {2}".format("/".join(origin),
-                                                    file_name,
-                                                    colors.green("installed")))
+                print "File \"%s/%s\" %s" % (
+                    "/".join(origin), file_name, colors.green("installed"))
 
 
-def install(enabled, force, rewrite):
-    (temp, source) = download_archive()
+def install(enabled, force, rewrite, archive):
+    if archive:
+        if not os.path.isfile(archive):
+            print("ERROR: Provided archive not found!")
+            sys.exit(-1)
+
+        data = open(archive, "rb").read()
+    else:
+        data = download_archive()
+
+    temp, source = extract_archive(data)
 
     folders = {
         "signatures": os.path.join("modules", "signatures"),
@@ -91,6 +113,7 @@ def install(enabled, force, rewrite):
         "reporting": os.path.join("modules", "reporting"),
         "machinery": os.path.join("modules", "machinery"),
         "analyzer": os.path.join("analyzer"),
+        "monitor": os.path.join("data", "monitor"),
         "agent": os.path.join("agent"),
     }
 
@@ -117,11 +140,13 @@ def main():
     parser.add_argument("-p", "--processing", help="Download processing modules", action="store_true", required=False)
     parser.add_argument("-m", "--machinery", help="Download machine managers", action="store_true", required=False)
     parser.add_argument("-n", "--analyzer", help="Download analyzer modules", action="store_true", required=False)
+    parser.add_argument("-M", "--monitor", help="Download monitoring binaries", action="store_true", required=False)
     parser.add_argument("-g", "--agent", help="Download agent modules", action="store_true", required=False)
     parser.add_argument("-r", "--reporting", help="Download reporting modules", action="store_true", required=False)
     parser.add_argument("-f", "--force", help="Install files without confirmation", action="store_true", required=False)
     parser.add_argument("-w", "--rewrite", help="Rewrite existing files", action="store_true", required=False)
     parser.add_argument("-b", "--branch", help="Specify a different branch", action="store", default="master", required=False)
+    parser.add_argument("archive", help="Install a stored archive", nargs="?")
     args = parser.parse_args()
 
     enabled = []
@@ -134,6 +159,7 @@ def main():
         enabled.append("reporting")
         enabled.append("machinery")
         enabled.append("analyzer")
+        enabled.append("monitor")
         enabled.append("agent")
     else:
         if args.signatures:
@@ -161,7 +187,7 @@ def main():
 
     URL = URL.format(args.branch)
 
-    install(enabled, force, rewrite)
+    install(enabled, force, rewrite, args.archive)
 
 if __name__ == "__main__":
     try:

@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -129,6 +130,12 @@ class MongoDB(Report):
         if spcap.valid():
             spcap_id = self.store_file(spcap)
             report["network"]["sorted_pcap_id"] = spcap_id
+
+        mitmproxy_path = os.path.join(self.analysis_path, "dump.mitm")
+        mitmpr = File(mitmproxy_path)
+        if mitmpr.valid():
+            mitmpr_id = self.store_file(mitmpr)
+            report["network"]["mitmproxy_id"] = mitmpr_id
 
         # Store the process memory dump file in GridFS and reference it back in the report.
         if "procmemory" in report and self.options.get("store_memdump", False):

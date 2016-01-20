@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -20,6 +21,7 @@ try:
     from lib.cuckoo.core.startup import cuckoo_clean, drop_privileges
     from lib.cuckoo.core.startup import init_logging, init_modules
     from lib.cuckoo.core.startup import init_tasks, init_yara, init_binaries
+    from lib.cuckoo.core.startup import init_rooter, init_routing
 
     import bson
 
@@ -65,6 +67,8 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     init_tasks()
     init_yara()
     init_binaries()
+    init_rooter()
+    init_routing()
 
     # TODO: This is just a temporary hack, we need an actual test suite to
     # integrate with Travis-CI.

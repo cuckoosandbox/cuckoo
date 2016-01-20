@@ -7,14 +7,14 @@
         </tr>
     </thead>
     <tbody>
-    {% for service in analysis.memory.devicetree.data %}
+    {% for row in analysis.memory.devicetree.data|volsort %}
         <tr>
-            <td>{{service.driver_name}}</td>
-            <td><span class="mono">{{service.driver_offset}}</span></td>
-            <td>
-            {% for device in service.devices %}
+            <td class="{{ row.class_ }}">{{row.driver_name}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.driver_offset}}</span></td>
+            <td class="{{ row.class_ }}">
+            {% for device in row.devices %}
                 {% if device.device_name %}
-                    {{device.device_name}}, 
+                    {{device.device_name}},
                 {% endif %}
             {% endfor %}
             </td>

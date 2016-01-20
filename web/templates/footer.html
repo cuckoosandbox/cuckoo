@@ -1,3 +1,4 @@
+{% load staticfiles %}
     <!-- Footer
     ================================================== -->
     <footer>
@@ -10,8 +11,8 @@
             <div>&copy;2010-2015 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a></div>
         </div>
     </div>
-    <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
-    <script src="{{ STATIC_URL }}js/bootstrap-fileupload.js"></script>
-    <script src="{{ STATIC_URL }}js/lightbox.js"></script>
+    <script src="{% static "js/bootstrap.min.js" %}"></script>
+    <script src="{% static "js/bootstrap-fileupload.js" %}"></script>
+    <script src="{% static "js/lightbox.js" %}"></script>
 </body>
 </html>

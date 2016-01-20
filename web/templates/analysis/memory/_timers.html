@@ -10,14 +10,14 @@
         </tr>
     </thead>
     <tbody>
-    {% for x in analysis.memory.timers.data %}
+    {% for row in analysis.memory.timers.data|volsort %}
         <tr>
-            <td><span class="mono">{{x.offset}}</span></td>
-            <td>{{x.due_time}}</td>
-            <td>{{x.period}}</td>
-            <td>{{x.signaled}}</td>
-            <td><span class="mono">{{x.routine}}</span></td>
-            <td>{{x.module}}</span></td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.offset}}</span></td>
+            <td class="{{ row.class_ }}">{{row.due_time}}</td>
+            <td class="{{ row.class_ }}">{{row.period}}</td>
+            <td class="{{ row.class_ }}">{{row.signaled}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.routine}}</span></td>
+            <td class="{{ row.class_ }}">{{row.module}}</span></td>
         </tr>
     {% endfor %}
     </tbody>

@@ -1,10 +1,12 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
 from django.conf.urls import patterns, url
 
-urlpatterns = patterns("",
+urlpatterns = patterns(
+    "",
     url(r"^$", "analysis.views.index"),
     url(r"^(?P<task_id>\d+)/$", "analysis.views.report"),
     url(r"^latest/$", "analysis.views.latest_report"),
@@ -15,4 +17,10 @@ urlpatterns = patterns("",
     url(r"^search/$", "analysis.views.search"),
     url(r"^pending/$", "analysis.views.pending"),
     url(r"^(?P<task_id>\d+)/pcapstream/(?P<conntuple>[.,\w]+)/$", "analysis.views.pcapstream"),
+    url(r"^moloch"
+        "/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-\.]+)?"
+        "/(?P<src_ip>[a-zA-Z0-9\.]+)?/(?P<src_port>\d+|None)?"
+        "/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+|None)?"
+        "/(?P<sid>\d+)?",
+        "analysis.views.moloch"),
 )

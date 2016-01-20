@@ -1,9 +1,11 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
 import logging
+import time
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
@@ -23,6 +25,7 @@ try:
     import volatility.obj as obj
     import volatility.exceptions as exc
     import volatility.plugins.filescan as filescan
+    import volatility.protos as protos
 
     HAVE_VOLATILITY = True
 
@@ -832,15 +835,57 @@ class VolatilityAPI(object):
 
         return dict(config={}, data=results)
 
+    def sockscan(self):
+        """Volatility sockscan plugin.
+        @see volatility/plugins/sockscan.py
+        """
+        results = []
+
+        command = self.plugins["sockscan"](self.config)
+        for sock in command.calculate():
+            new = {
+                "offset": "{0:#010x}".format(sock.obj_offset),
+                "process_id": str(sock.Pid),
+                "address": str(sock.LocalIpAddress),
+                "port": str(sock.LocalPort),
+                "protocol": "{0} ({1})".format(sock.Protocol, protos.protos.get(sock.Protocol.v(), "-")),
+                "create_time": time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(int(sock.CreateTime))),
+            }
+            results.append(new)
+
+        return dict(config={}, data=results)
+
+    def netscan(self):
+        """Volatility sockscan plugin.
+        @see volatility/plugins/netscan.py
+        """
+        results = []
+
+        command = self.plugins["netscan"](self.config)
+        for net_obj, proto, laddr, lport, raddr, rport, state in command.calculate():
+            new = {
+                "offset": "{0:#010x}".format(net_obj.obj_offset),
+                "process_id": str(net_obj.Owner.UniqueProcessId),
+                "local_address": str(laddr),
+                "local_port": str(lport),
+                "remote_address": str(raddr),
+                "remote_port": str(rport),
+                "protocol": str(proto),
+            }
+            results.append(new)
+
+        return dict(config={}, data=results)
+
+
 class VolatilityManager(object):
     """Handle several volatility results."""
     PLUGINS = [
         "pslist",
         "psxview",
         "callbacks",
-        "idt",
+        ["idt", "x86"],
         "ssdt",
-        "gdt",
+        ["gdt", "x86"],
         "timers",
         "messagehooks",
         "getsids",
@@ -855,6 +900,8 @@ class VolatilityManager(object):
         "svcscan",
         "modscan",
         "yarascan",
+        ["sockscan", "winxp"],
+        ["netscan", "vista", "win7"],
     ]
 
     def __init__(self, memfile, osprofile=None):
@@ -895,6 +942,21 @@ class VolatilityManager(object):
         vol = VolatilityAPI(self.memfile, self.osprofile)
 
         for plugin_name in self.PLUGINS:
+            if isinstance(plugin_name, list):
+                plugin_name, profiles = plugin_name[0], plugin_name[1:]
+            else:
+                profiles = []
+
+            # Some plugins can only run in certain profiles (i.e., only in
+            # Windows XP/Vista/7, or only in x86 or x64).
+            osp = self.osprofile.lower()
+            for profile in profiles:
+                if osp.startswith(profile) or osp.endswith(profile):
+                    break
+            else:
+                if profiles:
+                    continue
+
             plugin = self.voptions.get(plugin_name)
             if not plugin or not plugin.enabled:
                 log.debug("Skipping '%s' volatility module", plugin_name)

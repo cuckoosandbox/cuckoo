@@ -384,6 +384,12 @@ Following is a list of currently available resources and a brief description of 
                 }
             }
 
+        Note: possible value for key ``status``:
+            * ``pending``
+            * ``running``
+            * ``completed``
+            * ``reported``
+
         **Parameters**:
             * ``id`` *(required)* *(int)* - ID of the task to lookup
 
@@ -427,7 +433,7 @@ Following is a list of currently available resources and a brief description of 
 
         **Parameters**:
             * ``id`` *(required)* *(int)* - ID of the task to get the report for
-            * ``format`` *(optional)* - format of the report to retrieve [json/html/all/dropped]. If none is specified the JSON report will be returned. ``all`` returns all the result files as tar.bz2, ``dropped`` the dropped files as tar.bz2
+            * ``format`` *(optional)* - format of the report to retrieve [json/html/all/dropped/package_files]. If none is specified the JSON report will be returned. ``all`` returns all the result files as tar.bz2, ``dropped`` the dropped files as tar.bz2, ``package_files`` files uploaded to host by analysis packages.
 
         **Status codes**:
             * ``200`` - no error

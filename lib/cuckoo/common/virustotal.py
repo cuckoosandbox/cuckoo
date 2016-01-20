@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -58,7 +59,10 @@ class VirusTotalAPI(object):
         "a variant of w97m", "badmacro", "bkdr", "docdrp", "exedrop",
         "generic trojan", "malcrypt", "malicious website", "ransomlock",
         "ransomcrypt", "reputation", "trojanransom", "pepatch", "risk",
-        "adplugin", "webtoolbar",
+        "adplugin", "webtoolbar", "malagent", "genmalicious", "vbinject",
+        "vbcrypt", "inject2", "mdropper", "download3", "keylogger",
+        "downloader11", "damaged", "file", "dldrop", "msil7", "injcrypt",
+        "patched", "patchfile", "downware", "dropped",
     ]
 
     def __init__(self, apikey, timeout, scan=0):

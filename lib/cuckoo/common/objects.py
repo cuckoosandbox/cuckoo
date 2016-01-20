@@ -1,14 +1,18 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import binascii
 import hashlib
 import logging
+import mmap
 import os
+import re
 import subprocess
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.whitelist import is_whitelisted_domain
 
 try:
     import magic
@@ -44,6 +48,23 @@ log = logging.getLogger(__name__)
 
 FILE_CHUNK_SIZE = 16 * 1024
 
+URL_REGEX = (
+    # HTTP/HTTPS.
+    "(https?:\\/\\/)"
+    "((["
+    # IP address.
+    "(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\."
+    "(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\."
+    "(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\."
+    "(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])]|"
+    # Or domain name.
+    "[a-zA-Z0-9\\.-]+)"
+    # Optional port.
+    "(\\:\\d+)?"
+    # URI.
+    "(/[\\(\\)a-zA-Z0-9_:%?=/\\.-]*)?"
+)
+
 class Dictionary(dict):
     """Cuckoo custom dict."""
 
@@ -63,15 +84,23 @@ class URL:
 class File(object):
     """Basic file object class with all useful utilities."""
 
-    YARA_RULEPATH = \
-        os.path.join(CUCKOO_ROOT, "data", "yara", "index_binaries.yar")
+    # To be substituted with a category.
+    YARA_RULEPATH = os.path.join(CUCKOO_ROOT, "data", "yara", "index_%s.yar")
 
     # static fields which indicate whether the user has been
     # notified about missing dependencies already
     notified_yara = False
-    notified_pydeep = False
     notified_pefile = False
     notified_androguard = False
+
+    # Given that ssdeep hashes are not really used much in practice we're just
+    # going to disable its warning by default for now.
+    notified_pydeep = True
+
+    # The yara rules should not change during one session of processing tasks,
+    # thus we can cache them. If they are updated, one should restart Cuckoo
+    # or the processing tasks.
+    yara_rules = {}
 
     def __init__(self, file_path):
         """@param file_path: file path."""
@@ -391,7 +420,7 @@ class File(object):
 
         return ret
 
-    def get_yara(self, rulepath=YARA_RULEPATH):
+    def get_yara(self, category="binaries"):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
         """
@@ -403,17 +432,25 @@ class File(object):
                 log.warning("Unable to import yara (please compile from sources)")
             return results
 
-        if not os.path.exists(rulepath):
-            log.warning("The specified rule file at %s doesn't exist, skip",
-                        rulepath)
-            return results
+        # Compile the Yara rules only the first time.
+        if category not in File.yara_rules:
+            rulepath = self.YARA_RULEPATH % category
+            if not os.path.exists(rulepath):
+                log.warning("The specified rule file at %s doesn't exist, "
+                            "skip", rulepath)
+                return results
+
+            try:
+                File.yara_rules[category] = yara.compile(rulepath)
+            except:
+                log.exception("Error compiling the Yara rules.")
+                return
 
         if not os.path.getsize(self.file_path):
             return results
 
         try:
-            rules = yara.compile(rulepath)
-            matches = rules.match(self.file_path)
+            matches = File.yara_rules[category].match(self.file_path)
 
             if getattr(yara, "__version__", None) == "1.7.7":
                 return self._yara_matches_177(matches)
@@ -436,6 +473,22 @@ class File(object):
 
         return results
 
+    def get_urls(self):
+        """Extract all URLs embedded in this file through a simple regex."""
+        if not os.path.getsize(self.file_path):
+            return []
+
+        # http://stackoverflow.com/a/454589
+        urls = set()
+        f = open(self.file_path, "rb")
+        m = mmap.mmap(f.fileno(), 0, access=mmap.PROT_READ)
+
+        for url in re.findall(URL_REGEX, m):
+            if not is_whitelisted_domain(url[1]):
+                urls.add("".join(url))
+
+        return list(urls)
+
     def get_all(self):
         """Get all information available.
         @return: information dict.
@@ -452,4 +505,5 @@ class File(object):
         infos["ssdeep"] = self.get_ssdeep()
         infos["type"] = self.get_type()
         infos["yara"] = self.get_yara()
+        infos["urls"] = self.get_urls()
         return infos

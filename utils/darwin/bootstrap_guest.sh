@@ -30,7 +30,7 @@ ROUTER_ADDRESS="192.168.56.1"
 DNS_SERVERS=("208.67.220.220" "208.67.222.222")
 # Cuckoo agent locations
 AGENT_DIR="/Users/Shared"
-AGENT_URL="https://raw.githubusercontent.com/cuckoobox/cuckoo/master/agent/agent.py"
+AGENT_URL="https://raw.githubusercontent.com/cuckoosandbox/cuckoo/master/agent/agent.py"
 
 opt_patch_sudoers=false; opt_install_kext=false;
 while getopts ":sk" opt; do

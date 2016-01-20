@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -66,7 +67,7 @@ def index(request):
 
         # It has happened that for unknown reasons completed and started were
         # equal in which case an exception is thrown, avoid this.
-        if int(completed - started):
+        if completed and started and int(completed - started):
             hourly = 60 * 60 * finished / (completed - started)
         else:
             hourly = 0

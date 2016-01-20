@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -210,7 +211,7 @@ class BsonParser(object):
 
                 # If the parent is netlogs ResultHandler then we actually dump
                 # it - this should only be the case during the analysis, any
-                # after proposing will then be ignored.
+                # after processing will then be ignored.
                 from lib.cuckoo.core.resultserver import ResultHandler
 
                 if isinstance(self.fd, ResultHandler):

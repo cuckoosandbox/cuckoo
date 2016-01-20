@@ -144,5 +144,5 @@ repository`_.
         and it most likely lacks updated documentation.
 
 .. _`official website`: http://www.cuckoosandbox.org
-.. _`official git repository`: http://github.com/cuckoobox/cuckoo
+.. _`official git repository`: http://github.com/cuckoosandbox/cuckoo
 

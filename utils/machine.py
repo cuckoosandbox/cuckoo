@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -46,6 +46,9 @@ def update_conf(machinery, args, action=None):
             "ip = %s" % args.ip,
         ]
 
+    if args.options:
+        lines.append("options = %s" % args.options)
+
     if args.snapshot:
         lines.append("snapshot = %s" % args.snapshot)
 
@@ -70,6 +73,7 @@ def main():
     parser.add_argument("--delete", action="store_true", help="Delete a Virtual Machine.")
     parser.add_argument("--ip", type=str, help="Static IP Address.")
     parser.add_argument("--platform", type=str, default="windows", help="Guest Operating System.")
+    parser.add_argument("--options", type=str, help="Machine options.")
     parser.add_argument("--tags", type=str, help="Tags for this Virtual Machine.")
     parser.add_argument("--interface", type=str, help="Sniffer interface for this machine.")
     parser.add_argument("--snapshot", type=str, help="Specific Virtual Machine Snapshot to use.")
@@ -96,7 +100,7 @@ def main():
             sys.exit("A Virtual Machine with this name already exists!")
 
         db.add_machine(args.vmname, args.vmname, args.ip, args.platform,
-                       args.tags, args.interface, args.snapshot,
+                       args.options, args.tags, args.interface, args.snapshot,
                        resultserver_ip, int(resultserver_port))
         db.unlock_machine(args.vmname)
 

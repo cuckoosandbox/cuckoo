@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -43,6 +44,10 @@ class VirusTotal(Processing):
             results = self.scan_file(self.file_path)
         elif self.task["category"] == "url":
             results = self.scan_url(self.task["target"])
+        elif self.task["category"] == "baseline":
+            return
+        elif self.task["category"] == "service":
+            return
         else:
             raise CuckooProcessingError("Unsupported task category: %s" %
                                         self.task["category"])

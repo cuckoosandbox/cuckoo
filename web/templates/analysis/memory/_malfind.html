@@ -8,12 +8,12 @@
         </tr>
     </thead>
     <tbody>
-    {% for mal in analysis.memory.malfind.data %}
+    {% for row in analysis.memory.malfind.data|volsort %}
         <tr>
-            <td>{{mal.process_id}}</td>
-            <td>{{mal.process_name}}</td>
-            <td><span class="mono">{{mal.vad_start}}</span></td>
-            <td>{{mal.vad_tag}}</td>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.vad_start}}</span></td>
+            <td class="{{ row.class_ }}">{{row.vad_tag}}</td>
         </tr>
     {% endfor %}
     </tbody>

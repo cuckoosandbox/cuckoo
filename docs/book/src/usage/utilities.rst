@@ -108,7 +108,7 @@ Following are the usage options::
 
     $ ./utils/community.py --signatures --force
 
-.. _`Cuckoo Community Repository`: https://github.com/cuckoobox/community
+.. _`Cuckoo Community Repository`: https://github.com/cuckoosandbox/community
 
 Database migration utility
 ==========================

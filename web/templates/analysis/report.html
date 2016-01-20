@@ -1,20 +1,35 @@
 {% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
 {% block content %}
 <div class="row">
-    <div class="col-md-6"><p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p></div>
-    <div class="col-md-6" style="text-align: right;"><a class="btn btn-primary" href="{% url "compare.views.left" analysis.info.id %}">Compare this analysis to...</a></div>
+    <div class="col-md-6"><p style="margin-bottom: 10px;"><img src="{% static "graphic/cuckoo.png" %}" /></p></div>
+    <div class="col-md-6" style="text-align: right;">
+        <a class="btn btn-primary" href="{% url "compare.views.left" analysis.info.id %}">Compare this analysis to...</a>
+        <a class="btn btn-primary" href="{% url "submission.views.resubmit" analysis.info.id %}">Resubmit this sample</a>
+    </div>
 </div>
 <ul class="nav nav-tabs">
     <li class="active"><a href="#overview" data-toggle="tab">Quick Overview</a></li>
     <li><a href="#static" data-toggle="tab">Static Analysis</a></li>
     {% if analysis.behavior.processes %}
-        <li><a href="#behavior" data-toggle="tab" id="graph_hook">Behavioral Analysis</a></li>
+        <li><a href="#behavior" data-toggle="tab" id="graph_hook">Behavioral Analysis ({{ analysis.behavior.processes|filter_key_if_has:"track"|length }})</a></li>
     {% endif %}
-    <li><a href="#network" data-toggle="tab">Network Analysis</a></li>
-    <li><a href="#dropped" data-toggle="tab">Dropped Files</a></li>
-    <li><a href="#buffer" data-toggle="tab">Dropped Buffers</a></li>
+    {% with suricata=analysis.suricata|custom_length:"alerts tls" snort=analysis.snort|custom_length:"alerts" %}
+        {% if analysis.network.http_ex or analysis.network.https_ex %}
+            <li><a href="#network" data-toggle="tab">Network Analysis ({{ analysis.network|custom_length:"hosts dns tcp udp http_ex https_ex icmp irc"|add:suricata|add:snort }})</a></li>
+        {% else %}
+            <li><a href="#network" data-toggle="tab">Network Analysis ({{ analysis.network|custom_length:"hosts dns tcp udp http icmp irc"|add:suricata|add:snort }})</a></li>
+        {% endif %}
+    {% endwith %}
+    {% if analysis.dropped %}
+        <li><a href="#dropped" data-toggle="tab">Dropped Files ({{ analysis.dropped|length }})</a></li>
+    {% endif %}
+    {% if analysis.buffer %}
+        <li><a href="#buffer" data-toggle="tab">Dropped Buffers ({{ analysis.buffer|length }})</a></li>
+    {% endif %}
     {% if analysis.procmemory %}
-        <li><a href="#procmemory" data-toggle="tab">Process Memory</a></li>
+        <li><a href="#procmemory" data-toggle="tab">Process Memory ({{ analysis.procmemory|length }})</a></li>
     {% endif %}
     {% if analysis.memory %}
         <li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>

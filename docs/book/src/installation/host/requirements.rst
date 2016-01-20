@@ -11,9 +11,9 @@ Installing Python libraries
 Cuckoo host components are completely written in Python, therefore make sure to
 have an appropriate version installed. For the current release **Python 2.7** is preferred.
 
-Install Python on Ubuntu::
+Install the basic dependencies::
 
-    $ sudo apt-get install python python-pip
+    $ sudo apt-get install python python-pip python-dev libffi-dev libssl-dev
 
 If you want to use the Django-based web interface, you'll have to install MongoDB too::
 
@@ -23,7 +23,8 @@ In order to properly function, Cuckoo requires some dependencies. They can all b
 
     $ sudo pip install -r requirements.txt
 
-`Yara`_ and `Pydeep`_ will have to beinstalled manually, so please refer to their websites.
+`Yara`_ and `Pydeep`_ are *optional* plugins but will have to be installed
+manually, so please refer to their websites.
 
 If you want to use KVM it's packaged too and you can install it with the following command::
 
@@ -33,8 +34,12 @@ If you want to use XenServer you'll have to install the *XenAPI* Python package:
 
     $ sudo pip install XenAPI
 
+If you want to use the *mitm* auxiliary module (to intercept SSL/TLS generated traffic),
+you need to install `mitmproxy`_. Please refer to its website for installation instructions.
+
 .. _Yara: http://code.google.com/p/yara-project/
 .. _Pydeep: https://github.com/kbandla/pydeep
+.. _mitmproxy: https://mitmproxy.org/
 
 Virtualization Software
 =======================

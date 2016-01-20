@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -87,22 +88,21 @@ class PortableExecutable(object):
         """
         imports = []
 
-        if hasattr(self.pe, "DIRECTORY_ENTRY_IMPORT"):
-            for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
-                try:
-                    symbols = []
-                    for imported_symbol in entry.imports:
-                        symbol = {}
-                        symbol["address"] = hex(imported_symbol.address)
-                        symbol["name"] = imported_symbol.name
-                        symbols.append(symbol)
+        for entry in getattr(self.pe, "DIRECTORY_ENTRY_IMPORT", []):
+            try:
+                symbols = []
+                for imported_symbol in entry.imports:
+                    symbols.append({
+                        "address": hex(imported_symbol.address),
+                        "name": imported_symbol.name,
+                    })
 
-                    imports_section = {}
-                    imports_section["dll"] = convert_to_printable(entry.dll)
-                    imports_section["imports"] = symbols
-                    imports.append(imports_section)
-                except:
-                    continue
+                imports.append({
+                    "dll": convert_to_printable(entry.dll),
+                    "imports": symbols,
+                })
+            except:
+                log.exception("Unable to parse imported symbols.")
 
         return imports
 
@@ -114,12 +114,12 @@ class PortableExecutable(object):
 
         if hasattr(self.pe, "DIRECTORY_ENTRY_EXPORT"):
             for exported_symbol in self.pe.DIRECTORY_ENTRY_EXPORT.symbols:
-                symbol = {}
-                symbol["address"] = hex(self.pe.OPTIONAL_HEADER.ImageBase +
-                                        exported_symbol.address)
-                symbol["name"] = exported_symbol.name
-                symbol["ordinal"] = exported_symbol.ordinal
-                exports.append(symbol)
+                exports.append({
+                    "address": hex(self.pe.OPTIONAL_HEADER.ImageBase +
+                                   exported_symbol.address),
+                    "name": exported_symbol.name,
+                    "ordinal": exported_symbol.ordinal,
+                })
 
         return exports
 
