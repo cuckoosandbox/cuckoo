@@ -23,7 +23,7 @@ function paginationbar(pages, page) {
     return out;
 }
 function load_chunk(pid, pagenum, callback) {
-    $("#process_"+pid+" div.calltable").load("/analysis/chunk/{{analysis.info.id}}/"+pid+"/"+pagenum+"/", function(data, status, xhr){
+    $("#process_"+pid+" div.calltable").load("{% url "analysis.views.index" %}chunk/{{analysis.info.id}}/"+pid+"/"+pagenum+"/", function(data, status, xhr){
         if (status == "error") {
             $("#process_"+pid+" div.calltable").html("Error loading data. Please reload the page and if the error persists contact us.");
         }
@@ -71,7 +71,7 @@ function go_to_api_call(pid, call_id) {
     });
 }
 function load_filtered_chunk(pid, category) {
-    $("#process_"+pid+" div.calltable").load("/analysis/filtered/{{analysis.info.id}}/"+pid+"/"+category+"/", function(data, status, xhr){
+    $("#process_"+pid+" div.calltable").load("{% url "analysis.views.index" %}filtered/{{analysis.info.id}}/"+pid+"/"+category+"/", function(data, status, xhr){
         if (status == "error") {
             $("#process_"+pid+" div.calltable").html("Error loading data. Please reload the page and if the error persists contact us.");
         }
