@@ -1,8 +1,8 @@
                                   CHANGELOG
 
 
-Cuckoo Sandbox 2.0 (TBD)
-===============================
+Cuckoo Sandbox 2.0-rc1 (2016-01-21)
+===================================
 
 * Added Suricata processing module
 * Added screenshots processing module with OCR support
