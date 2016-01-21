@@ -4,6 +4,7 @@
 Cuckoo Sandbox 2.0 (TBD)
 ===============================
 
+* Added Suricata processing module
 * Added screenshots processing module with OCR support
 * Added mitmproxy support to intercept SSL/TLS traffic
 * Added new Flask based distributed utility
@@ -18,11 +19,36 @@ Cuckoo Sandbox 2.0 (TBD)
 * Added processing module for dropped buffers
 * Added option to drop privileges to a specified user
 * Added SMTP sinkhole utility
+* Added Javascript execution with jsbeautifier
+* Added "service" VM to optionally boot a second VM with honeyd support
+* Added noagent machine option for not engaging with cuckoo agent
+* Added nictrace machine option to have virtualbox dump network traffic
+* Added per-machine options (it allows to set extra per-machine options)
+* Added near realtime detection and reflection of changes to guest status
+* Added TLS & SSLv3 Master Secrets dump
+* Added httpreplay dissector to show HTTP and HTTPS traffic
+* Added option to skip calls from JSON report
+* Added option to load the entire process memory dump into IDA Pro
+* Added some process memory dump analysis improvements
+* Added URLs parsing from memory dump and URLs whitelist
+* Added tracking and reporting dead IP address/port combinations
+* Added maliciousness scoring system
+* Added option to web interface to submit dropped files for analysis
+* Added some performance improvments to signature engine
+* Added Volatility support for netscan and sockscan
+* Added re-submit button to web interface
+* Added baseline processing and representation
+* Added traffic routing options
+* Added moloch processing module
+* Added Snort processing module
 * By default HTML report is disabled now
 * By default Virtualbox is starting in headless mode now
+* Improved physical machine support
+* Improved reported data from Virustotal
 * Upgraded HTML analyzer package to Internet Explorer with proper setup phase
 * Upgraded to MAEC 4.1
 * Removed web.py interface
+* Removed option to store analysis data in legacy CSV format
 
 Cuckoo Sandbox 1.2 (2015-03-04)
 ===============================
