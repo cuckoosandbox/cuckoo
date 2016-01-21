@@ -160,7 +160,7 @@ if [ -n "$SETTINGS" ]; then
 fi
 
 if [ -z "$ISOFILE" ]; then
-    echo "Please specify the path to a Windows XP Installer ISO."
+    echo "Please specify the path to a Windows XP or Windows 7 Installer ISO."
     exit 1
 fi
 
@@ -386,7 +386,7 @@ _create_virtual_machines() {
     # Attempt to create a new image if one does not already exist.
     sudo -u cuckoo -i vmcloak init "${EGGNAME}_bird" "$WINOS" $options
     if [ "$?" -eq 0 ]; then
-        vmcloak install "${EGGNAME}_bird" $DEPENDENCIES
+        sudo -u cuckoo -i vmcloak install "${EGGNAME}_bird" $DEPENDENCIES
     fi
 
     # Create various Virtual Machine eggs.
