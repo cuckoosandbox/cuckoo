@@ -71,6 +71,11 @@ surrounding projects and initiatives.
 
 On 7th April 2014, Cuckoo Sandbox 1.1 is released.
 
+During summer 2015 Cuckoo Sandbox started the development of Mac OS X malware
+analysis as a `Google Summer of Code`_ project within `The Honeynet Project`_.
+*Dmitry Rodionov* qualified for the project and developed a working analyzer
+for Mac OS X.
+
 .. _`Google Summer of Code`: http://www.google-melange.com
 .. _`The Honeynet Project`: http://www.honeynet.org
 .. _`Malwr.com`: http://malwr.com
