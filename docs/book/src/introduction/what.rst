@@ -6,15 +6,15 @@ Cuckoo is an open source automated malware analysis system.
 
 It's used to automatically run and analyze files and collect comprehensive
 analysis results that outline what the malware does while running inside an
-isolated Windows operating system.
+isolated operating system.
 
 It can retrieve the following type of results:
 
-    * Traces of win32 API calls performed by all processes spawned by the malware.
+    * Traces of calls performed by all processes spawned by the malware.
     * Files being created, deleted and downloaded by the malware during its execution.
     * Memory dumps of the malware processes.
     * Network traffic trace in PCAP format.
-    * Screenshots of Windows desktop taken during the execution of the malware.
+    * Screenshots taken during the execution of the malware.
     * Full memory dumps of the machines.
 
 Some History
@@ -112,9 +112,10 @@ Architecture
 Cuckoo Sandbox consists of a central management software which handles sample
 execution and analysis.
 
-Each analysis is launched in a fresh and isolated virtual machine.
-Cuckoo's infrastructure is composed by an Host machine (the management
-software) and a number of Guest machines (virtual machines for analysis).
+Each analysis is launched in a fresh and isolated virtual or physical machine.
+The main components of Cuckoo's infrastructure are an Host machine (the
+management software) and a number of Guest machines (virtual or physical
+machines for analysis).
 
 The Host runs the core component of the sandbox that manages the whole
 analysis process, while the Guests are the isolated environments
