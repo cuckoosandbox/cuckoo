@@ -117,6 +117,9 @@ def index(request, task_id=None, sha1=None):
     if request.POST.get("services"):
         options["services"] = "yes"
 
+    if not request.POST.get("human"):
+        options["human"] = "0"
+
     db = Database()
     task_ids = []
     task_machines = []
