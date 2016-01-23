@@ -442,6 +442,10 @@ class LibVirtMachinery(Machinery):
 
         conn = self._connect()
         try:
+            # Resolve permission issue as libvirt creates the file as
+            # root/root in mode 0600, preventing us from reading it. This
+            # supposedly still doesn't allow us to remove it, though..
+            open(path, "wb").close()
             self.vms[label].coreDump(path, flags=libvirt.VIR_DUMP_MEMORY_ONLY)
         except libvirt.libvirtError as e:
             raise CuckooMachineError("Error dumping memory virtual machine "
