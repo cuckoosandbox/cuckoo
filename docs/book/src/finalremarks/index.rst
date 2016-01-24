@@ -20,18 +20,15 @@ Links
 Join the discussion
 ===================
 
-You can get in contact with the Cuckoo developers and users through the `official
-mailing list`_ kindly provided by `The Honeynet Project`_ or on IRC at the
-official `#cuckoosandbox`_ channel.
+You can get in contact with the Cuckoo developers and users through the `Community`_
+portal or on IRC at the official `#cuckoosandbox`_ channel.
 
-Our mailing list is mostly intended for development discussions and sharing
-of ideas and bug reports.
 If you are encountering an issue you can't solve and are looking for some help,
 go to our `Community`_ website.
 
 Please read the following rules before posting:
 
- * Before posting, read the mailing list archives, the Cuckoo blog,
+ * Before posting, read the `Community`_ archives, the Cuckoo blog,
    the documentation and Google about your issue. **DO NOT** post questions that
    have already been answered over and over everywhere.
  * Posting messages saying just something like "Doesn't work, help me" are completely
@@ -41,14 +38,7 @@ Please read the following rules before posting:
    don't have a crystal ball.
  * Use a proper title. Stuff like "Doesn't work", "Help me", "Error" are not
    proper titles.
- * Try to use `pastebin.com`_, `pastie.org`_ or similar services to paste
-   logs and configs: makes the message more readable.
- * **The community website uses Markdown syntax**. So please read the `Markdown`_
-   documentation before posting.
 
-.. _`pastebin.com`: http://pastebin.com/
-.. _`pastie.org`: http://pastie.org/
-.. _`official mailing list`: https://public.honeynet.org/mailman/listinfo/cuckoo
 .. _`#cuckoosandbox`: irc://irc.freenode.net/cuckoosandbox
 .. _`Markdown`: http://daringfireball.net/projects/markdown/syntax
 .. _`Community`: http://community.cuckoosandbox.org
