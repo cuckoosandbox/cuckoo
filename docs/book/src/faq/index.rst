@@ -67,7 +67,7 @@ Please follow the upgrade steps described in :doc:`../installation/upgrade`.
 Cuckoo stumbles and produces some error I don't understand
 ----------------------------------------------------------
 
-Cuckoo is a young and still evolving project, it's possible that
+Cuckoo is a mature but always evolving project, it's possible that
 you encounter some problems while running it, but before you rush into
 sending emails to everyone make sure you read what follows.
 
