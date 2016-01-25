@@ -109,7 +109,7 @@ Make sure when you ask for help to:
       setup.
     * Eventually provide a copy of the analysis that generated the problem.
 
-.. _`Community`: http://community.cuckoosandbox.org
+.. _`Community`: https://community.cuckoosandbox.org
 .. _`Google`: http://www.google.com
 
 Check and restore current snapshot with KVM

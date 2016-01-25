@@ -11,7 +11,7 @@ Links
     * `www.malwr.com`_
 
 .. _`www.cuckoosandbox.org`: http://www.cuckoosandbox.org
-.. _`community.cuckoosandbox.org`: http://community.cuckoosandbox.org
+.. _`community.cuckoosandbox.org`: https://community.cuckoosandbox.org
 .. _`github.com/cuckoosandbox`: http://github.com/cuckoosandbox
 .. _`www.malwr.com`: http://www.malwr.com
 
@@ -41,7 +41,7 @@ Please read the following rules before posting:
 
 .. _`#cuckoosandbox`: irc://irc.freenode.net/cuckoosandbox
 .. _`Markdown`: http://daringfireball.net/projects/markdown/syntax
-.. _`Community`: http://community.cuckoosandbox.org
+.. _`Community`: https://community.cuckoosandbox.org
 
 Support Us
 ==========
