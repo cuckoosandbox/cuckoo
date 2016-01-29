@@ -47,6 +47,14 @@ The interface can be configured by editing ``local_settings.py`` under ``web/web
     # host will be accepted. Thus it's usually only necessary to set it in production.
     ALLOWED_HOSTS = ["*"]
 
+In production deploys it is suggested to disable verbose error reporting setting
+``DEBUG`` to False, it could lead to an information disclosure vulnerability. It
+is also suggested to set at least one administrator email address in the
+``ADMIN`` variable to enable error notification by mail.
+
+In some cases, if you are submitting large files, it is suggested to increase
+the maximum file size limit editing ``MAX_UPLOAD_SIZE``.
+
 Usage
 =====
 
