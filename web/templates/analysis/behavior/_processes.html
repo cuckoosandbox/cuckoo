@@ -107,6 +107,7 @@ function load_filtered_chunk(pid, category) {
                 <a id="badge_process_{{process.pid}}" class="badge process" style="color:black;">process</a>
                 <a id="badge_services_{{process.pid}}" class="badge services" style="color:black;">services</a>
                 <a id="badge_sync_{{process.pid}}" class="badge synchronisation" style="color:black;">synchronisation</a>
+                <a id="badge_iexplore_{{process.pid}}" class="badge iexplore" style="color:black;">iexplore</a>
             </p>
 
             <script type="text/javascript">
@@ -119,6 +120,7 @@ function load_filtered_chunk(pid, category) {
                 $("#badge_process_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "process"); });
                 $("#badge_services_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "services"); });
                 $("#badge_sync_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "synchronisation"); });
+                $("#badge_iexplore_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "iexplore"); });
 
                 $('.tab-content').on('click', '.call-link', function (event) {
                     cid = $(this).attr('data-cid');
