@@ -66,3 +66,4 @@ For example, if your Cuckoo server has the IP address of 192.168.1.1, then you w
 Gateway and DNS server in Windows Settings to be 192.168.1.1 as well.
 
     .. image:: ../../_images/screenshots/windows_network.png
+        :align: center
