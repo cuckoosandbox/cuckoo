@@ -19,7 +19,8 @@ In order to start the API server you can simply do::
 
     $ ./utils/api.py
 
-By default it will bind the service on **localhost:8090**. If you want to change those values, you can for example do this::
+By default it will bind the service on **localhost:8090**. If you want to change
+those values, you can for example do this::
 
     $ ./utils/api.py --host 0.0.0.0 --port 1337
 
@@ -33,7 +34,8 @@ a simple example of deploying the API via `uWSGI`_ and `Nginx`_. These
 instructions are written with Ubuntu GNU/Linux in mind, but may be adapted for
 other platforms.
 
-This solution requires uWSGI, the uWSGI Python plugin, and Nginx. All are available as packages::
+This solution requires uWSGI, the uWSGI Python plugin, and Nginx. All are
+available as packages::
 
     $ sudo apt-get install uwsgi uwsgi-plugin-python nginx
 
@@ -52,8 +54,9 @@ To begin, create a uWSGI configuration file at ``/etc/uwsgi/apps-available/cucko
 
 This configuration inherits a number of settings from the distribution's
 default uWSGI configuration, loading ``api.py`` from the Cuckoo installation
-directory. If Cuckoo is installed in a different path, adjust the configuration
-(the *chdir* setting, and perhaps the *uid* and *gid* settings) accordingly.
+directory. In this example we installed Cuckoo in /home/cuckoo/cuckoo, if Cuckoo
+is installed in a different path, adjust the configuration (the *chdir* setting,
+and perhaps the *uid* and *gid* settings) accordingly.
 
 Enable the app configuration and start the server::
 
@@ -96,7 +99,8 @@ To begin, create a Nginx configuration file at ``/etc/nginx/sites-available/cuck
         }
     }
 
-Make sure that Nginx can connect to the uWSGI socket by placing its user in the **cuckoo** group::
+Make sure that Nginx can connect to the uWSGI socket by placing its user in the
+**cuckoo** group::
 
     $ sudo adduser www-data cuckoo
 
@@ -116,7 +120,8 @@ HTTPS.
 Resources
 =========
 
-Following is a list of currently available resources and a brief description of each one. For details click on the resource name.
+Following is a list of currently available resources and a brief description of
+each one. For details click on the resource name.
 
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | Resource                          | Description                                                                                                      |
