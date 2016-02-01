@@ -218,6 +218,17 @@ class AnalysisManager(threading.Thread):
                         "ignoring routing for this analysis: %r", route)
             self.interface = None
 
+        # Checking if network interface is still available. If VPN process
+        # dies for some reason, tunX interface will be no longer available.
+        if self.interface and not rooter("nic_available", self.interface):
+            log.error("Network interface '%s' configured for this analysis "
+                      "is not available in the system. Switching to route=none"
+                      " mode.", self.interface)
+            route = "none"
+            self.task.options["route"] = "none"
+            self.interface = None
+            self.rt_table = None
+
         if self.interface:
             rooter("forward_enable", self.machine.interface,
                    self.interface, self.machine.ip)

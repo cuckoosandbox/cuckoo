@@ -32,6 +32,16 @@ def nic_available(interface):
     except subprocess.CalledProcessError:
         return False
 
+def rt_available(rt_table):
+    """Check if specified routing table is defined"""
+    try:
+        subprocess.check_call([settings.ip, "route", "list", "table", rt_table],
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
 def vpn_status():
     ret = {}
     for line in run(settings.openvpn, "status")[0].split("\n"):
@@ -63,10 +73,10 @@ def disable_nat(interface):
     run(settings.iptables, "-t", "nat", "-D", "POSTROUTING",
         "-o", interface, "-j", "MASQUERADE")
 
-def enable_rttable(rt_table, interface):
-    """Populate routing table for this interface using routes
+def init_rttable(rt_table, interface):
+    """Initialise routing table for this interface using routes
     from main table"""
-    if rt_table == "main":
+    if rt_table in ["local", "main", "default"]:
         return
 
     for line in run(settings.ip, "route", "list", "dev",
@@ -75,16 +85,12 @@ def enable_rttable(rt_table, interface):
         args += ["dev", interface, "table", rt_table]
         run(settings.ip, *args)
 
-def disable_rttable(rt_table, interface):
-    """Flushes routing table entries for this interface"""
-    if rt_table == "main":
+def flush_rttable(rt_table):
+    """Flushes specified routing table entries"""
+    if rt_table in ["local", "main", "default"]:
         return
 
-    for line in run(settings.ip, "route", "list", "dev",
-                    interface)[0].split("\n"):
-        args = ["route", "del"] + [x for x in line.split(" ") if x]
-        args += ["dev", interface, "table", rt_table]
-        run(settings.ip, *args)
+    run(settings.ip, "route", "flush", "table", rt_table)
 
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
@@ -116,14 +122,15 @@ def srcroute_disable(rt_table, ipaddr):
 
 handlers = {
     "nic_available": nic_available,
+    "rt_available": rt_available,
     "vpn_status": vpn_status,
     "vpn_enable": vpn_enable,
     "vpn_disable": vpn_disable,
     "forward_drop": forward_drop,
     "enable_nat": enable_nat,
     "disable_nat": disable_nat,
-    "enable_rttable": enable_rttable,
-    "disable_rttable": disable_rttable,
+    "init_rttable": init_rttable,
+    "flush_rttable": flush_rttable,
     "forward_enable": forward_enable,
     "forward_disable": forward_disable,
     "srcroute_enable": srcroute_enable,
