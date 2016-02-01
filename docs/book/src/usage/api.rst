@@ -133,7 +133,9 @@ each one. For details click on the resource name.
 | ``GET`` :ref:`tasks_list`         | Returns the list of tasks stored in the internal Cuckoo database.                                                |
 |                                   | You can optionally specify a limit of entries to return.                                                         |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`tasks_view`         | Returns the details on the task assigned to the specified ID.                                                    |
+| ``GET`` :ref:`tasks_view`         | Reschedule a task assigned to the specified ID.                                                                  |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_reschedule`   | Returns the details on the task assigned to the specified ID.                                                    |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_delete`       | Removes the given task from the database and deletes the results.                                                |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
@@ -141,6 +143,8 @@ each one. For details click on the resource name.
 |                                   | You can optionally specify which report format to return, if none is specified the JSON report will be returned. |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_shots`        | Retrieves one or all screenshots associated with a given analysis task ID.                                       |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_rereport`     | Re-run reporting for task associated with a given analysis task ID.                                              |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`memory_list`        | Returns a list of memory dump files associated with a given analysis task ID.                                    |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
@@ -156,7 +160,9 @@ each one. For details click on the resource name.
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`machines_view`      | Returns details on the analysis machine associated with the specified name.                                      |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`cuckoo_status`      | Returns the basic cuckoo status, including version and tasks overview                                            |
+| ``GET`` :ref:`cuckoo_status`      | Returns the basic cuckoo status, including version and tasks overview.                                           |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`vpn_status`         | Returns VPN status.                                                                                              |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 
 .. highlight:: javascript
@@ -402,6 +408,32 @@ each one. For details click on the resource name.
             * ``200`` - no error
             * ``404`` - task not found
 
+.. _tasks_reschedule:
+
+/tasks/reschedule
+-----------------
+
+    **GET /tasks/reschedule/** *(int: id)*
+
+        Reschedule a task with the specified ID.
+
+        **Example request**::
+
+            curl http://localhost:8090/tasks/reschedule/1
+
+        **Example response**::
+
+            {
+                "status": "OK"
+            }
+
+        **Parameters**:
+            * ``id`` *(required)* *(int)* - ID of the task to reschedule
+
+        **Status codes**:
+            * ``200`` - no error
+            * ``404`` - task not found
+
 .. _tasks_delete:
 
 /tasks/delete
@@ -464,6 +496,32 @@ each one. For details click on the resource name.
 
         **Status codes**:
             * ``404`` - file or folder not found
+
+.. _tasks_rereport:
+
+/tasks/rereport
+---------------
+
+    **GET /tasks/rereport/** *(int: id)*
+
+        Re-run reporting for task associated with the specified task ID.
+
+        **Example request**::
+
+            curl http://localhost:8090/tasks/rereport/1
+
+        **Example response**::
+
+            {
+                "success": true
+            }
+
+        **Parameters**:
+            * ``id`` *(required)* *(int)* - ID of the task to re-run report
+
+        **Status codes**:
+            * ``200`` - no error
+            * ``404`` - task not found
 
 .. _memory_list:
 
@@ -734,3 +792,20 @@ each one. For details click on the resource name.
         **Status codes**:
             * ``200`` - no error
             * ``404`` - machine not found
+
+.. _vpn_status:
+
+/vpn/status
+-----------
+
+    **GET /vpn/status
+
+        Returns VPN status.
+
+        **Example request**::
+
+            curl http://localhost:8090/vpn/status
+
+        **Status codes**:
+            * ``200`` - show status
+            * ``500`` - not available
