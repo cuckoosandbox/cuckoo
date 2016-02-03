@@ -74,14 +74,13 @@ You can finally take a snapshot with the following command::
 
     $ virsh snapshot-create "<Name of VM>"
 
-Having multiple snapshots can cause errors.
+Having multiple snapshots can cause errors::
 
-ERROR: No snapshot found for virtual machine VM-Name
+    ERROR: No snapshot found for virtual machine VM-Name
 
-VM snapshots can be managed using the following commands.
+VM snapshots can be managed using the following commands::
 
     $ virsh snapshot-list "VM-Name"
-
     $ virsh snapshot-delete "VM-Name" 1234567890
 
 VMware Workstation

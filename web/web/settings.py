@@ -167,7 +167,15 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        # Log django request to log file. Uncomment to enable.
+        # 'log_file': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.handlers.RotatingFileHandler',
+        #     'filename': os.path.join(CUCKOO_PATH, "log", "django.log"),
+        #     'maxBytes': 1024*1024*16, # 16 megabytes
+        #     'backupCount': 3, # keep 3 copies
+        # },
     },
     'loggers': {
         'django.request': {
@@ -175,6 +183,11 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        # Log django request to log file. Uncomment to enable.
+        # 'django.request': {
+        #     'handlers': ['log_file'],
+        #     'level': 'DEBUG',
+        # },
     }
 }
 

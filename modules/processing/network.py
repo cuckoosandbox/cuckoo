@@ -297,6 +297,10 @@ class Pcap(object):
                 query["type"] = "TXT"
             elif q_type == dpkt.dns.DNS_SRV:
                 query["type"] = "SRV"
+            else:
+                # Some requests are not parsed by dpkt.
+                # For example MDNS requests have q_type=255.
+                query["type"] = "None"
 
             # DNS answer.
             query["answers"] = []

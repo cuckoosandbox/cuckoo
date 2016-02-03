@@ -11,6 +11,7 @@ class DOC(Package):
     """Word analysis package."""
     PATHS = [
         ("ProgramFiles", "Microsoft Office", "WINWORD.EXE"),
+        ("ProgramFiles", "Microsoft Office", "Office10", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office11", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office12", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office14", "WINWORD.EXE"),

@@ -38,9 +38,9 @@ Some questions you should ask yourself:
     * Which platform do I want to use to run my analysis on?
     * What kind of information I want about the file?
 
-The creation of the isolated environment (the virtual machine) is probably the
-most critical and important part of a sandbox deployment: it should be done
-carefully and with proper planning.
+The creation of the isolated environment (for example a virtual machine) is
+probably the most critical and important part of a sandbox deployment: it should
+be done carefully and with proper planning.
 
 Before getting hands on the virtualization product of your choice, you should
 already have a design plan that defines:
@@ -70,4 +70,3 @@ Once you finished designing and preparing the prototype of system you want, you
 can proceed creating it and deploying it. You will be always in time to
 change things or slightly fix them, but remember that good planning at the
 beginning always means less troubles in the long run.
-

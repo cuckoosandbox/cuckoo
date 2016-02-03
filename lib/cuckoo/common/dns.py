@@ -107,7 +107,7 @@ class Resultholder:
 
 
 # gevent based resolver with timeout
-def resolve_gevent(name):
+"""def resolve_gevent(name):
     result = resolve_gevent_real(name)
     # if it failed, do this a second time because of strange libevent behavior
     # basically sometimes the Timeout fires immediately instead of after
@@ -125,14 +125,14 @@ def resolve_gevent_real(name):
             pass
 
     return result
-
+"""
 
 # choose resolver automatically
 def resolve(name):
     if HAVE_CARES:
         return resolve_cares(name)
-    elif HAVE_GEVENT:
-        return resolve_gevent(name)
+    #elif HAVE_GEVENT:
+    #    return resolve_gevent(name)
     else:
         return resolve_thread(name)
 

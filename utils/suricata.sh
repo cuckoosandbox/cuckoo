@@ -27,4 +27,8 @@ fi
 
 suricata --unix-socket -D
 
+while [ ! -e /var/run/suricata/cuckoo.socket ]; do
+    sleep 1
+done
+
 sudo chown cuckoo:cuckoo /var/run/suricata/cuckoo.socket
