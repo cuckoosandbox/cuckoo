@@ -114,6 +114,12 @@ class ProcessMemory(Processing):
 
                 if self.options.get("idapro"):
                     self.create_idapy(proc)
+                    
+                if self.options.get("dump_delete"):
+                    try:
+                        os.remove(dump_path)
+                    except OSError:
+                        log.error("Unable to delete memory dump file at path \"%s\" ", dump_path)
 
                 results.append(proc)
 
