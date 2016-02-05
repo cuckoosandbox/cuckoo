@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+<div class="row">
+    <div class="col-md-6 col-md-offset-3 center">
+        <p><img src="{% static "graphic/cuckoo.png" %}" /></p>
+
+        <form class="form-inline" role="form" action="{% url "analysis.views.search2" %}" enctype="multipart/form-data" method="post">{% csrf_token %}
+            <p class="text-muted" style="margin-top: 5px;">For details on how to perform searches, get some <a href="#help" data-toggle="collapse">help</a>.</p>
+
+            <div class="form-group">
+                <label class="sr-only" for="form_search">Search term</label>
+                <input type="text" class="form-control" id="form_search" name="search" size=50 placeholder="Search term" />
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+</div>
+{% if term %}
+    <h3>Term <span class="text-info"><i>{{term}}</i></span></h3>
+{% endif %}
+{% if analyses %}
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Search Results</h3>
+        </div>
+        <table class="table table-striped" style="table-layout: fixed;">
+            <thead>
+            <tr>
+                <th style="width: 10%">Task ID</th>
+                <th style="width: 90%">Matches</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for analysis in analyses %}
+                <tr>
+                    <td>{{ analysis.task_id }}</td>
+                    <td style="word-wrap: break-word;">
+                        <pre>{{ analysis.matches|join:"<br />" }}
+({{ analysis.total }} more matches)</pre>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% elif analyses != None %}
+    <div class="alert alert-info" style="text-align: center;"><b>No results found.</b></div>
+{% else %}
+    {% if error %}
+        <div class="alert alert-error" style="text-align: center;"><b>{{error}}</b></div>
+    {% endif %}
+{% endif %}
+{% endblock %}

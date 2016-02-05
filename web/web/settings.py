@@ -26,6 +26,21 @@ MONGO_DB = cfg.mongodb.get("db", "cuckoo")
 
 MONGO = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)[MONGO_DB]
 
+if cfg.elasticsearch.get("enabled"):
+    try:
+        import elasticsearch
+    except ImportError:
+        raise Exception("ElasticSearch is enabled but not installed, aborting!")
+
+    hosts = []
+    for host in cfg.elasticsearch.get("hosts", "127.0.0.1:9200").split(","):
+        if host.strip():
+            hosts.append(host.strip())
+
+    ELASTIC = elasticsearch.Elasticsearch(hosts)
+else:
+    ELASTIC = None
+
 MOLOCH_ENABLED = cfg.moloch.get("enabled")
 MOLOCH_HOST = cfg.moloch.get("host")
 

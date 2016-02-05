@@ -337,6 +337,54 @@ def full_memory_dump_file(request, analysis_number):
             "error": "File not found",
         })
 
+def _search2_helper(obj, value):
+    r = []
+
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            r += _search2_helper(v, value)
+
+    if isinstance(obj, (tuple, list)):
+        for v in obj:
+            r += _search2_helper(v, value)
+
+    if isinstance(obj, basestring):
+        if value in obj.lower():
+            r.append(obj)
+
+    return r
+
+@require_http_methods(["GET", "POST"])
+def search2(request):
+    """New Search API using ElasticSearch as backend."""
+    if not request.POST.get("search"):
+        return render(request, "analysis/search2.html")
+
+    value = request.POST["search"]
+
+    r = settings.ELASTIC.search(body={
+        "query": {
+            "query_string": {
+                "query": value,
+            },
+        },
+    })
+
+    analyses = []
+    for hit in r["hits"]["hits"]:
+        # Find the actual matches in this hit and limit to 8 matches.
+        matches = _search2_helper(hit, value.lower())
+        analyses.append({
+            "task_id": hit["_index"].split("-")[-1],
+            "matches": matches[:8],
+            "total": max(len(matches)-8, 0),
+        })
+
+    return render(request, "analysis/search2.html", {
+        "analyses": analyses,
+        "term": request.POST["search"],
+        "error": None,
+    })
 
 @require_http_methods(["GET", "POST"])
 def search(request):
