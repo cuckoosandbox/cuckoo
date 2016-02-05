@@ -383,6 +383,7 @@ def search2(request):
     if request.POST.get("raw"):
         return render(request, "analysis/search2_results.html", {
             "analyses": analyses,
+            "term": request.POST["search"],
         })
 
     return render(request, "analysis/search2.html", {
