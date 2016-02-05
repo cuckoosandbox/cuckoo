@@ -10,6 +10,9 @@ from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.exceptions import CuckooReportError
 
+logging.getLogger("elasticsearch").setLevel(logging.WARNING)
+logging.getLogger("elasticsearch.trace").setLevel(logging.WARNING)
+
 try:
     from elasticsearch import (
         Elasticsearch, ConnectionError, ConnectionTimeout
@@ -44,6 +47,53 @@ class ElasticSearchReporting(Report):
         except (ConnectionError, ConnectionTimeout) as e:
             raise CuckooReportError("Cannot connect to Elasticsearch: %s" % e)
 
+    def do_index(self, obj):
+        index = "%s-%d" % (self.index, self.task["id"])
+
+        try:
+            self.es.create(index=index, doc_type=self.type_, body=obj)
+        except Exception as e:
+            raise CuckooReportError(
+                "Failed to save results in ElasticSearch for "
+                "task #%d: %s" % (self.task["id"], e)
+            )
+
+        self.idx += 1
+
+    def process_summary(self, results):
+        """Index the behavioral summary."""
+        summary = results.get("behavior", {}).get("summary")
+        if summary:
+            self.do_index(summary)
+
+    def process_behavior(self, results, paginate=100):
+        """Index the behavioral data."""
+        for process in results.get("behavior", {}).get("processes", []):
+            page, calls = 0, []
+            for call in process["calls"]:
+                calls.append(call)
+
+                if len(calls) == paginate:
+                    self.do_index({
+                        "process": {
+                            "pid": process["pid"],
+                            "page": page,
+                            "calls": calls,
+                        },
+                    })
+
+                    page += 1
+                    calls = []
+
+            if calls:
+                self.do_index({
+                    "process": {
+                        "pid": process["pid"],
+                        "page": page,
+                        "calls": calls,
+                    },
+                })
+
     def run(self, results):
         """Index the Cuckoo report into ElasticSearch.
         @param results: analysis results dictionary.
@@ -56,12 +106,11 @@ class ElasticSearchReporting(Report):
             )
 
         self.connect()
+        self.idx = 0
 
-        try:
-            self.es.create(index=self.index, doc_type=self.type_,
-                           id=self.task["id"], body=results)
-        except:
-            raise CuckooReportError(
-                "Failed to save results in ElasticSearch for task #%d" %
-                results["info"]["id"]
-            )
+        # Index the summary.
+        self.process_summary(results)
+
+        # Index the API calls.
+        if self.options.get("calls", True):
+            self.process_behavior(results)
