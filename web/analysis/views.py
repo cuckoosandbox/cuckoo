@@ -357,7 +357,7 @@ def _search2_helper(obj, k, value):
 @csrf_exempt
 def search2(request):
     """New Search API using ElasticSearch as backend."""
-    if not request.POST.get("search"):
+    if request.method == "GET":
         return render(request, "analysis/search2.html")
 
     value = request.POST["search"]
