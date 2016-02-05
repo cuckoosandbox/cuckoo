@@ -26,7 +26,7 @@ from lib.cuckoo.core.database import Database, TASK_PENDING
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 import modules.processing.network as network
 
-results_db = settings.mongo
+results_db = settings.MONGO
 fs = GridFS(results_db)
 
 @require_safe

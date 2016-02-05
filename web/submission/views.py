@@ -17,7 +17,7 @@ from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.rooter import vpns
 
-results_db = settings.mongo
+results_db = settings.MONGO
 cfg = Config()
 
 def force_int(value):

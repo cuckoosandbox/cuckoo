@@ -24,7 +24,7 @@ MONGO_HOST = cfg.mongodb.get("host", "127.0.0.1")
 MONGO_PORT = cfg.mongodb.get("port", 27017)
 MONGO_DB = cfg.mongodb.get("db", "cuckoo")
 
-mongo = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)[MONGO_DB]
+MONGO = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)[MONGO_DB]
 
 MOLOCH_ENABLED = cfg.moloch.get("enabled")
 MOLOCH_HOST = cfg.moloch.get("host")

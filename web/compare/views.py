@@ -13,7 +13,7 @@ sys.path.append(settings.CUCKOO_PATH)
 
 import lib.cuckoo.common.compare as compare
 
-results_db = settings.mongo
+results_db = settings.MONGO
 
 @require_safe
 def left(request, left_id):
