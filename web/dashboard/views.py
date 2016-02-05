@@ -7,8 +7,7 @@ import sys
 import time
 
 from django.conf import settings
-from django.template import RequestContext
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.views.decorators.http import require_safe
 
 sys.path.append(settings.CUCKOO_PATH)
@@ -75,6 +74,6 @@ def index(request):
         report["estimate_hour"] = int(hourly)
         report["estimate_day"] = int(24 * hourly)
 
-    return render_to_response("dashboard/index.html",
-                              {"report": report},
-                              context_instance=RequestContext(request))
+    return render(request, "dashboard/index.html", {
+        "report": report,
+    })
