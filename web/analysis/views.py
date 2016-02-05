@@ -365,7 +365,7 @@ def search2(request):
     r = settings.ELASTIC.search(body={
         "query": {
             "query_string": {
-                "query": value,
+                "query": "%s*" % value,
             },
         },
     })
