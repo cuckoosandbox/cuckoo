@@ -354,7 +354,7 @@ def _search2_helper(obj, k, value):
 
     return r
 
-@require_http_methods(["GET", "POST"])
+@csrf_exempt
 def search2(request):
     """New Search API using ElasticSearch as backend."""
     if not request.POST.get("search"):
@@ -378,6 +378,11 @@ def search2(request):
             "task_id": hit["_index"].split("-")[-1],
             "matches": matches[:16],
             "total": max(len(matches)-16, 0),
+        })
+
+    if request.POST.get("raw"):
+        return render(request, "analysis/search2_results.html", {
+            "analyses": analyses,
         })
 
     return render(request, "analysis/search2.html", {
