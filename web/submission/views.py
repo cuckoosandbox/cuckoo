@@ -5,7 +5,6 @@
 
 import os
 import sys
-import pymongo
 
 from django.conf import settings
 from django.shortcuts import redirect, render_to_response
@@ -19,7 +18,7 @@ from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.rooter import vpns
 
-results_db = pymongo.MongoClient(settings.MONGO_HOST, settings.MONGO_PORT)[settings.MONGO_DB]
+results_db = settings.mongo
 cfg = Config()
 
 def force_int(value):

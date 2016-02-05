@@ -30,7 +30,7 @@ class MongoDB(Report):
         @raise CuckooReportError: if unable to connect.
         """
         host = self.options.get("host", "127.0.0.1")
-        port = self.options.get("port", 27017)
+        port = int(self.options.get("port", 27017))
         db = self.options.get("db", "cuckoo")
 
         try:
@@ -75,11 +75,11 @@ class MongoDB(Report):
         @param results: analysis results dictionary.
         @raise CuckooReportError: if fails to connect or write to MongoDB.
         """
-        # We put the raise here and not at the import because it would
-        # otherwise trigger even if the module is not enabled in the config.
         if not HAVE_MONGO:
-            raise CuckooDependencyError("Unable to import pymongo "
-                                        "(install with `pip install pymongo`)")
+            raise CuckooDependencyError(
+                "Unable to import pymongo (install with "
+                "`pip install pymongo`)"
+            )
 
         self.connect()
 
@@ -193,7 +193,7 @@ class MongoDB(Report):
                 chunk = []
                 chunks_ids = []
                 # Loop on each process call.
-                for index, call in enumerate(process["calls"]):
+                for call in process["calls"]:
                     # If the chunk size is paginate or if the loop is
                     # completed then store the chunk in MongoDB.
                     if len(chunk) == paginate:

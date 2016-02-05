@@ -30,7 +30,8 @@ class Moloch(Report):
 
         if not os.path.isfile(self.config_path):
             raise CuckooProcessingError(
-                "Unable to locate Moloch configuration")
+                "Unable to locate Moloch configuration"
+            )
 
         args = [
             self.moloch_capture,

@@ -4,7 +4,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import sys
-import pymongo
 
 from django.conf import settings
 from django.template import RequestContext
@@ -15,7 +14,7 @@ sys.path.append(settings.CUCKOO_PATH)
 
 import lib.cuckoo.common.compare as compare
 
-results_db = pymongo.MongoClient(settings.MONGO_HOST, settings.MONGO_PORT)[settings.MONGO_DB]
+results_db = settings.mongo
 
 @require_safe
 def left(request, left_id):
