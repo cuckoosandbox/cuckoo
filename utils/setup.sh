@@ -241,8 +241,17 @@ _setup() {
             "$DEBVERSION contrib" >> /etc/apt/sources.list.d/virtualbox.list
 
         # Add the VirtualBox public key to our apt repository.
-        wget -q https://www.virtualbox.org/download/oracle_vbox.asc \
-            -O- | apt-key add -
+        wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- \
+            | apt-key add -
+    fi
+
+    # Add the ElasticSearch apt repository.
+    if [ ! -e /etc/apt/sources.list.d/elasticsearch.list ]; then
+        echo "deb http://packages.elastic.co/elasticsearch/2.x/debian" \
+            "stable main" >> /etc/apt/sources.list.d/elasticsearch.list
+
+        wget -q https://packages.elastic.co/GPG-KEY-elasticsearch -O- \
+            | sudo apt-key add -
     fi
 
     # Update apt repository and install required packages.
@@ -250,7 +259,8 @@ _setup() {
     apt-get install -y --force-yes sudo git python-dev python-pip postgresql \
         libpq-dev python-dpkt vim tcpdump libcap2-bin genisoimage pwgen \
         htop tig mosh mongodb uwsgi uwsgi-plugin-python nginx virtualbox-4.3 \
-        libffi-dev libxml2-dev libxslt1-dev libjpeg-dev
+        libffi-dev libxml2-dev libxslt1-dev libjpeg-dev samba-common-bin \
+        ethtool elasticsearch
 
     # Create the main postgresql cluster. In recent versions of Ubuntu Server
     # 14.04 you have to do this manually. If it already exists this command
