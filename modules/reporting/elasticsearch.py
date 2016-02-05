@@ -112,5 +112,5 @@ class ElasticSearchReporting(Report):
         self.process_summary(results)
 
         # Index the API calls.
-        if self.options.get("calls", True):
+        if self.options.get("calls"):
             self.process_behavior(results)
