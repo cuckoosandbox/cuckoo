@@ -19,7 +19,12 @@ General Questions
 Can I analyze URLs with Cuckoo?
 -------------------------------
 
-Yes you can. Since version 0.5 URLs are natively supported by Cuckoo.
+Yes you can. Since version 0.5 URLs are natively supported by Cuckoo. 
+Additional details on how URL submissions is documented :doc:`../usage/submit.html#submission-utility`.
+
+
+    $ ./utils/submit.py --url http://www.example.com
+
 
 .. _general_volatility:
 
