@@ -337,20 +337,20 @@ def full_memory_dump_file(request, analysis_number):
             "error": "File not found",
         })
 
-def _search2_helper(obj, value):
+def _search2_helper(obj, k, value):
     r = []
 
     if isinstance(obj, dict):
         for k, v in obj.items():
-            r += _search2_helper(v, value)
+            r += _search2_helper(v, k, value)
 
     if isinstance(obj, (tuple, list)):
         for v in obj:
-            r += _search2_helper(v, value)
+            r += _search2_helper(v, k, value)
 
     if isinstance(obj, basestring):
         if value in obj.lower():
-            r.append(obj)
+            r.append("%s: %s" % (k, obj))
 
     return r
 
@@ -373,11 +373,11 @@ def search2(request):
     analyses = []
     for hit in r["hits"]["hits"]:
         # Find the actual matches in this hit and limit to 8 matches.
-        matches = _search2_helper(hit, value.lower())
+        matches = _search2_helper(hit, "none", value.lower())
         analyses.append({
             "task_id": hit["_index"].split("-")[-1],
-            "matches": matches[:8],
-            "total": max(len(matches)-8, 0),
+            "matches": matches[:16],
+            "total": max(len(matches)-16, 0),
         })
 
     return render(request, "analysis/search2.html", {
