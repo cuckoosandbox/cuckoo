@@ -349,7 +349,7 @@ def _search2_helper(obj, k, value):
             r += _search2_helper(v, k, value)
 
     if isinstance(obj, basestring):
-        if value in obj.lower():
+        if re.search(value, obj, re.I):
             r.append("%s: %s" % (k, obj))
 
     return r
@@ -362,10 +362,12 @@ def search2(request):
 
     value = request.POST["search"]
 
+    match_value = ".*".join(re.split("[^a-zA-Z0-9]+", value.lower()))
+
     r = settings.ELASTIC.search(body={
         "query": {
             "query_string": {
-                "query": "%s*" % value,
+                "query": '"%s"*' % value,
             },
         },
     })
@@ -373,7 +375,7 @@ def search2(request):
     analyses = []
     for hit in r["hits"]["hits"]:
         # Find the actual matches in this hit and limit to 8 matches.
-        matches = _search2_helper(hit, "none", value.lower())
+        matches = _search2_helper(hit, "none", match_value)
         analyses.append({
             "task_id": hit["_index"].split("-")[-1],
             "matches": matches[:16],
