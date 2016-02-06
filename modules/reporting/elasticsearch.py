@@ -60,12 +60,6 @@ class ElasticSearchReporting(Report):
 
         self.idx += 1
 
-    def process_summary(self, results):
-        """Index the behavioral summary."""
-        summary = results.get("behavior", {}).get("summary")
-        if summary:
-            self.do_index(summary)
-
     def process_behavior(self, results, paginate=100):
         """Index the behavioral data."""
         for process in results.get("behavior", {}).get("processes", []):
@@ -108,8 +102,13 @@ class ElasticSearchReporting(Report):
         self.connect()
         self.idx = 0
 
-        # Index the summary.
-        self.process_summary(results)
+        # Index target information, the behavioral summary, and
+        # VirusTotal results.
+        self.do_index({
+            "target": results.get("target"),
+            "summary": results.get("behavior", {}).get("summary"),
+            "virustotal": results.get("virustotal"),
+        })
 
         # Index the API calls.
         if self.options.get("calls"):
