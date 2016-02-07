@@ -66,16 +66,14 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
                 # In Mac OS x:
                 # EADDRNOTAVAIL 49 (Cannot assign requested address)
                 elif e.errno == 99 or e.errno == 49:
-                    raise CuckooCriticalError("Unable to bind ResultServer on "
-                                              "{0}:{1}:{2}. This usually happens "
-                                              "when you start Cuckoo without "
-                                              "bringing up the virtual interface "
-                                              "associated with the ResultServer "
-                                              "IP address. "
-                                              "See http://docs.cuckoosandbox.org"
-                                              "/en/latest/faq/#troubles-problem"
-                                              " for more information."
-                                              "".format(ip, self.port, str(e)))
+                    raise CuckooCriticalError(
+                        "Unable to bind ResultServer on %s:%s %s. This "
+                        "usually happens when you start Cuckoo without "
+                        "bringing up the virtual interface associated with "
+                        "the ResultServer IP address. Please refer to "
+                        "http://docs.cuckoosandbox.org/en/latest/faq/#troubles-problem"
+                        " for more information." % (ip, self.port, e)
+                    )
                 else:
                     raise CuckooCriticalError("Unable to bind ResultServer on "
                                               "{0}:{1}: {2}".format(
