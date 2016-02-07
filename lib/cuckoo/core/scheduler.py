@@ -217,6 +217,7 @@ class AnalysisManager(threading.Thread):
             log.warning("Unknown network routing destination specified, "
                         "ignoring routing for this analysis: %r", route)
             self.interface = None
+            self.rt_table = None
 
         # Checking if network interface is still available. If VPN process
         # dies for some reason, tunX interface will be no longer available.
@@ -235,7 +236,7 @@ class AnalysisManager(threading.Thread):
 
         if self.rt_table:
             rooter("srcroute_enable", self.rt_table, self.machine.ip)
-            
+
         # Propagate the taken route to the database.
         self.db.set_route(self.task.id, route)
 
