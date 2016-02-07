@@ -14,16 +14,13 @@ import stat
 import subprocess
 import sys
 
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
-
-from lib.cuckoo.common.config import Config
-
 def run(*args):
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     return stdout, stderr
 
 def nic_available(interface):
+    """Check if specified network interface is available."""
     try:
         subprocess.check_call([settings.ifconfig, interface],
                               stdout=subprocess.PIPE,
@@ -33,7 +30,7 @@ def nic_available(interface):
         return False
 
 def rt_available(rt_table):
-    """Check if specified routing table is defined"""
+    """Check if specified routing table is defined."""
     try:
         subprocess.check_call([settings.ip, "route", "list", "table", rt_table],
                               stdout=subprocess.PIPE,
@@ -79,8 +76,8 @@ def init_rttable(rt_table, interface):
     if rt_table in ["local", "main", "default"]:
         return
 
-    for line in run(settings.ip, "route", "list", "dev",
-                    interface)[0].split("\n"):
+    stdout, _ = run(settings.ip, "route", "list", "dev", interface)
+    for line in stdout.split("\n"):
         args = ["route", "add"] + [x for x in line.split(" ") if x]
         args += ["dev", interface, "table", rt_table]
         run(settings.ip, *args)
@@ -149,10 +146,6 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger("cuckoo-rooter")
-
-    # Read configuration provided by Cuckoo.
-    cuckoo = Config()
-    vpn = Config("vpn")
 
     if not settings.openvpn or not os.path.exists(settings.openvpn):
         sys.exit("OpenVPN binary is not available, please configure!")
