@@ -142,6 +142,7 @@ if __name__ == "__main__":
     parser.add_argument("--openvpn", default="/etc/init.d/openvpn", help="Path to openvpn")
     parser.add_argument("--iptables", default="/sbin/iptables", help="Path to iptables")
     parser.add_argument("--ip", default="/sbin/ip", help="Path to ip")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
     settings = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
@@ -209,6 +210,13 @@ if __name__ == "__main__":
                 log.info("Invalid argument detected: %r", arg)
                 break
         else:
+            if settings.verbose:
+                log.info(
+                    "Processing command: %s %s %s", command,
+                    " ".join(args),
+                    " ".join("%s=%s" % (k, v) for k, v in kwargs.items())
+                )
+
             output = e = None
             try:
                 output = handlers[command](*args, **kwargs)
