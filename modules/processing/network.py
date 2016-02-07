@@ -276,6 +276,9 @@ class Pcap(object):
             except IndexError:
                 return False
 
+            # DNS RR type mapping.
+            # See: http://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
+            # See: https://github.com/kbandla/dpkt/blob/master/dpkt/dns.py#L42
             query["request"] = q_name
             if q_type == dpkt.dns.DNS_A:
                 query["type"] = "A"
@@ -297,9 +300,11 @@ class Pcap(object):
                 query["type"] = "TXT"
             elif q_type == dpkt.dns.DNS_SRV:
                 query["type"] = "SRV"
+            elif q_type == dpkt.dns.DNS_ANY:
+                # For example MDNS requests have q_type=255.
+                query["type"] = "All"
             else:
                 # Some requests are not parsed by dpkt.
-                # For example MDNS requests have q_type=255.
                 query["type"] = "None"
 
             # DNS answer.
