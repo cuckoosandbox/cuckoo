@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -447,7 +448,8 @@ class RunSignatures(object):
         # into the results dictionary.
         self.matched.sort(key=lambda key: key["severity"])
         self.results["signatures"] = self.matched
-        self.results["info"]["score"] = score / 5.0
+        if "info" in self.results:
+            self.results["info"]["score"] = score / 5.0
 
 class RunReporting(object):
     """Reporting Engine.

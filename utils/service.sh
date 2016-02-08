@@ -36,6 +36,9 @@ _install_configuration() {
 # is by default turned *OFF*. Enable by uncommenting and setting the value.
 # WEBADDR="127.0.0.1"
 
+# Run Suricata in the background?
+SURICATA="0"
+
 # Start Cuckoo in verbose mode. Toggle to 1 to enable verbose mode.
 VERBOSE="0"
 EOF
@@ -96,21 +99,17 @@ EOF
     cat > /etc/init/cuckoo-process.conf << EOF
 # Cuckoo results processing service.
 
-description "cuckoo results processing"
+description "start cuckoo results processing"
 start on started cuckoo
 stop on stopped cuckoo
-setuid "$USERNAME"
-chdir "$CUCKOO"
 
-# Restart Cuckoo report processing if it exits unexpectedly.
-respawn
+env PROCESSES=4
 
-env CONFFILE="$CONFFILE"
-
-script
-    . "\$CONFFILE"
-
-    exec ./utils/process.py auto -p 4
+pre-start script
+    echo STARTING
+    for i in \$(seq 1 \$PROCESSES); do
+        start cuckoo-process2 INSTANCE=process\$i
+    done
 end script
 EOF
 
@@ -118,8 +117,7 @@ EOF
 # Cuckoo results processing service.
 
 description "cuckoo results processing"
-start on started cuckoo
-stop on stopped cuckoo
+stop on stopping cuckoo-process
 setuid "$USERNAME"
 chdir "$CUCKOO"
 instance \$INSTANCE

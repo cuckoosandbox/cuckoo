@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -88,7 +89,7 @@ class Pcap(object):
         self.dns_answers = set()
         # List containing all SMTP requests.
         self.smtp_requests = []
-        # Reconstruncted SMTP flow.
+        # Reconstructed SMTP flow.
         self.smtp_flow = {}
         # List containing all IRC requests.
         self.irc_requests = []
@@ -275,6 +276,9 @@ class Pcap(object):
             except IndexError:
                 return False
 
+            # DNS RR type mapping.
+            # See: http://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
+            # See: https://github.com/kbandla/dpkt/blob/master/dpkt/dns.py#L42
             query["request"] = q_name
             if q_type == dpkt.dns.DNS_A:
                 query["type"] = "A"
@@ -296,6 +300,12 @@ class Pcap(object):
                 query["type"] = "TXT"
             elif q_type == dpkt.dns.DNS_SRV:
                 query["type"] = "SRV"
+            elif q_type == dpkt.dns.DNS_ANY:
+                # For example MDNS requests have q_type=255.
+                query["type"] = "All"
+            else:
+                # Some requests are not parsed by dpkt.
+                query["type"] = "None"
 
             # DNS answer.
             query["answers"] = []
@@ -785,13 +795,15 @@ def iplayer_from_raw(raw, linktype=1):
     @param linktype: integer describing link type as expected by dpkt
     """
     if linktype == 1:  # ethernet
-        pkt = dpkt.ethernet.Ethernet(raw)
-        ip = pkt.data
+        try:
+            pkt = dpkt.ethernet.Ethernet(raw)
+            return pkt.data
+        except dpkt.NeedData:
+            pass
     elif linktype == 101:  # raw
-        ip = dpkt.ip.IP(raw)
+        return dpkt.ip.IP(raw)
     else:
         raise CuckooProcessingError("unknown PCAP linktype")
-    return ip
 
 def conn_from_flowtuple(ft):
     """Convert the flow tuple into a dictionary (suitable for JSON)"""

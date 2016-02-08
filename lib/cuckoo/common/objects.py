@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -48,13 +49,20 @@ log = logging.getLogger(__name__)
 FILE_CHUNK_SIZE = 16 * 1024
 
 URL_REGEX = (
-    "(https?://)(["
-    "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]\\."
-    "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]\\."
-    "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]\\."
-    "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]"
-    "]|[a-zA-Z0-9\\.-]+)"
-    "(:\\d+)?(/[\\(\\)a-zA-Z0-9_:%?=/\\.-]+)"
+    # HTTP/HTTPS.
+    "(https?:\\/\\/)"
+    "((["
+    # IP address.
+    "(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\."
+    "(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\."
+    "(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\."
+    "(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])]|"
+    # Or domain name.
+    "[a-zA-Z0-9\\.-]+)"
+    # Optional port.
+    "(\\:\\d+)?"
+    # URI.
+    "(/[\\(\\)a-zA-Z0-9_:%?=/\\.-]*)?"
 )
 
 class Dictionary(dict):

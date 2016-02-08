@@ -25,15 +25,6 @@ The interface can be configured by editing ``local_settings.py`` under ``web/web
     # Make this unique, and don't share it with anybody.
     # SECRET_KEY = "YOUR_RANDOM_KEY"
 
-    # Local time zone for this installation. Choices can be found here:
-    # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
-    # although not all choices may be available on all operating systems.
-    # On Unix systems, a value of None will cause Django to use the same
-    # timezone as the operating system.
-    # If running in a Windows environment this must be set to the same as your
-    # system time zone.
-    TIME_ZONE = "America/Chicago"
-
     # Language code for this installation. All choices can be found here:
     # http://www.i18nguy.com/unicode/language-identifiers.html
     LANGUAGE_CODE = "en-us"
@@ -55,6 +46,14 @@ The interface can be configured by editing ``local_settings.py`` under ``web/web
     # When DEBUG is True or when running tests, host validation is disabled; any
     # host will be accepted. Thus it's usually only necessary to set it in production.
     ALLOWED_HOSTS = ["*"]
+
+In production deploys it is suggested to disable verbose error reporting setting
+``DEBUG`` to False, it could lead to an information disclosure vulnerability. It
+is also suggested to set at least one administrator email address in the
+``ADMIN`` variable to enable error notification by mail.
+
+In some cases, if you are submitting large files, it is suggested to increase
+the maximum file size limit editing ``MAX_UPLOAD_SIZE``.
 
 Usage
 =====

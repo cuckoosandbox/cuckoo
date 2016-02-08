@@ -1,9 +1,11 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import sys
 import os
+import pymongo
+import sys
 
 # Cuckoo path.
 CUCKOO_PATH = os.path.join(os.getcwd(), "..")
@@ -21,6 +23,26 @@ if not cfg.mongodb.get("enabled"):
 MONGO_HOST = cfg.mongodb.get("host", "127.0.0.1")
 MONGO_PORT = cfg.mongodb.get("port", 27017)
 MONGO_DB = cfg.mongodb.get("db", "cuckoo")
+
+try:
+    MONGO = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)[MONGO_DB]
+except Exception as e:
+    raise Exception("Unable to connect to Mongo: %s" % e)
+
+if cfg.elasticsearch.get("enabled"):
+    try:
+        import elasticsearch
+    except ImportError:
+        raise Exception("ElasticSearch is enabled but not installed, aborting!")
+
+    hosts = []
+    for host in cfg.elasticsearch.get("hosts", "127.0.0.1:9200").split(","):
+        if host.strip():
+            hosts.append(host.strip())
+
+    ELASTIC = elasticsearch.Elasticsearch(hosts)
+else:
+    ELASTIC = None
 
 MOLOCH_ENABLED = cfg.moloch.get("enabled")
 MOLOCH_HOST = cfg.moloch.get("host")
@@ -166,7 +188,15 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        # Log django request to log file. Uncomment to enable.
+        # 'log_file': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.handlers.RotatingFileHandler',
+        #     'filename': os.path.join(CUCKOO_PATH, "log", "django.log"),
+        #     'maxBytes': 1024*1024*16, # 16 megabytes
+        #     'backupCount': 3, # keep 3 copies
+        # },
     },
     'loggers': {
         'django.request': {
@@ -174,6 +204,11 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        # Log django request to log file. Uncomment to enable.
+        # 'django.request': {
+        #     'handlers': ['log_file'],
+        #     'level': 'DEBUG',
+        # },
     }
 }
 

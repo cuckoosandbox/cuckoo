@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -18,6 +19,14 @@ class Sniffer(Auxiliary):
         self.proc = None
 
     def start(self):
+        if not self.machine.interface:
+            log.error("Network interface not defined, network capture aborted")
+            return
+
+        # Handle special pcap dumping options.
+        if "nictrace" in self.machine.options:
+            return
+
         tcpdump = self.options.get("tcpdump", "/usr/sbin/tcpdump")
         bpf = self.options.get("bpf", "")
         file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
@@ -34,10 +43,6 @@ class Sniffer(Auxiliary):
         #    log.error("Tcpdump is not accessible from this user, "
         #              "network capture aborted")
         #    return
-
-        if not self.machine.interface:
-            log.error("Network interface not defined, network capture aborted")
-            return
 
         pargs = [
             tcpdump, "-U", "-q", "-s", "0", "-n",

@@ -1,9 +1,16 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
 import datetime
+
+try:
+    import jsbeautifier
+    HAVE_JSBEAUTIFIER = True
+except ImportError:
+    HAVE_JSBEAUTIFIER = False
 
 from lib.cuckoo.common.abstracts import BehaviorHandler
 from lib.cuckoo.common.netlog import BsonParser
@@ -11,10 +18,19 @@ from lib.cuckoo.common.netlog import BsonParser
 log = logging.getLogger(__name__)
 
 class MonitorProcessLog(list):
+    """Yields each API call event to the parent handler. Optionally it may
+    beautify certain API calls."""
+
     def __init__(self, eventstream):
         self.eventstream = eventstream
         self.first_seen = None
         self.has_apicalls = False
+
+    def _api_COleScript_Compile(self, event):
+        if HAVE_JSBEAUTIFIER:
+            event["raw"] = "script",
+            event["arguments"]["script"] = \
+                jsbeautifier.beautify(event["arguments"]["script"])
 
     def __iter__(self):
         # call_id = 0
@@ -43,6 +59,11 @@ class MonitorProcessLog(list):
                 # Get rid of the unique hash, this is only relevant
                 # for automation.
                 del event["uniqhash"]
+
+                # If available, call a modifier function.
+                apiname = "_api_%s" % event["api"]
+                if hasattr(self, apiname):
+                    getattr(self, apiname)(event)
 
                 yield event
 
@@ -292,10 +313,9 @@ class BehaviorReconstructor(object):
     # GUIDs.
 
     def _api_CoCreateInstance(self, return_value, arguments):
-        # The iid vs riid is to be removed later on and should be just iid.
         return [
             ("guid", arguments["clsid"]),
-            ("guid", arguments.get("iid", arguments.get("riid"))),
+            ("guid", arguments["iid"]),
         ]
 
     def _api_CoCreateInstanceEx(self, return_value, arguments):
@@ -312,7 +332,17 @@ class BehaviorReconstructor(object):
             ("guid", arguments["iid"]),
         ]
 
-    # TLS Master Secrets.
+    # SSLv3 & TLS Master Secrets.
+
+    def _api_Ssl3GenerateKeyMaterial(self, return_value, arguments):
+        if arguments["client_random"] and arguments["server_random"]:
+            return [
+                ("tls_master", (
+                    arguments["client_random"],
+                    arguments["server_random"],
+                    arguments["master_secret"],
+                ))
+            ]
 
     def _api_PRF(self, return_value, arguments):
         if arguments["type"] == "key expansion":

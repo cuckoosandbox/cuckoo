@@ -60,12 +60,53 @@ Following is the default *conf/auxiliary.conf* file::
     # path is correct.
     tcpdump = /usr/sbin/tcpdump
 
-    # Specify the network interface name on which tcpdump should monitor the
-    # traffic. Make sure the interface is active.
-    interface = vboxnet0
+    # We used to define the network interface to capture on in auxiliary.conf, but
+    # this has been moved to the "interface" field of each Virtual Machinery
+    # configuration.
 
     # Specify a Berkeley packet filter to pass to tcpdump.
+    # Note: packer filtering is not possible when using "nictrace" functionality
+    # from VirtualBox (for example dumping inter-VM traffic).
     # bpf = not arp
+
+    [mitm]
+    # Enable man in the middle proxying (mitmdump) [yes/no].
+    enabled = no
+
+    # Specify the path to your local installation of mitmdump. Make sure this
+    # path is correct.
+    mitmdump = /usr/local/bin/mitmdump
+
+    # Listen port base. Each virtual machine will use its own port to be
+    # able to make a good distinction between the various running analyses.
+    # Generally port 50000 should be fine, in this case port 50001, 50002, etc
+    # will also be used - again, one port per analyses.
+    port_base = 50000
+
+    # Script file to interact with the network traffic. Please refer to the
+    # documentation of mitmproxy/mitmdump to get an understand of their internal
+    # workings. (https://mitmproxy.org/doc/scripting/inlinescripts.html)
+    script = data/mitm.py
+
+    # Path to the certificate to be used by mitmdump. This file will be
+    # automatically generated for you if you run mitmdump once. It's just that
+    # you have to copy it from ~/.mitmproxy/mitmproxy-ca-cert.p12 to somewhere
+    # in the analyzer/windows/ directory. Recommended is to write the certificate
+    # to analyzer/windows/bin/cert.p12, in that case the following option should
+    # be set to bin/cert.p12.
+    certificate = bin/cert.p12
+
+    [services]
+    # Provide extra services accessible through the network of the analysis VM
+    # provided in separate, standalone, Virtual Machines [yes/no].
+    enabled = no
+
+    # Comma-separated list with each Virtual Machine containing said service(s).
+    services = honeyd
+
+    # Time in seconds required to boot these virtual machines. E.g., some services
+    # will only get online after a minute because initialization takes a while.
+    timeout = 0
 
 .. _machinery_conf:
 
@@ -89,10 +130,13 @@ Following is the default *conf/virtualbox.conf* file::
     # Specify which VirtualBox mode you want to run your machines on.
     # Can be "gui", "sdl" or "headless". Refer to VirtualBox's official
     # documentation to understand the differences.
-    mode = gui
+    mode = headless
 
     # Path to the local installation of the VBoxManage utility.
     path = /usr/bin/VBoxManage
+
+    # Default network interface.
+    interface = vboxnet0
 
     # Specify a comma-separated list of available machines to be used. For each
     # specified ID you have to define a dedicated section containing the details
@@ -120,15 +164,16 @@ Following is the default *conf/virtualbox.conf* file::
 
     # (Optional) Specify the name of the network interface that should be used
     # when dumping network traffic from this machine with tcpdump. If specified,
-    # overrides the default interface specified in cuckoo.conf
-    # Example (virbr0 is the interface name):
-    # interface = virbr0
+    # overrides the default interface specified in auxiliary.conf
+    # Example (vboxnet0 is the interface name):
+    # interface = vboxnet0
 
     # (Optional) Specify the IP of the Result Server, as your virtual machine sees it.
     # The Result Server will always bind to the address and port specified in cuckoo.conf,
     # however you could set up your virtual network to use NAT/PAT, so you can specify here
     # the IP address for the Result Server as your machine sees it. If you don't specify an
     # address here, the machine will use the default value from cuckoo.conf.
+    # NOTE: if you set this option you have to set result server IP to 0.0.0.0 in cuckoo.conf.
     # Example:
     # resultserver_ip = 192.168.56.1
 
@@ -144,6 +189,28 @@ Following is the default *conf/virtualbox.conf* file::
     # specific VMs. You can run samples on VMs with tag you require.
     # tags = windows_xp_sp3,32_bit,acrobat_reader_6
 
+    [honeyd]
+    # For more information on this VM please refer to the "services" section of
+    # the conf/auxiliary.conf configuration file. This machine is a bit special
+    # in the way that its used as an additional VM for an analysis.
+    # *NOTE* that if this functionality is used, the VM should be registered in
+    # the "machines" list in the beginning of this file.
+    label = honeyd
+    platform = linux
+    ip = 192.168.56.102
+    # The tags should at least contain "service" and the name of this service.
+    # This way the services auxiliary module knows how to find this particular VM.
+    tags = service, honeyd
+    # Not all services actually have a Cuckoo Agent running in the VM, for those
+    # services one can specify the "noagent" option so Cuckoo will just wait until
+    # the end of the analysis instead of trying to connect to the non-existing
+    # Cuckoo Agent. We can't really intercept any inter-VM communication from the
+    # host / gateway so in order to dump traffic between VMs we have to use a
+    # different network dumping approach. For this machine we use the "nictrace"
+    # functionality from VirtualBox (which is basically their internal tcpdump)
+    # and thus properly dumps inter-VM traffic.
+    options = nictrace noagent
+
 You can use this same configuration structure for any other machinery module, although
 existing ones might have some variations or additional configuration options.
 
@@ -156,6 +223,11 @@ Following is the default *conf/kvm.conf* file::
     # specified ID you have to define a dedicated section containing the details
     # on the respective machine. (E.g. cuckoo1,cuckoo2,cuckoo3)
     machines = cuckoo1
+
+    # Specify the name of the default network interface that will be used
+    # when dumping network traffic with tcpdump.
+    # Example (virbr0 is the interface name):
+    interface = virbr0
 
     [cuckoo1]
     # Specify the label name of the current machine as specified in your
@@ -178,8 +250,7 @@ Following is the default *conf/kvm.conf* file::
     # snapshot = Snapshot1
 
     # (Optional) Specify the name of the network interface that should be used
-    # when dumping network traffic from this machine with tcpdump. If specified,
-    # overrides the default interface specified in cuckoo.conf
+    # when dumping network traffic from this machine with tcpdump.
     # Example (virbr0 is the interface name):
     # interface = virbr0
 
@@ -188,6 +259,7 @@ Following is the default *conf/kvm.conf* file::
     # however you could set up your virtual network to use NAT/PAT, so you can specify here
     # the IP address for the Result Server as your machine sees it. If you don't specify an
     # address here, the machine will use the default value from cuckoo.conf.
+    # NOTE: if you set this option you have to set result server IP to 0.0.0.0 in cuckoo.conf.
     # Example:
     # resultserver_ip = 192.168.122.101
 
@@ -240,7 +312,8 @@ After that every plugin has an own section for configuration::
     enabled = off
     filter = on
 
-The filter configuration helps you to remove known clean data from the resulting report. It can be configured separately for every plugin.
+The filter configuration helps you to remove known clean data from the resulting
+report. It can be configured separately for every plugin.
 
 The filter itself is configured in the [mask] section.
 You can enter a list of pids in pid_generic to filter out processes::
@@ -272,23 +345,71 @@ You will find a section for each processing module::
     [analysisinfo]
     enabled = yes
 
+    [apkinfo]
+    enabled = no
+    # Decompiling dex files with androguard in a heavy operation. For large dex
+    # files it can really take quite a while - it is recommended to limit to a
+    # certain filesize.
+    # decompilation_threshold=5000000
+
+    [baseline]
+    enabled = no
+
     [behavior]
+    enabled = yes
+
+    [buffer]
     enabled = yes
 
     [debug]
     enabled = yes
 
+    [droidmon]
+    enabled = no
+
     [dropped]
     enabled = yes
 
+    [dumptls]
+    enabled = yes
+
+    [googleplay]
+    enabled = no
+    android_id =
+    google_login =
+    google_password =
+
     [memory]
+    # Create a memory dump of the entire Virtual Machine. This memory dump will
+    # then be analyzed using Volatility to locate interesting events that can be
+    # extracted from memory.
     enabled = no
 
     [network]
     enabled = yes
 
     [procmemory]
+    # Enables the creation of process memory dumps for each analyzed process right
+    # before they terminate themselves or right before the analysis finishes.
     enabled = yes
+    # It is possible to load these process memory dumps in IDA Pro through the
+    # generation of IDA Python-based script files. Although currently symbols and
+    # such are not properly recovered, it is still nice to get a quick look at
+    # specific memory addresses of a process.
+    idapro = no
+
+    [screenshots]
+    enabled = no
+    tesseract = /usr/bin/tesseract
+
+    [snort]
+    enabled = no
+    # Following are various configurable settings. When in use of a recent 2.9.x.y
+    # version of Snort there is no need to change any of the following settings as
+    # they represent the defaults.
+    #
+    # snort = /usr/local/bin/snort
+    # conf = /etc/snort/snort.conf
 
     [static]
     enabled = yes
@@ -296,11 +417,40 @@ You will find a section for each processing module::
     [strings]
     enabled = yes
 
+    [suricata]
+    enabled = no
+    # Following are various configurable settings. When in use of a recent version
+    # of Suricata there is no need to change any of the following settings as they
+    # represent the defaults.
+    #
+    # suricata = /usr/bin/suricata
+    # conf = /etc/suricata/suricata.yaml
+    # eve_log = eve.json
+    # files_log = files-json.log
+    # files_dir = files
+    #
+    # Uncommenting the following line makes our processing module use the socket
+    # mode in Suricata. This is quite the performance improvement as instead of
+    # having to load all the Suricata rules for each time the processing module is
+    # ran (i.e., for every task), the rules are only loaded once and then we talk
+    # to its API. This does require running Suricata as follows or similar;
+    # "suricata --unix-socket -D".
+    # (Please find more information in utils/suricata.sh for now).
+    # socket = /var/run/suricata/cuckoo.socket
+
     [targetinfo]
     enabled = yes
 
     [virustotal]
     enabled = yes
+    # How much time we can wait to establish VirusTotal connection and get the
+    # report.
+    timeout = 60
+    # Enable this option if you want to submit files to VirusTotal not yet available
+    # in their database.
+    # NOTE: if you are dealing with sensitive stuff, enabling this option you could
+    # leak some files to VirusTotal.
+    scan = 0
     # Add your VirusTotal API key here. The default API key, kindly provided
     # by the VirusTotal team, should enable you with a sufficient throughput
     # and while being shared with all our users, it shouldn't affect your use.
@@ -328,14 +478,34 @@ It contains the following sections::
 
     [jsondump]
     enabled = yes
+    indent = 4
+    encoding = latin-1
+    calls = yes
 
     [reporthtml]
-    enabled = yes
+    enabled = no
 
     [mongodb]
     enabled = no
     host = 127.0.0.1
     port = 27017
+    db = cuckoo
+    store_memdump = yes
+    paginate = 100
+
+    [moloch]
+    enabled = no
+    # If the Moloch web interface is hosted on a different IP address than the
+    # Cuckoo Web Interface then you'll want to override the IP address here.
+    # host = 127.0.0.1
+    #
+    # Following are various configurable settings. When in use of a recent version
+    # of Moloch there is no need to change any of the following settings as they
+    # represent the defaults.
+    #
+    # moloch_capture = /data/moloch/bin/moloch-capture
+    # conf = /data/moloch/etc/config.ini
+    # instance = cuckoo
 
 By setting those option to *on* or *off* you enable or disable the generation
 of such reports.

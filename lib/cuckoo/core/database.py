@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -16,7 +17,7 @@ from lib.cuckoo.common.objects import File, URL
 from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock
 
 try:
-    from sqlalchemy import create_engine, Column
+    from sqlalchemy import create_engine, Column, not_
     from sqlalchemy import Integer, String, Boolean, DateTime, Enum
     from sqlalchemy import ForeignKey, Text, Index, Table
     from sqlalchemy.ext.declarative import declarative_base
@@ -29,7 +30,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "1070cd314621"
+SCHEMA_VERSION = "cd31654d187"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -64,6 +65,7 @@ class Machine(Base):
     platform = Column(String(255), nullable=False)
     tags = relationship("Tag", secondary=machines_tags, single_parent=True,
                         backref="machine")
+    options = Column(String(255), nullable=True)
     interface = Column(String(255), nullable=True)
     snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)
@@ -98,12 +100,22 @@ class Machine(Base):
         """
         return json.dumps(self.to_dict())
 
-    def __init__(self, name, label, ip, platform, interface, snapshot,
-                 resultserver_ip, resultserver_port):
+    def is_analysis(self):
+        """Is this an analysis machine? Generally speaking all machines are
+        analysis machines, however, this is not the case for service VMs.
+        Please refer to the services auxiliary module."""
+        for tag in self.tags:
+            if tag.name == "service":
+                return
+        return True
+
+    def __init__(self, name, label, ip, platform, options, interface,
+                 snapshot, resultserver_ip, resultserver_port):
         self.name = name
         self.label = label
         self.ip = ip
         self.platform = platform
+        self.options = options
         self.interface = interface
         self.snapshot = snapshot
         self.resultserver_ip = resultserver_ip
@@ -127,6 +139,8 @@ class Guest(Base):
     __tablename__ = "guests"
 
     id = Column(Integer(), primary_key=True)
+    # TODO Replace the guest.status with a more generic Task.status solution.
+    status = Column(String(16), nullable=False)
     name = Column(String(255), nullable=False)
     label = Column(String(255), nullable=False)
     manager = Column(String(255), nullable=False)
@@ -456,7 +470,7 @@ class Database(object):
             session.close()
 
     @classlock
-    def add_machine(self, name, label, ip, platform, tags, interface,
+    def add_machine(self, name, label, ip, platform, options, tags, interface,
                     snapshot, resultserver_ip, resultserver_port):
         """Add a guest machine.
         @param name: machine id
@@ -474,6 +488,7 @@ class Database(object):
                           label=label,
                           ip=ip,
                           platform=platform,
+                          options=options,
                           interface=interface,
                           snapshot=snapshot,
                           resultserver_ip=resultserver_ip,
@@ -544,22 +559,22 @@ class Database(object):
             session.close()
 
     @classlock
-    def fetch(self, lock=True, machine=""):
+    def fetch(self, machine=None, service=True):
         """Fetches a task waiting to be processed and locks it for running.
         @return: None or task
         """
         session = self.Session()
-        row = None
         try:
-            if machine != "":
-                row = session.query(Task).filter_by(status=TASK_PENDING).filter(Machine.name == machine).order_by(Task.priority.desc(), Task.added_on.asc()).first()
-            else:
-                row = session.query(Task).filter_by(status=TASK_PENDING).order_by(Task.priority.desc(), Task.added_on.asc()).first()
+            q = session.query(Task).filter_by(status=TASK_PENDING)
 
-            if not row:
-                return None
+            if machine:
+                q = q.filter_by(machine=machine)
 
-            if lock:
+            if not service:
+                q = q.filter(not_(Task.tags.any(name="service")))
+
+            row = q.order_by(Task.priority.desc(), Task.added_on).first()
+            if row:
                 self.set_status(task_id=row.id, status=TASK_RUNNING)
                 session.refresh(row)
 
@@ -582,10 +597,47 @@ class Database(object):
         session = self.Session()
         guest = Guest(name, label, manager)
         try:
+            guest.status = "init"
             session.query(Task).get(task_id).guest = guest
             session.commit()
             session.refresh(guest)
             return guest.id
+        except SQLAlchemyError as e:
+            log.debug("Database error logging guest start: {0}".format(e))
+            session.rollback()
+            return None
+        finally:
+            session.close()
+
+    @classlock
+    def guest_get_status(self, task_id):
+        """Logs guest start.
+        @param task_id: task id
+        @return: guest status
+        """
+        session = self.Session()
+        try:
+            guest = session.query(Guest).filter_by(task_id=task_id).first()
+            return guest.status if guest else None
+        except SQLAlchemyError as e:
+            log.debug("Database error logging guest start: {0}".format(e))
+            session.rollback()
+            return
+        finally:
+            session.close()
+
+    @classlock
+    def guest_set_status(self, task_id, status):
+        """Logs guest start.
+        @param task_id: task identifier
+        @param status: status
+        """
+        session = self.Session()
+        try:
+            guest = session.query(Guest).filter_by(task_id=task_id).first()
+            guest.status = status
+            session.commit()
+            session.refresh(guest)
         except SQLAlchemyError as e:
             log.debug("Database error logging guest start: {0}".format(e))
             session.rollback()
@@ -615,7 +667,9 @@ class Database(object):
         """
         session = self.Session()
         try:
-            session.query(Guest).get(guest_id).shutdown_on = datetime.now()
+            guest = session.query(Guest).get(guest_id)
+            guest.status = "stopped"
+            guest.shutdown_on = datetime.now()
             session.commit()
         except SQLAlchemyError as e:
             log.debug("Database error logging guest stop: {0}".format(e))
@@ -752,7 +806,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machines = session.query(Machine).filter_by(locked=False).all()
+            machines = session.query(Machine).options(joinedload("tags")).filter_by(locked=False).all()
             return machines
         except SQLAlchemyError as e:
             log.debug("Database error getting available machines: {0}".format(e))
@@ -981,6 +1035,16 @@ class Database(object):
         return self.add(None, timeout=timeout or 0, priority=999, owner=owner,
                         machine=machine, memory=memory, category="baseline")
 
+    def add_service(self, timeout, owner, tags):
+        """Add a service task to database.
+        @param timeout: selected timeout.
+        @param owner: task owner.
+        @param tags: task tags.
+        @return: cursor or None.
+        """
+        return self.add(None, timeout=timeout, priority=999, owner=owner,
+                        tags=tags, category="service")
+
     @classlock
     def reschedule(self, task_id):
         """Reschedule a task.
@@ -1193,7 +1257,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).options(joinedload("tags")).filter(Machine.name == name).first()
+            machine = session.query(Machine).options(joinedload("tags")).filter_by(name=name).first()
         except SQLAlchemyError as e:
             log.debug("Database error viewing machine: {0}".format(e))
             return None
@@ -1212,7 +1276,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).options(joinedload("tags")).filter(Machine.label == label).first()
+            machine = session.query(Machine).options(joinedload("tags")).filter_by(label=label).first()
         except SQLAlchemyError as e:
             log.debug("Database error viewing machine by label: {0}".format(e))
             return None
@@ -1251,17 +1315,21 @@ class Database(object):
         # introducing a "reporting" status, but this requires annoying
         # database migrations, so leaving that for another day.
         query = """
-            UPDATE tasks SET processing = '%s'
+            UPDATE tasks SET processing = :instance
             WHERE id IN (
                 SELECT id FROM tasks
-                WHERE status = 'completed' AND processing IS NULL
+                WHERE status = :status AND processing IS NULL
                 LIMIT 1 FOR UPDATE
             )
             RETURNING id
         """
 
         try:
-            task = session.execute(query % instance).first()
+            params = {
+                "instance": instance,
+                "status": TASK_COMPLETED,
+            }
+            task = session.execute(query, params).first()
             session.commit()
             return task[0] if task else None
         except SQLAlchemyError as e:

@@ -19,7 +19,8 @@ In order to start the API server you can simply do::
 
     $ ./utils/api.py
 
-By default it will bind the service on **localhost:8090**. If you want to change those values, you can for example do this::
+By default it will bind the service on **localhost:8090**. If you want to change
+those values, you can for example do this::
 
     $ ./utils/api.py --host 0.0.0.0 --port 1337
 
@@ -33,7 +34,8 @@ a simple example of deploying the API via `uWSGI`_ and `Nginx`_. These
 instructions are written with Ubuntu GNU/Linux in mind, but may be adapted for
 other platforms.
 
-This solution requires uWSGI, the uWSGI Python plugin, and Nginx. All are available as packages::
+This solution requires uWSGI, the uWSGI Python plugin, and Nginx. All are
+available as packages::
 
     $ sudo apt-get install uwsgi uwsgi-plugin-python nginx
 
@@ -52,8 +54,9 @@ To begin, create a uWSGI configuration file at ``/etc/uwsgi/apps-available/cucko
 
 This configuration inherits a number of settings from the distribution's
 default uWSGI configuration, loading ``api.py`` from the Cuckoo installation
-directory. If Cuckoo is installed in a different path, adjust the configuration
-(the *chdir* setting, and perhaps the *uid* and *gid* settings) accordingly.
+directory. In this example we installed Cuckoo in /home/cuckoo/cuckoo, if Cuckoo
+is installed in a different path, adjust the configuration (the *chdir* setting,
+and perhaps the *uid* and *gid* settings) accordingly.
 
 Enable the app configuration and start the server::
 
@@ -96,7 +99,8 @@ To begin, create a Nginx configuration file at ``/etc/nginx/sites-available/cuck
         }
     }
 
-Make sure that Nginx can connect to the uWSGI socket by placing its user in the **cuckoo** group::
+Make sure that Nginx can connect to the uWSGI socket by placing its user in the
+**cuckoo** group::
 
     $ sudo adduser www-data cuckoo
 
@@ -116,7 +120,8 @@ HTTPS.
 Resources
 =========
 
-Following is a list of currently available resources and a brief description of each one. For details click on the resource name.
+Following is a list of currently available resources and a brief description of
+each one. For details click on the resource name.
 
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | Resource                          | Description                                                                                                      |
@@ -128,7 +133,9 @@ Following is a list of currently available resources and a brief description of 
 | ``GET`` :ref:`tasks_list`         | Returns the list of tasks stored in the internal Cuckoo database.                                                |
 |                                   | You can optionally specify a limit of entries to return.                                                         |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`tasks_view`         | Returns the details on the task assigned to the specified ID.                                                    |
+| ``GET`` :ref:`tasks_view`         | Reschedule a task assigned to the specified ID.                                                                  |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_reschedule`   | Returns the details on the task assigned to the specified ID.                                                    |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_delete`       | Removes the given task from the database and deletes the results.                                                |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
@@ -136,6 +143,8 @@ Following is a list of currently available resources and a brief description of 
 |                                   | You can optionally specify which report format to return, if none is specified the JSON report will be returned. |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_shots`        | Retrieves one or all screenshots associated with a given analysis task ID.                                       |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_rereport`     | Re-run reporting for task associated with a given analysis task ID.                                              |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`memory_list`        | Returns a list of memory dump files associated with a given analysis task ID.                                    |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
@@ -151,7 +160,9 @@ Following is a list of currently available resources and a brief description of 
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`machines_view`      | Returns details on the analysis machine associated with the specified name.                                      |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`cuckoo_status`      | Returns the basic cuckoo status, including version and tasks overview                                            |
+| ``GET`` :ref:`cuckoo_status`      | Returns the basic cuckoo status, including version and tasks overview.                                           |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`vpn_status`         | Returns VPN status.                                                                                              |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 
 .. highlight:: javascript
@@ -397,6 +408,32 @@ Following is a list of currently available resources and a brief description of 
             * ``200`` - no error
             * ``404`` - task not found
 
+.. _tasks_reschedule:
+
+/tasks/reschedule
+-----------------
+
+    **GET /tasks/reschedule/** *(int: id)*
+
+        Reschedule a task with the specified ID.
+
+        **Example request**::
+
+            curl http://localhost:8090/tasks/reschedule/1
+
+        **Example response**::
+
+            {
+                "status": "OK"
+            }
+
+        **Parameters**:
+            * ``id`` *(required)* *(int)* - ID of the task to reschedule
+
+        **Status codes**:
+            * ``200`` - no error
+            * ``404`` - task not found
+
 .. _tasks_delete:
 
 /tasks/delete
@@ -459,6 +496,32 @@ Following is a list of currently available resources and a brief description of 
 
         **Status codes**:
             * ``404`` - file or folder not found
+
+.. _tasks_rereport:
+
+/tasks/rereport
+---------------
+
+    **GET /tasks/rereport/** *(int: id)*
+
+        Re-run reporting for task associated with the specified task ID.
+
+        **Example request**::
+
+            curl http://localhost:8090/tasks/rereport/1
+
+        **Example response**::
+
+            {
+                "success": true
+            }
+
+        **Parameters**:
+            * ``id`` *(required)* *(int)* - ID of the task to re-run report
+
+        **Status codes**:
+            * ``200`` - no error
+            * ``404`` - task not found
 
 .. _memory_list:
 
@@ -729,3 +792,20 @@ Following is a list of currently available resources and a brief description of 
         **Status codes**:
             * ``200`` - no error
             * ``404`` - machine not found
+
+.. _vpn_status:
+
+/vpn/status
+-----------
+
+    **GET /vpn/status
+
+        Returns VPN status.
+
+        **Example request**::
+
+            curl http://localhost:8090/vpn/status
+
+        **Status codes**:
+            * ``200`` - show status
+            * ``500`` - not available

@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,6 +11,7 @@ import time
 import xml.etree.ElementTree as ET
 
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -70,6 +72,11 @@ class Machinery(object):
         # at each start.
         self.db.clean_machines()
 
+    def pcap_path(self, task_id):
+        """Returns the .pcap path for this task id."""
+        return os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                            "%s" % task_id, "dump.pcap")
+
     def set_options(self, options):
         """Set machine manager options.
         @param options: machine manager options dict.
@@ -100,6 +107,7 @@ class Machinery(object):
                 machine.id = machine_id.strip()
                 machine.label = machine_opts[self.LABEL]
                 machine.platform = machine_opts["platform"]
+                machine.options = machine_opts.get("options", "")
                 machine.tags = machine_opts.get("tags")
                 machine.ip = machine_opts["ip"]
 
@@ -137,6 +145,7 @@ class Machinery(object):
                                     label=machine.label,
                                     ip=machine.ip,
                                     platform=machine.platform,
+                                    options=machine.options,
                                     tags=machine.tags,
                                     interface=machine.interface,
                                     snapshot=machine.snapshot,
@@ -283,6 +292,7 @@ class Machinery(object):
 
         if isinstance(state, str):
             state = [state]
+
         while current not in state:
             log.debug("Waiting %i cuckooseconds for machine %s to switch "
                       "to status %s", waitme, label, state)
@@ -432,6 +442,10 @@ class LibVirtMachinery(Machinery):
 
         conn = self._connect()
         try:
+            # Resolve permission issue as libvirt creates the file as
+            # root/root in mode 0600, preventing us from reading it. This
+            # supposedly still doesn't allow us to remove it, though..
+            open(path, "wb").close()
             self.vms[label].coreDump(path, flags=libvirt.VIR_DUMP_MEMORY_ONLY)
         except libvirt.libvirtError as e:
             raise CuckooMachineError("Error dumping memory virtual machine "

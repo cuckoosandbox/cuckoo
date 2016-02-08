@@ -22,14 +22,14 @@ You can do so from Windows' Control Panel as shown in the picture:
         :align: center
 
 Using a physical machine manager requires a few more configuration options than
-the virtual machine managers in order to run properly.  In addition to the steps
+the virtual machine managers in order to run properly. In addition to the steps
 laid out in the regular Preparing the Guest section, some settings need to be changed
 for physical machines to work properly.
 
-    - Enable auto-logon (Allows for the agent to start upon reboot)
-    - Enable Remote RPC (Allows for Cuckoo to reboot the sandbox using RPC)
-    - Turn off paging (Optional)
-    - Disable Screen Saver (Optional)
+    * Enable auto-logon (Allows for the agent to start upon reboot)
+    * Enable Remote RPC (Allows for Cuckoo to reboot the sandbox using RPC)
+    * Turn off paging (Optional)
+    * Disable Screen Saver (Optional)
 
 In Windows 7 the following commands can be entered into an Administrative command prompt to enable auto-logon and Remote RPC.
 ::
@@ -39,8 +39,6 @@ In Windows 7 the following commands can be entered into an Administrative comman
     reg add "hklm\software\Microsoft\Windows NT\CurrentVersion\WinLogon" /v AutoAdminLogon /d 1 /t REG_SZ /f
     reg add "hklm\system\CurrentControlSet\Control\TerminalServer" /v AllowRemoteRPC /d 0x01 /t REG_DWORD /f
     reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v LocalAccountTokenFilterPolicy /d 0x01 /t REG_DWORD /f
-
-
 
 Networking
 ==========
@@ -63,8 +61,9 @@ This stage is very much up to your own requirements and to the
 characteristics of your virtualization software.
 
 For physical machines, make sure when setting the IP address of the guest to also set
-the Gateway and DNS server to be the IP address of the cuckoo server on the physical network.
-For example, if your cuckoo server has the IP address of 192.168.1.1, then you would set the
+the Gateway and DNS server to be the IP address of the Cuckoo server on the physical network.
+For example, if your Cuckoo server has the IP address of 192.168.1.1, then you would set the
 Gateway and DNS server in Windows Settings to be 192.168.1.1 as well.
 
     .. image:: ../../_images/screenshots/windows_network.png
+        :align: center

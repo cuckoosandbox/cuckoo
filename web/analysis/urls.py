@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
@@ -14,10 +15,11 @@ urlpatterns = patterns(
     url(r"^filtered/(?P<task_id>\d+)/(?P<pid>\d+)/(?P<category>\w+)/$", "analysis.views.filtered_chunk"),
     url(r"^search/(?P<task_id>\d+)/$", "analysis.views.search_behavior"),
     url(r"^search/$", "analysis.views.search"),
+    url(r"^search2/$", "analysis.views.search2"),
     url(r"^pending/$", "analysis.views.pending"),
     url(r"^(?P<task_id>\d+)/pcapstream/(?P<conntuple>[.,\w]+)/$", "analysis.views.pcapstream"),
     url(r"^moloch"
-        "/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-\.]+)?"
+        "/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-_\.]+)?"
         "/(?P<src_ip>[a-zA-Z0-9\.]+)?/(?P<src_port>\d+|None)?"
         "/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+|None)?"
         "/(?P<sid>\d+)?",

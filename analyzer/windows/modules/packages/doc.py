@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,6 +11,7 @@ class DOC(Package):
     """Word analysis package."""
     PATHS = [
         ("ProgramFiles", "Microsoft Office", "WINWORD.EXE"),
+        ("ProgramFiles", "Microsoft Office", "Office10", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office11", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office12", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office14", "WINWORD.EXE"),

@@ -27,12 +27,31 @@
         {% elif signature.severity >= 3 %}
             <div class="alert alert-danger signature">
         {% endif %}
-        {{signature.description}}</div></a>
+        {{signature.description}}
+        {% if signature.marks %}
+            {% if signature.marks|length == 1 %}
+            (1 event)
+            {% else %}
+            ({{ signature.marks|length }} events)
+            {% endif %}
+        {% endif %}
+        </div></a>
 
         <div id="signature_{{signature.name}}" class="collapse">
             <table class="table table-bordered" style="table-layout: fixed;">
                 {% for mark in signature.marks|sigsort|slice:":50" %}
                     {% if mark.type == "call" %}
+                    {% if mark.first %}
+                        <thead>
+                            <tr>
+                                <th width="15%">Time &amp; API</th>
+                                <th width="65%">Arguments</th>
+                                <th width="5%">Status</th>
+                                <th width="10%">Return</th>
+                                <th width="5%">Repeated</th>
+                            </tr>
+                        </thead>
+                    {% endif %}
                     <tr>
                         {% include "analysis/behavior/_api_call.html" with call=mark.call pid=mark.pid cid=mark.cid %}
                     </tr>

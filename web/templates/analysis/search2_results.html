@@ -1,0 +1,35 @@
+{% if term %}
+    <h3>Term <span class="text-info"><i>{{term}}</i></span></h3>
+{% endif %}
+{% if analyses %}
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Search Results</h3>
+        </div>
+        <table class="table table-striped" style="table-layout: fixed;">
+            <thead>
+            <tr>
+                <th style="width: 10%">Task ID</th>
+                <th style="width: 90%">Matches</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for analysis in analyses %}
+                <tr>
+                    <td>{{ analysis.task_id }}</td>
+                    <td style="word-wrap: break-word;">
+                        <pre>{{ analysis.matches|join:"<br />" }}
+({{ analysis.total }} more matches)</pre>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% elif analyses != None %}
+    <div class="alert alert-info" style="text-align: center;"><b>No results found.</b></div>
+{% else %}
+    {% if error %}
+        <div class="alert alert-error" style="text-align: center;"><b>{{error}}</b></div>
+    {% endif %}
+{% endif %}

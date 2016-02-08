@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -49,7 +50,7 @@ def foreach_child(hwnd, lparam):
     USER32.GetClassNameW(hwnd, classname, 50)
 
     # Check if the class of the child is button.
-    if classname.value == "Button":
+    if "button" in classname.value.lower():
         # Get the text of the button.
         length = USER32.SendMessageW(hwnd, WM_GETTEXTLENGTH, 0, 0)
         text = create_unicode_buffer(length + 1)

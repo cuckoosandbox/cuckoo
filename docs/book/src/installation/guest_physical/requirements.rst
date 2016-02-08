@@ -45,17 +45,17 @@ by reading the :doc:`../../introduction/sandboxing` chapter.
 Additional Host Requirements
 ============================
 The physical machine manager uses RPC requests to reboot physical machines.
-  The `net` command is required for this to be accomplished, and is available
-  from the samba-common-bin package.  
+The `net` command is required for this to be accomplished, and is available
+from the samba-common-bin package.
 
-On Debian/Ubuntu:
+On Debian/Ubuntu you can install it with::
 
     $ sudo apt-get install samba-common-bin
 
 In order for the physical machine manager to work, you must have a way
-for physical machines to be returned to a clean state.  In development/testing
-Fog (`http://www.fogproject.org/`_) was used as a platform to handle re-imaging
-the physical machines.  However, any re-imaging platform can be used
-(Clonezilla, Deepfreeze, etc) to accomplish this.
+for physical machines to be returned to a clean state. In development/testing
+`Fog`_ was used as a platform to handle re-imaging the physical machines.
+However, any re-imaging platform can be used (Clonezilla, Deepfreeze, etc) to
+accomplish this.
 
-.. _`http://www.fogproject.org/`: http://www.fogproject.org/
+.. _`Fog`: http://www.fogproject.org/
