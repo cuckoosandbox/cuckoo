@@ -326,7 +326,7 @@ _setup() {
     /opt/cuckoo/utils/service.sh -c /opt/cuckoo install
 
     # Fetch the community signatures and monitoring binaries.
-    sudo -u cuckoo -i /opt/cuckoo/utils/community.py -wafb 2.0
+    sudo -u cuckoo -i /opt/cuckoo/utils/community.py -wafb master
 
     # Add "nmi_watchdog=0" to the GRUB commandline if it's not in there already.
     if ! grep nmi_watchdog /etc/default/grub; then
