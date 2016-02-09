@@ -197,7 +197,14 @@ class BehaviorReconstructor(object):
         self.files[arguments["file_handle"]] = arguments["filepath"]
         if NT_SUCCESS(return_value):
             status_info = flags["status_info"].lower()
-            return (status_info, arguments["filepath"])
+            if status_info in ("file_overwritten", "file_superseded"):
+                return ("file_recreated", arguments["filepath"])
+            elif status_info == "file_exists":
+                return ("file_opened", arguments["filepath"])
+            elif status_info == "file_does_not_exist":
+                return ("file_failed", arguments["filepath"])
+            else:
+                return ("file_opened", arguments["filepath"])
         else:
             return ("file_failed", arguments["filepath"])
 
