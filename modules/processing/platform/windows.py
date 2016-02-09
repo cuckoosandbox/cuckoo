@@ -12,6 +12,12 @@ try:
 except ImportError:
     HAVE_JSBEAUTIFIER = False
 
+try:
+    import bs4
+    HAVE_BS4 = True
+except ImportError:
+    HAVE_BS4 = False
+
 from lib.cuckoo.common.abstracts import BehaviorHandler
 from lib.cuckoo.common.netlog import BsonParser
 
@@ -31,6 +37,25 @@ class MonitorProcessLog(list):
             event["raw"] = "script",
             event["arguments"]["script"] = \
                 jsbeautifier.beautify(event["arguments"]["script"])
+
+    def _api_CWindow_AddTimeoutCode(self, event):
+        if HAVE_JSBEAUTIFIER:
+            event["raw"] = "code",
+            event["arguments"]["code"] = \
+                jsbeautifier.beautify(event["arguments"]["code"])
+
+    def _api_CElement_put_innerHTML(self, event):
+        if HAVE_BS4:
+            html = bs4.BeautifulSoup(event["arguments"]["html"], "html.parser")
+            event["raw"] = "html",
+            event["arguments"]["html"] = html.prettify()
+
+    def _api_CDocument_write(self, event):
+        if HAVE_BS4:
+            event["raw"] = "lines",
+            for idx, line in enumerate(event["arguments"]["lines"]):
+                html = bs4.BeautifulSoup(line, "html.parser")
+                event["arguments"]["lines"][idx] = html.prettify()
 
     def __iter__(self):
         # call_id = 0

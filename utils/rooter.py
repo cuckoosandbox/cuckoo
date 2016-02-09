@@ -14,18 +14,25 @@ import stat
 import subprocess
 import sys
 
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
-
-from lib.cuckoo.common.config import Config
-
 def run(*args):
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     return stdout, stderr
 
 def nic_available(interface):
+    """Check if specified network interface is available."""
     try:
         subprocess.check_call([settings.ifconfig, interface],
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+def rt_available(rt_table):
+    """Check if specified routing table is defined."""
+    try:
+        subprocess.check_call([settings.ip, "route", "list", "table", rt_table],
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE)
         return True
@@ -63,6 +70,25 @@ def disable_nat(interface):
     run(settings.iptables, "-t", "nat", "-D", "POSTROUTING",
         "-o", interface, "-j", "MASQUERADE")
 
+def init_rttable(rt_table, interface):
+    """Initialise routing table for this interface using routes
+    from main table"""
+    if rt_table in ["local", "main", "default"]:
+        return
+
+    stdout, _ = run(settings.ip, "route", "list", "dev", interface)
+    for line in stdout.split("\n"):
+        args = ["route", "add"] + [x for x in line.split(" ") if x]
+        args += ["dev", interface, "table", rt_table]
+        run(settings.ip, *args)
+
+def flush_rttable(rt_table):
+    """Flushes specified routing table entries"""
+    if rt_table in ["local", "main", "default"]:
+        return
+
+    run(settings.ip, "route", "flush", "table", rt_table)
+
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
     another."""
@@ -81,16 +107,31 @@ def forward_disable(src, dst, ipaddr):
     run(settings.iptables, "-D", "FORWARD", "-i", dst, "-o", src,
         "--destination", ipaddr, "-j", "ACCEPT")
 
+def srcroute_enable(rt_table, ipaddr):
+    """Enable routing policy for specified source IP address"""
+    run(settings.ip, "rule", "add", "from", ipaddr, "table", rt_table)
+    run(settings.ip, "route", "flush", "cache")
+
+def srcroute_disable(rt_table, ipaddr):
+    """Disable routing policy for specified source IP address"""
+    run(settings.ip, "rule", "del", "from", ipaddr, "table", rt_table)
+    run(settings.ip, "route", "flush", "cache")
+
 handlers = {
     "nic_available": nic_available,
+    "rt_available": rt_available,
     "vpn_status": vpn_status,
     "vpn_enable": vpn_enable,
     "vpn_disable": vpn_disable,
     "forward_drop": forward_drop,
     "enable_nat": enable_nat,
     "disable_nat": disable_nat,
+    "init_rttable": init_rttable,
+    "flush_rttable": flush_rttable,
     "forward_enable": forward_enable,
     "forward_disable": forward_disable,
+    "srcroute_enable": srcroute_enable,
+    "srcroute_disable": srcroute_disable,
 }
 
 if __name__ == "__main__":
@@ -100,14 +141,12 @@ if __name__ == "__main__":
     parser.add_argument("--ifconfig", default="/sbin/ifconfig", help="Path to ifconfig")
     parser.add_argument("--openvpn", default="/etc/init.d/openvpn", help="Path to openvpn")
     parser.add_argument("--iptables", default="/sbin/iptables", help="Path to iptables")
+    parser.add_argument("--ip", default="/sbin/ip", help="Path to ip")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
     settings = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger("cuckoo-rooter")
-
-    # Read configuration provided by Cuckoo.
-    cuckoo = Config()
-    vpn = Config("vpn")
 
     if not settings.openvpn or not os.path.exists(settings.openvpn):
         sys.exit("OpenVPN binary is not available, please configure!")
@@ -171,6 +210,13 @@ if __name__ == "__main__":
                 log.info("Invalid argument detected: %r", arg)
                 break
         else:
+            if settings.verbose:
+                log.info(
+                    "Processing command: %s %s %s", command,
+                    " ".join(args),
+                    " ".join("%s=%s" % (k, v) for k, v in kwargs.items())
+                )
+
             output = e = None
             try:
                 output = handlers[command](*args, **kwargs)

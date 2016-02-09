@@ -24,7 +24,10 @@ MONGO_HOST = cfg.mongodb.get("host", "127.0.0.1")
 MONGO_PORT = cfg.mongodb.get("port", 27017)
 MONGO_DB = cfg.mongodb.get("db", "cuckoo")
 
-MONGO = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)[MONGO_DB]
+try:
+    MONGO = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)[MONGO_DB]
+except Exception as e:
+    raise Exception("Unable to connect to Mongo: %s" % e)
 
 if cfg.elasticsearch.get("enabled"):
     try:

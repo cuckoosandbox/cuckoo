@@ -61,6 +61,19 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
                     log.warning("Cannot bind ResultServer on port %s, "
                                 "trying another port.", self.port)
                     self.port += 1
+                # In Linux /usr/include/asm-generic/errno.h:
+                # EADDRNOTAVAIL 99 (Cannot assign requested address)
+                # In Mac OS x:
+                # EADDRNOTAVAIL 49 (Cannot assign requested address)
+                elif e.errno == 99 or e.errno == 49:
+                    raise CuckooCriticalError(
+                        "Unable to bind ResultServer on %s:%s %s. This "
+                        "usually happens when you start Cuckoo without "
+                        "bringing up the virtual interface associated with "
+                        "the ResultServer IP address. Please refer to "
+                        "http://docs.cuckoosandbox.org/en/latest/faq/#troubles-problem"
+                        " for more information." % (ip, self.port, e)
+                    )
                 else:
                     raise CuckooCriticalError("Unable to bind ResultServer on "
                                               "{0}:{1}: {2}".format(
@@ -128,6 +141,12 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         self.pid, self.ppid, self.procname = None, None, None
         self.server.register_handler(self)
 
+        if hasattr(select, "poll"):
+            self.poll = select.poll()
+            self.poll.register(self.request, select.POLLIN)
+        else:
+            self.poll = None
+
     def finish(self):
         self.done_event.set()
 
@@ -140,9 +159,14 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         while True:
             if self.end_request.isSet():
                 return False
-            rs, _, _ = select.select([self.request], [], [], 1)
-            if rs:
-                return True
+
+            if self.poll:
+                if self.poll.poll(1000):
+                    return True
+            else:
+                rs, _, _ = select.select([self.request], [], [], 1)
+                if rs:
+                    return True
 
     def seek(self, pos):
         pass

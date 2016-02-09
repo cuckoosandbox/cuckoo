@@ -20,9 +20,13 @@
         {% else %}
             <span class="gray">{{key}}:</span>
             {% if key in call.raw %}
-                <pre>{{value}}</pre>
+                {% for v in value|ensurelist %}
+                    <pre>{{v}}</pre>
+                {% endfor %}
             {% else %}
-                <span class="mono">{{value}}</span>
+                {% for v in value|ensurelist %}
+                    <span class="mono">{{v}}</span>
+                {% endfor %}
             {% endif %}
             {% if key in call.flags %}
                 <span class="gray">({{ call.flags|get_item:key }})</span>
