@@ -182,7 +182,13 @@ def main():
     else:
         task = Database().view_task(int(args.id))
         if not task:
-            process(task={"id": int(args.id), "category": "file", "target": ""}, report=args.report)
+            task = {
+                "id": int(args.id),
+                "category": "file",
+                "target": "",
+                "options": "",
+            }
+            process(task=task, report=args.report)
         else:
             process(task=task.to_dict(), report=args.report)
 
