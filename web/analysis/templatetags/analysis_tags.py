@@ -86,3 +86,9 @@ def sigsort(l):
                 x["first"] = True
                 first = False
             yield x
+
+@register.filter
+def ensurelist(o):
+    if isinstance(o, (tuple, list)):
+        return o
+    return o,
