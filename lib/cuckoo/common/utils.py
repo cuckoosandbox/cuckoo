@@ -5,6 +5,7 @@
 
 import hashlib
 import os
+import sys
 import shutil
 import ntpath
 import string
@@ -18,6 +19,7 @@ from datetime import datetime
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_VERSION
 
 try:
     import chardet
@@ -292,3 +294,24 @@ def md5_file(filepath):
 
 def sha1_file(filepath):
     return hash_file(hashlib.sha1, filepath)
+
+def exception_message():
+    """Creates a message describing an unhandled exception."""
+    msg = "Oops! Cuckoo falls in an unhandled exception!\nSometimes a bug " \
+          "could be already fixed in the development release, it is " \
+          "recommended to retry with the development release available at " \
+          "https://github.com/cuckoosandbox/cuckoo\n" \
+          "If the error persists please open a new issue at " \
+          "https://github.com/cuckoosandbox/cuckoo/issues\n\n"
+    msg += "=== Exception details ===\n"
+    msg += "Cuckoo version: %s\n" % CUCKOO_VERSION
+    msg += "OS version: %s\n" % os.name
+    msg += "Python version: %s\n" % sys.version.split()[0]
+    try:
+        import pip
+    except ImportError:
+        pass
+    else:
+        msg += "Modules: %s\n" % " ".join(sorted(["%s:%s" % (i.key, i.version) \
+                                for i in pip.get_installed_distributions()]))
+    return msg

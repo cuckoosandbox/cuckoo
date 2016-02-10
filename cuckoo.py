@@ -8,12 +8,14 @@ import argparse
 import logging
 import os
 import sys
+import traceback
 
 try:
     from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
     from lib.cuckoo.common.exceptions import CuckooCriticalError
     from lib.cuckoo.common.exceptions import CuckooDependencyError
     from lib.cuckoo.common.logo import logo
+    from lib.cuckoo.common.utils import exception_message
     from lib.cuckoo.core.resultserver import ResultServer
     from lib.cuckoo.core.scheduler import Scheduler
     from lib.cuckoo.core.startup import check_working_directory, check_configs
@@ -116,7 +118,6 @@ if __name__ == "__main__":
     try:
         cuckoo_init(quiet=args.quiet, debug=args.debug, artwork=args.artwork,
                     test=args.test)
-
         if not args.artwork and not args.test:
             cuckoo_main(max_analysis_count=args.max_analysis_count)
     except CuckooCriticalError as e:
@@ -125,5 +126,9 @@ if __name__ == "__main__":
             log.critical(message)
         else:
             sys.stderr.write("{0}\n".format(message))
-
         sys.exit(1)
+    except:
+        # Deal with an unhandled exception.
+        message = exception_message()
+        traceback = traceback.format_exc()
+        print message, traceback
