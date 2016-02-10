@@ -346,7 +346,7 @@ class BehaviorReconstructor(object):
 
     # GUIDs.
 
-    def _api_CoCreateInstance(self, return_value, arguments):
+    def _api_CoCreateInstance(self, return_value, arguments, flags):
         return [
             ("guid", arguments["clsid"]),
             ("guid", arguments["iid"]),
