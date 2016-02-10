@@ -20,6 +20,7 @@ from datetime import datetime
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_VERSION
+from lib.cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
 
 try:
     import chardet
@@ -300,9 +301,9 @@ def exception_message():
     msg = "Oops! Cuckoo falls in an unhandled exception!\nSometimes a bug " \
           "could be already fixed in the development release, it is " \
           "recommended to retry with the development release available at " \
-          "https://github.com/cuckoosandbox/cuckoo\n" \
-          "If the error persists please open a new issue at " \
-          "https://github.com/cuckoosandbox/cuckoo/issues\n\n"
+          "%s\n" \
+          "If the error persists please open a new issue at %s\n\n" % \
+          (GITHUB_URL, ISSUES_PAGE_URL)
     msg += "=== Exception details ===\n"
     msg += "Cuckoo version: %s\n" % CUCKOO_VERSION
     msg += "OS version: %s\n" % os.name
