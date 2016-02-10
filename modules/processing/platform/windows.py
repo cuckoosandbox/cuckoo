@@ -176,10 +176,8 @@ class BehaviorReconstructor(object):
     def process_apicall(self, event):
         fn = getattr(self, "_api_%s" % event["api"], None)
         if fn is not None:
-            if "flags" in event:
-                return fn(event["return_value"], event["arguments"], event["flags"])
-            else:
-                return fn(event["return_value"], event["arguments"], None)
+            return fn(event["return_value"], event["arguments"],
+                      event.get("flags"))
 
     # Generic file & directory stuff.
 
