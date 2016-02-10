@@ -337,28 +337,28 @@ def full_memory_dump_file(request, analysis_number):
             "error": "File not found",
         })
 
-def _search2_helper(obj, k, value):
+def _search_helper(obj, k, value):
     r = []
 
     if isinstance(obj, dict):
         for k, v in obj.items():
-            r += _search2_helper(v, k, value)
+            r += _search_helper(v, k, value)
 
     if isinstance(obj, (tuple, list)):
         for v in obj:
-            r += _search2_helper(v, k, value)
+            r += _search_helper(v, k, value)
 
     if isinstance(obj, basestring):
         if re.search(value, obj, re.I):
-            r.append("%s: %s" % (k, obj))
+            r.append([k, obj])
 
     return r
 
 @csrf_exempt
-def search2(request):
+def search(request):
     """New Search API using ElasticSearch as backend."""
     if request.method == "GET":
-        return render(request, "analysis/search2.html")
+        return render(request, "analysis/search.html")
 
     value = request.POST["search"]
 
@@ -375,7 +375,10 @@ def search2(request):
     analyses = []
     for hit in r["hits"]["hits"]:
         # Find the actual matches in this hit and limit to 8 matches.
-        matches = _search2_helper(hit, "none", match_value)
+        matches = _search_helper(hit, "none", match_value)
+        if len(matches) == 0:
+            continue
+
         analyses.append({
             "task_id": hit["_index"].split("-")[-1],
             "matches": matches[:16],
@@ -383,114 +386,10 @@ def search2(request):
         })
 
     if request.POST.get("raw"):
-        return render(request, "analysis/search2_results.html", {
+        return render(request, "analysis/search_results.html", {
             "analyses": analyses,
             "term": request.POST["search"],
         })
-
-    return render(request, "analysis/search2.html", {
-        "analyses": analyses,
-        "term": request.POST["search"],
-        "error": None,
-    })
-
-@require_http_methods(["GET", "POST"])
-def search(request):
-    if "search" not in request.POST:
-        return render(request, "analysis/search.html", {
-            "analyses": None,
-            "term": None,
-            "error": None,
-        })
-
-    search = request.POST["search"].strip()
-    if ":" in search:
-        term, value = search.split(":", 1)
-    else:
-        term, value = "", search
-
-    if term:
-        # Check on search size.
-        if len(value) < 3:
-            return render(request, "analysis/search.html", {
-                "analyses": None,
-                "term": request.POST["search"],
-                "error": "Search term too short, minimum 3 characters required"
-            })
-
-        # name:foo or name: foo
-        value = value.lstrip()
-
-        # Search logic.
-        if term == "name":
-            records = results_db.analysis.find({"target.file.name": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
-        elif term == "type":
-            records = results_db.analysis.find({"target.file.type": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
-        elif term == "string":
-            records = results_db.analysis.find({"strings": {"$regex": value, "$options": "-1"}}).sort([["_id", -1]])
-        elif term == "ssdeep":
-            records = results_db.analysis.find({"target.file.ssdeep": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
-        elif term == "crc32":
-            records = results_db.analysis.find({"target.file.crc32": value}).sort([["_id", -1]])
-        elif term == "file":
-            records = results_db.analysis.find({"behavior.summary.files": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
-        elif term == "key":
-            records = results_db.analysis.find({"behavior.summary.keys": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
-        elif term == "mutex":
-            records = results_db.analysis.find({"behavior.summary.mutexes": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
-        elif term == "domain":
-            records = results_db.analysis.find({"network.domains.domain": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
-        elif term == "ip":
-            records = results_db.analysis.find({"network.hosts": value}).sort([["_id", -1]])
-        elif term == "signature":
-            records = results_db.analysis.find({"signatures.description": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
-        elif term == "url":
-            records = results_db.analysis.find({"target.url": value}).sort([["_id", -1]])
-        elif term == "imphash":
-            records = results_db.analysis.find({"static.pe_imphash": value}).sort([["_id", -1]])
-        else:
-            return render(request, "analysis/search.html", {
-                "analyses": None,
-                "term": request.POST["search"],
-                "error": "Invalid search term: %s" % term
-            })
-    else:
-        value = value.lower()
-
-        if re.match(r"^([a-fA-F\d]{32})$", value):
-            records = results_db.analysis.find({"target.file.md5": value}).sort([["_id", -1]])
-        elif re.match(r"^([a-fA-F\d]{40})$", value):
-            records = results_db.analysis.find({"target.file.sha1": value}).sort([["_id", -1]])
-        elif re.match(r"^([a-fA-F\d]{64})$", value):
-            records = results_db.analysis.find({"target.file.sha256": value}).sort([["_id", -1]])
-        elif re.match(r"^([a-fA-F\d]{128})$", value):
-            records = results_db.analysis.find({"target.file.sha512": value}).sort([["_id", -1]])
-        else:
-            return render(request, "analysis/search.html", {
-                "analyses": None,
-                "term": None,
-                "error": "Unable to recognize the search syntax",
-            })
-
-    # Get data from cuckoo db.
-    db = Database()
-    analyses = []
-
-    for result in records:
-        new = db.view_task(result["info"]["id"])
-
-        if not new:
-            continue
-
-        new = new.to_dict()
-
-        if result["info"]["category"] == "file":
-            if new["sample_id"]:
-                sample = db.view_sample(new["sample_id"])
-                if sample:
-                    new["sample"] = sample.to_dict()
-
-        analyses.append(new)
 
     return render(request, "analysis/search.html", {
         "analyses": analyses,
