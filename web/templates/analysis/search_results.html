@@ -1,5 +1,5 @@
 {% if term %}
-    <h3>Term <span class="text-info"><i>{{term}}</i></span></h3>
+    <h3>Term <span class="text-info"><i>{{ term }}</i></span></h3>
 {% endif %}
 {% if analyses %}
     <div class="panel panel-primary">
@@ -16,7 +16,7 @@
             <tbody>
             {% for analysis in analyses %}
                 <tr>
-                    <td><a href="{% url "analysis.views.report" analysis.task_id %}">Analysis #{{analysis.task_id}}</a></td>
+                    <td><a href="{% url "analysis.views.report" analysis.task_id %}">Analysis #{{ analysis.task_id }}</a></td>
                     <td style="word-wrap: break-word;">
                         <table>
                         {% for key, value in analysis.matches %}
@@ -37,6 +37,6 @@
     <div class="alert alert-info" style="text-align: center;"><b>No results found.</b></div>
 {% else %}
     {% if error %}
-        <div class="alert alert-error" style="text-align: center;"><b>{{error}}</b></div>
+        <div class="alert alert-error" style="text-align: center;"><b>{{ error }}</b></div>
     {% endif %}
 {% endif %}
