@@ -12,7 +12,7 @@ import urllib
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.views.decorators.http import require_safe, require_http_methods
+from django.views.decorators.http import require_safe
 from django.views.decorators.csrf import csrf_exempt
 
 import pymongo
@@ -350,7 +350,7 @@ def _search_helper(obj, k, value):
 
     if isinstance(obj, basestring):
         if re.search(value, obj, re.I):
-            r.append([k, obj])
+            r.append((k, obj))
 
     return r
 
@@ -376,7 +376,7 @@ def search(request):
     for hit in r["hits"]["hits"]:
         # Find the actual matches in this hit and limit to 8 matches.
         matches = _search_helper(hit, "none", match_value)
-        if len(matches) == 0:
+        if not matches:
             continue
 
         analyses.append({

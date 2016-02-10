@@ -19,14 +19,14 @@
                     <td><a href="{% url "analysis.views.report" analysis.task_id %}">Analysis #{{analysis.task_id}}</a></td>
                     <td style="word-wrap: break-word;">
                         <table>
-                        {% for match in analysis.matches %}
+                        {% for key, value in analysis.matches %}
                             <tr>
-                                <td><span class="text-info" style="font-family: monospace;">{{match.0}}:</span></td>
-                                <td><span style="font-family: monospace;padding-left: 15px;">{{match.1}}</span></td>
+                                <td><span class="text-info" style="font-family: monospace;">{{ key }}:</span></td>
+                                <td><span style="font-family: monospace;padding-left: 15px;">{{ value }}</span></td>
                             </tr>
                         {% endfor %}
                         </table>
-                        {% if analysis.total > 0 %}<div>({{analysis.total}} more matches)</div>{% endif %}
+                        {% if analysis.total %}<div>({{ analysis.total }} more matches)</div>{% endif %}
                     </td>
                 </tr>
             {% endfor %}
