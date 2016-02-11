@@ -329,11 +329,21 @@ class Static(Processing):
         self.key = "static"
         static = {}
 
-        if self.task["category"] == "file" and os.path.exists(self.file_path):
-            if HAVE_PEFILE:
-                if "PE32" in File(self.file_path).get_type():
-                    static.update(PortableExecutable(self.file_path).run())
+        # Does the target file still exist?
+        if self.task["category"] == "file" and \
+                not os.path.exists(self.file_path):
+            return
 
+        package = self.task["package"]
+
+        if self.task["category"] == "file":
+            ext = os.path.splitext(self.task["target"])[1].lstrip(".").lower()
+        else:
+            ext = None
+
+        if ext == "exe" or "PE32" in File(self.file_path).get_type():
+            if HAVE_PEFILE:
+                static.update(PortableExecutable(self.file_path).run())
             static["keys"] = self._get_keys()
 
         return static
