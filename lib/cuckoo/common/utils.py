@@ -314,7 +314,10 @@ def exception_message():
 
     git_version = os.path.join(CUCKOO_ROOT, ".git", "refs", "heads", "master")
     if os.path.exists(git_version):
-        msg += "Git version: %s\n" % open(git_version, "rb").read().strip()
+        try:
+            msg += "Git version: %s\n" % open(git_version, "rb").read().strip()
+        except:
+            pass
 
     try:
         import pip
