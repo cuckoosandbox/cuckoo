@@ -447,7 +447,7 @@ class WindowsScriptFile(object):
 
             ret.append(source)
 
-        return ret
+        return unicode(ret)
 
 class Static(Processing):
     """Static analysis."""
