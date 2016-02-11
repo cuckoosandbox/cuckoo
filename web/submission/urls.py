@@ -5,7 +5,7 @@
 
 import submission.views
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 urlpatterns = [
     url(r"^$", submission.views.index),

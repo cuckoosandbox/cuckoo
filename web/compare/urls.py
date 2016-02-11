@@ -5,7 +5,7 @@
 
 import compare.views
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 urlpatterns = [
     url(r"^(?P<left_id>\d+)/$", compare.views.left),

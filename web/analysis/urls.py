@@ -5,7 +5,7 @@
 
 import analysis.views
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 urlpatterns = [
     url(r"^$", analysis.views.index),
