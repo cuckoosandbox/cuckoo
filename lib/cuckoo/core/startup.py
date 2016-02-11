@@ -405,7 +405,7 @@ def init_routing():
                     "VPN %s is not available." % entry.name
                 )
 
-            if not rooter("rt_available", str(entry.rt_table)):
+            if not rooter("rt_available", entry.rt_table):
                 raise CuckooStartupError(
                     "The routing table that has been configured for "
                     "VPN %s is not available." % entry.name
@@ -418,10 +418,10 @@ def init_routing():
             rooter("disable_nat", entry.interface)
             rooter("enable_nat", entry.interface)
 
+            # Populate routing table with entries from main routing table.
             if cuckoo.routing.auto_rt:
-                # Populate routing table with entries from main routing table
-                rooter("flush_rttable", str(entry.rt_table))
-                rooter("init_rttable", str(entry.rt_table), entry.interface)
+                rooter("flush_rttable", entry.rt_table)
+                rooter("init_rttable", entry.rt_table, entry.interface)
 
     # Check whether the default VPN exists if specified.
     if cuckoo.routing.route not in ("none", "internet"):
@@ -445,7 +445,7 @@ def init_routing():
                 "line is not available."
             )
 
-        if not rooter("rt_available", str(cuckoo.routing.rt_table)):
+        if not rooter("rt_available", cuckoo.routing.rt_table):
             raise CuckooStartupError(
                 "The routing table that has been configured for dirty "
                 "line interface is not available."
@@ -456,10 +456,10 @@ def init_routing():
         rooter("disable_nat", cuckoo.routing.internet)
         rooter("enable_nat", cuckoo.routing.internet)
 
+        # Populate routing table with entries from main routing table.
         if cuckoo.routing.auto_rt:
-            # Populate routing table for this network interface.
-            rooter("flush_rttable", str(cuckoo.routing.rt_table))
-            rooter("init_rttable", str(cuckoo.routing.rt_table),
+            rooter("flush_rttable", cuckoo.routing.rt_table)
+            rooter("init_rttable", cuckoo.routing.rt_table,
                    cuckoo.routing.internet)
 
 def cuckoo_clean():
