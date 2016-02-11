@@ -3,10 +3,9 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
-import dashboard.views
-
+from . import views
 from django.conf.urls import url
 
 urlpatterns = [
-    url(r"^$", dashboard.views.index),
+    url(r"^$", views.index),
 ]

@@ -3,12 +3,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
-import compare.views
-
+from . import views
 from django.conf.urls import url
 
 urlpatterns = [
-    url(r"^(?P<left_id>\d+)/$", compare.views.left),
-    url(r"^(?P<left_id>\d+)/(?P<right_id>\d+)/$", compare.views.both),
-    url(r"^(?P<left_id>\d+)/(?P<right_hash>\w+)/$", compare.views.hash),
+    url(r"^(?P<left_id>\d+)/$", views.left),
+    url(r"^(?P<left_id>\d+)/(?P<right_id>\d+)/$", views.both),
+    url(r"^(?P<left_id>\d+)/(?P<right_hash>\w+)/$", views.hash),
 ]

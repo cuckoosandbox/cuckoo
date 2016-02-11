@@ -3,25 +3,24 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
-import analysis.views
-
+from . import views
 from django.conf.urls import url
 
 urlpatterns = [
-    url(r"^$", analysis.views.index),
-    url(r"^(?P<task_id>\d+)/$", analysis.views.report),
-    url(r"^latest/$", analysis.views.latest_report),
-    url(r"^remove/(?P<task_id>\d+)/$", analysis.views.remove),
-    url(r"^chunk/(?P<task_id>\d+)/(?P<pid>\d+)/(?P<pagenum>\d+)/$", analysis.views.chunk),
-    url(r"^filtered/(?P<task_id>\d+)/(?P<pid>\d+)/(?P<category>\w+)/$", analysis.views.filtered_chunk),
-    url(r"^search/(?P<task_id>\d+)/$", analysis.views.search_behavior),
-    url(r"^search/$", analysis.views.search),
-    url(r"^pending/$", analysis.views.pending),
-    url(r"^(?P<task_id>\d+)/pcapstream/(?P<conntuple>[.,\w]+)/$", analysis.views.pcapstream),
+    url(r"^$", views.index),
+    url(r"^(?P<task_id>\d+)/$", views.report),
+    url(r"^latest/$", views.latest_report),
+    url(r"^remove/(?P<task_id>\d+)/$", views.remove),
+    url(r"^chunk/(?P<task_id>\d+)/(?P<pid>\d+)/(?P<pagenum>\d+)/$", views.chunk),
+    url(r"^filtered/(?P<task_id>\d+)/(?P<pid>\d+)/(?P<category>\w+)/$", views.filtered_chunk),
+    url(r"^search/(?P<task_id>\d+)/$", views.search_behavior),
+    url(r"^search/$", views.search),
+    url(r"^pending/$", views.pending),
+    url(r"^(?P<task_id>\d+)/pcapstream/(?P<conntuple>[.,\w]+)/$", views.pcapstream),
     url(r"^moloch"
         "/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-_\.]+)?"
         "/(?P<src_ip>[a-zA-Z0-9\.]+)?/(?P<src_port>\d+|None)?"
         "/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+|None)?"
         "/(?P<sid>\d+)?",
-        analysis.views.moloch),
+        views.moloch),
 ]
