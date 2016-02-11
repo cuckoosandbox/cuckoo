@@ -3,8 +3,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
+import dashboard.views
+
 from django.conf.urls import patterns, url
 
 urlpatterns = patterns("",
-    url(r"^$", "dashboard.views.index"),
+    url(r"^$", dashboard.views.index),
 )
