@@ -57,6 +57,14 @@ class MonitorProcessLog(list):
                 html = bs4.BeautifulSoup(line, "html.parser")
                 event["arguments"]["lines"][idx] = html.prettify()
 
+    def _api_CIFrameElement_CreateElement(self, event):
+        """Lowercases the attribute keys."""
+        attrs = {}
+        for key, value in event["arguments"]["attributes"].items():
+            attrs[key.lower()] = value
+
+        event["arguments"]["attributes"] = attrs
+
     def __iter__(self):
         # call_id = 0
         for event in self.eventstream:
