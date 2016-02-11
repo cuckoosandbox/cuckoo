@@ -493,6 +493,24 @@ It contains the following sections::
     store_memdump = yes
     paginate = 100
 
+    [elasticsearch]
+    enabled = no
+    # Comma-separated list of ElasticSearch hosts.
+    hosts = 127.0.0.1
+    # Set to yes if we want to be able to search every API call instead of just
+    # through the behavioral summary.
+    calls = no
+    # Index of this Cuckoo instance. If multiple Cuckoo instances connect to the
+    # same ElasticSearch host then this index (in Moloch called "instance") should
+    # be unique for each Cuckoo instance.
+    #
+    # index = cuckoo
+    #
+    # Just in case we will have report updates in Cuckoo one will be able to
+    # update to a new scheme by modifying the ElasticSearch document type.
+    #
+    # type = cuckoo
+
     [moloch]
     enabled = no
     # If the Moloch web interface is hosted on a different IP address than the

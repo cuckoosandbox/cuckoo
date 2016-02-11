@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import errno
 import os
 import socket
 import select
@@ -53,19 +54,11 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
                                                          *args,
                                                          **kwargs)
             except Exception as e:
-                # In Linux /usr/include/asm-generic/errno-base.h.
-                # EADDRINUSE  98 (Address already in use)
-                # In Mac OS X or FreeBSD:
-                # EADDRINUSE 48 (Address already in use)
-                if e.errno == 98 or e.errno == 48:
+                if e.errno == errno.EADDRINUSE:
                     log.warning("Cannot bind ResultServer on port %s, "
                                 "trying another port.", self.port)
                     self.port += 1
-                # In Linux /usr/include/asm-generic/errno.h:
-                # EADDRNOTAVAIL 99 (Cannot assign requested address)
-                # In Mac OS x:
-                # EADDRNOTAVAIL 49 (Cannot assign requested address)
-                elif e.errno == 99 or e.errno == 49:
+                elif e.errno == errno.EADDRNOTAVAIL:
                     raise CuckooCriticalError(
                         "Unable to bind ResultServer on %s:%s %s. This "
                         "usually happens when you start Cuckoo without "

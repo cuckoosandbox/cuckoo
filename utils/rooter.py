@@ -72,7 +72,7 @@ def disable_nat(interface):
 
 def init_rttable(rt_table, interface):
     """Initialise routing table for this interface using routes
-    from main table"""
+    from main table."""
     if rt_table in ["local", "main", "default"]:
         return
 
@@ -83,7 +83,7 @@ def init_rttable(rt_table, interface):
         run(settings.ip, *args)
 
 def flush_rttable(rt_table):
-    """Flushes specified routing table entries"""
+    """Flushes specified routing table entries."""
     if rt_table in ["local", "main", "default"]:
         return
 
@@ -108,12 +108,12 @@ def forward_disable(src, dst, ipaddr):
         "--destination", ipaddr, "-j", "ACCEPT")
 
 def srcroute_enable(rt_table, ipaddr):
-    """Enable routing policy for specified source IP address"""
+    """Enable routing policy for specified source IP address."""
     run(settings.ip, "rule", "add", "from", ipaddr, "table", rt_table)
     run(settings.ip, "route", "flush", "cache")
 
 def srcroute_disable(rt_table, ipaddr):
-    """Disable routing policy for specified source IP address"""
+    """Disable routing policy for specified source IP address."""
     run(settings.ip, "rule", "del", "from", ipaddr, "table", rt_table)
     run(settings.ip, "route", "flush", "cache")
 
