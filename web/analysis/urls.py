@@ -7,8 +7,7 @@ import analysis.views
 
 from django.conf.urls import patterns, url
 
-urlpatterns = patterns(
-    "",
+urlpatterns = [
     url(r"^$", analysis.views.index),
     url(r"^(?P<task_id>\d+)/$", analysis.views.report),
     url(r"^latest/$", analysis.views.latest_report),
@@ -25,4 +24,4 @@ urlpatterns = patterns(
         "/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+|None)?"
         "/(?P<sid>\d+)?",
         analysis.views.moloch),
-)
+]

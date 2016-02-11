@@ -7,6 +7,6 @@ import dashboard.views
 
 from django.conf.urls import patterns, url
 
-urlpatterns = patterns("",
+urlpatterns = [
     url(r"^$", dashboard.views.index),
-)
+]
