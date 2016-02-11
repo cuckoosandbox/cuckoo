@@ -67,5 +67,7 @@ def choose_package(file_type, file_name, exports):
         return "msi"
     elif file_name.endswith(".ps1"):
         return "ps1"
+    elif file_name.endswith(".wsf"):
+        return "wsf"
     else:
         return "generic"
