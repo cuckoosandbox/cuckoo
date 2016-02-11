@@ -19,7 +19,7 @@ from datetime import datetime
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import CUCKOO_VERSION
+from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 
 try:
     import chardet
@@ -297,21 +297,32 @@ def sha1_file(filepath):
 
 def exception_message():
     """Creates a message describing an unhandled exception."""
-    msg = "Oops! Cuckoo falls in an unhandled exception!\nSometimes a bug " \
-          "could be already fixed in the development release, it is " \
-          "recommended to retry with the development release available at " \
-          "https://github.com/cuckoosandbox/cuckoo\n" \
-          "If the error persists please open a new issue at " \
-          "https://github.com/cuckoosandbox/cuckoo/issues\n\n"
+    msg = (
+        "Oops! Cuckoo failed in an unhandled exception!\nSometimes bugs are "
+        "already fixed in the development release, it is therefore "
+        "recommended to retry with the latest development release available "
+        "at https://github.com/cuckoosandbox/cuckoo\n"
+        "If the error persists please open a new issue at "
+        "https://github.com/cuckoosandbox/cuckoo/issues\n\n"
+    )
     msg += "=== Exception details ===\n"
     msg += "Cuckoo version: %s\n" % CUCKOO_VERSION
     msg += "OS version: %s\n" % os.name
     msg += "Python version: %s\n" % sys.version.split()[0]
+
+    git_version = os.path.join(CUCKOO_ROOT, ".git", "refs", "heads", "master")
+    if os.path.exists(git_version):
+        msg += "Git version: %s\n" % open(git_version, "rb").read().strip()
+
     try:
         import pip
+
+        msg += "Modules: %s\n" % " ".join(sorted(
+            "%s:%s" % (package.key, package.version)
+            for package in pip.get_installed_distributions()
+        ))
     except ImportError:
         pass
-    else:
-        msg += "Modules: %s\n" % " ".join(sorted(["%s:%s" % (i.key, i.version) \
-                                for i in pip.get_installed_distributions()]))
+
+    msg += "\n"
     return msg
