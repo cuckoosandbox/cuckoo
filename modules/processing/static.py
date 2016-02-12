@@ -38,6 +38,7 @@ from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import convert_to_printable
+from lib.cuckoo.common.utils import to_unicode
 
 log = logging.getLogger(__name__)
 
@@ -445,9 +446,9 @@ class WindowsScriptFile(object):
             if language == "jscript.encode":
                 source = self.decode(source)
 
-            ret.append(source)
+            ret.append(to_unicode(source))
 
-        return unicode(ret)
+        return ret
 
 class Static(Processing):
     """Static analysis."""
