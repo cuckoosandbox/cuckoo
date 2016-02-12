@@ -34,6 +34,12 @@ try:
 except ImportError:
     HAVE_MCRYPTO = False
 
+try:
+    import oletools.olevba
+    HAVE_OLETOOLS = True
+except ImportError:
+    HAVE_OLETOOLS = False
+
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.objects import File
@@ -450,10 +456,81 @@ class WindowsScriptFile(object):
 
         return ret
 
+class OfficeDocument(object):
+    """Static analysis of Microsoft Office documents."""
+    deobf = [
+        [
+            # Chr(65) -> "A"
+            "Chr\\(\\s*(?P<chr>[0-9]+)\\s*\\)",
+            lambda x: '"%c"' % int(x.group("chr")),
+            0,
+        ],
+        [
+            # "A" & "B" -> "AB"
+            "\\\"(?P<a>.*?)\\\"\\s+\\&\\s+\\\"(?P<b>.*?)\\\"",
+            lambda x: '"%s%s"' % (x.group("a"), x.group("b")),
+            0,
+        ],
+    ]
+
+    def __init__(self, filepath):
+        self.filepath = filepath
+
+    def get_macros(self):
+        """Get embedded Macros if this is an Office document."""
+        try:
+            p = oletools.olevba.VBA_Parser(self.filepath)
+        except TypeError:
+            return
+
+        # We're not interested in plaintext.
+        if p.type == "Text":
+            return
+
+        for f, s, v, c in p.extract_macros():
+            yield {
+                "stream": s,
+                "filename": v,
+                "orig_code": c,
+            }
+
+    def deobfuscate(self, code):
+        """Bruteforce approach of regex-based deobfuscation."""
+        changes = 1
+        while changes:
+            changes = 0
+
+            for pattern, repl, flags in self.deobf:
+                count = 1
+                while count:
+                    code, count = re.subn(pattern, repl, code, flags=flags)
+                    changes += count
+
+        return code
+
+    def run(self):
+        if not HAVE_OLETOOLS:
+            log.warning(
+                "In order to do static analysis of Microsoft Word documents "
+                "we're going to require oletools (`pip install oletools`)"
+            )
+            return
+
+        ret = []
+        for macro in self.get_macros():
+            macro["deobf"] = self.deobfuscate(macro["orig_code"])
+            ret.append(macro)
+        return ret
+
 class Static(Processing):
     """Static analysis."""
     PUBKEY_RE = "(-----BEGIN PUBLIC KEY-----[a-zA-Z0-9\\n\\+/]+-----END PUBLIC KEY-----)"
     PRIVKEY_RE = "(-----BEGIN RSA PRIVATE KEY-----[a-zA-Z0-9\\n\\+/]+-----END RSA PRIVATE KEY-----)"
+
+    office_ext = [
+        "doc", "docm", "dotm", "docx", "ppt", "pptm", "pptx", "potm",
+        "ppam", "ppsm", "xls", "xlsm", "xlsx",
+    ]
 
     def run(self):
         """Run analysis.
@@ -481,6 +558,9 @@ class Static(Processing):
 
         if package == "wsf" or ext == "wsf":
             static["wsf"] = WindowsScriptFile(self.file_path).run()
+
+        if package in ("doc", "ppt", "xls") or ext in self.office_ext:
+            static["office"] = OfficeDocument(self.file_path).run()
 
         return static
 
