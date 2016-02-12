@@ -133,9 +133,9 @@ each one. For details click on the resource name.
 | ``GET`` :ref:`tasks_list`         | Returns the list of tasks stored in the internal Cuckoo database.                                                |
 |                                   | You can optionally specify a limit of entries to return.                                                         |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`tasks_view`         | Reschedule a task assigned to the specified ID.                                                                  |
+| ``GET`` :ref:`tasks_view`         | Returns the details on the task assigned to the specified ID.                                                    |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`tasks_reschedule`   | Returns the details on the task assigned to the specified ID.                                                    |
+| ``GET`` :ref:`tasks_reschedule`   | Reschedule a task assigned to the specified ID.                                                                  |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_delete`       | Removes the given task from the database and deletes the results.                                                |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
