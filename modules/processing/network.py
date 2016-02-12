@@ -761,14 +761,15 @@ class NetworkAnalysis(Processing):
             pcap_path = sorted_path
 
             # Sorted PCAP file hash.
-            results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
+            if os.path.exists(sorted_path):
+                results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
         else:
             pcap_path = self.pcap_path
 
         if HAVE_DPKT:
             results.update(Pcap(pcap_path).run())
 
-        if HAVE_HTTPREPLAY:
+        if HAVE_HTTPREPLAY and os.path.exists(pcap_path):
             try:
                 results.update(Pcap2(pcap_path, self.get_tlsmaster()).run())
             except:
