@@ -443,7 +443,7 @@ class WindowsScriptFile(object):
             source = re.match("<.*>(.*)</.*>$", script, re.S).group(0)
 
             # Decode JScript.Encode encoding.
-            if language == "jscript.encode":
+            if language in ("jscript.encode", "vbscript.encode"):
                 source = self.decode(source)
 
             ret.append(to_unicode(source))
