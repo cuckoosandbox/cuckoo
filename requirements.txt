@@ -18,6 +18,7 @@ jsbeautifier==1.5.10
 Mako==1.0.1
 MarkupSafe==0.23
 ndg-httpsclient==0.4.0
+oletools==0.42
 http://pefile.googlecode.com/files/pefile-1.2.10-139.tar.gz#egg=pefile
 pyasn1==0.1.8
 pycparser==2.14
