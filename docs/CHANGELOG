@@ -3,7 +3,10 @@
 Cuckoo Sandbox 2.0-dev (2016-xx-xx)
 ===================================
 
+* Added .WSF analysis package
 * Added Elasticsearch support
+* Added dump_delete option to delete process memory dumps after analysis
+* Added sniffer.debug option to create a debug network capture
 
 Cuckoo Sandbox 2.0-rc1 (2016-01-21)
 ===================================
