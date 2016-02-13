@@ -14,4 +14,11 @@ You can find a full documentation of the latest stable release [here](http://doc
 
 <hr />
 
+Cuckoo Sandbox has reached over 5000 commits, maturing well over the years.
+We'd like to thank all our users for their support and interest in the project.
+
+![5000 commit doge](http://cuckoo.sh/5000doge.jpg)
+
+<hr />
+
 [![Build Status](https://travis-ci.org/cuckoosandbox/cuckoo.png?branch=master)](https://travis-ci.org/cuckoosandbox/cuckoo)
