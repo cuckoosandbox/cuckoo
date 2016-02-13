@@ -402,55 +402,58 @@ def remove(request, task_id):
     """Remove an analysis.
     @todo: remove folder from storage.
     """
-    anals = results_db.analysis.find({"info.id": int(task_id)})
+    analyses = results_db.analysis.find({"info.id": int(task_id)})
 
-    # Checks if more analysis found with the same ID, like if process.py was run manually.
-    if anals.count() > 1:
-        message = "Multiple tasks with this ID deleted, thanks for all the fish. (The specified analysis was duplicated in mongo)"
-    elif anals.count() == 1:
+    # Checks if more analysis found with the same ID, like if process.py
+    # was run manually.
+    if analyses.count() > 1:
+        message = (
+            "Multiple tasks with this ID deleted, thanks for all the fish "
+            "(the specified analysis was present multiple times in mongo)."
+        )
+    elif analyses.count() == 1:
         message = "Task deleted, thanks for all the fish."
 
-    if anals.count() > 0:
-        # Delete dups too.
-        for analysis in anals:
-            # Delete sample if not used.
-            if "file_id" in analysis["target"]:
-                if results_db.analysis.find({"target.file_id": ObjectId(analysis["target"]["file_id"])}).count() == 1:
-                    fs.delete(ObjectId(analysis["target"]["file_id"]))
-
-            # Delete screenshots.
-            for shot in analysis["shots"]:
-                if results_db.analysis.find({"shots": ObjectId(shot)}).count() == 1:
-                    fs.delete(ObjectId(shot))
-
-            # Delete network pcap.
-            if "pcap_id" in analysis["network"] and results_db.analysis.find({"network.pcap_id": ObjectId(analysis["network"]["pcap_id"])}).count() == 1:
-                fs.delete(ObjectId(analysis["network"]["pcap_id"]))
-
-            # Delete sorted pcap
-            if "sorted_pcap_id" in analysis["network"] and results_db.analysis.find({"network.sorted_pcap_id": ObjectId(analysis["network"]["sorted_pcap_id"])}).count() == 1:
-                fs.delete(ObjectId(analysis["network"]["sorted_pcap_id"]))
-
-            # Delete mitmproxy dump.
-            if "mitmproxy_id" in analysis["network"] and results_db.analysis.find({"network.mitmproxy_id": ObjectId(analysis["network"]["mitmproxy_id"])}).count() == 1:
-                fs.delete(ObjectId(analysis["network"]["mitmproxy_id"]))
-
-            # Delete dropped.
-            for drop in analysis["dropped"]:
-                if "object_id" in drop and results_db.analysis.find({"dropped.object_id": ObjectId(drop["object_id"])}).count() == 1:
-                    fs.delete(ObjectId(drop["object_id"]))
-
-            # Delete calls.
-            for process in analysis.get("behavior", {}).get("processes", []):
-                for call in process["calls"]:
-                    results_db.calls.remove({"_id": ObjectId(call)})
-
-            # Delete analysis data.
-            results_db.analysis.remove({"_id": ObjectId(analysis["_id"])})
-    else:
+    if not analyses.count():
         return render(request, "error.html", {
             "error": "The specified analysis does not exist",
         })
+
+    for analysis in analyses:
+        # Delete sample if not used.
+        if "file_id" in analysis["target"]:
+            if results_db.analysis.find({"target.file_id": ObjectId(analysis["target"]["file_id"])}).count() == 1:
+                fs.delete(ObjectId(analysis["target"]["file_id"]))
+
+        # Delete screenshots.
+        for shot in analysis["shots"]:
+            if results_db.analysis.find({"shots": ObjectId(shot)}).count() == 1:
+                fs.delete(ObjectId(shot))
+
+        # Delete network pcap.
+        if "pcap_id" in analysis["network"] and results_db.analysis.find({"network.pcap_id": ObjectId(analysis["network"]["pcap_id"])}).count() == 1:
+            fs.delete(ObjectId(analysis["network"]["pcap_id"]))
+
+        # Delete sorted pcap
+        if "sorted_pcap_id" in analysis["network"] and results_db.analysis.find({"network.sorted_pcap_id": ObjectId(analysis["network"]["sorted_pcap_id"])}).count() == 1:
+            fs.delete(ObjectId(analysis["network"]["sorted_pcap_id"]))
+
+        # Delete mitmproxy dump.
+        if "mitmproxy_id" in analysis["network"] and results_db.analysis.find({"network.mitmproxy_id": ObjectId(analysis["network"]["mitmproxy_id"])}).count() == 1:
+            fs.delete(ObjectId(analysis["network"]["mitmproxy_id"]))
+
+        # Delete dropped.
+        for drop in analysis["dropped"]:
+            if "object_id" in drop and results_db.analysis.find({"dropped.object_id": ObjectId(drop["object_id"])}).count() == 1:
+                fs.delete(ObjectId(drop["object_id"]))
+
+        # Delete calls.
+        for process in analysis.get("behavior", {}).get("processes", []):
+            for call in process["calls"]:
+                results_db.calls.remove({"_id": ObjectId(call)})
+
+        # Delete analysis data.
+        results_db.analysis.remove({"_id": ObjectId(analysis["_id"])})
 
     # Delete from SQL db.
     db = Database()
@@ -500,7 +503,6 @@ def pcapstream(request, task_id, conntuple):
 
     try:
         fobj = fs.get(conndata["network"]["sorted_pcap_id"])
-        # Gridfs gridout has no fileno(), which is needed by dpkt pcap reader for NOTHING.
         setattr(fobj, "fileno", lambda: -1)
     except:
         return render(request, "standalone_error.html", {

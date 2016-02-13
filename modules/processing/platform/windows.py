@@ -227,7 +227,7 @@ class BehaviorReconstructor(object):
     def _api_NtCreateFile(self, return_value, arguments, flags):
         self.files[arguments["file_handle"]] = arguments["filepath"]
         if NT_SUCCESS(return_value):
-            status_info = flags["status_info"].lower()
+            status_info = flags.get("status_info", "").lower()
             if status_info in ("file_overwritten", "file_superseded"):
                 return ("file_recreated", arguments["filepath"])
             elif status_info == "file_exists":

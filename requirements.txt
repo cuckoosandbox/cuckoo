@@ -9,7 +9,7 @@ ecdsa==0.13
 elasticsearch==2.2.0
 enum34==1.0.4
 Flask==0.10.1
-HTTPReplay==0.1.5
+HTTPReplay==0.1.6
 idna==2.0
 ipaddress==1.0.14
 itsdangerous==0.24
@@ -18,6 +18,7 @@ jsbeautifier==1.5.10
 Mako==1.0.1
 MarkupSafe==0.23
 ndg-httpsclient==0.4.0
+oletools==0.42
 http://pefile.googlecode.com/files/pefile-1.2.10-139.tar.gz#egg=pefile
 pyasn1==0.1.8
 pycparser==2.14
