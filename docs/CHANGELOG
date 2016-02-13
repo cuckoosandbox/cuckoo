@@ -41,7 +41,7 @@ Cuckoo Sandbox 2.0-rc1 (2016-01-21)
 * Added tracking and reporting dead IP address/port combinations
 * Added maliciousness scoring system
 * Added option to web interface to submit dropped files for analysis
-* Added some performance improvments to signature engine
+* Added some performance improvements to signature engine
 * Added Volatility support for netscan and sockscan
 * Added re-submit button to web interface
 * Added baseline processing and representation
