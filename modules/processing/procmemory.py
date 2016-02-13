@@ -122,7 +122,7 @@ class ProcessMemory(Processing):
                     try:
                         os.remove(dump_path)
                     except OSError:
-                        log.error("Unable to delete memory dump file at path \"%s\" ", dump_path)
+                        log.error("Unable to delete memory dump file at path \"%s\"", dump_path)
 
                 results.append(proc)
 
