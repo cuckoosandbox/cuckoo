@@ -3,11 +3,14 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import os
 import struct
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.objects import File
+
+log = logging.getLogger(__name__)
 
 PAGE_READONLY = 0x00000002
 PAGE_READWRITE = 0x00000004
