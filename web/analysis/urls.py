@@ -18,9 +18,9 @@ urlpatterns = [
     url(r"^pending/$", views.pending),
     url(r"^(?P<task_id>\d+)/pcapstream/(?P<conntuple>[.,\w]+)/$", views.pcapstream),
     url(r"^moloch"
-        "/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-_\.]+)?"
-        "/(?P<src_ip>[a-zA-Z0-9\.]+)?/(?P<src_port>\d+|None)?"
-        "/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+|None)?"
-        "/(?P<sid>\d+)?",
+        r"/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-_\.]+)?"
+        r"/(?P<src_ip>[a-zA-Z0-9\.]+)?/(?P<src_port>\d+|None)?"
+        r"/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+|None)?"
+        r"/(?P<sid>\d+)?",
         views.moloch),
 ]
