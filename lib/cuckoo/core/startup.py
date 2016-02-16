@@ -60,25 +60,12 @@ def check_configs():
     """Checks if config files exist.
     @raise CuckooStartupError: if config files do not exist.
     """
-    configs = [
-        os.path.join(CUCKOO_ROOT, "conf", "auxiliary.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "avd.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "esx.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "kvm.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "memory.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "physical.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "processing.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "qemu.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "reporting.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "virtualbox.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "vmware.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "vpn.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "vsphere.conf"),
-        os.path.join(CUCKOO_ROOT, "conf", "xenserver.conf"),
-    ]
+    configs = ("auxiliary.conf", "avd.conf", "cuckoo.conf", "esx.conf",
+               "kvm.conf", "memory.conf", "physical.conf", "processing.conf",
+               "qemu.conf", "reporting.conf", "virtualbox.conf", "vmware.conf",
+               "vpn.conf", "vsphere.conf", "xenserver.conf")
 
-    for config in configs:
+    for config in [os.path.join(CUCKOO_ROOT, "conf", f) for f in configs]:
         if not os.path.exists(config):
             raise CuckooStartupError("Config file does not exist at "
                                      "path: {0}".format(config))
