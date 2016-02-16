@@ -299,7 +299,7 @@ Methods
 
 .. function:: Process.inject([dll[, apc=False]])
 
-    Injects a DLL (by default "dll/cuckoomon.dll") into the opened process. Returns ``True`` or ``False`` in case of success or failure of the operation.
+    Injects our DLL into the opened process. Returns ``True`` or ``False`` in case of success or failure of the operation.
 
     :param dll: path to the DLL to inject into the process
     :type dll: string
