@@ -217,8 +217,10 @@ def tasks_reschedule(task_id):
     if not db.view_task(task_id):
         return json_error(404, "There is no analysis with the specified ID")
 
-    if db.reschedule(task_id):
+    new_task_id = db.reschedule(task_id)
+    if new_task_id:
         response["status"] = "OK"
+        response["task_id"] = new_task_id
     else:
         return json_error(500, "An error occurred while trying to "
                           "reschedule the task")

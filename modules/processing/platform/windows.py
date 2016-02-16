@@ -66,22 +66,11 @@ class MonitorProcessLog(list):
         event["arguments"]["attributes"] = attrs
 
     def __iter__(self):
-        # call_id = 0
         for event in self.eventstream:
             if event["type"] == "process":
                 self.first_seen = event["first_seen"]
             elif event["type"] == "apicall":
                 event["time"] = self.first_seen + datetime.timedelta(0, 0, event["time"] * 1000)
-
-                # backwards compat with previous reports, remove if not necessary
-                # event["repeated"] = 0
-                # event["timestamp"] = logtime(event.pop("time"))
-                # event["arguments"] = [dict(name=i, value=j) for i,j in event["arguments"].iteritems()]
-                # event["return"] = convert_to_printable(cleanup_value(event.pop("return_value")))
-
-                # event["is_success"] = bool(int(event.pop("status")))
-                # event["id"] = call_id
-                # call_id += 1
 
                 # Remove the event type for reporting output.
                 del event["type"]
