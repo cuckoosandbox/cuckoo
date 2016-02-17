@@ -331,7 +331,7 @@ def exception_message():
         "Oops! Cuckoo failed in an unhandled exception!\nSometimes bugs are "
         "already fixed in the development release, it is therefore "
         "recommended to retry with the latest development release available "
-        "%s\nIf the error persists please open a new issue at %s\n\n" % \
+        "%s\nIf the error persists please open a new issue at %s\n\n" %
         (GITHUB_URL, ISSUES_PAGE_URL)
     )
 

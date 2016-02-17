@@ -25,8 +25,9 @@ try:
     from sqlalchemy.orm import sessionmaker, relationship, joinedload
     Base = declarative_base()
 except ImportError:
-    raise CuckooDependencyError("Unable to import sqlalchemy "
-                                "(install with `pip install sqlalchemy`)")
+    raise CuckooDependencyError(
+        "Unable to import sqlalchemy (install with `pip install sqlalchemy`)"
+    )
 
 log = logging.getLogger(__name__)
 
@@ -405,10 +406,11 @@ class Database(object):
             tmp_session.close()
             if last.version_num != SCHEMA_VERSION and schema_check:
                 raise CuckooDatabaseError(
-                    "DB schema version mismatch: found {0}, expected {1}. "
+                    "DB schema version mismatch: found %s, expected %s. "
                     "Try to apply all migrations (cd utils/db_migration/ && "
-                    "alembic upgrade head).".format(last.version_num,
-                                                    SCHEMA_VERSION))
+                    "alembic upgrade head)." %
+                    (last.version_num, SCHEMA_VERSION)
+                )
 
     def __del__(self):
         """Disconnects pool."""
@@ -431,9 +433,10 @@ class Database(object):
                 self.engine = create_engine(connection_string)
         except ImportError as e:
             lib = e.message.split()[-1]
-            raise CuckooDependencyError("Missing database driver, unable to "
-                                        "import %s (install with `pip "
-                                        "install %s`)" % (lib, lib))
+            raise CuckooDependencyError(
+                "Missing database driver, unable to import %s (install with "
+                "`pip install %s`)" % (lib, lib)
+            )
 
     def _get_or_create(self, session, model, **kwargs):
         """Get an ORM instance or create it if not exist.
@@ -1052,14 +1055,15 @@ class Database(object):
         @return: ID of the newly created task.
         """
         task = self.view_task(task_id)
-
         if not task:
-            return None
+            return
 
         if task.category == "file":
             add = self.add_path
         elif task.category == "url":
             add = self.add_url
+        else:
+            return
 
         # Change status to recovered.
         session = self.Session()
