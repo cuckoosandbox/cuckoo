@@ -482,7 +482,7 @@ It contains the following sections::
     encoding = latin-1
     calls = yes
 
-    [mmdef]
+    [reporthtml]
     enabled = no
 
     [mongodb]
