@@ -144,8 +144,8 @@ if __name__ == "__main__":
                         help="Unix socket group")
     parser.add_argument("--ifconfig", default="/sbin/ifconfig",
                         help="Path to ifconfig")
-    parser.add_argument("--openvpn", default="/etc/init.d/openvpn",
-                        help="Path to OpenVPN init script (Debian/Ubuntu)")
+    parser.add_argument("--openvpn", default="service",
+                        help="Command or init script path to run OpenVPN")
     parser.add_argument("--iptables", default="/sbin/iptables",
                         help="Path to iptables")
     parser.add_argument("--ip", default="/sbin/ip", help="Path to ip")
