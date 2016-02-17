@@ -235,9 +235,7 @@ class ResultHandler(SocketServer.BaseRequestHandler):
             pass
         except:
             log.exception("FIXME - exception in resultserver connection %s",
-                          str(self.client_address))
-
-        log.debug("Connection closed: {0}:{1}".format(ip, port))
+                          self.client_address)
 
     def open_process_log(self, event):
         pid = event["pid"]
