@@ -1046,7 +1046,7 @@ class Database(object):
                         tags=tags, category="service")
 
     @classlock
-    def reschedule(self, task_id):
+    def reschedule(self, task_id, priority=None):
         """Reschedule a task.
         @param task_id: ID of the task to reschedule.
         @return: ID of the newly created task.
@@ -1078,6 +1078,10 @@ class Database(object):
             tags = ",".join(tag.name for tag in task.tags)
         else:
             tags = task.tags
+
+        # Assign a new priority.
+        if priority:
+            task.priority = priority
 
         return add(task.target, task.timeout, task.package, task.options,
                    task.priority, task.custom, task.owner, task.machine,

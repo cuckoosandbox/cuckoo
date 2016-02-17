@@ -210,14 +210,16 @@ def tasks_view(task_id):
     return jsonify(response)
 
 @app.route("/tasks/reschedule/<int:task_id>")
+@app.route("/tasks/reschedule/<int:task_id>/<int:priority>")
 @app.route("/v1/tasks/reschedule/<int:task_id>")
-def tasks_reschedule(task_id):
+@app.route("/v1/tasks/reschedule/<int:task_id>/<int:priority>")
+def tasks_reschedule(task_id, priority=None):
     response = {}
 
     if not db.view_task(task_id):
         return json_error(404, "There is no analysis with the specified ID")
 
-    new_task_id = db.reschedule(task_id)
+    new_task_id = db.reschedule(task_id, priority)
     if new_task_id:
         response["status"] = "OK"
         response["task_id"] = new_task_id
