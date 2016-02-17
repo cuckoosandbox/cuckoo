@@ -15,6 +15,7 @@ import subprocess
 import sys
 
 def run(*args):
+    """Wrapper to Popen."""
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     return stdout, stderr
@@ -40,6 +41,7 @@ def rt_available(rt_table):
         return False
 
 def vpn_status():
+    """Gets current VPN status."""
     ret = {}
     for line in run(settings.openvpn, "status")[0].split("\n"):
         x = re.search("'(?P<vpn>\\w+)'\\ is\\ (?P<running>not)?", line)
