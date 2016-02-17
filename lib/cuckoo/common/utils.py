@@ -12,6 +12,7 @@ import string
 import tempfile
 import xmlrpclib
 import inspect
+import platform
 import threading
 import multiprocessing
 
@@ -299,6 +300,15 @@ def sha1_file(filepath):
 
 def exception_message():
     """Creates a message describing an unhandled exception."""
+    def get_os_release():
+        """Returns detailed OS release."""
+        if platform.linux_distribution()[0]:
+            return " ".join(platform.linux_distribution())
+        elif platform.mac_ver()[0]:
+            return "%s %s" % (platform.mac_ver()[0], platform.mac_ver()[2])
+        else:
+            return "Unknown"
+
     msg = (
         "Oops! Cuckoo failed in an unhandled exception!\nSometimes bugs are "
         "already fixed in the development release, it is therefore "
@@ -310,7 +320,9 @@ def exception_message():
     msg += "=== Exception details ===\n"
     msg += "Cuckoo version: %s\n" % CUCKOO_VERSION
     msg += "OS version: %s\n" % os.name
+    msg += "OS release: %s\n" % get_os_release()
     msg += "Python version: %s\n" % sys.version.split()[0]
+    msg += "Machine arch: %s\n" % platform.machine()
 
     git_version = os.path.join(CUCKOO_ROOT, ".git", "refs", "heads", "master")
     if os.path.exists(git_version):
