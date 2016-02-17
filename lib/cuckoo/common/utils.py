@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import hashlib
+import logging
 import os
 import sys
 import shutil
@@ -29,6 +30,8 @@ try:
     HAVE_CHARDET = True
 except ImportError:
     HAVE_CHARDET = False
+
+log = logging.getLogger(__name__)
 
 def create_folders(root=".", folders=[]):
     """Create directories.
@@ -297,6 +300,21 @@ def md5_file(filepath):
 
 def sha1_file(filepath):
     return hash_file(hashlib.sha1, filepath)
+
+GUIDS = {}
+
+def guid_name(guid):
+    if not GUIDS:
+        for line in open(os.path.join(CUCKOO_ROOT, "data", "guids.txt")):
+            try:
+                guid, name, url = line.strip().split()
+            except:
+                log.debug("Invalid GUID entry: %s", line)
+                continue
+
+            GUIDS["{%s}" % guid] = name
+
+    return GUIDS.get(guid)
 
 def exception_message():
     """Creates a message describing an unhandled exception."""

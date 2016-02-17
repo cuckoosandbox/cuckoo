@@ -20,6 +20,7 @@ except ImportError:
 
 from lib.cuckoo.common.abstracts import BehaviorHandler
 from lib.cuckoo.common.netlog import BsonParser
+from lib.cuckoo.common.utils import guid_name
 
 log = logging.getLogger(__name__)
 
@@ -65,6 +66,16 @@ class MonitorProcessLog(list):
 
         event["arguments"]["attributes"] = attrs
 
+    def _api_modifier(self, event):
+        """Adds flags field to CLSID and IID instances."""
+        clsid = guid_name(event["arguments"].get("clsid"))
+        if clsid:
+            event["flags"]["clsid"] = clsid
+
+        iid = guid_name(event["arguments"].get("iid"))
+        if iid:
+            event["flags"]["iid"] = iid
+
     def __iter__(self):
         for event in self.eventstream:
             if event["type"] == "process":
@@ -86,6 +97,9 @@ class MonitorProcessLog(list):
                 apiname = "_api_%s" % event["api"]
                 if hasattr(self, apiname):
                     getattr(self, apiname)(event)
+
+                # Generic modifier for various functions.
+                self._api_modifier(event)
 
                 yield event
 
