@@ -138,13 +138,19 @@ handlers = {
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("socket", nargs="?", default="/tmp/cuckoo-rooter", help="Unix socket path")
-    parser.add_argument("-g", "--group", default="cuckoo", help="Unix socket group")
-    parser.add_argument("--ifconfig", default="/sbin/ifconfig", help="Path to ifconfig")
-    parser.add_argument("--openvpn", default="/etc/init.d/openvpn", help="Path to openvpn")
-    parser.add_argument("--iptables", default="/sbin/iptables", help="Path to iptables")
+    parser.add_argument("socket", nargs="?", default="/tmp/cuckoo-rooter",
+                        help="Unix socket path")
+    parser.add_argument("-g", "--group", default="cuckoo",
+                        help="Unix socket group")
+    parser.add_argument("--ifconfig", default="/sbin/ifconfig",
+                        help="Path to ifconfig")
+    parser.add_argument("--openvpn", default="/etc/init.d/openvpn",
+                        help="Path to OpenVPN init script (Debian/Ubuntu)")
+    parser.add_argument("--iptables", default="/sbin/iptables",
+                        help="Path to iptables")
     parser.add_argument("--ip", default="/sbin/ip", help="Path to ip")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Enable verbose logging")
     settings = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
