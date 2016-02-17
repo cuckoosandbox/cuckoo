@@ -413,9 +413,10 @@ each one. For details click on the resource name.
 /tasks/reschedule
 -----------------
 
-    **GET /tasks/reschedule/** *(int: id)*
+    **GET /tasks/reschedule/** *(int: id)* **/** *(int: priority)*
 
-        Reschedule a task with the specified ID.
+        Reschedule a task with the specified ID and priority (default priority
+        is 1).
 
         **Example request**::
 
@@ -429,6 +430,7 @@ each one. For details click on the resource name.
 
         **Parameters**:
             * ``id`` *(required)* *(int)* - ID of the task to reschedule
+            * ``priority`` *(optional)* *(int)* - Task priority
 
         **Status codes**:
             * ``200`` - no error
