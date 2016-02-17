@@ -603,7 +603,7 @@ class Scheduler(object):
             # Drop forwarding rule to each VPN.
             for vpn in vpns.values():
                 rooter("forward_disable", machine.interface,
-                       vpn["interface"], machine.ip)
+                       vpn.interface, machine.ip)
 
             # Drop forwarding rule to the internet / dirty line.
             if self.cfg.routing.internet != "none":
