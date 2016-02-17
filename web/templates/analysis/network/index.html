@@ -1,15 +1,43 @@
-{% if analysis.network.pcap_id %}
-<div class="alert alert-info center"><a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "pcap" analysis.network.pcap_id %}">Download PCAP</a></div>
+{% if analysis.network.pcap_id or analysis.network.mitmproxy_id %}
+<div class="alert alert-info center">
+    {% if analysis.network.pcap_id %}
+    <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "pcap" analysis.network.pcap_id %}">Download PCAP</a>
+    {% endif %}
+    {% if analysis.network.mitmproxy_id %}
+    <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "mitmproxy" analysis.network.mitmproxy_id %}">Download mitmproxy dump</a>
+    {% endif %}
+</div>
 {% endif %}
+
+{% if not HAVE_HTTPREPLAY %}
+<div class="alert alert-warning">
+    <strong>Deprecation note:</strong>
+    While processing this analysis you did not have the httpreplay Python
+    library installed. Installing this library (i.e., pip install httpreplay)
+    will allow Cuckoo to do more proper PCAP analysis including but not
+    limited to showing full HTTP and HTTPS (!) requests and responses.
+    It is recommended that you install this library and possibly reprocess any
+    interesting analysis tasks.
+</div>
+{% endif %}
+
 <div class="tabbable tabs">
     <ul class="nav nav-pills" style="margin-bottom: 0;">
         <li class="active"><a href="#network_hosts_tab" data-toggle="tab">Hosts ({{ analysis.network.hosts|length }})</a></li>
-        <li><a href="#network_dns_tab" data-toggle="tab">DNS ({{ analysis.network.domains|length }})</a></li>
+        <li><a href="#network_dns_tab" data-toggle="tab">DNS ({{ analysis.network.dns|length }})</a></li>
         <li><a href="#network_tcp_tab" data-toggle="tab">TCP ({{ analysis.network.tcp|length }})</a></li>
         <li><a href="#network_udp_tab" data-toggle="tab">UDP ({{ analysis.network.udp|length }})</a></li>
-        <li><a href="#network_http_tab" data-toggle="tab">HTTP ({{ analysis.network.http|length }})</a></li>
+        <li><a href="#network_http_tab" data-toggle="tab">
+            {% if analysis.network.http_ex %}
+                HTTP/HTTPS ({{ analysis.network.http_ex|add:analysis.network.https_ex|length }})
+            {% else %}
+                HTTP ({{ analysis.network.http|length }})
+            {% endif %}
+        </a></li>
         <li><a href="#network_icmp_tab" data-toggle="tab">ICMP ({{ analysis.network.icmp|length }})</a></li>
         <li><a href="#network_irc_tab" data-toggle="tab">IRC ({{ analysis.network.irc|length }})</a></li>
+        <li><a href="#network_suricata_tab" data-toggle="tab">Suricata ({{ analysis.suricata|custom_length:"alerts tls" }})</a></li>
+        <li><a href="#network_snort_tab" data-toggle="tab">Snort ({{ analysis.snort.alerts|length }})</a></li>
     </ul>
     <div class="tab-content">
         <div class="tab-pane fade in active" id="network_hosts_tab">{% include "analysis/network/_hosts.html" %}</div>
@@ -19,5 +47,7 @@
         <div class="tab-pane fade" id="network_http_tab">{% include "analysis/network/_http.html" %}</div>
         <div class="tab-pane fade" id="network_icmp_tab">{% include "analysis/network/_icmp.html" %}</div>
         <div class="tab-pane fade" id="network_irc_tab">{% include "analysis/network/_irc.html" %}</div>
+        <div class="tab-pane fade" id="network_suricata_tab">{% include "analysis/network/_suricata.html" %}</div>
+        <div class="tab-pane fade" id="network_snort_tab">{% include "analysis/network/_snort.html" %}</div>
     </div>
 </div>

@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,7 +11,7 @@ class CreatesExe(Signature):
     severity = 2
     categories = ["generic"]
     authors = ["Cuckoo Developers"]
-    minimum = "0.5"
+    minimum = "2.0"
 
     # This is a signature template. It should be used as a skeleton for
     # creating custom signatures, therefore is disabled by default.
@@ -19,11 +20,8 @@ class CreatesExe(Signature):
     # read and attributes lookup.
     enabled = False
 
-    def run(self):
-        match = self.check_file(pattern=".*\.exe$",
-                                regex=True)
+    def on_complete(self):
+        match = self.check_file(pattern=".*\\.exe$", regex=True)
         if match:
-            self.data.append({"file": match})
+            self.mark_ioc("file", match)
             return True
-
-        return False

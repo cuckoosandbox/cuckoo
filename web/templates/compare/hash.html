@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load staticfiles %}
 {% block content %}
-<p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+<p style="margin-bottom: 10px;"><img src="{% static "graphic/cuckoo.png" %}" /></p>
 
 <div class="row">
     <div class="col-md-6" style="border-right: 1px dashed #ddd;">
@@ -13,7 +14,7 @@
 
         <p>You need to select the second analysis.</p>
         {% if records.count > 0 %}
-            <p>Following are all the analyses of the file with provided MD5 <b>{{hash}}</b>:</p>
+            <p>Following are all the analyses of the file with provided MD5 or pattern <b>{{hash}}</b>:</p>
             {% include "compare/_summary_table.html" %}
         {% else %}
             <p><b>There is no analysis for the specified file or you selected the same selected analysis.</b></p>

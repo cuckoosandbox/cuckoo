@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -41,9 +42,10 @@ class VirtualBox(Machinery):
         # Base checks.
         super(VirtualBox, self)._initialize_check()
 
-    def start(self, label):
+    def start(self, label, task):
         """Start a virtual machine.
         @param label: virtual machine name.
+        @param task: task object.
         @raise CuckooMachineError: if unable to start.
         """
         log.debug("Starting vm %s" % label)
@@ -52,12 +54,12 @@ class VirtualBox(Machinery):
             raise CuckooMachineError("Trying to start an already "
                                      "started vm %s" % label)
 
-        vm_info = self.db.view_machine_by_label(label)
+        machine = self.db.view_machine_by_label(label)
         virtualbox_args = [self.options.virtualbox.path, "snapshot", label]
-        if vm_info.snapshot:
+        if machine.snapshot:
             log.debug("Using snapshot {0} for virtual machine "
-                      "{1}".format(vm_info.snapshot, label))
-            virtualbox_args.extend(["restore", vm_info.snapshot])
+                      "{1}".format(machine.snapshot, label))
+            virtualbox_args.extend(["restore", machine.snapshot])
         else:
             log.debug("Using current snapshot for virtual machine "
                       "{0}".format(label))
@@ -77,12 +79,12 @@ class VirtualBox(Machinery):
 
         try:
             proc = subprocess.Popen([self.options.virtualbox.path,
-                             "startvm",
-                             label,
-                             "--type",
-                             self.options.virtualbox.mode],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+                                     "startvm",
+                                     label,
+                                     "--type",
+                                     self.options.virtualbox.mode],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
             output, err = proc.communicate()
             if err:
                 raise OSError(err)
@@ -90,7 +92,39 @@ class VirtualBox(Machinery):
             raise CuckooMachineError("VBoxManage failed starting the machine "
                                      "in %s mode: %s" %
                                      (self.options.virtualbox.mode.upper(), e))
+
         self._wait_status(label, self.RUNNING)
+
+        # Handle network dumping through the internal VirtualBox functionality.
+        if "nictrace" in machine.options:
+            self.dump_pcap(label, task)
+
+    def dump_pcap(self, label, task):
+        """Dump the pcap for this analysis through the VirtualBox integrated
+        nictrace functionality. This is useful in scenarios where multiple
+        Virtual Machines are talking with each other in the same subnet (which
+        you normally don't see when tcpdump'ing on the gatway)."""
+        try:
+            args = [
+                self.options.virtualbox.path,
+                "controlvm", label,
+                "nictracefile1", self.pcap_path(task.id),
+            ]
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError as e:
+            log.critical("Unable to set NIC tracefile (pcap file): %s", e)
+            return
+
+        try:
+            args = [
+                self.options.virtualbox.path,
+                "controlvm", label,
+                "nictrace1", "on",
+            ]
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError as e:
+            log.critical("Unable to enable NIC tracing (pcap file): %s", e)
+            return
 
     def stop(self, label):
         """Stops a virtual machine.
@@ -185,7 +219,7 @@ class VirtualBox(Machinery):
             status = self.ERROR
         if not status:
             for line in output.split("\n"):
-                state = re.match(r"VMState=\"(\w+)\"", line, re.M|re.I)
+                state = re.match(r'VMState="(\w+)"', line, re.M | re.I)
                 if state:
                     status = state.group(1)
                     log.debug("Machine %s status %s" % (label, status))
@@ -201,9 +235,32 @@ class VirtualBox(Machinery):
         """Takes a memory dump.
         @param path: path to where to store the memory dump.
         """
+
+        try:
+            proc = subprocess.Popen([self.options.virtualbox.path, "-v"],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            output, err = proc.communicate()
+
+            if proc.returncode != 0:
+                # It's quite common for virtualbox crap utility to exit with:
+                # VBoxManage: error: Details: code E_ACCESSDENIED (0x80070005)
+                # So we just log to debug this.
+                log.debug("VBoxManage returns error checking status for "
+                          "machine %s: %s", label, err)
+        except OSError as e:
+            raise CuckooMachineError("VBoxManage failed return it's version: %s" % (e))
+
+        if output[:1] == str(5):
+            # VirtualBox version 5.x
+            dumpcmd = "dumpvmcore"
+        else:
+            # VirtualBox version 4.x
+            dumpcmd = "dumpguestcore"
+
         try:
             subprocess.call([self.options.virtualbox.path, "debugvm",
-                             label, "dumpguestcore", "--filename", path],
+                             label, dumpcmd, "--filename", path],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
             log.info("Successfully generated memory dump for virtual machine "

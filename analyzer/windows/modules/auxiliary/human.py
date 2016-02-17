@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -26,18 +27,21 @@ RESOLUTION = {
 def foreach_child(hwnd, lparam):
     # List of buttons labels to click.
     buttons = [
-        "yes",
+        "yes", "oui",
         "ok",
-        "accept",
-        "next",
-        "install",
+        "accept", "accepter",
+        "next", "suivant",
+        "install", "installer",
         "run",
-        "agree",
-        "enable",
-        "don't send",
-        "continue",
-        "unzip",
-        "open",
+        "agree", "j'accepte",
+        "enable", "activer",
+        "don't send", "ne pas envoyer",
+        "continue", "continuer",
+        "unzip", "dezip",
+        "open", "ouvrir",
+        "execute", "executer",
+        "launch", "lancer",
+        "save", "sauvegarder"
     ]
 
     # List of buttons labels to not click.
@@ -49,7 +53,7 @@ def foreach_child(hwnd, lparam):
     USER32.GetClassNameW(hwnd, classname, 50)
 
     # Check if the class of the child is button.
-    if classname.value == "Button":
+    if "button" in classname.value.lower():
         # Get the text of the button.
         length = USER32.SendMessageW(hwnd, WM_GETTEXTLENGTH, 0, 0)
         text = create_unicode_buffer(length + 1)
@@ -61,18 +65,15 @@ def foreach_child(hwnd, lparam):
             if button in textval:
                 for btn in dontclick:
                     if btn in textval:
-                        return False
+                        break
+                else:
+                    log.info("Found button \"%s\", clicking it" % text.value)
+                    USER32.SetForegroundWindow(hwnd)
+                    KERNEL32.Sleep(1000)
+                    USER32.SendMessageW(hwnd, BM_CLICK, 0, 0)
 
-                log.info("Found button \"%s\", clicking it" % text.value)
-                USER32.SetForegroundWindow(hwnd)
-                KERNEL32.Sleep(1000)
-                USER32.SendMessageW(hwnd, BM_CLICK, 0, 0)
-        # Don't search for childs (USER32.EnumChildWindows).
-        return False
-    else:
-        # Recursively search for childs (USER32.EnumChildWindows).
-        return True
-
+    # Recursively search for childs (USER32.EnumChildWindows).
+    return True
 
 # Callback procedure invoked for every enumerated window.
 def foreach_window(hwnd, lparam):
@@ -106,9 +107,9 @@ def click_mouse():
 class Human(Auxiliary, Thread):
     """Human after all"""
 
-    def __init__(self, options):
+    def __init__(self, options={}, analyzer=None):
         Thread.__init__(self)
-        Auxiliary.__init__(self, options)
+        Auxiliary.__init__(self, options, analyzer)
         self.do_run = True
 
     def stop(self):

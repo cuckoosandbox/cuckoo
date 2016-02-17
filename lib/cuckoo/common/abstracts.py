@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,6 +11,7 @@ import time
 import xml.etree.ElementTree as ET
 
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -51,7 +53,6 @@ class Auxiliary(object):
     def stop(self):
         raise NotImplementedError
 
-
 class Machinery(object):
     """Base abstract class for machinery modules."""
 
@@ -70,6 +71,11 @@ class Machinery(object):
         # Machine table is cleaned to be filled from configuration file
         # at each start.
         self.db.clean_machines()
+
+    def pcap_path(self, task_id):
+        """Returns the .pcap path for this task id."""
+        return os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                            "%s" % task_id, "dump.pcap")
 
     def set_options(self, options):
         """Set machine manager options.
@@ -101,12 +107,16 @@ class Machinery(object):
                 machine.id = machine_id.strip()
                 machine.label = machine_opts[self.LABEL]
                 machine.platform = machine_opts["platform"]
+                machine.options = machine_opts.get("options", "")
                 machine.tags = machine_opts.get("tags")
                 machine.ip = machine_opts["ip"]
 
                 # If configured, use specific network interface for this
                 # machine, else use the default value.
-                machine.interface = machine_opts.get("interface")
+                if machine_opts.get("interface"):
+                    machine.interface = machine_opts["interface"]
+                else:
+                    machine.interface = mmanager_opts.get("interface")
 
                 # If configured, use specific snapshot name, else leave it
                 # empty and use default behaviour.
@@ -135,6 +145,7 @@ class Machinery(object):
                                     label=machine.label,
                                     ip=machine.ip,
                                     platform=machine.platform,
+                                    options=machine.options,
                                     tags=machine.tags,
                                     interface=machine.interface,
                                     snapshot=machine.snapshot,
@@ -142,7 +153,7 @@ class Machinery(object):
                                     resultserver_port=port)
             except (AttributeError, CuckooOperationalError) as e:
                 log.warning("Configuration details about machine %s "
-                            "are missing: %s", machine_id, e)
+                            "are missing: %s", machine_id.strip(), e)
                 continue
 
     def _initialize_check(self):
@@ -239,9 +250,10 @@ class Machinery(object):
         """
         self.db.set_machine_status(label, status)
 
-    def start(self, label=None):
+    def start(self, label, task):
         """Start a machine.
         @param label: machine name.
+        @param task: task object.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
@@ -280,6 +292,7 @@ class Machinery(object):
 
         if isinstance(state, str):
             state = [state]
+
         while current not in state:
             log.debug("Waiting %i cuckooseconds for machine %s to switch "
                       "to status %s", waitme, label, state)
@@ -289,7 +302,6 @@ class Machinery(object):
             time.sleep(1)
             waitme += 1
             current = self._status(label)
-
 
 class LibVirtMachinery(Machinery):
     """Libvirt based machine manager.
@@ -335,9 +347,10 @@ class LibVirtMachinery(Machinery):
         # currently still active.
         super(LibVirtMachinery, self)._initialize_check()
 
-    def start(self, label):
+    def start(self, label, task):
         """Starts a virtual machine.
         @param label: virtual machine name.
+        @param task: task object.
         @raise CuckooMachineError: if unable to start virtual machine.
         """
         log.debug("Starting machine %s", label)
@@ -429,6 +442,10 @@ class LibVirtMachinery(Machinery):
 
         conn = self._connect()
         try:
+            # Resolve permission issue as libvirt creates the file as
+            # root/root in mode 0600, preventing us from reading it. This
+            # supposedly still doesn't allow us to remove it, though..
+            open(path, "wb").close()
             self.vms[label].coreDump(path, flags=libvirt.VIR_DUMP_MEMORY_ONLY)
         except libvirt.libvirtError as e:
             raise CuckooMachineError("Error dumping memory virtual machine "
@@ -597,9 +614,11 @@ class Processing(object):
 
     def __init__(self):
         self.analysis_path = ""
+        self.baseline_path = ""
         self.logs_path = ""
         self.task = None
         self.options = None
+        self.results = {}
 
     def set_options(self, options):
         """Set report options.
@@ -613,6 +632,10 @@ class Processing(object):
         """
         self.task = task
 
+    def set_baseline(self, baseline_path):
+        """Set the path to the baseline directory."""
+        self.baseline_path = baseline_path
+
     def set_path(self, analysis_path):
         """Set paths.
         @param analysis_path: analysis folder path.
@@ -622,11 +645,21 @@ class Processing(object):
         self.file_path = os.path.realpath(os.path.join(self.analysis_path,
                                                        "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
+        self.package_files = os.path.join(self.analysis_path, "package_files")
+        self.buffer_path = os.path.join(self.analysis_path, "buffer")
         self.logs_path = os.path.join(self.analysis_path, "logs")
         self.shots_path = os.path.join(self.analysis_path, "shots")
         self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
         self.pmemory_path = os.path.join(self.analysis_path, "memory")
         self.memory_path = os.path.join(self.analysis_path, "memory.dmp")
+        self.mitmout_path = os.path.join(self.analysis_path, "mitm.log")
+        self.mitmerr_path = os.path.join(self.analysis_path, "mitm.err")
+        self.tlsmaster_path = os.path.join(self.analysis_path, "tlsmaster.txt")
+        self.suricata_path = os.path.join(self.analysis_path, "suricata")
+
+    def set_results(self, results):
+        """Set the results - the fat dictionary."""
+        self.results = results
 
     def run(self):
         """Start processing.
@@ -636,36 +669,39 @@ class Processing(object):
 
 class Signature(object):
     """Base class for Cuckoo signatures."""
-
     name = ""
     description = ""
     severity = 1
+    order = 1
     categories = []
     families = []
     authors = []
     references = []
+    platform = None
     alert = False
     enabled = True
     minimum = None
     maximum = None
 
-    # Higher order will be processed later (only for non-evented signatures)
-    # this can be used for having meta-signatures that check on other lower-
-    # order signatures being matched
-    order = 0
+    # Basic filters to reduce the amount of events sent to this signature.
+    filter_apinames = []
+    filter_categories = []
 
-    evented = False
-    filter_processnames = set()
-    filter_apinames = set()
-    filter_categories = set()
+    def __init__(self, caller):
+        """
+        @param caller: calling object. Stores results in caller.results
+        """
+        self.marks = []
+        self.matched = False
+        self._caller = caller
 
-    def __init__(self, results=None):
-        self.data = []
-        self.results = results
-        self._current_call_cache = None
-        self._current_call_dict = None
+        # These are set by the caller, they represent the process identifier
+        # and call index respectively.
+        self.pid = None
+        self.cid = None
+        self.call = None
 
-    def _check_value(self, pattern, subject, regex=False):
+    def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.
         @param pattern: string or expression to check for.
         @param subject: target of the check.
@@ -673,163 +709,269 @@ class Signature(object):
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
+        ret = set()
         if regex:
             exp = re.compile(pattern, re.IGNORECASE)
             if isinstance(subject, list):
                 for item in subject:
                     if exp.match(item):
-                        return item
+                        ret.add(item)
             else:
                 if exp.match(subject):
-                    return subject
+                    ret.add(subject)
         else:
             if isinstance(subject, list):
                 for item in subject:
-                    if item == pattern:
-                        return item
+                    if item.lower() == pattern.lower():
+                        ret.add(item)
             else:
                 if subject == pattern:
-                    return subject
+                    ret.add(subject)
 
-        return None
+        # Return all elements.
+        if all:
+            return list(ret)
+        # Return only the first element, if available. Otherwise return None.
+        elif ret:
+            return ret.pop()
 
-    def check_file(self, pattern, regex=False):
+    def get_results(self, key=None, default=None):
+        if key:
+            return self._caller.results.get(key, default)
+
+        return self._caller.results
+
+    def get_processes(self, name=None):
+        """Get a list of processes.
+
+        @param name: If set only return processes with that name.
+        @return: List of processes or empty list
+        """
+        for item in self.get_results("behavior", {}).get("processes", []):
+            if name is None or item["process_name"] == name:
+                yield item
+
+    def get_process_by_pid(self, pid=None):
+        """Get a process by its process identifier.
+
+        @param pid: pid to search for.
+        @return: process.
+        """
+        for item in self.get_results("behavior", {}).get("processes", []):
+            if item["pid"] == pid:
+                return item
+
+    def get_summary(self, key=None, default=[]):
+        """Get one or all values related to the global summary."""
+        summary = self.get_results("behavior", {}).get("summary", {})
+        return summary.get(key, default) if key else summary
+
+    def get_summary_generic(self, pid, actions):
+        """Get generic info from summary.
+
+        @param pid: pid of the process. None for all
+        @param actions: A list of actions to get
+        """
+        ret = []
+        for process in self.get_results("behavior", {}).get("generic", []):
+            if pid is not None and process["pid"] != pid:
+                continue
+
+            for action in actions:
+                if action in process["summary"]:
+                    ret += process["summary"][action]
+        return ret
+
+    def get_files(self, pid=None, actions=None):
+        """Get files read, queried, or written to optionally by a
+        specific process.
+
+        @param pid: the process or None for all
+        @param actions: actions to search for. None is all
+        @return: yields files
+
+        """
+        if actions is None:
+            actions = [
+                "file_opened", "file_written",
+                "file_read", "file_deleted",
+                "file_exists",
+            ]
+
+        return self.get_summary_generic(pid, actions)
+
+    def get_dll_loaded(self, pid=None):
+        """Get DLLs loaded by a specific process.
+
+        @param pid: the process or None for all
+        @return: yields DLLs loaded
+
+        """
+        return self.get_summary_generic(pid, ["dll_loaded"])
+
+    def get_keys(self, pid=None, actions=None):
+        """Get registry keys.
+
+        @param pid: The pid to look in or None for all.
+        @param actions: the actions as a list.
+        @return: yields registry keys
+
+        """
+        if actions is None:
+            actions = [
+                "regkey_opened", "regkey_written",
+                "regkey_read", "regkey_deleted",
+            ]
+
+        return self.get_summary_generic(pid, actions)
+
+    def check_file(self, pattern, regex=False, actions=None, pid=None,
+                   all=False):
         """Checks for a file being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
+        @param actions: a list of key actions to use.
+        @param pid: The process id to check. If it is set to None, all
+                    processes will be checked.
         @return: boolean with the result of the check.
         """
-        subject = self.results["behavior"]["summary"]["files"]
-        return self._check_value(pattern=pattern,
-                                 subject=subject,
-                                 regex=regex)
+        if actions is None:
+            actions = [
+                "file_opened", "file_written",
+                "file_read", "file_deleted",
+                "file_exists",
+            ]
 
-    def check_key(self, pattern, regex=False):
-        """Checks for a registry key being opened.
+        return self._check_value(pattern=pattern,
+                                 subject=self.get_files(pid, actions),
+                                 regex=regex,
+                                 all=all)
+
+    def check_dll_loaded(self, pattern, regex=False, actions=None, pid=None,
+                         all=False):
+        """Checks for DLLs being loaded.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
+        @param pid: The process id to check. If it is set to None, all
+                    processes will be checked.
         @return: boolean with the result of the check.
         """
-        subject = self.results["behavior"]["summary"]["keys"]
         return self._check_value(pattern=pattern,
-                                 subject=subject,
-                                 regex=regex)
+                                 subject=self.get_dll_loaded(pid),
+                                 regex=regex,
+                                 all=all)
 
-    def check_mutex(self, pattern, regex=False):
+    def check_key(self, pattern, regex=False, actions=None, pid=None,
+                  all=False):
+        """Checks for a registry key being accessed.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @param actions: a list of key actions to use.
+        @param pid: The process id to check. If it is set to None, all
+                    processes will be checked.
+        @return: boolean with the result of the check.
+        """
+        if actions is None:
+            actions = [
+                "regkey_written", "regkey_opened",
+                "regkey_read", "regkey_deleted",
+            ]
+
+        return self._check_value(pattern=pattern,
+                                 subject=self.get_keys(pid, actions),
+                                 regex=regex,
+                                 all=all)
+
+    def get_mutexes(self, pid=None):
+        """
+        @param pid: Pid to filter for
+        @return:List of mutexes
+        """
+        return self.get_summary_generic(pid, ["mutex"])
+
+    def check_mutex(self, pattern, regex=False, all=False):
         """Checks for a mutex being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        subject = self.results["behavior"]["summary"]["mutexes"]
         return self._check_value(pattern=pattern,
-                                 subject=subject,
-                                 regex=regex)
+                                 subject=self.get_mutexes(),
+                                 regex=regex,
+                                 all=all)
 
-    def check_api(self, pattern, process=None, regex=False):
-        """Checks for an API being called.
-        @param pattern: string or expression to check for.
-        @param process: optional filter for a specific process name.
-        @param regex: boolean representing if the pattern is a regular
-                      expression or not and therefore should be compiled.
-        @return: boolean with the result of the check.
+    def get_command_lines(self):
+        """Retrieves all command lines used."""
+        return self.get_summary("command_line")
+
+    def get_wmi_queries(self):
+        """Retrieves all executed WMI queries."""
+        return self.get_summary("wmi_query")
+
+    def get_net_generic(self, subtype):
+        """Generic getting network data.
+
+        @param subtype: subtype string to search for.
         """
-        # Loop through processes.
-        for item in self.results["behavior"]["processes"]:
-            # Check if there's a process name filter.
-            if process:
-                if item["process_name"] != process:
-                    continue
+        return self.get_results("network", {}).get(subtype, [])
 
-            # Loop through API calls.
-            for call in item["calls"]:
-                # Check if the name matches.
-                if self._check_value(pattern=pattern,
-                                     subject=call["api"],
-                                     regex=regex):
-                    return call["api"]
+    def get_net_hosts(self):
+        """Returns a list of all hosts."""
+        return self.get_net_generic("hosts")
 
-        return None
+    def get_net_domains(self):
+        """Returns a list of all domains."""
+        return self.get_net_generic("domains")
 
-    def check_argument_call(self,
-                            call,
-                            pattern,
-                            name=None,
-                            api=None,
-                            category=None,
-                            regex=False):
-        """Checks for a specific argument of an invoked API.
-        @param call: API call information.
-        @param pattern: string or expression to check for.
-        @param name: optional filter for the argument name.
-        @param api: optional filter for the API function name.
-        @param category: optional filter for a category name.
-        @param regex: boolean representing if the pattern is a regular
-                      expression or not and therefore should be compiled.
-        @return: boolean with the result of the check.
-        """
-        # Check if there's an API name filter.
-        if api:
-            if call["api"] != api:
-                return False
+    def get_net_http(self):
+        """Returns a list of all http data."""
+        return self.get_net_generic("http")
 
-        # Check if there's a category filter.
-        if category:
-            if call["category"] != category:
-                return False
+    def get_net_udp(self):
+        """Returns a list of all udp data."""
+        return self.get_net_generic("udp")
 
-        # Loop through arguments.
-        for argument in call["arguments"]:
-            # Check if there's an argument name filter.
-            if name:
-                if argument["name"] != name:
-                    continue
+    def get_net_icmp(self):
+        """Returns a list of all icmp data."""
+        return self.get_net_generic("icmp")
 
-            # Check if the argument value matches.
-            if self._check_value(pattern=pattern,
-                                 subject=argument["value"],
-                                 regex=regex):
-                return argument["value"]
+    def get_net_irc(self):
+        """Returns a list of all irc data."""
+        return self.get_net_generic("irc")
 
-        return False
+    def get_net_smtp(self):
+        """Returns a list of all smtp data."""
+        return self.get_net_generic("smtp")
 
-    def check_argument(self,
-                       pattern,
-                       name=None,
-                       api=None,
-                       category=None,
-                       process=None,
-                       regex=False):
-        """Checks for a specific argument of an invoked API.
-        @param pattern: string or expression to check for.
-        @param name: optional filter for the argument name.
-        @param api: optional filter for the API function name.
-        @param category: optional filter for a category name.
-        @param process: optional filter for a specific process name.
-        @param regex: boolean representing if the pattern is a regular
-                      expression or not and therefore should be compiled.
-        @return: boolean with the result of the check.
-        """
-        # Loop through processes.
-        for item in self.results["behavior"]["processes"]:
-            # Check if there's a process name filter.
-            if process:
-                if item["process_name"] != process:
-                    continue
+    def get_virustotal(self):
+        """Returns the information retrieved from virustotal."""
+        return self.get_results("virustotal", {})
 
-            # Loop through API calls.
-            for call in item["calls"]:
-                r = self.check_argument_call(call, pattern, name,
-                                             api, category, regex)
-                if r:
-                    return r
+    def get_volatility(self, module=None):
+        """Returns the data that belongs to the given module."""
+        volatility = self.get_results("memory", {})
+        return volatility if module is None else volatility.get(module, {})
 
-        return None
+    def get_apkinfo(self, section=None, default={}):
+        """Returns the apkinfo results for this analysis."""
+        apkinfo = self.get_results("apkinfo", {})
+        return apkinfo if section is None else apkinfo.get(section, default)
 
-    def check_ip(self, pattern, regex=False):
+    def get_droidmon(self, section=None, default={}):
+        """Returns the droidmon results for this analysis."""
+        droidmon = self.get_results("droidmon", {})
+        return droidmon if section is None else droidmon.get(section, default)
+
+    def get_googleplay(self, section=None, default={}):
+        """Returns the Google Play results for this analysis."""
+        googleplay = self.get_results("googleplay", {})
+        return googleplay if section is None else googleplay.get(section, default)
+
+    def check_ip(self, pattern, regex=False, all=False):
         """Checks for an IP address being contacted.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
@@ -837,126 +979,130 @@ class Signature(object):
         @return: boolean with the result of the check.
         """
         return self._check_value(pattern=pattern,
-                                 subject=self.results["network"]["hosts"],
-                                 regex=regex)
+                                 subject=self.get_net_hosts(),
+                                 regex=regex,
+                                 all=all)
 
-    def check_domain(self, pattern, regex=False):
+    def check_domain(self, pattern, regex=False, all=False):
         """Checks for a domain being contacted.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        if "domains" not in self.results["network"]:
-            return None
+        domains = set()
+        for item in self.get_net_domains():
+            domains.add(item["domain"])
 
-        for item in self.results["network"]["domains"]:
-            if self._check_value(pattern=pattern,
-                                 subject=item["domain"],
-                                 regex=regex):
-                return item
+        return self._check_value(pattern=pattern,
+                                 subject=list(domains),
+                                 regex=regex,
+                                 all=all)
 
-        return None
-
-    def check_url(self, pattern, regex=False):
+    def check_url(self, pattern, regex=False, all=False):
         """Checks for a URL being contacted.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
         @return: boolean with the result of the check.
         """
-        for item in self.results["network"]["http"]:
-            if self._check_value(pattern=pattern,
-                                 subject=item["uri"],
-                                 regex=regex):
-                return item
+        urls = set()
+        for item in self.get_net_http():
+            urls.add(item["uri"])
 
-        return None
+        return self._check_value(pattern=pattern,
+                                 subject=list(urls),
+                                 regex=regex,
+                                 all=all)
 
-    def get_argument(self, call, name):
-        """Retrieves the value of a specific argument from an API call.
-        @param call: API call object.
-        @param name: name of the argument to retrieve.
-        @return: value of the required argument.
-        """
-        # Check if the call passed to it was cached already.
-        # If not, we can start caching it and store a copy converted to a dict.
-        if call is not self._current_call_cache:
-            self._current_call_cache = call
-            self._current_call_dict = dict()
+    def init(self):
+        """Allow signatures to initialize themselves."""
 
-            for argument in call["arguments"]:
-                self._current_call_dict[argument["name"]] = argument["value"]
+    def mark_call(self, **kwargs):
+        """Mark the current call as explanation as to why this signature
+        matched."""
+        mark = {
+            "type": "call",
+            "pid": self.pid,
+            "cid": self.cid,
+            "call": self.call,
+        }
+        mark.update(kwargs)
+        self.marks.append(mark)
 
-        # Return the required argument.
-        if name in self._current_call_dict:
-            return self._current_call_dict[name]
+    def mark_ioc(self, category, ioc, **kwargs):
+        """Mark an IOC as explanation as to why the current signature
+        matched."""
+        mark = {
+            "type": "ioc",
+            "category": category,
+            "ioc": ioc,
+        }
+        mark.update(kwargs)
+        self.marks.append(mark)
 
-        return None
+    def mark_vol(self, plugin, **kwargs):
+        """Mark output of a Volatility plugin as explanation as to why the
+        current signature matched."""
+        mark = {
+            "type": "volatility",
+            "plugin": plugin,
+        }
+        mark.update(kwargs)
+        self.marks.append(mark)
 
-    def add_match(self, process, type, match):
-        """Adds a match to the signature data.
-        @param process: The process triggering the match.
-        @param type: The type of matching data (ex: 'api', 'mutex', 'file', etc.)
-        @param match: Value or array of values triggering the match.
-        """
-        signs = []
-        if isinstance(match, list):
-            for item in match:
-                signs.append({ 'type': type, 'value': item })
-        else:
-            signs.append({ 'type': type, 'value': match })
+    def mark(self, **kwargs):
+        """Mark arbitrary data."""
+        mark = {
+            "type": "generic",
+        }
+        mark.update(kwargs)
+        self.marks.append(mark)
 
-        process_summary = None
-        if process:
-            process_summary = {}
-            process_summary['process_name'] = process['process_name']
-            process_summary['process_id'] = process['process_id']
-
-        self.data.append({ 'process': process_summary, 'signs': signs })
-
-    def has_matches(self):
-        """Returns true if there is matches (data is not empty)
-        @return: boolean indicating if there is any match registered
-        """
-        return len(self.data) > 0
+    def has_marks(self, count=None):
+        """Returns true if this signature has one or more marks."""
+        if count is not None:
+            return len(self.marks) >= count
+        return not not self.marks
 
     def on_call(self, call, process):
         """Notify signature about API call. Return value determines
         if this signature is done or could still match.
+
+        Only called if signature is "active".
+
         @param call: logged API call.
-        @param process: process doing API call.
-        @raise NotImplementedError: this method is abstract.
+        @param process: proc object.
         """
         raise NotImplementedError
+
+    def on_signature(self, signature):
+        """Event yielded when another signatures has matched. Some signatures
+        only take effect when one or more other signatures have matched as
+        well.
+
+        @param signature: The signature that just matched
+        """
+
+    def on_process(self, process):
+        """Called on process change.
+
+        Can be used for cleanup of flags, re-activation of the signature, etc.
+
+        @param process: dictionary describing this process
+        """
 
     def on_complete(self):
-        """Evented signature is notified when all API calls are done.
-        @return: Match state.
-        @raise NotImplementedError: this method is abstract.
-        """
-        raise NotImplementedError
+        """Signature is notified when all API calls have been processed."""
 
-    def run(self):
-        """Start signature processing.
-        @param results: analysis results.
-        @raise NotImplementedError: this method is abstract.
-        """
-        raise NotImplementedError
-
-    def as_result(self):
-        """Properties as a dict (for results).
-        @return: result dictionary.
-        """
-        return dict(
-            name=self.name,
-            description=self.description,
-            severity=self.severity,
-            references=self.references,
-            data=self.data,
-            alert=self.alert,
-            families=self.families
-        )
+    def results(self):
+        """Turn this signature into actionable results."""
+        return dict(name=self.name,
+                    description=self.description,
+                    severity=self.severity,
+                    families=self.families,
+                    references=self.references,
+                    marks=self.marks)
 
 class Report(object):
     """Base abstract class for reporting module."""
@@ -968,17 +1114,19 @@ class Report(object):
         self.task = None
         self.options = None
 
+    def _get_analysis_path(self, subpath):
+        return os.path.join(self.analysis_path, subpath)
+
     def set_path(self, analysis_path):
         """Set analysis folder path.
         @param analysis_path: analysis folder path.
         """
         self.analysis_path = analysis_path
-        self.conf_path = os.path.join(self.analysis_path, "analysis.conf")
-        self.file_path = os.path.realpath(os.path.join(self.analysis_path,
-                                                       "binary"))
-        self.reports_path = os.path.join(self.analysis_path, "reports")
-        self.shots_path = os.path.join(self.analysis_path, "shots")
-        self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
+        self.conf_path = self._get_analysis_path("analysis.conf")
+        self.file_path = os.path.realpath(self._get_analysis_path("binary"))
+        self.reports_path = self._get_analysis_path("reports")
+        self.shots_path = self._get_analysis_path("shots")
+        self.pcap_path = self._get_analysis_path("dump.pcap")
 
         try:
             create_folder(folder=self.reports_path)
@@ -1001,4 +1149,33 @@ class Report(object):
         """Start report processing.
         @raise NotImplementedError: this method is abstract.
         """
+        raise NotImplementedError
+
+class BehaviorHandler(object):
+    """Base class for behavior handlers inside of BehaviorAnalysis."""
+    key = "undefined"
+
+    # Behavior event types this handler is interested in.
+    event_types = []
+
+    def __init__(self, behavior_analysis):
+        self.analysis = behavior_analysis
+
+    def handles_path(self, logpath):
+        """Needs to return True for the log files this handler wants to
+        process."""
+        return False
+
+    def parse(self, logpath):
+        """Called after handles_path succeeded, should generate behavior
+        events."""
+        raise NotImplementedError
+
+    def handle_event(self, event):
+        """Handle an event that gets passed down the stack."""
+        raise NotImplementedError
+
+    def run(self):
+        """Return the handler specific structure, gets placed into
+        behavior[self.key]."""
         raise NotImplementedError

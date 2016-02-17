@@ -1,6 +1,6 @@
 <h4>Process Tree</h4>
 <ul>
-{% for process in analysis.behavior.processtree %}
+{% for process in analysis.behavior.processtree|filter_key_if_has:"track" %}
     {% include "analysis/behavior/_tree_process.html" %}
 {% endfor %}
 </ul>

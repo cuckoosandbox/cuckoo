@@ -1,72 +1,101 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import os
-import json
-import urllib
-import urllib2
 
 from lib.cuckoo.common.abstracts import Processing
+from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooProcessingError
-from lib.cuckoo.common.objects import File
+from lib.cuckoo.common.virustotal import VirusTotalAPI
+from lib.cuckoo.common.virustotal import VirusTotalResourceNotScanned
 
-VIRUSTOTAL_FILE_URL = "https://www.virustotal.com/vtapi/v2/file/report"
-VIRUSTOTAL_URL_URL = "https://www.virustotal.com/vtapi/v2/url/report"
+log = logging.getLogger(__name__)
 
 class VirusTotal(Processing):
-    """Gets antivirus signatures from VirusTotal.com"""
+    """Gets antivirus signatures from VirusTotal.com for various results.
+
+    Currently obtains VirusTotal results for the target sample or URL and the
+    dropped files.
+    """
+    order = 2
 
     def run(self):
         """Runs VirusTotal processing
         @return: full VirusTotal report.
         """
         self.key = "virustotal"
-        virustotal = []
 
-        key = self.options.get("key", None)
-        timeout = self.options.get("timeout", 60)
+        apikey = self.options.get("key")
+        timeout = int(self.options.get("timeout", 60))
+        scan = int(self.options.get("scan", 0))
 
-        if not key:
+        if not apikey:
             raise CuckooProcessingError("VirusTotal API key not "
-                                        "configured, skip")
+                                        "configured, skipping VirusTotal "
+                                        "processing module.")
 
+        self.vt = VirusTotalAPI(apikey, timeout, scan)
+
+        # Scan the original sample or URL.
         if self.task["category"] == "file":
-            if not os.path.exists(self.file_path):
-                raise CuckooProcessingError("File {0} not found, skipping it".format(self.file_path))
-
-            resource = File(self.file_path).get_md5()
-            url = VIRUSTOTAL_FILE_URL
+            results = self.scan_file(self.file_path)
         elif self.task["category"] == "url":
-            resource = self.task["target"]
-            url = VIRUSTOTAL_URL_URL
+            results = self.scan_url(self.task["target"])
+        elif self.task["category"] == "baseline":
+            return
+        elif self.task["category"] == "service":
+            return
         else:
-            # Not supported type, exit.
-            return virustotal
+            raise CuckooProcessingError("Unsupported task category: %s" %
+                                        self.task["category"])
 
-        data = urllib.urlencode({"resource": resource, "apikey": key})
+        # Scan any dropped files that have an interesting filetype.
+        for row in self.results.get("dropped", []):
+            if not self.should_scan_file(row["type"]):
+                continue
+
+            row["virustotal"] = self.scan_file(row["path"], summary=True)
+
+        return results
+
+    def scan_file(self, filepath, summary=False):
+        """Retrieve VirusTotal results for a file.
+        @param filepath: file path
+        @param summary: if you want a summary report
+        """
+        if not os.path.exists(filepath):
+            log.warning("Path \"%s\" could not be found for VirusTotal "
+                        "lookup, skipping it", os.path.basename(filepath))
+            return
 
         try:
-            request = urllib2.Request(url, data)
-            response = urllib2.urlopen(request, timeout=int(timeout))
-            response_data = response.read()
-        except urllib2.URLError as e:
-            raise CuckooProcessingError("Unable to establish connection "
-                                        "to VirusTotal: {0}".format(e))
-        except urllib2.HTTPError as e:
-            raise CuckooProcessingError("Unable to perform HTTP request to "
-                                        "VirusTotal "
-                                        "(http code={0})".format(e.code))
+            return self.vt.file_report(filepath, summary=summary)
+        except VirusTotalResourceNotScanned:
+            return self.vt.file_scan(filepath)
+        except CuckooOperationalError as e:
+            log.warning("Error fetching results from VirusTotal for "
+                        "\"%s\": %s", os.path.basename(filepath), e.message)
 
+    def scan_url(self, url, summary=False):
+        """Retrieve VirusTotal results for a URL.
+        @param url: URL
+        @param summary: if you want a summary report
+        """
         try:
-            virustotal = json.loads(response_data)
-        except ValueError as e:
-            raise CuckooProcessingError("Unable to convert response to "
-                                        "JSON: {0}".format(e))
+            return self.vt.url_report(url, summary=summary)
+        except VirusTotalResourceNotScanned:
+            return self.vt.url_scan(url)
+        except CuckooOperationalError as e:
+            log.warning("Error fetching results from VirusTotal for "
+                        "\"%s\": %s", url, e.message)
 
-        if "scans" in virustotal:
-            items = virustotal["scans"].items()
-            virustotal["scans"] = dict((engine.replace(".", "_"), signature)
-                                       for engine, signature in items)
-
-        return virustotal
+    def should_scan_file(self, filetype):
+        """Determines whether a certain filetype should be scanned on
+        VirusTotal. For example, we're not interested in scanning text
+        files.
+        @param filetype: file type
+        """
+        return "PE32" in filetype or "MS-DOS" in filetype

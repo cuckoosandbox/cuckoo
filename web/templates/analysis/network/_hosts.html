@@ -7,8 +7,15 @@
             </tr>
             {% for host in analysis.network.hosts %}
             <tr>
-                {% if host|slice:":7" != "192.168" %}
-                <td>{{host}}</td>
+                {% if host|slice:":7" != "192.168" and ":" not in host %}
+                <td>
+                    <a target="_blank" href="{% url "analysis.views.moloch" ip=host %}">
+                        {{ host }}
+                        {% if host|isdeadip:analysis %}
+                            (dead IP/port - was unable to connect during analysis)
+                        {% endif %}
+                    </a>
+                </td>
                 {% endif %}
             </tr>
             {% endfor %}

@@ -1,3 +1,4 @@
+{% load analysis_tags %}
 <section id="domains">
     <h4>DNS</h4>
     {% if analysis.network.dns %}
@@ -9,13 +10,39 @@
             </tr>
             {% for p in analysis.network.dns %}
                 <tr>
-                    <td>{{p.request}}</td>
+                    <td>
+                        <a target="_blank" href="{% url "analysis.views.moloch" host=p.request %}">{{p.request}}</a>
+                    </td>
                     <td>
                         {% for a in p.answers %}
-                            {{a.type}} {{a.data|linebreaksbr}}{% if not forloop.last %}<br/>{% endif %}
+                            {% if a.type == "A" %}
+                                {% if ":" not in a.data %}
+                                    <a target="_blank" href="{% url "analysis.views.moloch" ip=a.data %}">
+                                        {{a.type}} {{a.data|linebreaksbr}}
+                                    </a>
+                                {% else %}
+                                    {{a.type}} {{a.data|linebreaksbr}}
+                                {% endif %}
+                                {% if not forloop.last %}<br/>{% endif %}
+                            {% elif a.type == "CNAME" %}
+                                <a target="_blank" href="{% url "analysis.views.moloch" host=a.data %}">
+                                    {{a.type}} {{a.data|linebreaksbr}}
+                                </a>
+                                {% if not forloop.last %}<br/>{% endif %}
+                            {% else %}
+                                {{a.type}} {{a.data|linebreaksbr}}{% if not forloop.last %}<br/>{% endif %}
+                            {% endif %}
                         {% endfor %}
                     </td>
-                    <td>{{ domainlookups|get_item:p.request }}</td>
+                    <td>
+                        {% if ":" not in domainlookups|get_item:p.request %}
+                            <a target="_blank" href="{% url "analysis.views.moloch" ip=domainlookups|get_item:p.request %}">
+                                {{ domainlookups|get_item:p.request }}
+                            </a>
+                        {% else %}
+                            {{ domainlookups|get_item:p.request }}
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
         </table>

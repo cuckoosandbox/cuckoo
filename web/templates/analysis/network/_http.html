@@ -1,5 +1,42 @@
-<h4>HTTP Requests</h4>
-{% if analysis.network.http %}
+<style>
+pre {
+    /* Make the pre's in this page wrap to the next line instead of having
+    to move around with the cursor. */
+    white-space: pre-wrap;
+}
+</style>
+
+<h4>HTTP &amp; HTTPS Requests</h4>
+{% if analysis.network.http_ex or analysis.network.https_ex %}
+<table class="table table-striped table-bordered" style="table-layout: fixed;">
+    <tr>
+        <th>Request</th>
+        <th>Response</th>
+    </tr>
+    {% for http in analysis.network.http_ex %}
+    <tr>
+        <td style="word-wrap: break-word;">
+            <pre>URL: http://{{http.host}}{{http.uri}}</pre>
+            <pre>{{http.request}}</pre>
+        </td>
+        <td style="word-wrap: break-word;">
+            <pre>{{http.response}}</pre>
+        </td>
+    </tr>
+    {% endfor %}
+    {% for http in analysis.network.https_ex %}
+    <tr>
+        <td style="word-wrap: break-word;">
+            <pre>URL: https://{{http.host}}{{http.uri}}</pre>
+            <pre>{{http.request}}</pre>
+        </td>
+        <td style="word-wrap: break-word;">
+            <pre>{{http.response}}</pre>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% elif analysis.network.http %}
 <table class="table table-striped table-bordered" style="table-layout: fixed;">
     <tr>
         <th>URI</th>

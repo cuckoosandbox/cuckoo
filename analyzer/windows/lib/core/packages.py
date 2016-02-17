@@ -1,8 +1,23 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-def choose_package(file_type, file_name):
+def has_com_exports(exports):
+    com_exports = [
+        "DllInstall",
+        "DllCanUnloadNow",
+        "DllGetClassObject",
+        "DllRegisterServer",
+        "DllUnregisterServer",
+    ]
+
+    for name in com_exports:
+        if name not in exports:
+            return False
+    return True
+
+def choose_package(file_type, file_name, exports):
     """Choose analysis package due to file type and file extension.
     @param file_type: file type.
     @param file_name: file name.
@@ -16,6 +31,8 @@ def choose_package(file_type, file_name):
     if "DLL" in file_type:
         if file_name.endswith(".cpl"):
             return "cpl"
+        elif has_com_exports(exports):
+            return "com"
         else:
             return "dll"
     elif "PE32" in file_type or "MS-DOS" in file_type:
@@ -35,7 +52,7 @@ def choose_package(file_type, file_name):
             file_name.endswith((".ppt", ".pptx", ".pps", ".ppsx", ".pptm", ".potm", ".potx", ".ppsm")):
         return "ppt"
     elif "HTML" in file_type or file_name.endswith((".htm", ".html")):
-        return "html"
+        return "ie"
     elif file_name.endswith(".jar"):
         return "jar"
     elif "Zip" in file_type:
@@ -44,9 +61,13 @@ def choose_package(file_type, file_name):
         return "python"
     elif file_name.endswith(".vbs"):
         return "vbs"
+    elif file_name.endswith(".js"):
+        return "js"
     elif file_name.endswith(".msi"):
         return "msi"
     elif file_name.endswith(".ps1"):
         return "ps1"
+    elif file_name.endswith(".wsf"):
+        return "wsf"
     else:
         return "generic"

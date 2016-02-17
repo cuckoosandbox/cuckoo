@@ -17,20 +17,28 @@
     </p>
     {% if results %}
         <table class="table table-bordered" style="table-layout: fixed;">
+            <thead>
+                <tr>
+                    <th width="15%">Time &amp; API</th>
+                    <th width="65%">Arguments</th>
+                    <th width="5%">Status</th>
+                    <th width="10%">Return</th>
+                    <th width="5%">Repeated</th>
+                </tr>
+            </thead>
             <tbody>
-                {% for match in results %}
-                    <tr><td colspan="7" class="search-process">Process: {{match.process.process_name}} ({{match.process.process_id}})</td></tr>
-                    {% for sign in match.signs %}
-                        <tr class="{{sign.category}}" id="call_{{sign.id}}">
-                            {% include "analysis/behavior/_api_call.html" with call=sign %}
-                            <td>
-                                <a href='#' class='call-link' data-pid='{{match.process.process_id}}' data-cid='{{sign.id}}'>
-                                    <span class="glyphicon glyphicon-circle-arrow-right"></span>
-                                </a>
-                            </td>
-                        <tr>             
-                    {% endfor %}
+            {% for match in results %}
+                <tr>
+                    <td colspan="7" class="search-process">
+                        Process: {{match.process.process_name}} ({{match.process.pid}})
+                    </td>
+                </tr>
+                {% for sign in match.signs %}
+                    <tr class="{{sign.category}}">
+                        {% include "analysis/behavior/_api_call.html" with call=sign pid=match.process.pid cid=sign.id %}
+                    <tr>
                 {% endfor %}
+            {% endfor %}
             </tbody>
         </table>
     {% else %}

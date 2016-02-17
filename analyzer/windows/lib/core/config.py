@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -13,7 +14,9 @@ class Config:
         for section in config.sections():
             for name, raw_value in config.items(section):
                 if name == "file_name":
-                    value = config.get(section, name)
+                    value = config.get(section, name).decode("utf8")
+                elif name == "options":
+                    value = self.parse_options(config.get(section, name))
                 else:
                     try:
                         value = config.getboolean(section, name)
@@ -24,33 +27,22 @@ class Config:
                             value = config.get(section, name)
                 setattr(self, name, value)
 
-    def get_options(self):
+        # Just make sure the options field is available.
+        if not hasattr(self, "options"):
+            self.options = {}
+
+    def parse_options(self, options):
         """Get analysis options.
         @return: options dict.
         """
         # The analysis package can be provided with some options in the
         # following format:
         #   option1=value1,option2=value2,option3=value3
-        #
-        # Here we parse such options and provide a dictionary that will be made
-        # accessible to the analysis package.
-        options = {}
-        if hasattr(self, "options"):
-            try:
-                # Split the options by comma.
-                fields = self.options.split(",")
-            except ValueError as e:
-                pass
-            else:
-                for field in fields:
-                    # Split the name and the value of the option.
-                    try:
-                        key, value = field.split("=", 1)
-                    except ValueError as e:
-                        pass
-                    else:
-                        # If the parsing went good, we add the option to the
-                        # dictionary.
-                        options[key.strip()] = value.strip()
+        ret = {}
+        for field in options.split(","):
+            if "=" not in field:
+                continue
 
-        return options
+            key, value = field.split("=", 1)
+            ret[key.strip()] = value.strip()
+        return ret

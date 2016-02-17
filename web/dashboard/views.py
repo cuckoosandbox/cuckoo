@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -6,9 +7,7 @@ import sys
 import time
 
 from django.conf import settings
-from django.template import RequestContext
-from django.http import HttpResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.views.decorators.http import require_safe
 
 sys.path.append(settings.CUCKOO_PATH)
@@ -19,7 +18,8 @@ from lib.cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSIN
 
 def timestamp(dt):
     """Returns the timestamp of a datetime object."""
-    if not dt: return None
+    if not dt:
+        return None
     return time.mktime(dt.timetuple())
 
 @require_safe
@@ -64,11 +64,16 @@ def index(request):
         # Get the amount of tasks that actually completed.
         finished = len(tasks)
 
-        hourly = 60 * 60 * finished / (completed - started)
+        # It has happened that for unknown reasons completed and started were
+        # equal in which case an exception is thrown, avoid this.
+        if completed and started and int(completed - started):
+            hourly = 60 * 60 * finished / (completed - started)
+        else:
+            hourly = 0
 
         report["estimate_hour"] = int(hourly)
         report["estimate_day"] = int(24 * hourly)
 
-    return render_to_response("dashboard/index.html",
-                              {"report" : report},
-                              context_instance=RequestContext(request))
+    return render(request, "dashboard/index.html", {
+        "report": report,
+    })

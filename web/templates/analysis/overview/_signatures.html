@@ -18,54 +18,70 @@
 </style>
 <section id="signatures">
     <h4>Signatures</h4>
-    {% if analysis.signatures %}
-        {% for signature in analysis.signatures %}
-            <a style="text-decoration: none;" href="#signature_{{signature.name}}" data-toggle="collapse">
-            {% if signature.severity <= 1 %}
-                <div class="alert alert-info signature">
-            {% elif signature.severity == 2 %}
-                <div class="alert alert-warning signature">
-            {% elif signature.severity >= 3 %}
-                <div class="alert alert-danger signature">
+    {% for signature in analysis.signatures %}
+        <a style="text-decoration: none;" href="#signature_{{signature.name}}" data-toggle="collapse">
+        {% if signature.severity <= 1 %}
+            <div class="alert alert-info signature">
+        {% elif signature.severity == 2 %}
+            <div class="alert alert-warning signature">
+        {% elif signature.severity >= 3 %}
+            <div class="alert alert-danger signature">
+        {% endif %}
+        {{signature.description}}
+        {% if signature.marks %}
+            {% if signature.marks|length == 1 %}
+            (1 event)
+            {% else %}
+            ({{ signature.marks|length }} events)
             {% endif %}
-            {{signature.description}}</div></a>
-            <div id="signature_{{signature.name}}" class="collapse">
-                <table class="table table-bordered" style="table-layout: fixed;">
-                    <tbody>
-                        {% for match in signature.data %}
-                            {% if match.process.process_name %}
-                                <tr><td colspan="7" class="signature-process">Process: {{match.process.process_name}} ({{match.process.process_id}})</td></tr>
+        {% endif %}
+        </div></a>
+
+        <div id="signature_{{signature.name}}" class="collapse">
+            <table class="table table-bordered" style="table-layout: fixed;">
+                {% for mark in signature.marks|sigsort|slice:":50" %}
+                    {% if mark.type == "call" %}
+                    {% if mark.first %}
+                        <thead>
+                            <tr>
+                                <th width="15%">Time &amp; API</th>
+                                <th width="65%">Arguments</th>
+                                <th width="5%">Status</th>
+                                <th width="10%">Return</th>
+                                <th width="5%">Repeated</th>
+                            </tr>
+                        </thead>
+                    {% endif %}
+                    <tr>
+                        {% include "analysis/behavior/_api_call.html" with call=mark.call pid=mark.pid cid=mark.cid %}
+                    </tr>
+                    {% elif mark.type == "ioc" %}
+                    <tr>
+                        <td colspan="1">{{mark.category}}</td>
+                        <td colspan="4">{{mark.ioc}}</td>
+                    </tr>
+                    {% elif mark.type == "generic" %}
+                    <tr>
+                        {% for key, value in mark.items %}
+                            {% if key != "type" %}
+                                <td colspan="1">{{ key }}</td>
+                                <td colspan="4">{{ value }}</td>
                             {% endif %}
-                            {% for sign in match.signs %}
-                                <tr>
-                                    {% if sign.type == 'api' %}
-                                        {% include "analysis/behavior/_api_call.html" with call=sign.value %}
-                                        <td>
-                                            <a href='#' class='call-link' data-pid='{{match.process.process_id}}' data-cid='{{sign.value.id}}'>
-                                                <span class="glyphicon glyphicon-circle-arrow-right"></span>
-                                            </a>
-                                        </td>
-                                    {% else %}
-                                        <td colspan="2">{{sign.type}}</td>
-                                        <td colspan="5">
-                                            {% if sign.value|is_dict %}
-                                                {% for key, value in  sign.value.items %}
-                                                    <span class='sign-key'>{{key}}:</span>
-                                                    <span class='sign-value'>{{value}}</span><br />
-                                                {% endfor %}
-                                            {% else %}
-                                                {{sign.value}}
-                                            {% endif %}
-                                        </td>
-                                    {% endif %}
-                                </tr>
-                            {% endfor %}
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% endfor %}
-    {% else %}
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                {% if signature.marks|length > 50 %}
+                    <tr>
+                        <td colspan="6">
+                            And there is more..
+                        </td>
+                    </tr>
+                {% endif %}
+            </table>
+        </div>
+    {% endfor %}
+    {% if not analysis.signatures %}
         <p>No signatures</p>
     {% endif %}
 </section>

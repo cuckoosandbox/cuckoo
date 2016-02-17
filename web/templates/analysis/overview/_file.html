@@ -38,6 +38,12 @@
                 <th>Ssdeep</th>
                 <td>{{analysis.target.file.ssdeep}}</td>
             </tr>
+            {% if analysis.static.pdb_path %}
+            <tr>
+                <th>PDB Path</th>
+                <td>{{analysis.static.pdb_path}}</td>
+            </tr>
+            {% endif %}
             <tr>
                 <th>Yara</th>
                 <td>
@@ -54,7 +60,13 @@
             </tr>
             <tr>
                 <th></th>
-                <td><a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "sample" analysis.target.file_id %}">Download</a></td>
+                <td>
+                {% if analysis.target.file_id %}
+                    <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "sample" analysis.target.file_id %}">Download</a>
+                {% else %}
+                    Sample not found
+                {% endif %}
+                </td>
             </tr>
         </table>
     </div>

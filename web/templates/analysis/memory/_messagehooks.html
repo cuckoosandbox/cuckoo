@@ -12,16 +12,16 @@
         </tr>
     </thead>
     <tbody>
-    {% for x in analysis.memory.messagehooks.data %}
+    {% for row in analysis.memory.messagehooks.data|volsort %}
         <tr>
-            <td><span class="mono">{{x.offset}}</span></td>
-            <td>{{x.session}}</td>
-            <td>{{x.desktop}}</td>
-            <td>{{x.thread}}</td>
-            <td>{{x.filter}}</td>
-            <td>{{x.flags}}</td>
-            <td><span class="mono">{{x.function}}</span></td>
-            <td>{{x.module}}</span></td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.offset}}</span></td>
+            <td class="{{ row.class_ }}">{{row.session}}</td>
+            <td class="{{ row.class_ }}">{{row.desktop}}</td>
+            <td class="{{ row.class_ }}">{{row.thread}}</td>
+            <td class="{{ row.class_ }}">{{row.filter}}</td>
+            <td class="{{ row.class_ }}">{{row.flags}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.function}}</span></td>
+            <td class="{{ row.class_ }}">{{row.module}}</span></td>
         </tr>
     {% endfor %}
     </tbody>

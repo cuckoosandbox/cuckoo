@@ -1,6 +1,9 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+
+import shlex
 
 from lib.common.abstracts import Package
 
@@ -20,4 +23,6 @@ class Python(Package):
     def start(self, path):
         python = self.get_path("Python")
         arguments = self.options.get("arguments", "")
-        return self.execute(python, "%s %s" % (path, arguments))
+
+        args = [path] + shlex.split(arguments)
+        return self.execute(python, args=args)

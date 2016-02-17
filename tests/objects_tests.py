@@ -1,11 +1,11 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
 import tempfile
-import copy
-from nose.tools import assert_equal, raises, assert_not_equal
+from nose.tools import assert_equal, raises, assert_not_equal, assert_in
 
 from lib.cuckoo.common.objects import Dictionary, File
 
@@ -63,7 +63,7 @@ class TestFile:
         assert_equal("empty", self.file.get_type())
 
     def test_get_content_type(self):
-        assert_equal("inode/x-empty", self.file.get_content_type())
+        assert_in(self.file.get_content_type(), ["inode/x-empty", "application/x-empty"])
 
     def test_get_all_type(self):
         assert isinstance(self.file.get_all(), dict)

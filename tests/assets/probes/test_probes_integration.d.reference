@@ -1,0 +1,72 @@
+/* For some reason either dtrace or clang preprocessor refuses to identify standard
+ * C integer types like int64_t or uint8_t. Thus we must include stdint.h with the
+ * following patches.
+ */
+/* (1) fix sys/_types/_int8_t.h */
+#define __signed signed
+/* (2) cdefs.h throws "Unsupported compiler detected" warning, ignore it */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-W#warnings"
+#include <stdint.h>
+#include <stddef.h>
+#pragma clang diagnostic pop
+
+
+typedef struct {
+	size_t hfa;
+	double * abc;
+	char * sss;
+} test_internal_t;
+
+typedef struct {
+	test_internal_t * base;
+	int hash;
+	char * description;
+} test_t;
+
+pid$target::system:entry
+{
+	self->deeplevel++;
+	self->arguments_stack[self->deeplevel, "arg0"] = self->arg0;
+	self->arg0 = arg0;
+}
+pid$target::system:return
+{
+	this->retval = arg1;
+	this->timestamp_ms = walltimestamp/1000000;
+	printf("{\"api\":\"%s\", \"args\":[\"%S\"], \"retval\":%d, \"timestamp\":%lld, \"pid\":%d, \"ppid\":%d, \"tid\":%d, \"errno\":%d}\n",
+		probefunc,
+		!!(self->arg0) ? copyinstr((uint64_t)self->arg0) : "<NULL>",
+		(int)(this->retval),
+		(int64_t)this->timestamp_ms, pid, ppid, tid, errno);
+	self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
+	self->arguments_stack[self->deeplevel, "arg0"] = 0;
+	--self->deeplevel;
+}
+pid$target::socket:entry
+{
+	self->deeplevel++;
+	self->arguments_stack[self->deeplevel, "arg0"] = self->arg0;
+	self->arg0 = arg0;
+	self->arguments_stack[self->deeplevel, "arg1"] = self->arg1;
+	self->arg1 = arg1;
+	self->arguments_stack[self->deeplevel, "arg2"] = self->arg2;
+	self->arg2 = arg2;
+}
+pid$target::socket:return
+{
+	this->retval = arg1;
+	this->timestamp_ms = walltimestamp/1000000;
+	printf("{\"api\":\"%s\", \"args\":[%d, %f, {\"base\" : {\"hfa\" : %lu, \"abc\" : %f, \"sss\" : \"%S\"}, \"hash\" : %d, \"description\" : \"%S\"}], \"retval\":%lu, \"timestamp\":%lld, \"pid\":%d, \"ppid\":%d, \"tid\":%d, \"errno\":%d}\n",
+		probefunc,
+		(int)(self->arg0), (double)(self->arg1), (size_t)(((test_internal_t *)(((test_t *)(self->arg2))->base))->hfa), !!(((test_internal_t *)(((test_t *)(self->arg2))->base))->abc) ? (double)0 : *(double *)copyin((uint64_t)((test_internal_t *)(((test_t *)(self->arg2))->base))->abc, sizeof(double)), !!(((test_internal_t *)(((test_t *)(self->arg2))->base))->sss) ? copyinstr((uint64_t)((test_internal_t *)(((test_t *)(self->arg2))->base))->sss) : "<NULL>", (int)(((test_t *)(self->arg2))->hash), !!(((test_t *)(self->arg2))->description) ? copyinstr((uint64_t)((test_t *)(self->arg2))->description) : "<NULL>",
+		(size_t)(this->retval),
+		(int64_t)this->timestamp_ms, pid, ppid, tid, errno);
+	self->arg0 = self->arguments_stack[self->deeplevel, "arg0"];
+	self->arguments_stack[self->deeplevel, "arg0"] = 0;
+	self->arg1 = self->arguments_stack[self->deeplevel, "arg1"];
+	self->arguments_stack[self->deeplevel, "arg1"] = 0;
+	self->arg2 = self->arguments_stack[self->deeplevel, "arg2"];
+	self->arguments_stack[self->deeplevel, "arg2"] = 0;
+	--self->deeplevel;
+}

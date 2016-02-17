@@ -5,7 +5,6 @@ Submit an Analysis
     * :ref:`submitpy`
     * :ref:`apipy`
     * :ref:`distpy`
-    * :ref:`webpy`
     * :ref:`python`
 
 .. _submitpy:
@@ -18,41 +17,43 @@ command-line utility. It currently has the following options available::
 
     usage: submit.py [-h] [-d] [--remote REMOTE] [--url] [--package PACKAGE]
                      [--custom CUSTOM] [--owner OWNER] [--timeout TIMEOUT]
-                     [--options OPTIONS] [--priority PRIORITY] [--machine MACHINE]
+                     [-o OPTIONS] [--priority PRIORITY] [--machine MACHINE]
                      [--platform PLATFORM] [--memory] [--enforce-timeout]
                      [--clock CLOCK] [--tags TAGS] [--max MAX] [--pattern PATTERN]
                      [--shuffle] [--unique] [--quiet]
                      target
 
     positional arguments:
-      target               URL, path to the file or folder to analyze
+      target                URL, path to the file or folder to analyze
 
     optional arguments:
-      -h, --help           show this help message and exit
-      --remote REMOTE      Specify IP:port to a Cuckoo API server to submit
-                           remotely
-      --url                Specify whether the target is an URL
-      --package PACKAGE    Specify an analysis package
-      --custom CUSTOM      Specify any custom value
-      --owner OWNER        Specify the task owner
-      --timeout TIMEOUT    Specify an analysis timeout
-      --options OPTIONS    Specify options for the analysis package (e.g.
-                           "name=value,name2=value2")
-      --priority PRIORITY  Specify a priority for the analysis represented by an
-                           integer
-      --machine MACHINE    Specify the identifier of a machine you want to use
-      --platform PLATFORM  Specify the operating system platform you want to use
-                           (windows/darwin/linux)
-      --memory             Enable to take a memory dump of the analysis machine
-      --enforce-timeout    Enable to force the analysis to run for the full
-                           timeout period
-      --clock CLOCK        Set virtual machine clock
-      --tags TAGS          Specify tags identifier of a machine you want to use
-      --max MAX            Maximum samples to add in a row
-      --pattern PATTERN    Pattern of files to submit
-      --shuffle            Shuffle samples before submitting them
-      --unique             Only submit new samples, ignore duplicates
-      --quiet              Only print text on failure
+      -h, --help            show this help message and exit
+      -d, --debug           Enable debug logging
+      --remote REMOTE       Specify IP:port to a Cuckoo API server to submit
+                            remotely
+      --url                 Specify whether the target is an URL
+      --package PACKAGE     Specify an analysis package
+      --custom CUSTOM       Specify any custom value
+      --owner OWNER         Specify the task owner
+      --timeout TIMEOUT     Specify an analysis timeout
+      -o OPTIONS, --options OPTIONS
+                            Specify options for the analysis package (e.g.
+                            "name=value,name2=value2")
+      --priority PRIORITY   Specify a priority for the analysis represented by an
+                            integer
+      --machine MACHINE     Specify the identifier of a machine you want to use
+      --platform PLATFORM   Specify the operating system platform you want to use
+                            (windows/darwin/linux)
+      --memory              Enable to take a memory dump of the analysis machine
+      --enforce-timeout     Enable to force the analysis to run for the full
+                            timeout period
+      --clock CLOCK         Set virtual machine clock
+      --tags TAGS           Specify tags identifier of a machine you want to use
+      --max MAX             Maximum samples to add in a row
+      --pattern PATTERN     Pattern of files to submit
+      --shuffle             Shuffle samples before submitting them
+      --unique              Only submit new samples, ignore duplicates
+      --quiet               Only print text on failure
 
 If you specify a directory as path, all the files contained in it will be
 submitted for analysis.
@@ -109,19 +110,6 @@ some options (in this case a command line argument for the malware)::
 *Example*: submit a sample for Volatility analysis (to reduce side effects of the cuckoo hooking, switch it off with *options free=True*)::
 
     $ ./utils/submit.py --memory --options free=True /path/to/binary
-
-.. _webpy:
-
-web.py
-======
-
-Cuckoo provides a very small utility under ``utils/web.py``, which will bind a simple
-webserver on localhost port 8080, through which you will be able to browse through
-existing reports as well as submit new files.
-
-Beware that this is not a full-fledged web interface, which is instead provided
-under the folder ``web/`` as a Django-powered application. You can find more details
-about that under :doc:`web`.
 
 .. _apipy:
 

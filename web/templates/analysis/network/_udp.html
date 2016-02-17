@@ -1,4 +1,6 @@
-<script src="{{ STATIC_URL }}js/hexdump.js"></script>
+{% load staticfiles %}
+{% load analysis_tags %}
+<script src="{% static "js/hexdump.js" %}"></script>
 <section id="udp" class="tcpudp">
     <h4>UDP</h4>
     {% if analysis.network.udp %}
@@ -12,8 +14,7 @@
                         <th>Destination Port</th>
                     </tr>
                     {% for p in analysis.network.udp %}
-                        <tr class="connrow">
-                            <input type="hidden" name="conn" value="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}},udp" />
+                        <tr class="connrow" data="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}},udp">
                             <td>{{p.src}}</td>
                             <td>{{p.sport}}</td>
                             <td>{{p.dst}} {{ iplookups|get_item:p.dst }}</td>

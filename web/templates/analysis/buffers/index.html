@@ -1,0 +1,66 @@
+{% if analysis.buffer|length %}
+    {% for file in analysis.buffer %}
+        <div class="panel panel-default">
+            <table class="table table-striped">
+                <tr>
+                    <th style="border-top: 0;">File name</th>
+                    <td style="border-top: 0;"><b>{{file.name}}</b></td>
+                </tr>
+                <tr>
+                    <th>File Size</th>
+                    <td>{{file.size}} bytes</td>
+                </tr>
+                <tr>
+                    <th>File Type</th>
+                    <td>{{file.type}}</td>
+                </tr>
+                <tr>
+                    <th>MD5</th>
+                    <td>{{file.md5}}</td>
+                </tr>
+                <tr>
+                    <th>SHA1</th>
+                    <td>{{file.sha1}}</td>
+                </tr>
+                <tr>
+                    <th>SHA256</th>
+                    <td>{{file.sha256}}</td>
+                </tr>
+                <tr>
+                    <th>CRC32</th>
+                    <td>{{file.crc32}}</td>
+                </tr>
+                <tr>
+                    <th>Ssdeep</th>
+                    <td>{{file.ssdeep}}</td>
+                </tr>
+                <tr>
+                    <th>Yara</th>
+                    <td>
+                    {% if file.yara %}
+                        <ul style="margin-bottom: 0;">
+                        {% for sign in file.yara %}
+                            <li>{{sign.name}} - {{sign.meta.description}}</li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        None matched
+                    {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>VirusTotal</th>
+                    <td><a href="https://www.virustotal.com/en/file/{{file.sha256}}/analysis/">Search for analysis</a></td>
+                </tr>
+                {% if file.object_id %}
+                    <tr>
+                        <th></th>
+                        <td><a href="{% url "analysis.views.file" "buffer" file.object_id %}" class="btn btn-primary btn-small">Download</a></td>
+                    </tr>
+                {% endif %}
+            </table>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info"><b>Sorry!</b> No dropped buffers.</div>
+{% endif %}

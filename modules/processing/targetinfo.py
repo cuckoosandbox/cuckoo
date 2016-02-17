@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -15,6 +16,8 @@ class TargetInfo(Processing):
         @return: information dict.
         """
         self.key = "target"
+        if not self.task:
+            return {"category": "unknown", "file": {"name": "unknown"}}
 
         target_info = {"category": self.task["category"]}
 

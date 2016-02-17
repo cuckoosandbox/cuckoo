@@ -9,7 +9,6 @@ Using and configuring your imaging software is out of the scope of this
 guide, so please refer to the official documentation.
 
     .. note::
-
         You can find some hints and considerations on how to design and create
         your virtualized environment in the :doc:`../../introduction/sandboxing`
         chapter.

@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -76,11 +77,10 @@ class Zip(Package):
             raise CuckooPackageError("Invalid Zip file")
 
     def start(self, path):
-        root = os.environ["TEMP"]
         password = self.options.get("password")
 
         zipinfos = self.get_infos(path)
-        self.extract_zip(path, root, password)
+        self.extract_zip(path, self.curdir, password)
 
         file_name = self.options.get("file")
         # If no file name is provided via option, take the first file.
@@ -93,5 +93,5 @@ class Zip(Package):
             else:
                 raise CuckooPackageError("Empty ZIP archive")
 
-        file_path = os.path.join(root, file_name)
+        file_path = os.path.join(self.curdir, file_name)
         return self.execute(file_path, self.options.get("arguments"))
