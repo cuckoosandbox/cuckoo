@@ -530,7 +530,7 @@ class VolatilityAPI(object):
 
         dirypath = '/'.join(fypath.split('/')[:-1])
 
-        tmpfile = '/'.join(fypath.split('/')[:-1]) +  '/.tmp_' + fypath.split('/')[-1]
+        tmpfile = dirypath +  '/.tmp_' + fypath.split('/')[-1]
         ff = open(tmpfile,'w')
         for root, dir, files in os.walk(dirypath):
             for filename in files:
