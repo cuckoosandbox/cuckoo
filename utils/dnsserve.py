@@ -6,8 +6,12 @@
 import argparse
 import logging
 import socket
+import sys
 
-from scapy.layers.dns import DNS, DNSQR, DNSRR
+try:
+    from scapy.layers.dns import DNS, DNSQR, DNSRR
+except ImportError:
+    sys.exit("ERROR: Scapy library is missing (`pip install scapy`)")
 
 def dns_serve(args):
     udps = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
