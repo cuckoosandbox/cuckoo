@@ -43,13 +43,13 @@ analysis would be polluted by the sandbox's components.
 
 .. _esxi_reqs:
 
-What I need to use Cuckoo with VMware ESXi?
--------------------------------------------
+What do I need to use Cuckoo with VMware ESXi?
+----------------------------------------------
 
-To run with VMware vSphere Hypervisor (or ESXi) Cuckoo levareges on libvirt.
-Libivirt is currently using VMware API to take control over virtual machines,
-althogh these API are available ony in licensed version.
-In VMware vSphere free edition, these API are read only, so you are unable
+To run with VMware vSphere Hypervisor (or ESXi) Cuckoo leverages libvirt.
+Libivirt is currently using the VMware API to take control over virtual machines,
+though these APIs are available only in the licensed version.
+In VMware vSphere free edition, these APIs are read only, so you are unable
 to use Cuckoo with it.
 For the minimum license needed, please have a look at VMware website.
 
