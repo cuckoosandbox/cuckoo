@@ -16,7 +16,7 @@ except ImportError:
 def dns_serve(args):
     udps = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udps.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    udps.bind((args.bind, 53))
+    udps.bind((args.bind, args.port))
 
     while True:
         data, addr = udps.recvfrom(1024)
@@ -61,6 +61,7 @@ def dns_serve(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Small DNS server")
     parser.add_argument("--bind", help="IP address to bind for DNS and services.", default="0.0.0.0")
+    parser.add_argument("--port", help="UDP port to bind for DNS and services.", default=53, type=int)
     parser.add_argument("--nxdomain", help="IP address to return instead of NXDOMAIN")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
