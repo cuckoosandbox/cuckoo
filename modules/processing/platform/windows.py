@@ -72,9 +72,11 @@ class MonitorProcessLog(list):
         if clsid:
             event["flags"]["clsid"] = clsid
 
-        iid = guid_name(event["arguments"].get("iid"))
-        if iid:
-            event["flags"]["iid"] = iid
+        iid = event["arguments"].get("iid")
+        if isinstance(iid, (tuple, list)):
+            event["flags"]["iid"] = [guid_name(x) for x in iid]
+        elif guid_name(iid):
+            event["flags"]["iid"] = guid_name(iid)
 
     def __iter__(self):
         for event in self.eventstream:
