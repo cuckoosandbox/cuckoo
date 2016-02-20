@@ -1132,7 +1132,7 @@ class Report(object):
         try:
             create_folder(folder=self.reports_path)
         except CuckooOperationalError as e:
-            CuckooReportError(e)
+            raise CuckooReportError(e)
 
     def set_options(self, options):
         """Set report options.
