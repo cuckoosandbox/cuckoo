@@ -708,13 +708,15 @@ class Pcap2(object):
             srcip, srcport, dstip, dstport = s
 
             if protocol == "http" or protocol == "https":
+                request = sent.raw.split("\r\n\r\n", 1)[0]
+                response = recv.raw.split("\r\n\r\n", 1)[0]
                 results["%s_ex" % protocol].append({
                     "src": srcip, "sport": srcport,
                     "dst": dstip, "dport": dstport,
                     "host": sent.headers.get("host", dstip),
                     "uri": sent.uri,
-                    "request": sent.raw.split("\r\n\r\n", 1)[0],
-                    "response": recv.raw.split("\r\n\r\n", 1)[0],
+                    "request": request.decode("latin-1"),
+                    "response": response.decode("latin-1"),
                 })
 
         return results
