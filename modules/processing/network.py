@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import hashlib
 import logging
 import json
 import os
@@ -683,8 +684,9 @@ class Pcap2(object):
     the various protocols, decrypts and decodes them, and then provides us
     with the high level representation of it."""
 
-    def __init__(self, pcap_path, tlsmaster):
+    def __init__(self, pcap_path, tlsmaster, network_path):
         self.pcap_path = pcap_path
+        self.network_path = network_path
 
         self.handlers = {
             25: httpreplay.cut.smtp_handler,
@@ -701,6 +703,9 @@ class Pcap2(object):
             "https_ex": [],
         }
 
+        if not os.path.exists(self.network_path):
+            os.mkdir(self.network_path)
+
         r = httpreplay.reader.PcapReader(self.pcap_path)
         r.tcp = httpreplay.smegma.TCPPacketStreamer(r, self.handlers)
 
@@ -710,6 +715,14 @@ class Pcap2(object):
             if protocol == "http" or protocol == "https":
                 request = sent.raw.split("\r\n\r\n", 1)[0]
                 response = recv.raw.split("\r\n\r\n", 1)[0]
+
+                md5 = hashlib.md5(recv.body).hexdigest()
+                sha1 = hashlib.sha1(recv.body).hexdigest()
+
+                filepath = os.path.join(self.network_path, sha1)
+                with open(filepath, "wb") as f:
+                    f.write(recv.body)
+
                 results["%s_ex" % protocol].append({
                     "src": srcip, "sport": srcport,
                     "dst": dstip, "dport": dstport,
@@ -717,6 +730,9 @@ class Pcap2(object):
                     "uri": sent.uri,
                     "request": request.decode("latin-1"),
                     "response": response.decode("latin-1"),
+                    "md5": md5,
+                    "sha1": sha1,
+                    "path": filepath,
                 })
 
         return results
@@ -773,7 +789,8 @@ class NetworkAnalysis(Processing):
 
         if HAVE_HTTPREPLAY and os.path.exists(pcap_path):
             try:
-                results.update(Pcap2(pcap_path, self.get_tlsmaster()).run())
+                p2 = Pcap2(pcap_path, self.get_tlsmaster(), self.network_path)
+                results.update(p2.run())
             except:
                 log.exception("Error running httpreplay-based PCAP analysis")
 
