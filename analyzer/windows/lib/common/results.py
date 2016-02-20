@@ -44,10 +44,12 @@ class NetlogConnection(object):
         while not self.sock:
             try:
                 s = socket.create_connection((self.hostip, self.hostport), 0.1)
-                s.sendall(self.proto)
             except socket.error:
                 time.sleep(0.1)
                 continue
+
+            s.settimeout(None)
+            s.sendall(self.proto)
 
             self.sock = s
 
