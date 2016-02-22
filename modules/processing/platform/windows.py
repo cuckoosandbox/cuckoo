@@ -239,6 +239,8 @@ class BehaviorReconstructor(object):
                 return ("file_opened", arguments["filepath"])
             elif status_info == "file_does_not_exist":
                 return ("file_failed", arguments["filepath"])
+            elif status_info == "file_created":
+                return ("file_created", arguments["filepath"])
             else:
                 return ("file_opened", arguments["filepath"])
         else:
