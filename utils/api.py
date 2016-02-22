@@ -512,7 +512,7 @@ def memorydumps_list(task_id):
         if len(memory_files) == 0:
             return json_error(404, "Memory dump not found")
 
-        return jsonify(memory_files)
+        return jsonify({"dump_files": memory_files})
     else:
         return json_error(404, "Memory dump not found")
 
