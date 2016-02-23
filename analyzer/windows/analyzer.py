@@ -250,7 +250,7 @@ class CommandPipeHandler(object):
                 proc.inject(dll, apc=False, mode="%s" % mode)
 
             log.info("Injected into process with pid %s and name %s",
-                     proc.pid, filename)
+                     proc.pid, filename.decode("latin-1"))
 
     def _handle_process(self, data):
         """Request for injection into a process."""
