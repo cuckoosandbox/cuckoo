@@ -726,6 +726,8 @@ class Pcap2(object):
                 results["%s_ex" % protocol].append({
                     "src": srcip, "sport": srcport,
                     "dst": dstip, "dport": dstport,
+                    "protocol": protocol,
+                    "method": sent.method,
                     "host": sent.headers.get("host", dstip),
                     "uri": sent.uri,
                     "request": request.decode("latin-1"),
