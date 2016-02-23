@@ -716,12 +716,11 @@ class Pcap2(object):
                 request = sent.raw.split("\r\n\r\n", 1)[0]
                 response = recv.raw.split("\r\n\r\n", 1)[0]
 
-                md5 = hashlib.md5(recv.body).hexdigest()
-                sha1 = hashlib.sha1(recv.body).hexdigest()
+                md5 = hashlib.md5(recv.body or "").hexdigest()
+                sha1 = hashlib.sha1(recv.body or "").hexdigest()
 
                 filepath = os.path.join(self.network_path, sha1)
-                with open(filepath, "wb") as f:
-                    f.write(recv.body)
+                open(filepath, "wb").write(recv.body or "")
 
                 results["%s_ex" % protocol].append({
                     "src": srcip, "sport": srcport,
