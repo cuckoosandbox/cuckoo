@@ -222,7 +222,9 @@ EOF
     fi
 
     # Add the Suricata reboot crontab entry.
-    (crontab -l ; echo @reboot /opt/cuckoo/utils/suricata.sh)|crontab -
+    if ! grep suricata.sh <(crontab -l); then
+        (crontab -l ; echo @reboot /opt/cuckoo/utils/suricata.sh)|crontab -
+    fi
 
     # Delete the cuckoo1 machine that is included in the VirtualBox
     # configuration by default.
