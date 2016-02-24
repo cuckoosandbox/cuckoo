@@ -28,13 +28,15 @@ _install_configuration() {
 # internet access to the virtual machines.
 # VMINTERNET="eth0 wlan0"
 
-# IP address the Cuckoo API will bind on. Cuckoo API is by default
+# IP address and port of the Cuckoo API. Cuckoo API is by default
 # turned *OFF*. Enable by uncommenting and setting the value.
 # APIADDR="127.0.0.1"
+# APIPORT=8090
 
-# IP address the Cuckoo Web Interface will bind on. The Cuckoo Web Interface
+# IP address and port of the Cuckoo Web Interface. The Cuckoo Web Interface
 # is by default turned *OFF*. Enable by uncommenting and setting the value.
 # WEBADDR="127.0.0.1"
+# WEBPORT=8000
 
 # Run Suricata in the background?
 SURICATA="0"
@@ -145,12 +147,13 @@ chdir "$CUCKOO"
 
 env CONFFILE="$CONFFILE"
 env APIADDR=""
+env APIPORT=8090
 
 script
     . "\$CONFFILE"
 
     if [ -n "\$APIADDR" ]; then
-        exec ./utils/api.py -H "\$APIADDR"
+        exec ./utils/api.py -H "\$APIADDR" -p "\$APIPORT"
     fi
 end script
 EOF
@@ -220,12 +223,13 @@ chdir "$(readlink -f "$CUCKOO/web/")"
 
 env CONFFILE="$CONFFILE"
 env WEBADDR=""
+env WEBPORT=8000
 
 script
     . "\$CONFFILE"
 
     if [ -n "\$WEBADDR" ]; then
-        exec ./manage.py runserver "\$WEBADDR:8000"
+        exec ./manage.py runserver "\$WEBADDR:\$WEBPORT"
     fi
 end script
 EOF
