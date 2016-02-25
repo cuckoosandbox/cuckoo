@@ -317,7 +317,7 @@ def init_binaries():
             "the latest changes from our Git repository. In order to get "
             "up-to-date, please run the following "
             "command: `./utils/community.py -wafb monitor` or "
-            "`./utils/community.py -wafb 2.0` if you'd also like to download "
+            "`./utils/community.py -waf` if you'd also like to download "
             "over 300 Cuckoo signatures."
         )
 
