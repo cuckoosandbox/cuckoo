@@ -490,8 +490,8 @@ class OfficeDocument(object):
         for f, s, v, c in p.extract_macros():
             yield {
                 "stream": s,
-                "filename": v,
-                "orig_code": c,
+                "filename": v.decode("latin-1"),
+                "orig_code": c.decode("latin-1"),
             }
 
     def deobfuscate(self, code):
