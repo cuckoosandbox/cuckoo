@@ -357,6 +357,12 @@ def _search_helper(obj, k, value):
 @csrf_exempt
 def search(request):
     """New Search API using ElasticSearch as backend."""
+    if not settings.ELASTIC:
+        return render(request, "error.html", {
+            "error": "ElasticSearch is not enabled and therefore it is "
+                     "not possible to do a global search.",
+        })
+
     if request.method == "GET":
         return render(request, "analysis/search.html")
 
