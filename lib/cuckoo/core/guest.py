@@ -398,7 +398,7 @@ class GuestManager(object):
                 "go through the documentation once more and otherwise inform "
                 "the Cuckoo Developers of your issue."
             )
-            self.db.guest_set_status(self.task_id, "failed")
+            db.guest_set_status(self.task_id, "failed")
             return
 
         log.info("Guest is running Cuckoo Agent %s (id=%s, ip=%s)",
