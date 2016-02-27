@@ -7,12 +7,6 @@ import logging
 import datetime
 
 try:
-    import jsbeautifier
-    HAVE_JSBEAUTIFIER = True
-except ImportError:
-    HAVE_JSBEAUTIFIER = False
-
-try:
     import bs4
     HAVE_BS4 = True
 except ImportError:
@@ -20,7 +14,7 @@ except ImportError:
 
 from lib.cuckoo.common.abstracts import BehaviorHandler
 from lib.cuckoo.common.netlog import BsonParser
-from lib.cuckoo.common.utils import guid_name
+from lib.cuckoo.common.utils import guid_name, jsbeautify
 
 log = logging.getLogger(__name__)
 
@@ -34,16 +28,13 @@ class MonitorProcessLog(list):
         self.has_apicalls = False
 
     def _api_COleScript_Compile(self, event):
-        if HAVE_JSBEAUTIFIER:
-            event["raw"] = "script",
-            event["arguments"]["script"] = \
-                jsbeautifier.beautify(event["arguments"]["script"])
+        event["raw"] = "script",
+        event["arguments"]["script"] = \
+            jsbeautify(event["arguments"]["script"])
 
     def _api_CWindow_AddTimeoutCode(self, event):
-        if HAVE_JSBEAUTIFIER:
-            event["raw"] = "code",
-            event["arguments"]["code"] = \
-                jsbeautifier.beautify(event["arguments"]["code"])
+        event["raw"] = "code",
+        event["arguments"]["code"] = jsbeautify(event["arguments"]["code"])
 
     def _api_CElement_put_innerHTML(self, event):
         if HAVE_BS4:

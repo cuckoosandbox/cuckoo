@@ -17,6 +17,7 @@ import platform
 import threading
 import multiprocessing
 
+from cStringIO import StringIO
 from datetime import datetime
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -30,6 +31,12 @@ try:
     HAVE_CHARDET = True
 except ImportError:
     HAVE_CHARDET = False
+
+try:
+    import jsbeautifier
+    HAVE_JSBEAUTIFIER = True
+except ImportError:
+    HAVE_JSBEAUTIFIER = False
 
 log = logging.getLogger(__name__)
 
@@ -361,3 +368,23 @@ def exception_message():
 
     msg += "\n"
     return msg
+
+
+_jsbeautify_blacklist = [
+    "",
+    "error: Unknown p.a.c.k.e.r. encoding.\n",
+]
+
+def jsbeautify(javascript):
+    """Beautifies Javascript through jsbeautifier and ignore some messages."""
+    if not HAVE_JSBEAUTIFIER:
+        return javascript
+
+    origout, sys.stdout = sys.stdout, StringIO()
+    javascript = jsbeautifier.beautify(javascript)
+
+    if sys.stdout.getvalue() not in _jsbeautify_blacklist:
+        log.warning("jsbeautifier returned error: %s", sys.stdout.getvalue())
+
+    sys.stdout = origout
+    return javascript
