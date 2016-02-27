@@ -20,6 +20,46 @@
             </div>
             <hr />
         {% endif %}
+        {% if analysis.static.signature %}
+            <div>
+                <h4>Signing Certificate</h4>
+                <div id="pe_signature">
+                    {% for cert in analysis.static.signature %}
+                    <table class="table table-striped table-bordered">
+                        <colgroup>
+                            <col width="150" />
+                            <col width="*" />
+                        </colgroup>
+                        <tr>
+                            <th>MD5</th>
+                            <td>{{cert.md5}}</td>
+                        </tr>
+                        <tr>
+                            <th>SHA1</th>
+                            <td>{{cert.sha1}}</td>
+                        </tr>
+                        <tr>
+                            <th>Serial Number</th>
+                            <td>{{cert.serial_number}}</td>
+                        </tr>
+                        <tr>
+                            <th>Common Name</th>
+                            <td>{{cert.common_name}}</td>
+                        </tr>
+                        <tr>
+                            <th>Country</th>
+                            <td>{{cert.country}}</td>
+                        </tr>
+                        <tr>
+                            <th>Locality</th>
+                            <td>{{cert.locality}}</td>
+                        </tr>
+                    </table>
+                    {% endfor %}
+                </div>
+            </div>
+            <hr />
+        {% endif %}
         {% if analysis.static.pe_versioninfo %}
             <div>
                 <h4>Version Infos</h4>
