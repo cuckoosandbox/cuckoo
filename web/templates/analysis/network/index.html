@@ -19,6 +19,14 @@
     It is recommended that you install this library and possibly reprocess any
     interesting analysis tasks.
 </div>
+{% elif httpreplay_version != "0.1.7" %}
+<div class="alert alert-warning">
+    <strong>Deprecation note:</strong>
+    You are using an old version of HTTPReplay which doesn't handle various
+    corner cases correctly. It also doesn't decrypt some TLS Cipher Suites
+    leaving one without decrypted TLS/HTTPS streams. Please upgrade it to
+    the latest version (`pip install --upgrade httpreplay`).
+</div>
 {% endif %}
 
 <div class="tabbable tabs">

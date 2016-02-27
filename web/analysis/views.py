@@ -253,11 +253,18 @@ def report(request, task_id):
     else:
         HAVE_HTTPREPLAY = False
 
+    try:
+        import httpreplay
+        httpreplay_version = getattr(httpreplay, "__version__", None)
+    except ImportError:
+        httpreplay_version = None
+
     return render(request, "analysis/report.html", {
         "analysis": report,
         "domainlookups": domainlookups,
         "iplookups": iplookups,
         "HAVE_HTTPREPLAY": HAVE_HTTPREPLAY,
+        "httpreplay_version": httpreplay_version,
     })
 
 @require_safe

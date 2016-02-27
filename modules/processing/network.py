@@ -51,6 +51,17 @@ Packet = namedtuple("Packet", ["raw", "ts"])
 log = logging.getLogger(__name__)
 cfg = Config()
 
+# Urge users to upgrade to the latest version.
+if HAVE_HTTPREPLAY and getattr(httpreplay, "__version__", None) in (
+        None, "0.1.4", "0.1.5", "0.1.6"):
+    log.warning(
+        "You are using an old version of HTTPReplay which doesn't handle "
+        "various corner cases correctly. It also doesn't decrypt some TLS "
+        "Cipher Suites leaving one without decrypted TLS/HTTPS streams. "
+        "Please upgrade it to the latest version (`pip install --upgrade "
+        "httpreplay`)."
+    )
+
 class Pcap(object):
     """Reads network data from PCAP file."""
     ssl_ports = 443,
