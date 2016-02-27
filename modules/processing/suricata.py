@@ -225,7 +225,7 @@ class Suricata(Processing):
 
             if not filepath or not os.path.isfile(filepath):
                 log.warning(
-                    "Suricata dropped file with id=%d and md5=%s not found, "
+                    "Suricata dropped file with id=%s and md5=%s not found, "
                     "skipping it..", event.get("id"), event.get("md5")
                 )
                 continue
