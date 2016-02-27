@@ -2,12 +2,11 @@ html {
     background: #1c1c1c;
 }
 body {
-    padding-top: 60px;
-    background: #ffffff url('/static/graphic/background.png') repeat-x;
+    padding-top: 70px;
 }
 @media (max-width: 979px) {
     body {
-        padding-top: 0px;
+        padding-top: 50px;
         padding-bottom: 0px;
     }
 }

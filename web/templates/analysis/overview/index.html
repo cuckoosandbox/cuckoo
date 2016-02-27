@@ -4,17 +4,17 @@
         of <strong>{{ analysis.info.score }} out of 10.</strong>
 {% elif analysis.info.score < 2 %}
     <div class="alert alert-info">
-        This {{ analysis.info.category }} shows some signs of potential
+        <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> This {{ analysis.info.category }} shows some signs of potential
         malicious behavior with a score of
         <strong>{{ analysis.info.score }} out of 10.</strong>
 {% elif analysis.info.score < 5 %}
     <div class="alert alert-warning">
-        This {{ analysis.info.category }} indicates real signs of malicious
+        <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> This {{ analysis.info.category }} indicates real signs of malicious
         behavior with a score of
         <strong>{{ analysis.info.score }} out of 10.</strong>
 {% else %}
     <div class="alert alert-danger">
-        This {{ analysis.info.category }} is definitely malicious with a score
+        <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> This {{ analysis.info.category }} is definitely malicious with a score
         of <strong>{{ analysis.info.score }} out of 10!</strong>
         You should <strong>NOT</strong> open this {{ analysis.info.category }}
         on a production system.
@@ -37,9 +37,14 @@
     {% include "analysis/overview/_url.html" %}
 {% endif %}
 <hr />
+<div class="row">
+<div class="col-md-6">
 {% include "analysis/overview/_signatures.html" %}
-<hr />
+</div>
+<div class="col-md-6">
 {% include "analysis/overview/_screenshots.html" %}
+</div>
+</div>
 <hr />
 <div class="row">
     <div class="col-xs-6">{% include "analysis/network/_hosts.html" %}</div>
