@@ -3,25 +3,34 @@
         <div class="panel panel-default">
             <div class="panel-heading"><h3 class="panel-title">Process memory dump for PID <b>{{proc.pid}}</b></h3></div>
             <div class="panel-body">
+                {% if proc.procmem_id %}
+                    <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "memdump" proc.procmem_id %}">Download</a>
+                {% endif %}
 
-            {% if proc.procmem_id %}
-                <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "memdump" proc.procmem_id %}">Download</a>
-            {% endif %}
+                {% if proc.yara %}
+                    <b>Yara signatures matches on process memory</b>
+                    {% for match in proc.yara %}
+                        <p>Match: {{match.name}}
+                        <ul>
+                        {% for string in match.strings %}
+                            <li>{{string}}</li>
+                        {% endfor %}
+                        </ul></p>
+                    {% endfor %}
+                {% endif %}
 
-            {% for match in proc.yara %}
-                <p>Match: {{match.name}}
-                <ul>
-                {% for string in match.strings %}
-                    <li>{{string}}</li>
-                {% endfor %}
-                </ul></p>
-            {% endfor %}
+                {% if proc.urls %}
+                    <b>URLs found in process memory</b>
+                    <ul>
+                    {% for url in proc.urls %}
+                        <li>{{url}}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
 
-            {% if proc.urls %}
-                <b>URLs found in process memory</b>
-                <pre>{{ proc.urls|join:"<br />" }}</pre>
-            {% endif %}
-
+                {% if proc.procmem_id %}
+                <a href="{% url "analysis.views.file" "procmem" proc.procmem_id %}" class="btn btn-primary btn-small">Download</a>
+                {% endif %}
             </div>
         </div>
     {% endfor %}
