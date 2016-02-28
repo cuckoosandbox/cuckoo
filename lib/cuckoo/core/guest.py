@@ -43,11 +43,11 @@ class OldGuestManager(object):
         self.task_id = task_id
 
         self.cfg = Config()
-        self.timeout = self.cfg.timeouts.critical
 
-        url = "http://{0}:{1}".format(ip, CUCKOO_GUEST_PORT)
-        self.server = TimeoutServer(url, allow_none=True,
-                                    timeout=self.timeout)
+        # initialized in start_analysis so we can update the critical timeout
+        # TODO, pull options parameter into __init__ so we can do this here
+        self.timeout = None
+        self.server = None
 
     def wait(self, status):
         """Waiting for status.
@@ -138,12 +138,11 @@ class OldGuestManager(object):
         # TODO Deal with unicode URLs, should probably try URL encoding.
         # Unicode files are being taken care of.
 
-        # If the analysis timeout is higher than the critical timeout,
-        # automatically increase the critical timeout by one minute.
-        # if options["timeout"] > self.timeout:
-        #     log.debug("Automatically increased critical timeout to %s",
-        #               self.timeout)
-        #     self.timeout = options["timeout"] + 60
+        self.timeout = options["timeout"] + self.cfg.timeouts.critical
+
+        url = "http://{0}:{1}".format(self.ip, CUCKOO_GUEST_PORT)
+        self.server = TimeoutServer(url, allow_none=True,
+                                    timeout=self.timeout)
 
         try:
             # Wait for the agent to respond. This is done to check the
@@ -238,7 +237,7 @@ class GuestManager(object):
         self.platform = platform
         self.task_id = task_id
 
-        self.timeout = Config().timeouts.critical
+        self.timeout = None
 
         # Just in case we have an old agent inside the Virtual Machine. This
         # allows us to remain backwards compatible (for now).
@@ -248,6 +247,8 @@ class GuestManager(object):
         # We maintain the path of the Cuckoo Analyzer on the host.
         self.analyzer_path = None
         self.environ = {}
+
+        self.options = {}
 
     def get(self, method, *args, **kwargs):
         """Simple wrapper around requests.get()."""
@@ -362,12 +363,10 @@ class GuestManager(object):
         log.info("Starting analysis on guest (id=%s, ip=%s)",
                  self.vmid, self.ipaddr)
 
-        # If the analysis timeout is higher than the critical timeout,
-        # automatically increase the critical timeout by one minute.
-        # if options["timeout"] > self.timeout:
-        #     log.debug("Automatically increased critical timeout to %s",
-        #               self.timeout)
-        #     self.timeout = options["timeout"] + 60
+        self.options = options
+        log.debug("Guest.options=%r", self.options)
+
+        self.timeout = options["timeout"] + self.cfg.timeouts.critical
 
         # Wait for the agent to come alive.
         self.wait_available()
@@ -448,9 +447,12 @@ class GuestManager(object):
 
             try:
                 status = self.get("/status", timeout=5).json()
-            except:
-                log.info("Virtual Machine stopped abruptly")
-                break
+            except Exception as e:
+                log.info("Virtual Machine /status failed (%r)", e)
+                # this might fail due to timeouts or just temporary network issues
+                # thus we don't want to abort the analysis just yet and wait for things to
+                # recover
+                continue
 
             if status["status"] == "complete":
                 log.info("%s: analysis completed successfully", self.vmid)
