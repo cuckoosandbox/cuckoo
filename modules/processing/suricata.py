@@ -206,6 +206,10 @@ class Suricata(Processing):
 
         # Index all the available files.
         files_dir = os.path.join(self.suricata_path, self.files_dir)
+        if not os.path.exists(files_dir):
+            log.warning("Suricata files dir is not available. Maybe you forgot to enable Suricata file-store ?")
+            return
+
         for filename in os.listdir(files_dir):
             filepath = os.path.join(files_dir, filename)
             files[md5_file(filepath)] = filepath
