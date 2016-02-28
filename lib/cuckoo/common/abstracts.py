@@ -657,6 +657,7 @@ class Processing(object):
         self.tlsmaster_path = os.path.join(self.analysis_path, "tlsmaster.txt")
         self.suricata_path = os.path.join(self.analysis_path, "suricata")
         self.network_path = os.path.join(self.analysis_path, "network")
+        self.taskinfo_path = os.path.join(self.analysis_path, "task.json")
 
     def set_results(self, results):
         """Set the results - the fat dictionary."""
