@@ -438,9 +438,9 @@ class AnalysisManager(threading.Thread):
 
     def process_results(self):
         """Process the analysis results and generate the enabled reports."""
-        results = RunProcessing(task=self.task.to_dict()).run()
+        results = RunProcessing(task=self.task).run()
         RunSignatures(results=results).run()
-        RunReporting(task=self.task.to_dict(), results=results).run()
+        RunReporting(task=self.task, results=results).run()
 
         # If the target is a file and the user enabled the option,
         # delete the original copy.
