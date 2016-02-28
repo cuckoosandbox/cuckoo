@@ -3,7 +3,11 @@
         <section id="information">
             <div class="panel panel-primary">
                 <div class="panel-heading">
-                    <h4 class="panel-title"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> Analysis</h4>
+                    <h4 class="panel-title"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> Analysis
+                        <a class="btn btn-success btn-xs pull-right" href="{% url "compare.views.left" analysis.info.id %}">
+                            <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> Compare to analysis ...
+                        </a>
+                    </h4>
                 </div>
                 <table class="table table-striped">
                     <thead>
@@ -35,9 +39,6 @@
                 </ul>
             {% endif %}
 
-            <div id="info-log" class="collapse">
-                <pre>{{analysis.debug.log|join:""}}</pre>
-            </div>
         </section>
     </div>
 
@@ -69,5 +70,12 @@
                     </div>
             </section>
         {% endif %}
+    </div>
+
+    <div class="col-md-12">
+        <div id="info-log" class="collapse">
+            <h3><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Activity Log</h3>
+            <pre>{{analysis.debug.log|join:""}}</pre>
+        </div>
     </div>
 </div>

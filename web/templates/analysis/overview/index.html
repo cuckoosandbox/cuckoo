@@ -42,13 +42,13 @@
 </div>
 
 {% include "analysis/overview/_info.html" %}
-<hr />
+
 {% if analysis.info.category == "file" and analysis.target %}
     {% include "analysis/overview/_file.html" %}
 {% elif analysis.info.category == "url" %}
     {% include "analysis/overview/_url.html" %}
 {% endif %}
-<hr />
+
 <div class="row">
 <div class="col-md-6">
 {% include "analysis/overview/_signatures.html" %}
@@ -57,10 +57,10 @@
 {% include "analysis/overview/_screenshots.html" %}
 </div>
 </div>
-<hr />
+
 <div class="row">
     <div class="col-xs-6">{% include "analysis/network/_hosts.html" %}</div>
     <div class="col-xs-6">{% include "analysis/network/_dns.html" %}</div>
 </div>
-<hr />
+
 {% include "analysis/overview/_summary.html" %}

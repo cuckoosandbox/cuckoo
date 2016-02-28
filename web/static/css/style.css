@@ -10,6 +10,12 @@ body {
         padding-bottom: 0px;
     }
 }
+
+pre {
+    font-stretch: ultra-condensed;
+    font-family: Consolas, monaco, monospace;
+    font-size: 0.8em;
+}
 footer {
     background: #292727;
     margin: 40px 0 0;

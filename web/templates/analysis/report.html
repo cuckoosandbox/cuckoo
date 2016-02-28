@@ -2,9 +2,8 @@
 {% load staticfiles %}
 {% load analysis_tags %}
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <ul class="nav nav-tabs">
+    <nav class="navbar navbar-default">
+        <ul class="nav nav-pills navbar-nav">
             <li class="active"><a href="#overview" data-toggle="tab">Summary</a></li>
             <li><a href="#static" data-toggle="tab">Static Analysis</a></li>
             {% if analysis.behavior.processes %}
