@@ -27,15 +27,18 @@ def dns_serve(args):
 
         # IN A, actually look the domain up.
         if p.opcode == 0 and p[DNSQR].qtype == 1 and p[DNSQR].qclass == 1:
-            try:
-                answer_ip = socket.gethostbyname(p.qd[0].qname)
-            except:
-                if args.nxdomain:
-                    answer_ip = args.nxdomain
-                else:
-                    rp.ancount = 0
-                    rp.rcode = 3
-                    answer_ip = None
+            if args.hardcode:
+                answer_ip = args.hardcode
+            else:
+                try:
+                    answer_ip = socket.gethostbyname(p.qd[0].qname)
+                except:
+                    if args.nxdomain:
+                        answer_ip = args.nxdomain
+                    else:
+                        rp.ancount = 0
+                        rp.rcode = 3
+                        answer_ip = None
 
             if answer_ip:
                 rp.an = DNSRR(
@@ -63,6 +66,7 @@ if __name__ == "__main__":
     parser.add_argument("--bind", help="IP address to bind for DNS and services.", default="0.0.0.0")
     parser.add_argument("--port", help="UDP port to bind for DNS and services.", default=53, type=int)
     parser.add_argument("--nxdomain", help="IP address to return instead of NXDOMAIN")
+    parser.add_argument("--hardcode", help="Hardcoded IP address to return rather than actually doing DNS lookups")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
