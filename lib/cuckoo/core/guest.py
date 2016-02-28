@@ -449,6 +449,8 @@ class GuestManager(object):
         end = time.time() + self.timeout
 
         while db.guest_get_status(self.task_id) == "running":
+            log.debug("%s: analysis still processing", self.vmid)
+
             time.sleep(1)
 
             # If the analysis hits the critical timeout, just return straight
@@ -463,6 +465,7 @@ class GuestManager(object):
                 # this might fail due to timeouts or just temporary network issues
                 # thus we don't want to abort the analysis just yet and wait for things to
                 # recover
+                continue
 
             if status["status"] == "complete":
                 log.info("%s: analysis completed successfully", self.vmid)
@@ -471,8 +474,6 @@ class GuestManager(object):
                 log.info("%s: analysis caught an exception\n%s",
                          self.vmid, status["description"])
                 return
-
-            log.debug("%s: analysis still processing", self.vmid)
 
     @property
     def server(self):
