@@ -112,6 +112,6 @@ class MetaInfo(Processing):
             if os.path.exists(path):
                 contents = os.listdir(path)
                 if contents:
-                    results["output"][key] = [reformat(os.path.join(path, i)) for i in contents]
+                    meta["output"][key] = [reformat(os.path.join(path, i)) for i in contents]
 
-        return results
+        return meta
