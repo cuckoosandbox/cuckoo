@@ -237,6 +237,7 @@ class GuestManager(object):
         self.platform = platform
         self.task_id = task_id
 
+        self.cfg = Config()
         self.timeout = None
 
         # Just in case we have an old agent inside the Virtual Machine. This
