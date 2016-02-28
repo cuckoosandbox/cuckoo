@@ -32,7 +32,10 @@
                 {% endif %}
             {% endwith %}
             {% if analysis.dropped %}
-                <li><a href="#dropped" data-toggle="tab">Dropped Files ({{ analysis.dropped|length }})</a></li>
+                <li><a href="#dropped" data-toggle="tab">
+                   <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                   Dropped Files ({{ analysis.dropped|length }})</a>
+                </li>
             {% endif %}
             {% if analysis.buffer %}
                 <li><a href="#buffer" data-toggle="tab">Dropped Buffers ({{ analysis.buffer|length }})</a></li>
