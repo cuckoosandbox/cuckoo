@@ -3,11 +3,14 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os
 import time
 import logging
+import json
 from datetime import datetime
 
 from lib.cuckoo.core.database import Database
+from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.constants import CUCKOO_VERSION
 
@@ -21,6 +24,9 @@ class AnalysisInfo(Processing):
         @return: information dict.
         """
         self.key = "info"
+
+        if os.path.isfile(self.taskinfo_path):
+            return json.load(open(self.taskinfo_path))
 
         if "started_on" not in self.task:
             return dict(
@@ -36,10 +42,8 @@ class AnalysisInfo(Processing):
             )
 
         if self.task.get("started_on") and self.task.get("completed_on"):
-            started = time.strptime(self.task["started_on"], "%Y-%m-%d %H:%M:%S")
-            started = datetime.fromtimestamp(time.mktime(started))
-            ended = time.strptime(self.task["completed_on"], "%Y-%m-%d %H:%M:%S")
-            ended = datetime.fromtimestamp(time.mktime(ended))
+            started = self.task["started_on"]
+            ended = self.task["completed_on"]
             duration = (ended - started).seconds
         else:
             log.critical("Failed to get start/end time from Task.")
@@ -74,3 +78,40 @@ class AnalysisInfo(Processing):
             options=self.task["options"],
             route=self.task["route"],
         )
+
+class MetaInfo(Processing):
+    """General information about the task and output files (memory dumps, etc)."""
+
+    def run(self):
+        """Run information gathering.
+        @return: information dict.
+        """
+        self.key = "metadata"
+
+        def reformat(x):
+            # kinda ugly absolute -> relative
+            relpath = x[len(self.analysis_path):].lstrip("/")
+
+            dirname = os.path.dirname(relpath)
+            basename = os.path.basename(relpath)
+            if not dirname: dirname = ""
+            return dict(dirname=dirname, basename=basename, sha256=File(x).get_sha256())
+
+        meta = {
+            "output": {},
+        }
+
+        if os.path.exists(self.pcap_path):
+            meta["output"]["pcap"] = reformat(self.pcap_path)
+
+        for path, key in [
+                (self.pmemory_path, "memdumps"),
+                (self.buffer_path, "buffers"),
+                (self.dropped_path, "dropped"),
+            ]:
+            if os.path.exists(path):
+                contents = os.listdir(path)
+                if contents:
+                    results["output"][key] = [reformat(os.path.join(path, i)) for i in contents]
+
+        return results

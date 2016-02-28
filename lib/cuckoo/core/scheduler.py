@@ -10,7 +10,7 @@ import logging
 import threading
 import Queue
 
-from lib.cuckoo.common.config import Config, parse_options, emit_options
+from lib.cuckoo.common.config import Config, emit_options
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooMachineError, CuckooGuestError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -41,19 +41,18 @@ class AnalysisManager(threading.Thread):
     complete the analysis and store, process and report its results.
     """
 
-    def __init__(self, task, error_queue):
+    def __init__(self, taskobj, error_queue):
         """@param task: task object containing the details for the analysis."""
         threading.Thread.__init__(self)
 
-        self.task = task
+        self.taskobj = taskobj
+        self.task = taskobj.to_dict()
         self.errors = error_queue
         self.cfg = Config()
         self.storage = ""
         self.binary = ""
         self.machine = None
         self.db = Database()
-
-        self.task.options = parse_options(self.task.options)
 
     def init_storage(self):
         """Initialize analysis storage folder."""
@@ -124,6 +123,10 @@ class AnalysisManager(threading.Thread):
                       "\"%s\": %s", self.binary, self.storage, e)
 
         return True
+
+    def store_task_info(self):
+        task_info_path = os.path.join(self.storage, "task.json")
+        open(task_info_path, "w").write(self.taskobj.to_json())
 
     def acquire_machine(self):
         """Acquire an analysis machine from the pool of available ones."""
@@ -303,6 +306,8 @@ class AnalysisManager(threading.Thread):
         # Initialize the analysis folders.
         if not self.init_storage():
             return False
+
+        self.store_task_info()
 
         if self.task.category == "file":
             # Check whether the file has been changed for some unknown reason.
