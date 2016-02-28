@@ -2,55 +2,6 @@
     <h4><span class="glyphicon glyphicon-file" aria-hidden="true"></span> File Details</h4>
     <div class="panel panel-default">
         <table class="table table-striped">
-            <tr>
-                <th>MD5</th>
-                <td><tt>{{analysis.target.file.md5}}</tt></td>
-            </tr>
-            <tr>
-                <th>SHA1</th>
-                <td><tt>{{analysis.target.file.sha1}}</tt></td>
-            </tr>
-            <tr>
-                <th>SHA256</th>
-                <td><tt>{{analysis.target.file.sha256}}</tt></td>
-            </tr>
-            <tr>
-                <th>SHA512</th>
-                <td>
-                    <button class="btn btn-primary btn-xs" type="button" data-toggle="collapse" data-target="#collapse-sha512" aria-expanded="false" aria-controls="collapseExample">
-                    Show SHA512
-                    </button>
-                    <div class="collapse" id="collapse-sha512"><tt>{{analysis.target.file.sha512}}</tt></div>
-                </td>
-            </tr>
-            <tr>
-                <th>CRC32</th>
-                <td><tt>{{analysis.target.file.crc32}}</tt></td>
-            </tr>
-            <tr>
-                <th>ssdeep</th>
-                <td><tt>{{analysis.target.file.ssdeep}}</tt></td>
-            </tr>
-            {% if analysis.static.pdb_path %}
-            <tr>
-                <th>PDB Path</th>
-                <td>{{analysis.static.pdb_path}}</td>
-            </tr>
-            {% endif %}
-            <tr>
-                <th>Yara</th>
-                <td>
-                {% if analysis.target.file.yara %}
-                    <ul style="margin-bottom: 0;">
-                    {% for sign in analysis.target.file.yara %}
-                        <li>{{sign.name}} - {{sign.meta.description}}</li>
-                    {% endfor %}
-                    </ul>
-                {% else %}
-                    None matched
-                {% endif %}
-                </td>
-            </tr>
         </table>
     </div>
 </section>
