@@ -8,13 +8,14 @@ import json
 import logging
 from datetime import datetime
 
-from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.config import Config, parse_options
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
-from lib.cuckoo.common.objects import File, URL
+from lib.cuckoo.common.objects import File, URL, Dictionary
 from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock
+from lib.cuckoo.common.profiles import task_profile
 
 try:
     from sqlalchemy import create_engine, Column, not_
@@ -23,6 +24,7 @@ try:
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
     from sqlalchemy.orm import sessionmaker, relationship, joinedload
+    from sqlalchemy.ext.hybrid import hybrid_property
     Base = declarative_base()
 except ImportError:
     raise CuckooDependencyError(
@@ -273,7 +275,7 @@ class Task(Base):
     package = Column(String(255), nullable=True)
     tags = relationship("Tag", secondary=tasks_tags, single_parent=True,
                         backref="task", lazy="subquery")
-    options = Column(String(255), nullable=True)
+    _options = Column("options", String(255), nullable=True)
     platform = Column(String(255), nullable=True)
     memory = Column(Boolean, nullable=False, default=False)
     enforce_timeout = Column(Boolean, nullable=False, default=False)
@@ -297,27 +299,38 @@ class Task(Base):
     guest = relationship("Guest", uselist=False, backref="tasks", cascade="save-update, delete")
     errors = relationship("Error", backref="tasks", cascade="save-update, delete")
 
+    @hybrid_property
+    def options(self):
+        return parse_options(self._options)
+
+    @options.setter
+    def options(self, value):
+        self._options = value
+
     def to_dict(self):
         """Converts object to dict.
         @return: dict
         """
-        d = {}
+        d = Dictionary()
         for column in self.__table__.columns:
             value = getattr(self, column.name)
-            if isinstance(value, datetime):
-                d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
-            else:
-                d[column.name] = value
+            d[column.name] = value
 
         # Tags are a relation so no column to iterate.
         d["tags"] = [tag.name for tag in self.tags]
+
         return d
 
     def to_json(self):
         """Converts object to JSON.
         @return: JSON data
         """
-        return json.dumps(self.to_dict())
+        d = self.to_dict()
+        for key, value in d.items():
+            if isinstance(value, datetime):
+                d[key] = value.strftime("%Y-%m-%dT%H:%M:%S")
+
+        return json.dumps(d)
 
     def __init__(self, target=None):
         self.target = target
@@ -729,7 +742,7 @@ class Database(object):
                 machines = machines.filter_by(platform=platform)
             if tags:
                 for tag in tags:
-                    machines = machines.filter(Machine.tags.any(name=tag.name))
+                    machines = machines.filter(Machine.tags.any(name=tag))
 
             # Check if there are any machines that satisfy the
             # selection requirements.
