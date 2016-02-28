@@ -34,7 +34,8 @@ class InstallCertificate(Auxiliary):
             return
 
         p = subprocess.Popen(["certutil.exe", "-importpfx", cert_path],
-                             stdin=subprocess.PIPE)
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
 
         # Send an empty string as certutil expects to see a password for our
         # certificate on the command-line. Our certificate has no password.

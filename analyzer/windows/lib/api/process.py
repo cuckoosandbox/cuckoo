@@ -8,6 +8,7 @@ import logging
 import random
 import subprocess
 import tempfile
+
 from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
 from ctypes import c_uint, c_wchar_p, create_unicode_buffer
 
@@ -19,6 +20,17 @@ from lib.common.exceptions import CuckooError
 from lib.common.results import upload_to_host
 
 log = logging.getLogger(__name__)
+
+def subprocess_checkcall(args):
+    return subprocess.check_call(
+        args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+def subprocess_checkoutput(args):
+    return subprocess.check_output(
+        args, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
 
 class Process(object):
     """Windows process."""
@@ -180,6 +192,7 @@ class Process(object):
             args = [is32bit_exe, "-p", "%s" % pid]
         elif process_name:
             args = [is32bit_exe, "-n", process_name]
+
         # If we're running a 32-bit Python in a 64-bit Windows system and the
         # path points to System32, then we hardcode it as being a 64-bit
         # binary. (To be fair, a 64-bit Python on 64-bit Windows would also
@@ -191,7 +204,7 @@ class Process(object):
             args = [is32bit_exe, "-f", self.shortpath(path)]
 
         try:
-            bitsize = int(subprocess.check_output(args))
+            bitsize = int(subprocess_checkoutput(args))
         except subprocess.CalledProcessError as e:
             raise CuckooError("Error returned by is32bit: %s" % e)
 
@@ -260,7 +273,7 @@ class Process(object):
             argv += ["--maximize"]
 
         try:
-            self.pid = int(subprocess.check_output(argv))
+            self.pid = int(subprocess_checkoutput(argv))
         except Exception:
             log.error("Failed to execute process from path %r with "
                       "arguments %r (Error: %s)", path, argv,
@@ -318,7 +331,6 @@ class Process(object):
                 dll = "monitor-x64.dll"
 
         dllpath = os.path.abspath(os.path.join("bin", dll))
-
         if not os.path.exists(dllpath):
             log.warning("No valid DLL specified to be injected in process "
                         "with pid %s / process name %s, injection aborted.",
@@ -346,7 +358,7 @@ class Process(object):
             args += ["--crt"]
 
         try:
-            subprocess.check_call(args)
+            subprocess_checkcall(args)
         except Exception:
             log.error("Failed to inject %s-bit process with pid %s and "
                       "process name %s", 32 if is32bit else 64, self.pid,
@@ -416,7 +428,7 @@ class Process(object):
                 "--pid", "%s" % self.pid,
                 "--dump", dump_path,
             ]
-            subprocess.check_call(args)
+            subprocess_checkcall(args)
         except subprocess.CalledProcessError:
             log.error("Failed to dump memory of %d-bit process with pid %d.",
                       32 if self.is32bit(pid=self.pid) else 64, self.pid)
