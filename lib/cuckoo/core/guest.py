@@ -390,7 +390,9 @@ class GuestManager(object):
             return
 
         try:
-            version = r.json().get("version")
+            status = r.json()
+            version = status.get("version")
+            features = status.get("features", [])
         except:
             log.critical(
                 "We were unable to detect either the Old or New Agent in the "
@@ -423,13 +425,21 @@ class GuestManager(object):
             }
             self.post("/store", files=files, data=data)
 
-        # Execute the analyzer that we just uploaded. TODO Improve this.
-        data = {
-            "command": "C:\\Python27\\python.exe %s\\analyzer.py" % self.analyzer_path,
-            "async": "yes",
-            "cwd": self.analyzer_path,
-        }
-        self.post("/execute", data=data)
+        if "execpy" in features:
+            data = {
+                "filepath": "%s\\analyzer.py" % self.analyzer_path,
+                "async": "yes",
+                "cwd": self.analyzer_path,
+            }
+            self.post("/execpy", data=data)
+        else:
+            # Execute the analyzer that we just uploaded.
+            data = {
+                "command": "C:\\Python27\\pythonw.exe %s\\analyzer.py" % self.analyzer_path,
+                "async": "yes",
+                "cwd": self.analyzer_path,
+            }
+            self.post("/execute", data=data)
 
     def wait_for_completion(self):
         if self.is_old:
