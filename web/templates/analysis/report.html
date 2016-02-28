@@ -4,16 +4,31 @@
 {% block content %}
     <nav class="navbar navbar-default">
         <ul class="nav nav-pills navbar-nav">
-            <li class="active"><a href="#overview" data-toggle="tab">Summary</a></li>
-            <li><a href="#static" data-toggle="tab">Static Analysis</a></li>
+            <li class="active"><a href="#overview" data-toggle="tab">
+                <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+                Summary</a>
+             </li>
+            <li><a href="#static" data-toggle="tab">
+                <span class="glyphicon glyphicon-stop" aria-hidden="true"></span>
+                Static Analysis</a>
+            </li>
             {% if analysis.behavior.processes %}
-                <li><a href="#behavior" data-toggle="tab" id="graph_hook">Behavioral Analysis ({{ analysis.behavior.processes|filter_key_if_has:"track"|length }})</a></li>
+                <li><a href="#behavior" data-toggle="tab" id="graph_hook">
+                    <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                    Behavioral Analysis ({{ analysis.behavior.processes|filter_key_if_has:"track"|length }})</a>
+                </li>
             {% endif %}
             {% with suricata=analysis.suricata|custom_length:"alerts tls" snort=analysis.snort|custom_length:"alerts" %}
                 {% if analysis.network.http_ex or analysis.network.https_ex %}
-                    <li><a href="#network" data-toggle="tab">Network Analysis ({{ analysis.network|custom_length:"hosts dns tcp udp http_ex https_ex icmp irc"|add:suricata|add:snort }})</a></li>
+                    <li><a href="#network" data-toggle="tab">
+                        <span class="glyphicon glyphicon-cloud" aria-hidden="true"></span>
+                        Network Analysis ({{ analysis.network|custom_length:"hosts dns tcp udp http_ex https_ex icmp irc"|add:suricata|add:snort }})</a>
+                    </li>
                 {% else %}
-                    <li><a href="#network" data-toggle="tab">Network Analysis ({{ analysis.network|custom_length:"hosts dns tcp udp http icmp irc"|add:suricata|add:snort }})</a></li>
+                    <li><a href="#network" data-toggle="tab">
+                        <span class="glyphicon glyphicon-cloud" aria-hidden="true"></span>
+                        Network Analysis ({{ analysis.network|custom_length:"hosts dns tcp udp http icmp irc"|add:suricata|add:snort }})</a>
+                    </li>
                 {% endif %}
             {% endwith %}
             {% if analysis.dropped %}
@@ -28,7 +43,10 @@
             {% if analysis.memory %}
                 <li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>
             {% endif %}
-            <li><a href="#admin" data-toggle="tab">Admin</a></li>
+            <li><a href="#admin" data-toggle="tab">
+                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+                Admin</a>
+            </li>
         </ul>
     </div>
 
