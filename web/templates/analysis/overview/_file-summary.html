@@ -15,28 +15,28 @@
     <div class="panel panel-default">
         <table class="table table-striped table-condensed">
             <tr>
-                <th>File Size</th>
+                <th>Size</th>
                 <td>{{ analysis.target.file.size | sizeof_fmt }}</td>
             </tr>
             <tr>
-                <th>File Type</th>
+                <th>Type</th>
                 <td>{{analysis.target.file.type}}</td>
             </tr>
             <tr>
                 <th>MD5</th>
-                <td><tt>{{analysis.target.file.md5}}</tt></td>
+                <td class="break-everywhere"><tt>{{analysis.target.file.md5}}</tt></td>
             </tr>
             <tr>
                 <th>SHA1</th>
-                <td><tt>{{analysis.target.file.sha1}}</tt></td>
+                <td class="break-everywhere"><tt>{{analysis.target.file.sha1}}</tt></td>
             </tr>
             <tr>
                 <th>SHA256</th>
-                <td><tt>{{analysis.target.file.sha256}}</tt></td>
+                <td class="break-everywhere"><tt>{{analysis.target.file.sha256}}</tt></td>
             </tr>
             <tr>
                 <th>SHA512</th>
-                <td>
+                <td class="break-everywhere">
                     <button class="btn btn-primary btn-xs" type="button" data-toggle="collapse" data-target="#collapse-sha512" aria-expanded="false" aria-controls="collapseExample">
                     Show SHA512
                     </button>
@@ -49,7 +49,7 @@
             </tr>
             <tr>
                 <th>ssdeep</th>
-                <td><tt>{{analysis.target.file.ssdeep}}</tt></td>
+                <td class="break-everywhere"><tt>{{analysis.target.file.ssdeep}}</tt></td>
             </tr>
             {% if analysis.static.pdb_path %}
             <tr>
