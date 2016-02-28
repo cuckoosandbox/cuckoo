@@ -15,13 +15,15 @@
 {% elif analysis.info.score < 2 %}
     <div class="alert alert-info">
         <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> This {{ analysis.info.category }} shows some signs of potential
-        malicious behavior with a score of
-        <strong>{{ analysis.info.score }} out of 10.</strong>
+        malicious behavior.
+        <br/><br/>
+        The score of this {{ analysis.info.category}} is <strong>{{ analysis.info.score }} out of 10.</strong>
 {% elif analysis.info.score < 5 %}
     <div class="alert alert-warning">
-        <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> This {{ analysis.info.category }} indicates real signs of malicious
-        behavior with a score of
-        <strong>{{ analysis.info.score }} out of 10.</strong>
+        <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> This {{ analysis.info.category }} shows real signs of malicious
+        behavior.
+        <br/><br/>
+        The score of this {{ analysis.info.category}} is <strong>{{ analysis.info.score }} out of 10.</strong>
 {% else %}
     <div class="alert alert-danger">
         <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> This {{ analysis.info.category }} is definitely malicious with a score
@@ -30,14 +32,12 @@
         on a production system.
 {% endif %}
 
-        <br /><br />
-        <i>
-            Note that the scoring system is still in alpha state and should
-            not yet be considered as a definitive outcome. Please at all times
-            check the analysis yourself - especially when the scoring says
-            it's benign.
-        </i>
     </div>
+    <p>
+    <b><span class="label label-warning">Disclaimer</span></b></br>
+        The scoring system is currently still in development and should be considered alpha-quality.
+        It is not a reliable indicator for malicious activity. Make sure to verify any verdict, especially for supposedly benign files!
+    </p>
 </div>
 </div>
 
