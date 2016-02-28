@@ -1,28 +1,28 @@
 {% if analysis.procmemory %}
-    <ul>
     {% for proc in analysis.procmemory %}
-        <li>
-            Process memory dump for PID <b>{{ proc.pid }}</b>
-        {% if proc.procmem_id %}
-            <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "memdump" proc.procmem_id %}">Download</a>
-        {% endif %}
-        {% for match in proc.yara %}
-            <p>Match: {{match.name}}
-            <ul>
-            {% for string in match.strings %}
-                <li>{{string}}</li>
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3 class="panel-title">Process memory dump for PID <b>{{proc.pid}}</b></h3></div>
+            <div class="panel-body">
+
+            {% if proc.procmem_id %}
+                <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "memdump" proc.procmem_id %}">Download</a>
+            {% endif %}
+
+            {% for match in proc.yara %}
+                <p>Match: {{match.name}}
+                <ul>
+                {% for string in match.strings %}
+                    <li>{{string}}</li>
+                {% endfor %}
+                </ul></p>
             {% endfor %}
-            </ul></p>
-        {% endfor %}
-        {% if proc.urls %}
-            <h4>Found URLs (potentially malicious URLs)</h4>
-            <pre>{{ proc.urls|join:"<br />" }}</pre>
-            <i>If legitimate URLs are found, please
-                <a href="https://github.com/cuckoosandbox/cuckoo/issues/new">
-                    report their URLs or hostnames
-                </a>
-                to us so we can whitelist those.</i>
-        {% endif %}
-        </li>
+
+            {% if proc.urls %}
+                <b>URLs found in process memory</b>
+                <pre>{{ proc.urls|join:"<br />" }}</pre>
+            {% endif %}
+
+            </div>
+        </div>
     {% endfor %}
 {% endif %}
