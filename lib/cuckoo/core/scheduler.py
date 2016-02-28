@@ -480,7 +480,8 @@ class AnalysisManager(threading.Thread):
             # variable with what's in the database, as otherwise we're missing
             # out on the status and completed_on change. This would then in
             # turn thrown an exception in the analysisinfo processing module.
-            self.task = self.db.view_task(self.task.id) or self.task
+            self.taskobj = self.db.view_task(self.task.id) or self.taskobj
+            self.task = self.taskobj.to_dict()
 
             log.debug("Released database task #%d", self.task.id)
 
@@ -511,6 +512,8 @@ class AnalysisManager(threading.Thread):
                 finally:
                     latest_symlink_lock.release()
 
+            # overwrite task.json so we have the latest data inside
+            self.store_task_info()
             log.info("Task #%d: analysis procedure completed", self.task.id)
         except:
             log.exception("Failure in AnalysisManager.run")
