@@ -38,7 +38,10 @@
                 </li>
             {% endif %}
             {% if analysis.buffer %}
-                <li><a href="#buffer" data-toggle="tab">Dropped Buffers ({{ analysis.buffer|length }})</a></li>
+                <li><a href="#buffer" data-toggle="tab">
+                    <span class="glyphicon glyphicon-th-large" aria-hidden="true"></span>
+                    Dropped Buffers ({{ analysis.buffer|length }})</a>
+                </li>
             {% endif %}
             {% if analysis.procmemory %}
                 <li><a href="#procmemory" data-toggle="tab">Process Memory ({{ analysis.procmemory|length }})</a></li>

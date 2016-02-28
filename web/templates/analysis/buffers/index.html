@@ -8,31 +8,31 @@
                 </tr>
                 <tr>
                     <th class="text-right">Size</th>
-                    <td>{{ file.size | sizeof_fmt }} bytes</td>
+                    <td>{{ file.size | sizeof_fmt }}</td>
                 </tr>
                 <tr>
-                    <th class="text-right">File Type</th>
+                    <th class="text-right">Type</th>
                     <td>{{file.type}}</td>
                 </tr>
                 <tr>
                     <th class="text-right">MD5</th>
-                    <td class="break-everwhere">{{file.md5}}</td>
+                    <td class="break-everwhere"><tt>{{file.md5}}</tt></td>
                 </tr>
                 <tr>
                     <th class="text-right">SHA1</th>
-                    <td class="break-everwhere">{{file.sha1}}</td>
+                    <td class="break-everwhere"><tt>{{file.sha1}}</tt></td>
                 </tr>
                 <tr>
                     <th class="text-right">SHA256</th>
-                    <td class="break-everwhere">{{file.sha256}}</td>
+                    <td class="break-everwhere"><tt>{{file.sha256}}</tt></td>
                 </tr>
                 <tr>
                     <th class="text-right">CRC32</th>
-                    <td class="break-everwhere">{{file.crc32}}</td>
+                    <td class="break-everwhere"><tt>{{file.crc32}}</tt></td>
                 </tr>
                 <tr>
-                    <th class="text-right">sdeep</th>
-                    <td class="break-everwhere">{{file.ssdeep}}</td>
+                    <th class="text-right">ssdeep</th>
+                    <td class="break-everwhere"><tt>{{file.ssdeep}}</tt></td>
                 </tr>
                 <tr>
                     <th class="text-right">Yara</th>
