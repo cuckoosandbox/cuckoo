@@ -425,7 +425,7 @@ class GuestManager(object):
 
         # Execute the analyzer that we just uploaded. TODO Improve this.
         data = {
-            "command": "C:\\Python27\\python.exe %s\\analyzer.py" % self.analyzer_path,
+            "command": "C:\\Python27\\p.exe %s\\analyzer.py" % self.analyzer_path,
             "async": "yes",
             "cwd": self.analyzer_path,
         }
@@ -453,7 +453,6 @@ class GuestManager(object):
                 # this might fail due to timeouts or just temporary network issues
                 # thus we don't want to abort the analysis just yet and wait for things to
                 # recover
-                continue
 
             if status["status"] == "complete":
                 log.info("%s: analysis completed successfully", self.vmid)
