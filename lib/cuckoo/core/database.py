@@ -15,7 +15,6 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.objects import File, URL, Dictionary
 from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock
-from lib.cuckoo.common.profiles import task_profile
 
 try:
     from sqlalchemy import create_engine, Column, not_
