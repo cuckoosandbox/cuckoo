@@ -9,10 +9,11 @@ import logging
 import json
 from datetime import datetime
 
-from lib.cuckoo.core.database import Database
+from lib.cuckoo.core.database import Database, Task
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.constants import CUCKOO_VERSION
+from lib.cuckoo.common.utils import json_decode
 
 log = logging.getLogger(__name__)
 
@@ -25,58 +26,36 @@ class AnalysisInfo(Processing):
         """
         self.key = "info"
 
-        if os.path.isfile(self.taskinfo_path):
-            return json.load(open(self.taskinfo_path))
-
-        if "started_on" not in self.task:
-            return dict(
-                version=CUCKOO_VERSION,
-                started="none",
-                ended="none",
-                duration=-1,
-                id=int(self.task["id"]),
-                category="unknown",
-                custom="unknown",
-                machine=None,
-                package="unknown"
-            )
-
-        if self.task.get("started_on") and self.task.get("completed_on"):
-            started = self.task["started_on"]
-            ended = self.task["completed_on"]
-            duration = (ended - started).seconds
-        else:
-            log.critical("Failed to get start/end time from Task.")
-            started, ended, duration = None, None, -1
-
         db = Database()
+        dbtask = db.view_task(self.task["id"], details=True)
 
-        # Fetch sqlalchemy object.
-        task = db.view_task(self.task["id"], details=True)
-
-        if task and task.guest:
-            # Get machine description.
-            machine = task.guest.to_dict()
-            # Remove superfluous fields.
-            del machine["task_id"]
-            del machine["id"]
+        if dbtask:
+            task = dbtask.to_dict()
         else:
-            machine = None
+            # task is gone from the database
+            if os.path.isfile(self.taskinfo_path):
+                # we've got task.json, so grab info from there
+                task = json_decode(open(self.taskinfo_path).read())
+            else:
+                # we don't have any info on the task :(
+                emptytask = Task()
+                emptytask.id = self.task["id"]
+                task = emptytask.to_dict()
 
         return dict(
             version=CUCKOO_VERSION,
-            started=self.task["started_on"],
-            ended=self.task.get("completed_on", "none"),
-            duration=duration,
-            id=int(self.task["id"]),
-            category=self.task["category"],
-            custom=self.task["custom"],
-            owner=self.task["owner"],
-            machine=machine,
-            package=self.task["package"],
-            platform=self.task["platform"],
-            options=self.task["options"],
-            route=self.task["route"],
+            started=task["started_on"],
+            ended=task.get("completed_on", "none"),
+            duration=task.get("duration", -1),
+            id=int(task["id"]),
+            category=task["category"],
+            custom=task["custom"],
+            owner=task["owner"],
+            machine=task["guest"],
+            package=task["package"],
+            platform=task["platform"],
+            options=task["options"],
+            route=task["route"],
         )
 
 class MetaInfo(Processing):

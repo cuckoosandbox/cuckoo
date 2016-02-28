@@ -14,7 +14,7 @@ from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.objects import File, URL, Dictionary
-from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock
+from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock, json_encode
 
 try:
     from sqlalchemy import create_engine, Column, not_
@@ -298,8 +298,14 @@ class Task(Base):
     guest = relationship("Guest", uselist=False, backref="tasks", cascade="save-update, delete")
     errors = relationship("Error", backref="tasks", cascade="save-update, delete")
 
+    def duration(self):
+        if self.started_on and self.completed_on:
+            return (self.completed_on - self.started_on).seconds
+        return -1
+
     @hybrid_property
     def options(self):
+        if not self._options: return {}
         return parse_options(self._options)
 
     @options.setter
@@ -317,6 +323,15 @@ class Task(Base):
 
         # Tags are a relation so no column to iterate.
         d["tags"] = [tag.name for tag in self.tags]
+        d["duration"] = self.duration()
+        d["guest"] = {}
+
+        if self.guest:
+            # Get machine description.
+            d["guest"] = machine = self.guest.to_dict()
+            # Remove superfluous fields.
+            del machine["task_id"]
+            del machine["id"]
 
         return d
 
@@ -325,11 +340,7 @@ class Task(Base):
         @return: JSON data
         """
         d = self.to_dict()
-        for key, value in d.items():
-            if isinstance(value, datetime):
-                d[key] = value.strftime("%Y-%m-%dT%H:%M:%S")
-
-        return json.dumps(d)
+        return json_encode(self.to_dict())
 
     def __init__(self, target=None):
         self.target = target
@@ -1104,7 +1115,7 @@ class Database(object):
                    task.platform, tags, task.memory, task.enforce_timeout,
                    task.clock)
 
-    def list_tasks(self, limit=None, details=False, category=None, owner=None,
+    def list_tasks(self, limit=None, details=True, category=None, owner=None,
                    offset=None, status=None, sample_id=None, not_status=None,
                    completed_after=None, order_by=None):
         """Retrieve list of task.
@@ -1172,7 +1183,7 @@ class Database(object):
             session.close()
 
     @classlock
-    def view_task(self, task_id, details=False):
+    def view_task(self, task_id, details=True):
         """Retrieve information on a task.
         @param task_id: ID of the task to query.
         @return: details on the task.

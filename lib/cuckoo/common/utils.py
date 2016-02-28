@@ -15,6 +15,7 @@ import xmlrpclib
 import inspect
 import platform
 import threading
+import json
 import multiprocessing
 
 from cStringIO import StringIO
@@ -25,6 +26,8 @@ from lib.cuckoo.common.config import Config
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
+
+import dateutil.parser
 
 try:
     import chardet
@@ -388,3 +391,26 @@ def jsbeautify(javascript):
 
     sys.stdout = origout
     return javascript
+
+def json_default(obj):
+    """JSON serializer for objects not serializable by default json code"""
+    if isinstance(obj, datetime):
+        if obj.utcoffset() is not None:
+            obj = obj - obj.utcoffset()
+        return {"$dt": obj.isoformat()}
+    raise TypeError ("Type not serializable")
+
+def json_hook(obj):
+    """JSON object hook, deserializing datetimes ($date)"""
+    if "$dt" in obj:
+        x = obj["$dt"]
+        return datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f")
+    return obj
+
+def json_encode(obj, **kwargs):
+    """JSON encoding wrapper that handles datetime objects"""
+    return json.dumps(obj, default=json_default, **kwargs)
+
+def json_decode(x):
+    """JSON decoder that does ugly first-level datetime handling"""
+    return json.loads(x, object_hook=json_hook)

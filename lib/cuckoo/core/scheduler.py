@@ -41,18 +41,18 @@ class AnalysisManager(threading.Thread):
     complete the analysis and store, process and report its results.
     """
 
-    def __init__(self, taskobj, error_queue):
+    def __init__(self, task_id, error_queue):
         """@param task: task object containing the details for the analysis."""
         threading.Thread.__init__(self)
 
-        self.taskobj = taskobj
-        self.task = taskobj.to_dict()
         self.errors = error_queue
         self.cfg = Config()
         self.storage = ""
         self.binary = ""
         self.machine = None
+
         self.db = Database()
+        self.task = self.db.view_task(task_id)
 
     def init_storage(self):
         """Initialize analysis storage folder."""
@@ -125,12 +125,12 @@ class AnalysisManager(threading.Thread):
         return True
 
     def store_task_info(self):
-        """grab latest task from db (if available) and update self.taskobj/self.task"""
-        self.taskobj = self.db.view_task(self.task.id) or self.taskobj
-        self.task = self.taskobj.to_dict()
+        """grab latest task from db (if available) and update self.task"""
+        dbtask = self.db.view_task(self.task.id)
+        self.task = dbtask.to_dict()
 
         task_info_path = os.path.join(self.storage, "task.json")
-        open(task_info_path, "w").write(self.taskobj.to_json())
+        open(task_info_path, "w").write(dbtask.to_json())
 
     def acquire_machine(self):
         """Acquire an analysis machine from the pool of available ones."""
@@ -483,7 +483,7 @@ class AnalysisManager(threading.Thread):
             log.debug("Released database task #%d", self.task.id)
 
             if self.cfg.cuckoo.process_results:
-                # this updates self.task / self.taskobj so processing gets the latest and greatest
+                # this updates self.task so processing gets the latest and greatest
                 self.store_task_info()
 
                 self.process_results()
@@ -717,7 +717,7 @@ class Scheduler(object):
                 self.total_analysis_count += 1
 
                 # Initialize and start the analysis manager.
-                analysis = AnalysisManager(task, errors)
+                analysis = AnalysisManager(task.id, errors)
                 analysis.daemon = True
                 analysis.start()
 
