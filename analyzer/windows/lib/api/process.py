@@ -353,7 +353,7 @@ class Process(object):
                       self.process_name)
             return False
 
-        log.info("Successfully injected process with pid %s", self.pid)
+        #log.info("Successfully injected process with pid %s", self.pid)
         return True
 
     def drop_config(self, track=True, mode=None):
