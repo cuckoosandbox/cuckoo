@@ -6,8 +6,6 @@
 import os
 import json
 from getpass import getuser
-from time import sleep
-from sys import argv
 from collections import namedtuple
 from subprocess import Popen
 from tempfile import NamedTemporaryFile
