@@ -720,7 +720,8 @@ class Pcap2(object):
         r = httpreplay.reader.PcapReader(self.pcap_path)
         r.tcp = httpreplay.smegma.TCPPacketStreamer(r, self.handlers)
 
-        for s, ts, protocol, sent, recv in r.process():
+        l = sorted(r.process(), key=lambda x: x[1])
+        for s, ts, protocol, sent, recv in l:
             srcip, srcport, dstip, dstport = s
 
             if protocol == "http" or protocol == "https":
