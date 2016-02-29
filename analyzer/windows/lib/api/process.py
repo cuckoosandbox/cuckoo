@@ -365,7 +365,6 @@ class Process(object):
                       self.process_name)
             return False
 
-        #log.info("Successfully injected process with pid %s", self.pid)
         return True
 
     def drop_config(self, track=True, mode=None):
@@ -380,8 +379,6 @@ class Process(object):
             Process.startup_time = random.randint(1, 30) * 20 * 60 * 1000
 
         lines = {
-            "host-ip": self.config.ip,
-            "host-port": self.config.port,
             "pipe": self.config.pipe,
             "logpipe": self.config.logpipe,
             "analyzer": os.getcwd(),
