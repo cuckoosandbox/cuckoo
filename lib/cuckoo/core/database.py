@@ -339,7 +339,6 @@ class Task(Base):
         """Converts object to JSON.
         @return: JSON data
         """
-        d = self.to_dict()
         return json_encode(self.to_dict())
 
     def __init__(self, target=None):
