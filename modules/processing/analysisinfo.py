@@ -4,10 +4,8 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import time
-import logging
 import json
-from datetime import datetime
+import logging
 
 from lib.cuckoo.core.database import Database, Task
 from lib.cuckoo.common.objects import File
