@@ -685,6 +685,9 @@ class Signature(object):
     minimum = None
     maximum = None
 
+    # Maximum amount of marks to record.
+    markcount = 50
+
     # Basic filters to reduce the amount of events sent to this signature.
     filter_apinames = []
     filter_categories = []
@@ -1118,7 +1121,7 @@ class Signature(object):
                     severity=self.severity,
                     families=self.families,
                     references=self.references,
-                    marks=self.marks)
+                    marks=self.marks[:self.markcount])
 
 class Report(object):
     """Base abstract class for reporting module."""
