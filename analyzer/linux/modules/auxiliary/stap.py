@@ -25,7 +25,6 @@ class STAP(Auxiliary):
     def start(self):
         # helper function locating the stap module
         def has_stap(p):
-            files = os.listdir(p)
             only_stap = [fn for fn in os.listdir(p) if fn.startswith("stap_") and fn.endswith(".ko")]
             if only_stap: return os.path.join(p, only_stap[0])
             return False
