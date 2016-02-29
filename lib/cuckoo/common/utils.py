@@ -27,8 +27,6 @@ from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
 
-import dateutil.parser
-
 try:
     import chardet
     HAVE_CHARDET = True
