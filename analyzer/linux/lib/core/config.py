@@ -51,7 +51,7 @@ class Config:
                     # Split the name and the value of the option.
                     try:
                         key, value = field.split("=", 1)
-                    except ValueError as e:
+                    except ValueError:
                         pass
                     else:
                         # If the parsing went good, we add the option to the
