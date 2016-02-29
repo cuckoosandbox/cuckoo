@@ -370,7 +370,6 @@ def exception_message():
     msg += "\n"
     return msg
 
-
 _jsbeautify_blacklist = [
     "",
     "error: Unknown p.a.c.k.e.r. encoding.\n",
@@ -396,7 +395,7 @@ def json_default(obj):
         if obj.utcoffset() is not None:
             obj = obj - obj.utcoffset()
         return {"$dt": obj.isoformat()}
-    raise TypeError ("Type not serializable")
+    raise TypeError("Type not serializable")
 
 def json_hook(obj):
     """JSON object hook, deserializing datetimes ($date)"""
