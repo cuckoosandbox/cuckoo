@@ -4,7 +4,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import json
 import logging
 
 from lib.cuckoo.core.database import Database, Task
