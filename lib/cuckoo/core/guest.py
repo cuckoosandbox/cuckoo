@@ -366,8 +366,6 @@ class GuestManager(object):
                  self.vmid, self.ipaddr)
 
         self.options = options
-        log.debug("Guest.options=%r", self.options)
-
         self.timeout = options["timeout"] + self.cfg.timeouts.critical
 
         # Wait for the agent to come alive.
