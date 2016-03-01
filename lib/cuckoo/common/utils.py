@@ -375,18 +375,21 @@ _jsbeautify_blacklist = [
     "error: Unknown p.a.c.k.e.r. encoding.\n",
 ]
 
+_jsbeautify_lock = threading.Lock()
+
 def jsbeautify(javascript):
     """Beautifies Javascript through jsbeautifier and ignore some messages."""
     if not HAVE_JSBEAUTIFIER:
         return javascript
 
-    origout, sys.stdout = sys.stdout, StringIO()
-    javascript = jsbeautifier.beautify(javascript)
+    with _jsbeautify_lock:
+        origout, sys.stdout = sys.stdout, StringIO()
+        javascript = jsbeautifier.beautify(javascript)
 
-    if sys.stdout.getvalue() not in _jsbeautify_blacklist:
-        log.warning("jsbeautifier returned error: %s", sys.stdout.getvalue())
+        if sys.stdout.getvalue() not in _jsbeautify_blacklist:
+            log.warning("jsbeautifier returned error: %s", sys.stdout.getvalue())
 
-    sys.stdout = origout
+        sys.stdout = origout
     return javascript
 
 def json_default(obj):
