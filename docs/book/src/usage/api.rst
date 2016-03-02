@@ -800,7 +800,7 @@ each one. For details click on the resource name.
 /vpn/status
 -----------
 
-    **GET /vpn/status
+    **GET /vpn/status**
 
         Returns VPN status.
 

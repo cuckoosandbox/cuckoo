@@ -237,7 +237,7 @@ An example signature using this technique is the following:
 
 The inline comments are already self-explanatory.
 
-Another event is triggered when a signature matches. 
+Another event is triggered when a signature matches.
 
     .. code-block:: python
         :linenos:

@@ -19,7 +19,7 @@ General Questions
 Can I analyze URLs with Cuckoo?
 -------------------------------
 
-Yes you can. Since version 0.5 URLs are natively supported by Cuckoo. 
+Yes you can. Since version 0.5 URLs are natively supported by Cuckoo.
 Additional details on how URL submissions is documented :doc:`../usage/submit.html#submission-utility`.
 
 
@@ -165,8 +165,8 @@ If the state is "powered off" you can go ahead with the next check, if the state
 With the following check the current snapshots state::
 
     $ VBoxManage snapshot "<Name of VM>" list --details
-       Name: s1 (UUID: 90828a77-72f4-4a5e-b9d3-bb1fdd4cef5f)
-          Name: s2 (UUID: 97838e37-9ca4-4194-a041-5e9a40d6c205) *
+    Name: s1 (UUID: 90828a77-72f4-4a5e-b9d3-bb1fdd4cef5f)
+    Name: s2 (UUID: 97838e37-9ca4-4194-a041-5e9a40d6c205) *
 
 If you have a snapshot marked with a star "*" your snapshot is ready, anyway
 you have to restore the current snapshot::

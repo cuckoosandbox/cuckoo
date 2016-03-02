@@ -351,7 +351,7 @@ Update ``connection`` to use something *not* sqlite3. Preferably PostgreSQL or
 MySQL. SQLite3 doesn't support multi-threaded applications that well and this
 will give errors at random if used.
 
-You should create your own empty database for the distributed cuckoo setup. Do not be tempted to use any existing cuckoo database in order to avoid update problems with the DB scripts. In the config use the new database name, the remaining stuff like usernames , servers can be the same as for your cuckoo install. 
+You should create your own empty database for the distributed cuckoo setup. Do not be tempted to use any existing cuckoo database in order to avoid update problems with the DB scripts. In the config use the new database name, the remaining stuff like usernames , servers can be the same as for your cuckoo install.
 
 conf/processing.conf
 ^^^^^^^^^^^^^^^^^^^^
@@ -399,7 +399,7 @@ the documentation on the parameters for this script)::
     $ SCREEN -S dist_scheduler ./distributed/instance.py dist.scheduler
     $ SCREEN -S dist_status ./distributed/instance.py dist.status
     $ SCREEN -S cuckoo1 ./distributed/instance.py -v cuckoo1
-    
+
 The -v parameter enables verbose output and the cuckoo1 parameter is the name assigned to the actual cuckoo instance running the virtual machine while registering the node as outlined below.
 
 Register Cuckoo nodes
