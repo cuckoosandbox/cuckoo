@@ -187,3 +187,11 @@ with the result server IP address.
 You can bring it up manually, it depends from one virtualization software to another, but
 if you don't know how to do, a good trick is to manually start and stop an analysis virtual
 machine, this will bring virtual networking up.
+
+In the case of VirtualBox the hostonly interface `vboxnet0` can be created as follows::
+
+    # If the hostonly interface vboxnet0 does not exist already.
+    $ VBoxManage hostonlyif create
+
+    # Configure vboxnet0.
+    $ VBoxManage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1 --netmask 255.255.255.0
