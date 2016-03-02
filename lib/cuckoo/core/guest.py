@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import datetime
+import json
 import os
 import time
 import socket
@@ -386,6 +387,17 @@ class GuestManager(object):
             #          "to backwards compatibility with the old agent.")
             self.is_old = True
             self.old.start_analysis(options, monitor)
+            return
+
+        if r.status_code != 200:
+            log.critical(
+                "While trying to determine the Agent version that your VM is "
+                "running we retrieved an unexpected HTTP status code: %s. If "
+                "this is a false positive, please report this issue to the "
+                "Cuckoo Developers. HTTP response headers: %s",
+                r.status_code, json.dumps(dict(r.headers)),
+            )
+            db.guest_set_status(self.task_id, "failed")
             return
 
         try:
