@@ -23,4 +23,6 @@ urlpatterns = [
         r"/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+|None)?"
         r"/(?P<sid>\d+)?",
         views.moloch),
+    url(r"^(?P<task_id>\d+)/export/$", views.export_analysis),
+    url(r"^import/$", views.import_analysis),
 ]
