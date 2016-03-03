@@ -10,6 +10,8 @@ import json
 import urllib
 import zipfile
 
+from cStringIO import StringIO
+
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -532,183 +534,166 @@ def export_analysis(request, task_id):
     if request.method == "POST":
         return export(request, task_id)
 
-    report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
-
+    report = results_db.analysis.find_one(
+        {"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)]
+    )
     if not report:
-        return render_to_response("error.html",
-                                  {"error": "The specified analysis does not exist"},
-                                  context_instance=RequestContext(request))
+        return render(request, "error.html", {
+            "error": "The specified analysis does not exist",
+        })
 
-    #For old analyses
-    try:
-        analysis_dir = report["info"]["analysis_path"]
-    except KeyError as e:
-        return render_to_response("error.html",
-                                  {"error": "The analysis hasn't yet the 'analysis_path' property. Because of this, this analysis can't be exported"},
-                                  context_instance=RequestContext(request))
-    directories = []
+    if "analysis_path" not in report.get("info", {}):
+        return render(request, "error.html", {
+            "error": "The analysis was created before the export "
+                     "functionality was integrated with Cuckoo and is "
+                     "therefore not available for this task (in order to "
+                     "export this analysis, please reprocess its report)."
+        })
 
-    #Searches for every directory in the analysis, if found append to directories array
-    for dir in os.listdir(analysis_dir):
-        if os.path.isdir(os.path.join(analysis_dir, dir)):
-            directories.append(dir)
+    analysis_path = report["info"]["analysis_path"]
 
-    return render_to_response("analysis/export.html",
-                                  {"analysis": report,
-                                   "directories": directories},
-                                  context_instance=RequestContext(request))
+    # Locate all directories/results available for this analysis.
+    dirs, files = [], []
+    for filename in os.listdir(analysis_path):
+        path = os.path.join(analysis_path, filename)
+        if os.path.isdir(path):
+            dirs.append((filename, len(os.listdir(path))))
+        else:
+            files.append(filename)
+
+    return render(request, "analysis/export.html", {
+        "analysis": report,
+        "dirs": dirs,
+        "files": files,
+    })
 
 def export(request, task_id):
-    directories = request.POST.getlist("directories")
-    task = Database().view_task(task_id)
+    taken_dirs = request.POST.getlist("dirs")
+    taken_files = request.POST.getlist("files")
+    if not taken_dirs and not taken_files:
+        return render(request, "error.html", {
+            "error": "Please select at least one directory or file to be exported."
+        })
 
-    if not directories:
-        print("directories is empty")
-        return render_to_response("error.html",
-                                  {"error": "You have not selected any directory"},
-                                  context_instance=RequestContext(request))
-
-    report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
+    report = results_db.analysis.find_one(
+        {"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)]
+    )
     if not report:
-        return render_to_response("error.html",
-                                  {"error": "The specified analysis does not exist"},
-                                  context_instance=RequestContext(request))
- 
+        return render(request, "error.html", {
+            "error": "The specified analysis does not exist",
+        })
+
     path = report["info"]["analysis_path"]
 
-    #Creating a analysis.json file for basic information about the analysis. Used for import
+    # Creating an analysis.json file with basic information about this
+    # analysis. This information serves as metadata when importing a task.
     analysis_path = os.path.join(path, "analysis.json")
     with open(analysis_path, "w") as outfile:
-        json.dump({'target':report["target"]}, outfile, indent=4)
+        json.dump({"target": report["target"]}, outfile, indent=4)
 
-    #Creates a zip file with the selected contents of the analyses
-    zf = zipfile.ZipFile(path + ".zip", "w", zipfile.ZIP_DEFLATED)
+    f = StringIO()
 
-    #file_path will be used to store the sample of the file in the zip that will be exported
-    if report["info"]["category"] == "file":
-        file_path = task.target
-        zf.write(file_path, "binary")
-    elif report["info"]["category"] == "url":
-        file_path = report["target"]["url"]
-    else:
-        return render_to_response("error.html",
-                                  {"error": "The category of the specified analysis isn't valid"},
-                                  context_instance=RequestContext(request))
+    # Creates a zip file with the selected files and directories of the task.
+    zf = zipfile.ZipFile(f, "w", zipfile.ZIP_DEFLATED)
 
     for dirname, subdirs, files in os.walk(path):
         if os.path.basename(dirname) == task_id:
             for filename in files:
-                zf.write(os.path.join(dirname, filename), filename)
-        if os.path.basename(dirname) in directories:
+                if filename in taken_files:
+                    zf.write(os.path.join(dirname, filename), filename)
+        if os.path.basename(dirname) in taken_dirs:
             for filename in files:
-                zf.write(os.path.join(dirname, filename), os.path.join(os.path.basename(dirname), filename))
+                zf.write(os.path.join(dirname, filename),
+                         os.path.join(os.path.basename(dirname), filename))
 
     zf.close()
 
-    #Deleting the analysis.json file from the original analysis directory
-    if os.path.isfile(analysis_path):
-        os.remove(analysis_path)
-
-    zfile = open(zf.filename, 'rb')
-
-    try:
-        zip_file_type = zf.content_type
-    except AttributeError:
-        zip_file_type = "application/zip"
-
-    response = HttpResponse(zfile, content_type=zip_file_type)
-    response["Content-Disposition"] = "attachment; filename=%s" % task_id + ".zip"
-    response["Content-Length"] = os.path.getsize(zf.filename)
-
+    response = HttpResponse(f.getvalue(), content_type="application/zip")
+    response["Content-Disposition"] = "attachment; filename=%s.zip" % task_id
     return response
 
 def import_analysis(request):
-    if request.method == "POST":
-        db = Database()
-        task_ids = []
-        samples = request.FILES.getlist("sample")
+    if request.method == "GET":
+        return render(request, "analysis/import.html")
 
-        for sample in samples:
-            # Error if there was only one submitted sample and it's empty.
-            # But if there are multiple and one was empty, just ignore it.
-            if not sample.size:
-                if len(samples) != 1:
-                    continue
+    db = Database()
+    task_ids = []
+    analyses = request.FILES.getlist("sample")
 
-                return render_to_response("error.html",
-                                         {"error": "You uploaded an empty file."},
-                                         context_instance=RequestContext(request))
-            elif sample.size > settings.MAX_UPLOAD_SIZE:
-                return render_to_response("error.html",
-                                         {"error": "You uploaded a file that exceeds that maximum allowed upload size."},
-                                         context_instance=RequestContext(request))
+    for analysis in analyses:
+        if not analysis.size:
+            return render(request, "error.html", {
+                "error": "You uploaded an empty analysis.",
+            })
 
-            if not sample.name.endswith(".zip"):
-                return render_to_response("error.html",
-                                         {"error": "You uploaded a file that wasn't a .zip."},
-                                         context_instance=RequestContext(request))
+        # if analysis.size > settings.MAX_UPLOAD_SIZE:
+            # return render(request, "error.html", {
+            #     "error": "You uploaded a file that exceeds that maximum allowed upload size.",
+            # })
 
-            path = store_temp_file(sample.read(), sample.name)
-            zf = zipfile.ZipFile(path)
+        if not analysis.name.endswith(".zip"):
+            return render(request, "error.html", {
+                "error": "You uploaded an analysis that wasn't a .zip.",
+            })
 
-            #Path to store the extracted files from the zip
-            extract_path = os.path.dirname(path) + "\\" + os.path.splitext(sample.name)[0]
-            zf.extractall(extract_path)
+        path = store_temp_file(analysis.read(), analysis.name)
+        zf = zipfile.ZipFile(path)
 
-            report = extract_path + "\\analysis.json"
-            if os.path.isfile(report):
-                with open(report) as json_file:
-                    json_data = json.load(json_file)
-                    category = json_data["Target"]["category"]
+        # Path to store the extracted files from the zip.
+        extract_path = os.path.join(os.path.dirname(path),
+                                    os.path.splitext(analysis.name)[0])
+        zf.extractall(extract_path)
 
-                    if category == "file":
-                        binary = extract_path + "\\binary"
+        report = os.path.join(extract_path, "analysis.json")
+        if not os.path.isfile(report):
+            return render(request, "error.html", {
+                "error": "No analysis.json found!",
+            })
 
-                        if os.path.isfile(binary):
-                            task_id = db.add_path(file_path=binary,
-                                      package="",
-                                      timeout=0,
-                                      options="",
-                                      priority=0,
-                                      machine="",
-                                      custom="",
-                                      memory=False,
-                                      enforce_timeout=False,
-                                      tags=None)
-                            if task_id:
-                                task_ids.append(task_id)
+        with open(report) as json_file:
+            json_data = json.load(json_file)
+            category = json_data["target"]["category"]
 
-                    elif category == "url":
-                        url = json_data["Target"]["url"]
-                        if not url:
-                            return render_to_response("error.html",
-                                                      {"error": "You specified an invalid URL!"},
-                                                      context_instance=RequestContext(request))
+            if category == "file":
+                binary = extract_path + "\\binary"
 
-                        task_id = db.add_url(url=url,
+                if os.path.isfile(binary):
+                    task_id = db.add_path(file_path=binary,
+                                          package="",
+                                          timeout=0,
+                                          options="",
+                                          priority=0,
+                                          machine="",
+                                          custom="",
+                                          memory=False,
+                                          enforce_timeout=False,
+                                          tags=None)
+                    if task_id:
+                        task_ids.append(task_id)
+
+            elif category == "url":
+                url = json_data["target"]["url"]
+                if not url:
+                    return render(request, "error.html", {
+                        "error": "You specified an invalid URL!",
+                    })
+
+                task_id = db.add_url(url=url,
                                      package="",
-                                      timeout=0,
-                                      options="",
-                                      priority=0,
-                                      machine="",
-                                      custom="",
-                                      memory=False,
-                                      enforce_timeout=False,
-                                      tags=None)
-                        if task_id:
-                            task_ids.append(task_id)
-            else:
-                return render_to_response("error.html",
-                                                      {"error": "No analysis.json found!"},
-                                                      context_instance=RequestContext(request))
+                                     timeout=0,
+                                     options="",
+                                     priority=0,
+                                     machine="",
+                                     custom="",
+                                     memory=False,
+                                     enforce_timeout=False,
+                                     tags=None)
+                if task_id:
+                    task_ids.append(task_id)
 
-            tasks_count = len(task_ids)
-            if tasks_count > 0:
-                return render_to_response("submission/complete.html",
-                                         {"tasks": task_ids,
-                                          "tasks_count": tasks_count,
-                                          "baseurl": request.build_absolute_uri('/')[:-1]},
-                                          context_instance=RequestContext(request))
-
-    return render_to_response("analysis/import.html",
-                                  context_instance=RequestContext(request))
+        if task_ids:
+            return render(request, "submission/complete.html", {
+                "tasks": task_ids,
+                "tasks_count": len(task_ids),
+                "baseurl": request.build_absolute_uri('/')[:-1],
+            })

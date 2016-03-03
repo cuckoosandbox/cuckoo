@@ -54,9 +54,14 @@ input[readonly] {
                     </div>
                     <div id="options" class="panel-collapse collapse in" style="text-align: left;">
                         <div class="panel-body">
-                            {% for dir in directories %}
+                            {% for dirname, count in dirs %}
                             <div class="form-group">
-                                <input type="checkbox" name="directories" value="{{dir}}" checked="checked"> {{dir}}
+                                <input type="checkbox" name="dirs" value="{{ dirname }}" checked="checked"> {{ dirname }} ({{ count }} files)
+                            </div>
+                            {% endfor %}
+                            {% for filename in files %}
+                            <div class="form-group">
+                                <input type="checkbox" name="files" value="{{ filename }}" checked="checked"> {{ filename }}
                             </div>
                             {% endfor %}
                         </div>
