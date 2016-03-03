@@ -16,6 +16,7 @@
         <li><a href="#memory_ssdt" data-toggle="tab">SSDT</a></li>
         <li><a href="#memory_idt" data-toggle="tab">IDT</a></li>
         <li><a href="#memory_gdt" data-toggle="tab">GDT</a></li>
+        <li><a href="#memory_sockets" data-toggle="tab">Sockets</a></li>
     </ul>
     <div class="tab-content">
         <div class="tab-pane fade in active" id="memory_pslist">
@@ -56,6 +57,13 @@
         </div>
         <div class="tab-pane fade in" id="memory_callbacks">
             {% include "analysis/memory/_callbacks.html" %}
+        </div>
+        <div class="tab-pane fade in" id="memory_sockets">
+            {% if analysis.memory.sockscan %}
+                {% include "analysis/memory/_sockscan.html" %}
+            {% elif analysis.memory.netscan %}
+                {% include "analysis/memory/_netscan.html" %}
+            {% endif %}
         </div>
     </div>
 </div>

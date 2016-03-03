@@ -1,0 +1,24 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Offset</th>
+            <th>PID</th>
+            <th>Local Address</th>
+            <th>Local Port</th>
+            <th>Protocol</th>
+            <th>Creation Time</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in analysis.memory.sockscan.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.offset}}</td>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.address}}</td>
+            <td class="{{ row.class_ }}">{{row.port}}</td>
+            <td class="{{ row.class_ }}">{{row.protocol}}</td>
+            <td class="{{ row.class_ }}">{{row.create_time}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

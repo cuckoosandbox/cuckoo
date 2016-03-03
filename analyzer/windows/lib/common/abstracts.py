@@ -1,8 +1,11 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import glob
 import os
+
 from _winreg import CreateKey, SetValueEx, CloseKey, REG_DWORD, REG_SZ
 
 from lib.api.process import Process
@@ -30,7 +33,7 @@ class Package(object):
         """
         self.pids = pids
 
-    def start(self):
+    def start(self, target):
         """Run analysis package.
         @raise NotImplementedError: this method is abstract.
         """
@@ -40,7 +43,7 @@ class Package(object):
         """Check."""
         return True
 
-    def _enum_paths(self):
+    def enum_paths(self):
         """Enumerate available paths."""
         basepaths = {
             "System32": [
@@ -67,13 +70,26 @@ class Package(object):
                 yield os.path.join(basepath, *path[1:])
 
     def get_path(self, application):
-        """Search for an application in all available paths.
+        """Search for the application in all available paths.
         @param applicaiton: application executable name
         @return: executable path
         """
-        for path in self._enum_paths():
+        for path in self.enum_paths():
             if os.path.isfile(path):
                 return path
+
+        raise CuckooPackageError("Unable to find any %s executable." %
+                                 application)
+
+    def get_path_glob(self, application):
+        """Search for the application in all available paths with glob support.
+        @param applicaiton: application executable name
+        @return: executable path
+        """
+        for path in self.enum_paths():
+            for path in glob.iglob(path):
+                if os.path.isfile(path):
+                    return path
 
         raise CuckooPackageError("Unable to find any %s executable." %
                                  application)
@@ -120,7 +136,7 @@ class Package(object):
         """
         dll = self.options.get("dll")
         free = self.options.get("free")
-        source = self.options.get("from", "explorer.exe")
+        source = self.options.get("from")
 
         # Setup pre-defined registry keys.
         self.init_regkeys(self.REGKEYS)

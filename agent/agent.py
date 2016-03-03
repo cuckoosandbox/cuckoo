@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -46,7 +47,7 @@ class Agent(object):
                 self.analyzer_folder = os.path.join(system_drive, container)
             elif self.system == "linux" or self.system == "darwin":
                 self.analyzer_folder = \
-                    os.path.join(os.environ.get("HOME", "./"), container)
+                    os.path.join(os.environ.get("HOME", os.environ.get("PWD", "/tmp")), container)
             else:
                 self.error_message = "Unable to identify operating system"
                 return False

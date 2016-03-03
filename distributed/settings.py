@@ -1,3 +1,7 @@
+# Copyright (C) 2014-2016 Cuckoo Foundation.
+# This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+# See the file 'docs/LICENSE' for copying permission.
+
 import os
 
 # Database connection URI. PostgreSQL or MySQL suggested.
@@ -12,6 +16,9 @@ SECRET_KEY = os.urandom(32)
 
 # A list of reporting formats, e.g., json.
 report_formats = "json",
+
+# Fetch the pcap?
+pcap = False
 
 # Directory for storing samples as long as their task is available.
 samples_directory = "/tmp"

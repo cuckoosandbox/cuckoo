@@ -12,16 +12,16 @@
         </tr>
     </thead>
     <tbody>
-    {% for service in analysis.memory.svcscan.data %}
+    {% for row in analysis.memory.svcscan.data|volsort %}
         <tr>
-            <td>{{service.service_name}}</td>
-            <td>{{service.service_display_name}}</td>
-            <td>{{service.service_binary_path}}</td>
-            <td>{{service.pricess_id}}</td>
-            <td>{{service.service_type}}</td>
-            <td>{{service.service_order}}</td>
-            <td><span class="mono">{{service.service_offset}}</span></td>
-            <td>{{service.service_state}}</td>
+            <td class="{{ row.class_ }}">{{row.service_name}}</td>
+            <td class="{{ row.class_ }}">{{row.service_display_name}}</td>
+            <td class="{{ row.class_ }}">{{row.service_binary_path}}</td>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.service_type}}</td>
+            <td class="{{ row.class_ }}">{{row.service_order}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.service_offset}}</span></td>
+            <td class="{{ row.class_ }}">{{row.service_state}}</td>
         </tr>
     {% endfor %}
     </tbody>

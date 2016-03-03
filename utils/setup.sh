@@ -146,7 +146,9 @@ if [ "$CLEAN" -ne 0 ]; then
     yes|sudo -u cuckoo -i vmcloak-removevms
     umount /home/cuckoo/vmmount
     rm -rf /home/cuckoo/{.config,.vmcloak,vmmount}
+    rm -rf /home/cuckoo/{cuckoo,cuckoo.git}
     rm -rf "$BASEDIR/vms" "$BASEDIR/vmbackup"
+    rm -rf /opt/cuckoo
     exit 0
 fi
 
@@ -158,7 +160,7 @@ if [ -n "$SETTINGS" ]; then
 fi
 
 if [ -z "$ISOFILE" ]; then
-    echo "Please specify the path to a Windows XP Installer ISO."
+    echo "Please specify the path to a Windows XP or Windows 7 Installer ISO."
     exit 1
 fi
 
@@ -180,19 +182,51 @@ if [ "$LONGTERM" -ne 0 ] && [ "$VMCOUNT" -ne 0 ]; then
 fi
 
 _clone_cuckoo() {
+    local gitrepo=""
+
     # Fetch Cuckoo or in the case of a longterm setup, longcuckoo.
     if [ "$LONGTERM" -eq 0 ]; then
-        git clone git://github.com/cuckoobox/cuckoo.git "$CUCKOO"
+        sudo -u cuckoo -i \
+            git clone --bare https://github.com/cuckoosandbox/cuckoo.git
+
+        gitrepo="cuckoo.git"
     else
-        git clone git://github.com/jbremer/longcuckoo.git "$CUCKOO"
+        sudo -u cuckoo -i \
+            git clone --bare https://github.com/jbremer/longcuckoo.git
+
+        gitrepo="longcuckoo.git"
     fi
 
-    chown -R cuckoo:cuckoo "$CUCKOO"
-    chmod 755 "/home/cuckoo/" "$CUCKOO"
+    sudo -u cuckoo -i tee "$gitrepo/hooks/post-receive" << EOF
+#!/bin/bash
+
+read commit
+
+if ! echo \$commit|grep production$; then
+    echo -e "\\e[31mWe only check out changes to the production branch.\\e[0m"
+    exit
+fi
+
+GIT_WORK_TREE=/opt/cuckoo git checkout -f production
+EOF
+
+    mkdir -p "/opt/cuckoo"
+    chown cuckoo:cuckoo "/opt/cuckoo"
+    chmod 755 "/home/cuckoo/" "/opt/cuckoo"
+    sudo -u cuckoo -i chmod +x "$gitrepo/hooks/post-receive"
+
+    # Checkout master branch of the repository (if this was not done already).
+    if [ -z "$(ls -A /opt/cuckoo)" ]; then
+        sudo -u cuckoo -i \
+            git --work-tree /opt/cuckoo --git-dir "$gitrepo" checkout -f master
+    fi
+
+    # Add the Suricata reboot crontab entry.
+    (crontab -l ; echo @reboot /opt/cuckoo/utils/suricata.sh)|crontab -
 
     # Delete the cuckoo1 machine that is included in the VirtualBox
     # configuration by default.
-    sudo -u cuckoo -i "$CUCKOO/utils/machine.py" --delete cuckoo1
+    sudo -u cuckoo -i "/opt/cuckoo/utils/machine.py" --delete cuckoo1
 }
 
 _setup() {
@@ -207,15 +241,26 @@ _setup() {
             "$DEBVERSION contrib" >> /etc/apt/sources.list.d/virtualbox.list
 
         # Add the VirtualBox public key to our apt repository.
-        wget -q https://www.virtualbox.org/download/oracle_vbox.asc \
-            -O- | apt-key add -
+        wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- \
+            | apt-key add -
+    fi
+
+    # Add the ElasticSearch apt repository.
+    if [ ! -e /etc/apt/sources.list.d/elasticsearch.list ]; then
+        echo "deb http://packages.elastic.co/elasticsearch/2.x/debian" \
+            "stable main" >> /etc/apt/sources.list.d/elasticsearch.list
+
+        wget -q https://packages.elastic.co/GPG-KEY-elasticsearch -O- \
+            | sudo apt-key add -
     fi
 
     # Update apt repository and install required packages.
     apt-get update -y --force-yes
     apt-get install -y --force-yes sudo git python-dev python-pip postgresql \
         libpq-dev python-dpkt vim tcpdump libcap2-bin genisoimage pwgen \
-        htop tig mosh mongodb uwsgi uwsgi-plugin-python nginx virtualbox-4.3
+        htop tig mosh mongodb uwsgi uwsgi-plugin-python nginx virtualbox-4.3 \
+        libffi-dev libxml2-dev libxslt1-dev libjpeg-dev samba-common-bin \
+        ethtool elasticsearch
 
     # Create the main postgresql cluster. In recent versions of Ubuntu Server
     # 14.04 you have to do this manually. If it already exists this command
@@ -234,10 +279,13 @@ _setup() {
 
     # Setup a Cuckoo user.
     useradd cuckoo -d /home/cuckoo -s /bin/bash
+    mkdir -p /home/cuckoo
+    chown cuckoo:cuckoo /home/cuckoo
 
     # Copy any authorized keys from the current user to the cuckoo user.
-    mkdir /home/cuckoo/.ssh
+    mkdir -p /home/cuckoo/.ssh
     cp ~/.ssh/authorized_keys /home/cuckoo/.ssh/authorized_keys
+    chown cuckoo:cuckoo /home/cuckoo/.ssh/authorized_keys
 
     # Add the www-data user to the cuckoo group.
     adduser www-data cuckoo
@@ -251,11 +299,14 @@ _setup() {
     chown -R cuckoo:cuckoo "$VMTEMP"
     chmod 755 "/home/cuckoo/" "$VMTEMP"
 
+    # Install required packages part two.
+    pip install --upgrade mitmproxy psycopg2 vmcloak
+
     # Clone the Cuckoo repository and initialize it.
     _clone_cuckoo
 
-    # Install required packages part two.
-    pip install --upgrade psycopg2 vmcloak -r "$CUCKOO/requirements.txt"
+    # Install required packages part three.
+    pip install -r "/opt/cuckoo/requirements.txt"
 
     # Create a random password.
     # PASSWORD="$(pwgen -1 16)"
@@ -272,7 +323,10 @@ _setup() {
     sql_query "CREATE USER cuckoo WITH PASSWORD '$PASSWORD'"
 
     # Install the Upstart/SystemV scripts.
-    "$CUCKOO/utils/service.sh" -c "$CUCKOO" -l "$CUCKOO/log" install
+    /opt/cuckoo/utils/service.sh -c /opt/cuckoo install
+
+    # Fetch the community signatures and monitoring binaries.
+    sudo -u cuckoo -i /opt/cuckoo/utils/community.py -wafb master
 
     # Add "nmi_watchdog=0" to the GRUB commandline if it's not in there already.
     if ! grep nmi_watchdog /etc/default/grub; then
@@ -303,8 +357,8 @@ EOF
         CRONJOB="/home/cuckoo/vmprovision.sh"
 
         # Install the machine cronjob.
-        "$CUCKOO/utils/experiment.py" machine-cronjob install \
-            "cpucount=$CPUCOUNT" "path=$CRONJOB"
+        "/opt/cuckoo/utils/experiment.py" machine-cronjob install \
+            "cpucount=$CPUCOUNT" "path=$CRONJOB" "basedir=$BASEDIR"
         chown cuckoo:cuckoo "$CRONJOB"
         chmod +x "$CRONJOB"
 
@@ -324,36 +378,26 @@ EOF
 _create_virtual_machines() {
     # Prepare the machine for virtual machines and actually create them.
 
-    VMCLOAKCONF="$(mktemp)"
+    # Ensure that vboxnet0 is up and running.
+    vmcloak-vboxnet0
 
-    cat > "$VMCLOAKCONF" << EOF
-[vmcloak]
-cuckoo = $CUCKOO
-vm-dir = $VMBACKUP
-data-dir = $VMBACKUP
-iso-mount = $MOUNT
-serial-key = $SERIALKEY
-temp-dirpath = $VMTEMP
-tags = $TAGS
-EOF
-
-    if [ -n "$DEPENDENCIES" ]; then
-        echo "dependencies = $DEPENDENCIES" >> "$VMCLOAKCONF"
-    fi
-
-    chown cuckoo:cuckoo "$VMCLOAKCONF"
-
-    # Check whether the bird image for this Windows version already exists.
-    sudo -u cuckoo -i vmcloak-bird hddpath "${EGGNAME}_bird"
-    if [ "$?" -ne 0 ]; then
-        echo "Creating the Virtual Machine bird.."
-        vmcloak -u cuckoo -s "$VMCLOAKCONF" -r \
-            --bird "${EGGNAME}_bird" "$WINOS" --vrde
-    fi
-
-    # Kill all VirtualBox processes as otherwise the listening
-    # port for vmcloak-clone might still be in use..
+    # Kill all VirtualBox processes as otherwise the listening port for
+    # vmcloak-clone might still be in use.. TODO This can probably be removed.
     vmcloak-killvbox
+
+    if [ -z "$SERIALKEY" ]; then
+        serial=""
+    else
+        serial="--serial-key $SERIALKEY"
+    fi
+
+    options="$serial --cpus $CPUCOUNT"
+
+    # Attempt to create a new image if one does not already exist.
+    sudo -u cuckoo -i vmcloak init "${EGGNAME}_bird" "$WINOS" $options
+    if [ "$?" -eq 0 ]; then
+        sudo -u cuckoo -i vmcloak install "${EGGNAME}_bird" $DEPENDENCIES
+    fi
 
     # Create various Virtual Machine eggs.
     for i in $(seq 1 "$VMCOUNT"); do
@@ -366,16 +410,18 @@ EOF
 
         # As vmcloak-clone will add an entry for this node we remove it just
         # in case it did already exist.
-        "$CUCKOO/utils/machine.py" --delete "$name"
+        "/opt/cuckoo/utils/machine.py" --delete "$name"
 
         # Delete any remaining files for this Virtual Machine just in case
         # they were still present.
         rm -rf "$VMBACKUP/$name"
 
         echo "Creating Virtual Machine $name.."
-        vmcloak-clone -s "$VMCLOAKCONF" -u cuckoo --bird "${EGGNAME}_bird" \
-            --hostonly-ip "192.168.56.$((2+$i))" --cpu-count "$CPUCOUNT" \
-            "$name"
+        sudo -u cuckoo -i vmcloak snapshot "${EGGNAME}_bird" \
+            "$name" "192.168.56.$((2+$i))"
+
+        echo "Registering Virtual Machine $name.."
+        sudo -u cuckoo -i vmcloak register "$name" /opt/cuckoo
     done
 
     rm -rf "$VMCLOAKCONF" "$VMTEMP"
@@ -463,12 +509,6 @@ MOUNT="/mnt/$MOUNTOS/"
 VMS="$BASEDIR/vms/"
 VMBACKUP="$BASEDIR/vmbackup/"
 VMMOUNT="/home/cuckoo/vmmount/"
-
-if [ "$LONGTERM" -eq 0 ]; then
-    CUCKOO="/home/cuckoo/cuckoo"
-else
-    CUCKOO="/home/cuckoo/longcuckoo"
-fi
 
 # In Upstart scripts the $HOME variable may not have been set. If so, set it.
 if [ -z "$HOME" ]; then

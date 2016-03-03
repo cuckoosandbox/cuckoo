@@ -3,18 +3,14 @@ REST API
 ========
 
 As mentioned in :doc:`submit`, Cuckoo provides a simple and lightweight REST
-API server implemented in `Bottle.py`_, therefore in order to make the service
-work you'll need it installed. Bottle release must be 0.10 or above.
+API server implemented in `Flask`_, therefore in order to make the service
+work you'll need it installed.
 
-On Debian/Ubuntu::
+On Debian/Ubuntu with pip::
 
-    $ sudo apt-get install python-bottle
+    $ pip install flask
 
-With Pip::
-
-    $ pip install bottle
-
-.. _`Bottle.py`: http://www.bottlepy.org
+.. _`Flask`: http://flask.pocoo.org/
 
 Starting the API server
 =======================
@@ -23,21 +19,23 @@ In order to start the API server you can simply do::
 
     $ ./utils/api.py
 
-By default it will bind the service on **localhost:8090**. If you want to change those values, you can for example do this::
+By default it will bind the service on **localhost:8090**. If you want to change
+those values, you can for example do this::
 
     $ ./utils/api.py --host 0.0.0.0 --port 1337
 
 Web deployment
 --------------
 
-While the default method of starting the API server works fine for many cases, 
-some users may wish to deploy the server in a robust manner. This can be done 
-by exposing the API as a WSGI application through a web server. This section shows 
-a simple example of deploying the API via `uWSGI`_ and `Nginx`_. These 
-instructions are written with Ubuntu GNU/Linux in mind, but may be adapted for 
+While the default method of starting the API server works fine for many cases,
+some users may wish to deploy the server in a robust manner. This can be done
+by exposing the API as a WSGI application through a web server. This section shows
+a simple example of deploying the API via `uWSGI`_ and `Nginx`_. These
+instructions are written with Ubuntu GNU/Linux in mind, but may be adapted for
 other platforms.
 
-This solution requires uWSGI, the uWSGI Python plugin, and Nginx. All are available as packages::
+This solution requires uWSGI, the uWSGI Python plugin, and Nginx. All are
+available as packages::
 
     $ sudo apt-get install uwsgi uwsgi-plugin-python nginx
 
@@ -54,10 +52,11 @@ To begin, create a uWSGI configuration file at ``/etc/uwsgi/apps-available/cucko
     uid = cuckoo
     gid = cuckoo
 
-This configuration inherits a number of settings from the distribution's 
-default uWSGI configuration, loading ``api.py`` from the Cuckoo installation 
-directory. If Cuckoo is installed in a different path, adjust the configuration 
-(the *chdir* setting, and perhaps the *uid* and *gid* settings) accordingly.
+This configuration inherits a number of settings from the distribution's
+default uWSGI configuration, loading ``api.py`` from the Cuckoo installation
+directory. In this example we installed Cuckoo in /home/cuckoo/cuckoo, if Cuckoo
+is installed in a different path, adjust the configuration (the *chdir* setting,
+and perhaps the *uid* and *gid* settings) accordingly.
 
 Enable the app configuration and start the server::
 
@@ -100,7 +99,8 @@ To begin, create a Nginx configuration file at ``/etc/nginx/sites-available/cuck
         }
     }
 
-Make sure that Nginx can connect to the uWSGI socket by placing its user in the **cuckoo** group::
+Make sure that Nginx can connect to the uWSGI socket by placing its user in the
+**cuckoo** group::
 
     $ sudo adduser www-data cuckoo
 
@@ -120,7 +120,8 @@ HTTPS.
 Resources
 =========
 
-Following is a list of currently available resources and a brief description of each one. For details click on the resource name.
+Following is a list of currently available resources and a brief description of
+each one. For details click on the resource name.
 
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | Resource                          | Description                                                                                                      |
@@ -134,12 +135,16 @@ Following is a list of currently available resources and a brief description of 
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_view`         | Returns the details on the task assigned to the specified ID.                                                    |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_reschedule`   | Reschedule a task assigned to the specified ID.                                                                  |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_delete`       | Removes the given task from the database and deletes the results.                                                |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_report`       | Returns the report generated out of the analysis of the task associated with the specified ID.                   |
 |                                   | You can optionally specify which report format to return, if none is specified the JSON report will be returned. |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_shots`        | Retrieves one or all screenshots associated with a given analysis task ID.                                       |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_rereport`     | Re-run reporting for task associated with a given analysis task ID.                                              |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`memory_list`        | Returns a list of memory dump files associated with a given analysis task ID.                                    |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
@@ -155,7 +160,9 @@ Following is a list of currently available resources and a brief description of 
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`machines_view`      | Returns details on the analysis machine associated with the specified name.                                      |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`cuckoo_status`      | Returns the basic cuckoo status, including version and tasks overview                                            |
+| ``GET`` :ref:`cuckoo_status`      | Returns the basic cuckoo status, including version and tasks overview.                                           |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`vpn_status`         | Returns VPN status.                                                                                              |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 
 .. highlight:: javascript
@@ -388,8 +395,42 @@ Following is a list of currently available resources and a brief description of 
                 }
             }
 
+        Note: possible value for key ``status``:
+            * ``pending``
+            * ``running``
+            * ``completed``
+            * ``reported``
+
         **Parameters**:
             * ``id`` *(required)* *(int)* - ID of the task to lookup
+
+        **Status codes**:
+            * ``200`` - no error
+            * ``404`` - task not found
+
+.. _tasks_reschedule:
+
+/tasks/reschedule
+-----------------
+
+    **GET /tasks/reschedule/** *(int: id)* **/** *(int: priority)*
+
+        Reschedule a task with the specified ID and priority (default priority
+        is 1).
+
+        **Example request**::
+
+            curl http://localhost:8090/tasks/reschedule/1
+
+        **Example response**::
+
+            {
+                "status": "OK"
+            }
+
+        **Parameters**:
+            * ``id`` *(required)* *(int)* - ID of the task to reschedule
+            * ``priority`` *(optional)* *(int)* - Task priority
 
         **Status codes**:
             * ``200`` - no error
@@ -431,7 +472,7 @@ Following is a list of currently available resources and a brief description of 
 
         **Parameters**:
             * ``id`` *(required)* *(int)* - ID of the task to get the report for
-            * ``format`` *(optional)* - format of the report to retrieve [json/html/all/dropped]. If none is specified the JSON report will be returned. ``all`` returns all the result files as tar.bz2, ``dropped`` the dropped files as tar.bz2
+            * ``format`` *(optional)* - format of the report to retrieve [json/html/all/dropped/package_files]. If none is specified the JSON report will be returned. ``all`` returns all the result files as tar.bz2, ``dropped`` the dropped files as tar.bz2, ``package_files`` files uploaded to host by analysis packages.
 
         **Status codes**:
             * ``200`` - no error
@@ -457,7 +498,33 @@ Following is a list of currently available resources and a brief description of 
 
         **Status codes**:
             * ``404`` - file or folder not found
-            
+
+.. _tasks_rereport:
+
+/tasks/rereport
+---------------
+
+    **GET /tasks/rereport/** *(int: id)*
+
+        Re-run reporting for task associated with the specified task ID.
+
+        **Example request**::
+
+            curl http://localhost:8090/tasks/rereport/1
+
+        **Example response**::
+
+            {
+                "success": true
+            }
+
+        **Parameters**:
+            * ``id`` *(required)* *(int)* - ID of the task to re-run report
+
+        **Status codes**:
+            * ``200`` - no error
+            * ``404`` - task not found
+
 .. _memory_list:
 
 /memory/list
@@ -476,7 +543,7 @@ Following is a list of currently available resources and a brief description of 
 
         **Status codes**:
             * ``404`` - file or folder not found
-            
+
 .. _memory_get:
 
 /memory/get
@@ -727,3 +794,20 @@ Following is a list of currently available resources and a brief description of 
         **Status codes**:
             * ``200`` - no error
             * ``404`` - machine not found
+
+.. _vpn_status:
+
+/vpn/status
+-----------
+
+    **GET /vpn/status
+
+        Returns VPN status.
+
+        **Example request**::
+
+            curl http://localhost:8090/vpn/status
+
+        **Status codes**:
+            * ``200`` - show status
+            * ``500`` - not available

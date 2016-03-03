@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -43,10 +44,12 @@ class NetlogConnection(object):
         while not self.sock:
             try:
                 s = socket.create_connection((self.hostip, self.hostport), 0.1)
-                s.sendall(self.proto)
             except socket.error:
                 time.sleep(0.1)
                 continue
+
+            s.settimeout(None)
+            s.sendall(self.proto)
 
             self.sock = s
 

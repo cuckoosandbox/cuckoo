@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -21,12 +22,12 @@ class AnalysisInfo(Processing):
         """
         self.key = "info"
 
-        if not "started_on" in self.task:
+        if "started_on" not in self.task:
             return dict(
                 version=CUCKOO_VERSION,
                 started="none",
                 ended="none",
-                duration="none",
+                duration=-1,
                 id=int(self.task["id"]),
                 category="unknown",
                 custom="unknown",
@@ -34,16 +35,15 @@ class AnalysisInfo(Processing):
                 package="unknown"
             )
 
-        try:
+        if self.task.get("started_on") and self.task.get("completed_on"):
             started = time.strptime(self.task["started_on"], "%Y-%m-%d %H:%M:%S")
             started = datetime.fromtimestamp(time.mktime(started))
             ended = time.strptime(self.task["completed_on"], "%Y-%m-%d %H:%M:%S")
             ended = datetime.fromtimestamp(time.mktime(ended))
-        except:
-            log.critical("Failed to get start/end time from Task.")
-            duration = -1
-        else:
             duration = (ended - started).seconds
+        else:
+            log.critical("Failed to get start/end time from Task.")
+            started, ended, duration = None, None, -1
 
         db = Database()
 
@@ -53,8 +53,9 @@ class AnalysisInfo(Processing):
         if task and task.guest:
             # Get machine description.
             machine = task.guest.to_dict()
-            # Remove useless task_id.
+            # Remove superfluous fields.
             del machine["task_id"]
+            del machine["id"]
         else:
             machine = None
 
@@ -66,7 +67,10 @@ class AnalysisInfo(Processing):
             id=int(self.task["id"]),
             category=self.task["category"],
             custom=self.task["custom"],
+            owner=self.task["owner"],
             machine=machine,
             package=self.task["package"],
             platform=self.task["platform"],
+            options=self.task["options"],
+            route=self.task["route"],
         )

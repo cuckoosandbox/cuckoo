@@ -1,8 +1,10 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
+import re
 
 try:
     import requests
@@ -27,6 +29,41 @@ class VirusTotalAPI(object):
     URL_REPORT = "https://www.virustotal.com/vtapi/v2/url/report"
     FILE_SCAN = "https://www.virustotal.com/vtapi/v2/file/scan"
     URL_SCAN = "https://www.virustotal.com/vtapi/v2/url/scan"
+
+    VARIANT_BLACKLIST = [
+        "generic", "malware", "trojan", "agent", "win32", "multi", "w32",
+        "trojanclicker", "trojware", "win", "a variant of win32", "trj",
+        "susp", "dangerousobject", "backdoor", "clicker", "variant", "heur",
+        "gen", "virus", "dropper", "generic suspicious", "spyware", "program",
+        "suspectcrc", "corrupt", "behaveslike", "crypt", "adclicker",
+        "troj", "injector", "cryptor", "packed", "adware", "macro", "msil4",
+        "suspicious", "worm", "msil", "msword", "drop", "keygen", "office",
+        "password", "malpack", "lookslike", "banker", "riskware", "unwanted",
+        "unclassifiedmalware", "ransom", "trojan horse", "trjndwnlder",
+        "trojandwnldr", "autorun", "trojandownloader", "trojandwnldr", "text",
+        "download", "excel", "msilobfuscator", "rootkit", "application",
+        "a variant of win64", "w97m", "shellcode", "o97m", "exploit",
+        "x97m", "maliciousmacro", "downldr", "msexcel", "pp97m", "other",
+        "trojandropper", "crypter", "a variant of msil", "macrodown",
+        "trojanapt", "dwnldr", "downldexe", "dload", "trojanhorse", "toolbar",
+        "mailer", "obfus", "obfuscator", "suspicious file", "optional",
+        "suspected of trojan", "heuristic", "rogue", "virtool", "infostealer",
+        "generic downloader", "generic malware", "undef", "inject", "packer",
+        "generic backdoor", "word", "macosx", "hack", "unknown", "downloader",
+        "trojanspy", "dldr", "msoffice", "osx32", "script", "stealer",
+        "not a virus", "html", "expl", "shellkode", "downagent", "win64",
+        "applicunwnt", "heur2", "ddos", "avkill", "servstart", "normal",
+        "encoder", "w2km_dloader", "docdl", "w97m_dloadr", "mo97", "dloader",
+        "x2km_dloadr", "w2km_dload", "w2km_dloade", "x2km_droppr", "exedown",
+        "encodefeature", "docdrop", "mw97", "adload", "a variant of pp97m",
+        "a variant of w97m", "badmacro", "bkdr", "docdrp", "exedrop",
+        "generic trojan", "malcrypt", "malicious website", "ransomlock",
+        "ransomcrypt", "reputation", "trojanransom", "pepatch", "risk",
+        "adplugin", "webtoolbar", "malagent", "genmalicious", "vbinject",
+        "vbcrypt", "inject2", "mdropper", "download3", "keylogger",
+        "downloader11", "damaged", "file", "dldrop", "msil7", "injcrypt",
+        "patched", "patchfile", "downware", "dropped",
+    ]
 
     def __init__(self, apikey, timeout, scan=0):
         """Initialize VirusTotal API with the API key and timeout.
@@ -83,8 +120,21 @@ class VirusTotalAPI(object):
 
         if not summary:
             results["scans"] = {}
+            results["normalized"] = []
+
+            # Embed all VirusTotal results into the report.
             for engine, signature in r.get("scans", {}).items():
+                signature["normalized"] = self.normalize(signature["result"])
                 results["scans"][engine.replace(".", "_")] = signature
+
+            # Normalize each detected variant in order to try to find the
+            # exact malware family.
+            norm_lower = []
+            for signature in results["scans"].values():
+                for normalized in signature["normalized"]:
+                    if normalized.lower() not in norm_lower:
+                        results["normalized"].append(normalized)
+                        norm_lower.append(normalized.lower())
 
         return results
 
@@ -117,3 +167,41 @@ class VirusTotalAPI(object):
         files = {"file": open(filepath, "rb")}
         r = self._request_json(self.FILE_SCAN, data=data, files=files)
         return dict(summary=dict(permalink=r.get("permalink")))
+
+    def normalize(self, variant):
+        """Normalize the variant name provided by an Anti Virus engine. This
+        attempts to extract the useful parts of a variant name by stripping
+        all the boilerplate stuff from it."""
+        if not variant:
+            return []
+
+        ret = []
+
+        # Handles "CVE-2012-1234", "CVE2012-1234".
+        cve = re.search("CVE[-_]?(\\d{4})[-_](\\d{4})", variant)
+        if cve:
+            ret.append("CVE-%s-%s" % (cve.group(1), cve.group(2)))
+
+        # Handles "CVE121234".
+        cve = re.search("CVE(\\d{2})(\\d{4})", variant)
+        if cve:
+            ret.append("CVE-20%s-%s" % (cve.group(1), cve.group(2)))
+
+        for word in re.split("[\\.\\,\\-\\(\\)\\[\\]/!:_]", variant):
+            word = word.strip()
+            if len(word) < 4:
+                continue
+
+            if word.lower() in self.VARIANT_BLACKLIST:
+                continue
+
+            # Random hashes that are specific to this file.
+            if re.match("[a-fA-F0-9]+$", word):
+                continue
+
+            # Family names followed by "potentially unwanted".
+            if re.match("[a-zA-Z]{1,2} potentially unwanted", word.lower()):
+                continue
+
+            ret.append(word)
+        return ret

@@ -1,0 +1,42 @@
+{% if term %}
+    <h3>Term <span class="text-info"><i>{{ term }}</i></span></h3>
+{% endif %}
+{% if analyses %}
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Search Results</h3>
+        </div>
+        <table class="table table-striped" style="table-layout: fixed;">
+            <thead>
+            <tr>
+                <th style="width: 10%">Task ID</th>
+                <th style="width: 90%">Matches</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for analysis in analyses %}
+                <tr>
+                    <td><a href="{% url "analysis.views.report" analysis.task_id %}">Analysis #{{ analysis.task_id }}</a></td>
+                    <td style="word-wrap: break-word;">
+                        <table>
+                        {% for key, value in analysis.matches %}
+                            <tr>
+                                <td><span class="text-info" style="font-family: monospace;">{{ key }}:</span></td>
+                                <td><span style="font-family: monospace;padding-left: 15px;">{{ value }}</span></td>
+                            </tr>
+                        {% endfor %}
+                        </table>
+                        {% if analysis.total %}<div>({{ analysis.total }} more matches)</div>{% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% elif analyses != None %}
+    <div class="alert alert-info" style="text-align: center;"><b>No results found.</b></div>
+{% else %}
+    {% if error %}
+        <div class="alert alert-error" style="text-align: center;"><b>{{ error }}</b></div>
+    {% endif %}
+{% endif %}

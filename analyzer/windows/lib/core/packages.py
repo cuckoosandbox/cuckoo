@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -66,5 +67,7 @@ def choose_package(file_type, file_name, exports):
         return "msi"
     elif file_name.endswith(".ps1"):
         return "ps1"
+    elif file_name.endswith(".wsf"):
+        return "wsf"
     else:
         return "generic"

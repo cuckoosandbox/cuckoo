@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load staticfiles %}
 {% block content %}
-<p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
+<p style="margin-bottom: 10px;"><img src="{% static "graphic/cuckoo.png" %}" /></p>
 
 <ul class="nav nav-tabs">
     <li class="active"><a href="#files" data-toggle="tab">Files</a></li>
@@ -120,7 +121,7 @@
                 </tbody>
             </table>
             {% else %}
-            <div class="panel-body">No URLS analyzed yet.</div>
+            <div class="panel-body">No URLs analyzed yet.</div>
             {% endif %}
         </div>
     </div>

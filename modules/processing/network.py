@@ -1,7 +1,9 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import hashlib
 import logging
 import json
 import os
@@ -21,9 +23,20 @@ from lib.cuckoo.common.exceptions import CuckooProcessingError
 
 try:
     import dpkt
-    IS_DPKT = True
+    HAVE_DPKT = True
 except ImportError:
-    IS_DPKT = False
+    HAVE_DPKT = False
+
+try:
+    import httpreplay
+    import httpreplay.cut
+
+    # Be less verbose about httpreplay logging messages.
+    logging.getLogger("httpreplay").setLevel(logging.CRITICAL)
+
+    HAVE_HTTPREPLAY = True
+except ImportError:
+    HAVE_HTTPREPLAY = False
 
 # Imports for the batch sort.
 # http://stackoverflow.com/questions/10665925/how-to-sort-huge-files-with-python
@@ -36,8 +49,9 @@ Keyed = namedtuple("Keyed", ["key", "obj"])
 Packet = namedtuple("Packet", ["raw", "ts"])
 
 log = logging.getLogger(__name__)
+cfg = Config()
 
-class Pcap:
+class Pcap(object):
     """Reads network data from PCAP file."""
     ssl_ports = 443,
 
@@ -58,6 +72,10 @@ class Pcap:
         # List containing all TCP packets.
         self.tcp_connections = []
         self.tcp_connections_seen = set()
+        # Lookup table to identify connection requests to services or IP
+        # addresses that are no longer available.
+        self.tcp_connections_dead = {}
+        self.dead_hosts = {}
         # List containing all UDP packets.
         self.udp_connections = []
         self.udp_connections_seen = set()
@@ -72,7 +90,7 @@ class Pcap:
         self.dns_answers = set()
         # List containing all SMTP requests.
         self.smtp_requests = []
-        # Reconstruncted SMTP flow.
+        # Reconstructed SMTP flow.
         self.smtp_flow = {}
         # List containing all IRC requests.
         self.irc_requests = []
@@ -84,7 +102,7 @@ class Pcap:
         @param name: hostname.
         @return: IP address or blank
         """
-        if Config().processing.resolve_dns:
+        if cfg.processing.resolve_dns:
             ip = resolve(name)
         else:
             ip = ""
@@ -213,7 +231,7 @@ class Pcap:
         if self._check_icmp(data):
             # If ICMP packets are coming from the host, it probably isn't
             # relevant traffic, hence we can skip from reporting it.
-            if conn["src"] == Config().resultserver.ip:
+            if conn["src"] == cfg.resultserver.ip:
                 return
 
             entry = {}
@@ -259,6 +277,9 @@ class Pcap:
             except IndexError:
                 return False
 
+            # DNS RR type mapping.
+            # See: http://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
+            # See: https://github.com/kbandla/dpkt/blob/master/dpkt/dns.py#L42
             query["request"] = q_name
             if q_type == dpkt.dns.DNS_A:
                 query["type"] = "A"
@@ -280,6 +301,12 @@ class Pcap:
                 query["type"] = "TXT"
             elif q_type == dpkt.dns.DNS_SRV:
                 query["type"] = "SRV"
+            elif q_type == dpkt.dns.DNS_ANY:
+                # For example MDNS requests have q_type=255.
+                query["type"] = "All"
+            else:
+                # Some requests are not parsed by dpkt.
+                query["type"] = "None"
 
             # DNS answer.
             query["answers"] = []
@@ -581,6 +608,17 @@ class Pcap:
                         if not ((dst, dport, src, sport) in self.tcp_connections_seen or (src, sport, dst, dport) in self.tcp_connections_seen):
                             self.tcp_connections.append((src, sport, dst, dport, offset, ts-first_ts))
                             self.tcp_connections_seen.add((src, sport, dst, dport))
+                    else:
+                        ipconn = (
+                            connection["src"], tcp.sport,
+                            connection["dst"], tcp.dport,
+                        )
+                        seqack = self.tcp_connections_dead.get(ipconn)
+                        if seqack == (tcp.seq, tcp.ack):
+                            host = connection["dst"], tcp.dport
+                            self.dead_hosts[host] = self.dead_hosts.get(host, 1) + 1
+
+                        self.tcp_connections_dead[ipconn] = tcp.seq, tcp.ack
 
                 elif ip.p == dpkt.ip.IP_PROTO_UDP:
                     udp = ip.data
@@ -629,39 +667,86 @@ class Pcap:
         self.results["smtp"] = self.smtp_requests
         self.results["irc"] = self.irc_requests
 
+        self.results["dead_hosts"] = []
+
+        # Report each IP/port combination as a dead host if we've had to retry
+        # at least 3 times to connect to it. TODO We should remove the IP/port
+        # combination from the list if the connection was successful later on
+        # during the analysis.
+        for (ip, port), count in self.dead_hosts.items():
+            if count > 2 and (ip, port) not in self.results["dead_hosts"]:
+                self.results["dead_hosts"].append((ip, port))
+
         return self.results
+
+class Pcap2(object):
+    """Interprets the PCAP file through the httpreplay library which parses
+    the various protocols, decrypts and decodes them, and then provides us
+    with the high level representation of it."""
+
+    def __init__(self, pcap_path, tlsmaster, network_path):
+        self.pcap_path = pcap_path
+        self.network_path = network_path
+
+        self.handlers = {
+            25: httpreplay.cut.smtp_handler,
+            80: httpreplay.cut.http_handler,
+            8000: httpreplay.cut.http_handler,
+            8080: httpreplay.cut.http_handler,
+            443: lambda: httpreplay.cut.https_handler(tlsmaster),
+            4443: lambda: httpreplay.cut.https_handler(tlsmaster),
+        }
+
+    def run(self):
+        results = {
+            "http_ex": [],
+            "https_ex": [],
+        }
+
+        if not os.path.exists(self.network_path):
+            os.mkdir(self.network_path)
+
+        r = httpreplay.reader.PcapReader(self.pcap_path)
+        r.tcp = httpreplay.smegma.TCPPacketStreamer(r, self.handlers)
+
+        for s, ts, protocol, sent, recv in r.process():
+            srcip, srcport, dstip, dstport = s
+
+            if protocol == "http" or protocol == "https":
+                request = sent.raw.split("\r\n\r\n", 1)[0]
+                response = recv.raw.split("\r\n\r\n", 1)[0]
+
+                md5 = hashlib.md5(recv.body).hexdigest()
+                sha1 = hashlib.sha1(recv.body).hexdigest()
+
+                filepath = os.path.join(self.network_path, sha1)
+                with open(filepath, "wb") as f:
+                    f.write(recv.body)
+
+                results["%s_ex" % protocol].append({
+                    "src": srcip, "sport": srcport,
+                    "dst": dstip, "dport": dstport,
+                    "protocol": protocol,
+                    "method": sent.method,
+                    "host": sent.headers.get("host", dstip),
+                    "uri": sent.uri,
+                    "request": request.decode("latin-1"),
+                    "response": response.decode("latin-1"),
+                    "md5": md5,
+                    "sha1": sha1,
+                    "path": filepath,
+                })
+
+        return results
 
 class NetworkAnalysis(Processing):
     """Network analysis."""
 
+    order = 2
+    key = "network"
+
     def run(self):
-        self.key = "network"
-
-        if not IS_DPKT:
-            log.error("Python DPKT is not installed, aborting PCAP analysis.")
-            return {}
-
-        if not os.path.exists(self.pcap_path):
-            log.warning("The PCAP file does not exist at path \"%s\".",
-                        self.pcap_path)
-            return {}
-
-        if os.path.getsize(self.pcap_path) == 0:
-            log.error("The PCAP file at path \"%s\" is empty." % self.pcap_path)
-            return {}
-
-        sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
-        if Config().processing.sort_pcap:
-            sort_pcap(self.pcap_path, sorted_path)
-            results = Pcap(sorted_path).run()
-        else:
-            results = Pcap(self.pcap_path).run()
-
-        # Save PCAP file hash.
-        if os.path.exists(self.pcap_path):
-            results["pcap_sha256"] = File(self.pcap_path).get_sha256()
-        if os.path.exists(sorted_path):
-            results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
+        results = {}
 
         # Include any results provided by the mitm script.
         results["mitm"] = []
@@ -672,7 +757,59 @@ class NetworkAnalysis(Processing):
                 except:
                     results["mitm"].append(line)
 
+        if not os.path.exists(self.pcap_path):
+            log.warning("The PCAP file does not exist at path \"%s\".",
+                        self.pcap_path)
+            return results
+
+        if os.path.getsize(self.pcap_path) == 0:
+            log.error("The PCAP file at path \"%s\" is empty." % self.pcap_path)
+            return results
+
+        # PCAP file hash.
+        if os.path.exists(self.pcap_path):
+            results["pcap_sha256"] = File(self.pcap_path).get_sha256()
+
+        if not HAVE_DPKT and not HAVE_HTTPREPLAY:
+            log.error("Both Python HTTPReplay and Python DPKT are not "
+                      "installed, no PCAP analysis possible.")
+            return results
+
+        sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
+        if cfg.processing.sort_pcap:
+            sort_pcap(self.pcap_path, sorted_path)
+            pcap_path = sorted_path
+
+            # Sorted PCAP file hash.
+            if os.path.exists(sorted_path):
+                results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
+        else:
+            pcap_path = self.pcap_path
+
+        if HAVE_DPKT:
+            results.update(Pcap(pcap_path).run())
+
+        if HAVE_HTTPREPLAY and os.path.exists(pcap_path):
+            try:
+                p2 = Pcap2(pcap_path, self.get_tlsmaster(), self.network_path)
+                results.update(p2.run())
+            except:
+                log.exception("Error running httpreplay-based PCAP analysis")
+
         return results
+
+    def get_tlsmaster(self):
+        """Obtain the client/server random to TLS master secrets mapping that
+        we have obtained through dynamic analysis."""
+        tlsmaster = {}
+        summary = self.results.get("behavior", {}).get("summary", {})
+        for entry in summary.get("tls_master", []):
+            client_random, server_random, master_secret = entry
+            client_random = client_random.decode("hex")
+            server_random = server_random.decode("hex")
+            master_secret = master_secret.decode("hex")
+            tlsmaster[client_random, server_random] = master_secret
+        return tlsmaster
 
 def iplayer_from_raw(raw, linktype=1):
     """Converts a raw packet to a dpkt packet regarding of link type.
@@ -680,13 +817,15 @@ def iplayer_from_raw(raw, linktype=1):
     @param linktype: integer describing link type as expected by dpkt
     """
     if linktype == 1:  # ethernet
-        pkt = dpkt.ethernet.Ethernet(raw)
-        ip = pkt.data
+        try:
+            pkt = dpkt.ethernet.Ethernet(raw)
+            return pkt.data
+        except dpkt.NeedData:
+            pass
     elif linktype == 101:  # raw
-        ip = dpkt.ip.IP(raw)
+        return dpkt.ip.IP(raw)
     else:
         raise CuckooProcessingError("unknown PCAP linktype")
-    return ip
 
 def conn_from_flowtuple(ft):
     """Convert the flow tuple into a dictionary (suitable for JSON)"""
@@ -817,7 +956,8 @@ def payload_from_raw(raw, linktype=1):
         return ""
 
 def next_connection_packets(piter, linktype=1):
-    """Extract all packets belonging to the same flow from a pcap packet iterator"""
+    """Extract all packets belonging to the same flow from a pcap packet
+    iterator."""
     first_ft = None
 
     for ts, raw in piter:
@@ -836,7 +976,8 @@ def next_connection_packets(piter, linktype=1):
         }
 
 def packets_for_stream(fobj, offset):
-    """Open a PCAP, seek to a packet offset, then get all packets belonging to the same connection"""
+    """Open a PCAP, seek to a packet offset, then get all packets belonging to
+    the same connection."""
     pcap = dpkt.pcap.Reader(fobj)
     pcapiter = iter(pcap)
     ts, raw = pcapiter.next()

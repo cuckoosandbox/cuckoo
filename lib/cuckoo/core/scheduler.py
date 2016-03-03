@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,7 +10,7 @@ import logging
 import threading
 import Queue
 
-from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.config import Config, parse_options, emit_options
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooMachineError, CuckooGuestError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -21,6 +22,7 @@ from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
 from lib.cuckoo.core.plugins import RunSignatures, RunReporting
 from lib.cuckoo.core.resultserver import ResultServer
+from lib.cuckoo.core.rooter import rooter, vpns
 
 log = logging.getLogger(__name__)
 
@@ -29,16 +31,6 @@ machine_lock = None
 latest_symlink_lock = threading.Lock()
 
 active_analysis_count = 0
-
-
-class CuckooDeadMachine(Exception):
-    """Exception thrown when a machine turns dead.
-
-    When this exception has been thrown, the analysis task will start again,
-    and will try to use another machine, when available.
-    """
-    pass
-
 
 class AnalysisManager(threading.Thread):
     """Analysis Manager.
@@ -61,22 +53,7 @@ class AnalysisManager(threading.Thread):
         self.machine = None
         self.db = Database()
 
-        self.task.options = self._parse_options(self.task.options)
-
-    def _parse_options(self, options):
-        """Parse the analysis options field to a dictionary."""
-        ret = {}
-        for field in options.split(","):
-            if "=" not in field:
-                continue
-
-            key, value = field.split("=", 1)
-            ret[key.strip()] = value.strip()
-        return ret
-
-    def _emit_options(self, options):
-        """Emit the analysis options from a dictionary to a string."""
-        return ",".join("%s=%s" % (k, v) for k, v in options.items())
+        self.task.options = parse_options(self.task.options)
 
     def init_storage(self):
         """Initialize analysis storage folder."""
@@ -204,7 +181,7 @@ class AnalysisManager(threading.Thread):
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
-        options["options"] = self._emit_options(self.task.options)
+        options["options"] = emit_options(self.task.options)
         options["enforce_timeout"] = self.task.enforce_timeout
         options["clock"] = self.task.clock
         options["terminate_processes"] = self.cfg.cuckoo.terminate_processes
@@ -222,13 +199,106 @@ class AnalysisManager(threading.Thread):
 
         return options
 
+    def route_network(self):
+        """Enable network routing if desired."""
+        # Determine the desired routing strategy (none, internet, VPN).
+        route = self.task.options.get("route", self.cfg.routing.route)
+
+        if route == "none":
+            self.interface = None
+            self.rt_table = None
+        elif route == "internet" and self.cfg.routing.internet != "none":
+            self.interface = self.cfg.routing.internet
+            self.rt_table = self.cfg.routing.rt_table
+        elif route in vpns:
+            self.interface = vpns[route].interface
+            self.rt_table = vpns[route].rt_table
+        else:
+            log.warning("Unknown network routing destination specified, "
+                        "ignoring routing for this analysis: %r", route)
+            self.interface = None
+            self.rt_table = None
+
+        # Check if the network interface is still available. If a VPN dies for
+        # some reason, its tunX interface will no longer be available.
+        if self.interface and not rooter("nic_available", self.interface):
+            log.error(
+                "The network interface '%s' configured for this analysis is "
+                "not available at the moment, switching to route=none mode.",
+                self.interface
+            )
+            route = "none"
+            self.task.options["route"] = "none"
+            self.interface = None
+            self.rt_table = None
+
+        if self.interface:
+            rooter("forward_enable", self.machine.interface,
+                   self.interface, self.machine.ip)
+
+        if self.rt_table:
+            rooter("srcroute_enable", self.rt_table, self.machine.ip)
+
+        # Propagate the taken route to the database.
+        self.db.set_route(self.task.id, route)
+
+    def unroute_network(self):
+        if self.interface:
+            rooter("forward_disable", self.machine.interface,
+                   self.interface, self.machine.ip)
+
+        if self.rt_table:
+            rooter("srcroute_disable", self.rt_table, self.machine.ip)
+
+    def wait_finish(self):
+        """Some VMs don't have an actual agent. Mainly those that are used as
+        assistance for an analysis through the services auxiliary module. This
+        method just waits until the analysis is finished rather than actively
+        trying to engage with the Cuckoo Agent."""
+        self.db.guest_set_status(self.task.id, "running")
+        while self.db.guest_get_status(self.task.id) == "running":
+            time.sleep(1)
+
+    def guest_manage(self, options):
+        # Handle a special case where we're creating a baseline report of this
+        # particular virtual machine - a report containing all the results
+        # that are gathered if no additional samples are ran in the VM. These
+        # results, such as loaded drivers and opened sockets in volatility, or
+        # DNS requests to hostnames related to Microsoft Windows, etc may be
+        # omitted or at the very least given less priority when creating a
+        # report for an analysis that ran on this VM later on.
+        if self.task.category == "baseline":
+            time.sleep(options["timeout"])
+        else:
+            # Initialize the guest manager.
+            guest = GuestManager(self.machine.name, self.machine.ip,
+                                 self.machine.platform, self.task.id)
+
+            # Start the analysis.
+            self.db.guest_set_status(self.task.id, "starting")
+            monitor = self.task.options.get("monitor", "latest")
+            guest.start_analysis(options, monitor)
+
+            # In case the Agent didn't respond and we force-quit the analysis
+            # at some point while it was still starting the analysis the state
+            # will be "stop" (or anything but "running", really).
+            if self.db.guest_get_status(self.task.id) == "starting":
+                self.db.guest_set_status(self.task.id, "running")
+                guest.wait_for_completion()
+
+            self.db.guest_set_status(self.task.id, "stopping")
+
     def launch_analysis(self):
         """Start analysis."""
         succeeded = False
-        dead_machine = False
 
-        log.info("Starting analysis of %s \"%s\" (task=%d)",
-                 self.task.category.upper(), self.task.target, self.task.id)
+        target = self.task.target
+        if self.task.category == "file":
+            target = os.path.basename(target)
+
+        log.info("Starting analysis of %s \"%s\" (task #%d, options \"%s\")",
+                 self.task.category.upper(), target, self.task.id,
+                 emit_options(self.task.options))
 
         # Initialize the analysis folders.
         if not self.init_storage():
@@ -267,6 +337,7 @@ class AnalysisManager(threading.Thread):
 
         try:
             unlocked = False
+            self.interface = None
 
             # Mark the selected analysis machine in the database as started.
             guest_log = self.db.guest_start(self.task.id,
@@ -276,25 +347,37 @@ class AnalysisManager(threading.Thread):
             # Start the machine.
             machinery.start(self.machine.label, self.task)
 
+            # Enable network routing.
+            self.route_network()
+
             # By the time start returns it will have fully started the Virtual
             # Machine. We can now safely release the machine lock.
             machine_lock.release()
             unlocked = True
 
-            # Initialize the guest manager.
-            guest = GuestManager(self.machine.name, self.machine.ip,
-                                 self.machine.platform)
+            # Run and manage the components inside the guest unless this
+            # machine has the "noagent" option specified (please refer to the
+            # wait_finish() function for more details on this function).
+            if "noagent" not in self.machine.options:
+                self.guest_manage(options)
+            else:
+                self.wait_finish()
 
-            # Start the analysis.
-            guest.start_analysis(options)
-
-            guest.wait_for_completion()
             succeeded = True
         except CuckooMachineError as e:
             if not unlocked:
                 machine_lock.release()
             log.error(str(e), extra={"task_id": self.task.id})
-            dead_machine = True
+            log.critical(
+                "A critical error has occurred trying to use the machine "
+                "with name %s during an analysis due to which it is no "
+                "longer in a working state, please report this issue and all "
+                "of the related environment details to the developers so we "
+                "can improve this situation. (Note that before we would "
+                "simply remove this VM from doing any more analyses, but as "
+                "all the VMs will eventually be depleted that way, hopefully "
+                "we'll find a better solution now).", self.machine.name,
+            )
         except CuckooGuestError as e:
             if not unlocked:
                 machine_lock.release()
@@ -330,20 +413,8 @@ class AnalysisManager(threading.Thread):
             # internal state for this analysis task.
             ResultServer().del_task(self.task, self.machine)
 
-            if dead_machine:
-                # Remove the guest from the database, so that we can assign a
-                # new guest when the task is being analyzed with another
-                # machine.
-                self.db.guest_remove(guest_log)
-
-                # Remove the analysis directory that has been created so
-                # far, as launch_analysis() is going to be doing that again.
-                shutil.rmtree(self.storage)
-
-                # This machine has turned dead, so we throw an exception here
-                # which informs the AnalysisManager that it should analyze
-                # this task again with another available machine.
-                raise CuckooDeadMachine()
+            # Drop the network routing rules if any.
+            self.unroute_network()
 
             try:
                 # Release the analysis machine. But only if the machine has
@@ -396,13 +467,7 @@ class AnalysisManager(threading.Thread):
         global active_analysis_count
         active_analysis_count += 1
         try:
-            while True:
-                try:
-                    success = self.launch_analysis()
-                except CuckooDeadMachine:
-                    continue
-
-                break
+            self.launch_analysis()
 
             self.db.set_status(self.task.id, TASK_COMPLETED)
 
@@ -412,8 +477,7 @@ class AnalysisManager(threading.Thread):
             # turn thrown an exception in the analysisinfo processing module.
             self.task = self.db.view_task(self.task.id) or self.task
 
-            log.debug("Released database task #%d with status %s",
-                      self.task.id, success)
+            log.debug("Released database task #%d", self.task.id)
 
             if self.cfg.cuckoo.process_results:
                 self.process_results()
@@ -448,7 +512,7 @@ class AnalysisManager(threading.Thread):
 
         active_analysis_count -= 1
 
-class Scheduler:
+class Scheduler(object):
     """Tasks Scheduler.
 
     This class is responsible for the main execution loop of the tool. It
@@ -477,11 +541,7 @@ class Scheduler:
         else:
             machine_lock = threading.Lock()
 
-        log.info("Using \"%s\" machine manager with max_analysis_count=%d, "
-                 "max_machines_count=%d, and max_vmstartup_count=%d",
-                 machinery_name, self.cfg.cuckoo.max_analysis_count,
-                 self.cfg.cuckoo.max_machines_count,
-                 self.cfg.cuckoo.max_vmstartup_count)
+        log.info("Using \"%s\" as machine manager", machinery_name)
 
         # Get registered class name. Only one machine manager is imported,
         # therefore there should be only one class in the list.
@@ -526,6 +586,29 @@ class Scheduler:
                         "to process the results in a separate process.py to "
                         "increase throughput and stability. Please read the "
                         "documentation about the `Processing Utility`.")
+
+        # Drop all existing packet forwarding rules for each VM. Just in case
+        # Cuckoo was terminated for some reason and various forwarding rules
+        # have thus not been dropped yet.
+        for machine in machinery.machines():
+            if not machine.interface:
+                log.info("Unable to determine the network interface for VM "
+                         "with name %s, Cuckoo will not be able to give it "
+                         "full internet access or route it through a VPN! "
+                         "Please define a default network interface for the "
+                         "machinery or define a network interface for each "
+                         "VM.", machine.name)
+                continue
+
+            # Drop forwarding rule to each VPN.
+            for vpn in vpns.values():
+                rooter("forward_disable", machine.interface,
+                       vpn.interface, machine.ip)
+
+            # Drop forwarding rule to the internet / dirty line.
+            if self.cfg.routing.internet != "none":
+                rooter("forward_disable", machine.interface,
+                       self.cfg.routing.internet, machine.ip)
 
     def stop(self):
         """Stop scheduler."""
@@ -582,7 +665,7 @@ class Scheduler:
                         continue
 
             # Have we limited the number of concurrently executing machines?
-            if self.cfg.cuckoo.max_machines_count > 0:
+            if self.cfg.cuckoo.max_machines_count:
                 # Are too many running?
                 if len(machinery.running()) >= self.cfg.cuckoo.max_machines_count:
                     continue
@@ -606,18 +689,29 @@ class Scheduler:
             # TODO We should probably move the entire "acquire machine" logic
             # from the Analysis Manager to the Scheduler and then pass the
             # selected machine onto the Analysis Manager instance.
+            task, available = None, False
             for machine in self.db.get_available_machines():
-
                 task = self.db.fetch(machine=machine.name)
                 if task:
-                    log.debug("Processing task #%s", task.id)
-                    self.total_analysis_count += 1
-
-                    # Initialize and start the analysis manager.
-                    analysis = AnalysisManager(task, errors)
-                    analysis.daemon = True
-                    analysis.start()
                     break
+
+                if machine.is_analysis():
+                    available = True
+
+            # We only fetch a new task if at least one of the available
+            # machines is not a "service" machine (again, please refer to the
+            # services auxiliary module for more information on service VMs).
+            if not task and available:
+                task = self.db.fetch(service=False)
+
+            if task:
+                log.debug("Processing task #%s", task.id)
+                self.total_analysis_count += 1
+
+                # Initialize and start the analysis manager.
+                analysis = AnalysisManager(task, errors)
+                analysis.daemon = True
+                analysis.start()
 
             # Deal with errors.
             try:

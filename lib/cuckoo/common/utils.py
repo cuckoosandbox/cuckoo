@@ -1,14 +1,19 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import hashlib
+import logging
 import os
+import sys
 import shutil
 import ntpath
 import string
 import tempfile
 import xmlrpclib
 import inspect
+import platform
 import threading
 import multiprocessing
 
@@ -17,11 +22,16 @@ from datetime import datetime
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.config import Config
 
+from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
+from lib.cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
+
 try:
     import chardet
     HAVE_CHARDET = True
 except ImportError:
     HAVE_CHARDET = False
+
+log = logging.getLogger(__name__)
 
 def create_folders(root=".", folders=[]):
     """Create directories.
@@ -269,3 +279,85 @@ class SuperLock(object):
     def __exit__(self, type, value, traceback):
         self.mlock.release()
         self.tlock.release()
+
+def hash_file(method, filepath):
+    """Calculates an hash on a file by path.
+    @param method: callable hashing method
+    @param path: file path
+    @return: computed hash string
+    """
+    f = open(filepath, "rb")
+    h = method()
+    while True:
+        buf = f.read(1024 * 1024)
+        if not buf:
+            break
+        h.update(buf)
+    return h.hexdigest()
+
+def md5_file(filepath):
+    return hash_file(hashlib.md5, filepath)
+
+def sha1_file(filepath):
+    return hash_file(hashlib.sha1, filepath)
+
+GUIDS = {}
+
+def guid_name(guid):
+    if not GUIDS:
+        for line in open(os.path.join(CUCKOO_ROOT, "data", "guids.txt")):
+            try:
+                guid, name, url = line.strip().split()
+            except:
+                log.debug("Invalid GUID entry: %s", line)
+                continue
+
+            GUIDS["{%s}" % guid] = name
+
+    return GUIDS.get(guid)
+
+def exception_message():
+    """Creates a message describing an unhandled exception."""
+    def get_os_release():
+        """Returns detailed OS release."""
+        if platform.linux_distribution()[0]:
+            return " ".join(platform.linux_distribution())
+        elif platform.mac_ver()[0]:
+            return "%s %s" % (platform.mac_ver()[0], platform.mac_ver()[2])
+        else:
+            return "Unknown"
+
+    msg = (
+        "Oops! Cuckoo failed in an unhandled exception!\nSometimes bugs are "
+        "already fixed in the development release, it is therefore "
+        "recommended to retry with the latest development release available "
+        "%s\nIf the error persists please open a new issue at %s\n\n" %
+        (GITHUB_URL, ISSUES_PAGE_URL)
+    )
+
+    msg += "=== Exception details ===\n"
+    msg += "Cuckoo version: %s\n" % CUCKOO_VERSION
+    msg += "OS version: %s\n" % os.name
+    msg += "OS release: %s\n" % get_os_release()
+    msg += "Python version: %s\n" % sys.version.split()[0]
+    msg += "Machine arch: %s\n" % platform.machine()
+
+    git_version = os.path.join(CUCKOO_ROOT, ".git", "refs", "heads", "master")
+    if os.path.exists(git_version):
+        try:
+            msg += "Git version: %s\n" % open(git_version, "rb").read().strip()
+        except:
+            pass
+
+    try:
+        import pip
+
+        msg += "Modules: %s\n" % " ".join(sorted(
+            "%s:%s" % (package.key, package.version)
+            for package in pip.get_installed_distributions()
+        ))
+    except ImportError:
+        pass
+
+    msg += "\n"
+    return msg

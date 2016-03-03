@@ -1,4 +1,5 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,6 +11,7 @@ import time
 import xml.etree.ElementTree as ET
 
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -70,6 +72,11 @@ class Machinery(object):
         # at each start.
         self.db.clean_machines()
 
+    def pcap_path(self, task_id):
+        """Returns the .pcap path for this task id."""
+        return os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                            "%s" % task_id, "dump.pcap")
+
     def set_options(self, options):
         """Set machine manager options.
         @param options: machine manager options dict.
@@ -100,12 +107,16 @@ class Machinery(object):
                 machine.id = machine_id.strip()
                 machine.label = machine_opts[self.LABEL]
                 machine.platform = machine_opts["platform"]
+                machine.options = machine_opts.get("options", "")
                 machine.tags = machine_opts.get("tags")
                 machine.ip = machine_opts["ip"]
 
                 # If configured, use specific network interface for this
                 # machine, else use the default value.
-                machine.interface = machine_opts.get("interface")
+                if machine_opts.get("interface"):
+                    machine.interface = machine_opts["interface"]
+                else:
+                    machine.interface = mmanager_opts.get("interface")
 
                 # If configured, use specific snapshot name, else leave it
                 # empty and use default behaviour.
@@ -134,6 +145,7 @@ class Machinery(object):
                                     label=machine.label,
                                     ip=machine.ip,
                                     platform=machine.platform,
+                                    options=machine.options,
                                     tags=machine.tags,
                                     interface=machine.interface,
                                     snapshot=machine.snapshot,
@@ -280,6 +292,7 @@ class Machinery(object):
 
         if isinstance(state, str):
             state = [state]
+
         while current not in state:
             log.debug("Waiting %i cuckooseconds for machine %s to switch "
                       "to status %s", waitme, label, state)
@@ -429,6 +442,10 @@ class LibVirtMachinery(Machinery):
 
         conn = self._connect()
         try:
+            # Resolve permission issue as libvirt creates the file as
+            # root/root in mode 0600, preventing us from reading it. This
+            # supposedly still doesn't allow us to remove it, though..
+            open(path, "wb").close()
             self.vms[label].coreDump(path, flags=libvirt.VIR_DUMP_MEMORY_ONLY)
         except libvirt.libvirtError as e:
             raise CuckooMachineError("Error dumping memory virtual machine "
@@ -597,6 +614,7 @@ class Processing(object):
 
     def __init__(self):
         self.analysis_path = ""
+        self.baseline_path = ""
         self.logs_path = ""
         self.task = None
         self.options = None
@@ -614,6 +632,10 @@ class Processing(object):
         """
         self.task = task
 
+    def set_baseline(self, baseline_path):
+        """Set the path to the baseline directory."""
+        self.baseline_path = baseline_path
+
     def set_path(self, analysis_path):
         """Set paths.
         @param analysis_path: analysis folder path.
@@ -623,6 +645,7 @@ class Processing(object):
         self.file_path = os.path.realpath(os.path.join(self.analysis_path,
                                                        "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
+        self.package_files = os.path.join(self.analysis_path, "package_files")
         self.buffer_path = os.path.join(self.analysis_path, "buffer")
         self.logs_path = os.path.join(self.analysis_path, "logs")
         self.shots_path = os.path.join(self.analysis_path, "shots")
@@ -632,6 +655,8 @@ class Processing(object):
         self.mitmout_path = os.path.join(self.analysis_path, "mitm.log")
         self.mitmerr_path = os.path.join(self.analysis_path, "mitm.err")
         self.tlsmaster_path = os.path.join(self.analysis_path, "tlsmaster.txt")
+        self.suricata_path = os.path.join(self.analysis_path, "suricata")
+        self.network_path = os.path.join(self.analysis_path, "network")
 
     def set_results(self, results):
         """Set the results - the fat dictionary."""
@@ -660,9 +685,13 @@ class Signature(object):
     maximum = None
 
     # Basic filters to reduce the amount of events sent to this signature.
-    filter_processnames = []
     filter_apinames = []
     filter_categories = []
+
+    # If no on_call() handler is present and this field has been set, then
+    # dispatch on a per-API basis to the accompanying API. That is, rather
+    # than calling the generic on_call(), call, e.g., on_call_CreateFile().
+    on_call_dispatch = False
 
     def __init__(self, caller):
         """
@@ -676,18 +705,7 @@ class Signature(object):
         # and call index respectively.
         self.pid = None
         self.cid = None
-
-        # Used to de-activate a signature that already matched.
-        self._active = True
-
-    def is_active(self):
-        return self._active
-
-    def deactivate(self):
-        self._active = False
-
-    def activate(self):
-        self._active = True
+        self.call = None
 
     def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.
@@ -710,7 +728,7 @@ class Signature(object):
         else:
             if isinstance(subject, list):
                 for item in subject:
-                    if item == pattern:
+                    if item.lower() == pattern.lower():
                         ret.add(item)
             else:
                 if subject == pattern:
@@ -749,6 +767,11 @@ class Signature(object):
             if item["pid"] == pid:
                 return item
 
+    def get_summary(self, key=None, default=[]):
+        """Get one or all values related to the global summary."""
+        summary = self.get_results("behavior", {}).get("summary", {})
+        return summary.get(key, default) if key else summary
+
     def get_summary_generic(self, pid, actions):
         """Get generic info from summary.
 
@@ -766,7 +789,8 @@ class Signature(object):
         return ret
 
     def get_files(self, pid=None, actions=None):
-        """Get files written by a specific process.
+        """Get files read, queried, or written to optionally by a
+        specific process.
 
         @param pid: the process or None for all
         @param actions: actions to search for. None is all
@@ -777,9 +801,19 @@ class Signature(object):
             actions = [
                 "file_opened", "file_written",
                 "file_read", "file_deleted",
+                "file_exists",
             ]
 
         return self.get_summary_generic(pid, actions)
+
+    def get_dll_loaded(self, pid=None):
+        """Get DLLs loaded by a specific process.
+
+        @param pid: the process or None for all
+        @return: yields DLLs loaded
+
+        """
+        return self.get_summary_generic(pid, ["dll_loaded"])
 
     def get_keys(self, pid=None, actions=None):
         """Get registry keys.
@@ -797,15 +831,41 @@ class Signature(object):
 
         return self.get_summary_generic(pid, actions)
 
-    def check_file(self, pattern, regex=False, all=False):
+    def check_file(self, pattern, regex=False, actions=None, pid=None,
+                   all=False):
         """Checks for a file being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
+        @param actions: a list of key actions to use.
+        @param pid: The process id to check. If it is set to None, all
+                    processes will be checked.
+        @return: boolean with the result of the check.
+        """
+        if actions is None:
+            actions = [
+                "file_opened", "file_written",
+                "file_read", "file_deleted",
+                "file_exists",
+            ]
+
+        return self._check_value(pattern=pattern,
+                                 subject=self.get_files(pid, actions),
+                                 regex=regex,
+                                 all=all)
+
+    def check_dll_loaded(self, pattern, regex=False, actions=None, pid=None,
+                         all=False):
+        """Checks for DLLs being loaded.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @param pid: The process id to check. If it is set to None, all
+                    processes will be checked.
         @return: boolean with the result of the check.
         """
         return self._check_value(pattern=pattern,
-                                 subject=self.get_files(),
+                                 subject=self.get_dll_loaded(pid),
                                  regex=regex,
                                  all=all)
 
@@ -821,7 +881,10 @@ class Signature(object):
         @return: boolean with the result of the check.
         """
         if actions is None:
-            actions = "regkey_written", "regkey_opened", "regkey_read"
+            actions = [
+                "regkey_written", "regkey_opened",
+                "regkey_read", "regkey_deleted",
+            ]
 
         return self._check_value(pattern=pattern,
                                  subject=self.get_keys(pid, actions),
@@ -847,6 +910,14 @@ class Signature(object):
                                  regex=regex,
                                  all=all)
 
+    def get_command_lines(self):
+        """Retrieves all command lines used."""
+        return self.get_summary("command_line")
+
+    def get_wmi_queries(self):
+        """Retrieves all executed WMI queries."""
+        return self.get_summary("wmi_query")
+
     def get_net_generic(self, subtype):
         """Generic getting network data.
 
@@ -865,6 +936,11 @@ class Signature(object):
     def get_net_http(self):
         """Returns a list of all http data."""
         return self.get_net_generic("http")
+
+    def get_net_http_ex(self):
+        """Returns a list of all http data."""
+        return \
+            self.get_net_generic("http_ex") + self.get_net_generic("https_ex")
 
     def get_net_udp(self):
         """Returns a list of all udp data."""
@@ -951,26 +1027,16 @@ class Signature(object):
                                  all=all)
 
     def init(self):
-        """Allow signatures to initialize theirselves."""
-
-    def quickout(self):
-        """Quickout test. Implement that to do a fast verification if
-        signature should be run.
-
-        Can be used for performance optimisation. Check the file type for
-        example to avoid running PDF signatures on PE files.
-
-        @return: True if you want to remove the signature from the list,
-                 False if you still want to process it.
-        """
+        """Allow signatures to initialize themselves."""
 
     def mark_call(self, **kwargs):
         """Mark the current call as explanation as to why this signature
         matched."""
         mark = {
-            "_type": "call",
-            "_pid": self.pid,
-            "_cid": self.cid,
+            "type": "call",
+            "pid": self.pid,
+            "cid": self.cid,
+            "call": self.call,
         }
         mark.update(kwargs)
         self.marks.append(mark)
@@ -979,9 +1045,9 @@ class Signature(object):
         """Mark an IOC as explanation as to why the current signature
         matched."""
         mark = {
-            "_type": "ioc",
-            "_category": category,
-            "_ioc": ioc,
+            "type": "ioc",
+            "category": category,
+            "ioc": ioc,
         }
         mark.update(kwargs)
         self.marks.append(mark)
@@ -990,8 +1056,8 @@ class Signature(object):
         """Mark output of a Volatility plugin as explanation as to why the
         current signature matched."""
         mark = {
-            "_type": "volatility",
-            "_plugin": plugin,
+            "type": "volatility",
+            "plugin": plugin,
         }
         mark.update(kwargs)
         self.marks.append(mark)
@@ -999,7 +1065,7 @@ class Signature(object):
     def mark(self, **kwargs):
         """Mark arbitrary data."""
         mark = {
-            "_type": "generic",
+            "type": "generic",
         }
         mark.update(kwargs)
         self.marks.append(mark)
@@ -1019,6 +1085,11 @@ class Signature(object):
         @param call: logged API call.
         @param process: proc object.
         """
+        # Dispatch this call to a per-API specific handler.
+        if self.on_call_dispatch:
+            return getattr(self, "on_call_%s" % call["api"])(call, process)
+
+        raise NotImplementedError
 
     def on_signature(self, signature):
         """Event yielded when another signatures has matched. Some signatures
@@ -1075,7 +1146,7 @@ class Report(object):
         try:
             create_folder(folder=self.reports_path)
         except CuckooOperationalError as e:
-            CuckooReportError(e)
+            raise CuckooReportError(e)
 
     def set_options(self, options):
         """Set report options.

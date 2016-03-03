@@ -27,7 +27,7 @@ After installing Fog, you will need to create an image and add an image and a
 host to the Fog server.
 
 To add an image to the fog server, open the Image Management window
-(http://<your_fog_server>/fog/management/index.php?node=images)
+(\http://<your_fog_server>/fog/management/index.php?node=images)
 and click "Create New Image."
 Provide the proper inputs for your OS configuration and click "Add"
 
@@ -36,7 +36,7 @@ Provide the proper inputs for your OS configuration and click "Add"
 
 Next you will need to add the host you plan to re-image to Fog.
 To add a host, open a web browser and navigate to the Host Management page of
-Fog (http://<your_fog_server>/fog/management/index.php?node=host).
+Fog (\http://<your_fog_server>/fog/management/index.php?node=host).
 Click "Create New Host."
 Provide the proper inputs for your host configuration. Be sure to select the
 image you created above from the "Host Image" option, when finished click the
@@ -47,7 +47,7 @@ image you created above from the "Host Image" option, when finished click the
 
 At this point you should be ready to take an image from the guest machine.
 In order to take an image you will need to navigate to the Task Management page
-and list all hosts (http://<your_fog_server>/fog/management/index.php?node=tasks&sub=listhosts).
+and list all hosts (\http://<your_fog_server>/fog/management/index.php?node=tasks&sub=listhosts).
 From here you should be able to click the Upload icon (Green up arrow), which
 should instantly add a task to the queue to take an image.
 Now you should reboot your Cuckoo guest image and it should PXE boot into Fog

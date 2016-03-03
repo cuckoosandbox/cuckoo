@@ -1,5 +1,6 @@
+{% load staticfiles %}
 {% load analysis_tags %}
-<script src="{{ STATIC_URL }}js/hexdump.js"></script>
+<script src="{% static "js/hexdump.js" %}"></script>
 <section id="tcp" class="tcpudp">
     <h4>TCP</h4>
     {% if analysis.network.tcp %}

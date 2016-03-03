@@ -9,13 +9,13 @@
         </tr>
     </thead>
     <tbody>
-    {% for hook in analysis.memory.apihooks.data %}
+    {% for row in analysis.memory.apihooks.data|volsort %}
         <tr>
-            <td>{{hook.process_id}}</td>
-            <td>{{hook.process_name}}</td>
-            <td>{{hook.victim_function}}</td>
-            <td>{{hook.hook_type}}</td>
-            <td>{{hook.hooking_module}}</td>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}">{{row.victim_function}}</td>
+            <td class="{{ row.class_ }}">{{row.hook_type}}</td>
+            <td class="{{ row.class_ }}">{{row.hooking_module}}</td>
         </tr>
     {% endfor %}
     </tbody>

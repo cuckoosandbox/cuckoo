@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,6 +11,7 @@ import tarfile
 import argparse
 from datetime import datetime
 from StringIO import StringIO
+from zipfile import ZipFile, ZIP_STORED
 
 try:
     from flask import Flask, request, jsonify, make_response
@@ -23,6 +25,7 @@ from lib.cuckoo.common.utils import store_temp_file, delete_folder
 from lib.cuckoo.core.database import Database, TASK_RUNNING, Task
 from lib.cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
 from lib.cuckoo.core.startup import drop_privileges
+from lib.cuckoo.core.rooter import rooter
 
 # Global Database object.
 db = Database()
@@ -155,6 +158,11 @@ def tasks_list(limit=None, offset=None):
                              completed_after=completed_after, owner=owner,
                              status=status, order_by=Task.completed_on.asc()):
         task = row.to_dict()
+
+        # Sanitize the target in case it contains non-ASCII characters as we
+        # can't pass along an encoding to flask's jsonify().
+        task["target"] = task["target"].decode("latin-1")
+
         task["guest"] = {}
         if row.guest:
             task["guest"] = row.guest.to_dict()
@@ -202,15 +210,19 @@ def tasks_view(task_id):
     return jsonify(response)
 
 @app.route("/tasks/reschedule/<int:task_id>")
+@app.route("/tasks/reschedule/<int:task_id>/<int:priority>")
 @app.route("/v1/tasks/reschedule/<int:task_id>")
-def tasks_reschedule(task_id):
+@app.route("/v1/tasks/reschedule/<int:task_id>/<int:priority>")
+def tasks_reschedule(task_id, priority=None):
     response = {}
 
     if not db.view_task(task_id):
         return json_error(404, "There is no analysis with the specified ID")
 
-    if db.reschedule(task_id):
+    new_task_id = db.reschedule(task_id, priority)
+    if new_task_id:
         response["status"] = "OK"
+        response["task_id"] = new_task_id
     else:
         return json_error(500, "An error occurred while trying to "
                           "reschedule the task")
@@ -253,6 +265,7 @@ def tasks_report(task_id, report_format="json"):
     bz_formats = {
         "all": {"type": "-", "files": ["memory.dmp"]},
         "dropped": {"type": "+", "files": ["files"]},
+        "package_files": {"type": "+", "files": ["package_files"]},
     }
 
     tar_formats = {
@@ -271,15 +284,16 @@ def tasks_report(task_id, report_format="json"):
                               "analyses", "%d" % task_id)
         s = StringIO()
 
-        # By default go for bz2 encoded tar files (for legacy reasons.)
+        # By default go for bz2 encoded tar files (for legacy reasons).
         tarmode = tar_formats.get(request.args.get("tar"), "w:bz2")
 
-        tar = tarfile.open(fileobj=s, mode=tarmode)
+        tar = tarfile.open(fileobj=s, mode=tarmode, dereference=True)
         for filedir in os.listdir(srcdir):
+            filepath = os.path.join(srcdir, filedir)
             if bzf["type"] == "-" and filedir not in bzf["files"]:
-                tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+                tar.add(filepath, arcname=filedir)
             if bzf["type"] == "+" and filedir in bzf["files"]:
-                tar.add(os.path.join(srcdir, filedir), arcname=filedir)
+                tar.add(filepath, arcname=filedir)
         tar.close()
 
         response = make_response(s.getvalue())
@@ -293,6 +307,36 @@ def tasks_report(task_id, report_format="json"):
         return open(report_path, "rb").read()
     else:
         return json_error(404, "Report not found")
+
+@app.route("/tasks/screenshots/<int:task_id>")
+@app.route("/v1/tasks/screenshots/<int:task_id>")
+@app.route("/tasks/screenshots/<int:task_id>/<screenshot>")
+@app.route("/v1/tasks/screenshots/<int:task_id>/<screenshot>")
+def task_screenshots(task_id=0, screenshot=None):
+    folder_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task_id), "shots")
+
+    if os.path.exists(folder_path):
+        if screenshot:
+            screenshot_name = "{0}.jpg".format(screenshot)
+            screenshot_path = os.path.join(folder_path, screenshot_name)
+            if os.path.exists(screenshot_path):
+                # TODO: Add content disposition.
+                response = make_response(open(screenshot_path, "rb").read())
+                response.headers["Content-Type"] = "image/jpeg"
+                return response
+            else:
+                return json_error(404, "Screenshot not found!")
+        else:
+            zip_data = StringIO()
+            with ZipFile(zip_data, "w", ZIP_STORED) as zip_file:
+                for shot_name in os.listdir(folder_path):
+                    zip_file.write(os.path.join(folder_path, shot_name), shot_name)
+
+            # TODO: Add content disposition.
+            response = make_response(zip_data.getvalue())
+            response.headers["Content-Type"] = "application/zip"
+            return response
+        return json_error(404, "Task not found")
 
 @app.route("/tasks/rereport/<int:task_id>")
 def rereport(task_id):
@@ -491,6 +535,14 @@ def memorydumps_get(task_id, pid=None):
             return json_error(404, "Memory dump not found")
     else:
         return json_error(404, "Memory dump not found")
+
+@app.route("/vpn/status")
+def vpn_status():
+    status = rooter("vpn_status")
+    if status is None:
+        return json_error(500, "Rooter not available")
+
+    return jsonify({"vpns": status})
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

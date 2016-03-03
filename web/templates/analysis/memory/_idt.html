@@ -10,14 +10,14 @@
         </tr>
     </thead>
     <tbody>
-    {% for x in analysis.memory.idt.data %}
+    {% for row in analysis.memory.idt.data|volsort %}
         <tr>
-            <td>{{x.cpu_number}}</td>
-            <td>{{x.index}}</td>
-            <td><span class="mono">{{x.selector}}</span></td>
-            <td><span class="mono">{{x.address}}</span></td>
-            <td>{{x.module}}</td>
-            <td>{{x.section}}</td>
+            <td class="{{ row.class_ }}">{{row.cpu_number}}</td>
+            <td class="{{ row.class_ }}">{{row.index}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.selector}}</span></td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.address}}</span></td>
+            <td class="{{ row.class_ }}">{{row.module}}</td>
+            <td class="{{ row.class_ }}">{{row.section}}</td>
         </tr>
     {% endfor %}
     </tbody>
