@@ -25,7 +25,7 @@ from gridfs import GridFS
 
 sys.path.append(settings.CUCKOO_PATH)
 
-from lib.cuckoo.core.database import Database, TASK_PENDING
+from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
 from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 import modules.processing.network as network
@@ -636,64 +636,78 @@ def import_analysis(request):
                 "error": "You uploaded an analysis that wasn't a .zip.",
             })
 
-        path = store_temp_file(analysis.read(), analysis.name)
-        zf = zipfile.ZipFile(path)
+        zf = zipfile.ZipFile(analysis)
 
-        # Path to store the extracted files from the zip.
-        extract_path = os.path.join(os.path.dirname(path),
-                                    os.path.splitext(analysis.name)[0])
-        zf.extractall(extract_path)
+        # As per Python documentation we have to make sure there are no
+        # incorrect filenames.
+        for filename in zf.namelist():
+            if filename.startswith("/") or ".." in filename or ":" in filename:
+                return render(request, "error.html", {
+                    "error": "The zip file contains incorrect filenames, "
+                             "please provide a legitimate .zip file.",
+                })
 
-        report = os.path.join(extract_path, "analysis.json")
-        if not os.path.isfile(report):
-            return render(request, "error.html", {
-                "error": "No analysis.json found!",
-            })
+        analysis_info = json.loads(zf.read("analysis.json"))
+        category = analysis_info["target"]["category"]
 
-        with open(report) as json_file:
-            json_data = json.load(json_file)
-            category = json_data["target"]["category"]
+        if category == "file":
+            binary = store_temp_file(zf.read("binary"), "binary")
 
-            if category == "file":
-                binary = extract_path + "\\binary"
-
-                if os.path.isfile(binary):
-                    task_id = db.add_path(file_path=binary,
-                                          package="",
-                                          timeout=0,
-                                          options="",
-                                          priority=0,
-                                          machine="",
-                                          custom="",
-                                          memory=False,
-                                          enforce_timeout=False,
-                                          tags=None)
-                    if task_id:
-                        task_ids.append(task_id)
-
-            elif category == "url":
-                url = json_data["target"]["url"]
-                if not url:
-                    return render(request, "error.html", {
-                        "error": "You specified an invalid URL!",
-                    })
-
-                task_id = db.add_url(url=url,
-                                     package="",
-                                     timeout=0,
-                                     options="",
-                                     priority=0,
-                                     machine="",
-                                     custom="",
-                                     memory=False,
-                                     enforce_timeout=False,
-                                     tags=None)
+            if os.path.isfile(binary):
+                task_id = db.add_path(file_path=binary,
+                                      package="",
+                                      timeout=0,
+                                      options="",
+                                      priority=0,
+                                      machine="",
+                                      custom="",
+                                      memory=False,
+                                      enforce_timeout=False,
+                                      tags=None)
                 if task_id:
                     task_ids.append(task_id)
 
-        if task_ids:
-            return render(request, "submission/complete.html", {
-                "tasks": task_ids,
-                "tasks_count": len(task_ids),
-                "baseurl": request.build_absolute_uri('/')[:-1],
-            })
+        elif category == "url":
+            url = analysis_info["target"]["url"]
+            if not url:
+                return render(request, "error.html", {
+                    "error": "You specified an invalid URL!",
+                })
+
+            task_id = db.add_url(url=url,
+                                 package="",
+                                 timeout=0,
+                                 options="",
+                                 priority=0,
+                                 machine="",
+                                 custom="",
+                                 memory=False,
+                                 enforce_timeout=False,
+                                 tags=None)
+            if task_id:
+                task_ids.append(task_id)
+
+        if not task_id:
+            continue
+
+        # Extract all of the files related to this analysis. This probably
+        # requires some hacks depending on the user/group the Web
+        # Interface is running under.
+        analysis_path = os.path.join(
+            CUCKOO_ROOT, "storage", "analyses", "%d" % task_id
+        )
+
+        if not os.path.exists(analysis_path):
+            os.mkdir(analysis_path)
+
+        zf.extractall(analysis_path)
+
+        # We set this analysis as completed so that it will be processed
+        # automatically (assuming process.py / process2.py is running).
+        db.set_status(task_id, TASK_COMPLETED)
+
+    if task_ids:
+        return render(request, "submission/complete.html", {
+            "tasks": task_ids,
+            "baseurl": request.build_absolute_uri("/")[:-1],
+        })
