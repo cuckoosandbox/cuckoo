@@ -7,6 +7,7 @@
     <div class="col-md-6" style="text-align: right;">
         <a class="btn btn-primary" href="{% url "compare.views.left" analysis.info.id %}">Compare this analysis to...</a>
         <a class="btn btn-primary" href="{% url "submission.views.resubmit" analysis.info.id %}">Resubmit this sample</a>
+        <a class="btn btn-primary" href="{% url "analysis.views.export_analysis" analysis.info.id %}">Export this analysis</a>
     </div>
 </div>
 <ul class="nav nav-tabs">

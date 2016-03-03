@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+<style>
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 999px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    background: red;
+    cursor: inherit;
+    display: block;
+}
+input[readonly] {
+    background-color: white !important;
+    cursor: text !important;
+}
+</style>
+<div class="row">
+    <div class="col-md-6 col-md-offset-3 center">
+        <p style="margin-bottom: 10px;"><img src="{% static "graphic/cuckoo.png" %}" /></p>
+
+        <form role="form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+            <div class="tabbable">
+                <div class="tab-content">
+                    <div class="tab-pane fade in active" id="file">
+                        <label style="display: flex; color: #337ab7;">Chosen analysis nr.{{analysis.info.id}} to export </label>
+                        <div class="input-group col-md-6">
+                            {% if analysis.info.category == "file" %}
+                            <input type="text" class="form-control" value="{{analysis.target.file.name}}" disabled>
+                            {% elif analysis.info.category == "url" %}
+                            <input type="text" class="form-control" value="{{analysis.target.url}}" disabled>
+                            <!-- This else is made only for testing purposes. Will be deleted when testing is done. -->
+                            {% else %}
+                            <input type="text" class="form-control" value="Unknown" disabled>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="accordion" style="margin-top: 20px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <label class=accordion-toggle" style="color: #337ab7;">Select which files you want to include in the export</label>
+                    </div>
+                    <div id="options" class="panel-collapse collapse in" style="text-align: left;">
+                        <div class="panel-body">
+                            {% for dirname, count in dirs %}
+                            <div class="form-group">
+                                <input type="checkbox" name="dirs" value="{{ dirname }}" checked="checked"> {{ dirname }} ({{ count }} files)
+                            </div>
+                            {% endfor %}
+                            {% for filename in files %}
+                            <div class="form-group">
+                                <input type="checkbox" name="files" value="{{ filename }}" checked="checked"> {{ filename }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn btn-primary btn-lg">Export</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
