@@ -39,22 +39,21 @@ function load_chunk(pid, pagenum, callback) {
 }
 function show_tab(id, callback) {
     // First, see if tab is already active. If it is, just run the callback
-    console.log("foo", id);
     if ($('#' + id).hasClass('active')) {
         typeof callback === 'function' && callback();
     }
     // Else, show the tab and run the callback once the tab is shown
     else {
-	// Wait for tab to be shown
-	$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-	    if ($(e.target).attr('href') == '#' + id) {
-		$('a[data-toggle="tab"]').off('shown.bs.tab');
-		typeof callback === 'function' && callback();
-	    }
-	});
+        // Wait for tab to be shown
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            if ($(e.target).attr('href') == '#' + id) {
+                $('a[data-toggle="tab"]').off('shown.bs.tab');
+                typeof callback === 'function' && callback();
+            }
+        });
 
-	// Show the tab
-	$('a[href="#' + id + '"]').tab('show');
+        // Show the tab
+        $('a[href="#' + id + '"]').tab('show');
     }
 }
 function go_to_api_call(pid, call_id) {
@@ -147,13 +146,10 @@ function load_filtered_chunk(pid, category) {
     {% endfor %}
     </div>
 </div>
-            <script type="text/javascript">
-
-                $('div.processes a.process[data-toggle="tab"]').on('show.bs.tab', function (e) {
-			console.log(e);
-			var pid = $(e.target).data("pid");
-			$("#process_"+pid+" div.calltable").html("LOADING!!!!");
-                    load_chunk(pid, 1);
-                });
-                //load_chunk({{process.pid}}, 1);
-            </script>
+<script type="text/javascript">
+    $('div.processes a.process[data-toggle="tab"]').on('show.bs.tab', function (e) {
+        var pid = $(e.target).data("pid");
+        $("#process_"+pid+" div.calltable").html("Loading..");
+        load_chunk(pid, 1);
+    });
+</script>

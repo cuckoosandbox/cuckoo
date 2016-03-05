@@ -8,9 +8,9 @@ $(function () {
     $("#hash").submit(function(e) {
         e.preventDefault();
         var $choice = $(this).find("input[name='hash']");
-        console.log($choice.val());
-        if ($choice.length)
+        if ($choice.length) {
             window.location = $choice.val();
+        }
     });
 })
 </script>
