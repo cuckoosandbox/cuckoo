@@ -4,9 +4,14 @@
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <h4 class="panel-title"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> Analysis
-                        <a class="btn btn-success btn-xs pull-right" href="{% url "compare.views.left" analysis.info.id %}">
-                            <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> Compare to analysis ...
-                        </a>
+                        <div class="pull-right">
+                            <a class="btn btn-success btn-xs" href="{% url "compare.views.left" analysis.info.id %}">
+                                <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> Compare to analysis ...
+                            </a>
+                            <a class="btn btn-warning btn-xs" href="{% url "analysis.views.export_analysis" analysis.info.id %}">
+                                <span class="glyphicon glyphicon-export" aria-hidden="true"></span> Export analysis
+                            </a>
+                        </div>
                     </h4>
                 </div>
                 <table class="table table-striped">

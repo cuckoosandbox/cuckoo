@@ -55,18 +55,6 @@
             </li>
         </ul>
     </div>
-
-    <div class="col-md-4">
-        <a class="btn btn-primary" href="{% url "submission.views.resubmit" analysis.info.id %}">
-            <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Resubmit sample
-        </a>
-        <a class="btn btn-primary" href="{% url "compare.views.left" analysis.info.id %}">
-            <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> Compare to analysis ...
-        </a>
-        <a class="btn btn-primary" href="{% url "analysis.views.export_analysis" analysis.info.id %}">
-            <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> Export analysis
-        </a>
-    </div>
 </div>
 
 <div class="tab-content">
