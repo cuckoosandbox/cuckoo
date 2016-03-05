@@ -162,3 +162,7 @@ td {
     background-color: white;
     color: #5bc0de;
 }
+
+.break-everywhere {
+    word-break: break-all;
+}

@@ -39,21 +39,22 @@ function load_chunk(pid, pagenum, callback) {
 }
 function show_tab(id, callback) {
     // First, see if tab is already active. If it is, just run the callback
+    console.log("foo", id);
     if ($('#' + id).hasClass('active')) {
         typeof callback === 'function' && callback();
     }
     // Else, show the tab and run the callback once the tab is shown
     else {
-        // Wait for tab to be shown
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-            if ($(e.target).attr('href') == '#' + id) {
-                $('a[data-toggle="tab"]').off('shown.bs.tab');
-                typeof callback === 'function' && callback();
-            }
-        });
+	// Wait for tab to be shown
+	$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+	    if ($(e.target).attr('href') == '#' + id) {
+		$('a[data-toggle="tab"]').off('shown.bs.tab');
+		typeof callback === 'function' && callback();
+	    }
+	});
 
-        // Show the tab
-        $('a[href="#' + id + '"]').tab('show');
+	// Show the tab
+	$('a[href="#' + id + '"]').tab('show');
     }
 }
 function go_to_api_call(pid, call_id) {
@@ -86,17 +87,17 @@ function load_filtered_chunk(pid, category) {
 }
 </script>
 
-<div class="tabbable">
+<div class="processes tabbable">
     <ul class="nav nav-tabs">
-        <li><a href="#search" data-toggle="tab"><span class="glyphicon glyphicon-search"></span> Search</a></li>
+        <li class="active"><a href="#search" data-toggle="tab"><span class="glyphicon glyphicon-search"></span> Search</a></li>
     {% for process in analysis.behavior.processes|filter_key_if_has:"track" %}
-        <li {% if forloop.counter == 1 %}class="active"{% endif %}><a href="#process_{{process.pid}}" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> {{process.process_name}} ({{process.pid}})</a></li>
+        <li><a class="process" href="#process_{{process.pid}}" data-pid="{{process.pid}}" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> {{process.process_name}} ({{process.pid}})</a></li>
     {% endfor %}
     </ul>
     <div class="tab-content">
     {% include "analysis/behavior/_search.html" %}
     {% for process in analysis.behavior.processes|filter_key_if_has:"track" %}
-        <div class="tab-pane{% if forloop.counter == 1%} active{% endif %}" id="process_{{process.pid}}" data-pid="{{process.pid}}" data-length="{{process.calls|length}}">
+        <div class="tab-pane" id="process_{{process.pid}}" data-pid="{{process.pid}}" data-length="{{process.calls|length}}">
             <div class="alert alert-info" style="text-align: center;"><b>{{process.process_name}}</b>, PID: <b>{{process.pid}}</b>, Parent PID: {{process.ppid}}</div>
 
             <p style="text-align: center;">
@@ -142,10 +143,17 @@ function load_filtered_chunk(pid, category) {
                 <ul class="pagination">
                 </ul>
             </div>
-            <script type="text/javascript">
-                load_chunk({{process.pid}}, 1);
-            </script>
         </div>
     {% endfor %}
     </div>
 </div>
+            <script type="text/javascript">
+
+                $('div.processes a.process[data-toggle="tab"]').on('show.bs.tab', function (e) {
+			console.log(e);
+			var pid = $(e.target).data("pid");
+			$("#process_"+pid+" div.calltable").html("LOADING!!!!");
+                    load_chunk(pid, 1);
+                });
+                //load_chunk({{process.pid}}, 1);
+            </script>
