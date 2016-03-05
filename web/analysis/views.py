@@ -589,6 +589,7 @@ def export(request, task_id):
     # analysis. This information serves as metadata when importing a task.
     analysis_path = os.path.join(path, "analysis.json")
     with open(analysis_path, "w") as outfile:
+        report["target"].pop("file_id", None)
         json.dump({"target": report["target"]}, outfile, indent=4)
 
     f = StringIO()
