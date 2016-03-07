@@ -31,6 +31,8 @@
         {% if signature.marks %}
             {% if signature.marks|length == 1 %}
             (1 event)
+            {% elif signature.markcount %}
+            ({{ signature.marks|length }} out of {{ signature.markcount }} events)
             {% else %}
             ({{ signature.marks|length }} events)
             {% endif %}

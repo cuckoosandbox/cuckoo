@@ -1121,7 +1121,8 @@ class Signature(object):
                     severity=self.severity,
                     families=self.families,
                     references=self.references,
-                    marks=self.marks[:self.markcount])
+                    marks=self.marks[:self.markcount],
+                    markcount=len(self.marks))
 
 class Report(object):
     """Base abstract class for reporting module."""
