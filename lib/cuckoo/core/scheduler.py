@@ -50,6 +50,8 @@ class AnalysisManager(threading.Thread):
         self.storage = ""
         self.binary = ""
         self.machine = None
+        self.interface = None
+        self.rt_table = None
 
         self.db = Database()
         self.task = self.db.view_task(task_id)
@@ -223,8 +225,6 @@ class AnalysisManager(threading.Thread):
         else:
             log.warning("Unknown network routing destination specified, "
                         "ignoring routing for this analysis: %r", route)
-            self.interface = None
-            self.rt_table = None
 
         # Check if the network interface is still available. If a VPN dies for
         # some reason, its tunX interface will no longer be available.
