@@ -414,3 +414,7 @@ def json_encode(obj, **kwargs):
 def json_decode(x):
     """JSON decoder that does ugly first-level datetime handling"""
     return json.loads(x, object_hook=json_hook)
+
+def versiontuple(v):
+    """Return the version as a tuple for easy comparison."""
+    return tuple(int(x) for x in v.split("."))

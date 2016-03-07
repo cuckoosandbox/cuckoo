@@ -26,8 +26,8 @@ from gridfs import GridFS
 sys.path.append(settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
-from lib.cuckoo.common.utils import store_temp_file
-from lib.cuckoo.common.constants import CUCKOO_ROOT
+from lib.cuckoo.common.utils import store_temp_file, versiontuple
+from lib.cuckoo.common.constants import CUCKOO_ROOT, LATEST_HTTPREPLAY
 import modules.processing.network as network
 
 results_db = settings.MONGO
@@ -263,12 +263,20 @@ def report(request, task_id):
     except ImportError:
         httpreplay_version = None
 
+    # Is this version of httpreplay deprecated?
+    deprecated = httpreplay_version and \
+        versiontuple(httpreplay_version) < versiontuple(LATEST_HTTPREPLAY)
+
     return render(request, "analysis/report.html", {
         "analysis": report,
         "domainlookups": domainlookups,
         "iplookups": iplookups,
-        "HAVE_HTTPREPLAY": HAVE_HTTPREPLAY,
-        "httpreplay_version": httpreplay_version,
+        "httpreplay": {
+            "have": HAVE_HTTPREPLAY,
+            "deprecated": deprecated,
+            "current_version": httpreplay_version,
+            "latest_version": LATEST_HTTPREPLAY,
+        },
     })
 
 @require_safe

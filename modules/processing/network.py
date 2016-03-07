@@ -15,10 +15,11 @@ import urlparse
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import LATEST_HTTPREPLAY
 from lib.cuckoo.common.dns import resolve
 from lib.cuckoo.common.irc import ircMessage
 from lib.cuckoo.common.objects import File
-from lib.cuckoo.common.utils import convert_to_printable
+from lib.cuckoo.common.utils import convert_to_printable, versiontuple
 from lib.cuckoo.common.exceptions import CuckooProcessingError
 
 try:
@@ -52,14 +53,16 @@ log = logging.getLogger(__name__)
 cfg = Config()
 
 # Urge users to upgrade to the latest version.
-if HAVE_HTTPREPLAY and getattr(httpreplay, "__version__", None) in (
-        None, "0.1.4", "0.1.5", "0.1.6"):
+_v = getattr(httpreplay, "__version__", None)
+if _v and versiontuple(_v) < versiontuple(LATEST_HTTPREPLAY):
     log.warning(
-        "You are using an old version of HTTPReplay which doesn't handle "
-        "various corner cases correctly. It also doesn't decrypt some TLS "
-        "Cipher Suites leaving one without decrypted TLS/HTTPS streams. "
-        "Please upgrade it to the latest version (`pip install --upgrade "
-        "httpreplay`)."
+        "You are using version %s of HTTPReplay, rather than the latest "
+        "version %s, which may not handle various corner cases and/or TLS "
+        "cipher suites correctly. This could result in not getting all the "
+        "HTTP/HTTPS streams that are available or corrupt some streams that "
+        "were not handled correctly before. Please upgrade it to the latest "
+        "version (`pip install --upgrade httpreplay`).",
+        _v, LATEST_HTTPREPLAY,
     )
 
 class Pcap(object):

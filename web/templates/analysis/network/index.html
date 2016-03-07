@@ -1,4 +1,4 @@
-{% if not HAVE_HTTPREPLAY %}
+{% if not httpreplay.have %}
 <div class="alert alert-warning">
     <strong>Deprecation note:</strong>
     While processing this analysis you did not have the httpreplay Python
@@ -8,13 +8,15 @@
     It is recommended that you install this library and possibly reprocess any
     interesting analysis tasks.
 </div>
-{% elif httpreplay_version != "0.1.7" %}
+{% elif httpreplay.deprecated %}
 <div class="alert alert-warning">
     <strong>Deprecation note:</strong>
-    You are using an old version of HTTPReplay which doesn't handle various
-    corner cases correctly. It also doesn't decrypt some TLS Cipher Suites
-    leaving one without decrypted TLS/HTTPS streams. Please upgrade it to
-    the latest version (`pip install --upgrade httpreplay`).
+    You are using version {{ httpreplay.current_version }} of HTTPReplay,
+    rather than the latest version {{ httpreplay.latest_version }}, which may
+    not handle various corner cases and/or TLS cipher suites correctly. This
+    could result in not getting all the HTTP/HTTPS streams that are available
+    or corrupt some streams that were not handled correctly before. Please
+    upgrade it to the latest version (`pip install --upgrade httpreplay`).
 </div>
 {% endif %}
 

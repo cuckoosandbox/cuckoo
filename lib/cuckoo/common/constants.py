@@ -16,3 +16,5 @@ CUCKOO_GUEST_COMPLETED = 0x003
 CUCKOO_GUEST_FAILED = 0x004
 GITHUB_URL = "https://github.com/cuckoosandbox/cuckoo"
 ISSUES_PAGE_URL = "https://github.com/cuckoosandbox/cuckoo/issues"
+
+LATEST_HTTPREPLAY = "0.1.10"
