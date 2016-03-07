@@ -41,7 +41,7 @@
 
         <div id="signature_{{signature.name}}" class="collapse">
             <table class="table table-bordered" style="table-layout: fixed;">
-                {% for mark in signature.marks|sigsort %}
+                {% for mark in signature.marks|sigsort|slice:":50" %}
                     {% if mark.type == "call" %}
                     {% if mark.first %}
                         <thead>
@@ -73,6 +73,13 @@
                     </tr>
                     {% endif %}
                 {% endfor %}
+                {% if signature.marks|length > 50 %}
+                    <tr>
+                        <td colspan="6">
+                            And there is more..
+                        </td>
+                    </tr>
+                {% endif %}
             </table>
         </div>
     {% endfor %}
