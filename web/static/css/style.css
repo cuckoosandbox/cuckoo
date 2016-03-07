@@ -3,6 +3,7 @@ html {
 }
 body {
     padding-top: 70px;
+    /*background: #ffffff url('/static/graphic/background.png') repeat-x;*/
 }
 @media (max-width: 979px) {
     body {
