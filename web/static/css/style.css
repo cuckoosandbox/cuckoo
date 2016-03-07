@@ -3,6 +3,7 @@ html {
 }
 body {
     padding-top: 70px;
+    /*background: #ffffff url('/static/graphic/background.png') repeat-x;*/
 }
 @media (max-width: 979px) {
     body {
@@ -78,6 +79,10 @@ img.opaque {
 img.opaque:hover {
     opacity: 1.0;
     filter: alpha(opacity=100);
+}
+img.screenshot {
+    border: 1px solid #000000;
+    margin: 0px 1px 2px 1px;
 }
 .gray {
     color: #666;

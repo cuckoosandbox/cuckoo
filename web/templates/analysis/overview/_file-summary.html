@@ -1,22 +1,23 @@
 {% load analysis_tags %}
 <section id="file">
     <h4><span class="glyphicon glyphicon-file" aria-hidden="true"></span> File <i>{{analysis.target.file.name}}</i>
-        {% if analysis.target.file_id %}
-            <div class="pull-right">
-            <a class="btn btn-success btn-xs" href="{% url "analysis.views.file" "sample" analysis.target.file_id %}">
-                <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download
-            </a>
-            <a class="btn btn-warning btn-xs" href="{% url "submission.views.resubmit" analysis.info.id %}">
-                <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Resubmit sample
-            </a>
-            </div>
-        {% endif %}
     </h4>
     <div class="panel panel-default">
         <table class="table table-striped table-condensed">
             <tr>
                 <th class="text-right">Size</th>
-                <td>{{ analysis.target.file.size | sizeof_fmt }}</td>
+                <td>{{ analysis.target.file.size | sizeof_fmt }}
+                {% if analysis.target.file_id %}
+                    <span class="pull-right">
+                    <a class="btn btn-success btn-xs" href="{% url "analysis.views.file" "sample" analysis.target.file_id %}">
+                        <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download
+                    </a>
+                    <a class="btn btn-warning btn-xs" href="{% url "submission.views.resubmit" analysis.info.id %}">
+                        <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Resubmit sample
+                    </a>
+                    </span>
+                {% endif %}
+                </td>
             </tr>
             <tr>
                 <th class="text-right">Type</th>
