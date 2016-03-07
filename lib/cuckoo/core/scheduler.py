@@ -54,6 +54,9 @@ class AnalysisManager(threading.Thread):
         self.db = Database()
         self.task = self.db.view_task(task_id)
 
+        self.interface = None
+        self.rt_table = None
+
     def init_storage(self):
         """Initialize analysis storage folder."""
         self.storage = os.path.join(CUCKOO_ROOT,
