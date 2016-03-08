@@ -13,7 +13,7 @@ $(function () {
 });
 </script>
 
-<div class="tab-pane active" id="search">
+<div class="tab-pane" id="search">
 	<form id='search' class="form-inline" role="form" action="{% url "analysis.views.search_behavior" analysis.info.id %}">
 		{% csrf_token %}
     	<div class="form-group">
