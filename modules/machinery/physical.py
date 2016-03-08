@@ -52,6 +52,7 @@ class Physical(Machinery):
         for machine in self.machines():
             status = self._status(machine.label)
             if status == self.STOPPED:
+                # Send a Wake On Lan message (if we're using FOG).
                 self.wake_on_lan(machine.label)
             elif status == self.ERROR:
                 raise CuckooMachineError(
@@ -115,6 +116,7 @@ class Physical(Machinery):
             else:
                 log.debug("Reboot success: %s." % label)
 
+            # Deploy a clean image through FOG, assuming we're using FOG.
             self.fog_queue_task(label)
 
     def _list(self):
@@ -215,10 +217,12 @@ class Physical(Machinery):
 
     def fog_queue_task(self, hostname):
         """Queues a task with FOG to deploy the given machine after reboot."""
-        macaddr, download = self.fog_machines[hostname]
-        self.fog_query(download)
+        if hostname in self.fog_machines:
+            macaddr, download = self.fog_machines[hostname]
+            self.fog_query(download)
 
     def wake_on_lan(self, hostname):
         """Start a machine that's currently shutdown."""
-        macaddr, download = self.fog_machines[hostname]
-        wakeonlan.wol.send_magic_packet(macaddr)
+        if hostname in self.fog_machines:
+            macaddr, download = self.fog_machines[hostname]
+            wakeonlan.wol.send_magic_packet(macaddr)
