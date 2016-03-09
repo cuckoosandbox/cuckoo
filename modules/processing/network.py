@@ -53,7 +53,7 @@ log = logging.getLogger(__name__)
 cfg = Config()
 
 # Urge users to upgrade to the latest version.
-_v = getattr(httpreplay, "__version__", None)
+_v = getattr(httpreplay, "__version__", None) if HAVE_HTTPREPLAY else None
 if _v and versiontuple(_v) < versiontuple(LATEST_HTTPREPLAY):
     log.warning(
         "You are using version %s of HTTPReplay, rather than the latest "
