@@ -305,7 +305,8 @@ class Task(Base):
 
     @hybrid_property
     def options(self):
-        if not self._options: return {}
+        if not self._options:
+            return {}
         return parse_options(self._options)
 
     @options.setter
