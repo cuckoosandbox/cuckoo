@@ -13,7 +13,7 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
-from lib.cuckoo.common.objects import File, URL
+from lib.cuckoo.common.objects import File, URL, Dictionary
 from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock, json_encode
 
 try:
@@ -305,8 +305,7 @@ class Task(Base):
 
     @hybrid_property
     def options(self):
-        if not self._options:
-            return {}
+        if not self._options: return {}
         return parse_options(self._options)
 
     @options.setter
@@ -317,7 +316,7 @@ class Task(Base):
         """Converts object to dict.
         @return: dict
         """
-        d = {}
+        d = Dictionary()
         for column in self.__table__.columns:
             value = getattr(self, column.name)
             d[column.name] = value
