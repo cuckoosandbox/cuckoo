@@ -138,7 +138,11 @@ def autoprocess(parallel=1):
                     copy_path = None
 
                 args = task.target, copy_path
-                kwargs = dict(report=True, auto=True, task=task.to_dict())
+                kwargs = {
+                    "report": True,
+                    "auto": True,
+                    "task": dict(task.to_dict()),
+                }
                 result = pool.apply_async(process_wrapper, args, kwargs)
                 pending_results[task.id] = result
     except KeyboardInterrupt:
