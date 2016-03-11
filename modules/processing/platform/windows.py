@@ -6,15 +6,9 @@
 import logging
 import datetime
 
-try:
-    import bs4
-    HAVE_BS4 = True
-except ImportError:
-    HAVE_BS4 = False
-
 from lib.cuckoo.common.abstracts import BehaviorHandler
 from lib.cuckoo.common.netlog import BsonParser
-from lib.cuckoo.common.utils import guid_name, jsbeautify
+from lib.cuckoo.common.utils import guid_name, jsbeautify, htmlprettify
 
 log = logging.getLogger(__name__)
 
@@ -37,17 +31,13 @@ class MonitorProcessLog(list):
         event["arguments"]["code"] = jsbeautify(event["arguments"]["code"])
 
     def _api_CElement_put_innerHTML(self, event):
-        if HAVE_BS4:
-            html = bs4.BeautifulSoup(event["arguments"]["html"], "html.parser")
-            event["raw"] = "html",
-            event["arguments"]["html"] = html.prettify()
+        event["raw"] = "html",
+        event["arguments"]["html"] = htmlprettify(event["arguments"]["html"])
 
     def _api_CDocument_write(self, event):
-        if HAVE_BS4:
-            event["raw"] = "lines",
-            for idx, line in enumerate(event["arguments"]["lines"]):
-                html = bs4.BeautifulSoup(line, "html.parser")
-                event["arguments"]["lines"][idx] = html.prettify()
+        event["raw"] = "lines",
+        for idx, line in enumerate(event["arguments"]["lines"]):
+            event["arguments"]["lines"][idx] = htmlprettify(line)
 
     def _api_CIFrameElement_CreateElement(self, event):
         """Lowercases the attribute keys."""

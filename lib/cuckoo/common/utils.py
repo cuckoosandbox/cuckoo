@@ -28,6 +28,12 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
 
 try:
+    import bs4
+    HAVE_BS4 = True
+except ImportError:
+    HAVE_BS4 = False
+
+try:
     import chardet
     HAVE_CHARDET = True
 except ImportError:
@@ -391,6 +397,13 @@ def jsbeautify(javascript):
 
         sys.stdout = origout
     return javascript
+
+def htmlprettify(html):
+    """Beautifies HTML through BeautifulSoup4."""
+    if not HAVE_BS4:
+        return html
+
+    return bs4.BeautifulSoup(html, "html.parser").prettify()
 
 def json_default(obj):
     """JSON serializer for objects not serializable by default json code"""
