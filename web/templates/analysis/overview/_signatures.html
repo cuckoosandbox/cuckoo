@@ -20,17 +20,13 @@
     <h4><span class="glyphicon glyphicon-qrcode" aria-hidden="true"></span> Signatures</h4>
     {% for signature in analysis.signatures %}
         <a style="text-decoration: none;" href="#signature_{{signature.name}}" data-toggle="collapse">
-        {% if signature.severity <= 1 %}
-            <div class="alert alert-info signature">
-        {% elif signature.severity == 2 %}
-            <div class="alert alert-warning signature">
-        {% elif signature.severity >= 3 %}
-            <div class="alert alert-danger signature">
-        {% endif %}
+        <div class="alert {% if signature.severity <= 1 %}alert-info{% elif signature.severity == 2 %}alert-warning{% else %}alert-danger{% endif %} signature">
         {{signature.description}}
         {% if signature.marks %}
             {% if signature.marks|length == 1 %}
             (1 event)
+            {% elif signature.markcount == signature.marks|length %}
+            ({{ signature.marks|length }} events)
             {% elif signature.markcount %}
             ({{ signature.marks|length }} out of {{ signature.markcount }} events)
             {% else %}
