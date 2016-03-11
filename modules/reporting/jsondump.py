@@ -16,7 +16,7 @@ def default(obj):
     if isinstance(obj, datetime.datetime):
         if obj.utcoffset() is not None:
             obj = obj - obj.utcoffset()
-        return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000.0
+        return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000000.0
     raise TypeError("%r is not JSON serializable" % obj)
 
 class JsonDump(Report):
