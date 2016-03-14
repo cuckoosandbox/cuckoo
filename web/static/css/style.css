@@ -171,3 +171,9 @@ td {
 .break-everywhere {
     word-break: break-all;
 }
+.navbar-brand,
+.navbar-nav li a {
+    line-height: 60px;
+    height: 60px;
+    padding-top: 0;
+}
