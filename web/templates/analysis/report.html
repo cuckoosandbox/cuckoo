@@ -2,7 +2,7 @@
 {% load staticfiles %}
 {% load analysis_tags %}
 {% block content %}
-    <nav class="navbar navbar-default">
+    <nav class="navbar navbar-default" >
         <ul class="nav nav-pills navbar-nav">
             <li class="active"><a href="#overview" data-toggle="tab">
                 <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
@@ -57,7 +57,7 @@
     </div>
 </div>
 
-<div class="tab-content content">
+<div class="tab-content content" style="margin-top: -15px;">
     <div class="tab-pane fade in active" id="overview">
         {% include "analysis/overview/index.html" %}
     </div>
