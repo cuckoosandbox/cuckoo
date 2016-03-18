@@ -7,6 +7,7 @@ import os
 import logging
 import random
 import subprocess
+import struct
 import tempfile
 
 from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
@@ -15,9 +16,11 @@ from ctypes import c_uint, c_wchar_p, create_unicode_buffer
 from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
 from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
+from lib.common.defines import MEMORY_BASIC_INFORMATION
 from lib.common.errors import get_error_string
 from lib.common.exceptions import CuckooError
 from lib.common.results import upload_to_host
+from lib.common.results import NetlogFile
 
 log = logging.getLogger(__name__)
 
@@ -440,4 +443,60 @@ class Process(object):
         os.unlink(dump_path)
 
         log.info("Memory dump of process with pid %d completed", self.pid)
+        return True
+
+    def dump_memory_block(self, addr, length):
+        """Dump process memory.
+        @return: operation status.
+        """
+        if not self.pid:
+            log.warning("No valid pid specified, memory dump aborted")
+            return False
+
+        if not self.is_alive():
+            log.warning("The process with pid %d is not alive, memory "
+                        "dump aborted", self.pid)
+            return False
+
+        self.get_system_info()
+
+        page_size = self.system_info.dwPageSize
+        if length < page_size:
+            length = page_size
+
+        # Now upload to host from the StringIO.
+        idx = self.dumpmem[self.pid] = self.dumpmem.get(self.pid, 0) + 1
+        file_name = os.path.join("memory", "block-%s-%s-%s.dmp" % (self.pid, hex(addr), idx))
+
+        process_handle = self.open_process()
+        mbi = MEMORY_BASIC_INFORMATION()
+
+        if KERNEL32.VirtualQueryEx(process_handle,
+                                   addr,
+                                   byref(mbi),
+                                   sizeof(mbi)) == 0:
+            log.warning("Couldn't obtain MEM_BASIC_INFO for pid %d address %s", self.pid, hex(addr))
+            return False
+
+        # override request with the full mem region attributes
+        addr = mbi.BaseAddress
+        length = mbi.RegionSize
+
+        count = c_ulong(0)
+        try:
+            buf = create_string_buffer(length)
+            if KERNEL32.ReadProcessMemory(process_handle, addr, buf, length, byref(count)):
+                header = struct.pack("QIIII", addr, length, mbi.State, mbi.Type, mbi.Protect)
+                nf = NetlogFile(file_name)
+                nf.sock.sendall(header)
+                nf.sock.sendall(buf.raw)
+                nf.close()
+            else:
+                log.warning("ReadProcessMemory failed on process_handle %r addr %s length %s", process_handle, hex(addr), hex(length))
+        except:
+            log.exception("ReadProcessMemory exception on process_handle %r addr %s length %s", process_handle, hex(addr), hex(length))
+
+        KERNEL32.CloseHandle(process_handle)
+
+        log.info("Memory block dump of process with pid %d, addr %s, length %s completed", self.pid, hex(addr), hex(length))
         return True
