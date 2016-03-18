@@ -5,6 +5,7 @@
 
 import logging
 import os
+import re
 import struct
 
 from lib.cuckoo.common.abstracts import Processing
@@ -103,10 +104,8 @@ class ProcessMemory(Processing):
                 dump_path = os.path.join(self.pmemory_path, dmp)
                 dump_file = File(dump_path)
 
-                if "-" in os.path.basename(dump_path):
-                    pid = int(os.path.basename(dump_path).split("-")[0])
-                else:
-                    pid = int(os.path.basename(dump_path).split(".")[0])
+                dump_name = os.path.basename(dump_path)
+                pid = int(re.findall("(\d{2,5})", dump_name)[0])
 
                 proc = dict(
                     file=dump_path, pid=pid,
