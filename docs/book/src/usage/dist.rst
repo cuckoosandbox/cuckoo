@@ -351,7 +351,7 @@ Update ``connection`` to use something *not* sqlite3. Preferably PostgreSQL or
 MySQL. SQLite3 doesn't support multi-threaded applications that well and this
 will give errors at random if used.
 
-You should create your own empty database for the distributed cuckoo setup. Do not be tempted to use any existing cuckoo database in order to avoid update problems with the DB scripts. In the config use the new database name, the remaining stuff like usernames , servers can be the same as for your cuckoo install.
+You should create your own empty database for the distributed cuckoo setup. Do not be tempted to use any existing cuckoo database in order to avoid update problems with the DB scripts. In the config use the new database name, the remaining stuff like usernames , servers can be the same as for your cuckoo install.Don´t forget to use one DB per node and another one more for the first machine which run the distributed script (so the say the "management machine" ).
 
 conf/processing.conf
 ^^^^^^^^^^^^^^^^^^^^
