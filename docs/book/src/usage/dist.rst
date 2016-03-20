@@ -398,9 +398,10 @@ the documentation on the parameters for this script)::
     $ screen -S distributed ./distributed/app.py
     $ SCREEN -S dist_scheduler ./distributed/instance.py dist.scheduler
     $ SCREEN -S dist_status ./distributed/instance.py dist.status
+    $ SCREEN -S cuckoo0 ./distributed/instance.py -v cuckoo0
     $ SCREEN -S cuckoo1 ./distributed/instance.py -v cuckoo1
 
-The -v parameter enables verbose output and the cuckoo1 parameter is the name assigned to the actual cuckoo instance running the virtual machine while registering the node as outlined below.
+The -v parameter enables verbose output and the cuckoo1 parameter is the name assigned to the actual cuckoo instance running the virtual machine while registering the node as outlined below.It´s mandatory to register the nodes before run the instance.py due to the script check the DB.
 
 Register Cuckoo nodes
 ---------------------
@@ -408,9 +409,11 @@ Register Cuckoo nodes
 As outlined in :ref:`quick-usage` the Cuckoo nodes have to be registered with
 the Distributed Cuckoo script::
 
-    $ curl http://localhost:9003/node -F name=cuckoo0 -F url=http://localhost:8090/
-    $ curl http://localhost:9003/node -F name=cuckoo1 -F url=http://1.2.3.4:8090/
+    $ curl http://localhost:9003/api/node -F name=cuckoo0 -F url=http://localhost:8090/
+    $ curl http://localhost:9003/api/node -F name=cuckoo1 -F url=http://1.2.3.4:8090/
 
 Having registered the Cuckoo nodes all that's left to do now is to submit
 tasks and fetch reports once finished. Documentation on these commands can be
 found in the :ref:`quick-usage` section. In case you are not using localhost, replace localhost with the IP of the node where there distributed.py is running and the -F url parameter points to the nodes running the actual virtual machines.
+
+If you want to experiment a real load balancing between the nodes you should use a lower value for the threshold parameter in the distributed/settings.py file, the default value is 500.
