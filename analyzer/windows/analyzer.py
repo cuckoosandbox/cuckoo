@@ -149,6 +149,7 @@ class CommandPipeHandler(object):
 
     def __init__(self, analyzer):
         self.analyzer = analyzer
+        self.tracked = {}
 
     def _handle_debug(self, data):
         """Debug message from the monitor."""
@@ -249,8 +250,8 @@ class CommandPipeHandler(object):
             else:
                 proc.inject(dll, apc=False, mode="%s" % mode)
 
-            log.info("Injected into process with pid %s and name %s",
-                     proc.pid, filename.encode("utf-8"))
+            log.info("Injected into process with pid %s and name %r",
+                     proc.pid, filename)
 
     def _handle_process(self, data):
         """Request for injection into a process."""
@@ -316,6 +317,37 @@ class CommandPipeHandler(object):
 
         Process(pid=int(data)).dump_memory()
 
+    def _handle_dumpreqs(self, data):
+        if not data.isdigit():
+            log.warning("Received DUMPREQS command with an incorrect argument %r.", data)
+            return
+
+        pid = int(data)
+
+        if not pid in self.tracked:
+            log.warning("Received DUMPREQS command but there are no reqs for pid %d.", pid)
+            return
+
+        dumpreqs = self.tracked[pid].get("dumpreq", [])
+        for addr, length in dumpreqs:
+            log.debug("tracked dump req (%r, %r, %r)", pid, addr, length)
+
+            if not addr or not length: continue
+            Process(pid=pid).dump_memory_block(int(addr), int(length))
+
+    def _handle_track(self, data):
+        if not data.count(":") == 2:
+            log.warning("Received TRACK command with an incorrect argument %r.", data)
+            return
+
+        pid, scope, params = data.split(":", 2)
+        pid = int(pid)
+
+        paramtuple = params.split(",")
+        if not pid in self.tracked: self.tracked[pid] = {}
+        if not scope in self.tracked[pid]: self.tracked[pid][scope] = []
+        self.tracked[pid][scope].append(paramtuple)
+
     def dispatch(self, data):
         response = "NOPE"
 
@@ -330,7 +362,10 @@ class CommandPipeHandler(object):
                              data.strip())
             else:
                 fn = getattr(self, "_handle_%s" % command.lower())
-                response = fn(arguments)
+                try:
+                    response = fn(arguments)
+                except:
+                    log.exception("Pipe command handler exception occurred (command %s args %r).", command, arguments)
 
         return response
 

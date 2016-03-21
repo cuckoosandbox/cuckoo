@@ -68,7 +68,8 @@ class VirtualBox(Machinery):
         try:
             if subprocess.call(virtualbox_args,
                                stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE):
+                               stderr=subprocess.PIPE,
+                               close_fds=True):
                 raise CuckooMachineError("VBoxManage exited with error "
                                          "restoring the machine's snapshot")
         except OSError as e:
@@ -84,7 +85,8 @@ class VirtualBox(Machinery):
                                      "--type",
                                      self.options.virtualbox.mode],
                                     stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
+                                    stderr=subprocess.PIPE,
+                                    close_fds=True)
             output, err = proc.communicate()
             if err:
                 raise OSError(err)
@@ -141,7 +143,8 @@ class VirtualBox(Machinery):
             proc = subprocess.Popen([self.options.virtualbox.path,
                                      "controlvm", label, "poweroff"],
                                     stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
+                                    stderr=subprocess.PIPE,
+                                    close_fds=True)
             # Sometimes VBoxManage stucks when stopping vm so we needed
             # to add a timeout and kill it after that.
             stop_me = 0
@@ -170,7 +173,8 @@ class VirtualBox(Machinery):
             proc = subprocess.Popen([self.options.virtualbox.path,
                                      "list", "vms"],
                                     stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
+                                    stderr=subprocess.PIPE,
+                                    close_fds=True)
             output, _ = proc.communicate()
         except OSError as e:
             raise CuckooMachineError("VBoxManage error listing "
@@ -203,7 +207,8 @@ class VirtualBox(Machinery):
                                      label,
                                      "--machinereadable"],
                                     stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
+                                    stderr=subprocess.PIPE,
+                                    close_fds=True)
             output, err = proc.communicate()
 
             if proc.returncode != 0:
@@ -239,7 +244,8 @@ class VirtualBox(Machinery):
         try:
             proc = subprocess.Popen([self.options.virtualbox.path, "-v"],
                                     stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
+                                    stderr=subprocess.PIPE,
+                                    close_fds=True)
             output, err = proc.communicate()
 
             if proc.returncode != 0:
@@ -262,7 +268,8 @@ class VirtualBox(Machinery):
             subprocess.call([self.options.virtualbox.path, "debugvm",
                              label, dumpcmd, "--filename", path],
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+                            stderr=subprocess.PIPE,
+                            close_fds=True)
             log.info("Successfully generated memory dump for virtual machine "
                      "with label %s to path %s", label, path)
         except OSError as e:

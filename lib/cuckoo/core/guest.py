@@ -119,8 +119,8 @@ class OldGuestManager(object):
         data = xmlrpclib.Binary(zip_data.getvalue())
         zip_data.close()
 
-        log.debug("Uploading analyzer to guest (id=%s, ip=%s)",
-                  self.id, self.ip)
+        log.debug("Uploading analyzer to guest (id=%s, ip=%s, monitor=%s)",
+                  self.id, self.ip, monitor)
 
         # Send the zip containing the analyzer to the agent running inside
         # the guest.
@@ -328,8 +328,8 @@ class GuestManager(object):
         zip_file.close()
         zip_data.seek(0)
 
-        log.debug("Uploading analyzer to guest (id=%s, ip=%s)",
-                  self.vmid, self.ipaddr)
+        log.debug("Uploading analyzer to guest (id=%s, ip=%s, monitor=%s)",
+                  self.vmid, self.ipaddr, monitor)
 
         self.determine_analyzer_path()
         data = {
