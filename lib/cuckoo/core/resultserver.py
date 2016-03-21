@@ -55,9 +55,13 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
                                                          **kwargs)
             except Exception as e:
                 if e.errno == errno.EADDRINUSE:
-                    log.warning("Cannot bind ResultServer on port %s, "
-                                "trying another port.", self.port)
-                    self.port += 1
+                    if self.cfg.resultserver.get("force_port", "no") == "yes":
+                        raise CuckooCriticalError("Cannot bind ResultServer on port %u, "
+                            "bailing.", self.port)
+                    else:
+                        log.warning("Cannot bind ResultServer on port %s, "
+                                    "trying another port.", self.port)
+                        self.port += 1
                 elif e.errno == errno.EADDRNOTAVAIL:
                     raise CuckooCriticalError(
                         "Unable to bind ResultServer on %s:%s %s. This "
