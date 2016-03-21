@@ -6,6 +6,7 @@
 import logging
 import socket
 import time
+import sys
 
 from lib.core.config import Config
 
@@ -64,9 +65,9 @@ class NetlogConnection(object):
                 self.connect()
                 self.send(data, retry=False)
             else:
-                raise
+                print >>sys.stderr, "Unhandled exception in NetlogConnection: %s", str(e)
         except Exception as e:
-            log.error("Unhandled exception in NetlogConnection: %s", str(e))
+            print >>sys.stderr, "Unhandled exception in NetlogConnection: %s", str(e)
             # We really have nowhere to log this, if the netlog connection
             # does not work, we can assume that any logging won't work either.
             # So we just fail silently.
