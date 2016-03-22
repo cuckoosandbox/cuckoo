@@ -60,10 +60,12 @@ def check_configs():
     """Checks if config files exist.
     @raise CuckooStartupError: if config files do not exist.
     """
-    configs = ("auxiliary.conf", "avd.conf", "cuckoo.conf", "esx.conf",
-               "kvm.conf", "memory.conf", "physical.conf", "processing.conf",
-               "qemu.conf", "reporting.conf", "virtualbox.conf", "vmware.conf",
-               "vpn.conf", "vsphere.conf", "xenserver.conf")
+    configs = (
+        "auxiliary.conf", "avd.conf", "cuckoo.conf", "esx.conf", "kvm.conf",
+        "memory.conf", "physical.conf", "processing.conf", "qemu.conf",
+        "reporting.conf", "virtualbox.conf", "vmware.conf", "vpn.conf",
+        "vsphere.conf", "xenserver.conf",
+    )
 
     for config in [os.path.join(CUCKOO_ROOT, "conf", f) for f in configs]:
         if not os.path.exists(config):
@@ -251,15 +253,6 @@ def init_modules(machinery=True):
 
 def init_yara():
     """Generates index for yara signatures."""
-
-    def find_signatures(root):
-        signatures = []
-        for entry in os.listdir(root):
-            if entry.endswith(".yara") or entry.endswith(".yar"):
-                signatures.append(os.path.join(root, entry))
-
-        return signatures
-
     log.debug("Initializing Yara...")
 
     # Generate root directory for yara rules.

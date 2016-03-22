@@ -699,8 +699,7 @@ class Analyzer(object):
                             aux.__class__.__name__, e)
 
         if self.config.terminate_processes:
-            # Try to terminate remaining active processes. We do this to make sure
-            # that we clean up remaining open handles (sockets, files, etc.).
+            # Try to terminate remaining active processes.
             log.info("Terminating remaining processes before shutdown.")
 
             for pid in self.process_list.pids:

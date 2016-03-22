@@ -1365,7 +1365,5 @@ class Database(object):
             return task[0] if task else None
         except SQLAlchemyError as e:
             log.debug("Database error getting new processing tasks: %s", e)
-            return
         finally:
             session.close()
-        return
