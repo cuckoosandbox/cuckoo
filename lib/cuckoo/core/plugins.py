@@ -255,13 +255,17 @@ class RunProcessing(object):
 
             # Run every loaded processing module.
             for module in processing_list:
+                module_name = inspect.getmodule(module).__name__
+                if "." in module_name:
+                    module_name = module_name.rsplit(".", 1)[1]
+
                 key, result = self.process(module, results)
 
                 # If the module provided results, append it to the fat dict.
                 if key and result:
                     results[key] = result
         else:
-            log.info("No processing modules loaded")
+            log.info("No processing modules loaded.")
 
         results.pop("_temp", None)
 

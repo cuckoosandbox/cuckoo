@@ -77,11 +77,26 @@
                         {% endif %}
                     </div>
                 </div>
+                
+                <div class="control-group {{'error' if context.get('error_platform','') else ''}}">
+                    <label class="control-label" for="select03">Platform</label>
+                    <div class="controls">
+                        <select id="select03" name="platform">
+                            <option value=""></option>
+                           {% for p in platforms %}
+                                <option {{'selected' if platform == p else ''}} value="{{p}}">{{p}}</option>
+                           {% endfor %}
+                        </select>
+                        {% if context.error_platform %}
+                            <span class="help-inline">{{context.error_platform}}</span>
+                        {% endif %}
+                    </div>
+                </div>
 
                 <div class="control-group {{'error' if context.get('error_memory','') else ''}}">
                     <label class="control-label" for="input05">Capture Memory</label>
                     <div class="controls">
-                        <select id="select03" name="memory">
+                        <select id="select04" name="memory">
                             <option value="0">False</option>
                             <option {{'selected' if memory == 'True' else ''}} value="1">True</option>
                         </select>
