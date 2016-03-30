@@ -119,8 +119,8 @@ In our example, we would create the following skeleton:
             authors = ["Me"] # We specify the author
             minimum = "1.2" # We specify that in order to run the signature, the user will need at least Cuckoo 0.5
 
-        def on_complete(self):
-            return
+            def on_complete(self):
+                return
 
 This is a perfectly valid signature. It doesn't really do anything yet,
 so now we need to define the conditions for the signature to be matched.
@@ -141,8 +141,8 @@ As we said, we want to match a particular mutex name, so we proceed as follows:
             authors = ["Me"]
             minimum = "1.2"
 
-        def on_complete(self):
-            return self.check_mutex("i_am_a_malware")
+            def on_complete(self):
+                return self.check_mutex("i_am_a_malware")
 
 Simple as that, now our signature will return ``True`` whether the analyzed
 malware was observed opening the specified mutex.
@@ -164,14 +164,14 @@ you could translate the previous signature in the following way:
             authors = ["Me"]
             minimum = "1.2"
 
-        def on_complete(self):
-            for process in self.get_processes_by_pid():
-                if "summary" in process and "mutexes" in process["summary"]:
-                    for mutex in process["summary"]["mutexes"]:
-                        if mutex == "i_am_a_malware":
-                            return True
+            def on_complete(self):
+                for process in self.get_processes_by_pid():
+                    if "summary" in process and "mutexes" in process["summary"]:
+                        for mutex in process["summary"]["mutexes"]:
+                            if mutex == "i_am_a_malware":
+                                return True
 
-            return False
+                return False
 
 Evented Signatures
 ==================
