@@ -61,7 +61,7 @@ class OldGuestManager(object):
         self.server._set_timeout(self.timeout)
 
 #        while db.guest_get_status(self.task_id) == "starting":
-       while True:
+        while True:
             # Check if we've passed the timeout.
             if time.time() > end:
                 raise CuckooGuestError("{0}: the guest initialization hit the "
