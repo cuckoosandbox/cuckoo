@@ -304,7 +304,12 @@ def tasks_report(task_id, report_format="json"):
         return json_error(400, "Invalid report format")
 
     if os.path.exists(report_path):
-        return open(report_path, "rb").read()
+        if report_format == "json":
+            response = make_response(open(report_path, "rb").read())
+            response.headers['Content-Type'] = 'application/json'
+            return response
+        else:
+            return open(report_path, "rb").read()
     else:
         return json_error(404, "Report not found")
 
