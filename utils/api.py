@@ -306,7 +306,7 @@ def tasks_report(task_id, report_format="json"):
     if os.path.exists(report_path):
         if report_format == "json":
             response = make_response(open(report_path, "rb").read())
-            response.headers['Content-Type'] = 'application/json'
+            response.headers["Content-Type"] = "application/json"
             return response
         else:
             return open(report_path, "rb").read()
