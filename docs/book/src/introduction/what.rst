@@ -105,7 +105,7 @@ It can be used to analyze:
     * Python files
     * *Almost anything else*
 
-Thanks to its modularity and powerful scripting capabilities, there's not limit
+Thanks to its modularity and powerful scripting capabilities, there's no limit
 to what you can achieve with Cuckoo.
 
 For more information on customizing Cuckoo, see the :doc:`../customization/index`
