@@ -50,11 +50,6 @@ def check_working_directory():
         raise CuckooStartupError("You specified a non-existing root "
                                  "directory: {0}".format(CUCKOO_ROOT))
 
-    cwd = os.path.join(os.getcwd(), "cuckoo.py")
-    if not os.path.exists(cwd):
-        raise CuckooStartupError("You are not running Cuckoo from it's "
-                                 "root directory")
-
 
 def check_configs():
     """Checks if config files exist.
