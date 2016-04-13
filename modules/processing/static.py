@@ -540,7 +540,7 @@ class Static(Processing):
         static = {}
 
         # Does the target file still exist?
-        if self.task["category"] == "file" and \
+        if self.task["category"] != "file" or \
                 not os.path.exists(self.file_path):
             return
 
