@@ -40,11 +40,11 @@ try:
 except ImportError:
     HAVE_OLETOOLS = False
 
-from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.objects import File
-from lib.cuckoo.common.utils import convert_to_printable
-from lib.cuckoo.common.utils import to_unicode
+from cuckoo.common.abstracts import Processing
+from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.common.objects import File
+from cuckoo.common.utils import convert_to_printable
+from cuckoo.common.utils import to_unicode
 
 log = logging.getLogger(__name__)
 

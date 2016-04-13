@@ -12,7 +12,7 @@ from distributed.app import create_app
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.core.startup import drop_privileges
+from cuckoo.core.startup import drop_privileges
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("requests").setLevel(logging.WARNING)

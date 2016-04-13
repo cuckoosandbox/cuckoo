@@ -8,13 +8,13 @@ import json
 import logging
 from datetime import datetime
 
-from lib.cuckoo.common.config import Config, parse_options
-from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.exceptions import CuckooDatabaseError
-from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.exceptions import CuckooDependencyError
-from lib.cuckoo.common.objects import File, URL, Dictionary
-from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock, json_encode
+from cuckoo.common.config import Config, parse_options
+from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.common.exceptions import CuckooDatabaseError
+from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.exceptions import CuckooDependencyError
+from cuckoo.common.objects import File, URL, Dictionary
+from cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock, json_encode
 
 try:
     from sqlalchemy import create_engine, Column, not_

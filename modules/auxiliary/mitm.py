@@ -8,8 +8,8 @@ import os.path
 import subprocess
 import threading
 
-from lib.cuckoo.common.abstracts import Auxiliary
-from lib.cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.common.abstracts import Auxiliary
+from cuckoo.common.constants import CUCKOO_ROOT
 
 log = logging.getLogger(__name__)
 PORTS = []

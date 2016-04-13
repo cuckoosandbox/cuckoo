@@ -9,8 +9,8 @@ import codecs
 import calendar
 import datetime
 
-from lib.cuckoo.common.abstracts import Report
-from lib.cuckoo.common.exceptions import CuckooReportError
+from cuckoo.common.abstracts import Report
+from cuckoo.common.exceptions import CuckooReportError
 
 def default(obj):
     if isinstance(obj, datetime.datetime):

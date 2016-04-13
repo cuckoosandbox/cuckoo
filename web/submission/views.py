@@ -12,10 +12,10 @@ from django.core.exceptions import ObjectDoesNotExist
 
 sys.path.append(settings.CUCKOO_PATH)
 
-from lib.cuckoo.common.config import Config, parse_options, emit_options
-from lib.cuckoo.common.utils import store_temp_file
-from lib.cuckoo.core.database import Database
-from lib.cuckoo.core.rooter import vpns
+from cuckoo.common.config import Config, parse_options, emit_options
+from cuckoo.common.utils import store_temp_file
+from cuckoo.core.database import Database
+from cuckoo.core.rooter import vpns
 
 results_db = settings.MONGO
 cfg = Config()

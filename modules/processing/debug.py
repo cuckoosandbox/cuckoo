@@ -6,9 +6,9 @@
 import os
 import codecs
 
-from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.exceptions import CuckooProcessingError
-from lib.cuckoo.core.database import Database
+from cuckoo.common.abstracts import Processing
+from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.core.database import Database
 
 class Debug(Processing):
     """Analysis debug information."""

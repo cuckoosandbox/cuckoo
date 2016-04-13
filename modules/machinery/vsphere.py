@@ -10,10 +10,10 @@ import re
 
 from datetime import datetime, timedelta
 
-from lib.cuckoo.common.abstracts import Machinery
-from lib.cuckoo.common.exceptions import CuckooMachineError
-from lib.cuckoo.common.exceptions import CuckooDependencyError
-from lib.cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.abstracts import Machinery
+from cuckoo.common.exceptions import CuckooMachineError
+from cuckoo.common.exceptions import CuckooDependencyError
+from cuckoo.common.exceptions import CuckooCriticalError
 
 try:
     from pyVim.connect import SmartConnection

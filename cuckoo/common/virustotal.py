@@ -16,8 +16,8 @@ try:
 except ImportError:
     HAVE_REQUESTS = False
 
-from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.objects import File
+from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.objects import File
 
 class VirusTotalResourceNotScanned(CuckooOperationalError):
     """This resource has not been scanned yet."""

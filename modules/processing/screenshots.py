@@ -7,7 +7,7 @@ import logging
 import os
 import subprocess
 
-from lib.cuckoo.common.abstracts import Processing
+from cuckoo.common.abstracts import Processing
 
 log = logging.getLogger(__name__)
 

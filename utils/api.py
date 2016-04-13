@@ -20,12 +20,12 @@ except ImportError:
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
-from lib.cuckoo.common.utils import store_temp_file, delete_folder
-from lib.cuckoo.core.database import Database, TASK_RUNNING, Task
-from lib.cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
-from lib.cuckoo.core.startup import drop_privileges
-from lib.cuckoo.core.rooter import rooter
+from cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
+from cuckoo.common.utils import store_temp_file, delete_folder
+from cuckoo.core.database import Database, TASK_RUNNING, Task
+from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
+from cuckoo.core.startup import drop_privileges
+from cuckoo.core.rooter import rooter
 
 # Global Database object.
 db = Database()

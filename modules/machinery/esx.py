@@ -6,9 +6,9 @@
 
 import libvirt
 
-from lib.cuckoo.common.abstracts import LibVirtMachinery
-from lib.cuckoo.common.exceptions import CuckooCriticalError
-from lib.cuckoo.common.exceptions import CuckooMachineError
+from cuckoo.common.abstracts import LibVirtMachinery
+from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.exceptions import CuckooMachineError
 
 class ESX(LibVirtMachinery):
     """Virtualization layer for ESXi/ESX based on python-libvirt."""

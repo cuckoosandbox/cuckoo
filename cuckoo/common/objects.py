@@ -11,8 +11,8 @@ import os
 import re
 import subprocess
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.whitelist import is_whitelisted_domain
+from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.common.whitelist import is_whitelisted_domain
 
 try:
     import magic

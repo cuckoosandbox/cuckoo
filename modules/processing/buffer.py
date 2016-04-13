@@ -5,8 +5,8 @@
 
 import os
 
-from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.objects import File
+from cuckoo.common.abstracts import Processing
+from cuckoo.common.objects import File
 
 class DroppedBuffer(Processing):
     """Dropped buffer analysis."""

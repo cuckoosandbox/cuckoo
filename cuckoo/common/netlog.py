@@ -23,8 +23,8 @@ else:
     elif hasattr(bson, "loads"):
         bson_decode = lambda d: bson.loads(d)
 
-from lib.cuckoo.common.utils import get_filename_from_path
-from lib.cuckoo.common.exceptions import CuckooResultError
+from cuckoo.common.utils import get_filename_from_path
+from cuckoo.common.exceptions import CuckooResultError
 
 log = logging.getLogger(__name__)
 
@@ -212,7 +212,7 @@ class BsonParser(object):
                 # If the parent is netlogs ResultHandler then we actually dump
                 # it - this should only be the case during the analysis, any
                 # after processing will then be ignored.
-                from lib.cuckoo.core.resultserver import ResultHandler
+                from cuckoo.core.resultserver import ResultHandler
 
                 if isinstance(self.fd, ResultHandler):
                     filepath = os.path.join(self.fd.storagepath,

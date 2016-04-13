@@ -6,11 +6,11 @@
 import logging
 import os
 
-from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.exceptions import CuckooProcessingError
-from lib.cuckoo.common.virustotal import VirusTotalAPI
-from lib.cuckoo.common.virustotal import VirusTotalResourceNotScanned
+from cuckoo.common.abstracts import Processing
+from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.virustotal import VirusTotalAPI
+from cuckoo.common.virustotal import VirusTotalResourceNotScanned
 
 log = logging.getLogger(__name__)
 

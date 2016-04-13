@@ -9,7 +9,7 @@ from django.conf import settings
 
 sys.path.append(settings.CUCKOO_PATH)
 
-from lib.cuckoo.common.constants import CUCKOO_VERSION
+from cuckoo.common.constants import CUCKOO_VERSION
 
 class CuckooHeaders(object):
     """Set Cuckoo custom response headers."""

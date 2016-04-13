@@ -22,11 +22,11 @@ import warnings
 from cStringIO import StringIO
 from datetime import datetime
 
-from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.config import Config
+from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.config import Config
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
-from lib.cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
+from cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
+from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
 
 try:
     import bs4

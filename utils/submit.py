@@ -19,10 +19,10 @@ except ImportError:
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.common.colors import bold, green, red, yellow
-from lib.cuckoo.common.objects import File
-from lib.cuckoo.common.utils import to_unicode
-from lib.cuckoo.core.database import Database
+from cuckoo.common.colors import bold, green, red, yellow
+from cuckoo.common.objects import File
+from cuckoo.common.utils import to_unicode
+from cuckoo.core.database import Database
 
 def main():
     parser = argparse.ArgumentParser()

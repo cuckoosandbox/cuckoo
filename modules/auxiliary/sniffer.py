@@ -8,8 +8,8 @@ import getpass
 import logging
 import subprocess
 
-from lib.cuckoo.common.abstracts import Auxiliary
-from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_GUEST_PORT
+from cuckoo.common.abstracts import Auxiliary
+from cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_GUEST_PORT
 
 log = logging.getLogger(__name__)
 

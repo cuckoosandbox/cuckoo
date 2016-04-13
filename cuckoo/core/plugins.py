@@ -11,15 +11,15 @@ import logging
 from collections import defaultdict
 from distutils.version import StrictVersion
 
-from lib.cuckoo.common.abstracts import Auxiliary, Machinery, LibVirtMachinery, Processing
-from lib.cuckoo.common.abstracts import Report, Signature
-from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
-from lib.cuckoo.common.exceptions import CuckooCriticalError
-from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.exceptions import CuckooProcessingError
-from lib.cuckoo.common.exceptions import CuckooReportError
-from lib.cuckoo.common.exceptions import CuckooDependencyError
+from cuckoo.common.abstracts import Auxiliary, Machinery, LibVirtMachinery, Processing
+from cuckoo.common.abstracts import Report, Signature
+from cuckoo.common.config import Config
+from cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
+from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.exceptions import CuckooReportError
+from cuckoo.common.exceptions import CuckooDependencyError
 
 log = logging.getLogger(__name__)
 

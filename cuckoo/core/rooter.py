@@ -10,7 +10,7 @@ import socket
 import tempfile
 import threading
 
-from lib.cuckoo.common.config import Config
+from cuckoo.common.config import Config
 
 cfg = Config()
 log = logging.getLogger(__name__)

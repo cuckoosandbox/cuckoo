@@ -6,9 +6,9 @@ from __future__ import absolute_import
 
 import logging
 
-from lib.cuckoo.common.abstracts import Report
-from lib.cuckoo.common.exceptions import CuckooDependencyError
-from lib.cuckoo.common.exceptions import CuckooReportError
+from cuckoo.common.abstracts import Report
+from cuckoo.common.exceptions import CuckooDependencyError
+from cuckoo.common.exceptions import CuckooReportError
 
 logging.getLogger("elasticsearch").setLevel(logging.WARNING)
 logging.getLogger("elasticsearch.trace").setLevel(logging.WARNING)

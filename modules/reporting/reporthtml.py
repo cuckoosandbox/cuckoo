@@ -7,10 +7,10 @@ import os
 import codecs
 import base64
 
-from lib.cuckoo.common.abstracts import Report
-from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.exceptions import CuckooReportError
-from lib.cuckoo.common.objects import File
+from cuckoo.common.abstracts import Report
+from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.common.exceptions import CuckooReportError
+from cuckoo.common.objects import File
 
 try:
     from jinja2.environment import Environment

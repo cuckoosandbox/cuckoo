@@ -6,11 +6,11 @@
 import os
 import logging
 
-from lib.cuckoo.core.database import Database, Task
-from lib.cuckoo.common.objects import File
-from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.constants import CUCKOO_VERSION
-from lib.cuckoo.common.utils import json_decode
+from cuckoo.core.database import Database, Task
+from cuckoo.common.objects import File
+from cuckoo.common.abstracts import Processing
+from cuckoo.common.constants import CUCKOO_VERSION
+from cuckoo.common.utils import json_decode
 
 log = logging.getLogger(__name__)
 

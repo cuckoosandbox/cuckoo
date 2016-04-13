@@ -9,7 +9,7 @@ import sys
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.core.database import *
+from cuckoo.core.database import *
 
 if __name__ == "__main__":
     db = Database(echo=True)

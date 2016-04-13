@@ -25,9 +25,9 @@ from gridfs import GridFS
 
 sys.path.append(settings.CUCKOO_PATH)
 
-from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
-from lib.cuckoo.common.utils import store_temp_file, versiontuple
-from lib.cuckoo.common.constants import CUCKOO_ROOT, LATEST_HTTPREPLAY
+from cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
+from cuckoo.common.utils import store_temp_file, versiontuple
+from cuckoo.common.constants import CUCKOO_ROOT, LATEST_HTTPREPLAY
 import modules.processing.network as network
 
 results_db = settings.MONGO

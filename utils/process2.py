@@ -14,12 +14,12 @@ log = logging.getLogger()
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.core.database import Database
-from lib.cuckoo.core.database import TASK_FAILED_PROCESSING, TASK_REPORTED
-from lib.cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
-from lib.cuckoo.core.startup import init_modules, drop_privileges
+from cuckoo.common.config import Config
+from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.core.database import Database
+from cuckoo.core.database import TASK_FAILED_PROCESSING, TASK_REPORTED
+from cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
+from cuckoo.core.startup import init_modules, drop_privileges
 
 def process(target=None, copy_path=None, task=None):
     results = RunProcessing(task=task).run()

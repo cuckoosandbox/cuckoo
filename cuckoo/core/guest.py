@@ -15,14 +15,14 @@ import xmlrpclib
 from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
 
-from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT
-from lib.cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
-from lib.cuckoo.common.constants import CUCKOO_GUEST_FAILED
-from lib.cuckoo.common.exceptions import CuckooGuestError
-from lib.cuckoo.common.utils import TimeoutServer
-from lib.cuckoo.core.database import Database
+from cuckoo.common.config import Config
+from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT
+from cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
+from cuckoo.common.constants import CUCKOO_GUEST_FAILED
+from cuckoo.common.exceptions import CuckooGuestError
+from cuckoo.common.utils import TimeoutServer
+from cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
 db = Database()

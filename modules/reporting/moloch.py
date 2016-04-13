@@ -7,8 +7,8 @@ import logging
 import os.path
 import subprocess
 
-from lib.cuckoo.common.abstracts import Report
-from lib.cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.abstracts import Report
+from cuckoo.common.exceptions import CuckooProcessingError
 
 log = logging.getLogger(__name__)
 

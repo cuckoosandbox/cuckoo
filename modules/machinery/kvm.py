@@ -3,7 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-from lib.cuckoo.common.abstracts import LibVirtMachinery
+from cuckoo.common.abstracts import LibVirtMachinery
 
 class KVM(LibVirtMachinery):
     """Virtualization layer for KVM based on python-libvirt."""

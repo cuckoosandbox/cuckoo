@@ -11,9 +11,9 @@ import time
 import shutil
 import shlex
 
-from lib.cuckoo.common.abstracts import Machinery
-from lib.cuckoo.common.exceptions import CuckooCriticalError
-from lib.cuckoo.core.resultserver import ResultServer
+from cuckoo.common.abstracts import Machinery
+from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.core.resultserver import ResultServer
 
 log = logging.getLogger(__name__)
 

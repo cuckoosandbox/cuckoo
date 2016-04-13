@@ -10,7 +10,7 @@ import cStringIO
 import re
 import logging
 
-from lib.cuckoo.common.utils import convert_to_printable
+from cuckoo.common.utils import convert_to_printable
 
 log = logging.getLogger("Processing.Pcap.irc.protocol")
 

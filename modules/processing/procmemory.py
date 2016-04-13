@@ -8,8 +8,8 @@ import os
 import re
 import struct
 
-from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.objects import File
+from cuckoo.common.abstracts import Processing
+from cuckoo.common.objects import File
 
 log = logging.getLogger(__name__)
 

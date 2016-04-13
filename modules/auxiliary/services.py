@@ -6,9 +6,9 @@
 import logging
 import time
 
-from lib.cuckoo.common.abstracts import Auxiliary
-from lib.cuckoo.common.config import Config
-from lib.cuckoo.core.database import Database
+from cuckoo.common.abstracts import Auxiliary
+from cuckoo.common.config import Config
+from cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
 cfg = Config()

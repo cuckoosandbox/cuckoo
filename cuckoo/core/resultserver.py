@@ -12,13 +12,13 @@ import datetime
 import SocketServer
 from threading import Event, Thread
 
-from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.exceptions import CuckooCriticalError
-from lib.cuckoo.common.exceptions import CuckooResultError
-from lib.cuckoo.common.netlog import BsonParser
-from lib.cuckoo.common.utils import create_folder, Singleton
+from cuckoo.common.config import Config
+from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.exceptions import CuckooResultError
+from cuckoo.common.netlog import BsonParser
+from cuckoo.common.utils import create_folder, Singleton
 
 log = logging.getLogger(__name__)
 

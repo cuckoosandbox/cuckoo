@@ -5,7 +5,7 @@
 
 import os.path
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.common.constants import CUCKOO_ROOT
 
 domains = set()
 

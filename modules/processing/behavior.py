@@ -7,8 +7,8 @@ import collections
 import logging
 import os
 
-from lib.cuckoo.common.abstracts import Processing, BehaviorHandler
-from lib.cuckoo.common.config import Config
+from cuckoo.common.abstracts import Processing, BehaviorHandler
+from cuckoo.common.config import Config
 
 from .platform.windows import WindowsMonitor
 from .platform.linux import LinuxSystemTap

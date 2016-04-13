@@ -11,7 +11,7 @@ from django.views.decorators.http import require_safe
 
 sys.path.append(settings.CUCKOO_PATH)
 
-import lib.cuckoo.common.compare as compare
+import cuckoo.common.compare as compare
 
 results_db = settings.MONGO
 

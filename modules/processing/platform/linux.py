@@ -10,7 +10,7 @@ import re
 
 import dateutil.parser
 
-from lib.cuckoo.common.abstracts import BehaviorHandler
+from cuckoo.common.abstracts import BehaviorHandler
 
 log = logging.getLogger(__name__)
 

@@ -6,9 +6,9 @@
 import os
 import ConfigParser
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.objects import Dictionary
+from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.objects import Dictionary
 
 class Config:
     """Configuration file parser."""

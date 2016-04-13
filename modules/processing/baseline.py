@@ -7,7 +7,7 @@ import json
 import logging
 import os.path
 
-from lib.cuckoo.common.abstracts import Processing
+from cuckoo.common.abstracts import Processing
 
 log = logging.getLogger(__name__)
 

@@ -11,8 +11,8 @@ import os.path
 import shutil
 import time
 
-from lib.cuckoo.common.abstracts import Machinery
-from lib.cuckoo.common.exceptions import CuckooMachineError
+from cuckoo.common.abstracts import Machinery
+from cuckoo.common.exceptions import CuckooMachineError
 
 log = logging.getLogger(__name__)
 

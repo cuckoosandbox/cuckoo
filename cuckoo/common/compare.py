@@ -6,7 +6,7 @@
 import os
 import collections
 
-from lib.cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.common.constants import CUCKOO_ROOT
 
 ANALYSIS_ROOT = os.path.join(CUCKOO_ROOT, "storage", "analyses")
 

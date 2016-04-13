@@ -10,9 +10,9 @@ import sys
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.core.database import Database
+from cuckoo.common.config import Config
+from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.core.database import Database
 
 def update_conf(machinery, args, action=None):
     """Writes the new machine to the relevant configuration file."""

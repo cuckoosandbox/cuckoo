@@ -11,19 +11,19 @@ import sys
 import traceback
 
 try:
-    from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
-    from lib.cuckoo.common.exceptions import CuckooCriticalError
-    from lib.cuckoo.common.exceptions import CuckooDependencyError
-    from lib.cuckoo.common.logo import logo
-    from lib.cuckoo.common.utils import exception_message
-    from lib.cuckoo.core.resultserver import ResultServer
-    from lib.cuckoo.core.scheduler import Scheduler
-    from lib.cuckoo.core.startup import check_working_directory, check_configs
-    from lib.cuckoo.core.startup import check_version, create_structure
-    from lib.cuckoo.core.startup import cuckoo_clean, drop_privileges
-    from lib.cuckoo.core.startup import init_logging, init_modules
-    from lib.cuckoo.core.startup import init_tasks, init_yara, init_binaries
-    from lib.cuckoo.core.startup import init_rooter, init_routing
+    from cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
+    from cuckoo.common.exceptions import CuckooCriticalError
+    from cuckoo.common.exceptions import CuckooDependencyError
+    from cuckoo.common.logo import logo
+    from cuckoo.common.utils import exception_message
+    from cuckoo.core.resultserver import ResultServer
+    from cuckoo.core.scheduler import Scheduler
+    from cuckoo.core.startup import check_working_directory, check_configs
+    from cuckoo.core.startup import check_version, create_structure
+    from cuckoo.core.startup import cuckoo_clean, drop_privileges
+    from cuckoo.core.startup import init_logging, init_modules
+    from cuckoo.core.startup import init_tasks, init_yara, init_binaries
+    from cuckoo.core.startup import init_rooter, init_routing
 
     import bson
 

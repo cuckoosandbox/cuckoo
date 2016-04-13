@@ -14,8 +14,8 @@ from tarfile import TarFile
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-import lib.cuckoo.common.colors as colors
-from lib.cuckoo.common.constants import CUCKOO_ROOT
+import cuckoo.common.colors as colors
+from cuckoo.common.constants import CUCKOO_ROOT
 
 URL = "https://github.com/cuckoosandbox/community/archive/{0}.tar.gz"
 

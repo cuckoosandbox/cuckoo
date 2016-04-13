@@ -22,10 +22,10 @@ except ImportError:
         "`pip install bs4 requests wakeonlan`)."
     )
 
-from lib.cuckoo.core.guest import GuestManager
-from lib.cuckoo.common.abstracts import Machinery
-from lib.cuckoo.common.exceptions import CuckooCriticalError
-from lib.cuckoo.common.exceptions import CuckooMachineError
+from cuckoo.core.guest import GuestManager
+from cuckoo.common.abstracts import Machinery
+from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.exceptions import CuckooMachineError
 
 class Physical(Machinery):
     """Manage physical sandboxes."""

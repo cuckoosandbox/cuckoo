@@ -10,9 +10,9 @@ import shutil
 import subprocess
 import time
 
-from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.exceptions import CuckooProcessingError
-from lib.cuckoo.common.utils import md5_file, sha1_file
+from cuckoo.common.abstracts import Processing
+from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.utils import md5_file, sha1_file
 
 try:
     import suricatasc
