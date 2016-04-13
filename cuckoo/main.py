@@ -10,28 +10,20 @@ import os
 import sys
 import traceback
 
-try:
-    from cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
-    from cuckoo.common.exceptions import CuckooCriticalError
-    from cuckoo.common.exceptions import CuckooDependencyError
-    from cuckoo.common.logo import logo
-    from cuckoo.common.utils import exception_message
-    from cuckoo.core.resultserver import ResultServer
-    from cuckoo.core.scheduler import Scheduler
-    from cuckoo.core.startup import check_working_directory, check_configs
-    from cuckoo.core.startup import check_version, create_structure
-    from cuckoo.core.startup import cuckoo_clean, drop_privileges
-    from cuckoo.core.startup import init_logging, init_modules
-    from cuckoo.core.startup import init_tasks, init_yara, init_binaries
-    from cuckoo.core.startup import init_rooter, init_routing
+from cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
+from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.logo import logo
+from cuckoo.common.utils import exception_message
+from cuckoo.core.resultserver import ResultServer
+from cuckoo.core.scheduler import Scheduler
+from cuckoo.core.startup import check_working_directory, check_configs
+from cuckoo.core.startup import check_version, create_structure
+from cuckoo.core.startup import cuckoo_clean, drop_privileges
+from cuckoo.core.startup import init_logging, init_modules
+from cuckoo.core.startup import init_tasks, init_yara, init_binaries
+from cuckoo.core.startup import init_rooter, init_routing
 
-    import bson
-
-    bson  # Pretend like it's actually being used (for static checkers.)
-except (CuckooDependencyError, ImportError) as e:
-    sys.exit("ERROR: Missing dependency: {0}".format(e))
-
-log = logging.getLogger()
+log = logging.getLogger("cuckoo")
 
 def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     """Cuckoo initialization workflow.
@@ -96,7 +88,7 @@ def cuckoo_main(max_analysis_count=0):
 
     os.chdir(cur_path)
 
-if __name__ == "__main__":
+def cuckoo():
     parser = argparse.ArgumentParser()
     parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
@@ -130,5 +122,4 @@ if __name__ == "__main__":
     except:
         # Deal with an unhandled exception.
         message = exception_message()
-        traceback = traceback.format_exc()
-        print message, traceback
+        print message, traceback.format_exc()
