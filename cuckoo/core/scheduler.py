@@ -10,6 +10,8 @@ import logging
 import threading
 import Queue
 
+import cuckoo
+
 from cuckoo.common.config import Config, emit_options
 from cuckoo.common.exceptions import CuckooMachineError, CuckooGuestError
 from cuckoo.common.exceptions import CuckooOperationalError
@@ -18,7 +20,7 @@ from cuckoo.common.objects import File
 from cuckoo.common.utils import create_folder
 from cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED
 from cuckoo.core.guest import GuestManager
-from cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
+from cuckoo.core.plugins import RunAuxiliary, RunProcessing
 from cuckoo.core.plugins import RunSignatures, RunReporting
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.rooter import rooter, vpns
@@ -550,11 +552,8 @@ class Scheduler(object):
 
         log.info("Using \"%s\" as machine manager", machinery_name)
 
-        # Get registered class name. Only one machine manager is imported,
-        # therefore there should be only one class in the list.
-        plugin = list_plugins("machinery")[0]
         # Initialize the machine manager.
-        machinery = plugin()
+        machinery = cuckoo.machinery.plugins[machinery_name]
 
         # Find its configuration file.
         conf = cwd("conf", "%s.conf" % machinery_name)

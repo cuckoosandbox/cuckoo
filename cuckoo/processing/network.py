@@ -50,7 +50,6 @@ Keyed = namedtuple("Keyed", ["key", "obj"])
 Packet = namedtuple("Packet", ["raw", "ts"])
 
 log = logging.getLogger(__name__)
-cfg = Config()
 
 # Urge users to upgrade to the latest version.
 _v = getattr(httpreplay, "__version__", None) if HAVE_HTTPREPLAY else None
@@ -116,7 +115,7 @@ class Pcap(object):
         @param name: hostname.
         @return: IP address or blank
         """
-        if cfg.processing.resolve_dns:
+        if Config().processing.resolve_dns:
             ip = resolve(name)
         else:
             ip = ""
@@ -245,7 +244,7 @@ class Pcap(object):
         if self._check_icmp(data):
             # If ICMP packets are coming from the host, it probably isn't
             # relevant traffic, hence we can skip from reporting it.
-            if conn["src"] == cfg.resultserver.ip:
+            if conn["src"] == Config().resultserver.ip:
                 return
 
             entry = {}
@@ -790,7 +789,7 @@ class NetworkAnalysis(Processing):
             return results
 
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
-        if cfg.processing.sort_pcap:
+        if Config().processing.sort_pcap:
             sort_pcap(self.pcap_path, sorted_path)
             pcap_path = sorted_path
 

@@ -11,7 +11,6 @@ from cuckoo.common.config import Config
 from cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
-cfg = Config()
 db = Database()
 
 class Services(Auxiliary):
@@ -23,7 +22,7 @@ class Services(Auxiliary):
         """Start a VM containing one or more services."""
         # We give all services a total of 5 minutes to boot up before
         # starting the actual analysis.
-        timeout = self.task.timeout or cfg.timeouts.default
+        timeout = self.task.timeout or Config().timeouts.default
         timeout += 300
         tags = "service,%s" % service
 

@@ -14,6 +14,8 @@ import logging
 import logging.handlers
 import socket
 
+import cuckoo
+
 from cuckoo.common.colors import red, green, yellow, cyan
 from cuckoo.common.config import Config
 from cuckoo.common.constants import CUCKOO_VERSION
@@ -22,7 +24,6 @@ from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.utils import create_folders
 from cuckoo.core.database import Database, TASK_RUNNING
 from cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
-from cuckoo.core.plugins import import_plugin, import_package, list_plugins
 from cuckoo.core.rooter import rooter, vpns
 from cuckoo.misc import cwd
 
@@ -32,7 +33,7 @@ try:
 except ImportError:
     HAVE_PWD = False
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 def check_python_version():
     """Checks if Python version is supported by Cuckoo.
@@ -203,35 +204,11 @@ def delete_file(*rel_path):
             os.path.join(*rel_path), e
         )
 
-def init_modules(machinery=True):
+def init_modules():
     """Initializes plugins."""
-    log.debug("Importing modules...")
+    log.debug("Imported modules...")
 
-    # Import all auxiliary modules.
-    import modules.auxiliary
-    import_package(modules.auxiliary)
-
-    # Import all processing modules.
-    import modules.processing
-    import_package(modules.processing)
-
-    # Import all signatures.
-    import modules.signatures
-    import_package(modules.signatures)
-
-    delete_file("modules", "reporting", "maec40.pyc")
-    delete_file("modules", "reporting", "maec41.pyc")
-    delete_file("modules", "reporting", "mmdef.pyc")
-
-    # Import all reporting modules.
-    import modules.reporting
-    import_package(modules.reporting)
-
-    # Import machine manager.
-    if machinery:
-        import_plugin("modules.machinery." + Config().cuckoo.machinery)
-
-    for category, entries in list_plugins().items():
+    for category, entries in cuckoo.plugins.items():
         log.debug("Imported \"%s\" modules:", category)
 
         for entry in entries:

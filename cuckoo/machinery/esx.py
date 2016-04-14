@@ -4,7 +4,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import libvirt
+try:
+    import libvirt
+    HAVE_LIBVIRT = True
+except ImportError:
+    HAVE_LIBVIRT = False
 
 from cuckoo.common.abstracts import LibVirtMachinery
 from cuckoo.common.exceptions import CuckooCriticalError
@@ -23,6 +27,9 @@ class ESX(LibVirtMachinery):
             raise CuckooMachineError("ESX(i) username is missing, please add it to the config file")
         if not self.options.esx.password:
             raise CuckooMachineError("ESX(i) password is missing, please add it to the config file")
+
+        if not HAVE_LIBVIRT:
+            raise CuckooMachineError("The libvirt package has not been installed (`pip install libvirt-python`)")
 
         self.dsn = self.options.esx.dsn
         self.global_conn = self._global_connect()

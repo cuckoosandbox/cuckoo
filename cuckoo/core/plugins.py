@@ -4,18 +4,16 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import pkgutil
 import importlib
 import inspect
 import logging
-from collections import defaultdict
+
 from distutils.version import StrictVersion
 
-from cuckoo.common.abstracts import Auxiliary, Machinery, LibVirtMachinery, Processing
-from cuckoo.common.abstracts import Report, Signature
+import cuckoo
+
 from cuckoo.common.config import Config
 from cuckoo.common.constants import CUCKOO_VERSION
-from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.exceptions import CuckooReportError
@@ -24,15 +22,14 @@ from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
-_modules = defaultdict(list)
-
 def enumerate_plugins(dirpath, module_prefix, namespace, class_,
-                      attributes={}):
+                      attributes={}, as_dict=False):
     """Import plugins of type `class` located at `dirpath` into the
     `namespace` that starts with `module_prefix`. If `dirpath` represents a
     filepath then it is converted into its containing directory. The
     `attributes` dictionary allows one to set extra fields for all imported
-    plugins."""
+    plugins. Using `as_dict` a dictionary based on the module name is
+    returned."""
     if os.path.isfile(dirpath):
         dirpath = os.path.dirname(dirpath)
 
@@ -52,47 +49,16 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
         namespace[subclass.__name__] = subclass
         for key, value in attributes.items():
             setattr(subclass, key, value)
+
         plugins.append(subclass)
+
+    if as_dict:
+        ret = {}
+        for plugin in plugins:
+            ret[plugin.__module__.split(".")[-1]] = plugin
+        return ret
+
     return plugins
-
-def import_plugin(name):
-    try:
-        module = __import__(name, globals(), locals(), ["dummy"], -1)
-    except ImportError as e:
-        raise CuckooCriticalError("Unable to import plugin "
-                                  "\"{0}\": {1}".format(name, e))
-    else:
-        load_plugins(module)
-
-def import_package(package):
-    prefix = package.__name__ + "."
-    for loader, name, ispkg in pkgutil.iter_modules(package.__path__, prefix):
-        import_plugin(name)
-
-def load_plugins(module):
-    for name, value in inspect.getmembers(module):
-        if inspect.isclass(value):
-            if issubclass(value, Auxiliary) and value is not Auxiliary:
-                register_plugin("auxiliary", value)
-            elif issubclass(value, Machinery) and value is not Machinery and value is not LibVirtMachinery:
-                register_plugin("machinery", value)
-            elif issubclass(value, Processing) and value is not Processing:
-                register_plugin("processing", value)
-            elif issubclass(value, Report) and value is not Report:
-                register_plugin("reporting", value)
-            elif issubclass(value, Signature) and value is not Signature:
-                register_plugin("signatures", value)
-
-def register_plugin(group, name):
-    global _modules
-    group = _modules.setdefault(group, [])
-    group.append(name)
-
-def list_plugins(group=None):
-    if group:
-        return _modules[group]
-    else:
-        return _modules
 
 class RunAuxiliary(object):
     """Auxiliary modules manager."""
@@ -104,7 +70,7 @@ class RunAuxiliary(object):
         self.enabled = []
 
     def start(self):
-        for module in list_plugins(group="auxiliary"):
+        for module in cuckoo.auxiliary.plugins:
             try:
                 current = module()
             except:
@@ -248,7 +214,7 @@ class RunProcessing(object):
         # Order modules using the user-defined sequence number.
         # If none is specified for the modules, they are selected in
         # alphabetical order.
-        processing_list = list_plugins(group="processing")
+        processing_list = cuckoo.processing.plugins
 
         # If no modules are loaded, return an empty dictionary.
         if processing_list:
@@ -283,7 +249,7 @@ class RunSignatures(object):
 
         # Gather all enabled, up-to-date, and applicable signatures.
         self.signatures = []
-        for signature in list_plugins(group="signatures"):
+        for signature in cuckoo.signatures.plugins:
             if self._should_enable_signature(signature):
                 self.signatures.append(signature(self))
 
@@ -521,7 +487,7 @@ class RunReporting(object):
         # represents at which position that module should be executed among
         # all the available ones. It can be used in the case where a
         # module requires another one to be already executed beforehand.
-        reporting_list = list_plugins(group="reporting")
+        reporting_list = cuckoo.reporting.plugins
 
         # Return if no reporting modules are loaded.
         if reporting_list:
