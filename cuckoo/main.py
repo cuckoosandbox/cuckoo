@@ -12,9 +12,10 @@ import traceback
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.logo import logo
 from cuckoo.common.utils import exception_message
+from cuckoo.core.database import Database
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.scheduler import Scheduler
-from cuckoo.core.startup import check_working_directory, check_configs
+from cuckoo.core.startup import check_configs
 from cuckoo.core.startup import check_version, create_structure
 from cuckoo.core.startup import cuckoo_clean, drop_privileges
 from cuckoo.core.startup import init_logging, init_modules
@@ -30,7 +31,6 @@ def cuckoo_init(quiet=False, debug=False):
     @param debug: enable debug mode.
     """
     logo()
-    check_working_directory()
     check_configs()
     check_version()
     create_structure()
@@ -49,6 +49,7 @@ def cuckoo_init(quiet=False, debug=False):
     init_rooter()
     init_routing()
 
+    Database().connect()
     ResultServer()
 
 def cuckoo_main(max_analysis_count=0):

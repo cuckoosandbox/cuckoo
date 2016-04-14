@@ -12,7 +12,7 @@ import threading
 
 from cuckoo.common.config import Config
 
-cfg = Config()
+_cfg = None
 log = logging.getLogger(__name__)
 unixpath = tempfile.mktemp()
 lock = threading.Lock()
@@ -20,7 +20,11 @@ lock = threading.Lock()
 vpns = {}
 
 def rooter(command, *args, **kwargs):
-    if not os.path.exists(cfg.cuckoo.rooter):
+    global _cfg
+    if _cfg is None:
+        _cfg = Config()
+
+    if not os.path.exists(_cfg.cuckoo.rooter):
         log.critical("Unable to passthrough root command (%s) as the rooter "
                      "unix socket doesn't exist.", command)
         return
@@ -35,7 +39,7 @@ def rooter(command, *args, **kwargs):
     s.bind(unixpath)
 
     try:
-        s.connect(cfg.cuckoo.rooter)
+        s.connect(_cfg.cuckoo.rooter)
     except socket.error as e:
         log.critical("Unable to passthrough root command as we're unable to "
                      "connect to the rooter unix socket: %s.", e)

@@ -8,8 +8,9 @@ from cuckoo.misc import cwd
 domains = set()
 
 def is_whitelisted_domain(domain):
-    return domain in domains
+    # Initialize the domain whitelist.
+    if not domains:
+        for domain in open(cwd("whitelist", "domain.txt")):
+            domains.add(domain.strip())
 
-# Initialize the domain whitelist.
-for domain in open(cwd("whitelist", "domain.txt")):
-    domains.add(domain.strip())
+    return domain in domains

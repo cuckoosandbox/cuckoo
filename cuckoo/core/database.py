@@ -362,18 +362,21 @@ class Database(object):
     """
     __metaclass__ = Singleton
 
-    def __init__(self, dsn=None, schema_check=True, echo=False):
+    def __init__(self, schema_check=True, echo=False):
         """
         @param dsn: database connection string.
         @param schema_check: disable or enable the db schema version check.
         @param echo: echo sql queries.
         """
         self._lock = SuperLock()
+        self.schema_check = schema_check
+        self.echo = echo
+
+    def connect(self):
+        """Connect to the database backend."""
         cfg = Config()
 
-        if dsn:
-            self._connect_database(dsn)
-        elif hasattr(cfg, "database") and cfg.database.connection:
+        if hasattr(cfg, "database") and cfg.database.connection:
             self._connect_database(cfg.database.connection)
         else:
             db_file = cwd("cuckoo.db")
@@ -388,7 +391,7 @@ class Database(object):
             self._connect_database("sqlite:///%s" % db_file)
 
         # Disable SQL logging. Turn it on for debugging.
-        self.engine.echo = echo
+        self.engine.echo = self.echo
 
         # Connection timeout.
         if hasattr(cfg, "database") and cfg.database.timeout:
@@ -427,7 +430,7 @@ class Database(object):
             # Check if db version is the expected one.
             last = tmp_session.query(AlembicVersion).first()
             tmp_session.close()
-            if last.version_num != SCHEMA_VERSION and schema_check:
+            if last.version_num != SCHEMA_VERSION and self.schema_check:
                 raise CuckooDatabaseError(
                     "DB schema version mismatch: found %s, expected %s. "
                     "Try to apply all migrations (cd utils/db_migration/ && "

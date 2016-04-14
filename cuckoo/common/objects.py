@@ -85,7 +85,7 @@ class File(object):
     """Basic file object class with all useful utilities."""
 
     # To be substituted with a category.
-    YARA_RULEPATH = cwd("yara", "index_%s.yar")
+    YARA_RULEPATH = None
 
     # static fields which indicate whether the user has been
     # notified about missing dependencies already
@@ -113,6 +113,10 @@ class File(object):
         self._sha1 = None
         self._sha256 = None
         self._sha512 = None
+
+        # During class initialization cwd is not yet set.
+        if not File.YARA_RULEPATH:
+            File.YARA_RULEPATH = cwd("yara", "index_%s.yar")
 
     def get_name(self):
         """Get file name.
