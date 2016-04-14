@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (C) 2010-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
@@ -10,7 +9,6 @@ import os
 import sys
 import traceback
 
-from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.logo import logo
 from cuckoo.common.utils import exception_message
@@ -26,27 +24,16 @@ from cuckoo.misc import set_cwd
 
 log = logging.getLogger("cuckoo")
 
-def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
-    """Cuckoo initialization workflow.
-    @param quiet: if set enable silent mode, it doesn't print anything except warnings
-    @param debug: if set enable debug mode, it print all debug messages
-    @param artwork: if set it will print only artworks, forever
-    @param test: enable integration test mode, used only for testing
+def cuckoo_init(quiet=False, debug=False):
+    """Initialize Cuckoo configuration.
+    @param quiet: enable quiet mode.
+    @param debug: enable debug mode.
     """
     logo()
     check_working_directory()
     check_configs()
     check_version()
     create_structure()
-
-    if artwork:
-        import time
-        try:
-            while True:
-                time.sleep(1)
-                logo()
-        except KeyboardInterrupt:
-            return
 
     init_logging()
 
@@ -62,11 +49,6 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     init_rooter()
     init_routing()
 
-    # TODO: This is just a temporary hack, we need an actual test suite to
-    # integrate with Travis-CI.
-    if test:
-        return
-
     ResultServer()
 
 def cuckoo_main(max_analysis_count=0):
@@ -81,14 +63,10 @@ def cuckoo_main(max_analysis_count=0):
 
 def cuckoo():
     parser = argparse.ArgumentParser()
+    parser.add_argument("command", nargs="?", help="Run a subcommand")
     parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
-    parser.add_argument("-v", "--version", action="version", version="You are running Cuckoo Sandbox {0}".format(CUCKOO_VERSION))
-    parser.add_argument("-a", "--artwork", help="Show artwork", action="store_true", required=False)
-    parser.add_argument("-t", "--test", help="Test startup", action="store_true", required=False)
-    parser.add_argument("-m", "--max-analysis-count", help="Maximum number of analyses", type=int, required=False)
-    parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
-    parser.add_argument("--clean", help="Remove all tasks and samples and their associated data", action='store_true', required=False)
+    parser.add_argument("--user", type=str, help="Drop user privileges to this user")
     parser.add_argument("--root", type=str, default="~/.cuckoo", help="Cuckoo Working Directory")
     args = parser.parse_args()
 
@@ -97,15 +75,13 @@ def cuckoo():
     if args.user:
         drop_privileges(args.user)
 
-    if args.clean:
+    if args.command == "clean":
         cuckoo_clean()
         sys.exit(0)
 
     try:
-        cuckoo_init(quiet=args.quiet, debug=args.debug, artwork=args.artwork,
-                    test=args.test)
-        if not args.artwork and not args.test:
-            cuckoo_main(max_analysis_count=args.max_analysis_count)
+        cuckoo_init(quiet=args.quiet, debug=args.debug)
+        cuckoo_main(max_analysis_count=args.max_analysis_count)
     except CuckooCriticalError as e:
         message = "{0}: {1}".format(e.__class__.__name__, e)
         if len(log.handlers):
