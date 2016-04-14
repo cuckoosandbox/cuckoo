@@ -553,7 +553,7 @@ class Scheduler(object):
         log.info("Using \"%s\" as machine manager", machinery_name)
 
         # Initialize the machine manager.
-        machinery = cuckoo.machinery.plugins[machinery_name]
+        machinery = cuckoo.machinery.plugins[machinery_name]()
 
         # Find its configuration file.
         conf = cwd("conf", "%s.conf" % machinery_name)

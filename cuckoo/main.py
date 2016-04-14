@@ -100,6 +100,7 @@ def main():
     parser.add_argument("command", nargs="?", help="Run a subcommand")
     parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
+    parser.add_argument("--maxcount", type=int, help="Maximum number of analyses to perform.")
     parser.add_argument("--user", type=str, help="Drop user privileges to this user")
     parser.add_argument("--root", type=str, default="~/.cuckoo", help="Cuckoo Working Directory")
     args = parser.parse_args()
@@ -124,7 +125,7 @@ def main():
 
     try:
         cuckoo_init()
-        cuckoo_main(max_analysis_count=args.max_analysis_count)
+        cuckoo_main(max_analysis_count=args.maxcount)
     except CuckooCriticalError as e:
         message = "{0}: {1}".format(e.__class__.__name__, e)
         if len(log.handlers):
