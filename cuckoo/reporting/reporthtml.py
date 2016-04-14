@@ -8,9 +8,9 @@ import codecs
 import base64
 
 from cuckoo.common.abstracts import Report
-from cuckoo.common.constants import CUCKOO_ROOT
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.objects import File
+from cuckoo.misc import cwd
 
 try:
     from jinja2.environment import Environment
@@ -57,8 +57,7 @@ class ReportHTML(Report):
             results["screenshots"] = []
 
         env = Environment(autoescape=True)
-        env.loader = FileSystemLoader(os.path.join(CUCKOO_ROOT,
-                                                   "data", "html"))
+        env.loader = FileSystemLoader(cwd("html"))
 
         processed = None
         mapping = [

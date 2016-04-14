@@ -11,7 +11,6 @@ import threading
 import Queue
 
 from cuckoo.common.config import Config, emit_options
-from cuckoo.common.constants import CUCKOO_ROOT
 from cuckoo.common.exceptions import CuckooMachineError, CuckooGuestError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooCriticalError
@@ -23,6 +22,7 @@ from cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
 from cuckoo.core.plugins import RunSignatures, RunReporting
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.rooter import rooter, vpns
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -59,10 +59,7 @@ class AnalysisManager(threading.Thread):
 
     def init_storage(self):
         """Initialize analysis storage folder."""
-        self.storage = os.path.join(CUCKOO_ROOT,
-                                    "storage",
-                                    "analyses",
-                                    str(self.task.id))
+        self.storage = cwd("storage", "analyses", "%s" % self.task.id)
 
         # If the analysis storage folder already exists, we need to abort the
         # analysis or previous results will be overwritten and lost.
@@ -100,7 +97,7 @@ class AnalysisManager(threading.Thread):
             return False
 
         sha256 = File(self.task.target).get_sha256()
-        self.binary = os.path.join(CUCKOO_ROOT, "storage", "binaries", sha256)
+        self.binary = cwd("storage", "binaries", sha256)
 
         if os.path.exists(self.binary):
             log.info("File already exists at \"%s\"", self.binary)
@@ -496,8 +493,7 @@ class AnalysisManager(threading.Thread):
             # analysis - this is useful for debugging purposes. This is only
             # supported under systems that support symbolic links.
             if hasattr(os, "symlink"):
-                latest = os.path.join(CUCKOO_ROOT, "storage",
-                                      "analyses", "latest")
+                latest = cwd("storage", "analyses", "latest")
 
                 # First we have to remove the existing symbolic link, then we
                 # have to create the new one.
@@ -561,7 +557,7 @@ class Scheduler(object):
         machinery = plugin()
 
         # Find its configuration file.
-        conf = os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % machinery_name)
+        conf = cwd("conf", "%s.conf" % machinery_name)
 
         if not os.path.exists(conf):
             raise CuckooCriticalError("The configuration file for machine "
@@ -660,7 +656,7 @@ class Scheduler(object):
             if self.cfg.cuckoo.freespace:
                 # Resolve the full base path to the analysis folder, just in
                 # case somebody decides to make a symbolic link out of it.
-                dir_path = os.path.join(CUCKOO_ROOT, "storage", "analyses")
+                dir_path = cwd("storage", "analyses")
 
                 # TODO: Windows support
                 if hasattr(os, "statvfs"):

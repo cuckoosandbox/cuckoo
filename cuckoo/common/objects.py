@@ -11,8 +11,8 @@ import os
 import re
 import subprocess
 
-from cuckoo.common.constants import CUCKOO_ROOT
 from cuckoo.common.whitelist import is_whitelisted_domain
+from cuckoo.misc import cwd
 
 try:
     import magic
@@ -85,7 +85,7 @@ class File(object):
     """Basic file object class with all useful utilities."""
 
     # To be substituted with a category.
-    YARA_RULEPATH = os.path.join(CUCKOO_ROOT, "data", "yara", "index_%s.yar")
+    YARA_RULEPATH = cwd("yara", "index_%s.yar")
 
     # static fields which indicate whether the user has been
     # notified about missing dependencies already

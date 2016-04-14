@@ -14,12 +14,13 @@ from distutils.version import StrictVersion
 from cuckoo.common.abstracts import Auxiliary, Machinery, LibVirtMachinery, Processing
 from cuckoo.common.abstracts import Report, Signature
 from cuckoo.common.config import Config
-from cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
+from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.exceptions import CuckooDependencyError
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -164,8 +165,8 @@ class RunProcessing(object):
     def __init__(self, task):
         """@param task: task dictionary of the analysis to process."""
         self.task = task
-        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]))
-        self.baseline_path = os.path.join(CUCKOO_ROOT, "storage", "baseline")
+        self.analysis_path = cwd("storage", "analyses", "%s" % task["id"])
+        self.baseline_path = cwd("storage", "baseline")
         self.cfg = Config("processing")
 
     def process(self, module, results):
@@ -463,7 +464,7 @@ class RunReporting(object):
         """@param analysis_path: analysis folder path."""
         self.task = task
         self.results = results
-        self.analysis_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task["id"]))
+        self.analysis_path = cwd("storage", "analyses", "%s" % task["id"])
         self.cfg = Config("reporting")
 
     def process(self, module):

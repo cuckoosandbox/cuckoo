@@ -16,7 +16,7 @@ import socket
 
 from cuckoo.common.colors import red, green, yellow, cyan
 from cuckoo.common.config import Config
-from cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
+from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooStartupError, CuckooDatabaseError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.utils import create_folders
@@ -24,6 +24,7 @@ from cuckoo.core.database import Database, TASK_RUNNING
 from cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
 from cuckoo.core.plugins import import_plugin, import_package, list_plugins
 from cuckoo.core.rooter import rooter, vpns
+from cuckoo.misc import cwd
 
 try:
     import pwd
@@ -42,15 +43,6 @@ def check_python_version():
                                  "of Python, please use 2.7")
 
 
-def check_working_directory():
-    """Checks if working directories are ready.
-    @raise CuckooStartupError: if directories are not properly configured.
-    """
-    if not os.path.exists(CUCKOO_ROOT):
-        raise CuckooStartupError("You specified a non-existing root "
-                                 "directory: {0}".format(CUCKOO_ROOT))
-
-
 def check_configs():
     """Checks if config files exist.
     @raise CuckooStartupError: if config files do not exist.
@@ -62,10 +54,12 @@ def check_configs():
         "vsphere.conf", "xenserver.conf",
     )
 
-    for config in [os.path.join(CUCKOO_ROOT, "conf", f) for f in configs]:
-        if not os.path.exists(config):
-            raise CuckooStartupError("Config file does not exist at "
-                                     "path: {0}".format(config))
+    for filename in configs:
+        if not os.path.exists(cwd("conf", filename)):
+            raise CuckooStartupError(
+                "Config file does not exist at path: %s" %
+                cwd("conf", filename)
+            )
 
     return True
 
@@ -80,7 +74,7 @@ def create_structure():
     ]
 
     try:
-        create_folders(root=CUCKOO_ROOT, folders=folders)
+        create_folders(root=cwd(), folders=folders)
     except CuckooOperationalError as e:
         raise CuckooStartupError(e)
 
@@ -152,7 +146,7 @@ def init_logging():
     """Initializes logging."""
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 
-    fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log"))
+    fh = logging.handlers.WatchedFileHandler(cwd("log", "cuckoo.log"))
     fh.setFormatter(formatter)
     log.addHandler(fh)
 
@@ -196,7 +190,7 @@ def init_tasks():
         db.set_status(task.id, TASK_FAILED_ANALYSIS)
 
 def delete_file(*rel_path):
-    filepath = os.path.join(CUCKOO_ROOT, *rel_path)
+    filepath = cwd(*rel_path)
     if not os.path.exists(filepath):
         return
 
@@ -251,7 +245,7 @@ def init_yara():
     log.debug("Initializing Yara...")
 
     # Generate root directory for yara rules.
-    yara_root = os.path.join(CUCKOO_ROOT, "data", "yara")
+    yara_root = cwd("yara")
 
     # We divide yara rules in three categories.
     categories = ["binaries", "urls", "memory"]
@@ -292,7 +286,7 @@ def init_yara():
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer
     binaries. These include the Windows monitor etc."""
-    monitor = os.path.join(CUCKOO_ROOT, "data", "monitor", "latest")
+    monitor = cwd("monitor", "latest")
 
     # Checks whether the "latest" symlink is available as well as whether
     # it points to an existing directory.
@@ -479,9 +473,9 @@ def cuckoo_clean():
 
     # Paths to clean.
     paths = [
-        os.path.join(CUCKOO_ROOT, "db"),
-        os.path.join(CUCKOO_ROOT, "log"),
-        os.path.join(CUCKOO_ROOT, "storage"),
+        cwd("cuckoo.db"),
+        cwd("log"),
+        cwd("storage"),
     ]
 
     # Delete various directories.
@@ -491,20 +485,7 @@ def cuckoo_clean():
                 shutil.rmtree(path)
             except (IOError, OSError) as e:
                 log.warning("Error removing directory %s: %s", path, e)
-
-    # Delete all compiled Python objects ("*.pyc").
-    for dirpath, dirnames, filenames in os.walk(CUCKOO_ROOT):
-        for fname in filenames:
-            if not fname.endswith(".pyc"):
-                continue
-
-            # We don't want to delete the Android's Agent .pyc files (as we
-            # don't ship the original .py files and thus they're critical).
-            if "agent/android/python_agent" in dirpath.replace("\\", "/"):
-                continue
-
-            path = os.path.join(dirpath, fname)
-
+        elif os.path.isfile(path):
             try:
                 os.unlink(path)
             except (IOError, OSError) as e:

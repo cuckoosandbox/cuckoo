@@ -9,7 +9,8 @@ import logging
 import subprocess
 
 from cuckoo.common.abstracts import Auxiliary
-from cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_GUEST_PORT
+from cuckoo.common.constants import CUCKOO_GUEST_PORT
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -29,8 +30,7 @@ class Sniffer(Auxiliary):
 
         tcpdump = self.options.get("tcpdump", "/usr/sbin/tcpdump")
         bpf = self.options.get("bpf", "")
-        file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
-                                 "%s" % self.task.id, "dump.pcap")
+        file_path = cwd("storage", "analyses", "%s" % self.task.id, "dump.pcap")
 
         if not os.path.exists(tcpdump):
             log.error("Tcpdump does not exist at path \"%s\", network "

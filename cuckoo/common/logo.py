@@ -143,6 +143,6 @@ def logo():
     print
     print(" Cuckoo Sandbox %s" % yellow(CUCKOO_VERSION))
     print(" www.cuckoosandbox.org")
-    print(" Copyright (c) 2010-2015")
+    print(" Copyright (c) 2010-2016")
     print
     sys.stdout.flush()

@@ -41,10 +41,10 @@ except ImportError:
     HAVE_OLETOOLS = False
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.constants import CUCKOO_ROOT
 from cuckoo.common.objects import File
 from cuckoo.common.utils import convert_to_printable
 from cuckoo.common.utils import to_unicode
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -89,8 +89,7 @@ class PortableExecutable(object):
         @return: matched signatures or None.
         """
         try:
-            sig_path = os.path.join(CUCKOO_ROOT, "data",
-                                    "peutils", "UserDB.TXT")
+            sig_path = cwd("peutils", "UserDB.TXT")
             signatures = peutils.SignatureDatabase(sig_path)
             return signatures.match(self.pe, ep_only=True)
         except:

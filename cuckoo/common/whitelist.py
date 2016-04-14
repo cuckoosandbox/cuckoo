@@ -3,9 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os.path
-
-from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.misc import cwd
 
 domains = set()
 
@@ -13,5 +11,5 @@ def is_whitelisted_domain(domain):
     return domain in domains
 
 # Initialize the domain whitelist.
-for domain in open(os.path.join(CUCKOO_ROOT, "data", "whitelist", "domain.txt")):
+for domain in open(cwd("whitelist", "domain.txt")):
     domains.add(domain.strip())

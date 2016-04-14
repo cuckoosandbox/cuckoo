@@ -11,7 +11,6 @@ import time
 import xml.etree.ElementTree as ET
 
 from cuckoo.common.config import Config
-from cuckoo.common.constants import CUCKOO_ROOT
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooMachineError
 from cuckoo.common.exceptions import CuckooOperationalError
@@ -21,6 +20,7 @@ from cuckoo.common.objects import Dictionary
 from cuckoo.common.utils import create_folder
 from cuckoo.core.database import Database
 from cuckoo.core.resultserver import ResultServer
+from cuckoo.misc import cwd
 
 try:
     import libvirt
@@ -74,8 +74,7 @@ class Machinery(object):
 
     def pcap_path(self, task_id):
         """Returns the .pcap path for this task id."""
-        return os.path.join(CUCKOO_ROOT, "storage", "analyses",
-                            "%s" % task_id, "dump.pcap")
+        return cwd("storage", "analyses", "%s" % task_id, "dump.pcap")
 
     def set_options(self, options):
         """Set machine manager options.

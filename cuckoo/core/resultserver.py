@@ -13,12 +13,12 @@ import SocketServer
 from threading import Event, Thread
 
 from cuckoo.common.config import Config
-from cuckoo.common.constants import CUCKOO_ROOT
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooResultError
 from cuckoo.common.netlog import BsonParser
 from cuckoo.common.utils import create_folder, Singleton
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -121,7 +121,7 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
         if not task or not machine:
             return
 
-        return os.path.join(CUCKOO_ROOT, "storage", "analyses", str(task.id))
+        return cwd("storage", "analyses", "%s" % task.id)
 
 class ResultHandler(SocketServer.BaseRequestHandler):
     """Result handler.

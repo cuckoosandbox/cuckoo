@@ -16,11 +16,11 @@ import traceback
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from cuckoo.common.config import Config
-from cuckoo.common.constants import CUCKOO_ROOT
 from cuckoo.core.database import Database, TASK_REPORTED, TASK_COMPLETED
 from cuckoo.core.database import Task, TASK_FAILED_PROCESSING
 from cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from cuckoo.core.startup import init_modules, drop_privileges
+from cuckoo.misc import cwd
 
 log = None
 
@@ -132,8 +132,7 @@ def autoprocess(parallel=1):
                 if task.category == "file":
                     sample = db.view_sample(task.sample_id)
 
-                    copy_path = os.path.join(CUCKOO_ROOT, "storage",
-                                             "binaries", sample.sha256)
+                    copy_path = cwd("storage", "binaries", sample.sha256)
                 else:
                     copy_path = None
 

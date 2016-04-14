@@ -25,8 +25,9 @@ from datetime import datetime
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.config import Config
 
-from cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
+from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
+from cuckoo.misc import cwd
 
 try:
     import bs4
@@ -320,7 +321,7 @@ GUIDS = {}
 
 def guid_name(guid):
     if not GUIDS:
-        for line in open(os.path.join(CUCKOO_ROOT, "data", "guids.txt")):
+        for line in open(cwd("guids.txt")):
             try:
                 guid, name, url = line.strip().split()
             except:

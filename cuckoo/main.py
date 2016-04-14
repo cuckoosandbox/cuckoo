@@ -10,7 +10,7 @@ import os
 import sys
 import traceback
 
-from cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
+from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.logo import logo
 from cuckoo.common.utils import exception_message
@@ -22,6 +22,7 @@ from cuckoo.core.startup import cuckoo_clean, drop_privileges
 from cuckoo.core.startup import init_logging, init_modules
 from cuckoo.core.startup import init_tasks, init_yara, init_binaries
 from cuckoo.core.startup import init_rooter, init_routing
+from cuckoo.misc import set_cwd
 
 log = logging.getLogger("cuckoo")
 
@@ -32,9 +33,6 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     @param artwork: if set it will print only artworks, forever
     @param test: enable integration test mode, used only for testing
     """
-    cur_path = os.getcwd()
-    os.chdir(CUCKOO_ROOT)
-
     logo()
     check_working_directory()
     check_configs()
@@ -71,22 +69,15 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
 
     ResultServer()
 
-    os.chdir(cur_path)
-
 def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
     @param max_analysis_count: kill cuckoo after this number of analyses
     """
-    cur_path = os.getcwd()
-    os.chdir(CUCKOO_ROOT)
-
     try:
         sched = Scheduler(max_analysis_count)
         sched.start()
     except KeyboardInterrupt:
         sched.stop()
-
-    os.chdir(cur_path)
 
 def cuckoo():
     parser = argparse.ArgumentParser()
@@ -98,7 +89,10 @@ def cuckoo():
     parser.add_argument("-m", "--max-analysis-count", help="Maximum number of analyses", type=int, required=False)
     parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
     parser.add_argument("--clean", help="Remove all tasks and samples and their associated data", action='store_true', required=False)
+    parser.add_argument("--root", type=str, default="~/.cuckoo", help="Cuckoo Working Directory")
     args = parser.parse_args()
+
+    set_cwd(os.path.expanduser(args.root))
 
     if args.user:
         drop_privileges(args.user)

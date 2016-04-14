@@ -9,7 +9,7 @@ import time
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.config import Config
-from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.misc import cwd
 
 try:
     import volatility.conf as conf
@@ -519,7 +519,7 @@ class VolatilityAPI(object):
         """
         results = []
 
-        ypath = os.path.join(CUCKOO_ROOT, "data", "yara", "index_memory.yar")
+        ypath = cwd("yara", "index_memory.yar")
         if not os.path.exists(ypath):
             return dict(config={}, data=[])
 
@@ -909,7 +909,7 @@ class VolatilityManager(object):
         self.taint_pid = set()
         self.memfile = memfile
 
-        conf_path = os.path.join(CUCKOO_ROOT, "conf", "memory.conf")
+        conf_path = cwd("conf", "memory.conf")
         if not os.path.exists(conf_path):
             log.error("Configuration file volatility.conf not found".format(conf_path))
             self.voptions = False

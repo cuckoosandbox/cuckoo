@@ -9,7 +9,7 @@ import subprocess
 import threading
 
 from cuckoo.common.abstracts import Auxiliary
-from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 PORTS = []
@@ -26,8 +26,7 @@ class MITM(Auxiliary):
         script = self.options.get("script", "data/mitm.py")
         certificate = self.options.get("certificate", "bin/cert.p12")
 
-        outpath = os.path.join(CUCKOO_ROOT, "storage", "analyses",
-                               "%d" % self.task.id, "dump.mitm")
+        outpath = cwd("storage", "analyses", "%d" % self.task.id, "dump.mitm")
 
         if not os.path.exists(mitmdump):
             log.error("Mitmdump does not exist at path \"%s\", man in the "
@@ -64,15 +63,12 @@ class MITM(Auxiliary):
             "-w", outpath
         ]
 
-        mitmlog = os.path.join(CUCKOO_ROOT, "storage", "analyses",
-                               "%d" % self.task.id, "mitm.log")
+        mitmlog = cwd("storage", "analyses", "%d" % self.task.id, "mitm.log")
+        mitmerr = cwd("storage", "analyses", "%d" % self.task.id, "mitm.err")
 
-        mitmerr = os.path.join(CUCKOO_ROOT, "storage", "analyses",
-                               "%d" % self.task.id, "mitm.err")
-
-        self.proc = subprocess.Popen(args,
-                                     stdout=open(mitmlog, "wb"),
-                                     stderr=open(mitmerr, "wb"))
+        self.proc = subprocess.Popen(
+            args, stdout=open(mitmlog, "wb"), stderr=open(mitmerr, "wb")
+        )
 
         if "cert" in self.task.options:
             log.warning("A root certificate has been provided for this task, "

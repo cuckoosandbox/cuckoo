@@ -15,11 +15,11 @@ log = logging.getLogger()
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from cuckoo.common.config import Config
-from cuckoo.common.constants import CUCKOO_ROOT
 from cuckoo.core.database import Database
 from cuckoo.core.database import TASK_FAILED_PROCESSING, TASK_REPORTED
 from cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from cuckoo.core.startup import init_modules, drop_privileges
+from cuckoo.misc import cwd
 
 def process(target=None, copy_path=None, task=None):
     results = RunProcessing(task=task).run()
@@ -58,9 +58,7 @@ def instance(instance):
             if task.category == "file":
                 sample = db.view_sample(task.sample_id)
 
-                copy_path = os.path.join(
-                    CUCKOO_ROOT, "storage", "binaries", sample.sha256
-                )
+                copy_path = cwd("storage", "binaries", sample.sha256)
             else:
                 copy_path = None
 

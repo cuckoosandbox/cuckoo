@@ -16,13 +16,13 @@ from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
 
 from cuckoo.common.config import Config
-from cuckoo.common.constants import CUCKOO_ROOT
 from cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT
 from cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
 from cuckoo.common.constants import CUCKOO_GUEST_FAILED
 from cuckoo.common.exceptions import CuckooGuestError
 from cuckoo.common.utils import TimeoutServer
 from cuckoo.core.database import Database
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 db = Database()
@@ -91,7 +91,7 @@ class OldGuestManager(object):
 
         # Select the proper analyzer's folder according to the operating
         # system associated with the current machine.
-        root = os.path.join(CUCKOO_ROOT, "analyzer", self.platform)
+        root = cwd("analyzer", self.platform)
         root_len = len(os.path.abspath(root))
 
         if not os.path.exists(root):
@@ -109,7 +109,7 @@ class OldGuestManager(object):
 
         # Include the chosen monitoring component.
         if self.platform == "windows":
-            dirpath = os.path.join(CUCKOO_ROOT, "data", "monitor", monitor)
+            dirpath = cwd("monitor", monitor)
             for name in os.listdir(dirpath):
                 path = os.path.join(dirpath, name)
                 archive_name = os.path.join("/bin", name)
@@ -301,7 +301,7 @@ class GuestManager(object):
 
         # Select the proper analyzer's folder according to the operating
         # system associated with the current machine.
-        root = os.path.join(CUCKOO_ROOT, "analyzer", self.platform)
+        root = cwd("analyzer", self.platform)
         root_len = len(os.path.abspath(root))
 
         if not os.path.exists(root):
@@ -319,7 +319,7 @@ class GuestManager(object):
 
         # Include the chosen monitoring component.
         if self.platform == "windows":
-            dirpath = os.path.join(CUCKOO_ROOT, "data", "monitor", monitor)
+            dirpath = cwd("monitor", monitor)
             for name in os.listdir(dirpath):
                 path = os.path.join(dirpath, name)
                 archive_name = os.path.join("/bin", name)

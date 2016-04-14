@@ -27,7 +27,8 @@ sys.path.append(settings.CUCKOO_PATH)
 
 from cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
 from cuckoo.common.utils import store_temp_file, versiontuple
-from cuckoo.common.constants import CUCKOO_ROOT, LATEST_HTTPREPLAY
+from cuckoo.common.constants import LATEST_HTTPREPLAY
+from cuckoo.misc import cwd
 import modules.processing.network as network
 
 results_db = settings.MONGO
@@ -345,7 +346,7 @@ def moloch(request, **kwargs):
 
 @require_safe
 def full_memory_dump_file(request, analysis_number):
-    file_path = os.path.join(CUCKOO_ROOT, "storage", "analyses", str(analysis_number), "memory.dmp")
+    file_path = cwd("storage", "analyses", "%s" % analysis_number, "memory.dmp")
     if os.path.exists(file_path):
         content_type = "application/octet-stream"
         response = HttpResponse(open(file_path, "rb").read(), content_type=content_type)
@@ -702,9 +703,7 @@ def import_analysis(request):
         # Extract all of the files related to this analysis. This probably
         # requires some hacks depending on the user/group the Web
         # Interface is running under.
-        analysis_path = os.path.join(
-            CUCKOO_ROOT, "storage", "analyses", "%d" % task_id
-        )
+        analysis_path = cwd("storage", "analyses", "%d" % task_id)
 
         if not os.path.exists(analysis_path):
             os.mkdir(analysis_path)

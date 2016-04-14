@@ -3,12 +3,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import ConfigParser
 
-from cuckoo.common.constants import CUCKOO_ROOT
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.objects import Dictionary
+from cuckoo.misc import cwd
 
 class Config:
     """Configuration file parser."""
@@ -23,7 +22,7 @@ class Config:
         if cfg:
             config.read(cfg)
         else:
-            config.read(os.path.join(CUCKOO_ROOT, "conf", "%s.conf" % file_name))
+            config.read(cwd("conf", "%s.conf" % file_name))
 
         for section in config.sections():
             setattr(self, section, Dictionary())

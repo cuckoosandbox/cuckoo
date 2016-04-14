@@ -6,9 +6,9 @@
 import os
 import collections
 
-from cuckoo.common.constants import CUCKOO_ROOT
+from cuckoo.misc import cwd
 
-ANALYSIS_ROOT = os.path.join(CUCKOO_ROOT, "storage", "analyses")
+ANALYSIS_ROOT = cwd("storage", "analyses")
 
 def behavior_categories_percent(calls):
     catcounts = collections.defaultdict(lambda: 0)

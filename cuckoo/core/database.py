@@ -9,12 +9,12 @@ import logging
 from datetime import datetime
 
 from cuckoo.common.config import Config, parse_options
-from cuckoo.common.constants import CUCKOO_ROOT
 from cuckoo.common.exceptions import CuckooDatabaseError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.objects import File, URL, Dictionary
 from cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock, json_encode
+from cuckoo.misc import cwd
 
 try:
     from sqlalchemy import create_engine, Column, not_
@@ -376,7 +376,7 @@ class Database(object):
         elif hasattr(cfg, "database") and cfg.database.connection:
             self._connect_database(cfg.database.connection)
         else:
-            db_file = os.path.join(CUCKOO_ROOT, "db", "cuckoo.db")
+            db_file = cwd("cuckoo.db")
             if not os.path.exists(db_file):
                 db_dir = os.path.dirname(db_file)
                 if not os.path.exists(db_dir):
