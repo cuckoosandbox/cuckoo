@@ -91,6 +91,10 @@ def cuckoo_main(max_analysis_count=0):
     except KeyboardInterrupt:
         sched.stop()
 
+def cuckoo_community():
+    """Utility to fetch supplies from the Cuckoo Community."""
+    fetch_community()
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("command", nargs="?", help="Run a subcommand")
@@ -112,6 +116,10 @@ def main():
 
     if args.command == "clean":
         cuckoo_clean()
+        sys.exit(0)
+
+    if args.command == "community":
+        cuckoo_community()
         sys.exit(0)
 
     try:
