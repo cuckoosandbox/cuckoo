@@ -102,10 +102,16 @@ def main():
     parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
     parser.add_argument("--maxcount", type=int, help="Maximum number of analyses to perform.")
     parser.add_argument("--user", type=str, help="Drop user privileges to this user")
-    parser.add_argument("--root", type=str, default="~/.cuckoo", help="Cuckoo Working Directory")
+    parser.add_argument("--root", type=str, help="Cuckoo Working Directory")
     args = parser.parse_args()
 
-    set_cwd(os.path.expanduser(args.root))
+    # Cuckoo Working Directory precedence:
+    # * Command-line option (--root)
+    # * Environment option ("CUCKOO")
+    # * Default value ("~/.cuckoo")
+    set_cwd(os.path.expanduser(
+        args.root or os.getenv("CUCKOO") or "~/.cuckoo"
+    ))
 
     if args.quiet:
         logging.basicConfig(level=logging.WARN)
