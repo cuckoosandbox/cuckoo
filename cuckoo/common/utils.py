@@ -358,12 +358,14 @@ def exception_message():
     msg += "Python version: %s\n" % sys.version.split()[0]
     msg += "Machine arch: %s\n" % platform.machine()
 
+    """
     git_version = os.path.join(CUCKOO_ROOT, ".git", "refs", "heads", "master")
     if os.path.exists(git_version):
         try:
             msg += "Git version: %s\n" % open(git_version, "rb").read().strip()
         except:
             pass
+    """
 
     try:
         import pip
