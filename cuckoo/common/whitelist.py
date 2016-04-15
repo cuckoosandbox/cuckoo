@@ -10,7 +10,7 @@ domains = set()
 def is_whitelisted_domain(domain):
     # Initialize the domain whitelist.
     if not domains:
-        for domain in open(cwd("whitelist", "domain.txt")):
+        for domain in open(cwd("whitelist", "domain.txt", private=True)):
             domains.add(domain.strip())
 
     return domain in domains
