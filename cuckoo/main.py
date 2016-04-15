@@ -11,20 +11,22 @@ import sys
 import traceback
 
 import cuckoo
+
+from cuckoo.apps import fetch_community, submit_tasks
 from cuckoo.common.exceptions import CuckooCriticalError
-from cuckoo.common.colors import yellow, red
+from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
 from cuckoo.common.utils import exception_message
 from cuckoo.core.database import Database
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.scheduler import Scheduler
-from cuckoo.core.startup import check_configs
+from cuckoo.core.startup import check_configs, init_modules
 from cuckoo.core.startup import check_version, create_structure
 from cuckoo.core.startup import cuckoo_clean, drop_privileges
-from cuckoo.core.startup import init_logging, init_modules
+from cuckoo.core.startup import init_logging, init_console_logging
 from cuckoo.core.startup import init_tasks, init_yara, init_binaries
 from cuckoo.core.startup import init_rooter, init_routing
-from cuckoo.misc import cwd, set_cwd, fetch_community
+from cuckoo.misc import cwd, set_cwd
 
 log = logging.getLogger("cuckoo")
 
@@ -79,8 +81,6 @@ def cuckoo_init(level):
 
     init_logging(level)
 
-    Database().connect()
-
     init_modules()
     init_tasks()
     init_yara()
@@ -116,6 +116,9 @@ def main(ctx, debug, quiet, maxcount, user, root):
 
     # Drop privileges.
     user and drop_privileges(user)
+
+    # Connect to the database.
+    Database().connect()
 
     # A subcommand will be invoked, so don't run Cuckoo itself.
     if ctx.invoked_subcommand:
@@ -158,3 +161,49 @@ def clean():
     """Utility to clean the Cuckoo Working Directory and associated
     databases."""
     cuckoo_clean()
+
+@main.command()
+@click.argument("target", nargs=-1)
+@click.option("-u", "--url", is_flag=True)
+@click.option("-o", "--options")
+@click.option("--package")
+@click.option("--custom")
+@click.option("--owner")
+@click.option("--timeout", type=int)
+@click.option("--priority", type=int)
+@click.option("--machine")
+@click.option("--platform")
+@click.option("--memory", is_flag=True)
+@click.option("--enforce-timeout", is_flag=True)
+@click.option("--clock")
+@click.option("--tags")
+@click.option("--baseline", is_flag=True)
+@click.option("--remote")
+@click.option("--shuffle", is_flag=True)
+@click.option("--pattern")
+@click.option("--max", type=int)
+@click.option("-d", "--debug", is_flag=True)
+@click.option("-q", "--quiet", is_flag=True)
+def submit(target, url, options, package, custom, owner, timeout, priority,
+           machine, platform, memory, enforce_timeout, clock, tags, baseline,
+           remote, shuffle, pattern, max, debug, quiet):
+    """Submit one or more files or URLs to Cuckoo."""
+    if quiet:
+        level = logging.WARN
+    elif debug:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+
+    init_console_logging(level=level)
+
+    l = submit_tasks(
+        target, options, package, custom, owner, timeout, priority, machine,
+        platform, memory, enforce_timeout, clock, tags, remote, pattern, max,
+        url, baseline, shuffle
+    )
+
+    for category, target, task_id in l:
+        print "%s: %s \"%s\" added as task with ID #%s" % (
+            bold(green("Success")), category, target, task_id
+        )

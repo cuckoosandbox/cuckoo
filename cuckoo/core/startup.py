@@ -166,7 +166,7 @@ def init_logging(level):
 
     log.setLevel(level)
 
-def init_console_logging():
+def init_console_logging(level=logging.INFO):
     """Initializes logging only to console."""
     formatter = logging.Formatter(
         "%(asctime)s [%(name)s] %(levelname)s: %(message)s"
@@ -179,7 +179,7 @@ def init_console_logging():
     ch.setFormatter(formatter)
     log.addHandler(ch)
 
-    log.setLevel(logging.INFO)
+    log.setLevel(level)
 
 def init_tasks():
     """Check tasks and reschedule uncompleted ones."""

@@ -4,9 +4,6 @@
 
 import logging
 import os.path
-import requests
-import StringIO
-import tarfile
 
 import cuckoo
 
@@ -33,50 +30,3 @@ def mkdir(*args):
     dirpath = os.path.join(*args)
     if not os.path.isdir(dirpath):
         os.mkdir(dirpath)
-
-URL = "https://github.com/cuckoosandbox/community/archive/%s.tar.gz"
-
-def fetch_community(branch="master", force=False, filepath=None):
-    if filepath:
-        buf = open(filepath, "rb").read()
-    else:
-        buf = requests.get(URL % branch).content
-
-    t = tarfile.TarFile.open(fileobj=StringIO.StringIO(buf), mode="r:gz")
-
-    folders = {
-        os.path.join("modules", "signatures"): "signatures",
-        os.path.join("data", "monitor"): "monitor",
-        os.path.join("agent"): "agent",
-    }
-
-    members = t.getmembers()
-
-    for tarfolder, outfolder in folders.items():
-        mkdir(cwd(outfolder))
-
-        # E.g., "community-master/modules/signatures".
-        name_start = "%s/%s" % (members[0].name, tarfolder)
-        for member in members:
-            if not member.name.startswith(name_start) or \
-                    name_start == member.name:
-                continue
-
-            filepath = cwd(outfolder, member.name[len(name_start)+1:])
-            if member.isdir():
-                mkdir(filepath)
-                continue
-
-            # TODO Ask for confirmation as we used to do.
-            if os.path.exists(filepath) and not force:
-                log.info(
-                    "Not overwriting file which already exists: %s",
-                    member.name
-                )
-                continue
-
-            if member.issym():
-                t.makelink(member, filepath)
-                continue
-
-            open(filepath, "wb").write(t.extractfile(member).read())
