@@ -5,6 +5,7 @@
 import fnmatch
 import logging
 import os.path
+import random
 import requests
 import StringIO
 import tarfile
@@ -128,6 +129,9 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
         files = []
         for path in target:
             files.extend(enumerate_files(os.path.abspath(path), pattern))
+
+        if is_shuffle:
+            random.shuffle(files)
 
         for filepath in files:
             if not os.path.getsize(filepath):
