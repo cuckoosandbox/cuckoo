@@ -127,7 +127,7 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
     else:
         files = []
         for path in target:
-            files.extend(enumerate_files(path, pattern))
+            files.extend(enumerate_files(os.path.abspath(path), pattern))
 
         for filepath in files:
             if not os.path.getsize(filepath):
