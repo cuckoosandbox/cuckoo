@@ -81,6 +81,8 @@ def cuckoo_init(level):
 
     init_logging(level)
 
+    Database().connect()
+
     init_modules()
     init_tasks()
     init_yara()
@@ -116,9 +118,6 @@ def main(ctx, debug, quiet, maxcount, user, root):
 
     # Drop privileges.
     user and drop_privileges(user)
-
-    # Connect to the database.
-    Database().connect()
 
     # A subcommand will be invoked, so don't run Cuckoo itself.
     if ctx.invoked_subcommand:
@@ -196,6 +195,7 @@ def submit(target, url, options, package, custom, owner, timeout, priority,
         level = logging.INFO
 
     init_console_logging(level=level)
+    Database().connect()
 
     l = submit_tasks(
         target, options, package, custom, owner, timeout, priority, machine,
