@@ -8,6 +8,8 @@ import requests
 import StringIO
 import tarfile
 
+import cuckoo
+
 log = logging.getLogger(__name__)
 
 # Cuckoo Working Directory base path.
@@ -17,9 +19,14 @@ def set_cwd(path):
     global _root
     _root = path
 
-def cwd(*args):
-    """Returns absolute path to this file in its Cuckoo Working Directory."""
-    return os.path.join(_root, *args)
+def cwd(*args, **kwargs):
+    """Returns absolute path to this file in the Cuckoo Working Directory or
+    optionally - when private=True has been passed along - to our private
+    Cuckoo Working Directory which is not configurable."""
+    if kwargs.pop("private", False):
+        return os.path.join(cuckoo.__path__[0], "data-private", *args)
+    else:
+        return os.path.join(_root, *args)
 
 def mkdir(*args):
     """Create a directory without throwing exceptions if it already exists."""

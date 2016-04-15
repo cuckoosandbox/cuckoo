@@ -57,7 +57,7 @@ class ReportHTML(Report):
             results["screenshots"] = []
 
         env = Environment(autoescape=True)
-        env.loader = FileSystemLoader(cwd("html"))
+        env.loader = FileSystemLoader(cwd("html", private=True))
 
         processed = None
         mapping = [

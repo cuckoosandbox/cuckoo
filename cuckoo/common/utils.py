@@ -321,7 +321,7 @@ GUIDS = {}
 
 def guid_name(guid):
     if not GUIDS:
-        for line in open(cwd("guids.txt")):
+        for line in open(cwd("guids.txt", private=True)):
             try:
                 guid, name, url = line.strip().split()
             except:

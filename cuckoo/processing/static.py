@@ -89,7 +89,7 @@ class PortableExecutable(object):
         @return: matched signatures or None.
         """
         try:
-            sig_path = cwd("peutils", "UserDB.TXT")
+            sig_path = cwd("peutils", "UserDB.TXT", private=True)
             signatures = peutils.SignatureDatabase(sig_path)
             return signatures.match(self.pe, ep_only=True)
         except:
