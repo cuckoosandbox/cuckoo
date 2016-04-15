@@ -38,6 +38,10 @@ def cuckoo_create():
     print " "*4, "We will now set you up with our default configuration."
     print " "*4, "You will be able to modify the configuration to your likings "
     print " "*4, "by exploring the", red(cwd()), "directory."
+    print
+    print " "*4, "Among other configurable things of most interest is the"
+    print " "*4, "new location for your Cuckoo configuration:"
+    print " "*4, "         " + red(cwd("conf"))
     print "="*71
     print
 

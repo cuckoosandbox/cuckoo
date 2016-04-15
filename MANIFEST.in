@@ -1,3 +1,6 @@
 include cuckoo/data/conf/*.conf
 include cuckoo/data/monitor/*/*.*
 include cuckoo/data/*.*
+include cuckoo/data-private/*.*
+include cuckoo/data-private/*/*.*
+include cuckoo/data-private/*/*/*.*

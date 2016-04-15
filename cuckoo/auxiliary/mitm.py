@@ -23,7 +23,7 @@ class MITM(Auxiliary):
     def start(self):
         mitmdump = self.options.get("mitmdump", "/usr/local/bin/mitmdump")
         port_base = int(self.options.get("port_base", 50000))
-        script = self.options.get("script", "data/mitm.py")
+        script = cwd(self.options.get("script", "mitm.py"))
         certificate = self.options.get("certificate", "bin/cert.p12")
 
         outpath = cwd("storage", "analyses", "%d" % self.task.id, "dump.mitm")
@@ -38,7 +38,7 @@ class MITM(Auxiliary):
                       "man in the middle interception aborted.", script)
             return
 
-        cert_path = os.path.join("analyzer", "windows", certificate)
+        cert_path = cwd("analyzer", "windows", certificate)
         if not os.path.exists(cert_path):
             log.error("Mitmdump root certificate not found at path \"%s\" "
                       "(real path \"%s\"), man in the middle interception "
