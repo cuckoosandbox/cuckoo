@@ -143,9 +143,14 @@ class ConsoleHandler(logging.StreamHandler):
 
         logging.StreamHandler.emit(self, colored)
 
-def init_logging():
+def init_logging(level):
     """Initializes logging."""
-    formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s [%(name)s] %(levelname)s: %(message)s"
+    )
+
+    # We operate on the root logger.
+    log = logging.getLogger()
 
     fh = logging.handlers.WatchedFileHandler(cwd("log", "cuckoo.log"))
     fh.setFormatter(formatter)
@@ -159,11 +164,16 @@ def init_logging():
     dh.setLevel(logging.ERROR)
     log.addHandler(dh)
 
-    log.setLevel(logging.INFO)
+    log.setLevel(level)
 
 def init_console_logging():
     """Initializes logging only to console."""
-    formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s [%(name)s] %(levelname)s: %(message)s"
+    )
+
+    # We operate on the root logger.
+    log = logging.getLogger()
 
     ch = ConsoleHandler()
     ch.setFormatter(formatter)

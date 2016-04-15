@@ -52,7 +52,7 @@ def cuckoo_create():
         else:
             shutil.copytree(filepath, cwd(filename), symlinks=True)
 
-def cuckoo_init():
+def cuckoo_init(level):
     """Initialize Cuckoo configuration.
     @param quiet: enable quiet mode.
     @param debug: enable debug mode.
@@ -68,7 +68,7 @@ def cuckoo_init():
     check_version()
     create_structure()
 
-    init_logging()
+    init_logging(level)
 
     Database().connect()
 
@@ -114,9 +114,11 @@ def main():
     ))
 
     if args.quiet:
-        logging.basicConfig(level=logging.WARN)
+        level = logging.WARN
     elif args.debug:
-        logging.basicConfig(level=logging.DEBUG)
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
 
     if args.user:
         drop_privileges(args.user)
@@ -130,7 +132,7 @@ def main():
         sys.exit(0)
 
     try:
-        cuckoo_init()
+        cuckoo_init(level)
         cuckoo_main(max_analysis_count=args.maxcount)
     except CuckooCriticalError as e:
         message = "{0}: {1}".format(e.__class__.__name__, e)
