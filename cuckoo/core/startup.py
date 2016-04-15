@@ -281,13 +281,10 @@ def init_binaries():
         raise CuckooStartupError(
             "The binaries used for Windows analysis are updated regularly, "
             "independently from the release line. It appears that you're "
-            "not up-to-date. This can happen when you've just installed "
-            "Cuckoo or when you've updated your Cuckoo version by pulling "
-            "the latest changes from our Git repository. In order to get "
-            "up-to-date, please run the following "
-            "command: `./utils/community.py -wafb monitor` or "
-            "`./utils/community.py -waf` if you'd also like to download "
-            "over 300 Cuckoo signatures."
+            "not up-to-date. This may happen when you've just installed the "
+            "latest development version of Cuckoo or when you've updated "
+            "to the latest Cuckoo. In order to get up-to-date, please run "
+            "the following command: `cuckoo community`."
         )
 
 def init_rooter():

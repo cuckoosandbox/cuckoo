@@ -52,6 +52,10 @@ def cuckoo_create():
         else:
             shutil.copytree(filepath, cwd(filename), symlinks=True)
 
+    print "Cuckoo has finished setting up the default configuration."
+    print "Please modify the default settings where required and"
+    print "start Cuckoo again (by running `cuckoo` or `cuckoo -d`)."
+
 def cuckoo_init(level):
     """Initialize Cuckoo configuration.
     @param quiet: enable quiet mode.
@@ -63,6 +67,7 @@ def cuckoo_init(level):
     # Cuckoo Working Directory anyway).
     if not os.path.isdir(cwd()) or not os.listdir(cwd()):
         cuckoo_create()
+        sys.exit(0)
 
     check_configs()
     check_version()
@@ -141,6 +146,8 @@ def main():
         else:
             sys.stderr.write("{0}\n".format(message))
         sys.exit(1)
+    except SystemExit:
+        pass
     except:
         # Deal with an unhandled exception.
         message = exception_message()
