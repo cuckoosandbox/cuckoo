@@ -148,12 +148,12 @@ def main(ctx, debug, quiet, maxcount, user, root):
         print message, traceback.format_exc()
 
 @main.command()
-@click.option("-f", "--force", is_flag=True)
-@click.option("-b", "--branch", default="master")
-def community(force, branch):
+@click.option("-f", "--force", is_flag=True, help="Overwrite existing files")
+@click.option("-b", "--branch", default="master", help="Specify a different community branch rather than master")
+@click.option("--file", "--filepath", type=click.Path(exists=True), help="Specify a local copy of a community .tar.gz file")
+def community(force, branch, filepath):
     """Utility to fetch supplies from the Cuckoo Community."""
-    # TODO Ability to use a local file (e.g., "master.tar.gz").
-    fetch_community(force=force, branch=branch)
+    fetch_community(force=force, branch=branch, filepath=filepath)
 
 @main.command()
 def clean():
