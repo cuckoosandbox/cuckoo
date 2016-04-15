@@ -3,7 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import argparse
+import click
 import logging
 import os
 import shutil
@@ -100,49 +100,37 @@ def cuckoo_main(max_analysis_count=0):
     except KeyboardInterrupt:
         sched.stop()
 
-def cuckoo_community():
-    """Utility to fetch supplies from the Cuckoo Community."""
-    fetch_community()
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("command", nargs="?", help="Run a subcommand")
-    parser.add_argument("-q", "--quiet", help="Display only error messages", action="store_true", required=False)
-    parser.add_argument("-d", "--debug", help="Display debug messages", action="store_true", required=False)
-    parser.add_argument("--maxcount", type=int, help="Maximum number of analyses to perform.")
-    parser.add_argument("--user", type=str, help="Drop user privileges to this user")
-    parser.add_argument("--root", type=str, help="Cuckoo Working Directory")
-    args = parser.parse_args()
-
+@click.group(invoke_without_command=True)
+@click.option("-d", "--debug", is_flag=True)
+@click.option("-q", "--quiet", is_flag=True)
+@click.option("-m", "--maxcount", default=0)
+@click.option("--user")
+@click.option("--root", envvar="CUCKOO", default="~/.cuckoo")
+@click.pass_context
+def main(ctx, debug, quiet, maxcount, user, root):
     # Cuckoo Working Directory precedence:
     # * Command-line option (--root)
     # * Environment option ("CUCKOO")
     # * Default value ("~/.cuckoo")
-    set_cwd(os.path.expanduser(
-        args.root or os.getenv("CUCKOO") or "~/.cuckoo"
-    ))
+    set_cwd(os.path.expanduser(root))
 
-    if args.quiet:
+    # Drop privileges.
+    user and drop_privileges(user)
+
+    # A subcommand will be invoked, so don't run Cuckoo itself.
+    if ctx.invoked_subcommand:
+        return
+
+    if quiet:
         level = logging.WARN
-    elif args.debug:
+    elif debug:
         level = logging.DEBUG
     else:
         level = logging.INFO
 
-    if args.user:
-        drop_privileges(args.user)
-
-    if args.command == "clean":
-        cuckoo_clean()
-        sys.exit(0)
-
-    if args.command == "community":
-        cuckoo_community()
-        sys.exit(0)
-
     try:
         cuckoo_init(level)
-        cuckoo_main(max_analysis_count=args.maxcount)
+        cuckoo_main(maxcount)
     except CuckooCriticalError as e:
         message = "{0}: {1}".format(e.__class__.__name__, e)
         if len(log.handlers):
@@ -156,3 +144,17 @@ def main():
         # Deal with an unhandled exception.
         message = exception_message()
         print message, traceback.format_exc()
+
+@main.command()
+@click.option("-f", "--force", is_flag=True)
+@click.option("-b", "--branch", default="master")
+def community(force, branch):
+    """Utility to fetch supplies from the Cuckoo Community."""
+    # TODO Ability to use a local file (e.g., "master.tar.gz").
+    fetch_community(force=force, branch=branch)
+
+@main.command()
+def clean():
+    """Utility to clean the Cuckoo Working Directory and associated
+    databases."""
+    cuckoo_clean()

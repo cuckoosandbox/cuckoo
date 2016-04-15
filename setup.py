@@ -26,6 +26,7 @@ setup(
         "alembic==0.8.0",
         "beautifulsoup4==4.4.1",
         "chardet==2.3.0",
+        "click==6.6",
         "Django==1.8.4",
         "dpkt==1.8.6.2",
         "Flask==0.10.1",
