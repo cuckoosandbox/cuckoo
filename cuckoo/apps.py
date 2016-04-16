@@ -86,7 +86,7 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
     db = Database()
 
     data = dict(
-        package=package,
+        package=package or "",
         timeout=timeout,
         options=options,
         priority=priority,
