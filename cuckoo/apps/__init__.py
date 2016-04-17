@@ -6,4 +6,5 @@ from .apps import (
     fetch_community, submit_tasks, process_tasks
 )
 
+from .api import cuckoo_api
 from .rooter import cuckoo_rooter

@@ -13,7 +13,7 @@ import traceback
 import cuckoo
 
 from cuckoo.apps import fetch_community, submit_tasks, process_tasks
-from cuckoo.apps import cuckoo_rooter
+from cuckoo.apps import cuckoo_rooter, cuckoo_api
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
@@ -244,3 +244,12 @@ def rooter(socket, group, ifconfig, service, iptables, ip, verbose):
         logging.basicConfig(level=logging.INFO)
 
     cuckoo_rooter(socket, group, ifconfig, service, iptables, ip)
+
+@main.command()
+@click.option("-H", "--host", default="localhost", help="Host to bind the API server on")
+@click.option("-p", "--port", default=8090, help="Port to bind the API server on")
+@click.option("-d", "--debug", is_flag=True, help="Start the API in debug mode")
+def api(host, port, debug):
+    Database().connect()
+
+    cuckoo_api(host, port, debug)

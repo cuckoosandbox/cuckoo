@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (C) 2010-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
@@ -8,7 +7,7 @@ import os
 import sys
 import socket
 import tarfile
-import argparse
+
 from datetime import datetime
 from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
@@ -18,13 +17,10 @@ try:
 except ImportError:
     sys.exit("ERROR: Flask library is missing (`pip install flask`)")
 
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
-
 from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.utils import store_temp_file, delete_folder
 from cuckoo.core.database import Database, TASK_RUNNING, Task
 from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
-from cuckoo.core.startup import drop_privileges
 from cuckoo.core.rooter import rooter
 from cuckoo.misc import cwd
 
@@ -547,17 +543,5 @@ def vpn_status():
 
     return jsonify({"vpns": status})
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-H", "--host", help="Host to bind the API server on",
-                        default="localhost", action="store", required=False)
-    parser.add_argument("-p", "--port", help="Port to bind the API server on",
-                        default=8090, action="store", required=False)
-    parser.add_argument("-u", "--user", type=str,
-                        help="Drop user privileges to this user")
-    args = parser.parse_args()
-
-    if args.user:
-        drop_privileges(args.user)
-
-    app.run(host=args.host, port=int(args.port))
+def cuckoo_api(hostname, port, debug):
+    app.run(host=hostname, port=port, debug=debug)
