@@ -19,7 +19,7 @@ from cuckoo.core.database import Database
 from cuckoo.core.database import TASK_FAILED_PROCESSING, TASK_REPORTED
 from cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from cuckoo.core.startup import init_modules, drop_privileges
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, set_cwd
 
 def process(target=None, copy_path=None, task=None):
     results = RunProcessing(task=task).run()
@@ -36,11 +36,7 @@ def instance(instance):
     maxcount = cfg.cuckoo.max_analysis_count
     count = 0
     db = Database()
-
-    # There's a good chance MySQL also works, though.
-    if db.engine.name != "postgresql":
-        sys.exit("Due to SQL limitations utils/process2.py currently only "
-                 "supports PostgreSQL.")
+    db.connect()
 
     try:
         while not maxcount or count != maxcount:
@@ -99,6 +95,8 @@ def main():
         log.exception("Unknown exception!")
 
 if __name__ == "__main__":
+    set_cwd(os.path.expanduser("~/.cuckoo"))
+
     cfg = Config()
 
     try:
