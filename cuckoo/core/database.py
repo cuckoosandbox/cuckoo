@@ -1341,31 +1341,32 @@ class Database(object):
         """Get an available task for processing."""
         session = self.Session()
 
-        # Please feel free to sqlalchemize the following query, but I didn't
-        # get that far. This seems to be doing a fine job for avoiding race
-        # conditions - especially with the session.commit() thing. But any
-        # improvements are welcome.
         # TODO We can get rid of the `processing` column once again by
         # introducing a "reporting" status, but this requires annoying
         # database migrations, so leaving that for another day.
-        query = """
-            UPDATE tasks SET processing = :instance
-            WHERE id IN (
-                SELECT id FROM tasks
-                WHERE status = :status AND processing IS NULL
-                LIMIT 1 FOR UPDATE
-            )
-            RETURNING id
-        """
 
         try:
-            params = {
-                "instance": instance,
-                "status": TASK_COMPLETED,
-            }
-            task = session.execute(query, params).first()
+            # Fetch a task that has yet to be processed and make sure no other
+            # threads are allowed to access it through "for update".
+            q = session.query(Task).filter_by(status=TASK_COMPLETED)
+            task = q.filter_by(processing=None).with_for_update().first()
+
+            # There's nothing to process in the first place.
+            if not task:
+                return
+
+            # Update the task so that it is processed by this instance.
+            session.query(Task).filter_by(id=task.id).update({
+                "processing": instance,
+            })
+
             session.commit()
-            return task[0] if task else None
+            session.refresh(task)
+
+            # Only return the task if it was really assigned to this node. It
+            # could be, e.g., in sqlite3, that the locking is misbehaving.
+            if task.processing == instance:
+                return task.id
         except SQLAlchemyError as e:
             log.debug("Database error getting new processing tasks: %s", e)
         finally:
