@@ -27,6 +27,7 @@ from cuckoo.core.startup import init_logging, init_console_logging
 from cuckoo.core.startup import init_tasks, init_yara, init_binaries
 from cuckoo.core.startup import init_rooter, init_routing
 from cuckoo.misc import cwd, set_cwd
+from cuckoo.rooter import cuckoo_rooter
 
 log = logging.getLogger("cuckoo")
 
@@ -227,3 +228,19 @@ def process(instance, maxcount, debug, quiet):
 
     log.info("Initialized instance=%s, ready to process some tasks", instance)
     process_tasks(instance, maxcount)
+
+@main.command()
+@click.argument("socket", default="/tmp/cuckoo-rooter", required=False)
+@click.option("-g", "--group", default="cuckoo", help="Unix socket group")
+@click.option("--ifconfig", default="/sbin/ifconfig", help="Path to ifconfig(8)")
+@click.option("--service", default="/usr/sbin/service", help="Path to service(8) for invoking OpenVPN")
+@click.option("--iptables", default="/sbin/iptables", help="Path to iptables(8)")
+@click.option("--ip", default="/sbin/ip", help="Path to ip(8)")
+@click.option("-v", "--verbose", is_flag=True)
+def rooter(socket, group, ifconfig, service, iptables, ip, verbose):
+    if verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    cuckoo_rooter(socket, group, ifconfig, service, iptables, ip)
