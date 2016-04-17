@@ -193,6 +193,23 @@ def process(target, copy_path, task, cfg):
                 "path \"%s\": %s", copy_path, e
             )
 
+def process_task(task, db, cfg=None):
+    try:
+        if task["category"] == "file":
+            sample = db.view_sample(task["sample_id"])
+            copy_path = cwd("storage", "binaries", sample.sha256)
+        else:
+            copy_path = None
+
+        try:
+            process(task["target"], copy_path, task, cfg or Config())
+            db.set_status(task["id"], TASK_REPORTED)
+        except Exception as e:
+            log.exception("Task #%d: error reporting: %s", task["id"], e)
+            db.set_status(task["id"], TASK_FAILED_PROCESSING)
+    except Exception as e:
+        log.exception("Caught unknown exception: %s", e)
+
 def process_tasks(instance, maxcount):
     count = 0
     cfg = Config()
@@ -212,19 +229,7 @@ def process_tasks(instance, maxcount):
 
             log.info("Task #%d: reporting task", task.id)
 
-            if task.category == "file":
-                sample = db.view_sample(task.sample_id)
-                copy_path = cwd("storage", "binaries", sample.sha256)
-            else:
-                copy_path = None
-
-            try:
-                process(task.target, copy_path, task.to_dict(), cfg)
-                db.set_status(task.id, TASK_REPORTED)
-            except Exception as e:
-                log.exception("Task #%d: error reporting: %s", task.id, e)
-                db.set_status(task.id, TASK_FAILED_PROCESSING)
-
+            process_task(task.to_dict(), db, cfg)
             count += 1
     except Exception as e:
         log.exception("Caught unknown exception: %s", e)

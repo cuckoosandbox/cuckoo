@@ -12,8 +12,10 @@ import traceback
 
 import cuckoo
 
-from cuckoo.apps import fetch_community, submit_tasks, process_tasks
-from cuckoo.apps import cuckoo_rooter, cuckoo_api, cuckoo_dnsserve
+from cuckoo.apps import (
+    fetch_community, submit_tasks, process_tasks, process_task, cuckoo_rooter,
+    cuckoo_api, cuckoo_dnsserve
+)
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
@@ -210,11 +212,13 @@ def submit(target, url, options, package, custom, owner, timeout, priority,
         )
 
 @main.command()
-@click.argument("instance")
+@click.argument("instance", required=False)
+@click.option("-r", "--report", default=0, help="Re-generate a report")
 @click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
 @click.option("-q", "--quiet", is_flag=True, help="Only log warnings and critical messages")
-def process(instance, maxcount, debug, quiet):
+@click.pass_context
+def process(ctx, instance, report, maxcount, debug, quiet):
     """Process raw task data into reports."""
     if quiet:
         level = logging.WARN
@@ -224,10 +228,30 @@ def process(instance, maxcount, debug, quiet):
         level = logging.INFO
 
     init_console_logging(level=level)
-    Database().connect()
 
-    log.info("Initialized instance=%s, ready to process some tasks", instance)
-    process_tasks(instance, maxcount)
+    db = Database()
+    db.connect()
+
+    # Regenerate a report.
+    if report:
+        task = db.view_task(report)
+        if not task:
+            task = {
+                "id": report,
+                "category": "file",
+                "target": "",
+                "options": "",
+            }
+        else:
+            task = task.to_dict()
+
+        process_task(task, db)
+    elif not instance:
+        print ctx.get_help(), "\n"
+        sys.exit("In automated mode an instance name is required!")
+    else:
+        log.info("Initialized instance=%s, ready to process some tasks", instance)
+        process_tasks(instance, maxcount)
 
 @main.command()
 @click.argument("socket", default="/tmp/cuckoo-rooter", required=False)
