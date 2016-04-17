@@ -13,7 +13,7 @@ import traceback
 import cuckoo
 
 from cuckoo.apps import fetch_community, submit_tasks, process_tasks
-from cuckoo.apps import cuckoo_rooter, cuckoo_api
+from cuckoo.apps import cuckoo_rooter, cuckoo_api, cuckoo_dnsserve
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
@@ -253,3 +253,17 @@ def api(host, port, debug):
     Database().connect()
 
     cuckoo_api(host, port, debug)
+
+@main.command()
+@click.option("-H", "--host", default="0.0.0.0", help="IP address to bind for the DNS server")
+@click.option("-p", "--port", default=53, help="UDP port to bind to for the DNS server")
+@click.option("--nxdomain", help="IP address to return instead of NXDOMAIN")
+@click.option("--hardcode", help="Hardcoded IP address to return instead of actually doing DNS lookups")
+@click.option("-v", "--verbose", is_flag=True)
+def dnsserve(host, port, nxdomain, hardcode, verbose):
+    if verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    cuckoo_dnsserve(host, port, nxdomain, hardcode)

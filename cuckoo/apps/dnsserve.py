@@ -1,9 +1,7 @@
-#!/usr/bin/env python
 # Copyright (C) 2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import argparse
 import logging
 import socket
 import sys
@@ -13,10 +11,12 @@ try:
 except ImportError:
     sys.exit("ERROR: Scapy library is missing (`pip install scapy`)")
 
-def dns_serve(args):
+log = logging.getLogger("dnsserve")
+
+def cuckoo_dnsserve(host, port, nxdomain, hardcode):
     udps = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udps.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    udps.bind((args.bind, args.port))
+    udps.bind((host, port))
 
     while True:
         data, addr = udps.recvfrom(1024)
@@ -27,14 +27,14 @@ def dns_serve(args):
 
         # IN A, actually look the domain up.
         if p.opcode == 0 and p[DNSQR].qtype == 1 and p[DNSQR].qclass == 1:
-            if args.hardcode:
-                answer_ip = args.hardcode
+            if hardcode:
+                answer_ip = hardcode
             else:
                 try:
                     answer_ip = socket.gethostbyname(p.qd[0].qname)
                 except:
-                    if args.nxdomain:
-                        answer_ip = args.nxdomain
+                    if nxdomain:
+                        answer_ip = nxdomain
                     else:
                         rp.ancount = 0
                         rp.rcode = 3
@@ -60,17 +60,3 @@ def dns_serve(args):
             )
 
         udps.sendto(rp.build(), addr)
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Small DNS server")
-    parser.add_argument("--bind", help="IP address to bind for DNS and services.", default="0.0.0.0")
-    parser.add_argument("--port", help="UDP port to bind for DNS and services.", default=53, type=int)
-    parser.add_argument("--nxdomain", help="IP address to return instead of NXDOMAIN")
-    parser.add_argument("--hardcode", help="Hardcoded IP address to return rather than actually doing DNS lookups")
-    parser.add_argument("-v", "--verbose", action="store_true")
-    args = parser.parse_args()
-
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
-    log = logging.getLogger("dnsserve")
-
-    dns_serve(args)
