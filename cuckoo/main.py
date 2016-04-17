@@ -13,6 +13,7 @@ import traceback
 import cuckoo
 
 from cuckoo.apps import fetch_community, submit_tasks, process_tasks
+from cuckoo.apps import cuckoo_rooter
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
@@ -27,7 +28,6 @@ from cuckoo.core.startup import init_logging, init_console_logging
 from cuckoo.core.startup import init_tasks, init_yara, init_binaries
 from cuckoo.core.startup import init_rooter, init_routing
 from cuckoo.misc import cwd, set_cwd
-from cuckoo.rooter import cuckoo_rooter
 
 log = logging.getLogger("cuckoo")
 
