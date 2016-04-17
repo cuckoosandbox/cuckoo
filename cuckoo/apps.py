@@ -9,10 +9,14 @@ import random
 import requests
 import StringIO
 import tarfile
+import time
 
 from cuckoo.common.colors import bold, red, yellow
+from cuckoo.common.config import Config
 from cuckoo.common.utils import to_unicode
 from cuckoo.core.database import Database
+from cuckoo.core.database import TASK_FAILED_PROCESSING, TASK_REPORTED
+from cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from cuckoo.misc import cwd, mkdir
 
 log = logging.getLogger(__name__)
@@ -165,3 +169,62 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
                     bold(red("Error")), e
                 )
                 continue
+
+def process(target, copy_path, task, cfg):
+    results = RunProcessing(task=task).run()
+    RunSignatures(results=results).run()
+    RunReporting(task=task, results=results).run()
+
+    if cfg.cuckoo.delete_original and os.path.exists(target):
+        try:
+            os.remove(target)
+        except OSError as e:
+            log.error(
+                "Unable to delete original file at path \"%s\": %s",
+                target, e
+            )
+
+    if cfg.cuckoo.delete_bin_copy and copy_path and os.path.exists(copy_path):
+        try:
+            os.remove(copy_path)
+        except OSError as e:
+            log.error(
+                "Unable to delete the copy of the original file at "
+                "path \"%s\": %s", copy_path, e
+            )
+
+def process_tasks(instance, maxcount):
+    count = 0
+    cfg = Config()
+    db = Database()
+    db.connect()
+
+    try:
+        while not maxcount or count != maxcount:
+            task_id = db.processing_get_task(instance)
+
+            # Wait a small while before trying to fetch a new task.
+            if task_id is None:
+                time.sleep(1)
+                continue
+
+            task = db.view_task(task_id)
+
+            log.info("Task #%d: reporting task", task.id)
+
+            if task.category == "file":
+                sample = db.view_sample(task.sample_id)
+                copy_path = cwd("storage", "binaries", sample.sha256)
+            else:
+                copy_path = None
+
+            try:
+                process(task.target, copy_path, task.to_dict(), cfg)
+                db.set_status(task.id, TASK_REPORTED)
+            except Exception as e:
+                log.exception("Task #%d: error reporting: %s", task.id, e)
+                db.set_status(task.id, TASK_FAILED_PROCESSING)
+
+            count += 1
+    except Exception as e:
+        log.exception("Caught unknown exception: %s", e)

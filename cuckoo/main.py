@@ -12,7 +12,7 @@ import traceback
 
 import cuckoo
 
-from cuckoo.apps import fetch_community, submit_tasks
+from cuckoo.apps import fetch_community, submit_tasks, process_tasks
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
@@ -207,3 +207,23 @@ def submit(target, url, options, package, custom, owner, timeout, priority,
         print "%s: %s \"%s\" added as task with ID #%s" % (
             bold(green("Success")), category, target, task_id
         )
+
+@main.command()
+@click.argument("instance")
+@click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
+@click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
+@click.option("-q", "--quiet", is_flag=True, help="Only log warnings and critical messages")
+def process(instance, maxcount, debug, quiet):
+    """Process raw task data into reports."""
+    if quiet:
+        level = logging.WARN
+    elif debug:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+
+    init_console_logging(level=level)
+    Database().connect()
+
+    log.info("Initialized instance=%s, ready to process some tasks", instance)
+    process_tasks(instance, maxcount)
