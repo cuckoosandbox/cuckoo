@@ -3,7 +3,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import sys
 import re
 import os
 import json
@@ -23,13 +22,11 @@ from bson.objectid import ObjectId
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from gridfs import GridFS
 
-sys.path.append(settings.CUCKOO_PATH)
-
 from cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
 from cuckoo.common.utils import store_temp_file, versiontuple
 from cuckoo.common.constants import LATEST_HTTPREPLAY
 from cuckoo.misc import cwd
-import modules.processing.network as network
+from cuckoo.processing import network
 
 results_db = settings.MONGO
 fs = GridFS(results_db)

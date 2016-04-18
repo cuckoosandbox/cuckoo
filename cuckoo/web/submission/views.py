@@ -4,18 +4,16 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import sys
 
 from django.conf import settings
 from django.shortcuts import redirect, render
 from django.core.exceptions import ObjectDoesNotExist
 
-sys.path.append(settings.CUCKOO_PATH)
-
 from cuckoo.common.config import Config, parse_options, emit_options
 from cuckoo.common.utils import store_temp_file
 from cuckoo.core.database import Database
 from cuckoo.core.rooter import vpns
+from cuckoo.misc import cwd
 
 results_db = settings.MONGO
 cfg = Config()
@@ -46,7 +44,7 @@ def dropped_filepath(task_id, sha1):
     raise ObjectDoesNotExist
 
 def render_index(request, kwargs={}):
-    files = os.listdir(os.path.join(settings.CUCKOO_PATH, "analyzer", "windows", "modules", "packages"))
+    files = os.listdir(cwd("analyzer", "windows", "modules", "packages"))
 
     packages = []
     for name in files:

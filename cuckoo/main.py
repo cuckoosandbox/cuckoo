@@ -294,3 +294,19 @@ def dnsserve(host, port, nxdomain, hardcode, verbose):
         logging.basicConfig(level=logging.INFO)
 
     cuckoo_dnsserve(host, port, nxdomain, hardcode)
+
+@main.command()
+@click.argument("args", nargs=-1)
+def web(args):
+    # Switch to cuckoo/web and add the current path to sys.path as the Web
+    # Interface is using local imports here and there.
+    # TODO Rename local imports to either cuckoo.web.* or relative imports.
+    os.chdir(os.path.join(cuckoo.__path__[0], "web"))
+    sys.path.append(".")
+
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web.settings")
+
+    from django.core.management import execute_from_command_line
+
+    Database().connect()
+    execute_from_command_line(("cuckoo",) + args)

@@ -5,11 +5,6 @@
 
 import os
 import pymongo
-import sys
-
-# Cuckoo path.
-CUCKOO_PATH = os.path.join(os.getcwd(), "..")
-sys.path.append(CUCKOO_PATH)
 
 from cuckoo.common.config import Config
 
@@ -193,7 +188,7 @@ LOGGING = {
         # 'log_file': {
         #     'level': 'DEBUG',
         #     'class': 'logging.handlers.RotatingFileHandler',
-        #     'filename': os.path.join(CUCKOO_PATH, "log", "django.log"),
+        #     'filename': cwd("log", "django.log"),
         #     'maxBytes': 1024*1024*16, # 16 megabytes
         #     'backupCount': 3, # keep 3 copies
         # },

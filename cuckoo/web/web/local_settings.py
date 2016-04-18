@@ -6,9 +6,6 @@
 LOCAL_SETTINGS = True
 from settings import *
 
-# If you want to customize your cuckoo path set it here.
-# CUCKOO_PATH = "/where/cuckoo/is/placed/"
-
 # Maximum upload size.
 MAX_UPLOAD_SIZE = 26214400
 

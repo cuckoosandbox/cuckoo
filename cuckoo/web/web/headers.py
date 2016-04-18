@@ -3,12 +3,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import sys
-
-from django.conf import settings
-
-sys.path.append(settings.CUCKOO_PATH)
-
 from cuckoo.common.constants import CUCKOO_VERSION
 
 class CuckooHeaders(object):

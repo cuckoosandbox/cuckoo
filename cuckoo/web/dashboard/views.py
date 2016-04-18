@@ -3,14 +3,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import sys
 import time
 
-from django.conf import settings
 from django.shortcuts import render
 from django.views.decorators.http import require_safe
-
-sys.path.append(settings.CUCKOO_PATH)
 
 from cuckoo.core.database import Database, TASK_PENDING, TASK_RUNNING
 from cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED, TASK_REPORTED
