@@ -29,7 +29,7 @@ from cuckoo.core.startup import cuckoo_clean, drop_privileges
 from cuckoo.core.startup import init_logging, init_console_logging
 from cuckoo.core.startup import init_tasks, init_yara, init_binaries
 from cuckoo.core.startup import init_rooter, init_routing
-from cuckoo.misc import cwd, set_cwd
+from cuckoo.misc import cwd, set_cwd, load_signatures
 
 log = logging.getLogger("cuckoo")
 
@@ -121,6 +121,9 @@ def main(ctx, debug, quiet, maxcount, user, root):
 
     # Drop privileges.
     user and drop_privileges(user)
+
+    # Load additional Signatures.
+    load_signatures()
 
     # A subcommand will be invoked, so don't run Cuckoo itself.
     if ctx.invoked_subcommand:
