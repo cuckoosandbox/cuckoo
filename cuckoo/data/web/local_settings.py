@@ -3,9 +3,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-LOCAL_SETTINGS = True
-from settings import *
-
 # Maximum upload size.
 MAX_UPLOAD_SIZE = 26214400
 
