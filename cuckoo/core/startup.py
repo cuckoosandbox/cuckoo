@@ -231,23 +231,21 @@ def init_yara():
     """Generates index for yara signatures."""
     log.debug("Initializing Yara...")
 
-    # Generate root directory for yara rules.
-    yara_root = cwd("yara")
-
     # We divide yara rules in three categories.
     categories = ["binaries", "urls", "memory"]
     generated = []
+
     # Loop through all categories.
     for category in categories:
         # Check if there is a directory for the given category.
-        category_root = os.path.join(yara_root, category)
+        category_root = cwd("yara", category)
         if not os.path.exists(category_root):
             continue
 
         # Check if the directory contains any rules.
         signatures = []
         for entry in os.listdir(category_root):
-            if entry.endswith(".yara") or entry.endswith(".yar"):
+            if entry.endswith((".yar", ".yara")):
                 signatures.append(os.path.join(category_root, entry))
 
         if not signatures:
@@ -255,7 +253,7 @@ def init_yara():
 
         # Generate path for the category's index file.
         index_name = "index_{0}.yar".format(category)
-        index_path = os.path.join(yara_root, index_name)
+        index_path = cwd("yara", index_name)
 
         # Create index file and populate it.
         with open(index_path, "w") as index_handle:
