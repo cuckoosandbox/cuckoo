@@ -105,7 +105,7 @@ class ProcessMemory(Processing):
                 dump_file = File(dump_path)
 
                 dump_name = os.path.basename(dump_path)
-                pid = int(re.findall("(\d{2,5})", dump_name)[0])
+                pid = int(re.findall("(\\d{2,5})", dump_name)[0])
 
                 proc = dict(
                     file=dump_path, pid=pid,
@@ -116,7 +116,7 @@ class ProcessMemory(Processing):
 
                 if self.options.get("idapro"):
                     self.create_idapy(proc)
-                    
+
                 if self.options.get("dump_delete"):
                     try:
                         os.remove(dump_path)

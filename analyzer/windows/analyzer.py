@@ -324,7 +324,7 @@ class CommandPipeHandler(object):
 
         pid = int(data)
 
-        if not pid in self.tracked:
+        if pid not in self.tracked:
             log.warning("Received DUMPREQS command but there are no reqs for pid %d.", pid)
             return
 
@@ -332,7 +332,8 @@ class CommandPipeHandler(object):
         for addr, length in dumpreqs:
             log.debug("tracked dump req (%r, %r, %r)", pid, addr, length)
 
-            if not addr or not length: continue
+            if not addr or not length:
+                continue
             Process(pid=pid).dump_memory_block(int(addr), int(length))
 
     def _handle_track(self, data):
@@ -344,8 +345,10 @@ class CommandPipeHandler(object):
         pid = int(pid)
 
         paramtuple = params.split(",")
-        if not pid in self.tracked: self.tracked[pid] = {}
-        if not scope in self.tracked[pid]: self.tracked[pid][scope] = []
+        if pid not in self.tracked:
+            self.tracked[pid] = {}
+        if scope not in self.tracked[pid]:
+            self.tracked[pid][scope] = []
         self.tracked[pid][scope].append(paramtuple)
 
     def dispatch(self, data):
