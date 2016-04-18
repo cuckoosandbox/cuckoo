@@ -406,7 +406,7 @@ class RunSignatures(object):
 
             # Initialize a list of signatures to call for this API call.
             if call["api"] not in self.api_sigs:
-                self.init_api_sigs(call["api"], call["category"])
+                self.init_api_sigs(call["api"], call.get("category"))
 
             # See the following SO answer on why we're using reversed() here.
             # http://stackoverflow.com/a/10665800

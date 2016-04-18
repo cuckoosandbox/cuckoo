@@ -94,7 +94,7 @@ class ProcessTree(BehaviorHandler):
             "command_line": process.get("command_line"),
             "first_seen": process["first_seen"],
             "children": [],
-            "track": process["track"],
+            "track": process.get("track", True),
         }
 
     def run(self):
