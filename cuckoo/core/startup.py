@@ -288,17 +288,16 @@ def init_binaries():
 def init_rooter():
     """If required, check whether the rooter is running and whether we can
     connect to it."""
-    cuckoo = Config()
+    cfg = Config()
 
     # The default configuration doesn't require the rooter to be ran.
-    if not Config("vpn").vpn.enabled and cuckoo.routing.route == "none":
+    if not Config("vpn").vpn.enabled and cfg.routing.route == "none":
         return
 
-    cuckoo = Config()
     s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 
     try:
-        s.connect(cuckoo.cuckoo.rooter)
+        s.connect(cfg.cuckoo.rooter)
     except socket.error as e:
         if e.strerror == "No such file or directory":
             raise CuckooStartupError(
@@ -334,7 +333,7 @@ def init_rooter():
 
 def init_routing():
     """Initialize and check whether the routing information is correct."""
-    cuckoo = Config()
+    cfg = Config()
     vpn = Config("vpn")
 
     # Check whether all VPNs exist if configured and make their configuration
@@ -372,33 +371,33 @@ def init_routing():
             rooter("enable_nat", entry.interface)
 
             # Populate routing table with entries from main routing table.
-            if cuckoo.routing.auto_rt:
+            if cfg.routing.auto_rt:
                 rooter("flush_rttable", entry.rt_table)
                 rooter("init_rttable", entry.rt_table, entry.interface)
 
     # Check whether the default VPN exists if specified.
-    if cuckoo.routing.route not in ("none", "internet"):
+    if cfg.routing.route not in ("none", "internet"):
         if not vpn.vpn.enabled:
             raise CuckooStartupError(
                 "A VPN has been configured as default routing interface for "
                 "VMs, but VPNs have not been enabled in vpn.conf"
             )
 
-        if cuckoo.routing.route not in vpns:
+        if cfg.routing.route not in vpns:
             raise CuckooStartupError(
                 "The VPN defined as default routing target has not been "
                 "configured in vpn.conf."
             )
 
     # Check whether the dirty line exists if it has been defined.
-    if cuckoo.routing.internet != "none":
-        if not rooter("nic_available", cuckoo.routing.internet):
+    if cfg.routing.internet != "none":
+        if not rooter("nic_available", cfg.routing.internet):
             raise CuckooStartupError(
                 "The network interface that has been configured as dirty "
                 "line is not available."
             )
 
-        if not rooter("rt_available", cuckoo.routing.rt_table):
+        if not rooter("rt_available", cfg.routing.rt_table):
             raise CuckooStartupError(
                 "The routing table that has been configured for dirty "
                 "line interface is not available."
@@ -406,14 +405,14 @@ def init_routing():
 
         # Disable & enable NAT on this network interface. Disable it just
         # in case we still had the same rule from a previous run.
-        rooter("disable_nat", cuckoo.routing.internet)
-        rooter("enable_nat", cuckoo.routing.internet)
+        rooter("disable_nat", cfg.routing.internet)
+        rooter("enable_nat", cfg.routing.internet)
 
         # Populate routing table with entries from main routing table.
-        if cuckoo.routing.auto_rt:
-            rooter("flush_rttable", cuckoo.routing.rt_table)
-            rooter("init_rttable", cuckoo.routing.rt_table,
-                   cuckoo.routing.internet)
+        if cfg.routing.auto_rt:
+            rooter("flush_rttable", cfg.routing.rt_table)
+            rooter("init_rttable", cfg.routing.rt_table,
+                   cfg.routing.internet)
 
 def cuckoo_clean():
     """Clean up cuckoo setup.
