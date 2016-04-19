@@ -5,6 +5,7 @@
 
 import logging
 import os.path
+import shlex
 import subprocess
 import threading
 
@@ -25,6 +26,7 @@ class MITM(Auxiliary):
         port_base = int(self.options.get("port_base", 50000))
         script = self.options.get("script", "data/mitm.py")
         certificate = self.options.get("certificate", "bin/cert.p12")
+        public_certificate = self.options.get("public_cert", "bin/cert.pem")
 
         outpath = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                                "%d" % self.task.id, "dump.mitm")
@@ -46,6 +48,13 @@ class MITM(Auxiliary):
                       "aborted.", certificate, cert_path)
             return
 
+        cert_path = os.path.join("analyzer", "windows", public_certificate)
+        if not os.path.exists(cert_path):
+            log.error("Mitmdump public certificate not found at path \"%s\" "
+                      "(real path \"%s\"), man in the middle interception "
+                      "aborted.", certificate, cert_path)
+            return
+
         PORT_LOCK.acquire()
 
         for port in xrange(port_base, port_base + 512):
@@ -57,22 +66,31 @@ class MITM(Auxiliary):
 
         PORT_LOCK.release()
 
-        args = [
-            mitmdump, "-q",
-            "-s", "\"%s\" %s" % (script, self.task.options.get("mitm", "")),
-            "-p", "%d" % self.port,
-            "-w", outpath
-        ]
-
+        # Assemble the command to execute
+        command = '%s -q -s "%s" %s -p %d -w %s' % (
+            mitmdump,
+            os.path.join(CUCKOO_ROOT, script),
+            self.task.options.get("mitm", ''),
+            self.port,
+            outpath,
+        )
         mitmlog = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                                "%d" % self.task.id, "mitm.log")
 
         mitmerr = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                                "%d" % self.task.id, "mitm.err")
 
-        self.proc = subprocess.Popen(args,
+        # Store the TLS master secrets for TLS decryption with Wireshark
+        tls_secrets_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                                 "%d" % self.task.id, "mitm_tls_secrets.log")
+
+        self.proc = subprocess.Popen(shlex.split(command),
                                      stdout=open(mitmlog, "wb"),
-                                     stderr=open(mitmerr, "wb"))
+                                     stderr=open(mitmerr, "wb"),
+                                     env={
+                                        "MITMPROXY_SSLKEYLOGFILE":
+                                        tls_secrets_path
+                                    })
 
         if "cert" in self.task.options:
             log.warning("A root certificate has been provided for this task, "
@@ -92,6 +110,11 @@ class MITM(Auxiliary):
 
         log.info("Started mitm interception with PID %d (ip=%s, port=%d).",
                  self.proc.pid, self.machine.resultserver_ip, self.port)
+
+        # Inform the AVD machinery about MITM being active to install cert.
+        self.task.options["mitmdump_certificate"] = \
+            os.path.join("analyzer", "windows", public_certificate)
+
 
     def stop(self):
         if self.proc and not self.proc.poll():
