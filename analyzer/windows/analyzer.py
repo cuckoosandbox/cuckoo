@@ -360,15 +360,18 @@ class CommandPipeHandler(object):
         else:
             command, arguments = data.strip().split(":", 1)
 
-            if not hasattr(self, "_handle_%s" % command.lower()):
+            fn = getattr(self, "_handle_%s" % command.lower(), None)
+            if not fn:
                 log.critical("Unknown command received from the monitor: %r",
                              data.strip())
             else:
-                fn = getattr(self, "_handle_%s" % command.lower())
                 try:
                     response = fn(arguments)
                 except:
-                    log.exception("Pipe command handler exception occurred (command %s args %r).", command, arguments)
+                    log.exception(
+                        "Pipe command handler exception occurred (command "
+                        "%s args %r).", command, arguments
+                    )
 
         return response
 
