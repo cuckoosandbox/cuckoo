@@ -153,11 +153,11 @@ class ProcessMemory(Processing):
         for idx, (pe, regions) in enumerate(images):
             img = []
 
-            self._fixup_pe_header(pe)
-
             # Skip DLLs if requested to do so (the default).
             if pe.is_dll() and not drop_dlls:
                 continue
+
+            self._fixup_pe_header(pe)
 
             img.append(pe.write())
             for r in regions:
