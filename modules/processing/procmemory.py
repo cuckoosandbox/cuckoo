@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import hashlib
 import logging
 import os
 import re
@@ -150,7 +151,7 @@ class ProcessMemory(Processing):
         if capture and regions:
             images.append((pe, regions))
 
-        for idx, (pe, regions) in enumerate(images):
+        for pe, regions in images:
             img = []
 
             # Skip DLLs if requested to do so (the default).
@@ -163,18 +164,22 @@ class ProcessMemory(Processing):
             for r in regions:
                 img.append(buf[r["offset"]:r["offset"]+r["size"]])
 
+            sha1 = hashlib.sha1("".join(img)).hexdigest()
+
             if pe.is_dll():
-                filename = "%s-%s.dll_" % (process["pid"], idx)
+                filename = "%s-%s.dll_" % (process["pid"], sha1[:16])
             elif pe.is_exe():
-                filename = "%s-%s.exe_" % (process["pid"], idx)
+                filename = "%s-%s.exe_" % (process["pid"], sha1[:16])
             else:
                 log.warning(
                     "Unknown injected executable for pid=%s", process["pid"]
                 )
                 continue
 
-            f = open(os.path.join(self.pmemory_path, filename), "wb")
-            f.write("".join(img))
+            filepath = os.path.join(self.pmemory_path, filename)
+            open(filepath, "wb").write("".join(img))
+
+            yield File(filepath).get_all()
 
     def run(self):
         """Run analysis.
@@ -205,7 +210,7 @@ class ProcessMemory(Processing):
                     self.create_idapy(proc)
 
                 if self.options.get("extract_img"):
-                    self.dump_images(proc)
+                    proc["extracted"] = list(self.dump_images(proc))
 
                 if self.options.get("dump_delete"):
                     try:
