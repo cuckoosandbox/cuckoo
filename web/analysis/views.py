@@ -656,7 +656,22 @@ def import_analysis(request):
                              "please provide a legitimate .zip file.",
                 })
 
-        analysis_info = json.loads(zf.read("analysis.json"))
+        if "analysis.json" in zf.namelist():
+            analysis_info = json.loads(zf.read("analysis.json"))
+        elif "binary" in zf.namelist():
+            analysis_info = {
+                "target": {
+                    "category": "file",
+                },
+            }
+        else:
+            analysis_info = {
+                "target": {
+                    "category": "url",
+                    "url": "unknown",
+                },
+            }
+
         category = analysis_info["target"]["category"]
 
         if category == "file":
