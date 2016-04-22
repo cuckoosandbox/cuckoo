@@ -39,6 +39,7 @@ class Files(object):
 
     def __init__(self):
         self.files = {}
+        self.files_orig = {}
         self.dumped = []
 
     def is_protected_filename(self, file_name):
@@ -56,6 +57,7 @@ class Files(object):
         if filepath.lower() not in self.files:
             log.info("Added new file to list with path: %s", filepath)
             self.files[filepath.lower()] = []
+            self.files_orig[filepath.lower()] = filepath
 
         self.add_pid(filepath, pid)
 
@@ -79,12 +81,17 @@ class Files(object):
 
         try:
             upload_to_host(
-                filepath, upload_path, self.files.get(filepath.lower(), [])
+                # If available use the original filepath, the one that is
+                # not lowercased.
+                self.files_orig.get(filepath.lower(), filepath),
+                upload_path, self.files.get(filepath.lower(), [])
             )
             self.dumped.append(sha256)
         except (IOError, socket.error) as e:
-            log.error("Unable to upload dropped file at path \"%s\": %s",
-                      filepath, e)
+            log.error(
+                "Unable to upload dropped file at path \"%s\": %s",
+                filepath, e
+            )
 
     def delete_file(self, filepath, pid=None):
         """A file is about to removed and thus should be dumped right away."""
@@ -93,6 +100,7 @@ class Files(object):
 
         # Remove the filepath from the files list.
         self.files.pop(filepath.lower(), None)
+        self.files_orig.pop(filepath.lower())
 
     def move_file(self, oldfilepath, newfilepath, pid=None):
         """A file will be moved - track this change."""
