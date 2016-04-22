@@ -74,7 +74,7 @@ class VolatilityAPI(object):
         base_conf = {
             "profile": "WinXPSP2x86",
             "use_old_as": None,
-vo            "kdbg": None,
+            "kdbg": None,
             "help": False,
             "kpcr": None,
             "tz": None,
