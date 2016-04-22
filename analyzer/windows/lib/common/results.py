@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 BUFSIZE = 1024*1024
 
-def upload_to_host(file_path, dump_path, pids):
+def upload_to_host(file_path, dump_path, pids=[]):
     nc = infd = None
     try:
         nc = NetlogFile()
