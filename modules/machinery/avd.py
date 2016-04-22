@@ -297,8 +297,6 @@ class Avd(Machinery):
             "shell", "/data/local/agent.sh",
         ]
         OSCommand.executeAsyncCommand(cmd)
-        # Sleep 10 seconds to allow the agent to startup properly
-        time.sleep(10)
 
     def install_certificate(self, label, task, mitmdump_certificate):
         """ Copy the CA certificate for mitmdump to the AVD """
