@@ -14,10 +14,11 @@ log = logging.getLogger(__name__)
 
 BUFSIZE = 1024*1024
 
-def upload_to_host(file_path, dump_path):
+def upload_to_host(file_path, dump_path, pids):
     nc = infd = None
     try:
-        nc = NetlogFile(dump_path)
+        nc = NetlogFile()
+        nc.init(dump_path, file_path, pids)
 
         infd = open(file_path, "rb")
         buf = infd.read(BUFSIZE)
@@ -80,9 +81,14 @@ class NetlogConnection(object):
             pass
 
 class NetlogFile(NetlogConnection):
-    def __init__(self, filepath):
-        self.filepath = filepath
-        NetlogConnection.__init__(self, proto="FILE\n{0}\n".format(self.filepath))
+    def init(self, dump_path, filepath=None, pids=[]):
+        if filepath:
+            self.proto = "FILE 2\n{0}\n{1}\n{2}\n".format(
+                dump_path, filepath, " ".join(pids)
+            )
+        else:
+            self.proto = "FILE\n{0}\n".format(dump_path)
+
         self.connect()
 
 class NetlogHandler(logging.Handler, NetlogConnection):

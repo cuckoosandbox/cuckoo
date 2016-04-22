@@ -392,6 +392,7 @@ class Process(object):
             "track": "1" if track else "0",
             "mode": mode or "",
             "disguise": self.config.options.get("disguise", "0"),
+            "pipe-pid": "1",
         }
 
         for key, value in lines.items():
@@ -487,7 +488,8 @@ class Process(object):
             buf = create_string_buffer(length)
             if KERNEL32.ReadProcessMemory(process_handle, addr, buf, length, byref(count)):
                 header = struct.pack("QIIII", addr, length, mbi.State, mbi.Type, mbi.Protect)
-                nf = NetlogFile(file_name)
+                nf = NetlogFile()
+                nf.init(file_name)
                 nf.sock.sendall(header)
                 nf.sock.sendall(buf.raw)
                 nf.close()

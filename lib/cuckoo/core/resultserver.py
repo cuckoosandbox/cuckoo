@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import errno
+import json
 import os
 import socket
 import select
@@ -12,6 +13,7 @@ import datetime
 import SocketServer
 import threading
 
+from lib.cuckoo.common.abstracts import ProtocolHandler
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -196,26 +198,38 @@ class ResultHandler(SocketServer.BaseRequestHandler):
             raise Disconnect()
         return tmp
 
-    def read_newline(self):
+    def read_newline(self, strip=False):
         buf = ""
         while "\n" not in buf:
             buf += self.read(1)
+
+        if strip:
+            buf = buf.strip()
+
         return buf
 
     def negotiate_protocol(self):
-        # Read until newline.
-        buf = self.read_newline()
+        protocol = self.read_newline(strip=True)
 
-        if "BSON" in buf:
-            self.protocol = BsonParser(self)
-        elif "FILE" in buf:
-            self.protocol = FileUpload(self)
-        elif "LOG" in buf:
-            self.protocol = LogHandler(self)
+        # Command with version number.
+        if " " in protocol:
+            command, version = protocol.split()
+            version = int(version)
+        else:
+            command, version = protocol, None
+
+        if command == "BSON":
+            self.protocol = BsonParser(self, version)
+        elif command == "FILE":
+            self.protocol = FileUpload(self, version)
+        elif command == "LOG":
+            self.protocol = LogHandler(self, version)
         else:
             raise CuckooOperationalError(
                 "Netlog failure, unknown protocol requested."
             )
+
+        self.protocol.init()
 
     def handle(self):
         ip, port = self.client_address
@@ -279,21 +293,30 @@ class ResultHandler(SocketServer.BaseRequestHandler):
                 return False
 
 
-class FileUpload(object):
+class FileUpload(ProtocolHandler):
     RESTRICTED_DIRECTORIES = "reports/",
+    lock = threading.Lock()
 
-    def __init__(self, handler):
-        self.handler = handler
+    def init(self):
         self.upload_max_size = \
             self.handler.server.cfg.resultserver.upload_max_size
         self.storagepath = self.handler.storagepath
         self.fd = None
+
+        self.filelog = os.path.join(self.handler.storagepath, "files.json")
 
     def __iter__(self):
         # Read until newline for file path, e.g.,
         # shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
 
         dump_path = self.handler.read_newline(strip=True).replace("\\", "/")
+
+        if self.version >= 2:
+            filepath = self.handler.read_newline(strip=True)
+            pids = map(int, self.handler.read_newline(strip=True).split())
+        else:
+            filepath, pids = None, []
+
         log.debug("File upload request for %s", dump_path)
 
         dir_part, filename = os.path.split(dump_path)
@@ -347,6 +370,17 @@ class FileUpload(object):
             except:
                 break
 
+        self.lock.acquire()
+
+        with open(self.filelog, "a+b") as f:
+            f.write("%s\n" % json.dumps({
+                "path": dump_path,
+                "filepath": filepath,
+                "pids": pids,
+            }))
+
+        self.lock.release()
+
         log.debug("Uploaded file length: %s", self.fd.tell())
         return
         yield
@@ -355,10 +389,9 @@ class FileUpload(object):
         if self.fd:
             self.fd.close()
 
-class LogHandler(object):
-    def __init__(self, handler):
-        self.handler = handler
-        self.logpath = os.path.join(handler.storagepath, "analysis.log")
+class LogHandler(ProtocolHandler):
+    def init(self):
+        self.logpath = os.path.join(self.handler.storagepath, "analysis.log")
         self.fd = self._open()
         log.debug("LogHandler for live analysis.log initialized.")
 
@@ -368,7 +401,7 @@ class LogHandler(object):
 
         while True:
             try:
-                buf = self.handler.read_newline()
+                buf = self.handler.read_newline(strip=False)
             except Disconnect:
                 break
 

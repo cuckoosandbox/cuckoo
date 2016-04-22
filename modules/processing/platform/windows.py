@@ -145,6 +145,7 @@ class WindowsMonitor(BehaviorHandler):
     def parse(self, path):
         # Invoke parsing of current log file.
         parser = BsonParser(open(path, "rb"))
+        parser.init()
 
         for event in parser:
             if event["type"] == "process":

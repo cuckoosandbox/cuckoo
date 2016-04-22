@@ -23,6 +23,7 @@ else:
     elif hasattr(bson, "loads"):
         bson_decode = lambda d: bson.loads(d)
 
+from lib.cuckoo.common.abstracts import ProtocolHandler
 from lib.cuckoo.common.utils import get_filename_from_path
 from lib.cuckoo.common.exceptions import CuckooResultError
 
@@ -80,8 +81,9 @@ class BsonParser(ProtocolHandler):
         "x": pointer_converter_32bit,
     }
 
-    def __init__(self, fd):
-        self.fd = fd
+    def init(self):
+        self.fd = self.handler
+
         self.infomap = {}
         self.flags_value = {}
         self.flags_bitmask = {}
@@ -94,9 +96,6 @@ class BsonParser(ProtocolHandler):
                 "Starting BsonParser, but bson is not available! "
                 "(install with `pip install bson`)"
             )
-
-    def close(self):
-        pass
 
     def resolve_flags(self, apiname, argdict, flags):
         # Resolve 1:1 values.

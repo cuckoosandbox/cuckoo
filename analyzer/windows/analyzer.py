@@ -38,18 +38,26 @@ class Files(object):
     PROTECTED_NAMES = ()
 
     def __init__(self):
-        self.files = []
+        self.files = {}
         self.dumped = []
 
     def is_protected_filename(self, file_name):
         """Do we want to inject into a process with this name?"""
         return file_name.lower() in self.PROTECTED_NAMES
 
-    def add_file(self, filepath):
-        """Add filepath to the list of files."""
+    def add_pid(self, filepath, pid):
+        """Tracks a process identifier for this file."""
+        log.info("adding pid for %r %r", filepath, pid)
+        if pid and pid not in self.files.get(filepath.lower(), []):
+            self.files[filepath.lower()].append(pid)
+
+    def add_file(self, filepath, pid=None):
+        """Add filepath to the list of files and track the pid."""
         if filepath.lower() not in self.files:
             log.info("Added new file to list with path: %s", filepath)
-            self.files.append(filepath.lower())
+            self.files[filepath.lower()] = []
+
+        self.add_pid(filepath, pid)
 
     def dump_file(self, filepath):
         """Dump a file to the host."""
@@ -70,26 +78,29 @@ class Files(object):
         upload_path = os.path.join("files", filename)
 
         try:
-            upload_to_host(filepath, upload_path)
+            upload_to_host(
+                filepath, upload_path, self.files.get(filepath.lower(), [])
+            )
             self.dumped.append(sha256)
         except (IOError, socket.error) as e:
             log.error("Unable to upload dropped file at path \"%s\": %s",
                       filepath, e)
 
-    def delete_file(self, filepath):
+    def delete_file(self, filepath, pid=None):
         """A file is about to removed and thus should be dumped right away."""
+        self.add_pid(filepath, pid)
         self.dump_file(filepath)
 
         # Remove the filepath from the files list.
-        if filepath.lower() in self.files:
-            self.files.remove(filepath.lower())
+        self.files.pop(filepath.lower(), None)
 
-    def move_file(self, oldfilepath, newfilepath):
+    def move_file(self, oldfilepath, newfilepath, pid=None):
         """A file will be moved - track this change."""
+        self.add_pid(oldfilepath, pid)
         if oldfilepath.lower() in self.files:
             # Replace the entry with the new filepath.
-            index = self.files.index(oldfilepath.lower())
-            self.files[index] = newfilepath.lower()
+            self.files[newfilepath.lower()] = \
+                self.files.pop(oldfilepath.lower(), [])
 
     def dump_files(self):
         """Dump all pending files."""
@@ -281,13 +292,12 @@ class CommandPipeHandler(object):
 
     def _handle_file_new(self, data):
         """Notification of a new dropped file."""
-        # Extract the file path and add it to the list.
-        self.analyzer.files.add_file(data.decode("utf8"))
+        self.analyzer.files.add_file(data.decode("utf8"), self.pid)
 
     def _handle_file_del(self, data):
         """Notification of a file being removed - we have to dump it before
         it's being removed."""
-        self.analyzer.files.delete_file(data.decode("utf8"))
+        self.analyzer.files.delete_file(data.decode("utf8"), self.pid)
 
     def _handle_file_move(self, data):
         """A file is being moved - track these changes."""
@@ -297,8 +307,9 @@ class CommandPipeHandler(object):
             return
 
         old_filepath, new_filepath = data.split("::", 1)
-        self.analyzer.files.move_file(old_filepath.decode("utf8"),
-                                      new_filepath.decode("utf8"))
+        self.analyzer.files.move_file(
+            old_filepath.decode("utf8"), new_filepath.decode("utf8"), self.pid
+        )
 
     def _handle_kill(self, data):
         """A process is being killed."""
@@ -358,7 +369,13 @@ class CommandPipeHandler(object):
             log.critical("Unknown command received from the monitor: %r",
                          data.strip())
         else:
-            command, arguments = data.strip().split(":", 1)
+            # Backwards compatibility (old syntax is, e.g., "FILE_NEW:" vs the
+            # new syntax, e.g., "1234:FILE_NEW:").
+            if data[0].isupper():
+                command, arguments = data.strip().split(":", 1)
+                self.pid = None
+            else:
+                self.pid, command, arguments = data.strip().split(":", 2)
 
             fn = getattr(self, "_handle_%s" % command.lower(), None)
             if not fn:
