@@ -21,6 +21,8 @@ class MonitorProcessLog(list):
         self.first_seen = None
         self.has_apicalls = False
 
+        self.services = {}
+
     def _api_COleScript_Compile(self, event):
         event["raw"] = "script",
         event["arguments"]["script"] = \
@@ -46,6 +48,29 @@ class MonitorProcessLog(list):
             attrs[key.lower()] = value
 
         event["arguments"]["attributes"] = attrs
+
+    def _remember_service_name(self, event):
+        """Keep track of the name of this service."""
+        service_name = event["arguments"]["service_name"]
+        # We've added logging of the service_handle to the API signature in
+        # the Monitor, but for backwards compatibility we'll keep it as
+        # follows for now.
+        service_handle = "0x%08x" % event["return_value"]
+        self.services[service_handle] = service_name
+
+    _api_OpenServiceA = _remember_service_name
+    _api_OpenServiceW = _remember_service_name
+    _api_CreateServiceA = _remember_service_name
+    _api_CreateServiceW = _remember_service_name
+
+    def _add_service_name(self, event):
+        service_name = self.services.get(event["arguments"]["service_handle"])
+        event["arguments"]["service_name"] = service_name
+
+    _api_StartServiceA = _add_service_name
+    _api_StartServiceW = _add_service_name
+    _api_ControlService = _add_service_name
+    _api_DeleteService = _add_service_name
 
     def _api_modifier(self, event):
         """Adds flags field to CLSID and IID instances."""
