@@ -5,7 +5,6 @@
 
 import logging
 import os.path
-import shlex
 import subprocess
 import threading
 
@@ -66,14 +65,13 @@ class MITM(Auxiliary):
 
         PORT_LOCK.release()
 
-        # Assemble the command to execute
-        command = '%s -q -s "%s" %s -p %d -w %s' % (
-            mitmdump,
-            os.path.join(CUCKOO_ROOT, script),
-            self.task.options.get("mitm", ''),
-            self.port,
-            outpath,
-        )
+        args = [
+            mitmdump, "-q",
+            "-s", "\"%s\" %s" % (script, self.task.options.get("mitm", "")),
+            "-p", "%d" % self.port,
+            "-w", outpath
+        ]
+
         mitmlog = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                                "%d" % self.task.id, "mitm.log")
 
@@ -84,7 +82,7 @@ class MITM(Auxiliary):
         tls_secrets_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                                  "%d" % self.task.id, "mitm_tls_secrets.log")
 
-        self.proc = subprocess.Popen(shlex.split(command),
+        self.proc = subprocess.Popen(args,
                                      stdout=open(mitmlog, "wb"),
                                      stderr=open(mitmerr, "wb"),
                                      env={
