@@ -17,16 +17,16 @@ class Dropped(Processing):
         @return: list of dropped files with related information.
         """
         self.key = "dropped"
-        dropped_files = []
+        dropped_files, meta = [], {}
 
-        meta = {}
-        for line in open(self.dropped_meta_path, "rb"):
-            entry = json.loads(line)
-            filepath = os.path.join(self.analysis_path, entry["path"])
-            meta[filepath] = {
-                "pids": entry["pids"],
-                "filepath": entry["filepath"],
-            }
+        if os.path.exists(self.dropped_meta_path):
+            for line in open(self.dropped_meta_path, "rb"):
+                entry = json.loads(line)
+                filepath = os.path.join(self.analysis_path, entry["path"])
+                meta[filepath] = {
+                    "pids": entry["pids"],
+                    "filepath": entry["filepath"],
+                }
 
         for dir_name, dir_names, file_names in os.walk(self.dropped_path):
             for file_name in file_names:
