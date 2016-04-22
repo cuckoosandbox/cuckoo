@@ -123,6 +123,7 @@ class GenericBehavior(BehaviorHandler):
             "pid": process["pid"],
             "ppid": process["ppid"],
             "process_name": process["process_name"],
+            "process_path": process["process_path"],
             "first_seen": process["first_seen"],
             "summary": collections.defaultdict(set),
         }
