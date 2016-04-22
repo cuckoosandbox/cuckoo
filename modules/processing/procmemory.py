@@ -196,11 +196,10 @@ class ProcessMemory(Processing):
                 dump_path = os.path.join(self.pmemory_path, dmp)
                 dump_file = File(dump_path)
 
-                dump_name = os.path.basename(dump_path)
-                pid = int(re.findall("(\\d{2,5})", dump_name)[0])
+                pid, num = map(int, re.findall("(\\d+)", dmp))
 
                 proc = dict(
-                    file=dump_path, pid=pid,
+                    file=dump_path, pid=pid, num=num,
                     yara=dump_file.get_yara("memory"),
                     urls=list(dump_file.get_urls()),
                     regions=list(self.read_dump(dump_path)),
@@ -220,4 +219,5 @@ class ProcessMemory(Processing):
 
                 results.append(proc)
 
+        results.sort(key=lambda x: (x["pid"], x["num"]))
         return results
