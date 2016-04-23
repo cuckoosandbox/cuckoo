@@ -48,8 +48,11 @@ class Files(object):
 
     def add_pid(self, filepath, pid):
         """Tracks a process identifier for this file."""
-        log.info("adding pid for %r %r", filepath, pid)
-        if pid and pid not in self.files.get(filepath.lower(), []):
+        if not pid or filepath.lower() not in self.files:
+            return
+
+        log.info("Adding pid for %r %s", filepath, pid)
+        if pid not in self.files[filepath.lower()]:
             self.files[filepath.lower()].append(pid)
 
     def add_file(self, filepath, pid=None):
