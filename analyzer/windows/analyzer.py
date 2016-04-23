@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import datetime
 import os
 import sys
 import socket
@@ -15,7 +16,6 @@ import traceback
 import urllib
 import urllib2
 import xmlrpclib
-from datetime import datetime
 
 from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
@@ -441,7 +441,9 @@ class Analyzer(object):
         Process.set_config(self.config)
 
         # Set virtual machine clock.
-        clock = datetime.strptime(self.config.clock, "%Y%m%dT%H:%M:%S")
+        clock = datetime.datetime.strptime(
+            self.config.clock, "%Y%m%dT%H:%M:%S"
+        )
 
         # Setting date and time.
         # NOTE: Windows system has only localized commands with date format

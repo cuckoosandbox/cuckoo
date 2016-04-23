@@ -251,8 +251,10 @@ class ResultHandler(SocketServer.BaseRequestHandler):
                     self.open_process_log(event)
 
         except CuckooResultError as e:
-            log.warning("ResultServer connection stopping because of "
-                        "CuckooResultError: %s.", str(e))
+            log.warning(
+                "ResultServer connection stopping because of "
+                "CuckooResultError: %s.", e
+            )
         except (Disconnect, socket.error):
             pass
         except:
@@ -265,19 +267,23 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         procname = event["process_name"]
 
         if self.pid is not None:
-            log.debug("ResultServer got a new process message but already "
-                      "has pid %d ppid %s procname %s.",
-                      pid, str(ppid), procname)
-            raise CuckooResultError("ResultServer connection state "
-                                    "inconsistent.")
+            log.debug(
+                "ResultServer got a new process message but already "
+                "has pid %d ppid %s procname %s.", pid, ppid, procname
+            )
+            raise CuckooResultError(
+                "ResultServer connection state inconsistent."
+            )
 
         # Only report this process when we're tracking it.
         if event["track"]:
-            log.debug("New process (pid=%s, ppid=%s, name=%s)",
-                      pid, ppid, procname)
+            log.debug(
+                "New process (pid=%s, ppid=%s, name=%s)",
+                pid, ppid, procname
+            )
 
-        path = os.path.join(self.storagepath, "logs", str(pid) + ".bson")
-        self.rawlogfd = open(path, "wb")
+        filepath = os.path.join(self.storagepath, "logs", "%s.bson" % pid)
+        self.rawlogfd = open(filepath, "wb")
         self.rawlogfd.write(self.startbuf)
 
         self.pid, self.ppid, self.procname = pid, ppid, procname
@@ -291,7 +297,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
             except CuckooOperationalError:
                 log.error("Unable to create folder %s" % folder)
                 return False
-
 
 class FileUpload(ProtocolHandler):
     RESTRICTED_DIRECTORIES = "reports/",
