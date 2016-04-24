@@ -13,6 +13,7 @@ import time
 
 from cuckoo.common.colors import bold, red, yellow
 from cuckoo.common.config import Config
+from cuckoo.common.objects import File
 from cuckoo.common.utils import to_unicode
 from cuckoo.core.database import Database
 from cuckoo.core.database import TASK_FAILED_PROCESSING, TASK_REPORTED
@@ -86,7 +87,8 @@ def enumerate_files(path, pattern):
 
 def submit_tasks(target, options, package, custom, owner, timeout, priority,
                  machine, platform, memory, enforce_timeout, clock, tags,
-                 remote, pattern, maxcount, is_url, is_baseline, is_shuffle):
+                 remote, pattern, maxcount, is_unique, is_url, is_baseline,
+                 is_shuffle):
     db = Database()
 
     data = dict(
@@ -110,6 +112,14 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
 
         task_id = db.add_baseline(timeout, owner, machine, memory)
         yield "Baseline", machine, task_id
+        return
+
+    if is_url and is_unique:
+        print "URL doesn't have --unique support yet."
+        return
+
+    if is_unique and remote:
+        print "Remote --unique support is not present"
         return
 
     if is_url:
@@ -150,6 +160,12 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
                 maxcount -= 1
 
             if not remote:
+                if is_unique:
+                    sha256 = File(filepath).get_sha256()
+                    if db.find_sample(sha256=sha256):
+                        yield "File", filepath, None
+                        continue
+
                 task_id = db.add_path(file_path=filepath, **data)
                 yield "File", filepath, task_id
                 continue

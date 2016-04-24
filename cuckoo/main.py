@@ -187,11 +187,12 @@ def clean():
 @click.option("--shuffle", is_flag=True, help="Shuffle the submitted tasks")
 @click.option("--pattern", help="Provide a glob-pattern when submitting a directory")
 @click.option("--max", type=int, help="Submit up to X tasks at once")
+@click.option("--unique", is_flag=True, help="Only submit samples that have not been analyzed before")
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
 @click.option("-q", "--quiet", is_flag=True, help="Only log warnings and critical messages")
 def submit(target, url, options, package, custom, owner, timeout, priority,
            machine, platform, memory, enforce_timeout, clock, tags, baseline,
-           remote, shuffle, pattern, max, debug, quiet):
+           remote, shuffle, pattern, max, unique, debug, quiet):
     """Submit one or more files or URLs to Cuckoo."""
     if quiet:
         level = logging.WARN
@@ -206,13 +207,18 @@ def submit(target, url, options, package, custom, owner, timeout, priority,
     l = submit_tasks(
         target, options, package, custom, owner, timeout, priority, machine,
         platform, memory, enforce_timeout, clock, tags, remote, pattern, max,
-        url, baseline, shuffle
+        unique, url, baseline, shuffle
     )
 
     for category, target, task_id in l:
-        print "%s: %s \"%s\" added as task with ID #%s" % (
-            bold(green("Success")), category, target, task_id
-        )
+        if task_id:
+            print "%s: %s \"%s\" added as task with ID #%s" % (
+                bold(green("Success")), category, target, task_id
+            )
+        else:
+            print "%s: %s \"%s\" skipped as it has already been analyzed" % (
+                bold(green("Success")), category, target, task_id
+            )
 
 @main.command()
 @click.argument("instance", required=False)
