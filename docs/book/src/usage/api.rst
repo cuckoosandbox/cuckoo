@@ -3,12 +3,7 @@ REST API
 ========
 
 As mentioned in :doc:`submit`, Cuckoo provides a simple and lightweight REST
-API server implemented in `Flask`_, therefore in order to make the service
-work you'll need it installed.
-
-On Debian/Ubuntu with pip::
-
-    $ pip install flask
+API server that is under the hood implemented using `Flask`_.
 
 .. _`Flask`: http://flask.pocoo.org/
 
@@ -17,12 +12,13 @@ Starting the API server
 
 In order to start the API server you can simply do::
 
-    $ ./utils/api.py
+    $ cuckoo api
 
 By default it will bind the service on **localhost:8090**. If you want to change
-those values, you can for example do this::
+those values, you can use the following syntax::
 
-    $ ./utils/api.py --host 0.0.0.0 --port 1337
+    $ cuckoo api --host 0.0.0.0 --port 1337
+    $ cuckoo api -H 0.0.0.0 -p 1337
 
 Web deployment
 --------------
@@ -43,20 +39,24 @@ uWSGI setup
 ^^^^^^^^^^^
 First, use uWSGI to run the API server as an application.
 
-To begin, create a uWSGI configuration file at ``/etc/uwsgi/apps-available/cuckoo-api.ini``::
+To begin, create a uWSGI configuration file at
+``/etc/uwsgi/apps-available/cuckoo-api.ini`` that contains the actual
+configuration as reported by the ``cuckoo api --uwsgi`` command::
 
+    $ cuckoo api --uwsgi
     [uwsgi]
     plugins = python
-    chdir = /home/cuckoo/cuckoo
-    file = utils/api.py
+    virtualenv = /home/cuckoo/cuckoo
+    module = cuckoo.apps.api
+    callable = app
     uid = cuckoo
     gid = cuckoo
 
 This configuration inherits a number of settings from the distribution's
-default uWSGI configuration, loading ``api.py`` from the Cuckoo installation
-directory. In this example we installed Cuckoo in /home/cuckoo/cuckoo, if Cuckoo
-is installed in a different path, adjust the configuration (the *chdir* setting,
-and perhaps the *uid* and *gid* settings) accordingly.
+default uWSGI configuration and importing ``cuckoo.apps.api`` from the Cuckoo
+package to do the actual work. In this example we installed Cuckoo in a
+virtualenv located at ``/home/cuckoo/cuckoo``. If Cuckoo is installed globally
+no virtualenv option is required.
 
 Enable the app configuration and start the server::
 
@@ -80,14 +80,15 @@ Nginx setup
 With the API server running in uWSGI, Nginx can now be set up to run as a web
 server/reverse proxy, backending HTTP requests to it.
 
-To begin, create a Nginx configuration file at ``/etc/nginx/sites-available/cuckoo-api``::
+To begin, create a Nginx configuration file at
+``/etc/nginx/sites-available/cuckoo-api`` that contains the actual
+configuration as reportd by the ``cuckoo api --nginx`` command::
 
+    $ cuckoo api --nginx
     upstream _uwsgi_cuckoo_api {
         server unix:/run/uwsgi/app/cuckoo-api/socket;
     }
 
-    # HTTP server
-    #
     server {
         listen 8090;
         listen [::]:8090 ipv6only=on;

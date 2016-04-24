@@ -110,17 +110,18 @@ def cuckoo_main(max_analysis_count=0):
 @click.option("-q", "--quiet", is_flag=True, help="Only log warnings and critical messages")
 @click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
 @click.option("--user", help="Drop privileges to this user")
-@click.option("--root", envvar="CUCKOO", default="~/.cuckoo", help="Cuckoo Working Directory")
+@click.option("--cwd", envvar="CUCKOO", default="~/.cuckoo", help="Cuckoo Working Directory")
 @click.pass_context
-def main(ctx, debug, quiet, maxcount, user, root):
+def main(ctx, debug, quiet, maxcount, user, cwd):
     # Cuckoo Working Directory precedence:
     # * Command-line option (--root)
     # * Environment option ("CUCKOO")
     # * Default value ("~/.cuckoo")
-    set_cwd(os.path.expanduser(root))
+    set_cwd(os.path.expanduser(cwd))
 
     # Drop privileges.
     user and drop_privileges(user)
+    ctx.user = user
 
     # Load additional Signatures.
     load_signatures()
@@ -282,7 +283,40 @@ def rooter(socket, group, ifconfig, service, iptables, ip, verbose):
 @click.option("-H", "--host", default="localhost", help="Host to bind the API server on")
 @click.option("-p", "--port", default=8090, help="Port to bind the API server on")
 @click.option("-d", "--debug", is_flag=True, help="Start the API in debug mode")
-def api(host, port, debug):
+@click.option("--uwsgi", is_flag=True, help="Dump uWSGI configuration")
+@click.option("--nginx", is_flag=True, help="Dump nginx configuration")
+@click.pass_context
+def api(ctx, host, port, debug, uwsgi, nginx):
+    username = ctx.parent.user or os.getlogin()
+    if uwsgi:
+        print "[uwsgi]"
+        print "plugins = python"
+        if os.environ.get("VIRTUAL_ENV"):
+            print "virtualenv =", os.environ["VIRTUAL_ENV"]
+        print "module = cuckoo.apps.api"
+        print "callable = app"
+        print "uid =", username
+        print "gid =", username
+        print "env = CUCKOO_FORCE=%s" % cwd()
+        return
+
+    if nginx:
+        print "upstream _uwsgi_cuckoo_api {"
+        print "    server unix:/run/uwsgi/app/cuckoo-api/socket;"
+        print "}"
+        print
+        print "server {"
+        print "    listen %d;" % port
+        print "    listen [::]:%d ipv6only=on;" % port
+        print
+        print "    # REST API app"
+        print "    location / {"
+        print "        uwsgi_pass  _uwsgi_cuckoo_api;"
+        print "        include     uwsgi_params;"
+        print "    }"
+        print "}"
+        return
+
     Database().connect()
 
     cuckoo_api(host, port, debug)

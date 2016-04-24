@@ -487,6 +487,6 @@ def drop_privileges(username):
         os.setuid(user.pw_uid)
         os.putenv("HOME", user.pw_dir)
     except KeyError:
-        sys.exit("Invalid user specified to drop privileges to: %s" % user)
+        sys.exit("Invalid user specified to drop privileges to: %s" % username)
     except OSError as e:
         sys.exit("Failed to drop privileges to %s: %s" % (username, e))

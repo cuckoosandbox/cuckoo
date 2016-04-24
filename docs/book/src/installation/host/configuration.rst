@@ -2,7 +2,7 @@
 Configuration
 =============
 
-Cuckoo relies on six main configuration files:
+Cuckoo relies on a couple of main configuration files:
 
     * :ref:`cuckoo_conf`: for configuring general behavior and analysis options.
     * :ref:`auxiliary_conf`: for enabling and configuring auxiliary modules.
@@ -12,22 +12,36 @@ Cuckoo relies on six main configuration files:
     * :ref:`processing_conf`: for enabling and configuring processing modules.
     * :ref:`reporting_conf`: for enabling or disabling report formats.
 
-To get Cuckoo working you have to edit :ref:`auxiliary_conf`:, :ref:`cuckoo_conf` and :ref:`machinery_conf` at least.
+To get Cuckoo working you have to at the very least edit :ref:`auxiliary_conf`:, :ref:`cuckoo_conf` and :ref:`machinery_conf`.
 
 .. _cuckoo_conf:
 
 cuckoo.conf
 ===========
 
-The first file to edit is *conf/cuckoo.conf*, it contains the generic configuration
-options that you might want to verify before launching Cuckoo.
+The first file to edit is ``$CWD/conf/cuckoo.conf``. Note that we'll be
+referring to the :doc:`cwd` when we talk about ``$CWD``. The ``cuckoo.conf``
+file contains generic configuration options that you will want to verify or
+at least familiarize yourself with before launching Cuckoo.
 
-The file is largely commented and self-explaining, but some of the options you might
-want to pay more attention to are:
+The file is largely commented and self-explanatory, but some of the options
+may be of special interest to you:
 
-    * ``machinery`` in ``[cuckoo]``: this defines which Machinery module you want Cuckoo to use to interact with your analysis machines. The value must be the name of the module without extension.
-    * ``ip`` and ``port`` in ``[resultserver]``: defines the local IP address and port that Cuckoo is going to use to bind the result server on. Make sure this matches the network configuration of your analysis machines, or they won't be able to return the collected results.
-    * ``connection`` in ``[database]``: defines how to connect to the internal database. You can use any DBMS supported by `SQLAlchemy`_ using a valid `Database Urls`_ syntax.
+    * ``machinery`` in ``[cuckoo]``:
+        This option defines which Machinery module you want Cuckoo to use to
+        interact with your analysis machines. The value must be the name of
+        the module without extension (e.g., ``virtualbox`` or ``vmware``).
+
+    * ``ip`` and ``port`` in ``[resultserver]``:
+        These define the local IP address and port that Cuckoo is going to try
+        to bind the result server on. Make sure this matches the network
+        configuration of your analysis machines or they won't be able to
+        return any results.
+
+    * ``connection`` in ``[database]``:
+        The database connection string defines how Cuckoo will connect to the
+        internal database. You can use any DBMS supported by `SQLAlchemy`_
+        using a valid `Database Urls`_ syntax.
 
 .. _`SQLAlchemy`: http://www.sqlalchemy.org/
 .. _`Database Urls`: http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
@@ -47,10 +61,10 @@ want to pay more attention to are:
 auxiliary.conf
 ==============
 
-Auxiliary modules are scripts that run concurrently with malware analysis, this file defines
-their options.
+Auxiliary modules are scripts that run concurrently with malware analysis,
+this file defines their options.
 
-Following is the default *conf/auxiliary.conf* file::
+Following is the default ``$CWD/conf/auxiliary.conf`` file::
 
     [sniffer]
     # Enable or disable the use of an external sniffer (tcpdump) [yes/no].
@@ -116,15 +130,16 @@ Following is the default *conf/auxiliary.conf* file::
 Machinery modules are scripts that define how Cuckoo should interact with
 your virtualization software of choice.
 
-Every module should have a dedicated configuration file which defines the
-details on the available machines. For example, if you created a *vmware.py*
-machinery module, you should specify *vmware* in *conf/cuckoo.conf*
-and have a *conf/vmware.conf* file.
+Every module has a dedicated configuration file which defines the details on
+the available machines. For example, Cuckoo comes with a ``VMWware`` machinery
+module. In order to use it one has to specify *vmware* as ``machinery`` option
+in ``$CWD/conf/cuckoo.conf`` and populate the ``$CWD/conf/vmware.conf`` file
+with the available Virtual Machines.
 
 Cuckoo provides some modules by default and for the sake of this guide, we'll
 assume you're going to use VirtualBox.
 
-Following is the default *conf/virtualbox.conf* file::
+Following is the default ``$CWD/conf/virtualbox.conf`` file::
 
     [virtualbox]
     # Specify which VirtualBox mode you want to run your machines on.
@@ -211,12 +226,13 @@ Following is the default *conf/virtualbox.conf* file::
     # and thus properly dumps inter-VM traffic.
     options = nictrace noagent
 
-You can use this same configuration structure for any other machinery module, although
-existing ones might have some variations or additional configuration options.
+The configuration for the other machinery modules look mostly the same with
+some variations where required. E.g., ``XenServer`` operates through an API,
+so to access it a URL and credentials are required.
 
-The comments for the options are self-explainatory.
+The comments for the options are self-explanatory.
 
-Following is the default *conf/kvm.conf* file::
+Following is the default ``$CWD/conf/kvm.conf`` file::
 
     [kvm]
     # Specify a comma-separated list of available machines to be used. For each
@@ -280,15 +296,17 @@ Following is the default *conf/kvm.conf* file::
 memory.conf
 ===========
 
-The Volatility tool offers a large set of plugins for memory dump analysis. Some of them are quite slow.
-In volatility.conf lets you to enable or disable the plugins of your choice.
-To use Volatility you have to follow two steps:
+The Volatility tool offers a large set of plugins for memory dump analysis.
+Some of them are quite slow. The ``$CWD/conf/volatility.conf`` file let's you
+enable or disable plugins of your choice. To use Volatility you have to follow
+two steps:
 
- * Enable it before in processing.conf
- * Enable memory_dump in cuckoo.conf
+ * Enable ``volatility`` in ``$CWD/conf/processing.conf``
+ * Enable ``memory_dump`` in ``$CWD/conf/cuckoo.conf``
 
-In the memory.conf's basic section you can configure the Volatility profile and
-the deletion of memory dumps after processing::
+In ``$CWD/conf/memory.conf``'s basic section you can configure the Volatility
+profile and whether memory dumps should be deleted after having been processed
+(this saves a lot of diskspace)::
 
     # Basic settings
     [basic]
@@ -297,7 +315,7 @@ the deletion of memory dumps after processing::
     # Delete memory dump after volatility processing.
     delete_memdump = no
 
-After that every plugin has an own section for configuration::
+After that every plugin has its own section for configuration::
 
     # Scans for hidden/injected code and dlls
     # http://code.google.com/p/volatility/wiki/CommandReference#malfind
@@ -312,8 +330,8 @@ After that every plugin has an own section for configuration::
     enabled = off
     filter = on
 
-The filter configuration helps you to remove known clean data from the resulting
-report. It can be configured separately for every plugin.
+The filter configuration helps you to remove known clean data from the
+resulting report. It can be configured separately for every plugin.
 
 The filter itself is configured in the [mask] section.
 You can enter a list of pids in pid_generic to filter out processes::
@@ -331,10 +349,11 @@ processing.conf
 ===============
 
 This file allows you to enable, disable and configure all processing modules.
-These modules are located under `modules/processing/` and define how to digest
-the raw data collected during the analysis.
+These modules are located under the ``cuckoo.processing`` module and define
+how to digest the raw data collected during the analysis.
 
-You will find a section for each processing module::
+You will find a section for each processing module in
+``$CWD/conf/processing.conf``::
 
     # Enable or disable the available processing modules [on/off].
     # If you add a custom processing module to your Cuckoo setup, you have to add
@@ -456,7 +475,8 @@ You will find a section for each processing module::
     # and while being shared with all our users, it shouldn't affect your use.
     key = a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088
 
-You might want to configure the `VirusTotal`_ key if you have an account of your own.
+You might want to configure the `VirusTotal`_ key if you have an account of
+your own.
 
 .. _`VirusTotal`: http://www.virustotal.com
 
@@ -465,7 +485,7 @@ You might want to configure the `VirusTotal`_ key if you have an account of your
 reporting.conf
 ==============
 
-The *conf/reporting.conf* file contains information on the automated reports
+The ``$CWD/conf/reporting.conf`` file contains information on the reports
 generation.
 
 It contains the following sections::

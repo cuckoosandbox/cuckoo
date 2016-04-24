@@ -5,16 +5,16 @@ Development Notes
 Git branches
 ============
 
-Cuckoo Sandbox source code is available in our `official git repository`_.
+Cuckoo Sandbox source code is available in our `official Git repository`_.
 
 .. _`official git repository`: https://github.com/cuckoosandbox/cuckoo
 
 Up until version 1.0 we used to coordinate all ongoing development in a
-dedicated "development" branch and we've been exclusively merging pull requests
-in such branch.
-Since version 1.1 we moved development to the traditional "master" branch and we
-make use of GitHub's tags and release system to reference development milestones
-in time.
+dedicated "development" branch and we've been exclusively merging pull
+requests in such branch.
+Since version 1.1 we moved development to the traditional "master" branch and
+we make use of GitHub's tags and release system to reference development
+milestones in time.
 
 Release Versioning
 ==================

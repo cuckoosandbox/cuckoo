@@ -4,14 +4,14 @@
 Clean all Tasks and Samples
 ===========================
 
-Since Cuckoo 1.2 a built-in **--clean** feature has been added, it
+Since Cuckoo 1.2 a built-in **clean** feature has been added, it
 drops all associated information of the tasks and samples in the
-database. If you submit a task after running
-**--clean** then you'll start with ``Task #1`` again.
+database, on the harddisk, and from MongoDB. If you submit a task after
+running **clean** you'll start over with ``Task #1`` again.
 
 To clean your setup, run::
 
-    $ ./cuckoo.py --clean
+    $ cuckoo clean
 
 To sum up, this command does the following:
 

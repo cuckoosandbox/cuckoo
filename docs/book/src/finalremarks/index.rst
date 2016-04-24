@@ -70,7 +70,7 @@ Active Developers
     +------------------------------+--------------------+-------------------------------------+
     | Alessandro `jekil`_ Tanasi   | Developer          | ``alessandro at tanasi dot it``     |
     +------------------------------+--------------------+-------------------------------------+
-    | Jurriaan `skier`_ Bremer     | Developer          | ``jurriaanbremer at gmail dot com`` |
+    | Jurriaan `skier`_ Bremer     | Developer          | ``jbr at cuckoo dot sh``            |
     +------------------------------+--------------------+-------------------------------------+
     | Mark `rep`_ Schloesser       | Developer          | ``ms at mwcollect dot org``         |
     +------------------------------+--------------------+-------------------------------------+
@@ -82,94 +82,98 @@ It's hard at this point to keep track of all individual contributions.
 Following is the list of people who contributed code to our GitHub repository::
 
     $ git shortlog -s -n
-        1226  Jurriaan Bremer
-        1119  Nex
-        1076  jekil
+        1426  Jurriaan Bremer
+        1143  Nex
+        1136  jekil
          372  Dmitry Rodionov
-         305  rep
+         328  rep
          185  nex
          117  Thorsten Sick
           85  Ivan Kirillov
           50  Alessandro Tanasi
+          24  Charlie Hanner
           24  Mark Schloesser
           24  Pietro Delsante
-          24  Charlie Hanner
           22  David Maciejak
+          16  Johannes Gilger
           15  Adam Meily
           14  Justin Roberts
           13  Greg Back
+          11  Nicky
+          11  lehmz
           11  r3comp1le
-          10  lehmz
-           9  Script Kiddie
+          10  Thibault Marquand
            9  Christopher Schmitt
+           9  Script Kiddie
            7  Hugh Pearse
            7  SpoonBoy
            6  KillerInstinct
            6  Tal Jerome
            6  init99
-           5  jamu
-           5  Rajiv Subrahmanyam
            5  David Francos
-           4  Nicky
-           4  Chris Boettcher
+           5  Rajiv Subrahmanyam
+           5  jamu
            4  Adam Pridgen
            4  Ben Small
+           4  Chris Boettcher
            4  Darren Spruell
-           3  Thibault Marquand
            3  Allen Swackhamer
            3  Espen Fjellvær Olsen
            3  Jerome Marty
            3  Nagy Ferenc László
            3  Stephen DiCato
            3  mak
+           3  nsmfoo
+           3  razu
            3  robertsjw
            3  wzr
            3  z0mbiehunt3r
-           2  Roberto Abdelkader Martínez Pérez
-           2  kholbrook1303
-           2  Will Metcalf
-           2  bcyrill
-           2  upsidedwn
-           2  mcpacosy
-           2  mt00at
-           2  Henrique Menezes
-           2  nsmfoo
-           2  SecTecRes
-           2  Shane-Carr
-           2  Mario Vilas
+           2  Claudio Guarnieri
+           2  Cory Kennedy
            2  Gael Muller
+           2  Henrique Menezes
            2  Jacob Gajek
-           2  Richard Harman
+           2  Marcin Wielgoszewski
+           2  Mario Vilas
            2  Mark Woan
            2  Max Taube
            2  Neriberto C.Prado
-           2  Thomas Penteker
-           2  Claudio Guarnieri
+           2  Nick Driver
            2  Nitzan Carmel
-           1  jvoisin
-           1  l0ngestever
-           1  Ben Lyon
-           1  Andrea De Pasquale
-           1  Alexander J
+           2  Richard Harman
+           2  Roberto Abdelkader Martínez Pérez
+           2  SecTecRes
+           2  Shane-Carr
+           2  Thomas Penteker
+           2  Will Metcalf
+           2  athend
+           2  bcyrill
+           2  kcn
+           2  kholbrook1303
+           2  mcpacosy
+           2  mt00at
+           2  n3sfox
+           2  upsidedwn
+           1  =
            1  Aitor Gómez
-           1  vacmf
-           1  sabri
-           1  sharvilkatariya
-           1  shendo
+           1  Alexander J
+           1  Andrea De Pasquale
+           1  Ben Lyon
+           1  Benjamin Vanheuverzwijn
+           1  Crashman1983
+           1  Dave Reindel
+           1  Edouard Chamillard
+           1  Fedele Mantuano
+           1  Jesús Hernández Gormaz
+           1  John Davison
+           1  KS
            1  Maxim Muzafarov
            1  Micha Lenk
            1  Michael George
-           1  ssobr
            1  Michal Marek
-           1  John Davison
-           1  Jesús Hernández Gormaz
            1  RiddleLei
            1  Ryan Peck
            1  SnakeByte Lab
-           1  tsmolka
-           1  Fedele Mantuano
-           1  =
-           1  Edouard Chamillard
            1  Valter Santos
            1  bladeswords
            1  chimerhapsody
@@ -179,11 +183,19 @@ Following is the list of people who contributed code to our GitHub repository::
            1  dewiestr
            1  dspruell
            1  flo-vienna
-           1  Crashman1983
-           1  Benjamin Vanheuverzwijn
+           1  jvoisin
+           1  l0ngestever
+           1  peteyb1313
+           1  rvargasbarranco
+           1  sabri
+           1  sharvilkatariya
+           1  shendo
+           1  ssobr
+           1  tsmolka
+           1  vacmf
 
-There is a number of friends who provided feedback, ideas and support during the years
-of development of this project, including:
+There is a number of friends who provided feedback, ideas and support during
+the years of development of this project, including but not limited to:
 
     * Felix Leder
     * Tillmann Werner

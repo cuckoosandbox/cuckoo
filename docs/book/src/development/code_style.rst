@@ -4,8 +4,9 @@ Coding Style
 
 In order to contribute code to the project, you must diligently follow the
 style rules describe in this chapter. Having a clean and structured code is
-very important for our development lifecycle, and not compliant code will
-most likely be rejected.
+very important for our development lifecycle. We do help out with code
+refactoring where required, but please try to do as much as possible on your
+own.
 
 Essentially Cuckoo's code style is based on `PEP 8 - Style Guide for Python Code
 <http://www.python.org/dev/peps/pep-0008/>`_ and `PEP 257 -- Docstring
@@ -17,19 +18,25 @@ Formatting
 Copyright header
 ----------------
 
-All source code files must start with the following copyright header::
+All existing source code files start with the following copyright header::
 
     # Copyright (C) 2010-2013 Claudio Guarnieri.
     # Copyright (C) 2014-2016 Cuckoo Foundation.
     # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
     # See the file 'docs/LICENSE' for copying permission.
 
+Newly created files should start with the following copyright header::
+
+    # Copyright (C) Cuckoo Foundation.
+    # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+    # See the file 'docs/LICENSE' for copying permission.
+
 Indentation
 -----------
 
-The code must have a 4-spaces-tabs indentation.
-Since Python enforce the indentation, make sure to configure your editor
-properly or your code might cause malfunctioning.
+The code must have a 4-spaces-tabs indentation. Since Python enforce the
+indentation, make sure to configure your editor properly or your code might
+cause malfunctioning.
 
 Maximum Line Length
 -------------------
@@ -97,31 +104,15 @@ In your module add::
     import logging
     log = logging.getLogger(__name__)
 
-And use the ``log`` handle, for more details refer to the Python documentation.
+And use the ``log`` handle. More details can be found in the Python
+documentation, but as follows is an example::
 
-In case you really need to print a string to standard output, use the
-``print()`` function::
-
-    print("foo")
-
-**NOT** the statement::
-
-    print "foo"
-
-Checking for keys in data structures
-------------------------------------
-
-When checking for a key in a data structure use the clause "in" instead of
-methods like "has_key()", for example::
-
-    if "bar" in foo:
-        do_something(foo["bar"])
+    log.info("Log message")
 
 Exceptions
 ==========
 
-Custom exceptions must be defined in the *lib/cuckoo/common/exceptions.py* file
-or in the local module if the exception should not be global.
+Custom exceptions must be defined in the ``cuckoo/common/exceptions.py`` file.
 
 The following is the current Cuckoo exceptions chain::
 

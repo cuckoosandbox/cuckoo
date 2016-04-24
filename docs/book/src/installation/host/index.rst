@@ -2,14 +2,14 @@
 Preparing the Host
 ==================
 
-Even though it's reported to run on other operating systems too, Cuckoo is
-originally supposed to run on a *GNU/Linux* native system.
-For the purpose of this documentation, we chose **latest Ubuntu LTS** as
-reference system for the commands examples.
+To run Cuckoo we suggest a *GNU/Linux* operating system. We'll be using the
+**latest Ubuntu LTS** throughout our documentation. However, Cuckoo should
+work fine on Windows and Mac OS X as well.
 
 .. toctree::
 
     requirements
     installation
+    cwd
     configuration
     configuration_android

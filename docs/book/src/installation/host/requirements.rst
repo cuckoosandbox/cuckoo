@@ -2,35 +2,30 @@
 Requirements
 ============
 
-Before proceeding on configuring Cuckoo, you'll need to install some required
-software and libraries.
+Before proceeding to installing and configuring Cuckoo, you'll need to install
+some required software packages and libraries.
 
 Installing Python libraries
 ===========================
 
-Cuckoo host components are completely written in Python, therefore make sure to
-have an appropriate version installed. For the current release **Python 2.7** is
-preferred.
+The Cuckoo host components is completely written in Python, therefore it is
+required to have an appropriate version of Python installed. At this point we
+only fully support **Python 2.7**. Older version of Python and Python 3
+versions are not supported by us.
 
-Install the basic dependencies::
+The following software packages from the apt repositories are required to get
+Cuckoo to install and run properly::
 
     $ sudo apt-get install python python-pip python-dev libffi-dev libssl-dev
 
-If you want to use the Django-based web interface, you'll have to install
-MongoDB too::
+In order to use the Django-based Web Interface, MongoDB is required::
 
     $ sudo apt-get install mongodb
-
-In order to properly function, Cuckoo requires some dependencies. They can all
-be installed through PyPI like this::
-
-    $ sudo pip install -r requirements.txt
 
 `Yara`_ and `Pydeep`_ are *optional* plugins but will have to be installed
 manually, so please refer to their websites.
 
-If you want to use KVM it's packaged too and you can install it with the
-following command::
+If you want to use KVM as machinery module you will have to install KVM::
 
     $ sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils python-libvirt
 
@@ -49,19 +44,18 @@ installation instructions.
 Virtualization Software
 =======================
 
-Despite heavily relying on `VirtualBox`_ in the past, Cuckoo has moved on being
-architecturally independent from the virtualization software.
-As you will see throughout this documentation, you'll be able to define and
-write modules to support any software of your choice.
+Cuckoo Sandbox supports most Virtualization Software solutions. As you will
+see throughout the documentation, Cuckoo has been setup to remain as modular
+as possible and in case integration with a piece of software is missing this
+could be easily added.
 
 For the sake of this guide we will assume that you have VirtualBox installed
-(which still is the default option), but this does **not** affect anyhow the
-execution and general configuration of the sandbox.
+(which is the default), but this does **not** affect the execution and general
+configuration of the sandbox.
 
 You are completely responsible for the choice, configuration and execution of
-your virtualization software, therefore please refrain from asking for help on
-it in our channels and lists: refer to the software's official documentation
-and support.
+your virtualization software. Please read our extensive documenation and FAQ
+before reaching out to us with questions on how to set Cuckoo up.
 
 Assuming you decide to go for VirtualBox, you can get the proper package for
 your distribution at the `official download page`_.
@@ -113,14 +107,13 @@ privileged tcpdump execution is contained otherwise.
 Installing Volatility
 =====================
 
-Volatility is an optional tool to do forensic analysis on memory dumps.
-In combination with Cuckoo, it can automatically provide additional visibility
+Volatility is an optional tool to do forensic analysis on memory dumps. In
+combination with Cuckoo, it can automatically provide additional visibility
 into deep modifications in the operating system as well as detect the presence
 of rootkit technology that escaped the monitoring domain of Cuckoo's analyzer.
 
 In order to function properly, Cuckoo requires at least version 2.3 of
-Volatility.
-You can get it from the `official repository`_.
+Volatility. You can get it from the `official repository`_.
 
 See the volatility documentation for detailed instructions on how to install it.
 

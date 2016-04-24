@@ -11,46 +11,49 @@ formats.
 Getting Started
 ===============
 
-All reporting modules must be placed inside the directory *modules/reporting/*.
+All reporting modules must be placed inside the ``cuckoo/cuckoo/reporting/``
+directory (which translates to the ``cuckoo.reporting`` module).
 
-Every module must also have a dedicated section in the file *conf/reporting.conf*: for
-example if you create a module *module/reporting/foobar.py* you will have to append
-the following section to *conf/reporting.conf*::
+Every module must also have a dedicated section in the
+``$CWD/conf/reporting.conf`` file: for example if you create a module
+``cuckoo/cuckoo/reporting/foobar.py`` you will have to append the following
+section to ``$CWD/conf/reporting.conf`` (and thus
+``cuckoo/data/conf/reporting.conf`` in the Git repository)::
 
     [foobar]
     enabled = on
 
-Every additional option you add to your section will be available to your reporting module
-in the ``self.options`` dictionary.
+Every additional option you add to your section will be available to your
+reporting module in the ``self.options`` dictionary.
 
 Following is an example of a working JSON reporting module:
 
-    .. code-block:: python
-        :linenos:
+.. code-block:: python
+    :linenos:
 
-        import os
-        import json
-        import codecs
+    import os
+    import json
+    import codecs
 
-        from lib.cuckoo.common.abstracts import Report
-        from lib.cuckoo.common.exceptions import CuckooReportError
+    from cuckoo.common.abstracts import Report
+    from cuckoo.common.exceptions import CuckooReportError
 
-        class JsonDump(Report):
-            """Saves analysis results in JSON format."""
+    class JsonDump(Report):
+        """Saves analysis results in JSON format."""
 
-            def run(self, results):
-                """Writes report.
-                @param results: Cuckoo results dict.
-                @raise CuckooReportError: if fails to write report.
-                """
-                try:
-                    report = codecs.open(os.path.join(self.reports_path, "report.json"), "w", "utf-8")
-                    json.dump(results, report, sort_keys=False, indent=4)
-                    report.close()
-                except (UnicodeError, TypeError, IOError) as e:
-                    raise CuckooReportError("Failed to generate JSON report: %s" % e)
+        def run(self, results):
+            """Writes report.
+            @param results: Cuckoo results dict.
+            @raise CuckooReportError: if fails to write report.
+            """
+            try:
+                report = codecs.open(os.path.join(self.reports_path, "report.json"), "w", "utf-8")
+                json.dump(results, report, sort_keys=False, indent=4)
+                report.close()
+            except (UnicodeError, TypeError, IOError) as e:
+                raise CuckooReportError("Failed to generate JSON report: %s" % e)
 
-This code is very simple, it basically just receives the global container produced by the
+This code is very simple, it receives the global container produced by the
 processing modules, converts it into JSON and writes it to a file.
 
 There are few requirements for writing a valid reporting module:

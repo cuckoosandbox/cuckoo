@@ -21,10 +21,8 @@ Some History
 ============
 
 Cuckoo Sandbox started as a `Google Summer of Code`_ project in 2010 within
-`The Honeynet Project`_.
-It was originally designed and developed by *Claudio “nex” Guarnieri*, who is
-still the main developer and coordinates all efforts from joined developers and
-contributors.
+`The Honeynet Project`_. It was originally designed and developed by
+*Claudio “nex” Guarnieri*, who is still the project leader and core developer.
 
 After initial work during the summer 2010, the first beta release was published
 on Feb. 5th 2011, when Cuckoo was publicly announced and distributed for the
@@ -71,10 +69,20 @@ surrounding projects and initiatives.
 
 On 7th April 2014, Cuckoo Sandbox 1.1 is released.
 
+On the 7th of October 2014, Cuckoo Sandbox 1.1.1 is released after a
+`Critical Vulnerability`_ had been disclosed by Robert Michel.
+
+On the 4th of March 2015, Cuckoo Sandbox 1.2 has been released featuring a
+wide array of improvements regarding the usability of Cuckoo.
+
 During summer 2015 Cuckoo Sandbox started the development of Mac OS X malware
 analysis as a `Google Summer of Code`_ project within `The Honeynet Project`_.
 *Dmitry Rodionov* qualified for the project and developed a working analyzer
 for Mac OS X.
+
+On the 21st of February 2016 `version 2.0 Release Candidate 1`_ is released.
+This version ships with almost two years of combined effort into making Cuckoo
+Sandbox a better project for daily usage.
 
 .. _`Google Summer of Code`: http://www.google-melange.com
 .. _`The Honeynet Project`: http://www.honeynet.org
@@ -83,6 +91,8 @@ for Mac OS X.
 .. _`Mo' Malware Mo' Problems - Cuckoo Sandbox to the rescue`: https://media.blackhat.com/us-13/US-13-Bremer-Mo-Malware-Mo-Problems-Cuckoo-Sandbox-Slides.pdf
 .. _`Rapid7`: http://www.rapid7.com
 .. _`Cuckoo Foundation`: http://cuckoofoundation.org/
+.. _`Critical Vulnerability`: https://cuckoosandbox.org/2014-10-07-cuckoo-sandbox-111.html
+.. _`version 2.0 Release Candidate 1`: https://cuckoosandbox.org/2016-01-21-cuckoo-sandbox-20-rc1.html
 
 Use Cases
 =========
@@ -133,6 +143,12 @@ The following picture explains Cuckoo's main architecture:
 
 Obtaining Cuckoo
 ================
+
+.. deprecated:: 2.0-rc2
+    Although Cuckoo can still be downloaded from the website we discourage
+    from doing so, given that simply installing it through pip is the
+    preferred way to get Cuckoo. Please refer to
+    :doc:`../installation/host/installation`.
 
 Cuckoo can be downloaded from the `official website`_, where the stable and
 packaged releases are distributed, or can be cloned from our `official git

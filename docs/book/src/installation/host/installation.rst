@@ -2,17 +2,14 @@
 Installing Cuckoo
 =================
 
-Proceed with download and installation. Read :doc:`../../introduction/what` to
-learn where you can obtain a copy of the sandbox.
-
 Create a user
 =============
 
-You either can run Cuckoo from your own user or create a new one dedicated just
-to your sandbox setup.
-Make sure that the user that runs Cuckoo is the same user that you will
-use to create and run the virtual machines, otherwise Cuckoo won't be able to
-identify and launch them.
+You either can run Cuckoo from your own user or create a new one dedicated
+just to your sandbox setup. Make sure that the user that runs Cuckoo is the
+same user that you will use to create and run the virtual machines (at least
+in the case of VirtualBox), otherwise Cuckoo won't be able to identify and
+launch these Virtual Machines.
 
 Create a new user::
 
@@ -32,6 +29,9 @@ run libvirt)::
 Install Cuckoo
 ==============
 
-Extract or checkout your copy of Cuckoo to a path of your choice and you're
-ready to go ;-).
+Installing the latest version of Cuckoo is as simple as follows::
 
+    $ sudo pip install -U cuckoo
+
+Please refer to :doc:`cwd` to learn more about the
+``Cuckoo Working Directory`` and how to operate it.

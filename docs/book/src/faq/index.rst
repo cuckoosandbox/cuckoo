@@ -19,25 +19,34 @@ General Questions
 Can I analyze URLs with Cuckoo?
 -------------------------------
 
-Yes you can. Since version 0.5 URLs are natively supported by Cuckoo.
-Additional details on how URL submissions is documented :doc:`../usage/submit.html#submission-utility`.
+.. versionadded:: 0.5
+    Native support for URL analysis was added to Cuckoo.
 
+.. versionchanged:: 2.0-rc1
+    Cuckoo will not only start the browser (i.e., Internet Explorer) but will
+    also attempt to actively instrument it in order to extract interesting
+    results such as executed Javascript, iframe URLs, etc. See also our
+    `2.0-rc1 blogpost`_.
 
-    $ ./utils/submit.py --url http://www.example.com
+Additional details on URL submissions is documented at :doc:`../usage/submit`,
+but it boils down to::
 
+    $ cuckoo submit --url http://www.example.com
+
+.. _`2.0-rc1 blogpost`: https://cuckoosandbox.org/2016-01-21-cuckoo-sandbox-20-rc1.html
 
 .. _general_volatility:
 
 Can I use Volatility with Cuckoo?
 ---------------------------------
 
-Cuckoo 0.5 introduces support for optional full memory dumps, which are created at
-the end of the analysis process. You can use these memory dumps to perform additional
-memory forensic analysis with `Volatility`_.
+Cuckoo 0.5 introduces support for optional full memory dumps, which are
+created at the end of the analysis process. You can use these memory dumps to
+perform additional memory forensic analysis with `Volatility`_.
 
-Please also consider that we don't particularly encourage this: since Cuckoo employs
-some rootkit-like technologies to perform its operations, the results of a forensic
-analysis would be polluted by the sandbox's components.
+Please also consider that we don't particularly encourage this: since Cuckoo
+employs some rootkit-like technologies to perform its operations, the results
+of a forensic analysis would be polluted by the sandbox's components.
 
 .. _`Volatility`: http://code.google.com/p/volatility/
 
@@ -47,10 +56,9 @@ What do I need to use Cuckoo with VMware ESXi?
 ----------------------------------------------
 
 To run with VMware vSphere Hypervisor (or ESXi) Cuckoo leverages libvirt.
-Libivirt is currently using the VMware API to take control over virtual machines,
-though these APIs are available only in the licensed version.
-In VMware vSphere free edition, these APIs are read only, so you are unable
-to use Cuckoo with it.
+Libvirt is uses the VMware API to take control over virtual machines, though
+these APIs are available only in the licensed version. In VMware vSphere free
+edition these APIs are read only, so you will be unable to use it with Cuckoo.
 For the minimum license needed, please have a look at VMware website.
 
 Troubleshooting

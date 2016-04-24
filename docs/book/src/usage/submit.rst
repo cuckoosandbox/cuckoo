@@ -12,104 +12,93 @@ Submit an Analysis
 Submission Utility
 ==================
 
-The easiest way to submit an analysis is to use the provided *submit.py*
-command-line utility. It currently has the following options available::
+The easiest way to submit an analysis is to use the ``cuckoo submit`` utility.
+It currently has the following options available::
 
-    usage: submit.py [-h] [-d] [--remote REMOTE] [--url] [--package PACKAGE]
-                     [--custom CUSTOM] [--owner OWNER] [--timeout TIMEOUT]
-                     [-o OPTIONS] [--priority PRIORITY] [--machine MACHINE]
-                     [--platform PLATFORM] [--memory] [--enforce-timeout]
-                     [--clock CLOCK] [--tags TAGS] [--max MAX] [--pattern PATTERN]
-                     [--shuffle] [--unique] [--quiet]
-                     target
+    $ cuckoo submit --help
+    Usage: cuckoo submit [OPTIONS] [TARGET]...
 
-    positional arguments:
-      target                URL, path to the file or folder to analyze
+    Submit one or more files or URLs to Cuckoo.
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -d, --debug           Enable debug logging
-      --remote REMOTE       Specify IP:port to a Cuckoo API server to submit
-                            remotely
-      --url                 Specify whether the target is an URL
-      --package PACKAGE     Specify an analysis package
-      --custom CUSTOM       Specify any custom value
-      --owner OWNER         Specify the task owner
-      --timeout TIMEOUT     Specify an analysis timeout
-      -o OPTIONS, --options OPTIONS
-                            Specify options for the analysis package (e.g.
-                            "name=value,name2=value2")
-      --priority PRIORITY   Specify a priority for the analysis represented by an
-                            integer
-      --machine MACHINE     Specify the identifier of a machine you want to use
-      --platform PLATFORM   Specify the operating system platform you want to use
-                            (windows/darwin/linux)
-      --memory              Enable to take a memory dump of the analysis machine
-      --enforce-timeout     Enable to force the analysis to run for the full
-                            timeout period
-      --clock CLOCK         Set virtual machine clock
-      --tags TAGS           Specify tags identifier of a machine you want to use
-      --max MAX             Maximum samples to add in a row
-      --pattern PATTERN     Pattern of files to submit
-      --shuffle             Shuffle samples before submitting them
-      --unique              Only submit new samples, ignore duplicates
-      --quiet               Only print text on failure
+    Options:
+    -u, --url           Submitting URLs instead of samples
+    -o, --options TEXT  Options for these tasks
+    --package TEXT      Analysis package to use
+    --custom TEXT       Custom information to pass along this task
+    --owner TEXT        Owner of this task
+    --timeout INTEGER   Analysis time in seconds
+    --priority INTEGER  Priority of this task
+    --machine TEXT      Machine to analyze these tasks on
+    --platform TEXT     Analysis platform
+    --memory            Enable memory dumping
+    --enforce-timeout   Don't terminate the analysis early
+    --clock TEXT        Set the system clock
+    --tags TEXT         Analysis tags
+    --baseline          Create baseline task
+    --remote TEXT       Submit to a remote Cuckoo instance
+    --shuffle           Shuffle the submitted tasks
+    --pattern TEXT      Provide a glob-pattern when submitting a directory
+    --max INTEGER       Submit up to X tasks at once
+    --unique            Only submit samples that have not been analyzed before
+    -d, --debug         Enable verbose logging
+    -q, --quiet         Only log warnings and critical messages
+    --help              Show this message and exit.
 
-If you specify a directory as path, all the files contained in it will be
-submitted for analysis.
+You may specify multiple files or directories at once. For directories
+``cuckoo submit`` will enumerate all its files and submit them one by one.
 
 The concept of analysis packages will be dealt later in this documentation (at
 :doc:`packages`). Following are some usage examples:
 
 *Example*: submit a local binary::
 
-    $ ./utils/submit.py /path/to/binary
+    $ cuckoo submit /path/to/binary
 
 *Example*: submit an URL::
 
-    $ ./utils/submit.py --url http://www.example.com
+    $ cuckoo submit --url http://www.example.com
 
 *Example*: submit a local binary and specify an higher priority::
 
-    $ ./utils/submit.py --priority 5 /path/to/binary
+    $ cuckoo submit --priority 5 /path/to/binary
 
 *Example*: submit a local binary and specify a custom analysis timeout of
 60 seconds::
 
-    $ ./utils/submit.py --timeout 60 /path/to/binary
+    $ cuckoo submit --timeout 60 /path/to/binary
 
 *Example*: submit a local binary and specify a custom analysis package::
 
-    $ ./utils/submit.py --package <name of package> /path/to/binary
+    $ cuckoo submit --package <name of package> /path/to/binary
 
 *Example*: submit a local binary and specify a custom analysis package and
 some options (in this case a command line argument for the malware)::
 
-    $ ./utils/submit.py --package exe --options arguments=--dosomething /path/to/binary.exe
+    $ cuckoo submit --package exe --options arguments=--dosomething /path/to/binary.exe
 
 *Example*: submit a local binary to be run on virtual machine *cuckoo1*::
 
-    $ ./utils/submit.py --machine cuckoo1 /path/to/binary
+    $ cuckoo submit --machine cuckoo1 /path/to/binary
 
 *Example*: submit a local binary to be run on a Windows machine::
 
-    $ ./utils/submit.py --platform windows /path/to/binary
+    $ cuckoo submit --platform windows /path/to/binary
 
 *Example*: submit a local binary and take a full memory dump of the analysis machine::
 
-    $ ./utils/submit.py --memory /path/to/binary
+    $ cuckoo submit --memory /path/to/binary
 
 *Example*: submit a local binary and force the analysis to be executed for the full timeout (disregarding the internal mechanism that Cuckoo uses to decide when to terminate the analysis)::
 
-    $ ./utils/submit.py --enforce-timeout /path/to/binary
+    $ cuckoo submit --enforce-timeout /path/to/binary
 
 *Example*: submit a local binary and set virtual machine clock. Format is %m-%d-%Y %H:%M:%S. If not specified, the current time is used. For example if we want run a sample the 24 january 2001 at 14:41:20::
 
-    $ ./utils/submit.py --clock "01-24-2001 14:41:20" /path/to/binary
+    $ cuckoo submit --clock "01-24-2001 14:41:20" /path/to/binary
 
 *Example*: submit a sample for Volatility analysis (to reduce side effects of the cuckoo hooking, switch it off with *options free=True*)::
 
-    $ ./utils/submit.py --memory --options free=True /path/to/binary
+    $ cuckoo submit --memory --options free=yes /path/to/binary
 
 .. _apipy:
 
@@ -133,7 +122,7 @@ Python Functions
 
 In order to keep track of submissions, samples and overall execution, Cuckoo
 uses a popular Python ORM called `SQLAlchemy`_ that allows you to make the sandbox
-use SQLite, MySQL, PostgreSQL and several other SQL database systems.
+use SQLite, MySQL or MariaDB, PostgreSQL and several other SQL database systems.
 
 Cuckoo is designed to be easily integrated in larger solutions and to be fully
 automated. In order to automate analysis submission we suggest to use the REST
@@ -218,6 +207,7 @@ Example Usage:
 
     >>> from lib.cuckoo.core.database import Database
     >>> db = Database()
+    >>> db.connect()
     >>> db.add_url("http://www.cuckoosandbox.org")
     2
     >>>

@@ -4,9 +4,7 @@ Starting Cuckoo
 
 To start Cuckoo use the command::
 
-    $ python cuckoo.py
-
-Make sure to run it inside Cuckoo's root directory.
+    $ cuckoo
 
 You will get an output similar to this::
 
@@ -16,9 +14,9 @@ You will get an output similar to this::
       88   88  8 88   88   8 8   8 8   8
       88e8 88ee8 88e8 88   8 8eee8 8eee8
 
-     Cuckoo Sandbox 1.2
+     Cuckoo Sandbox 2.0-rc2
      www.cuckoosandbox.org
-     Copyright (c) 2010-2015
+     Copyright (c) 2010-2016
 
      Checking for updates...
      Good! You have the latest version available.
@@ -32,23 +30,28 @@ You can avoid this by disabling the ``version_check`` option in the configuratio
 
 Now Cuckoo is ready to run and it's waiting for submissions.
 
-``cuckoo.py`` accepts some command line options as shown by the help::
+``cuckoo`` accepts some command line options as shown by the help::
 
-    usage: cuckoo.py [-h] [-q] [-d] [-v] [-a] [-t] [-m MAX_ANALYSIS_COUNT]
-                     [-u USER] [--clean]
+    $ cuckoo --help
+    Usage: cuckoo [OPTIONS] COMMAND [ARGS]...
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -q, --quiet           Display only error messages
-      -d, --debug           Display debug messages
-      -v, --version         show program's version number and exit
-      -a, --artwork         Show artwork
-      -t, --test            Test startup
-      -m MAX_ANALYSIS_COUNT, --max-analysis-count MAX_ANALYSIS_COUNT
-                            Maximum number of analyses
-      -u USER, --user USER  Drop user privileges to this user
-      --clean               Remove all tasks and samples and their associated data
+    Options:
+    -d, --debug             Enable verbose logging
+    -q, --quiet             Only log warnings and critical messages
+    -m, --maxcount INTEGER  Maximum number of analyses to process
+    --user TEXT             Drop privileges to this user
+    --root TEXT             Cuckoo Working Directory
+    --help                  Show this message and exit.
 
+    Commands:
+    api
+    clean      Utility to clean the Cuckoo Working Directory...
+    community  Utility to fetch supplies from the Cuckoo...
+    dnsserve
+    process    Process raw task data into reports.
+    rooter
+    submit     Submit one or more files or URLs to Cuckoo.
+    web
 
-Most importantly ``--debug`` and ``--quiet`` respectively increase and decrease the logging
-verbosity.
+The ``--debug`` and ``--quiet`` flags increase and decrease the logging
+verbosity for the ``cuckoo`` command or any of its subcommands.

@@ -22,7 +22,7 @@ from cuckoo.common.utils import store_temp_file, delete_folder
 from cuckoo.core.database import Database, TASK_RUNNING, Task
 from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
 from cuckoo.core.rooter import rooter
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, set_cwd
 
 # Global Database object.
 db = Database()
@@ -545,3 +545,9 @@ def vpn_status():
 
 def cuckoo_api(hostname, port, debug):
     app.run(host=hostname, port=port, debug=debug)
+
+# When run under uWSGI the Cuckoo Working Directory will not have been set
+# yet and we'll have to do so ourselves.
+if not cwd() and os.environ.get("CUCKOO_FORCE"):
+    set_cwd(os.environ["CUCKOO_FORCE"])
+    Database().connect()

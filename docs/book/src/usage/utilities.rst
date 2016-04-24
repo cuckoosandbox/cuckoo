@@ -3,115 +3,114 @@ Utilities
 =========
 
 Cuckoo comes with a set of pre-built utilities to automate several common
-tasks.
-You can find them under the "utils" folder.
+tasks. Before these utilities could be found in the ``utils/`` directory but
+since then we have moved to ``Cuckoo Apps``.
+
+Cuckoo Apps
+===========
+
+A ``Cuckoo App`` is essentially just a Cuckoo sub-command. There exist a
+couple of Cuckoo Apps, each with their own functionality. It is important to
+note that each Cuckoo App can be invoked in the same way. Following are some
+examples::
+
+    $ cuckoo submit --help
+    $ cuckoo api --help
+    $ cuckoo clean --help
+
+In these examples we provided the ``--help`` parameter which shows the
+functionality and all available parameters for the particular Cuckoo App.
 
 Submission Utility
 ==================
 
-Submits samples to analysis. This tool is already described in :doc:`submit`.
+Submits samples to analysis. This tool is described in :doc:`submit`.
 
 Web Utility
 ===========
 
-Cuckoo's web interface. This tool is already described in :doc:`submit`.
+Cuckoo's web interface. This tool is described in :doc:`web`.
 
 Processing Utility
 ==================
 
-Run the results processing engine and optionally the reporting engine (run
-all reports) on an already available analysis folder, in order to not re-run
-the analysis if you want to re-generate the reports for it.
-This is used mainly in debugging and developing Cuckoo.
-For example if you want run again the report engine for analysis number 1::
+.. versionchanged:: 2.0-rc2
+    We used to have longstanding issues with ``./utils/process.py`` randomly
+    freezing up and ``./utils/process2.py`` only being able to handle
+    PostgreSQL-based databases. These two commands have now been merged into
+    one Cuckoo App and no longer shows signs of said issues or limitations.
 
-    $ ./utils/process.py 1
+For bigger Cuckoo setups it is recommended to separate the results processing
+from the Cuckoo analyses. It is also possible to re-generate a Cuckoo report,
+this is mostly used while developing and debugging Cuckoo Signatures.
 
-If you want to re-generate the reports::
+In order to do results processing in a separate process one has to disable the
+``process_results`` configuration item in ``$CWD/conf/cuckoo.conf`` by setting
+the value to ``off``. Then a Cuckoo Processing instance has to be started,
+this can be done as follows::
 
-    $ ./utils/process.py --report 1
+    $ cuckoo process instance1
 
-Following are the usage options::
+If one Cuckoo Processing instance is not enough to handle all the incoming
+analyses, simply create a second, third, or fourth instance::
 
-    $ ./utils/process.py -h
-    usage: process.py [-h] [-d] [-r] [-p PARALLEL] [-u USER] [-m MODULES] id
+    $ cuckoo process instance2
 
-    positional arguments:
-      id                    ID of the analysis to process (auto for continuous
-                            processing of unprocessed tasks).
+In order to re-generate a Cuckoo report of an analysis task, use the ``-r``
+switch::
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -d, --debug           Display debug messages
-      -r, --report          Re-generate report
-      -p PARALLEL, --parallel PARALLEL
-                            Number of parallel threads to use (auto mode only).
-      -u USER, --user USER  Drop user privileges to this user
-      -m MODULES, --modules MODULES
-                            Path to signature and reporting modules - overrides
-                            default modules path.
+    $ cuckoo process -r 1
 
-As best practice we suggest to adopt the following configuration if you are
-running Cuckoo with many virtual machines:
+For more information see also the help on this ``Cuckoo App``::
 
-    * Run a stand alone process.py in auto mode (you choose the number of parallel threads)
-    * Disable Cuckoo reporting in cuckoo.conf (set process_results to off)
+    $ cuckoo process --help
+    Usage: cuckoo process [OPTIONS] [INSTANCE]
 
-This could increase the performance of your system because the reporting is not
-yet demanded to Cuckoo.
+    Process raw task data into reports.
 
-With Cuckoo 2 a new processing utility was introduced, it is more stable and
-with better performance. It is dubbed *process2.py*, following are the usage
-options::
+    Options:
+    -r, --report INTEGER    Re-generate a report
+    -m, --maxcount INTEGER  Maximum number of analyses to process
+    -d, --debug             Enable verbose logging
+    -q, --quiet             Only log warnings and critical messages
+    --help                  Show this message and exit.
 
-    $ ./utils/process2.py -h
-    usage: process2.py [-h] [-d] [-u USER] [-m MODULES] instance
-
-    positional arguments:
-      instance              Task processing instance.
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      -d, --debug           Display debug messages
-      -u USER, --user USER  Drop user privileges to this user
-      -m MODULES, --modules MODULES
-                            Path to signature and reporting modules - overrides
-                            default modules path.
+    In automated mode an instance name is required!
 
 Community Download Utility
 ==========================
 
-This utility downloads signatures from `Cuckoo Community Repository`_ and installs
-specific additional modules in your local setup and for example update it with
-all the latest available signatures.
-Following are the usage options::
+This ``Cuckoo App`` downloads Cuckoo Signatures, the latest monitoring
+binaries, and other goodies from the `Cuckoo Community Repository`_ and
+installs them in your ``CWD``.
 
-    $ ./utils/community.py -h
+To get all the latest and greatest from the Cuckoo Community simply execute
+as follows and wait until it finishes - it currently doesn't have any progress
+indication::
 
-    usage: community.py [-h] [-a] [-s] [-p] [-m] [-r] [-f] [-w] [-b BRANCH]
+    $ cuckoo community
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -a, --all             Download everything
-      -s, --signatures      Download Cuckoo signatures
-      -p, --processing      Download processing modules
-      -m, --machinery       Download machine managers
-      -n, --analyzer        Download analyzer modules
-      -g, --agent           Download agent modules
-      -r, --reporting       Download reporting modules
-      -f, --force           Install files without confirmation
-      -w, --rewrite         Rewrite existing files
-      -b BRANCH, --branch BRANCH
-                            Specify a different branch
+For more usage see as follows::
 
-*Example*: install all available signatures::
+    $ cuckoo community --help
+    Usage: cuckoo community [OPTIONS]
 
-    $ ./utils/community.py --signatures --force
+    Utility to fetch supplies from the Cuckoo Community.
+
+    Options:
+    -f, --force              Overwrite existing files
+    -b, --branch TEXT        Specify a different community branch rather than
+                             master
+    --file, --filepath PATH  Specify a local copy of a community .tar.gz file
+    --help                   Show this message and exit.
 
 .. _`Cuckoo Community Repository`: https://github.com/cuckoosandbox/community
 
 Database migration utility
 ==========================
+
+.. deprecated:: 2.0-rc2
+    This will be ported into a Cuckoo App in an upcoming update.
 
 This utility is developed to migrate your data between Cuckoo's release.
 It's developed on top of the `Alembic`_ framework and it should provide data
@@ -122,6 +121,11 @@ This tool is already described in :doc:`../installation/upgrade`.
 
 Stats utility
 =============
+
+.. deprecated:: 2.0-rc2
+    This utility will not be ported to a Cuckoo App as this information can
+    also be retrieved through both the Cuckoo API as well as the Cuckoo Web
+    Interface.
 
 This is a really simple utility which prints some statistics about processed
 samples::
@@ -142,6 +146,9 @@ samples::
 
 Machine utility
 ===============
+
+.. deprecated:: 2.0-rc2
+    This utility will be ported to a Cuckoo App in an upcoming Cuckoo update.
 
 The machine.py utility is designed to help you automatize the configuration of
 virtual machines in Cuckoo.
@@ -172,9 +179,13 @@ Following are the available options::
       --resultserver RESULTSERVER
                             IP:Port of the Result Server.
 
-
 Distributed scripts
 ===================
+
+.. deprecated:: 2.0-rc2
+    Distributed Cuckoo has not been properly integrated yet in the Cuckoo
+    Package. When that happens functionality from these scripts will likely
+    be moved elsewhere.
 
 There are a couple of shell scripts used to automate distributed utility:
 
@@ -184,6 +195,10 @@ There are a couple of shell scripts used to automate distributed utility:
 Mac OS X Bootstrap scripts
 ==========================
 
+.. deprecated:: 2.0-rc2
+    These files will be moved elsewhere in an upcoming update and so should
+    any documentation that references these scripts.
+
 A couple of bootstrap scripts used for Mac OS X analysis are located in
 *utils/darwin* folder, they are used to bootstrap the guest and host system for
 Mac OS X malware analysis.
@@ -192,6 +207,9 @@ look at them and configure them for your needs.
 
 SMTP Sinkhole
 =============
+
+.. deprecated:: 2.0-rc2
+    Whether this will be integrated as a Cuckoo App has yet to be determined.
 
 The smtp_sinkhole.py utility is designed to provide an easy to use SMTP sinkhole
 to catch all the emails going out of virtual machines network.
@@ -233,6 +251,10 @@ address of your virtual network and smtp_sinkhole.py is listening on
 
 Setup script
 ============
+
+.. deprecated:: 2.0-rc2
+    This script requires a major rewrite given it operates on the legacy
+    variant of Cuckoo.
 
 Cuckoo setup script is a tool to setup a whole Cuckoo environment on a Debian
 based OS (i.e. Ubuntu or Debian).

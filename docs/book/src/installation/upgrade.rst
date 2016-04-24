@@ -2,6 +2,11 @@
 Upgrade from a previous release
 ===============================
 
+.. warning::
+    These upgrade and migration instructions are outdated since 2.0-rc2 and
+    will be updated in a future Cuckoo update together with a Cuckoo App for
+    migration.
+
 Cuckoo Sandbox grows really fast and in every release new features are added and
 some others are fixed or removed.
 There are two ways to upgrade your Cuckoo: start from scratch or migrate your
