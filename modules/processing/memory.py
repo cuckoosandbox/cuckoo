@@ -100,7 +100,7 @@ class VolatilityAPI(object):
         if self.osprofile:
             base_conf["profile"] = self.osprofile
 
-        if self.baseline.get("memory", {}).get("kdbgscan", {}).get("data", []):
+        if self.baseline is not None and self.baseline.get("memory", {}).get("kdbgscan", {}).get("data", []):
              base_conf["kdbg"] = self.baseline["memory"]["kdbgscan"]["data"][0].get("kdbg", None)
 
         for key, value in base_conf.items():
