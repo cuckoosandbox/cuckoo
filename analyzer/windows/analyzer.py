@@ -103,7 +103,7 @@ class Files(object):
 
         # Remove the filepath from the files list.
         self.files.pop(filepath.lower(), None)
-        self.files_orig.pop(filepath.lower())
+        self.files_orig.pop(filepath.lower(), None)
 
     def move_file(self, oldfilepath, newfilepath, pid=None):
         """A file will be moved - track this change."""
