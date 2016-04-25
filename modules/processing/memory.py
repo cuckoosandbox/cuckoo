@@ -963,7 +963,7 @@ class VolatilityManager(object):
         if not self.voptions:
             return
 
-        vol = VolatilityAPI(self.memfile, self.osprofile)
+        vol = VolatilityAPI(self.memfile, self.osprofile, self.baseline)
 
         for plugin_name in self.PLUGINS:
             if isinstance(plugin_name, list):
