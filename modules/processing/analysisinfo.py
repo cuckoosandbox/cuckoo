@@ -71,8 +71,9 @@ class MetaInfo(Processing):
 
             dirname = os.path.dirname(relpath)
             basename = os.path.basename(relpath)
-            if not dirname: dirname = ""
-            return dict(dirname=dirname, basename=basename, sha256=File(x).get_sha256())
+            return dict(dirname=dirname or "",
+                        basename=basename,
+                        sha256=File(x).get_sha256())
 
         meta = {
             "output": {},
@@ -81,11 +82,13 @@ class MetaInfo(Processing):
         if os.path.exists(self.pcap_path):
             meta["output"]["pcap"] = reformat(self.pcap_path)
 
-        for path, key in [
-                (self.pmemory_path, "memdumps"),
-                (self.buffer_path, "buffers"),
-                (self.dropped_path, "dropped"),
-            ]:
+        infos = [
+            (self.pmemory_path, "memdumps"),
+            (self.buffer_path, "buffers"),
+            (self.dropped_path, "dropped"),
+        ]
+
+        for path, key in infos:
             if os.path.exists(path):
                 contents = os.listdir(path)
                 if contents:

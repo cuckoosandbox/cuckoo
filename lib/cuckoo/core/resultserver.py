@@ -50,11 +50,9 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
         while True:
             try:
                 server_addr = ip, self.port
-                SocketServer.ThreadingTCPServer.__init__(self,
-                                                         server_addr,
-                                                         ResultHandler,
-                                                         *args,
-                                                         **kwargs)
+                SocketServer.ThreadingTCPServer.__init__(
+                    self, server_addr, ResultHandler, *args, **kwargs
+                )
             except Exception as e:
                 if e.errno == errno.EADDRINUSE:
                     if self.cfg.resultserver.get("force_port"):
