@@ -8,7 +8,7 @@ import json
 import logging
 from datetime import datetime
 
-from lib.cuckoo.common.config import Config, parse_options
+from lib.cuckoo.common.config import Config, parse_options, emit_options
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -1110,7 +1110,8 @@ class Database(object):
         if priority:
             task.priority = priority
 
-        return add(task.target, task.timeout, task.package, task.options,
+        options = emit_options(task.options)
+        return add(task.target, task.timeout, task.package, options,
                    task.priority, task.custom, task.owner, task.machine,
                    task.platform, tags, task.memory, task.enforce_timeout,
                    task.clock)

@@ -189,9 +189,11 @@ def init_tasks():
     log.debug("Checking for locked tasks..")
     for task in db.list_tasks(status=TASK_RUNNING):
         if cfg.cuckoo.reschedule:
-            db.reschedule(task.id)
-            log.info("Rescheduled task with ID {0} and "
-                     "target {1}".format(task.id, task.target))
+            task_id = db.reschedule(task.id)
+            log.info(
+                "Rescheduled task with ID %s and target %s: task #%s",
+                task.id, task.target, task_id
+            )
         else:
             db.set_status(task.id, TASK_FAILED_ANALYSIS)
             log.info("Updated running task ID {0} status to failed_analysis".format(task.id))
