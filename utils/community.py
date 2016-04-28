@@ -52,9 +52,15 @@ def installdir(src, dst, force, rewrite, origin=[]):
         destination = os.path.join(dst, file_name)
 
         if not rewrite:
-            if os.path.exists(destination):
-                print("File \"{0}\" already exists, "
-                      "{1}".format(file_name, colors.yellow("skipped")))
+            srcpath = os.path.join(src, file_name)
+            if not os.path.isdir(srcpath) or os.path.islink(srcpath):
+                if os.path.exists(destination):
+                    print("File \"{0}/{1}\" already exists, {2}".format(
+                        "/".join(origin), file_name, colors.yellow("skipped")))
+                    continue
+            else:
+                installdir(srcpath, destination, force, rewrite,
+                           origin + [file_name])
                 continue
 
         install = False
@@ -127,7 +133,7 @@ def install(enabled, force, rewrite, archive):
             print "  No candidates available, continuing."
             continue
 
-        installdir(origin, os.path.join(CUCKOO_ROOT, folder), force, rewrite)
+        installdir(origin, os.path.join(CUCKOO_ROOT, folder), force, rewrite, origin=[folder])
 
     shutil.rmtree(temp)
 
@@ -174,6 +180,8 @@ def main():
             enabled.append("analyzer")
         if args.agent:
             enabled.append("agent")
+        if args.monitor:
+            enabled.append("monitor")
 
     if not enabled:
         print(colors.red("You need to enable some category!\n"))
