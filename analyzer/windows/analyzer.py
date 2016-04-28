@@ -29,7 +29,7 @@ from lib.core.config import Config
 from lib.core.packages import choose_package
 from lib.core.pipe import PipeServer, PipeForwarder, PipeDispatcher
 from lib.core.privileges import grant_debug_privilege
-from lib.core.startup import init_logging
+from lib.core.startup import init_logging, set_clock
 from modules import auxiliary
 
 log = logging.getLogger("analyzer")
@@ -441,19 +441,9 @@ class Analyzer(object):
         Process.set_config(self.config)
 
         # Set virtual machine clock.
-        clock = datetime.datetime.strptime(
+        set_clock(datetime.datetime.strptime(
             self.config.clock, "%Y%m%dT%H:%M:%S"
-        )
-
-        # Setting date and time.
-        # NOTE: Windows system has only localized commands with date format
-        # following localization settings, so these commands for english date
-        # format cannot work in other localizations.
-        # In addition DATE and TIME commands are blocking if an incorrect
-        # syntax is provided, so an echo trick is used to bypass the input
-        # request and not block analysis.
-        os.system("echo:|date {0}".format(clock.strftime("%m-%d-%y")))
-        os.system("echo:|time {0}".format(clock.strftime("%H:%M:%S")))
+        ))
 
         # Set the default DLL to be used for this analysis.
         self.default_dll = self.config.options.get("dll")
