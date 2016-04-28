@@ -37,7 +37,7 @@ If you want to use the *mitm* auxiliary module (to intercept SSL/TLS generated
 traffic), you need to install `mitmproxy`_. Please refer to its website for
 installation instructions.
 
-.. _Yara: http://code.google.com/p/yara-project/
+.. _Yara: https://github.com/plusvic/yara
 .. _Pydeep: https://github.com/kbandla/pydeep
 .. _mitmproxy: https://mitmproxy.org/
 
