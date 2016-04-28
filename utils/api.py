@@ -290,6 +290,8 @@ def tasks_report(task_id, report_format="json"):
         tar = tarfile.open(fileobj=s, mode=tarmode, dereference=True)
         for filedir in os.listdir(srcdir):
             filepath = os.path.join(srcdir, filedir)
+            if not os.path.exists(filepath):
+                continue
             if bzf["type"] == "-" and filedir not in bzf["files"]:
                 tar.add(filepath, arcname=filedir)
             if bzf["type"] == "+" and filedir in bzf["files"]:
