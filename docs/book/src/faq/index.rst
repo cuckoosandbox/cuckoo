@@ -195,3 +195,22 @@ In the case of VirtualBox the hostonly interface `vboxnet0` can be created as fo
 
     # Configure vboxnet0.
     $ VBoxManage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1 --netmask 255.255.255.0
+
+Error during template rendering
+-------------------------------
+
+.. versionchanged:: 2.0-rc1
+
+In our 2.0-rc1 release a bug was introduced that looks as follows in the
+screenshot below. In order to resolve this issue in your local setup, please
+open the ``web/analysis/urls.py`` file and modify the 21st line by adding an
+underscore as follows::
+
+     -        "/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-\.]+)?"
+     +        "/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-_\.]+)?"
+
+The official commit fixing this issue can be found in `the following commit`_.
+
+.. _`the following commit`: https://github.com/cuckoosandbox/cuckoo/commit/9c704f50e70227ed21ae1b79ba90540c3087fc57
+
+.. image:: ../_images/screenshots/error_template_rendering.png
