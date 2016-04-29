@@ -19,6 +19,16 @@ framework.
 
 """
 import os
+import sys
+
+from os.path import join, dirname, abspath
+
+webdir = abspath(join(dirname(abspath(__file__)), '..'))
+sys.path.append(abspath(join(webdir, '..')))
+sys.path.append(webdir)
+
+from os import chdir,environ
+chdir(webdir)
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web.settings")
 
