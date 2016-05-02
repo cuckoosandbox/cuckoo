@@ -143,7 +143,8 @@ class Package(object):
 
         p = Process()
         if not p.execute(path=path, args=args, dll=dll, free=free,
-                         curdir=self.curdir, source=source, mode=mode,
+                         curdir=self.curdir, source=source,
+                         mode=mode or self.options.get("mode"),
                          maximize=maximize, env=env):
             raise CuckooPackageError("Unable to execute the initial process, "
                                      "analysis aborted.")
