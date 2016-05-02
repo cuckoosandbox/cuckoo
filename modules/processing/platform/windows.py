@@ -72,6 +72,48 @@ class MonitorProcessLog(list):
     _api_ControlService = _add_service_name
     _api_DeleteService = _add_service_name
 
+    # VBA Macro analysis stuff.
+    vbe6_ptrs = {}
+    vbe6_func = {}
+
+    def _vbe6_newobject(self, event):
+        """Keep track which instance pointers belong to which classes."""
+        this = event["arguments"]["this"]
+        object_name = event["arguments"]["object_name"]
+
+        self.vbe6_ptrs[this] = object_name
+
+    _api_vbe6_CreateObject = _vbe6_newobject
+    _api_vbe6_GetObject = _vbe6_newobject
+
+    def _api_vbe6_StringConcat(self, event):
+        return False
+
+    def _vbe6_getidfromname(self, event):
+        """Keep track which function has which function index.
+        This informational call is omitted from the actual logs."""
+        this = event["arguments"]["this"]
+        funcidx = event["arguments"]["funcidx"]
+        funcname = event["arguments"]["funcname"]
+
+        if this in self.vbe6_ptrs:
+            class_ = self.vbe6_ptrs[this]
+            self.vbe6_func[class_, funcidx] = funcname
+            return False
+
+    _api_vbe6_GetIDFromName = _vbe6_getidfromname
+    _api_vbe6_CallByName = _vbe6_getidfromname
+
+    def _api_vbe6_Invoke(self, event):
+        this = event["arguments"]["this"]
+        funcidx = event["arguments"]["funcidx"]
+
+        class_ = self.vbe6_ptrs.get(this)
+        if class_ and (class_, funcidx) in self.vbe6_func:
+            event["arguments"]["funcname"] = self.vbe6_func[class_, funcidx]
+            event["flags"]["this"] = class_
+            del event["arguments"]["funcidx"]
+
     def _api_modifier(self, event):
         """Adds flags field to CLSID and IID instances."""
         clsid = guid_name(event["arguments"].get("clsid"))
@@ -103,13 +145,15 @@ class MonitorProcessLog(list):
 
                 # If available, call a modifier function.
                 apiname = "_api_%s" % event["api"]
-                if hasattr(self, apiname):
-                    getattr(self, apiname)(event)
+                r = getattr(self, apiname, lambda _: None)(event)
 
                 # Generic modifier for various functions.
                 self._api_modifier(event)
 
-                yield event
+                # Prevent this event from being passed along by returning
+                # False in a _api_() method.
+                if r is not False:
+                    yield event
 
     def __nonzero__(self):
         """Required for the JSON reporting module as otherwise the on-demand
