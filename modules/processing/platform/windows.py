@@ -87,7 +87,13 @@ class MonitorProcessLog(list):
     _api_vbe6_GetObject = _vbe6_newobject
 
     def _api_vbe6_StringConcat(self, event):
-        return False
+        pass
+
+    def _api_vbe6_Import(self, event):
+        # TODO Move this logic to the monitor.
+        args = event["arguments"]
+        if args["library"] == "VBE6.DLL" and not args["function"]:
+            return False
 
     def _vbe6_getidfromname(self, event):
         """Keep track which function has which function index.
@@ -96,10 +102,9 @@ class MonitorProcessLog(list):
         funcidx = event["arguments"]["funcidx"]
         funcname = event["arguments"]["funcname"]
 
-        if this in self.vbe6_ptrs:
-            class_ = self.vbe6_ptrs[this]
-            self.vbe6_func[class_, funcidx] = funcname
-            return False
+        class_ = self.vbe6_ptrs.get(this, this)
+        self.vbe6_func[class_, funcidx] = funcname
+        return False
 
     _api_vbe6_GetIDFromName = _vbe6_getidfromname
     _api_vbe6_CallByName = _vbe6_getidfromname
@@ -108,7 +113,7 @@ class MonitorProcessLog(list):
         this = event["arguments"]["this"]
         funcidx = event["arguments"]["funcidx"]
 
-        class_ = self.vbe6_ptrs.get(this)
+        class_ = self.vbe6_ptrs.get(this, this)
         if class_ and (class_, funcidx) in self.vbe6_func:
             event["arguments"]["funcname"] = self.vbe6_func[class_, funcidx]
             event["flags"]["this"] = class_
