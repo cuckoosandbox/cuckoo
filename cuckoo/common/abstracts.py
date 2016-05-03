@@ -94,7 +94,7 @@ class Machinery(object):
     def _get_resultserver_port(self):
         """Returns the ResultServer port."""
         # Avoid import recursion issues by importing ResultServer here.
-        from lib.cuckoo.core.resultserver import ResultServer
+        from cuckoo.core.resultserver import ResultServer
         return ResultServer().port
 
     def _initialize(self, module_name):
