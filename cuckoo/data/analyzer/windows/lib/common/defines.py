@@ -169,3 +169,16 @@ class SYSTEM_INFO(Structure):
         ("wProcessorLevel", WORD),
         ("wProcessorRevision", WORD),
     ]
+
+class SYSTEMTIME(Structure):
+    _pack_ = 1
+    _fields_ = [
+        ("wYear", WORD),
+        ("wMonth", WORD),
+        ("wDayOfWeek", WORD),
+        ("wDay", WORD),
+        ("wHour", WORD),
+        ("wMinute", WORD),
+        ("wSecond", WORD),
+        ("wMilliseconds", WORD),
+    ]

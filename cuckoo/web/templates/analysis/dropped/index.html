@@ -19,10 +19,26 @@
                     </td>
                 </tr>
             </h4>
+                {% if file.filepath %}
+                <tr>
+                    <th class="text-right">Filepath</th>
+                    <td>{{ file.filepath }}</td>
+                </tr>
+                {% endif %}
                 <tr>
                     <th class="text-right">Size</th>
                     <td>{{ file.size | sizeof_fmt }}</td>
                 </tr>
+                {% if file.pids %}
+                <tr>
+                    <th class="text-right">Processes</th>
+                    <td>
+                        {% for pid in file.pids %}
+                        {{ pid }} (<b>{{ pid|process_name:analysis }}</b>)
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endif %}
                 <tr>
                     <th class="text-right">Type</th>
                     <td>{{file.type}}</td>

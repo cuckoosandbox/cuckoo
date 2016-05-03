@@ -46,23 +46,23 @@ The following is a basic example signature:
         severity = 2
         categories = ["generic"]
         authors = ["Cuckoo Developers"]
-        minimum = "1.2"
+        minimum = "2.0"
 
         def on_complete(self):
             return self.check_file(pattern=".*\\.exe$", regex=True)
 
 As you can see the structure is really simple and consistent with the other
-modules. We're going to get into details later, but as you can see at line
-**12** from version 1.2 Cuckoo provides some helper functions that make the
-process of creating signatures much easier.
+modules. We're going to get into details later, but since version 1.2 Cuckoo
+provides some helper functions that make the process of
+creating signatures much easier.
 
-In this example we just walk through all the accessed files in the summary and
-check if there is anything ending with "*.exe*": in that case it will return
-``True``, meaning that the signature matched, otherwise return ``False``.
+In this example we just walk through all the accessed files in the summary and check
+if there is anything ending with "*.exe*": in that case it will return ``True``, meaning that
+the signature matched, otherwise return ``False``.
 
-The ``on_complete`` function is called at the end of the cuckoo signature
-process. Other function will be called before on specific events and help you
-to write more sophisticated and faster signatures.
+the function ``on_complete`` is called at the end of the cuckoo signature process.
+Other function will be called before on specific events and help you to write
+more sophisticated and faster signatures.
 
 In case the signature gets matched, a new entry in the "signatures" section
 will be added to the global container roughly as follows::
@@ -121,7 +121,7 @@ In our example, we would create the following skeleton:
         categories = ["trojan"] # We add a category
         families = ["badbadmalware"] # We add the name of our fictional malware family
         authors = ["Me"] # We specify the author
-        minimum = "1.2" # We specify that in order to run the signature, the user will need at least Cuckoo 0.5
+        minimum = "2.0" # We specify that in order to run the signature, the user will simply need Cuckoo 2.0
 
         def on_complete(self):
             return
@@ -143,7 +143,7 @@ As we said, we want to match a particular mutex name, so we proceed as follows:
         categories = ["trojan"]
         families = ["badbadmalware"]
         authors = ["Me"]
-        minimum = "1.2"
+        minimum = "2.0"
 
         def on_complete(self):
             return self.check_mutex("i_am_a_malware")
@@ -166,7 +166,7 @@ you could translate the previous signature in the following way:
         categories = ["trojan"]
         families = ["badbadmalware"]
         authors = ["Me"]
-        minimum = "1.2"
+        minimum = "2.0"
 
         def on_complete(self):
             for process in self.get_processes_by_pid():
@@ -205,7 +205,7 @@ An example signature using this technique is the following:
         severity = 2
         categories = ["generic"]
         authors = ["Cuckoo Developers"]
-        minimum = "1.2"
+        minimum = "2.0"
 
         # Evented signatures can specify filters that reduce the amount of
         # API calls that are streamed in. One can filter Process name, API

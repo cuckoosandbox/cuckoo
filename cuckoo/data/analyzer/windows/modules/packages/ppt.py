@@ -47,4 +47,4 @@ class PPT(Package):
 
     def start(self, path):
         powerpoint = self.get_path("Microsoft Office PowerPoint")
-        return self.execute(powerpoint, args=[path])
+        return self.execute(powerpoint, args=["/S", path])

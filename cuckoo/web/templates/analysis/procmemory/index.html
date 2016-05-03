@@ -1,10 +1,19 @@
 {% if analysis.procmemory %}
     {% for proc in analysis.procmemory %}
         <div class="panel panel-default">
-            <div class="panel-heading"><h3 class="panel-title">Process memory dump for PID <b>{{proc.pid}}</b></h3></div>
+            <div class="panel-heading"><h3 class="panel-title">Process memory dump for PID <b>{{proc.pid}}</b> (dump {{proc.num}})</h3></div>
             <div class="panel-body">
                 {% if proc.procmem_id %}
                     <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "memdump" proc.procmem_id %}">Download</a>
+                {% endif %}
+
+                {% if proc.extracted %}
+                    <b>Extracted/injected images (may contain unpacked executables)</b>
+                    <ul>
+                    {% for extracted in proc.extracted %}
+                        <li><a href="{% url "analysis.views.file" "procmem_extracted" extracted.extracted_id %}" class="btn btn-primary btn-small">Download</a></li>
+                    {% endfor %}
+                </ul>
                 {% endif %}
 
                 {% if proc.yara %}

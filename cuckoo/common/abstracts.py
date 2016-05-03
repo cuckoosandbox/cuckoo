@@ -19,7 +19,6 @@ from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.objects import Dictionary
 from cuckoo.common.utils import create_folder
 from cuckoo.core.database import Database
-from cuckoo.core.resultserver import ResultServer
 from cuckoo.misc import cwd
 
 try:
@@ -92,6 +91,12 @@ class Machinery(object):
         # Run initialization checks.
         self._initialize_check()
 
+    def _get_resultserver_port(self):
+        """Returns the ResultServer port."""
+        # Avoid import recursion issues by importing ResultServer here.
+        from lib.cuckoo.core.resultserver import ResultServer
+        return ResultServer().port
+
     def _initialize(self, module_name):
         """Read configuration.
         @param module_name: module name.
@@ -126,8 +131,8 @@ class Machinery(object):
                 opt_resultserver = self.options_globals.resultserver
 
                 # the resultserver port might have been dynamically changed
-                #  -> get the current one from the resultserver singelton
-                opt_resultserver.port = ResultServer().port
+                #  -> get the current one from the resultserver singleton
+                opt_resultserver.port = self._get_resultserver_port()
 
                 ip = machine_opts.get("resultserver_ip", opt_resultserver.ip)
                 port = machine_opts.get("resultserver_port", opt_resultserver.port)
@@ -644,6 +649,7 @@ class Processing(object):
         self.file_path = os.path.realpath(os.path.join(self.analysis_path,
                                                        "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
+        self.dropped_meta_path = os.path.join(self.analysis_path, "files.json")
         self.package_files = os.path.join(self.analysis_path, "package_files")
         self.buffer_path = os.path.join(self.analysis_path, "buffer")
         self.logs_path = os.path.join(self.analysis_path, "logs")
@@ -1198,3 +1204,15 @@ class BehaviorHandler(object):
         """Return the handler specific structure, gets placed into
         behavior[self.key]."""
         raise NotImplementedError
+
+class ProtocolHandler(object):
+    """Abstract class for protocol handlers coming out of the analysis."""
+    def __init__(self, handler, version=None):
+        self.handler = handler
+        self.version = version
+
+    def init(self):
+        pass
+
+    def close(self):
+        pass

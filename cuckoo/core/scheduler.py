@@ -51,6 +51,7 @@ class AnalysisManager(threading.Thread):
         self.cfg = Config()
         self.storage = ""
         self.binary = ""
+        self.storage_binary = ""
         self.machine = None
 
         self.db = Database()
@@ -114,12 +115,12 @@ class AnalysisManager(threading.Thread):
                 return False
 
         try:
-            new_binary_path = os.path.join(self.storage, "binary")
+            self.storage_binary = os.path.join(self.storage, "binary")
 
             if hasattr(os, "symlink"):
-                os.symlink(self.binary, new_binary_path)
+                os.symlink(self.binary, self.storage_binary)
             else:
-                shutil.copy(self.binary, new_binary_path)
+                shutil.copy(self.binary, self.storage_binary)
         except (AttributeError, OSError) as e:
             log.error("Unable to create symlink/copy from \"%s\" to "
                       "\"%s\": %s", self.binary, self.storage, e)
@@ -467,6 +468,12 @@ class AnalysisManager(threading.Thread):
                     os.remove(self.binary)
                 except OSError as e:
                     log.error("Unable to delete the copy of the original file at path \"%s\": %s", self.binary, e)
+            # Check if the binary in the analysis directory is an invalid symlink. If it is, delete it.
+            if os.path.islink(self.storage_binary) and not os.path.exists(self.storage_binary):
+                try:
+                    os.remove(self.storage_binary)
+                except OSError as e:
+                    log.error("Unable to delete symlink to the binary copy at path \"%s\": %s", self.storage_binary, e)
 
         log.info("Task #%d: reports generation completed (path=%s)",
                  self.task.id, self.storage)

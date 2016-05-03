@@ -203,3 +203,53 @@ In the case of VirtualBox the hostonly interface `vboxnet0` can be created as fo
 
     # Configure vboxnet0.
     $ VBoxManage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1 --netmask 255.255.255.0
+
+Error during template rendering
+-------------------------------
+
+.. versionchanged:: 2.0-rc1
+
+In our 2.0-rc1 release a bug was introduced that looks as follows in the
+screenshot below. In order to resolve this issue in your local setup, please
+open the ``web/analysis/urls.py`` file and modify the 21st line by adding an
+underscore as follows::
+
+     -        "/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-\.]+)?"
+     +        "/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-_\.]+)?"
+
+The official commit fixing this issue can be found in `the following commit`_.
+
+.. _`the following commit`: https://github.com/cuckoosandbox/cuckoo/commit/9c704f50e70227ed21ae1b79ba90540c3087fc57
+
+.. image:: ../_images/screenshots/error_template_rendering.png
+
+501 Unsupported Method ('GET')
+------------------------------
+
+.. versionchanged:: 2.0-rc1
+
+Since 2.0-rc1 Cuckoo supports both the `legacy Cuckoo Agent`_ as well as a
+`new, REST API-based, Cuckoo Agent`_ for communication between the Guest and
+the Host machine. The new ``Cuckoo Agent`` is an improved Agent in the sense
+that it also allows usage outside of Cuckoo. As an example, it is used
+extensively by `VMCloak`_ in order to automatically create, configure, and
+cloak Virtual Machines.
+
+Now in order to determine whether the Cuckoo Host is talking to the legacy or
+new ``Cuckoo Agent`` it does a ``HTTP GET`` request to the root path (``/``).
+The legacy Cuckoo Agent, which is based on ``xmlrpc``, doesn't handle that
+specific route and therefore returns an error, ``501 Unsupported method``.
+
+Having said that, the message is not actually an error, it is simply Cuckoo
+trying to determine to which version of the ``Cuckoo Agent`` it is talking.
+
+.. note::
+    It should be noted that even though there is a new ``Cuckoo Agent``
+    available, backwards compatibility for the legacy ``Cuckoo Agent`` is
+    still available and working properly.
+
+.. image:: ../_images/screenshots/unsupported_method.png
+
+.. _`legacy Cuckoo Agent`: https://github.com/cuckoosandbox/cuckoo/blob/master/agent/agent.py
+.. _`new, REST API-based, Cuckoo Agent`: https://github.com/jbremer/agent/blob/master/agent.py
+.. _`VMCloak`: https://github.com/jbremer/vmcloak

@@ -261,13 +261,13 @@ def resubmit(request, task_id):
             "sample_id": task.sample_id,
             "file_name": os.path.basename(task.target),
             "resubmit": "file",
-            "options": task.options,
+            "options": emit_options(task.options),
         })
     elif task.category == "url":
         return render_index(request, {
             "url": task.target,
             "resubmit": "URL",
-            "options": task.options,
+            "options": emit_options(task.options),
         })
 
 def submit_dropped(request, task_id, sha1):
@@ -285,5 +285,5 @@ def submit_dropped(request, task_id, sha1):
         "file_name": os.path.basename(filepath),
         "resubmit": "file",
         "dropped_file": True,
-        "options": task.options,
+        "options": emit_options(task.options),
     })

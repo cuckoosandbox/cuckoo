@@ -83,8 +83,10 @@ class ProcessTree(BehaviorHandler):
 
     def handle_event(self, process):
         if process["pid"] in self.processes:
-            log.warning("Found the same process identifier twice, this "
-                        "shouldn't happen!")
+            log.warning(
+                "Found the same process identifier twice, this "
+                "shouldn't happen!"
+            )
             return
 
         self.processes[process["pid"]] = {
@@ -94,7 +96,7 @@ class ProcessTree(BehaviorHandler):
             "command_line": process.get("command_line"),
             "first_seen": process["first_seen"],
             "children": [],
-            "track": process["track"],
+            "track": process.get("track", True),
         }
 
     def run(self):
@@ -123,6 +125,7 @@ class GenericBehavior(BehaviorHandler):
             "pid": process["pid"],
             "ppid": process["ppid"],
             "process_name": process["process_name"],
+            "process_path": process["process_path"],
             "first_seen": process["first_seen"],
             "summary": collections.defaultdict(set),
         }

@@ -1,12 +1,32 @@
                                   CHANGELOG
 
-Cuckoo Sandbox 2.0-dev (2016-xx-xx)
+Cuckoo Sandbox 2.0-rc2 (2016-xx-xx)
 ===================================
 
-* Added .WSF analysis package
-* Added Elasticsearch support
+* Import and Export analysis for improved debugging of user issues
+* Added Elasticsearch support and rely on it for global search
+* Fixed pythonw.exe execution for the new Agent
+* Added .docm documents to the Word document analysis package
+* Added .wsf analysis package
+* Added dynamic VBA analysis for Office 2007 products
+* Added PE files reconstruction from memory dumps
 * Added dump_delete option to delete process memory dumps after analysis
 * Added sniffer.debug option to create a debug network capture
+* Fixed setting the clock in the Guest for non-English users
+* Added PID tracking for dropped files
+* Automatically start PowerPoint documents in slide show mode
+* Use the Linux routing table for properly routing analysis traffic
+* Document known 2.0-rc1 issues and fixes in our FAQ
+* Prettify HTML and Javascript content
+* Make Cuckoo Agent interaction less error prone on the Host
+* Updated monitor to include various improvements and fixes
+* Custom DNS serve utility
+* Added clicking through of French buttons
+* Resolve names for CLSID identifiers
+* Added meta information to our reports
+* Experimental alpha version of VPN check cronjob script
+* Many Web Interface UI & backend tweaks
+* Many, many bug fixes and code tweaks
 
 Cuckoo Sandbox 2.0-rc1 (2016-01-21)
 ===================================

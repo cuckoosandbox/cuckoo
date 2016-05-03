@@ -24,15 +24,15 @@ from lib.common.results import NetlogFile
 
 log = logging.getLogger(__name__)
 
-def subprocess_checkcall(args):
+def subprocess_checkcall(args, env=None):
     return subprocess.check_call(
         args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=subprocess.PIPE, env=env,
     )
 
-def subprocess_checkoutput(args):
+def subprocess_checkoutput(args, env=None):
     return subprocess.check_output(
-        args, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
+        args, stdin=subprocess.PIPE, stderr=subprocess.PIPE, env=env,
     )
 
 class Process(object):
@@ -214,7 +214,7 @@ class Process(object):
         return bitsize == 32
 
     def execute(self, path, args=None, dll=None, free=False, curdir=None,
-                source=None, mode=None, maximize=False):
+                source=None, mode=None, maximize=False, env=None):
         """Execute sample process.
         @param path: sample path.
         @param args: process args.
@@ -225,6 +225,7 @@ class Process(object):
                        become the parent process for the new process.
         @param mode: monitor mode - which functions to instrument.
         @param maximize: whether the GUI should be maximized.
+        @param env: environment variables.
         @return: operation status.
         """
         if not os.access(path, os.X_OK):
@@ -276,7 +277,7 @@ class Process(object):
             argv += ["--maximize"]
 
         try:
-            self.pid = int(subprocess_checkoutput(argv))
+            self.pid = int(subprocess_checkoutput(argv, env))
         except Exception:
             log.error("Failed to execute process from path %r with "
                       "arguments %r (Error: %s)", path, argv,
@@ -392,6 +393,7 @@ class Process(object):
             "track": "1" if track else "0",
             "mode": mode or "",
             "disguise": self.config.options.get("disguise", "0"),
+            "pipe-pid": "1",
         }
 
         for key, value in lines.items():
@@ -487,7 +489,8 @@ class Process(object):
             buf = create_string_buffer(length)
             if KERNEL32.ReadProcessMemory(process_handle, addr, buf, length, byref(count)):
                 header = struct.pack("QIIII", addr, length, mbi.State, mbi.Type, mbi.Protect)
-                nf = NetlogFile(file_name)
+                nf = NetlogFile()
+                nf.init(file_name)
                 nf.sock.sendall(header)
                 nf.sock.sendall(buf.raw)
                 nf.close()

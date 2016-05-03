@@ -126,7 +126,7 @@ class Package(object):
 
             CloseKey(key_handle)
 
-    def execute(self, path, args, mode=None, maximize=False):
+    def execute(self, path, args, mode=None, maximize=False, env=None):
         """Starts an executable for analysis.
         @param path: executable path
         @param args: executable arguments
@@ -143,8 +143,9 @@ class Package(object):
 
         p = Process()
         if not p.execute(path=path, args=args, dll=dll, free=free,
-                         curdir=self.curdir, source=source, mode=mode,
-                         maximize=maximize):
+                         curdir=self.curdir, source=source,
+                         mode=mode or self.options.get("mode"),
+                         maximize=maximize, env=env):
             raise CuckooPackageError("Unable to execute the initial process, "
                                      "analysis aborted.")
 

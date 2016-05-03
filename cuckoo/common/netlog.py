@@ -23,6 +23,7 @@ else:
     elif hasattr(bson, "loads"):
         bson_decode = lambda d: bson.loads(d)
 
+from cuckoo.common.abstracts import ProtocolHandler
 from cuckoo.common.utils import get_filename_from_path
 from cuckoo.common.exceptions import CuckooResultError
 
@@ -58,14 +59,15 @@ def default_converter_64bit(v):
         return v.decode("latin-1")
     return v
 
-class BsonParser(object):
-    """Handle .bson logs from monitor. Basically we would like to directly pass through
-    the parsed data structures, but the .bson logs need a bit special handling to be more space efficient.
+class BsonParser(ProtocolHandler):
+    """Receives and interprets .bson logs from the monitor.
 
-    Basically we get "info" messages that explain how the function arguments will come through later on.
-    This class remembers these info mappings and then transforms the api call messages accordingly.
+    The monitor provides us with "info" messages that explain how the function
+    arguments will come through later on. This class remembers these info
+    mappings and then transforms the api call messages accordingly.
 
-    Other message types typically get passed through after renaming the keys slightly.
+    Other message types typically get passed through after renaming the
+    keys slightly.
     """
     converters_32bit = {
         None: default_converter_32bit,
@@ -79,8 +81,9 @@ class BsonParser(object):
         "x": pointer_converter_32bit,
     }
 
-    def __init__(self, fd):
-        self.fd = fd
+    def init(self):
+        self.fd = self.handler
+
         self.infomap = {}
         self.flags_value = {}
         self.flags_bitmask = {}
@@ -89,10 +92,10 @@ class BsonParser(object):
         self.buffer_sha1 = None
 
         if not HAVE_BSON:
-            log.critical("Starting BsonParser, but bson is not available! (install with `pip install bson`)")
-
-    def close(self):
-        pass
+            log.critical(
+                "Starting BsonParser, but bson is not available! "
+                "(install with `pip install bson`)"
+            )
 
     def resolve_flags(self, apiname, argdict, flags):
         # Resolve 1:1 values.
@@ -160,8 +163,10 @@ class BsonParser(object):
 
             blen = struct.unpack("I", data)[0]
             if blen > MAX_MESSAGE_LENGTH:
-                log.critical("BSON message larger than MAX_MESSAGE_LENGTH, "
-                             "stopping handler.")
+                log.critical(
+                    "BSON message larger than MAX_MESSAGE_LENGTH, "
+                    "stopping handler."
+                )
                 return
 
             data += self.fd.read(blen-4)
@@ -172,8 +177,10 @@ class BsonParser(object):
             try:
                 dec = bson_decode(data)
             except Exception as e:
-                log.warning("BsonParser decoding problem {0} on "
-                            "data[:50] {1}".format(e, repr(data[:50])))
+                log.warning(
+                    "BsonParser decoding problem %s on data[:50] %s",
+                    e, repr(data[:50])
+                )
                 return
 
             mtype = dec.get("type", "none")
@@ -215,8 +222,9 @@ class BsonParser(object):
                 from cuckoo.core.resultserver import ResultHandler
 
                 if isinstance(self.fd, ResultHandler):
-                    filepath = os.path.join(self.fd.storagepath,
-                                            "buffer", self.buffer_sha1)
+                    filepath = os.path.join(
+                        self.fd.storagepath, "buffer", self.buffer_sha1
+                    )
                     with open(filepath, "wb") as f:
                         f.write(buf)
 
@@ -232,9 +240,8 @@ class BsonParser(object):
             }
 
             if mtype == "debug":
-                log.info("Debug message from monitor: {0}".format(dec.get("msg", "")))
                 parsed["message"] = dec.get("msg", "")
-
+                log.info("Debug message from monitor: %s", parsed["message"])
             else:
                 # Regular api call from monitor
                 if index not in self.infomap:
@@ -246,9 +253,10 @@ class BsonParser(object):
                 args = dec.get("args", [])
 
                 if len(args) != len(argnames):
-                    log.warning("Inconsistent arg count (compared to arg names) "
-                                "on {2}: {0} names {1}".format(dec, argnames,
-                                                               apiname))
+                    log.warning(
+                        "Inconsistent arg count (compared to arg names) "
+                        "on %s: %s names %s", dec, argnames, apiname
+                    )
                     continue
 
                 argdict = {}
@@ -281,7 +289,9 @@ class BsonParser(object):
                         modulepath = argdict["module_path"]
 
                     else:
-                        raise CuckooResultError("I don't recognise the bson log contents.")
+                        raise CuckooResultError(
+                            "I don't recognize the bson log contents."
+                        )
 
                     # FILETIME is 100-nanoseconds from 1601 :/
                     vmtimeunix = (timelow + (timehigh << 32))

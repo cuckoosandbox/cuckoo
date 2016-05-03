@@ -21,6 +21,8 @@ class MonitorProcessLog(list):
         self.first_seen = None
         self.has_apicalls = False
 
+        self.services = {}
+
     def _api_COleScript_Compile(self, event):
         event["raw"] = "script",
         event["arguments"]["script"] = \
@@ -46,6 +48,76 @@ class MonitorProcessLog(list):
             attrs[key.lower()] = value
 
         event["arguments"]["attributes"] = attrs
+
+    def _remember_service_name(self, event):
+        """Keep track of the name of this service."""
+        service_name = event["arguments"]["service_name"]
+        # We've added logging of the service_handle to the API signature in
+        # the Monitor, but for backwards compatibility we'll keep it as
+        # follows for now.
+        service_handle = "0x%08x" % event["return_value"]
+        self.services[service_handle] = service_name
+
+    _api_OpenServiceA = _remember_service_name
+    _api_OpenServiceW = _remember_service_name
+    _api_CreateServiceA = _remember_service_name
+    _api_CreateServiceW = _remember_service_name
+
+    def _add_service_name(self, event):
+        service_name = self.services.get(event["arguments"]["service_handle"])
+        event["arguments"]["service_name"] = service_name
+
+    _api_StartServiceA = _add_service_name
+    _api_StartServiceW = _add_service_name
+    _api_ControlService = _add_service_name
+    _api_DeleteService = _add_service_name
+
+    # VBA Macro analysis stuff.
+    vbe6_ptrs = {}
+    vbe6_func = {}
+
+    def _vbe6_newobject(self, event):
+        """Keep track which instance pointers belong to which classes."""
+        this = event["arguments"]["this"]
+        object_name = event["arguments"]["object_name"]
+
+        self.vbe6_ptrs[this] = object_name
+
+    _api_vbe6_CreateObject = _vbe6_newobject
+    _api_vbe6_GetObject = _vbe6_newobject
+
+    def _api_vbe6_StringConcat(self, event):
+        pass
+
+    def _api_vbe6_Import(self, event):
+        # TODO Move this logic to the monitor.
+        args = event["arguments"]
+        if args["library"] == "VBE6.DLL" and not args["function"]:
+            return False
+
+    def _vbe6_getidfromname(self, event):
+        """Keep track which function has which function index.
+        This informational call is omitted from the actual logs."""
+        this = event["arguments"]["this"]
+        funcidx = event["arguments"]["funcidx"]
+        funcname = event["arguments"]["funcname"]
+
+        class_ = self.vbe6_ptrs.get(this, this)
+        self.vbe6_func[class_, funcidx] = funcname
+        return False
+
+    _api_vbe6_GetIDFromName = _vbe6_getidfromname
+    _api_vbe6_CallByName = _vbe6_getidfromname
+
+    def _api_vbe6_Invoke(self, event):
+        this = event["arguments"]["this"]
+        funcidx = event["arguments"]["funcidx"]
+
+        class_ = self.vbe6_ptrs.get(this, this)
+        if class_ and (class_, funcidx) in self.vbe6_func:
+            event["arguments"]["funcname"] = self.vbe6_func[class_, funcidx]
+            event["flags"]["this"] = class_
+            del event["arguments"]["funcidx"]
 
     def _api_modifier(self, event):
         """Adds flags field to CLSID and IID instances."""
@@ -78,13 +150,15 @@ class MonitorProcessLog(list):
 
                 # If available, call a modifier function.
                 apiname = "_api_%s" % event["api"]
-                if hasattr(self, apiname):
-                    getattr(self, apiname)(event)
+                r = getattr(self, apiname, lambda _: None)(event)
 
                 # Generic modifier for various functions.
                 self._api_modifier(event)
 
-                yield event
+                # Prevent this event from being passed along by returning
+                # False in a _api_() method.
+                if r is not False:
+                    yield event
 
     def __nonzero__(self):
         """Required for the JSON reporting module as otherwise the on-demand
@@ -120,6 +194,7 @@ class WindowsMonitor(BehaviorHandler):
     def parse(self, path):
         # Invoke parsing of current log file.
         parser = BsonParser(open(path, "rb"))
+        parser.init()
 
         for event in parser:
             if event["type"] == "process":
