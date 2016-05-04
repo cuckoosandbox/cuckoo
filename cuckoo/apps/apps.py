@@ -211,7 +211,7 @@ def process(target, copy_path, task, cfg):
 
 def process_task(task, db, cfg=None):
     try:
-        if task["category"] == "file":
+        if task["category"] == "file" and task.get("sample_id"):
             sample = db.view_sample(task["sample_id"])
             copy_path = cwd("storage", "binaries", sample.sha256)
         else:
