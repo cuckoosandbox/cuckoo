@@ -22,6 +22,8 @@ class MonitorProcessLog(list):
         self.has_apicalls = False
 
         self.services = {}
+        self.vbe6_ptrs = {}
+        self.vbe6_func = {}
 
     def _api_COleScript_Compile(self, event):
         event["raw"] = "script",
@@ -73,8 +75,6 @@ class MonitorProcessLog(list):
     _api_DeleteService = _add_service_name
 
     # VBA Macro analysis stuff.
-    vbe6_ptrs = {}
-    vbe6_func = {}
 
     def _vbe6_newobject(self, event):
         """Keep track which instance pointers belong to which classes."""
