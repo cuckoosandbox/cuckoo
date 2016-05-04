@@ -220,6 +220,19 @@ def search_behavior(request, task_id):
                         process_results.append(call)
                         break
 
+                    if isinstance(value, (tuple, list)):
+                        for arg in value:
+                            if not isinstance(arg, basestring):
+                                continue
+
+                            if query.search(arg):
+                                call["id"] = index
+                                process_results.append(call)
+                                break
+                        else:
+                            continue
+                        break
+
         if process_results:
             results.append({
                 "process": process,
