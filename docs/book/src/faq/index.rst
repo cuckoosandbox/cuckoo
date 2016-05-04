@@ -253,3 +253,22 @@ trying to determine to which version of the ``Cuckoo Agent`` it is talking.
 .. _`legacy Cuckoo Agent`: https://github.com/cuckoosandbox/cuckoo/blob/master/agent/agent.py
 .. _`new, REST API-based, Cuckoo Agent`: https://github.com/jbremer/agent/blob/master/agent.py
 .. _`VMCloak`: https://github.com/jbremer/vmcloak
+
+Permission denied for tcpdump
+-----------------------------
+
+.. versionchanged:: 2.0-rc3
+
+With the new Cuckoo structure in-place all storage is now, by default, located
+in ``~/.cuckoo``, including the PCAP file, which will be stored at
+``~/.cuckoo/storage/analysis/task_id/dump.pcap``. On Ubuntu with AppArmor
+enabled (default configuration) ``tcpdump`` doesn't have write permission to
+dot-directories in ``$HOME``, causing the permission denied message and
+preventing Cuckoo from capturing PCAP files.
+
+One of the workaround is as follows - by installing ``AppArmor utilities`` and
+simply disabling the ``tcpdump`` AppArmor profile altogether (more appropriate
+solutions are welcome of course)::
+
+    sudo apt-get install apparmor-utils
+    sudo aa-disable /usr/sbin/tcpdump
