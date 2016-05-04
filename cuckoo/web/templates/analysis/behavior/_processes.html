@@ -155,6 +155,5 @@ function load_filtered_chunk(pid, category) {
     $('div.processes a.process[data-toggle="tab"]').on('show.bs.tab', function (e) {
         var pid = $(e.target).data("pid");
         $("#process_"+pid+" div.calltable").html("Loading..");
-        load_chunk(pid, 1);
     });
 </script>
