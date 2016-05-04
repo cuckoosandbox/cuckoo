@@ -343,7 +343,7 @@ def web(args):
     # Interface is using local imports here and there.
     # TODO Rename local imports to either cuckoo.web.* or relative imports.
     os.chdir(os.path.join(cuckoo.__path__[0], "web"))
-    sys.path.append(".")
+    sys.path.insert(0, ".")
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web.settings")
 
