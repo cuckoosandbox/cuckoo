@@ -459,12 +459,12 @@ class WindowsScriptFile(object):
 class OfficeDocument(object):
     """Static analysis of Microsoft Office documents."""
     deobf = [
-        [
-            # Chr(65) -> "A"
-            "Chr\\(\\s*(?P<chr>[0-9]+)\\s*\\)",
-            lambda x: '"%c"' % int(x.group("chr")),
-            0,
-        ],
+        # [
+        #    # Chr(65) -> "A"
+        #    "Chr\\(\\s*(?P<chr>[0-9]+)\\s*\\)",
+        #    lambda x: '"%c"' % int(x.group("chr")),
+        #    0,
+        # ],
         [
             # "A" & "B" -> "AB"
             "\\\"(?P<a>.*?)\\\"\\s+\\&\\s+\\\"(?P<b>.*?)\\\"",
@@ -487,12 +487,18 @@ class OfficeDocument(object):
         if p.type == "Text":
             return
 
-        for f, s, v, c in p.extract_macros():
-            yield {
-                "stream": s,
-                "filename": v.decode("latin-1"),
-                "orig_code": c.decode("latin-1"),
-            }
+        try:
+            for f, s, v, c in p.extract_macros():
+                yield {
+                    "stream": s,
+                    "filename": v.decode("latin-1"),
+                    "orig_code": c.decode("latin-1"),
+                }
+        except ValueError as e:
+            log.warning(
+                "Error extracting macros from office document (this is an "
+                "issue with oletools - please report upstream): %s", e
+            )
 
     def deobfuscate(self, code):
         """Bruteforce approach of regex-based deobfuscation."""
