@@ -6,7 +6,7 @@
 # Maximum upload size.
 MAX_UPLOAD_SIZE = 26214400
 
-# Override default secret key stored in secret_key.py
+# Override default secret key stored in $CWD/web/.secret_key
 # Make this unique, and don't share it with anybody.
 # SECRET_KEY = "YOUR_RANDOM_KEY"
 
