@@ -147,37 +147,26 @@ samples::
 Machine utility
 ===============
 
-.. deprecated:: 2.0-rc2
-    This utility will be ported to a Cuckoo App in an upcoming Cuckoo update.
-
-The machine.py utility is designed to help you automatize the configuration of
-virtual machines in Cuckoo.
-It takes a list of machine details as arguments and write them in the specified
+The machine ``Cuckoo App`` is designed to help you automatize the
+configuration of virtual machines in Cuckoo. It takes a list of machine
+details as arguments and write them in the specified
 configuration file of the machinery module enabled in *cuckoo.conf*.
 Following are the available options::
 
-    $ ./utils/machine.py -h
-    usage: machine.py [-h] [--debug] [--add] [--delete] [--ip IP]
-                      [--platform PLATFORM] [--tags TAGS] [--interface INTERFACE]
-                      [--snapshot SNAPSHOT] [--resultserver RESULTSERVER]
-                      vmname
+    $ cuckoo machine --help
+    Usage: cuckoo machine [OPTIONS] VMNAME [IP]
 
-    positional arguments:
-      vmname                Name of the Virtual Machine.
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      --debug               Debug log in case of errors.
-      --add                 Add a Virtual Machine.
-      --delete              Delete a Virtual Machine.
-      --ip IP               Static IP Address.
-      --platform PLATFORM   Guest Operating System.
-      --tags TAGS           Tags for this Virtual Machine.
-      --interface INTERFACE
-                            Sniffer interface for this machine.
-      --snapshot SNAPSHOT   Specific Virtual Machine Snapshot to use.
-      --resultserver RESULTSERVER
-                            IP:Port of the Result Server.
+    Options:
+    --debug              Enable verbose logging
+    --add                Add a Virtual Machine
+    --delete             Delete a Virtual Machine
+    --platform TEXT      Guest Operating System
+    --options TEXT       Machine options
+    --tags TEXT          Tags for this Virtual Machine
+    --interface TEXT     Sniffer interface for this Virtual Machine
+    --snapshot TEXT      Specific Virtual Machine Snapshot to use
+    --resultserver TEXT  IP:Port of the Result Server
+    --help               Show this message and exit.
 
 Distributed scripts
 ===================
