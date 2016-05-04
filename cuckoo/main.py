@@ -166,6 +166,7 @@ def community(force, branch, filepath):
 def clean():
     """Utility to clean the Cuckoo Working Directory and associated
     databases."""
+    Database().connect()
     cuckoo_clean()
 
 @main.command()
