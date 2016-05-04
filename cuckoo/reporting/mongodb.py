@@ -21,6 +21,7 @@ except ImportError:
 
 class MongoDB(Report):
     """Stores report in MongoDB."""
+    order = 2
 
     # Mongo schema version, used for data migration.
     SCHEMA_VERSION = "1"
