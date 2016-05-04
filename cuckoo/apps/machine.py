@@ -2,8 +2,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import argparse
-import logging
 import os.path
 import sys
 
@@ -13,7 +11,8 @@ from cuckoo.common.config import Config
 from cuckoo.core.database import Database
 from cuckoo.misc import cwd
 
-def update_conf(machinery, args, action=None):
+def update_conf(machinery, vmname, ip, platform, options, tags, interface,
+                snapshot, resultserver, action=None):
     """Writes the new machine to the relevant configuration file."""
     path = cwd("conf", "%s.conf" % machinery)
 
@@ -27,10 +26,10 @@ def update_conf(machinery, args, action=None):
             labels = [label.strip() for label in labels.split(",")]
 
             if action == "add":
-                labels.append(args.vmname)
+                labels.append(vmname)
             elif action == "delete":
-                if args.vmname in labels:
-                    labels.remove(args.vmname)
+                if vmname in labels:
+                    labels.remove(vmname)
 
             line = "machines = %s" % ", ".join(labels)
 
@@ -39,75 +38,55 @@ def update_conf(machinery, args, action=None):
     if action == "add":
         lines += [
             "",
-            "[%s]" % args.vmname,
-            "label = %s" % args.vmname,
-            "platform = %s" % args.platform,
-            "ip = %s" % args.ip,
+            "[%s]" % vmname,
+            "label = %s" % vmname,
+            "platform = %s" % platform,
+            "ip = %s" % ip,
         ]
 
-    if args.options:
-        lines.append("options = %s" % args.options)
+    if options:
+        lines.append("options = %s" % options)
 
-    if args.snapshot:
-        lines.append("snapshot = %s" % args.snapshot)
+    if snapshot:
+        lines.append("snapshot = %s" % snapshot)
 
-    if args.interface:
-        lines.append("interface = %s" % args.interface)
+    if interface:
+        lines.append("interface = %s" % interface)
 
-    if args.resultserver:
-        ip, port = args.resultserver.split(":")
-        lines.append("resultserver_ip = %s" % ip)
-        lines.append("resultserver_port = %s" % port)
+    if resultserver:
+        resultserver_ip, resultserver_port = resultserver.split(":")
+        lines.append("resultserver_ip = %s" % resultserver_ip)
+        lines.append("resultserver_port = %s" % resultserver_port)
 
-    if args.tags:
-        lines.append("tags = %s" % args.tags)
+    if tags:
+        lines.append("tags = %s" % tags)
 
     open(path, "wb").write("\n".join(lines))
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("vmname", type=str, help="Name of the Virtual Machine.")
-    parser.add_argument("--debug", action="store_true", help="Debug log in case of errors.")
-    parser.add_argument("--add", action="store_true", help="Add a Virtual Machine.")
-    parser.add_argument("--delete", action="store_true", help="Delete a Virtual Machine.")
-    parser.add_argument("--ip", type=str, help="Static IP Address.")
-    parser.add_argument("--platform", type=str, default="windows", help="Guest Operating System.")
-    parser.add_argument("--options", type=str, help="Machine options.")
-    parser.add_argument("--tags", type=str, help="Tags for this Virtual Machine.")
-    parser.add_argument("--interface", type=str, help="Sniffer interface for this machine.")
-    parser.add_argument("--snapshot", type=str, help="Specific Virtual Machine Snapshot to use.")
-    parser.add_argument("--resultserver", type=str, help="IP:Port of the Result Server.")
-    args = parser.parse_args()
-
-    logging.basicConfig()
-    log = logging.getLogger()
-
-    if args.debug:
-        log.setLevel(logging.DEBUG)
-
+def cuckoo_machine(vmname, add, delete, ip, platform, options, tags,
+                   interface, snapshot, resultserver):
     db = Database()
     conf = Config()
 
-    if args.resultserver:
-        resultserver_ip, resultserver_port = args.resultserver.split(":")
+    if resultserver:
+        resultserver_ip, resultserver_port = resultserver.split(":")
     else:
         resultserver_ip = conf.resultserver.ip
         resultserver_port = conf.resultserver.port
 
-    if args.add:
-        if db.view_machine(args.vmname):
+    if add:
+        if db.view_machine(vmname):
             sys.exit("A Virtual Machine with this name already exists!")
 
-        db.add_machine(args.vmname, args.vmname, args.ip, args.platform,
-                       args.options, args.tags, args.interface, args.snapshot,
-                       resultserver_ip, int(resultserver_port))
-        db.unlock_machine(args.vmname)
+        db.add_machine(vmname, vmname, ip, platform, options, tags, interface,
+                       snapshot, resultserver_ip, int(resultserver_port))
+        db.unlock_machine(vmname)
 
-        update_conf(conf.cuckoo.machinery, args, action="add")
+        action = "add"
 
-    if args.delete:
+    if delete:
         # TODO Add a db.del_machine() function for runtime modification.
-        update_conf(conf.cuckoo.machinery, args, action="delete")
+        action = "delete"
 
-if __name__ == "__main__":
-    main()
+    update_conf(conf.cuckoo.machinery, vmname, ip, platform, options, tags,
+                interface, snapshot, resultserver, action=action)

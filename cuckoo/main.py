@@ -14,7 +14,7 @@ import cuckoo
 
 from cuckoo.apps import (
     fetch_community, submit_tasks, process_tasks, process_task, cuckoo_rooter,
-    cuckoo_api, cuckoo_dnsserve
+    cuckoo_api, cuckoo_dnsserve, cuckoo_machine
 )
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.colors import yellow, red, green, bold
@@ -350,3 +350,26 @@ def web(args):
 
     Database().connect()
     execute_from_command_line(("cuckoo",) + args)
+
+@main.command()
+@click.argument("vmname")
+@click.argument("ip")
+@click.option("--debug", is_flag=True, help="Enable verbose logging")
+@click.option("--add", is_flag=True, help="Add a Virtual Machine")
+@click.option("--delete", is_flag=True, help="Delete a Virtual Machine")
+@click.option("--platform", default="windows", help="Guest Operating System")
+@click.option("--options", help="Machine options")
+@click.option("--tags", help="Tags for this Virtual Machine")
+@click.option("--interface", help="Sniffer interface for this Virtual Machine")
+@click.option("--snapshot", help="Specific Virtual Machine Snapshot to use")
+@click.option("--resultserver", help="IP:Port of the Result Server")
+def machine(debug, vmname, ip, add, delete, platform, options, tags,
+            interface, snapshot, resultserver):
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    Database().connect()
+    cuckoo_machine(vmname, add, delete, ip, platform, options, tags,
+                   interface, snapshot, resultserver)
