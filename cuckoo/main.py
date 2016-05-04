@@ -353,7 +353,7 @@ def web(args):
 
 @main.command()
 @click.argument("vmname")
-@click.argument("ip")
+@click.argument("ip", default="")
 @click.option("--debug", is_flag=True, help="Enable verbose logging")
 @click.option("--add", is_flag=True, help="Add a Virtual Machine")
 @click.option("--delete", is_flag=True, help="Delete a Virtual Machine")
@@ -369,6 +369,9 @@ def machine(debug, vmname, ip, add, delete, platform, options, tags,
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
+
+    if add and not ip:
+        sys.exit("You have to specify a legitimate IP address for --add.")
 
     Database().connect()
     cuckoo_machine(vmname, add, delete, ip, platform, options, tags,
