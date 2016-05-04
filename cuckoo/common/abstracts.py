@@ -1038,7 +1038,7 @@ class Signature(object):
     def init(self):
         """Allow signatures to initialize themselves."""
 
-    def mark_call(self, **kwargs):
+    def mark_call(self, *args, **kwargs):
         """Mark the current call as explanation as to why this signature
         matched."""
         mark = {
@@ -1047,19 +1047,29 @@ class Signature(object):
             "cid": self.cid,
             "call": self.call,
         }
-        mark.update(kwargs)
+
+        if args or kwargs:
+            log.warning(
+                "You have provided extra arguments to the mark_call() method "
+                "which no longer supports doing so. Please report explicit "
+                "IOCs through mark_ioc()."
+            )
+
         self.marks.append(mark)
 
-    def mark_ioc(self, category, ioc, **kwargs):
+    def mark_ioc(self, category, ioc, description=None):
         """Mark an IOC as explanation as to why the current signature
         matched."""
         mark = {
             "type": "ioc",
             "category": category,
             "ioc": ioc,
+            "description": description,
         }
-        mark.update(kwargs)
-        self.marks.append(mark)
+
+        # Prevent duplicates.
+        if mark not in self.marks:
+            self.marks.append(mark)
 
     def mark_vol(self, plugin, **kwargs):
         """Mark output of a Volatility plugin as explanation as to why the

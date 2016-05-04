@@ -55,8 +55,11 @@
                     </tr>
                     {% elif mark.type == "ioc" %}
                     <tr>
-                        <td colspan="1">{{mark.category}}</td>
-                        <td colspan="4">{{mark.ioc}}</td>
+                        <td>{{ mark.category }}</td>
+                        <td>{{ mark.ioc }}</td>
+                        {% if mark.description %}
+                        <td>{{ mark.description }}</td>
+                        {% endif %}
                     </tr>
                     {% elif mark.type == "generic" %}
                     <tr>
