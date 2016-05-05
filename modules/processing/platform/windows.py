@@ -96,7 +96,7 @@ class MonitorProcessLog(list):
         if args["library"] == "VBE6.DLL" and not args["function"]:
             return False
 
-    def _vbe6_getidfromname(self, event):
+    def _api_vbe6_GetIDFromName(self, event):
         """Keep track which function has which function index.
         This informational call is omitted from the actual logs."""
         this = event["arguments"]["this"]
@@ -107,18 +107,18 @@ class MonitorProcessLog(list):
         self.vbe6_func[class_, funcidx] = funcname
         return False
 
-    _api_vbe6_GetIDFromName = _vbe6_getidfromname
-    _api_vbe6_CallByName = _vbe6_getidfromname
-
     def _api_vbe6_Invoke(self, event):
         this = event["arguments"]["this"]
         funcidx = event["arguments"]["funcidx"]
 
+        if this in self.vbe6_ptrs:
+            event["flags"]["this"] = self.vbe6_ptrs[this]
+
         class_ = self.vbe6_ptrs.get(this, this)
         if class_ and (class_, funcidx) in self.vbe6_func:
             event["arguments"]["funcname"] = self.vbe6_func[class_, funcidx]
-            event["flags"]["this"] = class_
-            del event["arguments"]["funcidx"]
+
+        del event["arguments"]["funcidx"]
 
     def _api_modifier(self, event):
         """Adds flags field to CLSID and IID instances."""
