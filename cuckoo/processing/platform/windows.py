@@ -21,6 +21,7 @@ class MonitorProcessLog(list):
         self.first_seen = None
         self.has_apicalls = False
 
+    def init(self):
         self.services = {}
         self.vbe6_ptrs = {}
         self.vbe6_func = {}
@@ -132,6 +133,7 @@ class MonitorProcessLog(list):
             event["flags"]["iid"] = guid_name(iid)
 
     def __iter__(self):
+        self.init()
         for event in self.eventstream:
             if event["type"] == "process":
                 self.first_seen = event["first_seen"]
