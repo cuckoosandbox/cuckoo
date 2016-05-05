@@ -40,6 +40,12 @@
                 {% for mark in signature.marks|sigsort %}
                     {% if mark.type == "call" %}
                     {% if mark.first %}
+                        {# Close up the non-API call table #}
+                        {% if not forloop.first %}
+                        </table>
+                        <table class="table table-bordered" style="table-layout: fixed;">
+                        {% endif %}
+
                         <thead>
                             <tr>
                                 <th width="15%">Time &amp; API</th>
