@@ -254,7 +254,7 @@ def resubmit(request, task_id):
         return index(request, task_id)
 
     if not task:
-        return render(request, "error", {
+        return render(request, "error.html", {
             "error": "No Task found with this ID",
         })
 
@@ -278,7 +278,7 @@ def submit_dropped(request, task_id, sha1):
 
     task = Database().view_task(task_id)
     if not task:
-        return render(request, "error", {
+        return render(request, "error.html", {
             "error": "No Task found with this ID",
         })
 
