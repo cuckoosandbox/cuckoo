@@ -22,10 +22,11 @@ except ImportError:
         "`pip install bs4 requests wakeonlan`)."
     )
 
-from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.common.abstracts import Machinery
+from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooMachineError
+from lib.cuckoo.common.utils import TimeoutServer
 
 class Physical(Machinery):
     """Manage physical sandboxes."""
@@ -140,10 +141,16 @@ class Physical(Machinery):
         # exceptions.
         log.debug("Getting status for machine: %s.", label)
         machine = self._get_machine(label)
-        guest = GuestManager(machine.id, machine.ip, machine.platform, None)
+
+        # The status is only used to determine whether the Guest is running
+        # or whether it is in a stopped status, therefore the timeout can most
+        # likely be fairly arbitrary. TODO This is a temporary fix as it is
+        # not compatible with the new Cuckoo Agent, but it will have to do.
+        url = "http://{0}:{1}".format(machine.ip, CUCKOO_GUEST_PORT)
+        server = TimeoutServer(url, allow_none=True, timeout=60)
 
         try:
-            status = guest.server.get_status()
+            status = server.get_status()
         except xmlrpclib.Fault as e:
             # Contacted Agent, but it threw an error.
             log.debug("Agent error: %s (%s) (Error: %s).",
