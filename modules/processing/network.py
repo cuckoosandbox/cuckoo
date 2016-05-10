@@ -720,7 +720,7 @@ class Pcap2(object):
         if not os.path.exists(self.network_path):
             os.mkdir(self.network_path)
 
-        r = httpreplay.reader.PcapReader(self.pcap_path)
+        r = httpreplay.reader.PcapReader(open(self.pcap_path, "rb"))
         r.tcp = httpreplay.smegma.TCPPacketStreamer(r, self.handlers)
 
         l = sorted(r.process(), key=lambda x: x[1])
