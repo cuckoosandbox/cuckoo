@@ -77,7 +77,10 @@ def installdir(src, dst, force, rewrite, origin=[]):
             srcpath = os.path.join(src, file_name)
             if os.path.islink(srcpath):
                 if os.path.lexists(destination):
-                    shutil.rmtree(destination)
+                    try:
+                        shutil.rmtree(destination)
+                    except OSError:
+                        os.unlink(destination)
                 os.symlink(os.readlink(srcpath), destination)
                 print "Symbolic link \"%s/%s\" -> \"%s\" %s" % (
                     "/".join(origin), file_name, os.readlink(srcpath),
