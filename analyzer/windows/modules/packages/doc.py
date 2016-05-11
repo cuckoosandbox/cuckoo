@@ -17,6 +17,7 @@ class DOC(Package):
         ("ProgramFiles", "Microsoft Office", "Office14", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office15", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office 15", "root", "office15", "WINWORD.EXE"),
+        ("ProgramFiles", "Microsoft Office", "root", "Office16", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office", "WORDVIEW.EXE"),
     ]
 
@@ -42,6 +43,15 @@ class DOC(Package):
                 # is not corrupted and is from trusted source before opening
                 # the file. Do you want to open the file now?"
                 "ExtensionHardening": 0,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\16.0\\Word\\Security",
+            {
+                # Enable VBA macros in Office 2016.
+                "VBAWarnings": 1,
+                "AccessVBOM": 1,
             },
         ],
     ]
