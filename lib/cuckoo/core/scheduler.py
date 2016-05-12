@@ -213,20 +213,24 @@ class AnalysisManager(threading.Thread):
     def route_network(self):
         """Enable network routing if desired."""
         # Determine the desired routing strategy (none, internet, VPN).
-        route = self.task.options.get("route", self.cfg.routing.route)
+        self.route = self.task.options.get("route", self.cfg.routing.route)
 
-        if route == "none":
+        if self.route == "none":
             self.interface = None
             self.rt_table = None
-        elif route == "internet" and self.cfg.routing.internet != "none":
+        elif self.route == "inetsim":
+            self.interface = self.cfg.routing.inetsim_interface
+         elif self.route == "tor":
+            self.interface = self.cfg.routing.tor_interface
+        elif self.route == "internet" and self.cfg.routing.internet != "none":
             self.interface = self.cfg.routing.internet
             self.rt_table = self.cfg.routing.rt_table
-        elif route in vpns:
-            self.interface = vpns[route].interface
-            self.rt_table = vpns[route].rt_table
+        elif self.route in vpns:
+            self.interface = vpns[self.route].interface
+            self.rt_table = vpns[self.route].rt_table
         else:
             log.warning("Unknown network routing destination specified, "
-                        "ignoring routing for this analysis: %r", route)
+                        "ignoring routing for this analysis: %r", self.route)
             self.interface = None
             self.rt_table = None
 
@@ -238,10 +242,18 @@ class AnalysisManager(threading.Thread):
                 "not available at the moment, switching to route=none mode.",
                 self.interface
             )
-            route = "none"
+            self.route = "none"
             self.task.options["route"] = "none"
             self.interface = None
             self.rt_table = None
+
+        if self.route == "inetsim":
+            rooter("inetsim_enable", self.machine.ip, self.cfg.routing.inetsim_server,
+                str(self.cfg.resultserver.port))
+
+        if self.route == "tor":
+            rooter("tor_enable", self.machine.ip, str(self.cfg.resultserver.port),
+                str(self.cfg.routing.tor_dnsport), str(self.cfg.routing.tor_proxyport))
 
         if self.interface:
             rooter("forward_enable", self.machine.interface,
@@ -251,7 +263,7 @@ class AnalysisManager(threading.Thread):
             rooter("srcroute_enable", self.rt_table, self.machine.ip)
 
         # Propagate the taken route to the database.
-        self.db.set_route(self.task.id, route)
+        self.db.set_route(self.task.id, self.route)
 
     def unroute_network(self):
         if self.interface:
@@ -260,6 +272,14 @@ class AnalysisManager(threading.Thread):
 
         if self.rt_table:
             rooter("srcroute_disable", self.rt_table, self.machine.ip)
+
+        if self.route == "inetsim":
+          rooter("inetsim_disable", self.machine.ip, self.cfg.routing.inetsim_server,
+                str(self.cfg.resultserver.port))
+
+        if self.route == "tor":
+            rooter("tor_disable", self.machine.ip, str(self.cfg.resultserver.port),
+                str(self.cfg.routing.tor_dnsport), str(self.cfg.routing.tor_proxyport))
 
     def wait_finish(self):
         """Some VMs don't have an actual agent. Mainly those that are used as
