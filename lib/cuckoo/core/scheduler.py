@@ -220,7 +220,7 @@ class AnalysisManager(threading.Thread):
             self.rt_table = None
         elif self.route == "inetsim":
             self.interface = self.cfg.routing.inetsim_interface
-         elif self.route == "tor":
+        elif self.route == "tor":
             self.interface = self.cfg.routing.tor_interface
         elif self.route == "internet" and self.cfg.routing.internet != "none":
             self.interface = self.cfg.routing.internet
