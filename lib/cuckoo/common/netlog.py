@@ -310,6 +310,7 @@ class BsonParser(ProtocolHandler):
 
                     # Is this process being "tracked"?
                     parsed["track"] = bool(argdict.get("track", 1))
+                    parsed["modules"] = argdict.get("modules", {})
 
                     self.pid = pid
 

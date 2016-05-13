@@ -22,7 +22,7 @@ example if you create a module *module/processing/foobar.py* you will have to ap
 the following section to *conf/processing.conf*::
 
     [foobar]
-    enabled = on
+    enabled = yes
 
 Every module will then be initialized and executed and the data returned
 will be appended in a data structure that we'll call **global container**.
