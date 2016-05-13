@@ -1,0 +1,46 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <tbody>
+    {% if analysis.misp %}
+        <tr>
+            <td width=80px><strong>Event ID</strong></td>
+            <td width=100px><strong>Date</strong></td>
+            <td><strong>IOCs</strong></td>
+            <td><strong>Description</strong></td>
+            <td width=60px><strong>Level</strong></td>
+        </tr>
+        {% for event in analysis.misp %}
+        <tr>
+               {% if event.url %}
+                    <td><a href="{{event.url}}{{event.eid}}" target="_blank">{{event.eid}}</a></td>
+               {% endif  %}
+               {% if event.date %}
+                   <td>{{event.date}}</td>
+               {% endif %}
+               {% if event.iocs %}
+                   <td>
+                   {% for ioc in event.iocs %}
+                       <li>{{ioc}}</li>
+                   {% endfor %}
+                   </td>
+               {% endif %}
+               {% if event.info %}
+                   <td>{{event.info}}</td>
+               {% endif %}
+               {% if event.level %}
+                   <td><p>
+                        {% if event.level == "4" %}
+                            <span class="label label-default">4</span>
+                        {% elif event.level == "3" %}
+                            <span class="label label-success">3</span>
+                        {% elif event.level == "2" %}
+                            <span class="label label-warning">2</span>
+                        {% elif event.level == "1"  %}
+                            <span class="label label-danger">1</span>
+                        {% endif %}
+                   </td>
+               {% endif %}
+        </tr>
+        {% endfor %}
+    {% endif %}
+    </tbody>
+</table>
