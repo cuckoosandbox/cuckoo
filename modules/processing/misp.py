@@ -33,28 +33,31 @@ class MISP(Processing):
     def misper_thread(self, url):
         while self.iocs:
             ioc = self.iocs.pop()
-            response = self.misp.search_all(ioc)
-            if response and response.get("response", {}):
-                self.lock.acquire()
-                for res in response.get("response", {}):
-                    event = res.get("Event", {})
-                    eid = res.get("Event", {}).get("id", 0)
-                    if eid in self.misper and ioc not in self.misper[eid]["iocs"]:
-                        self.misper[eid]["iocs"].append(ioc)
-                    else:
-                        tmp_misp = dict()
-                        tmp_misp.setdefault(eid, dict())
-                        date = event.get("date", "")
-                        if "iocs" not in tmp_misp[eid]:
-                            tmp_misp[eid].setdefault("iocs", list())
-                        tmp_misp[eid]["iocs"].append(ioc)
-                        tmp_misp[eid].setdefault("eid", eid)
-                        tmp_misp[eid].setdefault("url", url+"events/view/")
-                        tmp_misp[eid].setdefault("date", date)
-                        tmp_misp[eid].setdefault("level", event.get("threat_level_id",""))
-                        tmp_misp[eid].setdefault("info", event.get("info", "").strip())
-                        self.misper.update(tmp_misp)
-                self.lock.release()
+            try:
+                response = self.misp.search_all(ioc)
+                if response and response.get("response", {}):
+                    self.lock.acquire()
+                    for res in response.get("response", {}):
+                        event = res.get("Event", {})
+                        eid = res.get("Event", {}).get("id", 0)
+                        if eid in self.misper and ioc not in self.misper[eid]["iocs"]:
+                            self.misper[eid]["iocs"].append(ioc)
+                        else:
+                            tmp_misp = dict()
+                            tmp_misp.setdefault(eid, dict())
+                            date = event.get("date", "")
+                            if "iocs" not in tmp_misp[eid]:
+                                tmp_misp[eid].setdefault("iocs", list())
+                            tmp_misp[eid]["iocs"].append(ioc)
+                            tmp_misp[eid].setdefault("eid", eid)
+                            tmp_misp[eid].setdefault("url", url+"events/view/")
+                            tmp_misp[eid].setdefault("date", date)
+                            tmp_misp[eid].setdefault("level", event.get("threat_level_id",""))
+                            tmp_misp[eid].setdefault("info", event.get("info", "").strip())
+                            self.misper.update(tmp_misp)
+                    self.lock.release()
+            except Exception as e:
+                log.error(e)
 
     def run(self):
         """Run analysis.
