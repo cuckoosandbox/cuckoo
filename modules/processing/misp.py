@@ -7,13 +7,14 @@
   (4,"Undefined","*undefined* no risk","No risk");
 """
 
+import os
 import logging
 import threading
 from collections import deque
 from datetime import datetime
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.abstracts import Processing
-
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 
 PYMISP = False
 try:
@@ -57,9 +58,10 @@ class MISP(Processing):
 
     def run(self):
         """Run analysis.
-        @return: volatility results dict.
+        @return: MISP results dict.
         """
         self.key = "misp"
+        whitelist = list()
         self.iocs = deque()
         self.misper = dict()
         threads_list = list()
@@ -76,19 +78,25 @@ class MISP(Processing):
                 if not threads:
                     threads = 5
 
+                # load whitelist if exists
+                if os.path.exists(os.path.join(CUCKOO_ROOT, "conf", "misp.conf")):
+                    whitelist = Config("misp").whitelist.whitelist
+                    if whitelist:
+                        whitelist = [ioc.strip() for ioc in whitelist.split(",")]
+
                 if url and apikey:
                     self.misp = PyMISP(url, apikey, False, "json")
 
                     for drop in self.results.get("dropped", []):
-                        if drop.get("md5", "") and drop["md5"] not in self.iocs:
+                        if drop.get("md5", "") and drop["md5"] not in self.iocs and drop["md5"] not in whitelist:
                             self.iocs.append(drop["md5"])
 
-                    if self.results.get("target", {}).get("file", {}).get("md5", ""):
+                    if self.results.get("target", {}).get("file", {}).get("md5", "") and self.results["target"]["file"]["md5"] not in whitelist:
                         self.iocs.append(self.results["target"]["file"]["md5"])
                     for block in self.results.get("network", {}).get("hosts", []):
-                        if block.get("ip", "") and block["ip"] not in self.iocs:
+                        if block.get("ip", "") and block["ip"] not in self.iocs and block["ip"] not in whitelist:
                             self.iocs.append(block["ip"])
-                        if block.get("hostname", "") and block["hostname"] not in self.iocs:
+                        if block.get("hostname", "") and block["hostname"] not in self.iocs and block["hostname"] not in whitelist:
                             self.iocs.append(block["hostname"])
 
                     if self.iocs:
