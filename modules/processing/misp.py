@@ -86,7 +86,7 @@ class MISP(Processing):
                     if self.results.get("target", {}).get("file", {}).get("md5", ""):
                         self.iocs.append(self.results["target"]["file"]["md5"])
                     for block in self.results.get("network", {}).get("hosts", []):
-                        if block.get("ip", "") and block["ip"] not in self.iocs and block["ip"] not in whitelist:
+                        if block.get("ip", "") and block["ip"] not in self.iocs:
                             self.iocs.append(block["ip"])
                         if block.get("hostname", "") and block["hostname"] not in self.iocs:
                             self.iocs.append(block["hostname"])
