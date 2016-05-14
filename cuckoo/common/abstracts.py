@@ -810,7 +810,7 @@ class Signature(object):
             actions = [
                 "file_opened", "file_written",
                 "file_read", "file_deleted",
-                "file_exists",
+                "file_exists", "file_failed",
             ]
 
         return self.get_summary_generic(pid, actions)
@@ -855,7 +855,7 @@ class Signature(object):
             actions = [
                 "file_opened", "file_written",
                 "file_read", "file_deleted",
-                "file_exists",
+                "file_exists", "file_failed",
             ]
 
         return self._check_value(pattern=pattern,

@@ -51,9 +51,9 @@ class Files(object):
         if not pid or filepath.lower() not in self.files:
             return
 
-        log.info("Adding pid for %r %s", filepath, pid)
         if pid not in self.files[filepath.lower()]:
             self.files[filepath.lower()].append(pid)
+            log.info("Added pid %s for %r", pid, filepath)
 
     def add_file(self, filepath, pid=None):
         """Add filepath to the list of files and track the pid."""

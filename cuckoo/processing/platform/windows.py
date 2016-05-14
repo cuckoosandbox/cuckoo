@@ -396,8 +396,9 @@ class BehaviorReconstructor(object):
     # Process stuff.
 
     def _api_CreateProcessInternalW(self, return_value, arguments, flags):
-        cmdline = arguments["command_line"] or arguments["filepath"]
-        return ("command_line", cmdline)
+        if arguments.get("track", True):
+            cmdline = arguments["command_line"] or arguments["filepath"]
+            return ("command_line", cmdline)
 
     def _api_ShellExecuteExW(self, return_value, arguments, flags):
         if arguments["parameters"]:
