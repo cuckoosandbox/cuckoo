@@ -3,8 +3,9 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import logging
 import datetime
+import logging
+import re
 
 from lib.cuckoo.common.abstracts import BehaviorHandler
 from lib.cuckoo.common.netlog import BsonParser
@@ -119,6 +120,16 @@ class MonitorProcessLog(list):
             event["arguments"]["funcname"] = self.vbe6_func[class_, funcidx]
 
         del event["arguments"]["funcidx"]
+
+    def _api_pdf_unescape(self, event):
+        # "%u1234" => "\x34\x12"
+        # Strictly speaking this does not reflect what unescape() does, but
+        # in the end it's usually just about the in-memory representation.
+        event["arguments"]["unescaped"] = re.sub(
+            "%u([0-9a-fA-F]{4})",
+            lambda x: x.group(1).decode("hex").decode("latin-1")[::-1],
+            event["arguments"]["string"]
+        )
 
     def _api_modifier(self, event):
         """Adds flags field to CLSID and IID instances."""
