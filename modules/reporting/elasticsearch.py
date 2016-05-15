@@ -23,7 +23,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-class ElasticSearchReporting(Report):
+class ElasticSearch(Report):
     """Stores report in Elasticsearch."""
 
     def connect(self):
