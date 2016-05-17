@@ -121,6 +121,13 @@ class MonitorProcessLog(list):
 
         del event["arguments"]["funcidx"]
 
+    # PDF document analysis.
+
+    def _api_pdf_eval(self, event):
+        event["raw"] = "script",
+        event["arguments"]["script"] = \
+            jsbeautify(event["arguments"]["script"])
+
     def _api_pdf_unescape(self, event):
         # "%u1234" => "\x34\x12"
         # Strictly speaking this does not reflect what unescape() does, but
