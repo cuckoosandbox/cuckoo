@@ -8,11 +8,12 @@ import shutil
 import sys
 import copy
 import json
+import socket
 import urllib
 import urllib2
 import logging
 import logging.handlers
-import socket
+from distutils.version import LooseVersion
 
 from lib.cuckoo.common.colors import red, green, yellow, cyan
 from lib.cuckoo.common.config import Config
@@ -109,21 +110,25 @@ def check_version():
         return
 
     try:
-        r = json.loads(response.read())
+        response_data = json.loads(response.read())
     except ValueError:
         print(red(" Failed! ") + "Invalid response.\n")
         return
 
-    if not r["error"]:
-        if r["response"] == "NEW_VERSION" and r["current"] != "1.2":
-            msg = "Cuckoo Sandbox version %s is available now." % r["current"]
+    stable_version = response_data["current"]
+
+    if CUCKOO_VERSION.endswith("-dev"):
+        print(yellow(" You are running a development version! Current stable is {}.".format(
+            stable_version)))
+    else:
+        if LooseVersion(CUCKOO_VERSION) < LooseVersion(stable_version):
+            msg = "Cuckoo Sandbox version {} is available now.".format(
+                stable_version)
+
             print(red(" Outdated! ") + msg)
-        elif r["current"] == "1.2":
-            print(yellow(" Okay! ") + "You are running a development version.")
         else:
             print(green(" Good! ") + "You have the latest version "
                                      "available.\n")
-
 
 class DatabaseHandler(logging.Handler):
     """Logging to database handler.
