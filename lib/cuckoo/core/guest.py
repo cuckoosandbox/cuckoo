@@ -61,8 +61,7 @@ def analyzer_zipfile(platform, monitor):
             zip_file.write(path, archive_name)
 
     zip_file.close()
-    data = xmlrpclib.Binary(zip_data.getvalue())
-    zip_data.close()
+    data = zip_data.getvalue()
 
     if time.time() - t > 10:
         log.warning(
@@ -136,13 +135,13 @@ class OldGuestManager(object):
 
         log.debug(
             "Uploading analyzer to guest (id=%s, ip=%s, monitor=%s, size=%d)",
-            self.id, self.ip, monitor, len(zip_data.data)
+            self.id, self.ip, monitor, len(zip_data)
         )
 
         # Send the zip containing the analyzer to the agent running inside
         # the guest.
         try:
-            self.server.add_analyzer(zip_data)
+            self.server.add_analyzer(xmlrpclib.Binary(zip_data))
         except socket.timeout:
             raise CuckooGuestError("{0}: guest communication timeout: unable "
                                    "to upload agent, check networking or try "
