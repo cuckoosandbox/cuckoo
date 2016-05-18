@@ -129,6 +129,8 @@ class MonitorProcessLog(list):
             jsbeautify(event["arguments"]["script"])
 
     def _api_pdf_unescape(self, event):
+        event["raw"] = "string", "unescaped"
+
         # "%u1234" => "\x34\x12"
         # Strictly speaking this does not reflect what unescape() does, but
         # in the end it's usually just about the in-memory representation.
@@ -136,6 +138,13 @@ class MonitorProcessLog(list):
             "%u([0-9a-fA-F]{4})",
             lambda x: x.group(1).decode("hex").decode("latin-1")[::-1],
             event["arguments"]["string"]
+        )
+
+        # "%41" => "A"
+        event["arguments"]["unescaped"] = re.sub(
+            "%([0-9a-fA-F]{2})",
+            lambda x: x.group(1).decode("hex").decode("latin-1"),
+            event["arguments"]["unescaped"]
         )
 
     def _api_modifier(self, event):
