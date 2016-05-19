@@ -11,7 +11,9 @@
                     <b>Extracted/injected images (may contain unpacked executables)</b>
                     <ul>
                     {% for extracted in proc.extracted %}
+                        {% if extracted.extracted_id %}
                         <li><a href="{% url "analysis.views.file" "procmem_extracted" extracted.extracted_id %}" class="btn btn-primary btn-small">Download</a></li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
                 {% endif %}
