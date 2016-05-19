@@ -4,9 +4,14 @@
 
 import copy
 import logging.handlers
+import os.path
+import thread
 
-from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.colors import red, yellow, cyan
+from lib.cuckoo.core.database import Database
+from lib.cuckoo.common.constants import CUCKOO_ROOT
+
+_tasks = {}
 
 class DatabaseHandler(logging.Handler):
     """Logging to database handler.
@@ -17,6 +22,24 @@ class DatabaseHandler(logging.Handler):
         if hasattr(record, "task_id"):
             db = Database()
             db.add_error(record.msg, int(record.task_id))
+
+class TaskHandler(logging.Handler):
+    """Per-task logger.
+    Used to log all task specific events to a per-task cuckoo.log log file.
+    """
+
+    def emit(self, record):
+        task_id = _tasks.get(thread.get_ident())
+        if not task_id:
+            return
+
+        # Don't bother, this will be improved with #863 anyway.
+        logpath = os.path.join(
+            CUCKOO_ROOT, "storage", "analyses", "%s" % task_id, "cuckoo.log"
+        )
+
+        with open(logpath, "a+b") as f:
+            f.write("%s\n" % self.formatter.format(record))
 
 class ConsoleHandler(logging.StreamHandler):
     """Logging to console handler."""
@@ -35,3 +58,7 @@ class ConsoleHandler(logging.StreamHandler):
                 colored.msg = record.msg
 
         logging.StreamHandler.emit(self, colored)
+
+def init_task_log(task_id):
+    """Associate a thread with a task."""
+    _tasks[thread.get_ident()] = task_id

@@ -18,17 +18,29 @@ class Debug(Processing):
         @return: debug information dict.
         """
         self.key = "debug"
-        debug = {"log": "", "errors": []}
+        debug = {"log": [], "cuckoo": [], "errors": []}
 
         if os.path.exists(self.log_path):
             try:
-                debug["log"] = codecs.open(self.log_path, "rb", "utf-8").readlines()
+                f = codecs.open(self.log_path, "rb", "utf-8")
+                debug["log"] = f.readlines()
             except ValueError as e:
                 raise CuckooProcessingError("Error decoding %s: %s" %
                                             (self.log_path, e))
             except (IOError, OSError) as e:
                 raise CuckooProcessingError("Error opening %s: %s" %
                                             (self.log_path, e))
+
+        if os.path.exists(self.cuckoolog_path):
+            try:
+                f = codecs.open(self.cuckoolog_path, "rb", "utf-8")
+                debug["cuckoo"] = f.readlines()
+            except ValueError as e:
+                raise CuckooProcessingError("Error decoding %s: %s" %
+                                            (self.cuckoolog_path, e))
+            except (IOError, OSError) as e:
+                raise CuckooProcessingError("Error opening %s: %s" %
+                                            (self.cuckoolog_path, e))
 
         for error in Database().view_errors(int(self.task["id"])):
             debug["errors"].append(error.message)
